@@ -1,0 +1,13 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace gc.infraestructura.Core.EntidadesComunes
+{
+    public class ExceptionValidation
+    {
+        public int Status { get; set; }
+        public string? Title { get; set; }
+        public string? Detail { get; set; }
+    }
+}
