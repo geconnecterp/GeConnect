@@ -25,7 +25,7 @@
     {
         private readonly ISecurityServicio _securityServicio;
         private readonly ILogger<EmpleadoServicio> _logger;
-        string msj;
+        string? msj;
 
         public EmpleadoServicio(ILogger<EmpleadoServicio> logger, IUnitOfWork uow, IOptions<PaginationOptions> options, IOptions<ConfigNegocioOption> options1, ISecurityServicio securityServicio) : base(uow, options1, options)
         {
