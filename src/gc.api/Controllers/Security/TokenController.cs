@@ -189,7 +189,7 @@ namespace gc.api.Controllers.Security
            
             //token
             var token = new JwtSecurityToken(header, payload);
-            _empleadoServicio.RegistrarAcceso(usuario.Id,ip,'L');
+            //_empleadoServicio.RegistrarAcceso(usuario.Id,ip,'L');
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }

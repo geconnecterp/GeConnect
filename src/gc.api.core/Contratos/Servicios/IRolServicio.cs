@@ -8,8 +8,8 @@ namespace gc.api.core.Interfaces.Servicios
         void AddUsersToRoles(string[] usernames, string[] roleNames);
         void CreateRole(string?roleName);
         Task<bool> DeleteRoleAsync(string?roleName, bool throwOnPopulatedRole);
-        string[] GetAllRoles();
-        string[] GetRolesForUser(string?username);
+        string?[] GetAllRoles();
+        string?[] GetRolesForUser(string?username);
         bool IsUserInRole(string?username, string?roleName);
         bool RoleExists(string?roleName);
         string[] GetUsersInRole(string?roleName);

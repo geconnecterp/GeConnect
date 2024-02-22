@@ -16,6 +16,6 @@ namespace gc.infraestructura.Core.Responses
         }
 
         public T Data { get; set; }
-        public Metadata Meta { get; set; }
+        public Metadata? Meta { get; set; }
     }
 }

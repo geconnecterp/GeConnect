@@ -48,6 +48,6 @@ namespace gc.api.core.Entidades
         public bool? EsLaboratorio { get; set; }
         public string? VistaFormulario { get; set; }
 
-
+        public virtual TipoDocumento TipoDocumento { get; set; }
     }
 }
