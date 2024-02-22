@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace gc.infraestructura.Core.EntidadesComunes
+﻿namespace gc.infraestructura.Core.EntidadesComunes
 {
     public class ExceptionValidation
     {

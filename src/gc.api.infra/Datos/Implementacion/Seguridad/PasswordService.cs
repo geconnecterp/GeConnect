@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using gc.api.infra.Datos.Contratos.Security;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using System.Text;
 
 namespace gc.api.infra.Datos.Implementacion.Security
 {
@@ -38,17 +39,19 @@ namespace gc.api.infra.Datos.Implementacion.Security
         }
 
         public string Hash(string password)
-        {           
-            //PBKDF2 IMPLELMETACION
-            using (var alg = new PasswordDeriveBytes(password, null, "SHA256", _options.Iterations))
-            {
-                if (alg.Salt != null)
-                {
-                    var key = Convert.ToBase64String(alg.GetBytes(_options.KeySize));
-                    var salt = Convert.ToBase64String(alg.Salt);
-                    return $"{_options.Iterations}.{salt}.{key}";
-                }
-                return "";
+        {
+            //_options.Salt nunca deberia ser nula. Al tomarlo de la configuración se deberia hidratar transparentente.
+#pragma warning disable CS8604 // Posible argumento de referencia nulo
+            var saltOpt = Encoding.ASCII.GetBytes(_options.Salt);
+#pragma warning restore CS8604 // Posible argumento de referencia nulo
+                              //PBKDF2 IMPLELMETACION
+            using (var alg = new PasswordDeriveBytes(password, saltOpt, "SHA256", _options.Iterations))
+            {               
+                var key = Convert.ToBase64String(alg.GetBytes(_options.KeySize));
+#pragma warning disable CS8604 // Posible argumento de referencia nulo
+                var salt = Convert.ToBase64String(alg.Salt);
+#pragma warning restore CS8604 // Posible argumento de referencia nulo
+                return $"{_options.Iterations}.{salt}.{key}";
             }
         }
     }

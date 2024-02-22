@@ -59,7 +59,7 @@ namespace gc.api.infra.Datos.Implementacion
             _contexto.Set<T>().Remove(entity);
         }
 
-        public List<T> EjecutarSP(string sp, params object[] parametros)
+        public List<T> EjecutarSP(string? sp, params object[] parametros)
         {
             
             StringBuilder sb = new StringBuilder(sp + " ");

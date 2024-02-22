@@ -42,7 +42,8 @@ namespace gc.api.core.Servicios
             user.Autorizados.Add(new Autorizado
             {
                 UsuarioId = user.Id,
-                RoleId = role.Id
+                RoleId = role.Id,
+                Role = role,
             });
 
             return await AddAsync(user);

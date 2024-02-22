@@ -2,9 +2,9 @@
 
 namespace gc.api.core.Entidades
 {
-    public partial class Accesos : EntidadBase
+    public partial class Acceso : EntidadBase
     {
-        public Accesos()
+        public Acceso()
         {
             Usuario = new Usuario();
         }

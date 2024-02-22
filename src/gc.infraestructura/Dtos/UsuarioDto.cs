@@ -1,17 +1,17 @@
-namespace gc.api.core.Entidades
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace gc.infraestructura.DTOs
 {
-    public partial class Usuario : EntidadBase
+    public partial class UsuarioDto
     {
-        public Usuario()
+        public UsuarioDto()
         {
-            Accesos = new HashSet<Acceso>();
-            AuditoriaUsuarios = new HashSet<AuditoriaUsuario>();
-            Autorizados = new HashSet<Autorizado>();
             Contrasena = string.Empty;
             Correo = string.Empty;
             UserName = string.Empty;
         }
-
         public Guid Id { get; set; }
         public string Contrasena { get; set; }
         public string Correo { get; set; }
@@ -21,11 +21,6 @@ namespace gc.api.core.Entidades
         public DateTime? FechaBloqueo { get; set; }
         public string UserName { get; set; }
         public bool EstaLogueado { get; set; }
-
-
-        public virtual ICollection<Acceso> Accesos { get; set; }
-        public virtual ICollection<AuditoriaUsuario> AuditoriaUsuarios { get; set; }
-        public virtual ICollection<Autorizado> Autorizados { get; set; }
 
     }
 }

@@ -21,14 +21,14 @@ namespace gc.api.Controllers.Security
     {
         private readonly IOptions<ConfigNegocioOption> _options;
         private readonly IConfiguration _configuration;
-        private readonly IRoleServicio _roleServicio;
+        private readonly IRolServicio _roleServicio;
         private readonly ISecurityServicio _securityServicio;
         private readonly IPasswordService _passwordService;
         private readonly IEmpleadoServicio _empleadoServicio;
         private readonly ILogger<TokenController> _logger;
 
         public TokenController(IOptions<ConfigNegocioOption> options, IConfiguration configuration,
-            IRoleServicio roleServicio, IEmpleadoServicio empleadoServicio, ISecurityServicio securityServicio,
+            IRolServicio roleServicio, IEmpleadoServicio empleadoServicio, ISecurityServicio securityServicio,
             IPasswordService passwordService, ILogger<TokenController> logger)
         {
             _options = options;

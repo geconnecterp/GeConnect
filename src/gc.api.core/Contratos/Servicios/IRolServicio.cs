@@ -3,7 +3,7 @@ using gc.api.core.Entidades;
 
 namespace gc.api.core.Interfaces.Servicios
 {
-    public interface IRoleServicio:IServicio<Role>
+    public interface IRolServicio:IServicio<Role>
     {
         void AddUsersToRoles(string[] usernames, string[] roleNames);
         void CreateRole(string?roleName);

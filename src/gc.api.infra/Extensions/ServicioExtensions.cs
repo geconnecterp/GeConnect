@@ -6,6 +6,11 @@ using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Services;
 using gc.infraestructura.Core.Helpers;
 using gc.api.infra.Datos.Implementacion;
+using gc.api.core.Interfaces.Servicios;
+using gc.api.infra.Datos.Contratos.Security;
+using gc.api.infra.Datos.Implementacion.Security;
+using gc.api.Core.Servicios;
+using gc.api.Core.Interfaces.Servicios;
 
 namespace gc.api.infra.Extensions
 {
@@ -14,8 +19,12 @@ namespace gc.api.infra.Extensions
         public static IServiceCollection AddServicios(this IServiceCollection services)
         {
             //services.AddTransient<IConfigServicio, ConfigServicio>();
-            //services.AddScoped<IClienteServicio, ClienteServicio>();
-            
+            services.AddScoped<ISecurityServicio, SecurityServicio>();
+            services.AddScoped<IPasswordService, PasswordService>();
+            services.AddScoped<IRolServicio, RolServicio>();
+            services.AddScoped<IUsuarioServicio, UsuarioServicio>();
+            services.AddScoped<IRolServicio, RolServicio>();
+            services.AddScoped<IRolServicio, RolServicio>();
 
 
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));

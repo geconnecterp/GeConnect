@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace gc.api.core.Entidades
+﻿namespace gc.api.core.Entidades
 {
     public class Autorizado : EntidadBase
     {

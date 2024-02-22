@@ -6,7 +6,7 @@ namespace gc.api.core.Interfaces.Servicios
 {
     public interface ISecurityServicio:IServicio<Usuario>
     {
-        Task<Usuario> GetLoginByCredential(UserLogin login);
+        Task<Usuario?> GetLoginByCredential(UserLogin login);
 
         Task<bool> RegistrerUser(RegistroUserDto registro);
     }

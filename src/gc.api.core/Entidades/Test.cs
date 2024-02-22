@@ -1,6 +1,4 @@
-﻿using System.Security.Principal;
-
-namespace gc.api.core.Entidades
+﻿namespace gc.api.core.Entidades
 {
     public partial class Test: EntidadBase
     {
