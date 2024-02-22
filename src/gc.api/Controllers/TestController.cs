@@ -5,11 +5,11 @@ using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
+
 using System.Net;
 using System.Reflection;
+using System.Text.Json;
 
 namespace gc.api.Controllers
 {
@@ -61,7 +61,7 @@ namespace gc.api.Controllers
                 Meta = metadata
             };
 
-            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(metadata));
+            Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
 
             return Ok(response);
         }

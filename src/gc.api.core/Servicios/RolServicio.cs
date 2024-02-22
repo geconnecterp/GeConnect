@@ -70,12 +70,12 @@ namespace gc.api.Core.Servicios
             throw new SecurityException("El Rol no se encuentra.");
         }
 
-        public string[] GetAllRoles()
+        public string?[] GetAllRoles()
         {
             return GetAllIq().Select(r => r.Nombre).ToArray();
         }
 
-        public string[] GetRolesForUser(string? username)
+        public string?[] GetRolesForUser(string? username)
         {
             var _userRep = _uow.GetRepository<Usuario>();
             var usuario = _userRep.GetAll().Where(u => u.UserName.Equals(username)).Include(a => a.Autorizados).ThenInclude(a => a.Role).FirstOrDefault();

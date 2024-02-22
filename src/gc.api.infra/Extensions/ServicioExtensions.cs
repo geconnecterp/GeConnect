@@ -24,7 +24,7 @@ namespace gc.api.infra.Extensions
             services.AddScoped<IRolServicio, RolServicio>();
             services.AddScoped<IUsuarioServicio, UsuarioServicio>();
             services.AddScoped<IRolServicio, RolServicio>();
-            services.AddScoped<IRolServicio, RolServicio>();
+            services.AddScoped<IEmpleadoServicio, EmpleadoServicio>();
 
 
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));

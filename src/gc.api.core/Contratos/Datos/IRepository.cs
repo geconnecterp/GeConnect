@@ -17,6 +17,6 @@
         void Update(T entity);
         void Remove(T entity);
         List<T> EjecutarSP(string?sp, params object[] parametros);     
-        SqlParameter[] InferirParametros(T entidad, IEnumerable<string> excluir = null);
+        SqlParameter[] InferirParametros(T entidad, IEnumerable<string>? excluir = null);
     }
 }

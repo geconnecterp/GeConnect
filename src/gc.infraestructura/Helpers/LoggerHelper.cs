@@ -37,10 +37,10 @@ namespace gc.infraestructura.Core.Helpers
             }
         }
 
-        public LoggerHelper():this(null)
-        {
+        //public LoggerHelper():this(null)
+        //{
 
-        }
+        //}
 
         /// <summary>
         /// Carga el archivo de configuración de log4net ( log4net.Config.xml )y obtiene el logger.
