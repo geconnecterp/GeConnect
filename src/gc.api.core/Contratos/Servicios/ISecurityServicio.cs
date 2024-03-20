@@ -1,6 +1,6 @@
 ﻿using gc.api.core.Contratos.Servicios;
 using gc.api.core.Entidades;
-using gc.api.core.DTOs;
+using gc.infraestructura.Dtos;
 
 namespace gc.api.core.Interfaces.Servicios
 {

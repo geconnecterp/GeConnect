@@ -1,6 +1,6 @@
 ﻿namespace gc.api.Core.Servicios
 {
-    using gc.api.core.DTOs;
+    using gc.api.core.Dtos;
     using gc.api.core.Entidades;
     using gc.api.core.Interfaces.Datos;
     using gc.api.core.Interfaces.Servicios;

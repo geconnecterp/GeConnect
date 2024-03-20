@@ -1,6 +1,6 @@
 ﻿namespace gc.infraestructura.Dtos
 {
-    public class EmpleadoDto
+    public class EmpleadoDto : Dto
     {
         public Guid Id { get; set; }
         public int CodigoInterno { get; set; }

@@ -1,0 +1,85 @@
+﻿@model LoginDto
+@{
+    var fecha = DateTime.Now;
+    var fechaStr = fecha.ToString("g", System.Globalization.CultureInfo.CreateSpecificCulture("es-ES"));
+    var fechaNN = Comun.Core.Helpers.HelperGen.ObtenerFechaEnTexto(fecha);
+}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!--favicon-->
+
+    <link href="~/css/jquery-ui.css" rel="stylesheet" />
+
+    <link rel="icon" href="~/images/avatars/avatar.png" type="image/png" />
+    <!--plugins-->
+
+    <link href="~/plugins/notifications/css/lobibox.min.css" rel="stylesheet" />
+    <!-- loader-->
+    <link href="~/css/pace-theme-flash.css" rel="stylesheet" />
+    <script data-pace-options='{ "elements": { "selectors": [".selector"] }, "startOnPageLoad": false }' src="~/js/pace.min.js"></script>
+    <!-- Bootstrap CSS -->
+    <link href="~/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link href="~/css/app.css" rel="stylesheet">
+    <link href="~/css/icons.css" rel="stylesheet">
+    <title>Óptica Cabello &amp; Martinez - Panel de Administraci&oacute;n Gerencial | Home :: TradeOptic</title>
+
+</head>
+
+<body class="bg-lock-screen">
+    <!-- wrapper -->
+    <div class="wrapper">
+        <div class="authentication-lock-screen d-flex align-items-center justify-content-center">
+            <div class="card shadow-none bg-transparent">
+                <div class="card-body p-md-5 text-center">
+                    <h2 class="text-white">@fechaStr</h2>
+                    <h5 class="text-white">@fechaNN</h5>
+                    <div class="">
+                        <img src="~/images/ocm.png" class="mt-5" width="120" alt="" />
+                    </div>
+                    <p class="mt-2 text-white">Autenticación</p>
+                    <form asp-route="RutaLogin" method="post">
+                        <div class="mb-3 mt-3">
+                            @Html.EditorFor(m => m.UserName)
+                        </div>
+                        <div class="mb-3 mt-3">
+                            @Html.EditorFor(m => m.Password)
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-white">Login</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- end wrapper -->
+    <!-- Bootstrap JS -->
+    <script src="~/js/bootstrap.bundle.min.js"></script>
+
+    <script src="~/js/jquery.min.js"></script>
+    <script src="~/js/jquery-ui.min.js"></script>
+    <script src="~/js/site.js"></script>
+    <script src="~/js/jquery.blockUI.js"></script>
+    <!--notification js -->
+    <script src="~/plugins/notifications/js/lobibox.min.js"></script>
+    <script src="~/plugins/notifications/js/notifications.min.js"></script>
+    <i class="bx bx-spin"></i>
+
+
+    <script type="text/javascript">
+        var MensajeErrorTempData = '@TempData["error"]';
+        // var MensajeInfoTempData = '@TempData["info"]';
+        // var MensajeWarnTempData = '@TempData["warn"]';
+        // var MensajeSuccessTempData = '@TempData["succ"]';
+        // var MensajeBlock = "<h3><i class='bx bx-loader-circle bx-spin'></i> Por favor, espere...</h3>";
+
+    </script>
+</body>
+
+</html>

@@ -2,7 +2,7 @@ namespace gc.api.infra.Mappings
 {
     using AutoMapper;
     using gc.api.core.Entidades;
-    using gc.infraestructura.DTOs;
+    using gc.infraestructura.Dtos;
 
     public class AutoMapperUsuarioProfile : Profile
     {

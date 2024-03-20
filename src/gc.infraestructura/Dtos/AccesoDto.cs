@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace gc.infraestructura.DTOs
+namespace gc.infraestructura.Dtos
 {
-    public partial class AccesoDto
+    public partial class AccesoDto:Dto
     {
         public AccesoDto()
         {

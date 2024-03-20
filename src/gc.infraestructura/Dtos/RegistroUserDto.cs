@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace gc.infraestructura.DTOs
+namespace gc.infraestructura.Dtos
 {
-    public class RegistroUserDto
+    public class RegistroUserDto : Dto
     {
         public string?User { get; set; }
         public string?Password { get; set; }

@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace gc.infraestructura.DTOs
+namespace gc.infraestructura.Dtos
 {
-    public partial class UsuarioDto
+    public partial class UsuarioDto:Dto
     {
         public UsuarioDto()
         {

@@ -1,7 +1,7 @@
 namespace gc.api.infra.Validators
 {
     using FluentValidation;
-    using gc.infraestructura.DTOs;
+    using gc.infraestructura.Dtos;
 
     public class RolValidator : AbstractValidator<RolDto>
     {

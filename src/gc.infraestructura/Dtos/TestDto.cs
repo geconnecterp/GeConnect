@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace gc.infraestructura.Dtos
 {
-    public class TestDto
+    public class TestDto:Dto
     {
         public TestDto()
         {

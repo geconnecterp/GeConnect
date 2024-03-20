@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace gc.infraestructura.DTOs
+namespace gc.infraestructura.Dtos
 {
-    public partial class RolDto
+    public partial class RolDto : Dto
     {
         public RolDto()
         {

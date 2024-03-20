@@ -1,4 +1,4 @@
-﻿using gc.api.core.DTOs;
+﻿using gc.api.core.Dtos;
 using gc.api.core.Interfaces.Servicios;
 using gc.api.infra.Datos.Contratos.Security;
 using gc.infraestructura.Core.Responses;
