@@ -17,4 +17,9 @@ namespace gc.infraestructura.Core.EntidadesComunes
         public int PageNumber { get; set; }
 
     }
+    public class BaseFilters
+    {
+        public string? Sort { get; set; }
+        public string? SortDir { get; set; }
+    }
 }

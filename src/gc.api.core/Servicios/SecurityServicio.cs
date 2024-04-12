@@ -1,8 +1,8 @@
-﻿using gc.api.core.Dtos;
-using gc.api.core.Entidades;
+﻿using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.api.core.Interfaces.Servicios;
 using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Dtos;
 using Microsoft.EntityFrameworkCore;
 
 namespace gc.api.core.Servicios

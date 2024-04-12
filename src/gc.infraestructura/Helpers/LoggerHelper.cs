@@ -29,7 +29,7 @@ namespace gc.infraestructura.Core.Helpers
                 string rutaArch;
                 _log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-                rutaArch = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.log4net.xml");
+                rutaArch = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "log4net.config");
                 ILoggerRepository repository = log4net.LogManager.GetRepository(Assembly.GetCallingAssembly());
                 FileInfo arch = new FileInfo(rutaArch);
                 XmlConfigurator.Configure(repository, arch);

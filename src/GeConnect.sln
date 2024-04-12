@@ -34,9 +34,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gc.sitio", "gc.sitio\gc.sitio.csproj", "{859142DE-8069-4568-B9A8-D1E23F2BF5C5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gc.sitio", "gc.sitio\gc.sitio.csproj", "{859142DE-8069-4568-B9A8-D1E23F2BF5C5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gc.sitio.core", "gc.sitio.core\gc.sitio.core.csproj", "{29A6E240-7B41-4E9A-B0AC-978B9A18E990}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gc.sitio.core", "gc.sitio.core\gc.sitio.core.csproj", "{29A6E240-7B41-4E9A-B0AC-978B9A18E990}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "00-NOTIFICACION", "00-NOTIFICACION", "{E95A445D-BA86-469A-95C8-31ED7E77ECC7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gc.notificacion", "gc.notificacion\gc.notificacion.csproj", "{D3DDBB36-C77A-4AA3-A83E-42E928FD2673}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -68,6 +72,10 @@ Global
 		{29A6E240-7B41-4E9A-B0AC-978B9A18E990}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{29A6E240-7B41-4E9A-B0AC-978B9A18E990}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{29A6E240-7B41-4E9A-B0AC-978B9A18E990}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3DDBB36-C77A-4AA3-A83E-42E928FD2673}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3DDBB36-C77A-4AA3-A83E-42E928FD2673}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3DDBB36-C77A-4AA3-A83E-42E928FD2673}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3DDBB36-C77A-4AA3-A83E-42E928FD2673}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -85,6 +93,8 @@ Global
 		{DD951F08-FA84-4D3A-BA30-C3629355D19D} = {9C699961-ADB4-400D-A325-2EC186E0631D}
 		{859142DE-8069-4568-B9A8-D1E23F2BF5C5} = {2F6199AE-4876-43D4-BCA0-FE53F45C8E22}
 		{29A6E240-7B41-4E9A-B0AC-978B9A18E990} = {F9DF888E-2949-40D8-B3F0-18D598BFEF64}
+		{E95A445D-BA86-469A-95C8-31ED7E77ECC7} = {1D45B888-5341-40B2-AF69-652603A59436}
+		{D3DDBB36-C77A-4AA3-A83E-42E928FD2673} = {E95A445D-BA86-469A-95C8-31ED7E77ECC7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {424B23CE-287A-4EFC-A604-29DE25F8159C}

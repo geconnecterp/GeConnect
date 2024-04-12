@@ -1,10 +1,10 @@
 ﻿using gc.api.Controllers.Base;
-using gc.api.core.Dtos;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Servicios;
 using gc.api.infra.Datos.Contratos.Security;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;

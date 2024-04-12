@@ -304,7 +304,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 {
                     if (((DateTime?)valor).HasValue)
                     {
-                        ComponeCadena(ref first, ref cadena, prop, valor);
+                        ComponeCadena(ref first, ref cadena, prop, ((DateTime?)valor).Value);
                         continue;
 
                     }
