@@ -1,0 +1,6 @@
+@gc.notificacion.api_HostAddress = http://localhost:5033
+
+GET {{gc.notificacion.api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

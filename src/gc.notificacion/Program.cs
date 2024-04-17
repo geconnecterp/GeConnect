@@ -1,12 +1,15 @@
+using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddSingleton<ILoggerHelper, LoggerHelper>();
+builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+builder.Services.AddSingleton<ILoggerHelper,LoggerHelper>();
 
 var app = builder.Build();
 

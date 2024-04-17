@@ -10,14 +10,19 @@ namespace gc.sitio.Controllers
 {
     public class ControladorBase:Controller
     {
-        private readonly IOptions<AppSettings> _options;
+        private readonly AppSettings _options;
 
         public List<Orden> _orden;
 
         public ControladorBase(IOptions<AppSettings> options)
         {
-            _options = options;
+            _options = options.Value;
 
+        }
+
+        public string NombreSitio
+        {
+            get { return _options.Nombre; }
         }
 
         public string Token
