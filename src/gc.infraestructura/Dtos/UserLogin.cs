@@ -1,4 +1,4 @@
-﻿namespace gc.api.core.Entidades
+﻿namespace gc.infraestructura.Dtos
 {
     public class UserLogin
     {

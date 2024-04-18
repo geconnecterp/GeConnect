@@ -21,10 +21,7 @@ namespace gc.api.infra.Extensions
             //services.AddTransient<IConfigServicio, ConfigServicio>();
             services.AddScoped<ISecurityServicio, SecurityServicio>();
             services.AddScoped<IPasswordService, PasswordService>();
-            services.AddScoped<IRolServicio, RolServicio>();
             services.AddScoped<IUsuarioServicio, UsuarioServicio>();
-            services.AddScoped<IRolServicio, RolServicio>();
-            services.AddScoped<IEmpleadoServicio, EmpleadoServicio>();
 
 
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));

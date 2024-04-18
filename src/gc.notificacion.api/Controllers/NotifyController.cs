@@ -17,28 +17,30 @@ namespace gc.notificacion.api.Controllers
             _logger = logger;
         }
 
-        [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [Route(template: "[action]/orden/{ordenId}/mp")]
-        public IActionResult Notificar(int ordenId)
-        {
-            return Ok(ordenId);
-        }
+        //[HttpGet]
+        //[ProducesResponseType(StatusCodes.Status200OK)]
+        //[Route(template: "[action]/orden/{ordenId}/mp")]
+        //public IActionResult Notificar(int ordenId)
+        //{
+        //    return Ok(ordenId);
+        //}
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [Route(template:"orden/{ordenId}/mp")]
-        public async Task<IActionResult> Notificar2(int ordenId)
+        [Route(template:"[action]/orden/mp")]
+        public async Task<IActionResult> Notificar()
         {
-            _logger.Log(TraceEventType.Information, $"Orden: {ordenId}");
-            string contenido = string.Empty;
+            //_logger.Log(TraceEventType.Information, $"Orden: {ordenId}");
+            _logger.Log(TraceEventType.Information, $"Headers: {HttpContext.Request.Headers.ToString()}");
+            _logger.Log(TraceEventType.Information,$"Header x-signature: {HttpContext.Request.Headers["x-signature"]}");
+                string contenido = string.Empty;
             using (var reader = new StreamReader(HttpContext.Request.Body))
             {
                 contenido = await reader.ReadToEndAsync();
                 _logger.Log(TraceEventType.Information, contenido);
             }
             //await HttpContext.Response.WriteAsync($"El contenido del Post es: {contenido}");
-            return Ok(contenido);
+            return Ok();
         }
     }
 }

@@ -19,11 +19,9 @@
         {
         }
 
-        public virtual DbSet<Test> Tests { get; set; }
-        public virtual DbSet<Role> Roles { get; set; }
-        public virtual DbSet<Acceso> Accesos { get; set; }
+       
         public virtual DbSet<Usuarios> Usuarios { get; set; }
-        public virtual DbSet<Autorizado> Autorizados { get; set; }
+        
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

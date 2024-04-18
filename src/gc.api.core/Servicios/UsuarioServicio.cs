@@ -17,12 +17,12 @@ namespace gc.api.Core.Servicios
         public Usuarios GetUsuarioByUserName(string userName)
         {
             //#pragma warning disable CS1061 // "Usuario" no contiene una definición para "User" ni un método de extensión accesible "User" que acepte un primer argumento del tipo "Usuario" (¿falta alguna directiva using o una referencia de ensamblado?)
-            var usuario = GetAllIq().Where(u => u.UserName.Equals(userName)).FirstOrDefault();
-            //#pragma warning restore CS1061 // "Usuario" no contiene una definición para "User" ni un método de extensión accesible "User" que acepte un primer argumento del tipo "Usuario" (¿falta alguna directiva using o una referencia de ensamblado?)
-            if (usuario != null)
-            {
-                return usuario;
-            }
+            //var usuario = GetAllIq().Where(u => u.UserName.Equals(userName)).FirstOrDefault();
+            ////#pragma warning restore CS1061 // "Usuario" no contiene una definición para "User" ni un método de extensión accesible "User" que acepte un primer argumento del tipo "Usuario" (¿falta alguna directiva using o una referencia de ensamblado?)
+            //if (usuario != null)
+            //{
+            //    return usuario;
+            //}
             throw new SecurityException("Usuario no encontrado");
         }
     }
