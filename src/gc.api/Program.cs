@@ -1,21 +1,21 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using gc.api.infra.Datos;
-using gc.api.infra.Filtros;
 using gc.api.infra.Extensions;
+using gc.api.infra.Filtros;
 using gc.infraestructura.Core.EntidadesComunes.Options;
-using Microsoft.EntityFrameworkCore;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using System.Text;
-using FluentValidation.AspNetCore;
-using FluentValidation;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.Extensions.Logging.Configuration;
+using Microsoft.EntityFrameworkCore;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Agregamos el AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+builder.Logging.AddLog4Net("log4net.config", watch: true);
 
 //Activamos el Filtro de Exception General
 builder.Services.AddControllers(opt => { opt.Filters.Add<GlobalExceptionFilter>(); })

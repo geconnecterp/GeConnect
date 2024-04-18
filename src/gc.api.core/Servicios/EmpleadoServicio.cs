@@ -35,7 +35,7 @@
         public EmpleadoDto Find(Guid id)
         {
             var empleados = GetAllIq();
-            var _uRep = _uow.GetRepository<Usuario>();
+            var _uRep = _uow.GetRepository<Usuarios>();
             var usuarios = _uRep.GetAll();
             var _auRep = _uow.GetRepository<Autorizado>();
             var autos = _auRep.GetAll();
@@ -135,7 +135,7 @@
                 }
             }
 
-            var _uRep = _uow.GetRepository<Usuario>();
+            var _uRep = _uow.GetRepository<Usuarios>();
             var usuarios = _uRep.GetAll().Include(a => a.Autorizados).ThenInclude(r => r.Role);
 
             var emp = empleados.Join(usuarios,
@@ -282,7 +282,7 @@
 
             if (SePuedeEliminarEmpleado(id))
             {
-                var _usuRep = _uow.GetRepository<Usuario>();
+                var _usuRep = _uow.GetRepository<Usuarios>();
                 var _autoRep = _uow.GetRepository<Autorizado>();
 
                 var empleado = Find(id);
@@ -368,7 +368,7 @@
 
         public async Task<bool> CambioClave(Guid id, CambioClaveDto cambio)
         {
-            var _uRep = _uow.GetRepository<Usuario>();
+            var _uRep = _uow.GetRepository<Usuarios>();
             var usuarios = await _uRep.GetAll().SingleOrDefaultAsync(u=>u.Id== id);
             if (usuarios == null)
             {
@@ -388,7 +388,7 @@
         /// <returns></returns>
         public async Task<(bool, string)> VerificaSiEstaLogueado(string? userName,string? ip)
         {
-            var _uRep = _uow.GetRepository<Usuario>();
+            var _uRep = _uow.GetRepository<Usuarios>();
 
             var usuario = await _uRep.GetAll().Include(a => a.Accesos).SingleOrDefaultAsync(u => u.UserName.Equals(userName));
 
@@ -429,7 +429,7 @@
 
         public async Task Logoff(string? userName, string? ip)
         {
-            var _uRep = _uow.GetRepository<Usuario>();
+            var _uRep = _uow.GetRepository<Usuarios>();
 
             var usuario = await _uRep.GetAll().SingleOrDefaultAsync(u => u.UserName.Equals(userName));
 

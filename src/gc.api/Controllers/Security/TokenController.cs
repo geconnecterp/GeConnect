@@ -127,7 +127,7 @@ namespace gc.api.Controllers.Security
         }
 
 
-        private async Task<(bool, Usuario)> IsValidUser(UserLogin login)
+        private async Task<(bool, Usuarios)> IsValidUser(UserLogin login)
         {
             _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
 
@@ -140,7 +140,7 @@ namespace gc.api.Controllers.Security
             return (isValid, user);
         }
 
-        private string GenerateToken(Usuario usuario,string ip)
+        private string GenerateToken(Usuarios usuario,string ip)
         {
             _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
             bool first = true;

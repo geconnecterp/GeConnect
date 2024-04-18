@@ -6,7 +6,7 @@ namespace gc.api.core.Entidades
     {
         public Acceso()
         {
-            Usuario = new Usuario();
+            Usuario = new Usuarios();
         }
 
         public long Id { get; set; }
@@ -15,7 +15,7 @@ namespace gc.api.core.Entidades
         public string? IP { get; set; }
         public char TipoAcceso { get; set; }
 
-        public virtual Usuario Usuario { get; set; }
+        public virtual Usuarios Usuario { get; set; }
 
 
     }

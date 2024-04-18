@@ -8,7 +8,7 @@ namespace gc.api.core.Entidades
     {
         public AuditoriaUsuario()
         {
-            Usuario = new Usuario();
+            Usuario = new Usuarios();
         }
 
         public int Id { get; set; }
@@ -17,7 +17,7 @@ namespace gc.api.core.Entidades
         public string? IP { get; set; }
         public string? MetodoAccedido { get; set; }
 
-        public virtual Usuario Usuario { get; set; }
+        public virtual Usuarios Usuario { get; set; }
 
 
     }

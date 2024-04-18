@@ -3,7 +3,7 @@ namespace gc.api.infra.Validators
     using FluentValidation;
     using gc.infraestructura.Dtos;
 
-    public class UsuarioValidator : AbstractValidator<UsuarioDto>
+    public class UsuarioValidator : AbstractValidator<UsuariosDto>
     {
         public UsuarioValidator()
         { 

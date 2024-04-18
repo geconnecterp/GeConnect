@@ -77,7 +77,7 @@ namespace gc.api.Core.Servicios
 
         public string?[] GetRolesForUser(string? username)
         {
-            var _userRep = _uow.GetRepository<Usuario>();
+            var _userRep = _uow.GetRepository<Usuarios>();
             var usuario = _userRep.GetAll().Where(u => u.UserName.Equals(username)).Include(a => a.Autorizados).ThenInclude(a => a.Role).FirstOrDefault();
             if (usuario != null)
             {

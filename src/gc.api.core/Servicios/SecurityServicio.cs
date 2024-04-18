@@ -7,14 +7,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace gc.api.core.Servicios
 {
-    public class SecurityServicio : Servicio<Usuario>, ISecurityServicio
+    public class SecurityServicio : Servicio<Usuarios>, ISecurityServicio
     {
         public SecurityServicio(IUnitOfWork uow) : base(uow)
         {
 
         }
 
-        public async Task<Usuario?> GetLoginByCredential(UserLogin login)
+        public async Task<Usuarios?> GetLoginByCredential(UserLogin login)
         {
             return await GetAllIq().FirstOrDefaultAsync(u => u.UserName != null && u.UserName.Equals(login.UserName));
         }
@@ -28,7 +28,7 @@ namespace gc.api.core.Servicios
             {
                 throw new NotFoundException("El Rol que se pretende asignar no existe");
             }
-            Usuario user = new Usuario
+            Usuarios user = new Usuarios
             {
                 UserName = registro.User,
                 Contrasena = registro.Password,
