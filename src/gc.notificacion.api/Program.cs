@@ -1,9 +1,11 @@
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Interfaces;
+using gc.infraestructura.EntidadesComunes.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.Configure<ClaveSettings>(builder.Configuration.GetSection("ClaveSettings"));
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

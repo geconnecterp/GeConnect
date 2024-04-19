@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace gc.infraestructura.Core.Helpers
@@ -191,6 +192,29 @@ namespace gc.infraestructura.Core.Helpers
         public static string GenerarPeriodoMmAaaa()
         {
             return GenerarPeriodoMmAaaa(DateTime.Today);
+        }
+
+        public static string ObtenerHMACtoB64(string text, string key)
+        {
+            key ??= ""; //si es null se le asigna ""
+
+            using (var hmacsha256 = new HMACSHA256(Encoding.UTF8.GetBytes(key)))
+            {
+                var hash = hmacsha256.ComputeHash(Encoding.UTF8.GetBytes(text));
+                return Convert.ToBase64String(hash);
+            }
+        }
+
+        public static string ObtenerHMACtoHex(string text, string key)
+        {
+            key ??= ""; //si es null se le asigna ""
+
+            using (var hmacsha256 = new HMACSHA256(Encoding.UTF8.GetBytes(key)))
+            {
+                var hash = hmacsha256.ComputeHash(Encoding.UTF8.GetBytes(text));
+                return Convert.ToHexString(hash);
+            }
+
         }
     }
 }
