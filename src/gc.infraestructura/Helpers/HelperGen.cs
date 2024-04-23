@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System.Net.Mail;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -55,6 +56,22 @@ namespace gc.infraestructura.Core.Helpers
             //to vary this, replace 61 with an international code of your choice 
             //or remove [\+]?61[-]? if international code isn't needed
             //{8} is the number of digits in the actual phone number less one
+        }
+
+        public static bool ValidarCorreoElectronico(string correo)
+        {
+            //string pattern = @"/^(([^<>()\[\]\.,;:\s@”]+(\.[^<>()\[\]\.,;:\s@”]+)*)|(\”.+\”))@(([^<>()[\]\.,;:\s@”]+\.)+[^<>()[\]\.,;:\s@”]{2,})$/";
+
+            //return Regex.IsMatch(pattern, correo,RegexOptions.IgnoreCase);
+            try
+            {
+                var addr = new MailAddress(correo);
+                return addr.Address==correo;
+            }
+            catch 
+            {
+                return false;
+            }
         }
 
         public static string[] ObtenerMeses(int anio)
@@ -208,12 +225,29 @@ namespace gc.infraestructura.Core.Helpers
         public static string ObtenerHMACtoHex(string text, string key)
         {
             key ??= ""; //si es null se le asigna ""
-
+            
             using (var hmacsha256 = new HMACSHA256(Encoding.UTF8.GetBytes(key)))
             {
                 var hash = hmacsha256.ComputeHash(Encoding.UTF8.GetBytes(text));
                 return Convert.ToHexString(hash);
             }
+
+        }
+        public static string ObtenerHMACtoHexV2(string text, string key)
+        {
+            key ??= ""; //si es null se le asigna ""
+
+            using (var hmac = new HMACSHA3_256(Encoding.UTF8.GetBytes(key)))
+            {
+                var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(text));
+                return Convert.ToHexString(hash);
+            }
+
+            //using (var hmacsha256 = new HMACSHA256(Encoding.UTF8.GetBytes(key)))
+            //{
+            //    var hash = hmacsha256.ComputeHash(Encoding.UTF8.GetBytes(text));
+            //    return Convert.ToHexString(hash);
+            //}
 
         }
     }

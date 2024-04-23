@@ -11,6 +11,7 @@ using gc.api.infra.Datos.Contratos.Security;
 using gc.api.infra.Datos.Implementacion.Security;
 using gc.api.Core.Servicios;
 using gc.api.Core.Interfaces.Servicios;
+using gc.api.infra.Datos.Contratos;
 
 namespace gc.api.infra.Extensions
 {
@@ -22,6 +23,7 @@ namespace gc.api.infra.Extensions
             services.AddScoped<ISecurityServicio, SecurityServicio>();
             services.AddScoped<IPasswordService, PasswordService>();
             services.AddScoped<IUsuarioServicio, UsuarioServicio>();
+            services.AddScoped<IDataConnectionContext, DataConnectionContext>();
 
 
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));

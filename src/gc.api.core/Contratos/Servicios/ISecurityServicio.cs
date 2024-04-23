@@ -8,6 +8,6 @@ namespace gc.api.core.Interfaces.Servicios
     {
         Task<Usuarios?> GetLoginByCredential(UserLogin login);
 
-        Task<bool> RegistrerUser(RegistroUserDto registro);
+        Task<bool> RegistrerUser(Usuarios registracion);
     }
 }

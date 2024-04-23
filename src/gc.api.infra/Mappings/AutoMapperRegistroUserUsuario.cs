@@ -14,11 +14,12 @@ namespace gc.api.infra.Mappings
         public AutoMapperRegistroUserUsuario()
         {
             CreateMap<RegistroUserDto, Usuarios>()
+                .ForMember(dest => dest.usu_id, org => org.MapFrom(src => src.User))
                 .ForMember(dest => dest.usu_email, org => org.MapFrom(src => src.Correo))
                 .ForMember(dest => dest.usu_password, org => org.MapFrom(src => src.Password))
                 .ForMember(dest => dest.tdo_codigo, org => org.MapFrom(src => src.TipoDocumento))
                 .ForMember(dest => dest.usu_ducumento, org => org.MapFrom(src => src.Documento))
-                .ForMember(dest => dest.tdo_codigo, org => org.MapFrom(src => src.TipoDocumento));
+                .ForMember(dest => dest.usu_apellidoynombre, org => org.MapFrom(src => src.ApellidoYNombre));
 
         }
     }

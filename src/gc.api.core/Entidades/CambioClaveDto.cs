@@ -1,10 +1,12 @@
-﻿using System;
+﻿using gc.api.core.Entidades;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace gc.infraestructura.Dtos
+namespace gc.api.core.Entidades
+
 {
-    public class CambioClaveDto : Dto
+    public class CambioClaveDto : EntidadBase
     {
         public string? PassAct { get; set; }
         public string? PassNew { get; set; }

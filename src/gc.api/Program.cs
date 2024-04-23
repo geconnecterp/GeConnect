@@ -6,6 +6,7 @@ using gc.api.infra.Filtros;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Services;
+using gc.infraestructura.EntidadesComunes.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +28,8 @@ builder.Services.AddControllers(opt => { opt.Filters.Add<GlobalExceptionFilter>(
 builder.Services.Configure<PaginationOptions>(builder.Configuration.GetSection("Pagination"));
 builder.Services.Configure<PasswordOptions>(builder.Configuration.GetSection("PasswordOptions"));
 builder.Services.Configure<ConfigNegocioOption>(builder.Configuration.GetSection("ConfigNegocio"));
+builder.Services.Configure<UsuarioSettings>(builder.Configuration.GetSection("UsuarioSettings"));
+
 
 string? conn = builder.Configuration.GetConnectionString("GeConnectKey");
 if (!string.IsNullOrEmpty(conn))

@@ -3,6 +3,7 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Servicios;
 using gc.api.infra.Datos.Contratos.Security;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
 using Microsoft.AspNetCore.Authorization;
@@ -15,6 +16,7 @@ using System.Text;
 
 namespace gc.api.Controllers.Security
 {
+    [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
     public class TokenController : ControladorBase
@@ -30,46 +32,28 @@ namespace gc.api.Controllers.Security
             IPasswordService passwordService, ILogger<TokenController> logger)
         {
             _options = options;
-            _configuration = configuration;            
+            _configuration = configuration;
             _securityServicio = securityServicio;
-            _passwordService = passwordService;            
+            _passwordService = passwordService;
             _logger = logger;
         }
         [HttpPost]
         public async Task<IActionResult> Authentication(UserLogin login)
-        {            
-            //_logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+        {
+            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
             //string ip = ObtenerIPRemota(HttpContext);
             ////se generara un usuario y lo vamos a validar a modo de prueba. 
             ////Si el usuario fuera valido se deberia generar el token
-            //var validation = await IsValidUser(login);           
-            //if (validation.Item1)
-            //{   //el usuario es valido. Verificamos si esta logueado o no.
-            //    if (validation.Item2.EstaLogueado)
-            //    {
-            //        var estaLogueado = await VerificaSiEstaLogueado(login.UserName,ip);
+            var validation = await IsValidUser(login);
+            if (validation.Item1)
+            {   //el usuario es valido. Verificamos si esta logueado o no.
+              
+                var token = GenerateToken(validation.Item2);
+                return Ok(new { token });
 
-            //        if (estaLogueado.Item1)
-            //        {
-            //            return BadRequest($"El Usuario {login.UserName} ya se encuentra logueado en la IP {estaLogueado.Item2}");
-            //        }
-            //    }
-            //    var token = GenerateToken(validation.Item2,ip);
-            //    return Ok(new { token });
-
-            //}
+            }
             return NotFound();
-        }
-
-
-        private async Task<(bool,string)> VerificaSiEstaLogueado(string userName,string ip)
-        {
-            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-
-            //return await _empleadoServicio.VerificaSiEstaLogueado(userName,ip);
-            throw new NotImplementedException();
-
-        }
+        }       
 
         [HttpGet]
         [Route("[action]")]
@@ -83,7 +67,7 @@ namespace gc.api.Controllers.Security
             throw new NotImplementedException();
         }
 
-        [HttpPost, Authorize , Route("[action]")]
+        [HttpPost, Authorize, Route("[action]")]
         public async Task<IActionResult> CambioClave(CambioClaveDto cambio)
         {
             //_logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
@@ -128,23 +112,38 @@ namespace gc.api.Controllers.Security
 
         private async Task<(bool, Usuarios)> IsValidUser(UserLogin login)
         {
-            //_logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
 
-            //var user = await _securityServicio.GetLoginByCredential(login);
-            //if (user == null)
-            //{
-            //    return (false, null);
-            //}
-            //var isValid = _passwordService.Check(user.Contrasena, login.Password);
-            //return (isValid, user);
-            throw new NotImplementedException();
-
+            if (login == null)
+            {
+                return (false, null);
+                //throw new NegocioException("No se recepcinaron las credenciales del Usuario a autenticarse.");
+            }
+            if (string.IsNullOrEmpty(login.UserName) || string.IsNullOrWhiteSpace(login.Password))
+            {
+                return (false, null);
+                //throw new NegocioException("Las credenciales no son correctas.");
+            }
+            var user = await _securityServicio.GetLoginByCredential(login);
+            if (user == null)
+            {
+                return (false, null);
+            }
+            var isValid = _passwordService.Check(user.usu_password, login.UserName, login.Password);
+            if (!isValid)
+            {
+                return (false, null);
+            }
+            return (isValid, user);
         }
 
-        private string GenerateToken(Usuarios usuario,string ip)
+        private string GenerateToken(Usuarios usuario)
         {
-            //_logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-            //bool first = true;
+            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            bool first = true;
+            /******************************************************************************************************************************
+             * SE DEBE REALIZAR LA CONSULTA A LA BASE PARA OBTENER EL ARREGLO CON EL MENU A GENERAR, PADRE CON HIJOS Y RUTAS DE CADA HIJO *
+             ******************************************************************************************************************************/
             //string sRoles = string.Empty;
             ////debemos obtener los datos de un usuario y de sus roles            
             //var roles = _roleServicio.GetRolesForUser(usuario.UserName);
@@ -160,40 +159,45 @@ namespace gc.api.Controllers.Security
             //    }
             //    sRoles += rol;
             //}
-            ////token tiene 3 partes. Comenzamos por el Header
-            //var symetricSecurityKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Authentication:SecretKey"]));
-
-            ////credenciales
-            //var signingCredentials = new Microsoft.IdentityModel.Tokens.SigningCredentials(symetricSecurityKey, Microsoft.IdentityModel.Tokens.SecurityAlgorithms.HmacSha256);
-
-            //var header = new JwtHeader(signingCredentials);
 
 
-            ////Claims (informacion que queresmos validar y las caracteristicas del usuario
-            //var claims = new[]
-            //{
-            //    new Claim(ClaimTypes.Name, usuario.UserName),
-            //    new Claim("User",usuario.UserName),
-            //    new Claim(ClaimTypes.Email,usuario.Correo),
-            //    new Claim("Id",usuario.Id.ToString()),
-            //    new Claim(ClaimTypes.Role,sRoles),
-            //};
+            //token tiene 3 partes. Comenzamos por el Header
+            var symetricSecurityKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Authentication:SecretKey"]));
 
-            ////payload
-            //var payload = new JwtPayload
-            //    (
-            //    _configuration["Authentication:Issuer"],
-            //    _configuration["Authentication:Audience"],
-            //    claims, DateTime.UtcNow,
-            //    DateTime.UtcNow.AddMinutes(_options.Value.TiempoDuracionToken)
-            //    );
+            //credenciales
+            var signingCredentials = new Microsoft.IdentityModel.Tokens.SigningCredentials(symetricSecurityKey, Microsoft.IdentityModel.Tokens.SecurityAlgorithms.HmacSha256);
 
-            ////token
-            //var token = new JwtSecurityToken(header, payload);
-            ////_empleadoServicio.RegistrarAcceso(usuario.Id,ip,'L');
-            //return new JwtSecurityTokenHandler().WriteToken(token);
-            throw new NotImplementedException();
+            var header = new JwtHeader(signingCredentials);
 
+
+            //Claims (informacion que queresmos validar y las caracteristicas del usuario
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, usuario.usu_id),
+                new Claim(ClaimTypes.Name,usuario.usu_apellidoynombre),
+                new Claim(ClaimTypes.Email,usuario.usu_email),
+                //new Claim("Id",usuario.Id.ToString()),
+                //new Claim(ClaimTypes.Role,sRoles),
+            };
+
+            //payload
+            var payload = new JwtPayload
+                (
+                _configuration["Authentication:Issuer"],
+                _configuration["Authentication:Audience"],
+                claims, DateTime.UtcNow,
+                DateTime.UtcNow.AddMinutes(_options.Value.TiempoDuracionToken)
+                );
+
+            //token
+            var token = new JwtSecurityToken(header, payload);
+
+            /***********************************************
+             * ACÁ PUEDE IR EL CODIGO PARA IDENTIFICAR QUE SE LOGUEO EL USUARIO, EL PROBLEMA ES QUE POR LO GENERAL NO SE DESLOGUEAN.
+             * *********************************************/
+
+       
+            return new JwtSecurityTokenHandler().WriteToken(token);            
         }
     }
 }

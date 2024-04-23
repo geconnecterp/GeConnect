@@ -1,8 +1,8 @@
 ﻿namespace gc.api.core.Interfaces.Datos
 {
     using gc.api.core.Entidades;
+    using Microsoft.Data.SqlClient;
     using System.Collections.Generic;
-    using System.Data.SqlClient;
     using System.Linq;
     using System.Threading.Tasks;
 
@@ -18,5 +18,9 @@
         void Remove(T entity);
         List<T> EjecutarSP(string?sp, params object[] parametros);     
         SqlParameter[] InferirParametros(T entidad, IEnumerable<string>? excluir = null);
+        List<T> InvokarSp2Lst(string sp, List<SqlParameter> parametros);
+        int InvokarSpNQuery(string sp, List<SqlParameter> parametros, bool esTransacciona = false, bool elUltimo = true);
+        object InvokarSpScalar(string sp, List<SqlParameter>? parametros, bool esTransacciona = false, bool elUltimo = true,bool esSP=true);
+
     }
 }

@@ -1,7 +1,8 @@
-﻿using gc.api.core.Interfaces.Servicios;
+﻿using AutoMapper;
+using gc.api.core.Entidades;
+using gc.api.core.Interfaces.Servicios;
 using gc.api.infra.Datos.Contratos.Security;
 using gc.infraestructura.Core.Responses;
-using gc.infraestructura.Dtos;
 using Microsoft.AspNetCore.Mvc;
 using System.Reflection;
 
@@ -16,20 +17,26 @@ namespace gc.api.Controllers.Security
         private readonly ISecurityServicio _securityServicio;
         private readonly IPasswordService _passwordService;
         private readonly ILogger<SecurityController> _logger;
+        private readonly IMapper _mapper;
 
-        public SecurityController(ISecurityServicio securityServicio, IPasswordService passwordService, ILogger<SecurityController> logger)
+        public SecurityController(ISecurityServicio securityServicio, IPasswordService passwordService,IMapper mapper,
+            ILogger<SecurityController> logger)
         {
             _securityServicio = securityServicio;
             _passwordService = passwordService;
             _logger = logger;
+            _mapper = mapper;
         }
 
         [HttpPost]
         public async Task<IActionResult> Post(RegistroUserDto registroUserDto) //la entidad enviada debe venir en formato Json
         {
             _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-            registroUserDto.Password = _passwordService.Hash(registroUserDto.Password);
-            var res = await _securityServicio.RegistrerUser(registroUserDto);
+            registroUserDto.Password = _passwordService.CalculaClave(registroUserDto);
+
+            Usuarios usuarios = _mapper.Map<Usuarios>(registroUserDto);
+
+            var res = await _securityServicio.RegistrerUser(usuarios);
 
             var response = new ApiResponse<bool>(res);
 

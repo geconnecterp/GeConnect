@@ -1,11 +1,9 @@
 ﻿using gc.infraestructura.Core.Helpers;
-using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.EntidadesComunes.Options;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
-using System.Reflection.PortableExecutable;
 
 namespace gc.notificacion.api.Controllers
 {
@@ -13,10 +11,10 @@ namespace gc.notificacion.api.Controllers
     [ApiController]
     public class NotifyController : ControllerBase
     {
-        private ILoggerHelper _logger;
+        private ILogger<NotifyController> _logger;
         private readonly ClaveSettings _settings;
 
-        public NotifyController(ILoggerHelper logger,IOptions<ClaveSettings> options)
+        public NotifyController(ILogger<NotifyController> logger, IOptions<ClaveSettings> options)
         {
             _logger = logger;
             _settings = options.Value;
@@ -32,11 +30,22 @@ namespace gc.notificacion.api.Controllers
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [Route(template: "[action]/orden/mp")]
-        public async Task<IActionResult> Notificar()
+        [Route(template: "[action]/orden/{orderId}/{tiempo}/mp")]
+        public async Task<IActionResult> Notificar(int orderId, long tiempo)
         {
             try
             {
+                _logger.LogInformation("=============== NUEVA PETICIÓN ==================");
+                _logger.LogInformation($"orderId: {orderId} - Tiempo: {tiempo} - {new DateTime(tiempo)}");
+
+                _logger.LogInformation("Contenido Body Post");
+                string contenido = string.Empty;
+                using (var reader = new StreamReader(HttpContext.Request.Body))
+                {
+                    contenido = await reader.ReadToEndAsync();
+                    _logger.LogInformation(contenido);
+                }
+
                 //se rescatarán los siguientes valores:
                 //de QueryString => data.id  identificador del evento
                 //del Header => x-signature valor de "ts"
@@ -47,65 +56,84 @@ namespace gc.notificacion.api.Controllers
                 string[] arre;
 
                 //se procede a recuperar los datos enviados por MePa. Si alguno de los datos no existe, se procederá a desechar y desestimar el informe.
-                try { dataId = HttpContext.Request.Query["data.id"];
-                    _logger.Log(TraceEventType.Information, $"data.id: {dataId}");
-                } catch { throw new Exception("No se encontró 'data.id'."); }
+
+                try
+                {
+                    var tipo = HttpContext.Request.Query["id"];
+
+                    switch (tipo)
+                    {
+                        case "payment":
+                            dataId = HttpContext.Request.Query["data.id"];
+                            _logger.LogInformation($"data.id: {dataId}");
+                            break;
+                        default:
+                            dataId = HttpContext.Request.Query["id"];
+                            _logger.LogInformation($"id: {dataId}");
+                            break;
+                    }
+                }
+                catch
+                {
+                    throw new Exception("No se encontró 'data.id'.");
+                }
                 try
                 {
                     signa = HttpContext.Request.Headers["x-signature"];
-                    _logger.Log(TraceEventType.Information, $"x-signature: {signa}");
+                    _logger.LogInformation($"x-signature: {signa}");
 
                     arre = signa.Split(new char[] { ',' }, StringSplitOptions.None);
-                    ts = arre[0].Replace("ts=","");
-                    vs = arre[1].Replace("v1=","");
+                    ts = arre[0].Replace("ts=", "");
+                    vs = arre[1].Replace("v1=", "");
                 }
                 catch { throw new Exception("No se encontró 'x-signature'. "); }
 
-                try { rqId = HttpContext.Request.Headers["x-request-id"]; 
-                    _logger.Log(TraceEventType.Information, $"x-request-id: {signa}");
+                try
+                {
+                    rqId = HttpContext.Request.Headers["x-request-id"];
+                    _logger.LogInformation($"x-request-id: {rqId}");
                 }
                 catch { throw new Exception("No se encontró 'x-request-id'. "); }
 
                 string mensaje = $"id:{dataId};request-id:{rqId};ts:{ts};";
 
 
-                _logger.Log(TraceEventType.Information, $"Mensaje: {mensaje}");
+                _logger.LogInformation($"Mensaje: {mensaje}");
                 var hmac = HelperGen.ObtenerHMACtoHex(mensaje, _settings.Key);
 
-
+                hmac = hmac.ToLower();
                 if (!hmac.Equals(vs))
                 {
                     throw new Exception("La validación no es valida ");
                 }
-               
-
-
-                string contenido = string.Empty;
-                using (var reader = new StreamReader(HttpContext.Request.Body))
+                else
                 {
-                    contenido = await reader.ReadToEndAsync();
-                    _logger.Log(TraceEventType.Information, contenido);
+                    //invocar a MP para obtener el detalle de la venta
+
                 }
+
+
+
+
                 //await HttpContext.Response.WriteAsync($"El contenido del Post es: {contenido}");
                 return Ok();
             }
             catch (Exception ex)
             {
-                _logger.Log(TraceEventType.Warning, "Invocación WEBHOOKS DESESTIMADA");
-                _logger.Log(ex);
-                _logger.Log(TraceEventType.Warning, "QueryStrings");
+                _logger.LogError(ex, "Invocación WEBHOOKS DESESTIMADA");
+                _logger.LogWarning("QueryStrings");
                 foreach (var item in HttpContext.Request.Query)
                 {
-                    _logger.Log(TraceEventType.Warning, $"{item.Key} - {item.Value}");
+                    _logger.LogWarning($"{item.Key} - {item.Value}");
                 }
-                _logger.Log(TraceEventType.Warning, "Headers");
+                _logger.LogWarning("Headers");
 
                 foreach (var item in HttpContext.Request.Headers)
                 {
-                    _logger.Log(TraceEventType.Warning, $"{item.Key} - {item.Value}");
+                    _logger.LogWarning($"{item.Key} - {item.Value}");
                 }
 
-                return Conflict();
+                return Ok();
             }
         }
     }

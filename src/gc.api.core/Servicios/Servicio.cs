@@ -12,6 +12,7 @@
     using gc.infraestructura.Core.EntidadesComunes.Options;
     using gc.infraestructura.Core.Exceptions;
     using gc.infraestructura.Core.EntidadesComunes;
+    using Microsoft.Data.SqlClient;
 
     public class Servicio<T> : IServicio<T> where T : EntidadBase
     {
@@ -107,8 +108,8 @@
             }
             else
             {
-                filters.PageNumber=default;
-                filters.PageSize=default;
+                filters.PageNumber = default;
+                filters.PageSize = default;
             }
 
             var entidades = GetAllIq();
@@ -120,7 +121,7 @@
             var pagina = PagedList<T>.Create(entidades, filters.PageNumber, filters.PageSize);
             return pagina;
         }
-       
+
         public virtual IQueryable<T> GetAllIq()
         {
             var entities = _repository.GetAll();
@@ -176,9 +177,19 @@
             return result > 0;
         }
 
-        public List<T> EjecutarSP(string?sp, params object[] parametros)
+        public List<T> EjecutarSP(string? sp, params object[] parametros)
         {
             return _repository.EjecutarSP(sp, parametros);
+        }
+
+        public int InvokarSpNQuery(string sp, List<SqlParameter> parametros, bool esTransacciona = false, bool elUltimo = true)
+        {
+            return _repository.InvokarSpNQuery(sp, parametros, esTransacciona, elUltimo);
+        }
+
+        public object InvokarSpScalar(string sp, List<SqlParameter> parametros, bool esTransacciona = false, bool elUltimo = true)
+        {
+            return _repository.InvokarSpScalar(sp, parametros, esTransacciona, elUltimo);
         }
     }
 }

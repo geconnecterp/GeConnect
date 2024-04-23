@@ -9,5 +9,6 @@ namespace gc.infraestructura.EntidadesComunes.Options
     public class ClaveSettings
     {
         public string Key { get; set; }
+        public string ObtenerDetalleVentaUrl { get; set; }
     }
 }
