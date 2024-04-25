@@ -8,10 +8,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Folder Include="Enumeraciones\" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.16" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.16" />
 		<PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
@@ -20,6 +16,10 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\gc.infraestructura\gc.infraestructura.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Enumeraciones\" />
 	</ItemGroup>
 
 </Project>

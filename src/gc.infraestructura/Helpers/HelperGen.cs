@@ -222,17 +222,27 @@ namespace gc.infraestructura.Core.Helpers
             }
         }
 
-        public static string ObtenerHMACtoHex(string text, string key)
+        public static string ObtenerHMACtoHex(string text, string key, bool useUTF8 = true)
         {
             key ??= ""; //si es null se le asigna ""
-            
-            using (var hmacsha256 = new HMACSHA256(Encoding.UTF8.GetBytes(key)))
+            if (useUTF8)
             {
-                var hash = hmacsha256.ComputeHash(Encoding.UTF8.GetBytes(text));
-                return Convert.ToHexString(hash);
+                using (var hmacsha256 = new HMACSHA256(Encoding.UTF8.GetBytes(key)))
+                {
+                    var hash = hmacsha256.ComputeHash(Encoding.UTF8.GetBytes(text));
+                    return Convert.ToHexString(hash);
+                }
             }
-
+            else
+            {
+                using (var hmacsha256 = new HMACSHA256(Encoding.ASCII.GetBytes(key)))
+                {
+                    var hash = hmacsha256.ComputeHash(Encoding.ASCII.GetBytes(text));
+                    return Convert.ToHexString(hash);
+                }
+            }
         }
+
         public static string ObtenerHMACtoHexV2(string text, string key)
         {
             key ??= ""; //si es null se le asigna ""

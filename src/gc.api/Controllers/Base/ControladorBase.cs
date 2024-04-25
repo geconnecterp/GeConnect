@@ -1,14 +1,7 @@
 ﻿using gc.infraestructura.Core.Exceptions;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
-using System;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Net;
-using System.Net.Sockets;
-using System.Security.Authentication;
 
 namespace gc.api.Controllers.Base
 {

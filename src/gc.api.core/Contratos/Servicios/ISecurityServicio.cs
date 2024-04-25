@@ -4,10 +4,10 @@ using gc.infraestructura.Dtos;
 
 namespace gc.api.core.Interfaces.Servicios
 {
-    public interface ISecurityServicio:IServicio<Usuarios>
+    public interface ISecurityServicio:IServicio<Usuario>
     {
-        Task<Usuarios?> GetLoginByCredential(UserLogin login);
+        Task<Usuario?> GetLoginByCredential(UserLogin login);
 
-        Task<bool> RegistrerUser(Usuarios registracion);
+        Task<bool> RegistrerUser(Usuario registracion);
     }
 }

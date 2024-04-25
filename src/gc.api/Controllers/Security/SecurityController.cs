@@ -34,7 +34,7 @@ namespace gc.api.Controllers.Security
             _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
             registroUserDto.Password = _passwordService.CalculaClave(registroUserDto);
 
-            Usuarios usuarios = _mapper.Map<Usuarios>(registroUserDto);
+            Usuario usuarios = _mapper.Map<Usuario>(registroUserDto);
 
             var res = await _securityServicio.RegistrerUser(usuarios);
 

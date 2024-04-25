@@ -31,8 +31,16 @@ namespace gc.notificacion.api.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Route(template: "[action]/orden/{orderId}/{tiempo}/mp")]
-        public async Task<IActionResult> Notificar(int orderId, long tiempo)
+        public async Task<IActionResult> Notificar(string orderId, long tiempo)
         {
+            //se rescatarán los siguientes valores:
+            //de QueryString => data.id  identificador del evento
+            //del Header => x-signature valor de "ts"
+            //                          valor de "v1"
+            //              x-request-id su valor.
+            string idMP, dataId, signa, ts, vs, rqId, qType;
+            dataId = idMP = signa = ts = vs = rqId = qType = string.Empty;
+            string[] arre;
             try
             {
                 _logger.LogInformation("=============== NUEVA PETICIÓN ==================");
@@ -46,36 +54,42 @@ namespace gc.notificacion.api.Controllers
                     _logger.LogInformation(contenido);
                 }
 
-                //se rescatarán los siguientes valores:
-                //de QueryString => data.id  identificador del evento
-                //del Header => x-signature valor de "ts"
-                //                          valor de "v1"
-                //              x-request-id su valor.
-                string dataId, signa, ts, vs, rqId, qType;
-                dataId = signa = ts = vs = rqId = qType = string.Empty;
-                string[] arre;
+                qType = HttpContext.Request.Query["type"].ToString();
+                dataId = HttpContext.Request.Query["data.id"].ToString();
+                switch (qType)
+                {
+                    case "stop_delivery_op_wh":
+                        //tiene que informar inmediatamente que la tarjeta o cuenta ha sido robada.
+                        break;
+                    case "payment":
+                        
+                        //se debe validar el pago
+                        break;
+                    default:
+                        break;
+                }
+                               
 
                 //se procede a recuperar los datos enviados por MePa. Si alguno de los datos no existe, se procederá a desechar y desestimar el informe.
 
                 try
-                {
-                    var tipo = HttpContext.Request.Query["id"];
+                {                    
+                    
+                    _logger.LogInformation($"data.id: {dataId}");
 
-                    switch (tipo)
-                    {
-                        case "payment":
-                            dataId = HttpContext.Request.Query["data.id"];
-                            _logger.LogInformation($"data.id: {dataId}");
-                            break;
-                        default:
-                            dataId = HttpContext.Request.Query["id"];
-                            _logger.LogInformation($"id: {dataId}");
-                            break;
-                    }
+                                 
                 }
                 catch
                 {
-                    throw new Exception("No se encontró 'data.id'.");
+                    try
+                    {
+                        idMP = HttpContext.Request.Query["id"];
+                        _logger.LogInformation($"idMP: {idMP}");
+                    }
+                    catch
+                    {
+                        throw new Exception("No se encontró 'ni data.id, ni idMP'.");
+                    }
                 }
                 try
                 {
@@ -99,17 +113,20 @@ namespace gc.notificacion.api.Controllers
 
 
                 _logger.LogInformation($"Mensaje: {mensaje}");
-                var hmac = HelperGen.ObtenerHMACtoHex(mensaje, _settings.Key);
+                var hmac = HelperGen.ObtenerHMACtoHex(mensaje, _settings.Key).ToLower();
 
-                hmac = hmac.ToLower();
+                _logger.LogInformation($"V1:   {vs}");
+                _logger.LogInformation($"HMAC: {hmac}");
                 if (!hmac.Equals(vs))
                 {
+                    _logger.LogInformation("La validación es erronea. Se descarta el mensaje.");
+
                     throw new Exception("La validación no es valida ");
                 }
                 else
                 {
                     //invocar a MP para obtener el detalle de la venta
-
+                    _logger.LogInformation("La VALIDACIÓN DEL MENSAJE FUE EXITOSA.");
                 }
 
 

@@ -2,3 +2,6 @@
 
 # IDE0055: Fijar formato
 dotnet_diagnostic.IDE0055.severity = silent
+
+# SYSLIB0051: El tipo o el miembro están obsoletos
+dotnet_diagnostic.SYSLIB0051.severity = silent

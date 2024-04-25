@@ -26,4 +26,8 @@
     <ProjectReference Include="..\gc.infraestructura\gc.infraestructura.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Models\" />
+  </ItemGroup>
+
 </Project>

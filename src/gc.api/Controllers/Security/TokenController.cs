@@ -70,7 +70,7 @@ namespace gc.api.Controllers.Security
         [HttpPost, Authorize, Route("[action]")]
         public async Task<IActionResult> CambioClave(CambioClaveDto cambio)
         {
-            //_logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
             //if (string.IsNullOrEmpty(cambio.PassAct))
             //{
             //    return BadRequest("No se recepcionó la clave.");
@@ -110,7 +110,7 @@ namespace gc.api.Controllers.Security
         }
 
 
-        private async Task<(bool, Usuarios)> IsValidUser(UserLogin login)
+        private async Task<(bool, Usuario?)> IsValidUser(UserLogin login)
         {
             _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
 
@@ -129,7 +129,7 @@ namespace gc.api.Controllers.Security
             {
                 return (false, null);
             }
-            var isValid = _passwordService.Check(user.usu_password, login.UserName, login.Password);
+            var isValid = _passwordService.Check(user.Usu_password, login.UserName, login.Password);
             if (!isValid)
             {
                 return (false, null);
@@ -137,7 +137,7 @@ namespace gc.api.Controllers.Security
             return (isValid, user);
         }
 
-        private string GenerateToken(Usuarios usuario)
+        private string GenerateToken(Usuario usuario)
         {
             _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
             bool first = true;
@@ -162,7 +162,7 @@ namespace gc.api.Controllers.Security
 
 
             //token tiene 3 partes. Comenzamos por el Header
-            var symetricSecurityKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Authentication:SecretKey"]));
+            var symetricSecurityKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Authentication:SecretKey"] ?? ""));
 
             //credenciales
             var signingCredentials = new Microsoft.IdentityModel.Tokens.SigningCredentials(symetricSecurityKey, Microsoft.IdentityModel.Tokens.SecurityAlgorithms.HmacSha256);
@@ -173,9 +173,9 @@ namespace gc.api.Controllers.Security
             //Claims (informacion que queresmos validar y las caracteristicas del usuario
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, usuario.usu_id),
-                new Claim(ClaimTypes.Name,usuario.usu_apellidoynombre),
-                new Claim(ClaimTypes.Email,usuario.usu_email),
+                new Claim(ClaimTypes.NameIdentifier, usuario.Usu_id),
+                new Claim(ClaimTypes.Name,usuario.Usu_apellidoynombre),
+                new Claim(ClaimTypes.Email,usuario.Usu_email),
                 //new Claim("Id",usuario.Id.ToString()),
                 //new Claim(ClaimTypes.Role,sRoles),
             };

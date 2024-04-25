@@ -73,7 +73,7 @@ builder.Services.AddAuthentication(opt => {
         ValidateIssuerSigningKey = true,
         ValidIssuer = builder.Configuration["Authentication:Issuer"],   //se valida el emisor
         ValidAudience = builder.Configuration["Authentication:Audience"],
-        IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Authentication:SecretKey"])),
+        IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Authentication:SecretKey"]??"")),
     };
 });
 

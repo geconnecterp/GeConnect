@@ -8,7 +8,7 @@ namespace gc.infraestructura.EntidadesComunes.Options
 {
     public class ClaveSettings
     {
-        public string Key { get; set; }
-        public string ObtenerDetalleVentaUrl { get; set; }
+        public string Key { get; set; } = string.Empty;
+        public string ObtenerDetalleVentaUrl { get; set; } = string.Empty;
     }
 }

@@ -20,7 +20,7 @@ namespace gc.notificacion.Controllers
 
         public IActionResult Index()
         {
-            _logger.Log(LogLevel.Information, $"CONTEXTO Header: {_contexto.HttpContext.Request.Headers.ToString()} Body: {_contexto.HttpContext.Request.ToString()}");
+            _logger.Log(LogLevel.Information, $"CONTEXTO Header: {_contexto.HttpContext.Request.Headers } Body: {_contexto.HttpContext.Request.ToString()}");
             ViewBag.Title=_appSettings.Nombre;
             return View();
         }
