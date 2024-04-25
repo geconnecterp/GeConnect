@@ -100,7 +100,7 @@ namespace gc.api.infra.Datos.Implementacion
                     manejador.sqlTransaction.Commit();
                 }
             }
-            catch (Exception ex)
+            catch (Exception )
             {
 
                 //  _logger.Log(LogLevel.Error, $"DatabaseContext - Error al grabar los datos: {ex.Message}");
@@ -121,7 +121,7 @@ namespace gc.api.infra.Datos.Implementacion
                     manejador.sqlTransaction.Rollback();
                 }
             }
-            catch (Exception ex)
+            catch (Exception )
             {
                 // _logger.Log(LogLevel.Error, $"DatabaseContext - Error al Deshacer los datos: {ex.Message}");
                 throw;

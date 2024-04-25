@@ -118,7 +118,7 @@
                 entidades = entidades.OrderBy($"{filters.Sort} {filters.SortDir}");
             }
 
-            var pagina = PagedList<T>.Create(entidades, filters.PageNumber, filters.PageSize);
+            var pagina = PagedList<T>.Create(entidades, filters.PageNumber ?? 1, filters.PageSize ?? 20);
             return pagina;
         }
 

@@ -22,7 +22,7 @@ namespace gc.api.Controllers.Codigos
     public class AdministracionController : ControllerBase
     {
         private readonly IMapper _mapper;
-        private IAdministracionServicio _adminSv;
+        private readonly IAdministracionServicio _adminSv;
         private readonly IUriService _uriService;
         private readonly ILogger<AdministracionController> _logger;
 
@@ -35,12 +35,12 @@ namespace gc.api.Controllers.Codigos
         }
 
 
-            [HttpGet(Name = nameof(Getadministracioness))]
-            [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<IEnumerable<AdministracionDto>>))]
-            [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-            public IActionResult Getadministracioness([FromQuery] QueryFilters filters)
+            [HttpGet(Name = nameof(Getadministraciones))]
+            //[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<IEnumerable<AdministracionDto>>))]
+            //[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+            public IActionResult Getadministraciones([FromQuery] QueryFilters filters)
             {
-                _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            //_logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
                 var administracioness = _adminSv.GetAll(filters);
                 var administracionesDtos = _mapper.Map<IEnumerable<AdministracionDto>>(administracioness);
 
@@ -53,8 +53,8 @@ namespace gc.api.Controllers.Codigos
                     TatalPages = administracioness.TotalPages,
                     HasNextPage = administracioness.HasNextPage,
                     HasPreviousPage = administracioness.HasPreviousPage,
-                    NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getadministracioness))??"").ToString(),
-                    PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getadministracioness)) ?? "").ToString(),
+                    NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getadministraciones))??"").ToString(),
+                    PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getadministraciones)) ?? "").ToString(),
 
                 };
 
@@ -68,53 +68,53 @@ namespace gc.api.Controllers.Codigos
                 return Ok(response);
            }
 
-            // GET api/<administracionesController>/5
-            [HttpGet("{id:string}")]
-            public async Task<IActionResult> Get(string id)
-            {
-                _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-                var Administracion = await _adminSv.FindAsync(id);
-                var datoDto = _mapper.Map<AdministracionDto>(Administracion);
-                var response = new ApiResponse<AdministracionDto>(datoDto);
-                return Ok(response);
+            //// GET api/<administracionesController>/5
+            //[HttpGet("{id:string}")]
+            //public async Task<IActionResult> Get(string id)
+            //{
+            //    _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            //    var Administracion = await _adminSv.FindAsync(id);
+            //    var datoDto = _mapper.Map<AdministracionDto>(Administracion);
+            //    var response = new ApiResponse<AdministracionDto>(datoDto);
+            //    return Ok(response);
 
-            }
+            //}
 
 
-            // POST api/<administracionesController>
-            [HttpPost]
-            public async Task<IActionResult> Post(AdministracionDto datoDto)
-            {
-                _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-                var Admin = _mapper.Map<Administracion>(datoDto);
-                var res = await _adminSv.AddAsync(Admin);
+            //// POST api/<administracionesController>
+            //[HttpPost]
+            //public async Task<IActionResult> Post(AdministracionDto datoDto)
+            //{
+            //    _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            //    var Admin = _mapper.Map<Administracion>(datoDto);
+            //    var res = await _adminSv.AddAsync(Admin);
                 
-                var response = new ApiResponse<bool>(res);
+            //    var response = new ApiResponse<bool>(res);
 
-                return Ok(response);
-            }
+            //    return Ok(response);
+            //}
 
-            // PUT api/<administracionesController>/5
-            [HttpPut("{id}")]
-            public async Task<IActionResult> Put(string id, [FromBody] AdministracionDto datoDto)
-            {
-                _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-                var Administracion = _mapper.Map<Administracion>(datoDto);
-                Administracion.Adm_id = id; //garantizo que el id buscado es el que se envia al negocio
-                var result = await _adminSv.Update(Administracion);
-                var response = new ApiResponse<bool>(result);
-                return Ok(response);
+            //// PUT api/<administracionesController>/5
+            //[HttpPut("{id}")]
+            //public async Task<IActionResult> Put(string id, [FromBody] AdministracionDto datoDto)
+            //{
+            //    _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            //    var Administracion = _mapper.Map<Administracion>(datoDto);
+            //    Administracion.Adm_id = id; //garantizo que el id buscado es el que se envia al negocio
+            //    var result = await _adminSv.Update(Administracion);
+            //    var response = new ApiResponse<bool>(result);
+            //    return Ok(response);
 
-            }
+            //}
 
-            // DELETE api/<administracionesController>/5
-            [HttpDelete("{id}")]
-            public async Task<IActionResult> Delete(string id)
-            {
-                _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-                var res = await _adminSv.Delete(id);
-                var response = new ApiResponse<bool>(res);
-                return Ok(response);
-            }
+            //// DELETE api/<administracionesController>/5
+            //[HttpDelete("{id}")]
+            //public async Task<IActionResult> Delete(string id)
+            //{
+            //    _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            //    var res = await _adminSv.Delete(id);
+            //    var response = new ApiResponse<bool>(res);
+            //    return Ok(response);
+            //}
         }
     }

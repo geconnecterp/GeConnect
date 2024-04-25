@@ -12,6 +12,7 @@ using gc.api.infra.Datos.Implementacion.Security;
 using gc.api.Core.Servicios;
 using gc.api.Core.Interfaces.Servicios;
 using gc.api.infra.Datos.Contratos;
+using Microsoft.AspNetCore.Http;
 
 namespace gc.api.infra.Extensions
 {
@@ -20,10 +21,13 @@ namespace gc.api.infra.Extensions
         public static IServiceCollection AddServicios(this IServiceCollection services)
         {
             //services.AddTransient<IConfigServicio, ConfigServicio>();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
             services.AddScoped<ISecurityServicio, SecurityServicio>();
             services.AddScoped<IPasswordService, PasswordService>();
             services.AddScoped<IUsuarioServicio, UsuarioServicio>();
             services.AddScoped<IDataConnectionContext, DataConnectionContext>();
+            services.AddScoped<IAdministracionServicio, AdministracionesServicio>();
 
 
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));

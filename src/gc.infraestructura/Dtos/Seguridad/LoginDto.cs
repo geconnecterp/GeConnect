@@ -9,15 +9,19 @@ namespace gc.infraestructura.Dtos.Seguridad
         [UIHint("_User")]
         public string? UserName { get; set; }
 
-        [Display(Name = "Correo electrónico")]
-        [UIHint("_Text")]
-        [EmailAddress]
-        public string? Email { get; set; }
+        //[Display(Name = "Correo electrónico")]
+        //[UIHint("_Text")]
+        //[EmailAddress]
+        //public string? Email { get; set; }
 
         [Required]
         [DataType(DataType.Password)]
         [UIHint("_Pwd")]
         [Display(Name = "Contraseña")]
         public string? Password { get; set; }
+
+        [Required]
+        [Display(Name ="Administración")]
+        public string Adm_id {  get; set; }
     }
 }

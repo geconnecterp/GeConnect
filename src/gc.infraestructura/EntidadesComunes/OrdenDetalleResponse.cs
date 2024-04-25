@@ -10,26 +10,26 @@ namespace gc.infraestructura.EntidadesComunes
     public class Collector
     {
         public int id { get; set; }
-        public string email { get; set; }
-        public string nickname { get; set; }
+        public string email { get; set; } = string.Empty;
+        public string nickname { get; set; } = string.Empty;
     }
 
     public class Item
     {
-        public string id { get; set; }
-        public string category_id { get; set; }
-        public string currency_id { get; set; }
-        public string description { get; set; }
-        public object picture_url { get; set; }
-        public string title { get; set; }
-        public int quantity { get; set; }
-        public int unit_price { get; set; }
+        public string id { get; set; } = string.Empty;
+        public string category_id { get; set; } = string.Empty;
+        public string currency_id { get; set; } = string.Empty;
+        public string description { get; set; } = string.Empty;
+        public object picture_url { get; set; } = string.Empty;
+        public string title { get; set; } = string.Empty;
+        public int quantity { get; set; } =0;
+        public int unit_price { get; set; } = 0;
     }
 
     public class Payer
     {
-        public int id { get; set; }
-        public string email { get; set; }
+        public int id { get; set; } = 0;
+        public string email { get; set; } = string.Empty;
     }
 
     public class Payment

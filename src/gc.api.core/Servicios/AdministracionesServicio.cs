@@ -20,58 +20,60 @@ namespace gc.api.core.Servicios
             filters.PageNumber = filters.PageNumber == default ? _paginationOptions.DefaultPageNumber : filters.PageNumber;
             filters.PageSize = filters.PageSize == default ? _paginationOptions.DefaultPageSize : filters.PageSize;
 
-            var administracioness = GetAllIq();
-            administracioness = administracioness.OrderBy($"{filters.Sort} {filters.SortDir}");
+            var administraciones = GetAllIq();
+            if (string.IsNullOrEmpty(filters.Sort)){ filters.Sort = "Adm_id"; }
+            if (string.IsNullOrEmpty(filters.SortDir)){ filters.SortDir = "ASD"; }
+            administraciones = administraciones.OrderBy($"{filters.Sort} {filters.SortDir}");
 
             if (!filters.Todo)
             {
                 if (filters.Id != null && filters.Id != default)
                 {
-                    administracioness = administracioness.Where(r => r.Adm_id == (string)filters.Id);
+                    administraciones = administraciones.Where(r => r.Adm_id == (string)filters.Id);
                 }
             }
 
             if (!string.IsNullOrEmpty(filters.Search))
             {
-                administracioness = administracioness.Where(r => r.Adm_id.Contains(filters.Search));
+                administraciones = administraciones.Where(r => r.Adm_id.Contains(filters.Search));
             }
 
             if (!string.IsNullOrEmpty(filters.Search))
             {
-                administracioness = administracioness.Where(r => r.Adm_nombre.Contains(filters.Search));
+                administraciones = administraciones.Where(r => r.Adm_nombre.Contains(filters.Search));
             }
 
             if (!string.IsNullOrEmpty(filters.Search))
             {
-                administracioness = administracioness.Where(r => r.Adm_direccion.Contains(filters.Search));
+                administraciones = administraciones.Where(r => r.Adm_direccion.Contains(filters.Search));
             }
 
             if (!string.IsNullOrEmpty(filters.Search))
             {
-                administracioness = administracioness.Where(r => r.Usu_id_encargado.Contains(filters.Search));
+                administraciones = administraciones.Where(r => r.Usu_id_encargado.Contains(filters.Search));
             }
 
             if (!string.IsNullOrEmpty(filters.Search))
             {
-                administracioness = administracioness.Where(r => r.Cx_profile.Contains(filters.Search));
+                administraciones = administraciones.Where(r => r.Cx_profile.Contains(filters.Search));
             }
 
             if (!string.IsNullOrEmpty(filters.Search))
             {
-                administracioness = administracioness.Where(r => r.Cx_base.Contains(filters.Search));
+                administraciones = administraciones.Where(r => r.Cx_base.Contains(filters.Search));
             }
 
             if (!string.IsNullOrEmpty(filters.Search))
             {
-                administracioness = administracioness.Where(r => r.Cx_login.Contains(filters.Search));
+                administraciones = administraciones.Where(r => r.Cx_login.Contains(filters.Search));
             }
 
             if (!string.IsNullOrEmpty(filters.Search))
             {
-                administracioness = administracioness.Where(r => r.Cx_pass.Contains(filters.Search));
+                administraciones = administraciones.Where(r => r.Cx_pass.Contains(filters.Search));
             }
 
-            var paginas = PagedList<Administracion>.Create(administracioness, filters.PageNumber, filters.PageSize);
+            var paginas = PagedList<Administracion>.Create(administraciones, filters.PageNumber??1, filters.PageSize??20);
 
             return paginas;
         }

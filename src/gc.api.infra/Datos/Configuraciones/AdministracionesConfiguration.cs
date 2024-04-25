@@ -8,7 +8,7 @@ namespace geco_0000.Infraestructura.Datos.Configuraciones
     {
         public void Configure(EntityTypeBuilder<Administracion> builder)
         {
-            builder.ToTable("Administracion");
+            builder.ToTable("administraciones","dbo");
 
             builder.HasKey(e => e.Adm_id);
 

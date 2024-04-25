@@ -1,5 +1,8 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace gc.api.core.Entidades
 {
+    
     public partial class Administracion : EntidadBase
     {
         public Administracion()
