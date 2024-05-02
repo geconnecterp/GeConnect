@@ -16,6 +16,7 @@
   <ItemGroup>
     <Folder Include="Areas\Seguridad\Data\" />
     <Folder Include="Areas\Seguridad\Models\" />
+    <Folder Include="Views\Shared\EditorTemplates\" />
     <Folder Include="wwwroot\images\logo\" />
   </ItemGroup>
 

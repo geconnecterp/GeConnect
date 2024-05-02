@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace gc.infraestructura.EntidadesComunes.Options
+﻿namespace gc.infraestructura.EntidadesComunes.Options
 {
     public class ClaveSettings
     {
         public string Key { get; set; } = string.Empty;
         public string ObtenerDetalleVentaUrl { get; set; } = string.Empty;
+        public string SecretKey { get; set; } = string.Empty;
     }
 }

@@ -129,7 +129,7 @@ namespace gc.notificacion.api.Controllers
                     _logger.LogInformation("La VALIDACIÓN DEL MENSAJE FUE EXITOSA.");
                 }
 
-
+                //InvocacionApiMePa(dataId);
 
 
                 //await HttpContext.Response.WriteAsync($"El contenido del Post es: {contenido}");
@@ -153,5 +153,24 @@ namespace gc.notificacion.api.Controllers
                 return Ok();
             }
         }
+
+        //private Task InvocacionApiMePa(string dataId)
+        //{
+        //    try
+        //    {
+        //        HelperAPI helperAPI = new HelperAPI();
+        //        HttpClient client = helperAPI.InicializaCliente(_settings.SecretKey);
+        //        HttpResponseMessage response = client.GetAsync($"{_settings.ObtenerDetalleVentaUrl}/{dataId}").Result;
+        //        if(response.StatusCode==System.Net.HttpStatusCode.OK)
+        //        {
+
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+
+        //        throw;
+        //    }
+        //}
     }
 }
