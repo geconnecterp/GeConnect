@@ -30,8 +30,8 @@ namespace gc.notificacion.api.Controllers
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [Route(template: "[action]/orden/{orderId}/{tiempo}/mp")]
-        public async Task<IActionResult> Notificar(string orderId, long tiempo)
+        [Route(template: "[action]/orden/{orderId}/{encrypt}/mp")]
+        public async Task<IActionResult> Notificar(string orderId, string encrypt)
         {
             //se rescatarán los siguientes valores:
             //de QueryString => data.id  identificador del evento
@@ -44,7 +44,8 @@ namespace gc.notificacion.api.Controllers
             try
             {
                 _logger.LogInformation("=============== NUEVA PETICIÓN ==================");
-                _logger.LogInformation($"orderId: {orderId} - Tiempo: {tiempo} - {new DateTime(tiempo)}");
+                //_logger.LogInformation($"orderId: {orderId} - Tiempo: {tiempo} - {new DateTime(tiempo)}");
+                _logger.LogInformation($"orderId: {orderId} - Texto Encrypt: {encrypt}");
 
                 _logger.LogInformation("Contenido Body Post");
                 string contenido = string.Empty;
@@ -72,42 +73,42 @@ namespace gc.notificacion.api.Controllers
 
                 //se procede a recuperar los datos enviados por MePa. Si alguno de los datos no existe, se procederá a desechar y desestimar el informe.
 
-                try
-                {                    
+                //try
+                //{                    
                     
-                    _logger.LogInformation($"data.id: {dataId}");
+                //    _logger.LogInformation($"data.id: {dataId}");
 
                                  
-                }
-                catch
-                {
-                    try
-                    {
-                        idMP = HttpContext.Request.Query["id"];
-                        _logger.LogInformation($"idMP: {idMP}");
-                    }
-                    catch
-                    {
-                        throw new Exception("No se encontró 'ni data.id, ni idMP'.");
-                    }
-                }
-                try
-                {
-                    signa = HttpContext.Request.Headers["x-signature"];
-                    _logger.LogInformation($"x-signature: {signa}");
+                //}
+                //catch
+                //{
+                //    try
+                //    {
+                //        idMP = HttpContext.Request.Query["id"];
+                //        _logger.LogInformation($"idMP: {idMP}");
+                //    }
+                //    catch
+                //    {
+                //        throw new Exception("No se encontró 'ni data.id, ni idMP'.");
+                //    }
+                //}
+                //try
+                //{
+                //    signa = HttpContext.Request.Headers["x-signature"];
+                //    _logger.LogInformation($"x-signature: {signa}");
 
-                    arre = signa.Split(new char[] { ',' }, StringSplitOptions.None);
-                    ts = arre[0].Replace("ts=", "");
-                    vs = arre[1].Replace("v1=", "");
-                }
-                catch { throw new Exception("No se encontró 'x-signature'. "); }
+                //    arre = signa.Split(new char[] { ',' }, StringSplitOptions.None);
+                //    ts = arre[0].Replace("ts=", "");
+                //    vs = arre[1].Replace("v1=", "");
+                //}
+                //catch { throw new Exception("No se encontró 'x-signature'. "); }
 
-                try
-                {
-                    rqId = HttpContext.Request.Headers["x-request-id"];
-                    _logger.LogInformation($"x-request-id: {rqId}");
-                }
-                catch { throw new Exception("No se encontró 'x-request-id'. "); }
+                //try
+                //{
+                //    rqId = HttpContext.Request.Headers["x-request-id"];
+                //    _logger.LogInformation($"x-request-id: {rqId}");
+                //}
+                //catch { throw new Exception("No se encontró 'x-request-id'. "); }
 
                 string mensaje = $"id:{dataId};request-id:{rqId};ts:{ts};";
 

@@ -260,5 +260,32 @@ namespace gc.infraestructura.Core.Helpers
             //}
 
         }
+
+        public static string EncriptarTexto(string texto, string rutaPublicKey)
+        {
+            byte[] textByte = Encoding.UTF8.GetBytes(texto);
+            RSA rsa = new RSACryptoServiceProvider(1024);
+
+            Stream fse = File.OpenRead(rutaPublicKey);
+            string xmle = new StreamReader(fse).ReadToEnd();
+            rsa.FromXmlString(xmle);
+
+            byte[] encrypt = rsa.Encrypt(textByte, RSAEncryptionPadding.Pkcs1);
+
+            return Convert.ToBase64String(encrypt);
+        }
+
+        public static string DesencryptarTexto(string textB64, string rutaPrivateKey)
+        {
+            byte[] encrypt = Convert.FromBase64String(textB64);
+
+            RSA des = new RSACryptoServiceProvider(1024);
+            Stream fsd = File.OpenRead(Path.Combine(rutaPrivateKey));
+            string xmld = new StreamReader(fsd).ReadToEnd();
+            des.FromXmlString(xmld);
+
+            byte[] desencr = des.Decrypt(encrypt, RSAEncryptionPadding.Pkcs1);
+            return Encoding.UTF8.GetString(desencr);
+        }
     }
 }
