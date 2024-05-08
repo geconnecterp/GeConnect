@@ -261,7 +261,7 @@ namespace gc.infraestructura.Core.Helpers
 
         }
 
-        public static string EncriptarTexto(string texto, string rutaPublicKey)
+        public static string RSAEncryptToB64(string texto, string rutaPublicKey)
         {
             byte[] textByte = Encoding.UTF8.GetBytes(texto);
             RSA rsa = new RSACryptoServiceProvider(1024);
@@ -275,7 +275,7 @@ namespace gc.infraestructura.Core.Helpers
             return Convert.ToBase64String(encrypt);
         }
 
-        public static string DesencryptarTexto(string textB64, string rutaPrivateKey)
+        public static string RSADesencrypFromB64(string textB64, string rutaPrivateKey)
         {
             byte[] encrypt = Convert.FromBase64String(textB64);
 
@@ -286,6 +286,58 @@ namespace gc.infraestructura.Core.Helpers
 
             byte[] desencr = des.Decrypt(encrypt, RSAEncryptionPadding.Pkcs1);
             return Encoding.UTF8.GetString(desencr);
+        }
+
+        public static string RSAEncryptToHEX(string texto, string rutaPublicKey)
+        {
+            byte[] textByte = Encoding.UTF8.GetBytes(texto);
+            RSA rsa = new RSACryptoServiceProvider(1024);
+
+            Stream fse = File.OpenRead(rutaPublicKey);
+            string xmle = new StreamReader(fse).ReadToEnd();
+            rsa.FromXmlString(xmle);
+
+            byte[] encrypt = rsa.Encrypt(textByte, RSAEncryptionPadding.Pkcs1);
+
+            var b64 = Convert.ToBase64String(encrypt);
+
+            //convertir en hex
+            return ConvierteStrToHex(b64);
+        }
+
+        public static string RSADesencrypFromHEX(string hex, string rutaPrivateKey)
+        {
+            #region Se convierte la cadena hex en texto.  
+            string b64 = ConvierteHexToStr(hex);
+            #endregion
+
+            byte[] encrypt = Convert.FromBase64String(b64);
+
+            RSA des = new RSACryptoServiceProvider(1024);
+            Stream fsd = File.OpenRead(Path.Combine(rutaPrivateKey));
+            string xmld = new StreamReader(fsd).ReadToEnd();
+            des.FromXmlString(xmld);
+
+            byte[] desencr = des.Decrypt(encrypt, RSAEncryptionPadding.Pkcs1);
+            return Encoding.UTF8.GetString(desencr);
+        }
+
+        public static string ConvierteStrToHex(string str)
+        {
+            return BitConverter.ToString(Encoding.ASCII.GetBytes(str)).Replace("-", "");
+        }
+
+        public static string ConvierteHexToStr(string hex)
+        {
+            int length = hex.Length / 2;
+            string texto = string.Empty;
+
+            for (int i = 0; i < length; i++)
+            {
+                texto += Convert.ToChar(Convert.ToInt32(hex.Substring(2 * i, 2), 16));
+            }
+
+            return texto;
         }
     }
 }

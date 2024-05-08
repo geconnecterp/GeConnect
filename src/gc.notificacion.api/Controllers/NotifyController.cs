@@ -69,7 +69,18 @@ namespace gc.notificacion.api.Controllers
                     default:
                         break;
                 }
-                               
+
+
+                //validacion de la clave rsa
+                var text = HelperGen.RSADesencryp(encrypt, _settings.PathPrivateKey);
+
+                if (!orderId.Equals(text)) {
+                    _logger.Log(LogLevel.Warning, "No se verificó la autenticidad del mensaje");
+                }
+                else
+                {
+                    _logger.Log(LogLevel.Information, "VERIFICACIÓN COMPROBADA!!!");
+                }
 
                 //se procede a recuperar los datos enviados por MePa. Si alguno de los datos no existe, se procederá a desechar y desestimar el informe.
 
@@ -110,25 +121,25 @@ namespace gc.notificacion.api.Controllers
                 //}
                 //catch { throw new Exception("No se encontró 'x-request-id'. "); }
 
-                string mensaje = $"id:{dataId};request-id:{rqId};ts:{ts};";
+                //string mensaje = $"id:{dataId};request-id:{rqId};ts:{ts};";
 
 
-                _logger.LogInformation($"Mensaje: {mensaje}");
-                var hmac = HelperGen.ObtenerHMACtoHex(mensaje, _settings.Key).ToLower();
+                //_logger.LogInformation($"Mensaje: {mensaje}");
+                //var hmac = HelperGen.ObtenerHMACtoHex(mensaje, _settings.Key).ToLower();
 
-                _logger.LogInformation($"V1:   {vs}");
-                _logger.LogInformation($"HMAC: {hmac}");
-                if (!hmac.Equals(vs))
-                {
-                    _logger.LogInformation("La validación es erronea. Se descarta el mensaje.");
+                //_logger.LogInformation($"V1:   {vs}");
+                //_logger.LogInformation($"HMAC: {hmac}");
+                //if (!hmac.Equals(vs))
+                //{
+                //    _logger.LogInformation("La validación es erronea. Se descarta el mensaje.");
 
-                    throw new Exception("La validación no es valida ");
-                }
-                else
-                {
-                    //invocar a MP para obtener el detalle de la venta
-                    _logger.LogInformation("La VALIDACIÓN DEL MENSAJE FUE EXITOSA.");
-                }
+                //    throw new Exception("La validación no es valida ");
+                //}
+                //else
+                //{
+                //    //invocar a MP para obtener el detalle de la venta
+                //    _logger.LogInformation("La VALIDACIÓN DEL MENSAJE FUE EXITOSA.");
+                //}
 
                 //InvocacionApiMePa(dataId);
 
