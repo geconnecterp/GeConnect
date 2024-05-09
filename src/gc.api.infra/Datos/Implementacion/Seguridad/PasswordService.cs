@@ -1,16 +1,13 @@
 ﻿
+using gc.api.core.Constantes;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.api.core.Servicios;
 using gc.api.infra.Datos.Contratos.Security;
-using gc.infraestructura.Constantes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using Microsoft.Extensions.Options;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
-using System.Xml.Schema;
 
 namespace gc.api.infra.Datos.Implementacion.Security
 {

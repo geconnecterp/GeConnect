@@ -72,7 +72,7 @@ namespace gc.notificacion.api.Controllers
 
 
                 //validacion de la clave rsa
-                var text = HelperGen.RSADesencryp(encrypt, _settings.PathPrivateKey);
+                var text = HelperGen.RSADesencrypFromHEX(encrypt, _settings.PathPrivateKey);
 
                 if (!orderId.Equals(text)) {
                     _logger.Log(LogLevel.Warning, "No se verificó la autenticidad del mensaje");
