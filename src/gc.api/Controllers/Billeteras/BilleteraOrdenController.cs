@@ -15,7 +15,7 @@ namespace gc.api.Controllers.Billeteras
     using System.Reflection;
     using System.Threading.Tasks;
 
-    [Authorize]
+    //[Authorize]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
@@ -83,7 +83,8 @@ namespace gc.api.Controllers.Billeteras
 
         // POST api/<billeteras_ordenesController>
         [HttpPost]
-        public async Task<IActionResult> Post(BilleteraOrdenDto datoDto)
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        public async Task<IActionResult> Post([FromBody] BilleteraOrdenDto datoDto)
         {
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
             var billeteras_ordenes = _mapper.Map<BilleteraOrden>(datoDto);
@@ -92,6 +93,28 @@ namespace gc.api.Controllers.Billeteras
             var response = new ApiResponse<(bool,string)>(res);
 
             return Ok(response);
+        }
+
+        public async Task<IActionResult> OrdenNotificado(string nroOrden, [FromBody] OrdenNotificado ordenNotificado)
+        {
+            string msg;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            if(ordenNotificado == null)
+            {
+                msg = $"Orden: {nroOrden} - No se recepcionó la orden de Notificación";
+                _logger.Log(LogLevel.Error, msg);
+                return BadRequest(msg);
+            }
+            if(ordenNotificado.Orden_Id != nroOrden)
+            {
+                msg = $"Se recepcionó Orden: {nroOrden} y testigo orden {ordenNotificado.Orden_Id}";
+                _logger.Log(LogLevel.Error, msg);
+                return BadRequest(msg);
+            }
+
+            //se debe llamar al SP [SP_BilleteraOrdenNotificado] TB se debe hacer otra accion para [SP_BilleteraOrdenRegistro]
+
+            return Ok();
         }
 
         // PUT api/<billeteras_ordenesController>/5

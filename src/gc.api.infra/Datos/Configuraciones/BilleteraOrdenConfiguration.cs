@@ -37,7 +37,7 @@ namespace gc.api.infra.Datos.Configuraciones
 
 
             builder.Property(e => e.Boe_Id)
-                 .IsRequired()
+                 //.IsRequired()
                  .HasMaxLength(2)
                  .IsUnicode(false);
 
@@ -68,7 +68,7 @@ namespace gc.api.infra.Datos.Configuraciones
                 .HasColumnType("datetime");
 
 
-            builder.Property(e => e.Bo_Clave)
+            builder.Property(e => e.Bo_Clave)                
                  .HasMaxLength(500)
                  .IsUnicode(false);
 

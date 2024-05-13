@@ -29,11 +29,11 @@ namespace gc.api.core.Entidades
         public string Tco_Id { get; set; }//
         public string Cm_Compte { get; set; }//
         public decimal Bo_Importe { get; set; }//
-        public DateTime Bo_Carga { get; set; }
-        public string Bo_Clave { get; set; }//
-        public string Bo_Id_Ext { get; set; }
+        public DateTime? Bo_Carga { get; set; }
+        public string? Bo_Clave { get; set; }//
+        public string? Bo_Id_Ext { get; set; }
         public DateTime? Bo_Notificado { get; set; }
-        public string Bo_Notificado_Desc { get; set; }
+        public string? Bo_Notificado_Desc { get; set; }
         public string Ip { get; set; }//
 
 
