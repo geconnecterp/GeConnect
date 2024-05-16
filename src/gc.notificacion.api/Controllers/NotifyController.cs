@@ -1,9 +1,13 @@
 ﻿using gc.infraestructura.Core.Helpers;
+using gc.infraestructura.Core.Responses;
 using gc.infraestructura.EntidadesComunes.Options;
+using gc.notificacion.api.Modelo;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
+using System.Net;
+using System.Text.Json;
 
 namespace gc.notificacion.api.Controllers
 {
@@ -13,176 +17,156 @@ namespace gc.notificacion.api.Controllers
     {
         private ILogger<NotifyController> _logger;
         private readonly ClaveSettings _settings;
-
+        private readonly static string RutaBillOrden = "/api/billeteraOrden";
+        private readonly static string ActionOrdenRegistro = "/OrdenNotificado";
         public NotifyController(ILogger<NotifyController> logger, IOptions<ClaveSettings> options)
         {
             _logger = logger;
             _settings = options.Value;
         }
 
-        //[HttpGet]
-        //[ProducesResponseType(StatusCodes.Status200OK)]
-        //[Route(template: "[action]/orden/{ordenId}/mp")]
-        //public IActionResult Notificar(int ordenId)
-        //{
-        //    return Ok(ordenId);
-        //}
-
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [Route(template: "[action]/orden/{orderId}/{encrypt}/mp")]
-        public async Task<IActionResult> Notificar(string orderId, string encrypt)
+        [Route(template: "orden/{orderId}/{hex}/{encrypt}/mp")]
+        public async Task<IActionResult> Notificar(string orderId, string hex, string encrypt)
         {
-            //se rescatarán los siguientes valores:
-            //de QueryString => data.id  identificador del evento
-            //del Header => x-signature valor de "ts"
-            //                          valor de "v1"
-            //              x-request-id su valor.
-            string idMP, dataId, signa, ts, vs, rqId, qType;
-            dataId = idMP = signa = ts = vs = rqId = qType = string.Empty;
-            string[] arre;
+            int errorCodigo = 0;
             try
             {
-                _logger.LogInformation("=============== NUEVA PETICIÓN ==================");
-                //_logger.LogInformation($"orderId: {orderId} - Tiempo: {tiempo} - {new DateTime(tiempo)}");
-                _logger.LogInformation($"orderId: {orderId} - Texto Encrypt: {encrypt}");
-
-                _logger.LogInformation("Contenido Body Post");
-                string contenido = string.Empty;
-                using (var reader = new StreamReader(HttpContext.Request.Body))
+                //el token debera ser un usuario y clave especial para que se gestione el mismo automaticamente. Levantar de la cache
+                //el token, verificar que no esta vencido. Si el mismo esta vencido se debe obtener un nuevo token. almacenarlo y usarlo
+                //para invocar la api de servicios
+                //por ahora token = ""
+                string token = string.Empty;
+                string plano = string.Empty;
+                string desencrypt = string.Empty;
+                string nroRecibo = string.Empty;
+                string dataId = string.Empty;
+                string qType = string.Empty;
+                #region Conversión de datos HexToStr
+                try
                 {
-                    contenido = await reader.ReadToEndAsync();
-                    _logger.LogInformation(contenido);
-                }
+                    //al recepcionar la notificacion se valida que sea la que hemos mandado
+                    //1-orderId viene en hex. Convertirlo en string 
+                    plano = HelperGen.ConvierteHexToStr(hex);
+                    if(plano.Length>0)
+                    {
+                        nroRecibo = plano.Split('|')[0];
+                    }
 
-                qType = HttpContext.Request.Query["type"].ToString();
-                dataId = HttpContext.Request.Query["data.id"].ToString();
-                switch (qType)
+                }
+                catch (Exception ex)
                 {
-                    case "stop_delivery_op_wh":
-                        //tiene que informar inmediatamente que la tarjeta o cuenta ha sido robada.
-                        break;
-                    case "payment":
-                        
-                        //se debe validar el pago
-                        break;
-                    default:
-                        break;
+                    _logger.LogError(ex, "Error en la conversión de Hex a Str");
+                    errorCodigo = 1;
+                    throw new Exception($"Se produjo un error en la conversión de datos propios. Error Cod:{errorCodigo}");
                 }
+                #endregion
 
+                #region Desencryptación del texto encryptado
+                try
+                {
+                    //validacion de la clave rsa
+                    desencrypt = HelperGen.RSADesencrypFromHEX(encrypt, _settings.PathPrivateKey);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error en la desencryptación de los datos");
+                    errorCodigo = 2;
+                    throw new Exception($"Se produjo un error en la conversión de datos propios. Error Cod:{errorCodigo}");
+                }
+                #endregion
 
-                //validacion de la clave rsa
-                var text = HelperGen.RSADesencrypFromHEX(encrypt, _settings.PathPrivateKey);
+                #region Armando Request de OrdenRegistro
+                var reg = new OrdenNotificado { Orden_Id = orderId, Orden_Notificada_Ok='N', Orden_Id_Ext = " " };
+                #endregion
 
-                if (!orderId.Equals(text)) {
-                    _logger.Log(LogLevel.Warning, "No se verificó la autenticidad del mensaje");
+                #region Validación de los datos recibidos en la notificación. comparacion del numero de recibo y los datos plano y desencrypt
+                if (nroRecibo.Equals(orderId[..nroRecibo.Length]) && plano.Equals(desencrypt))
+                {
+                    _logger.Log(LogLevel.Information, "VERIFICACIÓN COMPROBADA!!!");
+                    qType = HttpContext.Request.Query["type"].ToString();
+                    if(string.IsNullOrEmpty(qType) )
+                    {
+                        qType = HttpContext.Request.Query["topic"].ToString();
+                    }
+                    dataId = HttpContext.Request.Query["data.id"].ToString();
+
+                    switch (qType)
+                    {
+                        case "stop_delivery_op_wh":
+                            //tiene que informar inmediatamente que la tarjeta o cuenta ha sido robada.
+                            _logger.LogWarning($"Se recepciono una alerta de posible fraude. OrdenId: {orderId} - DataId: {dataId} ");
+                            ActualizarOrdenEnBase(reg, token, _settings.RutaBaseServicios);
+                            return Ok();
+                        case "merchant_order":
+                        case "payment":
+                            reg.Orden_Notificada_Ok = 'S';
+                            reg.Orden_Id_Ext = dataId;
+                            var res = ActualizarOrdenEnBase(reg, token, _settings.RutaBaseServicios);
+                            break;
+                        default:
+                            _logger.LogWarning($"La Notificación no fue ni Payment, ni merchant_order. El tipo de notificación fue: {qType}. OrdenId: {orderId} - DataId: {dataId} ");
+                            ActualizarOrdenEnBase(reg, token, _settings.RutaBaseServicios);
+                            return Ok();
+                    }
                 }
                 else
                 {
-                    _logger.Log(LogLevel.Information, "VERIFICACIÓN COMPROBADA!!!");
-                }
-
-                //se procede a recuperar los datos enviados por MePa. Si alguno de los datos no existe, se procederá a desechar y desestimar el informe.
-
-                //try
-                //{                    
                     
-                //    _logger.LogInformation($"data.id: {dataId}");
+                    _logger.Log(LogLevel.Warning, "No se verificó la autenticidad del mensaje");
+                    reg.Orden_Notificada_Ok = 'N';
+                    var res = ActualizarOrdenEnBase(reg, token, _settings.RutaBaseServicios);
+                }
+                #endregion
+                //2-se toma el dato encryptado y se desencryptará. La misma se deberá comparar con el valor 
 
-                                 
-                //}
-                //catch
-                //{
-                //    try
-                //    {
-                //        idMP = HttpContext.Request.Query["id"];
-                //        _logger.LogInformation($"idMP: {idMP}");
-                //    }
-                //    catch
-                //    {
-                //        throw new Exception("No se encontró 'ni data.id, ni idMP'.");
-                //    }
-                //}
-                //try
-                //{
-                //    signa = HttpContext.Request.Headers["x-signature"];
-                //    _logger.LogInformation($"x-signature: {signa}");
-
-                //    arre = signa.Split(new char[] { ',' }, StringSplitOptions.None);
-                //    ts = arre[0].Replace("ts=", "");
-                //    vs = arre[1].Replace("v1=", "");
-                //}
-                //catch { throw new Exception("No se encontró 'x-signature'. "); }
-
-                //try
-                //{
-                //    rqId = HttpContext.Request.Headers["x-request-id"];
-                //    _logger.LogInformation($"x-request-id: {rqId}");
-                //}
-                //catch { throw new Exception("No se encontró 'x-request-id'. "); }
-
-                //string mensaje = $"id:{dataId};request-id:{rqId};ts:{ts};";
-
-
-                //_logger.LogInformation($"Mensaje: {mensaje}");
-                //var hmac = HelperGen.ObtenerHMACtoHex(mensaje, _settings.Key).ToLower();
-
-                //_logger.LogInformation($"V1:   {vs}");
-                //_logger.LogInformation($"HMAC: {hmac}");
-                //if (!hmac.Equals(vs))
-                //{
-                //    _logger.LogInformation("La validación es erronea. Se descarta el mensaje.");
-
-                //    throw new Exception("La validación no es valida ");
-                //}
-                //else
-                //{
-                //    //invocar a MP para obtener el detalle de la venta
-                //    _logger.LogInformation("La VALIDACIÓN DEL MENSAJE FUE EXITOSA.");
-                //}
-
-                //InvocacionApiMePa(dataId);
-
-
-                //await HttpContext.Response.WriteAsync($"El contenido del Post es: {contenido}");
-                return Ok();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Invocación WEBHOOKS DESESTIMADA");
-                _logger.LogWarning("QueryStrings");
-                foreach (var item in HttpContext.Request.Query)
-                {
-                    _logger.LogWarning($"{item.Key} - {item.Value}");
-                }
-                _logger.LogWarning("Headers");
-
-                foreach (var item in HttpContext.Request.Headers)
-                {
-                    _logger.LogWarning($"{item.Key} - {item.Value}");
-                }
-
-                return Ok();
+                _logger.LogError(ex, "Se produjo un error en la notificación");
             }
+
+            return Ok();
         }
 
-        //private Task InvocacionApiMePa(string dataId)
-        //{
-        //    try
-        //    {
-        //        HelperAPI helperAPI = new HelperAPI();
-        //        HttpClient client = helperAPI.InicializaCliente(_settings.SecretKey);
-        //        HttpResponseMessage response = client.GetAsync($"{_settings.ObtenerDetalleVentaUrl}/{dataId}").Result;
-        //        if(response.StatusCode==System.Net.HttpStatusCode.OK)
-        //        {
+        private (bool, string) ActualizarOrdenEnBase(OrdenNotificado ordenNotifica, string token, string rutaBaseApi)
+        {
+            ApiResponse<(bool, string)> respuesta = null;
+            HttpResponseMessage response;
+            HelperAPI helperAPI = new HelperAPI();
+            HttpClient client = helperAPI.InicializaCliente(ordenNotifica, token, out StringContent contentData);
+            string link = $"{rutaBaseApi}{RutaBillOrden}{ActionOrdenRegistro}/{ordenNotifica.Orden_Id}";
+            try
+            {
+                response = client.PutAsync(link, contentData).GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                respuesta = ExtraeContentRespuesta(respuesta, response).GetAwaiter().GetResult();
 
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
+                return (respuesta.Data.Item1, respuesta.Data.Item2);
+            }
+            else
+            {
+                respuesta = ExtraeContentRespuesta(respuesta, response).GetAwaiter().GetResult();
 
-        //        throw;
-        //    }
-        //}
+                return (false, respuesta.Data.Item2);
+            }
+
+        }
+
+        private static async Task<ApiResponse<(bool, string)>> ExtraeContentRespuesta(ApiResponse<(bool, string)> respuesta, HttpResponseMessage response)
+        {
+            string stringData = await response.Content.ReadAsStringAsync();
+
+            respuesta = JsonSerializer.Deserialize<ApiResponse<(bool, string)>>(stringData);
+            return respuesta;
+        }
+
     }
 }

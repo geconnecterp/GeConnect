@@ -80,6 +80,16 @@ namespace gc.api.Controllers.Billeteras
 
         }
 
+        [HttpGet]
+        [ProducesResponseType((int)HttpStatusCode.OK,Type = typeof(ApiResponse<(bool,string)>))]
+        [Route("[action]/{ordenId}")]
+        public IActionResult VerificaPago(string ordenId)
+        {
+            (bool,string) res = _billeteras_ordenesSv.VerificaPago(ordenId); // TODO
+            var response = new ApiResponse<(bool,string)>(res); 
+            return Ok(response);
+        }
+
 
         // POST api/<billeteras_ordenesController>
         [HttpPost]
@@ -95,7 +105,11 @@ namespace gc.api.Controllers.Billeteras
             return Ok(response);
         }
 
-        public async Task<IActionResult> OrdenNotificado(string nroOrden, [FromBody] OrdenNotificado ordenNotificado)
+        [HttpPut]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]/{nroOrden}")]
+        public IActionResult OrdenNotificado(string nroOrden, [FromBody] OrdenNotificado ordenNotificado)
         {
             string msg;
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
@@ -112,9 +126,39 @@ namespace gc.api.Controllers.Billeteras
                 return BadRequest(msg);
             }
 
-            //se debe llamar al SP [SP_BilleteraOrdenNotificado] TB se debe hacer otra accion para [SP_BilleteraOrdenRegistro]
+            (bool, string) res = _billeteras_ordenesSv.OrdenNotificado(ordenNotificado);
 
-            return Ok();
+            var response = new ApiResponse<(bool, string)>(res);
+
+            return Ok(response);           
+        }
+
+        [HttpPut]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]/{nroOrden}")]
+        public IActionResult OrdenRegistro(string nroOrden, [FromBody] OrdenRegistro ordenRegistro)
+        {
+            string msg;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            if (ordenRegistro == null)
+            {
+                msg = $"Orden: {nroOrden} - No se recepcionó la orden de Notificación";
+                _logger.Log(LogLevel.Error, msg);
+                return BadRequest(msg);
+            }
+            if (ordenRegistro.Orden_Id != nroOrden)
+            {
+                msg = $"Se recepcionó Orden: {nroOrden} y testigo orden {ordenRegistro.Orden_Id}";
+                _logger.Log(LogLevel.Error, msg);
+                return BadRequest(msg);
+            }
+
+            (bool, string) res = _billeteras_ordenesSv.OrdenRegistro(ordenRegistro);
+
+            var response = new ApiResponse<(bool, string)>(res);
+
+            return Ok(response);
         }
 
         // PUT api/<billeteras_ordenesController>/5

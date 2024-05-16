@@ -5,6 +5,7 @@ using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Responses;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using System.Linq.Dynamic.Core;
 using System.Net;
@@ -47,8 +48,8 @@ namespace gc.api.core.Servicios
             if (string.IsNullOrEmpty(orden.Cm_Compte))
             {
                 return (false, ConstantesGC.MensajeError.ERR_VALOR_CAMPO_CRITICO.Replace("@campo", "Cm_Compte"));
-            }          
-            if (orden.Bo_Importe==default)
+            }
+            if (orden.Bo_Importe == default)
             {
                 return (false, ConstantesGC.MensajeError.ERR_VALOR_CAMPO_CRITICO.Replace("@campo", "Bo_Importe"));
             }
@@ -65,16 +66,59 @@ namespace gc.api.core.Servicios
 
             List<string> excluir = new List<string>() { "Bo_Id", "Boe_Id", "Bo_Carga", "Bo_Id_Ext", "Bo_Notificado", "Bo_Notificado_Desc" };
             var ps = _repository.InferirParametros(orden, excluir).ToList();
-            
-            var res = _repository.InvokarSpNQuery(sp,ps);
 
-            if (res == 1)
+            object res = _repository.InvokarSpScalar(sp, ps);
+
+            if (res != null)
+            {
+                return (true, (string)res);
+            }
+            else
+            {
+                return (false, ConstantesGC.MensajeError.ERR_AL_INSERTAR);
+
+            }
+        }
+
+        public (bool, string) OrdenNotificado(OrdenNotificado ordenNotificado)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_BILLETERA_NOTIFICADO;
+            List<SqlParameter>? ps = new List<SqlParameter>();
+
+            ps.Add(new SqlParameter("@orden_id", ordenNotificado.Orden_Id));
+            ps.Add(new SqlParameter("@orden_notificada_ok", ordenNotificado.Orden_Notificada_Ok));
+            ps.Add(new SqlParameter("@orden_id_ext", ordenNotificado.Orden_Id_Ext));
+
+            var res = _repository.InvokarSpScalar(sp, ps);
+
+            if ((int)res == 0)
             {
                 return (true, "OK");
             }
             else
             {
-                return (false, ConstantesGC.MensajeError.ERR_AL_INSERTAR);
+                return (false, ConstantesGC.MensajeError.ERR_AL_ACTUALIZAR);
+            }
+        }
+
+        public (bool, string) OrdenRegistro(OrdenRegistro ordenRegistro)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_BILLETERA_REGISTRA;
+            List<SqlParameter>? ps = new List<SqlParameter>();
+
+            ps.Add(new SqlParameter("@orden_id", ordenRegistro.Orden_Id));
+            ps.Add(new SqlParameter("@orden_solicitada_ok", ordenRegistro.Orden_Solicitada_Ok));
+            ps.Add(new SqlParameter("@orden_id_ext", ordenRegistro.Orden_Id_Ext));
+
+            var res = _repository.InvokarSpScalar(sp, ps);
+
+            if ((int)res == 0)
+            {
+                return (true, "OK");
+            }
+            else
+            {
+                return (false, ConstantesGC.MensajeError.ERR_AL_ACTUALIZAR);
             }
         }
 
@@ -159,9 +203,29 @@ namespace gc.api.core.Servicios
                 billeteras_ordeness = billeteras_ordeness.Where(r => r.Ip.Contains(filters.Search));
             }
 
-            var paginas = PagedList<BilleteraOrden>.Create(billeteras_ordeness, filters.PageNumber??1, filters.PageSize??20);
+            var paginas = PagedList<BilleteraOrden>.Create(billeteras_ordeness, filters.PageNumber ?? 1, filters.PageSize ?? 20);
 
             return paginas;
+        }
+
+        public (bool, string) VerificaPago(string ordenId)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_BILLETERA_VERIFICA_PAGO;
+            List<SqlParameter>? ps = new List<SqlParameter>();
+
+            ps.Add(new SqlParameter("@orden_id", ordenId));
+
+
+            var res = _repository.InvokarSpScalar(sp, ps);
+
+            if (res.GetType().Name.Equals("DBNull"))
+            {
+                return (false, "");
+            }
+            else
+            {
+                return (true, (string)res);
+            }
         }
     }
 }
