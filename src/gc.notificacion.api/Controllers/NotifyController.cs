@@ -27,8 +27,8 @@ namespace gc.notificacion.api.Controllers
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [Route(template: "orden/{orderId}/{hex}/{encrypt}/mp")]
-        public async Task<IActionResult> Notificar(string orderId, string hex, string encrypt)
+        [Route(template: "orden/{orderId}/{b64}/{encrypt}/mp")]
+        public async Task<IActionResult> Notificar(string orderId, string b64, string encrypt)
         {
             int errorCodigo = 0;
             try
@@ -44,11 +44,11 @@ namespace gc.notificacion.api.Controllers
                 string dataId = string.Empty;
                 string qType = string.Empty;
                 #region Conversión de datos HexToStr
-                try
+                try 
                 {
                     //al recepcionar la notificacion se valida que sea la que hemos mandado
                     //1-orderId viene en hex. Convertirlo en string 
-                    plano = HelperGen.ConvierteHexToStr(hex);
+                    plano = HelperGen.ConvierteB64ToStr(b64);
                     if(plano.Length>0)
                     {
                         nroRecibo = plano.Split('|')[0];
@@ -57,7 +57,7 @@ namespace gc.notificacion.api.Controllers
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error en la conversión de Hex a Str");
+                    _logger.LogError(ex, "Error en la conversión de B64 a Str");
                     errorCodigo = 1;
                     throw new Exception($"Se produjo un error en la conversión de datos propios. Error Cod:{errorCodigo}");
                 }
@@ -67,7 +67,7 @@ namespace gc.notificacion.api.Controllers
                 try
                 {
                     //validacion de la clave rsa
-                    desencrypt = HelperGen.RSADesencrypFromHEX(encrypt, _settings.PathPrivateKey);
+                    desencrypt = HelperGen.RSADesencrypFromB64(encrypt, _settings.PathPrivateKey);
                 }
                 catch (Exception ex)
                 {

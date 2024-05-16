@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace gc.infraestructura.Core.Helpers
 {
-    public class HelperGen
+    public static class HelperGen
     {
         public static string EncodeStr2B64(string cadena)
         {
@@ -321,6 +321,17 @@ namespace gc.infraestructura.Core.Helpers
             byte[] desencr = des.Decrypt(encrypt, RSAEncryptionPadding.Pkcs1);
             return Encoding.UTF8.GetString(desencr);
         }
+
+        public static string ConvierteStrToB64(this string str)
+        {
+            return Convert.ToBase64String(Encoding.ASCII.GetBytes(str));
+        }
+
+        public static string ConvierteB64ToStr(this string str)
+        {
+            return Encoding.UTF8.GetString(Convert.FromBase64String(str));
+        }
+
 
         public static string ConvierteStrToHex(string str)
         {
