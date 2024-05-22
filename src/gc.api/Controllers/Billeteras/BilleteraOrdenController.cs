@@ -73,7 +73,12 @@ namespace gc.api.Controllers.Billeteras
         public async Task<IActionResult> Get(string id)
         {
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-            var billeteras_ordenes = await _billeteras_ordenesSv.FindAsync(id);
+            var billeteras_ordenes =  _billeteras_ordenesSv.Find(id);
+            if (billeteras_ordenes == null)
+            {
+                return BadRequest("No se encontro los datos de la Orden de la Billetera");
+            }
+
             var datoDto = _mapper.Map<BilleteraOrdenDto>(billeteras_ordenes);
             var response = new ApiResponse<BilleteraOrdenDto>(datoDto);
             return Ok(response);

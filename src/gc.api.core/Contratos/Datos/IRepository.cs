@@ -18,7 +18,7 @@
         void Remove(T entity);
         List<T> EjecutarSP(string?sp, params object[] parametros);     
         SqlParameter[] InferirParametros(T entidad, IEnumerable<string>? excluir = null);
-        List<T> InvokarSp2Lst(string sp, List<SqlParameter> parametros);
+        List<T> InvokarSp2Lst(string sp, List<SqlParameter> parametros,bool ignoreCase = false);
         int InvokarSpNQuery(string sp, List<SqlParameter> parametros, bool esTransacciona = false, bool elUltimo = true);
         object InvokarSpScalar(string sp, List<SqlParameter>? parametros, bool esTransacciona = false, bool elUltimo = true,bool esSP=true);
 

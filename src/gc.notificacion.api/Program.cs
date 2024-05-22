@@ -1,6 +1,7 @@
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.EntidadesComunes.Options;
+using gc.notificacion.api.Modelo.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +29,8 @@ var app = builder.Build();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.UseMiddleware<RegisterMiddleware>();
 
 app.MapControllers();
 

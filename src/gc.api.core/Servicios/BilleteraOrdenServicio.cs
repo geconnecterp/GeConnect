@@ -5,6 +5,7 @@ using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.EntidadesComunes;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using System.Linq.Dynamic.Core;
@@ -62,7 +63,7 @@ namespace gc.api.core.Servicios
                 return (false, ConstantesGC.MensajeError.ERR_VALOR_CAMPO_CRITICO.Replace("@campo", "Ip"));
             }
 
-            var sp = ConstantesGC.StoredProcedures.SP_BILLETERA_CARGA;
+            var sp = ConstantesGC.StoredProcedures.SP_BILLETERAORD_CARGA;
 
             List<string> excluir = new List<string>() { "Bo_Id", "Boe_Id", "Bo_Carga", "Bo_Id_Ext", "Bo_Notificado", "Bo_Notificado_Desc" };
             var ps = _repository.InferirParametros(orden, excluir).ToList();
@@ -82,7 +83,7 @@ namespace gc.api.core.Servicios
 
         public (bool, string) OrdenNotificado(OrdenNotificado ordenNotificado)
         {
-            var sp = ConstantesGC.StoredProcedures.SP_BILLETERA_NOTIFICADO;
+            var sp = ConstantesGC.StoredProcedures.SP_BILLETERAORD_NOTIFICADO;
             List<SqlParameter>? ps = new List<SqlParameter>();
 
             ps.Add(new SqlParameter("@orden_id", ordenNotificado.Orden_Id));
@@ -103,7 +104,7 @@ namespace gc.api.core.Servicios
 
         public (bool, string) OrdenRegistro(OrdenRegistro ordenRegistro)
         {
-            var sp = ConstantesGC.StoredProcedures.SP_BILLETERA_REGISTRA;
+            var sp = ConstantesGC.StoredProcedures.SP_BILLETERAORD_REGISTRA;
             List<SqlParameter>? ps = new List<SqlParameter>();
 
             ps.Add(new SqlParameter("@orden_id", ordenRegistro.Orden_Id));
@@ -208,9 +209,25 @@ namespace gc.api.core.Servicios
             return paginas;
         }
 
+        public override BilleteraOrden Find(object id)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_BILLETERAORD_OBTENER_BY_ID;
+            List<SqlParameter>? ps = new List<SqlParameter>();
+
+            ps.Add(new SqlParameter("@bo_id", id.ToString()));
+
+
+            var res = _repository.InvokarSp2Lst(sp, ps, true);
+
+            if (res.Count == 0)
+            {
+                return null;
+            }
+            return res.First();
+        }
         public (bool, string) VerificaPago(string ordenId)
         {
-            var sp = ConstantesGC.StoredProcedures.SP_BILLETERA_VERIFICA_PAGO;
+            var sp = ConstantesGC.StoredProcedures.SP_BILLETERAORD_VERIFICA_PAGO;
             List<SqlParameter>? ps = new List<SqlParameter>();
 
             ps.Add(new SqlParameter("@orden_id", ordenId));

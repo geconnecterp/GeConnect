@@ -121,7 +121,7 @@ namespace gc.api.infra.Datos.Implementacion
             return parametros.ToArray();
         }
 
-        public List<T> InvokarSp2Lst(string sp, List<SqlParameter> parametros)
+        public List<T> InvokarSp2Lst(string sp, List<SqlParameter> parametros,bool ignoreCase=false)
         {
             int contador = 0;
             List<T> resultado = null;
@@ -142,7 +142,7 @@ namespace gc.api.infra.Datos.Implementacion
                     while (dr.Read())
                     {
                         contador++;
-                        resultado.Add(mapper.Map(dr));
+                        resultado.Add(mapper.Map(dr,ignoreCase));
                     }
                 }
             }

@@ -7,10 +7,11 @@
             public const string FX_PASSWORD_ENCRIPTA = "dbo.sf_pass_e";
             public const string FX_PASSWORD_DESENCRIPTA = "dbo.sf_pass_d";
 
-            public const string SP_BILLETERA_CARGA = "dbo.SP_BilleteraOrdenCarga";
-            public const string SP_BILLETERA_REGISTRA = "dbo.SP_BilleteraOrdenRegistro";
-            public const string SP_BILLETERA_NOTIFICADO = "dbo.SP_BilleteraOrdenNotificado";
-            public const string SP_BILLETERA_VERIFICA_PAGO = "dbo.SP_BilleteraOrdenVerificaPago";
+            public const string SP_BILLETERAORD_CARGA = "dbo.SP_BilleteraOrdenCarga";
+            public const string SP_BILLETERAORD_REGISTRA = "dbo.SP_BilleteraOrdenRegistro";
+            public const string SP_BILLETERAORD_NOTIFICADO = "dbo.SP_BilleteraOrdenNotificado";
+            public const string SP_BILLETERAORD_VERIFICA_PAGO = "dbo.SP_BilleteraOrdenVerificaPago";
+            public const string SP_BILLETERAORD_OBTENER_BY_ID = "dbo.SP_BilleteraOrdenById";
 
         }
 
