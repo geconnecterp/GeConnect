@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace geco_0000.Infraestructura.Datos.Configuraciones
 {
-    public class AdministracionesConfiguration : IEntityTypeConfiguration<Administracion>
+    public class AdministracionConfiguration : IEntityTypeConfiguration<Administracion>
     {
         public void Configure(EntityTypeBuilder<Administracion> builder)
         {
@@ -72,6 +72,10 @@ namespace geco_0000.Infraestructura.Datos.Configuraciones
             builder.Property(e => e.Adm_oc_limite)
                 .IsRequired()
                 .HasPrecision(10,2);
+
+            builder.Property(e => e.Adm_MePa_Id)
+                .HasMaxLength(15)
+                .IsUnicode(false);
 
         }
     }

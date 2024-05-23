@@ -24,7 +24,8 @@
         public virtual DbSet<Administracion> Administraciones { get; set; }
         public virtual DbSet<BilleteraOrden> BilleteraOrdenes { get; set; }
         public virtual DbSet<Billetera> Billeteras { get; set; }
-        public virtual DbSet<BOrdenEstado> BOrdenEstados { get; set; }
+        public virtual DbSet<BOrdenEstado> BilleteraConfiguraciones { get; set; }
+        public virtual DbSet<BilleteraConfiguracion> BOrdenEstados { get; set; }
 
 
 

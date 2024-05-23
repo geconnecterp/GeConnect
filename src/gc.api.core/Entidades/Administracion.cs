@@ -33,6 +33,7 @@ namespace gc.api.core.Entidades
         public DateTime? Lote_central_f { get; set; }
         public char Adm_activa { get; set; }
         public decimal Adm_oc_limite { get; set; }
+        public string Adm_MePa_Id { get; set; }
 
 
         //public virtual ICollection<depositos> depositoss { get; set; }
