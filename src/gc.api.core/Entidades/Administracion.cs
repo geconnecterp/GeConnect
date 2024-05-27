@@ -10,11 +10,7 @@ namespace gc.api.core.Entidades
             Adm_id = string.Empty;
             Adm_nombre = string.Empty;
             Adm_direccion = string.Empty;
-            Usu_id_encargado = string.Empty;
-            Cx_profile = string.Empty;
-            Cx_base = string.Empty;
-            Cx_login = string.Empty;
-            Cx_pass = string.Empty;
+            Usu_id_encargado = string.Empty;           
         }
 
         public string Adm_id { get; set; }
@@ -25,15 +21,21 @@ namespace gc.api.core.Entidades
         public int Adm_nro_lote_central { get; set; }
         public char Adm_central { get; set; }
         public char Cx_existe { get; set; }
-        public string Cx_profile { get; set; }
-        public string Cx_base { get; set; }
-        public string Cx_login { get; set; }
-        public string Cx_pass { get; set; }
+        public string? Cx_profile { get; set; }
+        public string? Cx_base { get; set; }
+        public string? Cx_login { get; set; }
+        public string? Cx_pass { get; set; }
         public DateTime? Lote_f { get; set; }
         public DateTime? Lote_central_f { get; set; }
         public char Adm_activa { get; set; }
         public decimal Adm_oc_limite { get; set; }
-        public string Adm_MePa_Id { get; set; }
+        public string? Adm_MePa_Id { get; set; }
+        public string Adm_Mepa_Localidad { get; set; }
+        public string Adm_Mepa_Provincia { get; set; }
+        public string Adm_Mepa_Latitud { get; set; }
+        public string Adm_Mepa_Longitud { get; set; }
+        public string Adm_Mepa_Calle { get; set; }
+        public int Adm_Mepa_Numero { get; set; }
 
 
         //public virtual ICollection<depositos> depositoss { get; set; }

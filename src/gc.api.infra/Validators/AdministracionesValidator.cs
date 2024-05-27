@@ -1,7 +1,7 @@
 namespace gc.api.infra.Validators
 {
     using FluentValidation;
-    using gc.infraestructura.Dtos;
+    using gc.infraestructura.Dtos.Administracion;
 
     public class AdministracionesValidator : AbstractValidator<AdministracionDto>
     {

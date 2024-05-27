@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace gc.infraestructura.Dtos
+namespace gc.infraestructura.Dtos.Administracion
 {
     public partial class AdministracionDto
     {
@@ -25,16 +25,21 @@ namespace gc.infraestructura.Dtos
         public int Adm_nro_lote_central { get; set; }
         public char Adm_central { get; set; }
         public char Cx_existe { get; set; }
-        public string Cx_profile { get; set; }
-        public string Cx_base { get; set; }
-        public string Cx_login { get; set; }
-        public string Cx_pass { get; set; }
+        public string? Cx_profile { get; set; }
+        public string? Cx_base { get; set; }
+        public string? Cx_login { get; set; }
+        public string? Cx_pass { get; set; }
         public DateTime? Lote_f { get; set; }
         public DateTime? Lote_central_f { get; set; }
         public char Adm_activa { get; set; }
         public decimal Adm_oc_limite { get; set; }
-        public string Adm_MePa_Id { get; set; }
-
+        public string? Adm_MePa_Id { get; set; }
+        public string Adm_Localidad { get; set; }
+        public string Adm_Provincia { get; set; }
+        public string Adm_Latitud { get; set; }
+        public string Adm_Longitud { get; set; }
+        public string Adm_Calle { get; set; }
+        public int Adm_Numero { get; set; }
 
     }
 }

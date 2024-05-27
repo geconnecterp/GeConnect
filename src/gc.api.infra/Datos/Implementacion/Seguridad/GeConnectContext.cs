@@ -26,6 +26,7 @@
         public virtual DbSet<Billetera> Billeteras { get; set; }
         public virtual DbSet<BOrdenEstado> BilleteraConfiguraciones { get; set; }
         public virtual DbSet<BilleteraConfiguracion> BOrdenEstados { get; set; }
+        public virtual DbSet<Caja> Cajas { get; set; }
 
 
 

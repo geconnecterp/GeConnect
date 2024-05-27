@@ -76,6 +76,24 @@ namespace geco_0000.Infraestructura.Datos.Configuraciones
             builder.Property(e => e.Adm_MePa_Id)
                 .HasMaxLength(15)
                 .IsUnicode(false);
+            builder.Property(e => e.Adm_Mepa_Localidad)
+                .HasMaxLength(20)
+                .IsUnicode(false);
+            builder.Property(e => e.Adm_Mepa_Provincia)
+                .HasMaxLength(20)
+                .IsUnicode(false);
+            builder.Property(e => e.Adm_Mepa_Latitud)
+                .HasMaxLength(10)
+                .IsUnicode(false);
+            builder.Property(e => e.Adm_Mepa_Longitud)
+                .HasMaxLength(10)
+                .IsUnicode(false);
+            builder.Property(e => e.Adm_Mepa_Calle)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            builder.Property(e => e.Adm_Mepa_Numero)
+               .IsRequired()
+               .HasColumnType("int");
 
         }
     }

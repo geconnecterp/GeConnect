@@ -31,6 +31,7 @@ namespace gc.api.infra.Extensions
             services.AddScoped<IBilleteraOrdenServicio, BilleteraOrdenServicio>();
             services.AddScoped<IBilleteraServicio, BilleteraServicio>();
             services.AddScoped<IBOrdenEstadoServicio, BOrdenEstadoServicio>();
+            services.AddScoped<ICajaServicio, CajaServicio>();
 
 
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
