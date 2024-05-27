@@ -106,12 +106,23 @@ namespace gc.api.core.Servicios
             var ps = new List<SqlParameter>() {
                 new("@caja_id",datos.CajaId),
                 new("@adm_id",datos.SucId),
-                new("@mepaid",datos.PosMePaId)};
+                new("@mepa_id",datos.PosMePaId)};
             var res = InvokarSpNQuery(sp, ps);
-            if(res>0)
+
+            var caja = Find(datos.SucId,datos.CajaId);
+            if(caja == null)
+            {
+                throw new NegocioException("No pudo encontrarse la caja. Verifique.");
+            }
+
+            if (caja.Caja_Mepa_Id.Equals(datos.PosMePaId))
             {
                 return true;
-            }else { throw new NegocioException("No se pudo actualizar el MePaId en la Caja"); }
+            }
+            else
+            {
+                throw new NegocioException("No se pudo actualizar el MePaId en la Caja");
+            }
         }
     }
 }
