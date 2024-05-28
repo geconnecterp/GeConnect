@@ -70,7 +70,7 @@ namespace gc.api.Controllers.Billeteras
 
         // GET api/<billeteras_ordenesController>/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(string id)
+        public IActionResult Get(string id)
         {
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
             var billeteras_ordenes =  _billeteras_ordenesSv.Find(id);
@@ -99,7 +99,7 @@ namespace gc.api.Controllers.Billeteras
         // POST api/<billeteras_ordenesController>
         [HttpPost]
         [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<IActionResult> Post([FromBody] BilleteraOrdenDto datoDto)
+        public IActionResult Post([FromBody] BilleteraOrdenDto datoDto)
         {
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
             var billeteras_ordenes = _mapper.Map<BilleteraOrden>(datoDto);

@@ -3,6 +3,7 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Linq.Dynamic.Core;
 
@@ -44,6 +45,12 @@ namespace gc.api.core.Servicios
             var paginas = PagedList<Billetera>.Create(billeterass, filters.PageNumber ?? 1, filters.PageSize ?? 20);
 
             return paginas;
+        }
+
+        public override Billetera Find(object id)
+        {
+            var bill = GetAllIq().Where(x => x.Bill_id.Equals(id.ToString()));
+            return bill.FirstOrDefaultAsync().GetAwaiter().GetResult();
         }
     }
 }

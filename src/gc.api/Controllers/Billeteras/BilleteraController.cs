@@ -15,7 +15,7 @@ namespace gc.api.Controllers.Billeteras
     using System.Reflection;
     using System.Threading.Tasks;
 
-    [Authorize]
+    //[Authorize]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
@@ -73,11 +73,10 @@ namespace gc.api.Controllers.Billeteras
         public async Task<IActionResult> Get(string id)
         {
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-            var billeteras = await _billeterasSv.FindAsync(id);
+            var billeteras = _billeterasSv.Find(id);
             var datoDto = _mapper.Map<BilleteraDto>(billeteras);
             var response = new ApiResponse<BilleteraDto>(datoDto);
             return Ok(response);
-
         }
 
 

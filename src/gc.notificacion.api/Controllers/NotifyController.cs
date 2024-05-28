@@ -6,6 +6,7 @@ using gc.infraestructura.EntidadesComunes.Options;
 using gc.notificacion.api.Modelo;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
 using System.Net;
 
@@ -18,7 +19,7 @@ namespace gc.notificacion.api.Controllers
         private ILogger<NotifyController> _logger;
         private readonly ClaveSettings _settings;
         private readonly static string RutaBillOrden = "/api/billeteraOrden";
-        private readonly static string ActionOrdenRegistro = "/OrdenNotificado";
+        private readonly static string ActionOrdenNotificado = "/OrdenNotificado";
         public NotifyController(ILogger<NotifyController> logger, IOptions<ClaveSettings> options)
         {
             _logger = logger;
@@ -44,7 +45,7 @@ namespace gc.notificacion.api.Controllers
         [HttpPost]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [Route("{orden}/mp")]
-        public IActionResult Notificar(string orden,string? source_news,string? data_id,string? id,string? type,string? topic )
+        public IActionResult Notificar(string orden)
         {
             int errorCodigo = 0;
             try
@@ -56,6 +57,16 @@ namespace gc.notificacion.api.Controllers
                 {
                     string message = $"{item.Key}-{item.Value}";
                     _logger.LogWarning(message);
+                }
+                #endregion
+
+                #region Obteniendo datos del POST
+                _logger.LogInformation("Contenido Body Post");
+                string contenido = string.Empty;
+                using (var reader = new StreamReader(HttpContext.Request.Body))
+                {
+                    contenido = reader.ReadToEndAsync().GetAwaiter().GetResult();
+                    _logger.LogInformation(contenido);
                 }
                 #endregion
 
@@ -133,76 +144,64 @@ namespace gc.notificacion.api.Controllers
                 #endregion
 
                 #region Armando Request de OrdenRegistro
-                var reg = new OrdenNotificado { Orden_Id = ord, Orden_Notificada_Ok = 'N', Orden_Id_Ext = " " };
+                var reg = new OrdenNotificado { Orden_Id = orden_id, Orden_Notificada_Ok = 'N', Orden_Id_Ext = " " };
                 #endregion
 
                 #region Validación de los datos recibidos en la notificación. comparacion del numero de recibo y los datos plano y desencrypt
                 if (nroRecibo.Equals(orden_id[..nroRecibo.Length]) && plano.Equals(desencrypt))
                 {
                     _logger.Log(LogLevel.Information, "VERIFICACIÓN COMPROBADA!!!");
-                    if (!string.IsNullOrEmpty(type))
+
+                    //debo mirar solos los topic=merchant_order
+
+
+                    qType = HttpContext.Request.Query["topic"].ToString();
+                    dataId = HttpContext.Request.Query["id"].ToString();
+
+
+                    if (!string.IsNullOrEmpty(qType.Trim()) && !string.IsNullOrEmpty(dataId.Trim()))
                     {
-                        qType = type;
-                    }
-                    else
-                    {
-                        qType = HttpContext.Request.Query["type"].ToString();
-                        if (string.IsNullOrEmpty(qType))
+                        switch (qType)
                         {
-                            qType = HttpContext.Request.Query["topic"].ToString();
+                            case "stop_delivery_op_wh":
+                                //tiene que informar inmediatamente que la tarjeta o cuenta ha sido robada.
+                                _logger.LogWarning($"Se recepciono una alerta de posible fraude. OrdenId: {ord} - DataId: {dataId} ");
+                                ActualizarOrdenEnBase(reg, token, _settings.RutaBaseServicios);
+                                return Ok();
+                            case "merchant_order":
+                            case "payment":
+                                reg.Orden_Notificada_Ok = 'S';
+                                reg.Orden_Id_Ext = dataId;
+                                _logger.LogInformation($"Se recepcionó el pago {dataId}.");
+                                var res = ActualizarOrdenEnBase(reg, token, _settings.RutaBaseServicios);
+                                try
+                                {
+                                    var billetera = ObtenerDatosBilletera("MP");
+                                    //obtener datos de la venta 
+                                    VerificaInformacionPagoMepa(dataId, billetera.Bill_User_Id, billetera.Bill_Ruta_Base, billetera.Bill_Token);
+                                }
+                                catch (Exception ex)
+                                {
+
+                                    throw;
+                                }
+                                break;
+                            default:
+                                _logger.LogWarning($"La Notificación no fue ni Payment, ni merchant_order. El tipo de notificación fue: {qType}. OrdenId: {ord} - DataId: {dataId} ");
+                                ActualizarOrdenEnBase(reg, token, _settings.RutaBaseServicios);
+                                return Ok();
                         }
                     }
-                    if (!string.IsNullOrEmpty(data_id))
-                    {
-                        dataId = data_id.ToString();
-                    }
-                    else if (!string.IsNullOrEmpty(id))
-                    {
-                        dataId = id.ToString();
-                    }
                     else
                     {
-                        dataId = HttpContext.Request.Query["data.id"].ToString();
+
+                        _logger.Log(LogLevel.Warning, "No se verificó la autenticidad del mensaje");
+                        reg.Orden_Notificada_Ok = 'N';
+                        var res = ActualizarOrdenEnBase(reg, token, _settings.RutaBaseServicios);
                     }
-
-                    switch (qType)
-                    {
-                        case "stop_delivery_op_wh":
-                            //tiene que informar inmediatamente que la tarjeta o cuenta ha sido robada.
-                            _logger.LogWarning($"Se recepciono una alerta de posible fraude. OrdenId: {ord} - DataId: {dataId} ");
-                            ActualizarOrdenEnBase(reg, token, _settings.RutaBaseServicios);
-                            return Ok();
-                        case "merchant_order":
-                        case "payment":
-                            reg.Orden_Notificada_Ok = 'S';
-                            reg.Orden_Id_Ext = dataId;
-                            var res = ActualizarOrdenEnBase(reg, token, _settings.RutaBaseServicios);
-                            try
-                            {
-                                //obtener datos de la venta 
-                            }
-                            catch (Exception ex)
-                            {
-
-                                throw;
-                            }
-                            break;
-                        default:
-                            _logger.LogWarning($"La Notificación no fue ni Payment, ni merchant_order. El tipo de notificación fue: {qType}. OrdenId: {ord} - DataId: {dataId} ");
-                            ActualizarOrdenEnBase(reg, token, _settings.RutaBaseServicios);
-                            return Ok();
-                    }
+                    #endregion
+                    //2-se toma el dato encryptado y se desencryptará. La misma se deberá comparar con el valor 
                 }
-                else
-                {
-
-                    _logger.Log(LogLevel.Warning, "No se verificó la autenticidad del mensaje");
-                    reg.Orden_Notificada_Ok = 'N';
-                    var res = ActualizarOrdenEnBase(reg, token, _settings.RutaBaseServicios);
-                }
-                #endregion
-                //2-se toma el dato encryptado y se desencryptará. La misma se deberá comparar con el valor 
-
             }
             catch (Exception ex)
             {
@@ -212,8 +211,47 @@ namespace gc.notificacion.api.Controllers
             return Ok();
         }
 
+        private BilleteraDto ObtenerDatosBilletera(string bill)
+        {
+            ApiResponse<BilleteraDto> response;
+            HelperAPI helper = new HelperAPI();
+            HttpClient client = helper.InicializaCliente("");
+            HttpResponseMessage resp;
+            string link = $"{_settings.RutaBaseServicios}/api/billetera/{bill}";
+            resp = client.GetAsync(link).GetAwaiter().GetResult();
+            if (resp.StatusCode == HttpStatusCode.OK)
+            {
+                string dataString = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                response = JsonConvert.DeserializeObject<ApiResponse<BilleteraDto>>(dataString);
+                return response.Data;
+            }
+            else
+            {
+                throw new Exception("No se pudo obtener los datos base de la billetera.");
+            }
+        }
+
+        private void VerificaInformacionPagoMepa(string dataId, string userId, string rutaBase, string token)
+        {
+
+            HelperAPI helper = new HelperAPI();
+            HttpClient client = helper.InicializaCliente(token);
+            string link = $"{rutaBase}/merchant_orders/{dataId}";
+            HttpResponseMessage response = client.GetAsync(link).GetAwaiter().GetResult();
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                //se recepcionan los datos. 
+                string dataString = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                PagoMepaDto pago = JsonConvert.DeserializeObject<PagoMepaDto>(dataString);
+
+
+                _logger.LogInformation(JsonConvert.SerializeObject(pago));
+                //se debe tomar los datos de la entidad y se deben resguardar 
+            }
+        }
+
         private async Task<BilleteraOrdenDto> ObtenerDatosPorBoId(string bo_id, string token, string rutaBaseApi)
-        {           
+        {
             HttpResponseMessage response;
             HelperAPI helperAPI = new HelperAPI();
             HttpClient client = helperAPI.InicializaCliente(token);
@@ -247,21 +285,15 @@ namespace gc.notificacion.api.Controllers
 
         private (bool, string) ActualizarOrdenEnBase(OrdenNotificado ordenNotifica, string token, string rutaBaseApi)
         {
-            ApiResponse<(bool, string)> respuesta = null;
+            _logger.LogInformation($"Por actualizar notificacion-{JsonConvert.SerializeObject(ordenNotifica)}");
+            ApiResponse<(bool, string)> respuesta;
             HttpResponseMessage response;
-            HelperAPI helperAPI = new HelperAPI();
+            HelperAPI helperAPI = new();
             HttpClient client = helperAPI.InicializaCliente(ordenNotifica, token, out StringContent contentData);
-            string link = $"{rutaBaseApi}{RutaBillOrden}{ActionOrdenRegistro}/{ordenNotifica.Orden_Id}";
-            try
-            {
-                response = client.PutAsync(link, contentData).GetAwaiter().GetResult();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error al intentar actualizar el registro de la orden {ordenNotifica.Orden_Id}");
+            string link = $"{rutaBaseApi}{RutaBillOrden}{ActionOrdenNotificado}/{ordenNotifica.Orden_Id}";
 
-                throw;
-            }
+            response = client.PutAsync(link, contentData).GetAwaiter().GetResult();
+
             if (response.StatusCode == HttpStatusCode.OK)
             {
                 respuesta = ExtraeContentRespuesta<ApiResponse<(bool, string)>>(response).GetAwaiter().GetResult();
@@ -277,19 +309,12 @@ namespace gc.notificacion.api.Controllers
 
         }
 
-        private static async Task<T> ExtraeContentRespuesta<T>(HttpResponseMessage response)
+        private async Task<T> ExtraeContentRespuesta<T>(HttpResponseMessage response)
         {
             string stringData = await response.Content.ReadAsStringAsync();
-
+            _logger.LogInformation(stringData);
             T respuesta = JsonConvert.DeserializeObject<T>(stringData);
             return respuesta;
         }
-        //private static async Task<ApiResponse<BilleteraOrdenDto>> ExtraeContentRespuesta(ApiResponse<BilleteraOrdenDto> respuesta, HttpResponseMessage response)
-        //{
-        //    string stringData = await response.Content.ReadAsStringAsync();
-
-        //    respuesta = JsonSerializer.Deserialize<ApiResponse<BilleteraOrdenDto>>(stringData);
-        //    return respuesta;
-        //}
     }
 }
