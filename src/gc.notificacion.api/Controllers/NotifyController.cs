@@ -177,9 +177,13 @@ namespace gc.notificacion.api.Controllers
                                 {
                                     var billetera = ObtenerDatosBilletera("MP");
                                     //obtener datos de la venta 
-                                    var resMepa = VerificaInformacionPagoMepa(dataId, billetera.Bill_User_Id, billetera.Bill_Ruta_Base, billetera.Bill_Token); 
-                                    reg.ResponseMepa = resMepa;
-                                    var res = ActualizarOrdenEnBase(reg, token, _settings.RutaBaseServicios);
+                                    var resMepa = VerificaInformacionPagoMepa(dataId, billetera.Bill_User_Id, billetera.Bill_Ruta_Base, billetera.Bill_Token);
+                                    if (resMepa.Item1)
+                                    {
+                                        reg.ResponseMepa = resMepa.Item2;
+                                        var res = ActualizarOrdenEnBase(reg, token, _settings.RutaBaseServicios);
+                                    }
+                                    
                                 }
                                 catch (Exception ex)
                                 {
@@ -232,7 +236,7 @@ namespace gc.notificacion.api.Controllers
             }
         }
 
-        private string VerificaInformacionPagoMepa(string dataId, string userId, string rutaBase, string token)
+        private (bool, string) VerificaInformacionPagoMepa(string dataId, string userId, string rutaBase, string token)
         {
 
             HelperAPI helper = new HelperAPI();
@@ -243,14 +247,15 @@ namespace gc.notificacion.api.Controllers
             {
                 //se recepcionan los datos. 
                 string dataString = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                //PagoMepaDto pago = JsonConvert.DeserializeObject<PagoMepaDto>(dataString);
+                PagoMepaDto pago = JsonConvert.DeserializeObject<PagoMepaDto>(dataString);
 
-
-                _logger.LogInformation(JsonConvert.SerializeObject(dataString));
-                //se debe tomar los datos de la entidad y se deben resguardar 
-                return dataString;
+                if (pago.status.Equals("closed"))
+                {
+                    _logger.LogInformation(JsonConvert.SerializeObject(dataString));
+                    return (true, dataString);
+                }                
             }
-            return string.Empty;
+            return (false,string.Empty);
         }
 
         private async Task<BilleteraOrdenDto> ObtenerDatosPorBoId(string bo_id, string token, string rutaBaseApi)
