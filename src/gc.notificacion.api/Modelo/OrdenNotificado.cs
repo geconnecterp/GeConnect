@@ -8,6 +8,7 @@
     public class OrdenNotificado : OrdenBase
     {
         public char Orden_Notificada_Ok { get; set; }
+        public string? ResponseMepa {  get; set; }
     }
 
     public class OrdenRegistro : OrdenBase

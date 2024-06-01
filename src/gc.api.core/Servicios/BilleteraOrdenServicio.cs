@@ -89,6 +89,7 @@ namespace gc.api.core.Servicios
             ps.Add(new SqlParameter("@orden_id", ordenNotificado.Orden_Id));
             ps.Add(new SqlParameter("@orden_notificada_ok", ordenNotificado.Orden_Notificada_Ok));
             ps.Add(new SqlParameter("@orden_id_ext", ordenNotificado.Orden_Id_Ext));
+            ps.Add(new SqlParameter("@response_mepa", ordenNotificado.ResponseMepa));
 
             var res = _repository.InvokarSpScalar(sp, ps);
 

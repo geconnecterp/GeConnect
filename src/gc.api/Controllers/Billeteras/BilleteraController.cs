@@ -73,8 +73,9 @@ namespace gc.api.Controllers.Billeteras
         public async Task<IActionResult> Get(string id)
         {
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-            var billeteras = _billeterasSv.Find(id);
-            var datoDto = _mapper.Map<BilleteraDto>(billeteras);
+            var billeteras = _billeterasSv.FindBilletera(id);
+            var datoDto = _mapper.Map<BilleteraDto>(billeteras.Item1);            
+            datoDto.Bill_Ruta_PublicKey = billeteras.Item2;
             var response = new ApiResponse<BilleteraDto>(datoDto);
             return Ok(response);
         }

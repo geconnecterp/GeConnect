@@ -34,12 +34,12 @@ namespace gc.infraestructura.Dtos.Administracion
         public char Adm_activa { get; set; }
         public decimal Adm_oc_limite { get; set; }
         public string? Adm_MePa_Id { get; set; }
-        public string Adm_Localidad { get; set; }
-        public string Adm_Provincia { get; set; }
-        public string Adm_Latitud { get; set; }
-        public string Adm_Longitud { get; set; }
-        public string Adm_Calle { get; set; }
-        public int Adm_Numero { get; set; }
+        public string Adm_Mepa_Localidad { get; set; }
+        public string Adm_Mepa_Provincia { get; set; }
+        public string Adm_Mepa_Latitud { get; set; }
+        public string Adm_Mepa_Longitud { get; set; }
+        public string Adm_Mepa_Calle { get; set; }
+        public int Adm_Mepa_Numero { get; set; }
 
     }
 }

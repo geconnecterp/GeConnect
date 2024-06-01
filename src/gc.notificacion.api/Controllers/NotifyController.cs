@@ -51,13 +51,13 @@ namespace gc.notificacion.api.Controllers
             try
             {
                 #region Se logea los headers
-                _logger.LogInformation("Headers");
+                //_logger.LogInformation("Headers");
 
-                foreach (var item in HttpContext.Request.Headers)
-                {
-                    string message = $"{item.Key}-{item.Value}";
-                    _logger.LogWarning(message);
-                }
+                //foreach (var item in HttpContext.Request.Headers)
+                //{
+                //    string message = $"{item.Key}-{item.Value}";
+                //    _logger.LogWarning(message);
+                //}
                 #endregion
 
                 #region Obteniendo datos del POST
@@ -97,7 +97,6 @@ namespace gc.notificacion.api.Controllers
                     hex = orden.Substring(8 + lg1);
 
                     #endregion
-
 
                     //se obtiene el bo_id
                     orden_id = HelperGen.ConvierteHexToStr(ord);
@@ -173,12 +172,14 @@ namespace gc.notificacion.api.Controllers
                                 reg.Orden_Notificada_Ok = 'S';
                                 reg.Orden_Id_Ext = dataId;
                                 _logger.LogInformation($"Se recepcionó el pago {dataId}.");
-                                var res = ActualizarOrdenEnBase(reg, token, _settings.RutaBaseServicios);
+                               
                                 try
                                 {
                                     var billetera = ObtenerDatosBilletera("MP");
                                     //obtener datos de la venta 
-                                    VerificaInformacionPagoMepa(dataId, billetera.Bill_User_Id, billetera.Bill_Ruta_Base, billetera.Bill_Token);
+                                    var resMepa = VerificaInformacionPagoMepa(dataId, billetera.Bill_User_Id, billetera.Bill_Ruta_Base, billetera.Bill_Token); 
+                                    reg.ResponseMepa = resMepa;
+                                    var res = ActualizarOrdenEnBase(reg, token, _settings.RutaBaseServicios);
                                 }
                                 catch (Exception ex)
                                 {
@@ -231,7 +232,7 @@ namespace gc.notificacion.api.Controllers
             }
         }
 
-        private void VerificaInformacionPagoMepa(string dataId, string userId, string rutaBase, string token)
+        private string VerificaInformacionPagoMepa(string dataId, string userId, string rutaBase, string token)
         {
 
             HelperAPI helper = new HelperAPI();
@@ -242,12 +243,14 @@ namespace gc.notificacion.api.Controllers
             {
                 //se recepcionan los datos. 
                 string dataString = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                PagoMepaDto pago = JsonConvert.DeserializeObject<PagoMepaDto>(dataString);
+                //PagoMepaDto pago = JsonConvert.DeserializeObject<PagoMepaDto>(dataString);
 
 
-                _logger.LogInformation(JsonConvert.SerializeObject(pago));
+                _logger.LogInformation(JsonConvert.SerializeObject(dataString));
                 //se debe tomar los datos de la entidad y se deben resguardar 
+                return dataString;
             }
+            return string.Empty;
         }
 
         private async Task<BilleteraOrdenDto> ObtenerDatosPorBoId(string bo_id, string token, string rutaBaseApi)

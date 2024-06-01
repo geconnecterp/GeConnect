@@ -1,3 +1,5 @@
+using System.Diagnostics.SymbolStore;
+
 namespace gc.infraestructura.Dtos.Billeteras
 {
     public partial class BilleteraDto
@@ -14,5 +16,6 @@ namespace gc.infraestructura.Dtos.Billeteras
         public string Bill_Token { get; set; }
         public string Bill_Url_Base_Notificacion { get; set; }
         public string Bill_Ruta_Api_Notificacion { get; set; }
+        public string Bill_Ruta_PublicKey{ get; set; }
     }
 }

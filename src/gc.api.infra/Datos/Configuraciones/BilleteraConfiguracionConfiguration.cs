@@ -12,18 +12,6 @@ namespace gc.api.infra.Datos.Configuraciones
 
             builder.HasKey(e => e.Bc_Id);
 
-
-            builder.Property(e => e.Bc_Url_Base_Notificacion)
-                 .IsRequired()
-                 .HasMaxLength(50)
-                 .IsUnicode(false);
-
-
-            builder.Property(e => e.Bc_Url_Base_Servicio)
-                 .HasMaxLength(50)
-                 .IsUnicode(false);
-
-
             builder.Property(e => e.Bc_Ruta_Publickey)
                  .HasMaxLength(50)
                  .IsUnicode(false);

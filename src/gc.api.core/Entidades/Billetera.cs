@@ -15,6 +15,7 @@ namespace gc.api.core.Entidades
         public string Bill_Token { get; set; }
         public string Bill_Url_Base_Notificacion { get; set; }
         public string Bill_Ruta_Api_Notificacion { get; set; }
+        //public string Bill_Ruta_PublicKey { get; set; }
 
         public virtual ICollection<BilleteraOrden> Billeteras_ordeness { get; set; }
 

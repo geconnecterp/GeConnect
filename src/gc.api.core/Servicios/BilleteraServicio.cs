@@ -47,10 +47,15 @@ namespace gc.api.core.Servicios
             return paginas;
         }
 
-        public override Billetera Find(object id)
+        public (Billetera, string) FindBilletera(string id)
         {
-            var bill = GetAllIq().Where(x => x.Bill_id.Equals(id.ToString()));
-            return bill.FirstOrDefaultAsync().GetAwaiter().GetResult();
+            var bills = GetAllIq().Where(x => x.Bill_id.Equals(id));
+            var bill = bills.FirstOrDefaultAsync().GetAwaiter().GetResult();
+
+            var _repPK = _uow.GetRepository<BilleteraConfiguracion>();
+            var bcs = _repPK.GetAll().Where(c => c.Bc_Id.Equals("0001"));
+            var publicKey = bcs.First().Bc_Ruta_Publickey;
+            return (bill, publicKey);
         }
     }
 }

@@ -34,16 +34,6 @@ namespace geco_0000.Core.Servicios
 
             if (!string.IsNullOrEmpty(filters.Search))
             {
-                billetera_configuracions = billetera_configuracions.Where(r => r.Bc_Url_Base_Notificacion.Contains(filters.Search));
-            }
-
-            if (!string.IsNullOrEmpty(filters.Search))
-            {
-                billetera_configuracions = billetera_configuracions.Where(r => r.Bc_Url_Base_Servicio.Contains(filters.Search));
-            }
-
-            if (!string.IsNullOrEmpty(filters.Search))
-            {
                 billetera_configuracions = billetera_configuracions.Where(r => r.Bc_Ruta_Publickey.Contains(filters.Search));
             }
 
