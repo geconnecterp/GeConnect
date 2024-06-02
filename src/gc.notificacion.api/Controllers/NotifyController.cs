@@ -172,7 +172,7 @@ namespace gc.notificacion.api.Controllers
                                 reg.Orden_Notificada_Ok = 'S';
                                 reg.Orden_Id_Ext = dataId;
                                 _logger.LogInformation($"Se recepcionó el pago {dataId}.");
-                               
+
                                 try
                                 {
                                     var billetera = ObtenerDatosBilletera("MP");
@@ -180,14 +180,28 @@ namespace gc.notificacion.api.Controllers
                                     var resMepa = VerificaInformacionPagoMepa(dataId, billetera.Bill_User_Id, billetera.Bill_Ruta_Base, billetera.Bill_Token);
                                     if (resMepa.Item1)
                                     {
-                                        reg.ResponseMepa = resMepa.Item2;
+                                        if (qType.Equals("payment"))
+                                        {
+                                            //solo informaremos para que tenga en cuenta el pago
+                                            reg.Status = "payment";
+                                        }
+                                        else
+                                        {
+                                            reg.ResponseMepa = resMepa.Item2.Item1; //resguardamos el stringData (Json recepcionado desde MePa)
+                                            //son merchant_order
+                                            reg.Status = resMepa.Item2.Item2; //obtenemos el status de la operacion de orden merchant_order
+                                        }
+                                       
                                         var res = ActualizarOrdenEnBase(reg, token, _settings.RutaBaseServicios);
+                                        if (reg.Status.Equals("closed"))
+                                        {
+                                            reg.Status = "ok";    
+                                            ActualizarOrdenEnBase(reg, token, _settings.RutaBaseServicios);
+                                        }
                                     }
-                                    
                                 }
                                 catch (Exception ex)
                                 {
-
                                     throw;
                                 }
                                 break;
@@ -236,7 +250,7 @@ namespace gc.notificacion.api.Controllers
             }
         }
 
-        private (bool, string) VerificaInformacionPagoMepa(string dataId, string userId, string rutaBase, string token)
+        private (bool, (string, string)) VerificaInformacionPagoMepa(string dataId, string userId, string rutaBase, string token)
         {
 
             HelperAPI helper = new HelperAPI();
@@ -249,13 +263,11 @@ namespace gc.notificacion.api.Controllers
                 string dataString = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
                 PagoMepaDto pago = JsonConvert.DeserializeObject<PagoMepaDto>(dataString);
 
-                if (pago.status.Equals("closed"))
-                {
-                    _logger.LogInformation(JsonConvert.SerializeObject(dataString));
-                    return (true, dataString);
-                }                
+
+                _logger.LogInformation(JsonConvert.SerializeObject(dataString));
+                return (true, (dataString, pago.status));
             }
-            return (false,string.Empty);
+            return (false, (string.Empty, string.Empty));
         }
 
         private async Task<BilleteraOrdenDto> ObtenerDatosPorBoId(string bo_id, string token, string rutaBaseApi)
