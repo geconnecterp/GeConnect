@@ -90,8 +90,8 @@ namespace gc.api.Controllers.Billeteras
         [Route("[action]/{ordenId}")]
         public IActionResult VerificaPago(string ordenId)
         {
-            (bool,string) res = _billeteras_ordenesSv.VerificaPago(ordenId); // TODO
-            var response = new ApiResponse<(bool,string)>(res); 
+            (bool, (string, string)) res = _billeteras_ordenesSv.VerificaPago(ordenId); // TODO
+            var response = new ApiResponse<(bool, (string, string))>(res); 
             return Ok(response);
         }
 

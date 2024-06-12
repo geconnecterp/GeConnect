@@ -8,6 +8,6 @@ namespace gc.api.core.Contratos.Servicios
         (bool,string) CargarOrden(BilleteraOrden orden);
         (bool, string) OrdenNotificado(OrdenNotificado ordenNotificado);
         (bool, string) OrdenRegistro(OrdenRegistro ordenRegistro);
-        (bool, string) VerificaPago(string ordenId);
+        (bool, (string, string)) VerificaPago(string ordenId);
     }
 }

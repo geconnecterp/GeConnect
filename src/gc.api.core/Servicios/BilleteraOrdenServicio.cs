@@ -227,7 +227,7 @@ namespace gc.api.core.Servicios
             }
             return res.First();
         }
-        public (bool, string) VerificaPago(string ordenId)
+        public (bool, (string, string)) VerificaPago(string ordenId)
         {
             var sp = ConstantesGC.StoredProcedures.SP_BILLETERAORD_VERIFICA_PAGO;
             List<SqlParameter>? ps = new List<SqlParameter>();
@@ -239,11 +239,12 @@ namespace gc.api.core.Servicios
 
             if (res.GetType().Name.Equals("DBNull"))
             {
-                return (false, "");
+                return (false, ("", ""));
             }
             else
             {
-                return (true, (string)res);
+                var datos = res.ToString().Split('|');
+                return (true, (datos[0], datos[1]));
             }
         }
     }
