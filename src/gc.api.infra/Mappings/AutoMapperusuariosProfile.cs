@@ -8,9 +8,9 @@ namespace gc.api.infra.Mappings
     {
         public AutoMapperusuariosProfile()
         {
-            CreateMap<Usuario, UsuariosDto>()
+            CreateMap<Usuario, UsuarioDto>()
 ;
-            CreateMap<UsuariosDto, Usuario>();
+            CreateMap<UsuarioDto, Usuario>();
 
         }
     }

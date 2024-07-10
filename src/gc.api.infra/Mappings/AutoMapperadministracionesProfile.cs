@@ -8,9 +8,12 @@ namespace gc.api.infra.Mappings
     {
         public AutoMapperadministracionesProfile()
         {
-            CreateMap<Administracion, AdministracionDto>()
-;
+            CreateMap<Administracion, AdministracionDto>();
             CreateMap<AdministracionDto, Administracion>();
+
+            CreateMap<Administracion,AdministracionLoginDto>()
+                .ForMember(dest=>dest.Id, org=>org.MapFrom(src=>src.Adm_id))
+                .ForMember(dest=>dest.Descripcion,org=>org.MapFrom(src=>src.Adm_nombre));
 
         }
     }

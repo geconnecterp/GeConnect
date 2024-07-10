@@ -1,0 +1,27 @@
+﻿<!--(Nombre modulo,(NN))-->
+@model string
+@{
+    string nombre = User.Identity.Name;
+}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <dir class="card-header" style="background-color:orangered;color:#000">
+                <div class="row">
+                    <div class="col-6 align-content-start">GECOPocket</div>
+                    <div class="col-6 align-content-end">@nombre</div>
+                </div>
+            </dir>
+            <div class="card-body" style="background-color:orange;color:#000">
+                <div class="row">
+                    <div class="col-9 align-content-center">
+                        @Model.ToUpper()
+                    </div>
+                    <div class="col-3 align-content-end">
+                        @* <button type="button" class="btn rounded-pill btn-danger btn-xs"><icon class="bx bx-arrow-back btn-xs"></icon><span class="tf-icon bx bx-arrow-back me-1"></span>Volver</button> *@
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

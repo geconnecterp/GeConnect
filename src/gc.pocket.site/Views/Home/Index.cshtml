@@ -1,0 +1,29 @@
+﻿@{
+    ViewData["Title"] = "Página Inicial";
+    var botones = ViewBag.Botones as List<AppItem>;
+    var subtitulo = "Opciones";
+}
+@if (User.Identity.IsAuthenticated)
+{
+    <div class="text-center">
+        <h1 class="display-4">Bienvenido a GECONet</h1>
+        <p>Menú Principal</p>
+    </div>
+    <partial name="_headerApp" model="@subtitulo"/>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">                
+                <div class="card-body">
+                    @await Component.InvokeAsync("MenuPpal")
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="text-center">
+        <h1 class="display-4">Bienvenido a GECONet</h1>
+        <p>Sistema para la gestión y control de <strong>almacenamientos</strong>.</p>
+    </div>    
+}

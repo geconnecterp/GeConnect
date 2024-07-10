@@ -7,6 +7,7 @@ namespace gc.api.Controllers.Codigos
     using gc.infraestructura.Core.Interfaces;
     using gc.infraestructura.Core.Responses;
     using gc.infraestructura.Dtos.Administracion;
+    using log4net.Filter;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json;
@@ -78,6 +79,19 @@ namespace gc.api.Controllers.Codigos
             var response = new ApiResponse<AdministracionDto>(datoDto);
             return Ok(response);
 
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<IEnumerable<AdministracionLoginDto>>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        public IActionResult GetAdministraciones4Login()
+        {
+            var administracioness = _adminSv.GetAll(new QueryFilters());
+            var combo = _mapper.Map<List<AdministracionLoginDto>>(administracioness);
+
+            var response = new ApiResponse<List<AdministracionLoginDto>>(combo);
+            return Ok(response);
         }
 
         [HttpPost]

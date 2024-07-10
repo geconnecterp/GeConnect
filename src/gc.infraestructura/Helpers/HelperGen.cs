@@ -102,7 +102,8 @@ namespace gc.infraestructura.Core.Helpers
 
         public static string ObtenerFechaEnTexto(DateTime fecha)
         {
-            return string.Format("{0} de {1} de {2}", fecha.Day, Meses[fecha.Month - 1], fecha.Year);
+            var txt= $"{fecha.Day} de {Meses[fecha.Month - 1]} de {fecha.Year}";
+            return txt;
         }
 
 

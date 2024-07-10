@@ -14,6 +14,7 @@ namespace gc.api.core.Entidades
         public string TipoDocumento { get; set; } = "00";
         public string Documento { get; set; } = string.Empty;
         public string? Correo { get; set; }
+        public string? Adm_id { get; set; }
         //public string? Role { get; set; }
     }
 }

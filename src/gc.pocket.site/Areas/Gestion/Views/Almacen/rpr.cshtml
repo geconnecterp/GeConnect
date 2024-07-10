@@ -1,0 +1,12 @@
+﻿@model GridCore<ProductoDto>
+
+@{
+
+    Layout = "_Layout";
+
+
+    var appItem = ViewBag.AppItem as AppItem;
+}
+
+<partial name="_headerApp" model="@appItem.Nombre" />
+<partial name="_gridRprAutorizados" model="Model" />

@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="log4net" Version="2.0.17" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Log4Net.AspNetCore" Version="8.0.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.2" />
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.4.3" />
+    <PackageReference Include="X.PagedList.Mvc.Core" Version="8.4.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Areas\Gestion\Data\" />
+    <Folder Include="Areas\Gestion\Models\" />
+    <Folder Include="Areas\Gestion\Views\Shared\" />
+    <Folder Include="Areas\Seguridad\Data\" />
+    <Folder Include="Areas\Seguridad\Models\" />
+    <Folder Include="Areas\Seguridad\Views\Shared\" />
+    <Folder Include="wwwroot\js\app\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\gc.api.infra\gc.api.infra.csproj" />
+    <ProjectReference Include="..\gc.infraestructura\gc.infraestructura.csproj" />
+    <ProjectReference Include="..\gc.sitio.core\gc.sitio.core.csproj" />
+  </ItemGroup>
+
+  
+
+ 
+
+</Project>

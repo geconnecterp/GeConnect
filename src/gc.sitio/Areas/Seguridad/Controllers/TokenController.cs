@@ -25,6 +25,7 @@ namespace gc.sitio.Areas.Seguridad.Controllers
         private readonly IConfiguration _configuration;
         private readonly ILoggerHelper _logger;
         private readonly AppSettings _appSettings;
+       
 
         public TokenController(IConfiguration configuration, ILoggerHelper logger, IOptions<AppSettings> options) : base(options)
         {
@@ -36,6 +37,7 @@ namespace gc.sitio.Areas.Seguridad.Controllers
         [HttpGet]
         public IActionResult Login()
         {
+            
             return View();
         }
 

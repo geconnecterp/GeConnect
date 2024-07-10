@@ -4,7 +4,7 @@ using System.Text;
 
 namespace gc.infraestructura.Dtos.Administracion
 {
-    public partial class AdministracionDto
+    public partial class AdministracionDto:Dto
     {
         public AdministracionDto()
         {

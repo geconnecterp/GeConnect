@@ -3,9 +3,9 @@ namespace gc.api.infra.Validators
     using FluentValidation;
     using gc.infraestructura.Dtos.Cajas;
 
-    public class cajasValidator : AbstractValidator<CajaDto>
+    public class CajaValidator : AbstractValidator<CajaDto>
     {
-        public cajasValidator()
+        public CajaValidator()
         {
             RuleFor(p => p.Caja_Id).NotNull().Length(4, 4);
             RuleFor(p => p.Adm_Id).NotNull().Length(4, 4);

@@ -10,7 +10,17 @@ namespace gc.api.core.Entidades
             Adm_id = string.Empty;
             Adm_nombre = string.Empty;
             Adm_direccion = string.Empty;
-            Usu_id_encargado = string.Empty;           
+            Usu_id_encargado = string.Empty;
+            Cx_profile = string.Empty;
+            Cx_base = string.Empty;
+            Cx_login = string.Empty;
+            Cx_pass = string.Empty;
+            Adm_MePa_Id = string.Empty;
+            Adm_Mepa_Localidad = string.Empty;
+            Adm_Mepa_Provincia = string.Empty;
+            Adm_Mepa_Latitud = string.Empty;
+            Adm_Mepa_Longitud = string.Empty;
+            Adm_Mepa_Calle = string.Empty;
         }
 
         public string Adm_id { get; set; }

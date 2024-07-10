@@ -2,13 +2,12 @@
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
-using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.ViewModels;
 using gc.sitio.core.Servicios.Contratos;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Diagnostics;
 using System.Net;
 using System.Reflection;
 using System.Text.Json;
@@ -18,17 +17,17 @@ namespace gc.sitio.core.Servicios.Implementacion
     public class Servicio<T>:IServicio<T> where T : Dto
     {
         private readonly AppSettings appSettings;
-        private readonly ILoggerHelper _logger;
+        protected readonly ILogger _logger;
         private string _rutaEntidad;
 
-        public Servicio(IOptions<AppSettings> options, ILoggerHelper logger, string rutaEntidad)
+        public Servicio(IOptions<AppSettings> options, ILogger logger, string rutaEntidad)
         {
             appSettings = options.Value;
             _logger = logger;
             _rutaEntidad = rutaEntidad;
         }
 
-        public Servicio(IOptions<AppSettings> options, ILoggerHelper logger)
+        public Servicio(IOptions<AppSettings> options, ILogger logger)
         {
             appSettings = options.Value;
             _logger = logger;
@@ -40,7 +39,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             ApiResponse<List<T>> respuesta;
             HttpClient client;
             HelperAPI helperAPI = new HelperAPI();
-            _logger.Log(TraceEventType.Information, $"Buscando todas los coeficientes '{_rutaEntidad}'");
+            _logger.LogInformation( $"Buscando todas los coeficientes '{_rutaEntidad}'");
             if (!string.IsNullOrWhiteSpace(token))
             {
                 client = helperAPI.InicializaCliente(token);
@@ -48,7 +47,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             else { throw new NegocioException("Hay un problema al intentar generar la conexión. JWT."); 
             }
             HttpResponseMessage response = client.GetAsync($"{appSettings.RutaBase}{_rutaEntidad}").Result;
-            _logger.Log(TraceEventType.Information, $"Response: {JsonSerializer.Serialize(response)}");
+            _logger.LogInformation($"Response: {JsonSerializer.Serialize(response)}");
             if (response.StatusCode == HttpStatusCode.OK)
             {
                 string stringData = await response.Content.ReadAsStringAsync();
@@ -87,21 +86,21 @@ namespace gc.sitio.core.Servicios.Implementacion
             try
             {
                 HelperAPI helperAPI = new HelperAPI();
-                _logger.Log(TraceEventType.Information, $"Buscando todos los Items '{_rutaEntidad}' - Filtro: {JsonSerializer.Serialize(filters)}");
+                _logger.LogInformation($"Buscando todos los Items '{_rutaEntidad}' - Filtro: {JsonSerializer.Serialize(filters)}");
                 HttpClient client = helperAPI.InicializaCliente(token);
 
                 HttpResponseMessage response;
                 if (filters.Todo)
                 {
                     response = await client.GetAsync($"{appSettings.RutaBase}{_rutaEntidad}");
-                    _logger.Log(TraceEventType.Information, $"Response: {JsonSerializer.Serialize(response)}");
+                    _logger.LogInformation($"Response: {JsonSerializer.Serialize(response)}");
                 }
                 else
                 {
                     var link = $"{appSettings.RutaBase}{_rutaEntidad}?{EvaluarQueryFilter(filters)}";
 
                     response = await client.GetAsync(link);
-                    _logger.Log(TraceEventType.Information, $"Response: {JsonSerializer.Serialize(response)}");
+                    _logger.LogInformation($"Response: {JsonSerializer.Serialize(response)}");
                 }
 
                 if (response.StatusCode == HttpStatusCode.OK)
@@ -128,7 +127,8 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
             catch (Exception ex)
             {
-                throw _logger.Log(ex);
+                _logger.LogError(ex, "Error al Buscar");
+                throw;
             }
         }
         //public virtual async Task<(List<T>, Metadata)> BuscarAsync(ProductFilters filters, string token)
@@ -192,7 +192,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             try
             {
                 HelperAPI helperAPI = new HelperAPI();
-                _logger.Log(TraceEventType.Information, $"Buscando todos los Items '{_rutaEntidad}'");
+                _logger.LogInformation($"Buscando todos los Items '{_rutaEntidad}'");
                 HttpClient client = helperAPI.InicializaCliente(token);
 
                 HttpResponseMessage response;
@@ -200,7 +200,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 string link = $"{appSettings.RutaBase}{_rutaEntidad}/{id}";
 
                 response = await client.GetAsync(link);
-                _logger.Log(TraceEventType.Information, $"Response: {JsonSerializer.Serialize(response)}");
+                _logger.LogInformation($"Response: {JsonSerializer.Serialize(response)}");
 
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
@@ -225,7 +225,8 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
             catch (Exception ex)
             {
-                throw _logger.Log(ex);
+                _logger.LogError(ex, "Error al Buscar");
+                throw;
             }
         }
         public virtual async Task<T> BuscarUnoAsync(string token)
@@ -236,14 +237,14 @@ namespace gc.sitio.core.Servicios.Implementacion
             try
             {
                 HelperAPI helperAPI = new HelperAPI();
-                _logger.Log(TraceEventType.Information, $"Buscando todos los Items '{_rutaEntidad}'");
+                _logger.LogInformation($"Buscando todos los Items '{_rutaEntidad}'");
                 HttpClient client = helperAPI.InicializaCliente(token); ;
 
                 HttpResponseMessage response;
                 string link = $"{appSettings.RutaBase}{_rutaEntidad}";
 
                 response = await client.GetAsync(link);
-                _logger.Log(TraceEventType.Information, $"Response: {JsonSerializer.Serialize(response)}");
+                _logger.LogInformation($"Response: {JsonSerializer.Serialize(response)}");
 
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
@@ -268,7 +269,8 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
             catch (Exception ex)
             {
-                throw _logger.Log(ex);
+                _logger.LogError(ex, "Error al Buscar Uno");
+                throw;
             }
         }
         public string EvaluarQueryFilter(QueryFilters filters)
@@ -409,7 +411,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             cadena += $"{prop.Name}={valor}";
         }
 
-        public virtual async Task<bool> AgregarAsync(T entidad, string token)
+        public virtual async Task<bool> AgregarAsync(T entidad, string token)   
         {
             ValidaToken(token);
 
@@ -417,8 +419,8 @@ namespace gc.sitio.core.Servicios.Implementacion
             try
             {
                 HelperAPI helperAPI = new HelperAPI();
-                _logger.Log(TraceEventType.Information, "Agregando los datos de la entidad.");
-                _logger.Log(TraceEventType.Information, $"A Agregar: {JsonSerializer.Serialize(entidad)}");
+                _logger.LogInformation("Agregando los datos de la entidad.");
+                _logger.LogInformation($"A Agregar: {JsonSerializer.Serialize(entidad)}");
 
                 HttpClient client = helperAPI.InicializaCliente(entidad, token, out StringContent content);
                 client.BaseAddress = new Uri(appSettings.RutaBase);
@@ -429,7 +431,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     string stringData = await response.Content.ReadAsStringAsync();
-                    _logger.Log(TraceEventType.Information, $"stringData: {stringData}");
+                    _logger.LogInformation($"stringData: {stringData}");
 
                     respuesta = JsonSerializer.Deserialize<ApiResponse<bool>>(stringData);
                     return respuesta.Data;
@@ -446,14 +448,16 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
             catch (Exception ex)
             {
-                throw _logger.Log(ex);
+                _logger.LogError(ex, "Error al Agregar");
+                throw;
+
             }
         }
 
         protected async Task ParseoError(HttpResponseMessage response)
         {
             string stringData = await response.Content.ReadAsStringAsync();
-            _logger.Log(TraceEventType.Information, $"stringData: {stringData}");
+            _logger.LogInformation($"stringData: {stringData}");
             ErrorExceptionValidation resp = JsonSerializer.Deserialize<ErrorExceptionValidation>(stringData);
             if (resp.Error != null)
             {
@@ -485,20 +489,20 @@ namespace gc.sitio.core.Servicios.Implementacion
             try
             {
                 HelperAPI helperAPI = new HelperAPI();
-                _logger.Log(TraceEventType.Information, "Actualizando los datos de la entidad");
-                _logger.Log(TraceEventType.Information, $"A Modificar: {JsonSerializer.Serialize(entidad)}");
+                _logger.LogInformation("Actualizando los datos de la entidad");
+                _logger.LogInformation($"A Modificar: {JsonSerializer.Serialize(entidad)}");
                 HttpClient client = helperAPI.InicializaCliente(entidad, token, out StringContent content);
                 client.BaseAddress = new Uri(appSettings.RutaBase);
 
                 var link = $"{_rutaEntidad}/{id}";
 
                 HttpResponseMessage response = await client.PutAsync(link, content);
-                _logger.Log(TraceEventType.Information, $"Response: {JsonSerializer.Serialize(response)}");
+                _logger.LogInformation($"Response: {JsonSerializer.Serialize(response)}");
 
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     string stringData = await response.Content.ReadAsStringAsync();
-                    _logger.Log(TraceEventType.Information, $"String Response: {stringData}");
+                    _logger.LogInformation($"String Response: {stringData}");
                     respuesta = JsonSerializer.Deserialize<ApiResponse<bool>>(stringData);
                     return respuesta.Data;
                 }
@@ -509,7 +513,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 else
                 {
                     string stringData = await response.Content.ReadAsStringAsync();
-                    _logger.Log(TraceEventType.Information, $"stringData: {stringData}");
+                    _logger.LogInformation($"stringData: {stringData}");
 
                     if (!string.IsNullOrWhiteSpace(stringData))
                     {
@@ -543,7 +547,8 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
             catch (Exception ex)
             {
-                throw _logger.Log(ex);
+                _logger.LogError(ex, "Error al Actualizar");
+                throw;
             }
         }
 
@@ -580,19 +585,19 @@ namespace gc.sitio.core.Servicios.Implementacion
             try
             {
                 HelperAPI helperAPI = new HelperAPI();
-                _logger.Log(TraceEventType.Information, $"Eliminando datos. Id:{id}");
+                _logger.LogInformation($"Eliminando datos. Id:{id}");
                 HttpClient client = helperAPI.InicializaCliente(token);
                 client.BaseAddress = new Uri(appSettings.RutaBase);
                 HttpResponseMessage response;
                 var link = $"{_rutaEntidad}/{id}";
 
                 response = await client.DeleteAsync(link);
-                _logger.Log(TraceEventType.Information, $"Response: {JsonSerializer.Serialize(response)}");
+                _logger.LogInformation($"Response: {JsonSerializer.Serialize(response)}");
 
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     string stringData = await response.Content.ReadAsStringAsync();
-                    _logger.Log(TraceEventType.Information, $"String Response: {stringData}");
+                    _logger.LogInformation($"String Response: {stringData}");
                     respuesta = JsonSerializer.Deserialize<ApiResponse<bool>>(stringData);
                     return respuesta.Data;
                 }
@@ -619,7 +624,8 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
             catch (Exception ex)
             {
-                throw _logger.Log(ex);
+                _logger.LogError(ex, "Error al Eliminar");
+                throw ;
             }
         }
 

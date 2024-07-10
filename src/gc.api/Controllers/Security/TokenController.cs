@@ -3,9 +3,6 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Servicios;
 using gc.api.infra.Datos.Contratos.Security;
 using gc.infraestructura.Core.EntidadesComunes.Options;
-using gc.infraestructura.Core.Exceptions;
-using gc.infraestructura.Core.Responses;
-using gc.infraestructura.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -37,6 +34,7 @@ namespace gc.api.Controllers.Security
             _passwordService = passwordService;
             _logger = logger;
         }
+
         [HttpPost]
         public async Task<IActionResult> Authentication(UserLogin login)
         {
@@ -137,7 +135,7 @@ namespace gc.api.Controllers.Security
             return (isValid, user);
         }
 
-        private string GenerateToken(Usuario usuario)
+        private string GenerateToken(Usuario usuario)/*,string admId*/
         {
             _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
             bool first = true;
@@ -174,8 +172,9 @@ namespace gc.api.Controllers.Security
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, usuario.Usu_id),
-                new Claim(ClaimTypes.Name,usuario.Usu_apellidoynombre),
+                new Claim("nya",usuario.Usu_apellidoynombre),
                 new Claim(ClaimTypes.Email,usuario.Usu_email),
+                //new Claim("Adm_id",admId),
                 //new Claim("Id",usuario.Id.ToString()),
                 //new Claim(ClaimTypes.Role,sRoles),
             };

@@ -1,5 +1,7 @@
 ﻿using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Interfaces;
+using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Implementacion;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,6 +13,8 @@ namespace gc.sitio.core.Extensions
         {
             services.AddSingleton<ILoggerHelper, LoggerHelper>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddScoped<IAdministracionServicio,AdministracionServicio>();
+            services.AddScoped<ITipoDocumentoServicio, TipoDocumentoServicio>();
 
             return services;
         }

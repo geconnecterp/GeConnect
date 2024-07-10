@@ -1,0 +1,24 @@
+﻿<li class="nav-item navbar-dropdown dropdown-user dropdown">
+    <a class="nav-link dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+        <div class="avatar">
+            <img src="~/img/avatars/avatar.png" alt class="w-px-40 h-auto rounded-circle" />
+        </div>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end">
+        <li>
+            <a class="dropdown-item">
+                <i class="bx bx-user me-2"></i>
+                <span class="align-middle">Debe Autenticarse</span>
+            </a>
+        </li>
+        <li>
+            <div class="dropdown-divider"></div>
+        </li>
+        <li class="align-content-center">
+            <a asp-action="login" asp-controller="token" asp-area="seguridad" class="dropdown-item">
+                <i class="bx bx-log-in-circle me-2"></i>
+                <span class="align-middle">Ingresar</span>
+            </a>
+        </li>
+    </ul>
+</li>

@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using gc.infraestructura.Core.Helpers;
+using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 
 namespace gc.infraestructura.Dtos.Seguridad
 {
@@ -21,7 +23,10 @@ namespace gc.infraestructura.Dtos.Seguridad
         public string? Password { get; set; }
 
         [Required]
-        [Display(Name ="Administración")]
-        public string Adm_id {  get; set; }
+        [Display(Name = "Administración")]
+        public string Admid { get; set; }
+
+        public DateTime Fecha { get; set; }
+        public string FechaNN { get { return Fecha.ToString("g", System.Globalization.CultureInfo.CreateSpecificCulture("es-ES")); } }
     }
 }
