@@ -5,11 +5,15 @@
 }
 @if (User.Identity.IsAuthenticated)
 {
+    string nya = User.Claims.First(c => c.Type.Contains("nya")).Value;
+
+    var modelHeader = (subtitulo, (nya, "#"));
+
     <div class="text-center">
         <h1 class="display-4">Bienvenido a GECONet</h1>
         <p>Menú Principal</p>
     </div>
-    <partial name="_headerApp" model="@subtitulo"/>
+    <partial name="_headerApp" model="@modelHeader"/>
     <div class="row">
         <div class="col-12">
             <div class="card">                

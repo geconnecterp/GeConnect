@@ -1,4 +1,5 @@
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.EntidadesComunes.Options;
 using gc.pocket.site.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -18,6 +19,7 @@ namespace gc.pocket.site.Controllers
         public IActionResult Index(string error = "", string warn = "", string info = "")
         {
             PresentaMensaje(error, warn, info);
+            ViewBag.Botones =new  List<AppItem>();
             return View();
         }
 

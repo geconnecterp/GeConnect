@@ -25,3 +25,15 @@ body {
     width:77px;
     margin:2px;
 }
+
+.textoEncabezado{
+    font-weight:600;
+    font-size: 1em;
+}
+
+@media screen and (max-width: 480px){
+    .textoEncabezado {
+        font-weight: 500;
+        font-size: 0.7em;
+    }
+}

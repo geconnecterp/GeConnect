@@ -17,11 +17,14 @@ namespace gc.infraestructura.EntidadesComunes.Options
 
     public class AppItem
     {
+
         public int Orden { get; set; }
-        public string Nombre { get; set; }
-        public string Sigla { get; set; }
-        public string Color { get; set; }
-        public string Url { get; set; }
+        public string Nombre { get; set; }=string.Empty;
+        public string Sigla { get; set; } = string.Empty;
+        public string Color { get; set; } = string.Empty;
+        public string Url { get; set; } = string.Empty;
         public bool ConContraste { get; set; }
+        public int str { get; set; }
+        public List<AppItem> Aplicaciones { get; set; } = new();
     }
 }
