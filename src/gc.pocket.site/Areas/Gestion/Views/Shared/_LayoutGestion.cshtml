@@ -4,7 +4,7 @@
     var appItem = ViewBag.AppItem as AppItem;
     var nombre = User.Claims.First(c => c.Type.Contains("nya")).Value;
     // <!--(Nombre modulo,(NN,url))-->
-    (string, (string, string)) model = (Model.Nombre, (nombre, Model.Url));
+    (string, (string, string)) model = (appItem.Nombre, (nombre, appItem.Url));
 }
 
 <partial name="_headerApp" model="model" />
