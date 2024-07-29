@@ -30,16 +30,16 @@ namespace gc.pocket.site.Areas.Seguridad.Controllers
         private readonly IConfiguration _configuration;
         private readonly ILogger<TokenController> _logger;
         private readonly IAdministracionServicio _admSv;
-        private readonly IHttpContextAccessor _contexto;
+        private readonly IHttpContextAccessor _context;
 
         public TokenController(IConfiguration configuration, ILogger<TokenController> logger, 
             IOptions<AppSettings> options, IAdministracionServicio servicio,
-            IHttpContextAccessor contexto) : base(options)
+            IHttpContextAccessor context) : base(options,context)
         {
             _configuration = configuration;
             _logger = logger;
             _admSv = servicio;
-            _contexto = contexto;
+            _context = context;
 
         }
 
@@ -155,8 +155,8 @@ namespace gc.pocket.site.Areas.Seguridad.Controllers
                         var etiqueta = $"{user}";
 
                         var principal = new ClaimsPrincipal(new[] { identity });
-                        await _contexto.HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
-                        _contexto.HttpContext.Response.Cookies.Append(etiqueta, token, cookieOptions);
+                        await _context.HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
+                        _context.HttpContext.Response.Cookies.Append(etiqueta, token, cookieOptions); //se resguarda el token con el nombre del usuario
                         //if (roleUser[0].Equals(RolesUsuario.VENDEDOR.ToString()))
                         //{
                         //    return RedirectToAction("Venta", new RouteValueDictionary(new { area = "Salon", controller = "Bandeja", action = "Venta" }));

@@ -1,4 +1,4 @@
-namespace geco_0000.API.Controllers.Codigos
+namespace gc.api.Controllers.Codigos
 {
     using AutoMapper;
     using gc.api.core.Contratos.Servicios;
@@ -22,11 +22,11 @@ namespace geco_0000.API.Controllers.Codigos
     public class TipoDocumentoController : ControllerBase
     {
         private readonly IMapper _mapper;
-        private Itipos_documentosServicio _tipos_documentosSv;
+        private ITiposDocumentoServicio _tipos_documentosSv;
         private readonly IUriService _uriService;
         private readonly ILogger<TipoDocumentoController> _logger;
 
-        public TipoDocumentoController(Itipos_documentosServicio servicio, IMapper mapper, IUriService uriService, ILogger<TipoDocumentoController> logger)
+        public TipoDocumentoController(ITiposDocumentoServicio servicio, IMapper mapper, IUriService uriService, ILogger<TipoDocumentoController> logger)
         {
             _tipos_documentosSv = servicio;
             _mapper = mapper;
@@ -40,7 +40,7 @@ namespace geco_0000.API.Controllers.Codigos
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public IActionResult Gettipos_documentoss([FromQuery] QueryFilters filters)
         {
-            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
             var tipos_documentoss = _tipos_documentosSv.GetAll(filters);
             var tipos_documentosDtos = _mapper.Map<IEnumerable<TipoDocumentoDto>>(tipos_documentoss);
 
@@ -73,7 +73,7 @@ namespace geco_0000.API.Controllers.Codigos
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(string id)
         {
-            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
             var tipos_documentos = await _tipos_documentosSv.FindAsync(id);
             var datoDto = _mapper.Map<TipoDocumentoDto>(tipos_documentos);
             var response = new ApiResponse<TipoDocumentoDto>(datoDto);
@@ -87,7 +87,7 @@ namespace geco_0000.API.Controllers.Codigos
         [Authorize]
         public async Task<IActionResult> Post(TipoDocumentoDto datoDto)
         {
-            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
             var tipos_documentos = _mapper.Map<TipoDocumento>(datoDto);
             var res = await _tipos_documentosSv.AddAsync(tipos_documentos);
 
@@ -101,7 +101,7 @@ namespace geco_0000.API.Controllers.Codigos
         [Authorize]
         public async Task<IActionResult> Put(string id, [FromBody] TipoDocumentoDto datoDto)
         {
-            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
             var tipos_documentos = _mapper.Map<TipoDocumento>(datoDto);
             tipos_documentos.Tdoc_Id = id; //garantizo que el id buscado es el que se envia al negocio
             var result = await _tipos_documentosSv.Update(tipos_documentos);
@@ -115,7 +115,7 @@ namespace geco_0000.API.Controllers.Codigos
         [Authorize]
         public async Task<IActionResult> Delete(string id)
         {
-            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
             var res = await _tipos_documentosSv.Delete(id);
             var response = new ApiResponse<bool>(res);
             return Ok(response);

@@ -8,7 +8,7 @@ using System.Linq.Dynamic.Core;
 
 namespace gc.api.core.Servicios
 {
-    public class TipoDocumentoServicio : Servicio<TipoDocumento>, Itipos_documentosServicio
+    public class TipoDocumentoServicio : Servicio<TipoDocumento>, ITiposDocumentoServicio
     {
         public TipoDocumentoServicio(IUnitOfWork uow, IOptions<PaginationOptions> options) : base(uow, options)
         {

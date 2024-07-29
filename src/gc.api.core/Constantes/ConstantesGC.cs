@@ -15,7 +15,7 @@
 
             public const string SP_ADMINISTRACION_ACTUALIZA_MEPAID = "dbo.SP_AdministracionActualizaIdMePa";
             public const string SP_CAJA_ACTUALIZA_MEPAID = "dbo.SP_CajaActualizaIdMePa";
-
+            public const string SP_PROVEEDOR_LISTA= "dbo.SPGECO_Proveedores_lista";
         }
 
         public static class MensajeError

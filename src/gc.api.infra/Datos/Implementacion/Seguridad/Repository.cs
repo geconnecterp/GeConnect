@@ -1,20 +1,18 @@
 ﻿
 namespace gc.api.infra.Datos.Implementacion
 {
-    using Microsoft.EntityFrameworkCore;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using gc.api.core.Interfaces.Datos;
     using gc.api.core.Entidades;
-    using System.Data;
-    using log4net.Core;
-    using Microsoft.Extensions.Logging;
+    using gc.api.core.Interfaces.Datos;
     using gc.api.infra.Datos.Contratos;
     using gc.infraestructura.Helpers;
     using Microsoft.Data.SqlClient;
+    using Microsoft.EntityFrameworkCore;
+    using System;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
 
     public class Repository<T> : IRepository<T> where T : EntidadBase
     {
@@ -23,7 +21,7 @@ namespace gc.api.infra.Datos.Implementacion
         public Repository(GeConnectContext contexto)
         {
             _contexto = contexto;
-            _dbContext = new DataConnectionContext(contexto);            
+            _dbContext = new DataConnectionContext(contexto);
         }
 
         public T Find(object id)
@@ -58,14 +56,12 @@ namespace gc.api.infra.Datos.Implementacion
 
         public void Remove(T entity)
         {
-           if(_contexto.Entry(entity).State== Microsoft.EntityFrameworkCore.EntityState.Detached)
+            if (_contexto.Entry(entity).State == Microsoft.EntityFrameworkCore.EntityState.Detached)
             {
                 _contexto.Set<T>().Attach(entity);
             }
             _contexto.Set<T>().Remove(entity);
         }
-
-       
 
 
         public List<T> EjecutarSP(string? sp, params object[] parametros)
@@ -82,6 +78,7 @@ namespace gc.api.infra.Datos.Implementacion
             StringBuilder sb = new StringBuilder(sp + " ");
             bool first = true;
 
+
             foreach (SqlParameter p in parametros)
             {
                 if (first)
@@ -94,6 +91,7 @@ namespace gc.api.infra.Datos.Implementacion
                 }
                 sb.Append(p.ParameterName);
             }
+
 
             return sb;
         }
@@ -121,7 +119,7 @@ namespace gc.api.infra.Datos.Implementacion
             return parametros.ToArray();
         }
 
-        public List<T> InvokarSp2Lst(string sp, List<SqlParameter> parametros,bool ignoreCase=false)
+        public List<T> InvokarSp2Lst(string sp, List<SqlParameter> parametros, bool ignoreCase = false)
         {
             int contador = 0;
             List<T> resultado = null;
@@ -142,7 +140,7 @@ namespace gc.api.infra.Datos.Implementacion
                     while (dr.Read())
                     {
                         contador++;
-                        resultado.Add(mapper.Map(dr,ignoreCase));
+                        resultado.Add(mapper.Map(dr, ignoreCase));
                     }
                 }
             }
@@ -197,14 +195,14 @@ namespace gc.api.infra.Datos.Implementacion
 
             cmd.CommandText = sp;
 
-            if (parametros!=null)
+            if (parametros != null)
             {
                 foreach (var p in parametros)
                 {
                     cmd.Parameters.Add(p);
                 }
             }
-            
+
             //si es TRANSACCIONAL la conexion ya fue abierta al momento de generar la conexion y definir la transaccion para la operacion actual.
             if (!esTransacciona)
             {

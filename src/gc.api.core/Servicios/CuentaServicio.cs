@@ -1,0 +1,158 @@
+using gc.api.core.Contratos.Servicios;
+using gc.api.core.Entidades;
+using gc.api.core.Interfaces.Datos;
+using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos.Almacen;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Options;
+
+using System.Linq.Dynamic.Core;
+
+namespace gc.api.core.Servicios
+{
+    public class CuentaServicio : Servicio<Cuenta>, ICuentaServicio
+    {
+        public CuentaServicio(IUnitOfWork uow, IOptions<PaginationOptions> options) : base(uow, options)
+        {
+
+        }
+
+        public override PagedList<Cuenta> GetAll(QueryFilters filters)
+        {
+            filters.PageNumber = filters.PageNumber == default ? _paginationOptions.DefaultPageNumber : filters.PageNumber;
+            filters.PageSize = filters.PageSize == default ? _paginationOptions.DefaultPageSize : filters.PageSize;
+
+            var cuentass = GetAllIq();
+            cuentass = cuentass.OrderBy($"{filters.Sort} {filters.SortDir}");
+
+            if (!filters.Todo)
+            {
+                if (filters.Id != null && filters.Id != default)
+                {
+                    cuentass = cuentass.Where(r => r.Cta_Id == (string)filters.Id);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(filters.Search))
+            {
+                cuentass = cuentass.Where(r => r.Cta_Id.Contains(filters.Search));
+            }
+
+            if (!string.IsNullOrEmpty(filters.Search))
+            {
+                cuentass = cuentass.Where(r => r.Cta_Denominacion.Contains(filters.Search));
+            }
+
+            if (!string.IsNullOrEmpty(filters.Search))
+            {
+                cuentass = cuentass.Where(r => r.Tdoc_Id.Contains(filters.Search));
+            }
+
+            if (!string.IsNullOrEmpty(filters.Search))
+            {
+                cuentass = cuentass.Where(r => r.Cta_Documento.Contains(filters.Search));
+            }
+
+            if (!string.IsNullOrEmpty(filters.Search))
+            {
+                cuentass = cuentass.Where(r => r.Cta_Domicilio.Contains(filters.Search));
+            }
+
+            if (!string.IsNullOrEmpty(filters.Search))
+            {
+                cuentass = cuentass.Where(r => r.Cta_Localidad.Contains(filters.Search));
+            }
+
+            if (!string.IsNullOrEmpty(filters.Search))
+            {
+                cuentass = cuentass.Where(r => r.Cta_Cpostal.Contains(filters.Search));
+            }
+
+            if (!string.IsNullOrEmpty(filters.Search))
+            {
+                cuentass = cuentass.Where(r => r.Dep_Id.Contains(filters.Search));
+            }
+
+            if (!string.IsNullOrEmpty(filters.Search))
+            {
+                cuentass = cuentass.Where(r => r.Cta_Te.Contains(filters.Search));
+            }
+
+            if (!string.IsNullOrEmpty(filters.Search))
+            {
+                cuentass = cuentass.Where(r => r.Cta_Celu.Contains(filters.Search));
+            }
+
+            if (!string.IsNullOrEmpty(filters.Search))
+            {
+                cuentass = cuentass.Where(r => r.Cta_Email.Contains(filters.Search));
+            }
+
+            if (!string.IsNullOrEmpty(filters.Search))
+            {
+                cuentass = cuentass.Where(r => r.Cta_Www.Contains(filters.Search));
+            }
+
+            if (!string.IsNullOrEmpty(filters.Search))
+            {
+                cuentass = cuentass.Where(r => r.Afip_Id.Contains(filters.Search));
+            }
+
+            if (!string.IsNullOrEmpty(filters.Search))
+            {
+                cuentass = cuentass.Where(r => r.Nj_Id.Contains(filters.Search));
+            }
+
+            if (!string.IsNullOrEmpty(filters.Search))
+            {
+                cuentass = cuentass.Where(r => r.Cta_Ib_Nro.Contains(filters.Search));
+            }
+
+            if (!string.IsNullOrEmpty(filters.Search))
+            {
+                cuentass = cuentass.Where(r => r.Cta_Bco_Cuenta_Nro.Contains(filters.Search));
+            }
+
+            if (!string.IsNullOrEmpty(filters.Search))
+            {
+                cuentass = cuentass.Where(r => r.Cta_Bco_Cuenta_Cbu.Contains(filters.Search));
+            }
+
+            if (!string.IsNullOrEmpty(filters.Search))
+            {
+                cuentass = cuentass.Where(r => r.Cta_Obs.Contains(filters.Search));
+            }
+
+            if (!string.IsNullOrEmpty(filters.Search))
+            {
+                cuentass = cuentass.Where(r => r.Cta_Emp_Legajo.Contains(filters.Search));
+            }
+
+            if (!string.IsNullOrEmpty(filters.Search))
+            {
+                cuentass = cuentass.Where(r => r.Cta_Emp_Ctaf.Contains(filters.Search));
+            }
+
+            var paginas = PagedList<Cuenta>.Create(cuentass, filters.PageNumber ?? 1, filters.PageSize ?? 20);
+
+            return paginas;
+        }
+
+        public List<ProveedorListaDto> GetProveedorLista()
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_PROVEEDOR_LISTA;
+            var ps = new List<SqlParameter>();  
+            var res = _repository.InvokarSp2Lst(sp,ps,true);
+
+            if(res.Count == 0)
+            {
+                return new List<ProveedorListaDto>();
+            }
+            else
+            {
+                return res.Select(x => new ProveedorListaDto() { Cta_Id = x.Cta_Id,Cta_Denominacion=x.Cta_Denominacion,}).ToList();
+            }
+        }
+    }
+}

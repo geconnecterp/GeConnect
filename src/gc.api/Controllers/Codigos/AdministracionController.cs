@@ -2,19 +2,15 @@ namespace gc.api.Controllers.Codigos
 {
     using AutoMapper;
     using gc.api.core.Contratos.Servicios;
-    using gc.api.core.Entidades;
     using gc.infraestructura.Core.EntidadesComunes;
     using gc.infraestructura.Core.Interfaces;
     using gc.infraestructura.Core.Responses;
     using gc.infraestructura.Dtos.Administracion;
-    using log4net.Filter;
-    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json;
     using System.Collections.Generic;
     using System.Net;
     using System.Reflection;
-    using System.Threading.Tasks;
 
     //[Authorize]
     [Produces("application/json")]

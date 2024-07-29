@@ -1,10 +1,64 @@
 ﻿@model List<ProductoDto>
 
+@{
+    Layout = "_LayoutGestion";
+    // string nya = User.Claims.First(c => c.Type.Contains("nya")).Value;
+    // var modelHeader = ("", (nya, "#"));
+}
+@* <partial name="_headerApp" model="@modelHeader" /> *@
 <div class="row">
-    <div class="col-12">
+    <div class="col-sm-12 bg-white border border-secondary p-0 mt-3">
         <div class="card">
-            <div class="card-header"></div>
-            <div class="card-body"></div>
+            <div class="card-header">
+                <h3>Busqueda de Productos</h3>
+            </div>
+            <div class="card-body">
+                <div class="row gy-3">
+                    <div class="col-sm-6">
+                        <small class="fw-medium">Proveedor</small>
+                        <input type="text" class="form-control-sm input-group" name="ProveedorNombre" id="ProveedorNombre" />
+                        @Html.Hidden("proveedorId")
+
+                        @* <select class="form-select form-select-sm mb-3 input-group"></select> *@
+                        @* @Html.DropDownList("Proveedores", null, "seleccionar...", new { @class = "form-select form-select-sm mb-1 input-group" }) *@
+                        <small class="fw-medium">Rubro</small>
+                        <select class="form-select form-select-sm mb-3 input-group"></select>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="chkActivos" checked />
+                            <label class="form-check-label" for="chkActivos">Activos</label>
+                        </div>
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="chkDisc" />
+                            <label class="form-check-label" for="chkDisc">Discontinuos</label>
+                        </div>
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="chkInact" />
+                            <label class="form-check-label" for="chkInact">Inactivos</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" name="ckStk" type="radio" value="" id="rdConStk" checked>
+                            <label class="form-check-label" for="rdConStk">Con Stk</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" name="ckStk" type="radio" value="" id="rdSinStk">
+                            <label class="form-check-label" for="rdSinStk">Sin Stk</label>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
 </div>
+
+
+@section scripts {
+    <script type="text/javascript">
+        // var buscarProveedorUrl = "@Url.Action("Buscar", "proveedor", new { area = "gestion" })";
+        var buscarProveedorUrl = "/BuscarProveedor";
+        
+    </script>
+    <script src="~/js/app/busquedas.js" type="text/javascript"></script>
+}

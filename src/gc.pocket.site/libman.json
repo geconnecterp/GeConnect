@@ -19,6 +19,31 @@
         "js/messageboxes.min.js",
         "js/notifications.min.js"
       ]
+    },
+    {
+      "library": "jqueryui@1.13.3",
+      "destination": "wwwroot/lib/jqueryui/",
+      "files": [
+        "jquery-ui.min.js",
+        "themes/sunny/images/ui-icons_fadc7a_256x240.png",
+        "themes/sunny/images/ui-icons_ed9f26_256x240.png",
+        "themes/sunny/images/ui-icons_eb990f_256x240.png",
+        "themes/sunny/images/ui-icons_d19405_256x240.png",
+        "themes/sunny/images/ui-icons_bd7b00_256x240.png",
+        "themes/sunny/images/ui-icons_3d3d3d_256x240.png",
+        "themes/sunny/images/ui-bg_inset-soft_30_ffffff_1x100.png",
+        "themes/sunny/images/ui-bg_highlight-soft_100_feeebd_1x100.png",
+        "themes/sunny/images/ui-bg_gloss-wave_90_fff9e5_500x100.png",
+        "themes/sunny/images/ui-bg_gloss-wave_70_ffdd57_500x100.png",
+        "themes/sunny/images/ui-bg_gloss-wave_60_fece2f_500x100.png",
+        "themes/sunny/images/ui-bg_gloss-wave_45_817865_500x100.png",
+        "themes/sunny/images/ui-bg_diagonals-medium_20_d34d17_40x40.png",
+        "themes/sunny/theme.min.css",
+        "themes/sunny/theme.css",
+        "themes/sunny/jquery-ui.min.css",
+        "themes/sunny/jquery-ui.css",
+        "themes/sunny/images/ui-icons_ffe180_256x240.png"
+      ]
     }
   ]
 }

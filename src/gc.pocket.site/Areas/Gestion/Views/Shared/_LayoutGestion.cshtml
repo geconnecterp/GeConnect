@@ -1,12 +1,64 @@
 ﻿@{
-    Layout = "_Layout";
+
 
     var appItem = ViewBag.AppItem as AppItem;
     var nombre = User.Claims.First(c => c.Type.Contains("nya")).Value;
-    // <!--(Nombre modulo,(NN,url))-->
-    (string, (string, string)) model = (appItem.Nombre, (nombre, appItem.Url));
+    (string, (string, string)) model;
+    if (appItem == null)
+    {
+        model = ("", (nombre, "#"));
+    }
+    else
+    {
+        // <!--(Nombre modulo,(NN,url))-->
+        model = (appItem.Nombre, (nombre, appItem.Url));
+    }
 }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - gc.pocket.site</title>
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/core.css" />
+    <link rel="stylesheet" href="~/css/theme-default.css" />
+    <link rel="stylesheet" href="~/lib/lobibox/css/lobibox.min.css" />
+    <link rel="stylesheet" href="~/lib/jqueryui/themes/sunny/jquery-ui.min.css" />
+    <link rel="stylesheet" href="~/lib/jqueryui/themes/sunny/theme.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/gc.pocket.site.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <partial name="_headerApp" model="model" />
+    <div class="container" id="formulario" style="display:none">
+        <main role="main" class="pb-0">
+            @RenderBody()
+        </main>
+    </div>
 
-<partial name="_headerApp" model="model" />
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2024 - GECONet POCKET Site - <a asp-area="" asp-controller="Home" asp-action="Privacy">Normativas</a>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jqueryui/jquery-ui.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/lobibox/js/lobibox.min.js"></script>
+    <script src="~/lib/popper.js/umd/popper.min.js"></script>
+    <script src="~/lib/lobibox/js/messageboxes.min.js"></script>
+    <script src="~/lib/lobibox/js/notifications.min.js"></script>
 
-@RenderBody()
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+    <script type="text/javascript">
+        var MensajeErrorTempData = '@TempData["error"]';
+        var MensajeInfoTempData = '@TempData["info"]';
+        var MensajeWarnTempData = '@TempData["warn"]';
+        var MensajeSuccessTempData = '@TempData["succ"]';
+        var MensajeBlock = "<h3><i class='bx bx-loader-circle bx-spin'></i> Por favor, espere...</h3>";
+    </script>
+</body>
+</html>

@@ -22,7 +22,6 @@
     <Folder Include="Areas\Seguridad\Data\" />
     <Folder Include="Areas\Seguridad\Models\" />
     <Folder Include="Areas\Seguridad\Views\Shared\" />
-    <Folder Include="wwwroot\js\app\" />
   </ItemGroup>
 
   <ItemGroup>

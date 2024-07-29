@@ -11,7 +11,7 @@ namespace gc.pocket.site.Controllers
     {
         private readonly ILogger<HomeController> _logger;
 
-        public HomeController(ILogger<HomeController> logger,IOptions<AppSettings> options):base(options) 
+        public HomeController(ILogger<HomeController> logger,IOptions<AppSettings> options, IHttpContextAccessor context) :base(options,context) 
         {
             _logger = logger;
         }

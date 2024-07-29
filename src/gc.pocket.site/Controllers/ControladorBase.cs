@@ -1,31 +1,36 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.EntidadesComunes;
 using gc.infraestructura.EntidadesComunes.Options;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq.Dynamic.Core;
 
 namespace gc.pocket.site.Controllers
 {
-    public class ControladorBase:Controller
+    public class ControladorBase : Controller
     {
         private readonly AppSettings _options;
         private readonly MenuSettings? _menuSettings;
+        private readonly IHttpContextAccessor _context;
         public List<Orden> _orden;
 
-        
-        public ControladorBase(IOptions<AppSettings> options, IOptions<MenuSettings> options1)
+
+        public ControladorBase(IOptions<AppSettings> options, IOptions<MenuSettings> options1, IHttpContextAccessor contexto)
         {
             _options = options.Value;
             _menuSettings = options1.Value;
+            _context = contexto;
         }
-        public ControladorBase(IOptions<AppSettings> options)
+        public ControladorBase(IOptions<AppSettings> options, IHttpContextAccessor contexto)
         {
             _options = options.Value;
             _menuSettings = null;
+            _context = contexto;
         }
 
         protected AppItem ObtenerModulo(string sigla)
@@ -45,7 +50,7 @@ namespace gc.pocket.site.Controllers
 
         public string Token
         {
-            get { return HttpContext.Session.GetString("JwtToken"); }
+            get { return _context.HttpContext.Session.GetString("JwtToken"); }
 
             set { HttpContext.Session.SetString("JwtToken", value); }
         }
@@ -55,7 +60,7 @@ namespace gc.pocket.site.Controllers
             get
             {
                 string etiqueta = $"{User.Identity.Name}";
-                return HttpContext.Request.Cookies[etiqueta];
+                return _context.HttpContext.Request.Cookies[etiqueta];
             }
 
         }
@@ -159,6 +164,23 @@ namespace gc.pocket.site.Controllers
                 var usuario = tokenS.Claims.First(c => c.Type.Contains("User")).Value;
                 if (string.IsNullOrEmpty(usuario)) { return string.Empty; }
                 return usuario;
+            }
+        }
+
+        public List<ProveedorListaDto> ProveedoresLista
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("ProveedoresLista");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json)) { 
+                    return new List<ProveedorListaDto>();
+                }
+                return JsonConvert.DeserializeObject<List<ProveedorListaDto>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("ProveedoresLista", json);
             }
         }
 

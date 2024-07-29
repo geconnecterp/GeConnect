@@ -27,6 +27,9 @@
         public virtual DbSet<BOrdenEstado> BilleteraConfiguraciones { get; set; }
         public virtual DbSet<BilleteraConfiguracion> BOrdenEstados { get; set; }
         public virtual DbSet<Caja> Cajas { get; set; }
+        public virtual DbSet<Proveedor> Proveedores { get; set; }
+        public virtual DbSet<Producto> Productos { get; set; }
+        public virtual DbSet<Cuenta> Cuentas { get; set; }
 
 
 
