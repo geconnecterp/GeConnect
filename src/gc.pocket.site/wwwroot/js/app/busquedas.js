@@ -6,7 +6,7 @@
             data = { prefix: request.term }
             $.ajax({
                 url: buscarProveedorUrl,
-                type: "GET",
+                type: "POST",
                 dataType: "json",
                 data: data,
                 success: function (obj) {
@@ -19,8 +19,32 @@
         },
         minLength: 3,
         select: function (event, ui) {
-            $("#proveedorId").val(ui.item.cta_Id);
+            $("#proveedorId").val(ui.item.id);
+            return true;
         }
     });
 
+
+    $("#RubroNombre").autocomplete({
+        source: function (request, response) {
+            data = { prefix: request.term }
+            $.ajax({
+                url: buscarProveedorUrl,
+                type: "POST",
+                dataType: "json",
+                data: data,
+                success: function (obj) {
+                    response($.map(obj, function (item) {
+                        var texto = item.rub_Desc;
+                        return { label: texto, value: item.rub_Desc, id: item.rub_Id };
+                    }));
+                }
+            })
+        },
+        minLength: 3,
+        select: function (event, ui) {
+            $("#rubroId").val(ui.item.id);
+            return true;
+        }
+    });
 });

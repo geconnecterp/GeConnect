@@ -5,17 +5,11 @@ using gc.infraestructura.Dtos.Almacen;
 using gc.pocket.site.Controllers;
 using gc.pocket.site.Models.ViewModels;
 using gc.sitio.core.Servicios.Contratos;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using X.PagedList;
 
-namespace geco_0000.SitioWeb.Areas.proveedoress.Controllers
+namespace gc.pocket.site.Areas.Gestion.Models
 {
     [Area("Gestion")]
     public class ProveedorController : ControladorBase
@@ -135,7 +129,7 @@ namespace geco_0000.SitioWeb.Areas.proveedoress.Controllers
                 _logger.LogError(ex, "Error No Controlado");
                 TempData["error"] = ex.Message;
             }
-            
+
             return View(datos);
         }
 
@@ -263,13 +257,13 @@ namespace geco_0000.SitioWeb.Areas.proveedoress.Controllers
             return RedirectToAction("Index", new RouteValueDictionary(new { area = "ESPECIFICAR", controller = "proveedores", action = "Index" }));
         }
 
-        [HttpGet]
+        [HttpPost]
         [Route("BuscarProveedor")]
         public JsonResult Buscar(string prefix)
         {
             //var nombres = await _provSv.BuscarAsync(new QueryFilters { Search = prefix }, TokenCookie);
             //var lista = nombres.Item1.Select(c => new EmpleadoVM { Nombre = c.NombreCompleto, Id = c.Id, Cuil = c.CUIT });
-            var nombres = ProveedoresLista.Where(x=>x.Cta_Denominacion.Contains(prefix));
+            var nombres = ProveedoresLista.Where(x => x.Cta_Denominacion.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
             return Json(nombres);
         }
     }

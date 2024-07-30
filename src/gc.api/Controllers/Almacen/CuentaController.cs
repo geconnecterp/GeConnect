@@ -15,7 +15,7 @@ namespace geco_0000.API.Controllers.Codigos
     using System.Reflection;
     using System.Threading.Tasks;
 
-    //[Authorize]
+    [Authorize]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]

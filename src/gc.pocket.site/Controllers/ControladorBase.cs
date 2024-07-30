@@ -43,6 +43,7 @@ namespace gc.pocket.site.Controllers
         }
 
 
+
         public string NombreSitio
         {
             get { return _options.Nombre; }
@@ -59,8 +60,8 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                string etiqueta = $"{User.Identity.Name}";
-                return _context.HttpContext.Request.Cookies[etiqueta];
+                var nombre = User.Claims.First(c => c.Type.Contains("name")).Value;
+                return _context.HttpContext.Request.Cookies[nombre];
             }
 
         }
@@ -181,6 +182,24 @@ namespace gc.pocket.site.Controllers
             {
                 var json = JsonConvert.SerializeObject(value);
                 _context.HttpContext.Session.SetString("ProveedoresLista", json);
+            }
+        }
+
+        public List<RubroListaDto> RubroLista
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("RubroLista");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return new List<RubroListaDto>();
+                }
+                return JsonConvert.DeserializeObject<List<RubroListaDto>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("RubroLista", json);
             }
         }
 

@@ -18,6 +18,10 @@ namespace gc.pocket.site.Controllers
 
         public IActionResult Index(string error = "", string warn = "", string info = "")
         {
+            //if (string.IsNullOrEmpty(TokenCookie))
+            //{
+            //    return RedirectToAction("Logout", "token", new { area = "Seguridad" });
+            //}
             PresentaMensaje(error, warn, info);
             ViewBag.Botones =new  List<AppItem>();
             return View();
