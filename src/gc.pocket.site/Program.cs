@@ -9,6 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging.AddLog4Net("log4net.config", watch: true);
 builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
 builder.Services.Configure<MenuSettings>(builder.Configuration.GetSection("MenuSettings"));
+builder.Services.Configure<BusquedaProducto>(builder.Configuration.GetSection("BusquedaProducto"));
+builder.Services.Configure<GecoNetConfig>(builder.Configuration.GetSection("GecoNetConfig"));
 
 
 var cultureInfo = (CultureInfo)CultureInfo.CurrentCulture.Clone();

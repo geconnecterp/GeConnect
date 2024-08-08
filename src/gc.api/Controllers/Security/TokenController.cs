@@ -46,7 +46,7 @@ namespace gc.api.Controllers.Security
             if (validation.Item1)
             {   //el usuario es valido. Verificamos si esta logueado o no.
               
-                var token = GenerateToken(validation.Item2);
+                var token = GenerateToken(validation.Item2,login.Admid);
                 return Ok(new { token });
 
             }
@@ -117,7 +117,9 @@ namespace gc.api.Controllers.Security
                 return (false, null);
                 //throw new NegocioException("No se recepcinaron las credenciales del Usuario a autenticarse.");
             }
-            if (string.IsNullOrEmpty(login.UserName) || string.IsNullOrWhiteSpace(login.Password))
+            if (string.IsNullOrEmpty(login.UserName) || string.IsNullOrWhiteSpace(login.UserName) ||
+                string.IsNullOrEmpty(login.Password) || string.IsNullOrWhiteSpace(login.Password) ||
+                string.IsNullOrEmpty(login.Admid) || string.IsNullOrWhiteSpace(login.Admid))
             {
                 return (false, null);
                 //throw new NegocioException("Las credenciales no son correctas.");
@@ -135,7 +137,7 @@ namespace gc.api.Controllers.Security
             return (isValid, user);
         }
 
-        private string GenerateToken(Usuario usuario)/*,string admId*/
+        private string GenerateToken(Usuario usuario, string admId)/**/
         {
             _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
             bool first = true;
@@ -174,7 +176,8 @@ namespace gc.api.Controllers.Security
                 new Claim(ClaimTypes.NameIdentifier, usuario.Usu_id),
                 new Claim("nya",usuario.Usu_apellidoynombre),
                 new Claim(ClaimTypes.Email,usuario.Usu_email),
-                //new Claim("Adm_id",admId),
+                new Claim("AdmId",admId),
+                new Claim("expires",DateTime.Now.AddHours(1).Ticks.ToString()),
                 //new Claim("Id",usuario.Id.ToString()),
                 //new Claim(ClaimTypes.Role,sRoles),
             };

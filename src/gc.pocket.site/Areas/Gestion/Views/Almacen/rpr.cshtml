@@ -1,9 +1,7 @@
-﻿@model GridCore<ProductoDto>
-
+﻿@* @model GridCore<ProductoDto>
+ *@
 @{
-    Layout = "_LayoutGestion";
-
-
+    Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
 }
-<h1>Renderizando RPR @Model.CantidadReg</h1>
-<partial name="_gridRprAutorizados" model="Model" />
+<partial name="~/areas/gestion/views/producto/_ctrbuscar.cshtml" />
+@* <partial name="_gridRprAutorizados" model="Model" /> *@

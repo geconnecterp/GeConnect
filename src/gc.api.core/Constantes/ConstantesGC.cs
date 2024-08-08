@@ -17,6 +17,15 @@
             public const string SP_CAJA_ACTUALIZA_MEPAID = "dbo.SP_CajaActualizaIdMePa";
             public const string SP_PROVEEDOR_LISTA= "dbo.SPGECO_Proveedores_lista";
             public const string SP_RUBRO_LISTA = "dbo.SPGECO_Rubros_lista";
+
+            public const string SP_PRODUCTO_BUSQUEDA = "dbo.spgeco_p_busqueda";
+
+            public const string SP_INFOPROD_STKD = "dbo.spgeco_p_info_stk_depo";
+            public const string SP_INFOPROD_STKBOX = "dbo.spgeco_p_info_stk_box";
+            public const string SP_INFOPROD_STKA = "dbo.spgeco_p_info_stk_adm";
+            public const string SP_INFOPROD_MOVSTK = "dbo.spgeco_p_info_mov_stk";
+            public const string SP_INFOPROD_LP = "dbo.spgeco_p_info_lp";
+
         }
 
         public static class MensajeError

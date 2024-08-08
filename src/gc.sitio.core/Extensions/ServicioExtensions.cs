@@ -18,6 +18,7 @@ namespace gc.sitio.core.Extensions
             services.AddScoped<ICuentaServicio, CuentaServicio>();
             services.AddScoped<IProveedorServicio, ProveedorServicio>();
             services.AddScoped<IRubroServicio, RubroServicio>();
+            services.AddScoped<IProductoServicio, ProductoServicio>();
 
             return services;
         }

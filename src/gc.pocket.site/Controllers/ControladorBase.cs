@@ -66,6 +66,19 @@ namespace gc.pocket.site.Controllers
 
         }
 
+        public string AdministracionId
+        {
+            get
+            {
+                var adm = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
+                if (string.IsNullOrEmpty(adm))
+                {
+                    return string.Empty;
+                }
+                return adm;
+            }
+        }
+
         public (bool, DateTime?) EstaAutenticado
         {
             get
@@ -74,9 +87,9 @@ namespace gc.pocket.site.Controllers
                 var handler = new JwtSecurityTokenHandler(); //Libreria System.IdentityModel.Token.Jwt (6.7.1)
                 try
                 {
-                    var tokenS = handler.ReadToken(Token) as JwtSecurityToken;
+                    var tokenS = handler.ReadToken(TokenCookie) as JwtSecurityToken;
                     var venc = tokenS.Claims.First(c => c.Type.Contains("expires")).Value;
-                    expira = venc.ToDateTimeOrNull();
+                    expira = venc.ToDateTimeFromTicks();
                     if (!expira.HasValue || expira.Value < DateTime.Now)
                     {
 
@@ -200,6 +213,24 @@ namespace gc.pocket.site.Controllers
             {
                 var json = JsonConvert.SerializeObject(value);
                 _context.HttpContext.Session.SetString("RubroLista", json);
+            }
+        }
+
+        public List<ProductoBusquedaDto> ProductosSeleccionados
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("ProductosSeleccionados");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<ProductoBusquedaDto>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("ProductosSeleccionados", json);
             }
         }
 

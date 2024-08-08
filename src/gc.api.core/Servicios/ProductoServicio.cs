@@ -3,8 +3,16 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Productos;
+using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Helpers;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using System.Data;
 using System.Linq.Dynamic.Core;
+using System.Runtime.Intrinsics.Arm;
 
 namespace gc.api.core.Servicios
 {
@@ -119,6 +127,136 @@ namespace gc.api.core.Servicios
             var paginas = PagedList<Producto>.Create(productoss, filters.PageNumber ?? 1, filters.PageSize ?? 20);
 
             return paginas;
+        }
+
+        public List<InfoProdLP> InfoProductoLP(string id)
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_INFOPROD_MOVSTK;
+
+            var ps = new List<SqlParameter>()
+            {
+                new SqlParameter("@p_id",id),
+                   
+            };
+
+            List<InfoProdLP> producto = _repository.EjecutarLstSpExt<InfoProdLP>(sp, ps, true);
+
+            return producto;
+        }
+
+        public List<InfoProdMovStk> InfoProductoMovStk(string id, string adm, string depo, string tmov, DateTime desde, DateTime hasta)
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_INFOPROD_MOVSTK;
+
+            var ps = new List<SqlParameter>()
+            {
+                new SqlParameter("@p_id",id),
+                    new SqlParameter("@adm_id",adm),
+                    new SqlParameter("@depo_id",adm),
+                    new SqlParameter("@sm_tipo",adm),
+                    new SqlParameter("@d",adm),
+                    new SqlParameter("@h",adm),
+            };
+
+            List<InfoProdMovStk> producto = _repository.EjecutarLstSpExt<InfoProdMovStk>(sp, ps, true);
+
+            return producto;
+        }
+
+        public List<InfoProdStkA> InfoProductoStkA(string id, string admId)
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_INFOPROD_STKA;
+
+            var ps = new List<SqlParameter>()
+            {
+                new SqlParameter("@p_id",id),
+                    new SqlParameter("@adm_id",admId),
+            };
+
+            List<InfoProdStkA> producto = _repository.EjecutarLstSpExt<InfoProdStkA>(sp, ps, true);
+
+            return producto;
+        }
+
+        public List<InfoProdStkBox> InfoProductoStkBoxes(string id, string adm, string depo)
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_INFOPROD_STKBOX;
+
+            var ps = new List<SqlParameter>()
+            {
+                    new SqlParameter("@p_id",id),
+                    new SqlParameter("@adm_id",adm),
+                    new SqlParameter("@depo_id",depo),
+            };
+
+            List<InfoProdStkBox> producto = _repository.EjecutarLstSpExt<InfoProdStkBox>(sp, ps, true);
+
+            return producto;
+        }
+
+        public List<InfoProdStkD> InfoProductoStkD(string id, string admId)
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_INFOPROD_STKD;
+
+            var ps = new List<SqlParameter>()
+            {
+                    new SqlParameter("@p_id",id),
+                    new SqlParameter("@adm_id",admId),
+            };
+
+            List<InfoProdStkD> producto = _repository.EjecutarLstSpExt<InfoProdStkD>(sp, ps, true);
+
+            return producto;
+        }
+
+        public ProductoBusquedaDto ProductoBuscar(BusquedaBase busqueda)
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_PRODUCTO_BUSQUEDA;
+
+            var ps = new List<SqlParameter>()
+            {
+                    new SqlParameter("@busqueda",busqueda.Busqueda),
+                    new SqlParameter("@lp_id",busqueda.ListaPrecio?? ""),
+                    new SqlParameter("@adm_id",busqueda.Administracion),
+                    new SqlParameter("co_tipo",busqueda.TipoOperacion),
+                    new SqlParameter("cli_dto",busqueda.DescuentoCli)
+            };
+
+            List<ProductoBusquedaDto> producto = _repository.EjecutarLstSpExt<ProductoBusquedaDto>(sp, ps, true);
+
+            if (producto.Count > 0)
+            {
+                return producto.First();
+            }
+            else
+            {
+                return new();
+            }
+        }
+
+        public List<ProductoListaDto> ProductoListaBuscar(BusquedaProducto search)
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_PRODUCTO_BUSQUEDA;
+            /// varchar(30),  varchar(3),  varchar(4), varchar(8), @ bit, @ varchar(10) , @ bit, @ bit, @ bit, @ bit, @ bit, @ bit)  
+            var ps = new List<SqlParameter>()
+            {
+                new("@busqueda",search.Busqueda),
+                new("@lp_id",search.ListaPrecio??""),
+                new("@adm_id",search.Administracion),
+                new("@cta_id",search.CtaProveedorId),
+                new("@cta_id_unico",search.CtaProveedorIdUnico),
+                new("@rub_id",search.RubroId),
+                new("@rub_id_unico",search.RubroIdUnico),
+                new("@activo",search.EstadoActivo),
+                new("@discontinuo",search.EstadoDiscont),
+                new("@inactivo",search.EstadoInactivo),
+                new("@stk_no",search.SinStock),
+                new("@stk_si", search.ConStock)
+            };
+
+            List<ProductoListaDto> productos = _repository.EjecutarLstSpExt<ProductoListaDto>(sp, ps, true);
+
+            return productos;
         }
     }
 }

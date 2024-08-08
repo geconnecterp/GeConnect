@@ -19,7 +19,8 @@ namespace gc.api.core.Servicios
 
         public async Task<Usuario?> GetLoginByCredential(UserLogin login)
         {
-            return await GetAllIq().FirstOrDefaultAsync(u => u.Usu_id != null && u.Usu_id.Equals(login.UserName));
+            return await GetAllIq().Include(x=>x.UsuarioAdministraciones)
+                .FirstOrDefaultAsync(u => u.Usu_id != null && u.Usu_id.Equals(login.UserName) && u.UsuarioAdministraciones.Any(a=>a.Adm_Id.Equals(login.Admid)));
         }
 
         public async Task<bool> RegistrerUser(Usuario registro)

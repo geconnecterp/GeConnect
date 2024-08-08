@@ -13,6 +13,8 @@ namespace gc.api.core.Entidades
             Usu_celu = string.Empty;
             Usu_pin = string.Empty;
             Cta_id = string.Empty;
+
+            UsuarioAdministraciones=new HashSet<UsuarioAdministracion>();
         }
 
         public string Usu_id { get; set; }
@@ -33,8 +35,12 @@ namespace gc.api.core.Entidades
         public string Usu_pin { get; set; }
         public string Cta_id { get; set; }
 
+        public virtual ICollection<UsuarioAdministracion> UsuarioAdministraciones { get; set; }
+        //public virtual ICollection<usuarios_logon> Usuarios_Logons { get; set; }
+        //public virtual ICollection<usuarios_uderechos> Usuarios_Uderechoss { get; set; }
+        //public virtual ICollection<usuarios_uperfiles> Usuarios_Uperfiless { get; set; }
 
-     
+
 
     }
 }

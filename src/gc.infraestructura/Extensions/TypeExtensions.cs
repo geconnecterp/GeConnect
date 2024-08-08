@@ -145,6 +145,19 @@
             return ToDateTime(s, new DateTime());
         }
 
+       
+        public static DateTime? ToDateTimeFromTicks(this String s)
+        {
+            try
+            {
+                return new DateTime(s.ToLong());
+            }
+            catch 
+            {
+                return null;
+            }
+        }
+
         public static DateTime ToDateTime(this String s, DateTime returnValue)
         {
             return DateTime.TryParse(s, out DateTime value) ? value : returnValue;

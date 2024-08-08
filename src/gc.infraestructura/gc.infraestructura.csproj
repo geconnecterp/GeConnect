@@ -8,6 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Constantes\**" />
+    <EmbeddedResource Remove="Constantes\**" />
+    <None Remove="Constantes\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="EntidadesComunes\ProductFilters.cs" />
     <Compile Remove="EntidadesComunes\SolicitudFilter.cs" />
   </ItemGroup>
@@ -18,10 +24,6 @@
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.4" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.3.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Constantes\" />
   </ItemGroup>
 
 </Project>

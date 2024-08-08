@@ -21,7 +21,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - gc.pocket.site</title>
     <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/core.css" />
     <link rel="stylesheet" href="~/css/theme-default.css" />
     <link rel="stylesheet" href="~/lib/lobibox/css/lobibox.min.css" />
@@ -43,15 +43,17 @@
             &copy; 2024 - GECONet POCKET Site - <a asp-area="" asp-controller="Home" asp-action="Privacy">Normativas</a>
         </div>
     </footer>
+    <partial name="_espera" />
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/jqueryui/jquery-ui.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="~/lib/lobibox/js/lobibox.min.js"></script>
     <script src="~/lib/popper.js/umd/popper.min.js"></script>
     <script src="~/lib/lobibox/js/messageboxes.min.js"></script>
     <script src="~/lib/lobibox/js/notifications.min.js"></script>
 
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/app/siteGen.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
     <script type="text/javascript">
         var MensajeErrorTempData = '@TempData["error"]';

@@ -30,6 +30,9 @@
         public virtual DbSet<Proveedor> Proveedores { get; set; }
         public virtual DbSet<Producto> Productos { get; set; }
         public virtual DbSet<Cuenta> Cuentas { get; set; }
+        public virtual DbSet<Rubro> Rubros { get; set; }
+        //public virtual DbSet<UsuarioAdministracion> UsuarioAdministracioens { get; set; }
+
 
 
 

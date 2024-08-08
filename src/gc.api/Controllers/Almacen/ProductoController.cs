@@ -7,6 +7,8 @@ namespace gc.api.Controllers.Almacen
     using gc.infraestructura.Core.Interfaces;
     using gc.infraestructura.Core.Responses;
     using gc.infraestructura.Dtos.Almacen;
+    using gc.infraestructura.Dtos.Productos;
+    using gc.infraestructura.EntidadesComunes.Options;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json;
@@ -34,6 +36,22 @@ namespace gc.api.Controllers.Almacen
             _logger = logger;
         }
 
+       
+
+        [HttpGet]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<ProductoListaDto>>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult ProductoListaBuscar([FromQuery] BusquedaProducto search)
+        {
+            ApiResponse<List<ProductoListaDto>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            List<ProductoListaDto> res = _productosSv.ProductoListaBuscar(search);
+
+            response = new ApiResponse<List<ProductoListaDto>>(res);
+
+            return Ok(response);
+        }
 
         [HttpGet(Name = nameof(Getproductoss))]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<IEnumerable<ProductoDto>>))]
@@ -116,5 +134,96 @@ namespace gc.api.Controllers.Almacen
             var response = new ApiResponse<bool>(res);
             return Ok(response);
         }
+
+        #region Acciones especificas de GECO
+
+        [HttpGet]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult ProductoBuscar([FromQuery] BusquedaBase search)
+        {
+            ApiResponse<ProductoBusquedaDto> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.ProductoBuscar(search);
+
+            response = new ApiResponse<ProductoBusquedaDto>(res);
+
+            return Ok(response);
+        }
+
+        [HttpGet]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult InfoProductoStkD(string id, string admId)
+        {
+            ApiResponse<List<InfoProdStkD>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.InfoProductoStkD(id,admId);
+
+            response = new ApiResponse<List<InfoProdStkD>>(res);
+
+            return Ok(response);
+        }
+
+        [HttpGet]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult InfoProductoStkBoxes(string id, string adm, string depo)
+        {
+            ApiResponse<List<InfoProdStkBox>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.InfoProductoStkBoxes(id, adm,depo);
+
+            response = new ApiResponse<List<InfoProdStkBox>>(res);
+
+            return Ok(response);
+        }
+        [HttpGet]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult InfoProductoStkA(string id, string admId)
+        {
+            ApiResponse<List<InfoProdStkA>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.InfoProductoStkA(id, admId);
+
+            response = new ApiResponse<List<InfoProdStkA>>(res);
+
+            return Ok(response);
+        }
+        [HttpGet]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult InfoProductoMovStk(string id, string adm, string depo, string tmov, DateTime desde, DateTime hasta)
+        {
+            ApiResponse<List<InfoProdMovStk>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.InfoProductoMovStk(id, adm,depo,tmov,desde,hasta);
+
+            response = new ApiResponse<List<InfoProdMovStk>>(res);
+
+            return Ok(response);
+        }
+        [HttpGet]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult InfoProductoLP(string id)
+        {
+            ApiResponse<List<InfoProdLP>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.InfoProductoLP(id);
+
+            response = new ApiResponse<List<InfoProdLP>>(res);
+
+            return Ok(response);
+        }
+        #endregion
+
     }
 }

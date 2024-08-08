@@ -1,0 +1,59 @@
+﻿@model GridCore<ProductoListaDto>
+
+@{
+    var dataMod = new ProductoListaDto();
+    var alt = true;
+    string clase = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table mb-0 table-striped">
+                <thead>
+                    <tr class="header">
+                        <th scope="col">@nameof(dataMod.P_id)</th>
+                        <th scope="col">@nameof(dataMod.P_desc)</th>
+                        <th scope="col">@nameof(dataMod.Ps_stk)</th>
+                        <th scope="col">@nameof(dataMod.P_id_barrado)</th>
+                        <th scope="col">@nameof(dataMod.P_activo)</th>
+                        <th scope="col">Seleccionar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ListaDatos)
+                    {
+                        if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+                        <tr class="@clase">
+
+
+                            <td>@item.P_id</td>
+                            <td>@item.P_desc</td>
+                            <td>@item.Ps_stk</td>
+                            <td>@item.P_id_barrado</td>
+                            <td>@item.P_activo</td>
+                            <td class="text - center">
+                                <a asp-area="gestion" asp-controller="producto" asp-action="Selecciona" asp-route-id="@item.P_id">
+                                    <i class="bx bxs-info-circle text-primary font-20"></i> Selec. </a>
+                            </td>
+                        </tr>
+                    }
+                    <tr>
+                        <td colspan="9">
+                            @Html.PagedListPager(
+                                     (IPagedList)Model.ListaDatos,
+                                     page => Url.Action("Index", "producto", new { page = page, area = "Personas", sort = Model.Sort, sortdir = sortDirInv }), new PagedListRenderOptions
+                            {
+                                LiElementClasses = new string[] { "page-item" },
+                                PageClasses = new string[] { "page-link" },
+                                Display = PagedListDisplayMode.IfNeeded
+                            })
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

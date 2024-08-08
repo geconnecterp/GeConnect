@@ -1,0 +1,45 @@
+﻿@using System.Text
+@using gc.infraestructura.EntidadesComunes.Options
+
+@model AppItem
+
+@{   
+    StringBuilder sb = new();
+    @if (Model.Aplicaciones.Count > 0)
+    {
+       
+        @foreach (var item in Model.Aplicaciones)
+        {
+            var sigla = item.Sigla.Replace(" ", "");
+            string estilo = $".btn-outline-{sigla} {{ color: {item.Color};border-color: {item.Color}; background: transparent;}}";
+            sb.Append(estilo);
+            if (item.ConContraste)
+            {
+            estilo = $".btn-outline-{sigla}:hover {{color: #000 !important;background-color:{item.Color} !important;border-color: {item.Color} !important;";
+            }
+            else
+            {
+            estilo = $".btn-outline-{sigla}:hover {{color: #fff !important;background-color:{item.Color} !important;border-color: {item.Color} !important;";                
+            }
+            //el estilo esta cortado para poder visualizarlo mejor
+            sb.Append(estilo);
+            estilo = $"box-shadow: 0 0.125rem 0.25rem 0 rgba(133, 146, 163, 0.4) !important; transform: translateY(-1px)!important; }}";
+            sb.Append(estilo);
+        }      
+    }
+}
+<style>
+@sb.ToString()
+</style>
+<div class="row">
+    <div class="col-12">
+        @if (Model.Aplicaciones.Count > 0)
+        {
+            @foreach (var item in Model.Aplicaciones.OrderBy(b => b.Orden))
+            {
+                var sigla = item.Sigla.Replace(" ", "");
+                <a asp-action="@item.Action" asp-controller="@item.Controller" asp-area="@item.Area" class="btn btn-outline-@sigla btn-sm espBoton" title="@item.Nombre" data-toggle="tooltip" data-placement="top">@item.Sigla</a>
+            }
+        }
+    </div>
+</div>

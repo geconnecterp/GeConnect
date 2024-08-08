@@ -96,7 +96,20 @@ namespace gc.api.infra.Datos.Implementacion
             return sb;
         }
 
+        public SqlParameter[] InferirParametrosExt<S>(S entidad,IEnumerable<string>? excluir =null) where S:class
+        {
+            List<SqlParameter> parametros = InferirParametrosGen(entidad, excluir);
+
+            return parametros.ToArray();
+        }
         public SqlParameter[] InferirParametros(T entidad, IEnumerable<string>? excluir = null)
+        {
+            List<SqlParameter> parametros = InferirParametrosGen(entidad, excluir);
+
+            return parametros.ToArray();
+        }
+
+        private static List<SqlParameter> InferirParametrosGen<S>(S entidad, IEnumerable<string>? excluir) where S:class
         {
             List<SqlParameter> parametros = new List<SqlParameter>();
             if (excluir == null)
@@ -116,7 +129,35 @@ namespace gc.api.infra.Datos.Implementacion
                 parametros.Add(new SqlParameter(nn, valor));
             }
 
-            return parametros.ToArray();
+            return parametros;
+        }
+
+        public List<S> EjecutarLstSpExt<S>(string sp, List<SqlParameter> parametros, bool ignoreCase = false) where S : class
+        {
+            int contador = 0;
+            List<S> resultado ;
+
+            using (var cnn = _dbContext.ObtenerConexionSql())
+            {
+                var cmd = _dbContext.ObtenerCommandSql(cnn, CommandType.StoredProcedure);
+                cmd.CommandText = sp;
+                foreach (var p in parametros)
+                {
+                    cmd.Parameters.Add(p);
+                }
+                cnn.Open();
+                using (var dr = _dbContext.ObtenerDatosDelCommand(cmd))
+                {
+                    var mapper = new GenericDataMapper<S>();
+                    resultado = [];
+                    while (dr.Read())
+                    {
+                        contador++;
+                        resultado.Add(mapper.Map(dr, ignoreCase));
+                    }
+                }
+            }
+            return resultado;
         }
 
         public List<T> InvokarSp2Lst(string sp, List<SqlParameter> parametros, bool ignoreCase = false)
@@ -241,5 +282,7 @@ namespace gc.api.infra.Datos.Implementacion
         {
             return InvokarSpScalar(sp, new List<SqlParameter> { parametro }, esTransacciona, elUltimo);
         }
+
+      
     }
 }

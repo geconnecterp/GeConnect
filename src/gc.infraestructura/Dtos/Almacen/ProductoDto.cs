@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace gc.infraestructura.Dtos.Almacen
 {
@@ -24,9 +25,13 @@ namespace gc.infraestructura.Dtos.Almacen
             P_Balanza_Id = string.Empty;
             Lp_Id_Default = string.Empty;
         }
+        [Display(Name = "Id")]
         public string P_Id { get; set; }
+        [Display(Name = "Marca")]
         public string P_M_Marca { get; set; }
+        [Display(Name = "Descripción")]
         public string P_M_Desc { get; set; }
+        [Display(Name = "Capacidad")]
         public string P_M_Capacidad { get; set; }
         [Display(Name ="Prov.Id")]
         public string P_Id_Prov { get; set; }

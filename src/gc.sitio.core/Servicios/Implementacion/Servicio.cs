@@ -6,6 +6,7 @@ using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.ViewModels;
 using gc.sitio.core.Servicios.Contratos;
+using log4net.Filter;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net;
@@ -14,7 +15,7 @@ using System.Text.Json;
 
 namespace gc.sitio.core.Servicios.Implementacion
 {
-    public class Servicio<T>:IServicio<T> where T : Dto
+    public class Servicio<T> : IServicio<T> where T : Dto
     {
         private readonly AppSettings appSettings;
         protected readonly ILogger _logger;
@@ -33,18 +34,21 @@ namespace gc.sitio.core.Servicios.Implementacion
             _logger = logger;
             _rutaEntidad = string.Empty;
         }
+
         public virtual async Task<(List<T>?, Metadata?)> BuscarAsync(string? token)
         {
             ValidaToken(token);
             ApiResponse<List<T>> respuesta;
             HttpClient client;
             HelperAPI helperAPI = new HelperAPI();
-            _logger.LogInformation( $"Buscando todas los coeficientes '{_rutaEntidad}'");
+            _logger.LogInformation($"Buscando todas los coeficientes '{_rutaEntidad}'");
             if (!string.IsNullOrWhiteSpace(token))
             {
                 client = helperAPI.InicializaCliente(token);
             }
-            else { throw new NegocioException("Hay un problema al intentar generar la conexión. JWT."); 
+            else
+            {
+                throw new NegocioException("Hay un problema al intentar generar la conexión. JWT.");
             }
             HttpResponseMessage response = client.GetAsync($"{appSettings.RutaBase}{_rutaEntidad}").Result;
             _logger.LogInformation($"Response: {JsonSerializer.Serialize(response)}");
@@ -131,59 +135,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 throw;
             }
         }
-        //public virtual async Task<(List<T>, Metadata)> BuscarAsync(ProductFilters filters, string token)
-        //{
-        //    ValidaToken(token);
-
-        //    ApiResponse<List<T>> respuesta;
-        //    try
-        //    {
-        //        HelperAPI helperAPI = new HelperAPI();
-        //        _logger.Log(TraceEventType.Information, $"Buscando todos los Items '{_rutaEntidad}' - Filtro: {JsonSerializer.Serialize(filters)}");
-        //        HttpClient client = helperAPI.InicializaCliente(token);
-
-        //        HttpResponseMessage response;
-        //        if (filters.Todo)
-        //        {
-        //            response = await client.GetAsync($"{appSettings.RutaBase}{_rutaEntidad}");
-        //            _logger.Log(TraceEventType.Information, $"Response: {JsonSerializer.Serialize(response)}");
-        //        }
-        //        else
-        //        {
-        //            var link = $"{appSettings.RutaBase}{_rutaEntidad}?{EvaluarQueryFilter(filters)}";
-
-        //            response = await client.GetAsync(link);
-        //            _logger.Log(TraceEventType.Information, $"Response: {JsonSerializer.Serialize(response)}");
-        //        }
-
-        //        if (response.StatusCode == HttpStatusCode.OK)
-        //        {
-        //            string stringData = await response.Content.ReadAsStringAsync();
-        //            //_logger.Log(TraceEventType.Information, $"String Response: {stringData}");
-        //            respuesta = JsonSerializer.Deserialize<ApiResponse<List<T>>>(stringData);
-        //            return (respuesta.Data, respuesta.Meta);
-        //        }
-        //        else if (response.StatusCode == HttpStatusCode.Unauthorized)
-        //        {
-        //            throw new UnauthorizedException("Debe autenticarse nuevamente para continuar.");
-        //        }
-        //        else
-        //        {
-        //            //string stringData = await response.Content.ReadAsStringAsync();
-        //            //ErrorExceptionValidation resp = JsonSerializer.Deserialize<ErrorExceptionValidation>(stringData);
-        //            //var error = resp.Error.First();
-        //            //throw new NegocioException($"Código: {response.StatusCode} - Error: {error.Detail}");
-        //            await ParseoError(response);
-        //            return (null, null);
-        //        }
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw _logger.Log(ex);
-        //    }
-        //}
-
+       
         public virtual async Task<T> BuscarAsync(object id, string token)
         {
             ValidaToken(token);
@@ -272,6 +224,82 @@ namespace gc.sitio.core.Servicios.Implementacion
                 _logger.LogError(ex, "Error al Buscar Uno");
                 throw;
             }
+        }
+
+
+        public string EvaluarEntidad4Link<S>(S entidad) where S : class
+        {
+            bool first = true;
+            string cadena = string.Empty;
+            foreach (var prop in entidad.GetType().GetProperties())
+            {
+                var valor = prop.GetValue(entidad, null);
+                if (prop.PropertyType == typeof(int))
+                {
+                    if ((int)valor != 0)
+                    {
+                        ComponeCadena(ref first, ref cadena, prop, valor);
+                        continue;
+                    }
+                }
+                if (prop.PropertyType == typeof(Nullable<int>))
+                {
+                    if (((int?)valor).HasValue)
+                    {
+                        ComponeCadena(ref first, ref cadena, prop, valor);
+                        continue;
+                    }
+                }
+
+
+                if (prop.PropertyType == typeof(decimal))
+                {
+                    if ((decimal)valor != 0)
+                    {
+                        ComponeCadena(ref first, ref cadena, prop, valor);
+                        continue;
+
+                    }
+                }
+                if (prop.PropertyType == typeof(Nullable<decimal>))
+                {
+                    if (((decimal?)valor).HasValue)
+                    {
+                        ComponeCadena(ref first, ref cadena, prop, valor);
+                        continue;
+
+                    }
+                }
+
+                if (prop.PropertyType == typeof(string))
+                {
+                    if (!string.IsNullOrWhiteSpace((string)valor))
+                    {
+                        ComponeCadena(ref first, ref cadena, prop, valor);
+                        continue;
+
+                    }
+                }
+
+                if (prop.PropertyType == typeof(Nullable<DateTime>))
+                {
+                    if (((DateTime?)valor).HasValue)
+                    {
+                        ComponeCadena(ref first, ref cadena, prop, valor);
+                        continue;
+
+                    }
+                }
+
+                if (valor != null)
+                {
+                    ComponeCadena(ref first, ref cadena, prop, valor);
+                    continue;
+                }
+
+            }
+
+            return cadena;
         }
         public string EvaluarQueryFilter(QueryFilters filters)
         {
@@ -411,7 +439,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             cadena += $"{prop.Name}={valor}";
         }
 
-        public virtual async Task<bool> AgregarAsync(T entidad, string token)   
+        public virtual async Task<bool> AgregarAsync(T entidad, string token)
         {
             ValidaToken(token);
 
@@ -625,7 +653,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al Eliminar");
-                throw ;
+                throw;
             }
         }
 

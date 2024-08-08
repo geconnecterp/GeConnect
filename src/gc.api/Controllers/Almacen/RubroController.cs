@@ -31,7 +31,7 @@ namespace gc.api.Controllers.Almacen
         }
 
 
-        [HttpPost]
+        [HttpGet]
         [Route("[action]")]
         public IActionResult GetRubroLista()
         {

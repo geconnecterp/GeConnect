@@ -1,11 +1,8 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes.Options;
-using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.pocket.site.Controllers;
-using gc.pocket.site.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using X.PagedList;
 
 namespace gc.pocket.site.Areas.Gestion.Controllers
 {
@@ -28,22 +25,23 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         {
             if (User.Identity.IsAuthenticated)
             {
-                var mod = ObtenerModulo("RPR");
-                if (mod != null)
-                {
-                    ViewBag.AppItem = mod;
-                    List<ProductoDto> entidades = new List<ProductoDto>();
-                    var lista = new StaticPagedList<ProductoDto>(entidades, 1, 20, entidades.Count);//productos.Item2.CurrentPage, productos.Item2.PageSize, productos.Item2.TotalCount);
+                //var mod = ObtenerModulo("RPR");
+                //if (mod != null)
+                //{
+                //    ViewBag.AppItem = mod;
+                //    List<ProductoDto> entidades = new List<ProductoDto>();
+                //    var lista = new StaticPagedList<ProductoDto>(entidades, 1, 20, entidades.Count);//productos.Item2.CurrentPage, productos.Item2.PageSize, productos.Item2.TotalCount);
 
 
-                    //return new GridCore<ProductoDto>() { ListaDatos = lista, CantidadReg = LimiteAvalancha, PaginaActual = page, CantidadPaginas = LimiteAvalancha / 20, Sort = sort, SortDir = sortdir.Equals("ASC") ? "DESC" : "ASC" };
-                   var grilla =  new GridCore<ProductoDto>() { ListaDatos = lista, CantidadReg = 100, PaginaActual = 1, CantidadPaginas = 100 / 20, Sort = "P_Id", SortDir = "ASC" };
-                    return View(grilla);
-                }
-                else
-                {
-                    return RedirectToAction("Index", "home", new { area = "", error = "No se localizó el Módulo. Verifique su funcionalidad y/o configuración." });
-                }
+                //    //return new GridCore<ProductoDto>() { ListaDatos = lista, CantidadReg = LimiteAvalancha, PaginaActual = page, CantidadPaginas = LimiteAvalancha / 20, Sort = sort, SortDir = sortdir.Equals("ASC") ? "DESC" : "ASC" };
+                //   var grilla =  new GridCore<ProductoDto>() { ListaDatos = lista, CantidadReg = 100, PaginaActual = 1, CantidadPaginas = 100 / 20, Sort = "P_Id", SortDir = "ASC" };
+                //    return View(grilla);
+                //}
+                //else
+                //{
+                //    return RedirectToAction("Index", "home", new { area = "", error = "No se localizó el Módulo. Verifique su funcionalidad y/o configuración." });
+                //}
+                return View();
             }
             else {
                 return RedirectToAction("Index", "home", new {area="", error = "Debe Autenticarse para acceder." });

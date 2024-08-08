@@ -18,7 +18,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
             _logger = logger;
         }
 
-        [HttpGet]
+        [HttpPost]
         [Route("BuscarRubro")]
         public JsonResult Buscar(string prefix)
         {

@@ -18,24 +18,27 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         private readonly ILogger<ProductoController> _logger;
         private readonly ICuentaServicio _ctaSv;
         private readonly IRubroServicio _rubSv;
+        private readonly IProductoServicio _productoServicio;
+        private readonly BusquedaProducto _busqueda;
 
-        public ProductoController(ILogger<ProductoController> logger, IOptions<MenuSettings> options, IOptions<AppSettings> options1,
-            ICuentaServicio cuentaServicio, IHttpContextAccessor context, IRubroServicio rubSv) : base(options1, options, context)
+        public ProductoController(ILogger<ProductoController> logger, IOptions<MenuSettings> options, IOptions<AppSettings> options1, IOptions<BusquedaProducto> busqueda,
+            ICuentaServicio cuentaServicio, IHttpContextAccessor context, IRubroServicio rubSv, IProductoServicio productoServicio) : base(options1, options, context)
         {
             _logger = logger;
             _menuSettings = options.Value;
             _ctaSv = cuentaServicio;
             _rubSv = rubSv;
+            _busqueda = busqueda.Value;
+            _productoServicio = productoServicio;
         }
-        public IActionResult Index()
-        {
-            return View();
-        }
-
-        public IActionResult Busqueda(bool actualizar = false)
+        public IActionResult Index(bool actualizar = false)
         {
             try
             {
+                if (!EstaAutenticado.Item1)
+                {
+                    return RedirectToAction("Login", "Token", new { area = "Seguridad" });
+                }
                 if (ProveedoresLista.Count == 0 || actualizar)
                 {
                     ObtenerProveedores();
@@ -46,19 +49,67 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
                     ObtenerRubros();
                 }
 
-                return View(new List<ProductoDto>());
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error en Login");
+                _logger.LogError(ex, "Error en la carga de datos periféricos.");
                 TempData["error"] = "Hubo algún error al intentar cargar la vista de autenticación. Si el problema persiste, avise al administardor.";
                 var lv = new List<AdministracionLoginDto>();
                 ViewBag.Admid = HelperMvc<AdministracionLoginDto>.ListaGenerica(lv);
                 var login = new LoginDto { Fecha = DateTime.Now };
-                return View(new List<ProductoDto>());
+            }
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> BusquedaBase(string busqueda)
+        {
+            ProductoBusquedaDto producto=new ProductoBusquedaDto { P_Id = "0000-0000" };
+            if (string.IsNullOrEmpty(busqueda))
+            {
+                return Json(new { error = false, producto });
             }
 
+            BusquedaBase buscar = new BusquedaBase
+            {
+                Administracion = AdministracionId,
+                Busqueda = busqueda,
+                DescuentoCli = _busqueda.DescuentoCli,
+                ListaPrecio = _busqueda.ListaPrecio,
+                TipoOperacion = _busqueda.TipoOperacion
+            };
+
+            producto = await _productoServicio.BusquedaBaseProductos(buscar,TokenCookie);
+
+            if (producto != null && !string.IsNullOrEmpty(producto.P_Id))
+            {
+                var productos = ProductosSeleccionados;
+                productos.Add(producto);
+                ProductosSeleccionados = productos;
+
+                return Json(new { error = false, producto });
+            }
+            return Json(new { error = true, msg = "El producto no ha sido identificado." });
         }
+
+        [HttpPost]
+        public async Task<JsonResult> BusquedaAvanzada(BusquedaProducto search)
+        {
+            try
+            {
+                List<ProductoListaDto> productos = await _productoServicio.BusquedaListaProductos(search, TokenCookie);
+
+                return Json(new { error = false, lista = productos});
+            }
+            catch (Exception ex)
+            {
+                string msg = "Error en la invocación de la API - Busqueda Avanzada";
+                _logger.LogError(ex, "Error en la invocación de la API - Busqueda Avanzada");
+
+                return Json(new { error = true, msg });
+            }
+        }
+
 
         private void ObtenerRubros()
         {
@@ -71,5 +122,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
 
             ProveedoresLista = _ctaSv.ObtenerListaProveedores(TokenCookie);
         }
+
+       
     }
 }

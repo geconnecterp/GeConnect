@@ -5,15 +5,10 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace gc.api.core.Servicios
 {
-    internal class RubroServicio : Servicio<Rubro>, IRubroServicio
+    public class RubroServicio : Servicio<Rubro>, IRubroServicio
     {
         public RubroServicio(IUnitOfWork uow, IOptions<PaginationOptions> options) : base(uow, options)
         {

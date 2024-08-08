@@ -7,7 +7,7 @@
 
     public class UnitOfWork : IUnitOfWork
     {
-        private readonly GeConnectContext _contexto;
+        public readonly GeConnectContext _contexto;
 
         public UnitOfWork(GeConnectContext contexto)
         {

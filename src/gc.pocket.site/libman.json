@@ -44,6 +44,16 @@
         "themes/sunny/jquery-ui.css",
         "themes/sunny/images/ui-icons_ffe180_256x240.png"
       ]
+    },
+    {
+      "library": "bootstrap@5.3.3",
+      "destination": "wwwroot/lib/bootstrap/",
+      "files": [
+        "js/bootstrap.min.js",
+        "css/bootstrap.css",
+        "css/bootstrap.min.css",
+        "js/bootstrap.bundle.min.js"
+      ]
     }
   ]
 }
