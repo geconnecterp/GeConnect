@@ -21,6 +21,7 @@ function verificaEstado() {
         $("#Familia").val("???????");
         $("#Rubro").val(prod.rub_desc);     
 
+        var res = $("#estadoFuncion").val(false);
         CerrarWaiting();
     }
 }
