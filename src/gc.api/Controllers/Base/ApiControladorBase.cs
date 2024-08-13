@@ -5,7 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 
 namespace gc.api.Controllers.Base
 {
-    public class ControladorBase : ControllerBase
+    public class ApiControladorBase : ControllerBase
     {
        
 

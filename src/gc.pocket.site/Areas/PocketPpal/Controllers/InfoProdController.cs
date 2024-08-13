@@ -1,14 +1,17 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Administracion;
+using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Dtos.Seguridad;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
 using gc.pocket.site.Controllers;
+using gc.pocket.site.Models.ViewModels;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Build.Framework;
 using Microsoft.Extensions.Options;
+using NuGet.Packaging.Signing;
+using X.PagedList;
 
 namespace gc.pocket.site.Areas.PocketPpal.Controllers
 {
@@ -39,7 +42,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         [HttpGet]
         public IActionResult Index(bool actualizar = false)
         {
-           
+
             try
             {
                 try
@@ -119,123 +122,222 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         }
 
         [HttpPost]
-        public async Task<JsonResult> InfoProductoStkD(string id)
+        public ActionResult InfoProductoStkD()
         {
+            GridCore<InfoProdStkD> datosIP;
             try
             {
-                var regs =await _productoServicio.InfoProductoStkD(id, AdministracionId,TokenCookie);
-
-                if(regs==null || regs.Count == 0)
+                string id = ProductoBase.P_Id;
+                if (!id.Equals(InfoProdStkDId))
                 {
-                    return Json(new {error = false,list = regs, cantRegs = 0});
+                    InfoProdStkDId = id;
+
+                    var regs = _productoServicio.InfoProductoStkD(id, AdministracionId, TokenCookie).GetAwaiter().GetResult();
+
+                    datosIP = ObtenerInfoProdStkD(regs);
+
                 }
                 else
                 {
-                    return Json(new {error = false,list = regs, cantRegs = regs.Count});
+                    datosIP = ObtenerInfoProdStkD(InfoProdStkDRegs);
                 }
+                return PartialView("_infoProdStkDGrid", datosIP);
             }
             catch (Exception ex)
             {
-                TempData["error"] = ex.Message;
-                return Json(new {error = true,msg= ex.Message});
-                
+                TempData["warn"] = ex.Message;
             }
+            var lst = new StaticPagedList<InfoProdStkD>(new List<InfoProdStkD>(), 1, 1, 0);
+            return View("_infoProdStkDGrid", new GridCore<InfoProdStkD>() { ListaDatos = lst, CantidadReg = 0, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" });
+
+        }
+
+        private GridCore<InfoProdStkD> ObtenerInfoProdStkD(List<InfoProdStkD> listInfoProd)
+        {
+
+            var lista = new StaticPagedList<InfoProdStkD>(listInfoProd, 1, 999, listInfoProd.Count);
+
+            return new GridCore<InfoProdStkD>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" };
+        }
+
+
+        [HttpPost]
+        public ActionResult InfoProductoStkBoxes()
+        {
+            GridCore<InfoProdStkBox> datosIP;
+            //en documentacion GECO POCKET INFOPROD el valor default de depo = %
+            string depo = "%";
+            try
+            {
+                string id = ProductoBase.P_Id;
+                var ids = InfoProdStkBoxesIds;
+                if (!(id.Equals(ids.Item1)))
+                {
+                    InfoProdStkBoxesIds = (id, depo);
+
+                    var regs = _productoServicio.InfoProductoStkBoxes(id, AdministracionId, depo, TokenCookie).GetAwaiter().GetResult();
+
+                    if (regs == null || regs.Count == 0)
+                    {
+                        throw new Exception("No se encontró el producto");
+                    }
+                    else
+                    {
+                        var data = regs.First();
+                        datosIP = ObtenerInfoProdStkBox((id, depo));
+                    }
+                }
+                else
+                {
+                    datosIP = ObtenerInfoProdStkBox(InfoProdStkBoxesIds, true);
+                }
+                return PartialView("_infoProdStkBoxGrid", datosIP);
+            }
+            catch (Exception ex)
+            {
+                TempData["warn"] = ex.Message;
+            }
+            var lst = new StaticPagedList<InfoProdStkBox>(new List<InfoProdStkBox>(), 1, 1, 0);
+            return View("_infoProdStkBoxGrid", new GridCore<InfoProdStkBox>() { ListaDatos = lst, CantidadReg = 0, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" });
+
+        }
+
+        private GridCore<InfoProdStkBox> ObtenerInfoProdStkBox((string, string) ids, bool esSession = false)
+        {
+            List<InfoProdStkBox> listInfoProd;
+            if (esSession)
+            {
+                listInfoProd = InfoProdStkBoxesRegs;
+            }
+            else
+            {
+                listInfoProd = _productoServicio.InfoProductoStkBoxes(ids.Item1, AdministracionId, ids.Item2, TokenCookie).GetAwaiter().GetResult();
+            }
+
+            var lista = new StaticPagedList<InfoProdStkBox>(listInfoProd, 1, 999, listInfoProd.Count);
+
+            return new GridCore<InfoProdStkBox>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" };
         }
 
         [HttpPost]
-        public async Task<JsonResult> InfoProductoStkBoxes(string id,string depo)
+        public ActionResult InfoProductoStkA()
         {
+            GridCore<InfoProdStkA> datosIP;
             try
             {
-                var regs = await _productoServicio.InfoProductoStkBoxes(id, AdministracionId,depo, TokenCookie);
+                string id = ProductoBase.P_Id;
 
-                if (regs == null || regs.Count == 0)
+                if (!id.Equals(InfoProdStkAId))
                 {
-                    return Json(new { error = false, list = regs, cantRegs = 0 });
+                    InfoProdStkAId = id;
+
+                    var regs = _productoServicio.InfoProductoStkA(id, "%", TokenCookie).GetAwaiter().GetResult();
+
+                    datosIP = ObtenerInfoProdStkA(regs);
                 }
                 else
                 {
-                    return Json(new { error = false, list = regs, cantRegs = regs.Count });
+                    datosIP = ObtenerInfoProdStkA(InfoProdStkARegs);
                 }
+                return PartialView("_infoProdStkAGrid", datosIP);
             }
             catch (Exception ex)
             {
-                TempData["error"] = ex.Message;
-                return Json(new { error = true, msg = ex.Message });
-
+                TempData["warn"] = ex.Message;
             }
+            var lst = new StaticPagedList<InfoProdStkA>(new List<InfoProdStkA>(), 1, 1, 0);
+            return View("_infoProdStkAGrid", new GridCore<InfoProdStkA>() { ListaDatos = lst, CantidadReg = 0, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" });
+        }
+
+        private GridCore<InfoProdStkA> ObtenerInfoProdStkA(List<InfoProdStkA> listInfoProd)
+        {
+            var lista = new StaticPagedList<InfoProdStkA>(listInfoProd, 1, 999, listInfoProd.Count);
+
+            return new GridCore<InfoProdStkA>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" };
+        }
+
+
+        [HttpPost]
+        public ActionResult InfoProductoMovStk()
+        {
+            GridCore<InfoProdMovStk> datosIP;
+            string depo = "%";
+            string tmov = "RP";
+            DateTime desde, hasta;
+            hasta = DateTime.Today;
+            desde = DateTime.Today.AddDays(-7);
+            try
+            {
+                string id = ProductoBase.P_Id;
+                var ids = InfoProdMovStkIds.Split('#');
+                if (!(id.Equals(ids[0]) && depo.Equals(ids[1]) && tmov.Equals(ids[2]) && desde == ids[3].ToDateTime() && hasta == ids[4].ToDateTime()))
+                {
+                    InfoProdMovStkIds = $"{id}#{depo}#{tmov}#{desde}#{hasta}";
+
+                    var regs = _productoServicio.InfoProductoMovStk(id, AdministracionId, depo, tmov, desde, hasta, TokenCookie).GetAwaiter().GetResult();
+
+                    datosIP = ObtenerInfoProdMovStk(regs);
+                }
+                else
+                {
+                    datosIP = ObtenerInfoProdMovStk(InfoProdMovStkRegs);
+                }
+                return PartialView("_infoProdMovStkGrid", datosIP);
+            }
+            catch (Exception ex)
+            {
+                TempData["warn"] = ex.Message;
+            }
+            var lst = new StaticPagedList<InfoProdStkBox>(new List<InfoProdStkBox>(), 1, 1, 0);
+            return View("_infoProdStkBoxGrid", new GridCore<InfoProdStkBox>() { ListaDatos = lst, CantidadReg = 0, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" });
+
+        }
+
+        private GridCore<InfoProdMovStk> ObtenerInfoProdMovStk(List<InfoProdMovStk> listInfoProd)
+        {
+
+            var lista = new StaticPagedList<InfoProdMovStk>(listInfoProd, 1, 999, listInfoProd.Count);
+
+            return new GridCore<InfoProdMovStk>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" };
         }
 
         [HttpPost]
-        public async Task<JsonResult> InfoProductoStkA(string id)
+        public ActionResult InfoProductoLP()
         {
+            GridCore<InfoProdLP> datosIP;
             try
             {
-                var regs = await _productoServicio.InfoProductoStkA(id, AdministracionId, TokenCookie);
-
-                if (regs == null || regs.Count == 0)
+                string id = ProductoBase.P_Id;
+                if (!id.Equals(InfoProdLPId))
                 {
-                    return Json(new { error = false, list = regs, cantRegs = 0 });
+                    InfoProdLPId = id;
+
+                    var regs = _productoServicio.InfoProductoLP(id, TokenCookie).GetAwaiter().GetResult();
+
+
+                    datosIP = ObtenerInfoProdLP(regs);
                 }
                 else
                 {
-                    return Json(new { error = false, list = regs, cantRegs = regs.Count });
+                    datosIP = ObtenerInfoProdLP(InfoProdLPRegs);
                 }
+                return PartialView("_infoProdLPGrid", datosIP);
             }
             catch (Exception ex)
             {
-                TempData["error"] = ex.Message;
-                return Json(new { error = true, msg = ex.Message });
-
+                TempData["warn"] = ex.Message;
             }
+            var lst = new StaticPagedList<InfoProdLP>(new List<InfoProdLP>(), 1, 1, 0);
+            return View("_infoProdLPGrid", new GridCore<InfoProdLP>() { ListaDatos = lst, CantidadReg = 0, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" });
         }
 
-        [HttpPost]
-        public async Task<JsonResult> InfoProductoMovStk(string id,string depo,string tmov, DateTime desde,DateTime hasta)
+        private GridCore<InfoProdLP> ObtenerInfoProdLP(List<InfoProdLP> listInfoProd)
         {
-            try
-            {
-                var regs = await _productoServicio.InfoProductoMovStk(id, AdministracionId,depo,tmov,desde,hasta, TokenCookie);
 
-                if (regs == null || regs.Count == 0)
-                {
-                    return Json(new { error = false, list = regs, cantRegs = 0 });
-                }
-                else
-                {
-                    return Json(new { error = false, list = regs, cantRegs = regs.Count });
-                }
-            }
-            catch (Exception ex)
-            {
-                TempData["error"] = ex.Message;
-                return Json(new { error = true, msg = ex.Message });
+            var lista = new StaticPagedList<InfoProdLP>(listInfoProd, 1, 999, listInfoProd.Count);
 
-            }
+            return new GridCore<InfoProdLP>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" };
         }
 
-        [HttpPost]
-        public async Task<JsonResult> InfoProductoLP(string id)
-        {
-            try
-            {
-                var regs = await _productoServicio.InfoProductoLP(id, TokenCookie);
-
-                if (regs == null || regs.Count == 0)
-                {
-                    return Json(new { error = false, list = regs, cantRegs = 0 });
-                }
-                else
-                {
-                    return Json(new { error = false, list = regs, cantRegs = regs.Count });
-                }
-            }
-            catch (Exception ex)
-            {
-                TempData["error"] = ex.Message;
-                return Json(new { error = true, msg = ex.Message });
-
-            }
-        }
     }
 }

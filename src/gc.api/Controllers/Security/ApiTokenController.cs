@@ -16,17 +16,17 @@ namespace gc.api.Controllers.Security
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class TokenController : ControladorBase
+    public class ApiTokenController : ApiControladorBase
     {
         private readonly IOptions<ConfigNegocioOption> _options;
         private readonly IConfiguration _configuration;
         private readonly ISecurityServicio _securityServicio;
         private readonly IPasswordService _passwordService;
-        private readonly ILogger<TokenController> _logger;
+        private readonly ILogger<ApiTokenController> _logger;
 
-        public TokenController(IOptions<ConfigNegocioOption> options, IConfiguration configuration,
+        public ApiTokenController(IOptions<ConfigNegocioOption> options, IConfiguration configuration,
             ISecurityServicio securityServicio,
-            IPasswordService passwordService, ILogger<TokenController> logger)
+            IPasswordService passwordService, ILogger<ApiTokenController> logger)
         {
             _options = options;
             _configuration = configuration;

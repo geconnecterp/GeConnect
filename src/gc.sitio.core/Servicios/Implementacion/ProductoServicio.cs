@@ -15,7 +15,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 {
     public class ProductoServicio : Servicio<ProductoDto>, IProductoServicio
     {
-        private const string RutaAPI = "/api/producto";
+        private const string RutaAPI = "/api/apiproducto";
         private const string BUSCAR_PROD = "/ProductoBuscar";
         private const string BUSCAR_LISTA = "/ProductoListaBuscar";
         private const string INFOPROD_STKD = "/InfoProductoStkD";

@@ -47,86 +47,46 @@
                 <div class="nav-align-top mb-4">
                     <ul class="nav nav-pills mb-3" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#stkd" aria-controls="stkd" aria-selected="true">
+                            <button type="button" id="btnStkD" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#stkd" aria-controls="stkd" aria-selected="true">
                                 STK D
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#stkbox" aria-controls="stkbox" aria-selected="false" tabindex="-1">
+                            <button type="button" id="btnStkBox" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#stkbox" aria-controls="stkbox" aria-selected="false" tabindex="-1">
                                 STK BOX
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#stka" aria-controls="stka" aria-selected="false" tabindex="-1">
+                            <button type="button" id="btnStkA" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#stka" aria-controls="stka" aria-selected="false" tabindex="-1">
                                 STK A
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#mov" aria-controls="mov" aria-selected="false" tabindex="-1">
+                            <button type="button" id="btnMov" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#mov" aria-controls="mov" aria-selected="false" tabindex="-1">
                                 MOV
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#pr" aria-controls="pr" aria-selected="false" tabindex="-1">
+                            <button type="button" id="btnPr" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#pr" aria-controls="pr" aria-selected="false" tabindex="-1">
                                 PR
                             </button>
                         </li>
                     </ul>
                     <div class="tab-content">
                         <div class="tab-pane fade active show" id="stkd" role="tabpanel">
-                            <p>
-                                Icing pastry pudding oat cake. Lemon drops cotton candy caramels cake caramels sesame snaps
-                                powder. Bear claw candy topping.
-                            </p>
-                            <p class="mb-0">
-                                Tootsie roll fruitcake cookie. Dessert topping pie. Jujubes wafer carrot cake jelly. Bonbon
-                                jelly-o jelly-o ice cream jelly beans candy canes cake bonbon. Cookie jelly beans marshmallow
-                                jujubes sweet.
-                            </p>
+                            <div id="gridInfoProdStkD"></div>
                         </div>
                         <div class="tab-pane fade" id="stkbox" role="tabpanel">
-                            <p>
-                                Donut dragée jelly pie halvah. Danish gingerbread bonbon cookie wafer candy oat cake ice
-                                cream. Gummies halvah tootsie roll muffin biscuit icing dessert gingerbread. Pastry ice cream
-                                cheesecake fruitcake.
-                            </p>
-                            <p class="mb-0">
-                                Jelly-o jelly beans icing pastry cake cake lemon drops. Muffin muffin pie tiramisu halvah
-                                cotton candy liquorice caramels.
-                            </p>
+                            <div id="gridInfoProdStkBox"></div>
                         </div>
                         <div class="tab-pane fade" id="stka" role="tabpanel">
-                            <p>
-                                Oat cake chupa chups dragée donut toffee. Sweet cotton candy jelly beans macaroon gummies
-                                cupcake gummi bears cake chocolate.
-                            </p>
-                            <p class="mb-0">
-                                Cake chocolate bar cotton candy apple pie tootsie roll ice cream apple pie brownie cake. Sweet
-                                roll icing sesame snaps caramels danish toffee. Brownie biscuit dessert dessert. Pudding jelly
-                                jelly-o tart brownie jelly.
-                            </p>
+                            <div id="gridInfoProdStkA"></div>
                         </div>
                         <div class="tab-pane fade" id="mov" role="tabpanel">
-                            <p>
-                                Oat cake chupa chups dragée donut toffee. Sweet cotton candy jelly beans macaroon gummies
-                                cupcake gummi bears cake chocolate.
-                            </p>
-                            <p class="mb-0">
-                                Cake chocolate bar cotton candy apple pie tootsie roll ice cream apple pie brownie cake. Sweet
-                                roll icing sesame snaps caramels danish toffee. Brownie biscuit dessert dessert. Pudding jelly
-                                jelly-o tart brownie jelly.
-                            </p>
+                            <div id="gridInfoProdMov"></div>
                         </div>
                         <div class="tab-pane fade" id="pr" role="tabpanel">
-                            <p>
-                                Oat cake chupa chups dragée donut toffee. Sweet cotton candy jelly beans macaroon gummies
-                                cupcake gummi bears cake chocolate.
-                            </p>
-                            <p class="mb-0">
-                                Cake chocolate bar cotton candy apple pie tootsie roll ice cream apple pie brownie cake. Sweet
-                                roll icing sesame snaps caramels danish toffee. Brownie biscuit dessert dessert. Pudding jelly
-                                jelly-o tart brownie jelly.
-                            </p>
+                            <div id="gridInfoProdLP"></div>
                         </div>
                     </div>
                 </div>
@@ -143,6 +103,13 @@
         var buscarProveedorUrl = "@Url.Action("Buscar", "proveedor", new { area = "gestion" })";
         var buscarRubroUrl = "@Url.Action("Buscar", "rubro", new { area = "gestion" })";
         var busquedaProdBase = "@Url.Action("BusquedaBase", "producto", new { area = "gestion" })";
+
+        //urls de grillas
+        var infoProdStkDUrl = "@Url.Action("InfoProductoStkD", "infoprod", new { area = "PocketPpal" })";
+        var infoProdBoxUrl = "@Url.Action("InfoProductoStkBoxes", "infoprod", new { area = "PocketPpal" })";
+        var infoProdStkAUrl = "@Url.Action("InfoProductoStkA", "infoprod", new { area = "PocketPpal" })";
+        var infoProdMovUrl = "@Url.Action("InfoProductoMovStk", "infoprod", new { area = "PocketPpal" })";
+        var infoProdLPUrl = "@Url.Action("InfoProductoLP", "infoprod", new { area = "PocketPpal" })";
 
     </script>
 

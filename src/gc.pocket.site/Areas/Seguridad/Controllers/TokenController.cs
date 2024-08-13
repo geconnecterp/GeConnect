@@ -1,26 +1,22 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes.Options;
-using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
-using gc.infraestructura.Core.Interfaces;
-using gc.infraestructura.Dtos.Seguridad;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Administracion;
+using gc.infraestructura.Dtos.Seguridad;
+using gc.infraestructura.Helpers;
 using gc.pocket.site.Controllers;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.Sockets;
 using System.Net;
+using System.Net.Sockets;
 using System.Security.Claims;
 using System.Text;
-using gc.sitio.core.Servicios.Contratos;
-using gc.infraestructura.Helpers;
-using gc.infraestructura.Dtos.Administracion;
-using gc.infraestructura.Core.Exceptions;
-using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace gc.pocket.site.Areas.Seguridad.Controllers
 {
@@ -89,7 +85,7 @@ namespace gc.pocket.site.Areas.Seguridad.Controllers
                 var userJson = JsonConvert.SerializeObject(userModel);
                 var contentData = new StringContent(userJson, Encoding.UTF8, "application/json");
 
-                var response = await cliente.PostAsync("/api/token", contentData);
+                var response = await cliente.PostAsync("/api/apitoken", contentData);
 
                 if (response.StatusCode == HttpStatusCode.OK)
                 {

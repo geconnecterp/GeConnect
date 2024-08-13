@@ -21,14 +21,14 @@ namespace gc.api.Controllers.Almacen
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductoController : ControllerBase
+    public class ApiProductoController : ControllerBase
     {
         private readonly IMapper _mapper;
         private IProductoServicio _productosSv;
         private readonly IUriService _uriService;
-        private readonly ILogger<ProductoController> _logger;
+        private readonly ILogger<ApiProductoController> _logger;
 
-        public ProductoController(IProductoServicio servicio, IMapper mapper, IUriService uriService, ILogger<ProductoController> logger)
+        public ApiProductoController(IProductoServicio servicio, IMapper mapper, IUriService uriService, ILogger<ApiProductoController> logger)
         {
             _productosSv = servicio;
             _mapper = mapper;

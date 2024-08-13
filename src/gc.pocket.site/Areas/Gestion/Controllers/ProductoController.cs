@@ -62,7 +62,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         }
 
         [HttpPost]
-        public async Task<JsonResult> BusquedaBase(string busqueda)
+        public async Task<JsonResult> BusquedaBase(string busqueda, bool acumularProductos=false)
         {
             ProductoBusquedaDto producto=new ProductoBusquedaDto { P_Id = "0000-0000" };
             if (string.IsNullOrEmpty(busqueda))
@@ -83,10 +83,14 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
 
             if (producto != null && !string.IsNullOrEmpty(producto.P_Id))
             {
-                var productos = ProductosSeleccionados;
-                productos.Add(producto);
-                ProductosSeleccionados = productos;
-
+                //se resguarda el producto recien buscado.
+                ProductoBase = producto;
+                if (acumularProductos)
+                {
+                    var productos = ProductosSeleccionados;
+                    productos.Add(producto);
+                    ProductosSeleccionados = productos;
+                }
                 return Json(new { error = false, producto });
             }
             return Json(new { error = true, msg = "El producto no ha sido identificado." });
@@ -97,6 +101,8 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         {
             try
             {
+                search.SinStock = !search.ConStock;
+
                 List<ProductoListaDto> productos = await _productoServicio.BusquedaListaProductos(search, TokenCookie);
 
                 return Json(new { error = false, lista = productos});

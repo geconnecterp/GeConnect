@@ -6,7 +6,7 @@ namespace gc.api.Controllers.Security
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TestigoController : ControllerBase
+    public class ApiTestigoController : ControllerBase
     {
         [HttpGet]
         [ProducesResponseType((int)HttpStatusCode.OK)]

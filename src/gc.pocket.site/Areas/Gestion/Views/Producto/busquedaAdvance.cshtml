@@ -16,7 +16,7 @@
                         <div class="card">
                             <div class="card-body">
                                 <form asp-action="BusquedaAvanzada" asp-controller="producto" asp-area="gestion" method="post">
-                                    <div class="row gy-3">
+                                    <div class="row gy-3 ui-front">
                                         <div class="col-sm-6">
                                             <small class="fw-medium">Proveedor</small>
                                             <input type="text" class="form-control-sm input-group" name="ProveedorNombre" id="ProveedorNombre" />
@@ -46,11 +46,11 @@
                                             <div class="row mt-3">
                                                 <div class="col-12">
                                                     <div class="form-check form-check-inline">
-                                                        <input class="form-check-input" name="ConStock" type="radio" value="" id="rdConStk">
+                                                        <input class="form-check-input" name="ConStock" type="radio" value="true" id="rdConStk">
                                                         <label class="form-check-label" for="rdConStk">Con Stk</label>
                                                     </div>
                                                     <div class="form-check form-check-inline">
-                                                        <input class="form-check-input" name="SinStock" type="radio" value="" id="rdSinStk">
+                                                        <input class="form-check-input" name="ConStock" type="radio" value="false" id="rdSinStk">
                                                         <label class="form-check-label" for="rdSinStk">Sin Stk</label>
                                                     </div>
                                                 </div>
@@ -61,16 +61,14 @@
                                         <button type="button" class="btn btn-success btn-sm" id="btnBuscarProd"> <i class="bx bx-search"></i><span> Buscar</span> </button>
                                     </div>
                                 </form>
+
+                                <div id="divBusquedaAvanzada"></div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                @* <button id="btnMensajeExportar" class="btn btn-success hidden" onclick="MensajeExportar();">Exportar</button>
-                <button id="btnMensajeAceptar" class="btn btn-primary">Aceptar</button>
-                <button id="btnMensajeCancelar" class="btn btn-secondary" data-dismiss="modal" onclick="CerrarMensaje('NO');">Cancelar</button> *@
-            </div>
+            
         </div>
     </div>
 </div>

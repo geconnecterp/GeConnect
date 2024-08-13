@@ -152,10 +152,10 @@ namespace gc.api.core.Servicios
             {
                 new SqlParameter("@p_id",id),
                     new SqlParameter("@adm_id",adm),
-                    new SqlParameter("@depo_id",adm),
-                    new SqlParameter("@sm_tipo",adm),
-                    new SqlParameter("@d",adm),
-                    new SqlParameter("@h",adm),
+                    new SqlParameter("@depo_id",depo),
+                    new SqlParameter("@sm_tipo",tmov),
+                    new SqlParameter("@d",desde),
+                    new SqlParameter("@h",hasta),
             };
 
             List<InfoProdMovStk> producto = _repository.EjecutarLstSpExt<InfoProdMovStk>(sp, ps, true);

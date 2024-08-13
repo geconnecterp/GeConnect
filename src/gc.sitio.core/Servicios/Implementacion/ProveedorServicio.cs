@@ -8,7 +8,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 {
     public class ProveedorServicio : Servicio<ProveedorDto>, IProveedorServicio
     {
-        private const string RutaAPI = "/api/proveedor";
+        private const string RutaAPI = "/api/apiproveedor";
         private readonly AppSettings _appSettings;
 
         public ProveedorServicio(IOptions<AppSettings> options,ILogger<ProveedorServicio> logger):base(options,logger,RutaAPI)

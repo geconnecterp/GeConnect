@@ -141,6 +141,18 @@ namespace gc.infraestructura.Helpers
                     p.SetValue(result, this.MapInt64Nulleable(dr, p.Name, ignoreCase));
                     continue;
                 }
+
+                if (p.PropertyType == typeof(decimal))
+                {
+                    p.SetValue(result, this.MapDecimalNulleable(dr, p.Name, ignoreCase));
+                    continue;
+                }
+
+                if (p.PropertyType == typeof(Nullable<decimal>))
+                {
+                    p.SetValue(result, this.MapDecimalNulleable(dr, p.Name, ignoreCase));
+                    continue;
+                }
             }
 
             return result;
@@ -224,6 +236,25 @@ namespace gc.infraestructura.Helpers
             {
                 if (dr[column] != null && dr[column] != DBNull.Value)
                     return Convert.ToInt64(dr[column]);
+            }
+            return null;
+        }
+
+        internal decimal MapDecimal(SqlDataReader dr, string column, bool ignoreCase = false)
+        {
+            if (HasColumn(dr, column, ignoreCase))
+            {
+                return Convert.ToDecimal(dr[column]);
+            }
+            return 0;
+        }
+
+        internal decimal? MapDecimalNulleable(SqlDataReader dr, string column, bool ignoreCase = false)
+        {
+            if (HasColumn(dr, column, ignoreCase))
+            {
+                if (dr[column] != null && dr[column] != DBNull.Value)
+                    return Convert.ToDecimal(dr[column]);
             }
             return null;
         }

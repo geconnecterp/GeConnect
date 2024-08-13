@@ -15,14 +15,14 @@ namespace gc.api.Controllers.Almacen
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class RubroController : ControladorBase
+    public class ApiRubroController : ApiControladorBase
     {
         private readonly IMapper _mapper;
         private readonly IRubroServicio _rubSv;
         private readonly IUriService _uriService;
-        private readonly ILogger<RubroController> _logger;
+        private readonly ILogger<ApiRubroController> _logger;
 
-        public RubroController(IRubroServicio servicio, IMapper mapper, IUriService uriService, ILogger<RubroController> logger)
+        public ApiRubroController(IRubroServicio servicio, IMapper mapper, IUriService uriService, ILogger<ApiRubroController> logger)
         {
             _rubSv = servicio;
             _mapper = mapper;

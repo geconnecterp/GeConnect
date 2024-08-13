@@ -10,7 +10,7 @@
         public string P_alta_rotacion { get; set; }
         public string P_con_vto { get; set; }
         public string P_peso { get; set; }
-        public string Up_id { get; set; }
+        public string Up_id { get; set; } //= 00 => decimal -> acepto lo que traiga (3 decimales)
         public string Up_tipo { get; set; }
         public string Rub_id { get; set; }
         public string Rub_desc { get; set; }

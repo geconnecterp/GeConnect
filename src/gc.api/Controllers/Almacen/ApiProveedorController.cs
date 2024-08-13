@@ -19,14 +19,14 @@ namespace gc.api.Controllers.Almacen
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class ProveedorController : ControllerBase
+    public class ApiProveedorController : ControllerBase
     {
         private readonly IMapper _mapper;
         private IProveedorServicio _proveedoresSv;
         private readonly IUriService _uriService;
-        private readonly ILogger<ProveedorController> _logger;
+        private readonly ILogger<ApiProveedorController> _logger;
 
-        public ProveedorController(IProveedorServicio servicio, IMapper mapper, IUriService uriService, ILogger<ProveedorController> logger)
+        public ApiProveedorController(IProveedorServicio servicio, IMapper mapper, IUriService uriService, ILogger<ApiProveedorController> logger)
         {
             _proveedoresSv = servicio;
             _mapper = mapper;

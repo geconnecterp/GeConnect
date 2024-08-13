@@ -14,7 +14,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 {
     public class RubroServicio:Servicio<RubroDto>,IRubroServicio
     {
-        private const string RutaAPI = "/api/rubro";
+        private const string RutaAPI = "/api/apirubro";
         private const string RubroLista = "/GetRubroLista";
         private readonly AppSettings _appSettings;
 

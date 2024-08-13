@@ -12,15 +12,15 @@ namespace gc.api.Controllers.Security
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class SecurityController : ControllerBase
+    public class ApiSecurityController : ControllerBase
     {
         private readonly ISecurityServicio _securityServicio;
         private readonly IPasswordService _passwordService;
-        private readonly ILogger<SecurityController> _logger;
+        private readonly ILogger<ApiSecurityController> _logger;
         private readonly IMapper _mapper;
 
-        public SecurityController(ISecurityServicio securityServicio, IPasswordService passwordService,IMapper mapper,
-            ILogger<SecurityController> logger)
+        public ApiSecurityController(ISecurityServicio securityServicio, IPasswordService passwordService,IMapper mapper,
+            ILogger<ApiSecurityController> logger)
         {
             _securityServicio = securityServicio;
             _passwordService = passwordService;

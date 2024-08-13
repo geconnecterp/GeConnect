@@ -13,7 +13,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 {
     public class CuentaServicio : Servicio<CuentaDto>, ICuentaServicio
     {
-        private const string RutaAPI = "/api/cuenta";
+        private const string RutaAPI = "/api/apicuenta";
         private const string ProveedorLista = "/GetProveedorLista";
         private readonly AppSettings _appSettings;
         public CuentaServicio(IOptions<AppSettings> options,ILogger<CuentaServicio> logger):base(options,logger)

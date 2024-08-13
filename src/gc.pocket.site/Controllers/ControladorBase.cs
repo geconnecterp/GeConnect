@@ -2,6 +2,7 @@
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes;
 using gc.infraestructura.EntidadesComunes.Options;
 using Microsoft.AspNetCore.Mvc;
@@ -186,7 +187,8 @@ namespace gc.pocket.site.Controllers
             get
             {
                 var json = _context.HttpContext.Session.GetString("ProveedoresLista");
-                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json)) { 
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
                     return new List<ProveedorListaDto>();
                 }
                 return JsonConvert.DeserializeObject<List<ProveedorListaDto>>(json);
@@ -233,6 +235,220 @@ namespace gc.pocket.site.Controllers
                 _context.HttpContext.Session.SetString("ProductosSeleccionados", json);
             }
         }
+
+        #region Variables de Productos que podrían ser utilizados en InfoProd
+        protected ProductoBusquedaDto ProductoBase
+        {
+            get
+            {
+                string json = _context.HttpContext.Session.GetString("ProductoBase");
+                if (string.IsNullOrEmpty(json))
+                {
+                    return new();
+                }
+                return JsonConvert.DeserializeObject<ProductoBusquedaDto>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("ProductoBase", json);
+            }
+        }
+        #endregion
+
+        #region Variables de Session para modulo InfoProd
+        #region InfoProdStkD
+        protected string InfoProdStkDId
+        {
+
+            get
+            {
+                string json = _context.HttpContext.Session.GetString("InfoProdStkDId");
+                if (string.IsNullOrEmpty(json))
+                {
+                    return string.Empty;
+                }
+                return JsonConvert.DeserializeObject<string>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("InfoProdStkDId", json);
+            }
+        }
+        protected List<InfoProdStkD> InfoProdStkDRegs
+        {
+            get
+            {
+                string json = _context.HttpContext.Session.GetString("InfoProdStkDRegs");
+                if (string.IsNullOrEmpty(json))
+                {
+                    return new();
+                }
+                return JsonConvert.DeserializeObject<List<InfoProdStkD>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("InfoProdStkDRegs", json);
+            }
+        }
+        #endregion
+        #region InfoProdStkBoxes
+        /// <summary>
+        /// esta propiedad tiene 2 parametros (id y depo)
+        /// </summary>
+        protected (string, string) InfoProdStkBoxesIds
+        {
+            get
+            {
+                string json = _context.HttpContext.Session.GetString("InfoProdStkBoxesIds");
+                if (string.IsNullOrEmpty(json))
+                {
+                    return (string.Empty, string.Empty);
+                }
+                return JsonConvert.DeserializeObject<(string, string)>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("InfoProdStkBoxesIds", json);
+            }
+        }
+        protected List<InfoProdStkBox> InfoProdStkBoxesRegs
+        {
+            get
+            {
+                string json = _context.HttpContext.Session.GetString("InfoProdStkBoxesRegs");
+                if (string.IsNullOrEmpty(json))
+                {
+                    return new();
+                }
+                return JsonConvert.DeserializeObject<List<InfoProdStkBox>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("InfoProdStkBoxesRegs", json);
+            }
+        }
+        #endregion
+        #region InfoProdStkA
+        protected string InfoProdStkAId
+        {
+
+            get
+            {
+                string json = _context.HttpContext.Session.GetString("InfoProdStkAId");
+                if (string.IsNullOrEmpty(json))
+                {
+                    return string.Empty;
+                }
+                return JsonConvert.DeserializeObject<string>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("InfoProdStkAId", json);
+            }
+        }
+        protected List<InfoProdStkA> InfoProdStkARegs
+        {
+            get
+            {
+                string json = _context.HttpContext.Session.GetString("InfoProdStkARegs");
+                if (string.IsNullOrEmpty(json))
+                {
+                    return new();
+                }
+                return JsonConvert.DeserializeObject<List<InfoProdStkA>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("InfoProdStkARegs", json);
+            }
+        }
+        #endregion
+        #region InfoProdMovStk
+        /// <summary>
+        /// las propiedades id depo tmov desde y hasta estan separadas por #
+        /// id#depo#tmov#desde#hasta en un solo string.
+        /// con ella se splitea el string generando un array de 5 componentes
+        /// </summary>
+        protected string InfoProdMovStkIds
+        {
+            get
+            {
+                string json = _context.HttpContext.Session.GetString("InfoProdMovStkIds");
+                if (string.IsNullOrEmpty(json))
+                {
+                    return string.Empty;
+                }
+                return JsonConvert.DeserializeObject<string>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("InfoProdMovStkIds", json);
+            }
+        }
+        protected List<InfoProdMovStk> InfoProdMovStkRegs
+        {
+            get
+            {
+                string json = _context.HttpContext.Session.GetString("InfoProdMovStkRegs");
+                if (string.IsNullOrEmpty(json))
+                {
+                    return new();
+                }
+                return JsonConvert.DeserializeObject<List<InfoProdMovStk>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("InfoProdMovStkRegs", json);
+            }
+        }
+        #endregion
+        #region InfoProdLP
+        protected string InfoProdLPId
+        {
+
+            get
+            {
+                string json = _context.HttpContext.Session.GetString("InfoProdLPId");
+                if (string.IsNullOrEmpty(json))
+                {
+                    return string.Empty;
+                }
+                return JsonConvert.DeserializeObject<string>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("InfoProdLPId", json);
+            }
+        }
+        protected List<InfoProdLP> InfoProdLPRegs
+        {
+            get
+            {
+                string json = _context.HttpContext.Session.GetString("InfoProdLPRegs");
+                if (string.IsNullOrEmpty(json))
+                {
+                    return new();
+                }
+                return JsonConvert.DeserializeObject<List<InfoProdLP>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("InfoProdLPRegs", json);
+            }
+        }
+        #endregion
+        #endregion
 
         protected void PresentaMensaje(string error, string warn, string info)
         {

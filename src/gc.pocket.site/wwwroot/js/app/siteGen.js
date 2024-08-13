@@ -1,12 +1,22 @@
-﻿function PostGen(data, path, retorno) {
+﻿
+function PostGenHtml(data, path, retorno) {
+    PostGen(data, path, retorno, fnError, "HTML");
+}
+function PostGenHtml(data, path, retorno,fxError) {
+    PostGen(data, path, retorno, fxError, "HTML");
+}
+function PostGen(data, path, retorno) {
+    PostGen(data, path, retorno, fnError,"json");
+}
+function PostGen(data, path, retorno, fxError,datatype) {
     $.ajax({
-        "dataType": 'json',
+        "dataType": datatype,
         "url": path,
         "type": "POST",
         "data": data,
         "success": retorno,
         //beforeSend: function () { Bloquear();},
-        error: fnError
+        error: fxError
     });
 }
 
