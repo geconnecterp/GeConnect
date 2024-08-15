@@ -12,6 +12,7 @@ namespace gc.api.Controllers.Almacen
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
     using System.Collections.Generic;
     using System.Net;
     using System.Reflection;
@@ -24,11 +25,11 @@ namespace gc.api.Controllers.Almacen
     public class ApiProductoController : ControllerBase
     {
         private readonly IMapper _mapper;
-        private IProductoServicio _productosSv;
+        private IApiProductoServicio _productosSv;
         private readonly IUriService _uriService;
         private readonly ILogger<ApiProductoController> _logger;
 
-        public ApiProductoController(IProductoServicio servicio, IMapper mapper, IUriService uriService, ILogger<ApiProductoController> logger)
+        public ApiProductoController(IApiProductoServicio servicio, IMapper mapper, IUriService uriService, ILogger<ApiProductoController> logger)
         {
             _productosSv = servicio;
             _mapper = mapper;
@@ -135,10 +136,10 @@ namespace gc.api.Controllers.Almacen
             return Ok(response);
         }
 
-        #region Acciones especificas de GECO
+        #region Acciones especificas de GECO INFOPROD
 
         [HttpGet]
-        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoDto>))]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoBusquedaDto>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
         public IActionResult ProductoBuscar([FromQuery] BusquedaBase search)
@@ -153,7 +154,7 @@ namespace gc.api.Controllers.Almacen
         }
 
         [HttpGet]
-        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoDto>))]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<InfoProdStkD>>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
         public IActionResult InfoProductoStkD(string id, string admId)
@@ -168,7 +169,7 @@ namespace gc.api.Controllers.Almacen
         }
 
         [HttpGet]
-        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoDto>))]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<InfoProdStkBox>>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
         public IActionResult InfoProductoStkBoxes(string id, string adm, string depo)
@@ -182,7 +183,7 @@ namespace gc.api.Controllers.Almacen
             return Ok(response);
         }
         [HttpGet]
-        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoDto>))]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<InfoProdStkA>>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
         public IActionResult InfoProductoStkA(string id, string admId)
@@ -196,7 +197,7 @@ namespace gc.api.Controllers.Almacen
             return Ok(response);
         }
         [HttpGet]
-        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoDto>))]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<InfoProdMovStk>>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
         public IActionResult InfoProductoMovStk(string id, string adm, string depo, string tmov, DateTime desde, DateTime hasta)
@@ -210,7 +211,7 @@ namespace gc.api.Controllers.Almacen
             return Ok(response);
         }
         [HttpGet]
-        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoDto>))]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<InfoProdLP>>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
         public IActionResult InfoProductoLP(string id)
@@ -222,6 +223,74 @@ namespace gc.api.Controllers.Almacen
             response = new ApiResponse<List<InfoProdLP>>(res);
 
             return Ok(response);
+        }
+        #endregion
+
+        #region Acciones para modulo RPR
+
+        [HttpGet]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RPRAutorizacionPendienteDto>>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult RPRAutorizacionPendiente(string adm)
+        {
+            ApiResponse<List<RPRAutorizacionPendienteDto>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.RPRObtenerAutorizacionPendiente(adm);
+
+            response = new ApiResponse<List<RPRAutorizacionPendienteDto>>(res);
+
+            return Ok(response);
+        }
+
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RPRRegistroResponseDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+
+        public IActionResult RPRRegistrar(string json)
+        {
+            ApiResponse<RPRRegistroResponseDto> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+
+            if (string.IsNullOrEmpty(json))
+            {
+                return BadRequest("No se recepcionó dato alguno.");
+            }
+
+            //validar json
+            if (!JsonValido(json))
+            {
+                return BadRequest("El JSON recepcionado no es válido");
+            }
+
+            var res = _productosSv.RPRRegistrarProductos(json);
+            response = new ApiResponse<RPRRegistroResponseDto>(res);
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Método destinado a validar la estructura del Json antes de ser enviado a la base de datos
+        /// </summary>
+        /// <param name = "json" ></ param >
+        /// < returns ></ returns >
+        private bool JsonValido(string json)
+        {
+            try
+            {
+                JObject.Parse(json);
+                return true;
+            }
+            catch (JsonReaderException ex)
+            {
+                _logger.LogError(ex.Message, "JSON No válido.");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message, "JSON No válido.");
+                return false;
+            }
         }
         #endregion
 

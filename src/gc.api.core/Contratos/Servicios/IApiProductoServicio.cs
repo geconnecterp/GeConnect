@@ -5,7 +5,7 @@ using gc.infraestructura.EntidadesComunes.Options;
 
 namespace gc.api.core.Contratos.Servicios
 {
-    public interface IProductoServicio : IServicio<Producto>
+    public interface IApiProductoServicio : IServicio<Producto>
     {
         ProductoBusquedaDto ProductoBuscar(BusquedaBase busqueda);
         List<ProductoListaDto> ProductoListaBuscar(BusquedaProducto search);
@@ -15,5 +15,7 @@ namespace gc.api.core.Contratos.Servicios
         List<InfoProdStkA> InfoProductoStkA(string id, string admId);
         List<InfoProdMovStk> InfoProductoMovStk(string id,string adm,string depo,string tmov,DateTime desde,DateTime hasta);
         List<InfoProdLP> InfoProductoLP(string id);
+        List<RPRAutorizacionPendienteDto> RPRObtenerAutorizacionPendiente(string adm);        
+        RPRRegistroResponseDto RPRRegistrarProductos(string json);
     }
 }

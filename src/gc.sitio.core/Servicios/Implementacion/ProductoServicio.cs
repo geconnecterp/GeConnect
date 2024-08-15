@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net;
+using System.Runtime.Intrinsics.Arm;
 
 namespace gc.sitio.core.Servicios.Implementacion
 {
@@ -23,6 +24,9 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string INFOPROD_STKA = "/InfoProductoStkA";
         private const string INFOPROD_MovStk = "/InfoProductoMovStk";
         private const string INFOPROD_LP = "/InfoProductoLP";
+
+        private const string RPRAUTOPEND = "/RPRAutorizacionPendiente";
+        private const string RPRREGISTRAR = "/RPRRegistrar";
 
         private readonly AppSettings _appSettings;
 
@@ -233,7 +237,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             HttpClient client = helper.InicializaCliente(token);
             HttpResponseMessage response;
 
-            var link = $"{_appSettings.RutaBase}{RutaAPI}{INFOPROD_StkBoxes}?id={id}";
+            var link = $"{_appSettings.RutaBase}{RutaAPI}{INFOPROD_LP}?id={id}";
 
             response = await client.GetAsync(link);
 
@@ -255,5 +259,69 @@ namespace gc.sitio.core.Servicios.Implementacion
                 return new();
             }
         }
+
+        public async Task<List<RPRAutorizacionPendienteDto>> RPRObtenerAutorizacionPendiente(string adm,string token)
+        {
+            ApiResponse<List<RPRAutorizacionPendienteDto>> apiResponse;
+
+            HelperAPI helper = new HelperAPI();
+
+            HttpClient client = helper.InicializaCliente(token);
+            HttpResponseMessage response;
+
+            var link = $"{_appSettings.RutaBase}{RutaAPI}{RPRAUTOPEND}?adm={adm}";
+
+            response = await client.GetAsync(link);
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(stringData))
+                {
+                    _logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda adm:{adm}");
+                    return new();
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RPRAutorizacionPendienteDto>>>(stringData);
+                return apiResponse.Data;
+            }
+            else
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                return new();
+            }
+        }
+
+        public async Task<RPRRegistroResponseDto> RPRRegistrarProductos(List<ProductoJsonDto> json, string token)
+        {
+            ApiResponse<RPRRegistroResponseDto> apiResponse;
+
+            HelperAPI helper = new HelperAPI();
+
+            HttpClient client = helper.InicializaCliente(json, token,out StringContent contentData);
+            HttpResponseMessage response;
+
+            var link = $"{_appSettings.RutaBase}{RutaAPI}{RPRREGISTRAR}";
+
+            response = await client.PostAsync(link,contentData);
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(stringData))
+                {
+                    _logger.LogWarning($"La API no devolvió dato alguno. ");
+                    return new();
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<RPRRegistroResponseDto>>(stringData);
+                return apiResponse.Data;
+            }
+            else
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                return new();
+            }
+        }       
     }
 }

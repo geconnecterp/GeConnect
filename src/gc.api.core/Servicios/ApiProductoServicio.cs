@@ -6,9 +6,7 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
-using gc.infraestructura.Helpers;
 using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Data;
 using System.Linq.Dynamic.Core;
@@ -16,9 +14,9 @@ using System.Runtime.Intrinsics.Arm;
 
 namespace gc.api.core.Servicios
 {
-    public class ProductoServicio : Servicio<Producto>, IProductoServicio
+    public class ApiProductoServicio : Servicio<Producto>, IApiProductoServicio
     {
-        public ProductoServicio(IUnitOfWork uow, IOptions<PaginationOptions> options) : base(uow, options)
+        public ApiProductoServicio(IUnitOfWork uow, IOptions<PaginationOptions> options) : base(uow, options)
         {
 
         }
@@ -257,6 +255,34 @@ namespace gc.api.core.Servicios
             List<ProductoListaDto> productos = _repository.EjecutarLstSpExt<ProductoListaDto>(sp, ps, true);
 
             return productos;
+        }
+
+        public List<RPRAutorizacionPendienteDto> RPRObtenerAutorizacionPendiente(string adm)
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_PENDIENTES;
+            /// varchar(30),  varchar(3),  varchar(4), varchar(8), @ bit, @ varchar(10) , @ bit, @ bit, @ bit, @ bit, @ bit, @ bit)  
+            var ps = new List<SqlParameter>()
+            {                
+                new("@adm_id",adm),                
+            };
+
+            List<RPRAutorizacionPendienteDto> productos = _repository.EjecutarLstSpExt<RPRAutorizacionPendienteDto>(sp, ps, true);
+
+            return productos;
+        }
+
+        public RPRRegistroResponseDto RPRRegistrarProductos(string json)
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_PENDIENTES;
+            /// varchar(30),  varchar(3),  varchar(4), varchar(8), @ bit, @ varchar(10) , @ bit, @ bit, @ bit, @ bit, @ bit, @ bit)  
+            var ps = new List<SqlParameter>()
+            {
+                new("@rpr",json),
+            };
+
+            List<RPRRegistroResponseDto> productos = _repository.EjecutarLstSpExt<RPRRegistroResponseDto>(sp, ps, true);
+
+            return productos.First();
         }
     }
 }

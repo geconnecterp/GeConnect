@@ -1,0 +1,51 @@
+﻿@model GridCore<RPRAutorizacionPendienteDto>
+
+@using X.PagedList.Web.Common
+@using gc.infraestructura.Dtos.Productos
+
+@{
+    var dataMod = new RPRAutorizacionPendienteDto();
+    var alt = true;
+    string clase = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive text-nowrap">
+            <table class="table mb-0">
+                <thead class=" table-dark">
+                    <tr class="header">
+                        <th scope="col">Proveedores</th>
+                        <th scope="col">N° Autorización</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ListaDatos)
+                    {
+                        if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+                        <tr class="@clase">
+                            <td>@item.Cta_denominacion</td>
+                            <td>@item.Rp</td>
+                            <td><a asp-action="SeleccionarAutorizacion" asp-controller="rpr" asp-area="pocketppal" class="btn btn-sm btn-success"> <i class="bx bxs-send "> Sel.</i></a></td>                           
+                        </tr>
+                    }
+                    @* <tr>
+                        <td colspan="9">
+                            @Html.PagedListPager(
+                                     (IPagedList)Model.ListaDatos,
+                                     page => Url.Action("Index", "producto", new { page = page, area = "Personas", sort = Model.Sort, sortdir = sortDirInv }), new PagedListRenderOptions
+                            {
+                                LiElementClasses = new string[] { "page-item" },
+                                PageClasses = new string[] { "page-link" },
+                                Display = PagedListDisplayMode.IfNeeded
+                            })
+                        </td>
+                    </tr> *@
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

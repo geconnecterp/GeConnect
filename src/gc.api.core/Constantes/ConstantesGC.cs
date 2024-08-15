@@ -26,6 +26,9 @@
             public const string SP_INFOPROD_MOVSTK = "dbo.spgeco_p_info_mov_stk";
             public const string SP_INFOPROD_LP = "dbo.spgeco_p_info_lp";
 
+            public const string SP_RPR_PENDIENTES = "spgeco_RPR_Pendientes";
+            public const string SP_RPR_REGISTRA = "spgeco_RPR_Registra";    
+
         }
 
         public static class MensajeError

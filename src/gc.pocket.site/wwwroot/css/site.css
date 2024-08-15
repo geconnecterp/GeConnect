@@ -35,6 +35,11 @@ body {
     opacity:1;
 }
 
+tr.alt {
+    background-color: #C0FFC0;
+}
+
+
 @media screen and (max-width: 480px){
     .textoEncabezado {
         font-weight: 500;

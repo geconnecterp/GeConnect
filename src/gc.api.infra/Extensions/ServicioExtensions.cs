@@ -33,7 +33,7 @@ namespace gc.api.infra.Extensions
             services.AddScoped<IBOrdenEstadoServicio, BOrdenEstadoServicio>();
             services.AddScoped<ICajaServicio, CajaServicio>();
             services.AddScoped<IProveedorServicio, ProveedorServicio>();
-            services.AddScoped<IProductoServicio, ProductoServicio>();
+            services.AddScoped<IApiProductoServicio, ApiProductoServicio>();
             services.AddScoped<ICuentaServicio, CuentaServicio>();
             services.AddScoped<IRubroServicio, RubroServicio>();
 
