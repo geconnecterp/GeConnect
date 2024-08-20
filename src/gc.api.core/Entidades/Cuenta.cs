@@ -60,7 +60,8 @@ namespace gc.api.core.Entidades
         public string? Cta_Emp_Ctaf { get; set; }
         public DateTime? Cta_Actu_Fecha { get; set; }
         public char? Cta_Actu { get; set; }
-
+        public char? Tipo { get; set; }
+        public char? Habilitada { get; set; }
 
         //public virtual ICollection<clientes> Clientess { get; set; }
         //public virtual ICollection<ctacte> Ctactes { get; set; }

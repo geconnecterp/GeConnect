@@ -4,6 +4,7 @@ using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.EntidadesComunes.ControlComun.CuentaComercial;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 
@@ -153,6 +154,49 @@ namespace gc.api.core.Servicios
             {
                 return res.Select(x => new ProveedorListaDto() { Cta_Id = x.Cta_Id,Cta_Denominacion=x.Cta_Denominacion,}).ToList();
             }
+        }
+
+        public List<CuentaDto> GetCuentaComercialLista(string texto, char tipo)
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_CUENTA_BUSQUEDA;
+            var ps = new List<SqlParameter>()
+            {
+                    new("@busqueda",texto),
+                    new("@busqueda_tipo",tipo)
+            };
+            var res = _repository.InvokarSp2Lst(sp, ps,true);
+            if (res.Count == 0)
+                return [];
+            else
+                return res.Select(x=> new CuentaDto() {
+                    #region Campos
+                    Cta_Id = x.Cta_Id,
+                    Cta_Denominacion=x.Cta_Denominacion,
+                    Tdoc_Id=x.Tdoc_Id,
+                    Cta_Documento=x.Cta_Documento,
+                    Cta_Domicilio=x.Cta_Domicilio,
+                    Cta_Localidad=x.Cta_Localidad,
+                    Cta_Cpostal=x.Cta_Cpostal,
+                    Prov_Id=x.Prov_Id,
+                    Dep_Id=x.Dep_Id,
+                    Cta_Te=x.Cta_Te,
+                    Cta_Email=x.Cta_Email,
+                    Cta_Www=x.Cta_Www,
+                    Afip_Id=x.Afip_Id,
+                    Nj_Id=x.Nj_Id,
+                    Cta_Ib_Nro=x.Cta_Ib_Nro,
+                    Cta_Ib_Regimen=x.Cta_Ib_Regimen,
+                    Tcb_Id=x.Tcb_Id,
+                    Cta_Bco_Cuenta_Nro=x.Cta_Bco_Cuenta_Nro,
+                    Cta_Bco_Cuenta_Cbu=x.Cta_Bco_Cuenta_Cbu,
+                    Cta_Alta=x.Cta_Alta,
+                    Cta_Obs=x.Cta_Obs,
+                    Cta_Emp=x.Cta_Emp,
+                    Cta_Emp_Legajo=x.Cta_Emp_Legajo,
+                    Tipo=x.Tipo,
+                    Habilitada=x.Habilitada,
+                    #endregion
+                }).ToList();
         }
     }
 }

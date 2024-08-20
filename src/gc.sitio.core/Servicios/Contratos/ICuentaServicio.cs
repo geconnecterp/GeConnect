@@ -10,5 +10,6 @@ namespace gc.sitio.core.Servicios.Contratos
     public interface ICuentaServicio: IServicio<CuentaDto>
     {
         List<ProveedorListaDto> ObtenerListaProveedores(string token);
+        Task<List<CuentaDto>> ObtenerListaCuentaComercial(string texto, string tipo, string token);
     }
 }

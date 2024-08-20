@@ -53,6 +53,8 @@ namespace gc.infraestructura.Dtos.Almacen
         public string Cta_Emp_Ctaf { get; set; }
         public DateTime? Cta_Actu_Fecha { get; set; }
         public char? Cta_Actu { get; set; }
+        public char? Tipo { get; set;}
+        public char? Habilitada { get; set; }
 
     }
 }

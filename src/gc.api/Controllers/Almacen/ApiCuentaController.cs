@@ -7,6 +7,7 @@ namespace gc.api.Controllers.Almacen
     using gc.infraestructura.Core.Interfaces;
     using gc.infraestructura.Core.Responses;
     using gc.infraestructura.Dtos.Almacen;
+    using gc.infraestructura.EntidadesComunes.ControlComun.CuentaComercial;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json;
@@ -64,6 +65,21 @@ namespace gc.api.Controllers.Almacen
             };
 
             Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
+
+            return Ok(response);
+        }
+
+        [HttpGet]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult GetCuentaComercialLista(string texto, char tipo)
+        {
+            ApiResponse<List<CuentaDto>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _cuentasSv.GetCuentaComercialLista(texto, tipo);
+
+            response = new ApiResponse<List<CuentaDto>>(res);
 
             return Ok(response);
         }
