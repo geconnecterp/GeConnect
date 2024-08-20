@@ -127,7 +127,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             GridCore<InfoProdStkD> datosIP;
             try
             {
-                string id = ProductoBase.P_Id;
+                string id = ProductoBase.P_id;
                 if (!id.Equals(InfoProdStkDId))
                 {
                     InfoProdStkDId = id;
@@ -169,7 +169,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             string depo = "%";
             try
             {
-                string id = ProductoBase.P_Id;
+                string id = ProductoBase.P_id;
                 var ids = InfoProdStkBoxesIds;
                 if (!(id.Equals(ids.Item1)))
                 {
@@ -225,7 +225,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             GridCore<InfoProdStkA> datosIP;
             try
             {
-                string id = ProductoBase.P_Id;
+                string id = ProductoBase.P_id;
 
                 if (!id.Equals(InfoProdStkAId))
                 {
@@ -268,7 +268,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             desde = DateTime.Today.AddDays(-7);
             try
             {
-                string id = ProductoBase.P_Id;
+                string id = ProductoBase.P_id;
                 var ids = InfoProdMovStkIds.Split('#');
                 if (!(id.Equals(ids[0]) && depo.Equals(ids[1]) && tmov.Equals(ids[2]) && desde == ids[3].ToDateTime() && hasta == ids[4].ToDateTime()))
                 {
@@ -307,7 +307,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             GridCore<InfoProdLP> datosIP;
             try
             {
-                string id = ProductoBase.P_Id;
+                string id = ProductoBase.P_id;
                 if (!id.Equals(InfoProdLPId))
                 {
                     InfoProdLPId = id;

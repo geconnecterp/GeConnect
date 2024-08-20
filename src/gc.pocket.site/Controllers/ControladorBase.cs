@@ -50,6 +50,9 @@ namespace gc.pocket.site.Controllers
             get { return _options.Nombre; }
         }
 
+        #region Autenticación
+
+     
         public string Token
         {
             get { return _context.HttpContext.Session.GetString("JwtToken"); }
@@ -181,7 +184,7 @@ namespace gc.pocket.site.Controllers
                 return usuario;
             }
         }
-
+  #endregion
         public List<ProveedorListaDto> ProveedoresLista
         {
             get
@@ -448,6 +451,46 @@ namespace gc.pocket.site.Controllers
             }
         }
         #endregion
+        #endregion
+
+        #region Variables de Session para módulo RPR
+        public List<RPRAutorizacionPendienteDto> AutorizacionesPendientes
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("AutorizacionesPendientes");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<RPRAutorizacionPendienteDto>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("AutorizacionesPendientes", json);
+            }
+        }
+
+        public RPRAutorizacionPendienteDto AutorizacionPendienteSeleccionada
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("AutorizacionPendienteSeleccionada");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return null;
+                }
+                return JsonConvert.DeserializeObject<RPRAutorizacionPendienteDto>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("AutorizacionPendienteSeleccionada", json);
+            }
+        }
+
+        
         #endregion
 
         protected void PresentaMensaje(string error, string warn, string info)

@@ -129,7 +129,7 @@ namespace gc.api.core.Servicios
 
         public List<InfoProdLP> InfoProductoLP(string id)
         {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_INFOPROD_MOVSTK;
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_INFOPROD_LP;
 
             var ps = new List<SqlParameter>()
             {

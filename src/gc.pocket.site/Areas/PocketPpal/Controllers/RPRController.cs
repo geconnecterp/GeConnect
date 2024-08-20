@@ -34,7 +34,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             {
                 //se buscará todas las autorizaciones pendientes
                 pendientes = await _productoServicio.RPRObtenerAutorizacionPendiente(AdministracionId, TokenCookie);
-
+                //resguardo lista de autorizaciones pendientes 
+                AutorizacionesPendientes = pendientes;
                 grid = ObtenerAutorizacionPendienteGrid(pendientes);
             }
             catch (Exception ex)
@@ -55,9 +56,31 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             return new GridCore<RPRAutorizacionPendienteDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Cta_denominacion", SortDir = "ASC" };
         }
 
-        //public async Task<IActionResult> SeleccionarAutorizacion()
-        //{
+        [HttpGet]
+        public async Task<IActionResult> CargarProductos(string rp)
+        {
+            RPRAutorizacionPendienteDto auto=new();
+            try
+            {
+                auto = AutorizacionesPendientes.SingleOrDefault(x => x.Rp.Equals(rp));
+                if (auto == null)
+                {
+                    TempData["Warn"] = $"No se pudo seleccionar la Autorización {rp}. Intente de nuevo.";
+                    return RedirectToAction("Index");
+                }
+                //este viewbag es para que aparezca en la segunda fila del encabezado la leyenda que se quiera.
+                //en este caso presenta el numero de autorización pendiente y el proveedor al que le pertenece.
+                ViewBag.AppItem = new AppItem { Nombre = $"Auto:{auto.Rp}-{auto.Cta_denominacion}" };
+                AutorizacionPendienteSeleccionada = auto;              
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener Autorizaciones pendientes");
+                TempData["error"] = "Hubo algun problema al intentar obtener las Autorizaciones Pendientes. Si el problema persiste informe al Administrador";
+                return RedirectToAction("Index");
+            }
 
-        //}
+            return View(auto);
+        }
     }
 }
