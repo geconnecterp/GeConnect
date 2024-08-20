@@ -35,7 +35,11 @@
     <partial name="_headerApp" model="model" />
     <div class="container" id="formulario" style="display:none">
         <main role="main" class="pb-0">
-            @RenderBody()
+            <div class="card">
+                <div class="card-body">
+                    @RenderBody()
+                </div>
+            </div>
         </main>
     </div>
 

@@ -12,10 +12,10 @@ function verificaEstado() {
 
         //traigo la variable productoBase e hidrato componentes
         var prod = productoBase;
-        $("#Id").val(prod.p_Id);      
+        /*$("#P_id").val(prod.p_id);     */ 
         $("#Descipcion").val(prod.p_desc);      
         $("#Rubro").val(prod.rub_desc);
-
+        $("#up").val(prod.up_)
         $("#estadoFuncion").val(false);
 
         CerrarWaiting();
