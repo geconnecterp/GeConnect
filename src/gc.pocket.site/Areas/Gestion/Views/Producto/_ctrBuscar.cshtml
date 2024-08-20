@@ -5,11 +5,11 @@
 <div class="card col-sm-12">
     <div class="card-body">
         <form asp-action="Busqueda" asp-controller="producto" asp-area="gestion" id="ctrBusquedaBase" method="post" class="row g-3">
-            <div class="input-group">
+            <div class="input-group input-group-sm">
                 <span class="input-group-text">ID:</span>
-                <input type="text" asp-for="Busqueda" placeholder="Ingresar ID de Producto, EAN o Id de Proveedor." class="form-control" />
-
-               @*  <button type="button" class="btn btn-sm btn-success" id="btnBuscar">Buscar</button> *@
+                <input type="text" class="form-control" asp-for="Busqueda" placeholder="Ingresar ID de Producto, EAN o Id de Proveedor." />
+                <button type="button" class="btn btn-sm" id="btnBusquedaBase"><i class="bx bx-search btn-xs text-success"></i> Buscar</button>
+                @Html.Hidden("estadoFuncion", false)
             </div>
         </form>
     </div>

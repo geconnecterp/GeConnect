@@ -39,6 +39,20 @@ tr.alt {
     background-color: #C0FFC0;
 }
 
+.table-wrapper {
+    max-height: 500px;
+    max-width:98%;
+    overflow: auto;
+    /*display: inline-block;*/
+}
+.alinearDerecha{
+    justify-content:flex-end;
+}
+
+.sinbordefondo{
+    background-color: transparent;
+    border: 0;
+}
 
 @media screen and (max-width: 480px){
     .textoEncabezado {

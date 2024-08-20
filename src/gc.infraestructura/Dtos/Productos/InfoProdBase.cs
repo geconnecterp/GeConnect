@@ -6,6 +6,8 @@
         public string P_id { get; set; } = string.Empty;
         public decimal Ps_stk { get; set; }
         public decimal Ps_bulto { get; set; }
+        public int Up_id { get; set; }
+        public string Up_desc { get; set; } = string.Empty;
     }
     public class InfoProdExt : InfoProdBase
     {
@@ -35,19 +37,22 @@
 
     public class InfoProdMovStk
     {
-        public string P_id { get; set; }= string.Empty;
-        public string Sm_fecha_ind { get; set; } = string.Empty;
-        public string sm_concepto { get; set; } = string.Empty;
-        public string sm_tipo { get; set; } = string.Empty;
-        public string tco_id { get; set; } = string.Empty;
-        public string cm_compte { get; set; } = string.Empty;
-        public string Depo_id { get; set; } = string.Empty;
-        public string Depo_nombre { get; set; } = string.Empty;
-        public decimal Sm_cantidad { get; set; }
-        public decimal Sm_cantidad_b { get; set; }
-        public decimal sm_stk { get; set; }
-        public decimal sm_stk_b { get; set; }
-
+        public string P_id { get; set; }= string.Empty;//
+        public string Sm_fecha { get; set; } = string.Empty;//
+        public string Sm_concepto { get; set; } = string.Empty;//
+        public string Sm_tipo { get; set; } = string.Empty;//
+        public string Tco_id { get; set; } = string.Empty;//
+        public string Cm_compte { get; set; } = string.Empty;//
+        public string Depo_id { get; set; } = string.Empty;//
+        public string Depo_nombre { get; set; } = string.Empty;//
+        public string Box_id { get; set; }=string.Empty;
+        public string Sm_desc { get; set; } = string.Empty;
+        public string Sm_es { get; set; } = string.Empty;
+        public string Sm_es_b { get; set; } = string.Empty; 
+        public decimal Sm_stk { get; set; }
+        public decimal Sm_stk_b { get; set; }
+        public int Up_id { get; set; }
+        public string Up_desc { get; set; } = string.Empty;
     }
 
     public class InfoProdLP
@@ -67,5 +72,7 @@
         public int p_unidad_vta { get; set; }
         public DateTime p_actu_fecha { get; set; }
         public string usu_id { get; set; }= string.Empty;
+        public int Up_id { get; set; }
+        public string Up_desc { get; set; } = string.Empty;
     }
 }

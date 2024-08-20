@@ -64,11 +64,13 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         [HttpPost]
         public async Task<JsonResult> BusquedaBase(string busqueda, bool acumularProductos=false)
         {
-            ProductoBusquedaDto producto=new ProductoBusquedaDto { P_Id = "0000-0000" };
+            ProductoBusquedaDto producto=new ProductoBusquedaDto { P_id = "0000-0000" };
             if (string.IsNullOrEmpty(busqueda))
             {
                 return Json(new { error = false, producto });
             }
+
+            InicializaVariablesBusquedaBase();
 
             BusquedaBase buscar = new BusquedaBase
             {
@@ -81,7 +83,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
 
             producto = await _productoServicio.BusquedaBaseProductos(buscar,TokenCookie);
 
-            if (producto != null && !string.IsNullOrEmpty(producto.P_Id))
+            if (producto != null && !string.IsNullOrEmpty(producto.P_id))
             {
                 //se resguarda el producto recien buscado.
                 ProductoBase = producto;
@@ -94,6 +96,23 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
                 return Json(new { error = false, producto });
             }
             return Json(new { error = true, msg = "El producto no ha sido identificado." });
+        }
+
+        private void InicializaVariablesBusquedaBase()
+        {
+            #region Variables de InfoProd
+            InfoProdStkDId = "";
+            InfoProdStkDRegs = [];
+            InfoProdStkBoxesIds = ("","");
+            InfoProdStkBoxesRegs = [];
+            InfoProdStkAId = "";
+            InfoProdStkARegs = [];
+            InfoProdMovStkIds = "";
+            InfoProdMovStkRegs = [];
+            InfoProdLPId = "";
+            InfoProdLPRegs = [];
+            
+            #endregion
         }
 
         [HttpPost]

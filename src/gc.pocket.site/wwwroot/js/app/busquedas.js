@@ -1,5 +1,7 @@
 ﻿$(document).ready(function () {
 
+    $(document).keypress(verificaTeclaDeBusqueda);
+
     //declaramos el input de proveedor como autocomplete
     $("#ProveedorNombre").autocomplete({
         source: function (request, response) {
@@ -11,7 +13,7 @@
                 data: data,
                 success: function (obj) {
                     response($.map(obj, function (item) {
-                        var texto = item.cta_Denominacion;
+                        var texto = item.cta_Id + "-" + item.cta_Denominacion;
                         return { label: texto, value: item.cta_Denominacion, id: item.cta_Id };
                     }));
                 }
@@ -69,9 +71,18 @@ function buscarProducto() {
             else {
                 productoBase = null;
                 $("#estadoFuncion").val(false);
-            CerrarWaiting();
+                CerrarWaiting();
             }
         }
+        return true;
     });
 }
 
+function verificaTeclaDeBusqueda(e) {
+    if (e.which == "13") {
+
+        $("#btnBusquedaBase").trigger("click");
+        $("#btnBusquedaBase").prop("disabled", true);
+        return false;
+    }
+}

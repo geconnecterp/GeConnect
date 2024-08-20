@@ -1,0 +1,64 @@
+﻿@model RPRAutorizacionPendienteDto
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
+    var buscar = new BusquedaProducto();
+}
+
+<div class="container">
+    <div class="row">
+        <div class="input-group d-sm-inline">
+            <span>Autorización:</span>
+            <input type="text" value="@Model.Rp" class="form-control-sm sinbordefondo" readonly />
+            <span>Prov.</span>
+            <input type="text" value="@Model.Cta_denominacion" class="form-control-sm sinbordefondo" readonly />
+
+        </div>
+    </div>
+
+    <div class="row d-sm-inline-block">
+        <div class="col-sm-9">
+            <partial name="~/areas/gestion/views/producto/_ctrbuscar.cshtml" model="@buscar" />
+        </div>
+        <div class="col-sm-3">
+            <button type="button" class="btn btn-sm btn-success mb-4" id="btnBuscar">Buscar</button>
+            @Html.Hidden("estadoFuncion", false)
+        </div>
+    </div>
+    <div class="row">
+        <div class="input-group d-sm-inline">
+            <span class="input-group-text">ID</span>
+            <input type="text" class="form-control-sm sinbordefondo" id="Id" readonly />
+            <span class="input-group-text">Desc</span>
+            <input type="text" class="form-control-sm sinbordefondo" id="Descipcion" readonly />
+        </div>
+        <div class="input-group d-sm-inline">
+            <span class="input-group-text">Rubro</span>
+            <input type="text" id="Rubro" class="form-control-sm sinbordefondo" readonly />
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script type="text/javascript">
+        //funcionalidad busqueda avanzada
+        var productoBase = null; //se hidrata en busquedas.
+        var funcionBusquedaAvanzada = false;
+        var buscarProveedorUrl = "@Url.Action("Buscar", "proveedor", new { area = "gestion" })";
+        var buscarRubroUrl = "@Url.Action("Buscar", "rubro", new { area = "gestion" })";
+        var busquedaProdBase = "@Url.Action("BusquedaBase", "producto", new { area = "gestion" })";
+
+        //urls de grillas
+        var infoProdStkDUrl = "@Url.Action("InfoProductoStkD", "infoprod", new { area = "PocketPpal" })";
+        var infoProdBoxUrl = "@Url.Action("InfoProductoStkBoxes", "infoprod", new { area = "PocketPpal" })";
+        var infoProdStkAUrl = "@Url.Action("InfoProductoStkA", "infoprod", new { area = "PocketPpal" })";
+        var infoProdMovUrl = "@Url.Action("InfoProductoMovStk", "infoprod", new { area = "PocketPpal" })";
+        var infoProdLPUrl = "@Url.Action("InfoProductoLP", "infoprod", new { area = "PocketPpal" })";
+
+    </script>
+    <script src="~/js/app/busquedas.js" type="text/javascript"></script>
+    <script src="~/js/app/infoRpr.js" type="text/javascript"></script>
+
+}

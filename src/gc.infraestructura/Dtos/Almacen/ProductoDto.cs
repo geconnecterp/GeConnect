@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.Runtime.InteropServices.Marshalling;
 
 namespace gc.infraestructura.Dtos.Almacen
 {

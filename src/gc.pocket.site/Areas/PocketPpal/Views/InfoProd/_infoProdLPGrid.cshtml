@@ -1,10 +1,10 @@
-﻿@model GridCore<InfoProdStkD>
+﻿@model GridCore<InfoProdLP>
 
 @using X.PagedList.Web.Common
 @using gc.infraestructura.Dtos.Productos
 
 @{
-    var dataMod = new InfoProdStkD();
+    var dataMod = new InfoProdLP();
     var alt = true;
     string clase = string.Empty;
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
@@ -16,9 +16,8 @@
             <table class="table mb-0 table-dark">
                 <thead>
                     <tr class="header">
-                        <th scope="col">Depósito</th>
-                        <th scope="col">Stk</th>
-                        <th scope="col">FV</th>
+                        <th scope="col">Lista</th>
+                        <th scope="col">Precio</th>
 
                     </tr>
                 </thead>
@@ -28,22 +27,21 @@
                         if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
                         <tr class="@clase">
-                            <td>@item.Depo_nombre</td>
-                            <td>@item.Ps_stk</td>
-                            <td>@item.Vto</td>                           
+                            <td>@item.Lp_desc</td>
+                            <td>@item.p_pneto</td>
                         </tr>
                     }
                     @* <tr>
-                        <td colspan="9">
-                            @Html.PagedListPager(
-                                     (IPagedList)Model.ListaDatos,
-                                     page => Url.Action("Index", "producto", new { page = page, area = "Personas", sort = Model.Sort, sortdir = sortDirInv }), new PagedListRenderOptions
-                            {
-                                LiElementClasses = new string[] { "page-item" },
-                                PageClasses = new string[] { "page-link" },
-                                Display = PagedListDisplayMode.IfNeeded
-                            })
-                        </td>
+                    <td colspan="9">
+                    @Html.PagedListPager(
+                    (IPagedList)Model.ListaDatos,
+                    page => Url.Action("Index", "producto", new { page = page, area = "Personas", sort = Model.Sort, sortdir = sortDirInv }), new PagedListRenderOptions
+                    {
+                    LiElementClasses = new string[] { "page-item" },
+                    PageClasses = new string[] { "page-link" },
+                    Display = PagedListDisplayMode.IfNeeded
+                    })
+                    </td>
                     </tr> *@
                 </tbody>
             </table>
