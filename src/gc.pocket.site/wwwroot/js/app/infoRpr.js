@@ -9,8 +9,8 @@
 
     $("#estadoFuncion").on("change", verificaEstado); //este control debe ser insertado el mismo o similar para cada modulo.
 
-    $(".inputEditable").on("keypress",analizaEnterInput);
-    $(".inputEditable").on("focus", function () { $(this).select(); })
+    $(".inputEditable").on("keypress", analizaEnterInput);
+    $("input").on("focus", function () { $(this).select(); })
 });
 
 function analizaEnterInput(e) {
@@ -18,7 +18,7 @@ function analizaEnterInput(e) {
         //verifico cuantos input habilitados encuentro
         var $nextInput = $(this).nextAll("input:not(:disabled)");
         if ($nextInput.length) {
-            $nextInput.first().focus();  
+            $nextInput.first().focus();
             return true;
         }
     }
@@ -33,29 +33,22 @@ function verificaEstado(e) {
         //traigo la variable productoBase e hidrato componentes
         var prod = productoBase;
 
-        if (prod.p_activo === 'S') {
+        /*$("#P_id").val(prod.p_id);     */
+        $("#Descipcion").val(prod.p_desc);
+        $("#Rubro").val(prod.rub_desc);
+        $("#estadoFuncion").val(false);
+        $("#up").val(prod.p_unidad_pres).prop("disabled", false);
+        $("#box").val(0).prop("disabled", false);
+        $("#unid").val(0).prop("disabled", false);
+        if (prod.p_con_vto !== "N") {
+            var f = new Date();
+            var month = ('0' + (f.getMonth() + 1)).slice(-2); // Asegura que el mes siempre tenga dos dígitos
+            var day = ('0' + f.getDate()).slice(-2); // Asegura que el día siempre tenga dos dígitos
+            var newfecha = f.getFullYear() + '-' + month + '-' + day;
+            $("#fvto").prop("disabled", false).val(newfecha);
+        }
+        $("#up").focus();
 
-            /*$("#P_id").val(prod.p_id);     */
-            $("#Descipcion").val(prod.p_desc);
-            $("#Rubro").val(prod.rub_desc);
-            $("#estadoFuncion").val(false);
-            $("#up").val(prod.p_unidad_pres).prop("disabled", false);
-            $("#box").val(0).prop("disabled", false);
-            $("#unid").val(0).prop("disabled", false);
-            if (prod.p_con_vto !== "N") {
-                var f = new Date();
-                var month = ('0' + (f.getMonth() + 1)).slice(-2); // Asegura que el mes siempre tenga dos dígitos
-                var day = ('0' + f.getDate()).slice(-2); // Asegura que el día siempre tenga dos dígitos
-                var newfecha = f.getFullYear() + '-' + month + '-' + day;
-                $("#fvto").prop("disabled", false).val(newfecha);
-            }
-            $("#up").focus();
-        }
-        else {
-            ControlaMensajeError(prod.msj);
-            //se hace foco en el input de busqueda
-            $("input#Busqueda").focus();
-        }
         CerrarWaiting();
 
     }
