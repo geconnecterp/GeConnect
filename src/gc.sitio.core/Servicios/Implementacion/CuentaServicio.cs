@@ -24,7 +24,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             _appSettings = options.Value;
         }
 
-        public async Task<List<CuentaDto>> ObtenerListaCuentaComercial(string texto, string tipo, string token)
+        public async Task<List<CuentaDto>> ObtenerListaCuentaComercial(string texto, char tipo, string token)
         {
             try
             {
