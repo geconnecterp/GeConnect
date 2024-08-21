@@ -8,6 +8,7 @@ using gc.pocket.site.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Microsoft.VisualBasic;
 
 namespace gc.pocket.site.Areas.Gestion.Controllers
 {
@@ -85,6 +86,25 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
 
             if (producto != null && !string.IsNullOrEmpty(producto.P_id))
             {
+                bool warn = false;
+                string msg = string.Empty;
+                //validación de Estado
+                if (!producto.P_activo.Equals("A"))
+                {
+                    //se valida que no esta activo. Valores Noactivo Discontinuo
+                    return Json(new{error = true, msg = $"El producto {producto.P_desc} se encuentra {producto.Msj}"});
+                }
+                //Validación si pertenece o no al proveedor
+
+                if (AutorizacionPendienteSeleccionada != null &&
+                    !AutorizacionPendienteSeleccionada.Cta_id.Equals(producto.Cta_id))
+                {
+                    warn = true;
+                    msg = $"El Producto NO pertenece al actual proveedor. Pertenece al Proveedor {producto.Cta_denominacion}.";
+                }
+
+                ///ImPLEMENTAR LA VENTANA DE MENSAJE CON OPCIONES.
+
                 //se resguarda el producto recien buscado.
                 ProductoBase = producto;
                 if (acumularProductos)
@@ -93,7 +113,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
                     productos.Add(producto);
                     ProductosSeleccionados = productos;
                 }
-                return Json(new { error = false, producto });
+                return Json(new { error = false, producto,warn,msg });
             }
             return Json(new { error = true, msg = "El producto no ha sido identificado." });
         }

@@ -54,6 +54,10 @@ tr.alt {
     border: 0;
 }
 
+.inputEditable {
+    border-color:rgb(70, 196, 104);
+}
+
 @media screen and (max-width: 480px){
     .textoEncabezado {
         font-weight: 500;

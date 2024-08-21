@@ -1,0 +1,20 @@
+﻿<!-- Modal -->
+<div class="modal fade" id="msjModal" tabindex="-1" role="dialog" aria-labelledby="msjTitulo" data-keyboard="false" data-backdrop="static" aria-hidden="true" style="z-index: 999999;">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div id="msjHeader" class="modal-header">
+                <span id="msjIcono" class="" style="margin-top: -2px; margin-right: 5px;"></span>
+                <h5 id="msjTitulo">¡Atención!</h5>
+                <button type="button" class="close" onclick="AceptarMensaje('NO');" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div id="msjContenido" class="modal-body">
+            </div>
+            <div class="modal-footer">
+                <button id="btnMensajeAceptar" type="button" class="btn btn-primary">Aceptar</button>
+                <button id="btnMensajeCancelar" type="button" class="btn btn-secondary" data-dismiss="modal" onclick="CerrarMensaje('NO');">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>

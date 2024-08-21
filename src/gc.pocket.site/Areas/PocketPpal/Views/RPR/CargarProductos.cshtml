@@ -9,34 +9,42 @@
 
 <div class="container">
     <div class="row">
-        <div class="input-group d-sm-inline">
-            <span>Autorización:</span>
-            <input type="text" value="@Model.Rp" class="form-control-sm sinbordefondo" readonly />
-            <span>Prov.</span>
-            <input type="text" value="@Model.Cta_denominacion" class="form-control-sm sinbordefondo" readonly />
-
-        </div>
+        <div class="col-sm-12">
+            <div class="input-group input-group-sm">
+                <span>Autorización:</span>
+                <input type="text" value="@Model.Rp" class="form-control-sm sinbordefondo" readonly />
+                <span>Prov.</span>
+                <input type="text" value="@Model.Cta_denominacion" class="form-control-sm sinbordefondo" readonly />
+            </div>
+        </div>        
     </div>
-
-    <div class="row d-sm-inline-block">
-        <div class="col-sm-9">
-            <partial name="~/areas/gestion/views/producto/_ctrbuscar.cshtml" model="@buscar" />
-        </div>
-        <div class="col-sm-3">
-            <button type="button" class="btn btn-sm btn-success mb-4" id="btnBuscar">Buscar</button>
-            @Html.Hidden("estadoFuncion", false)
+    <partial name="~/areas/gestion/views/producto/_ctrbuscar.cshtml" model="@buscar" />
+    <div class="row">
+        <div class="col-sm-12">
+          
+                <div class="input-group input-group-sm">
+                    @* <span class="input-group-text">ID</span>
+                    <input type="text" class="form-control " id="P_id" readonly /> *@
+                    <span class="input-group-text">Desc</span>
+                    <input type="text" class="form-control " id="Descipcion" readonly />
+                    <span class="input-group-text">Rubro</span>
+                    <input type="text" id="Rubro" class="form-control " readonly />
+                </div>
         </div>
     </div>
     <div class="row">
-        <div class="input-group d-sm-inline">
-            <span class="input-group-text">ID</span>
-            <input type="text" class="form-control-sm sinbordefondo" id="Id" readonly />
-            <span class="input-group-text">Desc</span>
-            <input type="text" class="form-control-sm sinbordefondo" id="Descipcion" readonly />
-        </div>
-        <div class="input-group d-sm-inline">
-            <span class="input-group-text">Rubro</span>
-            <input type="text" id="Rubro" class="form-control-sm sinbordefondo" readonly />
+        <div class="col-sm-12">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text">UP:</span>
+                <input type="number" class="form-control inputEditable" name="up" id="up" disabled />
+                <span class="input-group-text">FVto:</span>
+                <input type="date" class="form-control inputEditable" name="fvto" id="fvto" disabled />
+                <span class="input-group-text">Box:</span>
+                <input type="number" class="form-control inputEditable" name="box" id="box" disabled />
+                <span class="input-group-text">Unid:</span>
+                <input type="number" class="form-control inputEditable" name="unid" id="unid" disabled />
+                <button type="button" class="btn btn-success"><i class="bx bx-plus-circle"></i> </button>
+            </div>
         </div>
     </div>
 </div>

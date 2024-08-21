@@ -1,6 +1,6 @@
 ﻿$(document).ready(function () {
 
-    $(document).keypress(verificaTeclaDeBusqueda);
+    $("input#Busqueda").keypress(verificaTeclaDeBusqueda);
 
     //declaramos el input de proveedor como autocomplete
     $("#ProveedorNombre").autocomplete({
@@ -60,22 +60,45 @@ function buscarProducto() {
             ControlaMensajeError(obj.msg);
             productoBase = null;
             $("#estadoFuncion").val(false);
+            $("#btnBusquedaBase").prop("disabled", false);
             CerrarWaiting();
+            return true;
         }
         else {
             if (obj.producto.p_Id !== "0000-0000") {
-                productoBase = obj.producto;
-                $("#estadoFuncion").val(true);
-                $("#estadoFuncion").trigger("change");
+                //debo verificar si el valor del warn es true.
+                //esto permite peresentar un mensaje
+                if (obj.warn === true) {
+                    AbrirMensaje("ATENCIÓN!", obj.msg, function (resp) {
+                        if (resp = "SI") {
+                            productoBase = obj.producto;
+                            $("#estadoFuncion").val(true);
+                            $("#estadoFuncion").trigger("change");
+                            return true;
+                        }
+                        else {
+                            //se deniega
+                            productoBase = null;
+                            $("#estadoFuncion").val(false);
+                            $("#btnBusquedaBase").prop("disabled", false);
+                            CerrarWaiting();
+                            return true;
+                        }
+                    },
+                        true, ["Aceptar", "Denegar"], "Warning!", null);
+                }
             }
             else {
                 productoBase = null;
                 $("#estadoFuncion").val(false);
+                ControlaMensajeWarning(obj.msg);
+                $("#btnBusquedaBase").prop("disabled", false);
                 CerrarWaiting();
+                return true;
             }
         }
-        return true;
     });
+    return true;
 }
 
 function verificaTeclaDeBusqueda(e) {
@@ -83,6 +106,7 @@ function verificaTeclaDeBusqueda(e) {
 
         $("#btnBusquedaBase").trigger("click");
         $("#btnBusquedaBase").prop("disabled", true);
-        return false;
+        return true;
+
     }
 }

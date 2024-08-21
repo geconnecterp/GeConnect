@@ -2,7 +2,10 @@
 
     //cargo el js para llamar desde esta funcion a la función de busqueda
     //verifico si se hace click en el boton buscar
-    $("#btnBusquedaBase").on("click", function () { buscarProducto(); }); 
+    $("#btnBusquedaBase").on("click", function () {
+        buscarProducto();
+        return true;
+    }); 
     $("#estadoFuncion").on("change", verificaEstado); //este control debe ser insertado el mismo o similar para cada modulo.
 
 //    $("#btnStkD").click(PresentarStkD);
@@ -34,6 +37,7 @@ function verificaEstado() {
         $("#btnBusquedaBase").prop("disabled", false);
 
     }
+    return true;
 }
 
 function infoProdStkD(id) {
