@@ -1,6 +1,6 @@
 ﻿$(document).ready(function () {
 
-    $(document).keypress(verificaTeclaDeBusqueda);
+    $("input#Busqueda").keypress(verificaTeclaDeBusqueda);
 
     //declaramos el input de proveedor como autocomplete
     $("#ProveedorNombre").autocomplete({
@@ -83,6 +83,7 @@ function verificaTeclaDeBusqueda(e) {
 
         $("#btnBusquedaBase").trigger("click");
         $("#btnBusquedaBase").prop("disabled", true);
-        return false;
+        return true;
+
     }
 }
