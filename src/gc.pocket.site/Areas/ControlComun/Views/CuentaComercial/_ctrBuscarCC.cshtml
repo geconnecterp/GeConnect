@@ -1,12 +1,11 @@
 ﻿@using gc.infraestructura.EntidadesComunes.ControlComun.CuentaComercial
 @model BusquedaCuentaComercial
-@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
 }
 
 <div class="card col-sm-12">
 	<div class="card-body">
-        <form asp-action="BusquedaCuentaComercial" asp-controller="cuenta" asp-area="controlcomun" id="ctrBusqueda" method="post" class="row g-3">
+        @* <form asp-action="BusquedaCuentaComercial" asp-controller="cuenta" asp-area="controlcomun" id="ctrBusqueda" method="post" class="row g-3"> *@
             <div class="input-group input-group-sm">
                 <span class="input-group-text">Cuenta:</span>
                 <input type="text" class="form-control" name="Cuenta" id="Cuenta" />
@@ -15,8 +14,8 @@
                 <picture><img /></picture>
                 @Html.Hidden("estadoFuncion", false)
             </div>
-        </form>
-	</div>
+@*         </form>
+ *@	</div>
 </div>
 
 @section scripts {

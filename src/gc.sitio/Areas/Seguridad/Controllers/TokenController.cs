@@ -55,11 +55,12 @@ namespace gc.sitio.Areas.Seguridad.Controllers
             cliente.DefaultRequestHeaders.Add("X-ClientUsr", ip.ToString());
 
             cliente.BaseAddress = new Uri(_configuration["AppSettings:RutaBase"]);
-            var userModel = new { autenticar.UserName, autenticar.Password };
+            var admid = autenticar.Admid ?? "0000";
+            var userModel = new { autenticar.UserName, autenticar.Password, admid };
             var userJson = JsonConvert.SerializeObject(userModel);
             var contentData = new StringContent(userJson, Encoding.UTF8, "application/json");
 
-            var response = await cliente.PostAsync("/api/token", contentData);
+            var response = await cliente.PostAsync("/api/apitoken", contentData);
 
             if (response.StatusCode == HttpStatusCode.OK)
             {
@@ -76,9 +77,12 @@ namespace gc.sitio.Areas.Seguridad.Controllers
 
 
 
-                    var roleUser = tokenS.Claims.First(c => c.Type.Contains("role")).Value.Split(',');
+                    //var roleUser = tokenS.Claims.First(c => c.Type.Contains("role")).Value.Split(',');
+                    //var email = tokenS.Claims.First(c => c.Type.Contains("email")).Value;
+                    //var user = tokenS.Claims.First(c => c.Type.Contains("User")).Value;
+                    var user = tokenS.Claims.First(c => c.Type.Contains("name")).Value;
                     var email = tokenS.Claims.First(c => c.Type.Contains("email")).Value;
-                    var user = tokenS.Claims.First(c => c.Type.Contains("User")).Value;
+                    var nombre = tokenS.Claims.First(c => c.Type.Contains("nya")).Value;
 
 
 
@@ -124,7 +128,7 @@ namespace gc.sitio.Areas.Seguridad.Controllers
 
                     var etiqueta = $"{user}";
 
-                    var principal = new ClaimsPrincipal(new[] { identity });
+                    var principal = new ClaimsPrincipal([identity]);
                     await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
                     HttpContext.Response.Cookies.Append(etiqueta, token, cookieOptions);
                     //if (roleUser[0].Equals(RolesUsuario.VENDEDOR.ToString()))

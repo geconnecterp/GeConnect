@@ -1,11 +1,57 @@
+using gc.sitio.core.Extensions;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Logging.AddLog4Net("log4net.config", watch: true);
 builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
+
+var cultureInfo = (CultureInfo)CultureInfo.CurrentCulture.Clone();
+cultureInfo.NumberFormat.NumberDecimalSeparator = ".";
+cultureInfo.NumberFormat.CurrencyDecimalSeparator = ".";
+cultureInfo.DateTimeFormat.ShortDatePattern = "dd/MM/yyyy";
+
+CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
+
+builder.Services.Configure<CookieAuthenticationOptions>(opt => {
+    opt.LoginPath = new PathString("/seguridad/token/login");
+});
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, opt =>
+    {
+        opt.Cookie.Name = "GecoLoginCookie";
+        opt.LoginPath = new PathString("/seguridad/token/login");
+        opt.LogoutPath = new PathString("/seguridad/token/logout");
+        opt.AccessDeniedPath = new PathString("/seguridad/token/login");  //aca debere generar la ruta para indicar el acceso denegado y volver al login
+    });
+
+builder.Services.AddServicios();
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-builder.Services.AddSession();
+
+builder.Services.AddRazorPages();
+builder.Services.AddHttpClient();
+builder.Services.AddDistributedMemoryCache();
+
+builder.Services.AddHsts(opt =>
+{
+    opt.Preload = true;
+    opt.IncludeSubDomains = true;
+    opt.MaxAge = TimeSpan.FromDays(1);
+});
+
+builder.Services.AddSession(opt =>
+{
+    opt.IdleTimeout = TimeSpan.FromMinutes(60);
+    opt.Cookie.HttpOnly = true;
+    opt.Cookie.IsEssential = true;
+});
+
+builder.Services.AddMvc();
 var app = builder.Build();
 
 
