@@ -1,0 +1,20 @@
+﻿@model RPRAutorizacionPendienteDto
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
+    
+}
+<div class="container">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="input-group input-group-sm">
+                <span>Autorización:</span>
+                <input type="text" value="@Model.Rp" class="form-control-sm sinbordefondo" readonly />
+                <span>Prov.</span>
+                <input type="text" value="@Model.Cta_denominacion" class="form-control-sm sinbordefondo" readonly />
+            </div>
+        </div>
+    </div>
+</div>

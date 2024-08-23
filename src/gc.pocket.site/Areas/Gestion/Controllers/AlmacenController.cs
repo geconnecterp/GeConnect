@@ -12,8 +12,8 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         private readonly MenuSettings _menuSettings;
         private readonly ILogger<AlmacenController> _logger;
 
-        public AlmacenController(ILogger<AlmacenController> logger,IOptions<MenuSettings> options,
-            IOptions<AppSettings> options1, IHttpContextAccessor context) :base(options1,options, context)
+        public AlmacenController(ILogger<AlmacenController> logger, IOptions<MenuSettings> options,
+            IOptions<AppSettings> options1, IHttpContextAccessor context) : base(options1, options, context)
         {
             _logger = logger;
             _menuSettings = options.Value;
@@ -43,8 +43,9 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
                 //}
                 return View();
             }
-            else {
-                return RedirectToAction("Index", "home", new {area="", error = "Debe Autenticarse para acceder." });
+            else
+            {
+                return RedirectToAction("Index", "home", new { area = "", error = "Debe Autenticarse para acceder." });
             }
         }
 

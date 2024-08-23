@@ -12,7 +12,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         private readonly ILogger<RubroController> _logger;
         private readonly AppSettings _appSettings;
 
-        public RubroController( ILogger<RubroController> logger, IOptions<AppSettings> options, IHttpContextAccessor context) : base(options, context)
+        public RubroController(ILogger<RubroController> logger, IOptions<AppSettings> options, IHttpContextAccessor context) : base(options, context)
         {
             _appSettings = options.Value;
             _logger = logger;

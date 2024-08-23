@@ -1,5 +1,4 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes;
-using gc.infraestructura.Dtos;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 
