@@ -3,6 +3,40 @@
     var email = User.Claims.First(c => c.Type.Contains("email")).Value;
     var nombre = User.Claims.First(c => c.Type.Contains("nya")).Value;
 }
+<!-- Módulos -->
+<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+    <li class="nav-item">
+        <a class="nav-link active" aria-current="page" href="javascript:void(0)">Cuentas</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="javascript:void(0)">Productos</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="javascript:void(0)">Movimientos Stk</a>
+    </li>
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="javascript:void(0)" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Compras
+        </a>
+        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <li><a class="dropdown-item" href="javascript:void(0)">RPR Autorizaciones</a></li>
+            <li><a class="dropdown-item" href="javascript:void(0)">Otra función</a></li>
+            <li>
+                <hr class="dropdown-divider">
+            </li>
+            <li><a class="dropdown-item" href="javascript:void(0)">Próximamente...</a></li>
+        </ul>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="javascript:void(0)">Ventas</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="javascript:void(0)">Tesorería</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="javascript:void(0)">Contabilidad</a>
+    </li>
+</ul>
 <!-- User -->
 <li class="nav-item navbar-dropdown dropdown-user dropdown">
     <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
@@ -21,7 +55,7 @@
                     </div>
                     <div class="flex-grow-1">
                         <span class="fw-medium d-block">@nombre</span>
-                        <small class="text-muted">acá va la administracion</small>
+                        <small class="text-muted">[rol]</small>
                     </div>
                 </div>
             </a>
@@ -32,13 +66,13 @@
         <li>
             <a class="dropdown-item" href="#">
                 <i class="bx bx-user me-2"></i>
-                <span class="align-middle">My Profile</span>
+                <span class="align-middle">Perfil</span>
             </a>
         </li>
         <li>
             <a class="dropdown-item" href="#">
                 <i class="bx bx-cog me-2"></i>
-                <span class="align-middle">Settings</span>
+                <span class="align-middle">Configuraciones</span>
             </a>
         </li>
         @*  <li>

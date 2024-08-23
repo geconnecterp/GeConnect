@@ -16,6 +16,9 @@ using System.Security.Claims;
 using System.Text;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Seguridad;
+using gc.infraestructura.Dtos.Administracion;
+using gc.infraestructura.Helpers;
+using gc.sitio.core.Servicios.Contratos;
 
 namespace gc.sitio.Areas.Seguridad.Controllers
 {
@@ -23,22 +26,44 @@ namespace gc.sitio.Areas.Seguridad.Controllers
     public class TokenController : ControladorBase
     {
         private readonly IConfiguration _configuration;
-        private readonly ILoggerHelper _logger;
+        //private readonly ILoggerHelper _logger;
+        private readonly ILogger<TokenController> _logger;
+        private readonly IAdministracionServicio _admSv;
         private readonly AppSettings _appSettings;
        
 
-        public TokenController(IConfiguration configuration, ILoggerHelper logger, IOptions<AppSettings> options) : base(options)
+        public TokenController(IConfiguration configuration, IAdministracionServicio servicio, ILogger<TokenController> logger, IOptions<AppSettings> options) : base(options)
         {
             _configuration = configuration;
             _logger = logger;
             _appSettings = options.Value;
+            _admSv = servicio;
         }
 
         [HttpGet]
         public IActionResult Login()
         {
-            
-            return View();
+            try
+            {
+                ComboAdministracion();
+                var login = new LoginDto { Fecha = DateTime.Now };
+                return View(login);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en Login");
+                TempData["error"] = "Hubo algún error al intentar cargar la vista de autenticación. Si el problema persiste, avise al administardor.";
+                var lv = new List<AdministracionLoginDto>();
+                ViewBag.Admid = HelperMvc<AdministracionLoginDto>.ListaGenerica(lv);
+                var login = new LoginDto { Fecha = DateTime.Now };
+                return View(login);
+            }
+        }
+
+        private void ComboAdministracion()
+        {
+            var adms = _admSv.GetAdministracionLogin();
+            ViewBag.Admid = HelperMvc<AdministracionLoginDto>.ListaGenerica(adms);
         }
 
         [HttpPost]
@@ -147,7 +172,7 @@ namespace gc.sitio.Areas.Seguridad.Controllers
                 TempData["error"] = "No se ha podido autenticar. El usuario o contraseña no son correctos.";
                 var respuesta = await response.Content.ReadAsStringAsync();
                 ExceptionValidation valid = JsonConvert.DeserializeObject<ExceptionValidation>(respuesta);
-                _logger.Log(TraceEventType.Error, $"{valid.Title} - {valid.Status} - {valid.Detail}");
+                _logger.LogError($"{valid.Title} - {valid.Status} - {valid.Detail}");
             }
 
             return View(autenticar);
@@ -159,30 +184,30 @@ namespace gc.sitio.Areas.Seguridad.Controllers
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
-            // Acá debo invocar la api
-            HelperAPI api = new HelperAPI();
-            var cliente = api.InicializaCliente();
-            cliente.BaseAddress = new Uri(_configuration["AppSettings:RutaBase"]);
-            string usuario = UserName;
-            HttpResponseMessage response;
-            var link = $"/api/token/Logoff?UserName={usuario}";
-            response = await cliente.GetAsync(link);
+            //// Acá debo invocar la api
+            //HelperAPI api = new HelperAPI();
+            //var cliente = api.InicializaCliente();
+            //cliente.BaseAddress = new Uri(_configuration["AppSettings:RutaBase"]);
+            //string usuario = UserName;
+            //HttpResponseMessage response;
+            //var link = $"/api/token/Logoff?UserName={usuario}";
+            //response = await cliente.GetAsync(link);
 
-            if (response.StatusCode == HttpStatusCode.OK)
-            {
+            //if (response.StatusCode == HttpStatusCode.OK)
+            //{
 
-            }
-            else if (response.StatusCode == HttpStatusCode.Unauthorized)
-            {
+            //}
+            //else if (response.StatusCode == HttpStatusCode.Unauthorized)
+            //{
 
-            }
-            else
-            {
-                string stringData = await response.Content.ReadAsStringAsync();
-                _logger.Log(TraceEventType.Error, $"stringData: {stringData}");
+            //}
+            //else
+            //{
+            //    string stringData = await response.Content.ReadAsStringAsync();
+            //    _logger.LogError($"stringData: {stringData}");
 
 
-            }
+            //}
 
             //al desloguear redirecciona a HOME
             return RedirectToAction("Index", new RouteValueDictionary(new { area = "", controller = "Home", action = "Index" }));
