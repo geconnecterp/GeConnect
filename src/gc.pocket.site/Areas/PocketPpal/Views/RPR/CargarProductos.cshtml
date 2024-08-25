@@ -8,17 +8,7 @@
 }
 
 <div class="container">
-    <div class="row">
-        <div class="col-sm-12">
-            <div class="input-group input-group-sm">
-                <span>Autorización:</span>
-                <input type="text" value="@Model.Rp" class="form-control-sm sinbordefondo" readonly />
-                <span>Prov.</span>
-                <input type="text" value="@Model.Cta_denominacion" class="form-control-sm sinbordefondo" readonly />
-
-            </div>
-        </div>
-    </div>
+    <partial name="_rprCabecera" model="@Model" />
     <partial name="~/areas/gestion/views/producto/_ctrbuscarproducto.cshtml" model="@buscar" />
     <div class="row">
         <div class="col-sm-12">
@@ -80,6 +70,7 @@
 
     </script>
     <script src="~/js/app/busquedas.js" type="text/javascript"></script>
+    <script src="~/js/app/rpr.js" type="text/javascript"></script>
     <script src="~/js/app/infoRpr.js" type="text/javascript"></script>
 
 }

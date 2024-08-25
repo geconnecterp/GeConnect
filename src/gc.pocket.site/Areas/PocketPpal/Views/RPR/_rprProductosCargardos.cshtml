@@ -8,20 +8,19 @@
     var alt = true;
     string clase = string.Empty;
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
-    int cantidad = Model.ListaDatos.Count;
 }
 
 <div class="card">
     <div class="card-body">
         <div class="table-responsive-sm table-wrapper">
-            @Html.Hidden("CantProdRPR",@cantidad);
             <table class="table table-sm mb-0" id="tbProdRPR">
                 <thead class=" table-dark">
                     <tr class="header">
                         <th scope="col" style="width:5%">IT</th>
                         <th scope="col" style="width:10%">ID</th>
                         <th scope="col" style="width:25%">Desc</th>
-                        <th scope="col" style="width:20%">Bto</th>
+                        <th scope="col" style="width:10%">Un.B.</th>
+                        <th scope="col" style="width:10%">Bto</th>
                         <th scope="col" style="width:10%">Un</th>
                         <th scope="col" style="width:20%">Cant</th>
                         <th scope="col" style="width:10%"></th>
@@ -36,6 +35,7 @@
                             <td>@item.Item</td>
                             <td>@item.P_id</td>
                             <td>@item.P_desc</td>
+                            <td>@item.Bulto_up</td>
                             <td>@item.Bulto</td>
                             <td>@item.Uni_suelta</td>
                             <td>@item.Cantidad</td>

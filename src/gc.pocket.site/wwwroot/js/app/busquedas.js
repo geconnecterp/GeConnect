@@ -94,6 +94,7 @@ function buscarProducto() {
                             productoBase = null;
                             $("#estadoFuncion").val(false);
                             $("#btnBusquedaBase").prop("disabled", false);
+                            $("#msjModal").modal("hide");
                             $("#Busqueda").focus();
                             return true;
                         }

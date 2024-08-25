@@ -1,14 +1,12 @@
-﻿using gc.api.core.Constantes;
-using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Almacen;
-using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Helpers;
 using gc.pocket.site.Controllers;
 using gc.pocket.site.Models.ViewModels;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using X.PagedList;
 
@@ -20,13 +18,15 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         private readonly MenuSettings _menuSettings;
         private readonly ILogger<InfoProdController> _logger;
         private readonly IProductoServicio _productoServicio;
+        private readonly IDepositoServicio _depositoServicio;
 
         public RPRController(IOptions<AppSettings> options, IHttpContextAccessor context, IOptions<MenuSettings> options1,
-            ILogger<InfoProdController> logger, IProductoServicio productoServicio) : base(options, context)
+            ILogger<InfoProdController> logger, IProductoServicio productoServicio, IDepositoServicio depositoServicio) : base(options, context)
         {
             _menuSettings = options1.Value;
             _logger = logger;
             _productoServicio = productoServicio;
+            _depositoServicio= depositoServicio;
         }
 
         public async Task<IActionResult> Index()
@@ -215,7 +215,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 var item = RPRProductoRegs.SingleOrDefault(p => p.P_id.Equals(RPRProductoTemp.P_id));
                 if (item == null)
                 {
-                    throw new Exception(ConstantesGC.MensajeError.RPR_PRODUCTO_NO_ENCONTRADO_ACUMULACION);
+                    throw new Exception(infraestructura.Constantes.Constantes.MensajeError.RPR_PRODUCTO_NO_ENCONTRADO_ACUMULACION);
                 }
                 //acumulando
                 //se verifica cual es el tipo de unidad que se utiliza
@@ -223,7 +223,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 {//son unidades enteras. 
                     if (!RPRProductoTemp.Bulto_up.Equals(item.Bulto_up))
                     {
-                        throw new Exception(ConstantesGC.MensajeError.RPR_PRODUCTO_ACUMULACION_UNIDAD_BULTO_DISTINTO);
+                        throw new Exception(infraestructura.Constantes.Constantes.MensajeError.RPR_PRODUCTO_ACUMULACION_UNIDAD_BULTO_DISTINTO);
                     }
 
                     item.Bulto += RPRProductoTemp.Bulto;
@@ -243,7 +243,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 lista.Add(item);
                 RPRProductoRegs = lista;
 
-                return Json(new { error = false, msg = ConstantesGC.MensajesOK.RPR_PRODUCTO_ACUMULADO });
+                return Json(new { error = false, msg = infraestructura.Constantes.Constantes.MensajesOK.RPR_PRODUCTO_ACUMULADO });
             }
             catch (Exception ex)
             {
@@ -264,7 +264,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 //resguardamos la lista
                 RPRProductoRegs = lista;
 
-                return Json(new { error = false, msg = ConstantesGC.MensajesOK.RPR_PRODUCTO_REMPLAZADO });
+                return Json(new { error = false, msg = infraestructura.Constantes.Constantes.MensajesOK.RPR_PRODUCTO_REMPLAZADO });
             }
             catch (Exception ex)
             {
@@ -275,9 +275,15 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
         [HttpGet]
         public IActionResult CargaUL()
-        {
-
+        {            
+            ComboDeposito();
             return View(RPRAutorizacionPendienteSeleccionada);
+        }
+
+        private void ComboDeposito()
+        {
+            var adms = _depositoServicio.ObtenerDepositosDeAdministracion(AdministracionId,TokenCookie);
+            ViewBag.DepoId = HelperMvc<DepositoDto>.ListaGenerica(adms);
         }
     }
 }
