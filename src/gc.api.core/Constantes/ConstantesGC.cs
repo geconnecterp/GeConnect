@@ -27,7 +27,7 @@
             public const string SP_INFOPROD_LP = "dbo.spgeco_p_info_lp";
 
             public const string SP_RPR_PENDIENTES = "spgeco_RPR_Pendientes";
-            public const string SP_RPR_REGISTRA = "spgeco_RPR_Registra";
+            public const string SP_RPR_REGISTRA = "SPGECO_RPR_Cargar_Conteos";
             public const string SP_RPR_DEPOSITOS = "SPGECO_RPR_Depositos";
 
 

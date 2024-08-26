@@ -5,70 +5,59 @@
         <div class="modal-content">
             <div class="modal-header">
                 <span id="msjIcono" class="" style="margin-top: -2px; margin-right: 5px;"></span>
-                <h5 id="msjTitulo">Busqueda de Productos</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <h3 id="msjTitulo">Busqueda de Productos</h3>
+                <button type="button" class="close sinbordefondo" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div id="msjContenido" class="modal-body">
                 <div class="row">
-                    <div class="col-sm-12 bg-white border border-secondary p-0 mt-3">
-                        <div class="card">
-                            <div class="card-body">
-                                <form asp-action="BusquedaAvanzada" asp-controller="producto" asp-area="gestion" method="post">
-                                    <div class="row gy-3 ui-front">
-                                        <div class="col-sm-6">
-                                            <small class="fw-medium">Proveedor</small>
-                                            <input type="text" class="form-control-sm input-group" name="ProveedorNombre" id="ProveedorNombre" />
-                                            @Html.Hidden("CtaProveedorId")
-                                            <small class="fw-medium">Rubro</small>
-                                            <input type="text" class="form-control-sm input-group" name="RubroNombre" id="RubroNombre" />
-                                            @Html.Hidden("RubroId")
-                                        </div>
-                                        <div class="col-sm-6">
-                                            <div class="row mt-4">
-                                                <div class="col-12">
-                                                    <div class="form-check form-check-inline form-switch mb-2">
-                                                        <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkActivos" checked />
-                                                        <label class="form-check-label" for="chkActivos">Activos</label>
-                                                    </div>
-                                                    <div class="form-check form-check-inline form-switch mb-2">
-                                                        <input class="form-check-input" type="checkbox" name="EstadoDiscont" id="chkDisc" />
-                                                        <label class="form-check-label" for="chkDisc">Discontinuos</label>
-                                                    </div>
-                                                    <div class="form-check form-check-inline form-switch mb-2">
-                                                        <input class="form-check-input" type="checkbox" name="EstadoInactivo" id="chkInact" />
-                                                        <label class="form-check-label" for="chkInact">Inactivos</label>
-                                                    </div>
-                                                </div>
+                    @* <div class="col-sm-12 bg-white border border-secondary p-0 mt-3"> *@
 
-                                            </div>
-                                            <div class="row mt-3">
-                                                <div class="col-12">
-                                                    <div class="form-check form-check-inline">
-                                                        <input class="form-check-input" name="ConStock" type="radio" value="true" id="rdConStk">
-                                                        <label class="form-check-label" for="rdConStk">Con Stk</label>
-                                                    </div>
-                                                    <div class="form-check form-check-inline">
-                                                        <input class="form-check-input" name="ConStock" type="radio" value="false" id="rdSinStk">
-                                                        <label class="form-check-label" for="rdSinStk">Sin Stk</label>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row gy-3">
-                                        <button type="button" class="btn btn-success btn-sm" id="btnBuscarProd"> <i class="bx bx-search"></i><span> Buscar</span> </button>
-                                    </div>
-                                </form>
-
-                                <div id="divBusquedaAvanzada"></div>
+                    <div class="row gy-3 ui-front">
+                        <div class="col-sm-6">
+                            <small class="fw-medium">Proveedor</small>
+                            <input type="text" class="form-control-sm input-group" name="ProveedorNombre" id="ProveedorNombre" />
+                            @Html.Hidden("CtaProveedorId")
+                            <small class="fw-medium">Rubro</small>
+                            <input type="text" class="form-control-sm input-group" name="RubroNombre" id="RubroNombre" />
+                            @Html.Hidden("RubroId")
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="form-check form-check-inline form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkActivos" checked />
+                                <label class="form-check-label" for="chkActivos">Activos</label>
+                            </div>
+                            <div class="form-check form-check-inline form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" name="EstadoDiscont" id="chkDisc" />
+                                <label class="form-check-label" for="chkDisc">Discontinuos</label>
+                            </div>
+                            <div class="form-check form-check-inline form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" name="EstadoInactivo" id="chkInact" />
+                                <label class="form-check-label" for="chkInact">Inactivos</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" name="ConStock" type="radio" value="true" id="rdConStk">
+                                <label class="form-check-label" for="rdConStk">Con Stk</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" name="ConStock" type="radio" value="false" id="rdSinStk">
+                                <label class="form-check-label" for="rdSinStk">Sin Stk</label>
                             </div>
                         </div>
                     </div>
+                    <div class="row gy-3">
+                        <button type="button" class="btn btn-success btn-sm" id="btnBuscarProd"> <i class="bx bx-search"></i><span> Buscar</span> </button>
+                    </div>
+
+
+                    <div id="divBusquedaAvanzada"></div>
+
                 </div>
             </div>
-            
+
         </div>
     </div>
 </div>
@@ -76,5 +65,5 @@
 
 
 @section scripts {
-    
+
 }

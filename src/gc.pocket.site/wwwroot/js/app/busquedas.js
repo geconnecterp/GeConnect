@@ -3,6 +3,8 @@
     $("input#Busqueda").keypress(verificaTeclaDeBusqueda);
     $("input").on("focus", function () { $(this).select(); })
 
+    $("#btnBuscarProd").on("click",busquedaAvanzadaProductos)
+
     //declaramos el input de proveedor como autocomplete
     $("#ProveedorNombre").autocomplete({
         source: function (request, response) {
@@ -50,7 +52,21 @@
         }
     });
 
+    return true;
 });
+
+function busquedaAvanzadaProductos() {
+    var pr = $("#CtaProveedorId").val();
+    var rb = $("#RubroId").val();
+    //activos
+    var act = $("#chkActivos").val();
+    //discontinuos
+    var dis = $("#chkDisc").val();
+    //inactivos
+    var ina = $("#chkInact").val();
+
+    return true;
+}
 
 function buscarProducto() {
     AbrirWaiting();
@@ -75,40 +91,9 @@ function buscarProducto() {
             $("#Busqueda").focus();
             return true;
         }
-        else {
-            if (obj.p_Id !== "0000-0000") {
-                //debo verificar si el valor del warn es true.
-                //esto permite peresentar un mensaje
-                if (obj.warn === true) {
-                    CerrarWaiting();
-                    AbrirMensaje("ATENCIÓN!", obj.msg, function (resp) {
-                        if (resp === "SI") {
-                            productoBase = obj.producto;
-                            $("#estadoFuncion").val(true);
-                            $("#estadoFuncion").trigger("change");
-                            $("#msjModal").modal("hide");
-                            return true;
-                        }
-                        else {
-                            //se deniega
-                            productoBase = null;
-                            $("#estadoFuncion").val(false);
-                            $("#btnBusquedaBase").prop("disabled", false);
-                            $("#msjModal").modal("hide");
-                            $("#Busqueda").focus();
-                            return true;
-                        }
-                    },
-                        true, ["Aceptar", "Denegar"], "Warning!", null);
-                }
-                else {
-                    productoBase = obj.producto;
-                    $("#estadoFuncion").val(true);
-                    $("#estadoFuncion").trigger("change");
-                    return true;
-                }
-            }
-            else {
+        else if (obj.warn === true) {
+            if (obj.producto.p_Id === "0000-0000") {
+                //un enter sin ningun codigo
                 productoBase = null;
                 $("#estadoFuncion").val(false);
                 ControlaMensajeWarning(obj.msg);
@@ -116,6 +101,51 @@ function buscarProducto() {
                 CerrarWaiting();
                 return true;
             }
+            else if (obj.producto.p_Id === "NO") {
+                //se busco un codigo pero no se encontró
+                if (typeof funcionBusquedaAvanzada !== 'undefined' || funcionBusquedaAvanzada === false) {
+                    //si no esta la variable funcionBusquedaAvanzada o la misma es false, no se realiza la busqueda avanzada
+                    productoBase = null;
+                    $("#estadoFuncion").val(false);
+                    $("#btnBusquedaBase").prop("disabled", false);
+                    $("#msjModal").modal("hide");
+                    $("#Busqueda").focus();
+                    return true;
+                }
+                else {
+                    ///se abre el modal de la busqueda avanzada
+                    $("#busquedaModal").modal("toggle");
+                }
+            } else {
+                //encontro producto pero hay warning
+                CerrarWaiting();
+                AbrirMensaje("ATENCIÓN!", obj.msg, function (resp) {
+                    if (resp === "SI") {
+                        productoBase = obj.producto;
+                        $("#estadoFuncion").val(true);
+                        $("#estadoFuncion").trigger("change");
+                        $("#msjModal").modal("hide");
+                        return true;
+                    }
+                    else {
+                        //se deniega
+                        productoBase = null;
+                        $("#estadoFuncion").val(false);
+                        $("#btnBusquedaBase").prop("disabled", false);
+                        $("#msjModal").modal("hide");
+                        $("#Busqueda").focus();
+                        return true;
+                    }
+                },
+                    true, ["Aceptar", "Denegar"], "Warning!", null);
+            }
+        }
+        else {
+            //encontro y se presenta
+            productoBase = obj.producto;
+            $("#estadoFuncion").val(true);
+            $("#estadoFuncion").trigger("change");
+            return true;
         }
     });
     return true;

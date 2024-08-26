@@ -144,6 +144,14 @@ function productosGrid() {
         } else {
             $("#btnContinuarRpr").show("fast");
         }
+
+        if (typeof ocultarTrash !== 'undefined') {
+            if (ocultarTrash === true) {
+                //ocultamos la 8° columna
+                $(".ocultar").toggle();
+                $("#divRprGrid #tbProdRPR tbody td:nth-child(8)").toggle();
+            }
+        }
         return true;
     }, function (obj) {
         ControlaMensajeError(obj.message);

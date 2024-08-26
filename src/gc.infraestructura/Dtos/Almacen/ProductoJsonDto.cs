@@ -2,8 +2,8 @@
 {
     public class ProductoJsonDto
     {
-        public string Ope { get; set; }=string.Empty;
-        public string Nro_auto { get; set; } = string.Empty;
+        public string ope { get; set; }=string.Empty;
+        public string nro_auto { get; set; } = string.Empty;
         public string cta_id { get; set; } = string.Empty;
         public string usu_id { get; set; } = string.Empty;
         public string adm_id { get; set; } = string.Empty;

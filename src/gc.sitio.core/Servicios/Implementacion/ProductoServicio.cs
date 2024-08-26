@@ -292,13 +292,18 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-        public async Task<RPRRegistroResponseDto> RPRRegistrarProductos(List<ProductoJsonDto> json, string token)
+        public async Task<RPRRegistroResponseDto> RPRRegistrarProductos(List<RPRProcuctoDto> prods,string admId, string ul, string token)
         {
             ApiResponse<RPRRegistroResponseDto> apiResponse;
 
             HelperAPI helper = new HelperAPI();
 
-            HttpClient client = helper.InicializaCliente(json, token,out StringContent contentData);
+            foreach (var item in prods)
+            {
+                item.ul_id = ul;
+            }
+
+            HttpClient client = helper.InicializaCliente(prods, token,out StringContent contentData);
             HttpResponseMessage response;
 
             var link = $"{_appSettings.RutaBase}{RutaAPI}{RPRREGISTRAR}";

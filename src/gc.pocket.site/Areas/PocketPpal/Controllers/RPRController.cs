@@ -1,13 +1,16 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
 using gc.pocket.site.Controllers;
 using gc.pocket.site.Models.ViewModels;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
+using System.Reflection;
 using X.PagedList;
 
 namespace gc.pocket.site.Areas.PocketPpal.Controllers
@@ -26,7 +29,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             _menuSettings = options1.Value;
             _logger = logger;
             _productoServicio = productoServicio;
-            _depositoServicio= depositoServicio;
+            _depositoServicio = depositoServicio;
         }
 
         public async Task<IActionResult> Index()
@@ -107,36 +110,37 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             {
                 //armo producto a resguardar
                 var item = new RPRProcuctoDto();
-                item.Item = RPRProductoRegs.Count + 1;
-                item.P_id = ProductoBase.P_id;
-                item.P_desc = ProductoBase.P_desc;
-                item.Up_id = ProductoBase.Up_id;
-                item.Cta_id = ProductoBase.Cta_id;
-                item.Usu_id = UserName;
-                item.Bulto_up = up;
-                item.Bulto = bulto;
-                item.Uni_suelta = unidad;
+                item.rp = RPRAutorizacionPendienteSeleccionada.Rp;
+                item.item = RPRProductoRegs.Count + 1;
+                item.p_id = ProductoBase.P_id;
+                item.p_desc = ProductoBase.P_desc;
+                item.up_id = ProductoBase.Up_id;
+                //item.Cta_id = ProductoBase.Cta_id;
+                item.p_id_prov = ProductoBase.P_id_prov;
+                item.p_id_barrado = ProductoBase.P_id_barrado;
+                item.usu_id = UserName;
+                item.unidad_pres = up;
+                item.bulto = bulto;
+                item.us = unidad;
                 if (string.IsNullOrEmpty(vto) && string.IsNullOrWhiteSpace(vto))
                 {
-                    item.Vto = null;
+                    item.vto = null;
                 }
                 else
                 {
                     var f = vto.Split('-', StringSplitOptions.RemoveEmptyEntries);
-                    item.Vto = new DateTime(f[0].ToInt(), f[1].ToInt(), f[2].ToInt());
+                    item.vto = new DateTime(f[0].ToInt(), f[1].ToInt(), f[2].ToInt());
                 }
-                item.Cantidad = ProductoBase.Up_id.Equals("07") ? (up * bulto) + unidad : bulto;
-                item.Nro_tra = RPRAutorizacionPendienteSeleccionada.Rp;
+                item.cantidad = ProductoBase.Up_id.Equals("07") ? (up * bulto) + unidad : bulto;
 
-
-                var res = RPRProductoRegs.Any(x => x.P_id.Equals(item.P_id));
+                var res = RPRProductoRegs.Any(x => x.p_id.Equals(item.p_id));
 
                 if (res)
                 {
                     //ya se encuentra cargado el producto, se debe avisar.
                     RPRProductoTemp = item;
-                    msg = $"El Producto {item.P_desc} ya se encuentra cargado. ¿Desea CANCELAR la operación, REMPLAZAR las cantidades existentes o ACUMULAR las cantidades?";
-                    return Json(new { error = false, warn = true, msg, p_id = item.P_id });
+                    msg = $"El Producto {item.p_desc} ya se encuentra cargado. ¿Desea CANCELAR la operación, REMPLAZAR las cantidades existentes o ACUMULAR las cantidades?";
+                    return Json(new { error = false, warn = true, msg, p_id = item.p_id });
                 }
                 else
                 {
@@ -179,7 +183,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             try
             {
                 RPRProcuctoDto? item = EliminaProductoBase(p_id);
-                return Json(new { error = false, msg = $"El producto {item.P_desc} fue removido de la lista." });
+                return Json(new { error = false, msg = $"El producto {item.p_desc} fue removido de la lista." });
             }
             catch (NegocioException ex)
             {
@@ -196,12 +200,12 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
         private RPRProcuctoDto EliminaProductoBase(string p_id)
         {
-            var item = RPRProductoRegs.SingleOrDefault(p => p.P_id.Equals(p_id));
+            var item = RPRProductoRegs.SingleOrDefault(p => p.p_id.Equals(p_id));
             if (item == null)
             {
                 throw new NegocioException("No se encontró el producto que intenta eliminar de la lista");
             }
-            var lista = RPRProductoRegs.Where(p => !p.P_id.Equals(p_id)).ToList();
+            var lista = RPRProductoRegs.Where(p => !p.p_id.Equals(p_id)).ToList();
             RPRProductoRegs = lista;
             return item;
         }
@@ -212,32 +216,32 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             try
             {
                 //Hubo problemas al intentar acumular el producto con la ya cargada en la lista de Productos seleccionados para el RPR."
-                var item = RPRProductoRegs.SingleOrDefault(p => p.P_id.Equals(RPRProductoTemp.P_id));
+                var item = RPRProductoRegs.SingleOrDefault(p => p.p_id.Equals(RPRProductoTemp.p_id));
                 if (item == null)
                 {
                     throw new Exception(infraestructura.Constantes.Constantes.MensajeError.RPR_PRODUCTO_NO_ENCONTRADO_ACUMULACION);
                 }
                 //acumulando
                 //se verifica cual es el tipo de unidad que se utiliza
-                if (RPRProductoTemp.Up_id.Equals("07"))
+                if (RPRProductoTemp.up_id.Equals("07"))
                 {//son unidades enteras. 
-                    if (!RPRProductoTemp.Bulto_up.Equals(item.Bulto_up))
+                    if (!RPRProductoTemp.unidad_pres.Equals(item.unidad_pres))
                     {
                         throw new Exception(infraestructura.Constantes.Constantes.MensajeError.RPR_PRODUCTO_ACUMULACION_UNIDAD_BULTO_DISTINTO);
                     }
 
-                    item.Bulto += RPRProductoTemp.Bulto;
-                    item.Cantidad += RPRProductoTemp.Cantidad;
-                    item.Uni_suelta += RPRProductoTemp.Uni_suelta;
+                    item.bulto += RPRProductoTemp.bulto;
+                    item.cantidad += RPRProductoTemp.cantidad;
+                    item.us += RPRProductoTemp.us;
                 }
                 else
                 { //son unidades decimales. Directamente se suman.
-                    item.Bulto_up += RPRProductoTemp.Bulto_up;
-                    item.Bulto += RPRProductoTemp.Bulto;
-                    item.Cantidad += RPRProductoTemp.Cantidad;
+                    item.unidad_pres += RPRProductoTemp.unidad_pres;
+                    item.bulto += RPRProductoTemp.bulto;
+                    item.cantidad += RPRProductoTemp.cantidad;
                 }
                 //Para agregar el acumulado primero debo sacar el producto de la lista
-                _ = EliminaProductoBase(RPRProductoTemp.P_id);
+                _ = EliminaProductoBase(RPRProductoTemp.p_id);
                 //traigo la lista, lo agrego y lo vuelvo a resguardar
                 var lista = RPRProductoRegs;
                 lista.Add(item);
@@ -258,7 +262,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             try
             {
                 //se toma la lista y se extrae el producto a ser reemplazado.
-                var lista = RPRProductoRegs.Where(p => !p.P_id.Equals(RPRProductoTemp.P_id)).ToList();
+                var lista = RPRProductoRegs.Where(p => !p.p_id.Equals(RPRProductoTemp.p_id)).ToList();
                 //Se agrega a lista el producto que esta en temp
                 lista.Add(RPRProductoTemp);
                 //resguardamos la lista
@@ -273,17 +277,69 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<JsonResult> ConfirmarRPR(string ul)
+        {
+            string msg = "";
+            try
+            {
+                if (string.IsNullOrEmpty(ul) || string.IsNullOrWhiteSpace(ul))
+                {
+                    throw new NegocioException("No ha ingresado el numero de la Unidad de Lectura.");
+                }
+                var analisis = ul.Trim().Split('-', StringSplitOptions.RemoveEmptyEntries);
+                if(analisis.Length != 2)
+                {
+                    throw new NegocioException("Verifique la Unidad de Lectura. Algo no esta bien.");
+                }
+                if (analisis[0].Length!= 5)
+                {
+                    throw new NegocioException("Verifique la Unidad de Lectura. Algo no esta bien.");
+                }
+                if (analisis[1].Length != 10)
+                {
+                    throw new NegocioException("Verifique la Unidad de Lectura. Algo no esta bien.");
+                }
+
+                var res = await _productoServicio.RPRRegistrarProductos(RPRProductoRegs, AdministracionId, ul, TokenCookie);
+
+                if (res.Resultado==0)
+                {
+                    return Json(new { error = false, warn = false, msg = $"La Carga del {ul} fue satisfactoria" });
+                }
+                else
+                {
+                    return Json(new { error = false, warn = true, msg = res.Resultado_msj });
+                }
+            }
+            catch(NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} Error al intentar confirmar");
+                msg = $"Hubo algún inconveniente al intentar Confirmar la Autorización.";
+            }
+
+            return Json(new { error = true, msg });
+        }
+
         [HttpGet]
         public IActionResult CargaUL()
-        {            
-            ComboDeposito();
+        {
+            //ComboDepositos();
+            ViewBag.AppItem = new AppItem { Nombre = $"Auto:{RPRAutorizacionPendienteSeleccionada.Rp}-{RPRAutorizacionPendienteSeleccionada.Cta_denominacion}" };
             return View(RPRAutorizacionPendienteSeleccionada);
         }
 
-        private void ComboDeposito()
+        private void ComboDepositos()
         {
-            var adms = _depositoServicio.ObtenerDepositosDeAdministracion(AdministracionId,TokenCookie);
-            ViewBag.DepoId = HelperMvc<DepositoDto>.ListaGenerica(adms);
+            var adms = _depositoServicio.ObtenerDepositosDeAdministracion(AdministracionId, TokenCookie);
+            var lista = adms.Select(x => new ComboGenDto { Id = x.Depo_Id, Descripcion = x.Depo_Nombre });
+            ViewBag.DepoId = HelperMvc<ComboGenDto>.ListaGenerica(lista);
         }
+
+
     }
 }
