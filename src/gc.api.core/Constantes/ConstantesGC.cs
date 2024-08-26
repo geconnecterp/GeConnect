@@ -28,6 +28,7 @@
 
             public const string SP_RPR_PENDIENTES = "spgeco_RPR_Pendientes";
             public const string SP_RPR_REGISTRA = "spgeco_RPR_Registra";
+            public const string SP_RPR_COMPTES_PENDIENTES = "spgeco_RPR_Comptes_Pendientes";
 
             public const string SP_CUENTA_BUSQUEDA = "dbo.spgeco_c_busqueda_lista";
 

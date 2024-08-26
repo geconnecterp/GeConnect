@@ -26,6 +26,7 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string INFOPROD_LP = "/InfoProductoLP";
 
         private const string RPRAUTOPEND = "/RPRAutorizacionPendiente";
+        private const string RPRCOMPTESPEND = "/RPRObtenerAutoComptesPendientes";
         private const string RPRREGISTRAR = "/RPRRegistrar";
 
         private readonly AppSettings _appSettings;
@@ -322,6 +323,38 @@ namespace gc.sitio.core.Servicios.Implementacion
                 _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
                 return new();
             }
-        }       
+        }
+
+        public async Task<List<RPRAutoComptesPendientesDto>> RPRObtenerComptesPendiente(string adm, string token)
+        {
+            ApiResponse<List<RPRAutoComptesPendientesDto>> apiResponse;
+
+            HelperAPI helper = new();
+
+            HttpClient client = helper.InicializaCliente(token);
+            HttpResponseMessage response;
+
+            var link = $"{_appSettings.RutaBase}{RutaAPI}{RPRCOMPTESPEND}?adm={adm}";
+
+            response = await client.GetAsync(link);
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(stringData))
+                {
+                    _logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda adm:{adm}");
+                    return new();
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RPRAutoComptesPendientesDto>>>(stringData);
+                return apiResponse.Data;
+            }
+            else
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                return new();
+            }
+        }
     }
 }

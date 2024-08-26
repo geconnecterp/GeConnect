@@ -17,5 +17,6 @@ namespace gc.api.core.Contratos.Servicios
         List<InfoProdLP> InfoProductoLP(string id);
         List<RPRAutorizacionPendienteDto> RPRObtenerAutorizacionPendiente(string adm);        
         RPRRegistroResponseDto RPRRegistrarProductos(string json);
+        List<RPRAutoComptesPendientesDto> RPRObtenerComptesPendientes(string adm);
     }
 }
