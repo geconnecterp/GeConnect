@@ -63,9 +63,9 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         }
 
         [HttpPost]
-        public async Task<JsonResult> BusquedaBase(string busqueda, bool acumularProductos=false)
+        public async Task<JsonResult> BusquedaBase(string busqueda,bool validarEstado=false, bool acumularProductos = false)
         {
-            ProductoBusquedaDto producto=new ProductoBusquedaDto { P_id = "0000-0000" };
+            ProductoBusquedaDto producto = new ProductoBusquedaDto { P_id = "0000-0000" };
             if (string.IsNullOrEmpty(busqueda))
             {
                 return Json(new { error = false, producto });
@@ -82,28 +82,28 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
                 TipoOperacion = _busqueda.TipoOperacion
             };
 
-            producto = await _productoServicio.BusquedaBaseProductos(buscar,TokenCookie);
+            producto = await _productoServicio.BusquedaBaseProductos(buscar, TokenCookie);
 
             if (producto != null && !string.IsNullOrEmpty(producto.P_id))
             {
                 bool warn = false;
                 string msg = string.Empty;
                 //validación de Estado
-                if (!producto.P_activo.Equals("A"))
+                if (!producto.P_activo.Equals("S") && validarEstado)
                 {
                     //se valida que no esta activo. Valores Noactivo Discontinuo
-                    return Json(new{error = true, msg = $"El producto {producto.P_desc} se encuentra {producto.Msj}"});
+                    return Json(new { error = true, msg = $"El producto {producto.P_desc} se encuentra {producto.Msj}" });
                 }
                 //Validación si pertenece o no al proveedor
 
-                if (AutorizacionPendienteSeleccionada != null &&
-                    !AutorizacionPendienteSeleccionada.Cta_id.Equals(producto.Cta_id))
+                if (RPRAutorizacionPendienteSeleccionada != null &&
+                    !RPRAutorizacionPendienteSeleccionada.Cta_id.Equals(producto.Cta_id) && validarEstado)
                 {
                     warn = true;
                     msg = $"El Producto NO pertenece al actual proveedor. Pertenece al Proveedor {producto.Cta_denominacion}.";
                 }
 
-                ///ImPLEMENTAR LA VENTANA DE MENSAJE CON OPCIONES.
+                
 
                 //se resguarda el producto recien buscado.
                 ProductoBase = producto;
@@ -113,7 +113,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
                     productos.Add(producto);
                     ProductosSeleccionados = productos;
                 }
-                return Json(new { error = false, producto,warn,msg });
+                return Json(new { error = false, producto, warn, msg });
             }
             return Json(new { error = true, msg = "El producto no ha sido identificado." });
         }
@@ -123,7 +123,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
             #region Variables de InfoProd
             InfoProdStkDId = "";
             InfoProdStkDRegs = [];
-            InfoProdStkBoxesIds = ("","");
+            InfoProdStkBoxesIds = ("", "");
             InfoProdStkBoxesRegs = [];
             InfoProdStkAId = "";
             InfoProdStkARegs = [];
@@ -131,7 +131,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
             InfoProdMovStkRegs = [];
             InfoProdLPId = "";
             InfoProdLPRegs = [];
-            
+
             #endregion
         }
 
@@ -144,7 +144,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
 
                 List<ProductoListaDto> productos = await _productoServicio.BusquedaListaProductos(search, TokenCookie);
 
-                return Json(new { error = false, lista = productos});
+                return Json(new { error = false, lista = productos });
             }
             catch (Exception ex)
             {
@@ -168,6 +168,6 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
             ProveedoresLista = _ctaSv.ObtenerListaProveedores(TokenCookie);
         }
 
-       
+
     }
 }

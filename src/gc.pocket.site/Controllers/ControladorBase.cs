@@ -17,7 +17,7 @@ namespace gc.pocket.site.Controllers
     {
         private readonly AppSettings _options;
         private readonly MenuSettings? _menuSettings;
-        private readonly IHttpContextAccessor _context;
+        protected readonly IHttpContextAccessor _context;
         public List<Orden> _orden;
 
 
@@ -179,7 +179,7 @@ namespace gc.pocket.site.Controllers
             {
                 var handler = new JwtSecurityTokenHandler(); //Libreria System.IdentityModel.Token.Jwt (6.7.1)
                 var tokenS = handler.ReadToken(TokenCookie) as JwtSecurityToken;
-                var usuario = tokenS.Claims.First(c => c.Type.Contains("User")).Value;
+                var usuario = tokenS.Claims.First(c => c.Type.Contains("user")).Value;
                 if (string.IsNullOrEmpty(usuario)) { return string.Empty; }
                 return usuario;
             }
@@ -472,7 +472,7 @@ namespace gc.pocket.site.Controllers
             }
         }
 
-        public RPRAutorizacionPendienteDto AutorizacionPendienteSeleccionada
+        public RPRAutorizacionPendienteDto RPRAutorizacionPendienteSeleccionada
         {
             get
             {
@@ -490,7 +490,42 @@ namespace gc.pocket.site.Controllers
             }
         }
 
-        
+        protected RPRProcuctoDto RPRProductoTemp
+        {
+            get
+            {
+                string json = _context.HttpContext.Session.GetString("RPRProductoTemp");
+                if (string.IsNullOrEmpty(json))
+                {
+                    return new();
+                }
+                return JsonConvert.DeserializeObject<RPRProcuctoDto>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("RPRProductoTemp", json);
+            }
+        }
+
+        protected List<RPRProcuctoDto> RPRProductoRegs
+        {
+            get
+            {
+                string json = _context.HttpContext.Session.GetString("RPRProductoRegs");
+                if (string.IsNullOrEmpty(json))
+                {
+                    return new();
+                }
+                return JsonConvert.DeserializeObject<List<RPRProcuctoDto>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("RPRProductoRegs", json);
+            }
+        }
+
         #endregion
 
         protected void PresentaMensaje(string error, string warn, string info)

@@ -6,6 +6,7 @@
         buscarProducto();
         return true;
     }); 
+
     $("#estadoFuncion").on("change", verificaEstado); //este control debe ser insertado el mismo o similar para cada modulo.
 
 //    $("#btnStkD").click(PresentarStkD);
@@ -48,7 +49,6 @@ function infoProdStkD(id) {
     }, function (obj) {
         ControlaMensajeError(obj.message);
         CerrarWaiting();
-
     });    
 }
 

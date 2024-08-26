@@ -9,6 +9,20 @@
 
     InicializarPage();
 
+    //Esta declaración de evento es aca, pues se tiene que generarse el evento para que se ejecute.
+    $("#btnMensajeAceptar").on("click", function (evento) {
+        AceptarMensaje("SI");
+        evento.preventDefault();
+        evento.stopPropagation();
+        return false;
+    });
+
+    $("#btnMensajeAlternativa").on("click", function (evento) {
+        AceptarMensaje("SI2");
+        evento.preventDefault();
+        evento.stopPropagation();
+        return false;
+    });
 });
 
 function Bloquear() {

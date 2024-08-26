@@ -1,6 +1,7 @@
 ﻿$(document).ready(function () {
-
+    
     $("input#Busqueda").keypress(verificaTeclaDeBusqueda);
+    $("input").on("focus", function () { $(this).select(); })
 
     //declaramos el input de proveedor como autocomplete
     $("#ProveedorNombre").autocomplete({
@@ -55,25 +56,37 @@ function buscarProducto() {
     AbrirWaiting();
     var _post = busquedaProdBase;
     var valor = $("#Busqueda").val();
-    PostGen({ busqueda: valor }, _post, function (obj) {
+
+    var datos = {};
+    if (typeof validarEstado !== 'undefined') {
+        datos = { busqueda: valor, validarEstado };
+    }
+    else {
+        datos = { busqueda: valor };
+    }
+
+    PostGen(datos, _post, function (obj) {
         if (obj.error === true) {
             ControlaMensajeError(obj.msg);
             productoBase = null;
             $("#estadoFuncion").val(false);
             $("#btnBusquedaBase").prop("disabled", false);
             CerrarWaiting();
+            $("#Busqueda").focus();
             return true;
         }
         else {
-            if (obj.producto.p_Id !== "0000-0000") {
+            if (obj.p_Id !== "0000-0000") {
                 //debo verificar si el valor del warn es true.
                 //esto permite peresentar un mensaje
                 if (obj.warn === true) {
+                    CerrarWaiting();
                     AbrirMensaje("ATENCIÓN!", obj.msg, function (resp) {
-                        if (resp = "SI") {
+                        if (resp === "SI") {
                             productoBase = obj.producto;
                             $("#estadoFuncion").val(true);
                             $("#estadoFuncion").trigger("change");
+                            $("#msjModal").modal("hide");
                             return true;
                         }
                         else {
@@ -81,11 +94,17 @@ function buscarProducto() {
                             productoBase = null;
                             $("#estadoFuncion").val(false);
                             $("#btnBusquedaBase").prop("disabled", false);
-                            CerrarWaiting();
+                            $("#Busqueda").focus();
                             return true;
                         }
                     },
                         true, ["Aceptar", "Denegar"], "Warning!", null);
+                }
+                else {
+                    productoBase = obj.producto;
+                    $("#estadoFuncion").val(true);
+                    $("#estadoFuncion").trigger("change");
+                    return true;
                 }
             }
             else {

@@ -39,6 +39,10 @@ tr.alt {
     background-color: #C0FFC0;
 }
 
+th, td {
+    overflow: hidden;
+}
+
 .table-wrapper {
     max-height: 500px;
     max-width:98%;
@@ -56,6 +60,8 @@ tr.alt {
 
 .inputEditable {
     border-color:rgb(70, 196, 104);
+    text-align:center;
+    font-weight:700;
 }
 
 @media screen and (max-width: 480px){

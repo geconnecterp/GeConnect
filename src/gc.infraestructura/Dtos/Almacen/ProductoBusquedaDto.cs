@@ -44,7 +44,10 @@
         public string P_unidad_pres { get; set; } = string.Empty;
         public string Cli_dto { get; set; } = string.Empty;
         public string Es_oferta { get; set; } = string.Empty;
-        public string Msj { get; set; } = string.Empty; 
-       
+        public string Msj { get; set; } = string.Empty;
+        public int Item { get; set; }
+        public int Bulto { get; set; }
+        public decimal Unidad { get; set; }
+        public decimal Cantidad { get; set; }
     }
 }

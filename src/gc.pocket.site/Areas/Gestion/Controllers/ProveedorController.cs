@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using X.PagedList;
 
-namespace gc.pocket.site.Areas.Gestion.Models
+namespace gc.pocket.site.Areas.Gestion.Controllers
 {
     [Area("Gestion")]
     public class ProveedorController : ControladorBase

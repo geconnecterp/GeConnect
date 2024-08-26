@@ -54,6 +54,13 @@
         "css/bootstrap.min.css",
         "js/bootstrap.bundle.min.js"
       ]
+    },
+    {
+      "library": "jquery.mask@1.14.16",
+      "destination": "wwwroot/js/mask/",
+      "files": [
+        "jquery.mask.min.js"
+      ]
     }
   ]
 }
