@@ -55,6 +55,19 @@ namespace gc.sitio.Areas.Compras.Controllers
             return View(grid);
         }
 
+        public async Task<IActionResult> RPRNuevaAutorizacion(string rp)
+        {
+            var auth = EstaAutenticado;
+            if (!auth.Item1 || auth.Item2 < DateTime.Now)
+            {
+                return RedirectToAction("Login", "Token", new { area = "seguridad" });
+            }
+            //
+
+            return View();
+        }
+
+        #region Métodos privados
         private GridCore<RPRAutoComptesPendientesDto> ObtenerAutorizacionPendienteGrid(List<RPRAutoComptesPendientesDto> pendientes)
         {
 
@@ -62,5 +75,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 
             return new GridCore<RPRAutoComptesPendientesDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Cta_denominacion", SortDir = "ASC" };
         }
+        #endregion
     }
 }

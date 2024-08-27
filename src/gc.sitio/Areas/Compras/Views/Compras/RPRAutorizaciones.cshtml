@@ -7,11 +7,12 @@
 
 <div class="card">
     <row>
+        <input type="text" id="rp_id" style="visibility:hidden" />
         <div style="float:left">
             <h5 class="card-header">RPR Autorizaciones</h5>
         </div>
         <div class="demo-inline-spacing" style="float:right;margin-top: 20px;margin-right: 25px;">
-            <button type="button" class="btn btn-primary">
+            <button type="button" class="btn btn-primary" id="btnNuevaAut">
                 <span class="tf-icons bx bx-plus-circle me-1"></span>Nuevo Aut.
             </button>
             <button type="button" class="btn btn-secondary">
@@ -89,3 +90,10 @@
         </div>
     </div>
 </div>
+
+@section scripts {
+    <script type="text/javascript">
+        var nuevaAutorizacionUrl = "@Url.Action("NuevaAutorizacion", "compras", new { area = "compras" })";
+    </script>
+    <script src="~/js/app/areas/compras/compras.js" type="text/javascript"></script>
+}

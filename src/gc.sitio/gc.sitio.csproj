@@ -27,6 +27,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Areas\ControlComun\Data\" />
+    <Folder Include="Areas\ControlComun\Models\" />
     <Folder Include="Areas\Seguridad\Data\" />
     <Folder Include="Areas\Seguridad\Models\" />
     <Folder Include="Views\Shared\EditorTemplates\" />
@@ -40,6 +42,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="Areas\ControlComun\Views\CuentaComercial\Index.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="Areas\ControlComun\Views\CuentaComercial\_ctrBuscarCC.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="Areas\ControlComun\Views\_ViewImports.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
     <Content Update="wwwroot\lib\jquery-validation-unobtrusive\jquery.validate.unobtrusive.js">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
