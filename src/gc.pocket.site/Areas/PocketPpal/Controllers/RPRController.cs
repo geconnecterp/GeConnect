@@ -8,8 +8,8 @@ using gc.pocket.site.Controllers;
 using gc.pocket.site.Models.ViewModels;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
+using System.Diagnostics;
 using System.Reflection;
 using X.PagedList;
 
@@ -22,6 +22,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         private readonly ILogger<InfoProdController> _logger;
         private readonly IProductoServicio _productoServicio;
         private readonly IDepositoServicio _depositoServicio;
+        private readonly AppSettings _settings;
 
         public RPRController(IOptions<AppSettings> options, IHttpContextAccessor context, IOptions<MenuSettings> options1,
             ILogger<InfoProdController> logger, IProductoServicio productoServicio, IDepositoServicio depositoServicio) : base(options, context)
@@ -30,6 +31,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             _logger = logger;
             _productoServicio = productoServicio;
             _depositoServicio = depositoServicio;
+            _settings = options.Value;
         }
 
         public async Task<IActionResult> Index()
@@ -108,6 +110,35 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             string msg;
             try
             {
+                //validaciones de parametros
+                if (up < 1) { 
+                return Json(new { error = true, msg = "Las unidades del bulto no puede ser 0 (cero) o tener valores negativos. Verifique, por favor." });
+                }
+                if (bulto < 1)
+                {
+                    return Json(new { error = true, msg = "Los bultos no puede ser 0 (cero) o tener valores negativos. Verifique, por favor." });
+                }
+
+                if (unidad < 0)
+                {
+                    return Json(new { error = true, msg = "Las unidades sueltas no puede tener valores negativos. Verifique, por favor." });
+                }
+                if (!string.IsNullOrEmpty(vto) && !string.IsNullOrWhiteSpace(vto))
+                {
+                    var fecha = vto.ToDateTimeOrNull();
+                    var tope = DateTime.Today.AddDays(_settings.FechaVtoCota);
+
+                    if ( fecha == null)
+                    {
+                        return Json(new { error = true, msg = "La fecha recepcionada no es válida. Verifique." });
+                    }
+                    else if(fecha<tope)
+                    {
+                        return Json(new { error = true, msg = $"La fecha recepcionada no puede ser menor a {tope}. Verifique, por favor." });
+                    }
+                }
+
+
                 //armo producto a resguardar
                 var item = new RPRProcuctoDto();
                 item.rp = RPRAutorizacionPendienteSeleccionada.Rp;
