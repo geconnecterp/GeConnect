@@ -20,7 +20,7 @@
     public class RPRAutoComptesPendientesDto : RPRAutorizacionPendienteDto
     {
         public string Rpe_desc { get; set; }=string.Empty ;
-        public char Tco_id { get; set; } = char.MinValue;
+        public string Tco_id { get; set; } = string.Empty;
         public string Cm_compte { get; set; } = string.Empty;
         public DateTime Cm_fecha { get; set; }
         public decimal Cm_importe { get; set; } = decimal.Zero;

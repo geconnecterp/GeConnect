@@ -7,11 +7,23 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Areas\Compras\Data\**" />
+    <Compile Remove="Areas\Compras\Models\**" />
+    <Content Remove="Areas\Compras\Data\**" />
+    <Content Remove="Areas\Compras\Models\**" />
+    <EmbeddedResource Remove="Areas\Compras\Data\**" />
+    <EmbeddedResource Remove="Areas\Compras\Models\**" />
+    <None Remove="Areas\Compras\Data\**" />
+    <None Remove="Areas\Compras\Models\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="log4net" Version="2.0.17" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.8" />
     <PackageReference Include="Microsoft.Extensions.Logging.Log4Net.AspNetCore" Version="8.0.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.4" />
     <PackageReference Include="System.Linq.Dynamic.Core" Version="1.4.5" />
+    <PackageReference Include="X.PagedList.Mvc.Core" Version="8.4.7" />
   </ItemGroup>
 
   <ItemGroup>

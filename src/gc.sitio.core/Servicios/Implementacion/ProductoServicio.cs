@@ -334,7 +334,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             HttpClient client = helper.InicializaCliente(token);
             HttpResponseMessage response;
 
-            var link = $"{_appSettings.RutaBase}{RutaAPI}{RPRCOMPTESPEND}?adm={adm}";
+            var link = $"{_appSettings.RutaBase}{RutaAPI}{RPRCOMPTESPEND}?adm_id={adm}";
 
             response = await client.GetAsync(link);
 

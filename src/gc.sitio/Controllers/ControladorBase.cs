@@ -2,6 +2,7 @@
 using gc.infraestructura.Dtos;
 using gc.infraestructura.EntidadesComunes;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq.Dynamic.Core;
@@ -11,13 +12,14 @@ namespace gc.sitio.Controllers
     public class ControladorBase:Controller
     {
         private readonly AppSettings _options;
+        protected readonly IHttpContextAccessor _context;
 
         public List<Orden> _orden;
 
-        public ControladorBase(IOptions<AppSettings> options)
+        public ControladorBase(IOptions<AppSettings> options, IHttpContextAccessor contexto)
         {
             _options = options.Value;
-
+            _context = contexto;
         }
 
         public string NombreSitio
@@ -36,10 +38,22 @@ namespace gc.sitio.Controllers
         {
             get
             {
-                string etiqueta = $"{User.Identity.Name}";
-                return HttpContext.Request.Cookies[etiqueta];
+                var nombre = User.Claims.First(c => c.Type.Contains("name")).Value;
+                return _context.HttpContext.Request.Cookies[nombre];
             }
 
+        }
+        public string AdministracionId
+        {
+            get
+            {
+                var adm = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
+                if (string.IsNullOrEmpty(adm))
+                {
+                    return string.Empty;
+                }
+                return adm;
+            }
         }
 
         public (bool, DateTime?) EstaAutenticado
@@ -50,9 +64,9 @@ namespace gc.sitio.Controllers
                 var handler = new JwtSecurityTokenHandler(); //Libreria System.IdentityModel.Token.Jwt (6.7.1)
                 try
                 {
-                    var tokenS = handler.ReadToken(Token) as JwtSecurityToken;
+                    var tokenS = handler.ReadToken(TokenCookie) as JwtSecurityToken;
                     var venc = tokenS.Claims.First(c => c.Type.Contains("expires")).Value;
-                    expira = venc.ToDateTimeOrNull();
+                    expira = venc.ToDateTimeFromTicks();
                     if (!expira.HasValue || expira.Value < DateTime.Now)
                     {
 

@@ -30,14 +30,15 @@ namespace gc.sitio.Areas.Seguridad.Controllers
         private readonly ILogger<TokenController> _logger;
         private readonly IAdministracionServicio _admSv;
         private readonly AppSettings _appSettings;
-       
+        private readonly IHttpContextAccessor _context;
 
-        public TokenController(IConfiguration configuration, IAdministracionServicio servicio, ILogger<TokenController> logger, IOptions<AppSettings> options) : base(options)
+        public TokenController(IConfiguration configuration, IAdministracionServicio servicio, ILogger<TokenController> logger, IOptions<AppSettings> options, IHttpContextAccessor context) : base(options, context)
         {
             _configuration = configuration;
             _logger = logger;
             _appSettings = options.Value;
             _admSv = servicio;
+            _context = context;
         }
 
         [HttpGet]

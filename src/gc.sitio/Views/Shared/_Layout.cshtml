@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@{
+    var nombre = User.Claims.First(c => c.Type.Contains("nya")).Value;
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -8,6 +11,7 @@
     <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.css" />
     <link rel="stylesheet" href="~/css/core.css" />
     <link rel="stylesheet" href="~/css/theme-default.css" />
+    <link rel="stylesheet" href="~/fonts/boxicons.css" />
     <link rel="stylesheet" href="~/lib/lobibox/css/lobibox.min.css" />
     <link rel="stylesheet" href="~/lib/jqueryui/themes/sunny/jquery-ui.min.css" />
     <link rel="stylesheet" href="~/lib/jqueryui/themes/sunny/theme.css" />
