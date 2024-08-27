@@ -65,57 +65,70 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         [HttpPost]
         public async Task<JsonResult> BusquedaBase(string busqueda,bool validarEstado=false, bool acumularProductos = false)
         {
-            ProductoBusquedaDto producto = new ProductoBusquedaDto { P_id = "0000-0000" };
-            if (string.IsNullOrEmpty(busqueda))
+            try
             {
-                return Json(new { error = false, producto });
+                ProductoBusquedaDto producto = new ProductoBusquedaDto { P_id = "0000-0000" };
+                if (string.IsNullOrEmpty(busqueda))
+                {
+                    return Json(new { error = false, producto });
+                }
+
+                InicializaVariablesBusquedaBase();
+
+                if (busqueda.Trim().Length < 6)
+                {
+                    busqueda = busqueda.Trim().PadLeft(6, '0');
+                }
+                BusquedaBase buscar = new BusquedaBase
+                {
+                    Administracion = AdministracionId,
+                    Busqueda = busqueda,
+                    DescuentoCli = _busqueda.DescuentoCli,
+                    ListaPrecio = _busqueda.ListaPrecio,
+                    TipoOperacion = _busqueda.TipoOperacion
+                };
+
+                producto = await _productoServicio.BusquedaBaseProductos(buscar, TokenCookie);
+
+                if (producto != null && !string.IsNullOrEmpty(producto.P_id))
+                {
+                    bool warn = false;
+                    string msg = string.Empty;
+                    //validación de Estado
+                    if (!producto.P_activo.Equals("S") && validarEstado)
+                    {
+                        //se valida que no esta activo. Valores Noactivo Discontinuo
+                        return Json(new { error = true, msg = $"El producto {producto.P_desc} se encuentra {producto.Msj}" });
+                    }
+                    //Validación si pertenece o no al proveedor
+
+                    if (RPRAutorizacionPendienteSeleccionada != null &&
+                        !RPRAutorizacionPendienteSeleccionada.Cta_id.Equals(producto.Cta_id) && validarEstado)
+                    {
+                        warn = true;
+                        msg = $"El Producto NO pertenece al actual proveedor. Pertenece al Proveedor {producto.Cta_denominacion}.";
+                    }
+
+                    //se resguarda el producto recien buscado.
+                    ProductoBase = producto;
+                    if (acumularProductos)
+                    {
+                        var productos = ProductosSeleccionados;
+                        productos.Add(producto);
+                        ProductosSeleccionados = productos;
+                    }
+                    return Json(new { error = false, producto, warn, msg, });
+                }
+                else
+                {
+                    return Json(new { error = false, warn = true, msg = "El producto no ha sido identificado." ,producto=new ProductoBusquedaDto() { P_id="NO" } });
+                }
             }
-
-            InicializaVariablesBusquedaBase();
-
-            BusquedaBase buscar = new BusquedaBase
+            catch (Exception ex)
             {
-                Administracion = AdministracionId,
-                Busqueda = busqueda,
-                DescuentoCli = _busqueda.DescuentoCli,
-                ListaPrecio = _busqueda.ListaPrecio,
-                TipoOperacion = _busqueda.TipoOperacion
-            };
-
-            producto = await _productoServicio.BusquedaBaseProductos(buscar, TokenCookie);
-
-            if (producto != null && !string.IsNullOrEmpty(producto.P_id))
-            {
-                bool warn = false;
-                string msg = string.Empty;
-                //validación de Estado
-                if (!producto.P_activo.Equals("S") && validarEstado)
-                {
-                    //se valida que no esta activo. Valores Noactivo Discontinuo
-                    return Json(new { error = true, msg = $"El producto {producto.P_desc} se encuentra {producto.Msj}" });
-                }
-                //Validación si pertenece o no al proveedor
-
-                if (RPRAutorizacionPendienteSeleccionada != null &&
-                    !RPRAutorizacionPendienteSeleccionada.Cta_id.Equals(producto.Cta_id) && validarEstado)
-                {
-                    warn = true;
-                    msg = $"El Producto NO pertenece al actual proveedor. Pertenece al Proveedor {producto.Cta_denominacion}.";
-                }
-
-                
-
-                //se resguarda el producto recien buscado.
-                ProductoBase = producto;
-                if (acumularProductos)
-                {
-                    var productos = ProductosSeleccionados;
-                    productos.Add(producto);
-                    ProductosSeleccionados = productos;
-                }
-                return Json(new { error = false, producto, warn, msg });
+                _logger.LogError(ex, "Hubo un error en la busqueda avanzada");
+                return Json(new { error = true, msg = "Algo no salió bien. Vuelva a intentarlo." });
             }
-            return Json(new { error = true, msg = "El producto no ha sido identificado." });
         }
 
         private void InicializaVariablesBusquedaBase()

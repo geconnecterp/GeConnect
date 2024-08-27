@@ -14,7 +14,7 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<List<InfoProdMovStk>> InfoProductoMovStk(string id, string adm, string depo, string tmov, DateTime desde, DateTime hasta, string token);
         Task<List<InfoProdLP>> InfoProductoLP(string id, string token);
         Task<List<RPRAutorizacionPendienteDto>> RPRObtenerAutorizacionPendiente(string adm, string token);
-        Task<RPRRegistroResponseDto> RPRRegistrarProductos(List<ProductoJsonDto> json, string token);
+        Task<RPRRegistroResponseDto> RPRRegistrarProductos(List<RPRProcuctoDto> json,string admId, string ul, string token);
         Task<List<RPRAutoComptesPendientesDto>> RPRObtenerComptesPendiente(string adm_id, string token);
     }
 }

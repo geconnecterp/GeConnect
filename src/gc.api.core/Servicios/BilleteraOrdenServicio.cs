@@ -4,12 +4,9 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
-using gc.infraestructura.Core.Responses;
-using gc.infraestructura.EntidadesComunes;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using System.Linq.Dynamic.Core;
-using System.Net;
 
 namespace gc.api.core.Servicios
 {
@@ -24,43 +21,43 @@ namespace gc.api.core.Servicios
         {
             if (string.IsNullOrEmpty(orden.Rb_Compte))
             {
-                return (false, ConstantesGC.MensajeError.ERR_VALOR_CAMPO_CRITICO.Replace("@campo", "Rb_Compte"));
+                return (false, gc.infraestructura.Constantes.Constantes.MensajeError.ERR_VALOR_CAMPO_CRITICO.Replace("@campo", "Rb_Compte"));
             }
             if (string.IsNullOrEmpty(orden.Adm_Id))
             {
-                return (false, ConstantesGC.MensajeError.ERR_VALOR_CAMPO_CRITICO.Replace("@campo", "Adm_Id"));
+                return (false, infraestructura.Constantes.Constantes.MensajeError.ERR_VALOR_CAMPO_CRITICO.Replace("@campo", "Adm_Id"));
             }
             if (string.IsNullOrEmpty(orden.Caja_Id))
             {
-                return (false, ConstantesGC.MensajeError.ERR_VALOR_CAMPO_CRITICO.Replace("@campo", "Caja_Id"));
+                return (false, infraestructura.Constantes.Constantes.MensajeError.ERR_VALOR_CAMPO_CRITICO.Replace("@campo", "Caja_Id"));
             }
             if (string.IsNullOrEmpty(orden.Bill_Id))
             {
-                return (false, ConstantesGC.MensajeError.ERR_VALOR_CAMPO_CRITICO.Replace("@campo", "Bill_Id"));
+                return (false, infraestructura.Constantes.Constantes.MensajeError.ERR_VALOR_CAMPO_CRITICO.Replace("@campo", "Bill_Id"));
             }
             if (string.IsNullOrEmpty(orden.Cuit))
             {
-                return (false, ConstantesGC.MensajeError.ERR_VALOR_CAMPO_CRITICO.Replace("@campo", "Cuit"));
+                return (false, infraestructura.Constantes.Constantes.MensajeError.ERR_VALOR_CAMPO_CRITICO.Replace("@campo", "Cuit"));
             }
             if (string.IsNullOrEmpty(orden.Tco_Id))
             {
-                return (false, ConstantesGC.MensajeError.ERR_VALOR_CAMPO_CRITICO.Replace("@campo", "Tco_Id"));
+                return (false, infraestructura.Constantes.Constantes.MensajeError.ERR_VALOR_CAMPO_CRITICO.Replace("@campo", "Tco_Id"));
             }
             if (string.IsNullOrEmpty(orden.Cm_Compte))
             {
-                return (false, ConstantesGC.MensajeError.ERR_VALOR_CAMPO_CRITICO.Replace("@campo", "Cm_Compte"));
+                return (false, infraestructura.Constantes.Constantes.MensajeError.ERR_VALOR_CAMPO_CRITICO.Replace("@campo", "Cm_Compte"));
             }
             if (orden.Bo_Importe == default)
             {
-                return (false, ConstantesGC.MensajeError.ERR_VALOR_CAMPO_CRITICO.Replace("@campo", "Bo_Importe"));
+                return (false, infraestructura.Constantes.Constantes.MensajeError.ERR_VALOR_CAMPO_CRITICO.Replace("@campo", "Bo_Importe"));
             }
             if (string.IsNullOrEmpty(orden.Bo_Clave))
             {
-                return (false, ConstantesGC.MensajeError.ERR_VALOR_CAMPO_CRITICO.Replace("@campo", "Bo_Clave"));
+                return (false, infraestructura.Constantes.Constantes.MensajeError.ERR_VALOR_CAMPO_CRITICO.Replace("@campo", "Bo_Clave"));
             }
             if (string.IsNullOrEmpty(orden.Ip))
             {
-                return (false, ConstantesGC.MensajeError.ERR_VALOR_CAMPO_CRITICO.Replace("@campo", "Ip"));
+                return (false, infraestructura.Constantes.Constantes.MensajeError.ERR_VALOR_CAMPO_CRITICO.Replace("@campo", "Ip"));
             }
 
             var sp = ConstantesGC.StoredProcedures.SP_BILLETERAORD_CARGA;
@@ -76,7 +73,7 @@ namespace gc.api.core.Servicios
             }
             else
             {
-                return (false, ConstantesGC.MensajeError.ERR_AL_INSERTAR);
+                return (false, infraestructura.Constantes.Constantes.MensajeError.ERR_AL_INSERTAR);
 
             }
         }
@@ -100,7 +97,7 @@ namespace gc.api.core.Servicios
             }
             else
             {
-                return (false, ConstantesGC.MensajeError.ERR_AL_ACTUALIZAR);
+                return (false, infraestructura.Constantes.Constantes.MensajeError.ERR_AL_ACTUALIZAR);
             }
         }
 
@@ -121,7 +118,7 @@ namespace gc.api.core.Servicios
             }
             else
             {
-                return (false, ConstantesGC.MensajeError.ERR_AL_ACTUALIZAR);
+                return (false, infraestructura.Constantes.Constantes.MensajeError.ERR_AL_ACTUALIZAR);
             }
         }
 

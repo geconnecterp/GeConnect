@@ -8,17 +8,7 @@
 }
 
 <div class="container">
-    <div class="row">
-        <div class="col-sm-12">
-            <div class="input-group input-group-sm">
-                <span>Autorización:</span>
-                <input type="text" value="@Model.Rp" class="form-control-sm sinbordefondo" readonly />
-                <span>Prov.</span>
-                <input type="text" value="@Model.Cta_denominacion" class="form-control-sm sinbordefondo" readonly />
-
-            </div>
-        </div>
-    </div>
+    <partial name="_rprCabecera" model="@Model" />
     <partial name="~/areas/gestion/views/producto/_ctrbuscarproducto.cshtml" model="@buscar" />
     <div class="row">
         <div class="col-sm-12">
@@ -58,7 +48,7 @@
     </div>
     <div class="row">
         <div class="offset-sm-3 col-sm-6">
-            <a asp-action="index" asp-controller="rpr" asp-area="PocketPpal" id="btnVolverRpr" class="btn btn-info btn-sm"><i class="bx bx-md bx-arrow-back"></i><span> Volver</span></a>
+            <button id="btnVolverRpr" class="btn btn-info btn-sm"><i class="bx bx-md bx-arrow-back"></i><span> Volver</span></button>
             <a asp-action="CargaUL" asp-controller="rpr" asp-area="PocketPpal" id="btnContinuarRpr" class="btn btn-danger btn-sm" style="display:none;"><i class="bx bx-md bx-right-arrow"></i><span> Continuar</span></a>
         </div>
     </div>
@@ -67,6 +57,7 @@
 @section scripts {
     <script type="text/javascript">
         //funcionalidad busqueda avanzada
+        var ocultarTrash = false;
         var productoBase = null; //se hidrata en busquedas.
         var funcionBusquedaAvanzada = false;
         var busquedaProdBase = "@Url.Action("BusquedaBase", "producto", new { area = "gestion" })";
@@ -77,9 +68,10 @@
         var EliminarProductoUrl = "@Url.Action("EliminarProducto", "rpr", new { area = "PocketPpal" })";
         var AcumularProductoUrl = "@Url.Action("AcumularProducto", "rpr", new { area = "PocketPpal" })";
         var RemplazarProductoUrl = "@Url.Action("RemplazarProducto", "rpr", new { area = "PocketPpal" })";
-
+        var homeRPRUrl = "@Url.Action("index", "rpr", new { area = "PocketPpal" })";
     </script>
     <script src="~/js/app/busquedas.js" type="text/javascript"></script>
+    <script src="~/js/app/rpr.js" type="text/javascript"></script>
     <script src="~/js/app/infoRpr.js" type="text/javascript"></script>
 
 }

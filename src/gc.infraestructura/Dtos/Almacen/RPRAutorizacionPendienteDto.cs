@@ -13,8 +13,8 @@
 
     public class RPRRegistroResponseDto
     {
-        public string Estado { get; set; }= string.Empty;   
-        public string Estado_Msj { get; set; }=string.Empty;   
+        public short Resultado { get; set; }
+        public string Resultado_msj { get; set; }=string.Empty;   
     }
 
     public class RPRAutoComptesPendientesDto : RPRAutorizacionPendienteDto

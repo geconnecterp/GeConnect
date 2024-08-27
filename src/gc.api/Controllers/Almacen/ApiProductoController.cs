@@ -248,21 +248,24 @@ namespace gc.api.Controllers.Almacen
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
 
-        public IActionResult RPRRegistrar(string json)
+        public IActionResult RPRRegistrar(List<RPRProcuctoDto> prods)
         {
             ApiResponse<RPRRegistroResponseDto> response;
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
 
-            if (string.IsNullOrEmpty(json))
+            if (prods.Count == 0)
             {
                 return BadRequest("No se recepcionó dato alguno.");
-            }
 
-            //validar json
-            if (!JsonValido(json))
-            {
-                return BadRequest("El JSON recepcionado no es válido");
             }
+            
+            var json = JsonConvert.SerializeObject(prods);
+
+            ////validar json
+            //if (!JsonValido(json))
+            //{
+            //    return BadRequest("El JSON recepcionado no es válido");
+            //}
 
             var res = _productosSv.RPRRegistrarProductos(json);
             response = new ApiResponse<RPRRegistroResponseDto>(res);

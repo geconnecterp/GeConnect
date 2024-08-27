@@ -273,11 +273,11 @@ namespace gc.api.core.Servicios
 
         public RPRRegistroResponseDto RPRRegistrarProductos(string json)
         {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_PENDIENTES;
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_REGISTRA;
             /// varchar(30),  varchar(3),  varchar(4), varchar(8), @ bit, @ varchar(10) , @ bit, @ bit, @ bit, @ bit, @ bit, @ bit)  
             var ps = new List<SqlParameter>()
             {
-                new("@rpr",json),
+                new("@json",json),
             };
 
             List<RPRRegistroResponseDto> productos = _repository.EjecutarLstSpExt<RPRRegistroResponseDto>(sp, ps, true);

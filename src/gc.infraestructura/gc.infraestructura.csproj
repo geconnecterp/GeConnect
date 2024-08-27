@@ -8,12 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Constantes\**" />
-    <EmbeddedResource Remove="Constantes\**" />
-    <None Remove="Constantes\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Remove="EntidadesComunes\ProductFilters.cs" />
     <Compile Remove="EntidadesComunes\SolicitudFilter.cs" />
   </ItemGroup>
