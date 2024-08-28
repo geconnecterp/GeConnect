@@ -75,7 +75,7 @@ namespace gc.sitio.Areas.Compras.Controllers
         }
 
 
-        public async Task<JsonResult> BuscarCuentaComercial(string cuenta, char tipo)
+        public async Task<JsonResult> BuscarCuentaComercial(string cuenta, char tipo, string vista)
         {
             try
             {
@@ -92,7 +92,8 @@ namespace gc.sitio.Areas.Compras.Controllers
                 {
                     //Buscar tipos de comprobantes por cuenta
                     //Metodo ACAESTAELMETODO
-                    return Json(new { error = false, warn = false, unico = true, cuenta = lista[0] });
+                    var tiposCompte=await _tiposComprobantesServicio.BuscarTiposComptesPorCuenta(cuenta, TokenCookie);
+                    return Json(new { error = false, warn = false, unico = true, cuenta = lista[0], tiposCompte });
                 }
                 return Json(new { error = false, warn = false, unico = false, cuenta = lista });
             }

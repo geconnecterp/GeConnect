@@ -31,8 +31,9 @@ function inicializaCuenta() {
 function buscarCuentasComercial() {
 	var cuenta = $("#Cuenta").val();
 	var tipo = tipoCuenta;
-	var seccion = componenteParcial; //-> Aca inyectar el html con los datos 
-	var datos = { cuenta, tipo };
+	var seccion = seccionEnVista; //-> Aca inyectar el html con los datos 
+	var vista = vistaParcial;
+	var datos = { cuenta, tipo, vista };
 
 	PostGen(datos, buscarCuentaUrl, function (obj) {
 		if (obj.error === true) {
