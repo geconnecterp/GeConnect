@@ -1,0 +1,59 @@
+﻿@model GridCore<RPRAutoComptesPendientesDto>
+@{
+}
+@{
+    Layout = "~/views/shared/_Layout.cshtml";
+}
+
+<div class="card">
+    <row>
+        <input type="text" id="rp_id" style="visibility:hidden" />
+        <div style="float:left">
+            <h5 class="card-header">RPR Autorizaciones</h5>
+        </div>
+        <div class="demo-inline-spacing" style="float:right;margin-top: 20px;margin-right: 25px;">
+            <a asp-action="NuevaAut" asp-controller="Compra" asp-area="Compras" class="btn btn-primary" id="btnNuevaAut">
+                <span class="tf-icons bx bx-plus-circle me-1"></span>Nuevo Aut.
+            </a>
+            <button type="button" class="btn btn-secondary">
+                <span class="tf-icons bx bx-edit me-1"></span>Mod. Aut.
+            </button>
+            <button type="button" class="btn btn-success">
+                <span class="tf-icons bx bxs-binoculars me-1"></span>Ver
+            </button>
+        </div>
+    </row>
+    <div class="card-body">
+        <div class="table-responsive text-nowrap">
+            <table class="table table-bordered table-hover">
+                <thead class="table-secondary">
+                    <tr>
+                        <th>N° Auto</th>
+                        <th>Cuenta</th>
+                        <th>Turno</th>
+                        <th>Nota</th>
+                        <th>Factura</th>
+                        <th>Fecha</th>
+                        <th>Monto</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ListaDatos)
+                    {
+                        <tr>
+                            <td>@item.Rp</td>
+                            <td>@item.Cta_denominacion</td>
+                            <td>@item.Fecha</td>
+                            <td>@item.Nota</td>
+                            <td>@item.Cm_compte</td>
+                            <td>@item.Cm_fecha</td>
+                            <td>@item.Cm_importe</td>
+                            <td>@item.Rpe_desc</td>
+                        </tr>    
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

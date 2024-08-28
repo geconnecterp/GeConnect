@@ -2,13 +2,13 @@
 function PostGenHtml(data, path, retorno) {
     PostGen(data, path, retorno, fnError, "HTML");
 }
-function PostGenHtml(data, path, retorno,fxError) {
+function PostGenHtml(data, path, retorno, fxError) {
     PostGen(data, path, retorno, fxError, "HTML");
 }
 function PostGen(data, path, retorno) {
-    PostGen(data, path, retorno, fnError,"json");
+    PostGen(data, path, retorno, fnError, "json");
 }
-function PostGen(data, path, retorno, fxError,datatype) {
+function PostGen(data, path, retorno, fxError, datatype) {
     $.ajax({
         "dataType": datatype,
         "url": path,
@@ -37,13 +37,21 @@ function AbrirWaiting(Mensaje) {
     $('#wWaiting').fadeIn(0);
 }
 
-function CerrarWaiting() {
+
+///debo mandar true siempre y cuando
+///haya definido una funcion de callback, 
+///para ejecutar funcionalidad luego de cerrar modal waiting
+function CerrarWaiting(ejecutar) {
     $('#wWaiting').fadeOut(0);
+    if (ejecutar === true) {
+        FunctionCallback();
+        return true;
+    }
+    return true;
 }
 
 function CerrarMensaje(Value) {
     //$('#msjModal').fadeOut(0);
-    $('#msjModal').modal('hide');
     FunctionCallback(Value);
 }
 
@@ -55,10 +63,20 @@ var FunctionCallback = null;
 var FunctionCallBackExportar = null;
 function AbrirMensaje(Titulo, Mensaje, CallBack, EsConfirmacion, Botones, Tipo, CallBackExportar) {
     if (EsConfirmacion) {
-        $("#btnMensajeAceptar").show();
-        $("#btnMensajeCancelar").show();
+        if (Botones.length > 2) {
+            $("#btnMensajeAceptar").show();
+            $("#btnMensajeAlternativa").show();
+            $("#btnMensajeCancelar").show();
+        }
+        else {
+            $("#btnMensajeAceptar").show();
+            $("#btnMensajeAlternativa").hide();
+            $("#btnMensajeCancelar").show();
+        }
+
     } else {
         $("#btnMensajeAceptar").show();
+        $("#btnMensajeAlternativa").hide();
         $("#btnMensajeCancelar").hide();
     }
     if (Mensaje != null) {
@@ -80,6 +98,11 @@ function AbrirMensaje(Titulo, Mensaje, CallBack, EsConfirmacion, Botones, Tipo, 
             $("#btnMensajeAceptar").text(Botones[0]);
             $("#btnMensajeCancelar").text(Botones[1]);
         }
+        else {
+            $("#btnMensajeAceptar").text(Botones[0]);
+            $("#btnMensajeAlternativa").text(Botones[1]);
+            $("#btnMensajeCancelar").text(Botones[2]);
+        }
         if (Botones.length == 0) {
             $("#btnMensajeCancelar").text("Cancelar");
         }
@@ -90,19 +113,19 @@ function AbrirMensaje(Titulo, Mensaje, CallBack, EsConfirmacion, Botones, Tipo, 
     //$('#msjModal').fadeIn(0);
     $("#msjIcono").html("");
     switch (Tipo) {
-        case "Info!":
+        case "info!":
             $("#msjTitulo").prop("class", "text-info");
             $("#msjIcono").html('<i class="bx bx-md bx-spin bx-info-circle text-info"></i>');
             break;
-        case "Warning!":
+        case "warn!":
             $("#msjTitulo").prop("class", "text-warning");
             $("#msjIcono").html('<i class="bx bx-md bx-spin bx-error text-warning"></i>');
             break;
-        case "Error!":
+        case "error!":
             $("#msjTitulo").prop("class", "text-danger");
             $("#msjIcono").html('<i class="bx bx-md bx-spin bx-hand text-danger"></i>');
             break;
-        case "success!":
+        case "succ!":
             $("#msjTitulo").prop("class", "text-success");
             $("#msjIcono").html('<i class="bx bx-md bx-spin bx-check text-success"></i>');
             break;

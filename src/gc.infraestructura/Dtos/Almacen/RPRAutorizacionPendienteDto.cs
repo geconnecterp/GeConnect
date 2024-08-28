@@ -25,4 +25,6 @@
         public DateTime Cm_fecha { get; set; }
         public decimal Cm_importe { get; set; } = decimal.Zero;
     }
+
+
 }

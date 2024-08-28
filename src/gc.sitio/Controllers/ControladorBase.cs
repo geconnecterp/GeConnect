@@ -165,5 +165,16 @@ namespace gc.sitio.Controllers
 
             return query;
         }
+
+        #region Metodos generales
+        //protected void VerificaAutenticacion()
+        //{
+        //    var auth = EstaAutenticado;
+        //    if (!auth.Item1 || auth.Item2 < DateTime.Now)
+        //    {
+        //        _context.HttpContext.Response.Redirect(Url.Action("Login", "Token", new { area = "seguridad" }), true);
+        //    }
+        //}
+        #endregion
     }
 }

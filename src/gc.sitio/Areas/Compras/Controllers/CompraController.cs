@@ -1,27 +1,34 @@
-﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿
+using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Almacen;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using System.Data;
+using System.Reflection;
 using X.PagedList;
 
 namespace gc.sitio.Areas.Compras.Controllers
 {
     [Area("Compras")]
-    public class ComprasController : ControladorBase
+    public class CompraController : ControladorBase
     {
+        private readonly ICuentaServicio _cuentaServicio;
+        private readonly ITipoComprobanteServicio _tiposComprobantesServicio;
         private readonly AppSettings _appSettings;
-        private readonly ILogger<ComprasController> _logger;
+        private readonly ILogger<CompraController> _logger;
         private readonly IProductoServicio _productoServicio;
 
-        public ComprasController(ILogger<ComprasController> logger, IOptions<AppSettings> options, IProductoServicio productoServicio,
+        public CompraController(ILogger<CompraController> logger, IOptions<AppSettings> options, IProductoServicio productoServicio,ICuentaServicio cuentaServicio,
             IHttpContextAccessor context) : base(options, context)
         {
             _logger = logger;
             _appSettings = options.Value;
             _productoServicio = productoServicio;
+            _cuentaServicio = cuentaServicio;
         }
 
         public IActionResult Index()
@@ -29,7 +36,7 @@ namespace gc.sitio.Areas.Compras.Controllers
             return View();
         }
 
-        public async Task<IActionResult> RPRAutorizaciones()
+        public async Task<IActionResult> RPRAutorizacionesLista()
         {
             var auth = EstaAutenticado;
             if (!auth.Item1 || auth.Item2 < DateTime.Now)
@@ -55,16 +62,49 @@ namespace gc.sitio.Areas.Compras.Controllers
             return View(grid);
         }
 
-        public async Task<IActionResult> RPRNuevaAutorizacion(string rp)
+        public async Task<IActionResult> NuevaAut(string rp)
         {
-            var auth = EstaAutenticado;
-            if (!auth.Item1 || auth.Item2 < DateTime.Now)
-            {
-                return RedirectToAction("Login", "Token", new { area = "seguridad" });
-            }
-            //
+			//VerificaAutenticacion();
+			var auth = EstaAutenticado;
+			if (!auth.Item1 || auth.Item2 < DateTime.Now)
+			{
+				return RedirectToAction("Login", "Token", new { area = "seguridad" });
+			}
 
-            return View();
+			return View("RPRNuevaAutorizacion");
+        }
+
+
+        public async Task<JsonResult> BuscarCuentaComercial(string cuenta, char tipo)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(cuenta) || string.IsNullOrWhiteSpace(cuenta))
+                {
+                    throw new NegocioException("Debe enviar codigo de cuenta");
+                }
+                var lista = await _cuentaServicio.ObtenerListaCuentaComercial(cuenta, tipo, TokenCookie);
+                if (lista.Count == 0)
+                {
+					throw new NegocioException("No se obtuvierion resultados");
+				}
+                if (lista.Count == 1)
+                {
+                    //Buscar tipos de comprobantes por cuenta
+                    //Metodo ACAESTAELMETODO
+                    return Json(new { error = false, warn = false, unico = true, cuenta = lista[0] });
+                }
+                return Json(new { error = false, warn = false, unico = false, cuenta = lista });
+            }
+            catch (NegocioException neg)
+            {
+                return Json(new { error = false, warn = true, msg = neg.Message });
+			}
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name} cuenta: {cuenta} tipo: {tipo}");
+                return Json(new { error = true, msg = "Algo no fue bien al buscar la cuenta comercial, intente nuevamente mas tarde." });
+            }
         }
 
         #region Métodos privados

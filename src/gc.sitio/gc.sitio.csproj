@@ -33,6 +33,7 @@
     <Folder Include="Areas\Seguridad\Models\" />
     <Folder Include="Views\Shared\EditorTemplates\" />
     <Folder Include="wwwroot\images\logo\" />
+    <Folder Include="wwwroot\js\app\areas\compras\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -51,6 +52,14 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
     <Content Update="Areas\ControlComun\Views\_ViewImports.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="wwwroot\js\app\siteGen.js">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="wwwroot\js\site.js">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>

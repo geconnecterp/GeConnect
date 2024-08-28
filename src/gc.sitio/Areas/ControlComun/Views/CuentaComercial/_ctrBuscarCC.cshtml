@@ -1,23 +1,16 @@
-﻿@using gc.infraestructura.EntidadesComunes.ControlComun.CuentaComercial
-@model List<CuentaDto>
-@{
-}
+﻿@model BuscarCuentaDto
 
-<div class="card col-sm-12">
-	<div class="card-body">
-        @* <form asp-action="BusquedaCuentaComercial" asp-controller="cuenta" asp-area="controlcomun" id="ctrBusqueda" method="post" class="row g-3"> *@
-            <div class="input-group input-group-sm">
-                <span class="input-group-text">Cuenta:</span>
-                <input type="text" class="form-control" name="Cuenta" id="Cuenta" />
-                <button type="button" class="btn btn-sm" id="btnBusquedaBase"><i class="bx bx-search btn-xs text-success"></i> Buscar</button>
-                <input type="text" class="form-control" name="RazonSocial" id="RazonSocial" />
-                <picture><img /></picture>
-                @Html.Hidden("estadoFuncion", false)
-            </div>
-@*         </form>
- *@	</div>
+<div class="row">
+	<div class="col-8">
+		<div class="input-group">
+			<span class="input-group-text">Cuenta: </span>
+			<input type="text" asp-for="Cuenta" class="form-control"/>
+			<button type="button" class="btn btn-icon btn-outline-primary" id="btnBuscarCC" title="Buscar cuenta comercial">
+				<span class="tf-icons bx bx-search"></span>
+			</button>
+			<input type="text" class="form-control" id="razonsocial" readonly/>
+			<i class="bx bx-user bx-md" id="iconTipoCC"></i>
+		</div>
+	</div>
 </div>
 
-@section scripts {
-    <script src="~/js/app/controlcomun/busquedacuentacomercial.js" type="text/javascript"></script>
-}
