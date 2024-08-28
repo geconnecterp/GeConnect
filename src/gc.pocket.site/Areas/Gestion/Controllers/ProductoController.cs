@@ -75,6 +75,10 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
 
                 InicializaVariablesBusquedaBase();
 
+                if (busqueda.Trim().Length < 6)
+                {
+                    busqueda = busqueda.Trim().PadLeft(6, '0');
+                }
                 BusquedaBase buscar = new BusquedaBase
                 {
                     Administracion = AdministracionId,

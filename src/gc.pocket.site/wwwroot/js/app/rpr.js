@@ -17,6 +17,7 @@
     else {
         datos = { up, vto: " ", bulto: box, unidad: un };
     }
+   
 
     AbrirWaiting();
 
@@ -53,12 +54,14 @@
 
         }
         else {
-            productosGrid();
             CerrarWaiting();
             ControlaMensajeSuccess("¡¡Producto cargado!!")
-            return true;
+            productosGrid();
+    return true;
         }
     });
+    $("input#Busqueda").focus();
+    return true;
 }
 
 
@@ -152,6 +155,7 @@ function productosGrid() {
                 $("#divRprGrid #tbProdRPR tbody td:nth-child(8)").toggle();
             }
         }
+       
         return true;
     }, function (obj) {
         ControlaMensajeError(obj.message);

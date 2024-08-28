@@ -16,6 +16,9 @@ using System.Security.Claims;
 using System.Text;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Seguridad;
+using gc.infraestructura.Dtos.Administracion;
+using gc.infraestructura.Helpers;
+using gc.sitio.core.Servicios.Contratos;
 
 namespace gc.sitio.Areas.Seguridad.Controllers
 {
@@ -23,22 +26,45 @@ namespace gc.sitio.Areas.Seguridad.Controllers
     public class TokenController : ControladorBase
     {
         private readonly IConfiguration _configuration;
-        private readonly ILoggerHelper _logger;
+        //private readonly ILoggerHelper _logger;
+        private readonly ILogger<TokenController> _logger;
+        private readonly IAdministracionServicio _admSv;
         private readonly AppSettings _appSettings;
-       
+        private readonly IHttpContextAccessor _context;
 
-        public TokenController(IConfiguration configuration, ILoggerHelper logger, IOptions<AppSettings> options) : base(options)
+        public TokenController(IConfiguration configuration, IAdministracionServicio servicio, ILogger<TokenController> logger, IOptions<AppSettings> options, IHttpContextAccessor context) : base(options, context)
         {
             _configuration = configuration;
             _logger = logger;
             _appSettings = options.Value;
+            _admSv = servicio;
+            _context = context;
         }
 
         [HttpGet]
         public IActionResult Login()
         {
-            
-            return View();
+            try
+            {
+                ComboAdministracion();
+                var login = new LoginDto { Fecha = DateTime.Now };
+                return View(login);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en Login");
+                TempData["error"] = "Hubo algún error al intentar cargar la vista de autenticación. Si el problema persiste, avise al administardor.";
+                var lv = new List<AdministracionLoginDto>();
+                ViewBag.Admid = HelperMvc<AdministracionLoginDto>.ListaGenerica(lv);
+                var login = new LoginDto { Fecha = DateTime.Now };
+                return View(login);
+            }
+        }
+
+        private void ComboAdministracion()
+        {
+            var adms = _admSv.GetAdministracionLogin();
+            ViewBag.Admid = HelperMvc<AdministracionLoginDto>.ListaGenerica(adms);
         }
 
         [HttpPost]
@@ -55,11 +81,12 @@ namespace gc.sitio.Areas.Seguridad.Controllers
             cliente.DefaultRequestHeaders.Add("X-ClientUsr", ip.ToString());
 
             cliente.BaseAddress = new Uri(_configuration["AppSettings:RutaBase"]);
-            var userModel = new { autenticar.UserName, autenticar.Password };
+            var admid = autenticar.Admid ?? "0000";
+            var userModel = new { autenticar.UserName, autenticar.Password, admid };
             var userJson = JsonConvert.SerializeObject(userModel);
             var contentData = new StringContent(userJson, Encoding.UTF8, "application/json");
 
-            var response = await cliente.PostAsync("/api/token", contentData);
+            var response = await cliente.PostAsync("/api/apitoken", contentData);
 
             if (response.StatusCode == HttpStatusCode.OK)
             {
@@ -76,9 +103,12 @@ namespace gc.sitio.Areas.Seguridad.Controllers
 
 
 
-                    var roleUser = tokenS.Claims.First(c => c.Type.Contains("role")).Value.Split(',');
+                    //var roleUser = tokenS.Claims.First(c => c.Type.Contains("role")).Value.Split(',');
+                    //var email = tokenS.Claims.First(c => c.Type.Contains("email")).Value;
+                    //var user = tokenS.Claims.First(c => c.Type.Contains("User")).Value;
+                    var user = tokenS.Claims.First(c => c.Type.Contains("name")).Value;
                     var email = tokenS.Claims.First(c => c.Type.Contains("email")).Value;
-                    var user = tokenS.Claims.First(c => c.Type.Contains("User")).Value;
+                    var nombre = tokenS.Claims.First(c => c.Type.Contains("nya")).Value;
 
 
 
@@ -124,7 +154,7 @@ namespace gc.sitio.Areas.Seguridad.Controllers
 
                     var etiqueta = $"{user}";
 
-                    var principal = new ClaimsPrincipal(new[] { identity });
+                    var principal = new ClaimsPrincipal([identity]);
                     await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
                     HttpContext.Response.Cookies.Append(etiqueta, token, cookieOptions);
                     //if (roleUser[0].Equals(RolesUsuario.VENDEDOR.ToString()))
@@ -143,7 +173,7 @@ namespace gc.sitio.Areas.Seguridad.Controllers
                 TempData["error"] = "No se ha podido autenticar. El usuario o contraseña no son correctos.";
                 var respuesta = await response.Content.ReadAsStringAsync();
                 ExceptionValidation valid = JsonConvert.DeserializeObject<ExceptionValidation>(respuesta);
-                _logger.Log(TraceEventType.Error, $"{valid.Title} - {valid.Status} - {valid.Detail}");
+                _logger.LogError($"{valid.Title} - {valid.Status} - {valid.Detail}");
             }
 
             return View(autenticar);
@@ -155,30 +185,30 @@ namespace gc.sitio.Areas.Seguridad.Controllers
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
-            // Acá debo invocar la api
-            HelperAPI api = new HelperAPI();
-            var cliente = api.InicializaCliente();
-            cliente.BaseAddress = new Uri(_configuration["AppSettings:RutaBase"]);
-            string usuario = UserName;
-            HttpResponseMessage response;
-            var link = $"/api/token/Logoff?UserName={usuario}";
-            response = await cliente.GetAsync(link);
+            //// Acá debo invocar la api
+            //HelperAPI api = new HelperAPI();
+            //var cliente = api.InicializaCliente();
+            //cliente.BaseAddress = new Uri(_configuration["AppSettings:RutaBase"]);
+            //string usuario = UserName;
+            //HttpResponseMessage response;
+            //var link = $"/api/token/Logoff?UserName={usuario}";
+            //response = await cliente.GetAsync(link);
 
-            if (response.StatusCode == HttpStatusCode.OK)
-            {
+            //if (response.StatusCode == HttpStatusCode.OK)
+            //{
 
-            }
-            else if (response.StatusCode == HttpStatusCode.Unauthorized)
-            {
+            //}
+            //else if (response.StatusCode == HttpStatusCode.Unauthorized)
+            //{
 
-            }
-            else
-            {
-                string stringData = await response.Content.ReadAsStringAsync();
-                _logger.Log(TraceEventType.Error, $"stringData: {stringData}");
+            //}
+            //else
+            //{
+            //    string stringData = await response.Content.ReadAsStringAsync();
+            //    _logger.LogError($"stringData: {stringData}");
 
 
-            }
+            //}
 
             //al desloguear redirecciona a HOME
             return RedirectToAction("Index", new RouteValueDictionary(new { area = "", controller = "Home", action = "Index" }));

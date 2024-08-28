@@ -272,6 +272,22 @@ namespace gc.api.Controllers.Almacen
             return Ok(response);
         }
 
+        [HttpGet]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RPRAutoComptesPendientesDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult RPRObtenerAutoComptesPendientes(string adm_id)
+        {
+            ApiResponse<List<RPRAutoComptesPendientesDto>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            if (string.IsNullOrEmpty(adm_id)) 
+                return BadRequest("No se recepciono dato alguno.");
+
+            var result=_productosSv.RPRObtenerComptesPendientes(adm_id);
+            response = new ApiResponse<List<RPRAutoComptesPendientesDto>>(result);
+            return Ok(response);
+        }
+
         /// <summary>
         /// Método destinado a validar la estructura del Json antes de ser enviado a la base de datos
         /// </summary>

@@ -284,5 +284,16 @@ namespace gc.api.core.Servicios
 
             return productos.First();
         }
+
+        public List<RPRAutoComptesPendientesDto> RPRObtenerComptesPendientes(string adm)
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_COMPTES_PENDIENTES;
+            var ps = new List<SqlParameter>()
+            { 
+                new("@adm_id", adm)
+            };
+            List<RPRAutoComptesPendientesDto> comptes_pendientes=_repository.EjecutarLstSpExt<RPRAutoComptesPendientesDto>(sp, ps, true);
+            return comptes_pendientes;
+        }
     }
 }

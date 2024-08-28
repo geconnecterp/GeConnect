@@ -6,6 +6,25 @@
         buscarProducto();
         return true;
     });
+
+    $("#btnVolverRpr").on("click", function () {
+        var tb = $("#divRprGrid #tbProdRPR tbody td");
+        if (tb.length > 0) {
+            AbrirMensaje("¡¡Atención!!", "Esta volviendo al inicio de esta aplicación. Tenga en cuenta que si cambia de Nro de Autorización Pendiente, perderá toda la información cargada.",
+                function (resp) {
+                    if (resp === "SI") { window.location.href = homeRPRUrl; }
+                    else {
+                        $("#msjModal").modal("hide");
+                        return true;
+                    }
+                }, true, ["Volver", "Quedarse"], "warn!", null);
+        } else {
+            window.location.href = homeRPRUrl;
+        }
+
+
+
+    });
     //input del control. Sirve para permitir inicializar pantalla.
     $("input#Busqueda").on("focus", function () {
         InicializaPantalla();
@@ -22,7 +41,7 @@
             $("#btnContinuarRpr").hide("fast");
         }
     }); //este control sirve para verificar si hay registros o no y asi presentar o no el boton de avanzar
-    
+
 
     $(".inputEditable").on("keypress", analizaEnterInput);
     $("#btnCargarProd").on("click", cargarProductos);

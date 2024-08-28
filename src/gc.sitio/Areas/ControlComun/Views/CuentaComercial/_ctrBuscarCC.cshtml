@@ -1,0 +1,16 @@
+﻿@model BuscarCuentaDto
+
+<div class="row">
+	<div class="col-8">
+		<div class="input-group">
+			<span class="input-group-text">Cuenta: </span>
+			<input type="text" asp-for="Cuenta" class="form-control"/>
+			<button type="button" class="btn btn-icon btn-outline-primary" id="btnBuscarCC" title="Buscar cuenta comercial">
+				<span class="tf-icons bx bx-search"></span>
+			</button>
+			<input type="text" class="form-control" id="razonsocial" readonly/>
+			<i class="bx bx-user bx-md" id="iconTipoCC"></i>
+		</div>
+	</div>
+</div>
+

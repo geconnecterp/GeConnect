@@ -1,0 +1,129 @@
+﻿@{
+	Layout = "~/views/shared/_Layout.cshtml";
+}
+
+<style>
+	fieldset {
+		margin: 8px;
+		border: 1px solid silver;
+		padding: 8px;
+		border-radius: 4px;
+	}
+</style>
+
+<div class="card">
+	<row>
+		@* <partial name="~/areas/controlcomun/views/cuentacomercial/_ctrBuscarCC.cshtml" /> *@
+		<div style="float:left">
+			<fieldset>
+				<legend>
+					<h5>Nueva Autorización RP</h5>
+				</legend>
+				<partial name="~/areas/controlcomun/views/cuentacomercial/_ctrBuscarCC.cshtml" />
+				<div id="sectionNuevaAutorizacionRP">
+					<fieldset>
+						<legend>
+							<h5>Comprobantes de RP</h5>
+						</legend>
+						<row>
+							<div class="col-12">
+								<div class="input-group">
+									<span class="input-group-text">Tipo: </span>
+									<select id="defaultSelect" class="form-select">
+										<option>Default select</option>
+										<option value="1">One</option>
+										<option value="2">Two</option>
+										<option value="3">Three</option>
+									</select>
+									<span class="input-group-text">N°: </span>
+									<input type="text" @* asp-for="Cuenta" *@ class="form-control" />
+									<span class="input-group-text">Fecha: </span>
+									<input type="text" @* asp-for="Cuenta" *@ class="form-control" />
+									<span class="input-group-text">Monto: </span>
+									<input type="text" @* asp-for="Cuenta" *@ class="form-control" />
+									<button type="button" class="btn btn-icon btn-success" style="margin-left:5px;">
+										<span class="tf-icons bx bx-plus-circle"></span>
+									</button>
+									<button type="button" class="btn btn-icon btn-danger" style="margin-left:5px;">
+										<span class="tf-icons bx bx-trash"></span>
+									</button>
+									<button type="button" class="btn btn-icon btn-success" style="margin-left:5px;">
+										<span class="tf-icons bx bx-detail"></span>
+									</button>
+								</div>
+							</div>
+						</row>
+						<row>
+							<div class="card-body">
+								<div class="table-responsive text-nowrap">
+									<table class="table table-bordered table-hover">
+										<thead class="table-secondary">
+											<tr>
+												<th>Tipo</th>
+												<th>N° Comprobante</th>
+												<th>Fecha</th>
+												<th>Importe</th>
+											</tr>
+										</thead>
+										<tbody>
+											@* @foreach (var item in Model.ListaDatos)
+											{
+											<tr>
+											<td>@item.Rp</td>
+											<td>@item.Cta_denominacion</td>
+											<td>@item.Fecha</td>
+											<td>@item.Nota</td>
+											<td>@item.Cm_compte</td>
+											<td>@item.Cm_fecha</td>
+											<td>@item.Cm_importe</td>
+											<td>@item.Rpe_desc</td>
+											</tr>
+											} *@
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</row>
+					</fieldset>
+					<fieldset>
+						<legend>
+							<h5>Autorización</h5>
+						</legend>
+						<row>
+							<div class="col-12">
+								<div class="input-group">
+									<span class="input-group-text">Nota Autorización: </span>
+									<input type="text" @* asp-for="Cuenta" *@ class="form-control" />
+								</div>
+							</div>
+						</row>
+						<row>
+							<div class="col-12">
+								<div class="input-group">
+									<span class="input-group-text">Depósito: </span>
+									<input type="text" @* asp-for="Cuenta" *@ class="form-control" />
+									<span class="input-group-text">Turno: </span>
+									<input type="text" @* asp-for="Cuenta" *@ class="form-control" />
+									<input type="checkbox" name="checkbox" id="checkbox_id" value="value">
+									<label for="checkbox_id">Poner en Curso</label>
+								</div>
+							</div>
+						</row>
+					</fieldset>
+				</div>
+			</fieldset>
+			@* <h5 class="card-header">Nueva Autorización RP</h5> *@
+		</div>
+	</row>
+</div>
+
+
+@section scripts {
+	<script type="text/javascript">
+		var tipoCuenta = "B";
+		var seccionEnVista = "#sectionNuevaAutorizacionRP";
+		var vistaParcial = "_rprAutoCargaComptes";
+		var buscarCuentaUrl = "@Url.Action("BuscarCuentaComercial", "compra", new { area = "Compras" })";
+	</script>
+	<script src="~/js/app/controlcomun/busquedacuentacomercial.js"></script>
+}

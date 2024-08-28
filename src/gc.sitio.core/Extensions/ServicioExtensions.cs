@@ -15,7 +15,8 @@ namespace gc.sitio.core.Extensions
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<IAdministracionServicio,AdministracionServicio>();
             services.AddScoped<ITipoDocumentoServicio, TipoDocumentoServicio>();
-            services.AddScoped<ICuentaServicio, CuentaServicio>();
+			services.AddScoped<ITipoComprobanteServicio, TipoComprobanteServicio>();
+			services.AddScoped<ICuentaServicio, CuentaServicio>();
             services.AddScoped<IProveedorServicio, ProveedorServicio>();
             services.AddScoped<IRubroServicio, RubroServicio>();
             services.AddScoped<IProductoServicio, ProductoServicio>();

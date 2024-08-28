@@ -9,10 +9,12 @@ namespace gc.sitio.Controllers
     public class HomeController : ControladorBase
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly IHttpContextAccessor _context;
 
-        public HomeController(ILogger<HomeController> logger,IOptions<AppSettings> options):base(options) 
+        public HomeController(ILogger<HomeController> logger,IOptions<AppSettings> options, IHttpContextAccessor context) :base(options, context) 
         {
             _logger = logger;
+            _context = context;
         }
 
         public IActionResult Index()

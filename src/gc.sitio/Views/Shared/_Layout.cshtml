@@ -1,15 +1,26 @@
-﻿<!DOCTYPE html>
+﻿@* @{
+    var nombre = User.Claims.First(c => c.Type.Contains("nya")).Value;
+} *@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - gc.sitio</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.css" />
+    <link rel="stylesheet" href="~/css/core.css" />
+    <link rel="stylesheet" href="~/css/theme-default.css" />
+    <link rel="stylesheet" href="~/fonts/boxicons.css" />
+    <link rel="stylesheet" href="~/lib/lobibox/css/lobibox.min.css" />
+    <link rel="stylesheet" href="~/lib/jqueryui/themes/sunny/jquery-ui.min.css" />
+    <link rel="stylesheet" href="~/lib/jqueryui/themes/sunny/theme.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/gc.sitio.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
+    <partial name="_header" />
+@*     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">gc.sitio</a>
@@ -29,21 +40,37 @@
                 </div>
             </div>
         </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+    </header> *@
+    <div class="container" id="formulario" style="display:none">
+        <main role="main" class="pb-0">
             @RenderBody()
         </main>
     </div>
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2024 - gc.sitio - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2024 - gc.sitio - <a asp-area="" asp-controller="Home" asp-action="Privacy">Normativas</a>
         </div>
     </footer>
+    <partial name="_espera" />
+    <partial name="_mensaje" />
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/jqueryui/jquery-ui.min.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/lobibox/js/lobibox.min.js"></script>
+    <script src="~/lib/popper.js/umd/popper.min.js"></script>
+    <script src="~/lib/lobibox/js/messageboxes.min.js"></script>
+    <script src="~/lib/lobibox/js/notifications.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/app/siteGen.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    <script type="text/javascript">
+        var MensajeErrorTempData = '@TempData["error"]';
+        var MensajeInfoTempData = '@TempData["info"]';
+        var MensajeWarnTempData = '@TempData["warn"]';
+        var MensajeSuccessTempData = '@TempData["succ"]';
+        var MensajeBlock = "<h3><i class='bx bx-loader-circle bx-spin'></i> Por favor, espere...</h3>";
+
+    </script>
 </body>
 </html>
