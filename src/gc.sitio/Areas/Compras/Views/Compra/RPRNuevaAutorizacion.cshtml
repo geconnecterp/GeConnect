@@ -1,5 +1,7 @@
-﻿@{
+﻿@model BuscarCuentaDto
+@{
 	Layout = "~/views/shared/_Layout.cshtml";
+	var depositos = Model.ComboDeposito;
 }
 
 <style>
@@ -29,18 +31,14 @@
 							<div class="col-12">
 								<div class="input-group">
 									<span class="input-group-text">Tipo: </span>
-									<select id="defaultSelect" class="form-select">
-										<option>Default select</option>
-										<option value="1">One</option>
-										<option value="2">Two</option>
-										<option value="3">Three</option>
-									</select>
+									<div id="divTiposComptes">
+									</div>
 									<span class="input-group-text">N°: </span>
 									<input type="text" @* asp-for="Cuenta" *@ class="form-control" />
 									<span class="input-group-text">Fecha: </span>
-									<input type="text" @* asp-for="Cuenta" *@ class="form-control" />
+									<input type="date" @* asp-for="Cuenta" *@ class="form-control" />
 									<span class="input-group-text">Monto: </span>
-									<input type="text" @* asp-for="Cuenta" *@ class="form-control" />
+									<input type="number" @* asp-for="Cuenta" *@ class="form-control" />
 									<button type="button" class="btn btn-icon btn-success" style="margin-left:5px;">
 										<span class="tf-icons bx bx-plus-circle"></span>
 									</button>
@@ -91,7 +89,7 @@
 						</legend>
 						<row>
 							<div class="col-12">
-								<div class="input-group">
+								<div class="input-group mb-3">
 									<span class="input-group-text">Nota Autorización: </span>
 									<input type="text" @* asp-for="Cuenta" *@ class="form-control" />
 								</div>
@@ -101,18 +99,20 @@
 							<div class="col-12">
 								<div class="input-group">
 									<span class="input-group-text">Depósito: </span>
-									<input type="text" @* asp-for="Cuenta" *@ class="form-control" />
+									<div>
+										@Html.DropDownList("id", depositos, "Seleccionar...", new { @class = "form-control" })
+									</div>
 									<span class="input-group-text">Turno: </span>
-									<input type="text" @* asp-for="Cuenta" *@ class="form-control" />
+									<input type="date" @* asp-for="Cuenta" *@ class="form-control" />
 									<input type="checkbox" name="checkbox" id="checkbox_id" value="value">
 									<label for="checkbox_id">Poner en Curso</label>
+
 								</div>
 							</div>
 						</row>
 					</fieldset>
 				</div>
 			</fieldset>
-			@* <h5 class="card-header">Nueva Autorización RP</h5> *@
 		</div>
 	</row>
 </div>
@@ -124,6 +124,7 @@
 		var seccionEnVista = "#sectionNuevaAutorizacionRP";
 		var vistaParcial = "_rprAutoCargaComptes";
 		var buscarCuentaUrl = "@Url.Action("BuscarCuentaComercial", "compra", new { area = "Compras" })";
+						var buscarTiposComptesUrl="@Url.Action("ComboTiposComptes", "compra", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/controlcomun/busquedacuentacomercial.js"></script>
 }

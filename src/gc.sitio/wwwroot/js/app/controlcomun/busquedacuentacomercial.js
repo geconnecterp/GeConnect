@@ -1,4 +1,11 @@
 ﻿$(document).ready(function () {
+	const dateControl = document.querySelector('input[type="date"]');
+	const dateControl2 = $('input[type="date"]');
+	var local = moment().format('yyyy-MM-DD');
+	for (var i = 0; i < dateControl2.length; i++) {
+		dateControl2[i].value = local;
+	}
+	dateControl.value = local;
 	$("#Cuenta").on("click", inicializaCuenta);
 	$("#btnBuscarCC").on("click", buscarCuentasComercial);
 	InicializaPantallaCC();
@@ -48,6 +55,7 @@ function buscarCuentasComercial() {
 			}, false, ["Aceptar"], "warn!", null);
 		} else if (obj.unico === true) {
 			$("#razonsocial").val(obj.cuenta.cta_Denominacion);
+			CargarComboTiposComptes(cuenta);
 			return true;
 		} else {
 			AbrirMensaje("Atención", "Trae una banda.....habilitar el modal para mostar la lista", function () {
@@ -57,4 +65,13 @@ function buscarCuentasComercial() {
 		}
 	});
 	return true;
+}
+
+function CargarComboTiposComptes(cuenta) {
+	var datos = { cuenta };
+	PostGenHtml(datos, buscarTiposComptesUrl, function (obj) {
+		$("#divTiposComptes").html(obj);
+		CerrarWaiting();
+		return true
+	})
 }

@@ -1,13 +1,18 @@
 ﻿
+using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.CuentaComercial;
+using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Helpers;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
-using System.Data;
+//using System.Data;
 using System.Reflection;
 using X.PagedList;
 
@@ -21,14 +26,17 @@ namespace gc.sitio.Areas.Compras.Controllers
         private readonly AppSettings _appSettings;
         private readonly ILogger<CompraController> _logger;
         private readonly IProductoServicio _productoServicio;
+        private readonly IDepositoServicio _depositoServicio;
 
-        public CompraController(ILogger<CompraController> logger, IOptions<AppSettings> options, IProductoServicio productoServicio,ICuentaServicio cuentaServicio,
-            IHttpContextAccessor context) : base(options, context)
+        public CompraController(ILogger<CompraController> logger, IOptions<AppSettings> options, IProductoServicio productoServicio, ICuentaServicio cuentaServicio,
+            ITipoComprobanteServicio tipoComprobanteServicio, IDepositoServicio depositoServicio, IHttpContextAccessor context) : base(options, context)
         {
             _logger = logger;
             _appSettings = options.Value;
             _productoServicio = productoServicio;
             _cuentaServicio = cuentaServicio;
+            _tiposComprobantesServicio = tipoComprobanteServicio;
+            _depositoServicio = depositoServicio;
         }
 
         public IActionResult Index()
@@ -64,48 +72,66 @@ namespace gc.sitio.Areas.Compras.Controllers
 
         public async Task<IActionResult> NuevaAut(string rp)
         {
-			//VerificaAutenticacion();
-			var auth = EstaAutenticado;
-			if (!auth.Item1 || auth.Item2 < DateTime.Now)
-			{
-				return RedirectToAction("Login", "Token", new { area = "seguridad" });
-			}
+            var auth = EstaAutenticado;
+            if (!auth.Item1 || auth.Item2 < DateTime.Now)
+            {
+                return RedirectToAction("Login", "Token", new { area = "seguridad" });
+            }
 
-			return View("RPRNuevaAutorizacion");
-        }
+            //var model = new RPRNuevaAutorizaciónDto() { ComboDeposito = ComboDepositos() };
+            var model = new BuscarCuentaDto() { ComboDeposito = ComboDepositos() };
+            //return PartialView("RPRNuevaAutorizacion", model);
+			
+			return PartialView("RPRNuevaAutorizacion", model);
+		}
 
 
         public async Task<JsonResult> BuscarCuentaComercial(string cuenta, char tipo, string vista)
         {
+            List<CuentaDto> Lista = new();
             try
             {
                 if (string.IsNullOrEmpty(cuenta) || string.IsNullOrWhiteSpace(cuenta))
                 {
                     throw new NegocioException("Debe enviar codigo de cuenta");
                 }
-                var lista = await _cuentaServicio.ObtenerListaCuentaComercial(cuenta, tipo, TokenCookie);
-                if (lista.Count == 0)
+                if (CuentaComercialSeleccionada == null)
                 {
-					throw new NegocioException("No se obtuvierion resultados");
-				}
-                if (lista.Count == 1)
-                {
-                    //Buscar tipos de comprobantes por cuenta
-                    //Metodo ACAESTAELMETODO
-                    var tiposCompte=await _tiposComprobantesServicio.BuscarTiposComptesPorCuenta(cuenta, TokenCookie);
-                    return Json(new { error = false, warn = false, unico = true, cuenta = lista[0], tiposCompte });
+                    Lista = await _cuentaServicio.ObtenerListaCuentaComercial(cuenta, tipo, TokenCookie);
                 }
-                return Json(new { error = false, warn = false, unico = false, cuenta = lista });
+                else
+                {
+                    Lista.Add(CuentaComercialSeleccionada);
+                }
+                if (Lista.Count == 0)
+                {
+                    throw new NegocioException("No se obtuvierion resultados");
+                }
+                if (Lista.Count == 1)
+                {
+                    CuentaComercialSeleccionada = Lista[0];
+                    return Json(new { error = false, warn = false, unico = true, cuenta = Lista[0] });
+                }
+                return Json(new { error = false, warn = false, unico = false, cuenta = Lista });
             }
             catch (NegocioException neg)
             {
                 return Json(new { error = false, warn = true, msg = neg.Message });
-			}
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name} cuenta: {cuenta} tipo: {tipo}");
                 return Json(new { error = true, msg = "Algo no fue bien al buscar la cuenta comercial, intente nuevamente mas tarde." });
             }
+        }
+
+        [HttpPost]
+        public ActionResult ComboTiposComptes(string cuenta)
+        {
+            var adms = _tiposComprobantesServicio.BuscarTiposComptesPorCuenta(cuenta, TokenCookie).GetAwaiter().GetResult();
+            var lista = adms.Select(x => new ComboGenDto { Id = x.tco_id, Descripcion = x.tco_desc });
+            var TiposComptes = HelperMvc<ComboGenDto>.ListaGenerica(lista);
+            return PartialView("~/Areas/ControlComun/Views/CuentaComercial/_ctrComboTipoCompte.cshtml", TiposComptes);
         }
 
         #region Métodos privados
@@ -115,6 +141,14 @@ namespace gc.sitio.Areas.Compras.Controllers
             var lista = new StaticPagedList<RPRAutoComptesPendientesDto>(pendientes, 1, 999, pendientes.Count);
 
             return new GridCore<RPRAutoComptesPendientesDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Cta_denominacion", SortDir = "ASC" };
+        }
+
+
+        private SelectList ComboDepositos()
+        {
+            var adms = _depositoServicio.ObtenerDepositosDeAdministracion(AdministracionId, TokenCookie);
+            var lista = adms.Select(x => new ComboGenDto { Id = x.Depo_Id, Descripcion = x.Depo_Nombre });
+            return HelperMvc<ComboGenDto>.ListaGenerica(lista);
         }
         #endregion
     }
