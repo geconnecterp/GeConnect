@@ -1,6 +1,7 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.EntidadesComunes;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -185,6 +186,24 @@ namespace gc.sitio.Controllers
 				_context.HttpContext.Session.SetString("CuentaComercialSeleccionada", json);
 			}
 
+		}
+
+		protected List<RPRComptesDeRPDto> RPRComptesDeRPRegs
+		{
+			get
+			{
+				string json = _context.HttpContext.Session.GetString("RPRComptesDeRPRegs");
+				if (string.IsNullOrEmpty(json))
+				{
+					return new();
+				}
+				return JsonConvert.DeserializeObject<List<RPRComptesDeRPDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("RPRComptesDeRPRegs", json);
+			}
 		}
 
 		#region Metodos generales

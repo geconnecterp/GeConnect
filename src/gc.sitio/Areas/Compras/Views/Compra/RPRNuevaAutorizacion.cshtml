@@ -34,54 +34,25 @@
 									<div id="divTiposComptes">
 									</div>
 									<span class="input-group-text">N°: </span>
-									<input type="text" @* asp-for="Cuenta" *@ class="form-control" />
+									<input type="text" id="txtNroCompte" class="form-control" />
 									<span class="input-group-text">Fecha: </span>
-									<input type="date" @* asp-for="Cuenta" *@ class="form-control" />
+									<input type="date" id="dtpFechCompte" class="form-control" />
 									<span class="input-group-text">Monto: </span>
-									<input type="number" @* asp-for="Cuenta" *@ class="form-control" />
-									<button type="button" class="btn btn-icon btn-success" style="margin-left:5px;">
+									<input type="number" id="txtMonto" class="form-control" />
+									<button type="button" class="btn btn-icon btn-success" style="margin-left:5px;" id="btnNuevoCompteDeRP">
 										<span class="tf-icons bx bx-plus-circle"></span>
 									</button>
-									<button type="button" class="btn btn-icon btn-danger" style="margin-left:5px;">
+									<button type="button" class="btn btn-icon btn-danger" style="margin-left:5px;" id="btnEliminarCompteDeRP">
 										<span class="tf-icons bx bx-trash"></span>
 									</button>
-									<button type="button" class="btn btn-icon btn-success" style="margin-left:5px;">
+									<button type="button" class="btn btn-icon btn-success" style="margin-left:5px;" id="btnVerCompteDeRP">
 										<span class="tf-icons bx bx-detail"></span>
 									</button>
 								</div>
 							</div>
 						</row>
-						<row>
-							<div class="card-body">
-								<div class="table-responsive text-nowrap">
-									<table class="table table-bordered table-hover">
-										<thead class="table-secondary">
-											<tr>
-												<th>Tipo</th>
-												<th>N° Comprobante</th>
-												<th>Fecha</th>
-												<th>Importe</th>
-											</tr>
-										</thead>
-										<tbody>
-											@* @foreach (var item in Model.ListaDatos)
-											{
-											<tr>
-											<td>@item.Rp</td>
-											<td>@item.Cta_denominacion</td>
-											<td>@item.Fecha</td>
-											<td>@item.Nota</td>
-											<td>@item.Cm_compte</td>
-											<td>@item.Cm_fecha</td>
-											<td>@item.Cm_importe</td>
-											<td>@item.Rpe_desc</td>
-											</tr>
-											} *@
-										</tbody>
-									</table>
-								</div>
-							</div>
-						</row>
+						<div id="divComptesDeRPGrid">
+						</div>
 					</fieldset>
 					<fieldset>
 						<legend>
@@ -123,6 +94,7 @@
 		var tipoCuenta = "B";
 		var seccionEnVista = "#sectionNuevaAutorizacionRP";
 		var vistaParcial = "_rprAutoCargaComptes";
+		var CargarComptesDeRPUrl = "@Url.Action("CargarComprobantesDeRP", "compra", new { area = "Compras" })";
 		var buscarCuentaUrl = "@Url.Action("BuscarCuentaComercial", "compra", new { area = "Compras" })";
 						var buscarTiposComptesUrl="@Url.Action("ComboTiposComptes", "compra", new { area = "Compras" })";
 	</script>

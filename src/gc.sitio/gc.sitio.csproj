@@ -34,7 +34,6 @@
     <Folder Include="Areas\Seguridad\Models\" />
     <Folder Include="Views\Shared\EditorTemplates\" />
     <Folder Include="wwwroot\images\logo\" />
-    <Folder Include="wwwroot\js\app\areas\compras\" />
   </ItemGroup>
 
   <ItemGroup>

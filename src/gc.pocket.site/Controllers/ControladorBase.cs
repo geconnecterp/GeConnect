@@ -2,6 +2,7 @@
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes;
 using gc.infraestructura.EntidadesComunes.Options;
@@ -526,9 +527,11 @@ namespace gc.pocket.site.Controllers
             }
         }
 
-        #endregion
+		
 
-        protected void PresentaMensaje(string error, string warn, string info)
+		#endregion
+
+		protected void PresentaMensaje(string error, string warn, string info)
         {
             if (!string.IsNullOrEmpty(error))
             {

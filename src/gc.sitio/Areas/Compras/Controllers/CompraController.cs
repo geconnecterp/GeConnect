@@ -12,6 +12,8 @@ using gc.sitio.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+
 //using System.Data;
 using System.Reflection;
 using X.PagedList;
@@ -81,9 +83,9 @@ namespace gc.sitio.Areas.Compras.Controllers
             //var model = new RPRNuevaAutorizaciónDto() { ComboDeposito = ComboDepositos() };
             var model = new BuscarCuentaDto() { ComboDeposito = ComboDepositos() };
             //return PartialView("RPRNuevaAutorizacion", model);
-			
-			return PartialView("RPRNuevaAutorizacion", model);
-		}
+
+            return PartialView("RPRNuevaAutorizacion", model);
+        }
 
 
         public async Task<JsonResult> BuscarCuentaComercial(string cuenta, char tipo, string vista)
@@ -134,7 +136,46 @@ namespace gc.sitio.Areas.Compras.Controllers
             return PartialView("~/Areas/ControlComun/Views/CuentaComercial/_ctrComboTipoCompte.cshtml", TiposComptes);
         }
 
+        [HttpPost]
+        public ActionResult CargarComprobantesDeRP(string tipo, string tipoDescripcion, string nroComprobante, string fecha, string importe)
+        {
+            GridCore<RPRComptesDeRPDto> datosIP;
+            var lista = new List<RPRComptesDeRPDto>();
+            if (tipo.IsNullOrEmpty())
+            {
+                datosIP = ObtenerComprobantesDeRPGrid(RPRComptesDeRPRegs);
+            }
+            else if (RPRComptesDeRPRegs.Exists(x => x.Tipo == tipo && x.NroComprobante == nroComprobante))
+            {
+                datosIP = ObtenerComprobantesDeRPGrid(RPRComptesDeRPRegs);
+            }
+            else
+            {
+                lista = RPRComptesDeRPRegs;
+                var nuevo = new RPRComptesDeRPDto() 
+                { 
+                    Tipo = tipo, 
+                    TipoDescripcion = tipoDescripcion, 
+                    NroComprobante = nroComprobante, 
+                    Fecha = Convert.ToDateTime(fecha), 
+                    Importe = importe 
+                };
+                lista.Add(nuevo);
+                RPRComptesDeRPRegs = lista;
+                datosIP = ObtenerComprobantesDeRPGrid(RPRComptesDeRPRegs);
+            }
+            return PartialView("_rprComprobantesDeRP", datosIP);
+        }
+
         #region Métodos privados
+        private GridCore<RPRComptesDeRPDto> ObtenerComprobantesDeRPGrid(List<RPRComptesDeRPDto> listaComptesDeRP)
+        {
+
+            var lista = new StaticPagedList<RPRComptesDeRPDto>(listaComptesDeRP, 1, 999, listaComptesDeRP.Count);
+
+            return new GridCore<RPRComptesDeRPDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
+        }
+
         private GridCore<RPRAutoComptesPendientesDto> ObtenerAutorizacionPendienteGrid(List<RPRAutoComptesPendientesDto> pendientes)
         {
 
