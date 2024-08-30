@@ -1,6 +1,9 @@
-﻿
+﻿@model AppItem
 @{
     Layout = "_LayoutGestion";
-
-    var appItem = ViewBag.AppItem as List<AppItem>;
 }
+<div class="container">
+    @{
+        await Html.RenderPartialAsync("~/views/shared/_menuprint.cshtml", Model);
+    }
+</div>

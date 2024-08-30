@@ -1,4 +1,5 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.pocket.site.Controllers;
 using Microsoft.AspNetCore.Mvc;
@@ -23,106 +24,179 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         [HttpGet]
         public IActionResult RPR()
         {
-            if (User.Identity.IsAuthenticated)
+            var sigla = "rpr";
+            var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
+            if (modulo == null)
             {
-                //var mod = ObtenerModulo("RPR");
-                //if (mod != null)
-                //{
-                //    ViewBag.AppItem = mod;
-                //    List<ProductoDto> entidades = new List<ProductoDto>();
-                //    var lista = new StaticPagedList<ProductoDto>(entidades, 1, 20, entidades.Count);//productos.Item2.CurrentPage, productos.Item2.PageSize, productos.Item2.TotalCount);
-
-
-                //    //return new GridCore<ProductoDto>() { ListaDatos = lista, CantidadReg = LimiteAvalancha, PaginaActual = page, CantidadPaginas = LimiteAvalancha / 20, Sort = sort, SortDir = sortdir.Equals("ASC") ? "DESC" : "ASC" };
-                //   var grilla =  new GridCore<ProductoDto>() { ListaDatos = lista, CantidadReg = 100, PaginaActual = 1, CantidadPaginas = 100 / 20, Sort = "P_Id", SortDir = "ASC" };
-                //    return View(grilla);
-                //}
-                //else
-                //{
-                //    return RedirectToAction("Index", "home", new { area = "", error = "No se localizó el Módulo. Verifique su funcionalidad y/o configuración." });
-                //}
-                return View();
+                throw new NegocioException("No se logro encontrar la configuración del Módulo. Si el problema persiste informe al Administrador");
             }
-            else
-            {
-                return RedirectToAction("Index", "home", new { area = "", error = "Debe Autenticarse para acceder." });
-            }
+            return View(modulo);
         }
 
         [HttpGet]
         public IActionResult BOXALM()
         {
-            return View();
+            var sigla = "boxalm";
+            var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
+            if (modulo == null)
+            {
+                throw new NegocioException("No se logro encontrar la configuración del Módulo. Si el problema persiste informe al Administrador");
+            }
+            return View(modulo);
         }
         [HttpGet]
         public IActionResult BOXCMB()
         {
-            return View();
+            var sigla = "boxcmb";
+            var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
+            if (modulo == null)
+            {
+                throw new NegocioException("No se logro encontrar la configuración del Módulo. Si el problema persiste informe al Administrador");
+            }
+            return View(modulo);
         }
         [HttpGet]
         public IActionResult RTI()
         {
-            return View();
+            var sigla = "rti";
+            var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
+            if (modulo == null)
+            {
+                throw new NegocioException("No se logro encontrar la configuración del Módulo. Si el problema persiste informe al Administrador");
+            }
+            return View(modulo);
         }
         [HttpGet]
         public IActionResult TI()
         {
-            return View();
+            var sigla = "ti";
+            var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
+            if (modulo == null)
+            {
+                throw new NegocioException("No se logro encontrar la configuración del Módulo. Si el problema persiste informe al Administrador");
+            }
+            return View(modulo);
         }
         [HttpGet]
         public IActionResult CTLTI()
         {
-            return View();
+            var sigla = "ctlti";
+            var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
+            if (modulo == null)
+            {
+                throw new NegocioException("No se logro encontrar la configuración del Módulo. Si el problema persiste informe al Administrador");
+            }
+            return View(modulo);
         }
         [HttpGet]
         public IActionResult REXPED()
         {
-            return View();
+            var sigla = "rexped";
+            var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
+            if (modulo == null)
+            {
+                throw new NegocioException("No se logro encontrar la configuración del Módulo. Si el problema persiste informe al Administrador");
+            }
+            return View(modulo);
         }
         [HttpGet]
         public IActionResult REXTI()
         {
-            return View();
+            var sigla = "rexti";
+            var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
+            if (modulo == null)
+            {
+                throw new NegocioException("No se logro encontrar la configuración del Módulo. Si el problema persiste informe al Administrador");
+            }
+            return View(modulo);
         }
         [HttpGet]
         public IActionResult CTLREXTI()
         {
-            return View();
+            var sigla = "ctlrexti";
+            var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
+            if (modulo == null)
+            {
+                throw new NegocioException("No se logro encontrar la configuración del Módulo. Si el problema persiste informe al Administrador");
+            }
+            return View(modulo);
         }
         [HttpGet]
         public IActionResult DPR()
         {
-            return View();
+            var sigla = "drp";
+            var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
+            if (modulo == null)
+            {
+                throw new NegocioException("No se logro encontrar la configuración del Módulo. Si el problema persiste informe al Administrador");
+            }
+            return View(modulo);
         }
         [HttpGet]
         public IActionResult OR()
         {
-            return View();
+            var sigla = "or";
+            var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
+            if (modulo == null)
+            {
+                throw new NegocioException("No se logro encontrar la configuración del Módulo. Si el problema persiste informe al Administrador");
+            }
+            return View(modulo);
         }
         [HttpGet]
         public IActionResult CTLOR()
         {
-            return View();
+            var sigla = "ctlor";
+            var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
+            if (modulo == null)
+            {
+                throw new NegocioException("No se logro encontrar la configuración del Módulo. Si el problema persiste informe al Administrador");
+            }
+            return View(modulo);
         }
         [HttpGet]
         public IActionResult ROTULO()
         {
-            return View();
+            var sigla = "rotulo";
+            var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
+            if (modulo == null)
+            {
+                throw new NegocioException("No se logro encontrar la configuración del Módulo. Si el problema persiste informe al Administrador");
+            }
+            return View(modulo);
         }
         [HttpGet]
         public IActionResult PREFACTURA()
         {
-            return View();
+            var sigla = "prefactura";
+            var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
+            if (modulo == null)
+            {
+                throw new NegocioException("No se logro encontrar la configuración del Módulo. Si el problema persiste informe al Administrador");
+            }
+            return View(modulo);
         }
         [HttpGet]
         public IActionResult INFO()
         {
-            return View();
+            var sigla = "info";
+            var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
+            if (modulo == null)
+            {
+                throw new NegocioException("No se logro encontrar la configuración del Módulo. Si el problema persiste informe al Administrador");
+            }
+            return View(modulo);
         }
         [HttpGet]
         public IActionResult INV()
         {
-            return View();
+            var sigla = "inv";
+            var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
+            if (modulo == null)
+            {
+                throw new NegocioException("No se logro encontrar la configuración del Módulo. Si el problema persiste informe al Administrador");
+            }
+            return View(modulo);
         }
 
     }

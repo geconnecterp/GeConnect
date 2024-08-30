@@ -31,8 +31,12 @@
             public const string SP_RPR_DEPOSITOS = "SPGECO_RPR_Depositos";
             public const string SP_RPR_COMPTES_PENDIENTES = "spgeco_RPR_Comptes_Pendientes";
 			public const string SP_RPR_TIPOS_COMPTES = "spgeco_RPR_Tipos_Comptes";
+            public const string SP_RPR_VALIDAR_UL = "SPGECO_RPR_BOX_Valida_UL";
+            public const string SP_RPR_VALIDAR_BOX = "SPGECO_RPR_BOX_Valida";
+            public const string SP_RPR_BOX_ALMACENA_UL = "SPGECO_RPR_BOX_Almacena_UL";
 
-			public const string SP_CUENTA_BUSQUEDA = "dbo.spgeco_c_busqueda_lista";
+
+            public const string SP_CUENTA_BUSQUEDA = "dbo.spgeco_c_busqueda_lista";
 
 
 
