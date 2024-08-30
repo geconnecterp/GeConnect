@@ -2,6 +2,7 @@
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.sitio.core.Servicios.Contratos;
@@ -28,6 +29,12 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string RPRAUTOPEND = "/RPRAutorizacionPendiente";
         private const string RPRCOMPTESPEND = "/RPRObtenerAutoComptesPendientes";
         private const string RPRREGISTRAR = "/RPRRegistrar";
+
+        //almacena Box 
+        private const string RutaApiAlmacen = "/api/apialmacen";
+        private const string RPR_AB_VALIDA_UL = "/ValidarUL";
+        private const string RPR_AB_VALIDA_BOX = "/ValidarBox";
+        private const string RPR_AB_ALMACENA_BOX = "/AlmacenaBoxUl";
 
         private readonly AppSettings _appSettings;
 
@@ -359,6 +366,105 @@ namespace gc.sitio.core.Servicios.Implementacion
                 string stringData = await response.Content.ReadAsStringAsync();
                 _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
                 return new();
+            }
+        }
+
+        public async Task<RprResponseDto> ValidarUL(string ul, string adm, string token)
+        {
+            ApiResponse<RprResponseDto> apiResponse;
+
+            HelperAPI helper = new HelperAPI();
+            RprABRequest request = new() { UL = ul, AdmId = adm };
+            HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+            HttpResponseMessage response;
+
+            var link = $"{_appSettings.RutaBase}{RutaApiAlmacen}{RPR_AB_VALIDA_UL}";
+
+            response = await client.PostAsync(link, contentData);
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(stringData))
+                {
+                    _logger.LogWarning($"La API no devolvió dato alguno. Parametro de busqueda {JsonConvert.SerializeObject(request)}");
+                    return new RprResponseDto();
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<RprResponseDto>>(stringData);
+                return apiResponse.Data;
+            }
+            else
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                return new RprResponseDto();
+
+            }
+        }
+
+        public async Task<RprResponseDto> ValidarBox(string box, string adm, string token)
+        {
+            ApiResponse<RprResponseDto> apiResponse;
+
+            HelperAPI helper = new HelperAPI();
+            RprABRequest request = new() { Box = box, AdmId = adm };
+            HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+            HttpResponseMessage response;
+
+            var link = $"{_appSettings.RutaBase}{RutaApiAlmacen}{RPR_AB_VALIDA_BOX}";
+
+            response = await client.PostAsync(link, contentData);
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(stringData))
+                {
+                    _logger.LogWarning($"La API no devolvió dato alguno. Parametro de busqueda {JsonConvert.SerializeObject(request)}");
+                    return new RprResponseDto();
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<RprResponseDto>>(stringData);
+                return apiResponse.Data;
+            }
+            else
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                return new RprResponseDto();
+
+            }
+        }
+
+        public async Task<RprResponseDto> ConfirmaBoxUl(string box, string ul, string adm, string token)
+        {
+            ApiResponse<RprResponseDto> apiResponse;
+
+            HelperAPI helper = new HelperAPI();
+            RprABRequest request = new() { Box = box, UL = ul, AdmId = adm };
+            HttpClient client = helper.InicializaCliente(request,token,out StringContent contentData);
+            HttpResponseMessage response;
+            
+            var link = $"{_appSettings.RutaBase}{RutaApiAlmacen}{RPR_AB_ALMACENA_BOX}";
+
+            response = await client.PostAsync(link,contentData);
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(stringData))
+                {
+                    _logger.LogWarning($"La API no devolvió dato alguno. Parametro de busqueda {JsonConvert.SerializeObject(request)}");
+                    return new RprResponseDto();
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<RprResponseDto>>(stringData);
+                return apiResponse.Data;
+            }
+            else
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                return new RprResponseDto();
+
             }
         }
     }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace gc.infraestructura.Dtos.Almacen
+namespace gc.infraestructura.Dtos.Almacen.Rpr
 {
     public class RPRProductosSeleccionados
     {

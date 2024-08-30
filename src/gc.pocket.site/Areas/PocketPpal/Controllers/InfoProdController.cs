@@ -133,7 +133,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     InfoProdStkDId = id;
 
                     var regs = _productoServicio.InfoProductoStkD(id, AdministracionId, TokenCookie).GetAwaiter().GetResult();
-
+                    InfoProdStkDRegs = regs;
                     datosIP = ObtenerInfoProdStkD(regs);
 
                 }

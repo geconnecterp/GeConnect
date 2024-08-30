@@ -1,7 +1,7 @@
 ﻿
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
-using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.Models.ViewModels;

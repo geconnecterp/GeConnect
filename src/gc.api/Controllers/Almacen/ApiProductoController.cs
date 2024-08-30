@@ -7,6 +7,7 @@ namespace gc.api.Controllers.Almacen
     using gc.infraestructura.Core.Interfaces;
     using gc.infraestructura.Core.Responses;
     using gc.infraestructura.Dtos.Almacen;
+    using gc.infraestructura.Dtos.Almacen.Rpr;
     using gc.infraestructura.Dtos.Productos;
     using gc.infraestructura.EntidadesComunes.Options;
     using Microsoft.AspNetCore.Authorization;

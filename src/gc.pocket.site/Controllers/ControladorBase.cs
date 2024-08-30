@@ -2,6 +2,7 @@
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes;
 using gc.infraestructura.EntidadesComunes.Options;
