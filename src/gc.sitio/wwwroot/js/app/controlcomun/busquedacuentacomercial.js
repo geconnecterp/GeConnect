@@ -1,22 +1,26 @@
-﻿$(document).ready(function () {
+﻿$(function () {
 	const dateControl = document.querySelector('input[type="date"]');
 	const dateControl2 = $('input[type="date"]');
 	var local = moment().format('yyyy-MM-DD');
 	var twoMonthPast = moment().add(-2, 'months')
 	for (var i = 0; i < dateControl2.length; i++) {
 		dateControl2[i].value = local;
-		if (dateControl2[i].id = "dtpFechCompte") {
+		if (dateControl2[i].id == "dtpFechCompte") {
 			dateControl2[i].setAttribute('min', twoMonthPast.format('yyyy-MM-DD'));
+			dateControl2[i].setAttribute('max', local);
+		}
+		if (dateControl2[i].id == "dtpFechaTurno") {
+			dateControl2[i].setAttribute('min', local);
 		}
 	}
 	dateControl.value = local;
-	$("#Cuenta").on("click", inicializaCuenta);
+	//$("#Cuenta").on("click", inicializaCuenta);
 	$("#btnBuscarCC").on("click", buscarCuentasComercial);
 	InicializaPantallaCC();
 	comptesDeRPGrid();
-	$("#btnNuevoCompteDeRP").click(NuevoCompteDeRP);
-	$("#btnEliminarCompteDeRP").click(EliminarCompteDeRP);
-	$("#btnVerCompteDeRP").click(VerCompteDeRP);
+	$("#btnNuevoCompteDeRP").on("click" ,NuevoCompteDeRP);
+	$("#btnEliminarCompteDeRP").on("click", EliminarCompteDeRP);
+	//$("#btnVerCompteDeRP").click(VerCompteDeRP);
 
 	$("#txtNroCompte").mask("0000-00000000", { reverse: true });
 
@@ -41,11 +45,11 @@ function InicializaPantallaCC() {
 	}
 }
 
-function inicializaCuenta() {
-	$("#razonsocial").val("");
-	$("#Cuenta").val("").focus();
+//function inicializaCuenta() {
+//	$("#razonsocial").val("");
+//	$("#Cuenta").val("").focus();
 
-}
+//}
 
 function NuevoCompteDeRP() {
 	var resultValidation = ValidarCamposEnComprobantesDeRP($("#Cuenta").val(), $("#tco_id").val(), $("#txtNroCompte").val(), $("#txtMonto").val());
@@ -133,23 +137,51 @@ function ValidarCamposEnComprobantesDeRP(cuenta, tipo, nroCompte, monto) {
 }
 
 function EliminarCompteDeRP() {
+	var id = $("#idTipoCompteDeRPSelected").val();
+	var nro = $("#nroCompteDeRPSelected").val();
+	if (id == "" && nro == "") {
+		AbrirMensaje("Atención", "Debe seleccionar un comprobante.", function () {
+			$("#msjModal").modal("hide");
+
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+		return false;
+	}
+	else {
+		eliminarComptesDeRPGrid(id, nro);
+		limparCompteDeRPSelected();
+	}
+}
+
+function limparCompteDeRPSelected() {
+	$("#idCompteDeRPSelected").val("");
+	$("#nroCompteDeRPSelected").val("");
 }
 
 function VerCompteDeRP() {
+	var tipo = $("#idTipoCompteDeRPSelected").val();
+	var nroComprobante = $("#nroCompteDeRPSelected").val();
+	var data = { tipo, nroComprobante };
+	PostGen(data, VerDetalleDeCompteDeRPUrl, function (obj) {
+		return true;
+	}, function (obj) {
+		ControlaMensajeError(obj.message);
+		return true;
+	});
+}
+
+function eliminarComptesDeRPGrid(tipo, nroComprobante) {
+	var data = { tipo, nroComprobante};
+	PostGenHtml(data, ActualizarComptesDeRPUrl, function (obj) {
+		$("#divComptesDeRPGrid").html(obj);
+		return true;
+	}, function (obj) {
+		ControlaMensajeError(obj.message);
+		return true;
+	});
 }
 
 function comptesDeRPGrid(tipo, tipoDescripcion, nroComprobante, fecha, importe) {
-	//document.getElementById("tbComptesDeRP").addEventListener('click', function (e) {
-	//	if (e.target.nodeName === 'TD') {
-	//		var selectedRow = this.querySelector('.selected-row');
-	//		if (selectedRow) {
-	//			selectedRow.classList.remove('selected-row');
-	//		}
-	//		e.target.closest('tr').classList.add('selected-row');
-	//	}
-	//});
-
-
 	var data = { tipo, tipoDescripcion, nroComprobante, fecha, importe };
 	PostGenHtml(data, CargarComptesDeRPUrl, function (obj) {
 		$("#divComptesDeRPGrid").html(obj);
