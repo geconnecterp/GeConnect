@@ -1,5 +1,10 @@
-﻿@* @model GridCore<ProductoDto>
- *@
+﻿@model AppItem
 @{
     Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
 }
+<div class="container">
+    @{
+        await Html.RenderPartialAsync("~/views/shared/_menuprint.cshtml", Model);
+    }
+
+</div>

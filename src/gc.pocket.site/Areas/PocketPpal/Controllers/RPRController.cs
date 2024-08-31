@@ -1,6 +1,7 @@
-﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿using gc.api.core.Entidades;
+using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
-using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
@@ -41,6 +42,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             {
                 return RedirectToAction("Login", "Token", new { area = "seguridad" });
             }
+
+
             List<RPRAutorizacionPendienteDto> pendientes;
             GridCore<RPRAutorizacionPendienteDto> grid;
             try
@@ -371,6 +374,113 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             ViewBag.DepoId = HelperMvc<ComboGenDto>.ListaGenerica(lista);
         }
 
+        [HttpGet]
+        public IActionResult AlmacenajeBox()
+        {
+            var auth = EstaAutenticado;
+            if (!auth.Item1 || auth.Item2 < DateTime.Now)
+            {
+                return RedirectToAction("Login", "Token", new { area = "seguridad" });
+            }
 
+
+
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> ValidarUl(string ul)
+        {
+            try
+            {
+                if(string.IsNullOrEmpty(ul) || string.IsNullOrWhiteSpace(ul))
+                {
+                    throw new NegocioException("No se recepcionó la UL. Verifique");
+                }
+                var res = await _productoServicio.ValidarUL(ul,AdministracionId,TokenCookie);
+                if (res.Resultado == 0)
+                {
+                    return Json(new { error = false, warn = false, msg = "La validación del UL fue exitosa." });
+                }
+                else
+                {
+                    throw new NegocioException(res.Resultado_msj);
+                }                
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new {error=false,warn=true,msg =ex.Message});
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error al validar la UL {ul}");
+                return Json(new { error = true, msg = "Algo no fué bien en la Validación de la UL. Intente nuevamente." });
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> ValidarBox(string box)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(box) || string.IsNullOrWhiteSpace(box))
+                {
+                    throw new NegocioException("No se recepcionó el Box. Verifique");
+                }
+                var res = await _productoServicio.ValidarBox(box, AdministracionId, TokenCookie);
+                if (res.Resultado == 0)
+                {
+                    return Json(new { error = false, warn = false, msg = "La validación del Box fue exitosa." });
+                }
+                else
+                {
+                    throw new NegocioException(res.Resultado_msj);
+                }
+               
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error al validar el Box {box}");
+                return Json(new { error = true, msg = "Algo no fué bien en la Validación de la UL. Intente nuevamente." });
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> ConfirmaBoxUl(string box,string ul)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(ul) || string.IsNullOrWhiteSpace(ul))
+                {
+                    throw new NegocioException("No se recepcionó la UL. Verifique");
+                }
+                if (string.IsNullOrEmpty(box) || string.IsNullOrWhiteSpace(box))
+                {
+                    throw new NegocioException("No se recepcionó el Box. Verifique");
+                }
+                var res = await _productoServicio.ConfirmaBoxUl(box,ul, AdministracionId, TokenCookie);
+                if (res.Resultado == 0)
+                {
+                    return Json(new { error = false, warn = false, msg = "La validación del Box fue exitosa." });
+                }
+                else
+                {
+                    throw new NegocioException(res.Resultado_msj);
+                }
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error al Confirmar el Box {box} Ul {ul}");
+                return Json(new { error = true, msg = "Algo no fué bien en la Validación de la UL. Intente nuevamente." });
+            }
+        }
     }
 }

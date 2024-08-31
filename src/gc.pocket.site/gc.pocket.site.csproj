@@ -24,6 +24,7 @@
     <Folder Include="Areas\ControlComun\Controllers\" />
     <Folder Include="Areas\ControlComun\Data\" />
     <Folder Include="Areas\ControlComun\Models\" />
+    <Folder Include="Areas\ControlComun\Views\Shared\" />
     <Folder Include="Areas\Gestion\Data\" />
     <Folder Include="Areas\Gestion\Models\" />
     <Folder Include="Areas\PocketPpal\Data\" />

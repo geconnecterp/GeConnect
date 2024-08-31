@@ -142,7 +142,7 @@ function productosGrid() {
     PostGenHtml(data, PresentarProductosSeleccionadosUrl, function (obj) {
         $("#divRprGrid").html(obj);
         var tb = $("#divRprGrid #tbProdRPR tbody td");
-        if (tb.length == 0) {
+        if (tb.length <= 0) {
             $("#btnContinuarRpr").hide("fast");
         } else {
             $("#btnContinuarRpr").show("fast");
