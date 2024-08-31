@@ -7,34 +7,30 @@
 	}
 </style>
 
-<div class="card">
-	<div class="card-body">
-		<div class="table-responsive table-wrapper">
-			<table class="table table-bordered table-hover" id="tbComptesDeRP">
-				<thead class="table-dark">
-					<tr class="header">
-						<th style="width:0%; display:none;">TipoId</th>
-						<th scope="col" style="width:25%">Tipo</th>
-						<th scope="col" style="width:25%">N° Comprobante</th>
-						<th scope="col" style="width:25%">Fecha</th>
-						<th scope="col" style="width:25%">Importe</th>
-					</tr>
-				</thead>
-				<tbody>
-					@foreach (var item in Model.ListaDatos)
-					{
-						<tr>
-							<td style="display:none;">@item.Tipo</td>
-							<td>@item.TipoDescripcion</td>
-							<td>@item.NroComprobante</td>
-							<td>@item.Fecha</td>
-							<td>@item.Importe</td>
-						</tr>
-					}
-				</tbody>
-			</table>
-		</div>
-	</div>
+<div class="table-responsive table-wrapper">
+	<table class="table table-bordered table-hover" id="tbComptesDeRP">
+		<thead class="table-dark">
+			<tr class="header">
+				<th style="width:0%; display:none;">TipoId</th>
+				<th scope="col" style="width:25%">Tipo</th>
+				<th scope="col" style="width:25%">N° Comprobante</th>
+				<th scope="col" style="width:25%">Fecha</th>
+				<th scope="col" style="width:25%">Importe</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in Model.ListaDatos)
+			{
+				<tr onclick="selectCompteDeRPRow(this)">
+					<td style="display:none;">@item.Tipo</td>
+					<td>@item.TipoDescripcion</td>
+					<td>@item.NroComprobante</td>
+					<td>@item.Fecha</td>
+					<td>@item.Importe</td>
+				</tr>
+			}
+		</tbody>
+	</table>
 </div>
 
 <script src="~/js/app/areas/compras/_rprComprobantesDeRP.js"></script>

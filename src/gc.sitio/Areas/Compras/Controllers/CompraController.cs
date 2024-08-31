@@ -87,8 +87,25 @@ namespace gc.sitio.Areas.Compras.Controllers
             return PartialView("RPRNuevaAutorizacion", model);
         }
 
+        public async Task<IActionResult> VerDetalleDeComprobanteDeRP(string idTipoCompte, string nroCompte)
+        {
+            var compte = new RPRComptesDeRPDto();
+			var model = new RPRDetalleComprobanteDeRP
+			{
+				Leyenda = $"Carga de Detalle de Comprobante RP Proveedor ({CuentaComercialSeleccionada.Tcb_Id} {CuentaComercialSeleccionada.Cta_Denominacion})"
+			};
 
-        public async Task<JsonResult> BuscarCuentaComercial(string cuenta, char tipo, string vista)
+			if (RPRComptesDeRPRegs.Exists(x => x.Tipo == idTipoCompte && x.NroComprobante == nroCompte))
+            {
+                compte = RPRComptesDeRPRegs.Where(x => x.Tipo == idTipoCompte && x.NroComprobante == nroCompte).FirstOrDefault();
+			}
+            model.CompteSeleccionado = compte ?? new RPRComptesDeRPDto();
+			return PartialView("RPRCargaDetalleDeCompteRP", model);
+		}
+
+
+
+		public async Task<JsonResult> BuscarCuentaComercial(string cuenta, char tipo, string vista)
         {
             List<CuentaDto> Lista = new();
             try
@@ -136,7 +153,29 @@ namespace gc.sitio.Areas.Compras.Controllers
             return PartialView("~/Areas/ControlComun/Views/CuentaComercial/_ctrComboTipoCompte.cshtml", TiposComptes);
         }
 
-        [HttpPost]
+		[HttpPost]
+		public ActionResult ActualizarComprobantesDeRP(string tipo, string nroComprobante)
+		{
+			GridCore<RPRComptesDeRPDto> datosIP;
+			var lista = new List<RPRComptesDeRPDto>();
+			if (tipo.IsNullOrEmpty())
+			{
+				datosIP = ObtenerComprobantesDeRPGrid(RPRComptesDeRPRegs);
+			}
+			else if (RPRComptesDeRPRegs.Exists(x => x.Tipo == tipo && x.NroComprobante == nroComprobante))
+			{
+                lista = RPRComptesDeRPRegs.Where(x => x.Tipo != tipo && x.NroComprobante != nroComprobante).ToList();
+				RPRComptesDeRPRegs = lista;
+				datosIP = ObtenerComprobantesDeRPGrid(RPRComptesDeRPRegs);
+			}
+			else
+			{
+				datosIP = ObtenerComprobantesDeRPGrid(RPRComptesDeRPRegs);
+			}
+			return PartialView("_rprComprobantesDeRP", datosIP);
+		}
+
+		[HttpPost]
         public ActionResult CargarComprobantesDeRP(string tipo, string tipoDescripcion, string nroComprobante, string fecha, string importe)
         {
             GridCore<RPRComptesDeRPDto> datosIP;
