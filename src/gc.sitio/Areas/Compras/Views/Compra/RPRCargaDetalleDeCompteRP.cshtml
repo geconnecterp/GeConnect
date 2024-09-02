@@ -16,6 +16,7 @@
 	<row>
 		<div style="float:left">
 			<div class="input-group">
+				@Html.Hidden("cta_id", Model.cta_id)
 				<span>@Model.Leyenda</span>
 				<button type="button" class="btn btn-success" style="margin-left:5px;" id="btnAceptarComprobanteRP">
 					<span class="tf-icons bx bx-check-circle">Aceptar</span>
@@ -54,7 +55,7 @@
 									<div class="input-group">
 										<span class="input-group-text">ID: </span>
 										<input type="text" id="txtIdProdEnComprobanteRP" class="form-control" />
-										<span class="input-group-text" style="width: 30%;">Holis</span>
+										<span class="input-group-text" style="width: 30%;"></span>
 										<span class="input-group-text">UP: </span>
 										<input type="text" id="txtUPEnComprobanteRP" class="form-control" />
 										<span class="input-group-text">Bto: </span>
@@ -94,9 +95,9 @@
 							<legend>
 								<h5>Ordenes de Compra</h5>
 							</legend>
+							<div id="divOrdenDeCompraXCuenta">
+							</div>
 						</fieldset>
-					</div>
-					<div id="divDetalleDeOrdenDeCompra">
 					</div>
 				</div>
 			</div>
@@ -107,6 +108,7 @@
 @section scripts {
 	<script type="text/javascript">
 		var CargarDetalleDeProductosEnRPUrl = "@Url.Action("CargarDetalleDeProductosEnRP", "compra", new { area = "Compras" })";
+		var CargarOCxCuentaEnRPUrl = "@Url.Action("CargarOCxCuentaEnRP", "compra", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/areas/compras/_rprDetDeProdDeRP.js"></script>
 }

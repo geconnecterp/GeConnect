@@ -101,10 +101,22 @@ namespace gc.sitio.Areas.Compras.Controllers
                 compte = RPRComptesDeRPRegs.Where(x => x.Tipo == idTipoCompte && x.NroComprobante == nroCompte).FirstOrDefault();
 			}
             model.CompteSeleccionado = compte ?? new RPRComptesDeRPDto();
+            model.cta_id = CuentaComercialSeleccionada.Cta_Id;
 			return PartialView("RPRCargaDetalleDeCompteRP", model);
 		}
 
-        public async Task<IActionResult> CargarDetalleDeProductosEnRP()
+        public async Task<IActionResult> CargarOCxCuentaEnRP(string cta_id)
+        {
+            GridCore<RPROrdenDeCompraDto> datosIP;
+            var lista = new List<RPROrdenDeCompraDto>();
+
+            lista = await _cuentaServicio.ObtenerListaOCxCuenta(cta_id, TokenCookie);
+			datosIP = ObtenerOCxCuentaRPGrid(lista);
+			return PartialView("_rprOCxCuenta", datosIP);
+		}
+
+
+		public async Task<IActionResult> CargarDetalleDeProductosEnRP()
         {
 			GridCore<ProductoBusquedaDto> datosIP;
 			var lista = new List<ProductoBusquedaDto>();
@@ -216,6 +228,13 @@ namespace gc.sitio.Areas.Compras.Controllers
         }
 
 		#region Métodos privados
+		private GridCore<RPROrdenDeCompraDto> ObtenerOCxCuentaRPGrid(List<RPROrdenDeCompraDto> listaOCxCuentaRP)
+		{
+
+			var lista = new StaticPagedList<RPROrdenDeCompraDto>(listaOCxCuentaRP, 1, 999, listaOCxCuentaRP.Count);
+
+			return new GridCore<RPROrdenDeCompraDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
+		}
 		private GridCore<ProductoBusquedaDto> ObtenerDetalleDeProductosRPGrid(List<ProductoBusquedaDto> listaProdDeRP)
 		{
 

@@ -4,6 +4,7 @@ using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Productos;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
@@ -18,6 +19,7 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string RutaAPI = "/api/apicuenta";
         private const string ProveedorLista = "/GetProveedorLista";
         private const string CuentaComercialBuscar = "/GetCuentaComercialLista";
+		private const string OCxCuentaBuscar = "/GetOCxCuenta";
         private readonly AppSettings _appSettings;
         public CuentaServicio(IOptions<AppSettings> options, ILogger<CuentaServicio> logger) : base(options, logger)
         {
@@ -59,8 +61,43 @@ namespace gc.sitio.core.Servicios.Implementacion
                 _logger.LogWarning($"Algo no fue bien. Error interno {ex.Message}");
                 return [];
             }
-            
+        }
 
+        public async Task<List<RPROrdenDeCompraDto>> ObtenerListaOCxCuenta(string cta_id, string token)
+        {
+            try
+            {
+				ApiResponse<List<RPROrdenDeCompraDto>> apiResponse;
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{OCxCuentaBuscar}?cta_id={cta_id}";
+				response = await client.GetAsync(link);
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					string stringData = await response.Content.ReadAsStringAsync();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						_logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda cta_id:{cta_id}");
+						return [];
+					}
+					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RPROrdenDeCompraDto>>>(stringData);
+					return apiResponse.Data;
+				}
+				else
+				{
+					string stringData = await response.Content.ReadAsStringAsync();
+					_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+					return [];
+				}
+			}
+            catch (Exception ex)
+            {
+				_logger.LogWarning($"Algo no fue bien. Error interno {ex.Message}");
+				return [];
+            }
         }
 
         public List<ProveedorListaDto> ObtenerListaProveedores(string token)

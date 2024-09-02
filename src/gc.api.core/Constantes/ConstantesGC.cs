@@ -34,9 +34,9 @@
             public const string SP_RPR_VALIDAR_UL = "SPGECO_RPR_BOX_Valida_UL";
             public const string SP_RPR_VALIDAR_BOX = "SPGECO_RPR_BOX_Valida";
             public const string SP_RPR_BOX_ALMACENA_UL = "SPGECO_RPR_BOX_Almacena_UL";
+			public const string SP_RPR_OC = "spgeco_rpr_oc";
 
-
-            public const string SP_CUENTA_BUSQUEDA = "dbo.spgeco_c_busqueda_lista";
+			public const string SP_CUENTA_BUSQUEDA = "dbo.spgeco_c_busqueda_lista";
 
 
 

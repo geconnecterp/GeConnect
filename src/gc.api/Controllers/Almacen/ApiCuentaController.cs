@@ -7,8 +7,9 @@ namespace gc.api.Controllers.Almacen
     using gc.infraestructura.Core.Interfaces;
     using gc.infraestructura.Core.Responses;
     using gc.infraestructura.Dtos.Almacen;
-    using gc.infraestructura.EntidadesComunes.ControlComun.CuentaComercial;
-    using Microsoft.AspNetCore.Authorization;
+	using gc.infraestructura.Dtos.CuentaComercial;
+	using gc.infraestructura.EntidadesComunes.ControlComun.CuentaComercial;
+	using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json;
     using System.Collections.Generic;
@@ -84,8 +85,23 @@ namespace gc.api.Controllers.Almacen
             return Ok(response);
         }
 
-        // GET api/<cuentasController>/5
-        [HttpGet("{id}")]
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetOCxCuenta(string cta_id)
+		{
+			ApiResponse<List<RPROrdenDeCompraDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _cuentasSv.GetOCporCuenta(cta_id);
+
+			response = new ApiResponse<List<RPROrdenDeCompraDto>>(res);
+
+			return Ok(response);
+		}
+
+		// GET api/<cuentasController>/5
+		[HttpGet("{id}")]
         public async Task<IActionResult> Get(string id)
         {
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");

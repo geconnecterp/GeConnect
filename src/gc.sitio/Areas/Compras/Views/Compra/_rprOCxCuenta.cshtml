@@ -1,0 +1,29 @@
+﻿@model GridCore<RPROrdenDeCompraDto>
+@{
+}
+
+<div class="table-responsive table-wrapper">
+	<table class="table table-bordered table-hover" id="tbComptesDeRP">
+		<thead class="table-dark">
+			<tr class="header">
+				<th scope="col" style="width:20%;">N° OC</th>
+				<th scope="col" style="width:20%">Fecha</th>
+				<th scope="col" style="width:20%">Sucursal</th>
+				<th scope="col" style="width:20%">Generada</th>
+				<th scope="col" style="width:20%">Estado</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in Model.ListaDatos)
+			{
+				<tr>
+					<td>@item.oc_compte</td>
+					<td>@item.oc_fecha</td>
+					<td>@item.depo_nombre</td>
+					<td>@item.oce_desc</td>
+					<td>@item.adm_nombre</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>

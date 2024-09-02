@@ -1,6 +1,6 @@
 using gc.api.core.Entidades;
 using gc.infraestructura.Dtos.Almacen;
-using gc.infraestructura.EntidadesComunes.ControlComun.CuentaComercial;
+using gc.infraestructura.Dtos.CuentaComercial;
 
 namespace gc.api.core.Contratos.Servicios
 {
@@ -8,5 +8,7 @@ namespace gc.api.core.Contratos.Servicios
     {
         List<ProveedorListaDto> GetProveedorLista();
         List<CuentaDto> GetCuentaComercialLista(string texto, char tipo);
-    }
+        List<RPROrdenDeCompraDto> GetOCporCuenta(string cta_id);
+
+	}
 }

@@ -1,9 +1,5 @@
 ﻿using gc.infraestructura.Dtos.Almacen;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using gc.infraestructura.Dtos.CuentaComercial;
 
 namespace gc.sitio.core.Servicios.Contratos
 {
@@ -11,5 +7,7 @@ namespace gc.sitio.core.Servicios.Contratos
     {
         List<ProveedorListaDto> ObtenerListaProveedores(string token);
         Task<List<CuentaDto>> ObtenerListaCuentaComercial(string texto, char tipo, string token);
-    }
+        Task<List<RPROrdenDeCompraDto>> ObtenerListaOCxCuenta(string cta_id, string token);
+
+	}
 }
