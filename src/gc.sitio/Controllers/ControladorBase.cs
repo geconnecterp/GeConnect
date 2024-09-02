@@ -206,6 +206,24 @@ namespace gc.sitio.Controllers
 			}
 		}
 
+		protected List<ProductoBusquedaDto> RPRDetalleDeProductosEnRP
+		{
+			get
+			{
+				string json = _context.HttpContext.Session.GetString("RPRDetalleDeProductosEnRP");
+				if (string.IsNullOrEmpty(json))
+				{
+					return new();
+				}
+				return JsonConvert.DeserializeObject<List<ProductoBusquedaDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("RPRDetalleDeProductosEnRP", json);
+			}
+		}
+
 		#region Metodos generales
 		//protected void VerificaAutenticacion()
 		//{

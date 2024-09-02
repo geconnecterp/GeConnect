@@ -1,4 +1,4 @@
-﻿$(document).ready(function () {
+﻿$(function () {
 	document.getElementById("tbComptesDeRP").addEventListener('click', function (e) {
 		if (e.target.nodeName === 'TD') {
 			var selectedRow = this.querySelector('.selected-row');

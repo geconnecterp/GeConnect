@@ -48,25 +48,37 @@
 						<legend>
 							<h5>Detalle de Productos</h5>
 						</legend>
-						<div class="input-group">
-							<span class="input-group-text">ID: </span>
-							<input type="text" id="txtIdProdEnComprobanteRP" class="form-control" />
-							<span class="input-group-text" style="width: 50px;">Holis</span>
-							<span class="input-group-text">UP: </span>
-							<input type="text" id="txtUPEnComprobanteRP" class="form-control" />
-							<span class="input-group-text">Bto: </span>
-							<input type="text" id="txtBtoEnComprobanteRP" class="form-control" />
-							<span class="input-group-text">Unid: </span>
-							<input type="text" id="txtUnidEnComprobanteRP" class="form-control" />
-							<button type="button" class="btn btn-icon btn-success" style="margin-left:5px;" id="btnAddProdEnComprobanteRP">
-								<span class="tf-icons bx bx-plus-circle"></span>
-							</button>
-							<button type="button" class="btn btn-icon btn-danger" style="margin-left:5px;" id="btnDelProdEnComprobanteRP">
-								<span class="tf-icons bx bx-trash"></span>
-							</button>
-							<button type="button" class="btn btn-success" style="margin-left:5px;" id="btnAddOCProdEnComprobanteRP">
-								<span class="tf-icons bx bx-plus-circle"> OC</span>
-							</button>
+						<div class="container" style="padding:0px;">
+							<div class="row">
+								<div class="col-9">
+									<div class="input-group">
+										<span class="input-group-text">ID: </span>
+										<input type="text" id="txtIdProdEnComprobanteRP" class="form-control" />
+										<span class="input-group-text" style="width: 30%;">Holis</span>
+										<span class="input-group-text">UP: </span>
+										<input type="text" id="txtUPEnComprobanteRP" class="form-control" />
+										<span class="input-group-text">Bto: </span>
+										<input type="text" id="txtBtoEnComprobanteRP" class="form-control" />
+										<span class="input-group-text">Unid: </span>
+										<input type="text" id="txtUnidEnComprobanteRP" class="form-control" />
+									</div>
+								</div>
+								<div class="col-3" style="padding: 0px;">
+									<div class="input-group">
+										<button type="button" class="btn btn-icon btn-success" style="margin-left:5px;" id="btnAddProdEnComprobanteRP">
+											<span class="tf-icons bx bx-plus-circle"></span>
+										</button>
+										<button type="button" class="btn btn-icon btn-danger" style="margin-left:5px;" id="btnDelProdEnComprobanteRP">
+											<span class="tf-icons bx bx-trash"></span>
+										</button>
+										<button type="button" class="btn btn-success" style="margin-left:5px;" id="btnAddOCProdEnComprobanteRP">
+											<span class="tf-icons bx bx-plus-circle"> OC</span>
+										</button>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div id="divDetalleDeProductos">
 						</div>
 					</fieldset>
 				</div>
@@ -91,3 +103,10 @@
 		</div>
 	</row>
 </div>
+
+@section scripts {
+	<script type="text/javascript">
+		var CargarDetalleDeProductosEnRPUrl = "@Url.Action("CargarDetalleDeProductosEnRP", "compra", new { area = "Compras" })";
+	</script>
+	<script src="~/js/app/areas/compras/_rprDetDeProdDeRP.js"></script>
+}

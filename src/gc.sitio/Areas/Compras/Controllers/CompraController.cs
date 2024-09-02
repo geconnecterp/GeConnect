@@ -104,7 +104,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return PartialView("RPRCargaDetalleDeCompteRP", model);
 		}
 
+        public async Task<IActionResult> CargarDetalleDeProductosEnRP()
+        {
+			GridCore<ProductoBusquedaDto> datosIP;
+			var lista = new List<ProductoBusquedaDto>();
 
+			datosIP = ObtenerDetalleDeProductosRPGrid(RPRDetalleDeProductosEnRP);
+
+			return PartialView("_rprDetalleDeProductos", datosIP);
+		}
 
 		public async Task<JsonResult> BuscarCuentaComercial(string cuenta, char tipo, string vista)
         {
@@ -207,8 +215,15 @@ namespace gc.sitio.Areas.Compras.Controllers
             return PartialView("_rprComprobantesDeRP", datosIP);
         }
 
-        #region Métodos privados
-        private GridCore<RPRComptesDeRPDto> ObtenerComprobantesDeRPGrid(List<RPRComptesDeRPDto> listaComptesDeRP)
+		#region Métodos privados
+		private GridCore<ProductoBusquedaDto> ObtenerDetalleDeProductosRPGrid(List<ProductoBusquedaDto> listaProdDeRP)
+		{
+
+			var lista = new StaticPagedList<ProductoBusquedaDto>(listaProdDeRP, 1, 999, listaProdDeRP.Count);
+
+			return new GridCore<ProductoBusquedaDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
+		}
+		private GridCore<RPRComptesDeRPDto> ObtenerComprobantesDeRPGrid(List<RPRComptesDeRPDto> listaComptesDeRP)
         {
 
             var lista = new StaticPagedList<RPRComptesDeRPDto>(listaComptesDeRP, 1, 999, listaComptesDeRP.Count);
