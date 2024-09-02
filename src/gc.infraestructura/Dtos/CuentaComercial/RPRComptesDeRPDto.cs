@@ -6,7 +6,7 @@ namespace gc.infraestructura.Dtos.CuentaComercial
 		public string Tipo { get; set; }=string.Empty;
         public string TipoDescripcion { get; set; } = string.Empty;
         public string NroComprobante { get; set; } = string.Empty;
-        public DateTime Fecha { get; set; }
+        public string Fecha { get; set; }= string.Empty;
         public string Importe { get; set; }=string.Empty ;
     }
 }

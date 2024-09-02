@@ -3,8 +3,91 @@
 	Layout = "~/views/shared/_Layout.cshtml";
 }
 
+<style>
+	fieldset {
+		margin: 8px;
+		border: 1px solid silver;
+		padding: 8px;
+		border-radius: 4px;
+	}
+</style>
+
 <div class="card">
 	<row>
-		<span>@Model.Leyenda</span>
+		<div style="float:left">
+			<div class="input-group">
+				<span>@Model.Leyenda</span>
+				<button type="button" class="btn btn-success" style="margin-left:5px;" id="btnAceptarComprobanteRP">
+					<span class="tf-icons bx bx-check-circle">Aceptar</span>
+				</button>
+				<button type="button" class="btn btn-primary" style="margin-left:5px;" id="btnRegresarDesdeComprobanteRP">
+					<span class="tf-icons bx bx-left-arrow-circle">Regresar</span>
+				</button>
+			</div>
+		</div>
+	</row>
+	<row>
+		<div class="col-8" style="float:left">
+			<div class="input-group">
+				<span class="input-group-text">Tipo: </span>
+				<input type="text" id="txtTipoEnComprobanteRP" class="form-control" readonly asp-for="@Model.CompteSeleccionado.TipoDescripcion" />
+				<span class="input-group-text">N°: </span>
+				<input type="text" id="txtNroCompteEnComprobanteRP" class="form-control" readonly asp-for="@Model.CompteSeleccionado.NroComprobante" />
+				<span class="input-group-text">Fecha: </span>
+				<input type="text" id="txtFechaEnComprobanteRP" class="form-control" readonly asp-for="@Model.CompteSeleccionado.Fecha" />
+				<span class="input-group-text">Monto: </span>
+				<input type="text" id="txtMontoEnComprobanteRP" class="form-control" readonly asp-for="@Model.CompteSeleccionado.Importe" />
+			</div>
+		</div>
+	</row>
+	<row>
+		<div class="container">
+			<div class="row">
+				<div class="col-8">
+					<fieldset>
+						<legend>
+							<h5>Detalle de Productos</h5>
+						</legend>
+						<div class="input-group">
+							<span class="input-group-text">ID: </span>
+							<input type="text" id="txtIdProdEnComprobanteRP" class="form-control" />
+							<span class="input-group-text" style="width: 50px;">Holis</span>
+							<span class="input-group-text">UP: </span>
+							<input type="text" id="txtUPEnComprobanteRP" class="form-control" />
+							<span class="input-group-text">Bto: </span>
+							<input type="text" id="txtBtoEnComprobanteRP" class="form-control" />
+							<span class="input-group-text">Unid: </span>
+							<input type="text" id="txtUnidEnComprobanteRP" class="form-control" />
+							<button type="button" class="btn btn-icon btn-success" style="margin-left:5px;" id="btnAddProdEnComprobanteRP">
+								<span class="tf-icons bx bx-plus-circle"></span>
+							</button>
+							<button type="button" class="btn btn-icon btn-danger" style="margin-left:5px;" id="btnDelProdEnComprobanteRP">
+								<span class="tf-icons bx bx-trash"></span>
+							</button>
+							<button type="button" class="btn btn-success" style="margin-left:5px;" id="btnAddOCProdEnComprobanteRP">
+								<span class="tf-icons bx bx-plus-circle"> OC</span>
+							</button>
+						</div>
+					</fieldset>
+				</div>
+				<div class="col-4">
+					<div>
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" value="" id="chkOCdeOtrasSuc" checked="">
+							<label class="form-check-label" for="defaultCheck3"> OC de Otras Sucursales</label>
+						</div>
+					</div>
+					<div>
+						<fieldset>
+							<legend>
+								<h5>Ordenes de Compra</h5>
+							</legend>
+						</fieldset>
+					</div>
+					<div id="divDetalleDeOrdenDeCompra">
+					</div>
+				</div>
+			</div>
+		</div>
 	</row>
 </div>

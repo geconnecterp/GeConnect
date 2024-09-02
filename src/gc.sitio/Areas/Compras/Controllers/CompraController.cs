@@ -93,7 +93,7 @@ namespace gc.sitio.Areas.Compras.Controllers
             var compte = new RPRComptesDeRPDto();
 			var model = new RPRDetalleComprobanteDeRP
 			{
-				Leyenda = $"Carga de Detalle de Comprobante RP Proveedor ({CuentaComercialSeleccionada.Tcb_Id} {CuentaComercialSeleccionada.Cta_Denominacion})"
+				Leyenda = $"Carga de Detalle de Comprobante RP Proveedor ({CuentaComercialSeleccionada.Cta_Id}) {CuentaComercialSeleccionada.Cta_Denominacion}"
 			};
 
 			if (RPRComptesDeRPRegs.Exists(x => x.Tipo == idTipoCompte && x.NroComprobante == nroCompte))
@@ -197,7 +197,7 @@ namespace gc.sitio.Areas.Compras.Controllers
                     Tipo = tipo, 
                     TipoDescripcion = tipoDescripcion, 
                     NroComprobante = nroComprobante, 
-                    Fecha = Convert.ToDateTime(fecha), 
+                    Fecha = Convert.ToDateTime(fecha).ToString("dd/MM/yyyy"), 
                     Importe = importe 
                 };
                 lista.Add(nuevo);
