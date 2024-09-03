@@ -99,6 +99,15 @@
 							</div>
 						</fieldset>
 					</div>
+					<div>
+						<fieldset>
+							<legend>
+								<h5>Detalle de OC</h5>
+							</legend>
+							<div id="divDetalleDeOrdenDeCompra">
+							</div>
+						</fieldset>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -109,6 +118,7 @@
 	<script type="text/javascript">
 		var CargarDetalleDeProductosEnRPUrl = "@Url.Action("CargarDetalleDeProductosEnRP", "compra", new { area = "Compras" })";
 		var CargarOCxCuentaEnRPUrl = "@Url.Action("CargarOCxCuentaEnRP", "compra", new { area = "Compras" })";
+		var VerDetalleDeOCRPUrl = "@Url.Action("VerDetalleDeOCRP", "compra", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/areas/compras/_rprDetDeProdDeRP.js"></script>
 }

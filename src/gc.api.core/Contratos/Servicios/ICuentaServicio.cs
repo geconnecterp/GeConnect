@@ -9,6 +9,6 @@ namespace gc.api.core.Contratos.Servicios
         List<ProveedorListaDto> GetProveedorLista();
         List<CuentaDto> GetCuentaComercialLista(string texto, char tipo);
         List<RPROrdenDeCompraDto> GetOCporCuenta(string cta_id);
-
+        List<RPROrdenDeCompraDetalleDto> GetDetalleDeOC(string oc_compte);
 	}
 }

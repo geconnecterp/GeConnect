@@ -115,6 +115,16 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return PartialView("_rprOCxCuenta", datosIP);
 		}
 
+        public async Task<IActionResult> VerDetalleDeOCRP(string oc_compte)
+        { 
+            GridCore<RPROrdenDeCompraDetalleDto> datosIP;
+            var lista = new List<RPROrdenDeCompraDetalleDto>();
+
+            lista =await _cuentaServicio.ObtenerDetalleDeOC(oc_compte, TokenCookie);
+			datosIP = ObtenerOCDetalleRPGrid(lista);
+			return PartialView("_rprOCDetalle", datosIP);
+		}
+
 
 		public async Task<IActionResult> CargarDetalleDeProductosEnRP()
         {
@@ -228,6 +238,13 @@ namespace gc.sitio.Areas.Compras.Controllers
         }
 
 		#region Métodos privados
+		private GridCore<RPROrdenDeCompraDetalleDto> ObtenerOCDetalleRPGrid(List<RPROrdenDeCompraDetalleDto> listaOCDetalle)
+		{
+
+			var lista = new StaticPagedList<RPROrdenDeCompraDetalleDto>(listaOCDetalle, 1, 999, listaOCDetalle.Count);
+
+			return new GridCore<RPROrdenDeCompraDetalleDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
+		}
 		private GridCore<RPROrdenDeCompraDto> ObtenerOCxCuentaRPGrid(List<RPROrdenDeCompraDto> listaOCxCuentaRP)
 		{
 

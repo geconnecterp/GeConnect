@@ -212,9 +212,19 @@ namespace gc.api.core.Servicios
 			};
 			var listaTemp = _repository.EjecutarLstSpExt<RPROrdenDeCompraDto>(sp, ps, true);
 			listaTemp.ForEach(x => x.oc_fecha = Convert.ToDateTime(x.oc_fecha).ToString("dd/MM/yyyy"));
-            //List<RPROrdenDeCompraDto> oc = _repository.EjecutarLstSpExt<RPROrdenDeCompraDto>(sp, ps, true);
 			return listaTemp;
+		}
 
+		public List<RPROrdenDeCompraDetalleDto> GetDetalleDeOC(string oc_compte)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_OC_D;
+			var ps = new List<SqlParameter>()
+			{
+					new("@oc_compte",oc_compte)
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RPROrdenDeCompraDetalleDto>(sp, ps, true);
+			listaTemp.ForEach(x => x.oc_fecha = Convert.ToDateTime(x.oc_fecha).ToString("dd/MM/yyyy"));
+			return listaTemp;
 		}
 	}
 }

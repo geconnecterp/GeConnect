@@ -1,0 +1,33 @@
+﻿@model GridCore<RPROrdenDeCompraDetalleDto>
+@{
+}
+
+<div class="table-responsive table-wrapper">
+	<table class="table table-bordered table-hover" id="tbComptesDeRP">
+		<thead class="table-dark">
+			<tr class="header">
+				<th scope="col" style="width:10%;">ID</th>
+				<th scope="col" style="width:30%;">Descripción</th>
+				<th scope="col" style="width:10%;">ID Prov</th>
+				<th scope="col" style="width:10%;">UxB</th>
+				<th scope="col" style="width:10%;">Btos</th>
+				<th scope="col" style="width:15%;">Unidades</th>
+				<th scope="col" style="width:15%;">Cantidad</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in Model.ListaDatos)
+			{
+				<tr onclick="selectOCDetalleRow(this)">
+					<td>@item.p_id</td>
+					<td>@item.p_desc</td>
+					<td>@item.p_id_prov</td>
+					<td>@item.ocd_unidad_x_bulto</td>
+					<td>@item.ocd_bultos</td>
+					<td>@item.ocd_unidad_pres</td>
+					<td>@item.ocd_cantidad</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>

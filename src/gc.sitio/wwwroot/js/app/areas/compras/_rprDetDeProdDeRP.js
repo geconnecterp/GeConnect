@@ -25,3 +25,17 @@ function CargarDetalleDeProductosEnRP() {
 		return true;
 	});
 }
+
+function selectOCRow(x) {
+
+	$("#ocCompteSelected").val(x.cells[0].innerText.trim());
+	var oc_compte = x.cells[0].innerText.trim();
+	var data = { oc_compte };
+	PostGenHtml(data, VerDetalleDeOCRPUrl, function (obj) {
+		$("#divDetalleDeOrdenDeCompra").html(obj);
+		return true;
+	}, function (obj) {
+		ControlaMensajeError(obj.message);
+		return true;
+	});
+}

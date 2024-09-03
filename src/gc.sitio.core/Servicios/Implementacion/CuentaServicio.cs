@@ -20,7 +20,8 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string ProveedorLista = "/GetProveedorLista";
         private const string CuentaComercialBuscar = "/GetCuentaComercialLista";
 		private const string OCxCuentaBuscar = "/GetOCxCuenta";
-        private readonly AppSettings _appSettings;
+		private const string DetalleOCBuscar = "/GetOCDetalle";
+		private readonly AppSettings _appSettings;
         public CuentaServicio(IOptions<AppSettings> options, ILogger<CuentaServicio> logger) : base(options, logger)
         {
             _appSettings = options.Value;
@@ -100,7 +101,46 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-        public List<ProveedorListaDto> ObtenerListaProveedores(string token)
+        public async Task<List<RPROrdenDeCompraDetalleDto>> ObtenerDetalleDeOC(string oc_compte, string token)
+        {
+            try
+            {
+				ApiResponse<List<RPROrdenDeCompraDetalleDto>> apiResponse;
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{DetalleOCBuscar}?oc_compte={oc_compte}";
+				response = await client.GetAsync(link);
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					string stringData = await response.Content.ReadAsStringAsync();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						_logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda oc_compte:{oc_compte}");
+						return [];
+					}
+					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RPROrdenDeCompraDetalleDto>>>(stringData);
+					return apiResponse.Data;
+				}
+				else
+				{
+					string stringData = await response.Content.ReadAsStringAsync();
+					_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+					return [];
+				}
+			}
+            catch (Exception ex)
+            {
+				_logger.LogWarning($"Algo no fue bien. Error interno {ex.Message}");
+				return [];
+			}
+			
+		}
+
+
+		public List<ProveedorListaDto> ObtenerListaProveedores(string token)
         {
             ApiResponse<List<ProveedorListaDto>> respuesta;
             string stringData;

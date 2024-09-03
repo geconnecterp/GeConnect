@@ -100,6 +100,21 @@ namespace gc.api.Controllers.Almacen
 			return Ok(response);
 		}
 
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetOCDetalle(string oc_compte)
+		{
+			ApiResponse<List<RPROrdenDeCompraDetalleDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _cuentasSv.GetDetalleDeOC(oc_compte);
+
+			response = new ApiResponse<List<RPROrdenDeCompraDetalleDto>>(res);
+
+			return Ok(response);
+		}
+
 		// GET api/<cuentasController>/5
 		[HttpGet("{id}")]
         public async Task<IActionResult> Get(string id)

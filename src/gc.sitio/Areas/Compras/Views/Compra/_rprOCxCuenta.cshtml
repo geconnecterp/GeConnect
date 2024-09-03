@@ -2,6 +2,7 @@
 @{
 }
 
+<input type="text" id="ocCompteSelected" style="display:none;" />
 <div class="table-responsive table-wrapper">
 	<table class="table table-bordered table-hover" id="tbComptesDeRP">
 		<thead class="table-dark">
@@ -16,7 +17,7 @@
 		<tbody>
 			@foreach (var item in Model.ListaDatos)
 			{
-				<tr>
+				<tr onclick="selectOCRow(this)">
 					<td>@item.oc_compte</td>
 					<td>@item.oc_fecha</td>
 					<td>@item.depo_nombre</td>

@@ -20,3 +20,6 @@ function selectCompteDeRPRow(x) {
 	var link = VerDetalleDeCompteDeRPUrl + "?idTipoCompte=" + x.cells[0].innerText.trim() + "&nroCompte=" + x.cells[2].innerText.trim();
 	$("#VerDetalle").prop("href", link);
 }
+
+
+
