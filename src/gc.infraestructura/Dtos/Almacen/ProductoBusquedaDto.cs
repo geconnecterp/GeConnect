@@ -49,5 +49,6 @@
         public int Bulto { get; set; }
         public decimal Unidad { get; set; }
         public decimal Cantidad { get; set; }
+        public string oc_compte { get; set; } = string.Empty;
     }
 }

@@ -20,3 +20,12 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.table-fontsize {
+    font-size: 11px !important;
+}
+
+.selected-row > td {
+    background-color: lightslategray;
+    color: black;
+}

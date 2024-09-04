@@ -3,31 +3,31 @@
 }
 
 <div class="table-responsive table-wrapper">
-	<table class="table table-bordered table-hover" id="tbComptesDeRP">
+	<table class="table table-bordered table-hover" id="tbDetalleDeProd">
 		<thead class="table-dark">
 			<tr class="header">
-				<th scope="col" style="width:10%;">ID</th>
-				<th scope="col" style="width:20%">Descripción</th>
-				<th scope="col" style="width:10%">ID Prov</th>
-				<th scope="col" style="width:10%">OC</th>
-				<th scope="col" style="width:10%">UxB</th>
-				<th scope="col" style="width:10%">Btos</th>
-				<th scope="col" style="width:15%">Unidades</th>
-				<th scope="col" style="width:15%">Cantidad</th>
+				<th scope="col" class="table-fontsize" style="width:10%;">ID</th>
+				<th scope="col" class="table-fontsize" style="width:20%">Descripción</th>
+				<th scope="col" class="table-fontsize" style="width:10%">ID Prov</th>
+				<th scope="col" class="table-fontsize" style="width:10%">OC</th>
+				<th scope="col" class="table-fontsize" style="width:10%">UP</th>
+				<th scope="col" class="table-fontsize" style="width:10%">Btos</th>
+				<th scope="col" class="table-fontsize" style="width:15%">Unidades</th>
+				<th scope="col" class="table-fontsize" style="width:15%">Cantidad</th>
 			</tr>
 		</thead>
 		<tbody>
 			@foreach (var item in Model.ListaDatos)
 			{
-				<tr>
-					<td>@item.P_id</td>
-					<td>@item.P_desc</td>
-					<td>@item.P_id_prov</td>
-					<td>@item.Bulto</td>
-					<td>@item.Bulto</td>
-					<td>@item.Bulto</td>
-					<td>@item.Unidad</td>
-					<td>@item.Cantidad</td>
+				<tr onclick="selectDetalleDeProdRow(this)">
+					<td class ="table-fontsize">@item.P_id</td>
+					<td class="table-fontsize">@item.P_desc</td>
+					<td class="table-fontsize">@item.P_id_prov</td>
+					<td class="table-fontsize">@item.oc_compte</td>
+					<td class="table-fontsize">@item.Bulto</td>
+					<td class="table-fontsize">@item.Bulto</td>
+					<td class="table-fontsize">@item.Unidad</td>
+					<td class ="table-fontsize">@item.Cantidad</td>
 				</tr>
 			}
 		</tbody>

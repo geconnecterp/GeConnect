@@ -4,25 +4,25 @@
 
 <input type="text" id="ocCompteSelected" style="display:none;" />
 <div class="table-responsive table-wrapper">
-	<table class="table table-bordered table-hover" id="tbComptesDeRP">
+	<table class="table table-bordered table-hover" id="tbOCxCuenta">
 		<thead class="table-dark">
 			<tr class="header">
-				<th scope="col" style="width:20%;">N° OC</th>
-				<th scope="col" style="width:20%">Fecha</th>
-				<th scope="col" style="width:20%">Sucursal</th>
-				<th scope="col" style="width:20%">Generada</th>
-				<th scope="col" style="width:20%">Estado</th>
+				<th scope="col" class="table-fontsize" style="width:20%;">N° OC</th>
+				<th scope="col" class="table-fontsize" style="width:20%">Fecha</th>
+				<th scope="col" class="table-fontsize" style="width:20%">Sucursal</th>
+				<th scope="col" class="table-fontsize" style="width:20%">Generada</th>
+				<th scope="col" class="table-fontsize" style="width:20%">Estado</th>
 			</tr>
 		</thead>
 		<tbody>
 			@foreach (var item in Model.ListaDatos)
 			{
 				<tr onclick="selectOCRow(this)">
-					<td>@item.oc_compte</td>
-					<td>@item.oc_fecha</td>
-					<td>@item.depo_nombre</td>
-					<td>@item.oce_desc</td>
-					<td>@item.adm_nombre</td>
+					<td class="table-fontsize">@item.oc_compte</td>
+					<td class="table-fontsize">@item.oc_fecha</td>
+					<td class="table-fontsize">@item.depo_nombre</td>
+					<td class="table-fontsize">@item.oce_desc</td>
+					<td class="table-fontsize">@item.adm_nombre</td>
 				</tr>
 			}
 		</tbody>

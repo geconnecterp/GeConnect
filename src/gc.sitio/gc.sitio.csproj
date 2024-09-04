@@ -8,13 +8,9 @@
 
   <ItemGroup>
     <Compile Remove="Areas\Compras\Data\**" />
-    <Compile Remove="Areas\Compras\Models\**" />
     <Content Remove="Areas\Compras\Data\**" />
-    <Content Remove="Areas\Compras\Models\**" />
     <EmbeddedResource Remove="Areas\Compras\Data\**" />
-    <EmbeddedResource Remove="Areas\Compras\Models\**" />
     <None Remove="Areas\Compras\Data\**" />
-    <None Remove="Areas\Compras\Models\**" />
   </ItemGroup>
 
   <ItemGroup>

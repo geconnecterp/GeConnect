@@ -169,6 +169,7 @@ namespace gc.sitio.Controllers
 			return query;
 		}
 
+		#region COMPRAS
 		public CuentaDto CuentaComercialSeleccionada
 		{
 			get
@@ -223,6 +224,7 @@ namespace gc.sitio.Controllers
 				_context.HttpContext.Session.SetString("RPRDetalleDeProductosEnRP", json);
 			}
 		}
+		#endregion
 
 		#region Metodos generales
 		//protected void VerificaAutenticacion()

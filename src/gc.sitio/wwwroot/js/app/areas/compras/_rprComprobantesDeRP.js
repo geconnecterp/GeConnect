@@ -8,6 +8,8 @@
 			e.target.closest('tr').classList.add('selected-row');
 		}
 	});
+	debugger;
+
 });
 
 function selectCompteDeRPRow(x) {
