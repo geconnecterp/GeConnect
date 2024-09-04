@@ -1,4 +1,4 @@
-﻿$(document).ready(function () {
+﻿$(function () {
     AbrirWaiting("Espere, se esta inicializando la vista...");
     $("#formulario").slideUp(300).fadeIn(400);
     CerrarWaiting();

@@ -26,7 +26,7 @@ namespace gc.pocket.site.Areas.Seguridad.Controllers
         private readonly IConfiguration _configuration;
         private readonly ILogger<TokenController> _logger;
         private readonly IAdministracionServicio _admSv;
-        private readonly IHttpContextAccessor _context;
+        //private readonly IHttpContextAccessor _context;
 
         public TokenController(IConfiguration configuration, ILogger<TokenController> logger, 
             IOptions<AppSettings> options, IAdministracionServicio servicio,
@@ -35,7 +35,7 @@ namespace gc.pocket.site.Areas.Seguridad.Controllers
             _configuration = configuration;
             _logger = logger;
             _admSv = servicio;
-            _context = context;
+            //_context = context;
 
         }
 
@@ -79,7 +79,7 @@ namespace gc.pocket.site.Areas.Seguridad.Controllers
 
                 //inyectamos la ip en el header del request
                 cliente.DefaultRequestHeaders.Add("X-ClientUsr", ip.ToString());
-
+               
                 cliente.BaseAddress = new Uri(_configuration["AppSettings:RutaBase"]);
                 var userModel = new { autenticar.UserName, autenticar.Password, autenticar.Admid };
                 var userJson = JsonConvert.SerializeObject(userModel);

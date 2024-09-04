@@ -8,13 +8,13 @@
     <div class="col-sm-6">
         <div class="input-group input-group-sm">
             <span class="input-group-text">UL: </span>
-            <input type="text" maxlength="16" id="txtUl" class="form-control" placeholder="Ingresar UL..." />
+            <input type="text" maxlength="16" id="txtUl" class="form-control inputEditable" placeholder="Ingresar UL..." />
         </div>
     </div>
     <div class="col-sm-6">
         <div class="input-group input-group-sm">
             <span class="input-group-text">Box: </span>
-            <input type="text" maxlength="11" id="txtBox" class="form-control" placeholder="Agregar Box" />
+            <input type="text" maxlength="11" id="txtBox" class="form-control inputEditable" placeholder="Agregar Box" />
         </div>
     </div>
 </div>
@@ -23,16 +23,16 @@
         <a asp-action="rpr" asp-controller="almacen" asp-area="gestion" id="btnVolver" class="btn btn-xs btn-danger"><i class="bx bx-left-arrow bx-sm"></i><span> Volver</span></a>
     </div>
     <div class="col-sm-2">
-        <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" type="button" id="btnInfoProd" class="btn btn-xs btn-info"><i class="bx bx-info-circle bx-sm "></i><span> Información</span></a>
+        <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" type="button" id="btnInfoProd" class="btn btn-xs btn-info"><i class="bx bx-info-circle bx-sm "></i><span> Info</span></a>
     </div>
     <div class="col-sm-2">
-        <button type="button" id="btnConfirmar" class="btn btn-xs btn-success"><i class="bx bx-right-arrow bx-sm"></i><span> Confirmar</span></button>
+        <button type="button" id="btnConfirmar" class="btn btn-xs btn-success"><i class="bx bx-check-circle bx-sm"></i><span> Confirma</span></button>
     </div>
 </div>
 
 @section scripts {
     <script type="text/javascript">
-        var almacenajeBoxUrl = "@Url.Action("almacenajebox", "rpr", new { area = "pocketppal" })";
+        var almacenajeBoxUrl = "@Url.Action("ConfirmaBoxUl", "rpr", new { area = "pocketppal" })";
         var validaBoxUrl = "@Url.Action("validarbox", "rpr", new { area = "pocketppal" })";
         var validaUlUrl = "@Url.Action("validarul", "rpr", new { area = "pocketppal" })";
         var homeRPRUrl = "@Url.Action("rpr", "almacen", new { area = "gestion" })";

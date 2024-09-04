@@ -311,6 +311,10 @@ namespace gc.sitio.core.Servicios.Implementacion
                 if (prop.Name.Equals("Todo"))
                 { continue; }
                 var valor = prop.GetValue(filters, null);
+                if (valor == null)
+                {
+                    continue;
+                }
                 if (prop.PropertyType == typeof(int))
                 {
                     if ((int)valor != 0)
