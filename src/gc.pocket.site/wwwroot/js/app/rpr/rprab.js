@@ -1,8 +1,27 @@
-﻿$(document).ready(function () {
-    $("#txtUl").on("blur", validaUL);
-    $("#txtBox").on("blur", validaBox);
+﻿$(function () {
+    //$("#txtUl").on("blur", validaUL);
+    //$("#txtBox").on("blur", validaBox);
+
     $("#btnConfirmar").on("click", ConfirmarBoxUl);
+    $(".inputEditable").on("keypress", analizaInput);
 });
+
+function analizaInput(e) {
+    if (e.which === 13) {
+        //verificamos quien es
+        var who = $(this).prop("id");
+        switch (who) {
+            case "txtUl":
+                validaUL();
+                break;
+            case "txtBox":
+                validaBox();
+                break;
+            default:
+                break;
+        }
+    }
+}
 
 function validaUL() {
     var ul = $("#txtUl").val();
@@ -24,9 +43,8 @@ function validaUL() {
         }
         else {
             ControlaMensajeSuccess(obj.msg);
-            //solo pasa al otro campo.
+            //solo pasa al otro campo.           
             $("#txtBox").focus();
-
             return true;
         }
     });
@@ -38,14 +56,14 @@ function validaBox() {
     var datos = { box };
     PostGen(datos, validaBoxUrl, function (obj) {
         if (obj.error === true) {
-            $("#txtUl").focus();
+            $("#txtBox").focus();
             AbrirMensaje("Importante", obj.msg, function () {
                 $("#msjModal").modal("hide");
                 return true;
             }, false, ["Aceptar"], "error!", null);
         }
         else if (obj.warn === true) {
-            $("#txtUl").focus();
+            $("#txtBox").focus();
             AbrirMensaje("Importante", obj.msg, function () {
                 $("#msjModal").modal("hide");
                 return true;
@@ -53,8 +71,10 @@ function validaBox() {
         }
         else {
             ControlaMensajeSuccess(obj.msg);
+            $("#txtBox").val(obj.box);
             //solo pasa al otro campo.
-            $("#txtBox").focus();
+            $("#btnConfirmar").focus();
+
 
             return true;
         }

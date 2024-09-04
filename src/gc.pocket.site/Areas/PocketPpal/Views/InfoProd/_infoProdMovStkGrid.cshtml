@@ -9,45 +9,49 @@
     string clase = string.Empty;
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
 }
+<div class="table-responsive text-nowrap">
+    <table class="table mb-0 table-dark">
+        <thead>
+            <tr class="header">
+                <th scope="col">Fecha</th>
+                <th scope="col">Mov</th>
+                <th scope="col">E/S</th>
+                <th scope="col">STK</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ListaDatos)
+            {
+                if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
-<div class="card">
-    <div class="card-body">
-        <div class="table-responsive text-nowrap">
-            <table class="table mb-0 table-dark">
-                <thead>
-                    <tr class="header">
-                        <th scope="col">Fecha</th>
-                        <th scope="col">Mov</th>
-                        <th scope="col">E/S</th>
-                        <th scope="col">STK</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model.ListaDatos)
-                    {
-                        if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-
-                        <tr class="@clase">
-                            <td>@item.Sm_fecha</td>
-                            <td>@item.Sm_concepto</td>
-                            <td>@item.Sm_tipo</td>
-                            <td>@item.Sm_stk</td>
-                        </tr>
-                    }
-                    @* <tr>
-                        <td colspan="9">
-                            @Html.PagedListPager(
-                                     (IPagedList)Model.ListaDatos,
-                                     page => Url.Action("Index", "producto", new { page = page, area = "Personas", sort = Model.Sort, sortdir = sortDirInv }), new PagedListRenderOptions
-                            {
-                                LiElementClasses = new string[] { "page-item" },
-                                PageClasses = new string[] { "page-link" },
-                                Display = PagedListDisplayMode.IfNeeded
-                            })
-                        </td>
-                    </tr> *@
-                </tbody>
-            </table>
-        </div>
-    </div>
+                <tr class="@clase">
+                    <td>@item.Sm_fecha</td>
+                    <td>@item.Sm_concepto</td>
+                    <td>@item.Sm_tipo</td>
+                    <td>
+                        @if (item.Up_id == 7)
+                        {
+                            var spl = item.Sm_stk.ToString().Split('.');
+                            <span>@spl[0]</span>
+                        }
+                        else
+                        {
+                            <span>@item.Sm_stk</span>
+                        }
+                </tr>
+            }
+            @* <tr>
+            <td colspan="9">
+            @Html.PagedListPager(
+            (IPagedList)Model.ListaDatos,
+            page => Url.Action("Index", "producto", new { page = page, area = "Personas", sort = Model.Sort, sortdir = sortDirInv }), new PagedListRenderOptions
+            {
+            LiElementClasses = new string[] { "page-item" },
+            PageClasses = new string[] { "page-link" },
+            Display = PagedListDisplayMode.IfNeeded
+            })
+            </td>
+            </tr> *@
+        </tbody>
+    </table>
 </div>

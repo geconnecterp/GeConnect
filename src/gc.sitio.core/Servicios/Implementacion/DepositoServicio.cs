@@ -31,7 +31,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 
         public List<DepositoDto> ObtenerDepositosDeAdministracion(string adm_id,string token )
         {
-            ApiResponse<List<DepositoDto>> respuesta;
+            ApiResponse<List<DepositoDto>>? respuesta;
             string stringData;
             try
             {
@@ -44,7 +44,10 @@ namespace gc.sitio.core.Servicios.Implementacion
                 {
                     stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
                     respuesta = JsonConvert.DeserializeObject<ApiResponse<List<DepositoDto>>>(stringData);
-
+                    if (response == null)
+                    {
+                        throw new NegocioException("No se desserializo correctamente la lista de Depositos. Verifique");
+                    }
                     return respuesta.Data;
                 }
                 else
@@ -55,8 +58,9 @@ namespace gc.sitio.core.Servicios.Implementacion
                 }
 
             }
-            catch (NegocioException)
+            catch (NegocioException ex )
             {
+                _logger.LogError(ex, "Error al intentar obtener Depositos para el Combo.");
                 throw;
             }
             catch (Exception ex)

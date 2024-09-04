@@ -9,10 +9,15 @@
    
 </div> *@
 <div class="container">
-    <div class="row alinearDerecha">
+   @*  <div class="row alinearDerecha">
         <a asp-action="index" asp-controller="home" asp-area="" style="width:100px;box-sizing:border-box;" class="btn btn-xs btn-danger mt-3"><i class="bx bx-left-arrow-circle bx-xs"></i> <span> Volver</span></a>
-    </div>
+    </div> *@
     <div class="row">
         <partial name="_autopendientegrid" model="@Model" />
+    </div>
+    <div class="row">
+        <div class="offset-sm-9 col-sm-3 mt-2">
+            <a asp-action="rpr" asp-controller="almacen" asp-area="gestion" class="btn btn-danger btn-sm"><i class="bx bx-sm bx-arrow-back"></i><span> Volver</span></a>
+        </div>
     </div>
 </div>

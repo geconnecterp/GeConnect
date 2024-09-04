@@ -30,7 +30,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             {
                 HelperAPI helper = new();
                 HttpClient client = helper.InicializaCliente("");
-                HttpResponseMessage response = null;
+                HttpResponseMessage response ;
                 var link = $"{_appSettings.RutaBase}{RutaAPI}{AccionLogin}";
                 response = client.GetAsync(link).GetAwaiter().GetResult();
                 if (response.StatusCode == HttpStatusCode.OK)

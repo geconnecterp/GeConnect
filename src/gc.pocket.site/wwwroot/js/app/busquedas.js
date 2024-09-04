@@ -1,4 +1,4 @@
-﻿$(document).ready(function () {
+﻿$(function () {
     
     $("input#Busqueda").keypress(verificaTeclaDeBusqueda);
     $("input").on("focus", function () { $(this).select(); })
