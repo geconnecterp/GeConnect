@@ -19,6 +19,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
 using X.PagedList;
 using gc.sitio.Areas.Compras.Models;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace gc.sitio.Areas.Compras.Controllers
 {
@@ -163,6 +164,59 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 			datosIP = ObtenerDetalleDeProductosRPGrid(RPRDetalleDeProductosEnRP);
 			return PartialView("_rprDetalleDeProductos", datosIP);
+		}
+
+		public JsonResult VerificarDetalleCargado()
+		{
+			try
+			{
+				if (RPRDetalleDeProductosEnRP == null)
+				{
+					return Json(new { error = false, warn = true, vacio = true, cantidad = 0, msg = "Error al intentar validar existencia de productos de RP cargados." });
+				}
+				else if (RPRDetalleDeProductosEnRP.Count > 0)
+				{
+					return Json(new { error = false, warn = false, vacio = false, cantidad = RPRDetalleDeProductosEnRP.Count, msg = $"Existen productos ({RPRDetalleDeProductosEnRP.Count}) agregados al detalle de comprobante RP de proveedor. Desea guardar los cambios antes de salir? Caso contrario se perderán." });
+				}
+				else
+				{
+					return Json(new { error = false, warn = false, vacio = true, cantidad = 0, msg = "" });
+				}
+			}
+			catch (NegocioException neg)
+			{
+				return Json(new { error = false, warn = true, msg = neg.Message, vacio = false, cantidad = 0 });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				return Json(new { error = true, msg = "Algo no fue bien al verificar detalle de productos cargados para RP, intente nuevamente mas tarde." });
+			}
+		}
+
+		public async Task<JsonResult> GuardarDetalleDeComprobanteRP(bool guardado)
+		{
+			try
+			{
+				if (guardado) //Guardo el detalle de productos del compte en la variable de sesion
+				{
+					//TODO -> Generar lista de productos (encabezado/detalle) usando las clases: JsonEncabezadoDeRPDto/JsonComprobanteDeRPDto
+				}
+				else //Vacío la lista 
+				{
+					RPRDetalleDeProductosEnRP = [];
+				}
+				return Json(new { error = false, warn = false, msg = "" });
+			}
+			catch (NegocioException neg)
+			{
+				return Json(new { error = false, warn = true, msg = neg.Message });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				return Json(new { error = true, msg = "Algo no fue bien al guardar el detalle de comprobante RP, intente nuevamente mas tarde." });
+			}
 		}
 
 		public async Task<JsonResult> BuscarCuentaComercial(string cuenta, char tipo, string vista)

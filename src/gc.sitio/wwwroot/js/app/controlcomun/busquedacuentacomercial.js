@@ -17,7 +17,7 @@
 	$("#btnBuscarCC").on("click", buscarCuentasComercial);
 	InicializaPantallaCC();
 	comptesDeRPGrid();
-	$("#btnNuevoCompteDeRP").on("click" ,NuevoCompteDeRP);
+	$("#btnNuevoCompteDeRP").on("click", NuevoCompteDeRP);
 	$("#btnEliminarCompteDeRP").on("click", EliminarCompteDeRP);
 	$("#btnRegresarASelAuto").on("click", RegresarASelAuto); //Regregar a la pantalla de seleccion de autorizaciones.
 
@@ -27,9 +27,58 @@
 });
 
 function RegresarASelAuto() {
-	//TODO
 	//Antes de volver debo validar si hay productos cargados en el detalle, si es así consultar con el operador
+	datos = {};
+	PostGen(datos, verificarDetalleCargadoURL, function (o) {
+		if (o.error === true) {
+			AbrirMensaje("Atención", o.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		} else if (o.warn === true) {
+			AbrirMensaje("Atención", o.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "warn!", null);
+		} else if (o.vacio === false) {
+			AbrirMensaje("Atención", o.msg, function () {
+				$("#msjModal").modal("hide");
+				switch (e) {
+					//TODO
+					case "SI": //Guardar los cambios
+						GuardarDetalleDeProductos(true);
+						break;
+					case "NO": //Cancelar la pre carga de productos en el detalle del comprobante
+						GuardarDetalleDeProductos(false);
+						break;
+					default: //NO
+						break;
+				}
+				return true;
+			}, false, ["Aceptar", "Cancelar"], "info!", null);
+		} else {
+			//Redireccionar a la pagina anterior
+		}
+	});
+}
 
+function GuardarDetalleDeProductos(guardado) {
+	datos = { guardado };
+	PostGen(datos, GuardarDetalleDeComprobanteRPUrl, function (o) {
+		if (o.error === true) {
+			AbrirMensaje("Atención", o.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		} else if (o.warn === true) {
+			AbrirMensaje("Atención", o.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "warn!", null);
+		} else {
+			//Volver a la pantalla anterior
+		}
+	});
 }
 
 function InicializaPantallaCC() {
@@ -49,12 +98,6 @@ function InicializaPantallaCC() {
 			break;
 	}
 }
-
-//function inicializaCuenta() {
-//	$("#razonsocial").val("");
-//	$("#Cuenta").val("").focus();
-
-//}
 
 function NuevoCompteDeRP() {
 	var resultValidation = ValidarCamposEnComprobantesDeRP($("#Cuenta").val(), $("#tco_id").val(), $("#txtNroCompte").val(), $("#txtMonto").val());
@@ -176,7 +219,7 @@ function VerCompteDeRP() {
 }
 
 function eliminarComptesDeRPGrid(tipo, nroComprobante) {
-	var data = { tipo, nroComprobante};
+	var data = { tipo, nroComprobante };
 	PostGenHtml(data, ActualizarComptesDeRPUrl, function (obj) {
 		$("#divComptesDeRPGrid").html(obj);
 		return true;

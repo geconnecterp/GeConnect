@@ -32,7 +32,7 @@
 					<button type="button" class="btn btn-danger" style="margin-left:5px;" id="btnEliminarAutoRP">
 						<span class="tf-icons bx bx-trash">Eliminar</span>
 					</button>
-					<button type="button" class="btn btn-primary" style="margin-left:5px;" id="btnRegresar">
+					<button type="button" class="btn btn-primary" style="margin-left:5px;" id="btnRegresarASelAuto">
 						<span class="tf-icons bx bx-left-arrow-circle">Regresar</span>
 					</button>
 				</div>
@@ -127,6 +127,8 @@
 		var ActualizarComptesDeRPUrl = "@Url.Action("ActualizarComprobantesDeRP", "compra", new { area = "Compras" })";
 		var VerDetalleDeCompteDeRPUrl = "@Url.Action("VerDetalleDeComprobanteDeRP", "compra", new { area = "Compras" })";
 		var buscarCuentaUrl = "@Url.Action("BuscarCuentaComercial", "compra", new { area = "Compras" })";
+		var verificarDetalleCargadoURL="@Url.Action("VerificarDetalleCargado", "compra", new { area = "Compras" })";
+		var GuardarDetalleDeComprobanteRPUrl="@Url.Action("GuardarDetalleDeComprobanteRP", "compra", new { area = "Compras" })";
 		var buscarTiposComptesUrl="@Url.Action("ComboTiposComptes", "compra", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/controlcomun/busquedacuentacomercial.js"></script>
