@@ -8,7 +8,6 @@
 			e.target.closest('tr').classList.add('selected-row');
 		}
 	});
-	debugger;
 
 });
 

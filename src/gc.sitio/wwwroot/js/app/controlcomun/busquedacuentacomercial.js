@@ -14,18 +14,23 @@
 		}
 	}
 	dateControl.value = local;
-	//$("#Cuenta").on("click", inicializaCuenta);
 	$("#btnBuscarCC").on("click", buscarCuentasComercial);
 	InicializaPantallaCC();
 	comptesDeRPGrid();
 	$("#btnNuevoCompteDeRP").on("click" ,NuevoCompteDeRP);
 	$("#btnEliminarCompteDeRP").on("click", EliminarCompteDeRP);
-	//$("#btnVerCompteDeRP").click(VerCompteDeRP);
+	$("#btnRegresarASelAuto").on("click", RegresarASelAuto); //Regregar a la pantalla de seleccion de autorizaciones.
 
 	$("#txtNroCompte").mask("0000-00000000", { reverse: true });
 
 
 });
+
+function RegresarASelAuto() {
+	//TODO
+	//Antes de volver debo validar si hay productos cargados en el detalle, si es así consultar con el operador
+
+}
 
 function InicializaPantallaCC() {
 	switch (tipoCuenta) {

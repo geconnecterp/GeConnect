@@ -127,7 +127,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 
-		public async Task<IActionResult> CargarDetalleDeProductosEnRP(string oc_compte, string id_prod, string up, string bulto, string unidad)
+		public async Task<IActionResult> CargarDetalleDeProductosEnRP(string oc_compte, string id_prod, string up, string bulto, string unidad, int accion)
 		{
 			GridCore<ProductoBusquedaDto> datosIP;
 			var lista = new List<ProductoBusquedaDto>();
@@ -145,21 +145,18 @@ namespace gc.sitio.Areas.Compras.Controllers
 						//No lo encuentra
 						if (default(ProductoBusquedaDto) == itemTemp)
 						{
-							CargarItemEnGrillaDeProductos(lista, item);
+							CargarItemEnGrillaDeProductos(lista, item, accion, null);
 						}
 						else
 						{
-							//Existe con diferente oc_compte, lo reemplazo
-							if (!string.IsNullOrWhiteSpace(itemTemp.oc_compte))
-								lista.Remove(itemTemp);
-							CargarItemEnGrillaDeProductos(lista, item);
+							CargarItemEnGrillaDeProductos(lista, item, accion, itemTemp);
 						}
 					}
 					RPRDetalleDeProductosEnRP = lista;
 				}
 			}
 			else
-			{ 
+			{
 				//Carga producto manual
 
 			}
@@ -319,8 +316,25 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
 
-		private void CargarItemEnGrillaDeProductos(List<ProductoBusquedaDto> lista, RPROrdenDeCompraDetalleDto item)
+		/// <summary>
+		/// Agregar items a la lista de productos, en Carga Detalle de Comprobante RP PRoveedor
+		/// </summary>
+		/// <param name="lista">Lista de productos en sesión</param>
+		/// <param name="item">Elemento a agregar/reemplazar/acumular</param>
+		/// <param name="accion">Acción a realizar con el elemento, en relación al segundo parámetro</param>
+		private void CargarItemEnGrillaDeProductos(List<ProductoBusquedaDto> lista, RPROrdenDeCompraDetalleDto item, int accion, ProductoBusquedaDto? itemAQuitar)
 		{
+			if (accion == 1 && itemAQuitar != null)
+			{
+				lista.Remove(itemAQuitar);
+			}
+			else if (accion == 2 && itemAQuitar != null)
+			{
+				lista.Remove(itemAQuitar);
+				item.oc_compte = itemAQuitar.oc_compte;
+				item.ocd_bultos += itemAQuitar.Bulto;
+				item.ocd_cantidad += itemAQuitar.Cantidad;
+			}
 			lista.Add(new ProductoBusquedaDto()
 			{
 				P_id = item.p_id,
@@ -332,7 +346,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				Unidad = item.ocd_unidad_x_bulto,
 				Cantidad = item.ocd_cantidad,
 			});
+			#endregion
 		}
-		#endregion
 	}
 }

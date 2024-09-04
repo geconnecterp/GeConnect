@@ -11,8 +11,10 @@ function AgregarProdDesdeDetalleDeOC() {
 				$("#msjModal").modal("hide");
 				switch (e) {
 					case "SI": //Reemplazar
+						CargarDetalleDeProductosEnRP(1);
 						break;
 					case "SI2": //Acumular
+						CargarDetalleDeProductosEnRP(2);
 						break;
 					default: //NO
 						break;
@@ -21,14 +23,8 @@ function AgregarProdDesdeDetalleDeOC() {
 				return true;
 			}, true, ["Reemplazar", "Acumular", "Cancelar"], "warn!", null);
 		}
-		if (!ExisteProdDeOCSele($("#ocCompteSelected").val())) {
-			CargarDetalleDeProductosEnRP();
-		}
 		else {
-			AbrirMensaje("Atención", "Debe seleccionar una OC.", function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "warn!", null);
+			CargarDetalleDeProductosEnRP(0);
 		}
 	}
 	else {
@@ -101,13 +97,17 @@ function AgregarHandlerSelectedRow(grilla) {
 	});
 }
 
-function CargarDetalleDeProductosEnRP() {
+//Valores de parametro:
+//0-> Agregar
+//1-> Reemplazar
+//2-> Acumular
+function CargarDetalleDeProductosEnRP(accion) {
 	var oc_compte = $("#ocCompteSelected").val();
 	var id_prod = $("txtIdProdEnComprobanteRP").val();
 	var up = $("#txtUPEnComprobanteRP").val();
 	var bulto = $("#txtBtoEnComprobanteRP").val();
 	var unidad = $("#txtUnidEnComprobanteRP").val();
-	var data = { oc_compte, id_prod, up, bulto, unidad };
+	var data = { oc_compte, id_prod, up, bulto, unidad, accion };
 	PostGenHtml(data, CargarDetalleDeProductosEnRPUrl, function (obj) {
 		$("#divDetalleDeProductos").html(obj);
 		AgregarHandlerSelectedRow("tbDetalleDeProd");

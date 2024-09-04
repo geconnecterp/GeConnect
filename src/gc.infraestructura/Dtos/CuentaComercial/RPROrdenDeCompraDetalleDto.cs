@@ -12,7 +12,7 @@ namespace gc.infraestructura.Dtos.CuentaComercial
 		public string p_id { get; set; } = string.Empty;
 		public string p_desc { get; set; } = string.Empty;
 		public int ocd_unidad_x_bulto { get; set; }
-		public int ocd_cantidad { get; set; }
+		public decimal ocd_cantidad { get; set; }
 		public decimal ocd_plista { get; set; }
 		public decimal ocd_dto1 { get; set; }
 		public decimal ocd_dto2 { get; set; }
