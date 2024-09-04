@@ -1,4 +1,4 @@
-﻿$(document).ready(function () {
+﻿$(function () {
 
     //cargo el js para llamar desde esta funcion a la función de busqueda
     //verifico si se hace click en el boton buscar
@@ -9,11 +9,11 @@
 
     $("#estadoFuncion").on("change", verificaEstado); //este control debe ser insertado el mismo o similar para cada modulo.
 
-//    $("#btnStkD").click(PresentarStkD);
-    $("#btnStkBox").click(PresentarStkBox);
-    $("#btnStkA").click(PresentarStkA);
-    $("#btnMov").click(PresentarMov);
-    $("#btnPr").click(PresentarLP);
+    $("#btnStkD").on("click",PresentarStkD);
+    $("#btnStkBox").on("click", PresentarStkBox);
+    $("#btnStkA").on("click", PresentarStkA);
+    $("#btnMov").on("click", PresentarMov);
+    $("#btnPr").on("click", PresentarLP);
 });
 
 function verificaEstado() {
@@ -33,7 +33,7 @@ function verificaEstado() {
 
         $("#estadoFuncion").val(false);
 
-        infoProdStkD(prod.p_Id);
+        //PresentarStkD(prod.p_Id);
         $("#btnStkD").trigger("click");
         $("#btnBusquedaBase").prop("disabled", false);
 
@@ -41,7 +41,7 @@ function verificaEstado() {
     return true;
 }
 
-function infoProdStkD(id) {
+function PresentarStkD(id) {
     var data = { };
     PostGenHtml(data, infoProdStkDUrl, function (obj) {
         $("#gridInfoProdStkD").html(obj);

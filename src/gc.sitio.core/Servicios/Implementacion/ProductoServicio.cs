@@ -1,4 +1,5 @@
-﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Almacen;
@@ -397,7 +398,15 @@ namespace gc.sitio.core.Servicios.Implementacion
             {
                 string stringData = await response.Content.ReadAsStringAsync();
                 _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
-                return new RprResponseDto();
+                try
+                {
+                    var res = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    return new RprResponseDto() { Resultado = -1, Resultado_msj = res.Detail ?? "Hubo algun problema. Verifique el log local y de la api." };
+                }
+                catch
+                {
+                    return new RprResponseDto() { Resultado = -1, Resultado_msj = stringData };
+                }
 
             }
         }
@@ -430,7 +439,15 @@ namespace gc.sitio.core.Servicios.Implementacion
             {
                 string stringData = await response.Content.ReadAsStringAsync();
                 _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
-                return new RprResponseDto();
+                try
+                {
+                    var res = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    return new RprResponseDto() { Resultado = -1, Resultado_msj = res.Detail ?? "Hubo algun problema. Verifique el log local y de la api." };
+                }
+                catch
+                {
+                    return new RprResponseDto() { Resultado = -1, Resultado_msj = stringData };
+                }
 
             }
         }
@@ -463,7 +480,18 @@ namespace gc.sitio.core.Servicios.Implementacion
             {
                 string stringData = await response.Content.ReadAsStringAsync();
                 _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
-                return new RprResponseDto();
+
+                try
+                {
+                    var res = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    return new RprResponseDto() { Resultado = -1, Resultado_msj = res.Detail??"Hubo algun problema. Verifique el log local y de la api." };
+                }
+                catch
+                {
+                    return new RprResponseDto() { Resultado = -1, Resultado_msj = stringData };
+                }
+               
+               
 
             }
         }

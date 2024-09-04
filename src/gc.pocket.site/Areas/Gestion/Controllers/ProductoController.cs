@@ -36,10 +36,13 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         {
             try
             {
-                if (!EstaAutenticado.Item1)
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || (auth.Item1 && !auth.Item2.HasValue) || (auth.Item1 && auth.Item2.HasValue && auth.Item2.Value < DateTime.Now))
                 {
                     return RedirectToAction("Login", "Token", new { area = "Seguridad" });
                 }
+
+              
                 if (ProveedoresLista.Count == 0 || actualizar)
                 {
                     ObtenerProveedores();
@@ -66,7 +69,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         public async Task<JsonResult> BusquedaBase(string busqueda,bool validarEstado=false, bool acumularProductos = false)
         {
             try
-            {
+            {                
                 ProductoBusquedaDto producto = new ProductoBusquedaDto { P_id = "0000-0000" };
                 if (string.IsNullOrEmpty(busqueda))
                 {

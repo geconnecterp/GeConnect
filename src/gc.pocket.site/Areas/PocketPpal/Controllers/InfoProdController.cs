@@ -23,6 +23,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         private readonly IProductoServicio _productoServicio;
         private readonly ICuentaServicio _ctaSv;
         private readonly IRubroServicio _rubSv;
+        private readonly AppSettings _settings;
 
         public InfoProdController(IOptions<AppSettings> options, IOptions<MenuSettings> options1,
             IHttpContextAccessor context, IProductoServicio productoServicio, ILogger<InfoProdController> logger,
@@ -33,6 +34,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             _logger = logger;
             _ctaSv = cta;
             _rubSv = rubro;
+            _settings= options.Value;
         }
 
         /// <summary>
@@ -42,15 +44,16 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         [HttpGet]
         public IActionResult Index(bool actualizar = false)
         {
-
             try
             {
                 try
                 {
-                    if (!EstaAutenticado.Item1)
+                    var auth = EstaAutenticado;
+                    if (!auth.Item1 || (auth.Item1 && !auth.Item2.HasValue) || (auth.Item1 && auth.Item2.HasValue && auth.Item2.Value < DateTime.Now))
                     {
                         return RedirectToAction("Login", "Token", new { area = "Seguridad" });
                     }
+
                     if (ProveedoresLista.Count == 0 || actualizar)
                     {
                         ObtenerProveedores();
@@ -101,6 +104,13 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         [HttpGet]
         public IActionResult Producto()
         {
+            var auth = EstaAutenticado;
+            if (!auth.Item1 || (auth.Item1 && !auth.Item2.HasValue) || (auth.Item1 && auth.Item2.HasValue && auth.Item2.Value < DateTime.Now))
+            {
+                return RedirectToAction("Login", "Token", new { area = "Seguridad" });
+            }
+
+            TempData["cota"] = _settings.FechaVtoCota;
 
             return View();
         }
