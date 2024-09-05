@@ -23,7 +23,12 @@
 
 	$("#txtNroCompte").mask("0000-00000000", { reverse: true });
 
-
+	if ($("#CtaId").val() !== "") {
+		$("#btnBuscarCC").trigger("click");
+	}
+	if ($("#DepoId").val() !== "") {
+		$("#listaDeposito").val($("#DepoId").val());
+	}
 });
 
 function RegresarASelAuto() {
@@ -41,10 +46,10 @@ function RegresarASelAuto() {
 				return true;
 			}, false, ["Aceptar"], "warn!", null);
 		} else if (o.vacio === false) {
-			AbrirMensaje("Atención", o.msg, function () {
+			AbrirMensaje("Atención", o.msg, function (e) {
 				$("#msjModal").modal("hide");
 				switch (e) {
-					//TODO
+					//TODO -> Despues de guardar debo limpiar las variables de sesion que sean necesarias para arrancar de 0
 					case "SI": //Guardar los cambios
 						GuardarDetalleDeProductos(true);
 						break;
@@ -55,9 +60,9 @@ function RegresarASelAuto() {
 						break;
 				}
 				return true;
-			}, false, ["Aceptar", "Cancelar"], "info!", null);
+			}, true, ["Aceptar", "Cancelar"], "info!", null);
 		} else {
-			//Redireccionar a la pagina anterior
+			window.location.href = volverAListaDeAutorizacionesUrl;
 		}
 	});
 }
@@ -76,7 +81,7 @@ function GuardarDetalleDeProductos(guardado) {
 				return true;
 			}, false, ["Aceptar"], "warn!", null);
 		} else {
-			//Volver a la pantalla anterior
+			window.location.href = volverAListaDeAutorizacionesUrl;
 		}
 	});
 }
@@ -241,6 +246,9 @@ function comptesDeRPGrid(tipo, tipoDescripcion, nroComprobante, fecha, importe) 
 }
 
 function buscarCuentasComercial() {
+	if ($("#CtaId").val() !== "") {
+		$("#Cuenta").val($("#CtaId").val());
+	}
 	var cuenta = $("#Cuenta").val();
 	var tipo = tipoCuenta;
 	var seccion = seccionEnVista; //-> Aca inyectar el html con los datos 

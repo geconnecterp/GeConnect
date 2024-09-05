@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using gc.infraestructura.Dtos.Almacen;
+using Newtonsoft.Json;
 
 namespace gc.infraestructura.Dtos.CuentaComercial
 {
@@ -6,7 +7,7 @@ namespace gc.infraestructura.Dtos.CuentaComercial
 	public class JsonEncabezadoDeRPDto
 	{
 		[JsonProperty("ope")]
-		public string Ope { get; set; }=string.Empty;
+		public string Ope { get; set; } = string.Empty;
 		[JsonProperty("rp")]
 		public string Rp { get; set; } = string.Empty;
 		[JsonProperty("cta_id")]
@@ -25,11 +26,14 @@ namespace gc.infraestructura.Dtos.CuentaComercial
 		public string Nota { get; set; } = string.Empty;
 		[JsonProperty("turno")]
 		public string Turno { get; set; } = string.Empty;
-		[JsonIgnore]
+		[JsonProperty("tco_id")]
 		public string Tco_id { get; set; } = string.Empty;
-		[JsonIgnore]
+		[JsonProperty("cm_compte")]
 		public string Cm_compte { get; set; } = string.Empty;
 		[JsonProperty("comprobantes")]
-        public List<JsonComprobanteDeRPDto> Comprobantes { get; set; }
-    }
+		public List<JsonComprobanteDeRPDto> Comprobantes { get; set; }
+		[JsonProperty("productos")]
+		public List<ProductoBusquedaDto> ListaProductoBusquedaDto { get; set; }
+
+	}
 }

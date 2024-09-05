@@ -86,6 +86,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 				RPRAutorizacionSeleccionada = rpSelected;
 			}
 			var model = new BuscarCuentaDto() { ComboDeposito = ComboDepositos(), rp = rp };
+			if (RPRComprobanteDeRPSeleccionado != null)
+			{
+				model.Cuenta = RPRComprobanteDeRPSeleccionado.cta_id;
+				model.Nota = RPRComprobanteDeRPSeleccionado.Nota;
+				model.FechaTurno = RPRComprobanteDeRPSeleccionado.FechaTurno;
+				model.Depo_id = RPRComprobanteDeRPSeleccionado.Depo_id;
+			}
 			return PartialView("RPRNuevaAutorizacion", model);
 		}
 
@@ -132,7 +139,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 
-		public async Task<IActionResult> CargarDetalleDeProductosEnRP(string oc_compte, string id_prod, string up, string bulto, string unidad, int accion)
+		public async Task<IActionResult> CargarDetalleDeProductosEnRP(string oc_compte, string id_prod, string up, string bulto, string unidad, int accion, string tco_id, string cm_compte)
 		{
 			GridCore<ProductoBusquedaDto> datosIP;
 			var lista = new List<ProductoBusquedaDto>();
@@ -160,12 +167,17 @@ namespace gc.sitio.Areas.Compras.Controllers
 					RPRDetalleDeProductosEnRP = lista;
 				}
 			}
+			//Traigo los prod del almacenamiento temporal
+			else if (!string.IsNullOrWhiteSpace(tco_id) && !string.IsNullOrWhiteSpace(cm_compte) && JsonEncabezadoDeRPLista != null)
+			{
+				lista = JsonEncabezadoDeRPLista.Where(x => x.Tco_id == tco_id && x.Cm_compte == cm_compte).Select(y => y.ListaProductoBusquedaDto).FirstOrDefault();
+				RPRDetalleDeProductosEnRP = lista;
+			}
 			else
 			{
 				//Carga producto manual
 
 			}
-
 			datosIP = ObtenerDetalleDeProductosRPGrid(RPRDetalleDeProductosEnRP);
 			return PartialView("_rprDetalleDeProductos", datosIP);
 		}
@@ -178,9 +190,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					return Json(new { error = false, warn = true, vacio = true, cantidad = 0, msg = "Error al intentar validar existencia de productos de RP cargados." });
 				}
-				else if (RPRDetalleDeProductosEnRP.Count > 0)
+				else if (RPRDetalleDeProductosEnRP != null && RPRDetalleDeProductosEnRP.Count > 0)
 				{
-					return Json(new { error = false, warn = false, vacio = false, cantidad = RPRDetalleDeProductosEnRP.Count, msg = $"Existen productos ({RPRDetalleDeProductosEnRP.Count}) agregados al detalle de comprobante RP de proveedor. Desea guardar los cambios antes de salir? Caso contrario se perderán." });
+					return Json(new { error = false, warn = false, vacio = false, cantidad = RPRDetalleDeProductosEnRP.Count, msg = $"Existen productos agregados al detalle de comprobante RP de proveedor. Desea guardar los cambios antes de salir? Caso contrario se perderán." });
+				}
+				else if (JsonEncabezadoDeRPLista != null && JsonEncabezadoDeRPLista.Count > 0)
+				{
+					return Json(new { error = false, warn = false, vacio = false, cantidad = JsonEncabezadoDeRPLista.Count, msg = $"Existen productos agregados al detalle de comprobante RP de proveedor. Desea guardar los cambios antes de salir? Caso contrario se perderán." });
 				}
 				else
 				{
@@ -204,7 +220,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				if (guardado) //Guardo el detalle de productos del compte en la variable de sesion
 				{
-					//TODO -> Generar lista de productos (encabezado/detalle) usando las clases: JsonEncabezadoDeRPDto/JsonComprobanteDeRPDto
 					var listaTemp = new List<JsonEncabezadoDeRPDto>();
 					JsonEncabezadoDeRPDto encabezado = new();
 					encabezado = ObtenerObjectoParaAlmacenar();
@@ -215,6 +230,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 						listaTemp.Remove(encaAEliminar);
 					}
 					listaTemp.Add(encabezado);
+					if (JsonEncabezadoDeRPLista != null && JsonEncabezadoDeRPLista.Exists(x => x.Tco_id == encabezado.Tco_id && x.Cm_compte == encabezado.Cm_compte))
+						JsonEncabezadoDeRPLista.Remove(encabezado);
 					JsonEncabezadoDeRPLista = listaTemp;
 				}
 				RPRDetalleDeProductosEnRP = [];
@@ -250,6 +267,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					Turno = RPRComprobanteDeRPSeleccionado.FechaTurno,
 					Tco_id = RPRComprobanteDeRPSeleccionado.CompteSeleccionado.Tipo,
 					Cm_compte = RPRComprobanteDeRPSeleccionado.CompteSeleccionado.NroComprobante,
+					ListaProductoBusquedaDto = RPRDetalleDeProductosEnRP,
 					Comprobantes = RPRDetalleDeProductosEnRP.Select(x => new JsonComprobanteDeRPDto()
 					{
 						Tco_id = RPRComprobanteDeRPSeleccionado.CompteSeleccionado.Tipo,

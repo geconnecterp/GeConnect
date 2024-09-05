@@ -211,7 +211,7 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("JsonEncabezadoDeRP");
+				var json = _context.HttpContext.Session.GetString("JsonEncabezadoDeRPLista");
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return null;
@@ -221,7 +221,7 @@ namespace gc.sitio.Controllers
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("JsonEncabezadoDeRP", json);
+				_context.HttpContext.Session.SetString("JsonEncabezadoDeRPLista", json);
 			}
 		}
 

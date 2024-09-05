@@ -19,6 +19,10 @@
 				@Html.Hidden("cta_id", Model.cta_id)
 				@Html.Hidden("tco_id", Model.CompteSeleccionado.Tipo)
 				@Html.Hidden("cm_compte", Model.CompteSeleccionado.NroComprobante)
+				@Html.Hidden("nota", Model.Nota)
+				@Html.Hidden("turno", Model.FechaTurno)
+				@Html.Hidden("depo_id", Model.Depo_id)
+				@Html.Hidden("poner_curso", Model.ponerEnCurso)
 				<span>@Model.Leyenda</span>
 				<button type="button" class="btn btn-success" style="margin-left:5px;" id="btnAceptarComprobanteRP">
 					<span class="tf-icons bx bx-check-circle">Aceptar</span>

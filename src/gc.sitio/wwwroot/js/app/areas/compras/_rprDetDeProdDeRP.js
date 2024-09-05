@@ -1,18 +1,18 @@
 ﻿$(function () {
 	$("#btnAddOCProdEnComprobanteRP").on("click", AgregarProdDesdeDetalleDeOC);
-	CargarDetalleDeProductosEnRP();
 	CargarOCxCuenta();
 	$("#btnRegresarDesdeComprobanteRP").on("click", RegresarDesdeComprobanteRP);
-	CargarDetalleDeProducto(); //TODO: al seleccionar el compte y tipo de la lista de comprobantes, buscar por esos dos tipos en la lista de productos Json (JsonEncabezadoDeRPDto)
+	CargarDetalleDeProducto();
 });
 
 function CargarDetalleDeProducto() {
+	console.log("cta_id: " + $("#cta_id").val());
 	console.log("tco_id: " + $("#tco_id").val());
 	console.log("cm_compte: " + $("#cm_compte").val());
+	CargarDetalleDeProductosEnRP(0);
 }
 
 function RegresarDesdeComprobanteRP() {
-	console.log("RegresarDesdeComprobanteRP");
 	//Antes de volver debo validar si hay productos cargados en el detalle, si es así consultar con el operador
 	datos = {};
 	PostGen(datos, verificarDetalleCargadoURL, function (o) {
@@ -159,7 +159,9 @@ function CargarDetalleDeProductosEnRP(accion) {
 	var up = $("#txtUPEnComprobanteRP").val();
 	var bulto = $("#txtBtoEnComprobanteRP").val();
 	var unidad = $("#txtUnidEnComprobanteRP").val();
-	var data = { oc_compte, id_prod, up, bulto, unidad, accion };
+	var tco_id = $("#tco_id").val();
+	var cm_compte = $("#cm_compte").val();
+	var data = { oc_compte, id_prod, up, bulto, unidad, accion, tco_id, cm_compte };
 	PostGenHtml(data, CargarDetalleDeProductosEnRPUrl, function (obj) {
 		$("#divDetalleDeProductos").html(obj);
 		AgregarHandlerSelectedRow("tbDetalleDeProd");

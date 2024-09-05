@@ -17,8 +17,10 @@
 	<row>
 		<input type="text" id="idTipoCompteDeRPSelected" style="display:none;"/>
 		<input type="text" id="nroCompteDeRPSelected" style="display:none;"/>
+		@Html.Hidden("CtaId", Model.Cuenta)
 		@Html.Hidden("IdTipoCompte", Model.IdTipoCompte)
 		@Html.Hidden("NroCompte", Model.NroCompte)
+		@Html.Hidden("DepoId", Model.Depo_id)
 		<div style="float:left">
 			<fieldset>
 				<legend>
@@ -80,7 +82,7 @@
 									<div class="col-sm">
 										<div class="input-group mb-3">
 											<span class="input-group-text">Nota Autorización: </span>
-											<input type="text" id="txtNota" *@ class="form-control" />
+											<input type="text" id="txtNota" *@ class="form-control" asp-for="@Model.Nota" />
 										</div>
 									</div>
 								</div>
@@ -98,7 +100,7 @@
 									<div class="col-sm">
 										<div class="input-group">
 											<span class="input-group-text">Turno: </span>
-											<input type="date" id="dtpFechaTurno" class="form-control" />
+											<input type="date" id="dtpFechaTurno" class="form-control" asp-for="@Model.FechaTurno"/>
 										</div>
 									</div>
 									<div class="col-sm">
@@ -125,9 +127,12 @@
 		var vistaParcial = "_rprAutoCargaComptes";
 		var CargarComptesDeRPUrl = "@Url.Action("CargarComprobantesDeRP", "compra", new { area = "Compras" })";
 		var ActualizarComptesDeRPUrl = "@Url.Action("ActualizarComprobantesDeRP", "compra", new { area = "Compras" })";
+		var verificarDetalleCargadoURL="@Url.Action("VerificarDetalleCargado", "compra", new { area = "Compras" })";
 		var VerDetalleDeCompteDeRPUrl = "@Url.Action("VerDetalleDeComprobanteDeRP", "compra", new { area = "Compras" })";
+		var GuardarDetalleDeComprobanteRPUrl="@Url.Action("GuardarDetalleDeComprobanteRP", "compra", new { area = "Compras" })";
 		var buscarCuentaUrl = "@Url.Action("BuscarCuentaComercial", "compra", new { area = "Compras" })";
 		var buscarTiposComptesUrl="@Url.Action("ComboTiposComptes", "compra", new { area = "Compras" })";
+		var volverAListaDeAutorizacionesUrl="@Url.Action("RPRAutorizacionesLista", "compra", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/controlcomun/busquedacuentacomercial.js"></script>
 }
