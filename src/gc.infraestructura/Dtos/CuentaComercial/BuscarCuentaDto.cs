@@ -8,6 +8,6 @@ namespace gc.infraestructura.Dtos.CuentaComercial
 		public SelectList ComboDeposito { get; set; }
         public string IdTipoCompte { get; set; } = string.Empty;
         public string NroCompte { get; set; }= string.Empty;
-
+        public string rp { get; set; } = string.Empty;
     }
 }

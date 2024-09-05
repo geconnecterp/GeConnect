@@ -61,9 +61,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			try
 			{
 				pendientes = await _productoServicio.RPRObtenerComptesPendiente(AdministracionId, TokenCookie);
-				//resguardo lista de autorizaciones pendientes 
-				//Veo que en  gc.pocket.site.Areas.PocketPpal.Controllers.RPRController.Index() almacena en una variable de sesión los datos.
-				//Consultar si tengo que hacer lo mismo
+				RPRAutorizacionesPendientesEnRP = pendientes;
 				grid = ObtenerAutorizacionPendienteGrid(pendientes);
 			}
 			catch (Exception ex)
@@ -82,15 +80,16 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				return RedirectToAction("Login", "Token", new { area = "seguridad" });
 			}
-
-			//var model = new RPRNuevaAutorizaciónDto() { ComboDeposito = ComboDepositos() };
-			var model = new BuscarCuentaDto() { ComboDeposito = ComboDepositos() };
-			//return PartialView("RPRNuevaAutorizacion", model);
-
+			var rpSelected = RPRAutorizacionesPendientesEnRP.Where(x => x.Rp == rp).FirstOrDefault();
+			if (rpSelected != default(RPRAutoComptesPendientesDto))
+			{
+				RPRAutorizacionSeleccionada = rpSelected;
+			}
+			var model = new BuscarCuentaDto() { ComboDeposito = ComboDepositos(), rp = rp };
 			return PartialView("RPRNuevaAutorizacion", model);
 		}
 
-		public async Task<IActionResult> VerDetalleDeComprobanteDeRP(string idTipoCompte, string nroCompte)
+		public async Task<IActionResult> VerDetalleDeComprobanteDeRP(string idTipoCompte, string nroCompte, string depoSelec, string notaAuto, string turno, string ponerEnCurso)
 		{
 			var compte = new RPRComptesDeRPDto();
 			var model = new RPRDetalleComprobanteDeRP
@@ -104,6 +103,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			model.CompteSeleccionado = compte ?? new RPRComptesDeRPDto();
 			model.cta_id = CuentaComercialSeleccionada.Cta_Id;
+			model.ponerEnCurso = bool.Parse(ponerEnCurso);
+			model.Nota = notaAuto;
+			model.Depo_id = depoSelec;
+			model.FechaTurno = UnixTimeStampToDateTime(turno).ToString("dd-MM-yyyy");
+			RPRComprobanteDeRPSeleccionado = model;
 			return PartialView("RPRCargaDetalleDeCompteRP", model);
 		}
 
@@ -201,11 +205,19 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (guardado) //Guardo el detalle de productos del compte en la variable de sesion
 				{
 					//TODO -> Generar lista de productos (encabezado/detalle) usando las clases: JsonEncabezadoDeRPDto/JsonComprobanteDeRPDto
+					var listaTemp = new List<JsonEncabezadoDeRPDto>();
+					JsonEncabezadoDeRPDto encabezado = new();
+					encabezado = ObtenerObjectoParaAlmacenar();
+					//Si existe, lo borro, y lo inserto de nuevo 
+					if (listaTemp.Exists(x => x.Rp == encabezado.Rp))
+					{
+						var encaAEliminar = listaTemp.Where(x => x.Rp == encabezado.Rp).FirstOrDefault();
+						listaTemp.Remove(encaAEliminar);
+					}
+					listaTemp.Add(encabezado);
+					JsonEncabezadoDeRPLista = listaTemp;
 				}
-				else //Vacío la lista 
-				{
-					RPRDetalleDeProductosEnRP = [];
-				}
+				RPRDetalleDeProductosEnRP = [];
 				return Json(new { error = false, warn = false, msg = "" });
 			}
 			catch (NegocioException neg)
@@ -216,6 +228,52 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
 				return Json(new { error = true, msg = "Algo no fue bien al guardar el detalle de comprobante RP, intente nuevamente mas tarde." });
+			}
+		}
+
+		private JsonEncabezadoDeRPDto ObtenerObjectoParaAlmacenar()
+		{
+			try
+			{
+				var ctaid = CuentaComercialSeleccionada.Cta_Id;
+				JsonEncabezadoDeRPDto encabezado = new()
+				{
+					Ope = RPRAutorizacionSeleccionada == null ? TipoAltaRP.AGREGA.ToString() : TipoAltaRP.MODIFICA.ToString(),
+					Rp = RPRAutorizacionSeleccionada == null ? "" : RPRAutorizacionSeleccionada.Rp,
+					Cta_id = ctaid,
+					Usu_id = UserName,
+					Adm_id = AdministracionId,
+					Rpe_id = "P",
+					Rpe_desc = "Pendiente",
+					Depo_id = RPRComprobanteDeRPSeleccionado.Depo_id,
+					Nota = RPRComprobanteDeRPSeleccionado.Nota,
+					Turno = RPRComprobanteDeRPSeleccionado.FechaTurno,
+					Tco_id = RPRComprobanteDeRPSeleccionado.CompteSeleccionado.Tipo,
+					Cm_compte = RPRComprobanteDeRPSeleccionado.CompteSeleccionado.NroComprobante,
+					Comprobantes = RPRDetalleDeProductosEnRP.Select(x => new JsonComprobanteDeRPDto()
+					{
+						Tco_id = RPRComprobanteDeRPSeleccionado.CompteSeleccionado.Tipo,
+						Tco_desc = RPRComprobanteDeRPSeleccionado.CompteSeleccionado.TipoDescripcion,
+						Cm_compte = RPRComprobanteDeRPSeleccionado.CompteSeleccionado.NroComprobante,
+						Cm_fecha = RPRComprobanteDeRPSeleccionado.CompteSeleccionado.Fecha,
+						Cm_importe = RPRComprobanteDeRPSeleccionado.CompteSeleccionado.Importe,
+						P_id = x.P_id,
+						P_id_prov = x.P_id_prov,
+						P_id_barrado = x.P_id_barrado,
+						P_desc = x.P_desc,
+						Bulto_up = x.P_unidad_pres,
+						Bulto = x.Bulto.ToString(),
+						Uni_suelta = x.Unidad.ToString(),
+						Cantidad = x.Cantidad.ToString(),
+						Oc_compte = x.oc_compte
+					}).ToList()
+				};
+				return encabezado;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name} intentando genera objeto para almacenar");
+				return null;
 			}
 		}
 
@@ -400,7 +458,26 @@ namespace gc.sitio.Areas.Compras.Controllers
 				Unidad = item.ocd_unidad_x_bulto,
 				Cantidad = item.ocd_cantidad,
 			});
-			#endregion
 		}
+
+		private static DateTime UnixTimeStampToDateTime(string unixTimeStamp)
+		{
+			if (double.TryParse(unixTimeStamp, out var dt))
+			{
+				DateTime dateTime = new(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+				dateTime = dateTime.AddSeconds(dt).ToLocalTime();
+				return dateTime;
+			}
+			else
+				return default;
+		}
+
+		enum TipoAltaRP
+		{
+			AGREGA,
+			MODIFICA,
+			ELIMINA
+		}
+		#endregion
 	}
 }

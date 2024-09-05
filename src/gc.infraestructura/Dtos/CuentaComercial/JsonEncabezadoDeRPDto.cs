@@ -25,7 +25,11 @@ namespace gc.infraestructura.Dtos.CuentaComercial
 		public string Nota { get; set; } = string.Empty;
 		[JsonProperty("turno")]
 		public string Turno { get; set; } = string.Empty;
-        [JsonProperty("comprobantes")]
+		[JsonIgnore]
+		public string Tco_id { get; set; } = string.Empty;
+		[JsonIgnore]
+		public string Cm_compte { get; set; } = string.Empty;
+		[JsonProperty("comprobantes")]
         public List<JsonComprobanteDeRPDto> Comprobantes { get; set; }
     }
 }

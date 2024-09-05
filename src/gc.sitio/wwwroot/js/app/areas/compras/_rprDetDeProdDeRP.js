@@ -2,7 +2,70 @@
 	$("#btnAddOCProdEnComprobanteRP").on("click", AgregarProdDesdeDetalleDeOC);
 	CargarDetalleDeProductosEnRP();
 	CargarOCxCuenta();
+	$("#btnRegresarDesdeComprobanteRP").on("click", RegresarDesdeComprobanteRP);
+	CargarDetalleDeProducto(); //TODO: al seleccionar el compte y tipo de la lista de comprobantes, buscar por esos dos tipos en la lista de productos Json (JsonEncabezadoDeRPDto)
 });
+
+function CargarDetalleDeProducto() {
+	console.log("tco_id: " + $("#tco_id").val());
+	console.log("cm_compte: " + $("#cm_compte").val());
+}
+
+function RegresarDesdeComprobanteRP() {
+	console.log("RegresarDesdeComprobanteRP");
+	//Antes de volver debo validar si hay productos cargados en el detalle, si es así consultar con el operador
+	datos = {};
+	PostGen(datos, verificarDetalleCargadoURL, function (o) {
+		if (o.error === true) {
+			AbrirMensaje("Atención", o.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		} else if (o.warn === true) {
+			AbrirMensaje("Atención", o.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "warn!", null);
+		} else if (o.vacio === false) {
+			AbrirMensaje("Atención", o.msg, function (e) {
+				$("#msjModal").modal("hide");
+				switch (e) {
+					//TODO
+					case "SI": //Guardar los cambios
+						GuardarDetalleDeProductos(true);
+						break;
+					case "NO": //Cancelar la pre carga de productos en el detalle del comprobante
+						GuardarDetalleDeProductos(false);
+						break;
+					default: //NO
+						break;
+				}
+				return true;
+			}, true, ["Aceptar", "Cancelar"], "info!", null);
+		} else {
+			window.location.href = VolverANuevaAutUrl;
+		}
+	});
+};
+
+function GuardarDetalleDeProductos(guardado) {
+	datos = { guardado };
+	PostGen(datos, GuardarDetalleDeComprobanteRPUrl, function (o) {
+		if (o.error === true) {
+			AbrirMensaje("Atención", o.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		} else if (o.warn === true) {
+			AbrirMensaje("Atención", o.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "warn!", null);
+		} else {
+			window.location.href = VolverANuevaAutUrl;
+		}
+	});
+}
 
 function AgregarProdDesdeDetalleDeOC() {
 	if ($("#ocCompteSelected").val() !== "") {
@@ -55,17 +118,6 @@ function ExistenciaProdEnGrilla() {
 		}
 	});
 	return existe;
-}
-
-//ValidarExistenciaDeProductosDeOCSeleccionada
-function ExisteProdDeOCSele(oc_compte) {
-	$("#tbDetalleDeProd").find('tr').each(function (i, el) {
-		var td = $(this).find('td');
-		if (td.eq(3).text() === oc_compte) {
-			return true;
-		}
-	});
-	return false;
 }
 
 function CargarOCxCuenta() {

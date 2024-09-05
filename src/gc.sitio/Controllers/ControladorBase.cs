@@ -1,6 +1,7 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.EntidadesComunes;
 using Microsoft.AspNetCore.Mvc;
@@ -155,7 +156,7 @@ namespace gc.sitio.Controllers
 			{
 				var handler = new JwtSecurityTokenHandler(); //Libreria System.IdentityModel.Token.Jwt (6.7.1)
 				var tokenS = handler.ReadToken(TokenCookie) as JwtSecurityToken;
-				var usuario = tokenS.Claims.First(c => c.Type.Contains("User")).Value;
+				var usuario = tokenS.Claims.First(c => c.Type.Contains("user")).Value;
 				if (string.IsNullOrEmpty(usuario)) { return string.Empty; }
 				return usuario;
 			}
@@ -186,7 +187,60 @@ namespace gc.sitio.Controllers
 				var json = JsonConvert.SerializeObject(value);
 				_context.HttpContext.Session.SetString("CuentaComercialSeleccionada", json);
 			}
+		}
 
+		public RPRAutoComptesPendientesDto RPRAutorizacionSeleccionada
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("RPRAutorizacionSeleccionada");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return null;
+				}
+				return JsonConvert.DeserializeObject<RPRAutoComptesPendientesDto>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("RPRAutorizacionSeleccionada", json);
+			}
+		}
+
+		public List<JsonEncabezadoDeRPDto> JsonEncabezadoDeRPLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("JsonEncabezadoDeRP");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return null;
+				}
+				return JsonConvert.DeserializeObject<List<JsonEncabezadoDeRPDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("JsonEncabezadoDeRP", json);
+			}
+		}
+
+		public RPRDetalleComprobanteDeRP RPRComprobanteDeRPSeleccionado
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("RPRComprobanteDeRPSeleccionado");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return null;
+				}
+				return JsonConvert.DeserializeObject<RPRDetalleComprobanteDeRP>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("RPRComprobanteDeRPSeleccionado", json);
+			}
 		}
 
 		protected List<RPRComptesDeRPDto> RPRComptesDeRPRegs
@@ -222,6 +276,24 @@ namespace gc.sitio.Controllers
 			{
 				var json = JsonConvert.SerializeObject(value);
 				_context.HttpContext.Session.SetString("RPRDetalleDeProductosEnRP", json);
+			}
+		}
+
+		protected List<RPRAutoComptesPendientesDto> RPRAutorizacionesPendientesEnRP
+		{
+			get
+			{
+				string json = _context.HttpContext.Session.GetString("RPRAutorizacionesPendientesEnRP");
+				if (string.IsNullOrEmpty(json))
+				{
+					return new();
+				}
+				return JsonConvert.DeserializeObject<List<RPRAutoComptesPendientesDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("RPRAutorizacionesPendientesEnRP", json);
 			}
 		}
 		#endregion

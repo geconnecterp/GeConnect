@@ -80,7 +80,7 @@
 									<div class="col-sm">
 										<div class="input-group mb-3">
 											<span class="input-group-text">Nota Autorización: </span>
-											<input type="text" @* asp-for="Cuenta" *@ class="form-control" />
+											<input type="text" id="txtNota" *@ class="form-control" />
 										</div>
 									</div>
 								</div>
@@ -92,7 +92,7 @@
 									<div class="col-sm">
 										<div class="input-group">
 											<span class="input-group-text">Depósito: </span>
-											@Html.DropDownList("id", depositos, "Seleccionar...", new { @class = "form-control" })
+											@Html.DropDownList("id", depositos, "Seleccionar...", new { @id = "listaDeposito", @class = "form-control" })
 										</div>
 									</div>
 									<div class="col-sm">
@@ -127,8 +127,6 @@
 		var ActualizarComptesDeRPUrl = "@Url.Action("ActualizarComprobantesDeRP", "compra", new { area = "Compras" })";
 		var VerDetalleDeCompteDeRPUrl = "@Url.Action("VerDetalleDeComprobanteDeRP", "compra", new { area = "Compras" })";
 		var buscarCuentaUrl = "@Url.Action("BuscarCuentaComercial", "compra", new { area = "Compras" })";
-		var verificarDetalleCargadoURL="@Url.Action("VerificarDetalleCargado", "compra", new { area = "Compras" })";
-		var GuardarDetalleDeComprobanteRPUrl="@Url.Action("GuardarDetalleDeComprobanteRP", "compra", new { area = "Compras" })";
 		var buscarTiposComptesUrl="@Url.Action("ComboTiposComptes", "compra", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/controlcomun/busquedacuentacomercial.js"></script>
