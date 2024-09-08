@@ -2,6 +2,8 @@
 	$("#btnAddOCProdEnComprobanteRP").on("click", AgregarProdDesdeDetalleDeOC);
 	CargarOCxCuenta();
 	$("#btnRegresarDesdeComprobanteRP").on("click", RegresarDesdeComprobanteRP);
+	$("#btnAceptarComprobanteRP").on("click", AceptarDesdeComprobanteRP);
+	$("#btnDelProdEnComprobanteRP").on("click", DelProdEnComprobanteRP);
 	CargarDetalleDeProducto();
 });
 
@@ -9,7 +11,64 @@ function CargarDetalleDeProducto() {
 	console.log("cta_id: " + $("#cta_id").val());
 	console.log("tco_id: " + $("#tco_id").val());
 	console.log("cm_compte: " + $("#cm_compte").val());
+	console.log("nota: " + $("#nota").val());
+	console.log("turno: " + $("#turno").val());
+	console.log("depo_id: " + $("#depo_id").val());
+	console.log("poner_curso: " + $("#poner_curso").val());
+	console.log("Rp: " + $("#Rp").val());
 	CargarDetalleDeProductosEnRP(0);
+}
+
+function selectDetalleDeProdRow(x) {
+	if (x) {
+		console.log(x);
+		p_id_selected = x.cells[2].innerText.trim();
+	}
+	else {
+		p_id_selected = "";
+	}
+}
+
+function DelProdEnComprobanteRP() {
+	if (p_id_selected != null && p_id_selected !== "") {
+		AbrirMensaje("Atención", "Desea quitar el producto seleccionado? Esta acción no se puede revertir.", function (e) {
+			$("#msjModal").modal("hide");
+			switch (e) {
+				case "SI": //Quitar elemento de la grilla, actualizar las variables de sesión y recargar el componente
+					QuitarProductoEnDetalle();
+					break;
+				case "NO":
+					break;
+				default: //NO
+					break;
+			}
+			return true;
+		}, true, ["Aceptar", "Cancelar"], "info!", null);
+	}
+	else {
+		AbrirMensaje("Atención", "Debe seleccionar un producto para quitar de la lista.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "warn!", null);
+	}
+}
+
+function QuitarProductoEnDetalle() {
+	var p_id = p_id_selected;
+	datos = { p_id };
+	PostGenHtml(datos, quitarItemDeDetalleDeProdURL, function (obj) {
+		$("#divDetalleDeProductos").html(obj);
+		AgregarHandlerSelectedRow("tbDetalleDeProd");
+		p_id_selected = "";
+		return true;
+	}, function (obj) {
+		ControlaMensajeError(obj.message);
+		return true;
+	});
+}
+
+function AceptarDesdeComprobanteRP() {
+	GuardarDetalleDeProductos(true);
 }
 
 function RegresarDesdeComprobanteRP() {
@@ -43,7 +102,10 @@ function RegresarDesdeComprobanteRP() {
 				return true;
 			}, true, ["Aceptar", "Cancelar"], "info!", null);
 		} else {
-			window.location.href = VolverANuevaAutUrl;
+			debugger;
+			var uri = VolverANuevaAutUrl + "?rp=" + $("#Rp").val();
+			console.log(uri);
+			window.location.href = uri;
 		}
 	});
 };
@@ -62,7 +124,8 @@ function GuardarDetalleDeProductos(guardado) {
 				return true;
 			}, false, ["Aceptar"], "warn!", null);
 		} else {
-			window.location.href = VolverANuevaAutUrl;
+			var uri = VolverANuevaAutUrl + "?rp=" + $("#Rp").val();
+			window.location.href = uri;
 		}
 	});
 }
@@ -135,7 +198,7 @@ function CargarOCxCuenta() {
 
 function selectOCDetalleRow(x) { }
 
-function selectDetalleDeProdRow(x) { }
+
 
 function AgregarHandlerSelectedRow(grilla) {
 	document.getElementById(grilla).addEventListener('click', function (e) {

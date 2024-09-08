@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using gc.infraestructura.Dtos.Almacen;
+using Newtonsoft.Json;
 
 namespace gc.infraestructura.Dtos.CuentaComercial
 {
@@ -33,5 +34,8 @@ namespace gc.infraestructura.Dtos.CuentaComercial
 		public string Cantidad { get; set; } = string.Empty;
 		[JsonProperty("oc_compte")]
 		public string Oc_compte { get; set; } = string.Empty;
-	}
+		[JsonProperty("Producto")]
+		public ProductoBusquedaDto Producto { get; set; }
+
+    }
 }

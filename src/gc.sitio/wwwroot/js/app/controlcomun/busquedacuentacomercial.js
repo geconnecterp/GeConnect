@@ -16,22 +16,41 @@
 	dateControl.value = local;
 	$("#btnBuscarCC").on("click", buscarCuentasComercial);
 	InicializaPantallaCC();
-	comptesDeRPGrid();
+	//comptesDeRPGrid();
 	$("#btnNuevoCompteDeRP").on("click", NuevoCompteDeRP);
 	$("#btnEliminarCompteDeRP").on("click", EliminarCompteDeRP);
 	$("#btnRegresarASelAuto").on("click", RegresarASelAuto); //Regregar a la pantalla de seleccion de autorizaciones.
 
 	$("#txtNroCompte").mask("0000-00000000", { reverse: true });
 
+	$("#Cuenta").on("keypress", analizaInput);
 	if ($("#CtaId").val() !== "") {
 		$("#btnBuscarCC").trigger("click");
 	}
 	if ($("#DepoId").val() !== "") {
 		$("#listaDeposito").val($("#DepoId").val());
 	}
+	console.log(modelObj);
+	CargarCompteEnGrilla(modelObj);
 });
 
+function analizaInput(e) {
+	$("#CtaId").val("");
+}
+
+function CargarCompteEnGrilla(obj) {
+	if (obj != null ) {
+		if (obj.compte != null && obj.compte.tipo != "") {
+			comptesDeRPGrid(obj.compte.tipo, obj.compte.tipoDescripcion, obj.compte.nroComprobante, obj.compte.fecha, obj.compte.importe, obj.rp);
+		} 
+		else {//El usuario esta trabajando con un nuevo RP, el cual al no tener valor es null, cargo los comptes que tiene null en RP
+			comptesDeRPGrid(null, null, null, null, null, null);
+		}
+	}
+};
+
 function RegresarASelAuto() {
+
 	//Antes de volver debo validar si hay productos cargados en el detalle, si es así consultar con el operador
 	datos = {};
 	PostGen(datos, verificarDetalleCargadoURL, function (o) {
@@ -110,7 +129,7 @@ function NuevoCompteDeRP() {
 		return;
 	}
 	else {
-		comptesDeRPGrid($("#tco_id").val(), $("#tco_id")[0].selectedOptions[0].text, $("#txtNroCompte").val(), $("#dtpFechCompte").val(), $("#txtMonto").val());
+		comptesDeRPGrid($("#tco_id").val(), $("#tco_id")[0].selectedOptions[0].text, $("#txtNroCompte").val(), $("#dtpFechCompte").val(), $("#txtMonto").val(), $("#Rp").val());
 	}
 }
 
@@ -177,14 +196,16 @@ function ValidarCamposEnComprobantesDeRP(cuenta, tipo, nroCompte, monto) {
 		}, false, ["Aceptar"], "error!", null);
 		return false;
 	}
-	var cantComptes = document.getElementById("tbComptesDeRP").rows.length;
-	if (cantComptes >= 7) {
-		AbrirMensaje("Atención", "Máximo de 6 comprobantes.", function () {
-			$("#msjModal").modal("hide");
+	if (document.getElementById("tbComptesDeRP")) {
+		var cantComptes = document.getElementById("tbComptesDeRP").rows.length;
+		if (cantComptes >= 7) {
+			AbrirMensaje("Atención", "Máximo de 6 comprobantes.", function () {
+				$("#msjModal").modal("hide");
 
-			return true;
-		}, false, ["Aceptar"], "error!", null);
-		return false;
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+			return false;
+		}
 	}
 	return true;
 }
@@ -234,8 +255,8 @@ function eliminarComptesDeRPGrid(tipo, nroComprobante) {
 	});
 }
 
-function comptesDeRPGrid(tipo, tipoDescripcion, nroComprobante, fecha, importe) {
-	var data = { tipo, tipoDescripcion, nroComprobante, fecha, importe };
+function comptesDeRPGrid(tipo, tipoDescripcion, nroComprobante, fecha, importe, rp) {
+	var data = { tipo, tipoDescripcion, nroComprobante, fecha, importe, rp };
 	PostGenHtml(data, CargarComptesDeRPUrl, function (obj) {
 		$("#divComptesDeRPGrid").html(obj);
 		return true;

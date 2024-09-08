@@ -21,6 +21,7 @@
 		@Html.Hidden("IdTipoCompte", Model.IdTipoCompte)
 		@Html.Hidden("NroCompte", Model.NroCompte)
 		@Html.Hidden("DepoId", Model.Depo_id)
+		@Html.Hidden("Rp", Model.rp)
 		<div style="float:left">
 			<fieldset>
 				<legend>
@@ -122,6 +123,7 @@
 
 @section scripts {
 	<script type="text/javascript">
+		var modelObj = @Html.Raw(Json.Serialize(Model));
 		var tipoCuenta = "B";
 		var seccionEnVista = "#sectionNuevaAutorizacionRP";
 		var vistaParcial = "_rprAutoCargaComptes";

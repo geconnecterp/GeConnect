@@ -23,6 +23,7 @@
 				@Html.Hidden("turno", Model.FechaTurno)
 				@Html.Hidden("depo_id", Model.Depo_id)
 				@Html.Hidden("poner_curso", Model.ponerEnCurso)
+				@Html.Hidden("Rp", Model.CompteSeleccionado.Rp)
 				<span>@Model.Leyenda</span>
 				<button type="button" class="btn btn-success" style="margin-left:5px;" id="btnAceptarComprobanteRP">
 					<span class="tf-icons bx bx-check-circle">Aceptar</span>
@@ -125,10 +126,12 @@
 
 @section scripts {
 	<script type="text/javascript">
+		var p_id_selected = "";
 		var CargarDetalleDeProductosEnRPUrl = "@Url.Action("CargarDetalleDeProductosEnRP", "compra", new { area = "Compras" })";
 		var CargarOCxCuentaEnRPUrl = "@Url.Action("CargarOCxCuentaEnRP", "compra", new { area = "Compras" })";
 		var VerDetalleDeOCRPUrl = "@Url.Action("VerDetalleDeOCRP", "compra", new { area = "Compras" })";
 		var verificarDetalleCargadoURL="@Url.Action("VerificarDetalleCargado", "compra", new { area = "Compras" })";
+		var quitarItemDeDetalleDeProdURL="@Url.Action("QuitarItemDeDetalleDeProd", "compra", new { area = "Compras" })";
 		var GuardarDetalleDeComprobanteRPUrl="@Url.Action("GuardarDetalleDeComprobanteRP", "compra", new { area = "Compras" })";
 		var VolverANuevaAutUrl="@Url.Action("NuevaAut", "compra", new { area = "Compras" })";
 	</script>

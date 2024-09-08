@@ -32,8 +32,5 @@ namespace gc.infraestructura.Dtos.CuentaComercial
 		public string Cm_compte { get; set; } = string.Empty;
 		[JsonProperty("comprobantes")]
 		public List<JsonComprobanteDeRPDto> Comprobantes { get; set; }
-		[JsonProperty("productos")]
-		public List<ProductoBusquedaDto> ListaProductoBusquedaDto { get; set; }
-
 	}
 }
