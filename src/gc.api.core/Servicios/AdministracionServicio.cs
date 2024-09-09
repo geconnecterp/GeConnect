@@ -4,6 +4,7 @@ using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Administracion;
+using gc.infraestructura.Dtos.Almacen.Rpr;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -11,9 +12,9 @@ using System.Linq.Dynamic.Core;
 
 namespace gc.api.core.Servicios
 {
-    public class AdministracionesServicio : Servicio<Administracion>, IAdministracionServicio
+    public class AdministracionServicio : Servicio<Administracion>, IAdministracionServicio
     {
-        public AdministracionesServicio(IUnitOfWork uow, IOptions<PaginationOptions> options) : base(uow, options)
+        public AdministracionServicio(IUnitOfWork uow, IOptions<PaginationOptions> options) : base(uow, options)
         {
 
         }
@@ -100,6 +101,24 @@ namespace gc.api.core.Servicios
             var paginas = PagedList<Administracion>.Create(administraciones, filters.PageNumber ?? 1, filters.PageSize ?? 20);
 
             return paginas;
+        }
+
+        public ResponseBaseDto ValidaUsuario(string tipo, string id, string usuId)
+        {
+
+
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_TI_VALIDA_USUARIO;
+
+            var ps = new List<SqlParameter>()
+            {
+                new SqlParameter("@tipo",tipo),
+                new SqlParameter("@id",id),
+                new SqlParameter("@usu_id",usuId)
+            };
+
+            List<ResponseBaseDto> response = _repository.EjecutarLstSpExt<ResponseBaseDto>(sp, ps, true);
+
+            return response[0];
         }
     }
 }

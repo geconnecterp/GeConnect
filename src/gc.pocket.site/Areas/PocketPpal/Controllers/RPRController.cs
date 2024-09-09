@@ -1,16 +1,13 @@
-﻿using gc.api.core.Entidades;
-using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
 using gc.pocket.site.Controllers;
-using gc.pocket.site.Models.ViewModels;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using System.Diagnostics;
 using System.Reflection;
 using X.PagedList;
 
@@ -20,13 +17,13 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
     public class RPRController : ControladorBase
     {
         private readonly MenuSettings _menuSettings;
-        private readonly ILogger<InfoProdController> _logger;
+        private readonly ILogger<RPRController> _logger;
         private readonly IProductoServicio _productoServicio;
         private readonly IDepositoServicio _depositoServicio;
         private readonly AppSettings _settings;
 
         public RPRController(IOptions<AppSettings> options, IHttpContextAccessor context, IOptions<MenuSettings> options1,
-            ILogger<InfoProdController> logger, IProductoServicio productoServicio, IDepositoServicio depositoServicio) : base(options, context)
+            ILogger<RPRController> logger, IProductoServicio productoServicio, IDepositoServicio depositoServicio) : base(options, context)
         {
             _menuSettings = options1.Value;
             _logger = logger;

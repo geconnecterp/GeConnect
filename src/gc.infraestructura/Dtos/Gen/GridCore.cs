@@ -1,10 +1,10 @@
 ﻿using X.PagedList;
 
-namespace gc.pocket.site.Models.ViewModels
+namespace gc.infraestructura.Dtos.Gen
 {
     public class GridCore<T>
     {
-        public StaticPagedList<T> ListaDatos { get; set; }
+        public StaticPagedList<T>? ListaDatos { get; set; }
         public int CantidadReg { get; set; }
         public int PrimerRegistro { get; set; }
         public int UltimoRegistro { get; set; }

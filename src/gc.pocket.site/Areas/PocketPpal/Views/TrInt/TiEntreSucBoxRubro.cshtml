@@ -1,0 +1,44 @@
+﻿@model AutorizacionTIDto
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+
+    Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
+}
+<div class="row">
+    <div class="d-inline-flex flex-row mb-3">
+        <div class="p-2">
+            <span class="text-info-emphasis">@Model.Ti</span>
+        </div>
+        <div class="p-2">
+            <span id="titVista" class="text-info-emphasis">Itinerario x Box</span>
+        </div>
+    </div>
+</div>
+<div class="row mb-3">
+    <div class="d-flex justify-content-center">
+        <div class="m-2 form-check">
+            <input name="rbVista" class="form-check-input" type="radio" value="B" id="rbBox" checked>
+            <label class="form-check-label" for="rbBox">BOX</label>
+        </div>
+        <div class="m-2 form-check">
+            <input name="rbVista" class="form-check-input" type="radio" value="B" id="rbRubro">
+            <label class="form-check-label" for="rbRubro">Rubro</label>
+        </div>
+    </div>
+</div>
+<div id="divGrids">
+</div>
+
+
+@section scripts {
+    <script type="text/javascript">
+        var presentarBoxDeProductosUrl = "@Url.Action("PresentarBoxDeProductos", "trint", new { area = "pocketppal" })";
+        var presentarRubroDeProductosUrl = "@Url.Action("PresentarRubroDeProductos", "trint", new { area = "pocketppal" })";
+        
+    </script>
+
+    <script src="~/js/app/ti/ti02.js"></script>
+}
+

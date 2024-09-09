@@ -2,15 +2,8 @@
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Dtos.Almacen.Rpr;
-using gc.infraestructura.Dtos.Productos;
+using gc.infraestructura.Dtos.Almacen.Tr;
 using Microsoft.Data.SqlClient;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Intrinsics.Arm;
-using System.Security.Policy;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace gc.api.core.Servicios
 {
@@ -35,6 +28,23 @@ namespace gc.api.core.Servicios
             List<RprResponseDto> response = _repository.EjecutarLstSpExt<RprResponseDto>(sp, ps, true);
 
             return response[0];
+        }
+
+        public List<AutorizacionTIDto> TRObtenerAutorizacionesPendientes(string admId, string usuId, string titId)
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_AUTORIZACIONES_PENDIENTES;
+
+            var ps = new List<SqlParameter>()
+            {
+                new SqlParameter("@adm_id",admId),
+                new SqlParameter("@usu_id",usuId),
+                new SqlParameter("@tit_id",titId),
+
+            };
+
+            List<AutorizacionTIDto> response = _repository.EjecutarLstSpExt<AutorizacionTIDto>(sp, ps, true);
+
+            return response;
         }
 
         public RprResponseDto ValidarBox(string box, string admid)
@@ -69,6 +79,6 @@ namespace gc.api.core.Servicios
             return response[0];
         }
 
-
+        
     }
 }

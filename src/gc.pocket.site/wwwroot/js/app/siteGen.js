@@ -115,19 +115,19 @@ function AbrirMensaje(Titulo, Mensaje, CallBack, EsConfirmacion, Botones, Tipo, 
     switch (Tipo) {
         case "info!":
             $("#msjTitulo").prop("class", "text-info");
-            $("#msjIcono").html('<i class="bx bx-md bx-spin bx-info-circle text-info"></i>');
+            $("#msjIcono").html('<i class="bx bx-lg bx-info-circle text-info"></i>');/*bx-spin */
             break;
         case "warn!":
             $("#msjTitulo").prop("class", "text-warning");
-            $("#msjIcono").html('<i class="bx bx-md bx-spin bx-error text-warning"></i>');
+            $("#msjIcono").html('<i class="bx bx-lg bx-error text-warning"></i>'); //bx-spin
             break;
         case "error!":
             $("#msjTitulo").prop("class", "text-danger");
-            $("#msjIcono").html('<i class="bx bx-md bx-spin bx-hand text-danger"></i>');
+            $("#msjIcono").html('<i class="bx bx-lg  bx-hand text-danger"></i>');/*bx-spin*/
             break;
         case "succ!":
             $("#msjTitulo").prop("class", "text-success");
-            $("#msjIcono").html('<i class="bx bx-md bx-spin bx-check text-success"></i>');
+            $("#msjIcono").html('<i class="bx bx-lg  bx-check text-success"></i>');/*bx-spin*/
             break;
         default:
             $("#msjIcono").prop("class", "");

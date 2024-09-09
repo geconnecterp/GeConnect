@@ -1,6 +1,7 @@
 ﻿using gc.api.core.Contratos.Servicios;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Almacen.Rpr;
+using gc.infraestructura.Dtos.Almacen.Tr;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -84,6 +85,28 @@ namespace gc.api.Controllers.Almacen
             var res = _almSv.AlmacenaBoxUl(req);
             var response = new ApiResponse<RprResponseDto>(res);
             return Ok(response);
+        }
+
+        [HttpGet]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<AutorizacionTIDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult TRAutorizacionPendiente(string admId, string usuId, string titId)
+        {
+            if (string.IsNullOrEmpty(admId) || string.IsNullOrEmpty(usuId) || string.IsNullOrEmpty(titId))
+            {
+                return BadRequest("Faltó alguno de los datos necesarios para devolver las Autorizaciones Pendientes");
+            }
+            if (string.IsNullOrWhiteSpace(admId) || string.IsNullOrWhiteSpace(usuId) || string.IsNullOrWhiteSpace(titId))
+            {
+                return BadRequest("Faltó alguno de los datos necesarios para devolver las Autorizaciones Pendientes");
+            }
+            
+            var lista = _almSv.TRObtenerAutorizacionesPendientes(admId, usuId, titId);
+
+            var response = new ApiResponse<List<AutorizacionTIDto>>(lista);
+            return Ok(response);    
+
         }
     }
 }

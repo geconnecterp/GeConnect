@@ -140,7 +140,7 @@ namespace gc.api.Controllers.Security
         private string GenerateToken(Usuario usuario, string admId)/**/
         {
             _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-            bool first = true;
+            //bool first = true;
             /******************************************************************************************************************************
              * SE DEBE REALIZAR LA CONSULTA A LA BASE PARA OBTENER EL ARREGLO CON EL MENU A GENERAR, PADRE CON HIJOS Y RUTAS DE CADA HIJO *
              ******************************************************************************************************************************/

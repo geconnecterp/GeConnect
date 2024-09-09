@@ -39,6 +39,10 @@ tr.alt {
     background-color: #C0FFC0;
 }
 
+tr.sel{
+    background-color: #7b82c8;
+}
+
 th, td {
     overflow: hidden;
 }
@@ -62,6 +66,22 @@ th, td {
     border-color:rgb(70, 196, 104);
     text-align:center;
     font-weight:700;
+}
+
+.btn-block{
+    display:block;
+    width:100%;
+    text-align:center;
+    cursor:pointer;
+}
+
+.table-fontsize {
+    font-size: 11px !important;
+}
+
+.selected-row > td {
+    background-color: lightslategray;
+    color: black;
 }
 
 @media screen and (max-width: 480px){

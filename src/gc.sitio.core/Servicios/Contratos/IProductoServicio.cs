@@ -1,5 +1,6 @@
 ﻿using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Rpr;
+using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
 
@@ -22,5 +23,8 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RprResponseDto> ValidarBox(string box,string adm,string token);
         Task<RprResponseDto> ConfirmaBoxUl(string box, string ul, string adm, string token);
 
+        Task<List<AutorizacionTIDto>> TRObtenerAutorizacionesPendientes(string admId, string usuId, string titId,string token);
+        Task<List<BoxRubProductoDto>> PresentarBoxDeProductos(string tr, string admId, string usuId, string token);
+        Task<List<BoxRubProductoDto>> PresentarRubrosDeProductos(string tr, string admId, string usuId, string token);
     }
 }

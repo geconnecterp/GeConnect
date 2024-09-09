@@ -8,7 +8,6 @@ using gc.pocket.site.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Microsoft.VisualBasic;
 
 namespace gc.pocket.site.Areas.Gestion.Controllers
 {

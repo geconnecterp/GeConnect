@@ -1,0 +1,39 @@
+﻿@model GridCore<AutorizacionTIDto>
+
+@{
+    var dataMod = new InfoProdLP();
+    var alt = true;
+    string clase = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+    int cont = 0;
+}
+<div class="table-responsive text-nowrap">
+    <table class="table mb-0 " id="tbAuPend">
+        <thead>
+            <tr class="header table-dark">
+                <th scope="col" style="width:1%"></th>
+                <th scope="col" style="width:33%">Sucursal</th>
+                <th scope="col" style="width:33%">N° Auto TI</th>
+                <th scope="col" style="width:33%">Nota</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ListaDatos)
+            {
+                cont++;
+                if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+                <tr class="@clase" onclick="seleccionarRegistroTR(this)" >
+                    <td>@cont </td>
+                    <td>@item.Adm_nombre 
+                        @Html.Hidden("ti"+@cont,item.Ti)
+                        @Html.Hidden("usu" + cont, item.Usu_id)
+                        @Html.Hidden("fec" + cont, item.Fecha.ToShortDateString())
+                    </td>
+                    <td>@item.Ti</td>
+                    <td>@item.Nota</td>
+                </tr>
+            }         
+        </tbody>
+    </table>
+</div>

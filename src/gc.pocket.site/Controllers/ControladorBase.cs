@@ -3,6 +3,7 @@ using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Rpr;
+using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes;
 using gc.infraestructura.EntidadesComunes.Options;
@@ -527,11 +528,68 @@ namespace gc.pocket.site.Controllers
             }
         }
 
-		
 
-		#endregion
 
-		protected void PresentaMensaje(string error, string warn, string info)
+        #endregion
+
+        #region Variables de Session para módulo TI
+
+        public string TIModuloActual
+        {
+            get
+            {
+                var txt = _context.HttpContext.Session.GetString("TIModuloActual");
+                if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
+                {
+                    return string.Empty;
+                }
+                return txt;
+            }
+            set
+            {
+               
+                _context.HttpContext.Session.SetString("TIModuloActual", value);
+            }
+        }
+
+        public AutorizacionTIDto TIAutorizacionPendienteSeleccionada
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("TIAutorizacionPendienteSeleccionada");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return new();
+                }
+                return JsonConvert.DeserializeObject<AutorizacionTIDto>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("TIAutorizacionPendienteSeleccionada", json);
+            }
+        }
+        public List<AutorizacionTIDto> ListadoTIAutoPendientes
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("ListadoTIAutoPendientes");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<AutorizacionTIDto>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("ListadoTIAutoPendientes", json);
+            }
+        }
+
+        #endregion
+
+        protected void PresentaMensaje(string error, string warn, string info)
         {
             if (!string.IsNullOrEmpty(error))
             {

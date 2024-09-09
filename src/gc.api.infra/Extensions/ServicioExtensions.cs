@@ -27,7 +27,7 @@ namespace gc.api.infra.Extensions
             services.AddScoped<IPasswordService, PasswordService>();
             services.AddScoped<IUsuarioServicio, UsuarioServicio>();
             services.AddScoped<IDataConnectionContext, DataConnectionContext>();
-            services.AddScoped<IAdministracionServicio, AdministracionesServicio>();
+            services.AddScoped<IAdministracionServicio, AdministracionServicio>();
             services.AddScoped<IBilleteraOrdenServicio, BilleteraOrdenServicio>();
             services.AddScoped<IBilleteraServicio, BilleteraServicio>();
             services.AddScoped<IBOrdenEstadoServicio, BOrdenEstadoServicio>();
