@@ -8,5 +8,6 @@ namespace gc.infraestructura.Dtos.CuentaComercial
         public string NroComprobante { get; set; } = string.Empty;
         public string Fecha { get; set; }= string.Empty;
         public string Importe { get; set; }=string.Empty ;
+        public string Rp { get; set; } = string.Empty;
     }
 }

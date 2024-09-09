@@ -19,6 +19,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
 using X.PagedList;
 using gc.sitio.Areas.Compras.Models;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace gc.sitio.Areas.Compras.Controllers
 {
@@ -60,9 +61,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 			try
 			{
 				pendientes = await _productoServicio.RPRObtenerComptesPendiente(AdministracionId, TokenCookie);
-				//resguardo lista de autorizaciones pendientes 
-				//Veo que en  gc.pocket.site.Areas.PocketPpal.Controllers.RPRController.Index() almacena en una variable de sesión los datos.
-				//Consultar si tengo que hacer lo mismo
+				RPRAutorizacionesPendientesEnRP = pendientes;
+				ObtenerComprobantesDesdeAutorizacionesPendientes();
 				grid = ObtenerAutorizacionPendienteGrid(pendientes);
 			}
 			catch (Exception ex)
@@ -74,6 +74,25 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return View(grid);
 		}
 
+		private void ObtenerComprobantesDesdeAutorizacionesPendientes()
+		{
+			var lista = new List<RPRComptesDeRPDto>();
+			foreach (var item in RPRAutorizacionesPendientesEnRP)
+			{
+				var newCompte = new RPRComptesDeRPDto()
+				{
+					Fecha = item.Fecha.ToString("dd/MM/yyyy"),
+					Importe = item.Cm_importe.ToString(),
+					NroComprobante = item.Cm_compte,
+					Tipo = item.Tco_id,
+					TipoDescripcion = item.Tco_desc,
+					Rp = item.Rp,
+				};
+				lista.Add(newCompte);
+			}
+			RPRComptesDeRPRegs = lista;
+		}
+
 		public async Task<IActionResult> NuevaAut(string rp)
 		{
 			var auth = EstaAutenticado;
@@ -81,15 +100,40 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				return RedirectToAction("Login", "Token", new { area = "seguridad" });
 			}
-
-			//var model = new RPRNuevaAutorizaciónDto() { ComboDeposito = ComboDepositos() };
-			var model = new BuscarCuentaDto() { ComboDeposito = ComboDepositos() };
-			//return PartialView("RPRNuevaAutorizacion", model);
-
+			var rpSelected = RPRAutorizacionesPendientesEnRP.Where(x => x.Rp == rp).FirstOrDefault();
+			if (rpSelected != default(RPRAutoComptesPendientesDto))
+			{
+				RPRAutorizacionSeleccionada = rpSelected;
+			}
+			var model = new BuscarCuentaDto() { ComboDeposito = ComboDepositos(), rp = rp };
+			if (RPRComprobanteDeRPSeleccionado != null && string.IsNullOrEmpty(rp))
+			{
+				model.Cuenta = RPRComprobanteDeRPSeleccionado.cta_id;
+				model.Nota = RPRComprobanteDeRPSeleccionado.Nota;
+				model.FechaTurno = RPRComprobanteDeRPSeleccionado.FechaTurno;
+				model.Depo_id = RPRComprobanteDeRPSeleccionado.Depo_id;
+				//model.rp = rp;
+			}
+			else if (RPRAutorizacionSeleccionada != null)
+			{
+				model.Cuenta = RPRAutorizacionSeleccionada.Cta_id;
+				model.Nota = RPRAutorizacionSeleccionada.Nota;
+				model.FechaTurno = RPRAutorizacionSeleccionada.Fecha.ToString("dd/MM/yyyy");
+				model.Depo_id = "0";
+				//model.rp = rp;
+				model.Compte = new RPRComptesDeRPDto()
+				{
+					Fecha = RPRAutorizacionSeleccionada.Fecha.ToString("dd/MM/yyyy"),
+					Importe = RPRAutorizacionSeleccionada.Cm_importe.ToString(),
+					NroComprobante = RPRAutorizacionSeleccionada.Cm_compte,
+					Tipo = RPRAutorizacionSeleccionada.Tco_id,
+					TipoDescripcion = RPRAutorizacionSeleccionada.Tco_desc
+				};
+			}
 			return PartialView("RPRNuevaAutorizacion", model);
 		}
 
-		public async Task<IActionResult> VerDetalleDeComprobanteDeRP(string idTipoCompte, string nroCompte)
+		public async Task<IActionResult> VerDetalleDeComprobanteDeRP(string idTipoCompte, string nroCompte, string depoSelec, string notaAuto, string turno, string ponerEnCurso)
 		{
 			var compte = new RPRComptesDeRPDto();
 			var model = new RPRDetalleComprobanteDeRP
@@ -101,8 +145,17 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				compte = RPRComptesDeRPRegs.Where(x => x.Tipo == idTipoCompte && x.NroComprobante == nroCompte).FirstOrDefault();
 			}
+			//else 
+			//{ 
+			//	compte=new RPRComptesDeRPDto() { Tipo=idTipoCompte, NroComprobante=nroCompte, }
+			//}
 			model.CompteSeleccionado = compte ?? new RPRComptesDeRPDto();
 			model.cta_id = CuentaComercialSeleccionada.Cta_Id;
+			model.ponerEnCurso = bool.Parse(ponerEnCurso);
+			model.Nota = notaAuto;
+			model.Depo_id = depoSelec;
+			model.FechaTurno = UnixTimeStampToDateTime(turno).ToString("dd-MM-yyyy");
+			RPRComprobanteDeRPSeleccionado = model;
 			return PartialView("RPRCargaDetalleDeCompteRP", model);
 		}
 
@@ -127,7 +180,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 
-		public async Task<IActionResult> CargarDetalleDeProductosEnRP(string oc_compte, string id_prod, string up, string bulto, string unidad)
+		public async Task<IActionResult> CargarDetalleDeProductosEnRP(string oc_compte, string id_prod, string up, string bulto, string unidad, int accion, string tco_id, string cm_compte)
 		{
 			GridCore<ProductoBusquedaDto> datosIP;
 			var lista = new List<ProductoBusquedaDto>();
@@ -145,27 +198,202 @@ namespace gc.sitio.Areas.Compras.Controllers
 						//No lo encuentra
 						if (default(ProductoBusquedaDto) == itemTemp)
 						{
-							CargarItemEnGrillaDeProductos(lista, item);
+							CargarItemEnGrillaDeProductos(lista, item, accion, null);
 						}
 						else
 						{
-							//Existe con diferente oc_compte, lo reemplazo
-							if (!string.IsNullOrWhiteSpace(itemTemp.oc_compte))
-								lista.Remove(itemTemp);
-							CargarItemEnGrillaDeProductos(lista, item);
+							CargarItemEnGrillaDeProductos(lista, item, accion, itemTemp);
 						}
 					}
 					RPRDetalleDeProductosEnRP = lista;
 				}
 			}
-			else
-			{ 
-				//Carga producto manual
-
+			//Traigo los prod del almacenamiento temporal
+			else if (!string.IsNullOrWhiteSpace(tco_id) && !string.IsNullOrWhiteSpace(cm_compte) && JsonEncabezadoDeRPLista != null)
+			{
+				var encTemp = JsonEncabezadoDeRPLista.Where(x => x.Tco_id == tco_id && x.Cm_compte == cm_compte).FirstOrDefault();
+				if (encTemp != null)
+				{
+					var listaComprobantesTemp = encTemp.Comprobantes.Where(x => x.Tco_id == tco_id && x.Cm_compte == cm_compte).ToList();
+					foreach (var item in listaComprobantesTemp)
+					{
+						lista.Add(item.Producto);
+					}
+				}
+				RPRDetalleDeProductosEnRP = lista ?? [];
 			}
-
+			else
+			{
+				RPRDetalleDeProductosEnRP = [];
+			}
 			datosIP = ObtenerDetalleDeProductosRPGrid(RPRDetalleDeProductosEnRP);
 			return PartialView("_rprDetalleDeProductos", datosIP);
+		}
+
+		public JsonResult VerificarDetalleCargado()
+		{
+			try
+			{
+				if (RPRDetalleDeProductosEnRP == null)
+				{
+					return Json(new { error = false, warn = true, vacio = true, cantidad = 0, msg = "Error al intentar validar existencia de productos de RP cargados." });
+				}
+				else if (RPRDetalleDeProductosEnRP != null && RPRDetalleDeProductosEnRP.Count > 0)
+				{
+					return Json(new { error = false, warn = false, vacio = false, cantidad = RPRDetalleDeProductosEnRP.Count, msg = $"Existen productos agregados al detalle de comprobante RP de proveedor. Desea guardar los cambios antes de salir? Caso contrario se perderán." });
+				}
+				else if (JsonEncabezadoDeRPLista != null && JsonEncabezadoDeRPLista.Count > 0)
+				{
+					return Json(new { error = false, warn = false, vacio = false, cantidad = JsonEncabezadoDeRPLista.Count, msg = $"Existen productos agregados al detalle de comprobante RP de proveedor. Desea guardar los cambios antes de salir? Caso contrario se perderán." });
+				}
+				else
+				{
+					return Json(new { error = false, warn = false, vacio = true, cantidad = 0, msg = "" });
+				}
+			}
+			catch (NegocioException neg)
+			{
+				return Json(new { error = false, warn = true, msg = neg.Message, vacio = false, cantidad = 0 });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				return Json(new { error = true, msg = "Algo no fue bien al verificar detalle de productos cargados para RP, intente nuevamente mas tarde." });
+			}
+		}
+
+		public async Task<JsonResult> GuardarDetalleDeComprobanteRP(bool guardado)
+		{
+			try
+			{
+				if (guardado) //Guardo el detalle de productos del compte en la variable de sesion
+				{
+					if (JsonEncabezadoDeRPLista == null)
+						JsonEncabezadoDeRPLista = [];
+
+					var listaTemp = new List<JsonEncabezadoDeRPDto>();
+					listaTemp = JsonEncabezadoDeRPLista;
+
+					JsonEncabezadoDeRPDto encabezado = new();
+					encabezado = ObtenerObjectoParaAlmacenar();
+
+					//Nuevo RP -> lo agrego de pechardi
+					if (!listaTemp.Exists(x => x.Rp == encabezado.Rp))
+					{
+						listaTemp.Add(encabezado);
+					}
+					else //Existe RP, verifico si tiene cargado comprobantes y opero sobre ellos
+					{
+						var encabezadoTemp = listaTemp.Where(x => x.Rp == encabezado.Rp).FirstOrDefault();
+						//Por las dudas verifico que exista el encabezado pero que no tenaga detalle, le cargo el detalle
+						if (encabezadoTemp != null)
+						{
+							if (encabezadoTemp.Comprobantes.Count == 0)
+							{
+								encabezadoTemp.Comprobantes = encabezado.Comprobantes;
+							}
+							//Tiene comprobantes, me fijo si ya existen items para ese tipo y numero de comprobante, si es así los actualizo
+							else if (encabezadoTemp.Comprobantes.Exists(x => x.Tco_id == encabezado.Tco_id && x.Cm_compte == encabezado.Cm_compte))
+							{
+								encabezadoTemp.Comprobantes.RemoveAll(x => x.Tco_id == encabezado.Tco_id && x.Cm_compte == encabezado.Cm_compte);
+								encabezadoTemp.Comprobantes.AddRange(encabezado.Comprobantes);
+							}
+							//No existen items para ese tipo y numero de comprobante, los agrego
+							else
+							{
+								encabezadoTemp.Comprobantes.AddRange(encabezado.Comprobantes);
+							}
+							listaTemp.RemoveAll(x => x.Rp == encabezado.Rp);
+							listaTemp.Add(encabezadoTemp);
+						}
+					}
+					JsonEncabezadoDeRPLista = listaTemp;
+				}
+				//RPRDetalleDeProductosEnRP = [];
+				return Json(new { error = false, warn = false, msg = "" });
+			}
+			catch (NegocioException neg)
+			{
+				return Json(new { error = false, warn = true, msg = neg.Message });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				return Json(new { error = true, msg = "Algo no fue bien al guardar el detalle de comprobante RP, intente nuevamente mas tarde." });
+			}
+		}
+
+		public IActionResult QuitarItemDeDetalleDeProd(string p_id)
+		{
+			try
+			{
+				var listaTemp = RPRDetalleDeProductosEnRP;
+				if (!string.IsNullOrWhiteSpace(p_id))
+				{
+					var prodSelected = listaTemp.Where(x => x.P_id == p_id).FirstOrDefault();
+					if (prodSelected != null)
+					{
+						listaTemp.Remove(prodSelected);
+						RPRDetalleDeProductosEnRP = listaTemp;
+					}
+				}
+				GridCore<ProductoBusquedaDto> datosIP;
+				datosIP = ObtenerDetalleDeProductosRPGrid(RPRDetalleDeProductosEnRP);
+				return PartialView("_rprDetalleDeProductos", datosIP);
+			}
+			catch (Exception ex)
+			{
+
+				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				return Json(new { error = true, msg = "Algo no fue bien al quitar un producto del detalle, intente nuevamente mas tarde." });
+			}
+		}
+
+		private JsonEncabezadoDeRPDto ObtenerObjectoParaAlmacenar()
+		{
+			try
+			{
+				var ctaid = CuentaComercialSeleccionada.Cta_Id;
+				JsonEncabezadoDeRPDto encabezado = new()
+				{
+					Ope = RPRAutorizacionSeleccionada == null ? TipoAltaRP.AGREGA.ToString() : TipoAltaRP.MODIFICA.ToString(),
+					Rp = RPRAutorizacionSeleccionada == null ? "" : RPRAutorizacionSeleccionada.Rp,
+					Cta_id = ctaid,
+					Usu_id = UserName,
+					Adm_id = AdministracionId,
+					Rpe_id = "P",
+					Rpe_desc = "Pendiente",
+					Depo_id = RPRComprobanteDeRPSeleccionado.Depo_id,
+					Nota = RPRComprobanteDeRPSeleccionado.Nota,
+					Turno = RPRComprobanteDeRPSeleccionado.FechaTurno,
+					Tco_id = RPRComprobanteDeRPSeleccionado.CompteSeleccionado.Tipo,
+					Cm_compte = RPRComprobanteDeRPSeleccionado.CompteSeleccionado.NroComprobante,
+					Comprobantes = RPRDetalleDeProductosEnRP.Select(x => new JsonComprobanteDeRPDto()
+					{
+						Tco_id = RPRComprobanteDeRPSeleccionado.CompteSeleccionado.Tipo,
+						Tco_desc = RPRComprobanteDeRPSeleccionado.CompteSeleccionado.TipoDescripcion,
+						Cm_compte = RPRComprobanteDeRPSeleccionado.CompteSeleccionado.NroComprobante,
+						Cm_fecha = RPRComprobanteDeRPSeleccionado.CompteSeleccionado.Fecha,
+						Cm_importe = RPRComprobanteDeRPSeleccionado.CompteSeleccionado.Importe,
+						P_id = x.P_id,
+						P_id_prov = x.P_id_prov,
+						P_id_barrado = x.P_id_barrado,
+						P_desc = x.P_desc,
+						Bulto_up = x.P_unidad_pres,
+						Bulto = x.Bulto.ToString(),
+						Uni_suelta = x.Unidad.ToString(),
+						Cantidad = x.Cantidad.ToString(),
+						Oc_compte = x.oc_compte,
+						Producto = x
+					}).ToList()
+				};
+				return encabezado;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name} intentando genera objeto para almacenar");
+				return null;
+			}
 		}
 
 		public async Task<JsonResult> BuscarCuentaComercial(string cuenta, char tipo, string vista)
@@ -243,37 +471,54 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		[HttpPost]
-		public ActionResult CargarComprobantesDeRP(string tipo, string tipoDescripcion, string nroComprobante, string fecha, string importe)
+		public ActionResult CargarComprobantesDeRP(string tipo, string tipoDescripcion, string nroComprobante, string fecha, string importe, string rp)
 		{
 			GridCore<RPRComptesDeRPDto> datosIP;
 			var lista = new List<RPRComptesDeRPDto>();
-			if (tipo.IsNullOrEmpty())
+			if (string.IsNullOrWhiteSpace(tipo) && string.IsNullOrWhiteSpace(tipoDescripcion) && string.IsNullOrWhiteSpace(nroComprobante) && string.IsNullOrWhiteSpace(fecha) && string.IsNullOrWhiteSpace(importe))
 			{
-				datosIP = ObtenerComprobantesDeRPGrid(RPRComptesDeRPRegs);
+				datosIP = ObtenerComprobantesDeRPGrid(RPRComptesDeRPRegs.Where(x => string.IsNullOrWhiteSpace(x.Rp)).ToList());
+				return PartialView("_rprComprobantesDeRP", datosIP);
 			}
-			else if (RPRComptesDeRPRegs.Exists(x => x.Tipo == tipo && x.NroComprobante == nroComprobante))
+			//if (tipo.IsNullOrEmpty())
+			//{
+			//	datosIP = ObtenerComprobantesDeRPGrid(RPRComptesDeRPRegs);
+			//}
+			else if (!string.IsNullOrWhiteSpace(rp) && RPRComptesDeRPRegs.Exists(x => x.Rp == rp))
 			{
-				datosIP = ObtenerComprobantesDeRPGrid(RPRComptesDeRPRegs);
+				if (!RPRComptesDeRPRegs.Exists(x => x.Rp == rp && x.Tipo == tipo && x.NroComprobante == nroComprobante))
+				{
+					RPRComptesDeRPRegs = CargarComprobanteRP(RPRComptesDeRPRegs, tipo, tipoDescripcion, nroComprobante, fecha, importe, rp);
+				}
+				datosIP = ObtenerComprobantesDeRPGrid(RPRComptesDeRPRegs.Where(x => x.Rp == rp).ToList());
 			}
 			else
 			{
-				lista = RPRComptesDeRPRegs;
-				var nuevo = new RPRComptesDeRPDto()
-				{
-					Tipo = tipo,
-					TipoDescripcion = tipoDescripcion,
-					NroComprobante = nroComprobante,
-					Fecha = Convert.ToDateTime(fecha).ToString("dd/MM/yyyy"),
-					Importe = importe
-				};
-				lista.Add(nuevo);
-				RPRComptesDeRPRegs = lista;
-				datosIP = ObtenerComprobantesDeRPGrid(RPRComptesDeRPRegs);
+				RPRComptesDeRPRegs = CargarComprobanteRP(RPRComptesDeRPRegs, tipo, tipoDescripcion, nroComprobante, fecha, importe, rp);
+				if (string.IsNullOrWhiteSpace(rp))
+					datosIP = ObtenerComprobantesDeRPGrid(RPRComptesDeRPRegs.Where(x => string.IsNullOrWhiteSpace(x.Rp)).ToList());
+				else
+					datosIP = ObtenerComprobantesDeRPGrid(RPRComptesDeRPRegs.Where(x => x.Rp == rp).ToList());
 			}
 			return PartialView("_rprComprobantesDeRP", datosIP);
 		}
 
 		#region Métodos privados
+		private List<RPRComptesDeRPDto> CargarComprobanteRP(List<RPRComptesDeRPDto> listaEnSesion, string tipo, string tipoDescripcion, string nroComprobante, string fecha, string importe, string rp)
+		{
+			var lista = listaEnSesion;
+			var nuevo = new RPRComptesDeRPDto()
+			{
+				Tipo = tipo,
+				TipoDescripcion = tipoDescripcion,
+				NroComprobante = nroComprobante,
+				Fecha = Convert.ToDateTime(fecha).ToString("dd/MM/yyyy"),
+				Importe = importe,
+				Rp = rp
+			};
+			lista.Add(nuevo);
+			return lista;
+		}
 		private GridCore<RPROrdenDeCompraDetalleDto> ObtenerOCDetalleRPGrid(List<RPROrdenDeCompraDetalleDto> listaOCDetalle)
 		{
 
@@ -319,8 +564,25 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
 
-		private void CargarItemEnGrillaDeProductos(List<ProductoBusquedaDto> lista, RPROrdenDeCompraDetalleDto item)
+		/// <summary>
+		/// Agregar items a la lista de productos, en Carga Detalle de Comprobante RP PRoveedor
+		/// </summary>
+		/// <param name="lista">Lista de productos en sesión</param>
+		/// <param name="item">Elemento a agregar/reemplazar/acumular</param>
+		/// <param name="accion">Acción a realizar con el elemento, en relación al segundo parámetro</param>
+		private void CargarItemEnGrillaDeProductos(List<ProductoBusquedaDto> lista, RPROrdenDeCompraDetalleDto item, int accion, ProductoBusquedaDto? itemAQuitar)
 		{
+			if (accion == 1 && itemAQuitar != null)
+			{
+				lista.Remove(itemAQuitar);
+			}
+			else if (accion == 2 && itemAQuitar != null)
+			{
+				lista.Remove(itemAQuitar);
+				item.oc_compte = itemAQuitar.oc_compte;
+				item.ocd_bultos += itemAQuitar.Bulto;
+				item.ocd_cantidad += itemAQuitar.Cantidad;
+			}
 			lista.Add(new ProductoBusquedaDto()
 			{
 				P_id = item.p_id,
@@ -332,6 +594,25 @@ namespace gc.sitio.Areas.Compras.Controllers
 				Unidad = item.ocd_unidad_x_bulto,
 				Cantidad = item.ocd_cantidad,
 			});
+		}
+
+		private static DateTime UnixTimeStampToDateTime(string unixTimeStamp)
+		{
+			if (double.TryParse(unixTimeStamp, out var dt))
+			{
+				DateTime dateTime = new(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+				dateTime = dateTime.AddSeconds(dt).ToLocalTime();
+				return dateTime;
+			}
+			else
+				return default;
+		}
+
+		enum TipoAltaRP
+		{
+			AGREGA,
+			MODIFICA,
+			ELIMINA
 		}
 		#endregion
 	}
