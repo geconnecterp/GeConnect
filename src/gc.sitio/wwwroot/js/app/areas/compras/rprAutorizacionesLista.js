@@ -18,6 +18,8 @@ function selectRPRow(x) {
 	$("#idRPSelected").val(x.cells[0].innerText.trim());
 	var link = ModificarAutorizacionRPUrl + "?rp=" + x.cells[0].innerText.trim();
 	$("#btnModificarAut").prop("href", link);
+	var linkVer = VerAutorizacionRPUrl + "?rp=" + x.cells[0].innerText.trim();
+	$("#btnVer").prop("href", linkVer);
 };
 
 function ModificarAutorizacion() {

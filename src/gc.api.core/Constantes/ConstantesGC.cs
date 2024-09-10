@@ -39,6 +39,7 @@
 			public const string SP_RPR_CARGAR = "spgeco_rpr_cargar";
 			public const string SP_RPR_ELIMINA = "spgeco_rpr_elimina";
 			public const string SP_RPR_DATOS_JSON = "spgeco_rpr_datos_json";
+			public const string SP_RPR_VER_COMPTES = "spgeco_rpr_ver_comptes";
 
 			public const string SP_CUENTA_BUSQUEDA = "dbo.spgeco_c_busqueda_lista";
 

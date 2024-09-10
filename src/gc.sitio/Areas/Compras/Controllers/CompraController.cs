@@ -35,6 +35,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private readonly ILogger<CompraController> _logger;
 		private readonly IProductoServicio _productoServicio;
 		private readonly IDepositoServicio _depositoServicio;
+		private const char TipoCuenta = 'B';
 
 		public CompraController(ILogger<CompraController> logger, IOptions<AppSettings> options, IProductoServicio productoServicio, ICuentaServicio cuentaServicio,
 			ITipoComprobanteServicio tipoComprobanteServicio, IDepositoServicio depositoServicio, IHttpContextAccessor context) : base(options, context)
@@ -75,6 +76,55 @@ namespace gc.sitio.Areas.Compras.Controllers
 				grid = new();
 			}
 			return View(grid);
+		}
+
+		public async Task<IActionResult> VerAut(string rp)
+		{
+			try
+			{
+				var model = new RPRVerAutoDto();
+				var comptes = RPRComptesDeRPRegs.Where(x => x.Rp == rp).ToList();
+				model.Comprobantes = comptes;
+				model.ComboDeposito = ComboDepositos();
+				model.Rp = rp;
+				JsonDeRPVerCompte = ObtenerComprobantesDesdeJson(rp).Result;
+				var objeto = JsonDeRPVerCompte.encabezado.FirstOrDefault();
+				var cuenta = await _cuentaServicio.ObtenerListaCuentaComercial(objeto?.Cta_id, TipoCuenta, TokenCookie);
+				model.Depo_id = objeto?.Depo_id;
+
+				model.Leyenda = $"Autorización RP {rp} Cuenta: {cuenta.FirstOrDefault().Cta_Denominacion} ({objeto.Cta_id}) Turno: {FormateoDeFecha(objeto.Turno, FechaTipoFormato.PARAUSUARIO)}";
+				return PartialView("RPRVerAutorizacion", model);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar abrir pantalla Ver Autorización.");
+				TempData["error"] = "Hubo algun problema al intentar abrir pantalla Ver Autorización. Si el problema persiste informe al Administrador";
+				return null;
+			}
+
+		}
+
+		public async Task<IActionResult> ObtenerDetalleVerCompte(string rp, string tco_id, string cc_compte)
+		{
+			GridCore<RPRItemVerCompteDto> datosIP = new();
+			var lista = new List<RPRItemVerCompteDto>();
+			try
+			{
+				var detalleVerCompte = await _productoServicio.RPRObtenerItemVerCompte(rp, TokenCookie);
+				if (detalleVerCompte != null)
+				{
+					lista = detalleVerCompte.Where(x => x.Tco_id == tco_id && x.Cm_compte == cc_compte).ToList();
+					datosIP = ObtenerDetalleItemVerCompteGrid(lista);
+				}
+				//
+				return PartialView("_rprDetalleVerCompte", datosIP);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar obtener el detalle del comprobante RPR.");
+				TempData["error"] = "Hubo algun problema al intentar obtener el detalle del comprobante RPR. Si el problema persiste informe al Administrador";
+				return PartialView("_rprDetalleVerCompte", datosIP);
+			}
 		}
 
 		private async Task<JsonDeRPDto> ObtenerComprobantesDesdeJson(string rp)
@@ -430,6 +480,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			try
 			{
+				var itemCount = 0;
 				var ctaid = CuentaComercialSeleccionada.Cta_Id;
 				JsonEncabezadoDeRPDto encabezado = new()
 				{
@@ -442,7 +493,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					Rpe_desc = "Pendiente",
 					Depo_id = RPRComprobanteDeRPSeleccionado.Depo_id,
 					Nota = RPRComprobanteDeRPSeleccionado.Nota,
-					Turno = FormateoDeFecha(RPRComprobanteDeRPSeleccionado.FechaTurno),
+					Turno = FormateoDeFecha(RPRComprobanteDeRPSeleccionado.FechaTurno, FechaTipoFormato.PARAJSON),
 					Tco_id = RPRComprobanteDeRPSeleccionado.CompteSeleccionado.Tipo,
 					Cm_compte = RPRComprobanteDeRPSeleccionado.CompteSeleccionado.NroComprobante,
 					Comprobantes = RPRDetalleDeProductosEnRP.Select(x => new JsonComprobanteDeRPDto()
@@ -450,7 +501,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 						Tco_id = RPRComprobanteDeRPSeleccionado.CompteSeleccionado.Tipo,
 						Tco_desc = RPRComprobanteDeRPSeleccionado.CompteSeleccionado.TipoDescripcion,
 						Cm_compte = RPRComprobanteDeRPSeleccionado.CompteSeleccionado.NroComprobante,
-						Cm_fecha = FormateoDeFecha(RPRComprobanteDeRPSeleccionado.CompteSeleccionado.Fecha),
+						Cm_fecha = FormateoDeFecha(RPRComprobanteDeRPSeleccionado.CompteSeleccionado.Fecha, FechaTipoFormato.PARAJSON),
 						Cm_importe = RPRComprobanteDeRPSeleccionado.CompteSeleccionado.Importe,
 						P_id = x.P_id,
 						P_id_prov = x.P_id_prov,
@@ -461,6 +512,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 						Uni_suelta = x.Unidad.ToString(),
 						Cantidad = x.Cantidad.ToString(),
 						Oc_compte = x.oc_compte,
+						Item = itemCount++,
 						Producto = x
 					}).ToList()
 				};
@@ -585,13 +637,18 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		#region Métodos privados
-		private string FormateoDeFecha(string formateoDeFecha)
+		private string FormateoDeFecha(string formateoDeFecha, FechaTipoFormato tipo)
 		{
 			try
 			{
 				if (DateTime.TryParse(formateoDeFecha, out var date))
 				{
-					return date.ToString("yyyy-MM-dd");
+					return tipo switch
+					{
+						FechaTipoFormato.PARAJSON => date.ToString("yyyy-MM-dd"),
+						FechaTipoFormato.PARAUSUARIO => date.ToString("dd-MM-yyyy"),
+						_ => date.ToString("dd-MM-yyyy"),
+					};
 				}
 				else
 				{
@@ -699,6 +756,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 			lista.Add(nuevo);
 			return lista;
 		}
+		private GridCore<RPRItemVerCompteDto> ObtenerDetalleItemVerCompteGrid(List<RPRItemVerCompteDto> lista)
+		{
+
+			var listaDetalle = new StaticPagedList<RPRItemVerCompteDto>(lista, 1, 999, lista.Count);
+
+			return new GridCore<RPRItemVerCompteDto>() { ListaDatos = listaDetalle, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
+		}
 		private GridCore<RPROrdenDeCompraDetalleDto> ObtenerOCDetalleRPGrid(List<RPROrdenDeCompraDetalleDto> listaOCDetalle)
 		{
 
@@ -795,6 +859,12 @@ namespace gc.sitio.Areas.Compras.Controllers
 			AGREGA,
 			MODIFICA,
 			ELIMINA
+		}
+
+		enum FechaTipoFormato
+		{
+			PARAJSON,
+			PARAUSUARIO
 		}
 		#endregion
 	}

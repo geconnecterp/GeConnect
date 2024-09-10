@@ -207,6 +207,7 @@ function AgregarHandlerSelectedRow(grilla) {
 //1-> Reemplazar
 //2-> Acumular
 function CargarDetalleDeProductosEnRP(accion) {
+	AbrirWaiting();
 	var oc_compte = $("#ocCompteSelected").val();
 	var id_prod = $("txtIdProdEnComprobanteRP").val();
 	var up = $("#txtUPEnComprobanteRP").val();
@@ -218,9 +219,11 @@ function CargarDetalleDeProductosEnRP(accion) {
 	PostGenHtml(data, CargarDetalleDeProductosEnRPUrl, function (obj) {
 		$("#divDetalleDeProductos").html(obj);
 		AgregarHandlerSelectedRow("tbDetalleDeProd");
+		CerrarWaiting();
 		return true;
 	}, function (obj) {
 		ControlaMensajeError(obj.message);
+		CerrarWaiting();
 		return true;
 	});
 }

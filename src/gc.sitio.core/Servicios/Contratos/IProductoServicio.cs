@@ -1,5 +1,6 @@
 ﻿using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Rpr;
+using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
@@ -25,6 +26,6 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<List<RespuestaDto>> RPRCargarCompte(string json_str, string token);
         Task<List<RespuestaDto>> RPREliminarCompte(string rp, string token);
         Task<List<JsonDto>> RPObtenerJsonDesdeRP(string rp, string token);
-
+        Task<List<RPRItemVerCompteDto>> RPRObtenerItemVerCompte(string rp, string token);
 	}
 }

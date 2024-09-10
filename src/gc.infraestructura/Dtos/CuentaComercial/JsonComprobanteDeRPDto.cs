@@ -63,7 +63,10 @@ namespace gc.infraestructura.Dtos.CuentaComercial
 		[DataMember]
 		[JsonProperty("oc_compte")]
 		public string Oc_compte { get; set; } = string.Empty;
-		
+		[DataMember]
+		[JsonProperty("item")]
+		public int Item { get; set; } = 0;
+
 		[JsonProperty(nameof(Producto))]
 		public ProductoBusquedaDto Producto { get; set; }
 

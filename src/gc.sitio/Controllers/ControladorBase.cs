@@ -207,23 +207,23 @@ namespace gc.sitio.Controllers
 			}
 		}
 
-		//public List<JsonEncabezadoDeRPDto> JsonEncabezadoDeRPLista
-		//{
-		//	get
-		//	{
-		//		var json = _context.HttpContext.Session.GetString("JsonEncabezadoDeRPLista");
-		//		if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
-		//		{
-		//			return null;
-		//		}
-		//		return JsonConvert.DeserializeObject<List<JsonEncabezadoDeRPDto>>(json);
-		//	}
-		//	set
-		//	{
-		//		var json = JsonConvert.SerializeObject(value);
-		//		_context.HttpContext.Session.SetString("JsonEncabezadoDeRPLista", json);
-		//	}
-		//}
+		public JsonDeRPDto JsonDeRPVerCompte
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("JsonDeRPVerCompte");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return null;
+				}
+				return JsonConvert.DeserializeObject<JsonDeRPDto>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("JsonDeRPVerCompte", json);
+			}
+		}
 
 		public JsonDeRPDto JsonDeRP
 		{

@@ -4,6 +4,7 @@ using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Rpr;
+using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
@@ -34,6 +35,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string RPRCARGAR = "/RPRCargar";
 		private const string RPRELIMINA = "/RPRElimina";
 		private const string RPROBTENERJSON = "/RPRObtenerJson";
+		private const string RPROBTENERDATOSVERCOMPTE = "/RPRObtenerItemVerCompte";
 
 		//almacena Box 
 		private const string RutaApiAlmacen = "/api/apialmacen";
@@ -456,6 +458,36 @@ namespace gc.sitio.core.Servicios.Implementacion
 					return new();
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<JsonDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<RPRItemVerCompteDto>> RPRObtenerItemVerCompte(string rp, string token)
+		{
+			ApiResponse<List<RPRItemVerCompteDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{RPROBTENERDATOSVERCOMPTE}?rp={rp}";
+			response = await client.GetAsync(link);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros rp:{rp}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RPRItemVerCompteDto>>>(stringData);
 				return apiResponse.Data;
 			}
 			else

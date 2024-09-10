@@ -29,3 +29,10 @@ body {
     background-color: lightslategray;
     color: black;
 }
+
+fieldset {
+    margin: 8px;
+    border: 1px solid silver;
+    padding: 8px;
+    border-radius: 4px;
+}

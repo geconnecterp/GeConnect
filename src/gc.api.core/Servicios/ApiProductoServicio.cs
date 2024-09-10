@@ -5,6 +5,7 @@ using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Rpr;
+using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
@@ -309,6 +310,17 @@ namespace gc.api.core.Servicios
 			return jsonstring;
 		}
 
+		public List<RPRItemVerCompteDto> RPRObtenerDatosVerCompte(string rp)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_VER_COMPTES;
+			var ps = new List<SqlParameter>()
+			{
+				new("@rp",rp),
+			};
+			List<RPRItemVerCompteDto> items = _repository.EjecutarLstSpExt<RPRItemVerCompteDto>(sp, ps, true);
+
+			return items;
+		}
 
 		public RPRRegistroResponseDto RPRRegistrarProductos(string json)
 		{

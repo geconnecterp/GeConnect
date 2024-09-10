@@ -8,6 +8,7 @@ namespace gc.api.Controllers.Almacen
     using gc.infraestructura.Core.Responses;
     using gc.infraestructura.Dtos.Almacen;
     using gc.infraestructura.Dtos.Almacen.Rpr;
+	using gc.infraestructura.Dtos.CuentaComercial;
 	using gc.infraestructura.Dtos.Gen;
 	using gc.infraestructura.Dtos.Productos;
     using gc.infraestructura.EntidadesComunes.Options;
@@ -286,6 +287,21 @@ namespace gc.api.Controllers.Almacen
 			var res = _productosSv.RPREObtenerDatosJsonDesdeRP(rp);
 
 			response = new ApiResponse<List<JsonDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RPRItemVerCompteDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult RPRObtenerItemVerCompte(string rp)
+		{
+			ApiResponse<List<RPRItemVerCompteDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.RPRObtenerDatosVerCompte(rp);
+
+			response = new ApiResponse<List<RPRItemVerCompteDto>>(res);
 
 			return Ok(response);
 		}

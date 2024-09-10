@@ -1,0 +1,111 @@
+﻿@model RPRVerAutoDto
+@{
+	Layout = "~/views/shared/_Layout.cshtml";
+	var depositos = Model.ComboDeposito;
+}
+<div class="card">
+	<row>
+		@Html.Hidden("Rp", Model.Rp)
+		<div style="float:left">
+			<fieldset>
+				<h5>RPR Autorización</h5>
+				<row>
+					<div class="container">
+						<div class="row">
+							<div class="col-8">
+								<div class="input-group">
+									<span>@Model.Leyenda</span>
+								</div>
+							</div>
+							<div class="col-4">
+								<div class="input-group">
+									<span class="input-group-text">Depósito: </span>
+									@Html.DropDownList("id", depositos, "Seleccionar...", new { @id = "listaDeposito", @class = "form-control" })
+								</div>
+							</div>
+						</div>
+					</div>
+				</row>
+				<row>
+					<div class="container">
+						<div class="row">
+							<div class="col-7">
+								<div class="table-responsive table-wrapper">
+									<table class="table table-bordered table-hover" id="tbVerComptesDeRP">
+										<thead class="table-dark">
+											<tr class="header">
+												<th style="width:0%; display:none;">TipoId</th>
+												<th style="width:0%; display:none;">NroCompte</th>
+												<th scope="col" style="width:50%">Tipo</th>
+												<th scope="col" style="width:25%">Fecha</th>
+												<th scope="col" style="width:25%">Importe</th>
+											</tr>
+										</thead>
+										<tbody>
+											@foreach (var item in Model.Comprobantes)
+											{
+												<tr onclick="selectVerComptesDeRPRow(this)">
+													<td style="display:none;">@item.Tipo</td>
+													<td style="display:none;">@item.NroComprobante</td>
+													<td>@item.TipoDescripcion @item.NroComprobante</td>
+													<td>@item.Fecha</td>
+													<td>@item.Importe</td>
+												</tr>
+											}
+										</tbody>
+									</table>
+								</div>
+							</div>
+							<div class="col-5">
+								<button type="button" class="btn btn-success" style="margin-left:5px;" id="btnConfirmarRP">
+									<span class="tf-icons bx bx-check-circle">Confirmar</span>
+								</button>
+								<button type="button" class="btn btn-danger" style="margin-left:5px;" id="btnRegresarAAutorizacionesRP">
+									<span class="tf-icons bx bx-left-arrow-circle">Regresar</span>
+								</button>
+							</div>
+						</div>
+					</div>
+				</row>
+			</fieldset>
+			<div class="nav-align-top mb-4">
+				<ul class="nav nav-tabs" role="tablist">
+					<li class="nav-item" role="presentation">
+						<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-home" aria-controls="navs-top-home" aria-selected="true">
+							<span id="tabOne">Detalle de comprobante</span>
+						</button>
+					</li>
+					<li class="nav-item" role="presentation">
+						<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-profile" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1">
+							<span id="tabTwo">Conteos</span>
+						</button>
+					</li>
+				</ul>
+				<div class="tab-content">
+					<div class="tab-pane fade active show" id="navs-top-home" role="tabpanel">
+						<div id="divDetalleVerCompte"></div>
+					</div>
+					<div class="tab-pane fade" id="navs-top-profile" role="tabpanel">
+						<p>
+							Donut dragée jelly pie halvah. Danish gingerbread bonbon cookie wafer candy oat cake ice
+							cream. Gummies halvah tootsie roll muffin biscuit icing dessert gingerbread. Pastry ice cream
+							cheesecake fruitcake.
+						</p>
+						<p class="mb-0">
+							Jelly-o jelly beans icing pastry cake cake lemon drops. Muffin muffin pie tiramisu halvah
+							cotton candy liquorice caramels.
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</row>
+</div>
+
+@section scripts {
+	<script type="text/javascript">
+		var volverAListaDeAutorizacionesUrl = "@Url.Action("RPRAutorizacionesLista", "compra", new { area = "Compras" })";
+		var buscarDetalleVerCompteUrl = "@Url.Action("ObtenerDetalleVerCompte", "compra", new { area = "Compras" })";
+	</script>
+	<script src="~/js/app/areas/compras/rprVerAutorizacion.js"></script>
+}
