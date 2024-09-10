@@ -23,6 +23,8 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RprResponseDto> ValidarBox(string box,string adm,string token);
         Task<RprResponseDto> ConfirmaBoxUl(string box, string ul, string adm, string token);
         Task<List<RespuestaDto>> RPRCargarCompte(string json_str, string token);
+        Task<List<RespuestaDto>> RPREliminarCompte(string rp, string token);
+        Task<List<JsonDto>> RPObtenerJsonDesdeRP(string rp, string token);
 
 	}
 }

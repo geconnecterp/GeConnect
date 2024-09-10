@@ -56,5 +56,10 @@ namespace gc.infraestructura.Dtos.CuentaComercial
 		[DataMember]
 		[JsonProperty("comprobantes")]
 		public List<JsonComprobanteDeRPDto> Comprobantes { get; set; }
+
+		public JsonEncabezadoDeRPDto()
+		{
+			Comprobantes = [];
+		}
 	}
 }

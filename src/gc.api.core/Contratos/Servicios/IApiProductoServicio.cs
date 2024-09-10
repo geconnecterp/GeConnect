@@ -21,6 +21,7 @@ namespace gc.api.core.Contratos.Servicios
         RPRRegistroResponseDto RPRRegistrarProductos(string json);
         List<RPRAutoComptesPendientesDto> RPRObtenerComptesPendientes(string adm);
         List<RespuestaDto> RPRCargar(RPRCargarRequest request);
-        List<RespuestaDto> RPRElimina(RPREliminarRequest request);
+        List<RespuestaDto> RPRElimina(string rp);
+        List<JsonDto> RPREObtenerDatosJsonDesdeRP(string rp);
 	}
 }

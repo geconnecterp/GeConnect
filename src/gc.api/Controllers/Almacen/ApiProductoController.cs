@@ -264,13 +264,28 @@ namespace gc.api.Controllers.Almacen
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RespuestaDto>>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]
-		public IActionResult RPRElimina(RPREliminarRequest request)
+		public IActionResult RPRElimina(string rp)
 		{
 			ApiResponse<List<RespuestaDto>> response;
 			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			var res = _productosSv.RPRElimina(request);
+			var res = _productosSv.RPRElimina(rp);
 
 			response = new ApiResponse<List<RespuestaDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<JsonDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult RPRObtenerJson(string rp)
+		{
+			ApiResponse<List<JsonDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.RPREObtenerDatosJsonDesdeRP(rp);
+
+			response = new ApiResponse<List<JsonDto>>(res);
 
 			return Ok(response);
 		}

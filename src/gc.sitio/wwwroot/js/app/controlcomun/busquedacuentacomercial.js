@@ -21,7 +21,8 @@
 	$("#btnNuevoCompteDeRP").on("click", NuevoCompteDeRP);
 	$("#btnEliminarCompteDeRP").on("click", EliminarCompteDeRP);
 	$("#btnRegresarASelAuto").on("click", RegresarASelAuto); //Regregar a la pantalla de seleccion de autorizaciones.
-	$("#btnAceptarAutoRP").on("click", AceptarAutoRP); //Regregar a la pantalla de seleccion de autorizaciones.
+	$("#btnAceptarAutoRP").on("click", AceptarAutoRP); //Generar Json de comprobante RPR
+	$("#btnEliminarAutoRP").on("click", EliminarAutoRP); //Eliminar RPR cargado
 
 	$("#txtNroCompte").mask("0000-00000000", { reverse: true });
 
@@ -91,6 +92,52 @@ function CargarCompteEnGrilla(obj) {
 		}
 	}
 };
+
+function EliminarAutoRP() {
+	var rp_id = $("#Rp").val();
+	if ($("#Rp").val() != "") {
+		AbrirMensaje("Confirmación", "Esta a punto de eliminar un comprobante RPR, esta acción no puede deshacerse. Desea continuar?", function (e) {
+			$("#msjModal").modal("hide");
+			switch (e) {
+				case "SI": //Borrar comprobante RPR
+					EliminarComprobanteRPR(rp_id);
+					break;
+				case "NO": 
+					break;
+				default: //NO
+					break;
+			}
+			return true;
+		}, true, ["Aceptar", "Cancelar"], "info!", null);
+	}
+}
+
+function EliminarComprobanteRPR(rp) {
+	datos = { rp };
+	PostGen(datos, eliminarComprobanteRPRUrl, function (o) {
+		if (o.error === true) {
+			AbrirMensaje("Atención", o.msg, function () {
+				$("#msjModal").modal("hide");
+				window.location.href = volverAListaDeAutorizacionesUrl;
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		} else if (o.warn === true) {
+			AbrirMensaje("Atención", o.msg, function () {
+				$("#msjModal").modal("hide");
+				window.location.href = volverAListaDeAutorizacionesUrl;
+				return true;
+			}, false, ["Aceptar"], "warn!", null);
+		} else if (o.codigo !== "") {
+			AbrirMensaje("Atención", o.msg, function (e) {
+				$("#msjModal").modal("hide");
+				window.location.href = volverAListaDeAutorizacionesUrl;
+				return true;
+			}, false, ["Aceptar"], "info!", null);
+		} else {
+			window.location.href = volverAListaDeAutorizacionesUrl;
+		}
+	});
+}
 
 function AceptarAutoRP() {
 	GuardarDetalleDeProductos(true);

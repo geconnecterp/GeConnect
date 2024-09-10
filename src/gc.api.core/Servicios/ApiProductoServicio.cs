@@ -285,16 +285,28 @@ namespace gc.api.core.Servicios
 			return productos;
 		}
 
-		public List<RespuestaDto> RPRElimina(RPREliminarRequest request)
+		public List<RespuestaDto> RPRElimina(string rp)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_ELIMINA;
 			var ps = new List<SqlParameter>()
 			{
-				new("@rp",request.rp_id),
+				new("@rp",rp),
 			};
 			List<RespuestaDto> productos = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 
 			return productos;
+		}
+
+		public List<JsonDto> RPREObtenerDatosJsonDesdeRP(string rp)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_DATOS_JSON;
+			var ps = new List<SqlParameter>()
+			{
+				new("@rp",rp),
+			};
+			List<JsonDto> jsonstring = _repository.EjecutarLstSpExt<JsonDto>(sp, ps, true);
+
+			return jsonstring;
 		}
 
 
