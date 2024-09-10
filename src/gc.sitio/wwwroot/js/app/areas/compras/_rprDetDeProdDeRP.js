@@ -8,20 +8,11 @@
 });
 
 function CargarDetalleDeProducto() {
-	console.log("cta_id: " + $("#cta_id").val());
-	console.log("tco_id: " + $("#tco_id").val());
-	console.log("cm_compte: " + $("#cm_compte").val());
-	console.log("nota: " + $("#nota").val());
-	console.log("turno: " + $("#turno").val());
-	console.log("depo_id: " + $("#depo_id").val());
-	console.log("poner_curso: " + $("#poner_curso").val());
-	console.log("Rp: " + $("#Rp").val());
 	CargarDetalleDeProductosEnRP(0);
 }
 
 function selectDetalleDeProdRow(x) {
 	if (x) {
-		console.log(x);
 		p_id_selected = x.cells[2].innerText.trim();
 	}
 	else {
@@ -102,16 +93,15 @@ function RegresarDesdeComprobanteRP() {
 				return true;
 			}, true, ["Aceptar", "Cancelar"], "info!", null);
 		} else {
-			debugger;
 			var uri = VolverANuevaAutUrl + "?rp=" + $("#Rp").val();
-			console.log(uri);
 			window.location.href = uri;
 		}
 	});
 };
 
 function GuardarDetalleDeProductos(guardado) {
-	datos = { guardado };
+	var generar = false;
+	datos = { guardado, generar };
 	PostGen(datos, GuardarDetalleDeComprobanteRPUrl, function (o) {
 		if (o.error === true) {
 			AbrirMensaje("Atención", o.msg, function () {

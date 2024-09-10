@@ -17,25 +17,68 @@
 	$("#btnBuscarCC").on("click", buscarCuentasComercial);
 	InicializaPantallaCC();
 	//comptesDeRPGrid();
+	$("#VerDetalle").on("click", VerDetalleClick);
 	$("#btnNuevoCompteDeRP").on("click", NuevoCompteDeRP);
 	$("#btnEliminarCompteDeRP").on("click", EliminarCompteDeRP);
 	$("#btnRegresarASelAuto").on("click", RegresarASelAuto); //Regregar a la pantalla de seleccion de autorizaciones.
+	$("#btnAceptarAutoRP").on("click", AceptarAutoRP); //Regregar a la pantalla de seleccion de autorizaciones.
 
 	$("#txtNroCompte").mask("0000-00000000", { reverse: true });
 
 	$("#Cuenta").on("keypress", analizaInput);
+	$("#txtNota").on("keypress", analizaInputTxtNota);
+	$("#listaDeposito").on("change", analizaInputlistaDeposito)
+
 	if ($("#CtaId").val() !== "") {
 		$("#btnBuscarCC").trigger("click");
 	}
 	if ($("#DepoId").val() !== "") {
 		$("#listaDeposito").val($("#DepoId").val());
 	}
-	console.log(modelObj);
 	CargarCompteEnGrilla(modelObj);
 });
 
+function VerDetalleClick() {
+	if ($("#Cuenta") == undefined) {
+		AbrirMensaje("Atención", "Debe especificar una cuenta válida.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	if ($("#Cuenta").val() == "") {
+		AbrirMensaje("Atención", "Debe especificar una cuenta válida.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	if ($("#tco_id") == undefined) {
+		AbrirMensaje("Atención", "Debe especificar una cuenta válida.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+}
+
 function analizaInput(e) {
 	$("#CtaId").val("");
+}
+
+function analizaInputTxtNota(e) {
+	var depoSelec = $("#listaDeposito").val();
+	var notaAuto = $("#txtNota").val();
+	var turno = moment($("#dtpFechaTurno").val()).format("X");
+	var ponerEnCurso = $("#chkPonerEnCurso")[0].checked;
+	var link = VerDetalleDeCompteDeRPUrl + "?idTipoCompte=" + $("#idTipoCompteDeRPSelected").val() + "&nroCompte=" + $("#txtNroCompte").val() + "&depoSelec=" + depoSelec + "&notaAuto=" + notaAuto + "&turno=" + turno + "&ponerEnCurso=" + ponerEnCurso;
+	$("#VerDetalle").prop("href", link);
+}
+
+function analizaInputlistaDeposito() {
+	var depoSelec = $("#listaDeposito").val();
+	var notaAuto = $("#txtNota").val();
+	var turno = moment($("#dtpFechaTurno").val()).format("X");
+	var ponerEnCurso = $("#chkPonerEnCurso")[0].checked;
+	var link = VerDetalleDeCompteDeRPUrl + "?idTipoCompte=" + $("#idTipoCompteDeRPSelected").val() + "&nroCompte=" + $("#txtNroCompte").val() + "&depoSelec=" + depoSelec + "&notaAuto=" + notaAuto + "&turno=" + turno + "&ponerEnCurso=" + ponerEnCurso;
+	$("#VerDetalle").prop("href", link);
 }
 
 function CargarCompteEnGrilla(obj) {
@@ -48,6 +91,10 @@ function CargarCompteEnGrilla(obj) {
 		}
 	}
 };
+
+function AceptarAutoRP() {
+	GuardarDetalleDeProductos(true);
+}
 
 function RegresarASelAuto() {
 
@@ -87,7 +134,8 @@ function RegresarASelAuto() {
 }
 
 function GuardarDetalleDeProductos(guardado) {
-	datos = { guardado };
+	var generar = true;
+	datos = { guardado, generar };
 	PostGen(datos, GuardarDetalleDeComprobanteRPUrl, function (o) {
 		if (o.error === true) {
 			AbrirMensaje("Atención", o.msg, function () {

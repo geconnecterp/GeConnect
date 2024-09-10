@@ -1,5 +1,6 @@
 ﻿using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Rpr;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
 
@@ -21,6 +22,7 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RprResponseDto> ValidarUL(string ul,string adm,string token);
         Task<RprResponseDto> ValidarBox(string box,string adm,string token);
         Task<RprResponseDto> ConfirmaBoxUl(string box, string ul, string adm, string token);
+        Task<List<RespuestaDto>> RPRCargarCompte(string json_str, string token);
 
-    }
+	}
 }

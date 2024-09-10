@@ -5,6 +5,7 @@ using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Rpr;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
 using Microsoft.Data.SqlClient;
@@ -15,286 +16,311 @@ using System.Runtime.Intrinsics.Arm;
 
 namespace gc.api.core.Servicios
 {
-    public class ApiProductoServicio : Servicio<Producto>, IApiProductoServicio
-    {
-        public ApiProductoServicio(IUnitOfWork uow, IOptions<PaginationOptions> options) : base(uow, options)
-        {
+	public class ApiProductoServicio : Servicio<Producto>, IApiProductoServicio
+	{
+		public ApiProductoServicio(IUnitOfWork uow, IOptions<PaginationOptions> options) : base(uow, options)
+		{
 
-        }
+		}
 
-        public override PagedList<Producto> GetAll(QueryFilters filters)
-        {
-            filters.PageNumber = filters.PageNumber == default ? _paginationOptions.DefaultPageNumber : filters.PageNumber;
-            filters.PageSize = filters.PageSize == default ? _paginationOptions.DefaultPageSize : filters.PageSize;
+		public override PagedList<Producto> GetAll(QueryFilters filters)
+		{
+			filters.PageNumber = filters.PageNumber == default ? _paginationOptions.DefaultPageNumber : filters.PageNumber;
+			filters.PageSize = filters.PageSize == default ? _paginationOptions.DefaultPageSize : filters.PageSize;
 
-            var productoss = GetAllIq();
-            productoss = productoss.OrderBy($"{filters.Sort} {filters.SortDir}");
+			var productoss = GetAllIq();
+			productoss = productoss.OrderBy($"{filters.Sort} {filters.SortDir}");
 
-            if (!filters.Todo)
-            {
-                if (filters.Id != null && filters.Id != default)
-                {
-                    productoss = productoss.Where(r => r.P_Id == (string)filters.Id);
-                }
-            }
+			if (!filters.Todo)
+			{
+				if (filters.Id != null && filters.Id != default)
+				{
+					productoss = productoss.Where(r => r.P_Id == (string)filters.Id);
+				}
+			}
 
-            if (!string.IsNullOrEmpty(filters.Search))
-            {
-                productoss = productoss.Where(r => r.P_Id.Contains(filters.Search));
-            }
+			if (!string.IsNullOrEmpty(filters.Search))
+			{
+				productoss = productoss.Where(r => r.P_Id.Contains(filters.Search));
+			}
 
-            if (!string.IsNullOrEmpty(filters.Search))
-            {
-                productoss = productoss.Where(r => r.P_M_Marca.Contains(filters.Search));
-            }
+			if (!string.IsNullOrEmpty(filters.Search))
+			{
+				productoss = productoss.Where(r => r.P_M_Marca.Contains(filters.Search));
+			}
 
-            if (!string.IsNullOrEmpty(filters.Search))
-            {
-                productoss = productoss.Where(r => r.P_M_Desc.Contains(filters.Search));
-            }
+			if (!string.IsNullOrEmpty(filters.Search))
+			{
+				productoss = productoss.Where(r => r.P_M_Desc.Contains(filters.Search));
+			}
 
-            if (!string.IsNullOrEmpty(filters.Search))
-            {
-                productoss = productoss.Where(r => r.P_M_Capacidad.Contains(filters.Search));
-            }
+			if (!string.IsNullOrEmpty(filters.Search))
+			{
+				productoss = productoss.Where(r => r.P_M_Capacidad.Contains(filters.Search));
+			}
 
-            if (!string.IsNullOrEmpty(filters.Search))
-            {
-                productoss = productoss.Where(r => r.P_Id_Prov.Contains(filters.Search));
-            }
+			if (!string.IsNullOrEmpty(filters.Search))
+			{
+				productoss = productoss.Where(r => r.P_Id_Prov.Contains(filters.Search));
+			}
 
-            if (!string.IsNullOrEmpty(filters.Search))
-            {
-                productoss = productoss.Where(r => r.P_Desc.Contains(filters.Search));
-            }
+			if (!string.IsNullOrEmpty(filters.Search))
+			{
+				productoss = productoss.Where(r => r.P_Desc.Contains(filters.Search));
+			}
 
-            if (!string.IsNullOrEmpty(filters.Search))
-            {
-                productoss = productoss.Where(r => r.P_Desc_Ticket.Contains(filters.Search));
-            }
+			if (!string.IsNullOrEmpty(filters.Search))
+			{
+				productoss = productoss.Where(r => r.P_Desc_Ticket.Contains(filters.Search));
+			}
 
-            if (!string.IsNullOrEmpty(filters.Search))
-            {
-                productoss = productoss.Where(r => r.Up_Id.Contains(filters.Search));
-            }
+			if (!string.IsNullOrEmpty(filters.Search))
+			{
+				productoss = productoss.Where(r => r.Up_Id.Contains(filters.Search));
+			}
 
-            if (!string.IsNullOrEmpty(filters.Search))
-            {
-                productoss = productoss.Where(r => r.Rub_Id.Contains(filters.Search));
-            }
+			if (!string.IsNullOrEmpty(filters.Search))
+			{
+				productoss = productoss.Where(r => r.Rub_Id.Contains(filters.Search));
+			}
 
-            if (!string.IsNullOrEmpty(filters.Search))
-            {
-                productoss = productoss.Where(r => r.Cta_Id.Contains(filters.Search));
-            }
+			if (!string.IsNullOrEmpty(filters.Search))
+			{
+				productoss = productoss.Where(r => r.Cta_Id.Contains(filters.Search));
+			}
 
-            if (!string.IsNullOrEmpty(filters.Search))
-            {
-                productoss = productoss.Where(r => r.Pg_Id.Contains(filters.Search));
-            }
+			if (!string.IsNullOrEmpty(filters.Search))
+			{
+				productoss = productoss.Where(r => r.Pg_Id.Contains(filters.Search));
+			}
 
-            if (!string.IsNullOrEmpty(filters.Search))
-            {
-                productoss = productoss.Where(r => r.P_Boni.Contains(filters.Search));
-            }
+			if (!string.IsNullOrEmpty(filters.Search))
+			{
+				productoss = productoss.Where(r => r.P_Boni.Contains(filters.Search));
+			}
 
-            if (!string.IsNullOrEmpty(filters.Search))
-            {
-                productoss = productoss.Where(r => r.Usu_Id_Alta.Contains(filters.Search));
-            }
+			if (!string.IsNullOrEmpty(filters.Search))
+			{
+				productoss = productoss.Where(r => r.Usu_Id_Alta.Contains(filters.Search));
+			}
 
-            if (!string.IsNullOrEmpty(filters.Search))
-            {
-                productoss = productoss.Where(r => r.Usu_Id_Modi.Contains(filters.Search));
-            }
+			if (!string.IsNullOrEmpty(filters.Search))
+			{
+				productoss = productoss.Where(r => r.Usu_Id_Modi.Contains(filters.Search));
+			}
 
-            if (!string.IsNullOrEmpty(filters.Search))
-            {
-                productoss = productoss.Where(r => r.P_Obs.Contains(filters.Search));
-            }
+			if (!string.IsNullOrEmpty(filters.Search))
+			{
+				productoss = productoss.Where(r => r.P_Obs.Contains(filters.Search));
+			}
 
-            if (!string.IsNullOrEmpty(filters.Search))
-            {
-                productoss = productoss.Where(r => r.P_Balanza_Id.Contains(filters.Search));
-            }
+			if (!string.IsNullOrEmpty(filters.Search))
+			{
+				productoss = productoss.Where(r => r.P_Balanza_Id.Contains(filters.Search));
+			}
 
-            if (!string.IsNullOrEmpty(filters.Search))
-            {
-                productoss = productoss.Where(r => r.Lp_Id_Default.Contains(filters.Search));
-            }
+			if (!string.IsNullOrEmpty(filters.Search))
+			{
+				productoss = productoss.Where(r => r.Lp_Id_Default.Contains(filters.Search));
+			}
 
-            var paginas = PagedList<Producto>.Create(productoss, filters.PageNumber ?? 1, filters.PageSize ?? 20);
+			var paginas = PagedList<Producto>.Create(productoss, filters.PageNumber ?? 1, filters.PageSize ?? 20);
 
-            return paginas;
-        }
+			return paginas;
+		}
 
-        public List<InfoProdLP> InfoProductoLP(string id)
-        {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_INFOPROD_LP;
+		public List<InfoProdLP> InfoProductoLP(string id)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_INFOPROD_LP;
 
-            var ps = new List<SqlParameter>()
-            {
-                new SqlParameter("@p_id",id),
-                   
-            };
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@p_id",id),
 
-            List<InfoProdLP> producto = _repository.EjecutarLstSpExt<InfoProdLP>(sp, ps, true);
+			};
 
-            return producto;
-        }
+			List<InfoProdLP> producto = _repository.EjecutarLstSpExt<InfoProdLP>(sp, ps, true);
 
-        public List<InfoProdMovStk> InfoProductoMovStk(string id, string adm, string depo, string tmov, DateTime desde, DateTime hasta)
-        {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_INFOPROD_MOVSTK;
+			return producto;
+		}
 
-            var ps = new List<SqlParameter>()
-            {
-                new SqlParameter("@p_id",id),
-                    new SqlParameter("@adm_id",adm),
-                    new SqlParameter("@depo_id",depo),
-                    new SqlParameter("@sm_tipo",tmov),
-                    new SqlParameter("@d",desde),
-                    new SqlParameter("@h",hasta),
-            };
+		public List<InfoProdMovStk> InfoProductoMovStk(string id, string adm, string depo, string tmov, DateTime desde, DateTime hasta)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_INFOPROD_MOVSTK;
 
-            List<InfoProdMovStk> producto = _repository.EjecutarLstSpExt<InfoProdMovStk>(sp, ps, true);
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@p_id",id),
+					new SqlParameter("@adm_id",adm),
+					new SqlParameter("@depo_id",depo),
+					new SqlParameter("@sm_tipo",tmov),
+					new SqlParameter("@d",desde),
+					new SqlParameter("@h",hasta),
+			};
 
-            return producto;
-        }
+			List<InfoProdMovStk> producto = _repository.EjecutarLstSpExt<InfoProdMovStk>(sp, ps, true);
 
-        public List<InfoProdStkA> InfoProductoStkA(string id, string admId)
-        {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_INFOPROD_STKA;
+			return producto;
+		}
 
-            var ps = new List<SqlParameter>()
-            {
-                new SqlParameter("@p_id",id),
-                    new SqlParameter("@adm_id",admId),
-            };
+		public List<InfoProdStkA> InfoProductoStkA(string id, string admId)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_INFOPROD_STKA;
 
-            List<InfoProdStkA> producto = _repository.EjecutarLstSpExt<InfoProdStkA>(sp, ps, true);
+			var ps = new List<SqlParameter>()
+			{
+				new SqlParameter("@p_id",id),
+					new SqlParameter("@adm_id",admId),
+			};
 
-            return producto;
-        }
+			List<InfoProdStkA> producto = _repository.EjecutarLstSpExt<InfoProdStkA>(sp, ps, true);
 
-        public List<InfoProdStkBox> InfoProductoStkBoxes(string id, string adm, string depo)
-        {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_INFOPROD_STKBOX;
+			return producto;
+		}
 
-            var ps = new List<SqlParameter>()
-            {
-                    new SqlParameter("@p_id",id),
-                    new SqlParameter("@adm_id",adm),
-                    new SqlParameter("@depo_id",depo),
-            };
+		public List<InfoProdStkBox> InfoProductoStkBoxes(string id, string adm, string depo)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_INFOPROD_STKBOX;
 
-            List<InfoProdStkBox> producto = _repository.EjecutarLstSpExt<InfoProdStkBox>(sp, ps, true);
+			var ps = new List<SqlParameter>()
+			{
+					new SqlParameter("@p_id",id),
+					new SqlParameter("@adm_id",adm),
+					new SqlParameter("@depo_id",depo),
+			};
 
-            return producto;
-        }
+			List<InfoProdStkBox> producto = _repository.EjecutarLstSpExt<InfoProdStkBox>(sp, ps, true);
 
-        public List<InfoProdStkD> InfoProductoStkD(string id, string admId)
-        {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_INFOPROD_STKD;
+			return producto;
+		}
 
-            var ps = new List<SqlParameter>()
-            {
-                    new SqlParameter("@p_id",id),
-                    new SqlParameter("@adm_id",admId),
-            };
+		public List<InfoProdStkD> InfoProductoStkD(string id, string admId)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_INFOPROD_STKD;
 
-            List<InfoProdStkD> producto = _repository.EjecutarLstSpExt<InfoProdStkD>(sp, ps, true);
+			var ps = new List<SqlParameter>()
+			{
+					new SqlParameter("@p_id",id),
+					new SqlParameter("@adm_id",admId),
+			};
 
-            return producto;
-        }
+			List<InfoProdStkD> producto = _repository.EjecutarLstSpExt<InfoProdStkD>(sp, ps, true);
 
-        public ProductoBusquedaDto ProductoBuscar(BusquedaBase busqueda)
-        {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_PRODUCTO_BUSQUEDA;
+			return producto;
+		}
 
-            var ps = new List<SqlParameter>()
-            {
-                    new SqlParameter("@busqueda",busqueda.Busqueda),
-                    new SqlParameter("@lp_id",busqueda.ListaPrecio?? ""),
-                    new SqlParameter("@adm_id",busqueda.Administracion),
-                    new SqlParameter("co_tipo",busqueda.TipoOperacion),
-                    new SqlParameter("cli_dto",busqueda.DescuentoCli)
-            };
+		public ProductoBusquedaDto ProductoBuscar(BusquedaBase busqueda)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PRODUCTO_BUSQUEDA;
 
-            List<ProductoBusquedaDto> producto = _repository.EjecutarLstSpExt<ProductoBusquedaDto>(sp, ps, true);
+			var ps = new List<SqlParameter>()
+			{
+					new SqlParameter("@busqueda",busqueda.Busqueda),
+					new SqlParameter("@lp_id",busqueda.ListaPrecio?? ""),
+					new SqlParameter("@adm_id",busqueda.Administracion),
+					new SqlParameter("co_tipo",busqueda.TipoOperacion),
+					new SqlParameter("cli_dto",busqueda.DescuentoCli)
+			};
 
-            if (producto.Count > 0)
-            {
-                return producto.First();
-            }
-            else
-            {
-                return new();
-            }
-        }
+			List<ProductoBusquedaDto> producto = _repository.EjecutarLstSpExt<ProductoBusquedaDto>(sp, ps, true);
 
-        public List<ProductoListaDto> ProductoListaBuscar(BusquedaProducto search)
-        {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_PRODUCTO_BUSQUEDA;
-            /// varchar(30),  varchar(3),  varchar(4), varchar(8), @ bit, @ varchar(10) , @ bit, @ bit, @ bit, @ bit, @ bit, @ bit)  
-            var ps = new List<SqlParameter>()
-            {
-                new("@busqueda",search.Busqueda),
-                new("@lp_id",search.ListaPrecio??""),
-                new("@adm_id",search.Administracion),
-                new("@cta_id",search.CtaProveedorId),
-                new("@cta_id_unico",search.CtaProveedorIdUnico),
-                new("@rub_id",search.RubroId),
-                new("@rub_id_unico",search.RubroIdUnico),
-                new("@activo",search.EstadoActivo),
-                new("@discontinuo",search.EstadoDiscont),
-                new("@inactivo",search.EstadoInactivo),
-                new("@stk_no",search.SinStock),
-                new("@stk_si", search.ConStock)
-            };
+			if (producto.Count > 0)
+			{
+				return producto.First();
+			}
+			else
+			{
+				return new();
+			}
+		}
 
-            List<ProductoListaDto> productos = _repository.EjecutarLstSpExt<ProductoListaDto>(sp, ps, true);
+		public List<ProductoListaDto> ProductoListaBuscar(BusquedaProducto search)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PRODUCTO_BUSQUEDA;
+			/// varchar(30),  varchar(3),  varchar(4), varchar(8), @ bit, @ varchar(10) , @ bit, @ bit, @ bit, @ bit, @ bit, @ bit)  
+			var ps = new List<SqlParameter>()
+			{
+				new("@busqueda",search.Busqueda),
+				new("@lp_id",search.ListaPrecio??""),
+				new("@adm_id",search.Administracion),
+				new("@cta_id",search.CtaProveedorId),
+				new("@cta_id_unico",search.CtaProveedorIdUnico),
+				new("@rub_id",search.RubroId),
+				new("@rub_id_unico",search.RubroIdUnico),
+				new("@activo",search.EstadoActivo),
+				new("@discontinuo",search.EstadoDiscont),
+				new("@inactivo",search.EstadoInactivo),
+				new("@stk_no",search.SinStock),
+				new("@stk_si", search.ConStock)
+			};
 
-            return productos;
-        }
+			List<ProductoListaDto> productos = _repository.EjecutarLstSpExt<ProductoListaDto>(sp, ps, true);
 
-        public List<RPRAutorizacionPendienteDto> RPRObtenerAutorizacionPendiente(string adm)
-        {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_PENDIENTES;
-            /// varchar(30),  varchar(3),  varchar(4), varchar(8), @ bit, @ varchar(10) , @ bit, @ bit, @ bit, @ bit, @ bit, @ bit)  
-            var ps = new List<SqlParameter>()
-            {                
-                new("@adm_id",adm),                
-            };
+			return productos;
+		}
 
-            List<RPRAutorizacionPendienteDto> productos = _repository.EjecutarLstSpExt<RPRAutorizacionPendienteDto>(sp, ps, true);
+		public List<RPRAutorizacionPendienteDto> RPRObtenerAutorizacionPendiente(string adm)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_PENDIENTES;
+			/// varchar(30),  varchar(3),  varchar(4), varchar(8), @ bit, @ varchar(10) , @ bit, @ bit, @ bit, @ bit, @ bit, @ bit)  
+			var ps = new List<SqlParameter>()
+			{
+				new("@adm_id",adm),
+			};
 
-            return productos;
-        }
+			List<RPRAutorizacionPendienteDto> productos = _repository.EjecutarLstSpExt<RPRAutorizacionPendienteDto>(sp, ps, true);
 
-        public RPRRegistroResponseDto RPRRegistrarProductos(string json)
-        {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_REGISTRA;
-            /// varchar(30),  varchar(3),  varchar(4), varchar(8), @ bit, @ varchar(10) , @ bit, @ bit, @ bit, @ bit, @ bit, @ bit)  
-            var ps = new List<SqlParameter>()
-            {
-                new("@json",json),
-            };
+			return productos;
+		}
 
-            List<RPRRegistroResponseDto> productos = _repository.EjecutarLstSpExt<RPRRegistroResponseDto>(sp, ps, true);
+		public List<RespuestaDto> RPRCargar(RPRCargarRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_CARGAR;
+			var ps = new List<SqlParameter>()
+			{
+				new("@json",request.json_str),
+			};
+			List<RespuestaDto> productos = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 
-            return productos.First();
-        }
+			return productos;
+		}
 
-        public List<RPRAutoComptesPendientesDto> RPRObtenerComptesPendientes(string adm)
-        {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_COMPTES_PENDIENTES;
-            var ps = new List<SqlParameter>()
-            { 
-                new("@adm_id", adm)
-            };
-            List<RPRAutoComptesPendientesDto> comptes_pendientes=_repository.EjecutarLstSpExt<RPRAutoComptesPendientesDto>(sp, ps, true);
-            return comptes_pendientes;
-        }
-    }
+		public List<RespuestaDto> RPRElimina(RPREliminarRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_ELIMINA;
+			var ps = new List<SqlParameter>()
+			{
+				new("@rp",request.rp_id),
+			};
+			List<RespuestaDto> productos = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+
+			return productos;
+		}
+
+
+		public RPRRegistroResponseDto RPRRegistrarProductos(string json)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_REGISTRA;
+			/// varchar(30),  varchar(3),  varchar(4), varchar(8), @ bit, @ varchar(10) , @ bit, @ bit, @ bit, @ bit, @ bit, @ bit)  
+			var ps = new List<SqlParameter>()
+			{
+				new("@json",json),
+			};
+
+			List<RPRRegistroResponseDto> productos = _repository.EjecutarLstSpExt<RPRRegistroResponseDto>(sp, ps, true);
+
+			return productos.First();
+		}
+
+		public List<RPRAutoComptesPendientesDto> RPRObtenerComptesPendientes(string adm)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_COMPTES_PENDIENTES;
+			var ps = new List<SqlParameter>()
+			{
+				new("@adm_id", adm)
+			};
+			List<RPRAutoComptesPendientesDto> comptes_pendientes = _repository.EjecutarLstSpExt<RPRAutoComptesPendientesDto>(sp, ps, true);
+			return comptes_pendientes;
+		}
+	}
 }

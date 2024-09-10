@@ -1,6 +1,7 @@
 using gc.api.core.Entidades;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Rpr;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
 
@@ -19,5 +20,7 @@ namespace gc.api.core.Contratos.Servicios
         List<RPRAutorizacionPendienteDto> RPRObtenerAutorizacionPendiente(string adm);        
         RPRRegistroResponseDto RPRRegistrarProductos(string json);
         List<RPRAutoComptesPendientesDto> RPRObtenerComptesPendientes(string adm);
-    }
+        List<RespuestaDto> RPRCargar(RPRCargarRequest request);
+        List<RespuestaDto> RPRElimina(RPREliminarRequest request);
+	}
 }

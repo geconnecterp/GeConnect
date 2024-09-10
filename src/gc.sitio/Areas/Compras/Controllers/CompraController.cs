@@ -20,6 +20,9 @@ using System.Reflection;
 using X.PagedList;
 using gc.sitio.Areas.Compras.Models;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Newtonsoft.Json;
+using gc.infraestructura.EntidadesComunes.Options;
+using Newtonsoft.Json.Serialization;
 
 namespace gc.sitio.Areas.Compras.Controllers
 {
@@ -74,23 +77,36 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return View(grid);
 		}
 
-		private void ObtenerComprobantesDesdeAutorizacionesPendientes()
+		/// <summary>
+		/// Metodo para cargar y generar el JSON correspondiente al RPR en el que se esta trabajando
+		/// </summary>
+		/// <returns></returns>
+		public async Task<JsonResult> RPRCargarNuevoComprobante()
 		{
-			var lista = new List<RPRComptesDeRPDto>();
-			foreach (var item in RPRAutorizacionesPendientesEnRP)
+			List<RespuestaDto> respuesta = [];
+			try
 			{
-				var newCompte = new RPRComptesDeRPDto()
+				var json_string = GenerarJsonDesdeJsonEncabezadoDeRPLista();
+				respuesta = await _productoServicio.RPRCargarCompte(json_string, TokenCookie);
+				if (respuesta == null)
 				{
-					Fecha = item.Fecha.ToString("dd/MM/yyyy"),
-					Importe = item.Cm_importe.ToString(),
-					NroComprobante = item.Cm_compte,
-					Tipo = item.Tco_id,
-					TipoDescripcion = item.Tco_desc,
-					Rp = item.Rp,
-				};
-				lista.Add(newCompte);
+					return Json(new { error = true, warn = false, codigo = 9999, msg = $"Error al intentar cargar el comprobante, intente nuevamente mas tarde." });
+				}
+				else if (respuesta.Count == 0)
+				{
+					return Json(new { error = true, warn = false, codigo = 9999, msg = $"Error al intentar cargar el comprobante, intente nuevamente mas tarde." });
+				}
+				else
+				{
+					return Json(new { error = true, warn = false, codigo = respuesta.FirstOrDefault()?.Resultado, msg = $"{respuesta.FirstOrDefault()?.Resultado_msj} Código ({respuesta.FirstOrDefault()?.Resultado})" });
+				}
 			}
-			RPRComptesDeRPRegs = lista;
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar generar y cargar JSON de nuevo comprobante RPR.");
+				TempData["error"] = "Hubo algun problema al intentar generar y cargar JSON de nuevo comprobante RPR. Si el problema persiste informe al Administrador";
+				return Json(new { error = true, warn = false, codigo = 9999, msg = $"Error al intentar cargar el comprobante, intente nuevamente mas tarde." });
+			}
 		}
 
 		public async Task<IActionResult> NuevaAut(string rp)
@@ -262,7 +278,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public async Task<JsonResult> GuardarDetalleDeComprobanteRP(bool guardado)
+		public async Task<JsonResult> GuardarDetalleDeComprobanteRP(bool guardado, bool generar)
 		{
 			try
 			{
@@ -277,37 +293,52 @@ namespace gc.sitio.Areas.Compras.Controllers
 					JsonEncabezadoDeRPDto encabezado = new();
 					encabezado = ObtenerObjectoParaAlmacenar();
 
-					//Nuevo RP -> lo agrego de pechardi
-					if (!listaTemp.Exists(x => x.Rp == encabezado.Rp))
+					//Nuevo RP -> lo agrego de pechardi, porque evalúo generar? Porque si es true no tengo que agregar nada, tengo que guardar
+					if (!generar)
 					{
-						listaTemp.Add(encabezado);
-					}
-					else //Existe RP, verifico si tiene cargado comprobantes y opero sobre ellos
-					{
-						var encabezadoTemp = listaTemp.Where(x => x.Rp == encabezado.Rp).FirstOrDefault();
-						//Por las dudas verifico que exista el encabezado pero que no tenaga detalle, le cargo el detalle
-						if (encabezadoTemp != null)
+						if (!listaTemp.Exists(x => x.Rp == encabezado.Rp))
 						{
-							if (encabezadoTemp.Comprobantes.Count == 0)
-							{
-								encabezadoTemp.Comprobantes = encabezado.Comprobantes;
-							}
-							//Tiene comprobantes, me fijo si ya existen items para ese tipo y numero de comprobante, si es así los actualizo
-							else if (encabezadoTemp.Comprobantes.Exists(x => x.Tco_id == encabezado.Tco_id && x.Cm_compte == encabezado.Cm_compte))
-							{
-								encabezadoTemp.Comprobantes.RemoveAll(x => x.Tco_id == encabezado.Tco_id && x.Cm_compte == encabezado.Cm_compte);
-								encabezadoTemp.Comprobantes.AddRange(encabezado.Comprobantes);
-							}
-							//No existen items para ese tipo y numero de comprobante, los agrego
-							else
-							{
-								encabezadoTemp.Comprobantes.AddRange(encabezado.Comprobantes);
-							}
-							listaTemp.RemoveAll(x => x.Rp == encabezado.Rp);
-							listaTemp.Add(encabezadoTemp);
+							listaTemp.Add(encabezado);
 						}
+						else //Existe RP, verifico si tiene cargado comprobantes y opero sobre ellos
+						{
+							var encabezadoTemp = listaTemp.Where(x => x.Rp == encabezado.Rp).FirstOrDefault();
+							//Por las dudas verifico que exista el encabezado pero que no tenaga detalle, le cargo el detalle
+							if (encabezadoTemp != null)
+							{
+								if (encabezadoTemp.Comprobantes.Count == 0)
+								{
+									encabezadoTemp.Comprobantes = encabezado.Comprobantes;
+								}
+								//Tiene comprobantes, me fijo si ya existen items para ese tipo y numero de comprobante, si es así los actualizo
+								else if (encabezadoTemp.Comprobantes.Exists(x => x.Tco_id == encabezado.Tco_id && x.Cm_compte == encabezado.Cm_compte))
+								{
+									encabezadoTemp.Comprobantes.RemoveAll(x => x.Tco_id == encabezado.Tco_id && x.Cm_compte == encabezado.Cm_compte);
+									encabezadoTemp.Comprobantes.AddRange(encabezado.Comprobantes);
+								}
+								//No existen items para ese tipo y numero de comprobante, los agrego
+								else
+								{
+									//encabezadoTemp.Comprobantes.AddRange(encabezado.Comprobantes);
+									listaTemp.Add(encabezado);
+								}
+								//listaTemp.RemoveAll(x => x.Rp == encabezado.Rp);
+								//listaTemp.Add(encabezadoTemp);
+							}
+						}
+						JsonEncabezadoDeRPLista = listaTemp;
 					}
-					JsonEncabezadoDeRPLista = listaTemp;
+					if (generar)
+					{
+						var resultado = CargarNuevoComprobante();
+						if (resultado != null && resultado.Resultado == "0") //Genero correctamente el json, limpio variable de sesion de JSON y Detalle de productos
+						{
+							JsonEncabezadoDeRPLista = [];
+							RPRDetalleDeProductosEnRP = [];
+							return Json(new { error = false, warn = false, codigo = 0, msg = "" });
+						}
+						return Json(new { error = false, warn = true, msg = resultado?.Resultado_msj, codigo = resultado?.Resultado });
+					}
 				}
 				//RPRDetalleDeProductosEnRP = [];
 				return Json(new { error = false, warn = false, msg = "" });
@@ -395,6 +426,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 				return null;
 			}
 		}
+
+
 
 		public async Task<JsonResult> BuscarCuentaComercial(string cuenta, char tipo, string vista)
 		{
@@ -504,6 +537,87 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		#region Métodos privados
+		private ProductoBusquedaDto ObtenerDatosDeProducto(string p_id)
+		{
+			ProductoBusquedaDto producto = new ProductoBusquedaDto { P_id = "0000-0000" };
+			BusquedaBase buscar = new()
+			{
+				Administracion = AdministracionId,
+				Busqueda = p_id,
+				DescuentoCli = 0,
+				ListaPrecio = "",
+				TipoOperacion = ""
+			};
+
+			return _productoServicio.BusquedaBaseProductos(buscar, TokenCookie).Result;
+		}
+
+		private RespuestaDto CargarNuevoComprobante()
+		{
+			try
+			{
+				List<RespuestaDto> Respuesta = [];
+				var json_string = GenerarJsonDesdeJsonEncabezadoDeRPLista();
+				Respuesta = _productoServicio.RPRCargarCompte(json_string, TokenCookie).Result;
+				return Respuesta?.FirstOrDefault();
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				return new RespuestaDto() { Resultado = "9999", Resultado_msj = ex.Message };
+			}
+
+		}
+
+		private string GenerarJsonDesdeJsonEncabezadoDeRPLista()
+		{
+			var jsonstring = JsonConvert.SerializeObject(JsonEncabezadoDeRPLista, new JsonSerializerSettings() { ContractResolver = new IgnorePropertiesResolver(new[] { "Producto" }) });
+			//var jsonstring = JsonConvert.SerializeObject(JsonEncabezadoDeRPLista, Formatting.Indented);
+			return jsonstring;
+		}
+
+		//TODO: agregar spinner de espera cuando estoy agregando productos (demora por la busqueda de los datos de los productos)
+		//TODO: Completar el camino de la eliminación del RPR
+
+		//short helper class to ignore some properties from serialization
+		public class IgnorePropertiesResolver : DefaultContractResolver
+		{
+			private readonly HashSet<string> ignoreProps;
+			public IgnorePropertiesResolver(IEnumerable<string> propNamesToIgnore)
+			{
+				this.ignoreProps = new HashSet<string>(propNamesToIgnore);
+			}
+
+			protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
+			{
+				JsonProperty property = base.CreateProperty(member, memberSerialization);
+				if (this.ignoreProps.Contains(property.PropertyName))
+				{
+					property.ShouldSerialize = _ => false;
+				}
+				return property;
+			}
+		}
+
+		private void ObtenerComprobantesDesdeAutorizacionesPendientes()
+		{
+			var lista = new List<RPRComptesDeRPDto>();
+			foreach (var item in RPRAutorizacionesPendientesEnRP)
+			{
+				var newCompte = new RPRComptesDeRPDto()
+				{
+					Fecha = item.Fecha.ToString("dd/MM/yyyy"),
+					Importe = item.Cm_importe.ToString(),
+					NroComprobante = item.Cm_compte,
+					Tipo = item.Tco_id,
+					TipoDescripcion = item.Tco_desc,
+					Rp = item.Rp,
+				};
+				lista.Add(newCompte);
+			}
+			RPRComptesDeRPRegs = lista;
+		}
+
 		private List<RPRComptesDeRPDto> CargarComprobanteRP(List<RPRComptesDeRPDto> listaEnSesion, string tipo, string tipoDescripcion, string nroComprobante, string fecha, string importe, string rp)
 		{
 			var lista = listaEnSesion;
@@ -570,7 +684,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		/// <param name="lista">Lista de productos en sesión</param>
 		/// <param name="item">Elemento a agregar/reemplazar/acumular</param>
 		/// <param name="accion">Acción a realizar con el elemento, en relación al segundo parámetro</param>
-		private void CargarItemEnGrillaDeProductos(List<ProductoBusquedaDto> lista, RPROrdenDeCompraDetalleDto item, int accion, ProductoBusquedaDto? itemAQuitar)
+		private void CargarItemEnGrillaDeProductos(List<ProductoBusquedaDto> lista, RPROrdenDeCompraDetalleDto item, int accion, ProductoBusquedaDto itemAQuitar)
 		{
 			if (accion == 1 && itemAQuitar != null)
 			{
@@ -583,6 +697,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				item.ocd_bultos += itemAQuitar.Bulto;
 				item.ocd_cantidad += itemAQuitar.Cantidad;
 			}
+			var producto = ObtenerDatosDeProducto(item.p_id);
 			lista.Add(new ProductoBusquedaDto()
 			{
 				P_id = item.p_id,
@@ -593,6 +708,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				Bulto = item.ocd_bultos,
 				Unidad = item.ocd_unidad_x_bulto,
 				Cantidad = item.ocd_cantidad,
+				P_id_barrado = producto.P_id_barrado,
 			});
 		}
 

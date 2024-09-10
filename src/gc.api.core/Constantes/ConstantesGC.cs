@@ -36,6 +36,8 @@
             public const string SP_RPR_BOX_ALMACENA_UL = "SPGECO_RPR_BOX_Almacena_UL";
 			public const string SP_RPR_OC = "spgeco_rpr_oc";
 			public const string SP_RPR_OC_D = "spgeco_rpr_oc_d";
+			public const string SP_RPR_CARGAR = "spgeco_rpr_cargar";
+			public const string SP_RPR_ELIMINA = "spgeco_rpr_elimina";
 
 			public const string SP_CUENTA_BUSQUEDA = "dbo.spgeco_c_busqueda_lista";
 
