@@ -28,7 +28,8 @@
 
 	$("#Cuenta").on("keypress", analizaInput);
 	$("#txtNota").on("keypress", analizaInputTxtNota);
-	$("#listaDeposito").on("change", analizaInputlistaDeposito)
+	$("#listaDeposito").on("change", analizaInputlistaDeposito);
+	$("#dtpFechaTurno").on("change", analizaInputTurno);
 
 	if ($("#CtaId").val() !== "") {
 		$("#btnBuscarCC").trigger("click");
@@ -37,6 +38,9 @@
 		$("#listaDeposito").val($("#DepoId").val());
 	}
 	CargarCompteEnGrilla(modelObj);
+	if ($("#FechaTurno").val() !== "") {
+		$("#dtpFechaTurno").val($("#FechaTurno").val())
+	}
 });
 
 function VerDetalleClick() {
@@ -64,19 +68,23 @@ function analizaInput(e) {
 	$("#CtaId").val("");
 }
 
+function analizaInputTurno(e) {
+	ActualizarLinkBotonVerDetalle();
+}
+
 function analizaInputTxtNota(e) {
-	var depoSelec = $("#listaDeposito").val();
-	var notaAuto = $("#txtNota").val();
-	var turno = moment($("#dtpFechaTurno").val()).format("X");
-	var ponerEnCurso = $("#chkPonerEnCurso")[0].checked;
-	var link = VerDetalleDeCompteDeRPUrl + "?idTipoCompte=" + $("#idTipoCompteDeRPSelected").val() + "&nroCompte=" + $("#txtNroCompte").val() + "&depoSelec=" + depoSelec + "&notaAuto=" + notaAuto + "&turno=" + turno + "&ponerEnCurso=" + ponerEnCurso;
-	$("#VerDetalle").prop("href", link);
+	ActualizarLinkBotonVerDetalle();
 }
 
 function analizaInputlistaDeposito() {
+	ActualizarLinkBotonVerDetalle();
+}
+
+function ActualizarLinkBotonVerDetalle() {
 	var depoSelec = $("#listaDeposito").val();
 	var notaAuto = $("#txtNota").val();
 	var turno = moment($("#dtpFechaTurno").val()).format("X");
+	console.log(turno);
 	var ponerEnCurso = $("#chkPonerEnCurso")[0].checked;
 	var link = VerDetalleDeCompteDeRPUrl + "?idTipoCompte=" + $("#idTipoCompteDeRPSelected").val() + "&nroCompte=" + $("#txtNroCompte").val() + "&depoSelec=" + depoSelec + "&notaAuto=" + notaAuto + "&turno=" + turno + "&ponerEnCurso=" + ponerEnCurso;
 	$("#VerDetalle").prop("href", link);
@@ -353,12 +361,6 @@ function eliminarComptesDeRPGrid(tipo, nroComprobante) {
 }
 
 function comptesDeRPGrid(tipo, tipoDescripcion, nroComprobante, fecha, importe, rp) {
-	console.log("tipo:" + tipo);
-	console.log("tipoDescripcion:" + tipoDescripcion);
-	console.log("nroComprobante:" + nroComprobante);
-	console.log("fecha:" + fecha);
-	console.log("importe: " + importe);
-	console.log("rp:" + rp);
 	var data = { tipo, tipoDescripcion, nroComprobante, fecha, importe, rp };
 	PostGenHtml(data, CargarComptesDeRPUrl, function (obj) {
 		$("#divComptesDeRPGrid").html(obj);

@@ -272,7 +272,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				model.Cuenta = RPRComprobanteDeRPSeleccionado.cta_id;
 				model.Nota = RPRComprobanteDeRPSeleccionado.Nota;
-				model.FechaTurno = RPRComprobanteDeRPSeleccionado.FechaTurno;
+				model.FechaTurno = Convert.ToDateTime(RPRComprobanteDeRPSeleccionado.FechaTurno).ToString("yyyy-MM-dd");
 				model.Depo_id = RPRComprobanteDeRPSeleccionado.Depo_id;
 				//model.rp = rp;
 			}
@@ -280,12 +280,12 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				model.Cuenta = RPRAutorizacionSeleccionada.Cta_id;
 				model.Nota = RPRAutorizacionSeleccionada.Nota;
-				model.FechaTurno = RPRAutorizacionSeleccionada.Fecha.ToString("dd/MM/yyyy");
+				model.FechaTurno = RPRAutorizacionSeleccionada.Fecha.ToString("yyyy-MM-dd");
 				model.Depo_id = "0";
 				//model.rp = rp;
 				model.Compte = new RPRComptesDeRPDto()
 				{
-					Fecha = RPRAutorizacionSeleccionada.Fecha.ToString("dd/MM/yyyy"),
+					Fecha = RPRAutorizacionSeleccionada.Fecha.ToString("yyyy-MM-dd"),
 					Importe = RPRAutorizacionSeleccionada.Cm_importe.ToString(),
 					NroComprobante = RPRAutorizacionSeleccionada.Cm_compte,
 					Tipo = RPRAutorizacionSeleccionada.Tco_id,

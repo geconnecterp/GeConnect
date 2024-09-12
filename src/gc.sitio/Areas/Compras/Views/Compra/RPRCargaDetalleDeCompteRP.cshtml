@@ -14,7 +14,7 @@
 
 <div class="card">
 	<row>
-		<div style="float:left">
+		<div style="float:left;width:100%;padding-top: 20px;padding-left: 40px;">
 			<div class="input-group">
 				@Html.Hidden("cta_id", Model.cta_id)
 				@Html.Hidden("tco_id", Model.CompteSeleccionado.Tipo)
@@ -24,20 +24,22 @@
 				@Html.Hidden("depo_id", Model.Depo_id)
 				@Html.Hidden("poner_curso", Model.ponerEnCurso)
 				@Html.Hidden("Rp", Model.CompteSeleccionado.Rp)
-				<span>@Model.Leyenda</span>
-				<button type="button" class="btn btn-success" style="margin-left:5px;" id="btnAceptarComprobanteRP">
-					<span class="tf-icons bx bx-check-circle">Aceptar</span>
-				</button>
-@* 				<a asp-action="NuevaAut" asp-controller="Compra" asp-area="Compras" class="btn btn-primary" id="btnRegresarDesdeComprobanteRP">
-					<span class="tf-icons bx bx-left-arrow-circle"></span>Regresar
-				</a> *@
-				<button type="button" class="btn btn-primary" style="margin-left:5px;" id="btnRegresarDesdeComprobanteRP">
-					<span class="tf-icons bx bx-left-arrow-circle">Regresar</span>
-				</button>
+				<div class="col-8">
+					<span>@Model.Leyenda</span>
+				</div>
+				<div class="col-4" style="text-align: right;padding-right: 30px;">
+					<button type="button" class="btn btn-success" style="margin-left:5px;" id="btnAceptarComprobanteRP">
+						<span class="tf-icons bx bx-check-circle">Aceptar</span>
+					</button>
+					<button type="button" class="btn btn-primary" style="margin-left:5px;" id="btnRegresarDesdeComprobanteRP">
+						<span class="tf-icons bx bx-left-arrow-circle">Regresar</span>
+					</button>
+				</div>
+				
 			</div>
 		</div>
 	</row>
-	<row>
+	<row style="padding-left:35px;">
 		<div class="col-8" style="float:left">
 			<div class="input-group">
 				<span class="input-group-text">Tipo: </span>
@@ -130,10 +132,10 @@
 		var CargarDetalleDeProductosEnRPUrl = "@Url.Action("CargarDetalleDeProductosEnRP", "compra", new { area = "Compras" })";
 		var CargarOCxCuentaEnRPUrl = "@Url.Action("CargarOCxCuentaEnRP", "compra", new { area = "Compras" })";
 		var VerDetalleDeOCRPUrl = "@Url.Action("VerDetalleDeOCRP", "compra", new { area = "Compras" })";
-		var verificarDetalleCargadoURL="@Url.Action("VerificarDetalleCargado", "compra", new { area = "Compras" })";
-		var quitarItemDeDetalleDeProdURL="@Url.Action("QuitarItemDeDetalleDeProd", "compra", new { area = "Compras" })";
-		var GuardarDetalleDeComprobanteRPUrl="@Url.Action("GuardarDetalleDeComprobanteRP", "compra", new { area = "Compras" })";
-		var VolverANuevaAutUrl="@Url.Action("NuevaAut", "compra", new { area = "Compras" })";
+		var verificarDetalleCargadoURL = "@Url.Action("VerificarDetalleCargado", "compra", new { area = "Compras" })";
+		var quitarItemDeDetalleDeProdURL = "@Url.Action("QuitarItemDeDetalleDeProd", "compra", new { area = "Compras" })";
+		var GuardarDetalleDeComprobanteRPUrl = "@Url.Action("GuardarDetalleDeComprobanteRP", "compra", new { area = "Compras" })";
+		var VolverANuevaAutUrl = "@Url.Action("NuevaAut", "compra", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/areas/compras/_rprDetDeProdDeRP.js"></script>
 }

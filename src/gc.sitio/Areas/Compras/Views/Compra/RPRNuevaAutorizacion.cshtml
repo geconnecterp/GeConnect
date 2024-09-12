@@ -4,40 +4,36 @@
 	var depositos = Model.ComboDeposito;
 }
 
-@* <style>
-	fieldset {
-		margin: 8px;
-		border: 1px solid silver;
-		padding: 8px;
-		border-radius: 4px;
-	}
-</style> *@
-
 <div class="card">
 	<row>
-		<input type="text" id="idTipoCompteDeRPSelected" style="display:none;"/>
-		<input type="text" id="nroCompteDeRPSelected" style="display:none;"/>
+		<input type="text" id="idTipoCompteDeRPSelected" style="display:none;" />
+		<input type="text" id="nroCompteDeRPSelected" style="display:none;" />
 		@Html.Hidden("CtaId", Model.Cuenta)
 		@Html.Hidden("IdTipoCompte", Model.IdTipoCompte)
 		@Html.Hidden("NroCompte", Model.NroCompte)
 		@Html.Hidden("DepoId", Model.Depo_id)
 		@Html.Hidden("Rp", Model.rp)
-		<div style="float:left">
+		@Html.Hidden("FechaTurno", Model.FechaTurno)
+		<div style="float:left; width: 100%;">
 			<fieldset>
 				<legend>
 					<h5>Nueva Autorización RP</h5>
 				</legend>
-				<div class="input-group">
-					<partial name="~/areas/controlcomun/views/cuentacomercial/_ctrBuscarCC.cshtml" />
-					<button type="button" class="btn btn-success" style="margin-left:5px;" id="btnAceptarAutoRP">
-						<span class="tf-icons bx bx-check-circle">Aceptar</span>
-					</button>
-					<button type="button" class="btn btn-danger" style="margin-left:5px;" id="btnEliminarAutoRP">
-						<span class="tf-icons bx bx-trash">Eliminar</span>
-					</button>
-					<button type="button" class="btn btn-primary" style="margin-left:5px;" id="btnRegresarASelAuto">
-						<span class="tf-icons bx bx-left-arrow-circle">Regresar</span>
-					</button>
+				<div class="input-group col-12">
+					<div class="col-8">
+						<partial name="~/areas/controlcomun/views/cuentacomercial/_ctrBuscarCC.cshtml" />
+					</div>
+					<div class="col-4" style="text-align: right;">
+						<button type="button" class="btn btn-success" style="margin-left:5px;" id="btnAceptarAutoRP">
+							<span class="tf-icons bx bx-check-circle">Aceptar</span>
+						</button>
+						<button type="button" class="btn btn-danger" style="margin-left:5px;" id="btnEliminarAutoRP">
+							<span class="tf-icons bx bx-trash">Eliminar</span>
+						</button>
+						<button type="button" class="btn btn-primary" style="margin-left:5px;" id="btnRegresarASelAuto">
+							<span class="tf-icons bx bx-left-arrow-circle">Regresar</span>
+						</button>
+					</div>
 				</div>
 				<div id="sectionNuevaAutorizacionRP">
 					<fieldset>
@@ -63,14 +59,10 @@
 										<span class="tf-icons bx bx-trash"></span>
 									</button>
 									<a href="#" id="VerDetalle" class="btn btn-icon btn-success"><span class="tf-icons bx bx-detail"></span></a>
-									@* <a asp-action="VerDetalleDeComprobanteDeRP" asp-controller="compra" asp-area="Compras" asp-route-idTipoCompte="@Model.IdTipoCompte" asp-route-nroCompte="@Model.NroCompte" class="btn btn-icon btn-success"><span class="tf-icons bx bx-detail"></span></a> *@
-									@* <button type="button" class="btn btn-icon btn-success" style="margin-left:5px;" id="btnVerCompteDeRP" asp-action="VerDetalleDeComprobanteDeRP" asp-controller="compra" asp-area="Compras" asp-route-tipo="@Model.IdTipoCompte" asp-route-nroComprobante="@Model.NroCompte">
-										<span class="tf-icons bx bx-detail"></span>
-									</button> *@
 								</div>
 							</div>
 						</row>
-						<div id="divComptesDeRPGrid">
+						<div id="divComptesDeRPGrid" style="padding-top: 10px;">
 						</div>
 					</fieldset>
 					<fieldset>
@@ -101,7 +93,7 @@
 									<div class="col-sm">
 										<div class="input-group">
 											<span class="input-group-text">Turno: </span>
-											<input type="date" id="dtpFechaTurno" class="form-control" asp-for="@Model.FechaTurno"/>
+											<input type="date" id="dtpFechaTurno" class="form-control" asp-for="@Model.FechaTurno" />
 										</div>
 									</div>
 									<div class="col-sm">
@@ -129,13 +121,13 @@
 		var vistaParcial = "_rprAutoCargaComptes";
 		var CargarComptesDeRPUrl = "@Url.Action("CargarComprobantesDeRP", "compra", new { area = "Compras" })";
 		var ActualizarComptesDeRPUrl = "@Url.Action("ActualizarComprobantesDeRP", "compra", new { area = "Compras" })";
-		var verificarDetalleCargadoURL="@Url.Action("VerificarDetalleCargado", "compra", new { area = "Compras" })";
+		var verificarDetalleCargadoURL = "@Url.Action("VerificarDetalleCargado", "compra", new { area = "Compras" })";
 		var VerDetalleDeCompteDeRPUrl = "@Url.Action("VerDetalleDeComprobanteDeRP", "compra", new { area = "Compras" })";
-		var GuardarDetalleDeComprobanteRPUrl="@Url.Action("GuardarDetalleDeComprobanteRP", "compra", new { area = "Compras" })";
+		var GuardarDetalleDeComprobanteRPUrl = "@Url.Action("GuardarDetalleDeComprobanteRP", "compra", new { area = "Compras" })";
 		var buscarCuentaUrl = "@Url.Action("BuscarCuentaComercial", "compra", new { area = "Compras" })";
-		var buscarTiposComptesUrl="@Url.Action("ComboTiposComptes", "compra", new { area = "Compras" })";
-		var volverAListaDeAutorizacionesUrl="@Url.Action("RPRAutorizacionesLista", "compra", new { area = "Compras" })";
-		var eliminarComprobanteRPRUrl="@Url.Action("RPREliminarComprobante", "compra", new { area = "Compras" })";
+		var buscarTiposComptesUrl = "@Url.Action("ComboTiposComptes", "compra", new { area = "Compras" })";
+		var volverAListaDeAutorizacionesUrl = "@Url.Action("RPRAutorizacionesLista", "compra", new { area = "Compras" })";
+		var eliminarComprobanteRPRUrl = "@Url.Action("RPREliminarComprobante", "compra", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/controlcomun/busquedacuentacomercial.js"></script>
 }

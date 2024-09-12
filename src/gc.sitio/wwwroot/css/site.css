@@ -21,6 +21,14 @@ body {
   margin-bottom: 60px;
 }
 
+table > tbody > tr > td {
+    font-size: 11px !important;
+}
+
+table > thead > tr > th {
+    font-size: 10px !important;
+}
+
 .table-fontsize {
     font-size: 11px !important;
 }
@@ -35,4 +43,10 @@ fieldset {
     border: 1px solid silver;
     padding: 8px;
     border-radius: 4px;
+}
+
+.table-wrapper {
+    max-height: 500px;
+    max-width: 98%;
+    overflow: auto;
 }
