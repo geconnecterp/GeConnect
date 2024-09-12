@@ -27,5 +27,6 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<List<RespuestaDto>> RPREliminarCompte(string rp, string token);
         Task<List<JsonDto>> RPObtenerJsonDesdeRP(string rp, string token);
         Task<List<RPRItemVerCompteDto>> RPRObtenerItemVerCompte(string rp, string token);
+        Task<List<RPRVerConteoDto>> RPRObtenerItemVerConteos(string rp, string token);
 	}
 }

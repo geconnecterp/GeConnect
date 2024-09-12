@@ -25,5 +25,6 @@ namespace gc.api.core.Contratos.Servicios
         List<RespuestaDto> RPRElimina(string rp);
         List<JsonDto> RPREObtenerDatosJsonDesdeRP(string rp);
         List<RPRItemVerCompteDto> RPRObtenerDatosVerCompte(string rp);
+        List<RPRVerConteoDto> RPRObtenerConteos(string rp);
 	}
 }

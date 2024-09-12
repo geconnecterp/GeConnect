@@ -306,6 +306,21 @@ namespace gc.api.Controllers.Almacen
 			return Ok(response);
 		}
 
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RPRVerConteoDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult RPRObtenerVerConteos(string rp)
+		{
+			ApiResponse<List<RPRVerConteoDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.RPRObtenerConteos(rp);
+
+			response = new ApiResponse<List<RPRVerConteoDto>>(res);
+
+			return Ok(response);
+		}
+
 		[HttpPost]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RPRRegistroResponseDto>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]

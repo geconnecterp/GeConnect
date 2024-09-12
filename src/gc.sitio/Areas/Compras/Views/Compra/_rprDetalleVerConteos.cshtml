@@ -1,38 +1,34 @@
-﻿@model GridCore<RPRItemVerCompteDto>
+﻿@model GridCore<RPRVerConteoDto>
 @{
 }
 
 <div class="table-responsive table-wrapper">
-	<table class="table table-bordered table-hover" id="tbDetalleVerCompte">
+	<table class="table table-bordered table-hover" id="tbDetalleVerConteos">
 		<thead class="table-dark">
 			<tr class="header">
 				<th scope="col" class="table-fontsize" style="width:10%;">Item</th>
 				<th scope="col" class="table-fontsize" style="width:20%;">ID</th>
 				<th scope="col" class="table-fontsize" style="width:10%;">Descripcion</th>
 				<th scope="col" class="table-fontsize" style="width:10%;">ID Prov</th>
-				<th scope="col" class="table-fontsize" style="width:10%;">OC N°</th>
-				<th scope="col" class="table-fontsize" style="width:10%;">OC Cant</th>
-				<th scope="col" class="table-fontsize" style="width:15%;">FAC Btos</th>
-				<th scope="col" class="table-fontsize" style="width:15%;">FAC Unid</th>
-				<th scope="col" class="table-fontsize" style="width:15%;">FAC Cant</th>
+				<th scope="col" class="table-fontsize" style="width:10%;">UL</th>
+				<th scope="col" class="table-fontsize" style="width:10%;">UxB</th>
 				<th scope="col" class="table-fontsize" style="width:15%;">Conteos en RP</th>
+				<th scope="col" class="table-fontsize" style="width:15%;">Facturado</th>
 				<th scope="col" class="table-fontsize" style="width:15%;">No Recibido</th>
 			</tr>
 		</thead>
 		<tbody>
 			@foreach (var item in Model.ListaDatos)
 			{
-				<tr onclick="selectDetalleDeVerCompte(this)">
+				<tr onclick="selectDetalleDeVerConteos(this)">
 					<td class="table-fontsize">@item.Item</td>
 					<td class="table-fontsize">@item.P_id</td>
 					<td class="table-fontsize">@item.P_desc</td>
 					<td class="table-fontsize">@item.P_id_prov</td>
-					<td class="table-fontsize">@item.Oc_compte</td>
-					<td class="table-fontsize">@item.Oc_cantidad</td>
-					<td class="table-fontsize">@item.Bulto_c</td>
-					<td class="table-fontsize">@item.Us_c</td>
-					<td class="table-fontsize">@item.Cantidad_c</td>
+					<td class="table-fontsize">@item.P_id_prov</td>
+					<td class="table-fontsize">@item.Unidad_x_bulto</td>
 					<td class="table-fontsize">@item.Cantidad</td>
+					<td class="table-fontsize">@item.Cantidad_c</td>
 					<td class="table-fontsize">@item.No_recibido</td>
 				</tr>
 			}

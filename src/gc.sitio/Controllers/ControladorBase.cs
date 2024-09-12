@@ -279,6 +279,42 @@ namespace gc.sitio.Controllers
 			}
 		}
 
+		protected List<RPRItemVerCompteDto> RPRItemVerCompteLista
+		{
+			get
+			{
+				string json = _context.HttpContext.Session.GetString("RPRItemVerCompteLista");
+				if (string.IsNullOrEmpty(json))
+				{
+					return new();
+				}
+				return JsonConvert.DeserializeObject<List<RPRItemVerCompteDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("RPRItemVerCompteLista", json);
+			}
+		}
+
+		protected List<RPRVerConteoDto> RPRItemVerConteoLista
+		{
+			get
+			{
+				string json = _context.HttpContext.Session.GetString("RPRItemVerConteoLista");
+				if (string.IsNullOrEmpty(json))
+				{
+					return new();
+				}
+				return JsonConvert.DeserializeObject<List<RPRVerConteoDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("RPRItemVerConteoLista", json);
+			}
+		}
+
 		protected List<ProductoBusquedaDto> RPRDetalleDeProductosEnRP
 		{
 			get

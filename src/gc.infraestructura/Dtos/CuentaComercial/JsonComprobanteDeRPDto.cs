@@ -45,7 +45,7 @@ namespace gc.infraestructura.Dtos.CuentaComercial
 		public string P_desc { get; set; } = string.Empty;
 
 		[DataMember]
-		[JsonProperty("bulto_up")]
+		[JsonProperty("unidad_pres")]
 		public string Bulto_up { get; set; } = string.Empty;
 
 		[DataMember]
@@ -53,7 +53,7 @@ namespace gc.infraestructura.Dtos.CuentaComercial
 		public string Bulto { get; set; } = string.Empty;
 
 		[DataMember]
-		[JsonProperty("uni_suelta")]
+		[JsonProperty("us")]
 		public string Uni_suelta { get; set; } = string.Empty;
 
 		[DataMember]

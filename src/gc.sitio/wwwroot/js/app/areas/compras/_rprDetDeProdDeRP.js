@@ -5,6 +5,7 @@
 	$("#btnAceptarComprobanteRP").on("click", AceptarDesdeComprobanteRP);
 	$("#btnDelProdEnComprobanteRP").on("click", DelProdEnComprobanteRP);
 	CargarDetalleDeProducto();
+	console.log("Rp en _rprDetDeProdDeRP: "+$("#Rp").val());
 });
 
 function CargarDetalleDeProducto() {

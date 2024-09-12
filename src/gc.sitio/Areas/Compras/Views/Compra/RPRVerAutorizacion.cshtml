@@ -86,15 +86,8 @@
 						<div id="divDetalleVerCompte"></div>
 					</div>
 					<div class="tab-pane fade" id="navs-top-profile" role="tabpanel">
-						<p>
-							Donut dragée jelly pie halvah. Danish gingerbread bonbon cookie wafer candy oat cake ice
-							cream. Gummies halvah tootsie roll muffin biscuit icing dessert gingerbread. Pastry ice cream
-							cheesecake fruitcake.
-						</p>
-						<p class="mb-0">
-							Jelly-o jelly beans icing pastry cake cake lemon drops. Muffin muffin pie tiramisu halvah
-							cotton candy liquorice caramels.
-						</p>
+						<div id="divDetalleVerConteos"></div>
+						<div style="padding-top: 15px;" id="divDetalleVerConteosSeleccionado"></div>
 					</div>
 				</div>
 			</div>
@@ -106,6 +99,8 @@
 	<script type="text/javascript">
 		var volverAListaDeAutorizacionesUrl = "@Url.Action("RPRAutorizacionesLista", "compra", new { area = "Compras" })";
 		var buscarDetalleVerCompteUrl = "@Url.Action("ObtenerDetalleVerCompte", "compra", new { area = "Compras" })";
+		var buscarDetalleVerConteosUrl = "@Url.Action("ObtenerDetalleVerConteos", "compra", new { area = "Compras" })";
+		var buscarDetalleVerConteoSeleccionadoUrl = "@Url.Action("BuscarDetalleVerConteoSeleccionado", "compra", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/areas/compras/rprVerAutorizacion.js"></script>
 }

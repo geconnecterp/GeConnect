@@ -36,6 +36,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string RPRELIMINA = "/RPRElimina";
 		private const string RPROBTENERJSON = "/RPRObtenerJson";
 		private const string RPROBTENERDATOSVERCOMPTE = "/RPRObtenerItemVerCompte";
+        private const string RPROBTENERDATOSVERCONTEOS = "/RPRObtenerVerConteos";
 
 		//almacena Box 
 		private const string RutaApiAlmacen = "/api/apialmacen";
@@ -488,6 +489,36 @@ namespace gc.sitio.core.Servicios.Implementacion
 					return new();
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RPRItemVerCompteDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<RPRVerConteoDto>> RPRObtenerItemVerConteos(string rp, string token)
+		{
+			ApiResponse<List<RPRVerConteoDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{RPROBTENERDATOSVERCONTEOS}?rp={rp}";
+			response = await client.GetAsync(link);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros rp:{rp}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RPRVerConteoDto>>>(stringData);
 				return apiResponse.Data;
 			}
 			else

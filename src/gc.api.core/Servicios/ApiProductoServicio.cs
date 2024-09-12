@@ -322,6 +322,18 @@ namespace gc.api.core.Servicios
 			return items;
 		}
 
+		public List<RPRVerConteoDto> RPRObtenerConteos(string rp)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_VER_CONTEOS;
+			var ps = new List<SqlParameter>()
+			{
+				new("@rp",rp),
+			};
+			List<RPRVerConteoDto> items = _repository.EjecutarLstSpExt<RPRVerConteoDto>(sp, ps, true);
+
+			return items;
+		}
+
 		public RPRRegistroResponseDto RPRRegistrarProductos(string json)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_REGISTRA;

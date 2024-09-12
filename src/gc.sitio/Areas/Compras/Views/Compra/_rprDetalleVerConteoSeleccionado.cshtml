@@ -1,0 +1,27 @@
+﻿@model GridCore<RPRItemVerCompteDto>
+@{
+}
+
+<div class="table-responsive table-wrapper">
+	<table class="table table-bordered table-hover" id="tbDetalleVerConteoSeleccionado">
+		<thead class="table-dark">
+			<tr class="header">
+				<th scope="col" class="table-fontsize" style="width:25%;">Comprobante</th>
+				<th scope="col" class="table-fontsize" style="width:25%;">Facturado</th>
+				<th scope="col" class="table-fontsize" style="width:25%;">Conteo</th>
+				<th scope="col" class="table-fontsize" style="width:25%;">No Recibido</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in Model.ListaDatos)
+			{
+				<tr onclick="selectDetalleVerConteoSeleccionado(this)">
+					<td class="table-fontsize">@item.Cm_compte</td>
+					<td class="table-fontsize">@item.Cantidad_c</td>
+					<td class="table-fontsize">@item.Cantidad</td>
+					<td class="table-fontsize">@item.No_recibido</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>

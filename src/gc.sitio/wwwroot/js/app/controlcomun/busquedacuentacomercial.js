@@ -83,10 +83,11 @@ function analizaInputlistaDeposito() {
 }
 
 function CargarCompteEnGrilla(obj) {
-	if (obj != null ) {
+	if (obj != null) {
 		if (obj.compte != null && obj.compte.tipo != "") {
+			console.log("obj.rp: " + obj.rp);
 			comptesDeRPGrid(obj.compte.tipo, obj.compte.tipoDescripcion, obj.compte.nroComprobante, obj.compte.fecha, obj.compte.importe, obj.rp);
-		} 
+		}
 		else {//El usuario esta trabajando con un nuevo RP, el cual al no tener valor es null, cargo los comptes que tiene null en RP
 			comptesDeRPGrid(null, null, null, null, null, null);
 		}
@@ -102,7 +103,7 @@ function EliminarAutoRP() {
 				case "SI": //Borrar comprobante RPR
 					EliminarComprobanteRPR(rp_id);
 					break;
-				case "NO": 
+				case "NO":
 					break;
 				default: //NO
 					break;
@@ -224,6 +225,7 @@ function NuevoCompteDeRP() {
 		return;
 	}
 	else {
+		console.log($("#Rp").val());
 		comptesDeRPGrid($("#tco_id").val(), $("#tco_id")[0].selectedOptions[0].text, $("#txtNroCompte").val(), $("#dtpFechCompte").val(), $("#txtMonto").val(), $("#Rp").val());
 	}
 }
@@ -351,6 +353,12 @@ function eliminarComptesDeRPGrid(tipo, nroComprobante) {
 }
 
 function comptesDeRPGrid(tipo, tipoDescripcion, nroComprobante, fecha, importe, rp) {
+	console.log("tipo:" + tipo);
+	console.log("tipoDescripcion:" + tipoDescripcion);
+	console.log("nroComprobante:" + nroComprobante);
+	console.log("fecha:" + fecha);
+	console.log("importe: " + importe);
+	console.log("rp:" + rp);
 	var data = { tipo, tipoDescripcion, nroComprobante, fecha, importe, rp };
 	PostGenHtml(data, CargarComptesDeRPUrl, function (obj) {
 		$("#divComptesDeRPGrid").html(obj);

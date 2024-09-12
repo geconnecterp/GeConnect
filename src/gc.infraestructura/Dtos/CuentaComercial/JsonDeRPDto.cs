@@ -13,4 +13,20 @@ namespace gc.infraestructura.Dtos.CuentaComercial
 			encabezado = [];
 		}
     }
+
+
+	[Serializable]
+	public class JsonDeRPDto2
+	{
+		[JsonProperty(nameof(encabezado))]
+		public List<JsonEncabezadoDeRPDto> encabezado { get; set; }
+		[JsonProperty(nameof(comprobantes))]
+		public List<JsonComprobanteDeRPDto> comprobantes { get; set; }
+
+		public JsonDeRPDto2()
+		{
+			encabezado = [];
+			comprobantes = [];
+		}
+	}
 }

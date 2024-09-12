@@ -82,6 +82,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			try
 			{
+				var lista = new List<RPRItemVerCompteDto>();
 				var model = new RPRVerAutoDto();
 				var comptes = RPRComptesDeRPRegs.Where(x => x.Rp == rp).ToList();
 				model.Comprobantes = comptes;
@@ -90,8 +91,18 @@ namespace gc.sitio.Areas.Compras.Controllers
 				JsonDeRPVerCompte = ObtenerComprobantesDesdeJson(rp).Result;
 				var objeto = JsonDeRPVerCompte.encabezado.FirstOrDefault();
 				var cuenta = await _cuentaServicio.ObtenerListaCuentaComercial(objeto?.Cta_id, TipoCuenta, TokenCookie);
-				model.Depo_id = objeto?.Depo_id;
+				var detalleVerCompte = await _productoServicio.RPRObtenerItemVerCompte(rp, TokenCookie);
+				if (detalleVerCompte != null)
+				{
+					RPRItemVerCompteLista = detalleVerCompte;
+				}
+				var detalleVerConteos = await _productoServicio.RPRObtenerItemVerConteos(rp, TokenCookie);
+				if (detalleVerConteos != null)
+				{
+					RPRItemVerConteoLista = detalleVerConteos;
+				}
 
+				model.Depo_id = objeto?.Depo_id;
 				model.Leyenda = $"Autorización RP {rp} Cuenta: {cuenta.FirstOrDefault().Cta_Denominacion} ({objeto.Cta_id}) Turno: {FormateoDeFecha(objeto.Turno, FechaTipoFormato.PARAUSUARIO)}";
 				return PartialView("RPRVerAutorizacion", model);
 			}
@@ -108,15 +119,24 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			GridCore<RPRItemVerCompteDto> datosIP = new();
 			var lista = new List<RPRItemVerCompteDto>();
+			var detalleVerCompte = new List<RPRItemVerCompteDto>();
 			try
 			{
-				var detalleVerCompte = await _productoServicio.RPRObtenerItemVerCompte(rp, TokenCookie);
-				if (detalleVerCompte != null)
+				if (RPRItemVerCompteLista != null)
 				{
-					lista = detalleVerCompte.Where(x => x.Tco_id == tco_id && x.Cm_compte == cc_compte).ToList();
-					datosIP = ObtenerDetalleItemVerCompteGrid(lista);
+					datosIP = ObtenerDetalleItemVerCompteGrid(RPRItemVerCompteLista.Where(x => x.Tco_id == tco_id && x.Cm_compte == cc_compte).ToList());
 				}
-				//
+				else
+				{
+					detalleVerCompte = await _productoServicio.RPRObtenerItemVerCompte(rp, TokenCookie);
+					if (detalleVerCompte != null)
+					{
+						lista = detalleVerCompte.Where(x => x.Tco_id == tco_id && x.Cm_compte == cc_compte).ToList();
+						datosIP = ObtenerDetalleItemVerCompteGrid(lista);
+					}
+					RPRItemVerCompteLista = detalleVerCompte;
+				}
+
 				return PartialView("_rprDetalleVerCompte", datosIP);
 			}
 			catch (Exception ex)
@@ -127,14 +147,45 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
+		public async Task<IActionResult> BuscarDetalleVerConteoSeleccionado(string p_id)
+		{
+			GridCore<RPRItemVerCompteDto> datosIP = new();
+			var lista = new List<RPRItemVerCompteDto>();
+			try
+			{
+				lista = RPRItemVerCompteLista.Where(x => x.P_id == p_id).ToList();
+				datosIP = ObtenerDetalleItemVerCompteGrid(lista);
+				return PartialView("_rprDetalleVerConteoSeleccionado", datosIP);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar obtener el detalle conteo para el compte seleccionado.");
+				TempData["error"] = "Hubo algun problema al intentar obtener el detalle conteo para el compte seleccionado. Si el problema persiste informe al Administrador";
+				return PartialView("_rprDetalleVerConteoSeleccionado", datosIP);
+			}
+		}
+
+		public async Task<IActionResult> ObtenerDetalleVerConteos()
+		{
+			GridCore<RPRVerConteoDto> datosIP = new();
+			if (RPRItemVerConteoLista == null)
+			{
+				RPRItemVerConteoLista = [];
+			}
+			datosIP = ObtenerDetalleItemVerConteosGrid(RPRItemVerConteoLista);
+			return PartialView("_rprDetalleVerConteos", datosIP);
+		}
+
 		private async Task<JsonDeRPDto> ObtenerComprobantesDesdeJson(string rp)
 		{
 			List<JsonDto> json_string = [];
 
 			try
 			{
+				JsonDeRPDto resObj = new JsonDeRPDto();
 				var res = await _productoServicio.RPObtenerJsonDesdeRP(rp, TokenCookie);
-				var resObj = JsonConvert.DeserializeObject<JsonDeRPDto>(res?.FirstOrDefault().Json);
+				if (res != null && res.FirstOrDefault() != null)
+					resObj = JsonConvert.DeserializeObject<JsonDeRPDto>(res?.FirstOrDefault()?.Json);
 				return resObj;
 			}
 			catch (Exception ex)
@@ -166,7 +217,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				}
 				else
 				{
-					return Json(new { error = true, warn = false, codigo = respuesta.FirstOrDefault()?.Resultado, msg = $"{respuesta.FirstOrDefault()?.Resultado_msj} Código ({respuesta.FirstOrDefault()?.Resultado})" });
+					return Json(new { error = true, warn = false, codigo = respuesta.FirstOrDefault()?.resultado, msg = $"{respuesta.FirstOrDefault()?.resultado_msj} Código ({respuesta.FirstOrDefault()?.resultado})" });
 				}
 			}
 			catch (Exception ex)
@@ -193,7 +244,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				}
 				else
 				{
-					return Json(new { error = false, warn = false, codigo = respuesta.FirstOrDefault()?.Resultado, msg = $"{respuesta.FirstOrDefault()?.Resultado_msj} Código ({respuesta.FirstOrDefault()?.Resultado})" });
+					return Json(new { error = false, warn = false, codigo = respuesta.FirstOrDefault()?.resultado, msg = $"{respuesta.FirstOrDefault()?.resultado_msj} Código ({respuesta.FirstOrDefault()?.resultado})" });
 				}
 			}
 			catch (Exception ex)
@@ -427,13 +478,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 					if (generar)
 					{
 						var resultado = CargarNuevoComprobante();
-						if (resultado != null && resultado.Resultado == "0") //Genero correctamente el json, limpio variable de sesion de JSON y Detalle de productos
+						if (resultado != null && resultado.resultado == "0") //Genero correctamente el json, limpio variable de sesion de JSON y Detalle de productos
 						{
 							JsonDeRP = new();
 							RPRDetalleDeProductosEnRP = [];
 							return Json(new { error = false, warn = false, codigo = 0, msg = "" });
 						}
-						return Json(new { error = false, warn = true, msg = resultado?.Resultado_msj, codigo = resultado?.Resultado });
+						return Json(new { error = false, warn = true, msg = resultado?.resultado_msj, codigo = resultado?.resultado });
 					}
 				}
 				//RPRDetalleDeProductosEnRP = [];
@@ -480,7 +531,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			try
 			{
-				var itemCount = 0;
+				var itemCount = 1;
 				var ctaid = CuentaComercialSeleccionada.Cta_Id;
 				JsonEncabezadoDeRPDto encabezado = new()
 				{
@@ -688,7 +739,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
-				return new RespuestaDto() { Resultado = "9999", Resultado_msj = ex.Message };
+				return new RespuestaDto() { resultado = "9999", resultado_msj = ex.Message };
 			}
 
 		}
@@ -755,6 +806,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 			};
 			lista.Add(nuevo);
 			return lista;
+		}
+		private GridCore<RPRVerConteoDto> ObtenerDetalleItemVerConteosGrid(List<RPRVerConteoDto> lista)
+		{
+
+			var listaDetalle = new StaticPagedList<RPRVerConteoDto>(lista, 1, 999, lista.Count);
+
+			return new GridCore<RPRVerConteoDto>() { ListaDatos = listaDetalle, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
 		}
 		private GridCore<RPRItemVerCompteDto> ObtenerDetalleItemVerCompteGrid(List<RPRItemVerCompteDto> lista)
 		{
