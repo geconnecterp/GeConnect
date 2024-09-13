@@ -6,6 +6,7 @@ namespace gc.api.Controllers.Codigos
     using gc.infraestructura.Core.Interfaces;
     using gc.infraestructura.Core.Responses;
     using gc.infraestructura.Dtos.Administracion;
+    using gc.infraestructura.Dtos.Almacen.Rpr;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json;
     using System.Collections.Generic;
@@ -101,6 +102,23 @@ namespace gc.api.Controllers.Codigos
             resp = new ApiResponse<bool>(res);
 
             return Ok(resp);
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult TIValidarUsuario(string tipo,string id,string usu)
+        {
+            if(string.IsNullOrEmpty(tipo) || string.IsNullOrEmpty(id)|| string.IsNullOrEmpty(usu))
+            {
+                return BadRequest("Alguno de los datos, para Verificar el Usuario en la TI, no se han encontrado.");
+            }
+            if (string.IsNullOrWhiteSpace(tipo) || string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(usu))
+            {
+                return BadRequest("Alguno de los datos, para Verificar el Usuario en la TI, no se han encontrado.");
+            }
+
+            var resp = _adminSv.ValidaUsuario(tipo, id, usu);   
+            return Ok(new ApiResponse<ResponseBaseDto>(resp));
         }
 
         //// POST api/<administracionesController>

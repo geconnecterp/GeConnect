@@ -1,0 +1,67 @@
+﻿@model AutorizacionTIDto
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+
+    Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
+}
+<div class="row">
+    <div class="d-inline-flex flex-row mb-3">
+        <div class="p-2">
+            <span class="text-info-emphasis">@Model.Ti</span>
+        </div>
+        <div class="p-2">
+            <span id="titVista" class="text-info-emphasis">Itinerario x Box</span>
+        </div>
+    </div>
+</div>
+<div class="row mb-3">
+    <div class="d-flex justify-content-center">
+        <div class="m-2 form-check">
+            <input name="rbVista" class="form-check-input" type="radio" value="B" id="rbBox" checked>
+            <label class="form-check-label" for="rbBox">BOX</label>
+        </div>
+        <div class="m-2 form-check">
+            <input name="rbVista" class="form-check-input" type="radio" value="B" id="rbRubro">
+            <label class="form-check-label" for="rbRubro">Rubro</label>
+        </div>
+    </div>
+</div>
+<div class="row mb-3">
+    <div class="d-flex d-inline-flex">
+        <div class="input-group input-group-sm text-info">
+            <input id="txtData01" class="form-control" readonly />
+            <input id="txtData02" class="form-control" readonly />
+            <input id="txtData03" class="form-control" readonly />
+            <input id="txtData04" class="form-control" readonly />
+        </div>
+    </div>
+</div>
+<div id="divGrids">
+</div>
+<div class="row mb-3">
+    <div class="d-flex justify-content-center">
+        <button type="button" class="btn btn-info btn-sm m-2"><i class="bx bx-ms bx-info-circle"></i></button>
+        <form asp-action="TIentreSucCargaCarrito" asp-controller="trint" asp-area="pocketppal" method="get">
+        <button type="submit" id="btnContinua02" disabled class="btn btn-success btn-sm m-2"><i class="bx bx-ms bx-right-arrow-alt"></i></button>
+            @Html.Hidden("esrubro")
+            @Html.Hidden("esbox")
+            @Html.Hidden("boxid")
+            @Html.Hidden("rubroid")
+            @Html.Hidden("rubrogid")
+
+        </form>
+    </div>
+</div>
+
+@section scripts {
+    <script type="text/javascript">
+        var presentarBoxDeProductosUrl = "@Url.Action("PresentarBoxDeProductos", "trint", new { area = "pocketppal" })";
+        var presentarRubroDeProductosUrl = "@Url.Action("PresentarRubroDeProductos", "trint", new { area = "pocketppal" })";
+        
+    </script>
+
+    <script src="~/js/app/ti/ti02.js"></script>
+}
+

@@ -1,32 +1,26 @@
-﻿
-using gc.api.core.Entidades;
-using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
-using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
-using gc.sitio.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 //using System.Data;
 using System.Reflection;
 using X.PagedList;
-using gc.sitio.Areas.Compras.Models;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Newtonsoft.Json;
-using gc.infraestructura.EntidadesComunes.Options;
-using Newtonsoft.Json.Serialization;
 
 namespace gc.sitio.Areas.Compras.Controllers
 {
-	[Area("Compras")]
+    [Area("Compras")]
 	public class CompraController : ControladorBase
 	{
 		private readonly ICuentaServicio _cuentaServicio;

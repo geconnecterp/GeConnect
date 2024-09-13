@@ -23,6 +23,7 @@ namespace gc.infraestructura.EntidadesComunes.Options
         public string Sigla { get; set; } = string.Empty;
         public string Color { get; set; } = string.Empty;
         public string Url { get; set; } = string.Empty;
+        public string VolverUrl { get; set; } = string.Empty;
         public string Area { get; set; } = string.Empty;
         public string Controller { get; set; } = string.Empty;
         public string Action { get; set; } = string.Empty;

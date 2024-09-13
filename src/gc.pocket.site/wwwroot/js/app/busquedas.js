@@ -70,7 +70,7 @@ function busquedaAvanzadaProductos() {
 
 function buscarProducto() {
     AbrirWaiting();
-    var _post = busquedaProdBase;
+    var _post = busquedaProdBaseUrl;
     var valor = $("#Busqueda").val();
 
     var datos = {};

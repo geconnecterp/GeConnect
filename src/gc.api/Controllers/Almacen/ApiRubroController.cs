@@ -22,6 +22,14 @@ namespace gc.api.Controllers.Almacen
         private readonly IUriService _uriService;
         private readonly ILogger<ApiRubroController> _logger;
 
+
+        /// <summary>
+        /// Utilizaré en conjunto este controlador para operar Rubro y BOX
+        /// </summary>
+        /// <param name="servicio"></param>
+        /// <param name="mapper"></param>
+        /// <param name="uriService"></param>
+        /// <param name="logger"></param>
         public ApiRubroController(IRubroServicio servicio, IMapper mapper, IUriService uriService, ILogger<ApiRubroController> logger)
         {
             _rubSv = servicio;
@@ -42,5 +50,8 @@ namespace gc.api.Controllers.Almacen
             var response = new ApiResponse<List<RubroListaDto>>(lista);
             return Ok(response);
         }
+
+       
     }
 }
+

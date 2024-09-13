@@ -1,16 +1,10 @@
-﻿using gc.api.core.Contratos.Servicios;
+﻿using gc.api.core.Constantes;
+using gc.api.core.Contratos.Servicios;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Dtos.Almacen.Rpr;
-using gc.infraestructura.Dtos.Productos;
+using gc.infraestructura.Dtos.Almacen.Tr;
 using Microsoft.Data.SqlClient;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Intrinsics.Arm;
-using System.Security.Policy;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace gc.api.core.Servicios
 {
@@ -23,7 +17,7 @@ namespace gc.api.core.Servicios
 
         public RprResponseDto AlmacenaBoxUl(RprABRequest req)
         {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_BOX_ALMACENA_UL;
+            var sp = ConstantesGC.StoredProcedures.SP_RPR_BOX_ALMACENA_UL;
 
             var ps = new List<SqlParameter>()
             {
@@ -35,6 +29,23 @@ namespace gc.api.core.Servicios
             List<RprResponseDto> response = _repository.EjecutarLstSpExt<RprResponseDto>(sp, ps, true);
 
             return response[0];
+        }
+
+        public List<AutorizacionTIDto> TRObtenerAutorizacionesPendientes(string admId, string usuId, string titId)
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_AUTORIZACIONES_PENDIENTES;
+
+            var ps = new List<SqlParameter>()
+            {
+                new SqlParameter("@adm_id",admId),
+                new SqlParameter("@usu_id",usuId),
+                new SqlParameter("@tit_id",titId),
+
+            };
+
+            List<AutorizacionTIDto> response = _repository.EjecutarLstSpExt<AutorizacionTIDto>(sp, ps, true);
+
+            return response;
         }
 
         public RprResponseDto ValidarBox(string box, string admid)
@@ -69,6 +80,56 @@ namespace gc.api.core.Servicios
             return response[0];
         }
 
+        public List<BoxRubProductoDto> TIObtenerListaRubro(string admId, string usuId, string ti)
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Lista_Rubros;
 
+            var ps = new List<SqlParameter>()
+            {
+                new SqlParameter("@adm_id",admId),
+                new SqlParameter("@usu_id",usuId),
+                new SqlParameter("@ti",ti),
+
+            };
+
+            List<BoxRubProductoDto> response = _repository.EjecutarLstSpExt<BoxRubProductoDto>(sp, ps, true);
+
+            return response;
+        }
+        public List<BoxRubProductoDto> TIObtenerListaBox(string admId, string usuId, string ti)
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Lista_BOX;
+
+            var ps = new List<SqlParameter>()
+            {
+                new SqlParameter("@adm_id",admId),
+                new SqlParameter("@usu_id",usuId),
+                new SqlParameter("@ti",ti),
+
+            };
+
+            List<BoxRubProductoDto> response = _repository.EjecutarLstSpExt<BoxRubProductoDto>(sp, ps, true);
+
+            return response;
+        }
+
+        public List<TiListaProductoDto> BuscaTIListaProductos(string admId, string usuId, string ti, string boxid, string rubroid)
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Lista_Productos;
+
+            var ps = new List<SqlParameter>()
+            {
+                new SqlParameter("@adm_id",admId),
+                new SqlParameter("@usu_id",usuId),
+                new SqlParameter("@ti",ti),
+                new SqlParameter("@box_id",boxid),
+                new SqlParameter("@rub_id",boxid),
+
+            };
+
+            List<TiListaProductoDto> response = _repository.EjecutarLstSpExt<TiListaProductoDto>(sp, ps, true);
+
+            return response;
+        }
     }
 }
