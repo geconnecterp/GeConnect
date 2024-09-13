@@ -1,10 +1,8 @@
-﻿using Azure;
-using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.pocket.site.Controllers;
 using gc.sitio.core.Servicios.Contratos;
@@ -81,40 +79,125 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             return View(TIAutorizacionPendienteSeleccionada);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> PresentarBoxDeProductos()
+        [HttpGet]
+        public IActionResult TIentreSucCargaCarrito(bool esrubro, bool esbox, string? boxid, string? rubroid, string? rubrogid)
         {
-            RespuestaGenerica<BoxRubProductoDto> response = new();
+            string? volver;
             try
             {
-                var regs = await _productoServicio.PresentarBoxDeProductos(tr: TIAutorizacionPendienteSeleccionada.Ti, admId: AdministracionId, usuId: UserName, token: TokenCookie);
-                response.GrillaDatos = ObtenerGrillaDeBoxRubros(regs);
-            }
-            catch (NegocioException ex)
-            {
-                response.Mensaje = ex.Message;
-                response.Ok = false;
-                response.EsWarn = true;
-                response.EsError = false;
-            }
-            catch (UnauthorizedException ex)
-            {
-                response.Mensaje = ex.Message;
-                response.Ok = false;
-                response.EsWarn = true;
-                response.EsError = false;
+                //resguardamos la seleccion realizada
+                var ti = TIAutorizacionPendienteSeleccionada;
+                ti.EsRubro = esrubro;
+                ti.RubroGId = rubrogid;
+                ti.RubroId = rubroid ?? "%";
+                ti.EsBox = esbox;
+                ti.BoxId = boxid ?? "%";
+
+                TIAutorizacionPendienteSeleccionada = ti;
+                volver = Url.Action("TiEntreSucBoxRubro", "trint", new { area = "pocketppal" });
+
+                ViewBag.AppItem = new AppItem { Nombre = "TI e/ Sucs - Producto a colectar en Carrito", VolverUrl = volver ?? "#" };
+                return View(TIAutorizacionPendienteSeleccionada);
             }
             catch (Exception ex)
             {
-                response.Mensaje = ex.Message;
-                response.Ok = false;
-                response.EsWarn = false;
-                response.EsError = true;
+                throw;
             }
-            return PartialView("_gridTIBox", response);
         }
 
-        private GridCore<BoxRubProductoDto>? ObtenerGrillaDeBoxRubros(List<BoxRubProductoDto> regs)
+        [HttpGet]
+        public IActionResult CargarCarrito(string pId)
+        {
+            string? volver;
+            try
+            {
+                var prod = _productoServicio.BusquedaBaseProductos(new BusquedaBase { Busqueda = pId, Administracion = AdministracionId, DescuentoCli = 0, ListaPrecio = "", TipoOperacion = "CR" }, TokenCookie);
+
+                var sel = TIAutorizacionPendienteSeleccionada;
+
+                volver = Url.Action("TIentreSucCargaCarrito", "trint", new { area = "pocketppal", esrubro = sel.EsRubro, esbox = sel.EsBox, boxid = sel.BoxId, rubroid = sel.RubroId, rubrogid = sel.RubroGId });
+                ViewBag.AppItem = new AppItem { Nombre = "TI - Carga Carrito", VolverUrl = volver ?? "#" };
+
+                return View(sel);
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> BuscaTIListaProductos()
+        {
+            GridCore<TiListaProductoDto> grid;
+            try
+            {
+                var selec = TIAutorizacionPendienteSeleccionada;
+                List<TiListaProductoDto> regs = await _productoServicio.BuscaTIListaProductos(tr: TIAutorizacionPendienteSeleccionada.Ti, admId: AdministracionId, usuId: UserName, boxid: selec.BoxId, rubId: selec.RubroId, token: TokenCookie);
+                grid = ObtenerGrillaTIListaProductos(regs);
+            }
+            catch (NegocioException ex)
+            {
+                TempData["warn"] = ex.Message;
+                return RedirectToAction("Index");   //para mensajes en pantalla debere generar una vista generica de errores.
+            }
+            catch (UnauthorizedException ex)
+            {
+                _logger.LogWarning(ex.Message);
+                TempData["warn"] = ex.Message;
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                TempData["error"] = ex.Message;
+                return RedirectToAction("Index");
+
+            }
+
+            return PartialView("_gridTIListaProducto", grid);
+        }
+
+        private GridCore<TiListaProductoDto> ObtenerGrillaTIListaProductos(List<TiListaProductoDto> regs)
+        {
+            var lista = new StaticPagedList<TiListaProductoDto>(regs, 1, 999, regs.Count);
+
+            return new GridCore<TiListaProductoDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Ti", SortDir = "ASC" };
+
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> PresentarBoxDeProductos()
+        {
+            GridCore<BoxRubProductoDto> grid;
+            try
+            {
+                var regs = await _productoServicio.PresentarBoxDeProductos(tr: TIAutorizacionPendienteSeleccionada.Ti, admId: AdministracionId, usuId: UserName, token: TokenCookie);
+                grid = ObtenerGrillaDeBoxRubros(regs);
+            }
+            catch (NegocioException ex)
+            {
+                TempData["warn"] = ex.Message;
+                return RedirectToAction("Index");
+            }
+            catch (UnauthorizedException ex)
+            {
+                _logger.LogWarning(ex.Message);
+                TempData["warn"] = ex.Message;
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                TempData["error"] = ex.Message;
+                return RedirectToAction("Index");
+
+            }
+            return PartialView("_gridTIBox", grid);
+        }
+
+        private GridCore<BoxRubProductoDto> ObtenerGrillaDeBoxRubros(List<BoxRubProductoDto> regs)
         {
             var lista = new StaticPagedList<BoxRubProductoDto>(regs, 1, 999, regs.Count);
 
@@ -125,32 +208,29 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         [HttpPost]
         public async Task<IActionResult> PresentarRubroDeProductos()
         {
-            RespuestaGenerica<BoxRubProductoDto> response = new();
+            GridCore<BoxRubProductoDto> response;
             try
             {
                 var regs = await _productoServicio.PresentarRubrosDeProductos(tr: TIAutorizacionPendienteSeleccionada.Ti, admId: AdministracionId, usuId: UserName, token: TokenCookie);
-                response.GrillaDatos = ObtenerGrillaDeBoxRubros(regs);
+                response = ObtenerGrillaDeBoxRubros(regs);
             }
             catch (NegocioException ex)
             {
-                response.Mensaje = ex.Message;
-                response.Ok = false;
-                response.EsWarn = true;
-                response.EsError = false;
+                TempData["warn"] = ex.Message;
+                return RedirectToAction("Index");
             }
             catch (UnauthorizedException ex)
             {
-                response.Mensaje = ex.Message;
-                response.Ok = false;
-                response.EsWarn = true;
-                response.EsError = false;
+                _logger.LogWarning(ex.Message);
+                TempData["warn"] = ex.Message;
+                return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
-                response.Mensaje = ex.Message;
-                response.Ok = false;
-                response.EsWarn = false;
-                response.EsError = true;
+                _logger.LogError(ex.Message);
+                TempData["error"] = ex.Message;
+                return RedirectToAction("Index");
+
             }
             return PartialView("_gridTIRubro", response);
         }
@@ -158,39 +238,34 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         [HttpPost]
         public async Task<IActionResult> ObtenerAutorizacionesPendientes()
         {
-            RespuestaGenerica<AutorizacionTIDto> response=new();
+            GridCore<AutorizacionTIDto> grid;
             try
             {
                 var autos = await _productoServicio.TRObtenerAutorizacionesPendientes(AdministracionId, UserName, "S", TokenCookie);
 
                 ListadoTIAutoPendientes = autos;
 
-                response.GrillaDatos = ObtenerAutorizaciones(autos);
-
+                grid = ObtenerAutorizaciones(autos);
             }
             catch (NegocioException ex)
             {
-                response.Ok = false;
-                response.EsWarn=true;
-                response.Mensaje = ex.Message;
+                TempData["warn"] = ex.Message;
+                return RedirectToAction("Index");
             }
             catch (UnauthorizedException ex)
             {
                 _logger.LogWarning(ex.Message);
-                response.Ok = false;
-                response.EsWarn = true;
-                response.Mensaje = ex.Message;
-
+                TempData["warn"] = ex.Message;
+                return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                response.Ok = false;
-                response.EsError = true;
-                response.Mensaje = ex.Message;
+                TempData["error"] = ex.Message;
+                return RedirectToAction("Index");
             }
 
-            return PartialView("_gridTRAutoPendientes", response);
+            return PartialView("_gridTRAutoPendientes", grid);
 
         }
 
@@ -245,6 +320,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 return Json(new { error = true, warn = false, msg = ex.Message });
             }
         }
+
+
 
         public IActionResult TIentreDep()
         {

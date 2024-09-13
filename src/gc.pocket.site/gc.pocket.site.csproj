@@ -8,6 +8,11 @@
 
   <ItemGroup>
     <Content Remove="log4net.config" />
+    <Content Remove="wwwroot\js\app\ti\ti03.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="wwwroot\js\app\ti\ti03.js" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,6 +43,7 @@
     <None Include="log4net.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="wwwroot\js\app\ti\ti03.js" />
   </ItemGroup>
 
   <ItemGroup>

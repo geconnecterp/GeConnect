@@ -1,4 +1,5 @@
 ﻿using Azure;
+using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Administracion;
@@ -134,7 +135,9 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         [HttpPost]
         public ActionResult InfoProductoStkD()
         {
-            RespuestaGenerica<InfoProdStkD> response = new() ;
+            RespuestaGenerica<EntidadBase> response = new() ;
+            GridCore<InfoProdStkD> grillaDatos;
+
             try
             {
                 string id = ProductoBase.P_id;
@@ -144,12 +147,12 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                     var regs = _productoServicio.InfoProductoStkD(id, AdministracionId, TokenCookie).GetAwaiter().GetResult();
                     InfoProdStkDRegs = regs;
-                    response.GrillaDatos = ObtenerInfoProdStkD(regs);
+                    grillaDatos = ObtenerInfoProdStkD(regs);
 
                 }
                 else
                 {
-                    response.GrillaDatos = ObtenerInfoProdStkD(InfoProdStkDRegs);
+                    grillaDatos = ObtenerInfoProdStkD(InfoProdStkDRegs);
                 }
                
             }
@@ -159,6 +162,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 response.Ok = false;
                 response.EsWarn = true;
                 response.EsError = false;
+                return PartialView("_gridMensaje", response);
             }
             catch (UnauthorizedException ex)
             {
@@ -166,6 +170,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 response.Ok = false;
                 response.EsWarn = true;
                 response.EsError = false;
+                return PartialView("_gridMensaje", response);
             }
             catch (Exception ex)
             {
@@ -173,8 +178,9 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 response.Ok = false;
                 response.EsWarn = false;
                 response.EsError = true;
+                return PartialView("_gridMensaje", response);
             }
-            return PartialView("_infoProdStkDGrid", response);
+            return PartialView("_infoProdStkDGrid", grillaDatos);
         }
 
         private GridCore<InfoProdStkD> ObtenerInfoProdStkD(List<InfoProdStkD> listInfoProd)
@@ -189,7 +195,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         [HttpPost]
         public ActionResult InfoProductoStkBoxes()
         {
-            RespuestaGenerica<InfoProdStkBox> response=new();
+            RespuestaGenerica<EntidadBase> response=new();
+            GridCore<InfoProdStkBox> grillaDatos;
             //en documentacion GECO POCKET INFOPROD el valor default de depo = %
             string depo = "%";
             try
@@ -209,12 +216,12 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     else
                     {
                         var data = regs.First();
-                        response.GrillaDatos = ObtenerInfoProdStkBox((id, depo));
+                        grillaDatos = ObtenerInfoProdStkBox((id, depo));
                     }
                 }
                 else
                 {
-                    response.GrillaDatos = ObtenerInfoProdStkBox(InfoProdStkBoxesIds, true);
+                    grillaDatos = ObtenerInfoProdStkBox(InfoProdStkBoxesIds, true);
                 }
               
             }
@@ -224,6 +231,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 response.Ok = false;
                 response.EsWarn = true;
                 response.EsError = false;
+                return PartialView("_gridMensaje", response);
             }
             catch (UnauthorizedException ex)
             {
@@ -231,6 +239,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 response.Ok = false;
                 response.EsWarn = true;
                 response.EsError = false;
+                return PartialView("_gridMensaje", response);
             }
             catch (Exception ex)
             {
@@ -238,13 +247,14 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 response.Ok = false;
                 response.EsWarn = false;
                 response.EsError = true;
+                return PartialView("_gridMensaje", response);
             }
             return PartialView("_infoProdStkBoxGrid", response);
         }
 
         private GridCore<InfoProdStkBox> ObtenerInfoProdStkBox((string, string) ids, bool esSession = false)
         {
-            List<InfoProdStkBox> listInfoProd;
+            List<InfoProdStkBox> listInfoProd;           
             if (esSession)
             {
                 listInfoProd = InfoProdStkBoxesRegs;
@@ -262,7 +272,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         [HttpPost]
         public ActionResult InfoProductoStkA()
         {
-            RespuestaGenerica<InfoProdStkA> response=new();
+            RespuestaGenerica<EntidadBase> response=new();
+            GridCore<InfoProdStkA> grillaDatos;
             try
             {
                 string id = ProductoBase.P_id;
@@ -273,11 +284,11 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                     var regs = _productoServicio.InfoProductoStkA(id, "%", TokenCookie).GetAwaiter().GetResult();
 
-                    response.GrillaDatos = ObtenerInfoProdStkA(regs);
+                    grillaDatos = ObtenerInfoProdStkA(regs);
                 }
                 else
                 {
-                    response.GrillaDatos = ObtenerInfoProdStkA(InfoProdStkARegs);
+                    grillaDatos = ObtenerInfoProdStkA(InfoProdStkARegs);
                 }
                 
             }
@@ -286,7 +297,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 response.Mensaje = ex.Message;
                 response.Ok = false;
                 response.EsWarn = true;
-                response.EsError = false;
+                response.EsError = false;                
+                return PartialView("_gridMensaje", response);
             }
             catch (UnauthorizedException ex)
             {
@@ -294,6 +306,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 response.Ok = false;
                 response.EsWarn = true;
                 response.EsError = false;
+                return PartialView("_gridMensaje", response);
             }
             catch (Exception ex)
             {
@@ -301,6 +314,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 response.Ok = false;
                 response.EsWarn = false;
                 response.EsError = true;
+                return PartialView("_gridMensaje", response);
             }
             return PartialView("_infoProdStkAGrid", response);
         }
@@ -316,7 +330,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         [HttpPost]
         public ActionResult InfoProductoMovStk()
         {
-            RespuestaGenerica<InfoProdMovStk> response = new()  ;
+            RespuestaGenerica<EntidadBase> response = new()  ;
+            GridCore<InfoProdMovStk> grillaDatos;
             string depo = "%";
             string tmov = "RP";
             DateTime desde, hasta;
@@ -332,11 +347,11 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                     var regs = _productoServicio.InfoProductoMovStk(id, AdministracionId, depo, tmov, desde, hasta, TokenCookie).GetAwaiter().GetResult();
 
-                    response.GrillaDatos = ObtenerInfoProdMovStk(regs);
+                    grillaDatos = ObtenerInfoProdMovStk(regs);
                 }
                 else
                 {
-                    response.GrillaDatos = ObtenerInfoProdMovStk(InfoProdMovStkRegs);
+                    grillaDatos = ObtenerInfoProdMovStk(InfoProdMovStkRegs);
                 }
                 
             }
@@ -346,6 +361,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 response.Ok = false;
                 response.EsWarn = true;
                 response.EsError = false;
+                return PartialView("_gridMensaje", response);
             }
             catch (UnauthorizedException ex)
             {
@@ -353,6 +369,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 response.Ok = false;
                 response.EsWarn = true;
                 response.EsError = false;
+                return PartialView("_gridMensaje", response);
             }
             catch (Exception ex)
             {
@@ -360,6 +377,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 response.Ok = false;
                 response.EsWarn = false;
                 response.EsError = true;
+                return PartialView("_gridMensaje", response);
             }
             return PartialView("_infoProdMovStkGrid", response);
         }
@@ -375,7 +393,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         [HttpPost]
         public ActionResult InfoProductoLP()
         {
-            RespuestaGenerica<InfoProdLP> response = new();
+            RespuestaGenerica<EntidadBase> response = new();
+            GridCore<InfoProdLP> grillaDatos;
             try
             {
                 string id = ProductoBase.P_id;
@@ -386,11 +405,11 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     var regs = _productoServicio.InfoProductoLP(id, TokenCookie).GetAwaiter().GetResult();
 
 
-                    response.GrillaDatos = ObtenerInfoProdLP(regs);
+                    grillaDatos = ObtenerInfoProdLP(regs);
                 }
                 else
                 {
-                    response.GrillaDatos = ObtenerInfoProdLP(InfoProdLPRegs);
+                    grillaDatos = ObtenerInfoProdLP(InfoProdLPRegs);
                 }
                 
             }
@@ -400,6 +419,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 response.Ok = false;
                 response.EsWarn = true;
                 response.EsError = false;
+                return PartialView("_gridMensaje", response);
             }
             catch (UnauthorizedException ex)
             {
@@ -407,6 +427,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 response.Ok = false;
                 response.EsWarn = true;
                 response.EsError = false;
+                return PartialView("_gridMensaje", response);
             }
             catch (Exception ex)
             {
@@ -414,8 +435,9 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 response.Ok = false;
                 response.EsWarn = false;
                 response.EsError = true;
+                return PartialView("_gridMensaje", response);
             }
-            
+
             return PartialView("_infoProdLPGrid", response );
         }
 

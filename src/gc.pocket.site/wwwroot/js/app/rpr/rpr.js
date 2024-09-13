@@ -17,7 +17,7 @@
     else {
         datos = { up, vto: " ", bulto: box, unidad: un };
     }
-   
+
 
     AbrirWaiting();
 
@@ -57,7 +57,7 @@
             CerrarWaiting();
             ControlaMensajeSuccess("¡¡Producto cargado!!")
             productosGrid();
-    return true;
+            return true;
         }
     });
     $("input#Busqueda").focus();
@@ -140,36 +140,22 @@ function AcumularProducto() {
 function productosGrid() {
     var data = {};
     PostGenHtml(data, PresentarProductosSeleccionadosUrl, function (obj) {
-    
-        if (obj.ok === true) {
-            $("#divRprGrid").html(obj.GrillaDatos);
-            var tb = $("#divRprGrid #tbProdRPR tbody td");
-            if (tb.length <= 0) {
-                $("#btnContinuarRpr").hide("fast");
-            } else {
-                $("#btnContinuarRpr").show("fast");
-            }
 
-            if (typeof ocultarTrash !== 'undefined') {
-                if (ocultarTrash === true) {
-                    //ocultamos la 8° columna
-                    $(".ocultar").toggle();
-                    $("#divRprGrid #tbProdRPR tbody td:nth-child(8)").toggle();
-                }
-            }
-        }
-        else if (obj.esError === true) {
-            //mensaje
-            AbrirMensaje("Algo pasó", obj.mensaje, function () {
-                $("#msjModal").modal("hide");
-                return true;
-            }, false, ["Aceptar"], "error!", null);
+
+        $("#divRprGrid").html(obj);
+        var tb = $("#divRprGrid #tbProdRPR tbody td");
+        if (tb.length <= 0) {
+            $("#btnContinuarRpr").hide("fast");
         } else {
-            //warn
-            AbrirMensaje("Algo pasó", obj.mensaje, function () {
-                $("#msjModal").modal("hide");
-                return true;
-            }, false, ["Aceptar"], "warn!", null);
+            $("#btnContinuarRpr").show("fast");
+        }
+
+        if (typeof ocultarTrash !== 'undefined') {
+            if (ocultarTrash === true) {
+                //ocultamos la 8° columna
+                $(".ocultar").toggle();
+                $("#divRprGrid #tbProdRPR tbody td:nth-child(8)").toggle();
+            }
         }
 
 

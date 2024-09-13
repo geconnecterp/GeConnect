@@ -31,7 +31,6 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             _depositoServicio = depositoServicio;
             _settings = options.Value;
         }
-
         public async Task<IActionResult> Index()
         {
             var auth = EstaAutenticado;
@@ -57,6 +56,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 TempData["error"] = "Hubo algun problema al intentar obtener las Autorizaciones Pendientes. Si el problema persiste informe al Administrador";
                 grid = new();
             }
+            TempData["cota"] = _settings.FechaVtoCota;
             return View(grid);
 
         }

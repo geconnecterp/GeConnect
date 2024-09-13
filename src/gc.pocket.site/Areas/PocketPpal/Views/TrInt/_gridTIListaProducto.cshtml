@@ -1,22 +1,20 @@
-﻿
+﻿@model GridCore<TiListaProductoDto>
 @*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
-@model GridCore<BoxRubProductoDto>
 @{
     var alt = true;
     string clase = string.Empty;
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
     int cont = 0;
 }
+
 <div class="table-responsive table-wrapper">
     <table class="table mb-0 " id="tbAuPend">
         <thead>
             <tr class="header table-dark">
                 <th style="display:none;"></th>
-                <th scope="col" style="width:33%">Rubro</th>
-              
-                <th scope="col" style="width:33%">Estado</th>
+                <th scope="col">Rubro</th>
             </tr>
         </thead>
         <tbody>
@@ -25,18 +23,21 @@
                 cont++;
                 if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
-                <tr class="@clase" onclick="seleccionarRegistroTIRubro(this)">
+                <tr class="@clase">
                     <td style="display:none;">@cont</td>
-                    <td>@item.Rub_desc
-                        @Html.Hidden("rTi" + cont,item.Ti)
-                        @Html.Hidden("rrub_id" + cont, item.Rub_Id)
-                        @Html.Hidden("rrub_desc" + cont, item.Rub_desc)
-                        @Html.Hidden("rrubg_id" + cont, item.Rubg_Id)
-                        @Html.Hidden("rrubg_desc" + cont, item.Rubg_desc)
-                        @Html.Hidden("rconteo" + cont, item.Conteo)
+                    <td>
+                        <div class="d-flex justify-content-between">
+                            <div class="d-flex flex-column">
+                                <div class="p-0">@item.P_id @item.P_desc | Pedido: @item.Pedido</div>
+                                <div class="p-0">Box @item.Box_id Rub @item.Rub_id</div>
+                                <div class="p-0"><strong>Cantidad: @item.Pedido</strong></div>
+                            </div>
+                            <div class="d-flex align-items-sm-center">
+                                <button type="button" class="btn btn-sm btn-success"><i class="bx bx-barcode"></i></button>
+                            </div>
+                        </div>
+
                     </td>
-             
-                    <td>@item.Conteo</td>
                 </tr>
             }
         </tbody>

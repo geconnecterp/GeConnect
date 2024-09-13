@@ -10,5 +10,8 @@ namespace gc.api.core.Contratos.Servicios
         RprResponseDto ValidarBox(string box, string admid);
         RprResponseDto AlmacenaBoxUl(RprABRequest req);
         List<AutorizacionTIDto> TRObtenerAutorizacionesPendientes(string admId,string usuId,string titId);
+        List<BoxRubProductoDto> TIObtenerListaBox(string admId, string usuId, string ti);
+        List<BoxRubProductoDto> TIObtenerListaRubro(string admId, string usuId, string ti);
+        List<TiListaProductoDto> BuscaTIListaProductos(string admId, string usuId, string ti, string boxid, string rubroid);
     }
 }

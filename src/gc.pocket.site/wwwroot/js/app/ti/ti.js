@@ -11,22 +11,22 @@ function cargarAutorizacionesPendientes() {
 
     var datos = {};
     PostGenHtml(datos, getAUPendientesUrl, function (obj) {
-        if (obj.ok === true) {
-            $("#divGrAUTIPend").html(obj.GrillaDatos);
-        }
-        else if (obj.esError === true) {
-            //mensaje
-            AbrirMensaje("Algo pasó", obj.mensaje, function () {
-                $("#msjModal").modal("hide");
-                return true;
-            }, false, ["Aceptar"], "error!", null);
-        } else { 
-            //warn
-            AbrirMensaje("Algo pasó", obj.mensaje, function () {
-                $("#msjModal").modal("hide");
-                return true;
-            }, false, ["Aceptar"], "warn!", null);
-        }
+        //if (obj.ok === true) {
+            $("#divGrAUTIPend").html(obj);
+        //}
+        //else if (obj.esError === true) {
+        //    //mensaje
+        //    AbrirMensaje("Algo pasó", obj.mensaje, function () {
+        //        $("#msjModal").modal("hide");
+        //        return true;
+        //    }, false, ["Aceptar"], "error!", null);
+        //} else { 
+        //    //warn
+        //    AbrirMensaje("Algo pasó", obj.mensaje, function () {
+        //        $("#msjModal").modal("hide");
+        //        return true;
+        //    }, false, ["Aceptar"], "warn!", null);
+        //}
         CerrarWaiting();
     });
 
@@ -67,8 +67,13 @@ function validarUsuario() {
         }
         else {
             CerrarWaiting();
-            ControlaMensajeSuccess(obj.msg);
-            window.location.href = trScr02;
+            AbrirMensaje("Usuario Validado", obj.msg, function () {
+                $("#msjModal").modal("hide");
+                window.location.href = trScr02;
+
+                //return true;
+            }, false, ["Aceptar"], "succ!", null);
+            //ControlaMensajeSuccess(obj.msg);
         }
     });
     return true;

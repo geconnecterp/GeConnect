@@ -28,9 +28,32 @@
         </div>
     </div>
 </div>
+<div class="row mb-3">
+    <div class="d-flex d-inline-flex">
+        <div class="input-group input-group-sm text-info">
+            <input id="txtData01" class="form-control" readonly />
+            <input id="txtData02" class="form-control" readonly />
+            <input id="txtData03" class="form-control" readonly />
+            <input id="txtData04" class="form-control" readonly />
+        </div>
+    </div>
+</div>
 <div id="divGrids">
 </div>
+<div class="row mb-3">
+    <div class="d-flex justify-content-center">
+        <button type="button" class="btn btn-info btn-sm m-2"><i class="bx bx-ms bx-info-circle"></i></button>
+        <form asp-action="TIentreSucCargaCarrito" asp-controller="trint" asp-area="pocketppal" method="get">
+        <button type="submit" id="btnContinua02" disabled class="btn btn-success btn-sm m-2"><i class="bx bx-ms bx-right-arrow-alt"></i></button>
+            @Html.Hidden("esrubro")
+            @Html.Hidden("esbox")
+            @Html.Hidden("boxid")
+            @Html.Hidden("rubroid")
+            @Html.Hidden("rubrogid")
 
+        </form>
+    </div>
+</div>
 
 @section scripts {
     <script type="text/javascript">

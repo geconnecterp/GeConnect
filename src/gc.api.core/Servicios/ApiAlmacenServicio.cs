@@ -1,4 +1,5 @@
-﻿using gc.api.core.Contratos.Servicios;
+﻿using gc.api.core.Constantes;
+using gc.api.core.Contratos.Servicios;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Dtos.Almacen.Rpr;
@@ -16,7 +17,7 @@ namespace gc.api.core.Servicios
 
         public RprResponseDto AlmacenaBoxUl(RprABRequest req)
         {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_BOX_ALMACENA_UL;
+            var sp = ConstantesGC.StoredProcedures.SP_RPR_BOX_ALMACENA_UL;
 
             var ps = new List<SqlParameter>()
             {
@@ -79,6 +80,56 @@ namespace gc.api.core.Servicios
             return response[0];
         }
 
-        
+        public List<BoxRubProductoDto> TIObtenerListaRubro(string admId, string usuId, string ti)
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Lista_Rubros;
+
+            var ps = new List<SqlParameter>()
+            {
+                new SqlParameter("@adm_id",admId),
+                new SqlParameter("@usu_id",usuId),
+                new SqlParameter("@ti",ti),
+
+            };
+
+            List<BoxRubProductoDto> response = _repository.EjecutarLstSpExt<BoxRubProductoDto>(sp, ps, true);
+
+            return response;
+        }
+        public List<BoxRubProductoDto> TIObtenerListaBox(string admId, string usuId, string ti)
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Lista_BOX;
+
+            var ps = new List<SqlParameter>()
+            {
+                new SqlParameter("@adm_id",admId),
+                new SqlParameter("@usu_id",usuId),
+                new SqlParameter("@ti",ti),
+
+            };
+
+            List<BoxRubProductoDto> response = _repository.EjecutarLstSpExt<BoxRubProductoDto>(sp, ps, true);
+
+            return response;
+        }
+
+        public List<TiListaProductoDto> BuscaTIListaProductos(string admId, string usuId, string ti, string boxid, string rubroid)
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Lista_Productos;
+
+            var ps = new List<SqlParameter>()
+            {
+                new SqlParameter("@adm_id",admId),
+                new SqlParameter("@usu_id",usuId),
+                new SqlParameter("@ti",ti),
+                new SqlParameter("@box_id",boxid),
+                new SqlParameter("@rub_id",boxid),
+
+            };
+
+            List<TiListaProductoDto> response = _repository.EjecutarLstSpExt<TiListaProductoDto>(sp, ps, true);
+
+            return response;
+        }
     }
 }

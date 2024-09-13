@@ -5,11 +5,11 @@
     $("#btnBusquedaBase").on("click", function () {
         buscarProducto();
         return true;
-    }); 
+    });
 
     $("#estadoFuncion").on("change", verificaEstado); //este control debe ser insertado el mismo o similar para cada modulo.
 
-    $("#btnStkD").on("click",PresentarStkD);
+    $("#btnStkD").on("click", PresentarStkD);
     $("#btnStkBox").on("click", PresentarStkBox);
     $("#btnStkA").on("click", PresentarStkA);
     $("#btnMov").on("click", PresentarMov);
@@ -29,7 +29,7 @@ function verificaEstado() {
         $("#Capacidad").val(prod.p_m_capacidad);
         $("#ProveedorId").val("??????");
         $("#Familia").val("???????");
-        $("#Rubro").val(prod.rub_desc);     
+        $("#Rubro").val(prod.rub_desc);
 
         $("#estadoFuncion").val(false);
 
@@ -42,55 +42,20 @@ function verificaEstado() {
 }
 
 function PresentarStkD(id) {
-    var data = { };
+    var data = {};
     PostGenHtml(data, infoProdStkDUrl, function (obj) {
-        if (obj.ok === true) {
-            $("#gridInfoProdStkD").html(obj.GrillaDatos);
-        }
-        else if (obj.esError === true) {
-            //mensaje
-            AbrirMensaje("Algo pasó", obj.mensaje, function () {
-                $("#msjModal").modal("hide");
-                return true;
-            }, false, ["Aceptar"], "error!", null);
-        } else {
-            //warn
-            AbrirMensaje("Algo pasó", obj.mensaje, function () {
-                $("#msjModal").modal("hide");
-                return true;
-            }, false, ["Aceptar"], "warn!", null);
-        }
-
-
+        $("#gridInfoProdStkD").html(obj);
         CerrarWaiting();
     }, function (obj) {
         ControlaMensajeError(obj.message);
         CerrarWaiting();
-    });    
+    });
 }
 
 function PresentarStkBox() {
-    var data = { };
+    var data = {};
     PostGenHtml(data, infoProdBoxUrl, function (obj) {
-
-        if (obj.ok === true) {
-            $("#gridInfoProdStkBox").html(obj.GrillaDatos);
-        }
-        else if (obj.esError === true) {
-            //mensaje
-            AbrirMensaje("Algo pasó", obj.mensaje, function () {
-                $("#msjModal").modal("hide");
-                return true;
-            }, false, ["Aceptar"], "error!", null);
-        } else {
-            //warn
-            AbrirMensaje("Algo pasó", obj.mensaje, function () {
-                $("#msjModal").modal("hide");
-                return true;
-            }, false, ["Aceptar"], "warn!", null);
-        }
-
-
+        $("#gridInfoProdStkBox").html(obj);
         CerrarWaiting();
     }, function (obj) {
         ControlaMensajeError(obj.message);
@@ -99,26 +64,9 @@ function PresentarStkBox() {
     return true;
 }
 function PresentarStkA() {
-    var data = { };
+    var data = {};
     PostGenHtml(data, infoProdStkAUrl, function (obj) {
-       
-        if (obj.ok === true) {
-            $("#gridInfoProdStkA").html(obj.GrillaDatos);
-        }
-        else if (obj.esError === true) {
-            //mensaje
-            AbrirMensaje("Algo pasó", obj.mensaje, function () {
-                $("#msjModal").modal("hide");
-                return true;
-            }, false, ["Aceptar"], "error!", null);
-        } else {
-            //warn
-            AbrirMensaje("Algo pasó", obj.mensaje, function () {
-                $("#msjModal").modal("hide");
-                return true;
-            }, false, ["Aceptar"], "warn!", null);
-        }
-
+        $("#gridInfoProdStkA").html(obj);
         CerrarWaiting();
     }, function (obj) {
         ControlaMensajeError(obj.message);
@@ -127,25 +75,9 @@ function PresentarStkA() {
     return true;
 }
 function PresentarMov() {
-    var data = { };
+    var data = {};
     PostGenHtml(data, infoProdMovUrl, function (obj) {
-       
-        if (obj.ok === true) {
-            $("#gridInfoProdMov").html(obj.GrillaDatos);
-        }
-        else if (obj.esError === true) {
-            //mensaje
-            AbrirMensaje("Algo pasó", obj.mensaje, function () {
-                $("#msjModal").modal("hide");
-                return true;
-            }, false, ["Aceptar"], "error!", null);
-        } else {
-            //warn
-            AbrirMensaje("Algo pasó", obj.mensaje, function () {
-                $("#msjModal").modal("hide");
-                return true;
-            }, false, ["Aceptar"], "warn!", null);
-        }
+        $("#gridInfoProdMov").html(obj);
         CerrarWaiting();
     }, function (obj) {
         ControlaMensajeError(obj.message);
@@ -154,25 +86,9 @@ function PresentarMov() {
     return true;
 }
 function PresentarLP() {
-    var data = { };
+    var data = {};
     PostGenHtml(data, infoProdLPUrl, function (obj) {
-        
-        if (obj.ok === true) {
-            $("#gridInfoProdLP").html(obj.GrillaDatos);
-        }
-        else if (obj.esError === true) {
-            //mensaje
-            AbrirMensaje("Algo pasó", obj.mensaje, function () {
-                $("#msjModal").modal("hide");
-                return true;
-            }, false, ["Aceptar"], "error!", null);
-        } else {
-            //warn
-            AbrirMensaje("Algo pasó", obj.mensaje, function () {
-                $("#msjModal").modal("hide");
-                return true;
-            }, false, ["Aceptar"], "warn!", null);
-        }
+        $("#gridInfoProdLP").html(obj);
         CerrarWaiting();
     }, function (obj) {
         ControlaMensajeError(obj.message);

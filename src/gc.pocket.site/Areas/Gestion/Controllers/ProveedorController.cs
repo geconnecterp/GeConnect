@@ -1,3 +1,4 @@
+using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
@@ -28,11 +29,12 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         // GET: proveedoresController
         public async Task<IActionResult> Index(string buscar, string sortdir = "ASC", string sort = "cta_id", int page = 1)
         {
-            RespuestaGenerica<ProveedorDto> response = new();
+            RespuestaGenerica<EntidadBase> response = new();
+            GridCore<ProveedorDto> grillaDatos;
             try
             {
                 string token = TokenCookie;
-                response.GrillaDatos = await ObtenerProveedorAsync(buscar, sortdir, sort, page, token);
+                grillaDatos = await ObtenerProveedorAsync(buscar, sortdir, sort, page, token);
                 ViewData["Title"] = "Listado de proveedoress";
                 return View(response);
             }

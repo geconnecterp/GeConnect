@@ -11,9 +11,7 @@ using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.Net;
-using System.Runtime.Intrinsics.Arm;
 
 namespace gc.sitio.core.Servicios.Implementacion
 {
@@ -37,6 +35,12 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string RPR_AB_VALIDA_UL = "/ValidarUL";
         private const string RPR_AB_VALIDA_BOX = "/ValidarBox";
         private const string RPR_AB_ALMACENA_BOX = "/AlmacenaBoxUl";
+
+        private const string TI_ListaBox = "/GetTIListaBox";
+        private const string TI_ListaRubro = "/GetTIListaRubro";
+        private const string TI_ListaProductos = "/BuscaTIListaProductos";
+        
+
 
         //Transferencia Interna
         private const string TR_AU_PENDIENTE = "/TRAutorizacionPendiente";
@@ -519,6 +523,129 @@ namespace gc.sitio.core.Servicios.Implementacion
                     return new();
                 }
                 apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AutorizacionTIDto>>>(stringData)?? new ApiResponse<List<AutorizacionTIDto>>(new List<AutorizacionTIDto>());
+                return apiResponse.Data;
+            }
+            else
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+
+                try
+                {
+                    var res = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    return new();
+                }
+                catch
+                {
+                    return new();
+                }
+            }
+        }
+
+        public async Task<List<BoxRubProductoDto>> PresentarBoxDeProductos(string tr, string admId, string usuId, string token)
+        {
+            ApiResponse<List<BoxRubProductoDto>> apiResponse;
+
+            HelperAPI helper = new HelperAPI();
+
+            HttpClient client = helper.InicializaCliente(token);
+            HttpResponseMessage response;
+
+            var link = $"{_appSettings.RutaBase}{RutaApiAlmacen}{TI_ListaBox}?tr={tr}&admId={admId}&usuId={usuId}";
+
+            response = await client.GetAsync(link);
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(stringData))
+                {
+                    _logger.LogWarning($"La API no devolvió dato alguno. Parametro de busqueda {JsonConvert.SerializeObject(response)}");
+                    return new();
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<BoxRubProductoDto>>>(stringData) ?? new ApiResponse<List<BoxRubProductoDto>>(new List<BoxRubProductoDto>());
+                return apiResponse.Data;
+            }
+            else
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+
+                try
+                {
+                    var res = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    return new();
+                }
+                catch
+                {
+                    return new();
+                }
+            }
+        }
+
+        public async Task<List<BoxRubProductoDto>> PresentarRubrosDeProductos(string tr, string admId, string usuId, string token)
+        {
+            ApiResponse<List<BoxRubProductoDto>> apiResponse;
+
+            HelperAPI helper = new HelperAPI();
+
+            HttpClient client = helper.InicializaCliente(token);
+            HttpResponseMessage response;
+
+            var link = $"{_appSettings.RutaBase}{RutaApiAlmacen}{TI_ListaRubro}?tr={tr}&admId={admId}&usuId={usuId}";
+
+            response = await client.GetAsync(link);
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(stringData))
+                {
+                    _logger.LogWarning($"La API no devolvió dato alguno. Parametro de busqueda {JsonConvert.SerializeObject(response)}");
+                    return new();
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<BoxRubProductoDto>>>(stringData) ?? new ApiResponse<List<BoxRubProductoDto>>(new List<BoxRubProductoDto>());
+                return apiResponse.Data;
+            }
+            else
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+
+                try
+                {
+                    var res = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    return new();
+                }
+                catch
+                {
+                    return new();
+                }
+            }
+        }
+
+        public async Task<List<TiListaProductoDto>> BuscaTIListaProductos(string tr, string admId, string usuId, string? boxid, string? rubId, string token)
+        {
+            ApiResponse<List<TiListaProductoDto>> apiResponse;
+
+            HelperAPI helper = new HelperAPI();
+
+            HttpClient client = helper.InicializaCliente(token);
+            HttpResponseMessage response;
+
+            var link = $"{_appSettings.RutaBase}{RutaApiAlmacen}{TI_ListaProductos}?tr={tr}&admId={admId}&usuId={usuId}&boxid={boxid}&rubroid={rubId}";
+
+            response = await client.GetAsync(link);
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(stringData))
+                {
+                    _logger.LogWarning($"La API no devolvió dato alguno. Parametro de busqueda {JsonConvert.SerializeObject(response)}");
+                    return new();
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<TiListaProductoDto>>>(stringData) ?? new ApiResponse<List<TiListaProductoDto>>(new List<TiListaProductoDto>());
                 return apiResponse.Data;
             }
             else

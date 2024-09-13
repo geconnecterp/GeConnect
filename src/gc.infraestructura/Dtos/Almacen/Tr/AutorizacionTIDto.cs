@@ -9,7 +9,12 @@
         public DateTime Fecha { get; set; } 
         public string? Nota { get; set; } 
         public string? Tie_id { get; set; } 
-        public string? Pi_compte { get; set; } 
+        public string? Pi_compte { get; set; }
+        public  bool EsBox { get; set; }
+        public string? BoxId { get; set; }
+        public bool EsRubro { get; set; }
+        public string? RubroId { get; set; }
+        public string? RubroGId { get; set; }
 
     }
 }
