@@ -41,7 +41,22 @@
 	if ($("#FechaTurno").val() !== "") {
 		$("#dtpFechaTurno").val($("#FechaTurno").val())
 	}
+	const inputCantUL = document.querySelector('txtCantidadUL');
+	inputCantUL.addEventListener('input', function () {
+		if (isValid(this.value))
+			console.log("true");
+		else
+			console.log("false");
+	});
 });
+
+function isValid(value) {
+	if (parseInt(value) <= inputCantUL.getAttribute('max'))
+		return true;
+	return false;
+}
+
+
 
 function VerDetalleClick() {
 	if ($("#Cuenta") == undefined) {

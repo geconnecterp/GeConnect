@@ -307,10 +307,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				compte = RPRComptesDeRPRegs.Where(x => x.Tipo == idTipoCompte && x.NroComprobante == nroCompte).FirstOrDefault();
 			}
-			//else 
-			//{ 
-			//	compte=new RPRComptesDeRPDto() { Tipo=idTipoCompte, NroComprobante=nroCompte, }
-			//}
 			model.CompteSeleccionado = compte ?? new RPRComptesDeRPDto();
 			model.cta_id = CuentaComercialSeleccionada.Cta_Id;
 			model.ponerEnCurso = bool.Parse(ponerEnCurso);

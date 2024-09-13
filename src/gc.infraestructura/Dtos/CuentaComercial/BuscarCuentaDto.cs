@@ -13,5 +13,6 @@ namespace gc.infraestructura.Dtos.CuentaComercial
 		public string FechaTurno { get; set; } = string.Empty;
 		public string Depo_id { get; set; } = string.Empty;
         public RPRComptesDeRPDto Compte { get; set; }
+        public int CantidadUL { get; set; }
     }
 }

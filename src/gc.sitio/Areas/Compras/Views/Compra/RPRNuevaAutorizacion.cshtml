@@ -78,6 +78,12 @@
 											<input type="text" id="txtNota" *@ class="form-control" asp-for="@Model.Nota" />
 										</div>
 									</div>
+									<div class="col-sm">
+										<div class="form-check">
+											<input class="form-check-input" type="checkbox" value="" id="chkPonerEnCurso" checked="">
+											<label class="form-check-label" for="defaultCheck3"> Poner en Curso</label>
+										</div>
+									</div>
 								</div>
 							</div>
 						</row>
@@ -97,9 +103,9 @@
 										</div>
 									</div>
 									<div class="col-sm">
-										<div class="form-check">
-											<input class="form-check-input" type="checkbox" value="" id="chkPonerEnCurso" checked="">
-											<label class="form-check-label" for="defaultCheck3"> Poner en Curso</label>
+										<div class="input-group mb-3">
+											<span class="input-group-text">Nota Autorización: </span>
+											<input type="number" id="txtCantidadUL" class="form-control" asp-for="@Model.CantidadUL" min="1" max="999" />
 										</div>
 									</div>
 								</div>
