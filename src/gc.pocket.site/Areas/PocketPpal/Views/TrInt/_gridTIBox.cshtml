@@ -1,0 +1,42 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model GridCore<BoxRubProductoDto>
+@{
+    var alt = true;
+    string clase = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+    int cont = 0;
+}
+<div class="table-responsive table-wrapper">
+    <table class="table mb-0 " id="tbAuPend">
+        <thead>
+            <tr class="header table-dark">
+                <th style="display:none;"></th>
+
+                <th scope="col" style="width:33%">Depo</th>
+                <th scope="col" style="width:33%">BOX</th>
+                <th scope="col" style="width:33%">Desarma</th>
+                <th scope="col" style="width:33%">Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ListaDatos)
+            {
+                cont++;
+                if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+                <tr class="@clase" onclick="seleccionarRegistroTIBox(this)">
+
+                    <td style="display:none;">@cont</td>
+                    <td>@item.Depo_nombre
+                        @Html.Hidden("rTi" + cont, item.Ti)
+                    </td>
+                    <td>@item.Box_id</td>
+                    <td>@item.Conteo</td>
+                    <td>?????</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

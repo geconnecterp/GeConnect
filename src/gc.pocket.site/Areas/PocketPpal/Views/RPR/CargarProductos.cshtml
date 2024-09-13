@@ -2,6 +2,7 @@
 @*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
+
 @{
     Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
     var buscar = new BusquedaProducto();
@@ -61,7 +62,7 @@
         var ocultarTrash = false;
         var productoBase = null; //se hidrata en busquedas.
         var funcionBusquedaAvanzada = false;
-        var busquedaProdBase = "@Url.Action("BusquedaBase", "producto", new { area = "gestion" })";
+        var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "gestion" })";
         var validarEstado = true;
         //de funcionalidad RPR2
         var reguardarProductoEnListaUrl = "@Url.Action("ReguardarProductoEnLista", "RPR", new { area = "PocketPpal" })";

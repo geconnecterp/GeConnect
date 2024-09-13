@@ -1,9 +1,10 @@
+using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Gen;
 using gc.pocket.site.Controllers;
-using gc.pocket.site.Models.ViewModels;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -28,12 +29,14 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         // GET: proveedoresController
         public async Task<IActionResult> Index(string buscar, string sortdir = "ASC", string sort = "cta_id", int page = 1)
         {
+            RespuestaGenerica<EntidadBase> response = new();
+            GridCore<ProveedorDto> grillaDatos;
             try
             {
                 string token = TokenCookie;
-                var grilla = await ObtenerProveedorAsync(buscar, sortdir, sort, page, token);
+                grillaDatos = await ObtenerProveedorAsync(buscar, sortdir, sort, page, token);
                 ViewData["Title"] = "Listado de proveedoress";
-                return View(grilla);
+                return View(response);
             }
             catch (UnauthorizedException ex)
             {

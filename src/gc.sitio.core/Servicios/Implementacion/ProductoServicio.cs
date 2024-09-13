@@ -4,6 +4,7 @@ using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Rpr;
+using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
@@ -12,9 +13,7 @@ using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.Net;
-using System.Runtime.Intrinsics.Arm;
 
 namespace gc.sitio.core.Servicios.Implementacion
 {
@@ -43,6 +42,15 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string RPR_AB_VALIDA_UL = "/ValidarUL";
         private const string RPR_AB_VALIDA_BOX = "/ValidarBox";
         private const string RPR_AB_ALMACENA_BOX = "/AlmacenaBoxUl";
+
+        private const string TI_ListaBox = "/GetTIListaBox";
+        private const string TI_ListaRubro = "/GetTIListaRubro";
+        private const string TI_ListaProductos = "/BuscaTIListaProductos";
+        
+
+
+        //Transferencia Interna
+        private const string TR_AU_PENDIENTE = "/TRAutorizacionPendiente";
 
         private readonly AppSettings _appSettings;
 
@@ -116,7 +124,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-        public async Task<List<InfoProdStkD>> InfoProductoStkD(string id, string admId,string token)
+        public async Task<List<InfoProdStkD>> InfoProductoStkD(string id, string admId, string token)
         {
             ApiResponse<List<InfoProdStkD>> apiResponse;
 
@@ -124,7 +132,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 
             HttpClient client = helper.InicializaCliente(token);
             HttpResponseMessage response;
-            
+
             var link = $"{_appSettings.RutaBase}{RutaAPI}{INFOPROD_STKD}?id={id}&admId={admId}";
 
             response = await client.GetAsync(link);
@@ -276,7 +284,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-        public async Task<List<RPRAutorizacionPendienteDto>> RPRObtenerAutorizacionPendiente(string adm,string token)
+        public async Task<List<RPRAutorizacionPendienteDto>> RPRObtenerAutorizacionPendiente(string adm, string token)
         {
             ApiResponse<List<RPRAutorizacionPendienteDto>> apiResponse;
 
@@ -308,7 +316,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-        public async Task<RPRRegistroResponseDto> RPRRegistrarProductos(List<RPRProcuctoDto> prods,string admId, string ul, string token)
+        public async Task<RPRRegistroResponseDto> RPRRegistrarProductos(List<RPRProcuctoDto> prods, string admId, string ul, string token)
         {
             ApiResponse<RPRRegistroResponseDto> apiResponse;
 
@@ -319,12 +327,12 @@ namespace gc.sitio.core.Servicios.Implementacion
                 item.ul_id = ul;
             }
 
-            HttpClient client = helper.InicializaCliente(prods, token,out StringContent contentData);
+            HttpClient client = helper.InicializaCliente(prods, token, out StringContent contentData);
             HttpResponseMessage response;
 
             var link = $"{_appSettings.RutaBase}{RutaAPI}{RPRREGISTRAR}";
 
-            response = await client.PostAsync(link,contentData);
+            response = await client.PostAsync(link, contentData);
 
             if (response.StatusCode == HttpStatusCode.OK)
             {
@@ -617,12 +625,12 @@ namespace gc.sitio.core.Servicios.Implementacion
 
             HelperAPI helper = new HelperAPI();
             RprABRequest request = new() { Box = box, UL = ul, AdmId = adm };
-            HttpClient client = helper.InicializaCliente(request,token,out StringContent contentData);
+            HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
             HttpResponseMessage response;
-            
+
             var link = $"{_appSettings.RutaBase}{RutaApiAlmacen}{RPR_AB_ALMACENA_BOX}";
 
-            response = await client.PostAsync(link,contentData);
+            response = await client.PostAsync(link, contentData);
 
             if (response.StatusCode == HttpStatusCode.OK)
             {
@@ -643,15 +651,176 @@ namespace gc.sitio.core.Servicios.Implementacion
                 try
                 {
                     var res = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
-                    return new RprResponseDto() { Resultado = -1, Resultado_msj = res.Detail??"Hubo algun problema. Verifique el log local y de la api." };
+                    return new RprResponseDto() { Resultado = -1, Resultado_msj = res.Detail ?? "Hubo algun problema. Verifique el log local y de la api." };
                 }
                 catch
                 {
                     return new RprResponseDto() { Resultado = -1, Resultado_msj = stringData };
                 }
-               
-               
+            }
+        }
 
+        public async Task<List<AutorizacionTIDto>> TRObtenerAutorizacionesPendientes(string admId, string usuId, string titId, string token)
+        {
+            ApiResponse<List<AutorizacionTIDto>> apiResponse;
+
+            HelperAPI helper = new HelperAPI();
+
+            HttpClient client = helper.InicializaCliente(token);
+            HttpResponseMessage response;
+
+            var link = $"{_appSettings.RutaBase}{RutaApiAlmacen}{TR_AU_PENDIENTE}?admId={admId}&usuId={usuId}&titId={titId}";
+
+            response = await client.GetAsync(link);
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(stringData))
+                {
+                    _logger.LogWarning($"La API no devolvió dato alguno. Parametro de busqueda {JsonConvert.SerializeObject(response)}");
+                    return new();
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AutorizacionTIDto>>>(stringData)?? new ApiResponse<List<AutorizacionTIDto>>(new List<AutorizacionTIDto>());
+                return apiResponse.Data;
+            }
+            else
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+
+                try
+                {
+                    var res = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    return new();
+                }
+                catch
+                {
+                    return new();
+                }
+            }
+        }
+
+        public async Task<List<BoxRubProductoDto>> PresentarBoxDeProductos(string tr, string admId, string usuId, string token)
+        {
+            ApiResponse<List<BoxRubProductoDto>> apiResponse;
+
+            HelperAPI helper = new HelperAPI();
+
+            HttpClient client = helper.InicializaCliente(token);
+            HttpResponseMessage response;
+
+            var link = $"{_appSettings.RutaBase}{RutaApiAlmacen}{TI_ListaBox}?tr={tr}&admId={admId}&usuId={usuId}";
+
+            response = await client.GetAsync(link);
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(stringData))
+                {
+                    _logger.LogWarning($"La API no devolvió dato alguno. Parametro de busqueda {JsonConvert.SerializeObject(response)}");
+                    return new();
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<BoxRubProductoDto>>>(stringData) ?? new ApiResponse<List<BoxRubProductoDto>>(new List<BoxRubProductoDto>());
+                return apiResponse.Data;
+            }
+            else
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+
+                try
+                {
+                    var res = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    return new();
+                }
+                catch
+                {
+                    return new();
+                }
+            }
+        }
+
+        public async Task<List<BoxRubProductoDto>> PresentarRubrosDeProductos(string tr, string admId, string usuId, string token)
+        {
+            ApiResponse<List<BoxRubProductoDto>> apiResponse;
+
+            HelperAPI helper = new HelperAPI();
+
+            HttpClient client = helper.InicializaCliente(token);
+            HttpResponseMessage response;
+
+            var link = $"{_appSettings.RutaBase}{RutaApiAlmacen}{TI_ListaRubro}?tr={tr}&admId={admId}&usuId={usuId}";
+
+            response = await client.GetAsync(link);
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(stringData))
+                {
+                    _logger.LogWarning($"La API no devolvió dato alguno. Parametro de busqueda {JsonConvert.SerializeObject(response)}");
+                    return new();
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<BoxRubProductoDto>>>(stringData) ?? new ApiResponse<List<BoxRubProductoDto>>(new List<BoxRubProductoDto>());
+                return apiResponse.Data;
+            }
+            else
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+
+                try
+                {
+                    var res = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    return new();
+                }
+                catch
+                {
+                    return new();
+                }
+            }
+        }
+
+        public async Task<List<TiListaProductoDto>> BuscaTIListaProductos(string tr, string admId, string usuId, string? boxid, string? rubId, string token)
+        {
+            ApiResponse<List<TiListaProductoDto>> apiResponse;
+
+            HelperAPI helper = new HelperAPI();
+
+            HttpClient client = helper.InicializaCliente(token);
+            HttpResponseMessage response;
+
+            var link = $"{_appSettings.RutaBase}{RutaApiAlmacen}{TI_ListaProductos}?tr={tr}&admId={admId}&usuId={usuId}&boxid={boxid}&rubroid={rubId}";
+
+            response = await client.GetAsync(link);
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(stringData))
+                {
+                    _logger.LogWarning($"La API no devolvió dato alguno. Parametro de busqueda {JsonConvert.SerializeObject(response)}");
+                    return new();
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<TiListaProductoDto>>>(stringData) ?? new ApiResponse<List<TiListaProductoDto>>(new List<TiListaProductoDto>());
+                return apiResponse.Data;
+            }
+            else
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+
+                try
+                {
+                    var res = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    return new();
+                }
+                catch
+                {
+                    return new();
+                }
             }
         }
     }

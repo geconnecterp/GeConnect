@@ -17,7 +17,7 @@
     else {
         datos = { up, vto: " ", bulto: box, unidad: un };
     }
-   
+
 
     AbrirWaiting();
 
@@ -57,7 +57,7 @@
             CerrarWaiting();
             ControlaMensajeSuccess("¡¡Producto cargado!!")
             productosGrid();
-    return true;
+            return true;
         }
     });
     $("input#Busqueda").focus();
@@ -140,6 +140,8 @@ function AcumularProducto() {
 function productosGrid() {
     var data = {};
     PostGenHtml(data, PresentarProductosSeleccionadosUrl, function (obj) {
+
+
         $("#divRprGrid").html(obj);
         var tb = $("#divRprGrid #tbProdRPR tbody td");
         if (tb.length <= 0) {
@@ -155,7 +157,8 @@ function productosGrid() {
                 $("#divRprGrid #tbProdRPR tbody td:nth-child(8)").toggle();
             }
         }
-       
+
+
         return true;
     }, function (obj) {
         ControlaMensajeError(obj.message);

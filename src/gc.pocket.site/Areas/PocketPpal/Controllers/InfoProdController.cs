@@ -1,16 +1,17 @@
-﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿using Azure;
+using gc.api.core.Entidades;
+using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Administracion;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Dtos.Seguridad;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
 using gc.pocket.site.Controllers;
-using gc.pocket.site.Models.ViewModels;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using NuGet.Packaging.Signing;
 using X.PagedList;
 
 namespace gc.pocket.site.Areas.PocketPpal.Controllers
@@ -134,7 +135,9 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         [HttpPost]
         public ActionResult InfoProductoStkD()
         {
-            GridCore<InfoProdStkD> datosIP;
+            RespuestaGenerica<EntidadBase> response = new() ;
+            GridCore<InfoProdStkD> grillaDatos;
+
             try
             {
                 string id = ProductoBase.P_id;
@@ -144,22 +147,40 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                     var regs = _productoServicio.InfoProductoStkD(id, AdministracionId, TokenCookie).GetAwaiter().GetResult();
                     InfoProdStkDRegs = regs;
-                    datosIP = ObtenerInfoProdStkD(regs);
+                    grillaDatos = ObtenerInfoProdStkD(regs);
 
                 }
                 else
                 {
-                    datosIP = ObtenerInfoProdStkD(InfoProdStkDRegs);
+                    grillaDatos = ObtenerInfoProdStkD(InfoProdStkDRegs);
                 }
-                return PartialView("_infoProdStkDGrid", datosIP);
+               
+            }
+            catch(NegocioException ex)
+            {
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = true;
+                response.EsError = false;
+                return PartialView("_gridMensaje", response);
+            }
+            catch (UnauthorizedException ex)
+            {
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = true;
+                response.EsError = false;
+                return PartialView("_gridMensaje", response);
             }
             catch (Exception ex)
             {
-                TempData["warn"] = ex.Message;
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
             }
-            var lst = new StaticPagedList<InfoProdStkD>(new List<InfoProdStkD>(), 1, 1, 0);
-            return View("_infoProdStkDGrid", new GridCore<InfoProdStkD>() { ListaDatos = lst, CantidadReg = 0, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" });
-
+            return PartialView("_infoProdStkDGrid", grillaDatos);
         }
 
         private GridCore<InfoProdStkD> ObtenerInfoProdStkD(List<InfoProdStkD> listInfoProd)
@@ -174,7 +195,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         [HttpPost]
         public ActionResult InfoProductoStkBoxes()
         {
-            GridCore<InfoProdStkBox> datosIP;
+            RespuestaGenerica<EntidadBase> response=new();
+            GridCore<InfoProdStkBox> grillaDatos;
             //en documentacion GECO POCKET INFOPROD el valor default de depo = %
             string depo = "%";
             try
@@ -194,27 +216,45 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     else
                     {
                         var data = regs.First();
-                        datosIP = ObtenerInfoProdStkBox((id, depo));
+                        grillaDatos = ObtenerInfoProdStkBox((id, depo));
                     }
                 }
                 else
                 {
-                    datosIP = ObtenerInfoProdStkBox(InfoProdStkBoxesIds, true);
+                    grillaDatos = ObtenerInfoProdStkBox(InfoProdStkBoxesIds, true);
                 }
-                return PartialView("_infoProdStkBoxGrid", datosIP);
+              
+            }
+            catch (NegocioException ex)
+            {
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = true;
+                response.EsError = false;
+                return PartialView("_gridMensaje", response);
+            }
+            catch (UnauthorizedException ex)
+            {
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = true;
+                response.EsError = false;
+                return PartialView("_gridMensaje", response);
             }
             catch (Exception ex)
             {
-                TempData["warn"] = ex.Message;
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
             }
-            var lst = new StaticPagedList<InfoProdStkBox>(new List<InfoProdStkBox>(), 1, 1, 0);
-            return View("_infoProdStkBoxGrid", new GridCore<InfoProdStkBox>() { ListaDatos = lst, CantidadReg = 0, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" });
-
+            return PartialView("_infoProdStkBoxGrid", response);
         }
 
         private GridCore<InfoProdStkBox> ObtenerInfoProdStkBox((string, string) ids, bool esSession = false)
         {
-            List<InfoProdStkBox> listInfoProd;
+            List<InfoProdStkBox> listInfoProd;           
             if (esSession)
             {
                 listInfoProd = InfoProdStkBoxesRegs;
@@ -232,7 +272,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         [HttpPost]
         public ActionResult InfoProductoStkA()
         {
-            GridCore<InfoProdStkA> datosIP;
+            RespuestaGenerica<EntidadBase> response=new();
+            GridCore<InfoProdStkA> grillaDatos;
             try
             {
                 string id = ProductoBase.P_id;
@@ -243,20 +284,39 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                     var regs = _productoServicio.InfoProductoStkA(id, "%", TokenCookie).GetAwaiter().GetResult();
 
-                    datosIP = ObtenerInfoProdStkA(regs);
+                    grillaDatos = ObtenerInfoProdStkA(regs);
                 }
                 else
                 {
-                    datosIP = ObtenerInfoProdStkA(InfoProdStkARegs);
+                    grillaDatos = ObtenerInfoProdStkA(InfoProdStkARegs);
                 }
-                return PartialView("_infoProdStkAGrid", datosIP);
+                
+            }
+            catch (NegocioException ex)
+            {
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = true;
+                response.EsError = false;                
+                return PartialView("_gridMensaje", response);
+            }
+            catch (UnauthorizedException ex)
+            {
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = true;
+                response.EsError = false;
+                return PartialView("_gridMensaje", response);
             }
             catch (Exception ex)
             {
-                TempData["warn"] = ex.Message;
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
             }
-            var lst = new StaticPagedList<InfoProdStkA>(new List<InfoProdStkA>(), 1, 1, 0);
-            return View("_infoProdStkAGrid", new GridCore<InfoProdStkA>() { ListaDatos = lst, CantidadReg = 0, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" });
+            return PartialView("_infoProdStkAGrid", response);
         }
 
         private GridCore<InfoProdStkA> ObtenerInfoProdStkA(List<InfoProdStkA> listInfoProd)
@@ -270,7 +330,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         [HttpPost]
         public ActionResult InfoProductoMovStk()
         {
-            GridCore<InfoProdMovStk> datosIP;
+            RespuestaGenerica<EntidadBase> response = new()  ;
+            GridCore<InfoProdMovStk> grillaDatos;
             string depo = "%";
             string tmov = "RP";
             DateTime desde, hasta;
@@ -286,21 +347,39 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                     var regs = _productoServicio.InfoProductoMovStk(id, AdministracionId, depo, tmov, desde, hasta, TokenCookie).GetAwaiter().GetResult();
 
-                    datosIP = ObtenerInfoProdMovStk(regs);
+                    grillaDatos = ObtenerInfoProdMovStk(regs);
                 }
                 else
                 {
-                    datosIP = ObtenerInfoProdMovStk(InfoProdMovStkRegs);
+                    grillaDatos = ObtenerInfoProdMovStk(InfoProdMovStkRegs);
                 }
-                return PartialView("_infoProdMovStkGrid", datosIP);
+                
+            }
+            catch (NegocioException ex)
+            {
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = true;
+                response.EsError = false;
+                return PartialView("_gridMensaje", response);
+            }
+            catch (UnauthorizedException ex)
+            {
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = true;
+                response.EsError = false;
+                return PartialView("_gridMensaje", response);
             }
             catch (Exception ex)
             {
-                TempData["warn"] = ex.Message;
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
             }
-            var lst = new StaticPagedList<InfoProdStkBox>(new List<InfoProdStkBox>(), 1, 1, 0);
-            return View("_infoProdStkBoxGrid", new GridCore<InfoProdStkBox>() { ListaDatos = lst, CantidadReg = 0, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" });
-
+            return PartialView("_infoProdMovStkGrid", response);
         }
 
         private GridCore<InfoProdMovStk> ObtenerInfoProdMovStk(List<InfoProdMovStk> listInfoProd)
@@ -314,7 +393,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         [HttpPost]
         public ActionResult InfoProductoLP()
         {
-            GridCore<InfoProdLP> datosIP;
+            RespuestaGenerica<EntidadBase> response = new();
+            GridCore<InfoProdLP> grillaDatos;
             try
             {
                 string id = ProductoBase.P_id;
@@ -325,20 +405,40 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     var regs = _productoServicio.InfoProductoLP(id, TokenCookie).GetAwaiter().GetResult();
 
 
-                    datosIP = ObtenerInfoProdLP(regs);
+                    grillaDatos = ObtenerInfoProdLP(regs);
                 }
                 else
                 {
-                    datosIP = ObtenerInfoProdLP(InfoProdLPRegs);
+                    grillaDatos = ObtenerInfoProdLP(InfoProdLPRegs);
                 }
-                return PartialView("_infoProdLPGrid", datosIP);
+                
+            }
+            catch (NegocioException ex)
+            {
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = true;
+                response.EsError = false;
+                return PartialView("_gridMensaje", response);
+            }
+            catch (UnauthorizedException ex)
+            {
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = true;
+                response.EsError = false;
+                return PartialView("_gridMensaje", response);
             }
             catch (Exception ex)
             {
-                TempData["warn"] = ex.Message;
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
             }
-            var lst = new StaticPagedList<InfoProdLP>(new List<InfoProdLP>(), 1, 1, 0);
-            return View("_infoProdLPGrid", new GridCore<InfoProdLP>() { ListaDatos = lst, CantidadReg = 0, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" });
+
+            return PartialView("_infoProdLPGrid", response );
         }
 
         private GridCore<InfoProdLP> ObtenerInfoProdLP(List<InfoProdLP> listInfoProd)

@@ -1,6 +1,7 @@
 ﻿using gc.api.core.Contratos.Servicios;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Almacen.Rpr;
+using gc.infraestructura.Dtos.Almacen.Tr;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -37,7 +38,7 @@ namespace gc.api.Controllers.Almacen
                 return BadRequest("No se proporcionó la Administración actual.");
             }
 
-            var res = _almSv.ValidarUL(req.UL,req.AdmId);
+            var res = _almSv.ValidarUL(req.UL, req.AdmId);
             var response = new ApiResponse<RprResponseDto>(res);
             return Ok(response);
         }
@@ -57,7 +58,7 @@ namespace gc.api.Controllers.Almacen
                 return BadRequest("No se proporcionó la Administración actual.");
             }
 
-            var res = _almSv.ValidarBox(req.Box,req.AdmId);
+            var res = _almSv.ValidarBox(req.Box, req.AdmId);
             var response = new ApiResponse<RprResponseDto>(res);
             return Ok(response);
         }
@@ -83,6 +84,78 @@ namespace gc.api.Controllers.Almacen
 
             var res = _almSv.AlmacenaBoxUl(req);
             var response = new ApiResponse<RprResponseDto>(res);
+            return Ok(response);
+        }
+
+        [HttpGet]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<AutorizacionTIDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult TRAutorizacionPendiente(string admId, string usuId, string titId)
+        {
+            if (string.IsNullOrEmpty(admId) || string.IsNullOrEmpty(usuId) || string.IsNullOrEmpty(titId))
+            {
+                return BadRequest("Faltó alguno de los datos necesarios para devolver las Autorizaciones Pendientes");
+            }
+            if (string.IsNullOrWhiteSpace(admId) || string.IsNullOrWhiteSpace(usuId) || string.IsNullOrWhiteSpace(titId))
+            {
+                return BadRequest("Faltó alguno de los datos necesarios para devolver las Autorizaciones Pendientes");
+            }
+
+            var lista = _almSv.TRObtenerAutorizacionesPendientes(admId, usuId, titId);
+
+            var response = new ApiResponse<List<AutorizacionTIDto>>(lista);
+            return Ok(response);
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult GetTIListaRubro(string tr, string admId, string usuId)
+        {
+            if (string.IsNullOrEmpty(tr) || string.IsNullOrEmpty(admId) || string.IsNullOrEmpty(usuId))
+            {
+                return BadRequest("Faltó alguno de los datos necesarios para devolver la lista de Rubros para TI");
+            }
+            if (string.IsNullOrWhiteSpace(tr) || string.IsNullOrWhiteSpace(admId) || string.IsNullOrWhiteSpace(usuId))
+            {
+                return BadRequest("Faltó alguno de los datos necesarios para devolver la lista de Rubros para TI");
+            }
+            var lista = _almSv.TIObtenerListaRubro(admId, usuId, tr);
+            var response = new ApiResponse<List<BoxRubProductoDto>>(lista);
+            return Ok(response);
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult GetTIListaBox(string tr, string admId, string usuId)
+        {
+            if (string.IsNullOrEmpty(tr) || string.IsNullOrEmpty(admId) || string.IsNullOrEmpty(usuId))
+            {
+                return BadRequest("Faltó alguno de los datos necesarios para devolver la lista de Box para TI");
+            }
+            if (string.IsNullOrWhiteSpace(tr) || string.IsNullOrWhiteSpace(admId) || string.IsNullOrWhiteSpace(usuId))
+            {
+                return BadRequest("Faltó alguno de los datos necesarios para devolver la lista de Box para TI");
+            }
+            var lista = _almSv.TIObtenerListaBox(admId, usuId, tr);
+            var response = new ApiResponse<List<BoxRubProductoDto>>(lista);
+            return Ok(response);
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult BuscaTIListaProductos(string tr, string admId, string usuId, string boxid, string rubroid)
+        {
+            if (string.IsNullOrEmpty(tr) || string.IsNullOrEmpty(admId) || string.IsNullOrEmpty(usuId) || string.IsNullOrEmpty(boxid) || string.IsNullOrEmpty(rubroid))
+            {
+                return BadRequest("Faltó alguno de los datos necesarios para devolver la lista de Box para TI");
+            }
+            if (string.IsNullOrWhiteSpace(tr) || string.IsNullOrWhiteSpace(admId) || string.IsNullOrWhiteSpace(usuId) || string.IsNullOrWhiteSpace(boxid) || string.IsNullOrWhiteSpace(rubroid))
+            {
+                return BadRequest("Faltó alguno de los datos necesarios para devolver la lista de Box para TI");
+            }
+            var lista = _almSv.BuscaTIListaProductos(admId, usuId, tr, boxid, rubroid);
+            var response = new ApiResponse<List<TiListaProductoDto>>(lista);
             return Ok(response);
         }
     }

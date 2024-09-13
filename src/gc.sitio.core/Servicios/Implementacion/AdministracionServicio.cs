@@ -1,12 +1,16 @@
-﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Administracion;
+using gc.infraestructura.Dtos.Almacen.Rpr;
+using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System;
 using System.Net;
 
 namespace gc.sitio.core.Servicios.Implementacion
@@ -15,6 +19,8 @@ namespace gc.sitio.core.Servicios.Implementacion
     {
         private const string RutaAPI = "/api/administracion";
         private const string AccionLogin = "/GetAdministraciones4Login";
+        private const string TI_VALIDA_USU = "/TIValidarUsuario";
+
         private readonly AppSettings _appSettings;
 
         public AdministracionServicio(IOptions<AppSettings> options, ILogger<AdministracionServicio> logger) : base(options, logger)
@@ -58,5 +64,49 @@ namespace gc.sitio.core.Servicios.Implementacion
                 throw;
             }
         }
-    }
+
+        public async Task<ResponseBaseDto> ValidarUsuario(string userId, string tipo,string tiId, string token)
+        {
+            ApiResponse<ResponseBaseDto> apiResponse;
+
+            HelperAPI helper = new HelperAPI();
+            HttpClient client = helper.InicializaCliente(token);
+            HttpResponseMessage response;
+
+            var link = $"{_appSettings.RutaBase}{RutaAPI}{TI_VALIDA_USU}?tipo={tipo}&id={userId}&usu={tiId}";
+
+            response = await client.GetAsync(link);
+
+            if (response.StatusCode == HttpStatusCode.Unauthorized) {
+                throw new UnauthorizedException("No se autorizó el acceso al servidor. Salga y vuelva a ingresar en el sistema.");
+            }
+        
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(stringData))
+                {
+                    _logger.LogWarning($"La API no devolvió dato alguno. Parametro de busqueda {JsonConvert.SerializeObject(response)}");
+                    return new();
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<ResponseBaseDto>>(stringData) ?? new ApiResponse<ResponseBaseDto>(new ResponseBaseDto());
+                return apiResponse.Data;
+            }
+            else
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+
+                try
+                {
+                    var res = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    return new();
+                }
+                catch
+                {
+                    return new();
+                }
+            }
+        }
+    }    
 }
