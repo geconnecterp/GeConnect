@@ -1,11 +1,8 @@
 ﻿using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Rpr;
-<<<<<<< HEAD
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
-=======
 using gc.infraestructura.Dtos.Almacen.Tr;
->>>>>>> developjj
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
 
@@ -27,19 +24,19 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RprResponseDto> ValidarUL(string ul,string adm,string token);
         Task<RprResponseDto> ValidarBox(string box,string adm,string token);
         Task<RprResponseDto> ConfirmaBoxUl(string box, string ul, string adm, string token);
-<<<<<<< HEAD
+
         Task<List<RespuestaDto>> RPRCargarCompte(string json_str, string token);
         Task<List<RespuestaDto>> RPREliminarCompte(string rp, string token);
         Task<List<JsonDto>> RPObtenerJsonDesdeRP(string rp, string token);
         Task<List<RPRItemVerCompteDto>> RPRObtenerItemVerCompte(string rp, string token);
         Task<List<RPRVerConteoDto>> RPRObtenerItemVerConteos(string rp, string token);
-	}
-=======
+	
+
 
         Task<List<AutorizacionTIDto>> TRObtenerAutorizacionesPendientes(string admId, string usuId, string titId,string token);
         Task<List<BoxRubProductoDto>> PresentarBoxDeProductos(string tr, string admId, string usuId, string token);
         Task<List<BoxRubProductoDto>> PresentarRubrosDeProductos(string tr, string admId, string usuId, string token);
         Task<List<TiListaProductoDto>> BuscaTIListaProductos(string tr, string admId, string usuId, string? boxid, string? rubId, string token);
     }
->>>>>>> developjj
+
 }
