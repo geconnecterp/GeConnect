@@ -11,5 +11,6 @@ namespace gc.infraestructura.Dtos.CuentaComercial
 		public string Depo_id { get; set; } = string.Empty;
 		public bool ponerEnCurso { get; set; }
 
+		public string Ul_cantidad { get; set; } = string.Empty;
     }
 }

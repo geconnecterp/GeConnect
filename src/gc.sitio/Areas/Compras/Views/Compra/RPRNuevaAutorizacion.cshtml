@@ -1,7 +1,9 @@
-﻿@model BuscarCuentaDto
+﻿
+@model BuscarCuentaDto
 @{
 	Layout = "~/views/shared/_Layout.cshtml";
 	var depositos = Model.ComboDeposito;
+	
 }
 
 <div class="card">
@@ -136,4 +138,5 @@
 		var eliminarComprobanteRPRUrl = "@Url.Action("RPREliminarComprobante", "compra", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/controlcomun/busquedacuentacomercial.js"></script>
+	@* <script src="~/js/app/areas/compras/_rprComprobantesDeRP.js"></script> *@
 }

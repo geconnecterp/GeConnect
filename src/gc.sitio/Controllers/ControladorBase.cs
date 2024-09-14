@@ -170,6 +170,44 @@ namespace gc.sitio.Controllers
 			return query;
 		}
 
+		#region Variables de Productos que podrían ser utilizados en InfoProd
+		protected ProductoBusquedaDto ProductoBase
+		{
+			get
+			{
+				string json = _context.HttpContext.Session.GetString("ProductoBase");
+				if (string.IsNullOrEmpty(json))
+				{
+					return new();
+				}
+				return JsonConvert.DeserializeObject<ProductoBusquedaDto>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("ProductoBase", json);
+			}
+		}
+
+		public List<ProductoBusquedaDto> ProductosSeleccionados
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("ProductosSeleccionados");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<ProductoBusquedaDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("ProductosSeleccionados", json);
+			}
+		}
+		#endregion
+
 		#region COMPRAS
 		public CuentaDto CuentaComercialSeleccionada
 		{
