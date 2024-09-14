@@ -16,7 +16,6 @@
 	dateControl.value = local;
 	$("#btnBuscarCC").on("click", buscarCuentasComercial);
 	InicializaPantallaCC();
-	//comptesDeRPGrid();
 	$("#VerDetalle").on("click", VerDetalleClick);
 	$("#btnNuevoCompteDeRP").on("click", NuevoCompteDeRP);
 	$("#btnEliminarCompteDeRP").on("click", EliminarCompteDeRP);
@@ -26,9 +25,12 @@
 
 	$("#txtNroCompte").mask("0000-00000000", { reverse: true });
 
-	$("#Cuenta").on("keypress", analizaInput);
-	$("#txtNota").on("keypress", analizaInputTxtNota);
-	$("#listaDeposito").on("change", analizaInputlistaDeposito)
+	$("#Cuenta").on("keyup", analizaInput);
+	$("#txtNota").on("keyup", analizaInputTxtNota);
+	$("#listaDeposito").on("change", analizaInputlistaDeposito);
+	$("#dtpFechaTurno").on("change", analizaInputTurno);
+	$("#chkPonerEnCurso").on("change", analizaInputChkPonerEnCurso);
+	$("#txtCantidadUL").on("keyup", analizaInputCantidadUL);
 
 	if ($("#CtaId").val() !== "") {
 		$("#btnBuscarCC").trigger("click");
@@ -37,7 +39,42 @@
 		$("#listaDeposito").val($("#DepoId").val());
 	}
 	CargarCompteEnGrilla(modelObj);
+	if ($("#FechaTurno").val() !== "") {
+		$("#dtpFechaTurno").val($("#FechaTurno").val())
+
+	}
+	const cantUL = document.getElementById("txtCantidadUL");
+	cantUL.addEventListener('input', function (e) {
+		if (isValid(this.value))
+			console.log("true");
+		else
+			cantUL.value = 999;
+	});
+
+	AddEventListenerToComptesGrid();
 });
+
+function AddEventListenerToComptesGrid() {
+	var grilla = document.getElementById("tbComptesDeRP");
+	if (grilla) {
+		document.getElementById("tbComptesDeRP").addEventListener('click', function (e) {
+			if (e.target.nodeName === 'TD') {
+				var selectedRow = this.querySelector('.selected-row');
+				if (selectedRow) {
+					selectedRow.classList.remove('selected-row');
+				}
+				e.target.closest('tr').classList.add('selected-row');
+			}
+		});
+	}
+}
+
+function isValid(value) {
+	var cantUL = document.getElementById("txtCantidadUL")
+	if (parseInt(value) <= cantUL.getAttribute('max'))
+		return true;
+	return false;
+}
 
 function VerDetalleClick() {
 	if ($("#Cuenta") == undefined) {
@@ -64,28 +101,39 @@ function analizaInput(e) {
 	$("#CtaId").val("");
 }
 
+function analizaInputTurno(e) {
+	ActualizarLinkBotonVerDetalle();
+}
+
 function analizaInputTxtNota(e) {
-	var depoSelec = $("#listaDeposito").val();
-	var notaAuto = $("#txtNota").val();
-	var turno = moment($("#dtpFechaTurno").val()).format("X");
-	var ponerEnCurso = $("#chkPonerEnCurso")[0].checked;
-	var link = VerDetalleDeCompteDeRPUrl + "?idTipoCompte=" + $("#idTipoCompteDeRPSelected").val() + "&nroCompte=" + $("#txtNroCompte").val() + "&depoSelec=" + depoSelec + "&notaAuto=" + notaAuto + "&turno=" + turno + "&ponerEnCurso=" + ponerEnCurso;
-	$("#VerDetalle").prop("href", link);
+	ActualizarLinkBotonVerDetalle();
 }
 
 function analizaInputlistaDeposito() {
+	ActualizarLinkBotonVerDetalle();
+}
+
+function analizaInputChkPonerEnCurso() {
+	ActualizarLinkBotonVerDetalle();
+}
+
+function analizaInputCantidadUL() {
+	ActualizarLinkBotonVerDetalle();
+}
+
+function ActualizarLinkBotonVerDetalle() {
 	var depoSelec = $("#listaDeposito").val();
 	var notaAuto = $("#txtNota").val();
 	var turno = moment($("#dtpFechaTurno").val()).format("X");
 	var ponerEnCurso = $("#chkPonerEnCurso")[0].checked;
-	var link = VerDetalleDeCompteDeRPUrl + "?idTipoCompte=" + $("#idTipoCompteDeRPSelected").val() + "&nroCompte=" + $("#txtNroCompte").val() + "&depoSelec=" + depoSelec + "&notaAuto=" + notaAuto + "&turno=" + turno + "&ponerEnCurso=" + ponerEnCurso;
+	var ul = $("#txtCantidadUL").val();
+	var link = VerDetalleDeCompteDeRPUrl + "?idTipoCompte=" + $("#idTipoCompteDeRPSelected").val() + "&nroCompte=" + $("#txtNroCompte").val() + "&depoSelec=" + depoSelec + "&notaAuto=" + notaAuto + "&turno=" + turno + "&ponerEnCurso=" + ponerEnCurso + "&ulCantidad=" + ul;
 	$("#VerDetalle").prop("href", link);
 }
 
 function CargarCompteEnGrilla(obj) {
 	if (obj != null) {
 		if (obj.compte != null && obj.compte.tipo != "") {
-			console.log("obj.rp: " + obj.rp);
 			comptesDeRPGrid(obj.compte.tipo, obj.compte.tipoDescripcion, obj.compte.nroComprobante, obj.compte.fecha, obj.compte.importe, obj.rp);
 		}
 		else {//El usuario esta trabajando con un nuevo RP, el cual al no tener valor es null, cargo los comptes que tiene null en RP
@@ -225,7 +273,6 @@ function NuevoCompteDeRP() {
 		return;
 	}
 	else {
-		console.log($("#Rp").val());
 		comptesDeRPGrid($("#tco_id").val(), $("#tco_id")[0].selectedOptions[0].text, $("#txtNroCompte").val(), $("#dtpFechCompte").val(), $("#txtMonto").val(), $("#Rp").val());
 	}
 }
@@ -353,15 +400,10 @@ function eliminarComptesDeRPGrid(tipo, nroComprobante) {
 }
 
 function comptesDeRPGrid(tipo, tipoDescripcion, nroComprobante, fecha, importe, rp) {
-	console.log("tipo:" + tipo);
-	console.log("tipoDescripcion:" + tipoDescripcion);
-	console.log("nroComprobante:" + nroComprobante);
-	console.log("fecha:" + fecha);
-	console.log("importe: " + importe);
-	console.log("rp:" + rp);
 	var data = { tipo, tipoDescripcion, nroComprobante, fecha, importe, rp };
 	PostGenHtml(data, CargarComptesDeRPUrl, function (obj) {
 		$("#divComptesDeRPGrid").html(obj);
+		AddEventListenerToComptesGrid();
 		return true;
 	}, function (obj) {
 		ControlaMensajeError(obj.message);
@@ -411,4 +453,20 @@ function CargarComboTiposComptes(cuenta) {
 		CerrarWaiting();
 		return true
 	})
+}
+
+
+function selectCompteDeRPRow(x) {
+	$("#txtNroCompte").val(x.cells[2].innerText.trim());
+	$("#txtMonto").val(x.cells[4].innerText.trim());
+	$("#tco_id").val(x.cells[0].innerText.trim());
+	$("#idTipoCompteDeRPSelected").val(x.cells[0].innerText.trim());
+	$("#nroCompteDeRPSelected").val(x.cells[2].innerText.trim());
+	var depoSelec = $("#listaDeposito").val();
+	var notaAuto = $("#txtNota").val();
+	var turno = moment($("#dtpFechaTurno").val()).format("X");
+	var ponerEnCurso = $("#chkPonerEnCurso")[0].checked;
+	var ul = $("#txtCantidadUL").val();
+	var link = VerDetalleDeCompteDeRPUrl + "?idTipoCompte=" + $("#idTipoCompteDeRPSelected").val() + "&nroCompte=" + $("#nroCompteDeRPSelected").val() + "&depoSelec=" + depoSelec + "&notaAuto=" + notaAuto + "&turno=" + turno + "&ponerEnCurso=" + ponerEnCurso + "&ulCantidad=" + ul;
+	$("#VerDetalle").prop("href", link);
 }

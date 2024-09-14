@@ -52,6 +52,8 @@ namespace gc.infraestructura.Dtos.CuentaComercial
 		public string Tco_id { get; set; } = string.Empty;
 		[JsonProperty("cm_compte")]
 		public string Cm_compte { get; set; } = string.Empty;
+		[JsonProperty("ul_cantidad")]
+		public string Ul_cantidad { get; set; } = string.Empty;
 
 		[DataMember]
 		[JsonProperty("comprobantes")]

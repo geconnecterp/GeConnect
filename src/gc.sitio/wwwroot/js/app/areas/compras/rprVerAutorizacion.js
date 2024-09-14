@@ -13,7 +13,15 @@
 
 	$("#btnRegresarAAutorizacionesRP").on("click", RegresarASelAuto); //Regregar a la pantalla de seleccion de autorizaciones.
 	CargarDetalleDeConteos();
+	SeleccionarDeposito();
 });
+
+function SeleccionarDeposito() {
+	var depoid = $("#DepoId").val();
+	if (depoid !== "") {
+		$("#listaDeposito").val(depoid);
+	}
+}
 
 function CargarDetalleDeConteos() {
 	var datos = {};

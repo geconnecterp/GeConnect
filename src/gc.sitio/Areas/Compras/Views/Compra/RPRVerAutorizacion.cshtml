@@ -6,18 +6,19 @@
 <div class="card">
 	<row>
 		@Html.Hidden("Rp", Model.Rp)
-		<div style="float:left">
+		@Html.Hidden("DepoId", Model.Depo_id)
+		<div style="float:left; width: 100%;">
 			<fieldset>
 				<h5>RPR Autorización</h5>
 				<row>
 					<div class="container">
 						<div class="row">
-							<div class="col-8">
+							<div class="col-9">
 								<div class="input-group">
 									<span>@Model.Leyenda</span>
 								</div>
 							</div>
-							<div class="col-4">
+							<div class="col-3">
 								<div class="input-group">
 									<span class="input-group-text">Depósito: </span>
 									@Html.DropDownList("id", depositos, "Seleccionar...", new { @id = "listaDeposito", @class = "form-control" })
@@ -29,7 +30,7 @@
 				<row>
 					<div class="container">
 						<div class="row">
-							<div class="col-7">
+							<div class="col-8">
 								<div class="table-responsive table-wrapper">
 									<table class="table table-bordered table-hover" id="tbVerComptesDeRP">
 										<thead class="table-dark">
@@ -56,7 +57,7 @@
 									</table>
 								</div>
 							</div>
-							<div class="col-5">
+							<div class="col-4" style="text-align: right;align-content: center;">
 								<button type="button" class="btn btn-success" style="margin-left:5px;" id="btnConfirmarRP">
 									<span class="tf-icons bx bx-check-circle">Confirmar</span>
 								</button>

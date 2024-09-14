@@ -1,5 +1,5 @@
 ﻿using gc.infraestructura.Dtos.CuentaComercial;
-using gc.sitio.Models.ViewModels;
+using gc.infraestructura.Dtos.Gen;
 
 namespace gc.sitio.Areas.Compras.Models
 {

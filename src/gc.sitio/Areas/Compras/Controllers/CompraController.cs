@@ -1,4 +1,5 @@
-﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿using gc.api.core.Entidades;
+using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Rpr;
@@ -251,45 +252,61 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> NuevaAut(string rp)
 		{
-			var auth = EstaAutenticado;
-			if (!auth.Item1 || auth.Item2 < DateTime.Now)
+			try
 			{
-				return RedirectToAction("Login", "Token", new { area = "seguridad" });
-			}
-			var rpSelected = RPRAutorizacionesPendientesEnRP.Where(x => x.Rp == rp).FirstOrDefault();
-			if (rpSelected != default(RPRAutoComptesPendientesDto))
-			{
-				RPRAutorizacionSeleccionada = rpSelected;
-			}
-			var model = new BuscarCuentaDto() { ComboDeposito = ComboDepositos(), rp = rp };
-			if (RPRComprobanteDeRPSeleccionado != null && string.IsNullOrEmpty(rp))
-			{
-				model.Cuenta = RPRComprobanteDeRPSeleccionado.cta_id;
-				model.Nota = RPRComprobanteDeRPSeleccionado.Nota;
-				model.FechaTurno = RPRComprobanteDeRPSeleccionado.FechaTurno;
-				model.Depo_id = RPRComprobanteDeRPSeleccionado.Depo_id;
-				//model.rp = rp;
-			}
-			else if (RPRAutorizacionSeleccionada != null)
-			{
-				model.Cuenta = RPRAutorizacionSeleccionada.Cta_id;
-				model.Nota = RPRAutorizacionSeleccionada.Nota;
-				model.FechaTurno = RPRAutorizacionSeleccionada.Fecha.ToString("dd/MM/yyyy");
-				model.Depo_id = "0";
-				//model.rp = rp;
-				model.Compte = new RPRComptesDeRPDto()
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 				{
-					Fecha = RPRAutorizacionSeleccionada.Fecha.ToString("dd/MM/yyyy"),
-					Importe = RPRAutorizacionSeleccionada.Cm_importe.ToString(),
-					NroComprobante = RPRAutorizacionSeleccionada.Cm_compte,
-					Tipo = RPRAutorizacionSeleccionada.Tco_id,
-					TipoDescripcion = RPRAutorizacionSeleccionada.Tco_desc
-				};
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+				}
+				var rpSelected = RPRAutorizacionesPendientesEnRP.Where(x => x.Rp == rp).FirstOrDefault();
+				if (rpSelected != default(RPRAutoComptesPendientesDto))
+				{
+					RPRAutorizacionSeleccionada = rpSelected;
+				}
+				var model = new BuscarCuentaDto() { ComboDeposito = ComboDepositos(), rp = rp };
+				if (RPRComprobanteDeRPSeleccionado != null && string.IsNullOrEmpty(rp))
+				{
+					model.Cuenta = RPRComprobanteDeRPSeleccionado.cta_id;
+					model.Nota = RPRComprobanteDeRPSeleccionado.Nota;
+					model.FechaTurno = Convert.ToDateTime(RPRComprobanteDeRPSeleccionado.FechaTurno).ToString("yyyy-MM-dd");
+					model.Depo_id = RPRComprobanteDeRPSeleccionado.Depo_id;
+					model.CantidadUL = Convert.ToInt32(RPRComprobanteDeRPSeleccionado.Ul_cantidad);
+					//model.rp = rp;
+				}
+				else if (RPRAutorizacionSeleccionada != null)
+				{
+					model.Cuenta = RPRAutorizacionSeleccionada.Cta_id;
+					model.Nota = RPRAutorizacionSeleccionada.Nota;
+					model.FechaTurno = RPRAutorizacionSeleccionada.Fecha.ToString("yyyy-MM-dd");
+					model.Depo_id = "0";
+					//model.rp = rp;
+					model.Compte = new RPRComptesDeRPDto()
+					{
+						Fecha = RPRAutorizacionSeleccionada.Fecha.ToString("yyyy-MM-dd"),
+						Importe = RPRAutorizacionSeleccionada.Cm_importe.ToString(),
+						NroComprobante = RPRAutorizacionSeleccionada.Cm_compte,
+						Tipo = RPRAutorizacionSeleccionada.Tco_id,
+						TipoDescripcion = RPRAutorizacionSeleccionada.Tco_desc
+					};
+				}
+				return PartialView("RPRNuevaAutorizacion", model);
 			}
-			return PartialView("RPRNuevaAutorizacion", model);
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+			
 		}
 
-		public async Task<IActionResult> VerDetalleDeComprobanteDeRP(string idTipoCompte, string nroCompte, string depoSelec, string notaAuto, string turno, string ponerEnCurso)
+		public async Task<IActionResult> VerDetalleDeComprobanteDeRP(string idTipoCompte, string nroCompte, string depoSelec, string notaAuto, string turno, string ponerEnCurso, string ulCantidad)
 		{
 			var compte = new RPRComptesDeRPDto();
 			var model = new RPRDetalleComprobanteDeRP
@@ -301,16 +318,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				compte = RPRComptesDeRPRegs.Where(x => x.Tipo == idTipoCompte && x.NroComprobante == nroCompte).FirstOrDefault();
 			}
-			//else 
-			//{ 
-			//	compte=new RPRComptesDeRPDto() { Tipo=idTipoCompte, NroComprobante=nroCompte, }
-			//}
 			model.CompteSeleccionado = compte ?? new RPRComptesDeRPDto();
 			model.cta_id = CuentaComercialSeleccionada.Cta_Id;
 			model.ponerEnCurso = bool.Parse(ponerEnCurso);
 			model.Nota = notaAuto;
 			model.Depo_id = depoSelec;
 			model.FechaTurno = UnixTimeStampToDateTime(turno).ToString("dd-MM-yyyy");
+			model.Ul_cantidad = ulCantidad;
 			RPRComprobanteDeRPSeleccionado = model;
 			return PartialView("RPRCargaDetalleDeCompteRP", model);
 		}
@@ -538,6 +552,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					Rpe_desc = "Pendiente",
 					Depo_id = RPRComprobanteDeRPSeleccionado.Depo_id,
 					Nota = RPRComprobanteDeRPSeleccionado.Nota,
+					Ul_cantidad = RPRComprobanteDeRPSeleccionado.Ul_cantidad,
 					Turno = FormateoDeFecha(RPRComprobanteDeRPSeleccionado.FechaTurno, FechaTipoFormato.PARAJSON),
 					Tco_id = RPRComprobanteDeRPSeleccionado.CompteSeleccionado.Tipo,
 					Cm_compte = RPRComprobanteDeRPSeleccionado.CompteSeleccionado.NroComprobante,
