@@ -249,7 +249,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 response.EsError = true;
                 return PartialView("_gridMensaje", response);
             }
-            return PartialView("_infoProdStkBoxGrid", response);
+            return PartialView("_infoProdStkBoxGrid", grillaDatos);
         }
 
         private GridCore<InfoProdStkBox> ObtenerInfoProdStkBox((string, string) ids, bool esSession = false)
@@ -316,7 +316,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 response.EsError = true;
                 return PartialView("_gridMensaje", response);
             }
-            return PartialView("_infoProdStkAGrid", response);
+            return PartialView("_infoProdStkAGrid", grillaDatos);
         }
 
         private GridCore<InfoProdStkA> ObtenerInfoProdStkA(List<InfoProdStkA> listInfoProd)
@@ -328,24 +328,24 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
 
         [HttpPost]
-        public ActionResult InfoProductoMovStk()
+        public ActionResult InfoProductoMovStk(DateTime fdesde, DateTime fhasta)
         {
             RespuestaGenerica<EntidadBase> response = new()  ;
             GridCore<InfoProdMovStk> grillaDatos;
             string depo = "%";
             string tmov = "RP";
-            DateTime desde, hasta;
-            hasta = DateTime.Today;
-            desde = DateTime.Today.AddDays(-7);
+            //DateTime desde, hasta;
+            //hasta = DateTime.Today;
+            //desde = DateTime.Today.AddDays(-7);
             try
             {
                 string id = ProductoBase.P_id;
                 var ids = InfoProdMovStkIds.Split('#');
-                if (!(id.Equals(ids[0]) && depo.Equals(ids[1]) && tmov.Equals(ids[2]) && desde == ids[3].ToDateTime() && hasta == ids[4].ToDateTime()))
+                if (!(id.Equals(ids[0]) && depo.Equals(ids[1]) && tmov.Equals(ids[2]) && fdesde == ids[3].ToDateTime() && fhasta == ids[4].ToDateTime()))
                 {
-                    InfoProdMovStkIds = $"{id}#{depo}#{tmov}#{desde}#{hasta}";
+                    InfoProdMovStkIds = $"{id}#{depo}#{tmov}#{fdesde}#{fhasta}";
 
-                    var regs = _productoServicio.InfoProductoMovStk(id, AdministracionId, depo, tmov, desde, hasta, TokenCookie).GetAwaiter().GetResult();
+                    var regs = _productoServicio.InfoProductoMovStk(id, AdministracionId, depo, tmov, fdesde, fhasta, TokenCookie).GetAwaiter().GetResult();
 
                     grillaDatos = ObtenerInfoProdMovStk(regs);
                 }
@@ -379,7 +379,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 response.EsError = true;
                 return PartialView("_gridMensaje", response);
             }
-            return PartialView("_infoProdMovStkGrid", response);
+            return PartialView("_infoProdMovStkGrid", grillaDatos);
         }
 
         private GridCore<InfoProdMovStk> ObtenerInfoProdMovStk(List<InfoProdMovStk> listInfoProd)
@@ -438,7 +438,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 return PartialView("_gridMensaje", response);
             }
 
-            return PartialView("_infoProdLPGrid", response );
+            return PartialView("_infoProdLPGrid", grillaDatos );
         }
 
         private GridCore<InfoProdLP> ObtenerInfoProdLP(List<InfoProdLP> listInfoProd)

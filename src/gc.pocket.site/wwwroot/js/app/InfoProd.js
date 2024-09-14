@@ -12,8 +12,17 @@
     $("#btnStkD").on("click", PresentarStkD);
     $("#btnStkBox").on("click", PresentarStkBox);
     $("#btnStkA").on("click", PresentarStkA);
-    $("#btnMov").on("click", PresentarMov);
+    $("#btnBuscarMov").on("click", PresentarMov);    
     $("#btnPr").on("click", PresentarLP);
+
+    //asignamos valor a los controles de fecha
+    var f = new Date();
+    //var month = ('0' + (f.getMonth() + 1)).slice(-2); // Asegura que el mes siempre tenga dos dígitos
+    //var day = ('0' + f.getDate()).slice(-2); // Asegura que el día siempre tenga dos dígitos
+    //var newfecha = f.getFullYear() + '-' + month + '-' + day;
+
+    $("#fdesde").val(formatoFechaYMD(restarFecha(f, 7)));
+    $("#fhasta").val(formatoFechaYMD(f));
 });
 
 function verificaEstado() {
@@ -75,7 +84,7 @@ function PresentarStkA() {
     return true;
 }
 function PresentarMov() {
-    var data = {};
+    var data = {fdesde:$("#fdesde").val(),fhasta:$("#fhasta").val()};
     PostGenHtml(data, infoProdMovUrl, function (obj) {
         $("#gridInfoProdMov").html(obj);
         CerrarWaiting();
