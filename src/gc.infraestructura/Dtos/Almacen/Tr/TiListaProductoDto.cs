@@ -12,6 +12,7 @@
         public string Depo_nombre { get; set; }
         public string P_id { get; set; }
         public string P_desc { get; set; }
+        public decimal Colectado { get; set; }
         public decimal Pedido { get; set; }
         public short Bulto { get; set; }
         public decimal   Us { get; set; }
