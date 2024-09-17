@@ -45,9 +45,7 @@
 	}
 	const cantUL = document.getElementById("txtCantidadUL");
 	cantUL.addEventListener('input', function (e) {
-		if (isValid(this.value))
-			console.log("true");
-		else
+		if (!isValid(this.value))
 			cantUL.value = 999;
 	});
 

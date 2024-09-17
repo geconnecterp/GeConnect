@@ -11,6 +11,7 @@ using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
@@ -21,7 +22,7 @@ using X.PagedList;
 
 namespace gc.sitio.Areas.Compras.Controllers
 {
-    [Area("Compras")]
+	[Area("Compras")]
 	public class CompraController : ControladorBase
 	{
 		private readonly ICuentaServicio _cuentaServicio;
@@ -269,17 +270,18 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					model.Cuenta = RPRComprobanteDeRPSeleccionado.cta_id;
 					model.Nota = RPRComprobanteDeRPSeleccionado.Nota;
-					model.FechaTurno = Convert.ToDateTime(RPRComprobanteDeRPSeleccionado.FechaTurno).ToString("yyyy-MM-dd");
+					model.FechaTurno = !string.IsNullOrWhiteSpace(RPRComprobanteDeRPSeleccionado.FechaTurno) ? Convert.ToDateTime(RPRComprobanteDeRPSeleccionado.FechaTurno).ToString("yyyy-MM-dd") : DateTime.Now.ToString("yyyy-MM-dd");
 					model.Depo_id = RPRComprobanteDeRPSeleccionado.Depo_id;
-					model.CantidadUL = Convert.ToInt32(RPRComprobanteDeRPSeleccionado.Ul_cantidad);
+					model.CantidadUL = !string.IsNullOrWhiteSpace(RPRComprobanteDeRPSeleccionado.Ul_cantidad) ? Convert.ToInt32(RPRComprobanteDeRPSeleccionado.Ul_cantidad) : 0;
 					//model.rp = rp;
 				}
 				else if (RPRAutorizacionSeleccionada != null)
 				{
-					model.Cuenta = RPRAutorizacionSeleccionada.Cta_id;
-					model.Nota = RPRAutorizacionSeleccionada.Nota;
-					model.FechaTurno = RPRAutorizacionSeleccionada.Fecha.ToString("yyyy-MM-dd");
-					model.Depo_id = "0";
+					model.Cuenta = !string.IsNullOrWhiteSpace(RPRComprobanteDeRPSeleccionado?.cta_id) ? RPRComprobanteDeRPSeleccionado?.cta_id : RPRAutorizacionSeleccionada.Cta_id;
+					model.Nota = !string.IsNullOrWhiteSpace(RPRComprobanteDeRPSeleccionado?.Nota) ? RPRComprobanteDeRPSeleccionado?.Nota : RPRAutorizacionSeleccionada.Nota;
+					model.FechaTurno = !string.IsNullOrWhiteSpace(RPRComprobanteDeRPSeleccionado?.FechaTurno) ? Convert.ToDateTime(RPRComprobanteDeRPSeleccionado.FechaTurno).ToString("yyyy-MM-dd") : RPRAutorizacionSeleccionada.Fecha.ToString("yyyy-MM-dd");
+					model.Depo_id = !string.IsNullOrWhiteSpace(RPRComprobanteDeRPSeleccionado?.Depo_id) ? RPRComprobanteDeRPSeleccionado?.Depo_id : "0";
+					model.CantidadUL = !string.IsNullOrWhiteSpace(RPRComprobanteDeRPSeleccionado?.Ul_cantidad) ? Convert.ToInt32(RPRComprobanteDeRPSeleccionado?.Ul_cantidad) : 0;
 					//model.rp = rp;
 					model.Compte = new RPRComptesDeRPDto()
 					{
@@ -289,6 +291,14 @@ namespace gc.sitio.Areas.Compras.Controllers
 						Tipo = RPRAutorizacionSeleccionada.Tco_id,
 						TipoDescripcion = RPRAutorizacionSeleccionada.Tco_desc
 					};
+				}
+				if (rp == null)
+				{
+					model.TituloVista = "Nueva RPR";
+				}
+				else
+				{
+					model.TituloVista = $"Autorización RPR N° {rp}";
 				}
 				return PartialView("RPRNuevaAutorizacion", model);
 			}
@@ -303,7 +313,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				};
 				return PartialView("_gridMensaje", response);
 			}
-			
+
 		}
 
 		public async Task<IActionResult> VerDetalleDeComprobanteDeRP(string idTipoCompte, string nroCompte, string depoSelec, string notaAuto, string turno, string ponerEnCurso, string ulCantidad)
@@ -350,7 +360,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 
-		public async Task<IActionResult> CargarDetalleDeProductosEnRP(string oc_compte, string id_prod, string up, string bulto, string unidad, int accion, string tco_id, string cm_compte)
+		public async Task<IActionResult> CargarDetalleDeProductosEnRP(string oc_compte, string id_prod, string up, string bulto, string unidad, int accion, string tco_id, string cm_compte, string up_id = "", string p_desc = "", string prov_id = "", string id_barrado = "")
 		{
 			GridCore<ProductoBusquedaDto> datosIP;
 			var lista = new List<ProductoBusquedaDto>();
@@ -379,15 +389,70 @@ namespace gc.sitio.Areas.Compras.Controllers
 				}
 			}
 			//Traigo los prod del almacenamiento temporal
-			else if (!string.IsNullOrWhiteSpace(tco_id) && !string.IsNullOrWhiteSpace(cm_compte) && JsonDeRP != null && JsonDeRP.encabezado != null && JsonDeRP.encabezado.Count > 0)
+			else if (!string.IsNullOrWhiteSpace(tco_id) && !string.IsNullOrWhiteSpace(cm_compte))
 			{
-				var encTemp = JsonDeRP.encabezado.Where(x => x.Tco_id == tco_id && x.Cm_compte == cm_compte).FirstOrDefault();
-				if (encTemp != null)
+				if (JsonDeRP != null && JsonDeRP.encabezado != null && JsonDeRP.encabezado.Count > 0)
 				{
-					var listaComprobantesTemp = encTemp.Comprobantes.Where(x => x.Tco_id == tco_id && x.Cm_compte == cm_compte).ToList();
-					foreach (var item in listaComprobantesTemp)
+					var encTemp = JsonDeRP.encabezado.Where(x => x.Tco_id == tco_id && x.Cm_compte == cm_compte).FirstOrDefault();
+					if (encTemp != null)
 					{
-						lista.Add(item.Producto);
+						var listaComprobantesTemp = encTemp.Comprobantes.Where(x => x.Tco_id == tco_id && x.Cm_compte == cm_compte).ToList();
+						foreach (var item in listaComprobantesTemp)
+						{
+							lista.Add(item.Producto);
+						}
+					}
+				}
+				if (!string.IsNullOrWhiteSpace(id_prod)) //Estoy agregando un producto de forma manual
+				{
+					lista = RPRDetalleDeProductosEnRP;
+					//Busco el producto en la lista
+					var existeProd = lista.Where(x => x.P_id == id_prod).FirstOrDefault();
+					if (existeProd == null || existeProd == default(ProductoBusquedaDto)) //No existe
+					{
+						lista.Add(new ProductoBusquedaDto()
+						{
+							P_id = id_prod,
+							P_desc = p_desc,
+							P_id_prov = prov_id,
+							Up_id = up_id,
+							P_id_barrado = id_barrado,
+							P_unidad_pres = up,
+							Bulto = Convert.ToInt32(bulto),
+							oc_compte = "",
+							Unidad = Convert.ToInt32(unidad),
+							Cantidad = CalcularCantidadDeProductoParaAgregar(up_id, bulto, up, unidad)
+						});
+					}
+					else
+					{
+						if (accion == 1)//Reemplazar
+						{
+							lista.Remove(existeProd);
+							lista.Add(new ProductoBusquedaDto()
+							{
+								P_id = id_prod,
+								P_desc = p_desc,
+								P_id_prov = prov_id,
+								Up_id = up_id,
+								P_id_barrado = id_barrado,
+								P_unidad_pres = up,
+								Bulto = Convert.ToInt32(bulto),
+								oc_compte = "",
+								Unidad = Convert.ToInt32(unidad),
+								Cantidad = CalcularCantidadDeProductoParaAgregar(up_id, bulto, up, unidad)
+							});
+						}
+						else //Acumular
+						{
+							var itemAQuitar = existeProd;
+							lista.Remove(itemAQuitar);
+							existeProd.Bulto = existeProd.Bulto + Convert.ToInt32(bulto);
+							existeProd.P_unidad_pres = (Convert.ToInt32(existeProd.P_unidad_pres) + Convert.ToInt32(up)).ToString();
+							existeProd.Unidad = existeProd.Unidad + Convert.ToInt32(unidad);
+							existeProd.Cantidad = existeProd.Cantidad + CalcularCantidadDeProductoParaAgregar(up_id, bulto, up, unidad);
+							lista.Add(existeProd);
+						}
 					}
 				}
 				RPRDetalleDeProductosEnRP = lista ?? [];
@@ -418,6 +483,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				}
 				else
 				{
+					RPRComprobanteDeRPSeleccionado = new();
 					return Json(new { error = false, warn = false, vacio = true, cantidad = 0, msg = "" });
 				}
 			}
@@ -457,7 +523,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 						}
 						else //Existe RP, verifico si tiene cargado comprobantes y opero sobre ellos
 						{
-							var encabezadoTemp = listaTemp.encabezado.Where(x => x.Rp == encabezado.Rp).FirstOrDefault();
+							var encabezadoTemp = listaTemp.encabezado.Where(x => x.Rp == encabezado.Rp && x.Tco_id == encabezado.Tco_id && x.Cm_compte == encabezado.Cm_compte).FirstOrDefault();
 							//Por las dudas verifico que exista el encabezado pero que no tenaga detalle, le cargo el detalle
 							if (encabezadoTemp != null)
 							{
@@ -466,19 +532,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 									encabezadoTemp.Comprobantes = encabezado.Comprobantes;
 								}
 								//Tiene comprobantes, me fijo si ya existen items para ese tipo y numero de comprobante, si es así los actualizo
-								else if (encabezadoTemp.Comprobantes.Exists(x => x.Tco_id == encabezado.Tco_id && x.Cm_compte == encabezado.Cm_compte))
+								else
 								{
 									encabezadoTemp.Comprobantes.RemoveAll(x => x.Tco_id == encabezado.Tco_id && x.Cm_compte == encabezado.Cm_compte);
 									encabezadoTemp.Comprobantes.AddRange(encabezado.Comprobantes);
 								}
-								//No existen items para ese tipo y numero de comprobante, los agrego
-								else
-								{
-									//encabezadoTemp.Comprobantes.AddRange(encabezado.Comprobantes);
-									listaTemp.encabezado.Add(encabezado);
-								}
-								//listaTemp.RemoveAll(x => x.Rp == encabezado.Rp);
-								//listaTemp.Add(encabezadoTemp);
+							}
+							else
+							{
+								listaTemp.encabezado.Add(encabezado);
 							}
 						}
 						JsonDeRP = listaTemp;
@@ -490,6 +552,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 						{
 							JsonDeRP = new();
 							RPRDetalleDeProductosEnRP = [];
+							RPRComprobanteDeRPSeleccionado = new();
+							RPRAutorizacionSeleccionada = new();
 							return Json(new { error = false, warn = false, codigo = 0, msg = "" });
 						}
 						return Json(new { error = false, warn = true, msg = resultado?.resultado_msj, codigo = resultado?.resultado });
@@ -697,6 +761,19 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		#region Métodos privados
+		private decimal CalcularCantidadDeProductoParaAgregar(string up_id, string bulto, string up, string unidad)
+		{
+			decimal retValue = 0;
+
+			if (up_id == "07")
+			{
+				return (Convert.ToDecimal(bulto) * Convert.ToDecimal(up)) + Convert.ToDecimal(unidad);
+			}
+			else
+			{
+				return Convert.ToDecimal(unidad);
+			}
+		}
 		private string FormateoDeFecha(string formateoDeFecha, FechaTipoFormato tipo)
 		{
 			try

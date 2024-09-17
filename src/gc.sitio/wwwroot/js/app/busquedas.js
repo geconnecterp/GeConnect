@@ -72,6 +72,7 @@ function buscarProducto() {
     AbrirWaiting();
     var _post = busquedaProdBaseUrl;
     var valor = $("#Busqueda").val();
+    var validarEstado = true;
 
     var datos = {};
     if (typeof validarEstado !== 'undefined') {

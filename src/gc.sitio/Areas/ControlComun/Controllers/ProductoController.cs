@@ -69,12 +69,12 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                     }
                     //Validación si pertenece o no al proveedor
 
-                    //if (RPRAutorizacionPendienteSeleccionada != null &&
-                    //	!RPRAutorizacionPendienteSeleccionada.Cta_id.Equals(producto.Cta_id) && validarEstado)
-                    //{
-                    //	warn = true;
-                    //	msg = $"El Producto NO pertenece al actual proveedor. Pertenece al Proveedor {producto.Cta_denominacion}.";
-                    //}
+                    if (CuentaComercialSeleccionada != null &&
+                        !CuentaComercialSeleccionada.Cta_Id.Equals(producto.Cta_id) && validarEstado)
+                    {
+                        warn = true;
+                        msg = $"El Producto NO pertenece al actual proveedor. Pertenece al Proveedor {producto.Cta_denominacion}.";
+                    }
 
                     //se resguarda el producto recien buscado.
                     ProductoBase = producto;
