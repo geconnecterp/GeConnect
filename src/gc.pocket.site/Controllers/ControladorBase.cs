@@ -552,11 +552,11 @@ namespace gc.pocket.site.Controllers
             }
         }
 
-        public AutorizacionTIDto TIAutorizacionPendienteSeleccionada
+        public AutorizacionTIDto TIActual
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("TIAutorizacionPendienteSeleccionada");
+                var json = _context.HttpContext.Session.GetString("TIActual");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return new();
@@ -566,7 +566,7 @@ namespace gc.pocket.site.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("TIAutorizacionPendienteSeleccionada", json);
+                _context.HttpContext.Session.SetString("TIActual", json);
             }
         }
         public List<AutorizacionTIDto> ListadoTIAutoPendientes
@@ -584,6 +584,42 @@ namespace gc.pocket.site.Controllers
             {
                 var json = JsonConvert.SerializeObject(value);
                 _context.HttpContext.Session.SetString("ListadoTIAutoPendientes", json);
+            }
+        }
+
+        public List<TiListaProductoDto> ListaProductosSegunRubro
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("ListaProductosSegunRubro");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<TiListaProductoDto>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("ListaProductosSegunRubro", json);
+            }
+        }
+
+        public List<TiListaProductoDto> ListaProductosSegunBox
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("ListaProductosSegunBox");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<TiListaProductoDto>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("ListaProductosSegunBox", json);
             }
         }
 

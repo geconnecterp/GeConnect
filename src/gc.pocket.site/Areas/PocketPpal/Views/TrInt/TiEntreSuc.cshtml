@@ -1,4 +1,4 @@
-﻿@model GridCore<AutorizacionTIDto>
+﻿@* @model GridCore<AutorizacionTIDto> *@
 @{
     Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
     
@@ -28,8 +28,7 @@
     <script type="text/javascript">
         var getAUPendientesUrl = "@Url.Action("ObtenerAutorizacionesPendientes", "trint", new { area = "pocketppal" })";
         var validaUsuarioUrl = "@Url.Action("ValidarUsuario", "trint", new { area = "pocketppal" })";
-        var trScr02 = "@Url.Action("TiEntreSucBoxRubro", "trint", new { area = "pocketppal" })";
-        
+        var trScr02 = "@Url.Action("TiEntreSucBoxRubro", "trint", new { area = "pocketppal" })";        
     </script>
 
     <script src="~/js/app/ti/ti.js"></script>
