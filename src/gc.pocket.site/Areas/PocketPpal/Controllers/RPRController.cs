@@ -56,7 +56,6 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 TempData["error"] = "Hubo algun problema al intentar obtener las Autorizaciones Pendientes. Si el problema persiste informe al Administrador";
                 grid = new();
             }
-            TempData["cota"] = _settings.FechaVtoCota;
             return View(grid);
 
         }
@@ -93,6 +92,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 //este viewbag es para que aparezca en la segunda fila del encabezado la leyenda que se quiera.
                 //en este caso presenta el numero de autorización pendiente y el proveedor al que le pertenece.
                 ViewBag.AppItem = new AppItem { Nombre = $"Auto:{auto.Rp}-{auto.Cta_denominacion}" };
+
+                ViewBag.FechaCotaJS = _settings.FechaVtoCota;
             }
             catch (Exception ex)
             {
@@ -114,9 +115,9 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 if (up < 1) { 
                 return Json(new { error = true, msg = "Las unidades del bulto no puede ser 0 (cero) o tener valores negativos. Verifique, por favor." });
                 }
-                if (bulto < 1)
+                if (bulto < 0)
                 {
-                    return Json(new { error = true, msg = "Los bultos no puede ser 0 (cero) o tener valores negativos. Verifique, por favor." });
+                    return Json(new { error = true, msg = "Los bultos no puede tener valores negativos. Verifique, por favor." });
                 }
 
                 if (unidad < 0)
@@ -138,6 +139,13 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     }
                 }
 
+                //valido cantidad. Si el resultado es igual a 0 dar error
+                var cantidad = ProductoBase.Up_id.Equals("07") ? (up * bulto) + unidad : bulto;
+
+                if(cantidad <= 0)
+                {
+                    return Json(new { error = true, msg = "La cantidad dió como resultado 0 (cero). Verifique." });
+                }
 
                 //armo producto a resguardar
                 var item = new RPRProcuctoDto();
@@ -162,7 +170,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     var f = vto.Split('-', StringSplitOptions.RemoveEmptyEntries);
                     item.vto = new DateTime(f[0].ToInt(), f[1].ToInt(), f[2].ToInt());
                 }
-                item.cantidad = ProductoBase.Up_id.Equals("07") ? (up * bulto) + unidad : bulto;
+                item.cantidad = cantidad;
 
                 var res = RPRProductoRegs.Any(x => x.p_id.Equals(item.p_id));
 

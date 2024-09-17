@@ -234,11 +234,11 @@ function verificaEstado(e) {
 
         //verificamos que el producto tenga vencimiento
         if (prod.p_con_vto !== "N") {
-            var f = new Date();
-            var month = ('0' + (f.getMonth() + 1)).slice(-2); // Asegura que el mes siempre tenga dos dígitos
-            var day = ('0' + f.getDate()).slice(-2); // Asegura que el día siempre tenga dos dígitos
-            var newfecha = f.getFullYear() + '-' + month + '-' + day;
-            $("#fvto").prop("disabled", false).val(newfecha);
+            //var f = new Date();
+            //var month = ('0' + (f.getMonth() + 1)).slice(-2); // Asegura que el mes siempre tenga dos dígitos
+            //var day = ('0' + f.getDate()).slice(-2); // Asegura que el día siempre tenga dos dígitos
+            //var newfecha = f.getFullYear() + '-' + month + '-' + day;
+            $("#fvto").prop("disabled", false).val(cotaVto);
             //asigno callback para que se ejecute luego que cierre el waiting
             /* FunctionCallback = function () {*/
             $("#fvto").focus();

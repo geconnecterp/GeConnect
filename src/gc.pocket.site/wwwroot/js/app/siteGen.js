@@ -157,3 +157,9 @@ function restarFecha(pFecha, diasRestar) {
     fecha.setDate(fecha.getDate() - diasRestar);
     return fecha;
 }
+
+function sumarFecha(pFecha, diasSumar) {
+    var fecha = new Date(pFecha);
+    fecha.setDate(fecha.getDate() + diasSumar);
+    return fecha;
+}
