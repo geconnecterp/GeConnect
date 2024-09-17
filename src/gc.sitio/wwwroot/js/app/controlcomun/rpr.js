@@ -199,6 +199,8 @@ function verificaEstado(e) {
         $("#txtIdProdEnComprobanteRP").val(prod.p_id);
         $("#txtProDescripcion").val(prod.p_desc);
         $("#estadoFuncion").val(false);
+        $("#txtUP_ID").val(prod.up_id);
+        $("#txtBARRADO_ID").val(prod.p_id_barrado);
         $("#txtUPEnComprobanteRP").mask("000.000.000.000", { reverse: true });
         $("#txtBtoEnComprobanteRP").mask("000.000.000.000", { reverse: true });
         $("#txtUPEnComprobanteRP").val(prod.p_unidad_pres).prop("disabled", false);
@@ -206,6 +208,8 @@ function verificaEstado(e) {
         $("#txtUnidEnComprobanteRP").mask("000.000.000.000", { reverse: true });
 
         if (prod.up_id === "07") {  //unidades enteras
+            // $("#box").mask("000.000.000.000,00", { reverse: true });
+            $("#txtUnidEnComprobanteRP").mask("000.000.000.000,00", { reverse: true });
             $("#txtUnidEnComprobanteRP").val(0).prop("disabled", false);
         }
         else { //unidades decimales
@@ -215,6 +219,7 @@ function verificaEstado(e) {
         if (prod.p_con_vto !== "N") {
         } else {
         }
+        $("#txtUPEnComprobanteRP").focus();
     }
     return true;
 }
