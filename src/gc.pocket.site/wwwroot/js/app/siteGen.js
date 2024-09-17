@@ -144,3 +144,16 @@ function AbrirMensaje(Titulo, Mensaje, CallBack, EsConfirmacion, Botones, Tipo, 
 
     $('#msjModal').modal('show');
 }
+
+function formatoFechaYMD(pFecha) {
+    var f = new Date(pFecha);
+    var month = ('0' + (f.getMonth() + 1)).slice(-2); // Asegura que el mes siempre tenga dos dígitos
+    var day = ('0' + f.getDate()).slice(-2); // Asegura que el día siempre tenga dos dígitos
+    return f.getFullYear() + '-' + month + '-' + day;
+}
+
+function restarFecha(pFecha, diasRestar) {
+    var fecha = new Date(pFecha);
+    fecha.setDate(fecha.getDate() - diasRestar);
+    return fecha;
+}

@@ -47,6 +47,12 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             return View();
         }
 
+        #region VISTA 01
+
+        /// <summary>
+        /// Primer vista para presentar las autorizaciones pendientes para TI
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public async Task<IActionResult> TiEntreSuc()
         {
@@ -61,86 +67,22 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             return View();
         }
 
-
-        [HttpGet]
-        public async Task<IActionResult> TiEntreSucBoxRubro()
-        {
-            string? volver;
-            if (TIModuloActual == "S")
-            {
-                volver = Url.Action("TiEntreSuc", "trint", new { area = "pocketppal" });
-            }
-            else
-            {
-                volver = Url.Action("index", "trint", new { area = "pocketppal" });
-            }
-            ViewBag.AppItem = new AppItem { Nombre = "TI e/ Sucs - Vista de Box o Rubros ", VolverUrl = volver ?? "#" };
-
-            return View(TIAutorizacionPendienteSeleccionada);
-        }
-
-        [HttpGet]
-        public IActionResult TIentreSucCargaCarrito(bool esrubro, bool esbox, string? boxid, string? rubroid, string? rubrogid)
-        {
-            string? volver;
-            try
-            {
-                //resguardamos la seleccion realizada
-                var ti = TIAutorizacionPendienteSeleccionada;
-                ti.EsRubro = esrubro;
-                ti.RubroGId = rubrogid;
-                ti.RubroId = rubroid ?? "%";
-                ti.EsBox = esbox;
-                ti.BoxId = boxid ?? "%";
-
-                TIAutorizacionPendienteSeleccionada = ti;
-                volver = Url.Action("TiEntreSucBoxRubro", "trint", new { area = "pocketppal" });
-
-                ViewBag.AppItem = new AppItem { Nombre = "TI e/ Sucs - Producto a colectar en Carrito", VolverUrl = volver ?? "#" };
-                return View(TIAutorizacionPendienteSeleccionada);
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-        }
-
-        [HttpGet]
-        public IActionResult CargarCarrito(string pId)
-        {
-            string? volver;
-            try
-            {
-                var prod = _productoServicio.BusquedaBaseProductos(new BusquedaBase { Busqueda = pId, Administracion = AdministracionId, DescuentoCli = 0, ListaPrecio = "", TipoOperacion = "CR" }, TokenCookie);
-
-                var sel = TIAutorizacionPendienteSeleccionada;
-
-                volver = Url.Action("TIentreSucCargaCarrito", "trint", new { area = "pocketppal", esrubro = sel.EsRubro, esbox = sel.EsBox, boxid = sel.BoxId, rubroid = sel.RubroId, rubrogid = sel.RubroGId });
-                ViewBag.AppItem = new AppItem { Nombre = "TI - Carga Carrito", VolverUrl = volver ?? "#" };
-
-                return View(sel);
-            }
-            catch (Exception ex)
-            {
-
-                throw;
-            }
-        }
-
         [HttpPost]
-        public async Task<IActionResult> BuscaTIListaProductos()
+        public async Task<IActionResult> ObtenerAutorizacionesPendientes()
         {
-            GridCore<TiListaProductoDto> grid;
+            GridCore<AutorizacionTIDto> grid;
             try
             {
-                var selec = TIAutorizacionPendienteSeleccionada;
-                List<TiListaProductoDto> regs = await _productoServicio.BuscaTIListaProductos(tr: TIAutorizacionPendienteSeleccionada.Ti, admId: AdministracionId, usuId: UserName, boxid: selec.BoxId, rubId: selec.RubroId, token: TokenCookie);
-                grid = ObtenerGrillaTIListaProductos(regs);
+                var autos = await _productoServicio.TRObtenerAutorizacionesPendientes(AdministracionId, UserName, "S", TokenCookie);
+
+                ListadoTIAutoPendientes = autos;
+
+                grid = ObtenerAutorizaciones(autos);
             }
             catch (NegocioException ex)
             {
                 TempData["warn"] = ex.Message;
-                return RedirectToAction("Index");   //para mensajes en pantalla debere generar una vista generica de errores.
+                return RedirectToAction("Index");
             }
             catch (UnauthorizedException ex)
             {
@@ -153,19 +95,95 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 _logger.LogError(ex.Message);
                 TempData["error"] = ex.Message;
                 return RedirectToAction("Index");
-
             }
 
-            return PartialView("_gridTIListaProducto", grid);
+            return PartialView("_gridTRAutoPendientes", grid);
+
         }
 
-        private GridCore<TiListaProductoDto> ObtenerGrillaTIListaProductos(List<TiListaProductoDto> regs)
+        /// <summary>
+        /// Se valida el usuario para verificar que solo esta "trabajado" en un solo lugar y no tiene otra autorización pendiente por otro lado.
+        /// Se resguarda la autorización seleccionada.
+        /// </summary>
+        /// <param name="auId"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<JsonResult> ValidarUsuario(string auId)
         {
-            var lista = new StaticPagedList<TiListaProductoDto>(regs, 1, 999, regs.Count);
+            string user = string.Empty;
+            try
+            {
+                user = UserName;
+                ResponseBaseDto resp = await _administracionServicio.ValidarUsuario(userId: user, "TR", auId, token: TokenCookie);
 
-            return new GridCore<TiListaProductoDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Ti", SortDir = "ASC" };
+                if (resp == null)
+                {
+                    throw new NegocioException("Algo no fue bíen para Validar el usuario");
+                }
+                if (resp.Resultado == 0)
+                {
+                    var ti = ListadoTIAutoPendientes.SingleOrDefault(x => x.Ti.Equals(auId));
+                    if (ti == null)
+                    {
+                        //no se encontro la TI
+                        throw new NegocioException("No se encontró la TI a procesar.");
+                    }
+                    ti.TipoTI=TIModuloActual;
+                    TIActual = ti;
 
+                    return Json(new { error = false, warn = false, msg = "Validación Exitosa" });
+                }
+                else
+                {
+                    //resguardamos la autorizacion seleccionada
+                    _logger.LogWarning($"{resp.Resultado_msj} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} Usuario:{user}");
+                    return Json(new { error = false, warn = true, msg = resp.Resultado_msj });
+                }
+            }
+            catch (NegocioException ex)
+            {
+
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} Usuario:{user}");
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} Usuario:{user}");
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} Usuario:{user}");
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
         }
+
+        #endregion  //VISTA 01
+
+        #region VISTA 02
+
+        /// <summary>
+        /// SELECCIONADA LA AUTORIZACION PENDIENTE SE PRESENTARAN EN PANTALLA LOS PRODUCTOS A INCLUIR BUSCANDOLOS POR BOX O RUBRO
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public async Task<IActionResult> TiEntreSucBoxRubro()
+        {
+            string? volver;
+            var ti = TIActual;
+            if (ti.TipoTI.Equals("S"))
+            {
+                volver = Url.Action("TiEntreSuc", "trint", new { area = "pocketppal" });
+            }
+            else
+            {
+                volver = Url.Action("index", "trint", new { area = "pocketppal" });
+            }
+            ViewBag.AppItem = new AppItem { Nombre = "TI e/ Sucs - Vista de Box o Rubros ", VolverUrl = volver ?? "#" };
+
+            return View(TIActual);
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> PresentarBoxDeProductos()
@@ -173,7 +191,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             GridCore<BoxRubProductoDto> grid;
             try
             {
-                var regs = await _productoServicio.PresentarBoxDeProductos(tr: TIAutorizacionPendienteSeleccionada.Ti, admId: AdministracionId, usuId: UserName, token: TokenCookie);
+                var regs = await _productoServicio.PresentarBoxDeProductos(tr: TIActual.Ti, admId: AdministracionId, usuId: UserName, token: TokenCookie);
                 grid = ObtenerGrillaDeBoxRubros(regs);
             }
             catch (NegocioException ex)
@@ -211,7 +229,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             GridCore<BoxRubProductoDto> response;
             try
             {
-                var regs = await _productoServicio.PresentarRubrosDeProductos(tr: TIAutorizacionPendienteSeleccionada.Ti, admId: AdministracionId, usuId: UserName, token: TokenCookie);
+                var regs = await _productoServicio.PresentarRubrosDeProductos(tr: TIActual.Ti, admId: AdministracionId, usuId: UserName, token: TokenCookie);
                 response = ObtenerGrillaDeBoxRubros(regs);
             }
             catch (NegocioException ex)
@@ -235,22 +253,72 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             return PartialView("_gridTIRubro", response);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> ObtenerAutorizacionesPendientes()
+
+        private GridCore<AutorizacionTIDto> ObtenerAutorizaciones(List<AutorizacionTIDto> autos)
         {
-            GridCore<AutorizacionTIDto> grid;
+
+            var lista = new StaticPagedList<AutorizacionTIDto>(autos, 1, 999, autos.Count);
+
+            return new GridCore<AutorizacionTIDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Ti", SortDir = "ASC" };
+        }
+
+        #endregion
+
+
+        #region VISTA 03
+
+        /// <summary>
+        /// VISTA INICIAL PARA CARGAR LOS PRODUCTOS. LA PRIMERA VEZ SE TRAE LOS DATOS DESDE EL SERVER. 
+        /// 
+        /// SE DEBE VERIFICAR SI PARA EL BUCLE QUE HAY QUE HACER POR CADA PRODUCGT
+        /// </summary>
+        /// <param name="esrubro"></param>
+        /// <param name="esbox"></param>
+        /// <param name="boxid"></param>
+        /// <param name="rubroid"></param>
+        /// <param name="rubrogid"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult TIentreSucCargaCarrito(bool esrubro, bool esbox, string? boxid, string? rubroid, string? rubrogid)
+        {
+            string? volver;
             try
             {
-                var autos = await _productoServicio.TRObtenerAutorizacionesPendientes(AdministracionId, UserName, "S", TokenCookie);
+                //resguardamos la seleccion realizada
+                var ti = TIActual;
+                ti.EsRubro = esrubro;
+                ti.RubroGId = rubrogid;
+                ti.RubroId = rubroid ?? "%";
+                ti.EsBox = esbox;
+                ti.BoxId = boxid ?? "%";
 
-                ListadoTIAutoPendientes = autos;
+                TIActual = ti;
+                volver = Url.Action("TiEntreSucBoxRubro", "trint", new { area = "pocketppal" });
 
-                grid = ObtenerAutorizaciones(autos);
+                ViewBag.AppItem = new AppItem { Nombre = "TI e/ Sucs - Producto a colectar en Carrito", VolverUrl = volver ?? "#" };
+                return View(TIActual);
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> BuscaTIListaProductos()
+        {
+            GridCore<TiListaProductoDto> grid;
+            try
+            {
+                var selec = TIActual;
+                List<TiListaProductoDto> regs = await _productoServicio.BuscaTIListaProductos(tr: TIActual.Ti, admId: AdministracionId, usuId: UserName, boxid: selec.BoxId, rubId: selec.RubroId, token: TokenCookie);
+                ListaProductosSegunRubro = regs;
+                grid = ObtenerGrillaTIListaProductos(regs);
             }
             catch (NegocioException ex)
             {
                 TempData["warn"] = ex.Message;
-                return RedirectToAction("Index");
+                return RedirectToAction("Index");   //para mensajes en pantalla debere generar una vista generica de errores.
             }
             catch (UnauthorizedException ex)
             {
@@ -263,65 +331,49 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 _logger.LogError(ex.Message);
                 TempData["error"] = ex.Message;
                 return RedirectToAction("Index");
+
             }
 
-            return PartialView("_gridTRAutoPendientes", grid);
+            return PartialView("_gridTIListaProducto", grid);
+        }
+
+        private GridCore<TiListaProductoDto> ObtenerGrillaTIListaProductos(List<TiListaProductoDto> regs)
+        {
+            var lista = new StaticPagedList<TiListaProductoDto>(regs, 1, 999, regs.Count);
+
+            return new GridCore<TiListaProductoDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Ti", SortDir = "ASC" };
 
         }
 
-        private GridCore<AutorizacionTIDto> ObtenerAutorizaciones(List<AutorizacionTIDto> autos)
+        [HttpGet]
+        public async Task<IActionResult> TIValidaProducto(string pId)
         {
-
-            var lista = new StaticPagedList<AutorizacionTIDto>(autos, 1, 999, autos.Count);
-
-            return new GridCore<AutorizacionTIDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Ti", SortDir = "ASC" };
-        }
-
-
-        [HttpPost]
-        public async Task<JsonResult> ValidarUsuario(string auId)
-        {
-            string user = string.Empty;
+            string? volver;
             try
             {
-                user = UserName;
-                ResponseBaseDto resp = await _administracionServicio.ValidarUsuario(userId: user, "TR", auId, token: TokenCookie);
+                var prod = await _productoServicio.BusquedaBaseProductos(new BusquedaBase { Busqueda = pId, Administracion = AdministracionId, DescuentoCli = 0, ListaPrecio = "", TipoOperacion = "CR" }, TokenCookie);
 
-                if (resp == null)
-                {
-                    throw new NegocioException("Algo no fue bíen para Validar el usuario");
-                }
-                if (resp.Resultado == 0)
-                {
-                    TIAutorizacionPendienteSeleccionada = ListadoTIAutoPendientes.SingleOrDefault(x => x.Ti.Equals(auId)) ?? new AutorizacionTIDto();
-                    return Json(new { error = false, warn = false, msg = "Validación Exitosa" });
-                }
-                else
-                {
-                    //resguardamos la autorizacion seleccionada
-                    _logger.LogWarning($"{resp.Resultado_msj} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} Usuario:{user}");
-                    return Json(new { error = false, warn = true, msg = resp.Resultado_msj });
-                }
-            }
-            catch (NegocioException ex)
-            {
+                var sel = TIActual;
 
-                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} Usuario:{user}");
-                return Json(new { error = false, warn = true, msg = ex.Message });
-            }
-            catch (UnauthorizedException ex)
-            {
-                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} Usuario:{user}");
-                return Json(new { error = false, warn = true, msg = ex.Message });
+                volver = Url.Action("TIentreSucCargaCarrito", "trint", new { area = "pocketppal", esrubro = sel.EsRubro, esbox = sel.EsBox, boxid = sel.BoxId, rubroid = sel.RubroId, rubrogid = sel.RubroGId });
+                ViewBag.AppItem = new AppItem { Nombre = "TI - Carga Carrito", VolverUrl = volver ?? "#" };
+
+                return View(prod);
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} Usuario:{user}");
-                return Json(new { error = true, warn = false, msg = ex.Message });
+                var sel = TIActual;
+                TempData["error"]= ex.ToString();
+                return RedirectToAction("TIentreSucCargaCarrito", "trint", new { area = "pocketppal", esrubro = sel.EsRubro, esbox = sel.EsBox, boxid = sel.BoxId, rubroid = sel.RubroId, rubrogid = sel.RubroGId });
             }
         }
 
+        #endregion
 
+
+     
+
+      
 
         public IActionResult TIentreDep()
         {

@@ -119,11 +119,11 @@ namespace gc.api.core.Servicios
 
             var ps = new List<SqlParameter>()
             {
+                new SqlParameter("@ti",ti),
                 new SqlParameter("@adm_id",admId),
                 new SqlParameter("@usu_id",usuId),
-                new SqlParameter("@ti",ti),
                 new SqlParameter("@box_id",boxid),
-                new SqlParameter("@rub_id",boxid),
+                new SqlParameter("@rub_id",rubroid),
 
             };
 
