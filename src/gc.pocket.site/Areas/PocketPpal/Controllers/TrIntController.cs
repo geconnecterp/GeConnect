@@ -312,7 +312,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             {
                 var selec = TIActual;
                 List<TiListaProductoDto> regs = await _productoServicio.BuscaTIListaProductos(tr: TIActual.Ti, admId: AdministracionId, usuId: UserName, boxid: selec.BoxId, rubId: selec.RubroId, token: TokenCookie);
-                ListaProductosSegunRubro = regs;
+                ListaProductosActual = regs;
                 grid = ObtenerGrillaTIListaProductos(regs);
             }
             catch (NegocioException ex)
@@ -351,14 +351,24 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             string? volver;
             try
             {
-                var prod = await _productoServicio.BusquedaBaseProductos(new BusquedaBase { Busqueda = pId, Administracion = AdministracionId, DescuentoCli = 0, ListaPrecio = "", TipoOperacion = "CR" }, TokenCookie);
+                //var prod = await _productoServicio.BusquedaBaseProductos(new BusquedaBase { Busqueda = pId, Administracion = AdministracionId, DescuentoCli = 0, ListaPrecio = "", TipoOperacion = "CR" }, TokenCookie);
+                var prod = ListaProductosActual.FirstOrDefault(x => x.P_id == pId);
+                if (prod == null)
+                {
+                    throw new Exception("El producto buscado no puede ser encontrado. Intente de nuevo, seleccione la lista y seleccione el producto a cargar.");
+                }
+
 
                 var sel = TIActual;
+                sel.PId = pId; //le asigno el pId para tenerlo resguardado. 
+                sel.PBoxId = prod.Box_id;
+             
+                TIActual = sel;
 
                 volver = Url.Action("TIentreSucCargaCarrito", "trint", new { area = "pocketppal", esrubro = sel.EsRubro, esbox = sel.EsBox, boxid = sel.BoxId, rubroid = sel.RubroId, rubrogid = sel.RubroGId });
                 ViewBag.AppItem = new AppItem { Nombre = "TI - Carga Carrito", VolverUrl = volver ?? "#" };
 
-                return View(prod);
+                return View(sel);
             }
             catch (Exception ex)
             {
@@ -368,12 +378,82 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             }
         }
 
+        [HttpPost]
+        public IActionResult ValidarBoxIngresado(string boxId)
+        {
+            AutorizacionTIDto sel;
+            try
+            {
+                sel = TIActual;
+                if (sel.PBoxId.Equals(boxId))
+                {
+                    return Json(new { error = false, warn = false, msg = "Box Correcto" });
+                }
+                else
+                {
+                    throw new NegocioException("El BOX ingresado no corresponde al Box esperado");
+                }
+
+            }
+            catch (NegocioException ex)
+            {
+                sel = TIActual;
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} boxId ingresado:{boxId} - Box Esperado {sel.BoxId}");
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+                sel = TIActual;
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} boxId ingresado:{boxId} - Box Esperado {sel.BoxId}");
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                sel = TIActual;
+                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} boxId ingresado:{boxId} - Box Esperado {sel.BoxId}");
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public IActionResult ValidarProductoIngresado(string pId)
+        {
+            AutorizacionTIDto sel;
+            try
+            {
+                sel = TIActual;
+                if (sel.PId.Equals(pId))
+                {
+                    return Json(new { error = false, warn = false, msg = "Producto es Correcto" });
+                }
+                else
+                {
+                    throw new NegocioException("El Producto ingresado no corresponde al Producto esperado");
+                }
+
+            }
+            catch (NegocioException ex)
+            {
+                sel = TIActual;
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} Producto ingresado:{pId} - Producto Esperado {sel.PId}");
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+                sel = TIActual;
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} Producto ingresado:{pId} - Producto Esperado {sel.PId}");
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                sel = TIActual;
+                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} Producto ingresado:{pId} - Producto Esperado {sel.PId}");
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+        }
+
+
         #endregion
-
-
-     
-
-      
 
         public IActionResult TIentreDep()
         {

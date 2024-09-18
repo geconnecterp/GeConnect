@@ -16,6 +16,9 @@
         public string? RubroId { get; set; }
         public string? RubroGId { get; set; }
         public string TipoTI { get; set; }=string.Empty;
+        public string PId { get; set; } = string.Empty;
+        public string PBoxId { get; set; } = string.Empty;
+        public DateTime Pfvto { get; set; }
 
     }
 }

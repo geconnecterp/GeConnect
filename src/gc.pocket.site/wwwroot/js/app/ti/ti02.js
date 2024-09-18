@@ -35,10 +35,10 @@ function seleccionVista(vista) {
 function seleccionarRegistroTIBox(x) {
     InicializaControlesTI02()
     $("#tbAuPend tbody tr").each(function (index) {
-        $(this).removeClass(".selected-row");
+        $(this).removeClass("selected-row");
     });
 
-    $(this).addClass(".selected-row");
+    $(x).addClass("selected-row");
     //presento datos para indicar seleccion
     var reg = parseInt(x.cells[0].innerText.trim());
     $("#txtData01").val($("#rTi" + reg).val());
@@ -56,9 +56,9 @@ function seleccionarRegistroTIBox(x) {
 function seleccionarRegistroTIRubro(x) {
     InicializaControlesTI02();
     $("#tbAuPend tbody tr").each(function (index) {
-        $(this).removeClass(".selected-row");
+        $(this).removeClass("selected-row");
     });
-    $(this).addClass(".selected-row");
+    $(x).addClass("selected-row");
 
 
     var reg = parseInt(x.cells[0].innerText.trim());

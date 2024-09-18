@@ -588,11 +588,11 @@ namespace gc.pocket.site.Controllers
             }
         }
 
-        public List<TiListaProductoDto> ListaProductosSegunRubro
+        public List<TiListaProductoDto> ListaProductosActual
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("ListaProductosSegunRubro");
+                var json = _context.HttpContext.Session.GetString("ListaProductosActual");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
@@ -602,7 +602,7 @@ namespace gc.pocket.site.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("ListaProductosSegunRubro", json);
+                _context.HttpContext.Session.SetString("ListaProductosActual", json);
             }
         }
 

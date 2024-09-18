@@ -24,7 +24,7 @@
                     break;
                 case 1:
                 case 2:
-                    valor = ('0' + valor).slice(-2); // Asegura que el mes siempre tenga dos dígitos
+                    valor = ('0' + valor).slice(-2); // Asegura que el numero siempre tenga dos dígitos
                     $("#ul_Id").val("RPR"+NroAuto + valor);                    
                     break;
                 default:

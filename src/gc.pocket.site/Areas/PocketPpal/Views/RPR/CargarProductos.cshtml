@@ -13,7 +13,8 @@
 <div class="container">
     <partial name="_rprCabecera" model="@Model" />
     <partial name="~/areas/gestion/views/producto/_ctrbuscarproducto.cshtml" model="@buscar" />
-    <div class="row">
+    <partial name="~/areas/gestion/views/producto/_productoDetalle.cshtml" />
+   @*  <div class="row">
         <div class="col-sm-12">
             <div class="input-group input-group-sm">
                 <span class="input-group-text">ID</span>
@@ -43,7 +44,7 @@
                 <button type="button" id="btnCargarProd" class="btn btn-success" disabled><i class="bx bx-plus-circle"></i> </button>
             </div>
         </div>
-    </div>
+    </div> *@
     <div class="row">
         <div class="col-sm-12">
             <div id="divRprGrid"></div>
