@@ -3,6 +3,7 @@ using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Administracion;
+using gc.infraestructura.Dtos.Almacen.Info;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Dtos.Seguridad;
@@ -103,13 +104,25 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
 
         [HttpGet]
-        public IActionResult Producto()
+        public async Task< IActionResult> Producto()
         {
             var auth = EstaAutenticado;
             if (!auth.Item1 || (auth.Item1 && !auth.Item2.HasValue) || (auth.Item1 && auth.Item2.HasValue && auth.Item2.Value < DateTime.Now))
             {
                 return RedirectToAction("Login", "Token", new { area = "Seguridad" });
             }
+
+            //obtengo datos TipoMotivo
+            if (TiposMotivo.Count == 0) { 
+                var res = await _productoServicio.ObtenerTiposMotivo(TokenCookie);
+                if (res != null)
+                {
+                    TiposMotivo = res;
+                }
+            }
+            var lista = TiposMotivo.Select(x => new ComboGenDto { Id = x.Sm_tipo, Descripcion = x.Sm_Desc });
+
+            ViewBag.TmId = HelperMvc<ComboGenDto>.ListaGenerica(lista);
 
             TempData["cota"] = _settings.FechaVtoCota;
 
@@ -329,24 +342,21 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
 
         [HttpPost]
-        public ActionResult InfoProductoMovStk(DateTime fdesde, DateTime fhasta)
+        public ActionResult InfoProductoMovStk(string idTm, DateTime fdesde, DateTime fhasta)
         {
             RespuestaGenerica<EntidadBase> response = new()  ;
             GridCore<InfoProdMovStk> grillaDatos;
             string depo = "%";
-            string tmov = "RP";
-            //DateTime desde, hasta;
-            //hasta = DateTime.Today;
-            //desde = DateTime.Today.AddDays(-7);
+
             try
             {
                 string id = ProductoBase.P_id;
                 var ids = InfoProdMovStkIds.Split('#');
-                if (!(id.Equals(ids[0]) && depo.Equals(ids[1]) && tmov.Equals(ids[2]) && fdesde == ids[3].ToDateTime() && fhasta == ids[4].ToDateTime()))
+                if (!(id.Equals(ids[0]) && depo.Equals(ids[1]) && idTm.Equals(ids[2]) && fdesde == ids[3].ToDateTime() && fhasta == ids[4].ToDateTime()))
                 {
 
-                    var regs = _productoServicio.InfoProductoMovStk(id, AdministracionId, depo, tmov, fdesde, fhasta, TokenCookie).GetAwaiter().GetResult();
-                    InfoProdMovStkIds = $"{id}#{depo}#{tmov}#{fdesde}#{fhasta}";
+                    var regs = _productoServicio.InfoProductoMovStk(id, AdministracionId, depo, idTm, fdesde, fhasta, TokenCookie).GetAwaiter().GetResult();
+                    InfoProdMovStkIds = $"{id}#{depo}#{idTm}#{fdesde}#{fhasta}";
                     InfoProdMovStkRegs = regs ;
                     grillaDatos = ObtenerInfoProdMovStk(regs);
                 }

@@ -8,9 +8,9 @@ namespace gc.api.Controllers.Almacen
     using gc.infraestructura.Core.Responses;
     using gc.infraestructura.Dtos.Almacen;
     using gc.infraestructura.Dtos.Almacen.Rpr;
-	using gc.infraestructura.Dtos.CuentaComercial;
-	using gc.infraestructura.Dtos.Gen;
-	using gc.infraestructura.Dtos.Productos;
+    using gc.infraestructura.Dtos.CuentaComercial;
+    using gc.infraestructura.Dtos.Gen;
+    using gc.infraestructura.Dtos.Productos;
     using gc.infraestructura.EntidadesComunes.Options;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
@@ -29,18 +29,20 @@ namespace gc.api.Controllers.Almacen
     {
         private readonly IMapper _mapper;
         private IApiProductoServicio _productosSv;
+        private readonly ITipoMotivoServicio _tmServicio;
         private readonly IUriService _uriService;
         private readonly ILogger<ApiProductoController> _logger;
 
-        public ApiProductoController(IApiProductoServicio servicio, IMapper mapper, IUriService uriService, ILogger<ApiProductoController> logger)
+        public ApiProductoController(IApiProductoServicio servicio, IMapper mapper, IUriService uriService, ILogger<ApiProductoController> logger, ITipoMotivoServicio tipo)
         {
             _productosSv = servicio;
             _mapper = mapper;
             _uriService = uriService;
             _logger = logger;
+            _tmServicio = tipo;
         }
 
-       
+
 
         [HttpGet]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<ProductoListaDto>>))]
@@ -164,7 +166,7 @@ namespace gc.api.Controllers.Almacen
         {
             ApiResponse<List<InfoProdStkD>> response;
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-            var res = _productosSv.InfoProductoStkD(id,admId);
+            var res = _productosSv.InfoProductoStkD(id, admId);
 
             response = new ApiResponse<List<InfoProdStkD>>(res);
 
@@ -179,7 +181,7 @@ namespace gc.api.Controllers.Almacen
         {
             ApiResponse<List<InfoProdStkBox>> response;
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-            var res = _productosSv.InfoProductoStkBoxes(id, adm,depo);
+            var res = _productosSv.InfoProductoStkBoxes(id, adm, depo);
 
             response = new ApiResponse<List<InfoProdStkBox>>(res);
 
@@ -204,11 +206,19 @@ namespace gc.api.Controllers.Almacen
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<InfoProdMovStk>>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
-        public IActionResult InfoProductoMovStk(string id, string adm, string depo, string tmov, DateTime desde, DateTime hasta)
+        public IActionResult InfoProductoMovStk(string id, string adm, string depo, string tmov, long desde, long hasta)
         {
             ApiResponse<List<InfoProdMovStk>> response;
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-            var res = _productosSv.InfoProductoMovStk(id, adm,depo,tmov,desde,hasta);
+            //if (depo.Equals("porc."))
+            //{
+            //    depo = "%";
+            //}
+            //if (tmov.Equals("porc."))
+            //{
+            //    tmov = "%";
+            //}
+            var res = _productosSv.InfoProductoMovStk(id, adm, depo, tmov, new DateTime(desde), new DateTime(hasta));
 
             response = new ApiResponse<List<InfoProdMovStk>>(res);
 
@@ -227,6 +237,15 @@ namespace gc.api.Controllers.Almacen
             response = new ApiResponse<List<InfoProdLP>>(res);
 
             return Ok(response);
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult ObtenerTiposMotivo()
+        {
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _tmServicio.ObtenerTiposMotivo();
+            return Ok(new ApiResponse<List<TipoMotivo>>(res));
         }
         #endregion
 
@@ -247,82 +266,82 @@ namespace gc.api.Controllers.Almacen
             return Ok(response);
         }
 
-		[HttpPost]
-		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RespuestaDto>>))]
-		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
-		[Route("[action]")]
-		public IActionResult RPRCargar(RPRCargarRequest request)
-		{
-			ApiResponse<List<RespuestaDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			var res = _productosSv.RPRCargar(request);
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RespuestaDto>>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult RPRCargar(RPRCargarRequest request)
+        {
+            ApiResponse<List<RespuestaDto>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.RPRCargar(request);
 
-			response = new ApiResponse<List<RespuestaDto>>(res);
+            response = new ApiResponse<List<RespuestaDto>>(res);
 
-			return Ok(response);
-		}
+            return Ok(response);
+        }
 
-		[HttpDelete]
-		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RespuestaDto>>))]
-		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
-		[Route("[action]")]
-		public IActionResult RPRElimina(string rp)
-		{
-			ApiResponse<List<RespuestaDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			var res = _productosSv.RPRElimina(rp);
+        [HttpDelete]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RespuestaDto>>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult RPRElimina(string rp)
+        {
+            ApiResponse<List<RespuestaDto>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.RPRElimina(rp);
 
-			response = new ApiResponse<List<RespuestaDto>>(res);
+            response = new ApiResponse<List<RespuestaDto>>(res);
 
-			return Ok(response);
-		}
+            return Ok(response);
+        }
 
-		[HttpGet]
-		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<JsonDto>>))]
-		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
-		[Route("[action]")]
-		public IActionResult RPRObtenerJson(string rp)
-		{
-			ApiResponse<List<JsonDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			var res = _productosSv.RPREObtenerDatosJsonDesdeRP(rp);
+        [HttpGet]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<JsonDto>>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult RPRObtenerJson(string rp)
+        {
+            ApiResponse<List<JsonDto>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.RPREObtenerDatosJsonDesdeRP(rp);
 
-			response = new ApiResponse<List<JsonDto>>(res);
+            response = new ApiResponse<List<JsonDto>>(res);
 
-			return Ok(response);
-		}
+            return Ok(response);
+        }
 
-		[HttpGet]
-		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RPRItemVerCompteDto>>))]
-		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
-		[Route("[action]")]
-		public IActionResult RPRObtenerItemVerCompte(string rp)
-		{
-			ApiResponse<List<RPRItemVerCompteDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			var res = _productosSv.RPRObtenerDatosVerCompte(rp);
+        [HttpGet]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RPRItemVerCompteDto>>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult RPRObtenerItemVerCompte(string rp)
+        {
+            ApiResponse<List<RPRItemVerCompteDto>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.RPRObtenerDatosVerCompte(rp);
 
-			response = new ApiResponse<List<RPRItemVerCompteDto>>(res);
+            response = new ApiResponse<List<RPRItemVerCompteDto>>(res);
 
-			return Ok(response);
-		}
+            return Ok(response);
+        }
 
-		[HttpGet]
-		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RPRVerConteoDto>>))]
-		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
-		[Route("[action]")]
-		public IActionResult RPRObtenerVerConteos(string rp)
-		{
-			ApiResponse<List<RPRVerConteoDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			var res = _productosSv.RPRObtenerConteos(rp);
+        [HttpGet]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RPRVerConteoDto>>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult RPRObtenerVerConteos(string rp)
+        {
+            ApiResponse<List<RPRVerConteoDto>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.RPRObtenerConteos(rp);
 
-			response = new ApiResponse<List<RPRVerConteoDto>>(res);
+            response = new ApiResponse<List<RPRVerConteoDto>>(res);
 
-			return Ok(response);
-		}
+            return Ok(response);
+        }
 
-		[HttpPost]
+        [HttpPost]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RPRRegistroResponseDto>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
@@ -337,7 +356,7 @@ namespace gc.api.Controllers.Almacen
                 return BadRequest("No se recepcionó dato alguno.");
 
             }
-            
+
             var json = JsonConvert.SerializeObject(prods);
 
             ////validar json
@@ -359,10 +378,10 @@ namespace gc.api.Controllers.Almacen
         {
             ApiResponse<List<RPRAutoComptesPendientesDto>> response;
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-            if (string.IsNullOrEmpty(adm_id)) 
+            if (string.IsNullOrEmpty(adm_id))
                 return BadRequest("No se recepciono dato alguno.");
 
-            var result=_productosSv.RPRObtenerComptesPendientes(adm_id);
+            var result = _productosSv.RPRObtenerComptesPendientes(adm_id);
             response = new ApiResponse<List<RPRAutoComptesPendientesDto>>(result);
             return Ok(response);
         }

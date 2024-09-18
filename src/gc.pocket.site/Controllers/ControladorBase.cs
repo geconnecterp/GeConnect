@@ -2,6 +2,7 @@
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.Info;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.Productos;
@@ -620,6 +621,24 @@ namespace gc.pocket.site.Controllers
             {
                 var json = JsonConvert.SerializeObject(value);
                 _context.HttpContext.Session.SetString("ListaProductosSegunBox", json);
+            }
+        }
+
+        public List<TipoMotivoDto> TiposMotivo
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("TiposMotivo");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<TipoMotivoDto>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("TiposMotivo", json);
             }
         }
 
