@@ -40,6 +40,7 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<List<TiListaProductoDto>> BuscaTIListaProductos(string tr, string admId, string usuId, string? boxid, string? rubId, string token);
 
         Task<List<TipoMotivoDto>> ObtenerTiposMotivo(string token);
+        Task<RespuestaGenerica<RespuestaDto>> ResguardarProductoCarrito(TiProductoCarritoDto request,string token);
     }
 
 }

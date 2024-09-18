@@ -19,6 +19,6 @@
         public decimal us { get; set; }//0
         public DateTime? vto { get; set; }//0
         public decimal cantidad { get; set; }//0
-        //public string Nro_tra { get; set; } = string.Empty;
+        
     }
 }

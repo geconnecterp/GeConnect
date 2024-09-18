@@ -163,3 +163,49 @@ function sumarFecha(pFecha, diasSumar) {
     fecha.setDate(fecha.getDate() + diasSumar);
     return fecha;
 }
+
+function analizaEnterInput(e) {
+    if (e.which == "13") {
+        tope = 99999;
+        index = -1;
+        //obtengo los inputs dentro del div
+        var inputss = $("#divInputs :input:not(:disabled)");
+        tope = inputss.length;
+        //le el id del input en el que he dado enter
+        var cual = $(this).prop("id");
+        inputss.each(function (i, item) {
+            if ($(item).prop("id") === cual) {
+                index = i;
+                return false;
+            }
+        });
+        if (index > -1 && tope > index + 1) {
+            inputss[index + 1].focus();
+        }
+
+        ////verifico cuantos input habilitados encuentro
+        //var $nextInput = $(this).nextAll("input:not(:disabled)");
+        //if ($nextInput.length>0) {
+        //    $nextInput.first().focus();
+        //    return true;
+        //} else if ($(this).prop("id") === "unid") {
+        //    e.preventDefault();
+        //    $("#btnCargarProd").focus();
+        //}
+    }
+    return true;
+}
+
+function CargarAutoActual() {
+    PostGen({}, ObtenerAutorizacionActualUrl, function (obj) {
+        if (obj.error === true) {
+            AbrirMensaje("Importante", obj.msg, function () {
+                $("#msjModal").modal("hide");
+                return true;
+            }, false, ["Aceptar"], "error!", null);
+        }
+        else {
+            autorizacionActual = obj.auto;
+        }
+    });
+}

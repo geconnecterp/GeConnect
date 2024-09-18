@@ -1,6 +1,7 @@
 namespace gc.api.Controllers.Almacen
 {
     using AutoMapper;
+    using Azure;
     using gc.api.core.Contratos.Servicios;
     using gc.api.core.Entidades;
     using gc.infraestructura.Core.EntidadesComunes;
@@ -8,6 +9,7 @@ namespace gc.api.Controllers.Almacen
     using gc.infraestructura.Core.Responses;
     using gc.infraestructura.Dtos.Almacen;
     using gc.infraestructura.Dtos.Almacen.Rpr;
+    using gc.infraestructura.Dtos.Almacen.Tr;
     using gc.infraestructura.Dtos.CuentaComercial;
     using gc.infraestructura.Dtos.Gen;
     using gc.infraestructura.Dtos.Productos;
@@ -383,6 +385,18 @@ namespace gc.api.Controllers.Almacen
 
             var result = _productosSv.RPRObtenerComptesPendientes(adm_id);
             response = new ApiResponse<List<RPRAutoComptesPendientesDto>>(result);
+            return Ok(response);
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public IActionResult ResguardarProductoCarrito(TiProductoCarritoDto request)
+        {
+            if (request == null) return BadRequest("No se recepcionaron los datos");
+
+            RespuestaDto resp = _productosSv.ResguardarProductoCarrito(request);
+
+            var response = new ApiResponse<RespuestaDto>(resp);
             return Ok(response);
         }
 

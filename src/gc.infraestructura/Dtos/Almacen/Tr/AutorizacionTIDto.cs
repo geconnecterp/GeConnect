@@ -19,6 +19,8 @@
         public string PId { get; set; } = string.Empty;
         public string PBoxId { get; set; } = string.Empty;
         public DateTime Pfvto { get; set; }
+        public int PUnidPres { get; set; }
+        public decimal PPedido { get; set; }
 
     }
 }

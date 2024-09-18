@@ -36,11 +36,11 @@
                                 <a asp-action="TIValidaProducto" asp-controller="trint" asp-area="pocketppal" asp-route-pId="@item.P_id" class="btn btn-sm btn-success btnBarcode"><i class="bx bx-barcode"></i></a>
                                 @if (!string.IsNullOrEmpty(item.Nota) && !string.IsNullOrWhiteSpace(item.Nota))
                                 {
-                                    <button type="button" class="btn btn-sm btn-danger btnNota" onclick="mostrarMensaje('@item.Nota')"><i class="bx bx-note"></i></button>
+                                    <button type="button" class="btn btn-sm btn-warning btnNota" onclick="mostrarMensaje('@item.Nota')"><i class="bx bx-note"></i></button>
                                 }
                                 @if (item.Colectado > 0)
                                 {
-                                    <button type="button" class="btn btn-sm btn-danger btnNota"><i class="bx bx-eraser"></i></button>
+                                    <button type="button" class="btn btn-sm btn-danger" onclick="limpiarProductoCarrito()"><i class="bx bx-eraser"></i></button>
                                 }
 
                             </div>

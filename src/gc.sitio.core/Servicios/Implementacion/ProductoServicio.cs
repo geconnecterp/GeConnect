@@ -50,7 +50,8 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string TI_ListaBox = "/GetTIListaBox";
         private const string TI_ListaRubro = "/GetTIListaRubro";
         private const string TI_ListaProductos = "/BuscaTIListaProductos";
-        
+        private const string TI_RESGUARDA_PROD_CARRITO = "/ResguardarProductoCarrito";
+
 
 
         //Transferencia Interna
@@ -874,6 +875,46 @@ namespace gc.sitio.core.Servicios.Implementacion
                 {
                     return new();
                 }
+            }
+        }
+
+        public async Task<RespuestaGenerica<RespuestaDto>> ResguardarProductoCarrito(TiProductoCarritoDto request,string token)
+        {
+
+            ApiResponse<RespuestaDto> apiResponse;
+
+            HelperAPI helper = new();
+           
+            HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+            HttpResponseMessage response;
+
+            var link = $"{_appSettings.RutaBase}{RutaAPI}{TI_RESGUARDA_PROD_CARRITO}";
+
+            response = await client.PostAsync(link, contentData);
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(stringData))
+                {
+                    _logger.LogWarning($"La API devolvió error. Parametros {JsonConvert.SerializeObject(request)}");
+                    return new();
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+                if (apiResponse.Data.resultado == "0")
+                {
+                    return new RespuestaGenerica<RespuestaDto> { Ok = true, Mensaje = "OK" };
+                }
+                else
+                {
+                    return new RespuestaGenerica<RespuestaDto> { Ok = false, Mensaje = apiResponse.Data.resultado_msj };
+                }
+            }
+            else
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                return new();
             }
         }
     }

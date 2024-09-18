@@ -1,6 +1,7 @@
 using gc.api.core.Entidades;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Rpr;
+using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
@@ -26,5 +27,6 @@ namespace gc.api.core.Contratos.Servicios
         List<JsonDto> RPREObtenerDatosJsonDesdeRP(string rp);
         List<RPRItemVerCompteDto> RPRObtenerDatosVerCompte(string rp);
         List<RPRVerConteoDto> RPRObtenerConteos(string rp);
-	}
+        RespuestaDto ResguardarProductoCarrito(TiProductoCarritoDto request);
+    }
 }

@@ -39,7 +39,14 @@
 
 @section scripts{
     <script type="text/javascript">
-        var buscarListaProductosUrl = "@Url.Action("BuscaTIListaProductos","trint",new{area="pocketppal"})";
+        var productoBase = null; //se hidrata en busquedas.
+        var autorizacionActual = null;
+        var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "gestion" })";
+        var buscarListaProductosUrl = "@Url.Action("BuscaTIListaProductos", "trint", new { area = "pocketppal" })";
+        var ObtenerAutorizacionActualUrl = "@Url.Action("ObtenerAutorizacionActual", "trint", new { area = "pocketppal" })";
+        var LimpiaProductoCarritoUrl = "@Url.Action("LimpiaProductoCarrito", "trint", new { area = "pocketppal" })";
+        var proximoProductoUrl = "@Url.Action("TIentreSucCargaCarrito", "trint", new { area = "pocketppal" })";
+
     </script>
 
     <script src="~/js/app/ti/ti03.js"></script>

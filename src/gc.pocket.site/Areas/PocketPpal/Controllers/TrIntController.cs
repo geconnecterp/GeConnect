@@ -9,6 +9,7 @@ using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Reflection;
+using System.Security.Cryptography;
 using X.PagedList;
 
 namespace gc.pocket.site.Areas.PocketPpal.Controllers
@@ -128,7 +129,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                         //no se encontro la TI
                         throw new NegocioException("No se encontró la TI a procesar.");
                     }
-                    ti.TipoTI=TIModuloActual;
+                    ti.TipoTI = TIModuloActual;
                     TIActual = ti;
 
                     return Json(new { error = false, warn = false, msg = "Validación Exitosa" });
@@ -282,17 +283,31 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         public IActionResult TIentreSucCargaCarrito(bool esrubro, bool esbox, string? boxid, string? rubroid, string? rubrogid)
         {
             string? volver;
+            AutorizacionTIDto ti;
             try
             {
-                //resguardamos la seleccion realizada
-                var ti = TIActual;
-                ti.EsRubro = esrubro;
-                ti.RubroGId = rubrogid;
-                ti.RubroId = rubroid ?? "%";
-                ti.EsBox = esbox;
-                ti.BoxId = boxid ?? "%";
+                if (!esrubro && !esbox)
+                {
+                    //verificamos que luego de cargar producto no conocemos cual es la lista que se debe presentar. Por lo qeu se deberá tomar los valores resguardados en TIActual
+                    ti = TIActual;
+                    esrubro = ti.EsRubro;
+                    rubrogid = ti.RubroGId;
+                    rubroid = ti.RubroId;
+                    esbox = ti.EsBox;
+                    boxid = ti.BoxId;
+                }
+                else
+                {
+                    //resguardamos la seleccion realizada ya que si se conoce que se pide
+                    ti = TIActual;
+                    ti.EsRubro = esrubro;
+                    ti.RubroGId = rubrogid;
+                    ti.RubroId = rubroid ?? "%";
+                    ti.EsBox = esbox;
+                    ti.BoxId = boxid ?? "%";
 
-                TIActual = ti;
+                    TIActual = ti;
+                }
                 volver = Url.Action("TiEntreSucBoxRubro", "trint", new { area = "pocketppal" });
 
                 ViewBag.AppItem = new AppItem { Nombre = "TI e/ Sucs - Producto a colectar en Carrito", VolverUrl = volver ?? "#" };
@@ -362,21 +377,119 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 var sel = TIActual;
                 sel.PId = pId; //le asigno el pId para tenerlo resguardado. 
                 sel.PBoxId = prod.Box_id;
-             
+                sel.PUnidPres = prod.Unidad_pres;
+                sel.PPedido = prod.Pedido;
+
                 TIActual = sel;
 
                 volver = Url.Action("TIentreSucCargaCarrito", "trint", new { area = "pocketppal", esrubro = sel.EsRubro, esbox = sel.EsBox, boxid = sel.BoxId, rubroid = sel.RubroId, rubrogid = sel.RubroGId });
                 ViewBag.AppItem = new AppItem { Nombre = "TI - Carga Carrito", VolverUrl = volver ?? "#" };
 
+                ////para validar la fecha de vencimiento
+                //ViewBag.FechaCotaJS = _settings.FechaVtoCota;
+
+
                 return View(sel);
             }
+
             catch (Exception ex)
             {
                 var sel = TIActual;
-                TempData["error"]= ex.ToString();
+                TempData["error"] = ex.ToString();
                 return RedirectToAction("TIentreSucCargaCarrito", "trint", new { area = "pocketppal", esrubro = sel.EsRubro, esbox = sel.EsBox, boxid = sel.BoxId, rubroid = sel.RubroId, rubrogid = sel.RubroGId });
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> LimpiaProductoCarrito(string p_id)
+        {
+            try
+            {
+                var ti = TIActual;
+
+                TiProductoCarritoDto request = new TiProductoCarritoDto();
+                request.Ti = ti.Ti;
+                request.AdmId = AdministracionId;
+                request.UsuId = UserName;
+                request.BoxId = ti.PBoxId;
+                request.Desarma = true;
+                request.Pid = p_id;
+                request.Unidad_pres = ti.PUnidPres;
+                request.Bulto = 0;
+                request.Us = 0;
+                request.Cantidad = 0;
+                request.Fvto = DateTime.MinValue.ToStringYYYYMMDD();
+
+                RespuestaGenerica<RespuestaDto> resp = await _productoServicio.ResguardarProductoCarrito(request, TokenCookie);
+
+                if (resp.Ok)
+                {
+                    return Json(new { error = false, warn = false, msg = $"Producto {ProductoBase.P_desc} fue limpiado exitosamente" });
+                }
+                else { return Json(new { error = false, warn = true, msg = resp.Mensaje }); }
+            }
+            catch (NegocioException ex)
+            {
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name}params: {p_id}");
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} params: {p_id} ");
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} params: {p_id} ");
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResguardarProductoCarrito(string p_id, int up, int bulto, decimal unid, decimal cantidad, string? fv, bool desarma = true)
+        {
+            try
+            {
+                var ti = TIActual;
+
+                TiProductoCarritoDto request = new TiProductoCarritoDto();
+                request.Ti = ti.Ti;
+                request.AdmId = AdministracionId;
+                request.UsuId = UserName;
+                request.BoxId = ti.PBoxId;
+                request.Desarma = desarma;
+                request.Pid = p_id;
+                request.Unidad_pres = up;
+                request.Bulto = bulto;
+                request.Us = unid;
+                request.Cantidad = cantidad;
+                request.Fvto = fv ?? DateTime.Today.AddDays(_settings.FechaVtoCota).ToStringYYYYMMDD();
+
+                RespuestaGenerica<RespuestaDto> resp = await _productoServicio.ResguardarProductoCarrito(request, TokenCookie);
+
+                if (resp.Ok)
+                {
+                    return Json(new { error = false, warn = false, msg = $"Producto {ProductoBase.P_desc} fue cargado exitosamente" });
+                }
+                else { return Json(new { error = false, warn = true, msg = resp.Mensaje }); }
+            }
+            catch (NegocioException ex)
+            {
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name}params: {p_id} {up} {bulto} {unid} {cantidad} {fv}");
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} params: {p_id} {up} {bulto} {unid} {cantidad} {fv}");
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} params: {p_id} {up} {bulto} {unid} {cantidad} {fv}");
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+        }
+
 
         [HttpPost]
         public IActionResult ValidarBoxIngresado(string boxId)
@@ -449,6 +562,29 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 sel = TIActual;
                 _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} Producto ingresado:{pId} - Producto Esperado {sel.PId}");
                 return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public IActionResult ObtenerAutorizacionActual()
+        {
+            AutorizacionTIDto sel;
+            try
+            {
+                sel = TIActual;
+                return Json(new { error = false, auto = sel });
+            }
+            catch (UnauthorizedException ex)
+            {
+                sel = TIActual;
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} No se pudo Cargar la Autorización Actual en la vista");
+                return Json(new { error = true, msg = "Las credenciales se han vencido. Debera autenticarse nuevamente." });
+            }
+            catch (Exception ex)
+            {
+                sel = TIActual;
+                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} No se pudo Cargar la Autorización Actual en la vista");
+                return Json(new { error = true, msg = "No se pudo Cargar la Autorización Actual en la vista" });
             }
         }
 
