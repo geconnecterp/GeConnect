@@ -170,7 +170,24 @@ namespace gc.sitio.Controllers
 			return query;
 		}
 
-		#region Variables de Productos que podrían ser utilizados en InfoProd
+		#region Variables globales
+		protected bool ElementoEditado
+		{
+			get
+			{
+				string json = _context.HttpContext.Session.GetString("ElementoEditado");
+				if (string.IsNullOrEmpty(json))
+				{
+					return new();
+				}
+				return JsonConvert.DeserializeObject<bool>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("ElementoEditado", json);
+			}
+		}
 		protected ProductoBusquedaDto ProductoBase
 		{
 			get

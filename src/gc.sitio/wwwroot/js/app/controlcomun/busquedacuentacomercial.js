@@ -39,10 +39,10 @@
 		$("#listaDeposito").val($("#DepoId").val());
 	}
 	CargarCompteEnGrilla(modelObj);
-	if ($("#FechaTurno").val() !== "") {
-		$("#dtpFechaTurno").val($("#FechaTurno").val())
+	//if ($("#FechaTurno").val() !== "") {
+	//	$("#dtpFechaTurno").val($("#FechaTurno").val())
 
-	}
+	//}
 	const cantUL = document.getElementById("txtCantidadUL");
 	cantUL.addEventListener('input', function (e) {
 		if (!isValid(this.value))
@@ -125,12 +125,17 @@ function ActualizarLinkBotonVerDetalle() {
 	var turno = moment($("#dtpFechaTurno").val()).format("X");
 	var ponerEnCurso = $("#chkPonerEnCurso")[0].checked;
 	var ul = $("#txtCantidadUL").val();
-	var link = VerDetalleDeCompteDeRPUrl + "?idTipoCompte=" + $("#idTipoCompteDeRPSelected").val() + "&nroCompte=" + $("#txtNroCompte").val() + "&depoSelec=" + depoSelec + "&notaAuto=" + notaAuto + "&turno=" + turno + "&ponerEnCurso=" + ponerEnCurso + "&ulCantidad=" + ul;
+	var rp = $("#Rp").val();
+	var cta = $("#CtaId").val();
+	var link = VerDetalleDeCompteDeRPUrl + "?idTipoCompte=" + $("#idTipoCompteDeRPSelected").val() + "&nroCompte=" + $("#txtNroCompte").val() + "&depoSelec=" + depoSelec + "&notaAuto=" + notaAuto + "&turno=" + turno + "&ponerEnCurso=" + ponerEnCurso + "&ulCantidad=" + ul + "&rp=" + rp + "&ctaId=" + cta + "&tipoCuenta=" + tipoCuenta;
 	$("#VerDetalle").prop("href", link);
 }
 
 function CargarCompteEnGrilla(obj) {
 	if (obj != null) {
+		console.log("CargarCompteEnGrilla (135): " + obj.fechaTurno.substring(0, 10));
+		$("#txtCantidadUL").val(obj.cantidadUL);
+		$("#dtpFechaTurno").val(obj.fechaTurno.substring(0, 10));
 		if (obj.compte != null && obj.compte.tipo != "") {
 			comptesDeRPGrid(obj.compte.tipo, obj.compte.tipoDescripcion, obj.compte.nroComprobante, obj.compte.fecha, obj.compte.importe, obj.rp);
 		}
@@ -209,7 +214,6 @@ function RegresarASelAuto() {
 			AbrirMensaje("Atención", o.msg, function (e) {
 				$("#msjModal").modal("hide");
 				switch (e) {
-					//TODO -> Despues de guardar debo limpiar las variables de sesion que sean necesarias para arrancar de 0
 					case "SI": //Guardar los cambios
 						GuardarDetalleDeProductos(true);
 						break;
@@ -271,6 +275,7 @@ function NuevoCompteDeRP() {
 		return;
 	}
 	else {
+		console.log("NuevoCompteDeRP (269): " + $("#Rp").val());
 		comptesDeRPGrid($("#tco_id").val(), $("#tco_id")[0].selectedOptions[0].text, $("#txtNroCompte").val(), $("#dtpFechCompte").val(), $("#txtMonto").val(), $("#Rp").val());
 	}
 }
@@ -398,13 +403,16 @@ function eliminarComptesDeRPGrid(tipo, nroComprobante) {
 }
 
 function comptesDeRPGrid(tipo, tipoDescripcion, nroComprobante, fecha, importe, rp) {
+	AbrirWaiting();
 	var data = { tipo, tipoDescripcion, nroComprobante, fecha, importe, rp };
 	PostGenHtml(data, CargarComptesDeRPUrl, function (obj) {
 		$("#divComptesDeRPGrid").html(obj);
 		AddEventListenerToComptesGrid();
+		CerrarWaiting();
 		return true;
 	}, function (obj) {
 		ControlaMensajeError(obj.message);
+		CerrarWaiting();
 		return true;
 	});
 }
@@ -465,6 +473,8 @@ function selectCompteDeRPRow(x) {
 	var turno = moment($("#dtpFechaTurno").val()).format("X");
 	var ponerEnCurso = $("#chkPonerEnCurso")[0].checked;
 	var ul = $("#txtCantidadUL").val();
-	var link = VerDetalleDeCompteDeRPUrl + "?idTipoCompte=" + $("#idTipoCompteDeRPSelected").val() + "&nroCompte=" + $("#nroCompteDeRPSelected").val() + "&depoSelec=" + depoSelec + "&notaAuto=" + notaAuto + "&turno=" + turno + "&ponerEnCurso=" + ponerEnCurso + "&ulCantidad=" + ul;
+	var rp = $("#Rp").val();
+	var cta = $("#CtaId").val();
+	var link = VerDetalleDeCompteDeRPUrl + "?idTipoCompte=" + $("#idTipoCompteDeRPSelected").val() + "&nroCompte=" + $("#nroCompteDeRPSelected").val() + "&depoSelec=" + depoSelec + "&notaAuto=" + notaAuto + "&turno=" + turno + "&ponerEnCurso=" + ponerEnCurso + "&ulCantidad=" + ul + "&rp=" + rp + "&ctaId=" + cta + "&tipoCuenta=" + tipoCuenta;
 	$("#VerDetalle").prop("href", link);
 }

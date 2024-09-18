@@ -1,6 +1,6 @@
 ﻿namespace gc.infraestructura.Dtos.Almacen
 {
-    public class ProductoBusquedaDto
+    public class ProductoBusquedaDto : Dto
     {
         public string P_id { get; set; }=string.Empty;
         public string P_id_barrado { get; set; } = string.Empty;

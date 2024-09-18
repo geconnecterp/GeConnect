@@ -158,7 +158,8 @@ function AceptarDesdeComprobanteRP() {
 
 function RegresarDesdeComprobanteRP() {
 	//Antes de volver debo validar si hay productos cargados en el detalle, si es así consultar con el operador
-	datos = {};
+	var desdeDetalle = true;
+	datos = { desdeDetalle };
 	PostGen(datos, verificarDetalleCargadoURL, function (o) {
 		if (o.error === true) {
 			AbrirMensaje("Atención", o.msg, function () {
@@ -174,7 +175,6 @@ function RegresarDesdeComprobanteRP() {
 			AbrirMensaje("Atención", o.msg, function (e) {
 				$("#msjModal").modal("hide");
 				switch (e) {
-					//TODO
 					case "SI": //Guardar los cambios
 						GuardarDetalleDeProductos(true);
 						break;
@@ -187,6 +187,7 @@ function RegresarDesdeComprobanteRP() {
 				return true;
 			}, true, ["Aceptar", "Cancelar"], "info!", null);
 		} else {
+			debugger;
 			var uri = VolverANuevaAutUrl + "?rp=" + $("#Rp").val();
 			window.location.href = uri;
 		}
@@ -212,6 +213,7 @@ function GuardarDetalleDeProductos(guardado) {
 			}, false, ["Aceptar"], "warn!", null);
 		} else {
 			CerrarWaiting();
+			debugger;
 			var uri = VolverANuevaAutUrl + "?rp=" + $("#Rp").val();
 			window.location.href = uri;
 		}

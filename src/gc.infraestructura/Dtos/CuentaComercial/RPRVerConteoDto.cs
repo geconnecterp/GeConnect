@@ -1,7 +1,7 @@
 ﻿
 namespace gc.infraestructura.Dtos.CuentaComercial
 {
-	public class RPRVerConteoDto
+	public class RPRVerConteoDto : Dto
 	{
         public string Rp { get; set; }
         public string P_id { get; set; }

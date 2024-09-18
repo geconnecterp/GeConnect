@@ -1,7 +1,7 @@
 ﻿
 namespace gc.infraestructura.Dtos.CuentaComercial
 {
-	public class RPRItemVerCompteDto
+	public class RPRItemVerCompteDto : Dto
 	{
         public string Rp { get; set; } = string.Empty;
 		public string Tco_id { get; set; } = string.Empty;

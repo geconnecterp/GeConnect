@@ -1,7 +1,7 @@
 ﻿
 namespace gc.infraestructura.Dtos.CuentaComercial
 {
-	public class RPRComptesDeRPDto
+	public class RPRComptesDeRPDto : Dto
 	{
 		public string Tipo { get; set; }=string.Empty;
         public string TipoDescripcion { get; set; } = string.Empty;

@@ -1,7 +1,7 @@
 ﻿
 namespace gc.infraestructura.Dtos.CuentaComercial
 {
-	public class RPROrdenDeCompraDto
+	public class RPROrdenDeCompraDto : Dto
 	{
         public string oc_compte { get; set; }=string.Empty;
         public string oc_fecha { get; set; } = string.Empty;
