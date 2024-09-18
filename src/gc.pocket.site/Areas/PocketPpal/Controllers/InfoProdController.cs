@@ -143,10 +143,11 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 string id = ProductoBase.P_id;
                 if (!id.Equals(InfoProdStkDId))
                 {
-                    InfoProdStkDId = id;
+                    
 
                     var regs = _productoServicio.InfoProductoStkD(id, AdministracionId, TokenCookie).GetAwaiter().GetResult();
                     InfoProdStkDRegs = regs;
+                    InfoProdStkDId = id;
                     grillaDatos = ObtenerInfoProdStkD(regs);
 
                 }
@@ -205,8 +206,6 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 var ids = InfoProdStkBoxesIds;
                 if (!(id.Equals(ids.Item1)))
                 {
-                    InfoProdStkBoxesIds = (id, depo);
-
                     var regs = _productoServicio.InfoProductoStkBoxes(id, AdministracionId, depo, TokenCookie).GetAwaiter().GetResult();
 
                     if (regs == null || regs.Count == 0)
@@ -215,13 +214,15 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     }
                     else
                     {
+                        InfoProdStkBoxesIds = (id, depo);
+                        InfoProdStkBoxesRegs = regs;
                         var data = regs.First();
                         grillaDatos = ObtenerInfoProdStkBox((id, depo));
                     }
                 }
                 else
                 {
-                    grillaDatos = ObtenerInfoProdStkBox(InfoProdStkBoxesIds, true);
+                    grillaDatos = ObtenerInfoProdStkBox((id, depo));
                 }
               
             }
@@ -280,10 +281,10 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                 if (!id.Equals(InfoProdStkAId))
                 {
-                    InfoProdStkAId = id;
 
                     var regs = _productoServicio.InfoProductoStkA(id, "%", TokenCookie).GetAwaiter().GetResult();
-
+                    InfoProdStkAId = id;
+                    InfoProdStkARegs = regs;
                     grillaDatos = ObtenerInfoProdStkA(regs);
                 }
                 else
@@ -343,10 +344,10 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 var ids = InfoProdMovStkIds.Split('#');
                 if (!(id.Equals(ids[0]) && depo.Equals(ids[1]) && tmov.Equals(ids[2]) && fdesde == ids[3].ToDateTime() && fhasta == ids[4].ToDateTime()))
                 {
-                    InfoProdMovStkIds = $"{id}#{depo}#{tmov}#{fdesde}#{fhasta}";
 
                     var regs = _productoServicio.InfoProductoMovStk(id, AdministracionId, depo, tmov, fdesde, fhasta, TokenCookie).GetAwaiter().GetResult();
-
+                    InfoProdMovStkIds = $"{id}#{depo}#{tmov}#{fdesde}#{fhasta}";
+                    InfoProdMovStkRegs = regs ;
                     grillaDatos = ObtenerInfoProdMovStk(regs);
                 }
                 else
@@ -400,10 +401,10 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 string id = ProductoBase.P_id;
                 if (!id.Equals(InfoProdLPId))
                 {
-                    InfoProdLPId = id;
 
                     var regs = _productoServicio.InfoProductoLP(id, TokenCookie).GetAwaiter().GetResult();
-
+                    InfoProdLPId = id;
+                    InfoProdLPRegs= regs;
 
                     grillaDatos = ObtenerInfoProdLP(regs);
                 }

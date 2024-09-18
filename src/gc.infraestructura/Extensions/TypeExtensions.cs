@@ -168,6 +168,10 @@
             return DateTime.TryParse(s, out DateTime value) ? (DateTime?)value : null;
         }
 
+        public static string ToStringJSDate(this DateTime d)
+        {
+            return $"{d.Year}-{d.Month.ToString().PadLeft(2,'0')}-{d.Day.ToString().PadLeft(2, '0')}";
+        }
 
         public static Guid ToGuid(this String s)
         {

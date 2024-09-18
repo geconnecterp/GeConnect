@@ -28,9 +28,9 @@
                     <td>
                         <div class="d-flex justify-content-between">
                             <div class="d-flex flex-column">
-                                <div class="p-0">@item.P_id @item.P_desc | Pedido: @item.Pedido</div>
+                                <div class="p-0">@item.P_id @item.P_desc | <strong>Pedido: @item.Pedido</strong></div>
                                 <div class="p-0">Box @item.Box_id Rub @item.Rub_id</div>
-                                <div class="p-0"><strong>Cantidad: @item.Pedido</strong></div>
+                                <div class="p-0"><strong>Cantidad: @item.Colectado</strong></div>
                             </div>
                             <div class="d-flex align-items-sm-center">
                                 <a asp-action="TIValidaProducto" asp-controller="trint" asp-area="pocketppal" asp-route-pId="@item.P_id" class="btn btn-sm btn-success btnBarcode"><i class="bx bx-barcode"></i></a>

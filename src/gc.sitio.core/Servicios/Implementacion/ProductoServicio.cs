@@ -23,7 +23,7 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string BUSCAR_PROD = "/ProductoBuscar";
         private const string BUSCAR_LISTA = "/ProductoListaBuscar";
         private const string INFOPROD_STKD = "/InfoProductoStkD";
-        private const string INFOPROD_StkBoxes = "/InfoProductoStkA";
+        private const string INFOPROD_StkBoxes = "/InfoProductoStkBoxes";
         private const string INFOPROD_STKA = "/InfoProductoStkA";
         private const string INFOPROD_MovStk = "/InfoProductoMovStk";
         private const string INFOPROD_LP = "/InfoProductoLP";
@@ -197,7 +197,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             HttpClient client = helper.InicializaCliente(token);
             HttpResponseMessage response;
 
-            var link = $"{_appSettings.RutaBase}{RutaAPI}{INFOPROD_StkBoxes}?id={id}&admId={admId}";
+            var link = $"{_appSettings.RutaBase}{RutaAPI}{INFOPROD_STKA}?id={id}&admId={admId}";
 
             response = await client.GetAsync(link);
 

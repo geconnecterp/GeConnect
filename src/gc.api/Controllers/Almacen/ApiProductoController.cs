@@ -185,6 +185,7 @@ namespace gc.api.Controllers.Almacen
 
             return Ok(response);
         }
+
         [HttpGet]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<InfoProdStkA>>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
