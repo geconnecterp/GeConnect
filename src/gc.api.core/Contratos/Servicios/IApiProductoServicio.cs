@@ -11,7 +11,9 @@ namespace gc.api.core.Contratos.Servicios
     public interface IApiProductoServicio : IServicio<Producto>
     {
         ProductoBusquedaDto ProductoBuscar(BusquedaBase busqueda);
-        List<ProductoListaDto> ProductoListaBuscar(BusquedaProducto search);
+        List<ProductoBusquedaDto> ProductoBuscarPorIds(BusquedaBase busqueda);
+
+		List<ProductoListaDto> ProductoListaBuscar(BusquedaProducto search);
 
         List<InfoProdStkD> InfoProductoStkD(string id, string admId);
         List<InfoProdStkBox> InfoProductoStkBoxes(string id, string adm, string depo);
@@ -23,7 +25,9 @@ namespace gc.api.core.Contratos.Servicios
         List<RPRAutoComptesPendientesDto> RPRObtenerComptesPendientes(string adm);
         List<RespuestaDto> RPRCargar(RPRCargarRequest request);
         List<RespuestaDto> RPRElimina(string rp);
-        List<JsonDto> RPREObtenerDatosJsonDesdeRP(string rp);
+        List<RespuestaDto> RPRConfirma(string rp, string adm_id);
+
+		List<JsonDto> RPREObtenerDatosJsonDesdeRP(string rp);
         List<RPRItemVerCompteDto> RPRObtenerDatosVerCompte(string rp);
         List<RPRVerConteoDto> RPRObtenerConteos(string rp);
 	}

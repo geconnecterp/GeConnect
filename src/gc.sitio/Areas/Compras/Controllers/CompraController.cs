@@ -58,13 +58,17 @@ namespace gc.sitio.Areas.Compras.Controllers
 				return RedirectToAction("Login", "Token", new { area = "seguridad" });
 			}
 			ElementoEditado = false;
+			JsonDeRP = null;
+			RPRComprobanteDeRPSeleccionado = null;
+			RPRAutorizacionSeleccionada = null;
+			RPRComptesDeRPRegs = null;
 			List<RPRAutoComptesPendientesDto> pendientes;
 			GridCore<RPRAutoComptesPendientesDto> grid;
 			try
 			{
 				pendientes = await _productoServicio.RPRObtenerComptesPendiente(AdministracionId, TokenCookie);
 				RPRAutorizacionesPendientesEnRP = pendientes;
-				ObtenerComprobantesDesdeAutorizacionesPendientes();
+				//ObtenerComprobantesDesdeAutorizacionesPendientes();
 				grid = ObtenerAutorizacionPendienteGrid(pendientes);
 			}
 			catch (Exception ex)
@@ -82,11 +86,14 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				var lista = new List<RPRItemVerCompteDto>();
 				var model = new RPRVerAutoDto();
-				var comptes = RPRComptesDeRPRegs.Where(x => x.Rp == rp).ToList();
+				JsonDeRPVerCompte = ObtenerComprobantesDesdeJson(rp).Result;
+				var adms = _tiposComprobantesServicio.BuscarTiposComptesPorCuenta(JsonDeRPVerCompte.encabezado.First().Cta_id, TokenCookie).GetAwaiter().GetResult();
+				TiposComprobantePorCuenta = adms;
+				RPRComptesDeRPRegs = CargarComprobantesDeRPDesdeJson(JsonDeRPVerCompte.encabezado);
+				var comptes = RPRComptesDeRPRegs;
 				model.Comprobantes = comptes;
 				model.ComboDeposito = ComboDepositos();
 				model.Rp = rp;
-				JsonDeRPVerCompte = ObtenerComprobantesDesdeJson(rp).Result;
 				var objeto = JsonDeRPVerCompte.encabezado.FirstOrDefault();
 				var cuenta = await _cuentaServicio.ObtenerListaCuentaComercial(objeto?.Cta_id, TipoCuenta, TokenCookie);
 				var detalleVerCompte = await _productoServicio.RPRObtenerItemVerCompte(rp, TokenCookie);
@@ -273,7 +280,12 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (!string.IsNullOrWhiteSpace(rp))
 				{
 					jsonAux = ObtenerComprobantesDesdeJson(rp).Result;
+					//RPRComptesDeRPRegs = [];
+					var adms = _tiposComprobantesServicio.BuscarTiposComptesPorCuenta(rpSelected.Cta_id, TokenCookie).GetAwaiter().GetResult();
+					TiposComprobantePorCuenta = adms;
 				}
+				//else
+				//	RPRComptesDeRPRegs = [];
 				if (RPRComprobanteDeRPSeleccionado != null && string.IsNullOrEmpty(rp))
 				{
 					model.Cuenta = RPRComprobanteDeRPSeleccionado.cta_id;
@@ -342,7 +354,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		}
 
-		public async Task<IActionResult> VerDetalleDeComprobanteDeRP(string idTipoCompte, string nroCompte, string depoSelec, string notaAuto, string turno, string ponerEnCurso, string ulCantidad, string rp = "", string ctaId = "", char tipoCuenta = char.MinValue)
+		public async Task<IActionResult> VerDetalleDeComprobanteDeRP(string idTipoCompte, string nroCompte, string depoSelec, string notaAuto, string turno, string ponerEnCurso, string ulCantidad, string rp = "", string ctaId = "", char tipoCuenta = char.MinValue, string fechaCompte = "", string monto = "", string descTipoCompte = "")
 		{
 			var compte = new RPRComptesDeRPDto();
 			if (CuentaComercialSeleccionada == null)
@@ -358,7 +370,17 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				compte = RPRComptesDeRPRegs.Where(x => x.Tipo == idTipoCompte && x.NroComprobante == nroCompte && x.Rp == rp).FirstOrDefault();
 			}
-			model.CompteSeleccionado = compte ?? new RPRComptesDeRPDto();
+			if (compte != null && compte != default(RPRComptesDeRPDto))
+			{
+				model.CompteSeleccionado = compte;
+			}
+			else
+			{
+				model.CompteSeleccionado.Fecha = UnixTimeStampToDateTime(fechaCompte).ToString("dd-MM-yyyy"); ;
+				model.CompteSeleccionado.Importe = monto;
+				model.CompteSeleccionado.NroComprobante = nroCompte;
+				model.CompteSeleccionado.TipoDescripcion = descTipoCompte;
+			}
 			model.cta_id = CuentaComercialSeleccionada.Cta_Id;
 			model.ponerEnCurso = bool.Parse(ponerEnCurso);
 			model.Nota = notaAuto;
@@ -422,15 +444,36 @@ namespace gc.sitio.Areas.Compras.Controllers
 			//Traigo los prod del almacenamiento temporal
 			else if (!string.IsNullOrWhiteSpace(tco_id) && !string.IsNullOrWhiteSpace(cm_compte))
 			{
+				if (JsonDeRP == null && RPRAutorizacionSeleccionada != null)
+				{
+					PreCargarJson(RPRAutorizacionSeleccionada.Rp, tco_id, cm_compte);
+				}
+				if (RPRAutorizacionSeleccionada != null && JsonDeRP != null && JsonDeRP.encabezado.FirstOrDefault().Rp != RPRAutorizacionSeleccionada.Rp)
+				{
+					PreCargarJson(RPRAutorizacionSeleccionada.Rp, tco_id, cm_compte);
+				}
 				if (JsonDeRP != null && JsonDeRP.encabezado != null && JsonDeRP.encabezado.Count > 0)
 				{
 					var encTemp = JsonDeRP.encabezado.Where(x => x.Tco_id == tco_id && x.Cm_compte == cm_compte).FirstOrDefault();
-					if (encTemp != null)
+					if (encTemp != null && encTemp.Comprobantes != null)
 					{
-						var listaComprobantesTemp = encTemp.Comprobantes.Where(x => x.Tco_id == tco_id && x.Cm_compte == cm_compte).ToList();
-						foreach (var item in listaComprobantesTemp)
+						var listaIdsDeProductos = encTemp.Comprobantes.Select(x => x.P_id).ToList();
+						var listaString = string.Join("@", listaIdsDeProductos);
+						if (!string.IsNullOrWhiteSpace(listaString))
 						{
-							lista.Add(item.Producto);
+							var listaDeProductosAux = ObtenerDatosDeProductos(listaString);
+							foreach (var item in encTemp.Comprobantes)
+							{
+								if (item.Producto == null)
+								{
+									item.Producto = listaDeProductosAux.Where(x => x.P_id == item.P_id).FirstOrDefault();
+									lista.Add(item.Producto);
+								}
+								else
+								{
+									lista.Add(item.Producto);
+								}
+							}
 						}
 					}
 				}
@@ -515,7 +558,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				}
 				else
 				{
-					RPRComprobanteDeRPSeleccionado = new();
+					//RPRComprobanteDeRPSeleccionado = new();
 					return Json(new { error = false, warn = false, vacio = true, cantidad = 0, msg = "" });
 				}
 			}
@@ -530,7 +573,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public async Task<JsonResult> GuardarDetalleDeComprobanteRP(bool guardado, bool generar)
+		public async Task<JsonResult> GuardarDetalleDeComprobanteRP(bool guardado, bool generar, string ulCantidad = "", string fechaTurno = "", string depoId = "", string nota = "")
 		{
 			try
 			{
@@ -539,15 +582,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 					if (JsonDeRP == null)
 						JsonDeRP = new();
 
-					var listaTemp = new JsonDeRPDto();
-					listaTemp = JsonDeRP;
-
-					JsonEncabezadoDeRPDto encabezado = new();
-					encabezado = ObtenerObjectoParaAlmacenar();
-
 					//Nuevo RP -> lo agrego de pechardi, porque evalúo generar? Porque si es true no tengo que agregar nada, tengo que guardar
 					if (!generar)
 					{
+						var listaTemp = new JsonDeRPDto();
+						listaTemp = JsonDeRP;
+
+						JsonEncabezadoDeRPDto encabezado = new();
+						encabezado = ObtenerObjectoParaAlmacenar();
+
 						if (!listaTemp.encabezado.Exists(x => x.Rp == encabezado.Rp))
 						{
 							listaTemp.encabezado.Add(encabezado);
@@ -583,6 +626,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 					}
 					if (generar)
 					{
+						var aux = JsonDeRP;
+						foreach (var item in aux.encabezado)
+						{
+							item.Ul_cantidad = ulCantidad;
+							item.Depo_id = depoId;
+							item.Nota = nota;
+							item.Turno = fechaTurno;
+						}
+						JsonDeRP = aux;
 						var resultado = CargarNuevoComprobante();
 						if (resultado != null && resultado.resultado == "0") //Genero correctamente el json, limpio variable de sesion de JSON y Detalle de productos
 						{
@@ -639,6 +691,164 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
+		public async Task<JsonResult> BuscarCuentaComercial(string cuenta, char tipo, string vista)
+		{
+			List<CuentaDto> Lista = new();
+			try
+			{
+				if (string.IsNullOrEmpty(cuenta) || string.IsNullOrWhiteSpace(cuenta))
+				{
+					throw new NegocioException("Debe enviar codigo de cuenta");
+				}
+				if (CuentaComercialSeleccionada == null)
+				{
+					Lista = BuscarCuentaComercial(cuenta, tipo).Result;
+				}
+				else if (CuentaComercialSeleccionada.Cta_Id != cuenta)
+				{
+					Lista = BuscarCuentaComercial(cuenta, tipo).Result;
+				}
+				else
+				{
+					Lista.Add(CuentaComercialSeleccionada);
+				}
+				if (Lista.Count == 0)
+				{
+					throw new NegocioException("No se obtuvierion resultados");
+				}
+				if (Lista.Count == 1)
+				{
+					CuentaComercialSeleccionada = Lista[0];
+					return Json(new { error = false, warn = false, unico = true, cuenta = Lista[0] });
+				}
+				return Json(new { error = false, warn = false, unico = false, cuenta = Lista });
+			}
+			catch (NegocioException neg)
+			{
+				return Json(new { error = false, warn = true, msg = neg.Message });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name} cuenta: {cuenta} tipo: {tipo}");
+				return Json(new { error = true, msg = "Algo no fue bien al buscar la cuenta comercial, intente nuevamente mas tarde." });
+			}
+		}
+
+		[HttpPost]
+		public ActionResult ComboTiposComptes(string cuenta)
+		{
+			var adms = _tiposComprobantesServicio.BuscarTiposComptesPorCuenta(cuenta, TokenCookie).GetAwaiter().GetResult();
+			TiposComprobantePorCuenta = adms;
+			var lista = adms.Select(x => new ComboGenDto { Id = x.tco_id, Descripcion = x.tco_desc });
+			var TiposComptes = HelperMvc<ComboGenDto>.ListaGenerica(lista);
+			return PartialView("~/Areas/ControlComun/Views/CuentaComercial/_ctrComboTipoCompte.cshtml", TiposComptes);
+		}
+
+		[HttpPost]
+		public ActionResult ActualizarComprobantesDeRP(string tipo, string nroComprobante)
+		{
+			GridCore<RPRComptesDeRPDto> datosIP;
+			var lista = new List<RPRComptesDeRPDto>();
+			var rp = "";
+			if (RPRComprobanteDeRPSeleccionado != null && RPRComprobanteDeRPSeleccionado != default(RPRDetalleComprobanteDeRP))
+				rp = RPRComprobanteDeRPSeleccionado.CompteSeleccionado.Rp;
+			if (tipo.IsNullOrEmpty())
+			{
+				datosIP = ObtenerGridCore(RPRComptesDeRPRegs);
+			}
+			else if (RPRComptesDeRPRegs.Exists(x => x.Tipo == tipo && x.NroComprobante == nroComprobante && x.Rp == rp))
+			{
+				lista = RPRComptesDeRPRegs.Where(x => x.Tipo != tipo && x.NroComprobante != nroComprobante && x.Rp != rp).ToList();
+				RPRComptesDeRPRegs = lista.Where(x => x.Rp == "").ToList();
+				datosIP = ObtenerGridCore(RPRComptesDeRPRegs);
+			}
+			else
+			{
+				datosIP = ObtenerGridCore(RPRComptesDeRPRegs);
+			}
+			return PartialView("_rprComprobantesDeRP", datosIP);
+		}
+
+		[HttpPost]
+		public ActionResult CargarComprobantesDeRP(string tipo, string tipoDescripcion, string nroComprobante, string fecha, string importe, string rp)
+		{
+			GridCore<RPRComptesDeRPDto> datosIP;
+			var lista = new List<RPRComptesDeRPDto>();
+			var listaProd = new List<ProductoBusquedaDto>();
+			JsonEncabezadoDeRPDto encaTemp;
+
+			if (!string.IsNullOrWhiteSpace(rp) && !string.IsNullOrWhiteSpace(tipo) && !string.IsNullOrWhiteSpace(nroComprobante) && JsonDeRP == null)
+			{
+				PreCargarJson(rp, tipo, nroComprobante);
+			}
+
+			if (string.IsNullOrWhiteSpace(tipo) && string.IsNullOrWhiteSpace(tipoDescripcion) && string.IsNullOrWhiteSpace(nroComprobante) && string.IsNullOrWhiteSpace(fecha) && string.IsNullOrWhiteSpace(importe))
+			{
+				if (RPRComptesDeRPRegs != null)
+					datosIP = ObtenerGridCore(RPRComptesDeRPRegs.Where(x => string.IsNullOrWhiteSpace(x.Rp)).ToList());
+				else
+					datosIP = ObtenerGridCore(new List<RPRComptesDeRPDto>());
+				return PartialView("_rprComprobantesDeRP", datosIP);
+			}
+			else if (!string.IsNullOrWhiteSpace(rp) && RPRComptesDeRPRegs != null && RPRComptesDeRPRegs.Exists(x => x.Rp == rp))
+			{
+				if (!RPRComptesDeRPRegs.Exists(x => x.Rp == rp && x.Tipo == tipo && x.NroComprobante == nroComprobante))
+				{
+					RPRComptesDeRPRegs = CargarComprobanteRP(RPRComptesDeRPRegs, tipo, tipoDescripcion, nroComprobante, fecha, importe, rp);
+					ElementoEditado = true;
+				}
+				datosIP = ObtenerGridCore(RPRComptesDeRPRegs.Where(x => x.Rp == rp).ToList());
+			}
+			else
+			{
+				if (JsonDeRP != null)
+				{
+					RPRComptesDeRPRegs = CargarComprobantesDeRPDesdeJson(JsonDeRP.encabezado);
+				}
+				if (RPRComptesDeRPRegs != null && !RPRComptesDeRPRegs.Exists(x => x.Rp == rp && x.Tipo == tipo && x.NroComprobante == nroComprobante))
+				{
+					RPRComptesDeRPRegs = CargarComprobanteRP(RPRComptesDeRPRegs, tipo, tipoDescripcion, nroComprobante, fecha, importe, rp);
+					ElementoEditado = true;
+				}
+				else if (string.IsNullOrWhiteSpace(rp))
+				{
+					RPRComptesDeRPRegs = CargarComprobanteRP([], tipo, tipoDescripcion, nroComprobante, fecha, importe, rp);
+				}
+				datosIP = ObtenerGridCore(RPRComptesDeRPRegs);
+				//RPRComptesDeRPRegs = CargarComprobanteRP(RPRComptesDeRPRegs, tipo, tipoDescripcion, nroComprobante, fecha, importe, rp);
+				//if (string.IsNullOrWhiteSpace(rp))
+				//	datosIP = ObtenerGridCore(RPRComptesDeRPRegs.Where(x => string.IsNullOrWhiteSpace(x.Rp)).ToList());
+				//else
+				//	datosIP = ObtenerGridCore(RPRComptesDeRPRegs.Where(x => x.Rp == rp).ToList());
+			}
+			return PartialView("_rprComprobantesDeRP", datosIP);
+		}
+
+		[HttpPost]
+		public async Task<JsonResult> ConfirmarRPR(string rp)
+		{
+			var respuesta = new List<RespuestaDto>();
+			try
+			{
+				respuesta = await _productoServicio.RPRConfirmarRPR(rp, AdministracionId, TokenCookie);
+				var resultado = respuesta.First();
+				if (resultado.resultado == "0")
+				{
+					return Json(new { error = false, warn = false, msg = "RPR Confirmado con éxito.", codigo = resultado.resultado });
+				}
+				else
+				{
+					return Json(new { error = false, warn = true, msg = resultado.resultado_msj, codigo = resultado.resultado });
+				}
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.Message, codigo = 9999 });
+			}
+
+		}
+
+		#region Métodos privados
 		private JsonEncabezadoDeRPDto ObtenerObjectoParaAlmacenar()
 		{
 			try
@@ -695,119 +905,24 @@ namespace gc.sitio.Areas.Compras.Controllers
 			Lista = await _cuentaServicio.ObtenerListaCuentaComercial(cuenta, tipo, TokenCookie);
 			return Lista;
 		}
-
-		public async Task<JsonResult> BuscarCuentaComercial(string cuenta, char tipo, string vista)
+		private List<RPRComptesDeRPDto> CargarComprobantesDeRPDesdeJson(List<JsonEncabezadoDeRPDto> encabezados)
 		{
-			List<CuentaDto> Lista = new();
-			try
-			{
-				if (string.IsNullOrEmpty(cuenta) || string.IsNullOrWhiteSpace(cuenta))
-				{
-					throw new NegocioException("Debe enviar codigo de cuenta");
-				}
-				if (CuentaComercialSeleccionada == null)
-				{
-					Lista = BuscarCuentaComercial(cuenta, tipo).Result;
-				}
-				else if (CuentaComercialSeleccionada.Cta_Id != cuenta)
-				{
-					Lista = BuscarCuentaComercial(cuenta, tipo).Result;
-				}
-				else
-				{
-					Lista.Add(CuentaComercialSeleccionada);
-				}
-				if (Lista.Count == 0)
-				{
-					throw new NegocioException("No se obtuvierion resultados");
-				}
-				if (Lista.Count == 1)
-				{
-					CuentaComercialSeleccionada = Lista[0];
-					return Json(new { error = false, warn = false, unico = true, cuenta = Lista[0] });
-				}
-				return Json(new { error = false, warn = false, unico = false, cuenta = Lista });
-			}
-			catch (NegocioException neg)
-			{
-				return Json(new { error = false, warn = true, msg = neg.Message });
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name} cuenta: {cuenta} tipo: {tipo}");
-				return Json(new { error = true, msg = "Algo no fue bien al buscar la cuenta comercial, intente nuevamente mas tarde." });
-			}
-		}
-
-		[HttpPost]
-		public ActionResult ComboTiposComptes(string cuenta)
-		{
-			var adms = _tiposComprobantesServicio.BuscarTiposComptesPorCuenta(cuenta, TokenCookie).GetAwaiter().GetResult();
-			var lista = adms.Select(x => new ComboGenDto { Id = x.tco_id, Descripcion = x.tco_desc });
-			var TiposComptes = HelperMvc<ComboGenDto>.ListaGenerica(lista);
-			return PartialView("~/Areas/ControlComun/Views/CuentaComercial/_ctrComboTipoCompte.cshtml", TiposComptes);
-		}
-
-		[HttpPost]
-		public ActionResult ActualizarComprobantesDeRP(string tipo, string nroComprobante)
-		{
-			GridCore<RPRComptesDeRPDto> datosIP;
 			var lista = new List<RPRComptesDeRPDto>();
-			if (tipo.IsNullOrEmpty())
+			foreach (var item in encabezados)
 			{
-				datosIP = ObtenerGridCore(RPRComptesDeRPRegs);
-			}
-			else if (RPRComptesDeRPRegs.Exists(x => x.Tipo == tipo && x.NroComprobante == nroComprobante))
-			{
-				lista = RPRComptesDeRPRegs.Where(x => x.Tipo != tipo && x.NroComprobante != nroComprobante).ToList();
-				RPRComptesDeRPRegs = lista;
-				datosIP = ObtenerGridCore(RPRComptesDeRPRegs);
-			}
-			else
-			{
-				datosIP = ObtenerGridCore(RPRComptesDeRPRegs);
-			}
-			return PartialView("_rprComprobantesDeRP", datosIP);
-		}
-
-		[HttpPost]
-		public ActionResult CargarComprobantesDeRP(string tipo, string tipoDescripcion, string nroComprobante, string fecha, string importe, string rp)
-		{
-			GridCore<RPRComptesDeRPDto> datosIP;
-			var lista = new List<RPRComptesDeRPDto>();
-			var listaProd = new List<ProductoBusquedaDto>();
-			JsonEncabezadoDeRPDto encaTemp;
-
-			if (!string.IsNullOrWhiteSpace(rp) && !string.IsNullOrWhiteSpace(tipo) && !string.IsNullOrWhiteSpace(nroComprobante))
-			{
-				PreCargarJson(rp, tipo, nroComprobante);
-			}
-
-			if (string.IsNullOrWhiteSpace(tipo) && string.IsNullOrWhiteSpace(tipoDescripcion) && string.IsNullOrWhiteSpace(nroComprobante) && string.IsNullOrWhiteSpace(fecha) && string.IsNullOrWhiteSpace(importe))
-			{
-				datosIP = ObtenerGridCore(RPRComptesDeRPRegs.Where(x => string.IsNullOrWhiteSpace(x.Rp)).ToList());
-				return PartialView("_rprComprobantesDeRP", datosIP);
-			}
-			else if (!string.IsNullOrWhiteSpace(rp) && RPRComptesDeRPRegs.Exists(x => x.Rp == rp))
-			{
-				if (!RPRComptesDeRPRegs.Exists(x => x.Rp == rp && x.Tipo == tipo && x.NroComprobante == nroComprobante))
+				var comprobante = item.Comprobantes.FirstOrDefault();
+				lista.Add(new RPRComptesDeRPDto()
 				{
-					RPRComptesDeRPRegs = CargarComprobanteRP(RPRComptesDeRPRegs, tipo, tipoDescripcion, nroComprobante, fecha, importe, rp);
-				}
-				datosIP = ObtenerGridCore(RPRComptesDeRPRegs.Where(x => x.Rp == rp).ToList());
+					Fecha = comprobante.Cm_fecha,
+					Importe = comprobante.Cm_importe,
+					NroComprobante = comprobante.Cm_compte,
+					Rp = item.Rp,
+					Tipo = comprobante.Tco_id,
+					TipoDescripcion = string.IsNullOrEmpty(comprobante.Tco_desc) ? TiposComprobantePorCuenta.Where(x => x.tco_id == comprobante.Tco_id).Select(y => y.tco_desc).First() : comprobante.Tco_desc
+				});
 			}
-			else
-			{
-				RPRComptesDeRPRegs = CargarComprobanteRP(RPRComptesDeRPRegs, tipo, tipoDescripcion, nroComprobante, fecha, importe, rp);
-				if (string.IsNullOrWhiteSpace(rp))
-					datosIP = ObtenerGridCore(RPRComptesDeRPRegs.Where(x => string.IsNullOrWhiteSpace(x.Rp)).ToList());
-				else
-					datosIP = ObtenerGridCore(RPRComptesDeRPRegs.Where(x => x.Rp == rp).ToList());
-			}
-			return PartialView("_rprComprobantesDeRP", datosIP);
+			return lista;
 		}
-
-		#region Métodos privados
 		private void PreCargarJson(string rp, string tipo, string nroComprobante)
 		{
 			JsonEncabezadoDeRPDto encaTemp;
@@ -817,32 +932,34 @@ namespace gc.sitio.Areas.Compras.Controllers
 				var objeto = ObtenerComprobantesDesdeJson(rp).Result;
 				if (objeto != null)
 				{
-					var listaEncaTemp = objeto.encabezado;
-					if (listaEncaTemp != null && listaEncaTemp.Count > 0)
-					{
-						if (listaEncaTemp.Count == 1)
-						{
-							encaTemp = listaEncaTemp.First();
-							if (encaTemp.Comprobantes != null && encaTemp.Comprobantes.Count > 0)
-							{
-								var existe = false;
-								if (JsonDeRP != null)
-									existe = JsonDeRP.encabezado.Exists(x => x.Rp == rp && x.Tco_id == tipo && x.Cm_compte == nroComprobante);
-								if (!existe)
-								{
-									foreach (var item in encaTemp.Comprobantes)
-									{
-										var prodAux = ObtenerDatosDeProducto(item.P_id);
-										listaProd.Add(prodAux);
-										item.Producto = prodAux;
-									}
-									RPRDetalleDeProductosEnRP = listaProd;
-								}
-								if (JsonDeRP == null)
-									JsonDeRP = objeto;
-							}
-						}
-					}
+					JsonDeRP = objeto;
+					//TODO Revisar este codigo comentado
+					//var listaEncaTemp = objeto.encabezado;
+					//if (listaEncaTemp != null && listaEncaTemp.Count > 0)
+					//{
+					//	if (listaEncaTemp.Count == 1)
+					//	{
+					//		encaTemp = listaEncaTemp.First();
+					//		if (encaTemp.Comprobantes != null && encaTemp.Comprobantes.Count > 0)
+					//		{
+					//			var existe = false;
+					//			if (JsonDeRP != null)
+					//				existe = JsonDeRP.encabezado.Exists(x => x.Rp == rp && x.Tco_id == tipo && x.Cm_compte == nroComprobante);
+					//			if (!existe)
+					//			{
+					//				foreach (var item in encaTemp.Comprobantes)
+					//				{
+					//					var prodAux = ObtenerDatosDeProducto(item.P_id);
+					//					listaProd.Add(prodAux);
+					//					item.Producto = prodAux;
+					//				}
+					//				RPRDetalleDeProductosEnRP = listaProd;
+					//			}
+					//			if (JsonDeRP == null)
+					//				JsonDeRP = objeto;
+					//		}
+					//	}
+					//}
 				}
 			}
 		}
@@ -896,6 +1013,26 @@ namespace gc.sitio.Areas.Compras.Controllers
 			};
 
 			return _productoServicio.BusquedaBaseProductos(buscar, TokenCookie).Result;
+		}
+
+		/// <summary>
+		/// Metodo que recibe como parametro los id de productos separados por @
+		/// </summary>
+		/// <param name="p_idLista"></param>
+		/// <returns>Lista de productos</returns>
+		private List<ProductoBusquedaDto> ObtenerDatosDeProductos(string p_idLista)
+		{
+			ProductoBusquedaDto producto = new ProductoBusquedaDto { P_id = "0000-0000" };
+			BusquedaBase buscar = new()
+			{
+				Administracion = AdministracionId,
+				Busqueda = p_idLista,
+				DescuentoCli = 0,
+				ListaPrecio = "",
+				TipoOperacion = ""
+			};
+
+			return _productoServicio.BusquedaBaseProductosPorIds(buscar, TokenCookie).Result;
 		}
 
 		private RespuestaDto CargarNuevoComprobante()
@@ -962,6 +1099,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private List<RPRComptesDeRPDto> CargarComprobanteRP(List<RPRComptesDeRPDto> listaEnSesion, string tipo, string tipoDescripcion, string nroComprobante, string fecha, string importe, string rp)
 		{
 			var lista = listaEnSesion;
+			if (rp == null)
+				rp = "";
 			var nuevo = new RPRComptesDeRPDto()
 			{
 				Tipo = tipo,

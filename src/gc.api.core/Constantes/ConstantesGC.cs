@@ -19,8 +19,9 @@
             public const string SP_RUBRO_LISTA = "dbo.SPGECO_Rubros_lista";
 
             public const string SP_PRODUCTO_BUSQUEDA = "dbo.spgeco_p_busqueda";
+			public const string SP_PRODUCTO_BUSQUEDA_MUCHOS = "dbo.spgeco_p_busqueda_muchos";
 
-            public const string SP_INFOPROD_STKD = "dbo.spgeco_p_info_stk_depo";
+			public const string SP_INFOPROD_STKD = "dbo.spgeco_p_info_stk_depo";
             public const string SP_INFOPROD_STKBOX = "dbo.spgeco_p_info_stk_box";
             public const string SP_INFOPROD_STKA = "dbo.spgeco_p_info_stk_adm";
             public const string SP_INFOPROD_MOVSTK = "dbo.spgeco_p_info_mov_stk";
@@ -41,7 +42,7 @@
 			public const string SP_RPR_DATOS_JSON = "spgeco_rpr_datos_json";
 			public const string SP_RPR_VER_COMPTES = "spgeco_rpr_ver_comptes";
 			public const string SP_RPR_VER_CONTEOS = "spgeco_rpr_ver_conteos";
-
+			public const string SP_RPR_CONFIRMA = "spgeco_rpr_confirmar";
 
 			public const string SP_CUENTA_BUSQUEDA = "dbo.spgeco_c_busqueda_lista";
 

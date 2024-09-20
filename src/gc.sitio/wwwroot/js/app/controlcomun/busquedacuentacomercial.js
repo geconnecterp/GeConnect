@@ -14,6 +14,7 @@
 		}
 	}
 	dateControl.value = local;
+	$("#dtpFechaTurno").val(local);
 	$("#btnBuscarCC").on("click", buscarCuentasComercial);
 	InicializaPantallaCC();
 	$("#VerDetalle").on("click", VerDetalleClick);
@@ -126,8 +127,14 @@ function ActualizarLinkBotonVerDetalle() {
 	var ponerEnCurso = $("#chkPonerEnCurso")[0].checked;
 	var ul = $("#txtCantidadUL").val();
 	var rp = $("#Rp").val();
-	var cta = $("#CtaId").val();
-	var link = VerDetalleDeCompteDeRPUrl + "?idTipoCompte=" + $("#idTipoCompteDeRPSelected").val() + "&nroCompte=" + $("#txtNroCompte").val() + "&depoSelec=" + depoSelec + "&notaAuto=" + notaAuto + "&turno=" + turno + "&ponerEnCurso=" + ponerEnCurso + "&ulCantidad=" + ul + "&rp=" + rp + "&ctaId=" + cta + "&tipoCuenta=" + tipoCuenta;
+	var tipoCompte = $("#idTipoCompteDeRPSelected").val();
+	var nroCompte = $("#txtNroCompte").val();
+	var rp = $("#Rp").val();
+	var fechaCompte = moment($("#fechaCompteDeRPSelected").val()).format("X");
+	var monto = $("#txtMonto").val();
+	var descTipoCompte = $("#descTipoCompteDeRPSelected").val();
+	var cta = $("#Cuenta").val();
+	var link = VerDetalleDeCompteDeRPUrl + "?idTipoCompte=" + tipoCompte + "&nroCompte=" + nroCompte + "&depoSelec=" + depoSelec + "&notaAuto=" + notaAuto + "&turno=" + turno + "&ponerEnCurso=" + ponerEnCurso + "&ulCantidad=" + ul + "&rp=" + rp + "&ctaId=" + cta + "&tipoCuenta=" + tipoCuenta + "&fechaCompte=" + fechaCompte + "&monto=" + monto + "&descTipoCompte" + descTipoCompte;
 	$("#VerDetalle").prop("href", link);
 }
 
@@ -135,7 +142,8 @@ function CargarCompteEnGrilla(obj) {
 	if (obj != null) {
 		console.log("CargarCompteEnGrilla (135): " + obj.fechaTurno.substring(0, 10));
 		$("#txtCantidadUL").val(obj.cantidadUL);
-		$("#dtpFechaTurno").val(obj.fechaTurno.substring(0, 10));
+		if (obj.fechaTurno !== "")
+			$("#dtpFechaTurno").val(obj.fechaTurno.substring(0, 10));
 		if (obj.compte != null && obj.compte.tipo != "") {
 			comptesDeRPGrid(obj.compte.tipo, obj.compte.tipoDescripcion, obj.compte.nroComprobante, obj.compte.fecha, obj.compte.importe, obj.rp);
 		}
@@ -232,8 +240,12 @@ function RegresarASelAuto() {
 }
 
 function GuardarDetalleDeProductos(guardado) {
+	var ulCantidad = $("#txtCantidadUL").val();
+	var fechaTurno = $("#dtpFechaTurno").val();
+	var depoId = $("#listaDeposito").val();
+	var nota = $("#txtNota").val();
 	var generar = true;
-	datos = { guardado, generar };
+	datos = { guardado, generar, ulCantidad, fechaTurno, depoId, nota };
 	PostGen(datos, GuardarDetalleDeComprobanteRPUrl, function (o) {
 		if (o.error === true) {
 			AbrirMensaje("Atención", o.msg, function () {
@@ -468,13 +480,20 @@ function selectCompteDeRPRow(x) {
 	$("#tco_id").val(x.cells[0].innerText.trim());
 	$("#idTipoCompteDeRPSelected").val(x.cells[0].innerText.trim());
 	$("#nroCompteDeRPSelected").val(x.cells[2].innerText.trim());
+	$("#fechaCompteDeRPSelected").val(x.cells[3].innerText.trim());
+	$("#descTipoCompteDeRPSelected").val(x.cells[1].innerText.trim());
+	var tipoCompte = x.cells[0].innerText.trim();
+	var descTipoCompte = x.cells[1].innerText.trim();
+	var nroCompte = x.cells[2].innerText.trim();
+	var monto = x.cells[4].innerText.trim();
+	var fechaCompte = moment($("#fechaCompteDeRPSelected").val()).format("X");
 	var depoSelec = $("#listaDeposito").val();
 	var notaAuto = $("#txtNota").val();
 	var turno = moment($("#dtpFechaTurno").val()).format("X");
 	var ponerEnCurso = $("#chkPonerEnCurso")[0].checked;
 	var ul = $("#txtCantidadUL").val();
 	var rp = $("#Rp").val();
-	var cta = $("#CtaId").val();
-	var link = VerDetalleDeCompteDeRPUrl + "?idTipoCompte=" + $("#idTipoCompteDeRPSelected").val() + "&nroCompte=" + $("#nroCompteDeRPSelected").val() + "&depoSelec=" + depoSelec + "&notaAuto=" + notaAuto + "&turno=" + turno + "&ponerEnCurso=" + ponerEnCurso + "&ulCantidad=" + ul + "&rp=" + rp + "&ctaId=" + cta + "&tipoCuenta=" + tipoCuenta;
+	var cta = $("#Cuenta").val();
+	var link = VerDetalleDeCompteDeRPUrl + "?idTipoCompte=" + tipoCompte + "&nroCompte=" + nroCompte + "&depoSelec=" + depoSelec + "&notaAuto=" + notaAuto + "&turno=" + turno + "&ponerEnCurso=" + ponerEnCurso + "&ulCantidad=" + ul + "&rp=" + rp + "&ctaId=" + cta + "&tipoCuenta=" + tipoCuenta + "&fechaCompte=" + fechaCompte + "&monto=" + monto + "&descTipoCompte" + descTipoCompte;
 	$("#VerDetalle").prop("href", link);
 }

@@ -12,6 +12,7 @@
 	}
 
 	$("#btnRegresarAAutorizacionesRP").on("click", RegresarASelAuto); //Regregar a la pantalla de seleccion de autorizaciones.
+	$("#btnConfirmarRP").on("click", ConfirmarRP);
 	CargarDetalleDeConteos();
 	SeleccionarDeposito();
 });
@@ -31,6 +32,34 @@ function CargarDetalleDeConteos() {
 		CerrarWaiting();
 		return true
 	})
+}
+
+function ConfirmarRP() {
+	var rp = $("#Rp").val();
+	var datos = { rp };
+	PostGen(datos, confirmarRPRUrl, function (o) {
+		if (o.error === true) {
+			AbrirMensaje("Atención", o.msg, function () {
+				$("#msjModal").modal("hide");
+				window.location.href = volverAListaDeAutorizacionesUrl;
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		} else if (o.warn === true) {
+			AbrirMensaje("Atención", o.msg, function () {
+				$("#msjModal").modal("hide");
+				window.location.href = volverAListaDeAutorizacionesUrl;
+				return true;
+			}, false, ["Aceptar"], "warn!", null);
+		} else if (o.codigo !== "") {
+			AbrirMensaje("Atención", o.msg, function (e) {
+				$("#msjModal").modal("hide");
+				window.location.href = volverAListaDeAutorizacionesUrl;
+				return true;
+			}, false, ["Aceptar"], "info!", null);
+		} else {
+			window.location.href = volverAListaDeAutorizacionesUrl;
+		}
+	});
 }
 
 function RegresarASelAuto() {

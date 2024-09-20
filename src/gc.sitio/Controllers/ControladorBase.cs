@@ -226,6 +226,23 @@ namespace gc.sitio.Controllers
 		#endregion
 
 		#region COMPRAS
+		public List<TipoComprobanteDto> TiposComprobantePorCuenta
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("TiposComprobantePorCuenta");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<TipoComprobanteDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("TiposComprobantePorCuenta", json);
+			}
+		}
 		public CuentaDto CuentaComercialSeleccionada
 		{
 			get

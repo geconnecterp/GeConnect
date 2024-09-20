@@ -235,6 +235,24 @@ namespace gc.api.core.Servicios
 			}
 		}
 
+		public List<ProductoBusquedaDto> ProductoBuscarPorIds(BusquedaBase busqueda)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PRODUCTO_BUSQUEDA_MUCHOS;
+
+			var ps = new List<SqlParameter>()
+			{
+					new SqlParameter("@lista",busqueda.Busqueda),
+					new SqlParameter("@lp_id",busqueda.ListaPrecio?? ""),
+					new SqlParameter("@adm_id",busqueda.Administracion),
+					new SqlParameter("co_tipo",busqueda.TipoOperacion),
+					new SqlParameter("cli_dto",busqueda.DescuentoCli)
+			};
+
+			List<ProductoBusquedaDto> producto = _repository.EjecutarLstSpExt<ProductoBusquedaDto>(sp, ps, true);
+
+			return producto;
+		}
+
 		public List<ProductoListaDto> ProductoListaBuscar(BusquedaProducto search)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PRODUCTO_BUSQUEDA;
@@ -292,6 +310,19 @@ namespace gc.api.core.Servicios
 			var ps = new List<SqlParameter>()
 			{
 				new("@rp",rp),
+			};
+			List<RespuestaDto> productos = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+
+			return productos;
+		}
+
+		public List<RespuestaDto> RPRConfirma(string rp, string adm_id)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_CONFIRMA;
+			var ps = new List<SqlParameter>()
+			{
+				new("@rp",rp),
+				new("@adm_id",adm_id),
 			};
 			List<RespuestaDto> productos = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 

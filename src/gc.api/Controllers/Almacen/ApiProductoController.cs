@@ -156,7 +156,22 @@ namespace gc.api.Controllers.Almacen
             return Ok(response);
         }
 
-        [HttpGet]
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoBusquedaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ProductoBuscarPorIds([FromQuery] BusquedaBase search)
+		{
+			ApiResponse<List<ProductoBusquedaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.ProductoBuscarPorIds(search);
+
+			response = new ApiResponse<List<ProductoBusquedaDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<InfoProdStkD>>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
@@ -271,6 +286,21 @@ namespace gc.api.Controllers.Almacen
 			ApiResponse<List<RespuestaDto>> response;
 			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
 			var res = _productosSv.RPRElimina(rp);
+
+			response = new ApiResponse<List<RespuestaDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RespuestaDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult RPRConfirma(RPRAConfirmarRequest request)
+		{
+			ApiResponse<List<RespuestaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.RPRConfirma(request.rp, request.adm_id);
 
 			response = new ApiResponse<List<RespuestaDto>>(res);
 

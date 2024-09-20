@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Net;
+using System.Runtime.Intrinsics.Arm;
 
 namespace gc.sitio.core.Servicios.Implementacion
 {
@@ -21,7 +22,8 @@ namespace gc.sitio.core.Servicios.Implementacion
     {
         private const string RutaAPI = "/api/apiproducto";
         private const string BUSCAR_PROD = "/ProductoBuscar";
-        private const string BUSCAR_LISTA = "/ProductoListaBuscar";
+		private const string BUSCAR_PROD_POR_IDS = "/ProductoBuscarPorIds";
+		private const string BUSCAR_LISTA = "/ProductoListaBuscar";
         private const string INFOPROD_STKD = "/InfoProductoStkD";
         private const string INFOPROD_StkBoxes = "/InfoProductoStkBoxes";
         private const string INFOPROD_STKA = "/InfoProductoStkA";
@@ -33,6 +35,7 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string RPRREGISTRAR = "/RPRRegistrar";
 		private const string RPRCARGAR = "/RPRCargar";
 		private const string RPRELIMINA = "/RPRElimina";
+		private const string RPRCONFIRMA = "/RPRConfirma";
 		private const string RPROBTENERJSON = "/RPRObtenerJson";
 		private const string RPROBTENERDATOSVERCOMPTE = "/RPRObtenerItemVerCompte";
         private const string RPROBTENERDATOSVERCONTEOS = "/RPRObtenerVerConteos";
@@ -92,7 +95,40 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-        public async Task<List<ProductoListaDto>> BusquedaListaProductos(BusquedaProducto busqueda, string token)
+		public async Task<List<ProductoBusquedaDto>> BusquedaBaseProductosPorIds(BusquedaBase busqueda, string token)
+		{
+			ApiResponse<List<ProductoBusquedaDto>> apiResponse;
+
+			HelperAPI helper = new HelperAPI();
+
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+			string parametros = EvaluarEntidad4Link(busqueda);
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{BUSCAR_PROD_POR_IDS}?{parametros}";
+
+			response = await client.GetAsync(link);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API no devolvió dato alguno. Parametro de busqueda {parametros}");
+					return new List<ProductoBusquedaDto>();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProductoBusquedaDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new List<ProductoBusquedaDto>();
+
+			}
+		}
+
+		public async Task<List<ProductoListaDto>> BusquedaListaProductos(BusquedaProducto busqueda, string token)
         {
             ApiResponse<List<ProductoListaDto>> apiResponse;
 
@@ -427,6 +463,38 @@ namespace gc.sitio.core.Servicios.Implementacion
 
 			var link = $"{_appSettings.RutaBase}{RutaAPI}{RPRELIMINA}?rp={rp}";
 			response = await client.DeleteAsync(link);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros rp:{rp}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<RespuestaDto>> RPRConfirmarRPR(string rp, string adm_id, string token)
+		{
+			ApiResponse<List<RespuestaDto>> apiResponse;
+
+			HelperAPI helper = new HelperAPI();
+			RPRAConfirmarRequest request = new() { rp = rp, adm_id = adm_id };
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{RPRCONFIRMA}";
+
+			response = await client.PostAsync(link, contentData);
 
 			if (response.StatusCode == HttpStatusCode.OK)
 			{
