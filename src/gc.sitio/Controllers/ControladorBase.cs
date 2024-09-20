@@ -3,6 +3,7 @@ using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.CuentaComercial;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq.Dynamic.Core;
+using X.PagedList;
 
 namespace gc.sitio.Controllers
 {
@@ -433,6 +435,11 @@ namespace gc.sitio.Controllers
 		//        _context.HttpContext.Response.Redirect(Url.Action("Login", "Token", new { area = "seguridad" }), true);
 		//    }
 		//}
+		public GridCore<T> ObtenerGridCore<T>(List<T> lista) where T : Dto
+		{
+			var listaDetalle = new StaticPagedList<T>(lista, 1, 999, lista.Count);
+			return new GridCore<T>() { ListaDatos = listaDetalle, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
+		}
 		#endregion
 	}
 }

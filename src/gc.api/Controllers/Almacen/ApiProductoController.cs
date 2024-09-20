@@ -10,8 +10,9 @@ namespace gc.api.Controllers.Almacen
     using gc.infraestructura.Dtos.Almacen;
     using gc.infraestructura.Dtos.Almacen.Rpr;
     using gc.infraestructura.Dtos.Almacen.Tr;
-    using gc.infraestructura.Dtos.CuentaComercial;
-    using gc.infraestructura.Dtos.Gen;
+	using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
+	using gc.infraestructura.Dtos.CuentaComercial;
+	using gc.infraestructura.Dtos.Gen;
     using gc.infraestructura.Dtos.Productos;
     using gc.infraestructura.EntidadesComunes.Options;
     using Microsoft.AspNetCore.Authorization;
@@ -430,12 +431,24 @@ namespace gc.api.Controllers.Almacen
             return Ok(response);
         }
 
-        /// <summary>
-        /// Método destinado a validar la estructura del Json antes de ser enviado a la base de datos
-        /// </summary>
-        /// <param name = "json" ></ param >
-        /// < returns ></ returns >
-        private bool JsonValido(string json)
+		[HttpPost]
+		[Route("[action]")]
+		public IActionResult ObtenerTRPendientes(ObtenerTRPendientesRequest request)
+		{
+			if (request == null) return BadRequest("No se recepcionaron los datos");
+
+			List<TRPendienteDto> resp = _productosSv.ObtenerTRPendientes(request);
+
+			var response = new ApiResponse<List<TRPendienteDto>>(resp);
+			return Ok(response);
+		}
+
+		/// <summary>
+		/// Método destinado a validar la estructura del Json antes de ser enviado a la base de datos
+		/// </summary>
+		/// <param name = "json" ></ param >
+		/// < returns ></ returns >
+		private bool JsonValido(string json)
         {
             try
             {

@@ -54,8 +54,9 @@
             public const string SP_TR_Lista_Productos = "SPGECO_TR_Lista_Productos";
             public const string SP_TR_Carrito_Valida = "SPGECO_TR_Carrito_Valida";
             public const string SP_TR_Carrito_Carga = "SPGECO_TR_Carrito_Carga";
+			public const string SP_TR_Pendientes = "SPGECO_TR_Pendientes";
 
-            public const string SP_TI_VALIDA_USUARIO = "SPGECO_USU_OK";
+			public const string SP_TI_VALIDA_USUARIO = "SPGECO_USU_OK";
 
         }
 

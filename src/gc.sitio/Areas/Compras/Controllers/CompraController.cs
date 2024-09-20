@@ -12,12 +12,10 @@ using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-//using System.Data;
 using System.Reflection;
 using X.PagedList;
 
@@ -50,6 +48,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return View();
 		}
 
+		#region RECEPCION DE PROVEEDORES - Métodos públicos
 		public async Task<IActionResult> RPRAutorizacionesLista()
 		{
 			var auth = EstaAutenticado;
@@ -68,7 +67,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				pendientes = await _productoServicio.RPRObtenerComptesPendiente(AdministracionId, TokenCookie);
 				RPRAutorizacionesPendientesEnRP = pendientes;
-				//ObtenerComprobantesDesdeAutorizacionesPendientes();
 				grid = ObtenerAutorizacionPendienteGrid(pendientes);
 			}
 			catch (Exception ex)
@@ -284,8 +282,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 					var adms = _tiposComprobantesServicio.BuscarTiposComptesPorCuenta(rpSelected.Cta_id, TokenCookie).GetAwaiter().GetResult();
 					TiposComprobantePorCuenta = adms;
 				}
-				//else
-				//	RPRComptesDeRPRegs = [];
 				if (RPRComprobanteDeRPSeleccionado != null && string.IsNullOrEmpty(rp))
 				{
 					model.Cuenta = RPRComprobanteDeRPSeleccionado.cta_id;
@@ -293,7 +289,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 					model.FechaTurno = !string.IsNullOrWhiteSpace(RPRComprobanteDeRPSeleccionado.FechaTurno) ? Convert.ToDateTime(RPRComprobanteDeRPSeleccionado.FechaTurno).ToString("yyyy-MM-dd") : DateTime.Now.ToString("yyyy-MM-dd");
 					model.Depo_id = RPRComprobanteDeRPSeleccionado.Depo_id;
 					model.CantidadUL = !string.IsNullOrWhiteSpace(RPRComprobanteDeRPSeleccionado.Ul_cantidad) ? Convert.ToInt32(RPRComprobanteDeRPSeleccionado.Ul_cantidad) : 0;
-					//model.rp = rp;
 				}
 				else if (RPRAutorizacionSeleccionada != null)
 				{
@@ -327,7 +322,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 						model.FechaTurno = !string.IsNullOrWhiteSpace(RPRComprobanteDeRPSeleccionado?.FechaTurno) ? Convert.ToDateTime(RPRComprobanteDeRPSeleccionado.FechaTurno).ToString("yyyy-MM-dd") : RPRAutorizacionSeleccionada.Fecha.ToString("yyyy-MM-dd");
 						model.Depo_id = !string.IsNullOrWhiteSpace(RPRComprobanteDeRPSeleccionado?.Depo_id) ? RPRComprobanteDeRPSeleccionado?.Depo_id : "0";
 						model.CantidadUL = !string.IsNullOrWhiteSpace(RPRComprobanteDeRPSeleccionado?.Ul_cantidad) ? Convert.ToInt32(RPRComprobanteDeRPSeleccionado?.Ul_cantidad) : 0;
-						//model.rp = rp;
 					}
 				}
 				if (rp == null)
@@ -558,7 +552,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 				}
 				else
 				{
-					//RPRComprobanteDeRPSeleccionado = new();
 					return Json(new { error = false, warn = false, vacio = true, cantidad = 0, msg = "" });
 				}
 			}
@@ -815,11 +808,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 					RPRComptesDeRPRegs = CargarComprobanteRP([], tipo, tipoDescripcion, nroComprobante, fecha, importe, rp);
 				}
 				datosIP = ObtenerGridCore(RPRComptesDeRPRegs);
-				//RPRComptesDeRPRegs = CargarComprobanteRP(RPRComptesDeRPRegs, tipo, tipoDescripcion, nroComprobante, fecha, importe, rp);
-				//if (string.IsNullOrWhiteSpace(rp))
-				//	datosIP = ObtenerGridCore(RPRComptesDeRPRegs.Where(x => string.IsNullOrWhiteSpace(x.Rp)).ToList());
-				//else
-				//	datosIP = ObtenerGridCore(RPRComptesDeRPRegs.Where(x => x.Rp == rp).ToList());
 			}
 			return PartialView("_rprComprobantesDeRP", datosIP);
 		}
@@ -847,8 +835,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 
 		}
-
-		#region Métodos privados
+		#endregion
+		
+		#region RECEPCION DE PROVEEDORES - Métodos privados
 		private JsonEncabezadoDeRPDto ObtenerObjectoParaAlmacenar()
 		{
 			try
@@ -933,33 +922,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (objeto != null)
 				{
 					JsonDeRP = objeto;
-					//TODO Revisar este codigo comentado
-					//var listaEncaTemp = objeto.encabezado;
-					//if (listaEncaTemp != null && listaEncaTemp.Count > 0)
-					//{
-					//	if (listaEncaTemp.Count == 1)
-					//	{
-					//		encaTemp = listaEncaTemp.First();
-					//		if (encaTemp.Comprobantes != null && encaTemp.Comprobantes.Count > 0)
-					//		{
-					//			var existe = false;
-					//			if (JsonDeRP != null)
-					//				existe = JsonDeRP.encabezado.Exists(x => x.Rp == rp && x.Tco_id == tipo && x.Cm_compte == nroComprobante);
-					//			if (!existe)
-					//			{
-					//				foreach (var item in encaTemp.Comprobantes)
-					//				{
-					//					var prodAux = ObtenerDatosDeProducto(item.P_id);
-					//					listaProd.Add(prodAux);
-					//					item.Producto = prodAux;
-					//				}
-					//				RPRDetalleDeProductosEnRP = listaProd;
-					//			}
-					//			if (JsonDeRP == null)
-					//				JsonDeRP = objeto;
-					//		}
-					//	}
-					//}
 				}
 			}
 		}
@@ -1113,11 +1075,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 			lista.Add(nuevo);
 			return lista;
 		}
-		private GridCore<T> ObtenerGridCore<T>(List<T> lista) where T : Dto
-		{
-			var listaDetalle = new StaticPagedList<T>(lista, 1, 999, lista.Count);
-			return new GridCore<T>() { ListaDatos = listaDetalle, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
-		}
+		//private GridCore<T> ObtenerGridCore<T>(List<T> lista) where T : Dto
+		//{
+		//	var listaDetalle = new StaticPagedList<T>(lista, 1, 999, lista.Count);
+		//	return new GridCore<T>() { ListaDatos = listaDetalle, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
+		//}
 		private GridCore<RPROrdenDeCompraDetalleDto> ObtenerOCDetalleRPGrid(List<RPROrdenDeCompraDetalleDto> listaOCDetalle)
 		{
 

@@ -6,6 +6,7 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
+using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
@@ -411,5 +412,18 @@ namespace gc.api.core.Servicios
             List<RespuestaDto> resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
             return resp.First();
         }
+
+		public List<TRPendienteDto> ObtenerTRPendientes(ObtenerTRPendientesRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Pendientes;
+			var ps = new List<SqlParameter>()
+			{
+				new("@adm_id",request.admId),
+				new("@usu_id",request.usuId),
+				new("@tit_id",request.titId),
+			};
+			List<TRPendienteDto> respuesta = _repository.EjecutarLstSpExt<TRPendienteDto>(sp, ps, true);
+			return respuesta;
+		}
     }
 }
