@@ -36,9 +36,9 @@ function cargarAutorizacionesPendientes() {
 function seleccionarRegistroTR(x) {
     //eliminamos de todos las filas el estilo 
     $("#tbAuPend tbody tr").each(function (index) {
-        $(this).removeClass(".selected-row");
+        $(this).removeClass("selected-row");
     });
-    $(this).addClass(".selected-row");
+    $(x).addClass("selected-row");
     var reg = parseInt(x.cells[0].innerText.trim());
     $("#txtTiro").val($("#ti" + reg).val());
     $("#txtNNro").val(x.cells[1].innerText.trim());

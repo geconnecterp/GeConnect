@@ -1,0 +1,36 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+<div class="row">
+    <div class="col-sm-12">
+        <div class="input-group input-group-sm">
+            <span class="input-group-text">ID</span>
+            <input type="text" class="form-control " id="P_id" readonly />
+            <span class="input-group-text">Desc</span>
+            <input type="text" class="form-control " id="Descipcion" readonly />
+            <span class="input-group-text">Rubro</span>
+            <input type="text" id="Rubro" class="form-control " readonly />
+        </div>
+    </div>
+</div>
+<div class="row" id="divInputs">
+    <div class="col-sm-12">
+        <div class="input-group input-group-sm">
+            <span class="input-group-text">FVto:</span>
+            <input type="date" class="form-control inputEditable" name="fvto" id="fvto" disabled />
+            <span class="input-group-text">Un.xBulto:</span>
+            <input type="text" class="form-control inputEditable" name="up" id="up" disabled />
+        </div>
+    </div>
+    <div class="col-sm-12">
+        <div class="input-group input-group-sm">
+            <span class="input-group-text">Bultos:</span>
+            <input type="text" class="form-control inputEditable" name="box" id="box" min="0" disabled />
+            <span class="input-group-text">Unidad:</span>
+            <input type="text" class="form-control inputEditable" name="unid" id="unid" min="0" disabled />
+            <button type="button" id="btnCargarProd" class="btn btn-success" disabled><i class="bx bx-plus-circle"></i> </button>
+        </div>
+    </div>
+</div>

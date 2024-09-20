@@ -84,7 +84,8 @@ function PresentarStkA() {
     return true;
 }
 function PresentarMov() {
-    var data = {fdesde:$("#fdesde").val(),fhasta:$("#fhasta").val()};
+    var idtm = $("#TmId").find(":selected").val();
+    var data = { idTm: idtm, fdesde:$("#fdesde").val(),fhasta:$("#fhasta").val()};
     PostGenHtml(data, infoProdMovUrl, function (obj) {
         $("#gridInfoProdMov").html(obj);
         CerrarWaiting();

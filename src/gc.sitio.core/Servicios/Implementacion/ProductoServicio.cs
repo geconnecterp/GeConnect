@@ -3,6 +3,7 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.Info;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.CuentaComercial;
@@ -13,6 +14,8 @@ using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Net;
 using System.Runtime.Intrinsics.Arm;
 
@@ -29,6 +32,7 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string INFOPROD_STKA = "/InfoProductoStkA";
         private const string INFOPROD_MovStk = "/InfoProductoMovStk";
         private const string INFOPROD_LP = "/InfoProductoLP";
+        private const string INFOPROD_TM = "/ObtenerTiposMotivo";
 
         private const string RPRAUTOPEND = "/RPRAutorizacionPendiente";
         private const string RPRCOMPTESPEND = "/RPRObtenerAutoComptesPendientes";
@@ -49,7 +53,8 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string TI_ListaBox = "/GetTIListaBox";
         private const string TI_ListaRubro = "/GetTIListaRubro";
         private const string TI_ListaProductos = "/BuscaTIListaProductos";
-        
+        private const string TI_RESGUARDA_PROD_CARRITO = "/ResguardarProductoCarrito";
+
 
 
         //Transferencia Interna
@@ -265,7 +270,16 @@ namespace gc.sitio.core.Servicios.Implementacion
             HttpClient client = helper.InicializaCliente(token);
             HttpResponseMessage response;
 
-            var link = $"{_appSettings.RutaBase}{RutaAPI}{INFOPROD_MovStk}?id={id}&adm={adm}&depo={depo}&tmov={tmov}&desde={desde}&hasta={hasta}";
+            //if (depo.Equals("%"))
+            //{
+            //    depo = "porc.";
+            //}
+            //if (tmov.Equals("%"))
+            //{
+            //    tmov = "porc.";
+            //}
+
+            var link = $"{_appSettings.RutaBase}{RutaAPI}{INFOPROD_MovStk}?id={id}&adm={adm}&depo={depo}&tmov={tmov}&desde={desde.Ticks}&hasta={hasta.Ticks}";
 
             response = await client.GetAsync(link);
 
@@ -889,6 +903,86 @@ namespace gc.sitio.core.Servicios.Implementacion
                 {
                     return new();
                 }
+            }
+        }
+
+        public async Task<List<TipoMotivoDto>> ObtenerTiposMotivo(string token)
+        {
+            ApiResponse<List<TipoMotivoDto>> apiResponse;
+            HelperAPI helper = new HelperAPI();
+
+            HttpClient client = helper.InicializaCliente(token);
+            HttpResponseMessage response;
+
+            var link = $"{_appSettings.RutaBase}{RutaAPI}{INFOPROD_TM}";
+
+            response = await client.GetAsync(link);
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(stringData))
+                {
+                    _logger.LogWarning($"La API no devolvió dato alguno. Parametro de busqueda {JsonConvert.SerializeObject(response)}");
+                    return new();
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<TipoMotivoDto>>>(stringData) ?? new ApiResponse<List<TipoMotivoDto>>(new List<TipoMotivoDto>());
+                return apiResponse.Data;
+            }
+            else
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+
+                try
+                {
+                    var res = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    return new();
+                }
+                catch
+                {
+                    return new();
+                }
+            }
+        }
+
+        public async Task<RespuestaGenerica<RespuestaDto>> ResguardarProductoCarrito(TiProductoCarritoDto request,string token)
+        {
+
+            ApiResponse<RespuestaDto> apiResponse;
+
+            HelperAPI helper = new();
+           
+            HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+            HttpResponseMessage response;
+
+            var link = $"{_appSettings.RutaBase}{RutaAPI}{TI_RESGUARDA_PROD_CARRITO}";
+
+            response = await client.PostAsync(link, contentData);
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(stringData))
+                {
+                    _logger.LogWarning($"La API devolvió error. Parametros {JsonConvert.SerializeObject(request)}");
+                    return new();
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+                if (apiResponse.Data.resultado == "0")
+                {
+                    return new RespuestaGenerica<RespuestaDto> { Ok = true, Mensaje = "OK" };
+                }
+                else
+                {
+                    return new RespuestaGenerica<RespuestaDto> { Ok = false, Mensaje = apiResponse.Data.resultado_msj };
+                }
+            }
+            else
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                return new();
             }
         }
     }

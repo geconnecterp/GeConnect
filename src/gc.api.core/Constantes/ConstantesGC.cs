@@ -26,6 +26,8 @@
             public const string SP_INFOPROD_STKA = "dbo.spgeco_p_info_stk_adm";
             public const string SP_INFOPROD_MOVSTK = "dbo.spgeco_p_info_mov_stk";
             public const string SP_INFOPROD_LP = "dbo.spgeco_p_info_lp";
+            public const string SP_INFOPROD_TM = "SPGECO_P_Info_Tipos_Mov_Stk";
+
 
             public const string SP_RPR_PENDIENTES = "spgeco_RPR_Pendientes";
             public const string SP_RPR_REGISTRA = "SPGECO_RPR_Cargar_Conteos";

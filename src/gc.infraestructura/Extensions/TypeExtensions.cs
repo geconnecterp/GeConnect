@@ -173,6 +173,11 @@
             return $"{d.Year}-{d.Month.ToString().PadLeft(2,'0')}-{d.Day.ToString().PadLeft(2, '0')}";
         }
 
+        public static string ToStringYYYYMMDD(this DateTime d)
+        {
+            return $"{d.Year}{d.Month.ToString().PadLeft(2, '0')}{d.Day.ToString().PadLeft(2, '0')}";
+        }
+
         public static Guid ToGuid(this String s)
         {
             return ToGuid(s, Guid.Empty);

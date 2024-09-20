@@ -5,6 +5,7 @@ using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Rpr;
+using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
@@ -17,7 +18,7 @@ using System.Runtime.Intrinsics.Arm;
 
 namespace gc.api.core.Servicios
 {
-	public class ApiProductoServicio : Servicio<Producto>, IApiProductoServicio
+    public class ApiProductoServicio : Servicio<Producto>, IApiProductoServicio
 	{
 		public ApiProductoServicio(IUnitOfWork uow, IOptions<PaginationOptions> options) : base(uow, options)
 		{
@@ -389,5 +390,26 @@ namespace gc.api.core.Servicios
 			List<RPRAutoComptesPendientesDto> comptes_pendientes = _repository.EjecutarLstSpExt<RPRAutoComptesPendientesDto>(sp, ps, true);
 			return comptes_pendientes;
 		}
-	}
+
+        public RespuestaDto ResguardarProductoCarrito(TiProductoCarritoDto request)
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Carrito_Carga;
+			var ps = new List<SqlParameter>()
+			{
+				new("@ti", request.Ti),
+				new("@adm_id",request.AdmId), 
+				new("@usu_id",request.UsuId), 
+				new("@box_id",request.BoxId),
+				new("@desarma_box",request.Desarma), 
+				new("@p_id",request.Pid),
+				new("@unidad_pres",request.Unidad_pres),
+				new("@bulto",request.Bulto), 
+				new("@us",request.Us), 
+				new("@cantidad",request.Cantidad), 
+				new("@fv",request.Fvto)
+			};
+            List<RespuestaDto> resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+            return resp.First();
+        }
+    }
 }

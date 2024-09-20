@@ -5,6 +5,7 @@ using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Dtos.Almacen.Info;
 
 namespace gc.sitio.core.Servicios.Contratos
 {
@@ -42,5 +43,9 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<List<RespuestaDto>> RPRConfirmarRPR(string rp, string adm_id, string token);
 
 	}
+
+        Task<List<TipoMotivoDto>> ObtenerTiposMotivo(string token);
+        Task<RespuestaGenerica<RespuestaDto>> ResguardarProductoCarrito(TiProductoCarritoDto request,string token);
+    }
 
 }
