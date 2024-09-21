@@ -1,2 +1,6 @@
 ﻿$(function () {
 });
+
+function selectTRRow(x) {
+
+}

@@ -6,6 +6,7 @@ using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Info;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
+using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
@@ -59,8 +60,9 @@ namespace gc.sitio.core.Servicios.Implementacion
 
         //Transferencia Interna
         private const string TR_AU_PENDIENTE = "/TRAutorizacionPendiente";
+		private const string TR_PENDIENTES = "/ObtenerTRPendientes";
 
-        private readonly AppSettings _appSettings;
+		private readonly AppSettings _appSettings;
 
         public ProductoServicio(IOptions<AppSettings> options, ILogger<ProductoServicio> logger) : base(options, logger)
         {
@@ -742,7 +744,40 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-        public async Task<List<AutorizacionTIDto>> TRObtenerAutorizacionesPendientes(string admId, string usuId, string titId, string token)
+		public async Task<List<TRPendienteDto>> TRObtenerPendientes(string admId, string usuId, string titId, string token)
+		{
+			ApiResponse<List<TRPendienteDto>> apiResponse;
+
+			HelperAPI helper = new();
+            ObtenerTRPendientesRequest request = new() { admId = admId, titId = titId, usuId = usuId };
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{TR_PENDIENTES}";
+
+			response = await client.PostAsync(link, contentData);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros adm_id:{admId} usu_id:{usuId} tit_id:{titId}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<TRPendienteDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+
+		public async Task<List<AutorizacionTIDto>> TRObtenerAutorizacionesPendientes(string admId, string usuId, string titId, string token)
         {
             ApiResponse<List<AutorizacionTIDto>> apiResponse;
 

@@ -6,6 +6,7 @@ using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen.Info;
+using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 
 namespace gc.sitio.core.Servicios.Contratos
 {
@@ -37,7 +38,9 @@ namespace gc.sitio.core.Servicios.Contratos
 
 
         Task<List<AutorizacionTIDto>> TRObtenerAutorizacionesPendientes(string admId, string usuId, string titId,string token);
-        Task<List<BoxRubProductoDto>> PresentarBoxDeProductos(string tr, string admId, string usuId, string token);
+        Task<List<TRPendienteDto>> TRObtenerPendientes(string admId, string usuId, string titId, string token);
+
+		Task<List<BoxRubProductoDto>> PresentarBoxDeProductos(string tr, string admId, string usuId, string token);
         Task<List<BoxRubProductoDto>> PresentarRubrosDeProductos(string tr, string admId, string usuId, string token);
         Task<List<TiListaProductoDto>> BuscaTIListaProductos(string tr, string admId, string usuId, string? boxid, string? rubId, string token);
         Task<List<RespuestaDto>> RPRConfirmarRPR(string rp, string adm_id, string token);

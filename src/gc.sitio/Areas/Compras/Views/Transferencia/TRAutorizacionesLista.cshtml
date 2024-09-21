@@ -1,6 +1,4 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model GridCore<TRPendienteDto>
 @{
 	Layout = "~/views/shared/_Layout.cshtml";
 }
@@ -8,9 +6,59 @@
 	<row>
 		<input type="text" id="rp_id" style="visibility:hidden" />
 		<div style="float:left">
-			<h5 class="card-header">Autorizaciones TR</h5>
+			<div class="card-header">
+				<h5>Autorizaciones TR</h5>
+				<div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+					<input type="radio" class="btn-check" name="btnradio" id="btnradioSucursales" checked="">
+					<label class="btn btn-outline-primary" for="btnradioSucursales">TR Sucursales</label>
+					<input type="radio" class="btn-check" name="btnradio" id="btnradioDepositos">
+					<label class="btn btn-outline-primary" for="btnradioDepositos">TR Depósitos</label>
+				</div>
+			</div>
+		</div>
+		<div class="demo-inline-spacing" style="float:right;margin-top: 20px;margin-right: 55px;">
+			<a asp-action="NuevaTR" asp-controller="Transferencia" asp-area="Compras" class="btn btn-primary" id="btnNuevaAut">
+				<span class="tf-icons bx bx-plus-circle me-1"></span>Nueva Aut.
+			</a>
+			<a href="#" id="btnModificarAut" class="btn btn-secondary"><span class="tf-icons bx bx-edit me-1">Modi. Aut.</span></a>
+			<a href="#" id="btnVer" class="btn btn-success"><span class="tf-icons bx bxs-binoculars me-1">Ver</span></a>
 		</div>
 	</row>
+	<div class="card-body">
+		<div class="table-responsive text-nowrap table-wrapper">
+			<table class="table table-bordered table-hover" id="tbListaAutorizaciones">
+				<thead class="table-dark">
+					<tr>
+						<th style="width:10%;">N° Auto</th>
+						<th style="width:10%;">Sucursal</th>
+						<th style="width:10%;">Fecha</th>
+						<th style="width:50%;">Nota</th>
+						<th style="width:10%;">PI</th>
+						<th style="width:10%;">Estado</th>
+						<th style="width:0%; display:none;">adm_id_des</th>
+						<th style="width:0%; display:none;">usu_id</th>
+						<th style="width:0%; display:none;">tie_id</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var item in Model.ListaDatos)
+					{
+						<tr onclick="selectTRRow(this)">
+							<td>@item.ti</td>
+							<td>@item.adm_nombre</td>
+							<td>@item.fecha.ToString("dd-MM-yyyy")</td>
+							<td>@item.nota</td>
+							<td>@item.pi_compte</td>
+							<td>@item.tie_desc</td>
+							<td style="display:none;">@item.adm_id_des</td>
+							<td style="display:none;">@item.usu_id</td>
+							<td style="display:none;">@item.tie_id</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
 </div>
 
 @section scripts {
