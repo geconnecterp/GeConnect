@@ -12,7 +12,19 @@
 	}
 
 	$("#btnModificarAut").on("click", ModificarAutorizacion);
+	SelecccionarPrimerRegistro("tbListaAutorizaciones");
 });
+
+function SelecccionarPrimerRegistro() {
+	var grid = document.getElementById("tbListaAutorizaciones");
+	if (grid) {
+		var rowsBody = grid.getElementsByTagName('tbody')[0];
+		if (rowsBody && rowsBody.firstElementChild) {
+			rowsBody.firstElementChild.className = "selected-row"
+			selectRPRow(rowsBody.firstElementChild);
+		}
+	}
+}
 
 function selectRPRow(x) {
 	$("#idRPSelected").val(x.cells[0].innerText.trim());

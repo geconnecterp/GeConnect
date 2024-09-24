@@ -443,6 +443,30 @@ namespace gc.api.Controllers.Almacen
 			return Ok(response);
 		}
 
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult ObtenerTRAutSucursales(string admId)
+		{
+			if (admId == null) return BadRequest("No se recepcionaron los datos");
+
+			List<TRAutSucursalesDto> resp = _productosSv.ObtenerTRAut_Sucursales(admId);
+
+			var response = new ApiResponse<List<TRAutSucursalesDto>>(resp);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult ObtenerTRAutPI(string admId, string admIdLista)
+		{
+			if (admId == null) return BadRequest("No se recepcionaron los datos");
+
+			List<TRAutPIDto> resp = _productosSv.ObtenerTRAut_PI(admId, admIdLista);
+
+			var response = new ApiResponse<List<TRAutPIDto>>(resp);
+			return Ok(response);
+		}
+
 		/// <summary>
 		/// Método destinado a validar la estructura del Json antes de ser enviado a la base de datos
 		/// </summary>

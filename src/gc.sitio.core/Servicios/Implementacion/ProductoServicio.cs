@@ -61,6 +61,8 @@ namespace gc.sitio.core.Servicios.Implementacion
         //Transferencia Interna
         private const string TR_AU_PENDIENTE = "/TRAutorizacionPendiente";
 		private const string TR_PENDIENTES = "/ObtenerTRPendientes";
+		private const string TR_AUT_SUCURSALES = "/ObtenerTRAutSucursales";
+		private const string TR_AUT_PI = "/ObtenerTRAutPI";
 
 		private readonly AppSettings _appSettings;
 
@@ -766,6 +768,68 @@ namespace gc.sitio.core.Servicios.Implementacion
 					return new();
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<TRPendienteDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<TRAutSucursalesDto>> TRObtenerAutSucursales(string admId, string token)
+		{
+			ApiResponse<List<TRAutSucursalesDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{TR_AUT_SUCURSALES}?admId={admId}";
+
+			response = await client.GetAsync(link);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros adm_id:{admId}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<TRAutSucursalesDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<TRAutPIDto>> TRObtenerAutPI(string admId, string admIdLista, string token)
+		{
+			ApiResponse<List<TRAutPIDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{TR_AUT_PI}?admId={admId}&admIdLista={admIdLista}";
+
+			response = await client.GetAsync(link);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros adm_id:{admId} adm_id_lista: {admIdLista}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<TRAutPIDto>>>(stringData);
 				return apiResponse.Data;
 			}
 			else

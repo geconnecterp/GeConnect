@@ -12,8 +12,8 @@ using Microsoft.Extensions.Options;
 
 namespace gc.sitio.Areas.Compras.Controllers
 {
-    [Area("Compras")]
-    public class TransferenciaController : ControladorBase
+	[Area("Compras")]
+	public class TransferenciaController : ControladorBase
 	{
 		private readonly AppSettings _appSettings;
 		private readonly ILogger<CompraController> _logger;
@@ -33,11 +33,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> TRAutorizacionesLista()
 		{
-            var auth = EstaAutenticado;
-            if (!auth.Item1 || auth.Item2 < DateTime.Now)
-            {
-                return RedirectToAction("Login", "Token", new { area = "seguridad" });
-            }
+			var auth = EstaAutenticado;
+			if (!auth.Item1 || auth.Item2 < DateTime.Now)
+			{
+				return RedirectToAction("Login", "Token", new { area = "seguridad" });
+			}
 
 			GridCore<TRPendienteDto> grid;
 			try
@@ -53,11 +53,24 @@ namespace gc.sitio.Areas.Compras.Controllers
 				grid = new();
 			}
 			return View(grid);
-        }
+		}
 
 		public async Task<IActionResult> NuevaTR(string ti)
 		{
-			return PartialView("TRNuevaAutorizacion");
+			var model = new TRCRUDDto();
+			try
+			{
+				var itemsAutSucursales = await _productoServicio.TRObtenerAutSucursales(AdministracionId, TokenCookie);
+				model.ListaAutSucursales = ObtenerGridCore<TRAutSucursalesDto>(itemsAutSucursales);
+				var itemsAutPI = await _productoServicio.TRObtenerAutPI(AdministracionId, "", TokenCookie);
+				model.ListaAutPI = ObtenerGridCore<TRAutPIDto>(itemsAutPI);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al obtener las Sucursales en transferencias pendientes.");
+				TempData["error"] = "Hubo algun problema al intentar obtener las Sucursales en transferencias pendientes. Si el problema persiste informe al Administrador";
+			}
+			return PartialView("TRCrudAutorizacion", model);
 		}
 
 	}

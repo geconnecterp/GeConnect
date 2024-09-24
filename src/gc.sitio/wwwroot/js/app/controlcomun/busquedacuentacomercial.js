@@ -420,6 +420,7 @@ function comptesDeRPGrid(tipo, tipoDescripcion, nroComprobante, fecha, importe, 
 	PostGenHtml(data, CargarComptesDeRPUrl, function (obj) {
 		$("#divComptesDeRPGrid").html(obj);
 		AddEventListenerToComptesGrid();
+		SelecccionarPrimerRegistro("tbComptesDeRP")
 		CerrarWaiting();
 		return true;
 	}, function (obj) {
@@ -427,6 +428,17 @@ function comptesDeRPGrid(tipo, tipoDescripcion, nroComprobante, fecha, importe, 
 		CerrarWaiting();
 		return true;
 	});
+}
+
+function SelecccionarPrimerRegistro(grilla) {
+	var grid = document.getElementById(grilla);
+	if (grid) {
+		var rowsBody = grid.getElementsByTagName('tbody')[0];
+		if (rowsBody && rowsBody.firstElementChild) {
+			rowsBody.firstElementChild.className = "selected-row"
+			selectCompteDeRPRow(rowsBody.firstElementChild);
+		}
+	}
 }
 
 function buscarCuentasComercial() {

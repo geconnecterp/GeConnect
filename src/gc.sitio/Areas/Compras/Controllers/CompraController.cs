@@ -16,6 +16,8 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using System.Drawing;
+using System.Numerics;
 using System.Reflection;
 using X.PagedList;
 
@@ -102,6 +104,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 				var detalleVerConteos = await _productoServicio.RPRObtenerItemVerConteos(rp, TokenCookie);
 				if (detalleVerConteos != null)
 				{
+					
+					foreach (var item in detalleVerConteos)
+					{
+						item.Row_color = ObtenerColor(item.No_recibido);
+					}
 					RPRItemVerConteoLista = detalleVerConteos;
 				}
 
@@ -127,6 +134,12 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				if (RPRItemVerCompteLista != null)
 				{
+					lista = RPRItemVerCompteLista;
+					foreach (var item in lista)
+					{
+						item.Row_color = ObtenerColor(item.No_recibido);
+					}
+					RPRItemVerCompteLista = lista;
 					datosIP = ObtenerGridCore(RPRItemVerCompteLista.Where(x => x.Tco_id == tco_id && x.Cm_compte == cc_compte).ToList());
 				}
 				else
@@ -135,11 +148,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 					if (detalleVerCompte != null)
 					{
 						lista = detalleVerCompte.Where(x => x.Tco_id == tco_id && x.Cm_compte == cc_compte).ToList();
+						lista.ForEach(x => x.Row_color = ObtenerColor(x.No_recibido));
 						datosIP = ObtenerGridCore(lista);
 					}
 					RPRItemVerCompteLista = detalleVerCompte;
 				}
-
 				return PartialView("_rprDetalleVerCompte", datosIP);
 			}
 			catch (Exception ex)
@@ -149,6 +162,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 				return PartialView("_rprDetalleVerCompte", datosIP);
 			}
 		}
+
+
 
 		public async Task<IActionResult> BuscarDetalleVerConteoSeleccionado(string p_id)
 		{
@@ -359,8 +374,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				Leyenda = $"Carga de Detalle de Comprobante RP Proveedor ({CuentaComercialSeleccionada.Cta_Id}) {CuentaComercialSeleccionada.Cta_Denominacion}"
 			};
-
-			if (RPRComptesDeRPRegs.Exists(x => x.Tipo == idTipoCompte && x.NroComprobante == nroCompte && x.Rp == rp))
+			//Aca modifique 23/09
+			if (RPRComptesDeRPRegs != null && RPRComptesDeRPRegs.Exists(x => x.Tipo == idTipoCompte && x.NroComprobante == nroCompte && x.Rp == rp))
 			{
 				compte = RPRComptesDeRPRegs.Where(x => x.Tipo == idTipoCompte && x.NroComprobante == nroCompte && x.Rp == rp).FirstOrDefault();
 			}
@@ -461,6 +476,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 								if (item.Producto == null)
 								{
 									item.Producto = listaDeProductosAux.Where(x => x.P_id == item.P_id).FirstOrDefault();
+									item.Producto.Cantidad = Convert.ToDecimal(item.Cantidad);
+									item.Producto.Unidad = Convert.ToDecimal(item.Uni_suelta);
+									item.Producto.Bulto = Convert.ToInt32(item.Bulto);
 									lista.Add(item.Producto);
 								}
 								else
@@ -836,8 +854,42 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		}
 		#endregion
-		
+
 		#region RECEPCION DE PROVEEDORES - Métodos privados
+		private static int IsPositiveOrNegativeUsingBuiltInMethod<T>(T number) where T : ISignedNumber<T>
+		{
+			if (number == T.Zero)
+				return 0;
+			return T.IsPositive(number) ? 1 : -1;
+		}
+
+		private static string ObtenerColor(string no_recibido)
+		{
+			var leftPart = "";
+			if (no_recibido.Length == 0)
+				return "#ffffff";
+			if (no_recibido == "0")
+				return "#ffffff";
+			if (no_recibido.Contains(','))
+				leftPart = no_recibido.Split(',')[0];
+			if (no_recibido.Contains('.'))
+				leftPart = no_recibido.Split('.')[0];
+			
+			if (int.TryParse(leftPart, out int numeric_no_recibido))
+			{
+				return IsPositiveOrNegativeUsingBuiltInMethod(numeric_no_recibido) switch
+				{
+					0 => "#ffffff",
+					1 => "#ff4500",
+					-1 => "#008000",
+					_ => "#ffffff",
+				};
+			}
+			else
+			{
+				return "#ffffff";
+			}
+		}
 		private JsonEncabezadoDeRPDto ObtenerObjectoParaAlmacenar()
 		{
 			try
@@ -900,15 +952,18 @@ namespace gc.sitio.Areas.Compras.Controllers
 			foreach (var item in encabezados)
 			{
 				var comprobante = item.Comprobantes.FirstOrDefault();
-				lista.Add(new RPRComptesDeRPDto()
+				if (comprobante != null)
 				{
-					Fecha = comprobante.Cm_fecha,
-					Importe = comprobante.Cm_importe,
-					NroComprobante = comprobante.Cm_compte,
-					Rp = item.Rp,
-					Tipo = comprobante.Tco_id,
-					TipoDescripcion = string.IsNullOrEmpty(comprobante.Tco_desc) ? TiposComprobantePorCuenta.Where(x => x.tco_id == comprobante.Tco_id).Select(y => y.tco_desc).First() : comprobante.Tco_desc
-				});
+					lista.Add(new RPRComptesDeRPDto()
+					{
+						Fecha = comprobante.Cm_fecha,
+						Importe = comprobante.Cm_importe,
+						NroComprobante = comprobante.Cm_compte,
+						Rp = item.Rp,
+						Tipo = comprobante.Tco_id,
+						TipoDescripcion = string.IsNullOrEmpty(comprobante.Tco_desc) ? TiposComprobantePorCuenta.Where(x => x.tco_id == comprobante.Tco_id).Select(y => y.tco_desc).First() : comprobante.Tco_desc
+					});
+				}
 			}
 			return lista;
 		}

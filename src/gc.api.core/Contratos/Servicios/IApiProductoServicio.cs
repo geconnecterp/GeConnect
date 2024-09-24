@@ -34,6 +34,8 @@ namespace gc.api.core.Contratos.Servicios
         List<RPRVerConteoDto> RPRObtenerConteos(string rp);
         RespuestaDto ResguardarProductoCarrito(TiProductoCarritoDto request);
         List<TRPendienteDto> ObtenerTRPendientes(ObtenerTRPendientesRequest request);
+        List<TRAutSucursalesDto> ObtenerTRAut_Sucursales(string admId);
+        List<TRAutPIDto> ObtenerTRAut_PI(string admId, string admIdLista);
 
 	}
 }

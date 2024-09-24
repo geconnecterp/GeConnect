@@ -19,5 +19,6 @@ namespace gc.infraestructura.Dtos.CuentaComercial
         public string Cantidad_c { get; set; }
         public string No_recibido { get; set; }
         public string Item { get; set; }
+        public string Row_color { get; set; }
     }
 }

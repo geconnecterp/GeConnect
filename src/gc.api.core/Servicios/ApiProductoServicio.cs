@@ -425,5 +425,28 @@ namespace gc.api.core.Servicios
 			List<TRPendienteDto> respuesta = _repository.EjecutarLstSpExt<TRPendienteDto>(sp, ps, true);
 			return respuesta;
 		}
-    }
+
+		public List<TRAutSucursalesDto> ObtenerTRAut_Sucursales(string admId)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Aut_Sucursales;
+			var ps = new List<SqlParameter>()
+			{
+				new("@adm_id",admId),
+			};
+			List<TRAutSucursalesDto> respuesta = _repository.EjecutarLstSpExt<TRAutSucursalesDto>(sp, ps, true);
+			return respuesta;
+		}
+
+		public List<TRAutPIDto> ObtenerTRAut_PI(string admId, string admIdLista)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Aut_PI;
+			var ps = new List<SqlParameter>()
+			{
+				new("@adm_id",admId),
+				new("@adm_id_lista",admIdLista),
+			};
+			List<TRAutPIDto> respuesta = _repository.EjecutarLstSpExt<TRAutPIDto>(sp, ps, true);
+			return respuesta;
+		}
+	}
 }

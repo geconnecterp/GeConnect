@@ -15,7 +15,31 @@
 	$("#btnConfirmarRP").on("click", ConfirmarRP);
 	CargarDetalleDeConteos();
 	SeleccionarDeposito();
+	SelecccionarPrimerRegistro("tbVerComptesDeRP");
+	
 });
+
+function SelecccionarPrimerRegistro(grilla) {
+	var grid = document.getElementById(grilla);
+	if (grid) {
+		var rowsBody = grid.getElementsByTagName('tbody')[0];
+		if (rowsBody && rowsBody.firstElementChild) {
+			rowsBody.firstElementChild.className = "selected-row"
+			selectVerComptesDeRPRow(rowsBody.firstElementChild);
+		}
+	}
+}
+
+function SelecccionarPrimerRegistroConteos() {
+	var grid = document.getElementById('tbDetalleVerConteos');
+	if (grid) {
+		var rowsBody = grid.getElementsByTagName('tbody')[0];
+		if (rowsBody && rowsBody.firstElementChild) {
+			rowsBody.firstElementChild.className = "selected-row"
+			selectDetalleDeVerConteos(rowsBody.firstElementChild);
+		}
+	}
+}
 
 function SeleccionarDeposito() {
 	var depoid = $("#DepoId").val();
@@ -35,6 +59,22 @@ function CargarDetalleDeConteos() {
 }
 
 function ConfirmarRP() {
+	AbrirMensaje("Confirmación", "Esta a punto de confirmar un comprobante RPR, esta acción no puede deshacerse. Desea continuar?", function (e) {
+		$("#msjModal").modal("hide");
+		switch (e) {
+			case "SI": //Confirmar comprobante RPR
+				Confirmar();
+				break;
+			case "NO":
+				break;
+			default: //NO
+				break;
+		}
+		return true;
+	}, true, ["Aceptar", "Cancelar"], "info!", null);
+}
+
+function Confirmar() {
 	var rp = $("#Rp").val();
 	var datos = { rp };
 	PostGen(datos, confirmarRPRUrl, function (o) {
@@ -89,6 +129,7 @@ function BuscarDetalleVerCompte(rp, tco_id, cc_compte) {
 	PostGenHtml(datos, buscarDetalleVerCompteUrl, function (obj) {
 		$("#divDetalleVerCompte").html(obj);
 		AgregarHandlerDeSeleccion("tbDetalleVerCompte");
+		SelecccionarPrimerRegistroConteos();
 		CerrarWaiting();
 		return true
 	})

@@ -55,6 +55,8 @@
             public const string SP_TR_Carrito_Valida = "SPGECO_TR_Carrito_Valida";
             public const string SP_TR_Carrito_Carga = "SPGECO_TR_Carrito_Carga";
 			public const string SP_TR_Pendientes = "SPGECO_TR_Pendientes";
+			public const string SP_TR_Aut_Sucursales = "SPGECO_TR_Aut_Sucursales";
+			public const string SP_TR_Aut_PI = "SPGECO_TR_Aut_PI";
 
 			public const string SP_TI_VALIDA_USUARIO = "SPGECO_USU_OK";
 

@@ -47,6 +47,9 @@ namespace gc.sitio.core.Servicios.Contratos
 
         Task<List<TipoMotivoDto>> ObtenerTiposMotivo(string token);
         Task<RespuestaGenerica<RespuestaDto>> ResguardarProductoCarrito(TiProductoCarritoDto request,string token);
-    }
+        Task<List<TRAutSucursalesDto>> TRObtenerAutSucursales(string admId, string token);
+        Task<List<TRAutPIDto>> TRObtenerAutPI(string admId, string admIdLista, string token);
+
+	}
 
 }
