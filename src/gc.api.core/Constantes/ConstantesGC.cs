@@ -57,6 +57,7 @@
 			public const string SP_TR_Pendientes = "SPGECO_TR_Pendientes";
 			public const string SP_TR_Aut_Sucursales = "SPGECO_TR_Aut_Sucursales";
 			public const string SP_TR_Aut_PI = "SPGECO_TR_Aut_PI";
+			public const string SP_TR_Aut_Depositos = "SPGECO_TR_Aut_Depositos";
 
 			public const string SP_TI_VALIDA_USUARIO = "SPGECO_USU_OK";
 

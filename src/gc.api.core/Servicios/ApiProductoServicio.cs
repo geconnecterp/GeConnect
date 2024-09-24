@@ -448,5 +448,16 @@ namespace gc.api.core.Servicios
 			List<TRAutPIDto> respuesta = _repository.EjecutarLstSpExt<TRAutPIDto>(sp, ps, true);
 			return respuesta;
 		}
+
+		public List<TRAutDepoDto> ObtenerTRAut_Depositos(string admId)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Aut_Depositos;
+			var ps = new List<SqlParameter>()
+			{
+				new("@adm_id",admId),
+			};
+			List<TRAutDepoDto> respuesta = _repository.EjecutarLstSpExt<TRAutDepoDto>(sp, ps, true);
+			return respuesta;
+		}
 	}
 }

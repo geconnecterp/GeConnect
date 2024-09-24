@@ -467,6 +467,17 @@ namespace gc.api.Controllers.Almacen
 			return Ok(response);
 		}
 
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult ObtenerTRAutDepositos(string admId)
+		{
+			if (admId == null) return BadRequest("No se recepcionaron los datos");
+
+			List<TRAutDepoDto> resp = _productosSv.ObtenerTRAut_Depositos(admId);
+
+			var response = new ApiResponse<List<TRAutDepoDto>>(resp);
+			return Ok(response);
+		}
 		/// <summary>
 		/// Método destinado a validar la estructura del Json antes de ser enviado a la base de datos
 		/// </summary>

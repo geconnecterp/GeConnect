@@ -63,6 +63,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string TR_PENDIENTES = "/ObtenerTRPendientes";
 		private const string TR_AUT_SUCURSALES = "/ObtenerTRAutSucursales";
 		private const string TR_AUT_PI = "/ObtenerTRAutPI";
+		private const string TR_AUT_Depositos = "/ObtenerTRAutDepositos";
 
 		private readonly AppSettings _appSettings;
 
@@ -840,6 +841,36 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 		}
 
+		public async Task<List<TRAutDepoDto>> TRObtenerAutDepositos(string admId, string token)
+		{
+			ApiResponse<List<TRAutDepoDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{TR_AUT_Depositos}?admId={admId}";
+
+			response = await client.GetAsync(link);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros adm_id:{admId}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<TRAutDepoDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
 
 		public async Task<List<AutorizacionTIDto>> TRObtenerAutorizacionesPendientes(string admId, string usuId, string titId, string token)
         {

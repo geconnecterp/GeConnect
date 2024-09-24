@@ -64,6 +64,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 				model.ListaAutSucursales = ObtenerGridCore<TRAutSucursalesDto>(itemsAutSucursales);
 				var itemsAutPI = await _productoServicio.TRObtenerAutPI(AdministracionId, "", TokenCookie);
 				model.ListaAutPI = ObtenerGridCore<TRAutPIDto>(itemsAutPI);
+				model.ListaPedidosIncluidos = ObtenerGridCore<TRAutPIDto>(new List<TRAutPIDto>());
+				model.ListaDepositosDeEnvio = ObtenerGridCore<TRAutDepoDto>(new List<TRAutDepoDto>());
 			}
 			catch (Exception ex)
 			{
@@ -73,5 +75,36 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return PartialView("TRCrudAutorizacion", model);
 		}
 
+		public async Task<IActionResult> CargarPedidosPorSucursal(string admId)
+		{
+			var model = new GridCore<TRAutPIDto>();
+			try
+			{
+				var itemsAutPI = await _productoServicio.TRObtenerAutPI(admId, "", TokenCookie);
+				model = ObtenerGridCore<TRAutPIDto>(itemsAutPI);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al obtener los Pedidos Internos por Sucursal.");
+				TempData["error"] = "Hubo algun problema al intentar obtener los Pedidos Internos por Sucursal. Si el problema persiste informe al Administrador";
+			}
+			return PartialView("_rprPedidosPorSucursal", model);
+		}
+
+		public async Task<IActionResult> CargarDepositosInclPorSucursal(string admId)
+		{
+			var model = new GridCore<TRAutDepoDto>();
+			try
+			{
+				var itemsAutDepo = await _productoServicio.TRObtenerAutDepositos(admId, TokenCookie);
+				model = ObtenerGridCore<TRAutDepoDto>(itemsAutDepo);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al obtener los Depositos Incluidos por Sucursal.");
+				TempData["error"] = "Hubo algun problema al intentar obtener los Depositos Incluidos por Sucursal. Si el problema persiste informe al Administrador";
+			}
+			return PartialView("_rprDepositosInclPorSucursal", model);
+		}
 	}
 }

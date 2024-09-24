@@ -10,5 +10,7 @@ namespace gc.infraestructura.Dtos.Almacen.Tr.Transferencia
 		public string pit_id { get; set; } = string.Empty;
 		public string pit_desc { get; set; } = string.Empty;
 		public string pi_nota { get; set; } = string.Empty;
-	}
+        public string adm_id { get; set; }=string.Empty;
+		public string adm_desc { get; set; } = string.Empty;
+    }
 }

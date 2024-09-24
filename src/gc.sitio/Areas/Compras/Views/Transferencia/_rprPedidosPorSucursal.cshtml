@@ -1,0 +1,31 @@
+﻿@model GridCore<TRAutPIDto>
+
+<div class="table-responsive text-nowrap table-wrapper">
+	<table class="table table-bordered table-hover" id="tbListaPedidosSucursal">
+		<thead class="table-dark">
+			<tr>
+				<th style="width:15%;">N° PI</th>
+				<th style="width:10%;">Fecha</th>
+				<th style="width:10%;">Estado</th>
+				<th style="width:30%;">Nota</th>
+				<th style="width:15%;">Tipo</th>
+				<th style="width:10%;">Det</th>
+				<th style="width:10%;">Carga</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in Model.ListaDatos)
+			{
+				<tr onclick="selectTRPedidoSucursalRow(this)">
+					<td>@item.pi_compte</td>
+					<td>@item.pi_fecha.ToString("dd-MM-yyyy")</td>
+					<td>@item.pie_desc</td>
+					<td>@item.pi_nota</td>
+					<td>@item.pit_desc</td>
+					<td>@item.pit_desc</td> @* //TODO: Reemplazar por botones *@
+					<td>@item.pit_desc</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>
