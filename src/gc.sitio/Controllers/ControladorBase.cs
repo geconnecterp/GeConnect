@@ -2,6 +2,7 @@
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Rpr;
+using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes;
@@ -422,6 +423,43 @@ namespace gc.sitio.Controllers
 			{
 				var json = JsonConvert.SerializeObject(value);
 				_context.HttpContext.Session.SetString("RPRAutorizacionesPendientesEnRP", json);
+			}
+		}
+		#endregion
+
+		#region TRANSFERENCIAS
+		protected List<TRAutPIDto> TRAutPedidosSucursalLista //ListaPedidosSucursal
+		{
+			get
+			{
+				string json = _context.HttpContext.Session.GetString("TRAutPedidosSucursalLista");
+				if (string.IsNullOrEmpty(json))
+				{
+					return new();
+				}
+				return JsonConvert.DeserializeObject<List<TRAutPIDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("TRAutPedidosSucursalLista", json);
+			}
+		}
+		protected List<TRAutPIDto> TRAutPedidosIncluidosILista
+		{
+			get
+			{
+				string json = _context.HttpContext.Session.GetString("TRAutPedidosIncluidosILista");
+				if (string.IsNullOrEmpty(json))
+				{
+					return new();
+				}
+				return JsonConvert.DeserializeObject<List<TRAutPIDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("TRAutPedidosIncluidosILista", json);
 			}
 		}
 		#endregion

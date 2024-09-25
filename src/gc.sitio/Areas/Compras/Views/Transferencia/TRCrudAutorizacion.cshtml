@@ -24,7 +24,14 @@
 								{
 									<tr onclick="selectTRSucursalesRow(this)">
 										<td>@item.adm_nombre</td>
-										<td><input type="checkbox" name="tieneOrdenes" value="@item.tiene_ordenes" /></td>
+										@if (item.tiene_ordenes)
+										{
+											<td><input type="checkbox" name="tieneOrdenes" value="@item.tiene_ordenes" checked disabled="disabled" /></td>
+										}
+										else
+										{
+											<td><input type="checkbox" name="tieneOrdenes" value="@item.tiene_ordenes" disabled="disabled" /></td>
+										}
 										<td style="display:none;">@item.adm_id</td>
 									</tr>
 								}
@@ -39,7 +46,7 @@
 						<h5>Pedido de Sucursal</h5>
 					</legend>
 					<div id="divListaPedidosSucursal">
-						<div class="table-responsive text-nowrap table-wrapper">
+						<div class="table-responsive text-nowrap table-wrapper-xs">
 							<table class="table table-bordered table-hover" id="tbListaPedidosSucursal">
 								<thead class="table-dark">
 									<tr>
@@ -50,10 +57,12 @@
 										<th style="width:15%;">Tipo</th>
 										<th style="width:10%;">Det</th>
 										<th style="width:10%;">Carga</th>
+										<th style="width:0%; display:none;">adm_id</th>
+										<th style="width:0%; display:none;">adm_desc</th>
 									</tr>
 								</thead>
 								<tbody>
-									@foreach (var item in Model.ListaAutPI.ListaDatos)
+									@foreach (var item in Model.ListaPedidosSucursal.ListaDatos)
 									{
 										<tr onclick="selectTRPedidoSucursalRow(this)">
 											<td>@item.pi_compte</td>
@@ -61,8 +70,11 @@
 											<td>@item.pie_desc</td>
 											<td>@item.pi_nota</td>
 											<td>@item.pit_desc</td>
-											<td>@item.pit_desc</td> @* //TODO: Reemplazar por botones *@
-											<td>@item.pit_desc</td>
+											<td><a asp-action="VerDetallePedidoDeSucursal" asp-controller="Transferencia" asp-area="Compras" class="btn btn-xs btn-outline-success" asp-route-picompte="@item.pi_compte"> <i class="bx bx-detail"></i></a></td>
+											@* <td><a asp-action="AgregarAPedidosIncluidosParaAutTR" asp-controller="Transferencia" asp-area="Compras" class="btn btn-xs btn-outline-primary" asp-route-picompte="@item.pi_compte"> <i class="bx bx-plus-circle"></i></a></td> *@
+											<td><input type="button" class="btn btn-xs btn-outline-primary" onclick="selectPI(@item.pi_compte);" /><i class="bx bx-plus-circle"></i></td>
+											<td style="display:none;">@item.adm_id</td>
+											<td style="display:none;">@item.adm_desc</td>
 										</tr>
 									}
 								</tbody>
@@ -75,7 +87,7 @@
 						<h5>Pedidos Incluidos para Autorizar TR</h5>
 					</legend>
 					<div id="divListaPedidosIncluidos">
-						<div class="table-responsive text-nowrap table-wrapper">
+						<div class="table-responsive text-nowrap table-wrapper-xs">
 							<table class="table table-bordered table-hover" id="tbListaPedidosIncluidos">
 								<thead class="table-dark">
 									<tr>
@@ -93,14 +105,14 @@
 									@foreach (var item in Model.ListaPedidosIncluidos.ListaDatos)
 									{
 										<tr onclick="selectTRPedidoIncluidoRow(this)">
-											<td></td>
+											<td>@item.adm_desc</td>
 											<td>@item.pi_compte</td>
 											<td>@item.pi_fecha.ToString("dd-MM-yyyy")</td>
 											<td>@item.pie_desc</td>
 											<td>@item.pi_nota</td>
 											<td>@item.pit_desc</td>
-											<td>@item.pit_desc</td> @* //TODO: Reemplazar por botones *@
-											<td>@item.pit_desc</td>
+											<td><a asp-action="VerDetallePedidoDeSucursal" asp-controller="Transferencia" asp-area="Compras" class="btn btn-xs btn-outline-success" asp-route-picompte="@item.pi_compte"> <i class="bx bx-detail"></i></a></td>
+											<td><a asp-action="QuitarDePedidosIncluidosParaAutTR" asp-controller="Transferencia" asp-area="Compras" class="btn btn-xs btn-outline-primary" asp-route-picompte="@item.pi_compte"> <i class="bx bx-minus-circle"></i></a></td>
 										</tr>
 									}
 								</tbody>
