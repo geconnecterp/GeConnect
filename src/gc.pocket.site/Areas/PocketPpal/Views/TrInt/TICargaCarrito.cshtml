@@ -4,12 +4,9 @@
 *@
 @{
     Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
+    var buscar = new BusquedaProducto();
 }
-<div class="row mb-2">
-    <div class="d-flex justify-content-center">
-        <span class="text-info" id="spanNroAuto">Nro Auto. TI <strong>@Model.Ti</strong> </span>
-    </div>
-</div>
+<partial name="_tiNroAutorizacion" model="@Model.Ti" />
 <div class="row mb-2">
     <div class="d-flex justify-content-center">
         <div class="m-2 form-check">
@@ -25,7 +22,9 @@
             <label class="form-check-label" for="rbRubro">Rubro</label>
         </div>
         <div class="m-2">
-            <button type="button" class="btn btn-sm btn-success"><i class="bx bx-cart"></i><span> Carga</span></button>
+            <a asp-action="TIValidaProducto" asp-controller="trint" asp-area="pocketppal" asp-route-pId="" id="btnCargaCarritoNuevo"
+            class="btn btn-sm btn-success btnBarcode"><i class="bx bx-cart"></i><span> Carga</span></a>
+           
         </div>
     </div>
 </div>
@@ -33,11 +32,13 @@
 <div class="row mb-3">
     <div class="d-flex justify-content-center">
         <button type="button" class="btn btn-info btn-sm m-3"><i class="bx bx-ms bx-info-circle"></i></button>
-        <button type="button" class="btn btn-sm btn-success m-3"><i class="bx bx-sm bxs-truck"></i></button>
+        <button type="button" id="btnCtrlSalida"  ti="@Model.Ti" type="button" class="btn btn-sm btn-success m-3"><i class="bx bx-sm bxs-truck"></i></button>
     </div>
 </div>
 
-@section scripts{
+
+
+@section scripts {
     <script type="text/javascript">
         var productoBase = null; //se hidrata en busquedas.
         var autorizacionActual = null;
@@ -45,7 +46,10 @@
         var buscarListaProductosUrl = "@Url.Action("BuscaTIListaProductos", "trint", new { area = "pocketppal" })";
         var ObtenerAutorizacionActualUrl = "@Url.Action("ObtenerAutorizacionActual", "trint", new { area = "pocketppal" })";
         var LimpiaProductoCarritoUrl = "@Url.Action("LimpiaProductoCarrito", "trint", new { area = "pocketppal" })";
-        var proximoProductoUrl = "@Url.Action("TIentreSucCargaCarrito", "trint", new { area = "pocketppal" })";
+        var proximoProductoUrl = "@Url.Action("TICargaCarrito", "trint", new { area = "pocketppal" })";
+        var ControlSalidaTIUrl = "@Url.Action("ControlSalidaTI", "trint", new { area = "pocketppal" })";
+        var ConfirmarTIUrl = "@Url.Action("ConfirmacionTI", "trint", new { area = "pocketppal" })";
+
 
     </script>
 

@@ -1,0 +1,29 @@
+﻿
+@model AutorizacionTIDto
+@{
+    Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
+}
+<partial name="_tiNroAutorizacion" model="@Model.Ti" />
+<div class="row" id="divBoxDestino">
+    <div class="d-flex justify-content-center">
+        <div class="input-group input-group-sm">
+            <span class="input-group-text">Box Destino</span>
+            <input type="text" class="form-control" id="txtBoxDestino" />
+        </div>        
+    </div>
+</div>
+<div class="row mb-3">
+    <div class="d-flex justify-content-center">
+        <button type="button" class="btn btn-info btn-sm m-3"><i class="bx bx-ms bx-info-circle"></i></button>
+        <button type="button" id="btnConfirmacionFinal" ti="@Model.Ti" class="btn btn-sm btn-check m-3 btn-success"><i class="bx bx-sm bxs-truck"></i></button>
+    </div>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        var autorizacionActual = null;
+        var ObtenerAutorizacionActualUrl = "@Url.Action("ObtenerAutorizacionActual", "trint", new { area = "pocketppal" })";
+
+    </script>
+    <script src="~/js/app/ti/ticonfirma.js"></script>
+}

@@ -19,14 +19,41 @@
     $(".inputEditable").on("keypress", analizaEnterInput);
 
     $("#btnBusquedaBase").prop("disabled", false);
+    $("input#Busqueda").on("focus", function () {
+        InicializaBusqueda();
+    });
+    $("#chkDesarma").on("click", function () {
+        var tipoti = autorizacionActual.tipoTI;
+        var sinau = autorizacionActual.sinAU;
+        if ($("#chkDesarma").is(":checked")) {
+            //habilito los controles
+            //$("#btnBusquedaBase").prop("disabled", true);
+            //$("input#Busqueda").prop("disabled", true);
+        }
+        else {
+            $("#btnBusquedaBase").prop("disabled", true);
+            $("input#Busqueda").prop("disabled", true);
+        }
+    });
+
     CargarAutoActual();
 });
 
+function InicializaBusqueda() {
+    $("#P_id").val("");
+    $("#Descipcion").val("");
+    $("#Rubro").val("");
+    $("#up").val(0).prop("disabled", true);
+    $("#fvto").val("").prop("disabled", true);
 
+    $("#box").val(0).prop("disabled", true);
+    $("#unid").val(0).prop("disabled", true);
+    $("#btnCargaProd").prop("disabled", true);
+}
 
 function cargarCarrito() {
     //aca se validará previamente si la cantidad ingresada corresponde a lo solicitado
-        AbrirWaiting()
+    AbrirWaiting()
     var cantSolic = autorizacionActual.pPedido;
     var upId = productoBase.up_id;
     var cantidad = 0;
@@ -40,17 +67,17 @@ function cargarCarrito() {
         cantidad = bulto;
     }
 
-    if (cantidad !== cantSolic) {
+    if (cantidad > cantSolic && autorizacionActual.sinAU===false) {
         CerrarWaiting();
 
-        AbrirMensaje("Atención", "La cantidad ingresada no corresponde a la cantidad solicitada. Verifique.", function () {
+        AbrirMensaje("Atención", "La cantidad ingresada" + cantidad + "no corresponde a la cantidad solicitada (" + cantSolic + "). Verifique.", function () {
             $("#msjModal").modal("hide");
             $("#up").focus();
             return true;
         }, false, ["Aceptar"], "warn!", null);
     }
     else {
-        ControlaMensajeSuccess("Cantidad correcta");
+        //ControlaMensajeSuccess("Cantidad correcta");
         //se procede a enviar el producto a cargar
         var dato = { p_id: autorizacionActual.pId, up, bulto, unid, cantidad, fv }
         PostGen(dato, ResguardarProductoCarritoUrl, function (obj) {
@@ -66,7 +93,7 @@ function cargarCarrito() {
                 CerrarWaiting();
 
                 ControlaMensajeSuccess(obj.msg);
-                window.location.href = proximoProductoUrl + "?esrubro=false&esbox=false";
+                window.location.href = proximoProductoUrl + "?esrubro=false&esbox=false&tiId=" + autorizacionActual.tipoTI;
             }
         });
 
@@ -137,7 +164,11 @@ function verificaEstado() {
                 $("#Descipcion").val(prod.p_desc);
                 $("#Rubro").val(prod.rub_desc);
                 $("#up").mask("000.000.000.000", { reverse: true });
-                $("#up").val(autoAct.pUnidPres).prop("disabled", false);
+                if (autoAct.pUnidPres === 0) {
+                    $("#up").val(prod.p_unidad_pres).prop("disabled", false);
+                } else {
+                    $("#up").val(autoAct.pUnidPres).prop("disabled", false);
+                }
                 $("#unid").mask("000.000.000.000", { reverse: true });
                 //$("#fvto").val(prod.)
 
@@ -149,6 +180,11 @@ function verificaEstado() {
                     $("#box").mask("000.000.000.000,00", { reverse: true });
                     $("#unid").val(0).prop("disabled", true);
                 }
+
+                if (prod.sinAU === true) {
+                    $("#chkDesarma").prop("disabled", false);
+                }
+
 
                 $("#box").val(0).prop("disabled", false);
 

@@ -28,5 +28,9 @@ namespace gc.api.core.Contratos.Servicios
         List<RPRItemVerCompteDto> RPRObtenerDatosVerCompte(string rp);
         List<RPRVerConteoDto> RPRObtenerConteos(string rp);
         RespuestaDto ResguardarProductoCarrito(TiProductoCarritoDto request);
+        RespuestaDto TRCtrlSalida(string ti, string adm, string usu);
+        TIRespuestaDto TRNuevaSinAuto(string tipoIt, string adm, string usu);
+        TIRespuestaDto TRValidaPendiente(string usu);
+        RespuestaDto TR_Confirma(TIRequestConfirmaDto conf);
     }
 }

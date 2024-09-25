@@ -84,6 +84,11 @@ th, td {
     color: black;
 }
 
+.link-noactivo{
+    pointer-events:none;
+    cursor:default;
+}
+
 @media screen and (max-width: 480px){
     .textoEncabezado {
         font-weight: 500;
