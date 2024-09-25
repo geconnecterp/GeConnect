@@ -49,15 +49,15 @@ namespace gc.infraestructura.Dtos.CuentaComercial
 		public string Bulto_up { get; set; } = string.Empty;
 
 		[DataMember]
-		[JsonProperty("bulto")]
+		[JsonProperty("bulto_c")]
 		public string Bulto { get; set; } = string.Empty;
 
 		[DataMember]
-		[JsonProperty("us")]
+		[JsonProperty("us_c")]
 		public string Uni_suelta { get; set; } = string.Empty;
 
 		[DataMember]
-		[JsonProperty("cantidad")]
+		[JsonProperty("cantidad_c")]
 		public string Cantidad { get; set; } = string.Empty;
 
 		[DataMember]

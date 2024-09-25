@@ -10,8 +10,9 @@ namespace gc.api.Controllers.Almacen
     using gc.infraestructura.Dtos.Almacen;
     using gc.infraestructura.Dtos.Almacen.Rpr;
     using gc.infraestructura.Dtos.Almacen.Tr;
-    using gc.infraestructura.Dtos.CuentaComercial;
-    using gc.infraestructura.Dtos.Gen;
+	using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
+	using gc.infraestructura.Dtos.CuentaComercial;
+	using gc.infraestructura.Dtos.Gen;
     using gc.infraestructura.Dtos.Productos;
     using gc.infraestructura.EntidadesComunes.Options;
     using Microsoft.AspNetCore.Authorization;
@@ -160,7 +161,22 @@ namespace gc.api.Controllers.Almacen
             return Ok(response);
         }
 
-        [HttpGet]
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoBusquedaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ProductoBuscarPorIds([FromQuery] BusquedaBase search)
+		{
+			ApiResponse<List<ProductoBusquedaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.ProductoBuscarPorIds(search);
+
+			response = new ApiResponse<List<ProductoBusquedaDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<InfoProdStkD>>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
@@ -298,15 +314,30 @@ namespace gc.api.Controllers.Almacen
             return Ok(response);
         }
 
-        [HttpGet]
-        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<JsonDto>>))]
-        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-        [Route("[action]")]
-        public IActionResult RPRObtenerJson(string rp)
-        {
-            ApiResponse<List<JsonDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-            var res = _productosSv.RPREObtenerDatosJsonDesdeRP(rp);
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RespuestaDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult RPRConfirma(RPRAConfirmarRequest request)
+		{
+			ApiResponse<List<RespuestaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.RPRConfirma(request.rp, request.adm_id);
+
+			response = new ApiResponse<List<RespuestaDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<JsonDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult RPRObtenerJson(string rp)
+		{
+			ApiResponse<List<JsonDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.RPREObtenerDatosJsonDesdeRP(rp);
 
             response = new ApiResponse<List<JsonDto>>(res);
 
@@ -400,6 +431,53 @@ namespace gc.api.Controllers.Almacen
             return Ok(response);
         }
 
+		[HttpPost]
+		[Route("[action]")]
+		public IActionResult ObtenerTRPendientes(ObtenerTRPendientesRequest request)
+		{
+			if (request == null) return BadRequest("No se recepcionaron los datos");
+
+			List<TRPendienteDto> resp = _productosSv.ObtenerTRPendientes(request);
+
+			var response = new ApiResponse<List<TRPendienteDto>>(resp);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult ObtenerTRAutSucursales(string admId)
+		{
+			if (admId == null) return BadRequest("No se recepcionaron los datos");
+
+			List<TRAutSucursalesDto> resp = _productosSv.ObtenerTRAut_Sucursales(admId);
+
+			var response = new ApiResponse<List<TRAutSucursalesDto>>(resp);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult ObtenerTRAutPI(string admId, string admIdLista)
+		{
+			if (admId == null) return BadRequest("No se recepcionaron los datos");
+
+			List<TRAutPIDto> resp = _productosSv.ObtenerTRAut_PI(admId, admIdLista);
+
+			var response = new ApiResponse<List<TRAutPIDto>>(resp);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult ObtenerTRAutDepositos(string admId)
+		{
+			if (admId == null) return BadRequest("No se recepcionaron los datos");
+
+			List<TRAutDepoDto> resp = _productosSv.ObtenerTRAut_Depositos(admId);
+
+			var response = new ApiResponse<List<TRAutDepoDto>>(resp);
+			return Ok(response);
+		}
 
         [HttpGet]
         [Route("[action]")]

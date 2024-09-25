@@ -2,7 +2,9 @@
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Rpr;
+using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.CuentaComercial;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +12,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq.Dynamic.Core;
+using X.PagedList;
 
 namespace gc.sitio.Controllers
 {
@@ -226,6 +229,23 @@ namespace gc.sitio.Controllers
 		#endregion
 
 		#region COMPRAS
+		public List<TipoComprobanteDto> TiposComprobantePorCuenta
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("TiposComprobantePorCuenta");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<TipoComprobanteDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("TiposComprobantePorCuenta", json);
+			}
+		}
 		public CuentaDto CuentaComercialSeleccionada
 		{
 			get
@@ -407,6 +427,43 @@ namespace gc.sitio.Controllers
 		}
 		#endregion
 
+		#region TRANSFERENCIAS
+		protected List<TRAutPIDto> TRAutPedidosSucursalLista //ListaPedidosSucursal
+		{
+			get
+			{
+				string json = _context.HttpContext.Session.GetString("TRAutPedidosSucursalLista");
+				if (string.IsNullOrEmpty(json))
+				{
+					return new();
+				}
+				return JsonConvert.DeserializeObject<List<TRAutPIDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("TRAutPedidosSucursalLista", json);
+			}
+		}
+		protected List<TRAutPIDto> TRAutPedidosIncluidosILista
+		{
+			get
+			{
+				string json = _context.HttpContext.Session.GetString("TRAutPedidosIncluidosILista");
+				if (string.IsNullOrEmpty(json))
+				{
+					return new();
+				}
+				return JsonConvert.DeserializeObject<List<TRAutPIDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("TRAutPedidosIncluidosILista", json);
+			}
+		}
+		#endregion
+
 		#region Metodos generales
 		//protected void VerificaAutenticacion()
 		//{
@@ -416,6 +473,11 @@ namespace gc.sitio.Controllers
 		//        _context.HttpContext.Response.Redirect(Url.Action("Login", "Token", new { area = "seguridad" }), true);
 		//    }
 		//}
+		public GridCore<T> ObtenerGridCore<T>(List<T> lista) where T : Dto
+		{
+			var listaDetalle = new StaticPagedList<T>(lista, 1, 999, lista.Count);
+			return new GridCore<T>() { ListaDatos = listaDetalle, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
+		}
 		#endregion
 	}
 }

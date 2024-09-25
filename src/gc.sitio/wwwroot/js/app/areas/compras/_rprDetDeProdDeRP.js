@@ -187,7 +187,6 @@ function RegresarDesdeComprobanteRP() {
 				return true;
 			}, true, ["Aceptar", "Cancelar"], "info!", null);
 		} else {
-			debugger;
 			var uri = VolverANuevaAutUrl + "?rp=" + $("#Rp").val();
 			window.location.href = uri;
 		}
@@ -213,7 +212,6 @@ function GuardarDetalleDeProductos(guardado) {
 			}, false, ["Aceptar"], "warn!", null);
 		} else {
 			CerrarWaiting();
-			debugger;
 			var uri = VolverANuevaAutUrl + "?rp=" + $("#Rp").val();
 			window.location.href = uri;
 		}

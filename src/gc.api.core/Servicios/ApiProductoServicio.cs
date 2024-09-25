@@ -7,6 +7,7 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
+using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
@@ -237,6 +238,24 @@ namespace gc.api.core.Servicios
 			}
 		}
 
+		public List<ProductoBusquedaDto> ProductoBuscarPorIds(BusquedaBase busqueda)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PRODUCTO_BUSQUEDA_MUCHOS;
+
+			var ps = new List<SqlParameter>()
+			{
+					new SqlParameter("@lista",busqueda.Busqueda),
+					new SqlParameter("@lp_id",busqueda.ListaPrecio?? ""),
+					new SqlParameter("@adm_id",busqueda.Administracion),
+					new SqlParameter("co_tipo",busqueda.TipoOperacion),
+					new SqlParameter("cli_dto",busqueda.DescuentoCli)
+			};
+
+			List<ProductoBusquedaDto> producto = _repository.EjecutarLstSpExt<ProductoBusquedaDto>(sp, ps, true);
+
+			return producto;
+		}
+
 		public List<ProductoListaDto> ProductoListaBuscar(BusquedaProducto search)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PRODUCTO_BUSQUEDA;
@@ -294,6 +313,19 @@ namespace gc.api.core.Servicios
 			var ps = new List<SqlParameter>()
 			{
 				new("@rp",rp),
+			};
+			List<RespuestaDto> productos = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+
+			return productos;
+		}
+
+		public List<RespuestaDto> RPRConfirma(string rp, string adm_id)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_CONFIRMA;
+			var ps = new List<SqlParameter>()
+			{
+				new("@rp",rp),
+				new("@adm_id",adm_id),
 			};
 			List<RespuestaDto> productos = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 
@@ -382,6 +414,53 @@ namespace gc.api.core.Servicios
             return resp.First();
         }
 
+		public List<TRPendienteDto> ObtenerTRPendientes(ObtenerTRPendientesRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Pendientes;
+			var ps = new List<SqlParameter>()
+			{
+				new("@adm_id",request.admId),
+				new("@usu_id",request.usuId),
+				new("@tit_id",request.titId),
+			};
+			List<TRPendienteDto> respuesta = _repository.EjecutarLstSpExt<TRPendienteDto>(sp, ps, true);
+			return respuesta;
+		}
+
+		public List<TRAutSucursalesDto> ObtenerTRAut_Sucursales(string admId)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Aut_Sucursales;
+			var ps = new List<SqlParameter>()
+			{
+				new("@adm_id",admId),
+			};
+			List<TRAutSucursalesDto> respuesta = _repository.EjecutarLstSpExt<TRAutSucursalesDto>(sp, ps, true);
+			return respuesta;
+		}
+
+		public List<TRAutPIDto> ObtenerTRAut_PI(string admId, string admIdLista)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Aut_PI;
+			var ps = new List<SqlParameter>()
+			{
+				new("@adm_id",admId),
+				new("@adm_id_lista",admIdLista),
+			};
+			List<TRAutPIDto> respuesta = _repository.EjecutarLstSpExt<TRAutPIDto>(sp, ps, true);
+			return respuesta;
+		}
+
+		public List<TRAutDepoDto> ObtenerTRAut_Depositos(string admId)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Aut_Depositos;
+			var ps = new List<SqlParameter>()
+			{
+				new("@adm_id",admId),
+			};
+			List<TRAutDepoDto> respuesta = _repository.EjecutarLstSpExt<TRAutDepoDto>(sp, ps, true);
+			return respuesta;
+		}
+          
         /// <summary>
         /// para generar una nueva TI para tr sin autorizacion
         /// </summary>

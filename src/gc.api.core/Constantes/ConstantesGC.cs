@@ -19,8 +19,9 @@
             public const string SP_RUBRO_LISTA = "dbo.SPGECO_Rubros_lista";
 
             public const string SP_PRODUCTO_BUSQUEDA = "dbo.spgeco_p_busqueda";
+			public const string SP_PRODUCTO_BUSQUEDA_MUCHOS = "dbo.spgeco_p_busqueda_muchos";
 
-            public const string SP_INFOPROD_STKD = "dbo.spgeco_p_info_stk_depo";
+			public const string SP_INFOPROD_STKD = "dbo.spgeco_p_info_stk_depo";
             public const string SP_INFOPROD_STKBOX = "dbo.spgeco_p_info_stk_box";
             public const string SP_INFOPROD_STKA = "dbo.spgeco_p_info_stk_adm";
             public const string SP_INFOPROD_MOVSTK = "dbo.spgeco_p_info_mov_stk";
@@ -43,7 +44,7 @@
 			public const string SP_RPR_DATOS_JSON = "spgeco_rpr_datos_json";
 			public const string SP_RPR_VER_COMPTES = "spgeco_rpr_ver_comptes";
 			public const string SP_RPR_VER_CONTEOS = "spgeco_rpr_ver_conteos";
-
+			public const string SP_RPR_CONFIRMA = "spgeco_rpr_confirmar";
 
 			public const string SP_CUENTA_BUSQUEDA = "dbo.spgeco_c_busqueda_lista";
 
@@ -53,13 +54,14 @@
             public const string SP_TR_Lista_Productos = "SPGECO_TR_Lista_Productos";
             public const string SP_TR_Carrito_Valida = "SPGECO_TR_Carrito_Valida";
             public const string SP_TR_Carrito_Carga = "SPGECO_TR_Carrito_Carga";
+			public const string SP_TR_Pendientes = "SPGECO_TR_Pendientes";
+			public const string SP_TR_Aut_Sucursales = "SPGECO_TR_Aut_Sucursales";
+			public const string SP_TR_Aut_PI = "SPGECO_TR_Aut_PI";
+			public const string SP_TR_Aut_Depositos = "SPGECO_TR_Aut_Depositos";
             public const string SP_TR_Control_Salida = "SPGECO_TR_Ctl_Salida";
             public const string SP_TR_Nueva_Sin_Au = "SPGECO_TR_Nueva_Sin_Aut";
             public const string SP_TR_VALIDA_PENDIENTE = "SPGECO_TR_Valida_pendiente";
             public const string SP_TR_CONFIRMA = "SPGECO_TR_Confirmar";
-
-
-            
 
             public const string SP_TI_VALIDA_USUARIO = "SPGECO_USU_OK";
 

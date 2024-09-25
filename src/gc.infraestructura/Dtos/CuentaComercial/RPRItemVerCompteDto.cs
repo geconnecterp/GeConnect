@@ -1,4 +1,6 @@
 ﻿
+using System.Drawing;
+
 namespace gc.infraestructura.Dtos.CuentaComercial
 {
 	public class RPRItemVerCompteDto : Dto
@@ -25,6 +27,7 @@ namespace gc.infraestructura.Dtos.CuentaComercial
 		public string Cantidad_c { get; set; } = string.Empty;
 		public string No_recibido { get; set; } = string.Empty;
 		public string Fila { get; set; } = string.Empty;
+		public string Row_color { get; set; } = "#ffffff";
 
-	}
+    }
 }

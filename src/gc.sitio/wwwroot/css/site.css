@@ -51,6 +51,11 @@ fieldset {
     overflow: auto;
 }
 
+.table-wrapper-xs {
+    max-height: 270px;
+    max-width: 98%;
+    overflow: auto;
+}
 /*Hide Arrows/Spinners from input type number*/
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,

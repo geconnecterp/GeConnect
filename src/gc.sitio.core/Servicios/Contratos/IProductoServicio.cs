@@ -6,13 +6,16 @@ using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen.Info;
+using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 
 namespace gc.sitio.core.Servicios.Contratos
 {
     public interface IProductoServicio : IServicio<ProductoDto>
     {
         Task<ProductoBusquedaDto> BusquedaBaseProductos(BusquedaBase busqueda, string token);
-        Task<List<ProductoListaDto>> BusquedaListaProductos(BusquedaProducto search, string tokenCookie);
+        Task<List<ProductoBusquedaDto>> BusquedaBaseProductosPorIds(BusquedaBase busqueda, string token);
+
+		Task<List<ProductoListaDto>> BusquedaListaProductos(BusquedaProducto search, string tokenCookie);
         Task<List<InfoProdStkD>> InfoProductoStkD(string id, string admId, string token);
         Task<List<InfoProdStkBox>> InfoProductoStkBoxes(string id, string adm, string depo, string token);
         Task<List<InfoProdStkA>> InfoProductoStkA(string id, string admId, string token);
@@ -35,12 +38,18 @@ namespace gc.sitio.core.Servicios.Contratos
 
 
         Task<List<AutorizacionTIDto>> TRObtenerAutorizacionesPendientes(string admId, string usuId, string titId,string token);
-        Task<List<BoxRubProductoDto>> PresentarBoxDeProductos(string tr, string admId, string usuId, string token);
+        Task<List<TRPendienteDto>> TRObtenerPendientes(string admId, string usuId, string titId, string token);
+
+		Task<List<BoxRubProductoDto>> PresentarBoxDeProductos(string tr, string admId, string usuId, string token);
         Task<List<BoxRubProductoDto>> PresentarRubrosDeProductos(string tr, string admId, string usuId, string token);
         Task<List<TiListaProductoDto>> BuscaTIListaProductos(string tr, string admId, string usuId, string? boxid, string? rubId, string token);
+        Task<List<RespuestaDto>> RPRConfirmarRPR(string rp, string adm_id, string token);
 
         Task<List<TipoMotivoDto>> ObtenerTiposMotivo(string token);
         Task<RespuestaGenerica<RespuestaDto>> ResguardarProductoCarrito(TiProductoCarritoDto request,string token);
+        Task<List<TRAutSucursalesDto>> TRObtenerAutSucursales(string admId, string token);
+        Task<List<TRAutPIDto>> TRObtenerAutPI(string admId, string admIdLista, string token);
+        Task<List<TRAutDepoDto>> TRObtenerAutDepositos(string admId, string token);
 
         Task<RespuestaGenerica<RespuestaDto>> ControlSalidaTI(string ti,string adm,string usu, string token);
         Task<RespuestaGenerica<TIRespuestaDto>> TIValidaPendiente(string usu, string token);
