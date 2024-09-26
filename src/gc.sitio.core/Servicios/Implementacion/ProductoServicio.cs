@@ -1260,7 +1260,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 apiResponse = JsonConvert.DeserializeObject<ApiResponse<TIRespuestaDto>>(stringData);
                 if (apiResponse.Data.resultado == "0")
                 {
-                    return new RespuestaGenerica<TIRespuestaDto> { Ok = true, Mensaje = "OK" };
+                    return new RespuestaGenerica<TIRespuestaDto> { Ok = true, Mensaje = "OK", Entidad = apiResponse.Data};
                 }
                 else
                 {

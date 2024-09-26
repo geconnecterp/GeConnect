@@ -41,7 +41,10 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             {
                 return RedirectToAction("Login", "Token", new { area = "seguridad" });
             }
-
+            ListadoTIAutoPendientes = new();
+            TIActual = new();
+            TI_ModId = string.Empty;
+            TI_CS = false;
             //se verificará si el usuario tiene alguna TR PENDIENTE
             var resu = await _productoServicio.TIValidaPendiente(UserName, TokenCookie);
 
@@ -53,6 +56,10 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 var tiId = resu.Entidad.Ti;
 
                 await ObtenerTIPendiente(tipo, tiId);
+
+                //REDIRECCIONAR AL CARRITO                
+                return RedirectToAction("TICargaCarrito", "trint", new { area = "pocketppal", esrubro = false, esbox = false, boxid = "", rubroid = "", rubrogid = "", tiId = tipo});
+
             }
 
             //este viewbag es para que aparezca en la segunda fila del encabezado la leyenda que se quiera.
@@ -60,10 +67,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             var sigla = "ti";
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
             ViewBag.AppItem = modulo;
-            ListadoTIAutoPendientes = new();
-            TIActual = new();
-            TI_ModId = string.Empty;
-            TI_CS = false;
+            
             return View();
         }
 
@@ -79,16 +83,11 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         {
             TI_ModId = tipo;
             TI_CS = false;
-            var autos = await _productoServicio.TRObtenerAutorizacionesPendientes(AdministracionId, UserName, TI_ModId, TokenCookie);
+            var ti = TIActual;
+            ti.Ti = tiId;
+            ti.TipoTI = tipo;
+            ti.SinAU = true;
 
-            ListadoTIAutoPendientes = autos;
-            var ti = ListadoTIAutoPendientes.SingleOrDefault(x => x.Ti.Equals(tiId));
-            if (ti == null)
-            {
-                //no se encontro la TI
-                throw new NegocioException("No se encontró la TI a procesar.");
-            }
-            ti.TipoTI = TI_ModId;
             TIActual = ti;
         }
 
@@ -376,7 +375,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         /// <param name="rubrogid"></param>
         /// <returns></returns>
         [HttpGet]
-        public IActionResult TICargaCarrito(bool esrubro, bool esbox, string? boxid, string? rubroid, string? rubrogid, string tiId = "")
+        public async Task<IActionResult> TICargaCarrito(bool esrubro, bool esbox, string? boxid, string? rubroid, string? rubrogid, string tiId = "")
         {
             string? volver;
             AutorizacionTIDto ti;
@@ -388,30 +387,41 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 {
                     return RedirectToAction("Login", "Token", new { area = "seguridad" });
                 }
-
+                ti = TIActual;
                 //tengo que verificar si la acción es llamada desde una autorización o viene directamente desde un proceso sin AU
                 if ((string.IsNullOrEmpty(tiId) || string.IsNullOrWhiteSpace(tiId)) && string.IsNullOrEmpty(boxid) && string.IsNullOrEmpty(rubroid))
                 {
                     throw new NegocioException(Constantes.MensajeError.TI_PROC_SIN_ID);
                 }
 
-                if (tiId.Equals(Constantes.ValoresDefault.TI_Dep_SAU) || tiId.Equals(Constantes.ValoresDefault.TI_Box_SAU))
-                {                                      
+                if ((tiId.Equals(Constantes.ValoresDefault.TI_Dep_SAU) || tiId.Equals(Constantes.ValoresDefault.TI_Box_SAU))&& string.IsNullOrEmpty(ti.Ti))
+                {
+                    #region Se llama al generador de nuevo TR para operación sin AU
+                    var resu = await _productoServicio.TINueva_SinAu(tiId, AdministracionId, UserName, TokenCookie);
+                    if (resu.Ok)
+                    {
+                        ti = new();
+                        ti.Ti = resu.Entidad.Ti; //este es el identificador de la autorizacion pendiente temporal                        
+                    }
+                    else
+                    {
+                        throw new NegocioException("No se pudo generar el Nuevo TI. Intente de nuevo más tarde.");
+                    }
+                    #endregion
+
                     TI_ModId = tiId; //resguardamos que es valor E u O
                     TI_CS = false;
-                    ti = new();
-                    ti.Ti = Constantes.ValoresDefault.TI_SIN_AU;
+
                     ti.TipoTI = TI_ModId;
                     ti.SinAU = true;
                     TIActual = ti;
                     ListadoTIAutoPendientes = new();
                 }
 
-
                 if (!esrubro && !esbox)
                 {
                     //verificamos que luego de cargar producto no conocemos cual es la lista que se debe presentar. Por lo qeu se deberá tomar los valores resguardados en TIActual
-                    ti = TIActual;
+                    //ti = TIActual;
                     esrubro = ti.EsRubro;
                     rubrogid = ti.RubroGId;
                     rubroid = ti.RubroId;
@@ -421,7 +431,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 else
                 {
                     //resguardamos la seleccion realizada ya que si se conoce que se pide
-                    ti = TIActual;
+                    //ti = TIActual;
                     ti.EsRubro = esrubro;
                     ti.RubroGId = rubrogid;
                     ti.RubroId = rubroid ?? "%";
@@ -456,7 +466,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             try
             {
                 var selec = TIActual;
-                List<TiListaProductoDto> regs = await _productoServicio.BuscaTIListaProductos(tr: TIActual.Ti, admId: AdministracionId, usuId: UserName, boxid: selec.BoxId, rubId: selec.RubroId, token: TokenCookie);
+                List<TiListaProductoDto> regs = await _productoServicio.BuscaTIListaProductos(tr: TIActual.Ti, admId: AdministracionId, usuId: UserName, boxid: selec.BoxId??"%", rubId: selec.RubroId??"%", token: TokenCookie);
                 ListaProductosActual = regs;
                 grid = ObtenerGrillaTIListaProductos(regs);
             }
@@ -509,7 +519,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                 //se verifica que si el pid no trae productos, pero es proceso B o D, deberia continuar sin buscar producto
                 //en el if siguiente niego toda la premisa... si no se cumple la premisa, DEBE BUSCAR.
-                if (!((string.IsNullOrWhiteSpace(pId) || string.IsNullOrEmpty(pId)) && (TI_ModId.Equals("B") || TI_ModId.Equals("D"))))
+                if (!((string.IsNullOrWhiteSpace(pId) || string.IsNullOrEmpty(pId)) && (TI_ModId.Equals("E") || TI_ModId.Equals("O"))))
                 {
 
                     prod = ListaProductosActual.FirstOrDefault(x => x.P_id == pId);
@@ -605,14 +615,9 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 }
 
                 TiProductoCarritoDto request = new TiProductoCarritoDto();
-                if ((ti.TipoTI.Equals("D") || ti.TipoTI.Equals("B")) && ti.Ti.Equals(Constantes.ValoresDefault.TI_SIN_AU))
-                {
-                    request.Ti = string.Empty;
-                }
-                else
-                {
-                    request.Ti = ti.Ti;
-                }
+
+                request.Ti = ti.Ti;
+
                 request.AdmId = AdministracionId;
                 request.UsuId = UserName;
                 request.BoxId = ti.PBoxId;
@@ -657,7 +662,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             {
 
                 sel = TIActual;
-                if ((sel.TipoTI.Equals("D") || sel.TipoTI.Equals("B") && sel.SinAU))
+                if ((sel.TipoTI.Equals("E") || sel.TipoTI.Equals("O") && sel.SinAU))
                 {
                     sel.PBoxId = boxId;
                     TIActual = sel;
@@ -699,7 +704,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             try
             {
                 sel = TIActual;
-                if ((sel.TipoTI.Equals("D") || sel.TipoTI.Equals("B") && sel.SinAU))
+                if ((sel.TipoTI.Equals("E") || sel.TipoTI.Equals("O") && sel.SinAU))
                 {
                     return Json(new { error = false, warn = false, msg = "Producto es Correcto" });
                 }
@@ -739,15 +744,6 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             try
             {
                 sel = TIActual;
-
-                if (sel.Ti.Equals(Constantes.ValoresDefault.TI_SIN_AU))
-                {
-                    sel.SinAU = true;
-                }
-                else
-                {
-                    sel.SinAU = false;
-                }
 
                 return Json(new { error = false, auto = sel });
             }
