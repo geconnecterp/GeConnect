@@ -55,6 +55,9 @@ function cargarCarrito() {
     //aca se validará previamente si la cantidad ingresada corresponde a lo solicitado
     AbrirWaiting()
     var cantSolic = autorizacionActual.pPedido;
+    if (autorizacionActual.sinAU === true) {
+        autorizacionActual.pId = $("#P_id").val();
+    }
     var upId = productoBase.up_id;
     var cantidad = 0;
     var up = parseInt($("#up").val());
