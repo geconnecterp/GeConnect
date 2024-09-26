@@ -609,7 +609,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 {
                     return Json(new { error = false, warn = true, msg = $"La cantidades de los productos a cargar siempre tienen que ser positivas, mayores a 0 (cero)." });
                 }
-                if (ti.PPedido < cantidad && !TIActual.SinAU) //verificamos las cantidades siempre y cuando haya una autorización
+                if (ti.PPedido < cantidad && (!TIActual.SinAU || !desarma)) //verificamos las cantidades siempre y cuando haya una autorización o en el caso de transferencia de box completo con desarma = false
                 {
                     return Json(new { error = false, warn = true, msg = $"No se puede cargar más unidades o cantidades ({cantidad}) que las pedidas ({ti.PPedido})" });
                 }
