@@ -37,6 +37,6 @@ namespace gc.api.core.Contratos.Servicios
         List<TRAutSucursalesDto> ObtenerTRAut_Sucursales(string admId);
         List<TRAutPIDto> ObtenerTRAut_PI(string admId, string admIdLista);
         List<TRAutDepoDto> ObtenerTRAut_Depositos(string admId);
-
+        List<TRAutAnalizaDto> TRAutAnaliza(string listaPi, string listaDepo, bool stkExistente, bool sustituto, int palletNro);
 	}
 }

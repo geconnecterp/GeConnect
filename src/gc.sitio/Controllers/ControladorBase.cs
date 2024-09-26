@@ -462,6 +462,23 @@ namespace gc.sitio.Controllers
 				_context.HttpContext.Session.SetString("TRAutPedidosIncluidosILista", json);
 			}
 		}
+		protected List<TRAutSucursalesDto> TRSucursalesLista
+		{
+			get
+			{
+				string json = _context.HttpContext.Session.GetString("TRSucursalesLista");
+				if (string.IsNullOrEmpty(json))
+				{
+					return new();
+				}
+				return JsonConvert.DeserializeObject<List<TRAutSucursalesDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("TRSucursalesLista", json);
+			}
+		}
 		#endregion
 
 		#region Metodos generales

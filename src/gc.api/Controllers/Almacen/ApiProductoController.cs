@@ -478,6 +478,18 @@ namespace gc.api.Controllers.Almacen
 			var response = new ApiResponse<List<TRAutDepoDto>>(resp);
 			return Ok(response);
 		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult TRAutAnaliza(string listaPi, string listaDepo, bool stkExistente, bool sustituto, int palletNro)
+		{
+			if (string.IsNullOrWhiteSpace(listaPi) || string.IsNullOrWhiteSpace(listaDepo)) return BadRequest("No se recepcionaron los datos");
+
+			List<TRAutAnalizaDto> resp = _productosSv.TRAutAnaliza(listaPi, listaDepo, stkExistente, sustituto, palletNro);
+
+			var response = new ApiResponse<List<TRAutAnalizaDto>>(resp);
+			return Ok(response);
+		}
 		/// <summary>
 		/// Método destinado a validar la estructura del Json antes de ser enviado a la base de datos
 		/// </summary>

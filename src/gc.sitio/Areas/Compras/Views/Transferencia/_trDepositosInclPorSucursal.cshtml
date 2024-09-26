@@ -14,7 +14,7 @@
 			{
 				<tr onclick="selectTRDepositosDeEnvioRow(this)">
 					<td>@item.depo_nombre</td>
-					<td>@item.seleccionado</td>  @* //TODO: Reemplazar por checkbox *@
+					<td><input type="checkbox" name="tienePI" id="chkTienePI" value="@item.seleccionado" @((item.seleccionado == false ? "" : "checked")) /></td>
 					<td style="width:0%; display:none;">@item.depo_id</td>
 				</tr>
 			}

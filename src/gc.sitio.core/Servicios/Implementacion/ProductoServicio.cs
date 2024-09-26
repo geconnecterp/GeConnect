@@ -64,6 +64,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string TR_AUT_SUCURSALES = "/ObtenerTRAutSucursales";
 		private const string TR_AUT_PI = "/ObtenerTRAutPI";
 		private const string TR_AUT_Depositos = "/ObtenerTRAutDepositos";
+		private const string TR_AUT_Analiza = "/TRAutAnaliza";
 
 		private readonly AppSettings _appSettings;
 
@@ -862,6 +863,37 @@ namespace gc.sitio.core.Servicios.Implementacion
 					return new();
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<TRAutDepoDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<TRAutAnalizaDto>> TRAutAnaliza(string listaPi, string listaDepo, bool stkExistente, bool sustituto, int palletNro, string token)
+		{
+			ApiResponse<List<TRAutAnalizaDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{TR_AUT_Analiza}?listaPi={listaPi}&listaDepo={listaDepo}&stkExistente={stkExistente}&sustituto={sustituto}&palletNro={palletNro}";
+
+			response = await client.GetAsync(link);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros listaPi:{listaPi} listaDepo:{listaDepo}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<TRAutAnalizaDto>>>(stringData);
 				return apiResponse.Data;
 			}
 			else

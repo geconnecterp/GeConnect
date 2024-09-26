@@ -1,10 +1,14 @@
-﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿using gc.api.core.Entidades;
+using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.Gen;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using System.Reflection;
+using System.Security.Policy;
 
 
 namespace gc.sitio.Areas.Compras.Controllers
@@ -67,6 +71,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					PreCargarListaAutPI(sucursales);
 					VerificarSiSucursalTieneOrdenes(itemsAutSucursales);
 				}
+				TRSucursalesLista = itemsAutSucursales;
 				model.ListaPedidosSucursal = ObtenerGridCore<TRAutPIDto>([]);
 				model.ListaPedidosIncluidos = ObtenerGridCore<TRAutPIDto>([]);
 				model.ListaDepositosDeEnvio = ObtenerGridCore<TRAutDepoDto>([]);
@@ -165,7 +170,75 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return PartialView("_trPedidosInclParaAutoTR", model);
 		}
 
+		public async Task<IActionResult> ActualizarInfoEnListaDeSucursalesTR()
+		{
+			var model = new GridCore<TRAutSucursalesDto>();
+			try
+			{
+				var listaSucursal = TRSucursalesLista;
+				foreach (var sucursalItem in listaSucursal)
+				{
+					if (TRAutPedidosIncluidosILista.Exists(x => x.adm_id.Equals(sucursalItem.adm_id)))
+						sucursalItem.tiene_pi = true;
+					else
+						sucursalItem.tiene_pi = false;
+				}
+				model = ObtenerGridCore<TRAutSucursalesDto>(listaSucursal);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar actualizar la información de sucursales.");
+				TempData["error"] = "Hubo algun problema al intentar actualizar la información de sucursales. Si el problema persiste informe al Administrador";
+			}
+			return PartialView("_trListaSucursalesTR", model);
+		}
+
+		/// <summary>
+		/// Método que hace analisis de parámetros (SPGECO_TR_Aut_Analiza) 
+		/// </summary>
+		/// <param name="depositos">lista de string concatenadas con '@' e indica depo_id</param>
+		/// <param name="stkExistente">booleano</param>
+		/// <param name="sustituto">booleano</param>
+		/// <param name="maxPallet">intero entre 1 y 80</param>
+		/// <returns></returns>
+		public async Task<JsonResult> TRAnalizarParametrosUrl(string depositos, bool stkExistente, bool sustituto, int maxPallet)
+		{
+			try
+			{
+				if (string.IsNullOrWhiteSpace(depositos))
+				{
+					return Json(new { error = true, warn = false, msg = "Se debe indicar al menos un depósito." });
+				}
+				else if (maxPallet < 1 || maxPallet > 80)
+				{
+					return Json(new { error = true, warn = false, msg = $"El valor máximo de pallet x autorización no es válido. Min '1' Max '80'." });
+				}
+				else
+				{
+					//Obtenemos la lista de Pedidos Incluidos (solo pi_compte)
+					var listaPI = ObtenerStringListDePedidosIncluidos();
+					var itemsAutAnaliza = await _productoServicio.TRAutAnaliza(listaPI, depositos,stkExistente, sustituto, maxPallet, TokenCookie);
+					return Json(new { error = false, warn = false, vacio = true, cantidad = 0, msg = "" });
+				}
+			}
+			catch (NegocioException neg)
+			{
+				return Json(new { error = false, warn = true, msg = neg.Message, vacio = false, cantidad = 0 });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				return Json(new { error = true, msg = "Algo no fue bien al analizar los parámetros de la transferencia solicitada, intente nuevamente mas tarde." });
+			}
+		}
+
 		#region métodos privados
+		private string ObtenerStringListDePedidosIncluidos()
+		{
+			var lista= TRAutPedidosIncluidosILista.Select(x=>x.pi_compte).Distinct().ToList();
+			var listaString = string.Join("@", lista);
+			return listaString;
+		}
 		private void PreCargarListaAutPI(Dictionary<string, string> sucursales)
 		{
 			if (sucursales.Count == 0) return;

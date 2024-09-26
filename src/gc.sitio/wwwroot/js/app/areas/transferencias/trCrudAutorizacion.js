@@ -1,10 +1,106 @@
 ﻿$(function () {
+	$("#btnAnalizar").on("click", AnalizarTR);
 	AddEventListenerToGrid("tbListaSucursales");
+	setMaxValueTotxtMaxPallet();
 });
+
+function setMaxValueTotxtMaxPallet() {
+	const cant = document.getElementById("txtMaxPallet");
+	cant.addEventListener('input', function (e) {
+		if (!isValid(this.value))
+			cant.value = 80;
+	});
+}
+function isValid(value) {
+	var cantUL = document.getElementById("txtMaxPallet")
+	if (parseInt(value) <= cantUL.getAttribute('max'))
+		return true;
+	return false;
+}
+
+function AnalizarTR() {
+	var depositos = "";
+	if (ExistenDepositosSeleccionados() && ExistenPedidosIncluidos()) {
+		depositos = ObtenerListaDepositoSeleccionado();
+		var stkExistente = $("#chkConsiderarStock").val();
+		var sustituto = $("#chkModificarYSustituto").val();
+		var maxPallet = $("#txtMaxPallet").val();
+		var datos = { depositos, stkExistente, sustituto, maxPallet };
+		PostGen(datos, TRAnalizarParametrosUrl, function (o) {
+			if (o.error === true) {
+				AbrirMensaje("Atención", o.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			} else if (o.warn === true) {
+				AbrirMensaje("Atención", o.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "warn!", null);
+			} else if (o.codigo !== "") {
+				AbrirMensaje("Atención", o.msg, function (e) {
+					$("#msjModal").modal("hide");
+					window.location.href = TRAbrirVistaAutorizacionesUrl;
+					return true;
+				}, false, ["Aceptar"], "info!", null);
+			} else {
+				window.location.href = TRAbrirVistaAutorizacionesUrl;
+			}
+		});
+	}
+}
+
+function ExistenPedidosIncluidos() {
+	var rowCount = $('#tbListaPedidosIncluidos tbody tr').length;
+	if (rowCount && rowCount > 1) {
+		return true;
+	}
+	else {
+		AbrirMensaje("Atención", "Debe al menos agregar un Pedido de Sucursal.", function () {
+			$("#msjModal").modal("hide");
+			return false;
+		}, false, ["Aceptar"], "error!", null);
+	}
+}
+
+function ExistenDepositosSeleccionados() {
+	
+	var rowCount = $('#tbDepositosDeEnvio tr').length;
+	if (rowCount && rowCount > 1) {
+		var listaDepo = ObtenerListaDepositoSeleccionado();
+		if (listaDepo && listaDepo.length > 0) {
+			return true;
+		}
+		else {
+			AbrirMensaje("Atención", "Debe al menos seleccionar un depósito.", function () {
+				$("#msjModal").modal("hide");
+				return false;
+			}, false, ["Aceptar"], "error!", null);
+		}
+	}
+	else {
+		AbrirMensaje("Atención", "No existen depósito para incluir en el análisis.", function () {
+			$("#msjModal").modal("hide");
+			return false;
+		}, false, ["Aceptar"], "error!", null);
+	}
+}
+
+function ObtenerListaDepositoSeleccionado() {
+	var lista = "";
+	$('#tbDepositosDeEnvio tbody tr').each(function (index, tr) {
+		if (tr.cells[1] && tr.cells[1].firstChild) {
+			if (tr.cells[1].firstChild.checked) {
+				lista += tr.cells[2].innerText.trim() + "@";
+			}
+		}
+	});
+	return lista.substring(0, lista.length - 1);
+}
 
 function selectTRSucursalesRow(x) {
 	AbrirWaiting();
-	var admId = x.cells[2].innerText.trim()
+	var admId = x.cells[3].innerText.trim()
 	if (admId && admId !== "") {
 		var datos = { admId };
 		PostGenHtml(datos, TRCargarPedidosPorSucursalUrl, function (obj) {
@@ -46,15 +142,57 @@ function AddEventListenerToGrid(tabla) {
 	}
 }
 
-function selectPI(x) {
-	console.log(x.dataset.interaction); //TODO -> Agregar el PI en la grilla de abajo via PostGenHtml, x.dataset.interaction tiene el pi_compte
+function agregarAPedidosIncl(x) {
+	AbrirWaiting();
+	var picompte = x.dataset.interaction;
+	if (picompte) {
+		var datos = { picompte };
+		PostGenHtml(datos, TRAgregarAPedidosIncluidosParaAutUrl, function (obj) {
+			$("#divListaPedidosIncluidos").html(obj);
+			//SelecccionarPrimerRegistroConteos();
+			AddEventListenerToGrid("tbListaPedidosIncluidos");
+			ActualizarInfoSucursales();
+			CerrarWaiting();
+			return true
+		});
+	}
+	CerrarWaiting();
+}
+
+function quitarDePedidosIncl(x) {
+	AbrirWaiting();
+	var picompte = x.dataset.interaction;
+	if (picompte) {
+		var datos = { picompte };
+		PostGenHtml(datos, TRQuitarDePedidosIncluidosParaAutUrl, function (obj) {
+			$("#divListaPedidosIncluidos").html(obj);
+			//SelecccionarPrimerRegistroConteos();
+			AddEventListenerToGrid("tbListaPedidosIncluidos");
+			ActualizarInfoSucursales();
+			CerrarWaiting();
+			return true
+		});
+	}
+	CerrarWaiting();
+}
+
+function ActualizarInfoSucursales() {
+	AbrirWaiting();
+	var datos = {};
+	PostGenHtml(datos, TRActualizarInfoEnListaDeSucursalesUrl, function (obj) {
+		$("#divListaSucursales").html(obj);
+		//SelecccionarPrimerRegistroConteos();
+		AddEventListenerToGrid("tbListaSucursales");
+		CerrarWaiting();
+		return true
+	});
 }
 
 function selectTRPedidoIncluidoRow(x) {
 
 }
 
-function selectTRDepositosDeEnvioRow(x) { 
+function selectTRDepositosDeEnvioRow(x) {
 }
 
 function selectTRPedidoSucursalRow(x) {

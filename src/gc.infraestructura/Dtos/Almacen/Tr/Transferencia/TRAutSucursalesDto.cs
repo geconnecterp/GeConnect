@@ -7,5 +7,6 @@ namespace gc.infraestructura.Dtos.Almacen.Tr.Transferencia
 		public string adm_nombre { get; set; } = string.Empty;
 		public string orden { get; set; } = string.Empty;
 		public bool tiene_ordenes { get; set; } = false;
+		public bool tiene_pi { get; set; } = false;
 	}
 }

@@ -10,33 +10,44 @@
 					<legend>
 						<h5>Sucursales</h5>
 					</legend>
-					<div class="table-responsive text-nowrap table-wrapper">
-						<table class="table table-bordered table-hover" id="tbListaSucursales">
-							<thead class="table-dark">
-								<tr>
-									<th style="width:80%;">Sucursal Destino</th>
-									<th style="width:20%;">PI</th>
-									<th style="width:0%; display:none;">adm_id</th>
-								</tr>
-							</thead>
-							<tbody>
-								@foreach (var item in Model.ListaAutSucursales.ListaDatos)
-								{
-									<tr onclick="selectTRSucursalesRow(this)">
-										<td>@item.adm_nombre</td>
-										@if (item.tiene_ordenes)
-										{
-											<td><input type="checkbox" name="tieneOrdenes" value="@item.tiene_ordenes" checked disabled="disabled" /></td>
-										}
-										else
-										{
-											<td><input type="checkbox" name="tieneOrdenes" value="@item.tiene_ordenes" disabled="disabled" /></td>
-										}
-										<td style="display:none;">@item.adm_id</td>
+					<div id="divListaSucursales">
+						<div class="table-responsive text-nowrap table-wrapper">
+							<table class="table table-bordered table-hover" id="tbListaSucursales">
+								<thead class="table-dark">
+									<tr>
+										<th style="width:80%;">Sucursal Destino</th>
+										<th style="width:20%;">PS</th>
+										<th style="width:20%;">PI</th>
+										<th style="width:0%; display:none;">adm_id</th>
 									</tr>
-								}
-							</tbody>
-						</table>
+								</thead>
+								<tbody>
+									@foreach (var item in Model.ListaAutSucursales.ListaDatos)
+									{
+										<tr onclick="selectTRSucursalesRow(this)">
+											<td>@item.adm_nombre</td>
+											@if (item.tiene_ordenes)
+											{
+												<td><input type="checkbox" name="tieneOrdenes" value="@item.tiene_ordenes" checked disabled="disabled" /></td>
+											}
+											else
+											{
+												<td><input type="checkbox" name="tieneOrdenes" value="@item.tiene_ordenes" disabled="disabled" /></td>
+											}
+											@if (item.tiene_pi) //TODO: continuar con la funcionalidad de doble columna en lista de sucursales
+											{
+												<td><input type="checkbox" name="tienePI" value="@item.tiene_pi" checked disabled="disabled" /></td>
+											}
+											else
+											{
+												<td><input type="checkbox" name="tienePI" value="@item.tiene_pi" disabled="disabled" /></td>
+											}
+											<td style="display:none;">@item.adm_id</td>
+										</tr>
+									}
+								</tbody>
+							</table>
+						</div>
 					</div>
 				</fieldset>
 			</div>
@@ -71,8 +82,7 @@
 											<td>@item.pi_nota</td>
 											<td>@item.pit_desc</td>
 											<td><a asp-action="VerDetallePedidoDeSucursal" asp-controller="Transferencia" asp-area="Compras" class="btn btn-xs btn-outline-success" asp-route-picompte="@item.pi_compte"> <i class="bx bx-detail"></i></a></td>
-											@* <td><a asp-action="AgregarAPedidosIncluidosParaAutTR" asp-controller="Transferencia" asp-area="Compras" class="btn btn-xs btn-outline-primary" asp-route-picompte="@item.pi_compte"> <i class="bx bx-plus-circle"></i></a></td> *@
-											<td><input type="button" class="btn btn-xs btn-outline-primary" onclick="selectPI(@item.pi_compte);" /><i class="bx bx-plus-circle"></i></td>
+											<td><a class="btn btn-xs btn-outline-primary" data-interaction="@item.pi_compte" onclick="agregarAPedidosIncl(this);"> <i class="bx bx-plus-circle"></i></a></td>
 											<td style="display:none;">@item.adm_id</td>
 											<td style="display:none;">@item.adm_desc</td>
 										</tr>
@@ -112,7 +122,7 @@
 											<td>@item.pi_nota</td>
 											<td>@item.pit_desc</td>
 											<td><a asp-action="VerDetallePedidoDeSucursal" asp-controller="Transferencia" asp-area="Compras" class="btn btn-xs btn-outline-success" asp-route-picompte="@item.pi_compte"> <i class="bx bx-detail"></i></a></td>
-											<td><a asp-action="QuitarDePedidosIncluidosParaAutTR" asp-controller="Transferencia" asp-area="Compras" class="btn btn-xs btn-outline-primary" asp-route-picompte="@item.pi_compte"> <i class="bx bx-minus-circle"></i></a></td>
+											<td><a class="btn btn-xs btn-outline-danger" data-interaction="@item.pi_compte" onclick="quitarDePedidosIncl(this);"> <i class="bx bx-minus-circle"></i></a></td>
 										</tr>
 									}
 								</tbody>
@@ -142,7 +152,8 @@
 												{
 													<tr onclick="selectTRDepositosDeEnvioRow(this)">
 														<td>@item.depo_nombre</td>
-														<td>@item.seleccionado</td>
+														<td><input type="checkbox" name="tienePI" id="chkTienePI" value="@item.seleccionado" @((item.seleccionado == false ? "" : "checked")) /></td>
+														@* <td>@item.seleccionado</td> *@
 														<td style="width:0%; display:none;">@item.depo_id</td>
 													</tr>
 												}
@@ -157,6 +168,43 @@
 								<legend>
 									<h5>Opciones</h5>
 								</legend>
+								<div id="divOpciones">
+									<div class="row">
+										<div>
+											<div class="col-sm">
+												<div class="form-check">
+													<input class="form-check-input" type="checkbox" id="chkConsiderarStock" @((Model.ConsiderarStockExistente == false ? "" : "checked")) asp-for="@Model.ConsiderarStockExistente">
+													<label class="form-check-label" for="chkConsiderarStock"> Considerar STK Existente de Sucursales</label>
+												</div>
+											</div>
+											<div class="col-sm">
+												<div class="form-check">
+													<input class="form-check-input" type="checkbox" id="chkModificarYSustituto" @((Model.ModificarYSustituto == false ? "" : "checked")) asp-for="@Model.ModificarYSustituto">
+													<label class="form-check-label" for="chkModificarYSustituto"> Modificar y Sustituto</label>
+												</div>
+											</div>
+											<div class="col-sm">
+												<div>
+													<div class="row">
+														<div class="form-check col-7" style="padding-left: 6.8%;">
+															<input class="form-check-input" type="checkbox" id="chkMaxPallet" @((Model.MaximoPalletXAuto == false ? "" : "checked")) asp-for="@Model.MaximoPalletXAuto">
+															<label class="form-check-label" for="chkMaxPallet"> Máximo Pallet x Autorización de TR</label>
+														</div>
+														<div class="col-5">
+															<input type="number" id="txtMaxPallet" class="form-control" min="1" max="80" style="width: 45%;" value="@Model.MaximoPalletXAutoValor">
+														</div>
+													</div>
+												</div>
+											</div>
+											<div class="col-sm">
+												<a asp-action="TRAutorizacionesLista" asp-controller="Transferencia" asp-area="Compras" class="btn btn-primary" id="btnNuevaAut">
+													<span class="tf-icons bx bx-left-arrow-circle"></span>Regresar
+												</a>
+												<a href="#" id="btnAnalizar" class="btn btn-success"><span class="tf-icons bx bx-check-circle me-1">Analizar</span></a>
+											</div>
+										</div>
+									</div>
+								</div>
 							</fieldset>
 						</div>
 					</div>
@@ -170,6 +218,11 @@
 	<script type="text/javascript">
 		var TRCargarPedidosPorSucursalUrl = "@Url.Action("CargarPedidosPorSucursal", "transferencia", new { area = "Compras" })";
 		var TRCargarDepositosInclPorSucursalUrl = "@Url.Action("CargarDepositosInclPorSucursal", "transferencia", new { area = "Compras" })";
+		var TRAgregarAPedidosIncluidosParaAutUrl = "@Url.Action("AgregarAPedidosIncluidosParaAutTR", "transferencia", new { area = "Compras" })";
+		var TRQuitarDePedidosIncluidosParaAutUrl = "@Url.Action("QuitarDePedidosIncluidosParaAutTR", "transferencia", new { area = "Compras" })";
+		var TRActualizarInfoEnListaDeSucursalesUrl = "@Url.Action("ActualizarInfoEnListaDeSucursalesTR", "transferencia", new { area = "Compras" })";
+		var TRAnalizarParametrosUrl = "@Url.Action("AnalizarParametros", "transferencia", new { area = "Compras" })";
+		var TRAbrirVistaAutorizacionesUrl = "@Url.Action("AbrirVistaAutorizaciones", "transferencia", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/areas/transferencias/trCrudAutorizacion.js"></script>
 }
