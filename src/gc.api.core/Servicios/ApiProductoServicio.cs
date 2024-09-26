@@ -20,7 +20,7 @@ using System.Runtime.Intrinsics.Arm;
 
 namespace gc.api.core.Servicios
 {
-    public class ApiProductoServicio : Servicio<Producto>, IApiProductoServicio
+	public class ApiProductoServicio : Servicio<Producto>, IApiProductoServicio
 	{
 		public ApiProductoServicio(IUnitOfWork uow, IOptions<PaginationOptions> options) : base(uow, options)
 		{
@@ -393,26 +393,26 @@ namespace gc.api.core.Servicios
 			return comptes_pendientes;
 		}
 
-        public RespuestaDto ResguardarProductoCarrito(TiProductoCarritoDto request)
-        {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Carrito_Carga;
+		public RespuestaDto ResguardarProductoCarrito(TiProductoCarritoDto request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Carrito_Carga;
 			var ps = new List<SqlParameter>()
 			{
 				new("@ti", request.Ti),
-				new("@adm_id",request.AdmId), 
-				new("@usu_id",request.UsuId), 
+				new("@adm_id",request.AdmId),
+				new("@usu_id",request.UsuId),
 				new("@box_id",request.BoxId),
-				new("@desarma_box",request.Desarma), 
+				new("@desarma_box",request.Desarma),
 				new("@p_id",request.Pid),
 				new("@unidad_pres",request.Unidad_pres),
-				new("@bulto",request.Bulto), 
-				new("@us",request.Us), 
-				new("@cantidad",request.Cantidad), 
+				new("@bulto",request.Bulto),
+				new("@us",request.Us),
+				new("@cantidad",request.Cantidad),
 				new("@fv",request.Fvto)
 			};
-            List<RespuestaDto> resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
-            return resp.First();
-        }
+			List<RespuestaDto> resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return resp.First();
+		}
 
 		public List<TRPendienteDto> ObtenerTRPendientes(ObtenerTRPendientesRequest request)
 		{
@@ -475,68 +475,68 @@ namespace gc.api.core.Servicios
 			List<TRAutAnalizaDto> respuesta = _repository.EjecutarLstSpExt<TRAutAnalizaDto>(sp, ps, true);
 			return respuesta;
 		}
-	}
-          
-        /// <summary>
-        /// para generar una nueva TI para tr sin autorizacion
-        /// </summary>
-        /// <param name="ti">(tipo de TR, pasar “E” 'Depósitos Sin Autorización y “O”  Box Sin Autorización)</param>
-        /// <param name="adm"></param>
-        /// <param name="usu"></param>
-        /// <returns></returns>
-        public TIRespuestaDto TRNuevaSinAuto(string ti, string adm,string usu)
+		//}
+
+		/// <summary>
+		/// para generar una nueva TI para tr sin autorizacion
+		/// </summary>
+		/// <param name="ti">(tipo de TR, pasar “E” 'Depósitos Sin Autorización y “O”  Box Sin Autorización)</param>
+		/// <param name="adm"></param>
+		/// <param name="usu"></param>
+		/// <returns></returns>
+		public TIRespuestaDto TRNuevaSinAuto(string ti, string adm, string usu)
 		{
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Nueva_Sin_Au;
-            var ps = new List<SqlParameter>()
-            {
-                new("@tit_d", ti),
-                new("@adm_id",adm),
-                new("@usu_id",usu),                
-            };
-            List<TIRespuestaDto> resp = _repository.EjecutarLstSpExt<TIRespuestaDto>(sp, ps, true);
-            return resp.First();
-        }
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Nueva_Sin_Au;
+			var ps = new List<SqlParameter>()
+			{
+				new("@tit_d", ti),
+				new("@adm_id",adm),
+				new("@usu_id",usu),
+			};
+			List<TIRespuestaDto> resp = _repository.EjecutarLstSpExt<TIRespuestaDto>(sp, ps, true);
+			return resp.First();
+		}
 		/// <summary>
 		/// 
 		/// </summary>
 		/// <param name="usu"></param>
 		/// <returns></returns>
-        public TIRespuestaDto TRValidaPendiente(string usu)
-        {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_VALIDA_PENDIENTE;
-            var ps = new List<SqlParameter>()
-            {
-                new("@usu_id",usu),
-            };
-            List<TIRespuestaDto> resp = _repository.EjecutarLstSpExt<TIRespuestaDto>(sp, ps, true);
-            return resp.First();
-        }
-        public RespuestaDto TRCtrlSalida(string ti, string adm, string usu)
-        {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Control_Salida;
-            var ps = new List<SqlParameter>()
-            {
-                new("@ti", ti),
-                new("@adm_id",adm),
-                new("@usu_id",usu),
-            };
-            List<RespuestaDto> resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
-            return resp.First();
-        }
-        public RespuestaDto TR_Confirma(TIRequestConfirmaDto conf)
-        {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_CONFIRMA;
-            var ps = new List<SqlParameter>()
-            {
-                new("@ti", conf.Ti),
-                new("@adm_id",conf.AdmId),
-                new("@usu_id",conf.Usu),
-                new("@box_id",conf.BoxDest),
-            };
-            List<RespuestaDto> resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
-            return resp.First();
-        }
+		public TIRespuestaDto TRValidaPendiente(string usu)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_VALIDA_PENDIENTE;
+			var ps = new List<SqlParameter>()
+			{
+				new("@usu_id",usu),
+			};
+			List<TIRespuestaDto> resp = _repository.EjecutarLstSpExt<TIRespuestaDto>(sp, ps, true);
+			return resp.First();
+		}
+		public RespuestaDto TRCtrlSalida(string ti, string adm, string usu)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Control_Salida;
+			var ps = new List<SqlParameter>()
+			{
+				new("@ti", ti),
+				new("@adm_id",adm),
+				new("@usu_id",usu),
+			};
+			List<RespuestaDto> resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return resp.First();
+		}
+		public RespuestaDto TR_Confirma(TIRequestConfirmaDto conf)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_CONFIRMA;
+			var ps = new List<SqlParameter>()
+			{
+				new("@ti", conf.Ti),
+				new("@adm_id",conf.AdmId),
+				new("@usu_id",conf.Usu),
+				new("@box_id",conf.BoxDest),
+			};
+			List<RespuestaDto> resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return resp.First();
+		}
 
-       
-    }
+
+	}
 }
