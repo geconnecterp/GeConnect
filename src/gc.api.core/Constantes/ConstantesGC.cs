@@ -58,9 +58,14 @@
 			public const string SP_TR_Aut_Sucursales = "SPGECO_TR_Aut_Sucursales";
 			public const string SP_TR_Aut_PI = "SPGECO_TR_Aut_PI";
 			public const string SP_TR_Aut_Depositos = "SPGECO_TR_Aut_Depositos";
+            public const string SP_TR_Control_Salida = "SPGECO_TR_Ctl_Salida";
+            public const string SP_TR_Nueva_Sin_Au = "SPGECO_TR_Nueva_Sin_Aut";
+            public const string SP_TR_VALIDA_PENDIENTE = "SPGECO_TR_Valida_pendiente";
+            public const string SP_TR_CONFIRMA = "SPGECO_TR_Confirmar";
             public const string SP_TR_Aut_Analiza = "SPGECO_TR_Aut_Analiza";
 
-			public const string SP_TI_VALIDA_USUARIO = "SPGECO_USU_OK";
+            public const string SP_TI_VALIDA_USUARIO = "SPGECO_USU_OK";
+
 
         }
 

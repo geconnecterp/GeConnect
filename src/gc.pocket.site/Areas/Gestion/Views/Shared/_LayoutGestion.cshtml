@@ -11,7 +11,7 @@
     else
     {
         // <!--(Nombre modulo,(NN,url))-->
-        model = (appItem.Nombre, (nombre, appItem.VolverUrl??"#"));
+        model = (appItem.Nombre, (nombre, appItem.VolverUrl ?? "#"));
     }
 }
 <!DOCTYPE html>
@@ -36,11 +36,9 @@
     <partial name="_mensaje" />
     <div class="container" id="formulario" style="display:none">
         <main role="main" class="pb-0">
-            <div class="card">
-                <div class="card-body">
-                    @RenderBody()
-                </div>
-            </div>
+
+            @RenderBody()
+
         </main>
     </div>
 

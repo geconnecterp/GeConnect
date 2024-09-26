@@ -272,8 +272,5 @@ function InicializaPantalla() {
     $("#divRprGrid").empty();
 
 
-
-
-
     return true;
 }

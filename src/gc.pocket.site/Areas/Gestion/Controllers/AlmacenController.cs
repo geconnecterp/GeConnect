@@ -80,7 +80,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         [HttpGet]
         public IActionResult CTLTI()
         {
-            var sigla = "ctlti";
+            var sigla = "ctl ti";
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
             if (modulo == null)
             {
@@ -91,7 +91,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         [HttpGet]
         public IActionResult REXPED()
         {
-            var sigla = "rexped";
+            var sigla = "rex ped";
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
             if (modulo == null)
             {

@@ -1,11 +1,16 @@
-﻿@* @model GridCore<AutorizacionTIDto> *@
+﻿@model AutorizacionTIDto
 @{
     Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
-    
+
 }
 
 <div class="row">
-    <div class="col-ms-12">
+    <div class="d-flex justify-content-center">
+        <h3 class="text-black"><strong>Listado de Autorizaciones Pendientes</strong></h3>
+    </div>
+</div>
+<div class="row mt-2">
+    <div class="d-flex justify-content-around">
         <div class="input-group input-group-sm text-info">
             <input id="txtTiro" class="form-control" readonly />
             <input id="txtNNro" class="form-control" readonly />
@@ -14,13 +19,24 @@
         </div>
     </div>
 </div>
-<div id="divGrAUTIPend"></div>
+<div class="row mt-2">
+
+    <div id="divGrAUTIPend"></div>
+
+</div>
 
 <div class="row mb-3">
-    <div class="d-flex justify-content-center" >
+    <div class="d-flex justify-content-center">
         <button type="button" class="btn btn-info btn-sm m-2"><i class="bx bx-ms bx-info-circle"></i></button>
 
         <button type="button" id="btnContinua01" disabled class="btn btn-success btn-sm m-2"><i class="bx bx-ms bx-right-arrow-alt"></i></button>
+        @if (Model.TipoTI.Equals("D") || Model.TipoTI.Equals("B"))
+        {
+            string tipo;
+            if (Model.TipoTI.Equals("D")) { tipo = "E"; } else { tipo = "O"; }
+            <a asp-action="TICargaCarrito" asp-controller="trint" asp-area="pocketppal" asp-route-tiId="@tipo" asp-route-cs="false"
+               id="btnCarrito" class="btn btn-success btn-sm m-2" title="Cargar productos en Carrito"><i class="bx bx-ms bxs-cart-add"></i></a>
+        }
     </div>
 </div>
 
@@ -28,7 +44,7 @@
     <script type="text/javascript">
         var getAUPendientesUrl = "@Url.Action("ObtenerAutorizacionesPendientes", "trint", new { area = "pocketppal" })";
         var validaUsuarioUrl = "@Url.Action("ValidarUsuario", "trint", new { area = "pocketppal" })";
-        var trScr02 = "@Url.Action("TiEntreSucBoxRubro", "trint", new { area = "pocketppal" })";        
+        var trScr02 = "@Url.Action("TiProdBoxRubro", "trint", new { area = "pocketppal" })";
     </script>
 
     <script src="~/js/app/ti/ti.js"></script>

@@ -1,4 +1,5 @@
-﻿using gc.infraestructura.Core.EntidadesComunes;
+﻿using Azure.Core;
+using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
@@ -55,8 +56,10 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string TI_ListaRubro = "/GetTIListaRubro";
         private const string TI_ListaProductos = "/BuscaTIListaProductos";
         private const string TI_RESGUARDA_PROD_CARRITO = "/ResguardarProductoCarrito";
-
-
+        private const string TI_CONTROL_SALIDA = "/ControlSalidaTI";
+        private const string TI_VALIDA_PENDIENTE = "/TRValidaPendiente";
+        private const string TI_CONFIRMA = "/TR_Confirma";
+        private const string TI_NUEVA_SIN_AUTO = "/TRNuevaSinAuto";
 
         //Transferencia Interna
         private const string TR_AU_PENDIENTE = "/TRAutorizacionPendiente";
@@ -1138,6 +1141,162 @@ namespace gc.sitio.core.Servicios.Implementacion
                 else
                 {
                     return new RespuestaGenerica<RespuestaDto> { Ok = false, Mensaje = apiResponse.Data.resultado_msj };
+                }
+            }
+            else
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                return new();
+            }
+        }
+
+        public async Task<RespuestaGenerica<RespuestaDto>> ControlSalidaTI(string ti, string adm, string usu, string token)
+        {
+            ApiResponse<RespuestaDto> apiResponse;
+
+            HelperAPI helper = new();
+
+            HttpClient client = helper.InicializaCliente(token);
+            HttpResponseMessage response;
+
+            var link = $"{_appSettings.RutaBase}{RutaAPI}{TI_CONTROL_SALIDA}?ti={ti}&adm={adm}&usu={usu}";
+
+            response = await client.GetAsync(link);
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(stringData))
+                {
+                    
+                    return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+                if (apiResponse.Data.resultado == "0")
+                {
+                    return new RespuestaGenerica<RespuestaDto> { Ok = true, Mensaje = "OK" };
+                }
+                else
+                {
+                    return new RespuestaGenerica<RespuestaDto> { Ok = false, Mensaje = apiResponse.Data.resultado_msj,Entidad = apiResponse.Data };
+                }
+            }
+            else
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                return new();
+            }
+        }
+
+        public async Task<RespuestaGenerica<TIRespuestaDto>> TIValidaPendiente(string usu, string token)
+        {
+            ApiResponse<TIRespuestaDto> apiResponse;
+
+            HelperAPI helper = new();
+
+            HttpClient client = helper.InicializaCliente(token);
+            HttpResponseMessage response;
+
+            var link = $"{_appSettings.RutaBase}{RutaAPI}{TI_VALIDA_PENDIENTE}?usu={usu}";
+
+            response = await client.GetAsync(link);
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(stringData))
+                {
+
+                    return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<TIRespuestaDto>>(stringData);
+                if (apiResponse.Data.resultado == "0")
+                {
+                    return new RespuestaGenerica<TIRespuestaDto> { Ok = true, Mensaje = "OK" };
+                }
+                else
+                {
+                    return new RespuestaGenerica<TIRespuestaDto> { Ok = false, Mensaje = apiResponse.Data.resultado_msj, Entidad = apiResponse.Data };
+                }
+            }
+            else
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                return new();
+            }
+        }
+
+        public async Task<RespuestaGenerica<RespuestaDto>> TIConfirma(TIRequestConfirmaDto confirma,string token)
+        {
+            ApiResponse<RespuestaDto> apiResponse;
+
+            HelperAPI helper = new();
+
+            HttpClient client = helper.InicializaCliente(confirma, token,out StringContent content);
+            HttpResponseMessage response;
+
+            var link = $"{_appSettings.RutaBase}{RutaAPI}{TI_CONFIRMA}";
+
+            response = await client.PostAsync(link,content);
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(stringData))
+                {
+
+                    return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+                if (apiResponse.Data.resultado == "0")
+                {
+                    return new RespuestaGenerica<RespuestaDto> { Ok = true, Mensaje = "OK" };
+                }
+                else
+                {
+                    return new RespuestaGenerica<RespuestaDto> { Ok = false, Mensaje = apiResponse.Data.resultado_msj, Entidad = apiResponse.Data };
+                }
+            }
+            else
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                return new();
+            }
+        }
+
+        public async Task<RespuestaGenerica<TIRespuestaDto>> TINueva_SinAu(string tipo, string adm, string usu, string token)
+        {
+            ApiResponse<TIRespuestaDto> apiResponse;
+
+            HelperAPI helper = new();
+
+            HttpClient client = helper.InicializaCliente(token);
+            HttpResponseMessage response;
+
+            var link = $"{_appSettings.RutaBase}{RutaAPI}{TI_NUEVA_SIN_AUTO}?tipo={tipo}&adm={adm}&usu={usu}";
+
+            response = await client.GetAsync(link);
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(stringData))
+                {
+
+                    return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<TIRespuestaDto>>(stringData);
+                if (apiResponse.Data.resultado == "0")
+                {
+                    return new RespuestaGenerica<TIRespuestaDto> { Ok = true, Mensaje = "OK" };
+                }
+                else
+                {
+                    return new RespuestaGenerica<TIRespuestaDto> { Ok = false, Mensaje = apiResponse.Data.resultado_msj };
                 }
             }
             else

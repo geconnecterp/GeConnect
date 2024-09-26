@@ -1,5 +1,4 @@
-﻿@using Newtonsoft.Json
-@model AutorizacionTIDto
+﻿@model AutorizacionTIDto
 @*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
@@ -9,6 +8,7 @@
     var buscar = new BusquedaProducto();
     // var cota = (int)ViewBag.FechaCotaJS;
 }
+<partial name="_tiNroAutorizacion" model="@Model.Ti" />
 <div class="row">
     <div class="col-sm-12">
         <div class="input-group input-group-sm">
@@ -37,7 +37,7 @@
         var validarProductoIngresadoUrl = "@Url.Action("ValidarProductoIngresado", "trint", new { area = "pocketppal" })";
         var ObtenerAutorizacionActualUrl = "@Url.Action("ObtenerAutorizacionActual", "trint", new { area = "pocketppal" })";
         var ResguardarProductoCarritoUrl = "@Url.Action("ResguardarProductoCarrito", "trint", new { area = "pocketppal" })";
-        var proximoProductoUrl = "@Url.Action("TIentreSucCargaCarrito", "trint", new { area = "pocketppal" })";
+        var proximoProductoUrl = "@Url.Action("TICargaCarrito", "trint", new { area = "pocketppal" })";
     </script>
     <script src="~/js/app/busquedas.js" type="text/javascript"></script>
     @* <script src="~/js/app/rpr/rprab.js" type="text/javascript"></script> *@

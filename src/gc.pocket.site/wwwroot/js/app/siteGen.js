@@ -169,7 +169,7 @@ function analizaEnterInput(e) {
         tope = 99999;
         index = -1;
         //obtengo los inputs dentro del div
-        var inputss = $("#divInputs :input:not(:disabled)");
+        var inputss = $("main :input:not(:disabled)");
         tope = inputss.length;
         //le el id del input en el que he dado enter
         var cual = $(this).prop("id");
@@ -196,6 +196,7 @@ function analizaEnterInput(e) {
     return true;
 }
 
+//metodo se utliliza en inforpr y ti
 function CargarAutoActual() {
     PostGen({}, ObtenerAutorizacionActualUrl, function (obj) {
         if (obj.error === true) {
@@ -206,6 +207,23 @@ function CargarAutoActual() {
         }
         else {
             autorizacionActual = obj.auto;
+            //permite activar o no el check que permite o no desarmar el paquete.
+            if ((obj.auto.tipoTI === "B" || obj.auto.tipoTI === "D") && obj.auto.sinAU === true) {
+                //activamos el desarma
+                $("#chkDesarma").prop("disabled", false);
+            }
+            else {
+                $("#chkDesarma").prop("disabled", true);
+            }
+            //permite activar o no el boton de carrito
+            if (obj.auto.tipoTI === "S") {
+                $("#btnCargaCarritoNuevo").removeClass("btn-success").addClass("btn-secundary link-noactivo");
+            }
+            else {
+                $("#btnCargaCarritoNuevo").removeClass("btn-secundary link-noactivo").addClass("btn-success");
+            }
         }
     });
 }
+
+//metodo se utliliza en inforpr y ti

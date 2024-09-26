@@ -496,6 +496,80 @@ namespace gc.api.Controllers.Almacen
 		/// <param name = "json" ></ param >
 		/// < returns ></ returns >
 		private bool JsonValido(string json)
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult ControlSalidaTI(string ti,string adm,string usu)
+        {
+            if(string.IsNullOrEmpty(ti) || string.IsNullOrEmpty(adm) || string.IsNullOrEmpty(usu))
+            {
+                return BadRequest("Algunos de los Parametros necesarios para el Control de Salida no se recepcionaron.");
+            }
+            if (string.IsNullOrWhiteSpace(ti) || string.IsNullOrWhiteSpace(adm) || string.IsNullOrWhiteSpace(usu))
+            {
+                return BadRequest("Algunos de los Parametros necesarios para el Control de Salida no se recepcionaron.");
+            }
+
+            var resp = _productosSv.TRCtrlSalida(ti, adm, usu);
+
+            var response = new ApiResponse<RespuestaDto>(resp);
+            return Ok(response);
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult TRNuevaSinAuto(string tipo, string adm, string usu)
+        {
+            if (string.IsNullOrEmpty(tipo) || string.IsNullOrEmpty(adm) || string.IsNullOrEmpty(usu))
+            {
+                return BadRequest("Algunos de los Parametros necesarios para el Control de Salida no se recepcionaron.");
+            }
+            if (string.IsNullOrWhiteSpace(tipo) || string.IsNullOrWhiteSpace(adm) || string.IsNullOrWhiteSpace(usu))
+            {
+                return BadRequest("Algunos de los Parametros necesarios para el Control de Salida no se recepcionaron.");
+            }
+
+            var resp = _productosSv.TRNuevaSinAuto(tipo, adm, usu);
+
+            var response = new ApiResponse<TIRespuestaDto>(resp);
+            return Ok(response);
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult TRValidaPendiente(string usu)
+        {
+            if ( string.IsNullOrEmpty(usu) || string.IsNullOrWhiteSpace(usu))
+            {
+                return BadRequest("Algunos de los Parametros necesarios para el Control de Salida no se recepcionaron.");
+            }
+           
+            var resp = _productosSv.TRValidaPendiente(usu);
+
+            var response = new ApiResponse<TIRespuestaDto>(resp);
+            return Ok(response);
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public IActionResult TR_Confirma(TIRequestConfirmaDto confirma)
+        {
+            if (confirma == null)
+            {
+                return BadRequest("No se recepcionó los datos para confirmar la TR");
+            }
+            var resp = _productosSv.TR_Confirma(confirma);
+
+            var response = new ApiResponse<RespuestaDto>(resp);
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Método destinado a validar la estructura del Json antes de ser enviado a la base de datos
+        /// </summary>
+        /// <param name = "json" ></ param >
+        /// < returns ></ returns >
+        private bool JsonValido(string json)
         {
             try
             {

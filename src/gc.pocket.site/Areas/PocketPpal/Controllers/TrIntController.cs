@@ -1,4 +1,5 @@
-﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿using gc.infraestructura.Constantes;
+using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
@@ -9,7 +10,6 @@ using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Reflection;
-using System.Security.Cryptography;
 using X.PagedList;
 
 namespace gc.pocket.site.Areas.PocketPpal.Controllers
@@ -32,49 +32,135 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             _administracionServicio = admiServicio;
             _settings = options.Value;
         }
+        #region VISTAS INICIALES
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             var auth = EstaAutenticado;
             if (!auth.Item1 || auth.Item2 < DateTime.Now)
             {
                 return RedirectToAction("Login", "Token", new { area = "seguridad" });
             }
+
+            //se verificará si el usuario tiene alguna TR PENDIENTE
+            var resu = await _productoServicio.TIValidaPendiente(UserName, TokenCookie);
+
+            if (!resu.Ok && resu.Entidad.resultado == "-1")
+            {
+                //tiene un tr pendiente por lo que se redirecciona a la carga de productos (carrito) previamente debo obtener los datos de la tr pendiente para cargar 
+                //la variable de sesion TIActual 
+                var tipo = resu.Entidad.Tit_id;
+                var tiId = resu.Entidad.Ti;
+
+                await ObtenerTIPendiente(tipo, tiId);
+            }
+
             //este viewbag es para que aparezca en la segunda fila del encabezado la leyenda que se quiera.
             //en este caso presenta el numero de autorización pendiente y el proveedor al que le pertenece.
             var sigla = "ti";
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
             ViewBag.AppItem = modulo;
+            ListadoTIAutoPendientes = new();
+            TIActual = new();
+            TI_ModId = string.Empty;
+            TI_CS = false;
             return View();
         }
 
+        /// <summary>
+        /// Este metodo se encarga de ya cargar en las variables de session los valores de la TIActual
+        /// y otras variables de session utilizadas
+        /// </summary>
+        /// <param name="tipo"></param>
+        /// <param name="tiId"></param>
+        /// <returns></returns>
+        /// <exception cref="NegocioException"></exception>
+        private async Task ObtenerTIPendiente(string tipo, string tiId)
+        {
+            TI_ModId = tipo;
+            TI_CS = false;
+            var autos = await _productoServicio.TRObtenerAutorizacionesPendientes(AdministracionId, UserName, TI_ModId, TokenCookie);
+
+            ListadoTIAutoPendientes = autos;
+            var ti = ListadoTIAutoPendientes.SingleOrDefault(x => x.Ti.Equals(tiId));
+            if (ti == null)
+            {
+                //no se encontro la TI
+                throw new NegocioException("No se encontró la TI a procesar.");
+            }
+            ti.TipoTI = TI_ModId;
+            TIActual = ti;
+        }
+
+
+        #endregion
+
         #region VISTA 01
+
+        #region VISTA CONFIGURACION INICIAL
 
         /// <summary>
         /// Primer vista para presentar las autorizaciones pendientes para TI
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IActionResult> TiEntreSuc()
+        public async Task<IActionResult> TI_AU(string tiId, bool cs)
         {
             // GENERAR VARIABLE QUE ME INDIQUE QUE TIPO DE TR ESTOY HACIENDO PARA AUTOMATIZAR MENSAJES DE CABECERA
-            TIModuloActual = "S";
 
 
-            string? volver = Url.Action("index", "trint", new { area = "pocketppal" });
-            ViewBag.AppItem = new AppItem { Nombre = "TR Interna entre Sucursales", VolverUrl = volver ?? "#" };
+            var auth = EstaAutenticado;
+            if (!auth.Item1 || auth.Item2 < DateTime.Now)
+            {
+                return RedirectToAction("Login", "Token", new { area = "seguridad" });
+            }
 
-            ViewBag.ModuloActual = TIModuloActual;
-            return View();
+            string? volver = Url.Action("index", "trint", new { area = "pocketppal", tiId, cs });
+            switch (tiId)
+            {
+                case "S":
+                    ViewBag.AppItem = new AppItem { Nombre = "TR Interna entre Sucursales", VolverUrl = volver ?? "#" };
+                    break;
+                case "D":
+                    ViewBag.AppItem = new AppItem { Nombre = "TR Interna entre Depositos", VolverUrl = volver ?? "#" };
+                    break;
+                case "E":
+                    ViewBag.AppItem = new AppItem { Nombre = "TR Interna entre Depositos (SIN AUTORIZACION)", VolverUrl = volver ?? "#" };
+                    break;
+                case "B":
+                    ViewBag.AppItem = new AppItem { Nombre = "TR Interna entre Box", VolverUrl = volver ?? "#" };
+                    break;
+                case "O":
+                    ViewBag.AppItem = new AppItem { Nombre = "TR Interna entre Box (SIN AUTORIZACION)", VolverUrl = volver ?? "#" };
+                    break;
+            }
+            TI_ModId = tiId;
+            TI_CS = cs;
+            var ti = TIActual;
+            ti.TipoTI = TI_ModId;
+            ti.SinAU = TI_CS;
+            TIActual = ti;
+
+            return View("TI_AU", TIActual);
         }
+
+        #endregion
+
+        #region Acciones POST
 
         [HttpPost]
         public async Task<IActionResult> ObtenerAutorizacionesPendientes()
         {
+            var auth = EstaAutenticado;
+            if (!auth.Item1 || auth.Item2 < DateTime.Now)
+            {
+                return RedirectToAction("Login", "Token", new { area = "seguridad" });
+            }
+
             GridCore<AutorizacionTIDto> grid;
             try
             {
-                var autos = await _productoServicio.TRObtenerAutorizacionesPendientes(AdministracionId, UserName, "S", TokenCookie);
+                var autos = await _productoServicio.TRObtenerAutorizacionesPendientes(AdministracionId, UserName, TI_ModId, TokenCookie);
 
                 ListadoTIAutoPendientes = autos;
 
@@ -129,7 +215,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                         //no se encontro la TI
                         throw new NegocioException("No se encontró la TI a procesar.");
                     }
-                    ti.TipoTI = TIModuloActual;
+                    ti.TipoTI = TI_ModId;
                     TIActual = ti;
 
                     return Json(new { error = false, warn = false, msg = "Validación Exitosa" });
@@ -158,6 +244,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 return Json(new { error = true, warn = false, msg = ex.Message });
             }
         }
+        #endregion
 
         #endregion  //VISTA 01
 
@@ -168,13 +255,22 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IActionResult> TiEntreSucBoxRubro()
+        public async Task<IActionResult> TiProdBoxRubro()
         {
+
+
+            var auth = EstaAutenticado;
+            if (!auth.Item1 || auth.Item2 < DateTime.Now)
+            {
+                return RedirectToAction("Login", "Token", new { area = "seguridad" });
+            }
+
             string? volver;
             var ti = TIActual;
-            if (ti.TipoTI.Equals("S"))
+            List<string> list = new List<string>() { "S", "D", "B" };
+            if (list.Contains(ti.TipoTI))
             {
-                volver = Url.Action("TiEntreSuc", "trint", new { area = "pocketppal" });
+                volver = Url.Action("TI_AU", "trint", new { area = "pocketppal", tiId = TI_ModId, cs = TI_CS });
             }
             else
             {
@@ -280,12 +376,38 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         /// <param name="rubrogid"></param>
         /// <returns></returns>
         [HttpGet]
-        public IActionResult TIentreSucCargaCarrito(bool esrubro, bool esbox, string? boxid, string? rubroid, string? rubrogid)
+        public IActionResult TICargaCarrito(bool esrubro, bool esbox, string? boxid, string? rubroid, string? rubrogid, string tiId = "")
         {
             string? volver;
             AutorizacionTIDto ti;
             try
             {
+
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return RedirectToAction("Login", "Token", new { area = "seguridad" });
+                }
+
+                //tengo que verificar si la acción es llamada desde una autorización o viene directamente desde un proceso sin AU
+                if ((string.IsNullOrEmpty(tiId) || string.IsNullOrWhiteSpace(tiId)) && string.IsNullOrEmpty(boxid) && string.IsNullOrEmpty(rubroid))
+                {
+                    throw new NegocioException(Constantes.MensajeError.TI_PROC_SIN_ID);
+                }
+
+                if (tiId.Equals(Constantes.ValoresDefault.TI_Dep_SAU) || tiId.Equals(Constantes.ValoresDefault.TI_Box_SAU))
+                {                                      
+                    TI_ModId = tiId; //resguardamos que es valor E u O
+                    TI_CS = false;
+                    ti = new();
+                    ti.Ti = Constantes.ValoresDefault.TI_SIN_AU;
+                    ti.TipoTI = TI_ModId;
+                    ti.SinAU = true;
+                    TIActual = ti;
+                    ListadoTIAutoPendientes = new();
+                }
+
+
                 if (!esrubro && !esbox)
                 {
                     //verificamos que luego de cargar producto no conocemos cual es la lista que se debe presentar. Por lo qeu se deberá tomar los valores resguardados en TIActual
@@ -308,7 +430,15 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                     TIActual = ti;
                 }
-                volver = Url.Action("TiEntreSucBoxRubro", "trint", new { area = "pocketppal" });
+
+                if (tiId.Equals(Constantes.ValoresDefault.TI_Dep_SAU) || tiId.Equals(Constantes.ValoresDefault.TI_Box_SAU))
+                {
+                    volver = Url.Action("index", "trint", new { area = "pocketppal" });
+                }
+                else
+                {
+                    volver = Url.Action("TiProdBoxRubro", "trint", new { area = "pocketppal" });
+                }
 
                 ViewBag.AppItem = new AppItem { Nombre = "TI e/ Sucs - Producto a colectar en Carrito", VolverUrl = volver ?? "#" };
                 return View(TIActual);
@@ -364,25 +494,40 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         public async Task<IActionResult> TIValidaProducto(string pId)
         {
             string? volver;
+            AutorizacionTIDto sel;
+            TiListaProductoDto prod;
             try
             {
-                //var prod = await _productoServicio.BusquedaBaseProductos(new BusquedaBase { Busqueda = pId, Administracion = AdministracionId, DescuentoCli = 0, ListaPrecio = "", TipoOperacion = "CR" }, TokenCookie);
-                var prod = ListaProductosActual.FirstOrDefault(x => x.P_id == pId);
-                if (prod == null)
+
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
                 {
-                    throw new Exception("El producto buscado no puede ser encontrado. Intente de nuevo, seleccione la lista y seleccione el producto a cargar.");
+                    return RedirectToAction("Login", "Token", new { area = "seguridad" });
+                }
+
+                sel = TIActual;
+
+                //se verifica que si el pid no trae productos, pero es proceso B o D, deberia continuar sin buscar producto
+                //en el if siguiente niego toda la premisa... si no se cumple la premisa, DEBE BUSCAR.
+                if (!((string.IsNullOrWhiteSpace(pId) || string.IsNullOrEmpty(pId)) && (TI_ModId.Equals("B") || TI_ModId.Equals("D"))))
+                {
+
+                    prod = ListaProductosActual.FirstOrDefault(x => x.P_id == pId);
+                    if (prod == null)
+                    {
+                        throw new Exception("El producto buscado no puede ser encontrado. Intente de nuevo, seleccione la lista y seleccione el producto a cargar.");
+                    }
+                    sel.PId = pId; //le asigno el pId para tenerlo resguardado. 
+                    sel.PBoxId = prod.Box_id;
+                    sel.PUnidPres = prod.Unidad_pres;
+                    sel.PPedido = prod.Pedido;
                 }
 
 
-                var sel = TIActual;
-                sel.PId = pId; //le asigno el pId para tenerlo resguardado. 
-                sel.PBoxId = prod.Box_id;
-                sel.PUnidPres = prod.Unidad_pres;
-                sel.PPedido = prod.Pedido;
 
                 TIActual = sel;
 
-                volver = Url.Action("TIentreSucCargaCarrito", "trint", new { area = "pocketppal", esrubro = sel.EsRubro, esbox = sel.EsBox, boxid = sel.BoxId, rubroid = sel.RubroId, rubrogid = sel.RubroGId });
+                volver = Url.Action("TICargaCarrito", "trint", new { area = "pocketppal", esrubro = sel.EsRubro, esbox = sel.EsBox, boxid = sel.BoxId, rubroid = sel.RubroId, rubrogid = sel.RubroGId, tiId = TI_ModId });
                 ViewBag.AppItem = new AppItem { Nombre = "TI - Carga Carrito", VolverUrl = volver ?? "#" };
 
                 ////para validar la fecha de vencimiento
@@ -394,9 +539,9 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
             catch (Exception ex)
             {
-                var sel = TIActual;
+                sel = TIActual;
                 TempData["error"] = ex.ToString();
-                return RedirectToAction("TIentreSucCargaCarrito", "trint", new { area = "pocketppal", esrubro = sel.EsRubro, esbox = sel.EsBox, boxid = sel.BoxId, rubroid = sel.RubroId, rubrogid = sel.RubroGId });
+                return RedirectToAction("TICargaCarrito", "trint", new { area = "pocketppal", esrubro = sel.EsRubro, esbox = sel.EsBox, boxid = sel.BoxId, rubroid = sel.RubroId, rubrogid = sel.RubroGId });
             }
         }
 
@@ -444,16 +589,30 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 return Json(new { error = true, warn = false, msg = ex.Message });
             }
         }
-
         [HttpPost]
         public async Task<IActionResult> ResguardarProductoCarrito(string p_id, int up, int bulto, decimal unid, decimal cantidad, string? fv, bool desarma = true)
         {
             try
             {
                 var ti = TIActual;
+                if (cantidad < 1)
+                {
+                    return Json(new { error = false, warn = true, msg = $"La cantidades de los productos a cargar siempre tienen que ser positivas, mayores a 0 (cero)." });
+                }
+                if (ti.PPedido < cantidad && !TIActual.SinAU) //verificamos las cantidades siempre y cuando haya una autorización
+                {
+                    return Json(new { error = false, warn = true, msg = $"No se puede cargar más unidades o cantidades ({cantidad}) que las pedidas ({ti.PPedido})" });
+                }
 
                 TiProductoCarritoDto request = new TiProductoCarritoDto();
-                request.Ti = ti.Ti;
+                if ((ti.TipoTI.Equals("D") || ti.TipoTI.Equals("B")) && ti.Ti.Equals(Constantes.ValoresDefault.TI_SIN_AU))
+                {
+                    request.Ti = string.Empty;
+                }
+                else
+                {
+                    request.Ti = ti.Ti;
+                }
                 request.AdmId = AdministracionId;
                 request.UsuId = UserName;
                 request.BoxId = ti.PBoxId;
@@ -463,7 +622,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 request.Bulto = bulto;
                 request.Us = unid;
                 request.Cantidad = cantidad;
-                request.Fvto = fv ?? DateTime.Today.AddDays(_settings.FechaVtoCota).ToStringYYYYMMDD();
+                request.Fvto = fv ?? DateTime.Today.AddDays(_settings.FechaVtoCota).ToStringYYYYMMDD();   ///debo traer fecha de vencimiento del producto a mostrar
+
 
                 RespuestaGenerica<RespuestaDto> resp = await _productoServicio.ResguardarProductoCarrito(request, TokenCookie);
 
@@ -489,15 +649,20 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 return Json(new { error = true, warn = false, msg = ex.Message });
             }
         }
-
-
         [HttpPost]
         public IActionResult ValidarBoxIngresado(string boxId)
         {
             AutorizacionTIDto sel;
             try
             {
+
                 sel = TIActual;
+                if ((sel.TipoTI.Equals("D") || sel.TipoTI.Equals("B") && sel.SinAU))
+                {
+                    sel.PBoxId = boxId;
+                    TIActual = sel;
+                    return Json(new { error = false, warn = false, msg = "Box Correcto" });
+                }
                 if (sel.PBoxId.Equals(boxId))
                 {
                     return Json(new { error = false, warn = false, msg = "Box Correcto" });
@@ -527,7 +692,6 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 return Json(new { error = true, warn = false, msg = ex.Message });
             }
         }
-
         [HttpPost]
         public IActionResult ValidarProductoIngresado(string pId)
         {
@@ -535,6 +699,10 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             try
             {
                 sel = TIActual;
+                if ((sel.TipoTI.Equals("D") || sel.TipoTI.Equals("B") && sel.SinAU))
+                {
+                    return Json(new { error = false, warn = false, msg = "Producto es Correcto" });
+                }
                 if (sel.PId.Equals(pId))
                 {
                     return Json(new { error = false, warn = false, msg = "Producto es Correcto" });
@@ -564,7 +732,6 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 return Json(new { error = true, warn = false, msg = ex.Message });
             }
         }
-
         [HttpPost]
         public IActionResult ObtenerAutorizacionActual()
         {
@@ -572,6 +739,16 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             try
             {
                 sel = TIActual;
+
+                if (sel.Ti.Equals(Constantes.ValoresDefault.TI_SIN_AU))
+                {
+                    sel.SinAU = true;
+                }
+                else
+                {
+                    sel.SinAU = false;
+                }
+
                 return Json(new { error = false, auto = sel });
             }
             catch (UnauthorizedException ex)
@@ -591,32 +768,188 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
         #endregion
 
-        public IActionResult TIentreDep()
+        #region PASO 4
+        [HttpPost]
+        public async Task<JsonResult> ControlSalidaTI(string ti)
         {
-            string? volver = Url.Action("index", "trint", new { area = "pocketppal" });
-            ViewBag.AppItem = new AppItem { Nombre = "TR Interna entre Depositos", VolverUrl = volver ?? "#" };
-            return View();
+            AutorizacionTIDto sel;
+            try
+            {
+                sel = TIActual;
+                if (!sel.Ti.Equals(ti))
+                {
+                    throw new NegocioException("No se Reconoce el Identificador de la Transferencia. Intente nuevamente, sino salga e ingrese de nuevo.");
+                }
+
+
+                #region Se realiza el control de Salida
+                var res = await _productoServicio.ControlSalidaTI(sel.Ti, AdministracionId, UserName, TokenCookie);
+
+                if (res.Ok)
+                {
+                    return Json(new { error = false, warn = false, msg = "Control de Salida superado." });
+                }
+                else
+                {
+                    return Json(new { error = true, warn = false, msg = res.Entidad.resultado_msj });
+                }
+
+                #endregion
+
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} No se pudo Cargar la Autorización Actual en la vista");
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} Error durante el proceso");
+                return Json(new { error = true, warn = false, msg = "Algo no fue bien en el procesamiento. Ingrese de nuevo si fuera necesario. " });
+            }
         }
 
-        public IActionResult TIentreDepSinAuto()
+        [HttpGet]
+        public IActionResult ConfirmacionTI()
         {
-            string? volver = Url.Action("index", "trint", new { area = "pocketppal" });
-            ViewBag.AppItem = new AppItem { Nombre = "TR Interna entre Depositos (SIN AUTORIZACION)", VolverUrl = volver ?? "#" };
-            return View();
+            string? volver;
+            AutorizacionTIDto sel;
+            TiListaProductoDto prod;
+            try
+            {
+
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return RedirectToAction("Login", "Token", new { area = "seguridad" });
+                }
+
+                sel = TIActual;
+
+                volver = Url.Action("TICargaCarrito", "trint", new { area = "pocketppal", esrubro = sel.EsRubro, esbox = sel.EsBox, boxid = sel.BoxId, rubroid = sel.RubroId, rubrogid = sel.RubroGId, tiId = TI_ModId });
+                ViewBag.AppItem = new AppItem { Nombre = "TI - Confirmación de TR", VolverUrl = volver ?? "#" };
+
+                ////para validar la fecha de vencimiento
+                //ViewBag.FechaCotaJS = _settings.FechaVtoCota;
+
+
+                return View(sel);
+            }
+
+            catch (Exception ex)
+            {
+                sel = TIActual;
+                TempData["error"] = ex.ToString();
+                return RedirectToAction("TICargaCarrito", "trint", new { area = "pocketppal", esrubro = sel.EsRubro, esbox = sel.EsBox, boxid = sel.BoxId, rubroid = sel.RubroId, rubrogid = sel.RubroGId });
+            }
         }
 
-        public IActionResult TIentreBox()
+        [HttpPost]
+        //el valor "" de boxDest se refiere a que a TR entre Sucursales no se puede especificar.
+        public async Task<JsonResult> ConfirmacionFinalTI(string ti, string boxDest = "")
         {
-            string? volver = Url.Action("index", "trint", new { area = "pocketppal" });
-            ViewBag.AppItem = new AppItem { Nombre = "TR Interna entre Box", VolverUrl = volver ?? "#" };
-            return View();
+            AutorizacionTIDto sel;
+            try
+            {
+                sel = TIActual;
+                if (!sel.Ti.Equals(ti))
+                {
+                    throw new NegocioException("No se Reconoce el Identificador de la Transferencia. Intente nuevamente, sino salga e ingrese de nuevo.");
+                }
+
+                if ((string.IsNullOrEmpty(boxDest) || string.IsNullOrWhiteSpace(boxDest)) && !sel.TipoTI.Equals("S"))
+                {
+                    throw new NegocioException("NO SE HA ESPECIFICADO EL BOX FINAL. VERIFIQUE");
+                }
+
+
+                #region Se realiza el control de Salida
+                var request = new TIRequestConfirmaDto { Ti = ti, AdmId = AdministracionId, Usu = UserName, BoxDest = boxDest };
+                var res = await _productoServicio.TIConfirma(request, TokenCookie);
+
+                if (res.Ok)
+                {
+                    return Json(new { error = false, warn = false, msg = "Control de Salida superado." });
+                }
+                else
+                {
+                    return Json(new { error = true, warn = false, msg = res.Entidad.resultado_msj });
+                }
+
+                #endregion
+
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} No se pudo Cargar la Autorización Actual en la vista");
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} Error durante el proceso");
+                return Json(new { error = true, warn = false, msg = "Algo no fue bien en el procesamiento. Ingrese de nuevo si fuera necesario. " });
+            }
         }
 
-        public IActionResult TIentreBoxSinAuto()
+        [HttpPost]
+        public async Task<JsonResult> GeneraNuevaTISinAuto(string tipo)
         {
-            string? volver = Url.Action("index", "trint", new { area = "pocketppal" });
-            ViewBag.AppItem = new AppItem { Nombre = "TR Interna entre Box (SIN AUTORIZACION)", VolverUrl = volver ?? "#" };
-            return View();
+            AutorizacionTIDto sel;
+            try
+            {
+                sel = TIActual;
+                var ls = new List<string> { "E", "O" };
+                if (!ls.Contains(tipo))
+                {
+                    throw new NegocioException("No se Puede generar una Nueva TI sin Autorización si no corresponde a TI entre Depositos o entre Box.");
+                }
+
+                #region Se realiza el control de Salida
+                var res = await _productoServicio.TINueva_SinAu(tipo, AdministracionId, UserName, TokenCookie);
+
+                if (res.Ok)
+                {
+                    //se generó la TI NUEVA. Por lo que será necesario traerla y resguardarla.
+                    await ObtenerTIPendiente(tipo, res.Entidad.Tit_id);
+
+                    return Json(new { error = false, warn = false, msg = "Control de Salida superado." });
+                }
+                else
+                {
+                    return Json(new { error = true, warn = false, msg = res.Entidad.resultado_msj });
+                }
+
+                #endregion
+
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} No se pudo Cargar la Autorización Actual en la vista");
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} Error durante el proceso");
+                return Json(new { error = true, warn = false, msg = "Algo no fue bien en el procesamiento. Ingrese de nuevo si fuera necesario. " });
+            }
         }
+
+
+        #endregion
     }
 }

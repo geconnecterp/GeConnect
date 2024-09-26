@@ -15,21 +15,21 @@ namespace gc.api.core.Contratos.Servicios
         ProductoBusquedaDto ProductoBuscar(BusquedaBase busqueda);
         List<ProductoBusquedaDto> ProductoBuscarPorIds(BusquedaBase busqueda);
 
-		List<ProductoListaDto> ProductoListaBuscar(BusquedaProducto search);
+        List<ProductoListaDto> ProductoListaBuscar(BusquedaProducto search);
 
         List<InfoProdStkD> InfoProductoStkD(string id, string admId);
         List<InfoProdStkBox> InfoProductoStkBoxes(string id, string adm, string depo);
         List<InfoProdStkA> InfoProductoStkA(string id, string admId);
-        List<InfoProdMovStk> InfoProductoMovStk(string id,string adm,string depo,string tmov,DateTime desde,DateTime hasta);
+        List<InfoProdMovStk> InfoProductoMovStk(string id, string adm, string depo, string tmov, DateTime desde, DateTime hasta);
         List<InfoProdLP> InfoProductoLP(string id);
-        List<RPRAutorizacionPendienteDto> RPRObtenerAutorizacionPendiente(string adm);        
+        List<RPRAutorizacionPendienteDto> RPRObtenerAutorizacionPendiente(string adm);
         RPRRegistroResponseDto RPRRegistrarProductos(string json);
         List<RPRAutoComptesPendientesDto> RPRObtenerComptesPendientes(string adm);
         List<RespuestaDto> RPRCargar(RPRCargarRequest request);
         List<RespuestaDto> RPRElimina(string rp);
         List<RespuestaDto> RPRConfirma(string rp, string adm_id);
 
-		List<JsonDto> RPREObtenerDatosJsonDesdeRP(string rp);
+        List<JsonDto> RPREObtenerDatosJsonDesdeRP(string rp);
         List<RPRItemVerCompteDto> RPRObtenerDatosVerCompte(string rp);
         List<RPRVerConteoDto> RPRObtenerConteos(string rp);
         RespuestaDto ResguardarProductoCarrito(TiProductoCarritoDto request);
@@ -37,6 +37,13 @@ namespace gc.api.core.Contratos.Servicios
         List<TRAutSucursalesDto> ObtenerTRAut_Sucursales(string admId);
         List<TRAutPIDto> ObtenerTRAut_PI(string admId, string admIdLista);
         List<TRAutDepoDto> ObtenerTRAut_Depositos(string admId);
+
+
+        RespuestaDto TRCtrlSalida(string ti, string adm, string usu);
+        TIRespuestaDto TRNuevaSinAuto(string tipoIt, string adm, string usu);
+        TIRespuestaDto TRValidaPendiente(string usu);
+        RespuestaDto TR_Confirma(TIRequestConfirmaDto conf);
+    }
         List<TRAutAnalizaDto> TRAutAnaliza(string listaPi, string listaDepo, bool stkExistente, bool sustituto, int palletNro);
 	}
 }

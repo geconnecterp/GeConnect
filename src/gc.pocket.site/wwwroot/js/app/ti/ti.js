@@ -1,4 +1,4 @@
-﻿$(function () {    
+﻿$(function () {
 
     $("#btnContinua01").on("click", validarUsuario);
 
@@ -11,22 +11,15 @@ function cargarAutorizacionesPendientes() {
 
     var datos = {};
     PostGenHtml(datos, getAUPendientesUrl, function (obj) {
-        //if (obj.ok === true) {
-            $("#divGrAUTIPend").html(obj);
-        //}
-        //else if (obj.esError === true) {
-        //    //mensaje
-        //    AbrirMensaje("Algo pasó", obj.mensaje, function () {
-        //        $("#msjModal").modal("hide");
-        //        return true;
-        //    }, false, ["Aceptar"], "error!", null);
-        //} else { 
-        //    //warn
-        //    AbrirMensaje("Algo pasó", obj.mensaje, function () {
-        //        $("#msjModal").modal("hide");
-        //        return true;
-        //    }, false, ["Aceptar"], "warn!", null);
-        //}
+
+        $("#divGrAUTIPend").html(obj);
+        var tb = $("#divGrAUTIPend #tbAuPend tbody td");
+        if (tb.length === 0) {
+            $("#btnCarrito").show();
+        }
+        else {
+            $("#btnCarrito").hide();
+        }
         CerrarWaiting();
     });
 
@@ -56,7 +49,7 @@ function validarUsuario() {
             AbrirMensaje("Algo pasó", obj.msg, function () {
                 $("#msjModal").modal("hide");
                 return true;
-            },false, ["Aceptar"], "error!", null);
+            }, false, ["Aceptar"], "error!", null);
         }
         else if (obj.warn === true) {
             CerrarWaiting();
@@ -67,12 +60,16 @@ function validarUsuario() {
         }
         else {
             CerrarWaiting();
-            AbrirMensaje("Usuario Validado", obj.msg, function () {
-                $("#msjModal").modal("hide");
-                window.location.href = trScr02;
+            //no se da el ok al usuario validado. Directamente se direcciona
+            window.location.href = trScr02;
 
-                //return true;
-            }, false, ["Aceptar"], "succ!", null);
+
+            //AbrirMensaje("Usuario Validado", obj.msg, function () {
+            //    $("#msjModal").modal("hide");
+            //    window.location.href = trScr02;
+
+            //    //return true;
+            //}, false, ["Aceptar"], "succ!", null);
             //ControlaMensajeSuccess(obj.msg);
         }
     });

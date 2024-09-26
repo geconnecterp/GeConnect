@@ -1,4 +1,5 @@
-﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿using gc.infraestructura.Constantes;
+using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen;
@@ -535,14 +536,14 @@ namespace gc.pocket.site.Controllers
 
         #region Variables de Session para módulo TI
 
-        public string TIModuloActual
+        public string TI_ModId
         {
             get
             {
                 var txt = _context.HttpContext.Session.GetString("TIModuloActual");
                 if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
                 {
-                    return string.Empty;
+                    return Constantes.ValoresDefault.TI_MODID;
                 }
                 return txt;
             }
@@ -552,6 +553,25 @@ namespace gc.pocket.site.Controllers
                 _context.HttpContext.Session.SetString("TIModuloActual", value);
             }
         }
+
+        public bool TI_CS
+        {
+            get
+            {
+                var txt = _context.HttpContext.Session.GetString("TIControlSalida");
+                if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
+                {
+                    return false;
+                }
+                return txt.ToBoolean();
+            }
+            set
+            {
+                var valor = value.ToString();
+                _context.HttpContext.Session.SetString("TIControlSalida", valor);
+            }
+        }
+
 
         public AutorizacionTIDto TIActual
         {
