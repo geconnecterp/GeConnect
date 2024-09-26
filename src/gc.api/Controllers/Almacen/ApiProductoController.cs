@@ -490,12 +490,6 @@ namespace gc.api.Controllers.Almacen
 			var response = new ApiResponse<List<TRAutAnalizaDto>>(resp);
 			return Ok(response);
 		}
-		/// <summary>
-		/// Método destinado a validar la estructura del Json antes de ser enviado a la base de datos
-		/// </summary>
-		/// <param name = "json" ></ param >
-		/// < returns ></ returns >
-		private bool JsonValido(string json)
 
         [HttpGet]
         [Route("[action]")]

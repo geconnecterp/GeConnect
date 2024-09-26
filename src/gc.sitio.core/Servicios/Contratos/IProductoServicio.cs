@@ -55,8 +55,6 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RespuestaGenerica<TIRespuestaDto>> TIValidaPendiente(string usu, string token);
         Task<RespuestaGenerica<RespuestaDto>> TIConfirma(TIRequestConfirmaDto confirma,string token);
         Task<RespuestaGenerica<TIRespuestaDto>> TINueva_SinAu(string tipo, string adm, string usu, string token);
-
-    }
 		Task<List<TRAutAnalizaDto>> TRAutAnaliza(string listaPi, string listaDepo, bool stkExistente, bool sustituto, int palletNro, string token);
 	}
 
