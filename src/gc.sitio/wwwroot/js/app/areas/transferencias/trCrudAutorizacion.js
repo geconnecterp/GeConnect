@@ -170,10 +170,8 @@ function verDetalleDePedido(x) {
 	if (picompte) {
 		var datos = { picompte };
 		PostGenHtml(datos, TRVerDetallePedidoDeSucursalUrl, function (obj) {
-			//$("#divListaPedidosIncluidos").html(obj);
-			//SelecccionarPrimerRegistroConteos();
-			//AddEventListenerToGrid("tbListaPedidosIncluidos");
-			//ActualizarInfoSucursales();
+			$("#divDetalleDePedido").html(obj);
+			AddEventListenerToGrid("tbDetalleDePedido");
 			$('#modalCenter').modal('show')
 			CerrarWaiting();
 			return true
@@ -219,5 +217,7 @@ function selectTRDepositosDeEnvioRow(x) {
 }
 
 function selectTRPedidoSucursalRow(x) {
-	console.log(x);
+}
+
+function selectTRDetalleDePedido(x) {
 }

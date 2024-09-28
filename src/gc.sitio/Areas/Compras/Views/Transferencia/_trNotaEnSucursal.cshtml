@@ -1,0 +1,16 @@
+﻿@model TRNotaEnSucursalDto
+
+@Html.Hidden("adm_id", Model.adm_id)
+<div class="modal-header">
+	<h5 class="modal-title" id="modalCenterTitle">@Model.Titulo</h5>
+	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+	<textarea class="form-control" id="txtNotaEnSucursal" rows="4"></textarea>
+</div>
+<div class="modal-footer">
+	<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+		Cerrar
+	</button>
+	<button type="button" class="btn btn-primary">Guardar</button>
+</div>

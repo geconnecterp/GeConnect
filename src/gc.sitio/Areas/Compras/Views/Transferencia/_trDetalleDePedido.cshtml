@@ -1,0 +1,42 @@
+﻿@model TRDetallePedidoDto
+
+<div class="modal-header">
+	<h5 class="modal-title" id="modalCenterTitle">@Model.Titulo</h5>
+	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+	<div class="table-responsive text-nowrap table-wrapper-xs">
+		<table class="table table-bordered table-hover" id="tbDetalleDePedido">
+			<thead class="table-dark">
+				<tr>
+					<th style="width:10%;">PI</th>
+					<th style="width:10%;">Orden</th>
+					<th style="width:10%;">Prod ID</th>
+					<th style="width:40%;">Descripción</th>
+					<th style="width:10%;">Cantidad</th>
+					<th style="width:10%;">Enviado</th>
+					<th style="width:10%;">Stk</th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var item in Model.Detalle.ListaDatos)
+				{
+					<tr onclick="selectTRDetalleDePedido(this)">
+						<td>@item.pi_compte</td>
+						<td>@item.pid_item</td>
+						<td>@item.p_id</td>
+						<td>@item.p_desc</td>
+						<td>@item.pid_cantidad</td>
+						<td>@item.pid_enviado</td>
+						<td>@item.pid_stk</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+</div>
+<div class="modal-footer">
+	<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+		Cerrar
+	</button>
+</div>

@@ -30,7 +30,8 @@
 											<td>@item.orden</td>
 											<td>@item.adm_nombre</td>
 											<td>@item.pallet_aprox</td>
-											<td><a asp-action="AgregarNotaASucursalNuevaAutTR" asp-controller="Transferencia" asp-area="Compras" class="btn btn-xs btn-outline-success" asp-route-nota="@item.nota"> <i class="bx bx-detail"></i></a></td>
+											@* <td><a asp-action="AgregarNotaASucursalNuevaAutTR" asp-controller="Transferencia" asp-area="Compras" class="btn btn-xs btn-outline-success" asp-route-nota="@item.nota"> <i class="bx bx-detail"></i></a></td> *@
+											<td><a class="btn btn-xs btn-outline-success" data-interaction="@item.adm_id" onclick="verNotaEnSucursal(this);"> <i class="bx bx-detail"></i></a></td>
 											<td style="display:none;">@item.adm_id</td>
 										</tr>
 									}
@@ -89,7 +90,8 @@
 											<td>@item.a_transferir</td> @*TODO: Deberia ir Dif, consultar con Carlos*@
 											<td>@item.box_id</td>
 											<td>@item.a_transferir_box</td>
-											<td><a asp-action="AgregarNotaASucursalNuevaAutTR" asp-controller="Transferencia" asp-area="Compras" class="btn btn-xs btn-outline-success" asp-route-nota="@item.nota"> <i class="bx bx-detail"></i></a></td>
+											@* <td><a asp-action="AgregarNotaASucursalNuevaAutTR" asp-controller="Transferencia" asp-area="Compras" class="btn btn-xs btn-outline-success" asp-route-nota="@item.nota"> <i class="bx bx-detail"></i></a></td> *@
+											<td><a class="btn btn-xs btn-outline-success" data-interaction="@item.p_id" onclick="verNotaEnProducto(this);"> <i class="bx bx-detail"></i></a></td>
 											<td style="display:none;">@item.adm_id</td>
 											<td style="display:none;">@item.depo_id</td>
 											<td style="display:none;">@item.depo_nombre</td>
@@ -108,8 +110,28 @@
 	</div>
 </div>
 
+<div class="modal fade" id="modalNotaEnSucursal" tabindex="-1" style="display: none;" aria-hidden="true">
+	<div class="modal-dialog modal-xl" role="document">
+		<div class="modal-content">
+			<div id="divNotaEnSucursal">
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="modalNotaEnProducto" tabindex="-1" style="display: none;" aria-hidden="true">
+	<div class="modal-dialog modal-xl" role="document">
+		<div class="modal-content">
+			<div id="divNotaEnProducto">
+			</div>
+		</div>
+	</div>
+</div>
+
 @section scripts {
 	<script type="text/javascript">
+		var TREditarNotaEnSucursalUrl = "@Url.Action("EditarNotaEnSucursal", "transferencia", new { area = "Compras" })";
+		var TREditarNotaEnProductoUrl = "@Url.Action("EditarNotaEnProducto", "transferencia", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/areas/transferencias/trVistaNuevaAutYDetalleDeProductos.js"></script>
 }

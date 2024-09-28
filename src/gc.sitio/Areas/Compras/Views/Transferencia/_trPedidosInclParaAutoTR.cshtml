@@ -24,7 +24,8 @@
 					<td>@item.pie_desc</td>
 					<td>@item.pi_nota</td>
 					<td>@item.pit_desc</td>
-					<td><a asp-action="VerDetallePedidoDeSucursal" asp-controller="Transferencia" asp-area="Compras" class="btn btn-xs btn-outline-success" asp-route-picompte="@item.pi_compte"> <i class="bx bx-detail"></i></a></td>
+					@* <td><a asp-action="VerDetallePedidoDeSucursal" asp-controller="Transferencia" asp-area="Compras" class="btn btn-xs btn-outline-success" asp-route-picompte="@item.pi_compte"> <i class="bx bx-detail"></i></a></td> *@
+					<td><a class="btn btn-xs btn-outline-success" data-interaction="@item.pi_compte" onclick="verDetalleDePedido(this);"> <i class="bx bx-detail"></i></a></td>
 					<td><a class="btn btn-xs btn-outline-danger" data-interaction="@item.pi_compte" onclick="quitarDePedidosIncl(this);"> <i class="bx bx-minus-circle"></i></a></td>
 				</tr>
 			}

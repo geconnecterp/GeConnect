@@ -121,11 +121,60 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return PartialView("_trDepositosInclPorSucursal", model);
 		}
 
-		public async Task<IActionResult> VerDetallePedidoDeSucursal()
+		public async Task<IActionResult> VerDetallePedidoDeSucursal(string piCompte)
 		{
-			//TODO: Obtener los datos de pedido a visualizar, charlarlo con Carlos
-			return Json(new { error = false, warn = false, vacio = false, msg = "" });
-			//return PartialView("<_aca_deberia_ir_un_modal>");
+			//TODO: Charlar con carlos para ver si modificamos lo que se muestra en el detalle de PI
+			var model = new TRDetallePedidoDto();
+			try
+			{
+				var itemsAutPIDetalle = await _productoServicio.TRObtenerAutPIDetalle(piCompte, TokenCookie);
+				model.Detalle = ObtenerGridCore<TRAutPIDetalleDto>(itemsAutPIDetalle);
+				model.Titulo = $"Detalle de Pedido {piCompte}";
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al obtener el detalle del Pedido Interno por Sucursal.");
+				TempData["error"] = "Hubo algun problema al intentar obtener el detalle del Pedido Interno por Sucursal. Si el problema persiste informe al Administrador.";
+				return ObtenerMensajeDeError("Hubo algun problema al intentar obtener el detalle del Pedido Interno por Sucursal. Si el problema persiste informe al Administrador.");
+			}
+			return PartialView("_trDetalleDePedido", model);
+		}
+
+		public async Task<IActionResult> EditarNotaEnSucursal(string admId)
+		{
+			//TODO: Charlar con carlos para ver si modificamos lo que se muestra en esta vista
+			var model = new TRNotaEnSucursalDto();
+			try
+			{
+				model.Titulo = $"Nota de Sucursal {admId} - {TRSucursalesLista.Where(x => x.adm_id == admId).Select(y => y.adm_nombre).First()}";
+				model.Nota = string.Empty;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al obtener el formlario de Nota de Sucursal.");
+				TempData["error"] = "Hubo algun problema al intentar obtener el formlario de Nota de Sucursal. Si el problema persiste informe al Administrador.";
+				return ObtenerMensajeDeError("Hubo algun problema al intentar obtener el formlario de Nota de Sucursal. Si el problema persiste informe al Administrador.");
+			}
+			return PartialView("_trNotaEnSucursal", model);
+		}
+
+		public async Task<IActionResult> EditarNotaEnProducto(string pId)
+		{
+			//TODO: Charlar con carlos para ver si modificamos lo que se muestra en esta vista
+			var model = new TRNotaEnProductoDto();
+			try
+			{
+				model.Titulo = $"Nota de Producto {pId} - {TRAutAnaliza.Where(x => x.p_id == pId).Select(y => y.p_desc).First()}";
+				model.Nota = string.Empty;
+				model.p_id = pId;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al obtener el formulario de Nota de Producto.");
+				TempData["error"] = "Hubo algun problema al intentar obtener el formulario de Nota de Producto. Si el problema persiste informe al Administrador.";
+				return ObtenerMensajeDeError("Hubo algun problema al intentar obtener el formulario de Nota de Producto. Si el problema persiste informe al Administrador.");
+			}
+			return PartialView("_trNotaEnProducto", model);
 		}
 
 		public async Task<IActionResult> AgregarAPedidosIncluidosParaAutTR(string picompte)
