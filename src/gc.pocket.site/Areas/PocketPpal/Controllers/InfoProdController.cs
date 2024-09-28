@@ -12,6 +12,7 @@ using gc.infraestructura.Helpers;
 using gc.pocket.site.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Build.ObjectModelRemoting;
 using Microsoft.Extensions.Options;
 using X.PagedList;
 
@@ -104,7 +105,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
 
         [HttpGet]
-        public async Task< IActionResult> Producto()
+        public async Task< IActionResult> Producto(string callback="")
         {
             var auth = EstaAutenticado;
             if (!auth.Item1 || (auth.Item1 && !auth.Item2.HasValue) || (auth.Item1 && auth.Item2.HasValue && auth.Item2.Value < DateTime.Now))
@@ -123,6 +124,14 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             var lista = TiposMotivo.Select(x => new ComboGenDto { Id = x.Sm_tipo, Descripcion = x.Sm_Desc });
 
             ViewBag.TmId = HelperMvc<ComboGenDto>.ListaGenerica(lista);
+
+            if (!string.IsNullOrEmpty(callback))
+            {
+                ViewBag.Callback = callback;
+            }
+
+            string volver = Url.Action("info", "almacen", new { area = "gestion" });
+            ViewBag.AppItem = new AppItem { Nombre = "Información de Productos", VolverUrl = volver ?? "#" };
 
             TempData["cota"] = _settings.FechaVtoCota;
 

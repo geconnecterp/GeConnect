@@ -58,7 +58,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 await ObtenerTIPendiente(tipo, tiId);
 
                 //REDIRECCIONAR AL CARRITO                
-                return RedirectToAction("TICargaCarrito", "trint", new { area = "pocketppal", esrubro = false, esbox = false, boxid = "", rubroid = "", rubrogid = "", tiId = tipo});
+                return RedirectToAction("TICargaCarrito", "trint", new { area = "pocketppal", esrubro = false, esbox = false, boxid = "", rubroid = "", rubrogid = "", tiId = tipo });
 
             }
 
@@ -67,7 +67,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             var sigla = "ti";
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
             ViewBag.AppItem = modulo;
-            
+
             return View();
         }
 
@@ -394,7 +394,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     throw new NegocioException(Constantes.MensajeError.TI_PROC_SIN_ID);
                 }
 
-                if ((tiId.Equals(Constantes.ValoresDefault.TI_Dep_SAU) || tiId.Equals(Constantes.ValoresDefault.TI_Box_SAU))&& string.IsNullOrEmpty(ti.Ti))
+                if ((tiId.Equals(Constantes.ValoresDefault.TI_Dep_SAU) || tiId.Equals(Constantes.ValoresDefault.TI_Box_SAU)) && string.IsNullOrEmpty(ti.Ti))
                 {
                     #region Se llama al generador de nuevo TR para operación sin AU
                     var resu = await _productoServicio.TINueva_SinAu(tiId, AdministracionId, UserName, TokenCookie);
@@ -460,14 +460,26 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> BuscaTIListaProductos()
+        public async Task<IActionResult> BuscaTIListaProductos(string orden)
         {
             GridCore<TiListaProductoDto> grid;
             try
             {
                 var selec = TIActual;
-                List<TiListaProductoDto> regs = await _productoServicio.BuscaTIListaProductos(tr: TIActual.Ti, admId: AdministracionId, usuId: UserName, boxid: selec.BoxId??"%", rubId: selec.RubroId??"%", token: TokenCookie);
-                ListaProductosActual = regs;
+                List<TiListaProductoDto> regs = await _productoServicio.BuscaTIListaProductos(tr: TIActual.Ti, admId: AdministracionId, usuId: UserName, boxid: selec.BoxId ?? "%", rubId: selec.RubroId ?? "%", token: TokenCookie);
+                switch (orden)
+                {
+                    case "B":
+                        ListaProductosActual = regs.OrderBy(x => x.Box_id).ToList();
+                        break;
+                    case "R":
+                        ListaProductosActual = regs.OrderBy(x=> x.Rub_id).ToList();
+                        break;
+                    default:
+                        //orden producto
+                        ListaProductosActual = regs.OrderBy(x=> x.P_desc).ToList();
+                        break;
+                }
                 grid = ObtenerGrillaTIListaProductos(regs);
             }
             catch (NegocioException ex)
@@ -556,7 +568,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> LimpiaProductoCarrito(string p_id)
+        public async Task<IActionResult> LimpiaProductoCarrito(string p_id, string boxId = "")
         {
             try
             {
@@ -566,7 +578,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 request.Ti = ti.Ti;
                 request.AdmId = AdministracionId;
                 request.UsuId = UserName;
-                request.BoxId = ti.PBoxId;
+                request.BoxId = !string.IsNullOrEmpty(ti.PBoxId) ? ti.PBoxId : boxId;
                 request.Desarma = true;
                 request.Pid = p_id;
                 request.Unidad_pres = ti.PUnidPres;
@@ -655,28 +667,12 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             }
         }
         [HttpPost]
-        public IActionResult ValidarBoxIngresado(string boxId)
+        public async Task<IActionResult> ValidarBoxIngresado(string boxId)
         {
             AutorizacionTIDto sel;
             try
             {
-
-                sel = TIActual;
-                if ((sel.TipoTI.Equals("E") || sel.TipoTI.Equals("O") && sel.SinAU))
-                {
-                    sel.PBoxId = boxId;
-                    TIActual = sel;
-                    return Json(new { error = false, warn = false, msg = "Box Correcto" });
-                }
-                if (sel.PBoxId.Equals(boxId))
-                {
-                    return Json(new { error = false, warn = false, msg = "Box Correcto" });
-                }
-                else
-                {
-                    throw new NegocioException("El BOX ingresado no corresponde al Box esperado");
-                }
-
+                return await ValidaBox(boxId);
             }
             catch (NegocioException ex)
             {
@@ -697,6 +693,34 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 return Json(new { error = true, warn = false, msg = ex.Message });
             }
         }
+
+        private async Task<IActionResult> ValidaBox(string boxId)
+        {
+            AutorizacionTIDto sel = TIActual;
+
+            if ((sel.TipoTI.Equals("E") || sel.TipoTI.Equals("O") && sel.SinAU))
+            {
+                //como no se tiene referencia del box porque no hay AU se valida el box en la base de datos
+                var res = await _productoServicio.ValidarBox(boxId, AdministracionId, TokenCookie);
+                if (res.Resultado != 0)
+                {
+                    return Json(new { error = false, warn = true, msg = res.Resultado_msj });
+                }
+
+                sel.PBoxId = res.Box_id_sugerido;
+                TIActual = sel;
+                return Json(new { error = false, warn = false, msg = "Box Correcto" });
+            }
+            if (sel.PBoxId.Equals(boxId))
+            {
+                return Json(new { error = false, warn = false, msg = "Box Correcto" });
+            }
+            else
+            {
+                throw new NegocioException("El BOX ingresado no corresponde al Box esperado");
+            }
+        }
+
         [HttpPost]
         public IActionResult ValidarProductoIngresado(string pId)
         {

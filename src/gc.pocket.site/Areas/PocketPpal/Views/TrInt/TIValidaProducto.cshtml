@@ -4,8 +4,9 @@
 *@
 @{
     Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
-    
+
     var buscar = new BusquedaProducto();
+    var rutaActual = Url.Action("TIValidaProducto", "trint", new { area = "pocketppal" });
     // var cota = (int)ViewBag.FechaCotaJS;
 }
 <partial name="_tiNroAutorizacion" model="@Model.Ti" />

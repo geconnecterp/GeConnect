@@ -1,15 +1,15 @@
 ﻿$(function () {
 
-    $("#rbBox").on("click", function () { alert("Radio Button Box") });
-    $("#rbProd").on("click", function () { alert("Radio Button Prod") });
-    $("#rbRubro").on("click", function () { alert("Radio Button Rubro") });  
+    $("#rbBox").on("click", function () { presentaListaProducto("B"); });
+    $("#rbProd").on("click", function () { presentaListaProducto("R"); });
+    $("#rbRubro").on("click", function () { presentaListaProducto("P"); });  
 
    
 
     AbrirWaiting();
     CargarAutoActual();
     $("#btnCtrlSalida").on("click", VerificaCtrlSalida);
-    presentaListaProducto();
+    presentaListaProducto("B");//ordenado por box
     //InicializaTiCarga();
 });
 
@@ -36,7 +36,7 @@ function VerificaCtrlSalida() {
                 return true;
             }, false, ["Aceptar"], "error!", null);
         }
-        if (obj.warn === true) {
+        else if (obj.warn === true) {
             CerrarWaiting();
             AbrirMensaje("Importante", obj.msg, function () {
                 $("#msjModal").modal("hide");
@@ -50,8 +50,8 @@ function VerificaCtrlSalida() {
         }
     });
 }
-function presentaListaProducto() {
-    datos = {};
+function presentaListaProducto(orden) {
+    datos = {orden};
     PostGenHtml(datos, buscarListaProductosUrl, function (obj) {
 
         $("#divti03").html(obj);
@@ -71,14 +71,21 @@ function mostrarMensaje(nota) {
         return true;
     }, false, ["Aceptar"], "info!", null);
 }
-function limpiarProductoCarrito(id) {
+function limpiarProductoCarrito(id,boxId) {
     AbrirWaiting()
     //aca se validará previamente si la cantidad ingresada corresponde a lo solicitado
 
     //se procede a enviar el producto a cargar
-    var dato = { p_id:id }
+    var dato = { p_id: id, boxId }
     PostGen(dato, LimpiaProductoCarritoUrl, function (obj) {
         if (obj.error === true) {
+            CerrarWaiting();
+            AbrirMensaje("Importante", obj.msg, function () {
+                $("#msjModal").modal("hide");
+                return true;
+            }, false, ["Aceptar"], "error!", null);
+        }
+        else if (obj.warn === true) {
             CerrarWaiting();
             AbrirMensaje("Importante", obj.msg, function () {
                 $("#msjModal").modal("hide");

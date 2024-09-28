@@ -49,6 +49,9 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 //resguardo lista de autorizaciones pendientes 
                 AutorizacionesPendientes = pendientes;
                 grid = ObtenerAutorizacionPendienteGrid(pendientes);
+
+                string volver = Url.Action("rpr", "almacen", new { area = "gestion" });
+                ViewBag.AppItem = new AppItem { Nombre = "Detalle de autorizaciones pendientes", VolverUrl = volver ?? "#" };
             }
             catch (Exception ex)
             {

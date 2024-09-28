@@ -2,6 +2,10 @@
 @{
     Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
 
+    var ls = new List<string> { "E", "O" };
+    var cs = ls.Contains(Model.TipoTI) ? false : true;
+
+    var callback = Url.Action("ti_au", "trint", new { area = "pocketppal", tiId = Model.TipoTI,cs=cs });
 }
 
 <div class="row">
@@ -27,7 +31,8 @@
 
 <div class="row mb-3">
     <div class="d-flex justify-content-center">
-        <button type="button" class="btn btn-info btn-sm m-2"><i class="bx bx-ms bx-info-circle"></i></button>
+        <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-2"><i class="bx bx-ms bx-info-circle"></i></a>
+
 
         <button type="button" id="btnContinua01" disabled class="btn btn-success btn-sm m-2"><i class="bx bx-ms bx-right-arrow-alt"></i></button>
         @if (Model.TipoTI.Equals("D") || Model.TipoTI.Equals("B"))
