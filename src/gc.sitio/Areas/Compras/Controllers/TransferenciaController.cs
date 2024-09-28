@@ -1,4 +1,5 @@
-﻿using gc.api.core.Entidades;
+﻿using Azure;
+using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
@@ -6,6 +7,7 @@ using gc.infraestructura.Dtos.Gen;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Options;
 using System.Reflection;
 using System.Security.Policy;
@@ -73,7 +75,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 				}
 				TRSucursalesLista = itemsAutSucursales;
 				model.ListaPedidosSucursal = ObtenerGridCore<TRAutPIDto>([]);
-				model.ListaPedidosIncluidos = ObtenerGridCore<TRAutPIDto>([]);
+				if (TRAutPedidosIncluidosILista != null)
+					model.ListaPedidosIncluidos = ObtenerGridCore<TRAutPIDto>(TRAutPedidosIncluidosILista);
+				else
+					model.ListaPedidosIncluidos = ObtenerGridCore<TRAutPIDto>([]);
 				model.ListaDepositosDeEnvio = ObtenerGridCore<TRAutDepoDto>([]);
 			}
 			catch (Exception ex)
@@ -116,9 +121,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return PartialView("_trDepositosInclPorSucursal", model);
 		}
 
-		public async Task<IActionResult> VerDetallePedidoDeSucursal(string picompte)
+		public async Task<IActionResult> VerDetallePedidoDeSucursal()
 		{
-			return PartialView("<_aca_deberia_ir_un_modal>");
+			//TODO: Obtener los datos de pedido a visualizar, charlarlo con Carlos
+			return Json(new { error = false, warn = false, vacio = false, msg = "" });
+			//return PartialView("<_aca_deberia_ir_un_modal>");
 		}
 
 		public async Task<IActionResult> AgregarAPedidosIncluidosParaAutTR(string picompte)
@@ -201,7 +208,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		/// <param name="sustituto">booleano</param>
 		/// <param name="maxPallet">intero entre 1 y 80</param>
 		/// <returns></returns>
-		public async Task<JsonResult> TRAnalizarParametrosUrl(string depositos, bool stkExistente, bool sustituto, int maxPallet)
+		public async Task<JsonResult> AnalizarParametros(string depositos, bool stkExistente, bool sustituto, int maxPallet)
 		{
 			try
 			{
@@ -217,8 +224,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					//Obtenemos la lista de Pedidos Incluidos (solo pi_compte)
 					var listaPI = ObtenerStringListDePedidosIncluidos();
-					var itemsAutAnaliza = await _productoServicio.TRAutAnaliza(listaPI, depositos,stkExistente, sustituto, maxPallet, TokenCookie);
-					return Json(new { error = false, warn = false, vacio = true, cantidad = 0, msg = "" });
+					var itemsAutAnaliza = await _productoServicio.TRAutAnaliza(listaPI, depositos, stkExistente, sustituto, maxPallet, TokenCookie);
+					TRAutAnaliza = itemsAutAnaliza;
+					return Json(new { error = false, warn = false, vacio = false, cantidad = itemsAutAnaliza.Count, msg = "" });
 				}
 			}
 			catch (NegocioException neg)
@@ -232,10 +240,85 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
+		public async Task<JsonResult> AgregarNotaASucursalNuevaAutTR(string nota)
+		{
+			try
+			{
+				return Json(new { error = false, warn = false, vacio = false, msg = "" });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar agregar una nota a la sucursal.");
+				TempData["error"] = "Hubo algun problema al intentar agregar una nota a la sucursal. Si el problema persiste informe al Administrador";
+				return Json(new { error = true, msg = "Algo no fue bien al intentar agregar una nota a la sucursal, intente nuevamente mas tarde." });
+			}
+		}
+
+		public async Task<IActionResult> AbrirVistaEdicionNuevasAutYDetalleTR()
+		{
+			var model = new TRNuevaAutDto();
+			try
+			{
+				if (TRAutAnaliza == null)
+					return ObtenerMensajeDeError("Ocurrio un error al intentar leer los datos para analizar. Intente nevamente desde el principio, si el problema persiste informe al Administrador.");
+
+				var orden = 0;
+				var listaSucursales = from i in TRAutAnaliza
+									  group i by new { i.adm_id, i.adm_nombre } into x
+									  select new TRNuevaAutSucursalDto() { adm_id = x.Key.adm_id, adm_nombre = x.Key.adm_nombre, pallet_aprox = x.Sum(y => y.unidad_palet), orden = orden++ };
+				TRNuevaAutSucursalLista = listaSucursales.ToList();
+				model.Sucursales = ObtenerGridCore<TRNuevaAutSucursalDto>(listaSucursales.ToList());
+				TRNuevaAutDetallelLista = TRAutAnaliza.Select(x => new TRNuevaAutDetalleDto()
+				{
+					#region Campos
+					adm_id = x.adm_id,
+					adm_nombre = x.adm_nombre,
+					autorrizacion = x.autorizacion,
+					a_transferir = x.a_transferir,
+					a_transferir_box = x.a_transferir_box,
+					box_id = x.box_id,
+					depo_id = x.depo_id,
+					depo_nombre = x.depo_nombre,
+					fv = x.fv,
+					nota = x.nota,
+					palet = x.palet,
+					pedido = x.pedido,
+					pi_compte = x.pi_compte,
+					p_desc = x.p_desc,
+					p_id = x.p_id,
+					p_id_sustituto = x.p_id_sustituto,
+					p_sustituto = x.p_sustituto,
+					stk = x.stk,
+					stk_adm = x.stk_adm,
+					unidad_palet = x.unidad_palet,
+					#endregion
+				}).ToList();
+				model.Detalle = ObtenerGridCore<TRNuevaAutDetalleDto>(TRNuevaAutDetallelLista);
+				return View("TRVistaNuevaAutYDetalleDeProductos", model);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al abrir la vista de edicion de nuevas autorizaciones y detalle de TR.");
+				TempData["error"] = "Hubo algun problema al abrir la vista de edicion de nuevas autorizaciones y detalle de TR. Si el problema persiste informe al Administrador";
+				return ObtenerMensajeDeError("Hubo algun problema al abrir la vista de edicion de nuevas autorizaciones y detalle de TR. Si el problema persiste informe al Administrador");
+			}
+		}
+
 		#region métodos privados
+		private PartialViewResult ObtenerMensajeDeError(string mensaje)
+		{
+			RespuestaGenerica<EntidadBase> response = new()
+			{
+				Ok = false,
+				EsError = true,
+				EsWarn = false,
+				Mensaje = mensaje
+			};
+			return PartialView("_gridMensaje", response);
+		}
 		private string ObtenerStringListDePedidosIncluidos()
 		{
-			var lista= TRAutPedidosIncluidosILista.Select(x=>x.pi_compte).Distinct().ToList();
+			var lista = TRAutPedidosIncluidosILista.Select(x => x.pi_compte).Distinct().ToList();
 			var listaString = string.Join("@", lista);
 			return listaString;
 		}

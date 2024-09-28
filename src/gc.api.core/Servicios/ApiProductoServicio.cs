@@ -470,7 +470,7 @@ namespace gc.api.core.Servicios
 				new("@lista_depo",listaDepo),
 				new("@stk_existente",stkExistente),
 				new("@sustituto",sustituto),
-				new("@pallet_nro",palletNro),
+				new("@palet_nro",palletNro),
 			};
 			List<TRAutAnalizaDto> respuesta = _repository.EjecutarLstSpExt<TRAutAnalizaDto>(sp, ps, true);
 			return respuesta;

@@ -479,6 +479,57 @@ namespace gc.sitio.Controllers
 				_context.HttpContext.Session.SetString("TRSucursalesLista", json);
 			}
 		}
+		protected List<TRAutAnalizaDto> TRAutAnaliza
+		{
+			get
+			{
+				string json = _context.HttpContext.Session.GetString("TRAutAnaliza");
+				if (string.IsNullOrEmpty(json))
+				{
+					return new();
+				}
+				return JsonConvert.DeserializeObject<List<TRAutAnalizaDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("TRAutAnaliza", json);
+			}
+		}
+		protected List<TRNuevaAutSucursalDto> TRNuevaAutSucursalLista
+		{
+			get
+			{
+				string json = _context.HttpContext.Session.GetString("TRNuevaAutSucursalLista");
+				if (string.IsNullOrEmpty(json))
+				{
+					return new();
+				}
+				return JsonConvert.DeserializeObject<List<TRNuevaAutSucursalDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("TRNuevaAutSucursalLista", json);
+			}
+		}
+		protected List<TRNuevaAutDetalleDto> TRNuevaAutDetallelLista
+		{
+			get
+			{
+				string json = _context.HttpContext.Session.GetString("TRNuevaAutDetallelLista");
+				if (string.IsNullOrEmpty(json))
+				{
+					return new();
+				}
+				return JsonConvert.DeserializeObject<List<TRNuevaAutDetalleDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("TRNuevaAutDetallelLista", json);
+			}
+		}
 		#endregion
 
 		#region Metodos generales
