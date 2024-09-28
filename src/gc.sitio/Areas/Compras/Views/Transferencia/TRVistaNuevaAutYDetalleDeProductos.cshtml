@@ -26,7 +26,7 @@
 								<tbody>
 									@foreach (var item in Model.Sucursales.ListaDatos)
 									{
-										<tr onclick="selectTRSucursalesRow(this)">
+										<tr onclick="selectNuevaAutListaSucursalesRow(this)">
 											<td>@item.orden</td>
 											<td>@item.adm_nombre</td>
 											<td>@item.pallet_aprox</td>
@@ -78,7 +78,7 @@
 								<tbody>
 									@foreach (var item in Model.Detalle.ListaDatos)
 									{
-										<tr onclick="selectTRSucursalesRow(this)">
+										<tr onclick="selectNuevaAutListaProductosRow(this)">
 											<td>@item.p_id</td>
 											<td>@item.p_desc</td>
 											<td>@item.pi_compte</td> @*TODO: Deberia ir ID Prov, consultar con Carlos*@
@@ -107,3 +107,9 @@
 		</div>
 	</div>
 </div>
+
+@section scripts {
+	<script type="text/javascript">
+	</script>
+	<script src="~/js/app/areas/transferencias/trVistaNuevaAutYDetalleDeProductos.js"></script>
+}
