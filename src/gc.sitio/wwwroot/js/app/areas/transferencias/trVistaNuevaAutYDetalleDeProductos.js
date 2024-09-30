@@ -53,3 +53,83 @@ function verNotaEnProducto(x) {
 	}
 	CerrarWaiting();
 }
+
+function guardarNotaDeSucursal() {
+	AbrirWaiting();
+	var nota = $("#txtNotaEnSucursal").val();
+	var admId = $("#adm_id_en_modal_sucursal").val();
+	var datos = { nota, admId };
+	if (admId && nota) {
+		PostGen(datos, TRAgregarNotaASucursalNuevaAutUrl, function (o) {
+			if (o.error === true) {
+				CerrarWaiting();
+				AbrirMensaje("Atención", o.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			} else if (o.warn === true) {
+				CerrarWaiting();
+				AbrirMensaje("Atención", o.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "warn!", null);
+			} else if (o.codigo !== "" && o.msg !== "") {
+				CerrarWaiting();
+				AbrirMensaje("Atención", o.msg, function (e) {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "info!", null);
+			} else {
+				CerrarWaiting();
+				$("#modalNotaEnSucursal").modal("hide");
+			}
+		});
+	}
+	else {
+		CerrarWaiting();
+		AbrirMensaje("Atención", "Algunos de los valores de la nota que desea anexar no son válidos.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+}
+
+function guardarNotaDeProducto() {
+	AbrirWaiting();
+	var nota = $("#txtNotaEnProducto").val();
+	var pId = $("#p_id_en_modal_producto").val();
+	var datos = { nota, pId };
+	if (pId && nota) {
+		PostGen(datos, TRAgregarNotaAProductoNuevaAutTRUrl, function (o) {
+			if (o.error === true) {
+				CerrarWaiting();
+				AbrirMensaje("Atención", o.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			} else if (o.warn === true) {
+				CerrarWaiting();
+				AbrirMensaje("Atención", o.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "warn!", null);
+			} else if (o.codigo !== "" && o.msg !== "") {
+				CerrarWaiting();
+				AbrirMensaje("Atención", o.msg, function (e) {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "info!", null);
+			} else {
+				CerrarWaiting();
+				$("#modalNotaEnProducto").modal("hide");
+			}
+		});
+	}
+	else {
+		CerrarWaiting();
+		AbrirMensaje("Atención", "Algunos de los valores de la nota que desea anexar no son válidos.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+}

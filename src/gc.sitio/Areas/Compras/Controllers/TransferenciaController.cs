@@ -140,43 +140,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return PartialView("_trDetalleDePedido", model);
 		}
 
-		public async Task<IActionResult> EditarNotaEnSucursal(string admId)
-		{
-			//TODO: Charlar con carlos para ver si modificamos lo que se muestra en esta vista
-			var model = new TRNotaEnSucursalDto();
-			try
-			{
-				model.Titulo = $"Nota de Sucursal {admId} - {TRSucursalesLista.Where(x => x.adm_id == admId).Select(y => y.adm_nombre).First()}";
-				model.Nota = string.Empty;
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "Error al obtener el formlario de Nota de Sucursal.");
-				TempData["error"] = "Hubo algun problema al intentar obtener el formlario de Nota de Sucursal. Si el problema persiste informe al Administrador.";
-				return ObtenerMensajeDeError("Hubo algun problema al intentar obtener el formlario de Nota de Sucursal. Si el problema persiste informe al Administrador.");
-			}
-			return PartialView("_trNotaEnSucursal", model);
-		}
-
-		public async Task<IActionResult> EditarNotaEnProducto(string pId)
-		{
-			//TODO: Charlar con carlos para ver si modificamos lo que se muestra en esta vista
-			var model = new TRNotaEnProductoDto();
-			try
-			{
-				model.Titulo = $"Nota de Producto {pId} - {TRAutAnaliza.Where(x => x.p_id == pId).Select(y => y.p_desc).First()}";
-				model.Nota = string.Empty;
-				model.p_id = pId;
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "Error al obtener el formulario de Nota de Producto.");
-				TempData["error"] = "Hubo algun problema al intentar obtener el formulario de Nota de Producto. Si el problema persiste informe al Administrador.";
-				return ObtenerMensajeDeError("Hubo algun problema al intentar obtener el formulario de Nota de Producto. Si el problema persiste informe al Administrador.");
-			}
-			return PartialView("_trNotaEnProducto", model);
-		}
-
 		public async Task<IActionResult> AgregarAPedidosIncluidosParaAutTR(string picompte)
 		{
 			var model = new GridCore<TRAutPIDto>();
@@ -289,10 +252,104 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public async Task<JsonResult> AgregarNotaASucursalNuevaAutTR(string nota)
+		public async Task<IActionResult> EditarNotaEnSucursal(string admId)
+		{
+			//TODO: Charlar con carlos para ver si modificamos lo que se muestra en esta vista
+			var model = new TRNotaEnSucursalDto();
+			try
+			{
+				if (admId == null)
+					return ObtenerMensajeDeError("Debe proporcionar una sucursal válida. Si el problema persiste informe al Administrador.");
+
+				model.Titulo = $"Nota de Sucursal {admId} - {TRSucursalesLista.Where(x => x.adm_id == admId).Select(y => y.adm_nombre).First()}";
+				var listaSucursalTemp = TRNuevaAutSucursalLista;
+				var sucursalTemp = listaSucursalTemp.Where(x => x.adm_id == admId).First();
+				if (sucursalTemp == null)
+					return ObtenerMensajeDeError("No se ha encontrado la sucursal seleccionada. Si el problema persiste informe al Administrador.");
+
+				model.Nota = sucursalTemp.nota;
+				model.adm_id = admId;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al obtener el formlario de Nota de Sucursal.");
+				TempData["error"] = "Hubo algun problema al intentar obtener el formlario de Nota de Sucursal. Si el problema persiste informe al Administrador.";
+				return ObtenerMensajeDeError("Hubo algun problema al intentar obtener el formlario de Nota de Sucursal. Si el problema persiste informe al Administrador.");
+			}
+			return PartialView("_trNotaEnSucursal", model);
+		}
+
+		public async Task<JsonResult> AgregarNotaASucursalNuevaAutTR(string nota, string admId)
 		{
 			try
 			{
+				if (string.IsNullOrEmpty(nota))
+					return Json(new { error = false, warn = true, vacio = "Debe especificar un valor de nota válido.", msg = "" });
+				if (string.IsNullOrEmpty(admId))
+					return Json(new { error = false, warn = true, vacio = "Debe seleccionar una sucursal para anexar una nota.", msg = "" });
+				var listaSucursalTemp = TRNuevaAutSucursalLista;
+				var sucursalTemp = listaSucursalTemp.Where(x => x.adm_id == admId).First();
+				if (sucursalTemp != null)
+				{
+					sucursalTemp.nota = nota;
+					TRNuevaAutSucursalLista = listaSucursalTemp;
+				}
+				else
+					return Json(new { error = false, warn = true, vacio = "No se ha encontrado la sucursal seleccionada, solicite soporte.", msg = "" });
+				return Json(new { error = false, warn = false, vacio = false, msg = "" });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar agregar una nota a la sucursal.");
+				TempData["error"] = "Hubo algun problema al intentar agregar una nota a la sucursal. Si el problema persiste informe al Administrador";
+				return Json(new { error = true, msg = "Algo no fue bien al intentar agregar una nota a la sucursal, intente nuevamente mas tarde." });
+			}
+		}
+
+		public async Task<IActionResult> EditarNotaEnProducto(string pId)
+		{
+			//TODO: Charlar con carlos para ver si modificamos lo que se muestra en esta vista
+			var model = new TRNotaEnProductoDto();
+			try
+			{
+				if (pId == null)
+					return ObtenerMensajeDeError("Debe proporcionar un producto válido. Si el problema persiste informe al Administrador.");
+
+				model.Titulo = $"Nota de Producto {pId} - {TRAutAnaliza.Where(x => x.p_id == pId).Select(y => y.p_desc).First()}";
+				var listaTemp = TRNuevaAutDetallelLista;
+				var itemTemp = listaTemp.Where(x => x.p_id == pId).First();
+				if (itemTemp == null)
+					return ObtenerMensajeDeError("No se ha encontrado el producto seleccionado. Si el problema persiste informe al Administrador.");
+
+				model.Nota = itemTemp.nota;
+				model.p_id = pId;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al obtener el formulario de Nota de Producto.");
+				TempData["error"] = "Hubo algun problema al intentar obtener el formulario de Nota de Producto. Si el problema persiste informe al Administrador.";
+				return ObtenerMensajeDeError("Hubo algun problema al intentar obtener el formulario de Nota de Producto. Si el problema persiste informe al Administrador.");
+			}
+			return PartialView("_trNotaEnProducto", model);
+		}
+
+		public async Task<JsonResult> AgregarNotaAProductoNuevaAutTR(string nota, string pId)
+		{
+			try
+			{
+				if (string.IsNullOrEmpty(nota))
+					return Json(new { error = false, warn = true, vacio = "Debe especificar un valor de nota válido.", msg = "" });
+				if (string.IsNullOrEmpty(pId))
+					return Json(new { error = false, warn = true, vacio = "Debe seleccionar un producto para anexar una nota.", msg = "" });
+				var listaProductoTemp = TRNuevaAutDetallelLista;
+				var itemTemp = listaProductoTemp.Where(x => x.p_id == pId).First();
+				if (itemTemp != null)
+				{
+					itemTemp.nota = nota;
+					TRNuevaAutDetallelLista = listaProductoTemp;
+				}
+				else
+					return Json(new { error = false, warn = true, vacio = "No se ha encontrado el producto seleccionada, solicite soporte.", msg = "" });
 				return Json(new { error = false, warn = false, vacio = false, msg = "" });
 			}
 			catch (Exception ex)

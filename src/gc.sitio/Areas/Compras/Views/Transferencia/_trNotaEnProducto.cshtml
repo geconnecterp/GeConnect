@@ -1,16 +1,16 @@
 ﻿@model TRNotaEnProductoDto
 
-@Html.Hidden("p_id", Model.p_id)
+@Html.Hidden("p_id_en_modal_producto", Model.p_id)
 <div class="modal-header">
 	<h5 class="modal-title" id="modalCenterTitle">@Model.Titulo</h5>
 	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
 <div class="modal-body">
-	<textarea class="form-control" id="txtNotaEnProducto" rows="4"></textarea>
+	<textarea class="form-control" id="txtNotaEnProducto" asp-for="@Model.Nota" rows="4"></textarea>
 </div>
 <div class="modal-footer">
 	<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
 		Cerrar
 	</button>
-	<button type="button" class="btn btn-primary">Guardar</button>
+	<button type="button" class="btn btn-primary" onclick="guardarNotaDeProducto();">Guardar</button>
 </div>
