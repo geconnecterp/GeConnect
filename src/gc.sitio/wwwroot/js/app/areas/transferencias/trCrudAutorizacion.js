@@ -21,29 +21,34 @@ function isValid(value) {
 function AnalizarTR() {
 	var depositos = "";
 	if (ExistenDepositosSeleccionados() && ExistenPedidosIncluidos()) {
+		AbrirWaiting();
 		depositos = ObtenerListaDepositoSeleccionado();
-		var stkExistente = $("#chkConsiderarStock").val();
-		var sustituto = $("#chkModificarYSustituto").val();
+		var stkExistente = $("#chkConsiderarStock")[0].checked;
+		var sustituto = $("#chkModificarYSustituto")[0].checked;
 		var maxPallet = $("#txtMaxPallet").val();
 		var datos = { depositos, stkExistente, sustituto, maxPallet };
 		PostGen(datos, TRAnalizarParametrosUrl, function (o) {
 			if (o.error === true) {
+				CerrarWaiting();
 				AbrirMensaje("Atención", o.msg, function () {
 					$("#msjModal").modal("hide");
 					return true;
 				}, false, ["Aceptar"], "error!", null);
 			} else if (o.warn === true) {
+				CerrarWaiting();
 				AbrirMensaje("Atención", o.msg, function () {
 					$("#msjModal").modal("hide");
 					return true;
 				}, false, ["Aceptar"], "warn!", null);
-			} else if (o.codigo !== "") {
+			} else if (o.codigo !== "" && o.msg !== "") {
+				CerrarWaiting();
 				AbrirMensaje("Atención", o.msg, function (e) {
 					$("#msjModal").modal("hide");
 					window.location.href = TRAbrirVistaAutorizacionesUrl;
 					return true;
 				}, false, ["Aceptar"], "info!", null);
 			} else {
+				CerrarWaiting();
 				window.location.href = TRAbrirVistaAutorizacionesUrl;
 			}
 		});
@@ -52,7 +57,7 @@ function AnalizarTR() {
 
 function ExistenPedidosIncluidos() {
 	var rowCount = $('#tbListaPedidosIncluidos tbody tr').length;
-	if (rowCount && rowCount > 1) {
+	if (rowCount && rowCount >= 1) {
 		return true;
 	}
 	else {
@@ -64,7 +69,7 @@ function ExistenPedidosIncluidos() {
 }
 
 function ExistenDepositosSeleccionados() {
-	
+
 	var rowCount = $('#tbDepositosDeEnvio tr').length;
 	if (rowCount && rowCount > 1) {
 		var listaDepo = ObtenerListaDepositoSeleccionado();
@@ -159,6 +164,22 @@ function agregarAPedidosIncl(x) {
 	CerrarWaiting();
 }
 
+function verDetalleDePedido(x) {
+	AbrirWaiting();
+	var picompte = x.dataset.interaction;
+	if (picompte) {
+		var datos = { picompte };
+		PostGenHtml(datos, TRVerDetallePedidoDeSucursalUrl, function (obj) {
+			$("#divDetalleDePedido").html(obj);
+			AddEventListenerToGrid("tbDetalleDePedido");
+			$('#modalCenter').modal('show')
+			CerrarWaiting();
+			return true
+		});
+	}
+	CerrarWaiting();
+}
+
 function quitarDePedidosIncl(x) {
 	AbrirWaiting();
 	var picompte = x.dataset.interaction;
@@ -196,5 +217,7 @@ function selectTRDepositosDeEnvioRow(x) {
 }
 
 function selectTRPedidoSucursalRow(x) {
-	console.log(x);
+}
+
+function selectTRDetalleDePedido(x) {
 }

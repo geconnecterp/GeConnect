@@ -469,6 +469,18 @@ namespace gc.api.Controllers.Almacen
 
 		[HttpGet]
 		[Route("[action]")]
+		public IActionResult ObtenerTRAutPIDetalle(string piCompte)
+		{
+			if (piCompte == null) return BadRequest("No se recepcionaron los datos");
+
+			List<TRAutPIDetalleDto> resp = _productosSv.ObtenerTRAut_PI_Detalle(piCompte);
+
+			var response = new ApiResponse<List<TRAutPIDetalleDto>>(resp);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
 		public IActionResult ObtenerTRAutDepositos(string admId)
 		{
 			if (admId == null) return BadRequest("No se recepcionaron los datos");

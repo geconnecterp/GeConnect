@@ -450,6 +450,17 @@ namespace gc.api.core.Servicios
 			return respuesta;
 		}
 
+		public List<TRAutPIDetalleDto> ObtenerTRAut_PI_Detalle(string piCompte)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Aut_PI_Detalle;
+			var ps = new List<SqlParameter>()
+			{
+				new("@pi_compte",piCompte),
+			};
+			List<TRAutPIDetalleDto> respuesta = _repository.EjecutarLstSpExt<TRAutPIDetalleDto>(sp, ps, true);
+			return respuesta;
+		}
+
 		public List<TRAutDepoDto> ObtenerTRAut_Depositos(string admId)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Aut_Depositos;
@@ -470,7 +481,7 @@ namespace gc.api.core.Servicios
 				new("@lista_depo",listaDepo),
 				new("@stk_existente",stkExistente),
 				new("@sustituto",sustituto),
-				new("@pallet_nro",palletNro),
+				new("@palet_nro",palletNro),
 			};
 			List<TRAutAnalizaDto> respuesta = _repository.EjecutarLstSpExt<TRAutAnalizaDto>(sp, ps, true);
 			return respuesta;

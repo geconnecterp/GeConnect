@@ -36,7 +36,9 @@ namespace gc.api.core.Contratos.Servicios
         List<TRPendienteDto> ObtenerTRPendientes(ObtenerTRPendientesRequest request);
         List<TRAutSucursalesDto> ObtenerTRAut_Sucursales(string admId);
         List<TRAutPIDto> ObtenerTRAut_PI(string admId, string admIdLista);
-        List<TRAutDepoDto> ObtenerTRAut_Depositos(string admId);
+        List<TRAutPIDetalleDto> ObtenerTRAut_PI_Detalle(string piCompte);
+
+		List<TRAutDepoDto> ObtenerTRAut_Depositos(string admId);
 
 
         RespuestaDto TRCtrlSalida(string ti, string adm, string usu);

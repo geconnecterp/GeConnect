@@ -24,7 +24,13 @@
 					<td>@item.pie_desc</td>
 					<td>@item.pi_nota</td>
 					<td>@item.pit_desc</td>
-					<td><a asp-action="VerDetallePedidoDeSucursal" asp-controller="Transferencia" asp-area="Compras" class="btn btn-xs btn-outline-success" asp-route-picompte="@item.pi_compte"> <i class="bx bx-detail"></i></a></td>
+					@* <td>
+						<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCenter">
+							Launch modal
+						</button>
+					</td> *@
+					@* <td><a asp-action="VerDetallePedidoDeSucursal" asp-controller="Transferencia" asp-area="Compras" class="btn btn-xs btn-outline-success" asp-route-picompte="@item.pi_compte"> <i class="bx bx-detail"></i></a></td> *@
+					<td><a class="btn btn-xs btn-outline-success" data-interaction="@item.pi_compte" onclick="verDetalleDePedido(this);"> <i class="bx bx-detail"></i></a></td>
 					<td><a class="btn btn-xs btn-outline-primary" data-interaction="@item.pi_compte" onclick="agregarAPedidosIncl(this);"> <i class="bx bx-plus-circle"></i></a></td>
 					<td style="display:none;">@item.adm_id</td>
 					<td style="display:none;">@item.adm_desc</td>
