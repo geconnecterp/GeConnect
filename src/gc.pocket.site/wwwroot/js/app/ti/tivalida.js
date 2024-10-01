@@ -11,7 +11,7 @@
     //$("#btnCleanProd").on("click", limpiarProductoCarrito);
 
     //este boton valida el BOX
-    $("#btnValBox").on("click", validaBox);
+    $("#btnValBox").on("click", validaBoxCarrito);
 
     //ESTE BOTON CARGARÍA LOS DATOS AL CARRITO
     $("#btnCargarProd").on("click", cargarCarrito);
@@ -105,7 +105,7 @@ function cargarCarrito() {
 
 
 //esta funcion verifica si el box que ingresa corresponde al box del producto
-function validaBox() {
+function validaBoxCarrito() {
     var dato = { boxId: $("#txtBox").val() }
     PostGen(dato, validarBoxIngresadoUrl, function (obj) {
         if (obj.error === true) {
@@ -162,49 +162,97 @@ function verificaEstado() {
                 var prod = productoBase;
                 var autoAct = autorizacionActual;
 
-                $("#P_id").val(prod.p_id);
-                $("#Marca").val(prod.p_m_marca);
-                $("#Descipcion").val(prod.p_desc);
-                $("#Rubro").val(prod.rub_desc);
-                $("#up").mask("000.000.000.000", { reverse: true });
-                if (autoAct.pUnidPres === 0) {
-                    $("#up").val(prod.p_unidad_pres).prop("disabled", false);
-                } else {
-                    $("#up").val(autoAct.pUnidPres).prop("disabled", false);
+                //se procedera a buscar la fecha de vencimiento del producto dependiendo del box en el que estamos trabajando.
+                var bId = $("#txtBox").val();
+                if (bId === "") {
+                    InicializaBusqueda();
+                    $("#msjModal").modal("hide");
+                    $("#Busqueda").val("");
+                    $("#Busqueda").focus();
+                    return true;
+                    AbrirMensaje("Atención", "No se ha seleccionado Box aún. Seleccionelo y vuelva a buscar el producto.", function () {
+                    }, false, ["Aceptar"], "warn!", null)
                 }
-                $("#unid").mask("000.000.000.000", { reverse: true });
-                //$("#fvto").val(prod.)
+                else {
+                    //buscamos el vencimiento
+                    dato = { pId: productoBase.p_id, bId };
 
-                if (prod.up_id === "07") {  //unidades enteras
-                    $("#box").mask("000.000.000.000", { reverse: true });
-                    $("#unid").val(0).prop("disabled", false);
+                    PostGen(dato, buscarFechaVtoUrl, function (obj) {
+                        if (obj.error === true) {
+                            AbrirMensaje("Importante", obj.msg, function () {
+                                $("#msjModal").modal("hide");
+                                $("#Busqueda").val("");
+                                $("#Busqueda").focus();
+
+                                return true;
+                            }, false, ["Aceptar"], "error!", null);
+                        }
+                        else if (obj.warn === true) {
+                            AbrirMensaje("Importante", obj.msg, function () {
+                                $("#msjModal").modal("hide");
+                                $("#Busqueda").val("");
+                                $("#Busqueda").focus();
+
+                                return true;
+                            }, false, ["Aceptar"], "warn!", null);
+                        }
+                        else {
+
+                            $("#P_id").val(prod.p_id);
+                            $("#Marca").val(prod.p_m_marca);
+                            $("#Descipcion").val(prod.p_desc);
+                            $("#Rubro").val(prod.rub_desc);
+                            $("#up").mask("000.000.000.000", { reverse: true });
+                            if (autoAct.pUnidPres === 0) {
+                                $("#up").val(prod.p_unidad_pres).prop("disabled", false);
+                            } else {
+                                $("#up").val(autoAct.pUnidPres).prop("disabled", false);
+                            }
+                            $("#unid").mask("000.000.000.000", { reverse: true });
+
+                            if (obj.vto !== "") {
+                                var f = new Date(obj.vto);
+                                $("#fvto").val(formatoFechaYMD(f));
+                            }
+
+                            if (prod.up_id === "07") {  //unidades enteras
+                                $("#box").mask("000.000.000.000", { reverse: true });
+                                $("#unid").val(0).prop("disabled", false);
+                            }
+                            else { //unidades decimales
+                                $("#box").mask("000.000.000.000,00", { reverse: true });
+                                $("#unid").val(0).prop("disabled", true);
+                            }
+
+                            if (prod.sinAU === true) {
+                                $("#chkDesarma").prop("disabled", false);
+                            }
+
+
+                            $("#box").val(0).prop("disabled", false);
+
+                            //activamos el boton
+                            $("#btnCargarProd").prop("disabled", false);
+
+                            //inicializamos el campo de busqueda
+                            $("#Busqueda").val("");
+
+                            if (prod.p_con_vto !== "N") {                               
+                                $("#fvto").prop("disabled", false);                             
+                                $("#fvto").focus();
+                               
+                            } else {                               
+                                $("#up").focus();                               
+                            }                           
+
+                            return true;
+
+                        }
+                    });
+                    
                 }
-                else { //unidades decimales
-                    $("#box").mask("000.000.000.000,00", { reverse: true });
-                    $("#unid").val(0).prop("disabled", true);
-                }
-
-                if (prod.sinAU === true) {
-                    $("#chkDesarma").prop("disabled", false);
-                }
-
-
-                $("#box").val(0).prop("disabled", false);
-
-                //activamos el boton
-                $("#btnCargarProd").prop("disabled", false);
-
-                //inicializamos el campo de busqueda
-                $("#Busqueda").val("");
-
-                $("#up").focus();
-
-                return true;
             }
         });
-
-
-
 
         $("#estadoFuncion").val(false);
 

@@ -10,6 +10,7 @@ using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.General;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.sitio.core.Servicios.Contratos;
@@ -68,8 +69,10 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string TR_AUT_PI = "/ObtenerTRAutPI";
 		private const string TR_AUT_Depositos = "/ObtenerTRAutDepositos";
 		private const string TR_AUT_Analiza = "/TRAutAnaliza";
+        private const string TR_Busca_Vto = "/BuscarFechaVto";
 
-		private readonly AppSettings _appSettings;
+
+        private readonly AppSettings _appSettings;
 
         public ProductoServicio(IOptions<AppSettings> options, ILogger<ProductoServicio> logger) : base(options, logger)
         {
@@ -1297,6 +1300,45 @@ namespace gc.sitio.core.Servicios.Implementacion
                 else
                 {
                     return new RespuestaGenerica<TIRespuestaDto> { Ok = false, Mensaje = apiResponse.Data.resultado_msj };
+                }
+            }
+            else
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                return new();
+            }
+        }
+        //
+        public async Task<RespuestaGenerica<ProductoDepositoDto>> BuscarFechaVto(string pId, string bId, string token)
+        {
+            ApiResponse<ProductoDepositoDto> apiResponse;
+
+            HelperAPI helper = new();
+
+            HttpClient client = helper.InicializaCliente(token);
+            HttpResponseMessage response;
+
+            var link = $"{_appSettings.RutaBase}{RutaAPI}{TR_Busca_Vto}?pId={pId}&bId={bId}";
+
+            response = await client.GetAsync(link);
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(stringData))
+                {
+
+                    return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<ProductoDepositoDto>>(stringData);
+                if (apiResponse.Data.P_Id.Equals(pId) && apiResponse.Data.Box_Id.Equals(bId))
+                {
+                    return new RespuestaGenerica<ProductoDepositoDto> { Ok = true, Mensaje = "OK", Entidad = apiResponse.Data };
+                }
+                else
+                {
+                    return new RespuestaGenerica<ProductoDepositoDto> { Ok = true, Mensaje = "No se encontró el producto.", Entidad = new ProductoDepositoDto { P_Id=pId,Box_Id=bId,Ps_Fv="" } };
                 }
             }
             else

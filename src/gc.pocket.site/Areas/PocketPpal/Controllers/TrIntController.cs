@@ -8,6 +8,7 @@ using gc.infraestructura.EntidadesComunes.Options;
 using gc.pocket.site.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.DotNet.MSIdentity.Shared;
 using Microsoft.Extensions.Options;
 using System.Reflection;
 using X.PagedList;
@@ -667,12 +668,12 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             }
         }
         [HttpPost]
-        public async Task<IActionResult> ValidarBoxIngresado(string boxId)
+        public async Task<IActionResult> ValidarBoxIngresado(string boxId, bool esBoxDest = false)
         {
             AutorizacionTIDto sel;
             try
             {
-                return await ValidaBox(boxId);
+                return await ValidaBox(boxId,esBoxDest);
             }
             catch (NegocioException ex)
             {
@@ -694,7 +695,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             }
         }
 
-        private async Task<IActionResult> ValidaBox(string boxId)
+        private async Task<IActionResult> ValidaBox(string boxId,bool esBoxDestino=false)
         {
             AutorizacionTIDto sel = TIActual;
 
@@ -706,14 +707,28 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 {
                     return Json(new { error = false, warn = true, msg = res.Resultado_msj });
                 }
-
-                sel.PBoxId = res.Box_id_sugerido;
+                
+                if (esBoxDestino)
+                {
+                    sel.PBoxIdDest = boxId;
+                }
+                else
+                {
+                    sel.PBoxId = res.Box_id_sugerido;
+                }
                 TIActual = sel;
+
                 return Json(new { error = false, warn = false, msg = "Box Correcto" });
             }
-            if (sel.PBoxId.Equals(boxId))
+            if (sel.PBoxId.Equals(boxId) && !esBoxDestino)
             {
                 return Json(new { error = false, warn = false, msg = "Box Correcto" });
+            }
+            else if (esBoxDestino) {
+                sel.PBoxIdDest = boxId;
+                TIActual = sel;
+                return Json(new { error = false, warn = false, msg = "Box Correcto" });
+
             }
             else
             {
@@ -848,9 +863,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 {
                     return RedirectToAction("Login", "Token", new { area = "seguridad" });
                 }
-
                 sel = TIActual;
-
+                string nn = $"TI - Confirmación de TR - {IdentificaModulo}";
                 volver = Url.Action("TICargaCarrito", "trint", new { area = "pocketppal", esrubro = sel.EsRubro, esbox = sel.EsBox, boxid = sel.BoxId, rubroid = sel.RubroId, rubrogid = sel.RubroGId, tiId = TI_ModId });
                 ViewBag.AppItem = new AppItem { Nombre = "TI - Confirmación de TR", VolverUrl = volver ?? "#" };
 
@@ -871,7 +885,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
         [HttpPost]
         //el valor "" de boxDest se refiere a que a TR entre Sucursales no se puede especificar.
-        public async Task<JsonResult> ConfirmacionFinalTI(string ti, string boxDest = "")
+        public async Task<JsonResult> ConfirmacionFinalTI(string ti)
         {
             AutorizacionTIDto sel;
             try
@@ -882,14 +896,14 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     throw new NegocioException("No se Reconoce el Identificador de la Transferencia. Intente nuevamente, sino salga e ingrese de nuevo.");
                 }
 
-                if ((string.IsNullOrEmpty(boxDest) || string.IsNullOrWhiteSpace(boxDest)) && !sel.TipoTI.Equals("S"))
+                if ((string.IsNullOrEmpty(sel.PBoxIdDest) || string.IsNullOrWhiteSpace(sel.PBoxIdDest)) && !sel.TipoTI.Equals("S"))
                 {
                     throw new NegocioException("NO SE HA ESPECIFICADO EL BOX FINAL. VERIFIQUE");
                 }
 
 
                 #region Se realiza el control de Salida
-                var request = new TIRequestConfirmaDto { Ti = ti, AdmId = AdministracionId, Usu = UserName, BoxDest = boxDest };
+                var request = new TIRequestConfirmaDto { Ti = ti, AdmId = AdministracionId, Usu = UserName, BoxDest = sel.PBoxIdDest };
                 var res = await _productoServicio.TIConfirma(request, TokenCookie);
 
                 if (res.Ok)
@@ -969,6 +983,54 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             }
         }
 
+        [HttpPost] //TIRespuestaDto
+        public async Task<JsonResult> BuscarFechaVto(string pId,string bId)
+        {
+           
+            try
+            {
+                
+                if (string.IsNullOrWhiteSpace(pId) || string.IsNullOrWhiteSpace(pId))
+                {
+                    throw new NegocioException("No se puede buscar la Fecha de Vencimiento. Falta algunos de los datos necesarios. Intentelo de nuevo.");
+                }
+
+                if (string.IsNullOrEmpty(pId) || string.IsNullOrEmpty(pId))
+                {
+                    throw new NegocioException("No se puede buscar la Fecha de Vencimiento. Falta algunos de los datos necesarios. Intentelo de nuevo.");
+                }
+
+                #region Se reaiza la busqueda de la fecha de vencimiento
+                var res = await _productoServicio.BuscarFechaVto(pId, bId, TokenCookie);
+
+                if (res.Ok)
+                {
+                    return Json(new { error = false, warn = false, vto = res.Entidad.Ps_Fv });
+                }
+                else
+                {
+                    return Json(new { error = true, warn = false, msg = res.Mensaje });
+                }
+
+                #endregion
+
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} No se pudo Cargar la Autorización Actual en la vista");
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} Error durante el proceso");
+                return Json(new { error = true, warn = false, msg = "Algo no fue bien en el procesamiento. Ingrese de nuevo si fuera necesario. " });
+            }
+        }
 
         #endregion
     }
