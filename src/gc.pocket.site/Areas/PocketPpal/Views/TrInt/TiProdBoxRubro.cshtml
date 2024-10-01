@@ -5,6 +5,8 @@
 @{
 
     Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
+    var callback = Url.Action("tiprodboxrubro", "trint", new { area = "pocketppal" });
+
 }
 <div class="row">
     <div class="d-inline-flex flex-row mb-3">
@@ -42,7 +44,7 @@
 </div>
 <div class="row mb-3">
     <div class="d-flex justify-content-center">
-        <button type="button" class="btn btn-info btn-sm m-2"><i class="bx bx-ms bx-info-circle"></i></button>
+        <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-2"><i class="bx bx-ms bx-info-circle"></i></a>
         <form asp-action="TICargaCarrito" asp-controller="trint" asp-area="pocketppal" method="get">
         <button type="submit" id="btnContinua02" disabled class="btn btn-success btn-sm m-2"><i class="bx bx-ms bx-right-arrow-alt"></i></button>
             @Html.Hidden("esrubro")

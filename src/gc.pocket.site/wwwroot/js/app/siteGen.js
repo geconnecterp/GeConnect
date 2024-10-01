@@ -200,12 +200,14 @@ function analizaEnterInput(e) {
 function CargarAutoActual() {
     PostGen({}, ObtenerAutorizacionActualUrl, function (obj) {
         if (obj.error === true) {
+            CerrarWaiting();
             AbrirMensaje("Importante", obj.msg, function () {
                 $("#msjModal").modal("hide");
                 return true;
             }, false, ["Aceptar"], "error!", null);
         }
         else {
+            CerrarWaiting();
             autorizacionActual = obj.auto;
             //permite activar o no el check que permite o no desarmar el paquete.
             if ((obj.auto.tipoTI === "B" || obj.auto.tipoTI === "D") && obj.auto.sinAU === true) {

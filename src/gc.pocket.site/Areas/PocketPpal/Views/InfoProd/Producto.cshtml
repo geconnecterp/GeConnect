@@ -2,6 +2,7 @@
 @model InfoProductoDto
 @{
     Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
+    string callback = ViewBag.Callback ?? "";
 }
 
 <div class="container">
@@ -99,10 +100,12 @@
         </div>
     </div>
     <div class="row mt-2">
-        <div class="offset-sm-3 col-sm-2">
-            <a asp-action="info" asp-controller="almacen" asp-area="gestion" id="btnVolver" class="btn btn-sm btn-danger" title="VOLVER"><i class="bx bx-left-arrow bx-sm"></i><span> Voler</span></a>
-        </div>
-        <div class="col-sm-2">
+        <div class="d-flex justify-content-around">
+            @* <a asp-action="info" asp-controller="almacen" asp-area="gestion" id="btnVolver" class="btn btn-sm btn-danger" title="VOLVER"><i class="bx bx-left-arrow bx-sm"></i><span> Voler</span></a> *@
+            @if (!string.IsNullOrEmpty(callback))
+            {
+                <a href="@callback" class="btn btn-sm btn-info"><i class="bx bx-reply bx-sm"></i><span>Retornar</span></a>
+            }
             <a asp-action="rpr" asp-controller="almacen" asp-area="gestion" type="button" id="btnInfoProd" class="btn btn-sm btn-secondary"><i class="bx bx-info-circle bx-sm "></i><span> ir a RPR</span></a>
         </div>
     </div>

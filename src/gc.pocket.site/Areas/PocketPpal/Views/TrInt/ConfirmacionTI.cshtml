@@ -2,20 +2,23 @@
 @model AutorizacionTIDto
 @{
     Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
+    var callback = Url.Action("confirmacionTI", "trint", new { area = "pocketppal"});
 }
 <partial name="_tiNroAutorizacion" model="@Model.Ti" />
+
 <div class="row" id="divBoxDestino">
     <div class="d-flex justify-content-center">
         <div class="input-group input-group-sm">
             <span class="input-group-text">Box Destino</span>
-            <input type="text" class="form-control" id="txtBoxDestino" />
+            <input type="text" class="form-control inputEditable" id="txtBoxDestino" />
+            <button type="button" id="btnVerifBoxDestino" class="btn btn-success btn-sm"><i class="bx bx-sm bx-check"></i></button>
         </div>        
     </div>
 </div>
 <div class="row mb-3">
-    <div class="d-flex justify-content-center">
-        <button type="button" class="btn btn-info btn-sm m-3"><i class="bx bx-ms bx-info-circle"></i></button>
-        <button type="button" id="btnConfirmacionFinal" ti="@Model.Ti" class="btn btn-sm btn-check m-3 btn-success"><i class="bx bx-sm bxs-truck"></i></button>
+    <div class="d-flex justify-content-around">
+        <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-3"><i class="bx bx-ms bx-info-circle"></i></a>
+        <button type="button" id="btnConfirmacionFinal" class="btn btn-danger btn-sm m-3" trint="@Model.Ti" disabled><i class="bx bx-sm bx-check-circle"></i><span> Finalizar</span></button>
     </div>
 </div>
 
@@ -23,6 +26,8 @@
     <script type="text/javascript">
         var autorizacionActual = null;
         var ObtenerAutorizacionActualUrl = "@Url.Action("ObtenerAutorizacionActual", "trint", new { area = "pocketppal" })";
+        var confirmacionFinalTIUrl = "@Url.Action("ConfirmacionFinalTI", "trint", new { area = "pocketppal" })";
+        var validarBoxIngresadoUrl = "@Url.Action("ValidarBoxIngresado", "trint", new { area = "pocketppal" })";
 
     </script>
     <script src="~/js/app/ti/ticonfirma.js"></script>

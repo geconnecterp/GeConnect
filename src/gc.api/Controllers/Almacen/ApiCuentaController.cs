@@ -7,9 +7,8 @@ namespace gc.api.Controllers.Almacen
     using gc.infraestructura.Core.Interfaces;
     using gc.infraestructura.Core.Responses;
     using gc.infraestructura.Dtos.Almacen;
-	using gc.infraestructura.Dtos.CuentaComercial;
-	using gc.infraestructura.EntidadesComunes.ControlComun.CuentaComercial;
-	using Microsoft.AspNetCore.Authorization;
+    using gc.infraestructura.Dtos.CuentaComercial;
+    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json;
     using System.Collections.Generic;

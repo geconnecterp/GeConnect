@@ -40,7 +40,7 @@
                                 }
                                 @if (item.Colectado > 0)
                                 {
-                                    <button type="button" class="btn btn-sm btn-danger" onclick="limpiarProductoCarrito()"><i class="bx bx-eraser"></i></button>
+                                    <button type="button" class="btn btn-sm btn-danger" onclick="limpiarProductoCarrito('@item.P_id','@item.Box_id')"><i class="bx bx-eraser"></i></button>
                                 }
 
                             </div>

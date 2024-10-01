@@ -4,8 +4,9 @@
 *@
 @{
     Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
-    
+
     var buscar = new BusquedaProducto();
+    var rutaActual = Url.Action("TIValidaProducto", "trint", new { area = "pocketppal" });
     // var cota = (int)ViewBag.FechaCotaJS;
 }
 <partial name="_tiNroAutorizacion" model="@Model.Ti" />
@@ -38,6 +39,7 @@
         var ObtenerAutorizacionActualUrl = "@Url.Action("ObtenerAutorizacionActual", "trint", new { area = "pocketppal" })";
         var ResguardarProductoCarritoUrl = "@Url.Action("ResguardarProductoCarrito", "trint", new { area = "pocketppal" })";
         var proximoProductoUrl = "@Url.Action("TICargaCarrito", "trint", new { area = "pocketppal" })";
+        var buscarFechaVtoUrl = "@Url.Action("BuscarFechaVto", "trint", new { area = "pocketppal" })";
     </script>
     <script src="~/js/app/busquedas.js" type="text/javascript"></script>
     @* <script src="~/js/app/rpr/rprab.js" type="text/javascript"></script> *@
