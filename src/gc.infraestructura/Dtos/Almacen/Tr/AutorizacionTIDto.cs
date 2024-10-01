@@ -21,6 +21,7 @@
         public DateTime Pfvto { get; set; }
         public int PUnidPres { get; set; }
         public decimal PPedido { get; set; }
+        public string PBoxIdDest { get; set; } = string.Empty;
         public bool SinAU { get; set; }
 
     }

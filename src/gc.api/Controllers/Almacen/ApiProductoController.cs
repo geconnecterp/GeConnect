@@ -1,18 +1,19 @@
 namespace gc.api.Controllers.Almacen
 {
     using AutoMapper;
-    using Azure;
     using gc.api.core.Contratos.Servicios;
     using gc.api.core.Entidades;
     using gc.infraestructura.Core.EntidadesComunes;
+    using gc.infraestructura.Core.Exceptions;
     using gc.infraestructura.Core.Interfaces;
     using gc.infraestructura.Core.Responses;
     using gc.infraestructura.Dtos.Almacen;
     using gc.infraestructura.Dtos.Almacen.Rpr;
     using gc.infraestructura.Dtos.Almacen.Tr;
-	using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
-	using gc.infraestructura.Dtos.CuentaComercial;
-	using gc.infraestructura.Dtos.Gen;
+    using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
+    using gc.infraestructura.Dtos.CuentaComercial;
+    using gc.infraestructura.Dtos.Gen;
+    using gc.infraestructura.Dtos.General;
     using gc.infraestructura.Dtos.Productos;
     using gc.infraestructura.EntidadesComunes.Options;
     using Microsoft.AspNetCore.Authorization;
@@ -35,14 +36,17 @@ namespace gc.api.Controllers.Almacen
         private readonly ITipoMotivoServicio _tmServicio;
         private readonly IUriService _uriService;
         private readonly ILogger<ApiProductoController> _logger;
+        private readonly IProductoDepositoServicio _prodDepoSv;
 
-        public ApiProductoController(IApiProductoServicio servicio, IMapper mapper, IUriService uriService, ILogger<ApiProductoController> logger, ITipoMotivoServicio tipo)
+        public ApiProductoController(IApiProductoServicio servicio, IMapper mapper, IUriService uriService,
+            ILogger<ApiProductoController> logger, ITipoMotivoServicio tipo, IProductoDepositoServicio prodDepoSv)
         {
             _productosSv = servicio;
             _mapper = mapper;
             _uriService = uriService;
             _logger = logger;
             _tmServicio = tipo;
+            _prodDepoSv = prodDepoSv;
         }
 
 
@@ -161,22 +165,22 @@ namespace gc.api.Controllers.Almacen
             return Ok(response);
         }
 
-		[HttpGet]
-		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoBusquedaDto>))]
-		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
-		[Route("[action]")]
-		public IActionResult ProductoBuscarPorIds([FromQuery] BusquedaBase search)
-		{
-			ApiResponse<List<ProductoBusquedaDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			var res = _productosSv.ProductoBuscarPorIds(search);
+        [HttpGet]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoBusquedaDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult ProductoBuscarPorIds([FromQuery] BusquedaBase search)
+        {
+            ApiResponse<List<ProductoBusquedaDto>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.ProductoBuscarPorIds(search);
 
-			response = new ApiResponse<List<ProductoBusquedaDto>>(res);
+            response = new ApiResponse<List<ProductoBusquedaDto>>(res);
 
-			return Ok(response);
-		}
+            return Ok(response);
+        }
 
-		[HttpGet]
+        [HttpGet]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<InfoProdStkD>>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
@@ -314,30 +318,30 @@ namespace gc.api.Controllers.Almacen
             return Ok(response);
         }
 
-		[HttpPost]
-		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RespuestaDto>>))]
-		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
-		[Route("[action]")]
-		public IActionResult RPRConfirma(RPRAConfirmarRequest request)
-		{
-			ApiResponse<List<RespuestaDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			var res = _productosSv.RPRConfirma(request.rp, request.adm_id);
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RespuestaDto>>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult RPRConfirma(RPRAConfirmarRequest request)
+        {
+            ApiResponse<List<RespuestaDto>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.RPRConfirma(request.rp, request.adm_id);
 
-			response = new ApiResponse<List<RespuestaDto>>(res);
+            response = new ApiResponse<List<RespuestaDto>>(res);
 
-			return Ok(response);
-		}
+            return Ok(response);
+        }
 
-		[HttpGet]
-		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<JsonDto>>))]
-		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
-		[Route("[action]")]
-		public IActionResult RPRObtenerJson(string rp)
-		{
-			ApiResponse<List<JsonDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			var res = _productosSv.RPREObtenerDatosJsonDesdeRP(rp);
+        [HttpGet]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<JsonDto>>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult RPRObtenerJson(string rp)
+        {
+            ApiResponse<List<JsonDto>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.RPREObtenerDatosJsonDesdeRP(rp);
 
             response = new ApiResponse<List<JsonDto>>(res);
 
@@ -431,41 +435,41 @@ namespace gc.api.Controllers.Almacen
             return Ok(response);
         }
 
-		[HttpPost]
-		[Route("[action]")]
-		public IActionResult ObtenerTRPendientes(ObtenerTRPendientesRequest request)
-		{
-			if (request == null) return BadRequest("No se recepcionaron los datos");
+        [HttpPost]
+        [Route("[action]")]
+        public IActionResult ObtenerTRPendientes(ObtenerTRPendientesRequest request)
+        {
+            if (request == null) return BadRequest("No se recepcionaron los datos");
 
-			List<TRPendienteDto> resp = _productosSv.ObtenerTRPendientes(request);
+            List<TRPendienteDto> resp = _productosSv.ObtenerTRPendientes(request);
 
-			var response = new ApiResponse<List<TRPendienteDto>>(resp);
-			return Ok(response);
-		}
+            var response = new ApiResponse<List<TRPendienteDto>>(resp);
+            return Ok(response);
+        }
 
-		[HttpGet]
-		[Route("[action]")]
-		public IActionResult ObtenerTRAutSucursales(string admId)
-		{
-			if (admId == null) return BadRequest("No se recepcionaron los datos");
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult ObtenerTRAutSucursales(string admId)
+        {
+            if (admId == null) return BadRequest("No se recepcionaron los datos");
 
-			List<TRAutSucursalesDto> resp = _productosSv.ObtenerTRAut_Sucursales(admId);
+            List<TRAutSucursalesDto> resp = _productosSv.ObtenerTRAut_Sucursales(admId);
 
-			var response = new ApiResponse<List<TRAutSucursalesDto>>(resp);
-			return Ok(response);
-		}
+            var response = new ApiResponse<List<TRAutSucursalesDto>>(resp);
+            return Ok(response);
+        }
 
-		[HttpGet]
-		[Route("[action]")]
-		public IActionResult ObtenerTRAutPI(string admId, string admIdLista)
-		{
-			if (admId == null) return BadRequest("No se recepcionaron los datos");
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult ObtenerTRAutPI(string admId, string admIdLista)
+        {
+            if (admId == null) return BadRequest("No se recepcionaron los datos");
 
-			List<TRAutPIDto> resp = _productosSv.ObtenerTRAut_PI(admId, admIdLista);
+            List<TRAutPIDto> resp = _productosSv.ObtenerTRAut_PI(admId, admIdLista);
 
-			var response = new ApiResponse<List<TRAutPIDto>>(resp);
-			return Ok(response);
-		}
+            var response = new ApiResponse<List<TRAutPIDto>>(resp);
+            return Ok(response);
+        }
 
 		[HttpGet]
 		[Route("[action]")]
@@ -485,29 +489,29 @@ namespace gc.api.Controllers.Almacen
 		{
 			if (admId == null) return BadRequest("No se recepcionaron los datos");
 
-			List<TRAutDepoDto> resp = _productosSv.ObtenerTRAut_Depositos(admId);
+            List<TRAutDepoDto> resp = _productosSv.ObtenerTRAut_Depositos(admId);
 
-			var response = new ApiResponse<List<TRAutDepoDto>>(resp);
-			return Ok(response);
-		}
-
-		[HttpGet]
-		[Route("[action]")]
-		public IActionResult TRAutAnaliza(string listaPi, string listaDepo, bool stkExistente, bool sustituto, int palletNro)
-		{
-			if (string.IsNullOrWhiteSpace(listaPi) || string.IsNullOrWhiteSpace(listaDepo)) return BadRequest("No se recepcionaron los datos");
-
-			List<TRAutAnalizaDto> resp = _productosSv.TRAutAnaliza(listaPi, listaDepo, stkExistente, sustituto, palletNro);
-
-			var response = new ApiResponse<List<TRAutAnalizaDto>>(resp);
-			return Ok(response);
-		}
+            var response = new ApiResponse<List<TRAutDepoDto>>(resp);
+            return Ok(response);
+        }
 
         [HttpGet]
         [Route("[action]")]
-        public IActionResult ControlSalidaTI(string ti,string adm,string usu)
+        public IActionResult TRAutAnaliza(string listaPi, string listaDepo, bool stkExistente, bool sustituto, int palletNro)
         {
-            if(string.IsNullOrEmpty(ti) || string.IsNullOrEmpty(adm) || string.IsNullOrEmpty(usu))
+            if (string.IsNullOrWhiteSpace(listaPi) || string.IsNullOrWhiteSpace(listaDepo)) return BadRequest("No se recepcionaron los datos");
+
+            List<TRAutAnalizaDto> resp = _productosSv.TRAutAnaliza(listaPi, listaDepo, stkExistente, sustituto, palletNro);
+
+            var response = new ApiResponse<List<TRAutAnalizaDto>>(resp);
+            return Ok(response);
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult ControlSalidaTI(string ti, string adm, string usu)
+        {
+            if (string.IsNullOrEmpty(ti) || string.IsNullOrEmpty(adm) || string.IsNullOrEmpty(usu))
             {
                 return BadRequest("Algunos de los Parametros necesarios para el Control de Salida no se recepcionaron.");
             }
@@ -545,11 +549,11 @@ namespace gc.api.Controllers.Almacen
         [Route("[action]")]
         public IActionResult TRValidaPendiente(string usu)
         {
-            if ( string.IsNullOrEmpty(usu) || string.IsNullOrWhiteSpace(usu))
+            if (string.IsNullOrEmpty(usu) || string.IsNullOrWhiteSpace(usu))
             {
                 return BadRequest("Algunos de los Parametros necesarios para el Control de Salida no se recepcionaron.");
             }
-           
+
             var resp = _productosSv.TRValidaPendiente(usu);
 
             var response = new ApiResponse<TIRespuestaDto>(resp);
@@ -568,6 +572,34 @@ namespace gc.api.Controllers.Almacen
 
             var response = new ApiResponse<RespuestaDto>(resp);
             return Ok(response);
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult BuscarFechaVto(string pId, string bId)
+        {
+
+
+            if (string.IsNullOrWhiteSpace(pId) || string.IsNullOrWhiteSpace(pId))
+            {
+                throw new NegocioException("No se puede buscar la Fecha de Vencimiento. Falta algunos de los datos necesarios. Intentelo de nuevo.");
+            }
+
+            if (string.IsNullOrEmpty(pId) || string.IsNullOrEmpty(pId))
+            {
+                throw new NegocioException("No se puede buscar la Fecha de Vencimiento. Falta algunos de los datos necesarios. Intentelo de nuevo.");
+            }
+
+            var res = _prodDepoSv.ObtenerFechaVencimiento(pId, bId);
+            if (res == null)
+            {
+                return Ok(new ApiResponse<ProductoDepositoDto>(new ProductoDepositoDto()));
+            }
+            else
+            {
+                var prod = _mapper.Map<ProductoDeposito, ProductoDepositoDto>(res);
+                return Ok(new ApiResponse<ProductoDepositoDto>(prod));
+            }          
         }
 
         /// <summary>

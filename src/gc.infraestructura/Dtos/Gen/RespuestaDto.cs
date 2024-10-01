@@ -10,6 +10,6 @@ namespace gc.infraestructura.Dtos.Gen
 	public class TIRespuestaDto : RespuestaDto {
         public string Ti { get; set; }=string.Empty;
         public string Tit_id { get; set; }=string.Empty;
-        
+		
     }
 }

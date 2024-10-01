@@ -225,6 +225,18 @@ namespace gc.pocket.site.Controllers
             }
         }
 
+        public string IdentificaModulo
+        {
+            get {
+                AutorizacionTIDto sel = TIActual;
+                return sel.TipoTI.Equals("S") ? "S => S" : 
+                    sel.TipoTI.Equals("D") ? "D => D " : 
+                    sel.TipoTI.Equals("E") ? "D => D (S/AU)" : 
+                    sel.TipoTI.Equals("B") ? "B => B" : 
+                    sel.TipoTI.Equals("O") ? "B => B (S/AU)" : "DEBE REINICIAR MODULO";
+            }
+        }
+
         public List<ProductoBusquedaDto> ProductosSeleccionados
         {
             get

@@ -40,6 +40,7 @@ namespace gc.api.infra.Extensions
 			services.AddScoped<ITiposComprobanteServicio, TipoComprobanteServicio>();
             services.AddScoped<IApiAlmacenServicio, ApiAlmacenServicio>();
             services.AddScoped<ITipoMotivoServicio, TipoMotivoServicio>();
+            services.AddScoped<IProductoDepositoServicio, ProductoDepositoServicio>();
 
 
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
