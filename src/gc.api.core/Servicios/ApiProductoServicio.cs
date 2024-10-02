@@ -486,6 +486,20 @@ namespace gc.api.core.Servicios
 			List<TRAutAnalizaDto> respuesta = _repository.EjecutarLstSpExt<TRAutAnalizaDto>(sp, ps, true);
 			return respuesta;
 		}
+
+		public List<TRProductoParaAgregar> TRObtenerSustituto(string pId, string listaDepo, string admIdDes, string tipo)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_sustituto;
+			var ps = new List<SqlParameter>()
+			{
+				new("@p_id",pId),
+				new("@lista_depo",listaDepo),
+				new("@adm_id_des",admIdDes),
+				new("@tipo",tipo),
+			};
+			List<TRProductoParaAgregar> respuesta = _repository.EjecutarLstSpExt<TRProductoParaAgregar>(sp, ps, true);
+			return respuesta;
+		}
 		//}
 
 		/// <summary>

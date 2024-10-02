@@ -1,0 +1,31 @@
+﻿@model TRAgregarProductoDto
+
+<div class="table-responsive text-nowrap table-wrapper-xs">
+	<table class="table table-bordered table-hover" id="tbListaProductosParaAgregar">
+		<thead class="table-dark">
+			<tr>
+				<th style="width:10%;">ID</th>
+				<th style="width:40%;">Descripción</th>
+				<th style="width:10%;">ID Prov</th>
+				<th style="width:10%;">Incluido</th>
+				<th style="width:10%;">Pedido</th>
+				<th style="width:10%;">Box</th>
+				<th style="width:10%;">Stk</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in Model.Productos.ListaDatos)
+			{
+				<tr onclick="selectNuevaAutListaSucursalesRow(this)">
+					<td>@item.p_id</td>
+					<td>@item.p_desc</td>
+					<td>@item.adm_id</td>
+					<td>@item.adm_id</td>
+					<td>@item.stk_adm</td>
+					<td>@item.box_id</td>
+					<td>@item.stk</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>

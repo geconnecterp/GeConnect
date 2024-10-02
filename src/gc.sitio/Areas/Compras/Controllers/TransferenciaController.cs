@@ -10,7 +10,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Options;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Security.Policy;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 
 namespace gc.sitio.Areas.Compras.Controllers
@@ -64,16 +66,21 @@ namespace gc.sitio.Areas.Compras.Controllers
 			Dictionary<string, string> sucursales = [];
 			try
 			{
-				var itemsAutSucursales = await _productoServicio.TRObtenerAutSucursales(AdministracionId, TokenCookie);
-				model.ListaAutSucursales = ObtenerGridCore<TRAutSucursalesDto>(itemsAutSucursales);
-				if (model.ListaAutSucursales != null && model.ListaAutSucursales.ListaDatos != null && model.ListaAutSucursales.ListaDatos.Count > 0)
+				if (TRSucursalesLista != null && TRSucursalesLista.Count > 0)
+					model.ListaAutSucursales = ObtenerGridCore<TRAutSucursalesDto>(TRSucursalesLista);
+				else
 				{
+					var itemsAutSucursales = await _productoServicio.TRObtenerAutSucursales(AdministracionId, TokenCookie);
+					model.ListaAutSucursales = ObtenerGridCore<TRAutSucursalesDto>(itemsAutSucursales);
+					if (model.ListaAutSucursales != null && model.ListaAutSucursales.ListaDatos != null && model.ListaAutSucursales.ListaDatos.Count > 0)
+					{
 
-					itemsAutSucursales.ForEach(x => sucursales.Add(x.adm_id, x.adm_nombre));
-					PreCargarListaAutPI(sucursales);
-					VerificarSiSucursalTieneOrdenes(itemsAutSucursales);
+						itemsAutSucursales.ForEach(x => sucursales.Add(x.adm_id, x.adm_nombre));
+						PreCargarListaAutPI(sucursales);
+						VerificarSiSucursalTieneOrdenes(itemsAutSucursales);
+					}
+					TRSucursalesLista = itemsAutSucursales;
 				}
-				TRSucursalesLista = itemsAutSucursales;
 				model.ListaPedidosSucursal = ObtenerGridCore<TRAutPIDto>([]);
 				if (TRAutPedidosIncluidosILista != null)
 					model.ListaPedidosIncluidos = ObtenerGridCore<TRAutPIDto>(TRAutPedidosIncluidosILista);
@@ -202,6 +209,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					else
 						sucursalItem.tiene_pi = false;
 				}
+				TRSucursalesLista = listaSucursal;
 				model = ObtenerGridCore<TRAutSucursalesDto>(listaSucursal);
 			}
 			catch (Exception ex)
@@ -250,6 +258,147 @@ namespace gc.sitio.Areas.Compras.Controllers
 				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
 				return Json(new { error = true, msg = "Algo no fue bien al analizar los parámetros de la transferencia solicitada, intente nuevamente mas tarde." });
 			}
+		}
+
+		public async Task<IActionResult> AbrirVistaEdicionNuevasAutYDetalleTR()
+		{
+			var model = new TRNuevaAutDto();
+			try
+			{
+				if (TRAutAnaliza == null)
+					return ObtenerMensajeDeError("Ocurrio un error al intentar leer los datos para analizar. Intente nevamente desde el principio, si el problema persiste informe al Administrador.");
+
+				var orden = 0;
+				var listaSucursales = from i in TRAutAnaliza
+									  group i by new { i.adm_id, i.adm_nombre } into x
+									  select new TRNuevaAutSucursalDto() { adm_id = x.Key.adm_id, adm_nombre = x.Key.adm_nombre, pallet_aprox = x.Sum(y => y.unidad_palet), orden = orden++ };
+				TRNuevaAutSucursalLista = listaSucursales.ToList();
+				model.Sucursales = ObtenerGridCore<TRNuevaAutSucursalDto>(listaSucursales.ToList());
+				TRNuevaAutDetallelLista = TRAutAnaliza.Select(x => new TRNuevaAutDetalleDto()
+				{
+					#region Campos
+					adm_id = x.adm_id,
+					adm_nombre = x.adm_nombre,
+					autorrizacion = x.autorizacion,
+					a_transferir = x.a_transferir,
+					a_transferir_box = x.a_transferir_box,
+					box_id = x.box_id,
+					depo_id = x.depo_id,
+					depo_nombre = x.depo_nombre,
+					fv = x.fv,
+					nota = x.nota,
+					palet = x.palet,
+					pedido = x.pedido,
+					pi_compte = x.pi_compte,
+					p_desc = x.p_desc,
+					p_id = x.p_id,
+					p_id_sustituto = x.p_id_sustituto,
+					p_sustituto = x.p_sustituto,
+					stk = x.stk,
+					stk_adm = x.stk_adm,
+					unidad_palet = x.unidad_palet,
+					#endregion
+				}).OrderBy(y => y.p_id).ToList();
+				model.Detalle = ObtenerGridCore<TRNuevaAutDetalleDto>(TRNuevaAutDetallelLista);
+				return View("TRVistaNuevaAutYDetalleDeProductos", model);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al abrir la vista de edicion de nuevas autorizaciones y detalle de TR.");
+				TempData["error"] = "Hubo algun problema al abrir la vista de edicion de nuevas autorizaciones y detalle de TR. Si el problema persiste informe al Administrador";
+				return ObtenerMensajeDeError("Hubo algun problema al abrir la vista de edicion de nuevas autorizaciones y detalle de TR. Si el problema persiste informe al Administrador");
+			}
+		}
+
+		public async Task<IActionResult> FiltrarListaDeProductosPorSucursal(string admId)
+		{
+			var model = new GridCore<TRNuevaAutDetalleDto>();
+			try
+			{
+				var listaTemp = TRNuevaAutDetallelLista;
+				var listaFiltrada = listaTemp.Where(x => x.adm_id == admId).ToList();
+				model = ObtenerGridCore<TRNuevaAutDetalleDto>(listaFiltrada);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al filtrar la lista de productos por sucursal.");
+				TempData["error"] = "Hubo algun problema al filtrar la lista de productos por sucursal. Si el problema persiste informe al Administrador";
+				return ObtenerMensajeDeError("Hubo algun problema al filtrar la lista de productos por sucursal. Si el problema persiste informe al Administrador");
+			}
+			return PartialView("_trNuevaAutListaProductos", model);
+		}
+
+		public async Task<JsonResult> ExisteProductoEnTR(string pId, string admId)
+		{
+			try
+			{
+				if (string.IsNullOrWhiteSpace(pId))
+				{
+					return Json(new { error = true, warn = false, msg = "Se debe indicar al menos un producto." });
+				}
+				else if (string.IsNullOrWhiteSpace(admId))
+				{
+					return Json(new { error = true, warn = false, msg = "Se debe especificar una sucursal válida." });
+				}
+				else
+				{
+					if (TRNuevaAutDetallelLista.Exists(x => x.p_id == pId && x.adm_id == admId))
+					{
+						return Json(new { error = false, warn = true, msg = "El producto ingresado ya existe." });
+					}
+					return Json(new { error = false, warn = false, msg = "" });
+				}
+			}
+			catch (NegocioException neg)
+			{
+				return Json(new { error = false, warn = true, msg = neg.Message });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				return Json(new { error = true, msg = "Algo no fue bien al verificar si existe el producto ingresado, intente nuevamente mas tarde." });
+			}
+		}
+
+		public async Task<IActionResult> CargarListaProductoSustituto(string pId, string listaDepo, string admIdDesc, string tipo)
+		{
+			var model = new TRAgregarProductoDto();
+			try
+			{
+				if (string.IsNullOrWhiteSpace(pId))
+					return ObtenerMensajeDeError($"Faltan parámetros: 'p_id'. Si el problema persiste informe al Administrador.");
+				if (string.IsNullOrWhiteSpace(tipo))
+					return ObtenerMensajeDeError($"Faltan parámetros: 'tipo'. Si el problema persiste informe al Administrador.");
+
+				var itemsSustitutoParaAgregar = await _productoServicio.TRObtenerSustituto(pId, string.IsNullOrWhiteSpace(listaDepo) ? "N" : listaDepo, admIdDesc, tipo, TokenCookie);
+				model.Productos = ObtenerGridCore<TRProductoParaAgregar>(itemsSustitutoParaAgregar);
+				return PartialView("_trCargarNuevoProducto", model);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al obtener lista de productos sustitutos.");
+				TempData["error"] = "Hubo algun problema al obtener lista de productos sustitutos. Si el problema persiste informe al Administrador.";
+				return ObtenerMensajeDeError("Hubo algun problema al obtener lista de productos sustitutos. Si el problema persiste informe al Administrador.");
+			}
+		}
+
+		public async Task<IActionResult> InicializarModalAgregarProductoATR(string admId)
+		{
+			var model = new TRAgregarProductoDto();
+			try
+			{
+				model.Titulo = $"Detalle de TR {admId} - {TRSucursalesLista.Where(x => x.adm_id == admId).Select(y => y.adm_nombre).First()}";
+				var listaTemp = new List<TRProductoParaAgregar>();
+				model.Productos = ObtenerGridCore<TRProductoParaAgregar>(listaTemp);
+				model.adm_id = admId;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al inicializar modal de carga de producto a TR.");
+				TempData["error"] = "Hubo algun problema al inicializar modal de carga de producto a TR. Si el problema persiste informe al Administrador.";
+				return ObtenerMensajeDeError("Hubo algun problema al inicializar modal de carga de producto a TR. Si el problema persiste informe al Administrador.");
+			}
+			return PartialView("_trCargarNuevoProducto", model);
 		}
 
 		public async Task<IActionResult> EditarNotaEnSucursal(string admId)
@@ -360,55 +509,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public async Task<IActionResult> AbrirVistaEdicionNuevasAutYDetalleTR()
-		{
-			var model = new TRNuevaAutDto();
-			try
-			{
-				if (TRAutAnaliza == null)
-					return ObtenerMensajeDeError("Ocurrio un error al intentar leer los datos para analizar. Intente nevamente desde el principio, si el problema persiste informe al Administrador.");
 
-				var orden = 0;
-				var listaSucursales = from i in TRAutAnaliza
-									  group i by new { i.adm_id, i.adm_nombre } into x
-									  select new TRNuevaAutSucursalDto() { adm_id = x.Key.adm_id, adm_nombre = x.Key.adm_nombre, pallet_aprox = x.Sum(y => y.unidad_palet), orden = orden++ };
-				TRNuevaAutSucursalLista = listaSucursales.ToList();
-				model.Sucursales = ObtenerGridCore<TRNuevaAutSucursalDto>(listaSucursales.ToList());
-				TRNuevaAutDetallelLista = TRAutAnaliza.Select(x => new TRNuevaAutDetalleDto()
-				{
-					#region Campos
-					adm_id = x.adm_id,
-					adm_nombre = x.adm_nombre,
-					autorrizacion = x.autorizacion,
-					a_transferir = x.a_transferir,
-					a_transferir_box = x.a_transferir_box,
-					box_id = x.box_id,
-					depo_id = x.depo_id,
-					depo_nombre = x.depo_nombre,
-					fv = x.fv,
-					nota = x.nota,
-					palet = x.palet,
-					pedido = x.pedido,
-					pi_compte = x.pi_compte,
-					p_desc = x.p_desc,
-					p_id = x.p_id,
-					p_id_sustituto = x.p_id_sustituto,
-					p_sustituto = x.p_sustituto,
-					stk = x.stk,
-					stk_adm = x.stk_adm,
-					unidad_palet = x.unidad_palet,
-					#endregion
-				}).ToList();
-				model.Detalle = ObtenerGridCore<TRNuevaAutDetalleDto>(TRNuevaAutDetallelLista);
-				return View("TRVistaNuevaAutYDetalleDeProductos", model);
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "Error al abrir la vista de edicion de nuevas autorizaciones y detalle de TR.");
-				TempData["error"] = "Hubo algun problema al abrir la vista de edicion de nuevas autorizaciones y detalle de TR. Si el problema persiste informe al Administrador";
-				return ObtenerMensajeDeError("Hubo algun problema al abrir la vista de edicion de nuevas autorizaciones y detalle de TR. Si el problema persiste informe al Administrador");
-			}
-		}
 
 		#region métodos privados
 		private PartialViewResult ObtenerMensajeDeError(string mensaje)
@@ -468,6 +569,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					else
 						obj.tiene_ordenes = false;
 				}
+				TRAutPedidosSucursalLista = TRTRAutPIListaTemporal;
 			}
 		}
 		#endregion

@@ -1,6 +1,7 @@
 ﻿$(function () {
 	//cargo el js para llamar desde esta funcion a la función de busqueda
 	//verifico si se hace click en el boton buscar
+	console.log("Cargo");
 	$("#btnBusquedaBase").on("click", function () {
 		InicializaPantalla();
 		buscarProducto();
@@ -51,10 +52,12 @@
 	InicializaPantalla();
 
 	const txtB = document.getElementById("txtBtoEnComprobanteRP");
-	txtB.addEventListener('input', function (e) {
-		if (!isValid(this.value))
-			txtB.value = 0;
-	});
+	if (txtB) {
+		txtB.addEventListener('input', function (e) {
+			if (!isValid(this.value))
+				txtB.value = 0;
+		});
+	}
 });
 
 function isValid(value) {

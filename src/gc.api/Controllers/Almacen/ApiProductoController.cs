@@ -507,7 +507,19 @@ namespace gc.api.Controllers.Almacen
             return Ok(response);
         }
 
-        [HttpGet]
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult TRObtenerSustituto(string pId, string listaDepo, string admIdDes, string tipo)
+		{
+			if (string.IsNullOrWhiteSpace(pId) || string.IsNullOrWhiteSpace(tipo)) return BadRequest("No se recepcionaron los datos");
+
+			List<TRProductoParaAgregar> resp = _productosSv.TRObtenerSustituto(pId, listaDepo=="N"?"": listaDepo, admIdDes, tipo);
+
+			var response = new ApiResponse<List<TRProductoParaAgregar>>(resp);
+			return Ok(response);
+		}
+
+		[HttpGet]
         [Route("[action]")]
         public IActionResult ControlSalidaTI(string ti, string adm, string usu)
         {

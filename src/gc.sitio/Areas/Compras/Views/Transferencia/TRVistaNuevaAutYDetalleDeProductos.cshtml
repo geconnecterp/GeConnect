@@ -1,6 +1,7 @@
 ﻿@model TRNuevaAutDto
 @{
 	Layout = "~/views/shared/_Layout.cshtml";
+	BusquedaProducto busquedaProducto = new();
 }
 
 <div class="card">
@@ -68,6 +69,7 @@
 										<th style="width:10%;">Box</th>
 										<th style="width:10%;">A transf. Box</th>
 										<th style="width:5%;">Nota</th>
+										<th style="width:0%; display:none;">sustituto</th>
 										<th style="width:0%; display:none;">adm_id</th>
 										<th style="width:0%; display:none;">depo_id</th>
 										<th style="width:0%; display:none;">depo_nombre</th>
@@ -90,19 +92,30 @@
 											<td>@item.a_transferir</td> @*TODO: Deberia ir Dif, consultar con Carlos*@
 											<td>@item.box_id</td>
 											<td>@item.a_transferir_box</td>
-											@* <td><a asp-action="AgregarNotaASucursalNuevaAutTR" asp-controller="Transferencia" asp-area="Compras" class="btn btn-xs btn-outline-success" asp-route-nota="@item.nota"> <i class="bx bx-detail"></i></a></td> *@
 											<td><a class="btn btn-xs btn-outline-success" data-interaction="@item.p_id" onclick="verNotaEnProducto(this);"> <i class="bx bx-detail"></i></a></td>
+											@if (item.p_sustituto)
+											{
+												<td style="display:none;"><input type="checkbox" name="p_sustituto" value="@item.p_sustituto" checked disabled="disabled" /></td>
+											}
+											else
+											{
+												<td style="display:none;"><input type="checkbox" name="p_sustituto" value="@item.p_sustituto" disabled="disabled"  /></td>
+											}
 											<td style="display:none;">@item.adm_id</td>
 											<td style="display:none;">@item.depo_id</td>
 											<td style="display:none;">@item.depo_nombre</td>
-											@* <td style="display:none;">@item.rub_id</td> TODO: Estos dos campos no vienen con el SP
-											<td style="display:none;">@item.rub_nombre</td> *@
-
 										</tr>
 									}
 								</tbody>
 							</table>
 						</div>
+					</div>
+					<div class="container col-sm" style="padding-top: 15px;">
+						<a href="#" id="btnAgregar" class="btn btn-success" onclick="abrirlModalAgregaProductoATR();"><span class="tf-icons bx bx-plus-circle me-1">Agregar</span></a>
+						<button id="btnSustituto" class="btn btn-primary"><span class="tf-icons bx bx-exclude me-1">Sustituto</span></button>
+						@* <a href="#" id="btnSustituto" class="btn btn-primary" ><span class="tf-icons bx bx-exclude me-1">Sustituto</span></a> *@
+						<a href="#" id="btnEliminar" class="btn btn-danger"><span class="tf-icons bx bx-minus-circle me-1">Eliminar</span></a>
+						<a href="#" id="btnModCantidad" class="btn btn-primary"><span class="tf-icons bx bx-edit-alt me-1">Mod. Cantidad</span></a>
 					</div>
 				</fieldset>
 			</div>
@@ -128,13 +141,59 @@
 	</div>
 </div>
 
+<div class="modal fade" id="modalCargarNuevoProducto" tabindex="-1" style="display: none;" aria-hidden="true">
+	<div class="modal-dialog modal-xl" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="modalCenterTitle"></h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<fieldset>
+					<legend>
+						<h5>Cargar Nuevo Producto Aut TR</h5>
+					</legend>
+					<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
+					<div class="row" style="padding-top: 5px;">
+						<div class="input-group">
+							<span class="input-group-text">A Transferir: </span>
+							<input type="text" id="txtAtransferir" class="form-control" style="width:20%;max-width:20%;"/>
+							<button type="button" class="btn btn-icon btn-success" style="margin-left:5px;" id="btnEditarCantidad">
+								<span class="tf-icons bx bx-plus-circle"></span>
+							</button>
+						</div>
+					</div>
+					<div id="divListaProductosParaAgregar" style="padding-top:5px;">
+					</div>
+				</fieldset>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+					Cerrar
+				</button>
+				<button type="button" class="btn btn-primary" onclick="agregarProductoATR();">Guardar</button>
+			</div>
+		</div>
+	</div>
+</div>
+
 @section scripts {
 	<script type="text/javascript">
+		var admSeleccionado = "";
+		var admSeleccionadoNombre = "";
 		var TREditarNotaEnSucursalUrl = "@Url.Action("EditarNotaEnSucursal", "transferencia", new { area = "Compras" })";
 		var TRAgregarNotaASucursalNuevaAutUrl = "@Url.Action("AgregarNotaASucursalNuevaAutTR", "transferencia", new { area = "Compras" })";
 		var TREditarNotaEnProductoUrl = "@Url.Action("EditarNotaEnProducto", "transferencia", new { area = "Compras" })";
 		var TRAgregarNotaAProductoNuevaAutTRUrl = "@Url.Action("AgregarNotaAProductoNuevaAutTR", "transferencia", new { area = "Compras" })";
+		var TRInicializarModalAgregarProductoATRUrl = "@Url.Action("InicializarModalAgregarProductoATR", "transferencia", new { area = "Compras" })";
+		var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun" })";
+		var TRExisteProductoEnTRUrl = "@Url.Action("ExisteProductoEnTR", "transferencia", new { area = "Compras" })";
+		var TRCargarListaProductoSustitutoUrl = "@Url.Action("CargarListaProductoSustituto", "transferencia", new { area = "Compras" })";
+		var TRFiltrarListaDeProductosPorSucursalUrl = "@Url.Action("FiltrarListaDeProductosPorSucursal", "transferencia", new { area = "Compras" })";
 
 	</script>
 	<script src="~/js/app/areas/transferencias/trVistaNuevaAutYDetalleDeProductos.js"></script>
+	<script src="~/js/app/busquedas.js" type="text/javascript"></script>
+	@* <script src="~/js/app/controlcomun/rpr.js" type="text/javascript"></script> *@
+	<script src="~/js/app/controlcomun/infoRpr.js" type="text/javascript"></script>
 }
