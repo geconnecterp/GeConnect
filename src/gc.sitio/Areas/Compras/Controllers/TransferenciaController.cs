@@ -402,7 +402,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 						nota = "",
 						p_sustituto = false,
 						a_transferir = ctd,
-						
+
 					};
 					var listaTemp = TRNuevaAutDetallelLista;
 					listaTemp.Add(nuevoProducto);
@@ -460,11 +460,50 @@ namespace gc.sitio.Areas.Compras.Controllers
 						nota = "Sustituto",
 						p_sustituto = false,
 						a_transferir = ctd,
-						p_id_sustituto=idProductoSustituto,
+						p_id_sustituto = idProductoSustituto,
 					};
 					var listaTemp = TRNuevaAutDetallelLista;
 					listaTemp.Add(nuevoProducto);
 					TRNuevaAutDetallelLista = listaTemp;
+					return Json(new { error = false, warn = false, msg = "" });
+				}
+			}
+			catch (NegocioException neg)
+			{
+				return Json(new { error = false, warn = true, msg = neg.Message });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				return Json(new { error = true, msg = "Algo no fue bien al ingresar el producto a la TR, intente nuevamente mas tarde." });
+			}
+		}
+
+		public async Task<JsonResult> EditarCantidadEnProducto(string idProdDeProdSeleccionado, string admSeleccionado, string cantidad)
+		{
+			try
+			{
+				if (string.IsNullOrWhiteSpace(idProdDeProdSeleccionado))
+				{
+					return Json(new { error = true, warn = false, msg = "Se debe indicar un producto." });
+				}
+				else if (string.IsNullOrWhiteSpace(cantidad))
+				{
+					return Json(new { error = true, warn = false, msg = "Se debe especificar un valor válido para cantidad." });
+				}
+				else
+				{
+					if (!decimal.TryParse(cantidad, out decimal ctd))
+					{
+						return Json(new { error = true, warn = false, msg = "Se debe especificar un valor válido para cantidad." });
+					}
+					var listaTemp = TRNuevaAutDetallelLista;
+					var producto = listaTemp.Where(x => x.p_id == idProdDeProdSeleccionado && x.adm_id == admSeleccionado).First();
+					if (producto != null)
+					{ 
+						producto.stk=ctd;
+						TRNuevaAutDetallelLista = listaTemp;
+					}
 					return Json(new { error = false, warn = false, msg = "" });
 				}
 			}
@@ -541,7 +580,57 @@ namespace gc.sitio.Areas.Compras.Controllers
 				TempData["error"] = "Hubo algun problema al inicializar modal de carga de producto a TR. Si el problema persiste informe al Administrador.";
 				return ObtenerMensajeDeError("Hubo algun problema al inicializar modal de carga de producto a TR. Si el problema persiste informe al Administrador.");
 			}
-			return PartialView("_trCargarNuevoProducto", model);
+		}
+
+		public async Task<IActionResult> InicializarModalModificarCantidad(string admId, string pId)
+		{
+			var model = new TRAgregarProductoDto();
+			try
+			{
+				model.Titulo = $"Detalle de TR {admId} - {TRSucursalesLista.Where(x => x.adm_id == admId).Select(y => y.adm_nombre).First()}";
+				var producto = TRNuevaAutDetallelLista.Where(x => x.p_id == pId && x.adm_id == admId).First();
+				var listaProdAEditar = new List<TRProductoParaAgregar>();
+				listaProdAEditar.Add(new TRProductoParaAgregar()
+				{
+					p_id=producto.p_id,
+					p_desc=producto.p_desc,
+					stk_adm=producto.stk_adm,
+					box_id=producto.box_id,
+					stk=producto.stk,
+				});
+				model.Productos = ObtenerGridCore<TRProductoParaAgregar>(listaProdAEditar);
+				return PartialView("_trCargarNuevoProducto", model);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al inicializar modal de modificación de cantidad.");
+				TempData["error"] = "Hubo algun problema al inicializar modal de modificación de cantidad. Si el problema persiste informe al Administrador.";
+				return ObtenerMensajeDeError("Hubo algun problema al inicializar modal de modificación de cantidad. Si el problema persiste informe al Administrador.");
+			}
+		}
+
+		public async Task<IActionResult> EliminarProducto(string pId, string admId)
+		{
+			var model = new GridCore<TRNuevaAutDetalleDto>();
+			try
+			{
+				if (string.IsNullOrWhiteSpace(pId))
+					return ObtenerMensajeDeError($"Faltan parámetros: id de producto. Si el problema persiste informe al Administrador.");
+				if (string.IsNullOrWhiteSpace(admId))
+					return ObtenerMensajeDeError($"Faltan parámetros: sucursal. Si el problema persiste informe al Administrador.");
+
+				var listaTemp = TRNuevaAutDetallelLista;
+				listaTemp.RemoveAll(y => y.p_id == pId && y.adm_id == admId);
+				TRNuevaAutDetallelLista = listaTemp;
+				model = ObtenerGridCore<TRNuevaAutDetalleDto>(listaTemp);
+				return PartialView("_trNuevaAutListaProductos", model);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al eliminar un producto por sucursal.");
+				TempData["error"] = "Hubo algun problema al eliminar un producto por sucursal. Si el problema persiste informe al Administrador";
+				return ObtenerMensajeDeError("Hubo algun problema al eliminar un producto por sucursal. Si el problema persiste informe al Administrador");
+			}
 		}
 
 		public async Task<IActionResult> EditarNotaEnSucursal(string admId)

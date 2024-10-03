@@ -4,7 +4,29 @@
 	$("#btnEditarCantidad").on("click", EditarCantidad);
 });
 
+function verificaEstado(e) {
+	FunctionCallback = null; //inicializo funcion por si tiene alguna funcionalidad asignada.
+	var res = $("#estadoFuncion").val();
+	CerrarWaiting();
+	if (res === "true") {
+		var prod = productoBase;
+		if (prod) { //Producto existe
+			if (ExisteProductoEnTR(prod.p_id)) {
+				return false;
+			}
+			BuscarSustituto(prod.p_id);
+		}
+	}
+	return true;
+}
 
+var tipoFuncion = "";
+const FuncionSobreProductosAAgregar = {
+	NUEVO: 'NUEVO',
+	SUSTITUTO: 'SUSTITUTO',
+	EDICION: 'EDICION',
+	NOSELECTED: 'NOSELECTED',
+}
 
 function selectNuevaAutListaSucursalesRow(x) {
 	admSeleccionado = x.cells[4].innerText.trim();
@@ -169,6 +191,7 @@ function abrirlModalAgregaProductoATR() {
 		document.getElementById("modalCenterTitle").outerHTML = "<h5 class=\"modal-title\" id=\"modalCenterTitle\"> Detalle de TR (" + admSeleccionado + ") " + admSeleccionadoNombre + "</h5>";
 		$('#modalCargarNuevoProducto').modal('show')
 		esProductoSustituto = false;
+		tipoFuncion = FuncionSobreProductosAAgregar.NUEVO;
 		CerrarWaiting();
 		return true
 	});
@@ -189,6 +212,7 @@ function abrirlModalSustitutoDeProductoATR() {
 		document.getElementById("divBusquedaProducto").style.display = 'none'
 		$('#modalCargarNuevoProducto').modal('show')
 		esProductoSustituto = true;
+		tipoFuncion = FuncionSobreProductosAAgregar.SUSTITUTO;
 		AddEventListenerToGrid("tbListaProductosParaAgregar");
 		CerrarWaiting();
 		return true
@@ -196,21 +220,27 @@ function abrirlModalSustitutoDeProductoATR() {
 	CerrarWaiting();
 }
 
-function verificaEstado(e) {
-	FunctionCallback = null; //inicializo funcion por si tiene alguna funcionalidad asignada.
-	var res = $("#estadoFuncion").val();
+function abrirlModalModCantDeProductoATR() {
+	AbrirWaiting();
+	var admId = admSeleccionado;
+	var pId = prodSeleccionado;
+	var datos = { admId, pId };
+	PostGenHtml(datos, TRInicializarModalModificarCantidadATRUrl, function (obj) {
+		$("#divListaProductosParaAgregar").html(obj);
+		document.getElementById("modalCenterTitle").outerHTML = "<h5 class=\"modal-title\" id=\"modalCenterTitle\"> Detalle de TR (" + admSeleccionado + ") " + admSeleccionadoNombre + "</h5>";
+		document.getElementById("leyendaNuevoProducto").outerHTML = "<h5 id=\"leyendaNuevoProducto\"> Producto Sustituto de (" + prodSeleccionado + ") " + prodSeleccionadoNombre + "</h5>";
+		document.getElementById("divBusquedaProducto").style.display = 'none'
+		$('#modalCargarNuevoProducto').modal('show')
+		esProductoSustituto = false;
+		tipoFuncion = FuncionSobreProductosAAgregar.EDICION;
+		AddEventListenerToGrid("tbListaProductosParaAgregar");
+		CerrarWaiting();
+		return true
+	});
 	CerrarWaiting();
-	if (res === "true") {
-		var prod = productoBase;
-		if (prod) { //Producto existe
-			if (ExisteProductoEnTR(prod.p_id)) {
-				return false;
-			}
-			BuscarSustituto(prod.p_id);
-		}
-	}
-	return true;
 }
+
+
 
 //Llamar al SP SPGECO_TR_sustituto (el cual no existe, voy a probar con el SP SPGECO_TR_Aut_Sustituto)
 function BuscarSustituto(p_id) {
@@ -299,64 +329,193 @@ function EditarCantidad() {
 		}, false, ["Aceptar"], "warn!", null);
 	}
 	else {
-		if (!esProductoSustituto) {
-			//Mandar al backend el item, agregarlo a la lista y refrescar
-			var datos = { idProdDeProdSeleccionado, idProvDeProdSeleccionado, pedidoDeProdSeleccionado, boxDeProdSeleccionado, stkDeProdSeleccionado, cantidad, admSeleccionado, admSeleccionadoNombre };
-			PostGen(datos, TRAgregarNuevoProductoUrl, function (o) {
-				if (o.error === true) {
-					CerrarWaiting();
-					AbrirMensaje("Atención", o.msg, function () {
-						$("#msjModal").modal("hide");
-						return true;
-					}, false, ["Aceptar"], "error!", null);
-				} else if (o.warn === true) {
-					CerrarWaiting();
-					AbrirMensaje("Atención", o.msg, function () {
-						$("#msjModal").modal("hide");
-						return true;
-					}, false, ["Aceptar"], "warn!", null);
-				} else if (o.msg !== "") {
-					CerrarWaiting();
-					AbrirMensaje("Atención", o.msg, function (e) {
-						$("#msjModal").modal("hide");
-						return true;
-					}, false, ["Aceptar"], "info!", null);
-				} else {
-					//Cerrar modal y actualizar lista
-					$("#modalCargarNuevoProducto").modal("hide")
-					filtrarListaDeProductosPorSucursal();
-				}
-			});
+		switch (tipoFuncion) {
+			case FuncionSobreProductosAAgregar.NUEVO:
+				var datos = { idProdDeProdSeleccionado, idProvDeProdSeleccionado, pedidoDeProdSeleccionado, boxDeProdSeleccionado, stkDeProdSeleccionado, cantidad, admSeleccionado, admSeleccionadoNombre };
+				PostGen(datos, TRAgregarNuevoProductoUrl, function (o) {
+					if (o.error === true) {
+						CerrarWaiting();
+						AbrirMensaje("Atención", o.msg, function () {
+							$("#msjModal").modal("hide");
+							return true;
+						}, false, ["Aceptar"], "error!", null);
+					} else if (o.warn === true) {
+						CerrarWaiting();
+						AbrirMensaje("Atención", o.msg, function () {
+							$("#msjModal").modal("hide");
+							return true;
+						}, false, ["Aceptar"], "warn!", null);
+					} else if (o.msg !== "") {
+						CerrarWaiting();
+						AbrirMensaje("Atención", o.msg, function (e) {
+							$("#msjModal").modal("hide");
+							return true;
+						}, false, ["Aceptar"], "info!", null);
+					} else {
+						//Cerrar modal y actualizar lista
+						CerrarWaiting();
+						$("#modalCargarNuevoProducto").modal("hide")
+						filtrarListaDeProductosPorSucursal();
+					}
+					tipoFuncion = FuncionSobreProductosAAgregar.NOSELECTED;
+				});
+				break;
+			case FuncionSobreProductosAAgregar.SUSTITUTO:
+				var idProductoSustituto = prodSeleccionado;
+				var datos = { idProdDeProdSeleccionado, idProductoSustituto, idProvDeProdSeleccionado, pedidoDeProdSeleccionado, boxDeProdSeleccionado, stkDeProdSeleccionado, cantidad, admSeleccionado, admSeleccionadoNombre };
+				PostGen(datos, TRAgregarProductoSustitutoUrl, function (o) {
+					if (o.error === true) {
+						CerrarWaiting();
+						AbrirMensaje("Atención", o.msg, function () {
+							$("#msjModal").modal("hide");
+							return true;
+						}, false, ["Aceptar"], "error!", null);
+					} else if (o.warn === true) {
+						CerrarWaiting();
+						AbrirMensaje("Atención", o.msg, function () {
+							$("#msjModal").modal("hide");
+							return true;
+						}, false, ["Aceptar"], "warn!", null);
+					} else if (o.msg !== "") {
+						CerrarWaiting();
+						AbrirMensaje("Atención", o.msg, function (e) {
+							$("#msjModal").modal("hide");
+							return true;
+						}, false, ["Aceptar"], "info!", null);
+					} else {
+						//Cerrar modal y actualizar lista
+						CerrarWaiting();
+						$("#modalCargarNuevoProducto").modal("hide")
+						filtrarListaDeProductosPorSucursal();
+					}
+					tipoFuncion = FuncionSobreProductosAAgregar.NOSELECTED;
+				});
+				break;
+			case FuncionSobreProductosAAgregar.EDICION:
+				var datos = { idProdDeProdSeleccionado, admSeleccionado, cantidad };
+				PostGen(datos, TREditarCantidadEnProductoUrl, function (o) {
+					if (o.error === true) {
+						CerrarWaiting();
+						AbrirMensaje("Atención", o.msg, function () {
+							$("#msjModal").modal("hide");
+							return true;
+						}, false, ["Aceptar"], "error!", null);
+					} else if (o.warn === true) {
+						CerrarWaiting();
+						AbrirMensaje("Atención", o.msg, function () {
+							$("#msjModal").modal("hide");
+							return true;
+						}, false, ["Aceptar"], "warn!", null);
+					} else if (o.msg !== "") {
+						CerrarWaiting();
+						AbrirMensaje("Atención", o.msg, function (e) {
+							$("#msjModal").modal("hide");
+							return true;
+						}, false, ["Aceptar"], "info!", null);
+					} else {
+						//Cerrar modal y actualizar lista
+						CerrarWaiting();
+						$("#modalCargarNuevoProducto").modal("hide")
+						filtrarListaDeProductosPorSucursal();
+					}
+					tipoFuncion = FuncionSobreProductosAAgregar.NOSELECTED;
+				});
+				break:
+			default:
 		}
-		else {
-			//Mandar al backend el item, agregarlo a la lista y refrescar
-			var idProductoSustituto = prodSeleccionado;
-			var datos = { idProdDeProdSeleccionado, idProductoSustituto, idProvDeProdSeleccionado, pedidoDeProdSeleccionado, boxDeProdSeleccionado, stkDeProdSeleccionado, cantidad, admSeleccionado, admSeleccionadoNombre };
-			PostGen(datos, TRAgregarProductoSustitutoUrl, function (o) {
-				if (o.error === true) {
-					CerrarWaiting();
-					AbrirMensaje("Atención", o.msg, function () {
-						$("#msjModal").modal("hide");
-						return true;
-					}, false, ["Aceptar"], "error!", null);
-				} else if (o.warn === true) {
-					CerrarWaiting();
-					AbrirMensaje("Atención", o.msg, function () {
-						$("#msjModal").modal("hide");
-						return true;
-					}, false, ["Aceptar"], "warn!", null);
-				} else if (o.msg !== "") {
-					CerrarWaiting();
-					AbrirMensaje("Atención", o.msg, function (e) {
-						$("#msjModal").modal("hide");
-						return true;
-					}, false, ["Aceptar"], "info!", null);
-				} else {
-					//Cerrar modal y actualizar lista
-					$("#modalCargarNuevoProducto").modal("hide")
-					filtrarListaDeProductosPorSucursal();
-				}
-			});
-		}
+		//if (!esProductoSustituto) {
+		//	//Mandar al backend el item, agregarlo a la lista y refrescar
+		//	var datos = { idProdDeProdSeleccionado, idProvDeProdSeleccionado, pedidoDeProdSeleccionado, boxDeProdSeleccionado, stkDeProdSeleccionado, cantidad, admSeleccionado, admSeleccionadoNombre };
+		//	PostGen(datos, TRAgregarNuevoProductoUrl, function (o) {
+		//		if (o.error === true) {
+		//			CerrarWaiting();
+		//			AbrirMensaje("Atención", o.msg, function () {
+		//				$("#msjModal").modal("hide");
+		//				return true;
+		//			}, false, ["Aceptar"], "error!", null);
+		//		} else if (o.warn === true) {
+		//			CerrarWaiting();
+		//			AbrirMensaje("Atención", o.msg, function () {
+		//				$("#msjModal").modal("hide");
+		//				return true;
+		//			}, false, ["Aceptar"], "warn!", null);
+		//		} else if (o.msg !== "") {
+		//			CerrarWaiting();
+		//			AbrirMensaje("Atención", o.msg, function (e) {
+		//				$("#msjModal").modal("hide");
+		//				return true;
+		//			}, false, ["Aceptar"], "info!", null);
+		//		} else {
+		//			//Cerrar modal y actualizar lista
+		//			$("#modalCargarNuevoProducto").modal("hide")
+		//			filtrarListaDeProductosPorSucursal();
+		//		}
+		//	});
+		//}
+		//else {
+		//	//Mandar al backend el item, agregarlo a la lista y refrescar
+		//	var idProductoSustituto = prodSeleccionado;
+		//	var datos = { idProdDeProdSeleccionado, idProductoSustituto, idProvDeProdSeleccionado, pedidoDeProdSeleccionado, boxDeProdSeleccionado, stkDeProdSeleccionado, cantidad, admSeleccionado, admSeleccionadoNombre };
+		//	PostGen(datos, TRAgregarProductoSustitutoUrl, function (o) {
+		//		if (o.error === true) {
+		//			CerrarWaiting();
+		//			AbrirMensaje("Atención", o.msg, function () {
+		//				$("#msjModal").modal("hide");
+		//				return true;
+		//			}, false, ["Aceptar"], "error!", null);
+		//		} else if (o.warn === true) {
+		//			CerrarWaiting();
+		//			AbrirMensaje("Atención", o.msg, function () {
+		//				$("#msjModal").modal("hide");
+		//				return true;
+		//			}, false, ["Aceptar"], "warn!", null);
+		//		} else if (o.msg !== "") {
+		//			CerrarWaiting();
+		//			AbrirMensaje("Atención", o.msg, function (e) {
+		//				$("#msjModal").modal("hide");
+		//				return true;
+		//			}, false, ["Aceptar"], "info!", null);
+		//		} else {
+		//			//Cerrar modal y actualizar lista
+		//			$("#modalCargarNuevoProducto").modal("hide")
+		//			filtrarListaDeProductosPorSucursal();
+		//		}
+		//	});
+		//}
 	}
+}
+
+function eliminarProductoATR() {
+	if (prodSeleccionado == "") {
+		AbrirMensaje("Atención", "Debe seleccionar un producto para eliminar.", function (e) {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "info!", null);
+	}
+	if (admSeleccionado == "") {
+		AbrirMensaje("Atención", "Debe una sucursal antes de intentar eliminar un producto.", function (e) {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "info!", null);
+	}
+
+	AbrirMensaje("Confirmación", "Esta a punto eliminar el producto (" + prodSeleccionado + ") " + prodSeleccionadoNombre + ", desea continuar? Esta acción no se puede revertir.", function (e) {
+		$("#msjModal").modal("hide");
+		switch (e) {
+			case "SI": //Confirmar comprobante RPR
+				PostGenHtml(datos, TREliminarProductoUrl, function (obj) {
+					$("#divListaProductosParaAgregar").html(obj);
+					AddEventListenerToGrid("tbListaProductosParaAgregar");
+					CerrarWaiting();
+					return true
+				});
+				break;
+			case "NO":
+				break;
+			default: //NO
+				break;
+		}
+		return true;
+	}, true, ["Aceptar", "Cancelar"], "info!", null);
+	
 }
