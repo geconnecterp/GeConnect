@@ -1,7 +1,10 @@
 ﻿$(function () {
 	AddEventListenerToGrid("tbNuevaAutListaSucursales");
 	AddEventListenerToGrid("tbNuevaAutListaProductos");
+	$("#btnEditarCantidad").on("click", EditarCantidad);
 });
+
+
 
 function selectNuevaAutListaSucursalesRow(x) {
 	admSeleccionado = x.cells[4].innerText.trim();
@@ -27,9 +30,9 @@ function filtrarListaDeProductosPorSucursal() {
 
 function selectNuevaAutListaProductosRow(x) {
 	prodSeleccionado = x.cells[0].innerText.trim();
+	prodSeleccionadoNombre = x.cells[1].innerText.trim();
 	sustituto = x.cells[11].children[0].checked;
 	$('#btnSustituto').prop('disabled', !sustituto);
-	
 }
 
 function AddEventListenerToGrid(tabla) {
@@ -165,6 +168,28 @@ function abrirlModalAgregaProductoATR() {
 		$("#divListaProductosParaAgregar").html(obj);
 		document.getElementById("modalCenterTitle").outerHTML = "<h5 class=\"modal-title\" id=\"modalCenterTitle\"> Detalle de TR (" + admSeleccionado + ") " + admSeleccionadoNombre + "</h5>";
 		$('#modalCargarNuevoProducto').modal('show')
+		esProductoSustituto = false;
+		CerrarWaiting();
+		return true
+	});
+	CerrarWaiting();
+}
+
+function abrirlModalSustitutoDeProductoATR() {
+	AbrirWaiting();
+	var admId = admSeleccionado;
+	var pId = prodSeleccionado;
+	var listaDepo = "";
+	var tipo = "S";
+	var datos = { admId, prodSeleccionado, listaDepo, tipo };
+	PostGenHtml(datos, TRInicializarModalAgregarProductoSustitutoATRUrl, function (obj) {
+		$("#divListaProductosParaAgregar").html(obj);
+		document.getElementById("modalCenterTitle").outerHTML = "<h5 class=\"modal-title\" id=\"modalCenterTitle\"> Detalle de TR (" + admSeleccionado + ") " + admSeleccionadoNombre + "</h5>";
+		document.getElementById("leyendaNuevoProducto").outerHTML = "<h5 id=\"leyendaNuevoProducto\"> Producto Sustituto de (" + prodSeleccionado + ") " + prodSeleccionadoNombre + "</h5>";
+		document.getElementById("divBusquedaProducto").style.display = 'none'
+		$('#modalCargarNuevoProducto').modal('show')
+		esProductoSustituto = true;
+		AddEventListenerToGrid("tbListaProductosParaAgregar");
 		CerrarWaiting();
 		return true
 	});
@@ -188,7 +213,7 @@ function verificaEstado(e) {
 }
 
 //Llamar al SP SPGECO_TR_sustituto (el cual no existe, voy a probar con el SP SPGECO_TR_Aut_Sustituto)
-function BuscarSustituto(p_id){
+function BuscarSustituto(p_id) {
 	AbrirWaiting();
 	var pId = p_id;
 	var admId = admSeleccionado;
@@ -198,6 +223,7 @@ function BuscarSustituto(p_id){
 	var datos = { pId, listaDepo, admIdDesc, tipo };
 	PostGenHtml(datos, TRCargarListaProductoSustitutoUrl, function (obj) {
 		$("#divListaProductosParaAgregar").html(obj);
+		AddEventListenerToGrid("tbListaProductosParaAgregar");
 		CerrarWaiting();
 		return true
 	});
@@ -247,4 +273,90 @@ function EliminarProducto(id) {
 }
 
 function InicializaPantalla() {
+}
+
+function selectProductosParaAgregarRow(x) {
+	stkDeProdSeleccionado = x.cells[6].innerText.trim();
+	boxDeProdSeleccionado = x.cells[5].innerText.trim();
+	pedidoDeProdSeleccionado = x.cells[3].innerText.trim();
+	idProvDeProdSeleccionado = x.cells[2].innerText.trim();
+	idProdDeProdSeleccionado = x.cells[0].innerText.trim();
+	console.log(idProdDeProdSeleccionado + " " + idProvDeProdSeleccionado + " " + pedidoDeProdSeleccionado + " " + boxDeProdSeleccionado + " " + stkDeProdSeleccionado);
+}
+
+function EditarCantidad() {
+	var cantidad = $("#txtAtransferir").val();
+	if (cantidad === "") {
+		AbrirMensaje("Atención", "La cantidad ingresada no posee un formato válido.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "warn!", null);
+	}
+	else if (stkDeProdSeleccionado === "") {
+		AbrirMensaje("Atención", "El stock del producto seleccionado no posee un formato válido.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "warn!", null);
+	}
+	else {
+		if (!esProductoSustituto) {
+			//Mandar al backend el item, agregarlo a la lista y refrescar
+			var datos = { idProdDeProdSeleccionado, idProvDeProdSeleccionado, pedidoDeProdSeleccionado, boxDeProdSeleccionado, stkDeProdSeleccionado, cantidad, admSeleccionado, admSeleccionadoNombre };
+			PostGen(datos, TRAgregarNuevoProductoUrl, function (o) {
+				if (o.error === true) {
+					CerrarWaiting();
+					AbrirMensaje("Atención", o.msg, function () {
+						$("#msjModal").modal("hide");
+						return true;
+					}, false, ["Aceptar"], "error!", null);
+				} else if (o.warn === true) {
+					CerrarWaiting();
+					AbrirMensaje("Atención", o.msg, function () {
+						$("#msjModal").modal("hide");
+						return true;
+					}, false, ["Aceptar"], "warn!", null);
+				} else if (o.msg !== "") {
+					CerrarWaiting();
+					AbrirMensaje("Atención", o.msg, function (e) {
+						$("#msjModal").modal("hide");
+						return true;
+					}, false, ["Aceptar"], "info!", null);
+				} else {
+					//Cerrar modal y actualizar lista
+					$("#modalCargarNuevoProducto").modal("hide")
+					filtrarListaDeProductosPorSucursal();
+				}
+			});
+		}
+		else {
+			//Mandar al backend el item, agregarlo a la lista y refrescar
+			var idProductoSustituto = prodSeleccionado;
+			var datos = { idProdDeProdSeleccionado, idProductoSustituto, idProvDeProdSeleccionado, pedidoDeProdSeleccionado, boxDeProdSeleccionado, stkDeProdSeleccionado, cantidad, admSeleccionado, admSeleccionadoNombre };
+			PostGen(datos, TRAgregarProductoSustitutoUrl, function (o) {
+				if (o.error === true) {
+					CerrarWaiting();
+					AbrirMensaje("Atención", o.msg, function () {
+						$("#msjModal").modal("hide");
+						return true;
+					}, false, ["Aceptar"], "error!", null);
+				} else if (o.warn === true) {
+					CerrarWaiting();
+					AbrirMensaje("Atención", o.msg, function () {
+						$("#msjModal").modal("hide");
+						return true;
+					}, false, ["Aceptar"], "warn!", null);
+				} else if (o.msg !== "") {
+					CerrarWaiting();
+					AbrirMensaje("Atención", o.msg, function (e) {
+						$("#msjModal").modal("hide");
+						return true;
+					}, false, ["Aceptar"], "info!", null);
+				} else {
+					//Cerrar modal y actualizar lista
+					$("#modalCargarNuevoProducto").modal("hide")
+					filtrarListaDeProductosPorSucursal();
+				}
+			});
+		}
+	}
 }

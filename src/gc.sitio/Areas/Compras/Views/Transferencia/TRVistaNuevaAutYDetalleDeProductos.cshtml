@@ -112,7 +112,7 @@
 					</div>
 					<div class="container col-sm" style="padding-top: 15px;">
 						<a href="#" id="btnAgregar" class="btn btn-success" onclick="abrirlModalAgregaProductoATR();"><span class="tf-icons bx bx-plus-circle me-1">Agregar</span></a>
-						<button id="btnSustituto" class="btn btn-primary"><span class="tf-icons bx bx-exclude me-1">Sustituto</span></button>
+						<button id="btnSustituto" class="btn btn-primary" onclick="abrirlModalSustitutoDeProductoATR();"><span class="tf-icons bx bx-exclude me-1">Sustituto</span></button>
 						@* <a href="#" id="btnSustituto" class="btn btn-primary" ><span class="tf-icons bx bx-exclude me-1">Sustituto</span></a> *@
 						<a href="#" id="btnEliminar" class="btn btn-danger"><span class="tf-icons bx bx-minus-circle me-1">Eliminar</span></a>
 						<a href="#" id="btnModCantidad" class="btn btn-primary"><span class="tf-icons bx bx-edit-alt me-1">Mod. Cantidad</span></a>
@@ -151,13 +151,15 @@
 			<div class="modal-body">
 				<fieldset>
 					<legend>
-						<h5>Cargar Nuevo Producto Aut TR</h5>
+						<h5 id="leyendaNuevoProducto">Cargar Nuevo Producto Aut TR</h5>
 					</legend>
-					<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
+					<div id="divBusquedaProducto">
+						<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
+					</div>
 					<div class="row" style="padding-top: 5px;">
 						<div class="input-group">
 							<span class="input-group-text">A Transferir: </span>
-							<input type="text" id="txtAtransferir" class="form-control" style="width:20%;max-width:20%;"/>
+							<input type="number" id="txtAtransferir" class="form-control" style="width:20%;max-width:20%;"/>
 							<button type="button" class="btn btn-icon btn-success" style="margin-left:5px;" id="btnEditarCantidad">
 								<span class="tf-icons bx bx-plus-circle"></span>
 							</button>
@@ -171,7 +173,7 @@
 				<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
 					Cerrar
 				</button>
-				<button type="button" class="btn btn-primary" onclick="agregarProductoATR();">Guardar</button>
+				@* <button type="button" class="btn btn-primary" onclick="agregarProductoATR();">Guardar</button> *@
 			</div>
 		</div>
 	</div>
@@ -181,6 +183,15 @@
 	<script type="text/javascript">
 		var admSeleccionado = "";
 		var admSeleccionadoNombre = "";
+		var prodSeleccionado = "";
+		var prodSeleccionadoNombre = "";
+		var stkDeProdSeleccionado = 0;
+		var boxDeProdSeleccionado = "";
+		var pedidoDeProdSeleccionado = 0;
+		var idProvDeProdSeleccionado = "";
+		var idProdDeProdSeleccionado = "";
+		var sustituto = false;
+		var esProductoSustituto = false;
 		var TREditarNotaEnSucursalUrl = "@Url.Action("EditarNotaEnSucursal", "transferencia", new { area = "Compras" })";
 		var TRAgregarNotaASucursalNuevaAutUrl = "@Url.Action("AgregarNotaASucursalNuevaAutTR", "transferencia", new { area = "Compras" })";
 		var TREditarNotaEnProductoUrl = "@Url.Action("EditarNotaEnProducto", "transferencia", new { area = "Compras" })";
@@ -190,6 +201,9 @@
 		var TRExisteProductoEnTRUrl = "@Url.Action("ExisteProductoEnTR", "transferencia", new { area = "Compras" })";
 		var TRCargarListaProductoSustitutoUrl = "@Url.Action("CargarListaProductoSustituto", "transferencia", new { area = "Compras" })";
 		var TRFiltrarListaDeProductosPorSucursalUrl = "@Url.Action("FiltrarListaDeProductosPorSucursal", "transferencia", new { area = "Compras" })";
+		var TRAgregarNuevoProductoUrl = "@Url.Action("AgregarNuevoProducto", "transferencia", new { area = "Compras" })";
+		var TRAgregarProductoSustitutoUrl = "@Url.Action("AgregarProductoSustituto", "transferencia", new { area = "Compras" })";
+		var TRInicializarModalAgregarProductoSustitutoATRUrl = "@Url.Action("InicializarModalAgregarProductoSustitutoATR", "transferencia", new { area = "Compras" })";
 
 	</script>
 	<script src="~/js/app/areas/transferencias/trVistaNuevaAutYDetalleDeProductos.js"></script>

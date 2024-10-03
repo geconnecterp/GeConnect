@@ -2,8 +2,10 @@
 using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.EntidadesComunes.Options;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
@@ -243,6 +245,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				else
 				{
 					//Obtenemos la lista de Pedidos Incluidos (solo pi_compte)
+					TRDepositosSeleccionados = depositos;
 					var listaPI = ObtenerStringListDePedidosIncluidos();
 					var itemsAutAnaliza = await _productoServicio.TRAutAnaliza(listaPI, depositos, stkExistente, sustituto, maxPallet, TokenCookie);
 					TRAutAnaliza = itemsAutAnaliza;
@@ -360,6 +363,122 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
+		public async Task<JsonResult> AgregarNuevoProducto(string idProdDeProdSeleccionado, string idProvDeProdSeleccionado, string pedidoDeProdSeleccionado, string boxDeProdSeleccionado, string stkDeProdSeleccionado, string cantidad, string admSeleccionado, string admSeleccionadoNombre)
+		{
+			try
+			{
+				if (string.IsNullOrWhiteSpace(idProdDeProdSeleccionado))
+				{
+					return Json(new { error = true, warn = false, msg = "Se debe indicar un producto." });
+				}
+				else if (string.IsNullOrWhiteSpace(cantidad))
+				{
+					return Json(new { error = true, warn = false, msg = "Se debe especificar un valor válido para cantidad." });
+				}
+				else
+				{
+					if (!decimal.TryParse(stkDeProdSeleccionado, out decimal stk))
+					{
+						return Json(new { error = true, warn = false, msg = "El valor de stock no es válido." });
+					}
+					if (!decimal.TryParse(cantidad, out decimal ctd))
+					{
+						return Json(new { error = true, warn = false, msg = "Se debe especificar un valor válido para cantidad." });
+					}
+					if (!decimal.TryParse(pedidoDeProdSeleccionado, out decimal pedido))
+					{
+						pedido = 0;
+					}
+					var productoBase = ObtenerDatosDeProducto(idProdDeProdSeleccionado);
+					var nuevoProducto = new TRNuevaAutDetalleDto
+					{
+						stk = stk,
+						p_id = idProdDeProdSeleccionado,
+						p_desc = productoBase.P_desc,
+						adm_id = admSeleccionado,
+						adm_nombre = admSeleccionadoNombre,
+						box_id = boxDeProdSeleccionado,
+						pedido = pedido,
+						nota = "",
+						p_sustituto = false,
+						a_transferir = ctd,
+						
+					};
+					var listaTemp = TRNuevaAutDetallelLista;
+					listaTemp.Add(nuevoProducto);
+					TRNuevaAutDetallelLista = listaTemp;
+					return Json(new { error = false, warn = false, msg = "" });
+				}
+			}
+			catch (NegocioException neg)
+			{
+				return Json(new { error = false, warn = true, msg = neg.Message });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				return Json(new { error = true, msg = "Algo no fue bien al ingresar el producto a la TR, intente nuevamente mas tarde." });
+			}
+		}
+
+		public async Task<JsonResult> AgregarProductoSustituto(string idProdDeProdSeleccionado, string idProductoSustituto, string idProvDeProdSeleccionado, string pedidoDeProdSeleccionado, string boxDeProdSeleccionado, string stkDeProdSeleccionado, string cantidad, string admSeleccionado, string admSeleccionadoNombre)
+		{
+			try
+			{
+				if (string.IsNullOrWhiteSpace(idProdDeProdSeleccionado))
+				{
+					return Json(new { error = true, warn = false, msg = "Se debe indicar un producto." });
+				}
+				else if (string.IsNullOrWhiteSpace(cantidad))
+				{
+					return Json(new { error = true, warn = false, msg = "Se debe especificar un valor válido para cantidad." });
+				}
+				else
+				{
+					if (!decimal.TryParse(stkDeProdSeleccionado, out decimal stk))
+					{
+						return Json(new { error = true, warn = false, msg = "El valor de stock no es válido." });
+					}
+					if (!decimal.TryParse(cantidad, out decimal ctd))
+					{
+						return Json(new { error = true, warn = false, msg = "Se debe especificar un valor válido para cantidad." });
+					}
+					if (!decimal.TryParse(pedidoDeProdSeleccionado, out decimal pedido))
+					{
+						pedido = 0;
+					}
+					var productoBase = ObtenerDatosDeProducto(idProdDeProdSeleccionado);
+					var nuevoProducto = new TRNuevaAutDetalleDto
+					{
+						stk = stk,
+						p_id = idProdDeProdSeleccionado,
+						p_desc = productoBase.P_desc,
+						adm_id = admSeleccionado,
+						adm_nombre = admSeleccionadoNombre,
+						box_id = boxDeProdSeleccionado,
+						pedido = pedido,
+						nota = "Sustituto",
+						p_sustituto = false,
+						a_transferir = ctd,
+						p_id_sustituto=idProductoSustituto,
+					};
+					var listaTemp = TRNuevaAutDetallelLista;
+					listaTemp.Add(nuevoProducto);
+					TRNuevaAutDetallelLista = listaTemp;
+					return Json(new { error = false, warn = false, msg = "" });
+				}
+			}
+			catch (NegocioException neg)
+			{
+				return Json(new { error = false, warn = true, msg = neg.Message });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				return Json(new { error = true, msg = "Algo no fue bien al ingresar el producto a la TR, intente nuevamente mas tarde." });
+			}
+		}
+
 		public async Task<IActionResult> CargarListaProductoSustituto(string pId, string listaDepo, string admIdDesc, string tipo)
 		{
 			var model = new TRAgregarProductoDto();
@@ -370,6 +489,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (string.IsNullOrWhiteSpace(tipo))
 					return ObtenerMensajeDeError($"Faltan parámetros: 'tipo'. Si el problema persiste informe al Administrador.");
 
+				if (!string.IsNullOrWhiteSpace(TRDepositosSeleccionados))
+					listaDepo = TRDepositosSeleccionados; //Lo seteo cuando abro la ventana TRCrudAutorizacion.cshtml
 				var itemsSustitutoParaAgregar = await _productoServicio.TRObtenerSustituto(pId, string.IsNullOrWhiteSpace(listaDepo) ? "N" : listaDepo, admIdDesc, tipo, TokenCookie);
 				model.Productos = ObtenerGridCore<TRProductoParaAgregar>(itemsSustitutoParaAgregar);
 				return PartialView("_trCargarNuevoProducto", model);
@@ -391,6 +512,28 @@ namespace gc.sitio.Areas.Compras.Controllers
 				var listaTemp = new List<TRProductoParaAgregar>();
 				model.Productos = ObtenerGridCore<TRProductoParaAgregar>(listaTemp);
 				model.adm_id = admId;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al inicializar modal de carga de producto a TR.");
+				TempData["error"] = "Hubo algun problema al inicializar modal de carga de producto a TR. Si el problema persiste informe al Administrador.";
+				return ObtenerMensajeDeError("Hubo algun problema al inicializar modal de carga de producto a TR. Si el problema persiste informe al Administrador.");
+			}
+			return PartialView("_trCargarNuevoProducto", model);
+		}
+
+		public async Task<IActionResult> InicializarModalAgregarProductoSustitutoATR(string admId, string prodSeleccionado, string listaDepo, string tipo)
+		{
+			var model = new TRAgregarProductoDto();
+			try
+			{
+				model.Titulo = $"Detalle de TR {admId} - {TRSucursalesLista.Where(x => x.adm_id == admId).Select(y => y.adm_nombre).First()}";
+				if (!string.IsNullOrWhiteSpace(TRDepositosSeleccionados))
+					listaDepo = TRDepositosSeleccionados; //Lo seteo cuando abro la ventana TRCrudAutorizacion.cshtml
+				var itemsSustitutoParaAgregar = await _productoServicio.TRObtenerSustituto(prodSeleccionado, string.IsNullOrWhiteSpace(listaDepo) ? "N" : listaDepo, admId, tipo, TokenCookie);
+				model.Productos = ObtenerGridCore<TRProductoParaAgregar>(itemsSustitutoParaAgregar);
+				model.adm_id = admId;
+				return PartialView("_trCargarNuevoProducto", model);
 			}
 			catch (Exception ex)
 			{
@@ -464,7 +607,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (pId == null)
 					return ObtenerMensajeDeError("Debe proporcionar un producto válido. Si el problema persiste informe al Administrador.");
 
-				model.Titulo = $"Nota de Producto {pId} - {TRAutAnaliza.Where(x => x.p_id == pId).Select(y => y.p_desc).First()}";
+				model.Titulo = $"Nota de Producto {pId} - {TRNuevaAutDetallelLista.Where(x => x.p_id == pId).Select(y => y.p_desc).First()}";
 				var listaTemp = TRNuevaAutDetallelLista;
 				var itemTemp = listaTemp.Where(x => x.p_id == pId).First();
 				if (itemTemp == null)
@@ -512,6 +655,20 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 
 		#region métodos privados
+		private ProductoBusquedaDto ObtenerDatosDeProducto(string p_id)
+		{
+			ProductoBusquedaDto producto = new ProductoBusquedaDto { P_id = "0000-0000" };
+			BusquedaBase buscar = new()
+			{
+				Administracion = AdministracionId,
+				Busqueda = p_id,
+				DescuentoCli = 0,
+				ListaPrecio = "",
+				TipoOperacion = ""
+			};
+
+			return _productoServicio.BusquedaBaseProductos(buscar, TokenCookie).Result;
+		}
 		private PartialViewResult ObtenerMensajeDeError(string mensaje)
 		{
 			RespuestaGenerica<EntidadBase> response = new()

@@ -16,7 +16,7 @@
 		<tbody>
 			@foreach (var item in Model.Productos.ListaDatos)
 			{
-				<tr onclick="selectNuevaAutListaSucursalesRow(this)">
+				<tr onclick="selectProductosParaAgregarRow(this)">
 					<td>@item.p_id</td>
 					<td>@item.p_desc</td>
 					<td>@item.adm_id</td>

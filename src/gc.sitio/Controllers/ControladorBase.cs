@@ -6,6 +6,7 @@ using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes;
+using gc.infraestructura.EntidadesComunes.Options;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -428,6 +429,23 @@ namespace gc.sitio.Controllers
 		#endregion
 
 		#region TRANSFERENCIAS
+		protected string TRDepositosSeleccionados
+		{
+			get
+			{
+				string json = _context.HttpContext.Session.GetString("TRDepositosSeleccionados");
+				if (string.IsNullOrEmpty(json))
+				{
+					return string.Empty;
+				}
+				return JsonConvert.DeserializeObject<string>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("TRDepositosSeleccionados", json);
+			}
+		}
 		protected List<TRAutPIDto> TRAutPedidosSucursalLista //ListaPedidosSucursal
 		{
 			get
@@ -533,14 +551,6 @@ namespace gc.sitio.Controllers
 		#endregion
 
 		#region Metodos generales
-		//protected void VerificaAutenticacion()
-		//{
-		//    var auth = EstaAutenticado;
-		//    if (!auth.Item1 || auth.Item2 < DateTime.Now)
-		//    {
-		//        _context.HttpContext.Response.Redirect(Url.Action("Login", "Token", new { area = "seguridad" }), true);
-		//    }
-		//}
 		public GridCore<T> ObtenerGridCore<T>(List<T> lista) where T : Dto
 		{
 			var listaDetalle = new StaticPagedList<T>(lista, 1, 999, lista.Count);
