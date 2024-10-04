@@ -14,7 +14,7 @@ namespace gc.infraestructura.Dtos.Almacen.Tr.Transferencia
         public string depo_id { get; set; }=string.Empty;
         public string depo_nombre { get; set; } = string.Empty;
         public decimal a_transferir { get; set; }
-        public decimal a_transferir_box { get; set; }
+        public decimal a_transferir_box { get; set; } = 0.000m;
 		public string fv { get; set; } = string.Empty;
 		public string pi_compte { get; set; } = string.Empty;
         public int unidad_palet { get; set; }

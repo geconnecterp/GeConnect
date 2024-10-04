@@ -11,7 +11,9 @@ using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Options;
+using System.Globalization;
 using System.Reflection;
+using System.Runtime.Intrinsics.X86;
 using System.Security.Cryptography;
 using System.Security.Policy;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
@@ -493,15 +495,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 				}
 				else
 				{
-					if (!decimal.TryParse(cantidad, out decimal ctd))
-					{
-						return Json(new { error = true, warn = false, msg = "Se debe especificar un valor válido para cantidad." });
-					}
 					var listaTemp = TRNuevaAutDetallelLista;
 					var producto = listaTemp.Where(x => x.p_id == idProdDeProdSeleccionado && x.adm_id == admSeleccionado).First();
 					if (producto != null)
-					{ 
-						producto.stk=ctd;
+					{
+						producto.a_transferir_box = ConvertToDecimal(cantidad, 3);
 						TRNuevaAutDetallelLista = listaTemp;
 					}
 					return Json(new { error = false, warn = false, msg = "" });
@@ -517,6 +515,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 				return Json(new { error = true, msg = "Algo no fue bien al ingresar el producto a la TR, intente nuevamente mas tarde." });
 			}
 		}
+
+
 
 		public async Task<IActionResult> CargarListaProductoSustituto(string pId, string listaDepo, string admIdDesc, string tipo)
 		{
@@ -587,16 +587,21 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new TRAgregarProductoDto();
 			try
 			{
+				if (string.IsNullOrWhiteSpace(pId))
+					return ObtenerMensajeDeError($"Faltan parámetros: seleccione un producto de la lista. Si el problema persiste informe al Administrador.");
+				if (string.IsNullOrWhiteSpace(admId))
+					return ObtenerMensajeDeError($"Faltan parámetros: seleccione una sucursal de la lista. Si el problema persiste informe al Administrador.");
+
 				model.Titulo = $"Detalle de TR {admId} - {TRSucursalesLista.Where(x => x.adm_id == admId).Select(y => y.adm_nombre).First()}";
 				var producto = TRNuevaAutDetallelLista.Where(x => x.p_id == pId && x.adm_id == admId).First();
 				var listaProdAEditar = new List<TRProductoParaAgregar>();
 				listaProdAEditar.Add(new TRProductoParaAgregar()
 				{
-					p_id=producto.p_id,
-					p_desc=producto.p_desc,
-					stk_adm=producto.stk_adm,
-					box_id=producto.box_id,
-					stk=producto.stk,
+					p_id = producto.p_id,
+					p_desc = producto.p_desc,
+					stk_adm = producto.stk_adm,
+					box_id = producto.box_id,
+					stk = producto.a_transferir_box,
 				});
 				model.Productos = ObtenerGridCore<TRProductoParaAgregar>(listaProdAEditar);
 				return PartialView("_trCargarNuevoProducto", model);

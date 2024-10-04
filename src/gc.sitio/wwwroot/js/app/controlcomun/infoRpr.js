@@ -1,7 +1,7 @@
 ﻿$(function () {
 	//cargo el js para llamar desde esta funcion a la función de busqueda
 	//verifico si se hace click en el boton buscar
-	console.log("Cargo");
+	console.log("infoRpr");
 	$("#btnBusquedaBase").on("click", function () {
 		InicializaPantalla();
 		buscarProducto();

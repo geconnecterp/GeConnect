@@ -551,6 +551,23 @@ namespace gc.sitio.Controllers
 		#endregion
 
 		#region Metodos generales
+		public static decimal ConvertToDecimal(string value, int precision)
+		{
+			if (value.Contains('.'))
+			{
+				var splited = value.Split('.');
+				value = splited[0];
+				value += ".";
+				value = value.PadRight(precision, '0');
+			}
+			else
+				value += ".000";
+			if (!decimal.TryParse(value, out decimal converted))
+			{
+				return 0.000M;
+			}
+			return converted;
+		}
 		public GridCore<T> ObtenerGridCore<T>(List<T> lista) where T : Dto
 		{
 			var listaDetalle = new StaticPagedList<T>(lista, 1, 999, lista.Count);
