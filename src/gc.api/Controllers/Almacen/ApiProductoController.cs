@@ -519,6 +519,22 @@ namespace gc.api.Controllers.Almacen
 			return Ok(response);
 		}
 
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult TRConfirmaAutorizaciones(TRConfirmaRequest request)
+		{
+			ApiResponse<List<RespuestaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.TRConfirmaAutorizaciones(request);
+
+			//response = new ApiResponse<RespuestaDto>(res);
+			response = new ApiResponse<List<RespuestaDto>>(res);
+
+			return Ok(response);
+		}
+
 		[HttpGet]
         [Route("[action]")]
         public IActionResult ControlSalidaTI(string ti, string adm, string usu)

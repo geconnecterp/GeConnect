@@ -47,5 +47,6 @@ namespace gc.api.core.Contratos.Servicios
         RespuestaDto TR_Confirma(TIRequestConfirmaDto conf);
         List<TRAutAnalizaDto> TRAutAnaliza(string listaPi, string listaDepo, bool stkExistente, bool sustituto, int palletNro);
         List<TRProductoParaAgregar> TRObtenerSustituto(string pId, string listaDepo, string admIdDes, string tipo);
+		List<RespuestaDto> TRConfirmaAutorizaciones(TRConfirmaRequest request);
 	}
 }

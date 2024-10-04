@@ -41,9 +41,10 @@
 						</div>
 					</div>
 					<div class="container col-sm" style="padding-top: 15px;">
-						<a asp-action="NuevaTR" asp-controller="Transferencia" asp-area="Compras" class="btn btn-primary" id="btnRegrsarANuevaAut">
+						@* <a asp-action="NuevaTR" asp-controller="Transferencia" asp-area="Compras" class="btn btn-primary" id="btnRegresarANuevaAut">
 							<span class="tf-icons bx bx-left-arrow-circle"></span>Regresar
-						</a>
+						</a> *@
+						<a href="#" id="btnRegresarANuevaAut" class="btn btn-primary"><span class="tf-icons bx bx-left-arrow-circle me-1">Regresar</span></a>
 						<a href="#" id="btnConfirmarAuto" class="btn btn-success"><span class="tf-icons bx bx-check-circle me-1">Confirmar Auto.</span></a>
 					</div>
 				</fieldset>
@@ -113,7 +114,6 @@
 					<div class="container col-sm" style="padding-top: 15px;">
 						<a href="#" id="btnAgregar" class="btn btn-success" onclick="abrirlModalAgregaProductoATR();"><span class="tf-icons bx bx-plus-circle me-1">Agregar</span></a>
 						<button id="btnSustituto" class="btn btn-primary" onclick="abrirlModalSustitutoDeProductoATR();"><span class="tf-icons bx bx-exclude me-1">Sustituto</span></button>
-						@* <a href="#" id="btnSustituto" class="btn btn-primary" ><span class="tf-icons bx bx-exclude me-1">Sustituto</span></a> *@
 						<a href="#" id="btnEliminar" class="btn btn-danger" onclick="eliminarProductoATR();"><span class="tf-icons bx bx-minus-circle me-1">Eliminar</span></a>
 						<a href="#" id="btnModCantidad" class="btn btn-primary" onclick="abrirlModalModCantDeProductoATR();"><span class="tf-icons bx bx-edit-alt me-1">Mod. Cantidad</span></a>
 					</div>
@@ -173,7 +173,6 @@
 				<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
 					Cerrar
 				</button>
-				@* <button type="button" class="btn btn-primary" onclick="agregarProductoATR();">Guardar</button> *@
 			</div>
 		</div>
 	</div>
@@ -207,6 +206,11 @@
 		var TREliminarProductoUrl = "@Url.Action("EliminarProducto", "transferencia", new { area = "Compras" })";
 		var TRInicializarModalModificarCantidadATRUrl = "@Url.Action("InicializarModalModificarCantidad", "transferencia", new { area = "Compras" })";
 		var TREditarCantidadEnProductoUrl = "@Url.Action("EditarCantidadEnProducto", "transferencia", new { area = "Compras" })";
+		var TRValidarSiExisteAnalisisUrl = "@Url.Action("ValidarSiExisteAnalisis", "transferencia", new { area = "Compras" })";
+		var TRAbrirVistaTRCrudAutorizacionUrl = "@Url.Action("NuevaTR", "transferencia", new { area = "Compras" })";
+		var TRLimpiarAnalisisUrl = "@Url.Action("LimpiarAnalisis", "transferencia", new { area = "Compras" })";
+		var TRConfirmaAutorizacionesDeTRUrl = "@Url.Action("ConfirmaAutorizacionesDeTR", "transferencia", new { area = "Compras" })";
+		var TRAbrirVistaTRAutorizacionesListaUrl = "@Url.Action("TRAutorizacionesLista", "transferencia", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/areas/transferencias/trVistaNuevaAutYDetalleDeProductos.js"></script>
 	<script src="~/js/app/busquedas.js" type="text/javascript"></script>

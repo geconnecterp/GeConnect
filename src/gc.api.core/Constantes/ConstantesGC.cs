@@ -65,6 +65,7 @@
             public const string SP_TR_CONFIRMA = "SPGECO_TR_Confirmar";
             public const string SP_TR_Aut_Analiza = "SPGECO_TR_Aut_Analiza";
 			public const string SP_TR_sustituto = "SPGECO_TR_Aut_Sustituto"; //En el docx figura SPGECO_TR_sustituto pero ese SP no existe
+			public const string SP_TR_Aut_Nuevas = "SPGECO_TR_Aut_Nuevas";
 
 			public const string SP_TI_VALIDA_USUARIO = "SPGECO_USU_OK";
 

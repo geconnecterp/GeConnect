@@ -1,5 +1,4 @@
-﻿using Azure;
-using gc.api.core.Entidades;
+﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Almacen;
@@ -9,15 +8,9 @@ using gc.infraestructura.EntidadesComunes.Options;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Options;
-using System.Globalization;
+using Newtonsoft.Json;
 using System.Reflection;
-using System.Runtime.Intrinsics.X86;
-using System.Security.Cryptography;
-using System.Security.Policy;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
-
 
 namespace gc.sitio.Areas.Compras.Controllers
 {
@@ -284,7 +277,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					#region Campos
 					adm_id = x.adm_id,
 					adm_nombre = x.adm_nombre,
-					autorrizacion = x.autorizacion,
+					autorizacion = x.autorizacion,
 					a_transferir = x.a_transferir,
 					a_transferir_box = x.a_transferir_box,
 					box_id = x.box_id,
@@ -638,6 +631,117 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
+		public async Task<JsonResult> ValidarSiExisteAnalisis()
+		{
+			try
+			{
+				if (TRNuevaAutDetallelLista != null && TRNuevaAutDetallelLista.Count > 0)
+				{
+					return Json(new { error = false, warn = true, msg = "Existe un análisis en curso.", cant = TRNuevaAutDetallelLista.Count });
+				}
+				else
+				{
+					return Json(new { error = false, warn = false, msg = "", cant = 0 });
+				}
+			}
+			catch (NegocioException neg)
+			{
+				return Json(new { error = false, warn = true, msg = neg.Message, cant = 0 });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				return Json(new { error = true, msg = "Algo no fue bien al si existe un análisis realizado, intente nuevamente mas tarde." });
+			}
+		}
+
+		public async Task<JsonResult> LimpiarAnalisis()
+		{
+			try
+			{
+				TRNuevaAutDetallelLista = [];
+				return Json(new { error = false, warn = false, msg = "" });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				return Json(new { error = true, msg = "Algo no fue bien al intentar limpiar el analisis realizado, intente nuevamente mas tarde." });
+			}
+		}
+
+		/// <summary>
+		/// Crea las nuevas autorizaciones de TR
+		/// </summary>
+		/// <returns></returns>
+		public async Task<JsonResult> ConfirmaAutorizacionesDeTR()
+		{
+			try
+			{
+				if (TRNuevaAutDetallelLista == null)
+				{
+					return Json(new { error = false, warn = true, msg = "No existe analisis para generar autorizaciones de transferencias." });
+				}
+				if (TRNuevaAutDetallelLista.Count == 0)
+				{
+					return Json(new { error = false, warn = true, msg = "No existe analisis para generar autorizaciones de transferencias." });
+				}
+
+				var json = GenerarJsonDesdeListaDeProductosAutDetallelLista();
+				var respuesta = await _productoServicio.TRConfirmaAutorizaciones(json, AdministracionId, UserName, TokenCookie);
+				if (respuesta != null && respuesta.First().resultado == "0") //Genero correctamente el json, limpio variable de sesion de JSON y Detalle de productos
+				{
+					//Limpiar datos
+					TRAutAnaliza = [];
+					TRNuevaAutDetallelLista = [];
+					return Json(new { error = false, warn = false, codigo = 0, msg = "" });
+				}
+				return Json(new { error = false, warn = true, msg = respuesta?.First()?.resultado_msj, codigo = respuesta?.First()?.resultado });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				return Json(new { error = true, msg = "Algo no fue bien al intentar confirmar las autorizaciones de TR, intente nuevamente mas tarde." });
+			}
+		}
+
+		private string GenerarJsonDesdeListaDeProductosAutDetallelLista()
+		{
+			var listaJsonDeTR = new List<JsonDeTRDetalleDto>();
+			var listaPI = from i in TRNuevaAutDetallelLista
+						  group i by new { i.pi_compte } into x
+						  select new Auxiliar() { pi_compte = x.Key.pi_compte.Split('-')[1] };
+			foreach (var item in TRNuevaAutDetallelLista)
+			{
+				listaJsonDeTR.Add(new JsonDeTRDetalleDto()
+				{
+					#region Campos
+					adm_id = item.adm_id,
+					adm_nombre = item.adm_nombre,
+					autorizacion = item.autorizacion,
+					a_transferir = item.a_transferir,
+					a_transferir_box = item.a_transferir_box,
+					box_id = item.box_id,
+					depo_id = item.depo_id,
+					depo_nombre = item.depo_nombre,
+					fv = item.fv,
+					nota = item.nota,
+					palet = item.palet,
+					pedido = item.pedido,
+					pi_compte = item.pi_compte,
+					p_desc = item.p_desc,
+					p_id = item.p_id,
+					p_id_sustituto = item.p_id_sustituto,
+					p_sustituto = item.p_sustituto,
+					stk = item.stk,
+					stk_adm = item.stk_adm,
+					unidad_palet = item.unidad_palet,
+					#endregion
+				});
+			}
+			var jsonstring = JsonConvert.SerializeObject(listaJsonDeTR, new JsonSerializerSettings());
+			return jsonstring;
+		}
+
 		public async Task<IActionResult> EditarNotaEnSucursal(string admId)
 		{
 			//TODO: Charlar con carlos para ver si modificamos lo que se muestra en esta vista
@@ -749,6 +853,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 
 		#region métodos privados
+		private class Auxiliar()
+		{
+			public string pi_compte { get; set; } = string.Empty;
+		}
+
 		private ProductoBusquedaDto ObtenerDatosDeProducto(string p_id)
 		{
 			ProductoBusquedaDto producto = new ProductoBusquedaDto { P_id = "0000-0000" };

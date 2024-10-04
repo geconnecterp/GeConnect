@@ -3,6 +3,8 @@
 	AddEventListenerToGrid("tbNuevaAutListaSucursales");
 	AddEventListenerToGrid("tbNuevaAutListaProductos");
 	$("#btnEditarCantidad").on("click", EditarCantidad);
+	$("#btnRegresarANuevaAut").on("click", RegresarANuevaAut);
+	$("#btnConfirmarAuto").on("click", ConfirmarAuto);
 });
 
 function verificaEstado(e) {
@@ -27,6 +29,98 @@ const FuncionSobreProductosAAgregar = {
 	SUSTITUTO: 'SUSTITUTO',
 	EDICION: 'EDICION',
 	NOSELECTED: 'NOSELECTED',
+}
+
+function RegresarANuevaAut() {
+	//Validamos si existe un analisis 
+	datos = {};
+	PostGen(datos, TRValidarSiExisteAnalisisUrl, function (o) {
+		debugger;
+		if (o.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("Atención", o.msg, function () {
+				$("#msjModal").modal("hide");
+				window.location.href = TRAbrirVistaTRCrudAutorizacionUrl;
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		} else if (o.warn === true) {
+			CerrarWaiting();
+			ControlarRetorno(o.warn, o.msg, o.cant);
+		} else if (o.codigo !== "" && o.msg !== "") {
+			CerrarWaiting();
+			AbrirMensaje("Atención", o.msg, function (e) {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "info!", null);
+		} else {
+			CerrarWaiting();
+			$("#modalNotaEnSucursal").modal("hide");
+		}
+	});
+}
+
+function ControlarRetorno(value, msg, cant) {
+	if (value === true) {
+		AbrirMensaje("Confirmación", msg + " Si decide continuar los datos se perderán.", function (e) {
+			$("#msjModal").modal("hide");
+			switch (e) {
+				case "SI": //Confirmar comprobante RPR
+					datos = {};
+					PostGen(datos, TRLimpiarAnalisisUrl, function (o) {
+						if (o.error === true) {
+							CerrarWaiting();
+							AbrirMensaje("Atención", o.msg, function () {
+								$("#msjModal").modal("hide");
+								window.location.href = TRAbrirVistaTRCrudAutorizacionUrl;
+								return true;
+							}, false, ["Aceptar"], "error!", null);
+						} else {
+							CerrarWaiting();
+							window.location.href = TRAbrirVistaTRCrudAutorizacionUrl;
+							return true;
+						}
+						CerrarWaiting();
+						window.location.href = TRAbrirVistaTRCrudAutorizacionUrl;
+						return true
+					});
+					break;
+				case "NO":
+					break;
+				default: //NO
+					break;
+			}
+			return true;
+		}, true, ["Aceptar", "Cancelar"], "info!", null);
+	}
+}
+
+function ConfirmarAuto() {
+	AbrirWaiting();
+	datos = {};
+	PostGen(datos, TRConfirmaAutorizacionesDeTRUrl, function (o) {
+		if (o.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("Atención", o.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		} else if (o.warn === true) {
+			CerrarWaiting();
+			AbrirMensaje("Atención", o.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "warn!", null);
+		} else if (o.codigo !== "" && o.msg !== "") {
+			CerrarWaiting();
+			AbrirMensaje("Atención", o.msg, function (e) {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "info!", null);
+		} else {
+			CerrarWaiting();
+			window.location.href = TRAbrirVistaTRAutorizacionesListaUrl;
+		}
+	});
 }
 
 function selectNuevaAutListaSucursalesRow(x) {

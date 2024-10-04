@@ -1,5 +1,5 @@
-using Azure.Core;
 using gc.api.core.Contratos.Servicios;
+using Azure.Core;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes;
@@ -16,7 +16,8 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using System.Data;
 using System.Linq.Dynamic.Core;
-using System.Runtime.Intrinsics.Arm;
+using gc.api.core.Contratos.Servicios;
+
 
 namespace gc.api.core.Servicios
 {
@@ -498,6 +499,18 @@ namespace gc.api.core.Servicios
 				new("@tipo",tipo),
 			};
 			List<TRProductoParaAgregar> respuesta = _repository.EjecutarLstSpExt<TRProductoParaAgregar>(sp, ps, true);
+			return respuesta;
+		}
+		public List<RespuestaDto> TRConfirmaAutorizaciones(TRConfirmaRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Aut_Nuevas;
+			var ps = new List<SqlParameter>()
+			{
+				new("@json",request.json),
+				new("@adm_id",request.admId),
+				new("@usu_id",request.usuId),
+			};
+			List<RespuestaDto> respuesta = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 			return respuesta;
 		}
 		//}
