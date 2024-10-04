@@ -235,13 +235,22 @@ function abrirlModalModCantDeProductoATR() {
 		esProductoSustituto = false;
 		tipoFuncion = FuncionSobreProductosAAgregar.EDICION;
 		AddEventListenerToGrid("tbListaProductosParaAgregar");
+		SeleccionarFila(1, "tbListaProductosParaAgregar");
 		CerrarWaiting();
 		return true
 	});
 	CerrarWaiting();
 }
 
-
+function SeleccionarFila(fila, tabla) {
+	var grilla = document.getElementById(tabla);
+	if (grilla) {
+		//e.target.closest('tr').classList.add('selected-row');
+		grilla.rows[1].classList.add('selected-row');
+		idProdDeProdSeleccionado = grilla.rows[1].cells[0].innerText.trim();
+		prodSeleccionadoNombre = grilla.rows[1].cells[1].innerText.trim();
+	}
+}
 
 //Llamar al SP SPGECO_TR_sustituto (el cual no existe, voy a probar con el SP SPGECO_TR_Aut_Sustituto)
 function BuscarSustituto(p_id) {
