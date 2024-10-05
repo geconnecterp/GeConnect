@@ -69,7 +69,7 @@
 
 			public const string SP_TI_VALIDA_USUARIO = "SPGECO_USU_OK";
 
-
+            public const string SP_RTR_Pendientes = "SPGECO_RTR_Pendientes";
         }
 
         

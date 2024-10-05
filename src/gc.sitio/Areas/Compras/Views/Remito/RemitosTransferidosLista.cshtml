@@ -1,0 +1,55 @@
+﻿@model GridCore<RemitoTransferidoDto>
+@{
+	Layout = "~/views/shared/_Layout.cshtml";
+}
+
+<div class="card">
+	<row>
+		<input type="text" id="rp_id" style="visibility:hidden" />
+		<div style="float:left">
+			<div class="card-header">
+				<h5>Remitos Transferidos Pendientes</h5>
+			</div>
+		</div>
+		<div class="demo-inline-spacing" style="float:right;margin-top: 60px;margin-right: 55px;">
+			<a asp-action="RemitosTransferidosLista" asp-controller="Remito" asp-area="Compras" class="btn btn-primary" id="btnAutorizar">
+				<span class="tf-icons bx bxs-edit me-1"></span>Autorizar
+			</a>
+			<a href="#" id="btnVer" class="btn btn-success"><span class="tf-icons bx bxs-binoculars me-1">Ver</span></a>
+		</div>
+	</row>
+	<div class="card-body">
+		<div class="table-responsive text-nowrap table-wrapper">
+			<table class="table table-bordered table-hover" id="tbListaRemitosTransferidos">
+				<thead class="table-dark">
+					<tr>
+						<th style="width:15%;">N° Remito</th>
+						<th style="width:15%;">TR N°</th>
+						<th style="width:40%;">Sucursal que Envía</th>
+						<th style="width:15%;">Fecha</th>
+						<th style="width:15%;">Estado</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var item in Model.ListaDatos)
+					{
+						<tr onclick="selectRemitoRow(this)">
+							<td>@item.re_compte</td>
+							<td>@item.pv_compte</td>
+							<td>@item.adm_nombre</td>
+							<td>@item.re_fecha.ToString("dd-MM-yyyy")</td>
+							<td>@item.ree_desc</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+@section scripts {
+	<script type="text/javascript">
+
+	</script>
+	<script src="~/js/app/areas/remitos/remitosTransferidosLista.js"></script>
+}
