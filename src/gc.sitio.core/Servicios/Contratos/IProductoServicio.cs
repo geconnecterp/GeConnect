@@ -22,9 +22,9 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<List<InfoProdStkA>> InfoProductoStkA(string id, string admId, string token);
         Task<List<InfoProdMovStk>> InfoProductoMovStk(string id, string adm, string depo, string tmov, DateTime desde, DateTime hasta, string token);
         Task<List<InfoProdLP>> InfoProductoLP(string id, string token);
-        Task<List<RPRAutorizacionPendienteDto>> RPRObtenerAutorizacionPendiente(string adm, string token);
-        Task<RPRRegistroResponseDto> RPRRegistrarProductos(List<RPRProcuctoDto> json,string admId, string ul, string token);
-        Task<List<RPRAutoComptesPendientesDto>> RPRObtenerComptesPendiente(string adm_id, string token);
+        Task<List<AutorizacionPendienteDto>> RPRObtenerAutorizacionPendiente(string adm, string token);
+        Task<RegistroResponseDto> RPRRegistrarProductos(List<ProcuctoGenDto> json,string admId, string ul, string token);
+        Task<List<AutoComptesPendientesDto>> RPRObtenerComptesPendiente(string adm_id, string token);
 
         Task<RprResponseDto> ValidarUL(string ul,string adm,string token);
         Task<RprResponseDto> ValidarBox(string box,string adm,string token);

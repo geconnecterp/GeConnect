@@ -1,6 +1,6 @@
 ﻿namespace gc.infraestructura.Dtos.Almacen.Rpr
 {
-	public class RPRAutorizacionPendienteDto : Dto
+	public class AutorizacionPendienteDto : Dto
 	{
 		public string Rp { get; set; } = string.Empty;
 		public string Cta_id { get; set; } = string.Empty;
@@ -11,13 +11,13 @@
 		public string Cta_denominacion { get; set; } = string.Empty;
 	}
 
-	public class RPRRegistroResponseDto
+	public class RegistroResponseDto
 	{
 		public short Resultado { get; set; }
 		public string Resultado_msj { get; set; } = string.Empty;
 	}
 
-	public class RPRAutoComptesPendientesDto : RPRAutorizacionPendienteDto
+	public class AutoComptesPendientesDto : AutorizacionPendienteDto
 	{
 		public string Rpe_desc { get; set; } = string.Empty;
 		public string Tco_id { get; set; } = string.Empty;

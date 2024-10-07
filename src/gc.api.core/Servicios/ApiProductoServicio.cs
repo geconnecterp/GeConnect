@@ -281,7 +281,7 @@ namespace gc.api.core.Servicios
 			return productos;
 		}
 
-		public List<RPRAutorizacionPendienteDto> RPRObtenerAutorizacionPendiente(string adm)
+		public List<AutorizacionPendienteDto> RPRObtenerAutorizacionPendiente(string adm)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_PENDIENTES;
 			/// varchar(30),  varchar(3),  varchar(4), varchar(8), @ bit, @ varchar(10) , @ bit, @ bit, @ bit, @ bit, @ bit, @ bit)  
@@ -290,7 +290,7 @@ namespace gc.api.core.Servicios
 				new("@adm_id",adm),
 			};
 
-			List<RPRAutorizacionPendienteDto> productos = _repository.EjecutarLstSpExt<RPRAutorizacionPendienteDto>(sp, ps, true);
+			List<AutorizacionPendienteDto> productos = _repository.EjecutarLstSpExt<AutorizacionPendienteDto>(sp, ps, true);
 
 			return productos;
 		}
@@ -368,7 +368,7 @@ namespace gc.api.core.Servicios
 			return items;
 		}
 
-		public RPRRegistroResponseDto RPRRegistrarProductos(string json)
+		public RegistroResponseDto RPRRegistrarProductos(string json)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_REGISTRA;
 			/// varchar(30),  varchar(3),  varchar(4), varchar(8), @ bit, @ varchar(10) , @ bit, @ bit, @ bit, @ bit, @ bit, @ bit)  
@@ -377,19 +377,19 @@ namespace gc.api.core.Servicios
 				new("@json",json),
 			};
 
-			List<RPRRegistroResponseDto> productos = _repository.EjecutarLstSpExt<RPRRegistroResponseDto>(sp, ps, true);
+			List<RegistroResponseDto> productos = _repository.EjecutarLstSpExt<RegistroResponseDto>(sp, ps, true);
 
 			return productos.First();
 		}
 
-		public List<RPRAutoComptesPendientesDto> RPRObtenerComptesPendientes(string adm)
+		public List<AutoComptesPendientesDto> RPRObtenerComptesPendientes(string adm)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_COMPTES_PENDIENTES;
 			var ps = new List<SqlParameter>()
 			{
 				new("@adm_id", adm)
 			};
-			List<RPRAutoComptesPendientesDto> comptes_pendientes = _repository.EjecutarLstSpExt<RPRAutoComptesPendientesDto>(sp, ps, true);
+			List<AutoComptesPendientesDto> comptes_pendientes = _repository.EjecutarLstSpExt<AutoComptesPendientesDto>(sp, ps, true);
 			return comptes_pendientes;
 		}
 

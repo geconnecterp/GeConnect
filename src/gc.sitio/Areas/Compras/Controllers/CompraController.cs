@@ -63,8 +63,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 			RPRComprobanteDeRPSeleccionado = null;
 			RPRAutorizacionSeleccionada = null;
 			RPRComptesDeRPRegs = null;
-			List<RPRAutoComptesPendientesDto> pendientes;
-			GridCore<RPRAutoComptesPendientesDto> grid;
+			List<AutoComptesPendientesDto> pendientes;
+			GridCore<AutoComptesPendientesDto> grid;
 			try
 			{
 				pendientes = await _productoServicio.RPRObtenerComptesPendiente(AdministracionId, TokenCookie);
@@ -284,7 +284,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 				}
 				var rpSelected = RPRAutorizacionesPendientesEnRP.Where(x => x.Rp == rp).FirstOrDefault();
-				if (rpSelected != default(RPRAutoComptesPendientesDto))
+				if (rpSelected != default(AutoComptesPendientesDto))
 				{
 					RPRAutorizacionSeleccionada = rpSelected;
 				}
@@ -1143,12 +1143,12 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return new GridCore<RPROrdenDeCompraDetalleDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
 		}
 
-		private GridCore<RPRAutoComptesPendientesDto> ObtenerAutorizacionPendienteGrid(List<RPRAutoComptesPendientesDto> pendientes)
+		private GridCore<AutoComptesPendientesDto> ObtenerAutorizacionPendienteGrid(List<AutoComptesPendientesDto> pendientes)
 		{
 
-			var lista = new StaticPagedList<RPRAutoComptesPendientesDto>(pendientes, 1, 999, pendientes.Count);
+			var lista = new StaticPagedList<AutoComptesPendientesDto>(pendientes, 1, 999, pendientes.Count);
 
-			return new GridCore<RPRAutoComptesPendientesDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Cta_denominacion", SortDir = "ASC" };
+			return new GridCore<AutoComptesPendientesDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Cta_denominacion", SortDir = "ASC" };
 		}
 
 

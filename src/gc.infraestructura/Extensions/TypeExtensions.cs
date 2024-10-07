@@ -139,6 +139,25 @@
             return null;
         }
 
+        /// <summary>
+        /// Esta funcion de conversión es exclusivamente para usar en string que tiene 
+        /// fecha de la forma yyyymmdd.
+        /// Se validará que sea un numero completamente y posteriormente se validará que sea una fecha valida.
+        /// Caso contrario se devolvera un string vacio.
+        /// </summary>
+        /// <param name="s">fecha de la forma yyyymmdd</param>
+        /// <returns>string "dd/mm/yyyy" o ""</returns>
+        public static string ToDateFormat_dd_mm_yyyy(this String s)
+        {
+            if(string.IsNullOrEmpty(s)) return "";
+            if (string.IsNullOrWhiteSpace(s)) return "";
+            if (s.ToLongOrNull() == null) return "";
+            if (s.Length != 8) return "";
+            var y = s.Substring(0, 4);
+            var m = s.Substring(4, 2);
+            var d=s.Substring(6,2);
+            return $"{d}/{m}/{y}";
+        }
 
         public static DateTime ToDateTime(this String s)
         {

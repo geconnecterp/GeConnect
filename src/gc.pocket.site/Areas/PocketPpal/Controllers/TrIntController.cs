@@ -8,7 +8,6 @@ using gc.infraestructura.EntidadesComunes.Options;
 using gc.pocket.site.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.DotNet.MSIdentity.Shared;
 using Microsoft.Extensions.Options;
 using System.Reflection;
 using X.PagedList;
@@ -1005,7 +1004,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                 if (res.Ok)
                 {
-                    return Json(new { error = false, warn = false, vto = res.Entidad.Ps_Fv });
+                    return Json(new { error = false, warn = false, vto = res.Entidad.Ps_Fv.ToDateFormat_dd_mm_yyyy() });
                 }
                 else
                 {

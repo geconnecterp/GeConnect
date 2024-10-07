@@ -274,16 +274,16 @@ namespace gc.api.Controllers.Almacen
         #region Acciones para modulo RPR
 
         [HttpGet]
-        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RPRAutorizacionPendienteDto>>))]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<AutorizacionPendienteDto>>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
         public IActionResult RPRAutorizacionPendiente(string adm)
         {
-            ApiResponse<List<RPRAutorizacionPendienteDto>> response;
+            ApiResponse<List<AutorizacionPendienteDto>> response;
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
             var res = _productosSv.RPRObtenerAutorizacionPendiente(adm);
 
-            response = new ApiResponse<List<RPRAutorizacionPendienteDto>>(res);
+            response = new ApiResponse<List<AutorizacionPendienteDto>>(res);
 
             return Ok(response);
         }
@@ -379,13 +379,13 @@ namespace gc.api.Controllers.Almacen
         }
 
         [HttpPost]
-        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RPRRegistroResponseDto>))]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RegistroResponseDto>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
 
-        public IActionResult RPRRegistrar(List<RPRProcuctoDto> prods)
+        public IActionResult RPRRegistrar(List<ProcuctoGenDto> prods)
         {
-            ApiResponse<RPRRegistroResponseDto> response;
+            ApiResponse<RegistroResponseDto> response;
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
 
             if (prods.Count == 0)
@@ -403,23 +403,23 @@ namespace gc.api.Controllers.Almacen
             //}
 
             var res = _productosSv.RPRRegistrarProductos(json);
-            response = new ApiResponse<RPRRegistroResponseDto>(res);
+            response = new ApiResponse<RegistroResponseDto>(res);
             return Ok(response);
         }
 
         [HttpGet]
-        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RPRAutoComptesPendientesDto>))]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<AutoComptesPendientesDto>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
         public IActionResult RPRObtenerAutoComptesPendientes(string adm_id)
         {
-            ApiResponse<List<RPRAutoComptesPendientesDto>> response;
+            ApiResponse<List<AutoComptesPendientesDto>> response;
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
             if (string.IsNullOrEmpty(adm_id))
                 return BadRequest("No se recepciono dato alguno.");
 
             var result = _productosSv.RPRObtenerComptesPendientes(adm_id);
-            response = new ApiResponse<List<RPRAutoComptesPendientesDto>>(result);
+            response = new ApiResponse<List<AutoComptesPendientesDto>>(result);
             return Ok(response);
         }
 

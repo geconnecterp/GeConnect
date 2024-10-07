@@ -264,7 +264,7 @@ namespace gc.sitio.Controllers
 			}
 		}
 
-		public RPRAutoComptesPendientesDto RPRAutorizacionSeleccionada
+		public AutoComptesPendientesDto RPRAutorizacionSeleccionada
 		{
 			get
 			{
@@ -273,7 +273,7 @@ namespace gc.sitio.Controllers
 				{
 					return null;
 				}
-				return JsonConvert.DeserializeObject<RPRAutoComptesPendientesDto>(json);
+				return JsonConvert.DeserializeObject<AutoComptesPendientesDto>(json);
 			}
 			set
 			{
@@ -408,7 +408,7 @@ namespace gc.sitio.Controllers
 			}
 		}
 
-		protected List<RPRAutoComptesPendientesDto> RPRAutorizacionesPendientesEnRP
+		protected List<AutoComptesPendientesDto> RPRAutorizacionesPendientesEnRP
 		{
 			get
 			{
@@ -417,7 +417,7 @@ namespace gc.sitio.Controllers
 				{
 					return new();
 				}
-				return JsonConvert.DeserializeObject<List<RPRAutoComptesPendientesDto>>(json);
+				return JsonConvert.DeserializeObject<List<AutoComptesPendientesDto>>(json);
 			}
 			set
 			{

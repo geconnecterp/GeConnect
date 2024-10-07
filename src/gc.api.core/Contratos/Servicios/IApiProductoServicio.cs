@@ -22,9 +22,9 @@ namespace gc.api.core.Contratos.Servicios
         List<InfoProdStkA> InfoProductoStkA(string id, string admId);
         List<InfoProdMovStk> InfoProductoMovStk(string id, string adm, string depo, string tmov, DateTime desde, DateTime hasta);
         List<InfoProdLP> InfoProductoLP(string id);
-        List<RPRAutorizacionPendienteDto> RPRObtenerAutorizacionPendiente(string adm);
-        RPRRegistroResponseDto RPRRegistrarProductos(string json);
-        List<RPRAutoComptesPendientesDto> RPRObtenerComptesPendientes(string adm);
+        List<AutorizacionPendienteDto> RPRObtenerAutorizacionPendiente(string adm);
+        RegistroResponseDto RPRRegistrarProductos(string json);
+        List<AutoComptesPendientesDto> RPRObtenerComptesPendientes(string adm);
         List<RespuestaDto> RPRCargar(RPRCargarRequest request);
         List<RespuestaDto> RPRElimina(string rp);
         List<RespuestaDto> RPRConfirma(string rp, string adm_id);

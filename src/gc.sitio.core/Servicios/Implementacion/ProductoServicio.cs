@@ -346,9 +346,9 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-        public async Task<List<RPRAutorizacionPendienteDto>> RPRObtenerAutorizacionPendiente(string adm, string token)
+        public async Task<List<AutorizacionPendienteDto>> RPRObtenerAutorizacionPendiente(string adm, string token)
         {
-            ApiResponse<List<RPRAutorizacionPendienteDto>> apiResponse;
+            ApiResponse<List<AutorizacionPendienteDto>> apiResponse;
 
             HelperAPI helper = new HelperAPI();
 
@@ -367,7 +367,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                     _logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda adm:{adm}");
                     return new();
                 }
-                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RPRAutorizacionPendienteDto>>>(stringData);
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AutorizacionPendienteDto>>>(stringData);
                 return apiResponse.Data;
             }
             else
@@ -378,9 +378,9 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-        public async Task<RPRRegistroResponseDto> RPRRegistrarProductos(List<RPRProcuctoDto> prods, string admId, string ul, string token)
+        public async Task<RegistroResponseDto> RPRRegistrarProductos(List<ProcuctoGenDto> prods, string admId, string ul, string token)
         {
-            ApiResponse<RPRRegistroResponseDto> apiResponse;
+            ApiResponse<RegistroResponseDto> apiResponse;
 
             HelperAPI helper = new HelperAPI();
 
@@ -404,7 +404,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                     _logger.LogWarning($"La API no devolvió dato alguno. ");
                     return new();
                 }
-                apiResponse = JsonConvert.DeserializeObject<ApiResponse<RPRRegistroResponseDto>>(stringData);
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<RegistroResponseDto>>(stringData);
                 return apiResponse.Data;
             }
             else
@@ -415,9 +415,9 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-        public async Task<List<RPRAutoComptesPendientesDto>> RPRObtenerComptesPendiente(string adm, string token)
+        public async Task<List<AutoComptesPendientesDto>> RPRObtenerComptesPendiente(string adm, string token)
         {
-            ApiResponse<List<RPRAutoComptesPendientesDto>> apiResponse;
+            ApiResponse<List<AutoComptesPendientesDto>> apiResponse;
 
             HelperAPI helper = new();
 
@@ -436,7 +436,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                     _logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda adm:{adm}");
                     return new();
                 }
-                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RPRAutoComptesPendientesDto>>>(stringData);
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AutoComptesPendientesDto>>>(stringData);
                 return apiResponse.Data;
             }
             else
@@ -1267,7 +1267,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             {
                 string stringData = await response.Content.ReadAsStringAsync();
                 _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
-                return new();
+                return new() { Ok = false, Mensaje = "Algo no fue bien y el proceso no se completó. Intente de nuevo más tarde. Si el problema persiste informe al Administrador del sistema." };
             }
         }
 
@@ -1306,7 +1306,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             {
                 string stringData = await response.Content.ReadAsStringAsync();
                 _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
-                return new();
+                return new() { Ok = false, Mensaje = "Algo no fue bien y el proceso no se completó. Intente de nuevo más tarde. Si el problema persiste informe al Administrador del sistema." };
             }
         }
         //
@@ -1345,7 +1345,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             {
                 string stringData = await response.Content.ReadAsStringAsync();
                 _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
-                return new();
+                return new() { Ok = false, Mensaje = "Algo no fue bien y el proceso no se completó. Intente de nuevo más tarde. Si el problema persiste informe al Administrador del sistema." };
             }
         }
     }
