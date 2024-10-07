@@ -1,10 +1,11 @@
 ﻿namespace gc.infraestructura.Dtos.Almacen.Rpr
 {
-    public class RPRProcuctoDto
+    public class ProcuctoGenDto
     {
         public int item { get; set; }//0
         //public string Ope { get; set; }
         public string rp { get; set; }//0
+        public string Ti { get; set; }
         public string ul_id { get; set; }//0
         //public string Nro_auto { get; set; } = string.Empty;
         public string p_id { get; set; } = string.Empty;//0

@@ -86,7 +86,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
             {
                 throw new NegocioException("No se logro encontrar la configuración del Módulo. Si el problema persiste informe al Administrador");
             }
-            return View(modulo);
+            return View("gen", modulo);
         }
         [HttpGet]
         public IActionResult REXPED()

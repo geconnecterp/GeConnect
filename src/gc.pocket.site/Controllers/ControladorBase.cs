@@ -470,7 +470,7 @@ namespace gc.pocket.site.Controllers
         #endregion
 
         #region Variables de Session para módulo RPR
-        public List<RPRAutorizacionPendienteDto> AutorizacionesPendientes
+        public List<AutorizacionPendienteDto> AutorizacionesPendientes
         {
             get
             {
@@ -479,7 +479,7 @@ namespace gc.pocket.site.Controllers
                 {
                     return [];
                 }
-                return JsonConvert.DeserializeObject<List<RPRAutorizacionPendienteDto>>(json);
+                return JsonConvert.DeserializeObject<List<AutorizacionPendienteDto>>(json);
             }
             set
             {
@@ -488,7 +488,7 @@ namespace gc.pocket.site.Controllers
             }
         }
 
-        public RPRAutorizacionPendienteDto RPRAutorizacionPendienteSeleccionada
+        public AutorizacionPendienteDto AutorizacionPendienteSeleccionada
         {
             get
             {
@@ -497,7 +497,7 @@ namespace gc.pocket.site.Controllers
                 {
                     return null;
                 }
-                return JsonConvert.DeserializeObject<RPRAutorizacionPendienteDto>(json);
+                return JsonConvert.DeserializeObject<AutorizacionPendienteDto>(json);
             }
             set
             {
@@ -506,7 +506,7 @@ namespace gc.pocket.site.Controllers
             }
         }
 
-        protected RPRProcuctoDto RPRProductoTemp
+        protected ProcuctoGenDto RPRProductoTemp
         {
             get
             {
@@ -515,7 +515,7 @@ namespace gc.pocket.site.Controllers
                 {
                     return new();
                 }
-                return JsonConvert.DeserializeObject<RPRProcuctoDto>(json);
+                return JsonConvert.DeserializeObject<ProcuctoGenDto>(json);
             }
             set
             {
@@ -524,7 +524,7 @@ namespace gc.pocket.site.Controllers
             }
         }
 
-        protected List<RPRProcuctoDto> RPRProductoRegs
+        protected List<ProcuctoGenDto> RPRProductoRegs
         {
             get
             {
@@ -533,7 +533,7 @@ namespace gc.pocket.site.Controllers
                 {
                     return new();
                 }
-                return JsonConvert.DeserializeObject<List<RPRProcuctoDto>>(json);
+                return JsonConvert.DeserializeObject<List<ProcuctoGenDto>>(json);
             }
             set
             {

@@ -1,0 +1,40 @@
+﻿@model AutorizacionTIDto
+
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
+    var callback = Url.Action("ctrlti_au", "ctrlti", new { area = "pocketppal", tiId = Model.TipoTI});
+
+}
+<div class="row mt-2">
+    <div class="d-flex justify-content-around">
+        <div class="input-group input-group-sm text-info">
+            <input id="txtTiro" class="form-control" readonly />
+            <input id="txtNNro" class="form-control" readonly />
+            <input id="txtUsro" class="form-control" readonly />
+            <input id="txtFero" class="form-control" readonly />
+        </div>
+    </div>
+</div>
+<div class="row mt-2">
+    <div id="divGrAUTIPend"></div>
+</div>
+
+<div class="row mb-3">
+    <div class="d-flex justify-content-center">
+        <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-2"><i class="bx bx-ms bx-info-circle"></i></a>
+        <button type="button" id="btnContinua01" disabled class="btn btn-success btn-sm m-2"><i class="bx bx-ms bx-right-arrow-alt"></i></button>      
+    </div>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        var getAUPendientesUrl = "@Url.Action("ObtenerAutorizacionesPendientes", "trint", new { area = "pocketppal" })";
+        var validaUsuarioUrl = "@Url.Action("ValidarUsuario", "trint", new { area = "pocketppal" })";
+        var trScr02 = "@Url.Action("CtrlTI_Colector", "ctrlti", new { area = "pocketppal" })";
+    </script>
+    <script src="~/js/app/ti/ti.js"></script>
+    @* <script src="~/js/app/ctrlti/ctrl01.js"></script> *@
+}

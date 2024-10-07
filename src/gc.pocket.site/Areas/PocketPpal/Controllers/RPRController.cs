@@ -40,8 +40,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             }
 
 
-            List<RPRAutorizacionPendienteDto> pendientes;
-            GridCore<RPRAutorizacionPendienteDto> grid;
+            List<AutorizacionPendienteDto> pendientes;
+            GridCore<AutorizacionPendienteDto> grid;
             try
             {
                 //se buscará todas las autorizaciones pendientes
@@ -63,18 +63,18 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
         }
 
-        private GridCore<RPRAutorizacionPendienteDto> ObtenerAutorizacionPendienteGrid(List<RPRAutorizacionPendienteDto> pendientes)
+        private GridCore<AutorizacionPendienteDto> ObtenerAutorizacionPendienteGrid(List<AutorizacionPendienteDto> pendientes)
         {
 
-            var lista = new StaticPagedList<RPRAutorizacionPendienteDto>(pendientes, 1, 999, pendientes.Count);
+            var lista = new StaticPagedList<AutorizacionPendienteDto>(pendientes, 1, 999, pendientes.Count);
 
-            return new GridCore<RPRAutorizacionPendienteDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Cta_denominacion", SortDir = "ASC" };
+            return new GridCore<AutorizacionPendienteDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Cta_denominacion", SortDir = "ASC" };
         }
 
         [HttpGet]
         public IActionResult ResguardarAutorizacionProveedor(string rp)
         {
-            RPRAutorizacionPendienteDto auto = new();
+            AutorizacionPendienteDto auto = new();
             try
             {
                 auto = AutorizacionesPendientes.SingleOrDefault(x => x.Rp.Equals(rp));
@@ -84,11 +84,11 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     return RedirectToAction("Index");
                 }
 
-                if (RPRAutorizacionPendienteSeleccionada == null || !RPRAutorizacionPendienteSeleccionada.Rp.Equals(rp))
+                if (AutorizacionPendienteSeleccionada == null || !AutorizacionPendienteSeleccionada.Rp.Equals(rp))
                 {
                     //en el caso que haga para atras y vuelva a elegir la misma  Autorización Pendiente no se elimina nada. 
                     //si es distinto como en este caso, se inicializan las variables.
-                    RPRAutorizacionPendienteSeleccionada = auto;
+                    AutorizacionPendienteSeleccionada = auto;
                     RPRProductoRegs = [];
                     RPRProductoTemp = new();
                 }
@@ -105,7 +105,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 return RedirectToAction("Index");
             }
 
-            return View("CargarProductos", RPRAutorizacionPendienteSeleccionada);
+            return View("CargarProductos", AutorizacionPendienteSeleccionada);
         }
 
         [HttpPost]
@@ -151,8 +151,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 }
 
                 //armo producto a resguardar
-                var item = new RPRProcuctoDto();
-                item.rp = RPRAutorizacionPendienteSeleccionada.Rp;
+                var item = new ProcuctoGenDto();
+                item.rp = AutorizacionPendienteSeleccionada.Rp;
                 item.item = RPRProductoRegs.Count + 1;
                 item.p_id = ProductoBase.P_id;
                 item.p_desc = ProductoBase.P_desc;
@@ -202,7 +202,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         [HttpPost]
         public ActionResult PresentarProductosSeleccionados()
         {
-            GridCore<RPRProcuctoDto> datosIP;
+            GridCore<ProcuctoGenDto> datosIP;
 
             datosIP = ObtenerRPRProdGrid(RPRProductoRegs);
 
@@ -210,12 +210,12 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         }
 
 
-        private GridCore<RPRProcuctoDto> ObtenerRPRProdGrid(List<RPRProcuctoDto> listaRpr)
+        private GridCore<ProcuctoGenDto> ObtenerRPRProdGrid(List<ProcuctoGenDto> listaRpr)
         {
 
-            var lista = new StaticPagedList<RPRProcuctoDto>(listaRpr, 1, 999, listaRpr.Count);
+            var lista = new StaticPagedList<ProcuctoGenDto>(listaRpr, 1, 999, listaRpr.Count);
 
-            return new GridCore<RPRProcuctoDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
+            return new GridCore<ProcuctoGenDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
         }
 
         [HttpPost]
@@ -224,7 +224,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             //busco el producto.
             try
             {
-                RPRProcuctoDto? item = EliminaProductoBase(p_id);
+                ProcuctoGenDto? item = EliminaProductoBase(p_id);
                 return Json(new { error = false, msg = $"El producto {item.p_desc} fue removido de la lista." });
             }
             catch (NegocioException ex)
@@ -240,7 +240,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
         }
 
-        private RPRProcuctoDto EliminaProductoBase(string p_id)
+        private ProcuctoGenDto EliminaProductoBase(string p_id)
         {
             var item = RPRProductoRegs.SingleOrDefault(p => p.p_id.Equals(p_id));
             if (item == null)
@@ -371,8 +371,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         public IActionResult CargaUL()
         {
             //ComboDepositos();
-            ViewBag.AppItem = new AppItem { Nombre = $"Auto:{RPRAutorizacionPendienteSeleccionada.Rp}-{RPRAutorizacionPendienteSeleccionada.Cta_denominacion}" };
-            return View(RPRAutorizacionPendienteSeleccionada);
+            ViewBag.AppItem = new AppItem { Nombre = $"Auto:{AutorizacionPendienteSeleccionada.Rp}-{AutorizacionPendienteSeleccionada.Cta_denominacion}" };
+            return View(AutorizacionPendienteSeleccionada);
         }
 
         private void ComboDepositos()

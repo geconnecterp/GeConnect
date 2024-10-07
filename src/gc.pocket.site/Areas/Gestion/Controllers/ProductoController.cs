@@ -104,8 +104,8 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
                     }
                     //Validación si pertenece o no al proveedor
 
-                    if (RPRAutorizacionPendienteSeleccionada != null &&
-                        !RPRAutorizacionPendienteSeleccionada.Cta_id.Equals(producto.Cta_id) && validarEstado)
+                    if (AutorizacionPendienteSeleccionada != null &&
+                        !AutorizacionPendienteSeleccionada.Cta_id.Equals(producto.Cta_id) && validarEstado)
                     {
                         warn = true;
                         msg = $"El Producto NO pertenece al actual proveedor. Pertenece al Proveedor {producto.Cta_denominacion}.";

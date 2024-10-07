@@ -1,0 +1,49 @@
+﻿@model AutorizacionTIDto
+
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
+    var callback = Url.Action("ctrlti_colector", "ctrlti", new { area = "pocketppal", tiId = Model.TipoTI });
+    var buscar = new BusquedaProducto();
+}
+
+<partial name="~/areas/gestion/views/producto/_ctrbuscarproducto.cshtml" model="@buscar" />
+<partial name="~/areas/gestion/views/producto/_productoDetalle.cshtml" />
+<div class="row">
+    <div class="col-sm-12">
+        <div id="divCtrlTIGrid"></div>
+    </div>
+</div>
+<div class="row mb-3">
+    <div class="d-flex justify-content-center">
+        <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-2"><i class="bx bx-ms bx-info-circle"></i></a>
+        <button type="button" id="btnContinua02" disabled class="btn btn-success btn-sm m-2"><i class="bx bx-ms bx-right-arrow-alt"></i></button>
+        
+    </div>
+</div>
+
+@section scripts {
+    <script type="text/javascript">
+        //funcionalidad busqueda avanzada
+      
+        var ocultarTrash = false;
+        var productoBase = null; //se hidrata en busquedas.
+        var funcionBusquedaAvanzada = false;
+        var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "gestion" })";
+        var validarEstado = true;
+      
+        var reguardarProductoEnListaUrl = "@Url.Action("ReguardarProductoEnLista", "ctrlti", new { area = "PocketPpal" })";
+        var PresentarProductosSeleccionadosUrl = "@Url.Action("PresentarProductosSeleccionados", "ctrlti", new { area = "PocketPpal" })";
+        var AcumularProductoUrl = "@Url.Action("AcumularProducto", "ctrlti", new { area = "PocketPpal" })";
+        var RemplazarProductoUrl = "@Url.Action("RemplazarProducto", "ctrlti", new { area = "PocketPpal" })";
+        var EliminarProductoUrl = "@Url.Action("EliminarProducto", "ctrlti", new { area = "PocketPpal" })";
+        
+
+        var homeCtrlTIUrl = "@Url.Action("index", "ctrlti", new { area = "pocketppal" })";
+    </script>
+    <script src="~/js/app/busquedas.js" type="text/javascript"></script>
+    <script src="~/js/app/ctrlti/ctrl01.js"></script>
+
+}
