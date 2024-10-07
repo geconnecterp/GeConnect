@@ -872,17 +872,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 			return _productoServicio.BusquedaBaseProductos(buscar, TokenCookie).Result;
 		}
-		private PartialViewResult ObtenerMensajeDeError(string mensaje)
-		{
-			RespuestaGenerica<EntidadBase> response = new()
-			{
-				Ok = false,
-				EsError = true,
-				EsWarn = false,
-				Mensaje = mensaje
-			};
-			return PartialView("_gridMensaje", response);
-		}
 		private string ObtenerStringListDePedidosIncluidos()
 		{
 			var lista = TRAutPedidosIncluidosILista.Select(x => x.pi_compte).Distinct().ToList();

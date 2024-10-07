@@ -105,12 +105,11 @@ function ObtenerListaDepositoSeleccionado() {
 
 function selectTRSucursalesRow(x) {
 	AbrirWaiting();
-	var admId = x.cells[3].innerText.trim()
+	var admId = x.cells[3].innerText.trim();
 	if (admId && admId !== "") {
 		var datos = { admId };
 		PostGenHtml(datos, TRCargarPedidosPorSucursalUrl, function (obj) {
 			$("#divListaPedidosSucursal").html(obj);
-			//SelecccionarPrimerRegistroConteos();
 			AddEventListenerToGrid("tbListaPedidosSucursal");
 			CerrarWaiting();
 			return true
@@ -118,7 +117,6 @@ function selectTRSucursalesRow(x) {
 		PostGenHtml(datos, TRCargarDepositosInclPorSucursalUrl, function (obj) {
 			$("#divDepositosDeEnvio").html(obj);
 			AddEventListenerToGrid("tbListaPedidosIncluidos");
-			//SelecccionarPrimerRegistroConteos();
 			CerrarWaiting();
 			return true
 		});

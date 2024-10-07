@@ -1,4 +1,5 @@
-﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿using gc.api.core.Entidades;
+using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Rpr;
@@ -551,6 +552,17 @@ namespace gc.sitio.Controllers
 		#endregion
 
 		#region Metodos generales
+		public PartialViewResult ObtenerMensajeDeError(string mensaje)
+		{
+			RespuestaGenerica<EntidadBase> response = new()
+			{
+				Ok = false,
+				EsError = true,
+				EsWarn = false,
+				Mensaje = mensaje
+			};
+			return PartialView("_gridMensaje", response);
+		}
 		public static decimal ConvertToDecimal(string value, int precision)
 		{
 			if (value.Contains('.'))

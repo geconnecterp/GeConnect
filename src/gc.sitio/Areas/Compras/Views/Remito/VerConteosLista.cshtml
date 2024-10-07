@@ -1,0 +1,76 @@
+﻿@model RemitoDetalle
+@{
+	Layout = "~/views/shared/_Layout.cshtml";
+}
+
+<div class="card">
+	<row>
+		@Html.Hidden("remCompte", Model.rem_compte)
+		<div style="float:left">
+			<div class="card-header">
+				<h5>Recepción TR</h5>
+			</div>
+		</div>
+	</row>
+	<div class="container">
+		<row>
+			<div class="input-group">
+				<span class="input-group-text">@Model.Remito</span>
+				<span class="input-group-text">             </span>
+				<span class="input-group-text">@Model.QuienEnvia</span>
+				<div style="padding-left:50px;">
+					<a href="#" class="btn btn-primary float-right" id="btnAutorizar" onclick="confirmarRemito();"><span class="tf-icons bx bx-check-circle me-1">Confirmar</span></a>
+					<a href="#" id="btnRegresar" class="btn btn-success float-right" onclick="regresarARemitosTransferidosLista();" style="padding-left:5px;"><span class="tf-icons bx bx-left-arrow-circle me-1">Regresar</span></a>
+				</div>
+			</div>
+		</row>
+	</div>
+	<div class="card-body">
+		<div class="table-responsive text-nowrap table-wrapper">
+			<table class="table table-bordered table-hover" id="tbListaVerConteos">
+				<thead class="table-dark">
+					<tr>
+						<th scope="col" class="table-fontsize" style="width:10%;">Item</th>
+						<th scope="col" class="table-fontsize" style="width:10%;">ID</th>
+						<th scope="col" class="table-fontsize" style="width:40%;">Descripción</th>
+						<th scope="col" class="table-fontsize" style="width:10%;">EAN</th>
+						<th scope="col" class="table-fontsize" style="width:10%;">Enviado</th>
+						<th scope="col" class="table-fontsize" style="width:10%;">Conteos</th>
+						<th scope="col" class="table-fontsize" style="width:10%;">Diferencia</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var item in Model.Productos.ListaDatos)
+					{
+						<tr onclick="selectVerConteosRow(this)">
+							<td class="table-fontsize">@item.item</td>
+							<td class="table-fontsize">@item.p_id</td>
+							<td class="table-fontsize">@item.p_desc</td>
+							<td class="table-fontsize">@item.p_id_barrado</td>
+							<td class="table-fontsize">@item.enviado</td>
+							<td class="table-fontsize">@item.recibido</td>
+							@if (item.diferencia != 0)
+							{
+								<td class="table-fontsize" style="border-right: 5px solid @item.Row_color;">@item.diferencia</td>
+							}
+							else
+							{
+								<td class="table-fontsize">@item.diferencia</td>
+							}
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+@section scripts {
+	<script type="text/javascript">
+		var RVolverARemitosTransferidosListaUrl = "@Url.Action("RemitosTransferidosLista", "remito", new { area = "Compras" })";
+		var RVerDetalleDeConteosDeRemitoUrl = "@Url.Action("VerConteosLista", "remito", new { area = "Compras" })";
+		var RConfirmarRecepcionDeRemitoUrl = "@Url.Action("ConfirmarRecepcion", "remito", new { area = "Compras" })";
+	</script>
+	<script src="~/js/app/areas/remitos/remitosTransferidosLista.js"></script>
+	<script src="~/js/app/areas/remitos/verConteos.js"></script>
+}

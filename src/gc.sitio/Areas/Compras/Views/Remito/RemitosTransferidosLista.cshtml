@@ -12,9 +12,7 @@
 			</div>
 		</div>
 		<div class="demo-inline-spacing" style="float:right;margin-top: 60px;margin-right: 55px;">
-			<a asp-action="RemitosTransferidosLista" asp-controller="Remito" asp-area="Compras" class="btn btn-primary" id="btnAutorizar">
-				<span class="tf-icons bx bxs-edit me-1"></span>Autorizar
-			</a>
+			<a href="#" class="btn btn-primary" id="btnAutorizar" onclick="autorizarRemito();"><span class="tf-icons bx bxs-edit me-1">Autorizar</span></a>
 			<a href="#" id="btnVer" class="btn btn-success"><span class="tf-icons bx bxs-binoculars me-1">Ver</span></a>
 		</div>
 	</row>
@@ -49,7 +47,11 @@
 
 @section scripts {
 	<script type="text/javascript">
-
+		var remSeleccionado = "";
+		var remQuienEnvia = "";
+		var RSetearEstadoDeRemitoUrl = "@Url.Action("SetearEstadoDeRemito", "remito", new { area = "Compras" })";
+		var RActualizarListadoDeRemitoUrl = "@Url.Action("RemitosTransferidosLista", "remito", new { area = "Compras" })";
+		var RVerDetalleDeConteosDeRemitoUrl = "@Url.Action("VerConteosLista", "remito", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/areas/remitos/remitosTransferidosLista.js"></script>
 }

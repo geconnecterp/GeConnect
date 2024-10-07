@@ -70,8 +70,9 @@
 			public const string SP_TI_VALIDA_USUARIO = "SPGECO_USU_OK";
 
             public const string SP_RTR_Pendientes = "SPGECO_RTR_Pendientes";
-        }
-
-        
-    }
+			public const string SP_RTR_Setea_Estado = "SPGECO_RTR_Setea_Estado";
+			public const string SP_RTR_Ver_Conteos = "SPGECO_RTR_Ver_Conteos";
+			public const string SP_RTR_Confirma = "SPGECO_RTR_Confirmar";
+		}
+	}
 }

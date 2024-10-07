@@ -5,6 +5,8 @@ using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Tr.Remito;
+using gc.infraestructura.Dtos.Almacen.Tr.Request;
+using gc.infraestructura.Dtos.Gen;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Reflection;
@@ -41,5 +43,41 @@ namespace gc.api.Controllers.Almacen
             var response = new ApiResponse<List<RemitoTransferidoDto>>(lista);
             return Ok(response);
         }
-    }
+
+		[HttpPost]
+		[Route("[action]")]
+		public IActionResult SetearEstado(RSetearEstadoRequest request)
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			List<RespuestaDto> remitos = _remSv.SeteaEstado(request);
+			var lista = _mapper.Map<List<RespuestaDto>>(remitos);
+
+			var response = new ApiResponse<List<RespuestaDto>>(lista);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult VerConteos(string remCompte)
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			List<RemitoVerConteoDto> remitos = _remSv.VerConteos(remCompte);
+			var lista = _mapper.Map<List<RemitoVerConteoDto>>(remitos);
+
+			var response = new ApiResponse<List<RemitoVerConteoDto>>(lista);
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[Route("[action]")]
+		public IActionResult ConfirmarRecepcion(RConfirmaRecepcionRequest request)
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			List<RespuestaDto> remitos = _remSv.ConfirmaRecepcion(request);
+			var lista = _mapper.Map<List<RespuestaDto>>(remitos);
+
+			var response = new ApiResponse<List<RespuestaDto>>(lista);
+			return Ok(response);
+		}
+	}
 }
