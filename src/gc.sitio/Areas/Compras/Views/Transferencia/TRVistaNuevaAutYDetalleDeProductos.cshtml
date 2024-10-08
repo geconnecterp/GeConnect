@@ -28,10 +28,9 @@
 									@foreach (var item in Model.Sucursales.ListaDatos)
 									{
 										<tr onclick="selectNuevaAutListaSucursalesRow(this)">
-											<td>@item.orden</td>
+											<td style="text-align: right;">@item.aut_a_generar</td>
 											<td>@item.adm_nombre</td>
-											<td>@item.pallet_aprox</td>
-											@* <td><a asp-action="AgregarNotaASucursalNuevaAutTR" asp-controller="Transferencia" asp-area="Compras" class="btn btn-xs btn-outline-success" asp-route-nota="@item.nota"> <i class="bx bx-detail"></i></a></td> *@
+											<td style="text-align: right;">@item.pallet_aprox</td>
 											<td><a class="btn btn-xs btn-outline-success" data-interaction="@item.adm_id" onclick="verNotaEnSucursal(this);"> <i class="bx bx-detail"></i></a></td>
 											<td style="display:none;">@item.adm_id</td>
 										</tr>
@@ -41,9 +40,6 @@
 						</div>
 					</div>
 					<div class="container col-sm" style="padding-top: 15px;">
-						@* <a asp-action="NuevaTR" asp-controller="Transferencia" asp-area="Compras" class="btn btn-primary" id="btnRegresarANuevaAut">
-							<span class="tf-icons bx bx-left-arrow-circle"></span>Regresar
-						</a> *@
 						<a href="#" id="btnRegresarANuevaAut" class="btn btn-primary"><span class="tf-icons bx bx-left-arrow-circle me-1">Regresar</span></a>
 						<a href="#" id="btnConfirmarAuto" class="btn btn-success"><span class="tf-icons bx bx-check-circle me-1">Confirmar Auto.</span></a>
 					</div>
@@ -87,13 +83,18 @@
 											<td>@item.p_desc</td>
 											<td>@item.pi_compte</td> @*TODO: Deberia ir ID Prov, consultar con Carlos*@
 											<td>@item.pi_compte</td>
-											<td>@item.stk</td>
-											<td>@item.stk_adm</td>
-											<td>@item.a_transferir</td>
-											<td>@item.a_transferir</td> @*TODO: Deberia ir Dif, consultar con Carlos*@
+											<td style="text-align: right;">@item.stk</td>
+											<td style="text-align: right;">@item.stk_adm</td>
+											<td style="text-align: right;">@item.a_transferir</td>
+											<td style="text-align: right;">@item.a_transferir</td> @*TODO: Deberia ir Dif, consultar con Carlos*@
 											<td>@item.box_id</td>
-											<td>@item.a_transferir_box</td>
-											<td><a class="btn btn-xs btn-outline-success" data-interaction="@item.p_id" onclick="verNotaEnProducto(this);"> <i class="bx bx-detail"></i></a></td>
+											<td style="text-align: right;">@item.a_transferir_box</td>
+											<td>
+												@if (item.nota != "")
+												{
+													<a class="btn btn-xs btn-outline-success" data-interaction="@item.p_id" onclick="verNotaEnProducto(this);"> <i class="bx bx-detail"></i></a>
+												}
+											</td>
 											@if (item.p_sustituto)
 											{
 												<td style="display:none;"><input type="checkbox" name="p_sustituto" value="@item.p_sustituto" checked disabled="disabled" /></td>
@@ -113,9 +114,9 @@
 					</div>
 					<div class="container col-sm" style="padding-top: 15px;">
 						<a href="#" id="btnAgregar" class="btn btn-success" onclick="abrirlModalAgregaProductoATR();"><span class="tf-icons bx bx-plus-circle me-1">Agregar</span></a>
-						<button id="btnSustituto" class="btn btn-primary" onclick="abrirlModalSustitutoDeProductoATR();"><span class="tf-icons bx bx-exclude me-1">Sustituto</span></button>
-						<a href="#" id="btnEliminar" class="btn btn-danger" onclick="eliminarProductoATR();"><span class="tf-icons bx bx-minus-circle me-1">Eliminar</span></a>
-						<a href="#" id="btnModCantidad" class="btn btn-primary" onclick="abrirlModalModCantDeProductoATR();"><span class="tf-icons bx bx-edit-alt me-1">Mod. Cantidad</span></a>
+						<button id="btnSustituto" class="btn btn-primary" onclick="abrirlModalSustitutoDeProductoATR();" disabled><span class="tf-icons bx bx-exclude me-1">Sustituto</span></button>
+						<button id="btnEliminar" class="btn btn-danger" onclick="eliminarProductoATR();" disabled><span class="tf-icons bx bx-minus-circle me-1">Eliminar</span></button>
+						<button id="btnModCantidad" class="btn btn-primary" onclick="abrirlModalModCantDeProductoATR();" disabled><span class="tf-icons bx bx-edit-alt me-1">Mod. Cantidad</span></button>
 					</div>
 				</fieldset>
 			</div>

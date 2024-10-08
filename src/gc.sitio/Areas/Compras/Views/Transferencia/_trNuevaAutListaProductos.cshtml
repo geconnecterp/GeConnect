@@ -38,7 +38,12 @@
 					<td>@item.a_transferir</td> @*TODO: Deberia ir Dif, consultar con Carlos*@
 					<td>@item.box_id</td>
 					<td>@item.a_transferir_box</td>
-					<td><a class="btn btn-xs btn-outline-success" data-interaction="@item.p_id" onclick="verNotaEnProducto(this);"> <i class="bx bx-detail"></i></a></td>
+					<td>
+						@if (item.nota != "")
+						{
+							<a class="btn btn-xs btn-outline-success" data-interaction="@item.p_id" onclick="verNotaEnProducto(this);"> <i class="bx bx-detail"></i></a>
+						}
+					</td>
 					@if (item.p_sustituto)
 					{
 						<td style="display:none;"><input type="checkbox" name="p_sustituto" value="@item.p_sustituto" checked disabled="disabled" /></td>

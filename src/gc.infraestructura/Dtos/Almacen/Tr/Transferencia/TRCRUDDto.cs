@@ -22,7 +22,7 @@ namespace gc.infraestructura.Dtos.Almacen.Tr.Transferencia
 			ConsiderarStockExistente = true;
 			ModificarYSustituto = false;
 			MaximoPalletXAuto = false;
-			MaximoPalletXAutoValor = 1;
+			MaximoPalletXAutoValor = 10;
 		}
 	}
 }

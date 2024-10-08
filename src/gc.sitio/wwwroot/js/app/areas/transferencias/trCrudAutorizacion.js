@@ -2,6 +2,7 @@
 	$("#btnAnalizar").on("click", AnalizarTR);
 	AddEventListenerToGrid("tbListaSucursales");
 	setMaxValueTotxtMaxPallet();
+	SeleccionarFila(1, "tbListaSucursales");
 });
 
 function setMaxValueTotxtMaxPallet() {
@@ -18,6 +19,14 @@ function isValid(value) {
 	return false;
 }
 
+function changeMaxPalletChk(x) {
+	var value = $("#txtMaxPallet").val();
+	if (x.checked) {
+		if (value < 10)
+			$("#txtMaxPallet").val(10);
+	}
+}
+
 function AnalizarTR() {
 	var depositos = "";
 	if (ExistenDepositosSeleccionados() && ExistenPedidosIncluidos()) {
@@ -25,7 +34,10 @@ function AnalizarTR() {
 		depositos = ObtenerListaDepositoSeleccionado();
 		var stkExistente = $("#chkConsiderarStock")[0].checked;
 		var sustituto = $("#chkModificarYSustituto")[0].checked;
-		var maxPallet = $("#txtMaxPallet").val();
+		var chkMaxPallet = $("#chkMaxPallet")[0].checked;
+		var maxPallet = 99999999;
+		if (chkMaxPallet)
+			maxPallet = $("#txtMaxPallet").val();
 		var datos = { depositos, stkExistente, sustituto, maxPallet };
 		PostGen(datos, TRAnalizarParametrosUrl, function (o) {
 			if (o.error === true) {
@@ -52,6 +64,16 @@ function AnalizarTR() {
 				window.location.href = TRAbrirVistaAutorizacionesUrl;
 			}
 		});
+	}
+}
+
+function SeleccionarFila(fila, tabla) {
+	var grilla = document.getElementById(tabla);
+	if (grilla) {
+		if (grilla.rows[fila]) {
+			grilla.rows[fila].classList.add('selected-row');
+			selectTRSucursalesRow(grilla.rows[1]);
+		}
 	}
 }
 
@@ -114,12 +136,12 @@ function selectTRSucursalesRow(x) {
 			CerrarWaiting();
 			return true
 		});
-		PostGenHtml(datos, TRCargarDepositosInclPorSucursalUrl, function (obj) {
-			$("#divDepositosDeEnvio").html(obj);
-			AddEventListenerToGrid("tbListaPedidosIncluidos");
-			CerrarWaiting();
-			return true
-		});
+		//PostGenHtml(datos, TRCargarDepositosInclPorSucursalUrl, function (obj) {
+		//	$("#divDepositosDeEnvio").html(obj);
+		//	AddEventListenerToGrid("tbListaPedidosIncluidos");
+		//	CerrarWaiting();
+		//	return true
+		//});
 	}
 	else {
 		AbrirMensaje("Atención", "Código de sucursal no válido.", function () {

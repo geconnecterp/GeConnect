@@ -8,5 +8,6 @@ namespace gc.infraestructura.Dtos.Almacen.Tr.Transferencia
 		public string adm_nombre { get; set; } = string.Empty;
 		public int pallet_aprox { get; set; } = 0;
 		public string nota { get; set; } = string.Empty;
+		public int aut_a_generar { get; set; } = 0;
     }
 }

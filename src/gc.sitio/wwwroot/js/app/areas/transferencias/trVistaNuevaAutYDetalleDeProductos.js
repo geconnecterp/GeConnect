@@ -5,6 +5,7 @@
 	$("#btnEditarCantidad").on("click", EditarCantidad);
 	$("#btnRegresarANuevaAut").on("click", RegresarANuevaAut);
 	$("#btnConfirmarAuto").on("click", ConfirmarAuto);
+	SeleccionarFila(1, "tbNuevaAutListaSucursales");
 });
 
 function verificaEstado(e) {
@@ -95,32 +96,44 @@ function ControlarRetorno(value, msg, cant) {
 }
 
 function ConfirmarAuto() {
-	AbrirWaiting();
-	datos = {};
-	PostGen(datos, TRConfirmaAutorizacionesDeTRUrl, function (o) {
-		if (o.error === true) {
-			CerrarWaiting();
-			AbrirMensaje("Atención", o.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
-		} else if (o.warn === true) {
-			CerrarWaiting();
-			AbrirMensaje("Atención", o.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "warn!", null);
-		} else if (o.codigo !== "" && o.msg !== "") {
-			CerrarWaiting();
-			AbrirMensaje("Atención", o.msg, function (e) {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "info!", null);
-		} else {
-			CerrarWaiting();
-			window.location.href = TRAbrirVistaTRAutorizacionesListaUrl;
+	AbrirMensaje("Confirmación", "Se generarán las Autorizaciones para realizar las Transferencias. ¿Está seguro de continuar?", function (e) {
+		$("#msjModal").modal("hide");
+		switch (e) {
+			case "SI": //Confirmar transferencia
+				AbrirWaiting();
+				datos = {};
+				PostGen(datos, TRConfirmaAutorizacionesDeTRUrl, function (o) {
+					if (o.error === true) {
+						CerrarWaiting();
+						AbrirMensaje("Atención", o.msg, function () {
+							$("#msjModal").modal("hide");
+							return true;
+						}, false, ["Aceptar"], "error!", null);
+					} else if (o.warn === true) {
+						CerrarWaiting();
+						AbrirMensaje("Atención", o.msg, function () {
+							$("#msjModal").modal("hide");
+							return true;
+						}, false, ["Aceptar"], "warn!", null);
+					} else if (o.codigo !== "" && o.msg !== "") {
+						CerrarWaiting();
+						AbrirMensaje("Atención", o.msg, function (e) {
+							$("#msjModal").modal("hide");
+							return true;
+						}, false, ["Aceptar"], "info!", null);
+					} else {
+						CerrarWaiting();
+						window.location.href = TRAbrirVistaTRAutorizacionesListaUrl;
+					}
+				});
+				break;
+			case "NO":
+				break;
+			default: //NO
+				break;
 		}
-	});
+		return true;
+	}, true, ["Aceptar", "Cancelar"], "info!", null);
 }
 
 function selectNuevaAutListaSucursalesRow(x) {
@@ -150,6 +163,8 @@ function selectNuevaAutListaProductosRow(x) {
 	prodSeleccionadoNombre = x.cells[1].innerText.trim();
 	sustituto = x.cells[11].children[0].checked;
 	$('#btnSustituto').prop('disabled', !sustituto);
+	$('#btnEliminar').prop('disabled', false);
+	$('#btnModCantidad').prop('disabled', false);
 }
 
 function AddEventListenerToGrid(tabla) {
@@ -339,10 +354,18 @@ function abrirlModalModCantDeProductoATR() {
 function SeleccionarFila(fila, tabla) {
 	var grilla = document.getElementById(tabla);
 	if (grilla) {
-		//e.target.closest('tr').classList.add('selected-row');
-		grilla.rows[1].classList.add('selected-row');
-		idProdDeProdSeleccionado = grilla.rows[1].cells[0].innerText.trim();
-		prodSeleccionadoNombre = grilla.rows[1].cells[1].innerText.trim();
+		if (grilla.rows.length > 1) {
+			grilla.rows[fila].classList.add('selected-row');
+			if (tabla === "tbListaProductosParaAgregar") {
+				idProdDeProdSeleccionado = grilla.rows[fila].cells[0].innerText.trim();
+				prodSeleccionadoNombre = grilla.rows[fila].cells[1].innerText.trim();
+			}
+			if (tabla === "tbNuevaAutListaSucursales") {
+				admSeleccionado = grilla.rows[fila].cells[4].innerText.trim();
+				admSeleccionadoNombre = grilla.rows[fila].cells[1].innerText.trim();
+				filtrarListaDeProductosPorSucursal();
+			}
+		}
 	}
 }
 

@@ -44,7 +44,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 			GridCore<TRPendienteDto> grid;
 			try
 			{
-				// Carga por default al iniciar la pantalla
 				var items = await _productoServicio.TRObtenerPendientes(AdministracionId, "%", "S", TokenCookie);
 				grid = ObtenerGridCore<TRPendienteDto>(items);
 			}
@@ -55,6 +54,25 @@ namespace gc.sitio.Areas.Compras.Controllers
 				grid = new();
 			}
 			return View(grid);
+		}
+
+		public async Task<IActionResult> TRAutorizacionesListaPorSucursal(string titId)
+		{
+			GridCore<TRPendienteDto> grid;
+			try
+			{
+				if (string.IsNullOrEmpty(titId))
+					titId = "S";
+				var items = await _productoServicio.TRObtenerPendientes(AdministracionId, "%", titId, TokenCookie);
+				grid = ObtenerGridCore<TRPendienteDto>(items);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al obtener Autorizaciones de transferencias pendientes.");
+				TempData["error"] = "Hubo algun problema al intentar obtener las Autorizaciones de transferencias pendientes. Si el problema persiste informe al Administrador";
+				grid = new();
+			}
+			return PartialView("_trAutorizacionesLista", grid);
 		}
 
 		public async Task<IActionResult> NuevaTR(string ti)
@@ -83,7 +101,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 					model.ListaPedidosIncluidos = ObtenerGridCore<TRAutPIDto>(TRAutPedidosIncluidosILista);
 				else
 					model.ListaPedidosIncluidos = ObtenerGridCore<TRAutPIDto>([]);
-				model.ListaDepositosDeEnvio = ObtenerGridCore<TRAutDepoDto>([]);
+				var itemsAutDepo = await _productoServicio.TRObtenerAutDepositos(AdministracionId, TokenCookie);
+				model.ListaDepositosDeEnvio = ObtenerGridCore<TRAutDepoDto>(itemsAutDepo);
 			}
 			catch (Exception ex)
 			{
@@ -233,7 +252,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					return Json(new { error = true, warn = false, msg = "Se debe indicar al menos un depósito." });
 				}
-				else if (maxPallet < 1 || maxPallet > 80)
+				else if (maxPallet < 1 || (maxPallet > 80 && maxPallet != 99999999))
 				{
 					return Json(new { error = true, warn = false, msg = $"El valor máximo de pallet x autorización no es válido. Min '1' Max '80'." });
 				}
@@ -269,7 +288,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				var orden = 0;
 				var listaSucursales = from i in TRAutAnaliza
 									  group i by new { i.adm_id, i.adm_nombre } into x
-									  select new TRNuevaAutSucursalDto() { adm_id = x.Key.adm_id, adm_nombre = x.Key.adm_nombre, pallet_aprox = x.Sum(y => y.unidad_palet), orden = orden++ };
+									  select new TRNuevaAutSucursalDto() { adm_id = x.Key.adm_id, adm_nombre = x.Key.adm_nombre, pallet_aprox = x.Sum(y => y.unidad_palet), aut_a_generar = x.Max(y => y.autorizacion), orden = orden++ };
 				TRNuevaAutSucursalLista = listaSucursales.ToList();
 				model.Sucursales = ObtenerGridCore<TRNuevaAutSucursalDto>(listaSucursales.ToList());
 				TRNuevaAutDetallelLista = TRAutAnaliza.Select(x => new TRNuevaAutDetalleDto()

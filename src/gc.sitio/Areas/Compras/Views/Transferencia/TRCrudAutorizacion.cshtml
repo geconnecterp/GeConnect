@@ -189,11 +189,11 @@
 												<div>
 													<div class="row">
 														<div class="form-check col-7" style="padding-left: 6.8%;">
-															<input class="form-check-input" type="checkbox" id="chkMaxPallet" @((Model.MaximoPalletXAuto == false ? "" : "checked")) asp-for="@Model.MaximoPalletXAuto">
+															<input class="form-check-input" onchange="changeMaxPalletChk(this);" type="checkbox" id="chkMaxPallet" @((Model.MaximoPalletXAuto == false ? "" : "checked")) asp-for="@Model.MaximoPalletXAuto">
 															<label class="form-check-label" for="chkMaxPallet"> Máximo Pallet x Autorización de TR</label>
 														</div>
 														<div class="col-5">
-															<input type="number" id="txtMaxPallet" class="form-control" min="1" max="80" style="width: 45%;" value="@Model.MaximoPalletXAutoValor">
+															<input type="number" id="txtMaxPallet" class="form-control" min="10" max="80" style="width: 45%;" value="@Model.MaximoPalletXAutoValor">
 														</div>
 													</div>
 												</div>
