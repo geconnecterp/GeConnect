@@ -136,12 +136,6 @@ function selectTRSucursalesRow(x) {
 			CerrarWaiting();
 			return true
 		});
-		//PostGenHtml(datos, TRCargarDepositosInclPorSucursalUrl, function (obj) {
-		//	$("#divDepositosDeEnvio").html(obj);
-		//	AddEventListenerToGrid("tbListaPedidosIncluidos");
-		//	CerrarWaiting();
-		//	return true
-		//});
 	}
 	else {
 		AbrirMensaje("Atención", "Código de sucursal no válido.", function () {
@@ -174,7 +168,6 @@ function agregarAPedidosIncl(x) {
 		var datos = { picompte };
 		PostGenHtml(datos, TRAgregarAPedidosIncluidosParaAutUrl, function (obj) {
 			$("#divListaPedidosIncluidos").html(obj);
-			//SelecccionarPrimerRegistroConteos();
 			AddEventListenerToGrid("tbListaPedidosIncluidos");
 			ActualizarInfoSucursales();
 			CerrarWaiting();
@@ -207,7 +200,6 @@ function quitarDePedidosIncl(x) {
 		var datos = { picompte };
 		PostGenHtml(datos, TRQuitarDePedidosIncluidosParaAutUrl, function (obj) {
 			$("#divListaPedidosIncluidos").html(obj);
-			//SelecccionarPrimerRegistroConteos();
 			AddEventListenerToGrid("tbListaPedidosIncluidos");
 			ActualizarInfoSucursales();
 			CerrarWaiting();
@@ -222,7 +214,6 @@ function ActualizarInfoSucursales() {
 	var datos = {};
 	PostGenHtml(datos, TRActualizarInfoEnListaDeSucursalesUrl, function (obj) {
 		$("#divListaSucursales").html(obj);
-		//SelecccionarPrimerRegistroConteos();
 		AddEventListenerToGrid("tbListaSucursales");
 		CerrarWaiting();
 		return true

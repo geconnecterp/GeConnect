@@ -1,3 +1,4 @@
 ﻿$(function () {
 	AddEventListenerToGrid("tbListaVerConteos");
+	CerrarWaiting();
 });

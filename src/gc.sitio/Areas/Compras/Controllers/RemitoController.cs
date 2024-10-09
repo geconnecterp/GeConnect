@@ -1,10 +1,8 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen.Tr.Remito;
-using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.Gen;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
-using gc.sitio.core.Servicios.Implementacion;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -133,7 +131,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			if (diferencia == 0)
 				return "#ffffff";
-			//return "#ffffff";
 			else
 				return "#ff4500";
 		}

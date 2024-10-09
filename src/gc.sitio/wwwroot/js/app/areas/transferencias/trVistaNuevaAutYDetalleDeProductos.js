@@ -1,5 +1,4 @@
 ﻿$(function () {
-	console.log("trVistaNuevaAutYDetalleDeProductos");
 	AddEventListenerToGrid("tbNuevaAutListaSucursales");
 	AddEventListenerToGrid("tbNuevaAutListaProductos");
 	$("#btnEditarCantidad").on("click", EditarCantidad);
@@ -369,7 +368,6 @@ function SeleccionarFila(fila, tabla) {
 	}
 }
 
-//Llamar al SP SPGECO_TR_sustituto (el cual no existe, voy a probar con el SP SPGECO_TR_Aut_Sustituto)
 function BuscarSustituto(p_id) {
 	AbrirWaiting();
 	var pId = p_id;
@@ -419,14 +417,12 @@ function ExisteProductoEnTR(p_id) {
 
 
 function analizaEnterInput(e) {
-	console.log("analizaEnterInput" + e);
 }
 
 function cargarProductos() {
 }
 
 function EliminarProducto(id) {
-	console.log(id);
 }
 
 function InicializaPantalla() {

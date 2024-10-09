@@ -7,13 +7,24 @@ function selectRemitoRow(x) {
 	if (x) {
 		remSeleccionado = x.cells[0].innerText.trim();
 		remQuienEnvia = x.cells[2].innerText.trim();
-		link = RVerDetalleDeConteosDeRemitoUrl + "?remCompte=" + remSeleccionado + "&quienEnvia=" + remQuienEnvia;
-		$("#btnVer").prop("href", link);
 	}
 	else {
 		remQuienEnvia = "";
 		remSeleccionado = "";
-		$("#btnVer").prop("href", link);
+	}
+}
+
+function verRemito() {
+	if (remSeleccionado === "") {
+		AbrirMensaje("Atención", "Debe seleccionar un remito.", function () {
+			$("#msjModal").modal("hide");
+			return false;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting();
+		link = RVerDetalleDeConteosDeRemitoUrl + "?remCompte=" + remSeleccionado + "&quienEnvia=" + remQuienEnvia;
+		window.location.href = link;
 	}
 }
 
