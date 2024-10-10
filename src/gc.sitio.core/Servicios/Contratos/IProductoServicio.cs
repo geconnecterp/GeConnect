@@ -62,6 +62,7 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RespuestaGenerica<ProductoDepositoDto>> BuscarFechaVto(string pId, string bId, string tokenCookie);
         Task<List<TRProductoParaAgregar>> TRObtenerSustituto(string pId, string listaDepo, string admIdDes, string tipo, string token);
         Task<List<RespuestaDto>> TRConfirmaAutorizaciones(string json, string admId, string usuId, string token);
+        Task<List<TRVerConteosDto>> TRVerConteos(string ti, string token);
+        Task<List<RespuestaDto>> TRValidarTransferencia(string ti, string admId, string usuId, string token);
 	}
-
 }

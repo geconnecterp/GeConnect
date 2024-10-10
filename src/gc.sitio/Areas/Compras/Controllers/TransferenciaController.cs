@@ -1,6 +1,7 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
@@ -722,43 +723,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		private string GenerarJsonDesdeListaDeProductosAutDetallelLista()
-		{
-			var listaJsonDeTR = new List<JsonDeTRDetalleDto>();
-			var listaPI = from i in TRNuevaAutDetallelLista
-						  group i by new { i.pi_compte } into x
-						  select new Auxiliar() { pi_compte = x.Key.pi_compte.Split('-')[1] };
-			foreach (var item in TRNuevaAutDetallelLista)
-			{
-				listaJsonDeTR.Add(new JsonDeTRDetalleDto()
-				{
-					#region Campos
-					adm_id = item.adm_id,
-					adm_nombre = item.adm_nombre,
-					autorizacion = item.autorizacion,
-					a_transferir = item.a_transferir,
-					a_transferir_box = item.a_transferir_box,
-					box_id = item.box_id,
-					depo_id = item.depo_id,
-					depo_nombre = item.depo_nombre,
-					fv = item.fv,
-					nota = item.nota,
-					palet = item.palet,
-					pedido = item.pedido,
-					pi_compte = item.pi_compte,
-					p_desc = item.p_desc,
-					p_id = item.p_id,
-					p_id_sustituto = item.p_id_sustituto,
-					p_sustituto = item.p_sustituto,
-					stk = item.stk,
-					stk_adm = item.stk_adm,
-					unidad_palet = item.unidad_palet,
-					#endregion
-				});
-			}
-			var jsonstring = JsonConvert.SerializeObject(listaJsonDeTR, new JsonSerializerSettings());
-			return jsonstring;
-		}
+
 
 		public async Task<IActionResult> EditarNotaEnSucursal(string admId)
 		{
@@ -868,9 +833,113 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
+		public async Task<IActionResult> TRVerTransferencia(string ti, string tipo, string destino)
+		{
+			var model = new TRVerTransferenciaDto();
+			try
+			{
+				var tipoLoc = tipo == "S" ? "Sucursal" : "Deposito";
+				model.Autorizacion = $"Autorización TR {ti}";
+				model.TipoTR = $"Tipo: {tipoLoc}";
+				model.Tipo = tipo;
+				model.Destino = $"Destino: {destino}";
+				model.ti = ti;
+				var lista = await _productoServicio.TRVerConteos(ti, TokenCookie);
+				model.ListaTransferencias = ObtenerGridCore<TRVerConteosDto>(lista);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al obtener el detalle de la transferencia.");
+				TempData["error"] = "Hubo algun problema al intentar obtener el detalle de la transferencia. Si el problema persiste informe al Administrador";
+				return ObtenerMensajeDeError("Hubo algun problema al intentar obtener el detalle de la transferencia. Si el problema persiste informe al Administrador.");
+			}
+			return PartialView("TRVerTransferencia", model);
+		}
 
+		public async Task<JsonResult> ValidarTransferencia(string ti)
+		{
+			try
+			{
+				if (string.IsNullOrWhiteSpace(ti))
+					return Json(new { error = false, warn = true, msg = "Faltan datos, intente nuevamente mas tarde." });
+				var respuesta = await _productoServicio.TRValidarTransferencia(ti, AdministracionId, UserName, TokenCookie);
+				if (respuesta == null)
+					return Json(new { error = false, warn = true, msg = "Algo no fue bien al intentar validar la transferencia, intente nuevamente mas tarde." });
+				if (respuesta != null && respuesta.Count > 1)
+					return Json(new { error = false, warn = true, msg = "Algo no fue bien al intentar validar la transferencia, intente nuevamente mas tarde." });
+				if (respuesta?.First().resultado != "0")
+					return Json(new { error = false, warn = true, msg = respuesta?.First().resultado_msj });
+				return Json(new { error = false, warn = false, msg = string.Empty });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar validar la transferencia.");
+				TempData["error"] = "Hubo algun problema al intentar validar la transferencia. Si el problema persiste informe al Administrador";
+				return Json(new { error = true, msg = "Algo no fue bien al intentar validar la transferencia, intente nuevamente mas tarde." });
+			}
+		}
 
+		public async Task<JsonResult> ConfirmarAutorizacion(string ti)
+		{
+			try
+			{
+				if (string.IsNullOrWhiteSpace(ti))
+					return Json(new { error = false, warn = true, msg = "Faltan datos, intente nuevamente mas tarde." });
+				var request = new TIRequestConfirmaDto() { AdmId = AdministracionId, BoxDest = null, Ti = ti, Usu = UserName };
+				var respuesta = await _productoServicio.TIConfirma(request, TokenCookie);
+				if (respuesta == null)
+					return Json(new { error = false, warn = true, msg = "Algo no fue bien al intentar confirmar la transferencia, intente nuevamente mas tarde." });
+				if (respuesta != null && respuesta.Mensaje != "" && !respuesta.Ok)
+					return Json(new { error = false, warn = true, msg = respuesta.Mensaje });
+				if (respuesta != null && respuesta.Mensaje == "" && !respuesta.Ok)
+					return Json(new { error = false, warn = true, msg = "Algo no fue bien al intentar confirmar la transferencia, intente nuevamente mas tarde." });
+				return Json(new { error = false, warn = false, msg = string.Empty });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar confirmar la transferencia.");
+				TempData["error"] = "Hubo algun problema al intentar confirmar la transferencia. Si el problema persiste informe al Administrador";
+				return Json(new { error = true, msg = "Algo no fue bien al intentar confirmar la transferencia, intente nuevamente mas tarde." });
+			}
+		}
 		#region métodos privados
+		private string GenerarJsonDesdeListaDeProductosAutDetallelLista()
+		{
+			var listaJsonDeTR = new List<JsonDeTRDetalleDto>();
+			var listaPI = from i in TRNuevaAutDetallelLista
+						  group i by new { i.pi_compte } into x
+						  select new Auxiliar() { pi_compte = x.Key.pi_compte.Split('-')[1] };
+			foreach (var item in TRNuevaAutDetallelLista)
+			{
+				listaJsonDeTR.Add(new JsonDeTRDetalleDto()
+				{
+					#region Campos
+					adm_id = item.adm_id,
+					adm_nombre = item.adm_nombre,
+					autorizacion = item.autorizacion,
+					a_transferir = item.a_transferir,
+					a_transferir_box = item.a_transferir_box,
+					box_id = item.box_id,
+					depo_id = item.depo_id,
+					depo_nombre = item.depo_nombre,
+					fv = item.fv,
+					nota = item.nota,
+					palet = item.palet,
+					pedido = item.pedido,
+					pi_compte = item.pi_compte,
+					p_desc = item.p_desc,
+					p_id = item.p_id,
+					p_id_sustituto = item.p_id_sustituto,
+					p_sustituto = item.p_sustituto,
+					stk = item.stk,
+					stk_adm = item.stk_adm,
+					unidad_palet = item.unidad_palet,
+					#endregion
+				});
+			}
+			var jsonstring = JsonConvert.SerializeObject(listaJsonDeTR, new JsonSerializerSettings());
+			return jsonstring;
+		}
 		private class Auxiliar()
 		{
 			public string pi_compte { get; set; } = string.Empty;

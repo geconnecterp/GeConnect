@@ -1,19 +1,42 @@
 ﻿$(function () {
+	titId = "S";
+	AddEventListenerToGrid("tbListaAutorizaciones");
 	$("#btnradioSucursales").on("click", buscarPorSucursal);
 	$("#btnradioDepositos").on("click", buscarPorDeposito);
 });
 
 function selectTRRow(x) {
+	if (x) {
+		trSeleccionada = x.cells[0].innerText.trim();
+		sucSeleccionada = x.cells[1].innerText.trim();
+	}
+	else {
+		trSeleccionada = "";
+		sucSeleccionada = "";
+	}
+}
 
+function verTransferencia() {
+	if (trSeleccionada === "") {
+		AbrirMensaje("Atención", "Debe seleccionar una transferencia.", function () {
+			$("#msjModal").modal("hide");
+			return false;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting();
+		link = TRVerTransferenciaUrl + "?ti=" + trSeleccionada + "&tipo=" + titId + "&destino=" + sucSeleccionada;
+		window.location.href = link;
+	}
 }
 
 function buscarPorSucursal() {
-	var titId = "S";
+	titId = "S";
 	buscarAuto(titId);
 }
 
 function buscarPorDeposito() {
-	var titId = "D";
+	titId = "D";
 	buscarAuto(titId);
 }
 

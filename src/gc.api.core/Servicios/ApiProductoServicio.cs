@@ -513,6 +513,29 @@ namespace gc.api.core.Servicios
 			List<RespuestaDto> respuesta = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 			return respuesta;
 		}
+
+		public List<TRVerConteosDto> TRVerConteos(string ti)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Ver_Conteos;
+			var ps = new List<SqlParameter>()
+			{
+				new("@ti",ti),
+			};
+			List<TRVerConteosDto> respuesta = _repository.EjecutarLstSpExt<TRVerConteosDto>(sp, ps, true);
+			return respuesta;
+		}
+		public List<RespuestaDto> TRValidarTransferencia(TRValidarTransferenciaRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Ctl_Salida;
+			var ps = new List<SqlParameter>()
+			{
+				new("@ti",request.ti),
+				new("@adm_id",request.admId),
+				new("@usu_id",request.usuId),
+			};
+			List<RespuestaDto> respuesta = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return respuesta;
+		}
 		//}
 
 		/// <summary>

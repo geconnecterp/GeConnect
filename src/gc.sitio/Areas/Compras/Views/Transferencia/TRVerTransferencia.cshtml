@@ -1,0 +1,81 @@
+﻿@model TRVerTransferenciaDto
+@{
+	Layout = "~/views/shared/_Layout.cshtml";
+}
+<div class="card">
+	<row>
+		@Html.Hidden("ti", Model.ti)
+		@Html.Hidden("tipo", Model.Tipo)
+		<div style="float:left">
+			<div class="card-header">
+				<h5>Autorizaciones TR</h5>
+				<div class="input-group">
+					<span class="input-group-text">@Model.Autorizacion</span>
+					<span class="input-group-text">             </span>
+					<span class="input-group-text">@Model.TipoTR</span>
+					<span class="input-group-text">             </span>
+					<span class="input-group-text">@Model.Destino</span>
+					<div style="padding-left:50px;">
+						<a href="#" class="btn btn-primary float-right" id="btnConfirmar" onclick="validarAutorizacion();"><span class="tf-icons bx bx-check-circle me-1">Confirmar</span></a>
+						<a href="#" id="btnRegresar" class="btn btn-success float-right" onclick="regresarATRLista();" style="padding-left:5px;"><span class="tf-icons bx bx-left-arrow-circle me-1">Regresar</span></a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</row>
+	<fieldset>
+		<legend>
+			<h5>Conteos</h5>
+		</legend>
+		<div id="divListaConteos">
+			<div class="table-responsive text-nowrap table-wrapper">
+				<table class="table table-bordered table-hover" id="tbListaConteos">
+					<thead class="table-dark">
+						<tr>
+							<th style="width:8%;">ID</th>
+							<th style="width:40%;text-align: center;">Descripcion</th>
+							<th style="width:10%;">ID Prov</th>
+							<th style="width:10%;">UxB</th>
+							<th style="width:8%;">Pedido</th>
+							<th style="width:8%;">CONTEOS</th>
+							<th style="width:8%;">CTL Salida</th>
+							<th style="width:8%;">Diferencia</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var item in Model.ListaTransferencias.ListaDatos)
+						{
+							<tr onclick="selectTRRow(this)">
+								<td>@item.p_id</td>
+								<td>@item.p_desc</td>
+								<td>@item.p_id_prov</td>
+								<td style="text-align: right;">@item.unidad_pres</td>
+								<td style="text-align: right;">@item.cantidad_pi</td>
+								<td style="text-align: right;">@item.cantidad</td>
+								<td style="text-align: right;">@item.cantidad_c</td>
+								@if (item.Row_color != "")
+								{
+									<td class="table-fontsize" style="border-right: 5px solid @item.Row_color;text-align: right;">@item.Diferencia</td>
+								}
+								else
+								{
+									<td style="text-align: right;" class="table-fontsize">@item.Diferencia</td>
+								}
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</fieldset>
+</div>
+
+@section scripts {
+	<script type="text/javascript">
+		var TRRegresarAAutorizacionesListaUrl = "@Url.Action("TRAutorizacionesLista", "transferencia", new { area = "Compras" })";
+		var TRValidarTransferenciaUrl = "@Url.Action("ValidarTransferencia", "transferencia", new { area = "Compras" })";
+		var TRConfirmarAutorizacionUrl = "@Url.Action("ConfirmarAutorizacion", "transferencia", new { area = "Compras" })";
+	</script>
+	<script src="~/js/app/areas/transferencias/trAutorizacionesLista.js"></script>
+	<script src="~/js/app/areas/transferencias/trVerTransferencia.js"></script>
+}

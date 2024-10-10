@@ -48,5 +48,7 @@ namespace gc.api.core.Contratos.Servicios
         List<TRAutAnalizaDto> TRAutAnaliza(string listaPi, string listaDepo, bool stkExistente, bool sustituto, int palletNro);
         List<TRProductoParaAgregar> TRObtenerSustituto(string pId, string listaDepo, string admIdDes, string tipo);
 		List<RespuestaDto> TRConfirmaAutorizaciones(TRConfirmaRequest request);
+        List<TRVerConteosDto> TRVerConteos(string ti);
+        List<RespuestaDto> TRValidarTransferencia(TRValidarTransferenciaRequest request);
 	}
 }
