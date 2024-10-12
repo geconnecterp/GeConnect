@@ -23,7 +23,7 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<List<InfoProdMovStk>> InfoProductoMovStk(string id, string adm, string depo, string tmov, DateTime desde, DateTime hasta, string token);
         Task<List<InfoProdLP>> InfoProductoLP(string id, string token);
         Task<List<AutorizacionPendienteDto>> RPRObtenerAutorizacionPendiente(string adm, string token);
-        Task<RegistroResponseDto> RPRRegistrarProductos(List<ProcuctoGenDto> json,string admId, string ul, string token);
+        Task<RegistroResponseDto> RPRRegistrarProductos(List<ProductoGenDto> json,string admId, string ul, string token);
         Task<List<AutoComptesPendientesDto>> RPRObtenerComptesPendiente(string adm_id, string token);
 
         Task<RprResponseDto> ValidarUL(string ul,string adm,string token);
@@ -48,6 +48,7 @@ namespace gc.sitio.core.Servicios.Contratos
 
         Task<List<TipoMotivoDto>> ObtenerTiposMotivo(string token);
         Task<RespuestaGenerica<RespuestaDto>> ResguardarProductoCarrito(TiProductoCarritoDto request,string token);
+        Task<RespuestaGenerica<RespuestaDto>> VaidaProductoCarrito(TiProductoCarritoDto request, string tokenCookie);
         Task<List<TRAutSucursalesDto>> TRObtenerAutSucursales(string admId, string token);
         Task<List<TRAutPIDto>> TRObtenerAutPI(string admId, string admIdLista, string token);
         Task<List<TRAutPIDetalleDto>> TRObtenerAutPIDetalle(string piCompte, string token);
@@ -62,6 +63,8 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RespuestaGenerica<ProductoDepositoDto>> BuscarFechaVto(string pId, string bId, string tokenCookie);
         Task<List<TRProductoParaAgregar>> TRObtenerSustituto(string pId, string listaDepo, string admIdDes, string tipo, string token);
         Task<List<RespuestaDto>> TRConfirmaAutorizaciones(string json, string admId, string usuId, string token);
-	}
+        Task<RespuestaGenerica<ProductoGenDto>> ObtenerProductosCargadosCtrlSalida(string tr, string user, string token);
+        Task<RespuestaGenerica<RespuestaDto>> EnviarProductosCtrl(List<ProductoGenDto> lista, string Token);
+    }
 
 }

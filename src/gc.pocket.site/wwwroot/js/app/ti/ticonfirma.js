@@ -48,8 +48,7 @@ function ConfirmaFinalizacionTI() {
                 $("#msjModal").modal("hide");
                 return true;
             }, false, ["Aceptar"], "error!", null);
-        }
-        if (obj.warn === true) {
+        }else if (obj.warn === true) {
             CerrarWaiting();
             AbrirMensaje("Importante", obj.msg, function () {
                 $("#msjModal").modal("hide");

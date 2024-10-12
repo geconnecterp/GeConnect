@@ -89,7 +89,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     //en el caso que haga para atras y vuelva a elegir la misma  Autorización Pendiente no se elimina nada. 
                     //si es distinto como en este caso, se inicializan las variables.
                     AutorizacionPendienteSeleccionada = auto;
-                    RPRProductoRegs = [];
+                    ProductoGenRegs = [];
                     RPRProductoTemp = new();
                 }
                 //este viewbag es para que aparezca en la segunda fila del encabezado la leyenda que se quiera.
@@ -151,11 +151,11 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 }
 
                 //armo producto a resguardar
-                var item = new ProcuctoGenDto();
+                var item = new ProductoGenDto();
                 item.rp = AutorizacionPendienteSeleccionada.Rp;
-                item.item = RPRProductoRegs.Count + 1;
+                item.item = ProductoGenRegs.Count + 1;
                 item.p_id = ProductoBase.P_id;
-                item.p_desc = ProductoBase.P_desc;
+                item.p_id_desc = ProductoBase.P_desc;
                 item.up_id = ProductoBase.Up_id;
                 //item.Cta_id = ProductoBase.Cta_id;
                 item.p_id_prov = ProductoBase.P_id_prov;
@@ -175,21 +175,21 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 }
                 item.cantidad = cantidad;
 
-                var res = RPRProductoRegs.Any(x => x.p_id.Equals(item.p_id));
+                var res = ProductoGenRegs.Any(x => x.p_id.Equals(item.p_id));
 
                 if (res)
                 {
                     //ya se encuentra cargado el producto, se debe avisar.
                     RPRProductoTemp = item;
-                    msg = $"El Producto {item.p_desc} ya se encuentra cargado. ¿Desea CANCELAR la operación, REMPLAZAR las cantidades existentes o ACUMULAR las cantidades?";
+                    msg = $"El Producto {item.p_id_desc} ya se encuentra cargado. ¿Desea CANCELAR la operación, REMPLAZAR las cantidades existentes o ACUMULAR las cantidades?";
                     return Json(new { error = false, warn = true, msg, p_id = item.p_id });
                 }
                 else
                 {
                     //no esta se carga directamente
-                    var lista = RPRProductoRegs;
+                    var lista = ProductoGenRegs;
                     lista.Add(item);
-                    RPRProductoRegs = lista;
+                    ProductoGenRegs = lista;
                     return Json(new { error = false, warn = false });
                 }
             }
@@ -202,20 +202,20 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         [HttpPost]
         public ActionResult PresentarProductosSeleccionados()
         {
-            GridCore<ProcuctoGenDto> datosIP;
+            GridCore<ProductoGenDto> datosIP;
 
-            datosIP = ObtenerRPRProdGrid(RPRProductoRegs);
+            datosIP = ObtenerRPRProdGrid(ProductoGenRegs);
 
             return PartialView("_rprProductosCargardos", datosIP);
         }
 
 
-        private GridCore<ProcuctoGenDto> ObtenerRPRProdGrid(List<ProcuctoGenDto> listaRpr)
+        private GridCore<ProductoGenDto> ObtenerRPRProdGrid(List<ProductoGenDto> listaRpr)
         {
 
-            var lista = new StaticPagedList<ProcuctoGenDto>(listaRpr, 1, 999, listaRpr.Count);
+            var lista = new StaticPagedList<ProductoGenDto>(listaRpr, 1, 999, listaRpr.Count);
 
-            return new GridCore<ProcuctoGenDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
+            return new GridCore<ProductoGenDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
         }
 
         [HttpPost]
@@ -224,8 +224,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             //busco el producto.
             try
             {
-                ProcuctoGenDto? item = EliminaProductoBase(p_id);
-                return Json(new { error = false, msg = $"El producto {item.p_desc} fue removido de la lista." });
+                ProductoGenDto? item = EliminaProductoBase(p_id);
+                return Json(new { error = false, msg = $"El producto {item.p_id_desc} fue removido de la lista." });
             }
             catch (NegocioException ex)
             {
@@ -240,15 +240,15 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
         }
 
-        private ProcuctoGenDto EliminaProductoBase(string p_id)
+        private ProductoGenDto EliminaProductoBase(string p_id)
         {
-            var item = RPRProductoRegs.SingleOrDefault(p => p.p_id.Equals(p_id));
+            var item = ProductoGenRegs.SingleOrDefault(p => p.p_id.Equals(p_id));
             if (item == null)
             {
                 throw new NegocioException("No se encontró el producto que intenta eliminar de la lista");
             }
-            var lista = RPRProductoRegs.Where(p => !p.p_id.Equals(p_id)).ToList();
-            RPRProductoRegs = lista;
+            var lista = ProductoGenRegs.Where(p => !p.p_id.Equals(p_id)).ToList();
+            ProductoGenRegs = lista;
             return item;
         }
 
@@ -258,7 +258,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             try
             {
                 //Hubo problemas al intentar acumular el producto con la ya cargada en la lista de Productos seleccionados para el RPR."
-                var item = RPRProductoRegs.SingleOrDefault(p => p.p_id.Equals(RPRProductoTemp.p_id));
+                var item = ProductoGenRegs.SingleOrDefault(p => p.p_id.Equals(RPRProductoTemp.p_id));
                 if (item == null)
                 {
                     throw new Exception(infraestructura.Constantes.Constantes.MensajeError.RPR_PRODUCTO_NO_ENCONTRADO_ACUMULACION);
@@ -285,9 +285,9 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 //Para agregar el acumulado primero debo sacar el producto de la lista
                 _ = EliminaProductoBase(RPRProductoTemp.p_id);
                 //traigo la lista, lo agrego y lo vuelvo a resguardar
-                var lista = RPRProductoRegs;
+                var lista = ProductoGenRegs;
                 lista.Add(item);
-                RPRProductoRegs = lista;
+                ProductoGenRegs = lista;
 
                 return Json(new { error = false, msg = infraestructura.Constantes.Constantes.MensajesOK.RPR_PRODUCTO_ACUMULADO });
             }
@@ -304,11 +304,11 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             try
             {
                 //se toma la lista y se extrae el producto a ser reemplazado.
-                var lista = RPRProductoRegs.Where(p => !p.p_id.Equals(RPRProductoTemp.p_id)).ToList();
+                var lista = ProductoGenRegs.Where(p => !p.p_id.Equals(RPRProductoTemp.p_id)).ToList();
                 //Se agrega a lista el producto que esta en temp
                 lista.Add(RPRProductoTemp);
                 //resguardamos la lista
-                RPRProductoRegs = lista;
+                ProductoGenRegs = lista;
 
                 return Json(new { error = false, msg = infraestructura.Constantes.Constantes.MensajesOK.RPR_PRODUCTO_REMPLAZADO });
             }
@@ -343,7 +343,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     throw new NegocioException("Verifique la Unidad de Lectura. Algo no esta bien.");
                 }
 
-                var res = await _productoServicio.RPRRegistrarProductos(RPRProductoRegs, AdministracionId, ul, TokenCookie);
+                var res = await _productoServicio.RPRRegistrarProductos(ProductoGenRegs, AdministracionId, ul, TokenCookie);
 
                 if (res.Resultado==0)
                 {

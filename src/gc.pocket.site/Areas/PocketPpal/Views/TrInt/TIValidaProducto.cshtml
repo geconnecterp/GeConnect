@@ -6,8 +6,10 @@
     Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
 
     var buscar = new BusquedaProducto();
-    var rutaActual = Url.Action("TIValidaProducto", "trint", new { area = "pocketppal" });
-    // var cota = (int)ViewBag.FechaCotaJS;
+    bool activarCheckDesarma = Model.TipoTI.Equals("E") || Model.TipoTI.Equals("O") || (Model.TipoTI.Equals("D") && Model.SinAU) || (Model.TipoTI.Equals("B") && Model.SinAU);
+    // var rutaActual = Url.Action("TIValidaProducto", "trint", new { area = "pocketppal" });
+    var callback = Url.Action("TIValidaProducto", "trint", new { area = "pocketppal" });
+    
 }
 <partial name="_tiNroAutorizacion" model="@Model.Ti" />
 <div class="row">
@@ -17,24 +19,29 @@
             <input type="text" class="form-control inputEditable" id="txtBox" />
             <button type="button" class="btn btn-success btn-sm" id="btnValBox"><i class="bx bx-check-circle bx-sm"></i></button>
             <div class="form-check form-check-inline form-switch m-2 ">
-                <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkDesarma" checked disabled />
+                <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkDesarma" checked />
                 <label class="form-check-label" for="chkDesarma">Desarma</label>
-            </div>            
+            </div>
         </div>
     </div>
 </div>
 <partial name="~/areas/gestion/views/producto/_ctrBuscarProducto.cshtml" model="@buscar" />
 <partial name="~/areas/gestion/views/producto/_productoDetalle.cshtml" />
-
+<div class="row mb-3">
+    <div class="d-flex justify-content-around">
+        <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-3"><i class="bx bx-ms bx-info-circle"></i></a>
+    </div>
+</div>
 @section scripts {
     <script type="text/javascript">
         //funcionalidad busqueda avanzada
         var productoBase = null; //se hidrata en busquedas.
         var autorizacionActual = null;
-       
+        var activarCheckDesarma = "@activarCheckDesarma" === "True";
+        // if ("@activarCheckDesarma"==="True") { activarCheckDesarma = false; } else { activarCheckDesarma = true; }
         var funcionBusquedaAvanzada = false;
         var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "gestion" })";
-        var validarBoxIngresadoUrl = "@Url.Action("ValidarBoxIngresado","trint",new{area="pocketppal"})";
+        var validarBoxIngresadoUrl = "@Url.Action("ValidarBoxIngresado", "trint", new { area = "pocketppal" })";
         var validarProductoIngresadoUrl = "@Url.Action("ValidarProductoIngresado", "trint", new { area = "pocketppal" })";
         var ObtenerAutorizacionActualUrl = "@Url.Action("ObtenerAutorizacionActual", "trint", new { area = "pocketppal" })";
         var ResguardarProductoCarritoUrl = "@Url.Action("ResguardarProductoCarrito", "trint", new { area = "pocketppal" })";

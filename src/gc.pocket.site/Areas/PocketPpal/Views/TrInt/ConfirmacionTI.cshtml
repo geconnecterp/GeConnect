@@ -6,15 +6,18 @@
 }
 <partial name="_tiNroAutorizacion" model="@Model.Ti" />
 
-<div class="row" id="divBoxDestino">
-    <div class="d-flex justify-content-center">
-        <div class="input-group input-group-sm">
-            <span class="input-group-text">Box Destino</span>
-            <input type="text" class="form-control inputEditable" id="txtBoxDestino" />
-            <button type="button" id="btnVerifBoxDestino" class="btn btn-success btn-sm"><i class="bx bx-sm bx-check"></i></button>
-        </div>        
+@if(!Model.TipoTI.Equals("S"))
+{
+    <div class="row" id="divBoxDestino">
+        <div class="d-flex justify-content-center">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text">Box Destino</span>
+                <input type="text" class="form-control inputEditable" id="txtBoxDestino" />
+                <button type="button" id="btnVerifBoxDestino" class="btn btn-success btn-sm"><i class="bx bx-sm bx-check"></i></button>
+            </div>        
+        </div>
     </div>
-</div>
+}
 <div class="row mb-3">
     <div class="d-flex justify-content-around">
         <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-3"><i class="bx bx-ms bx-info-circle"></i></a>
@@ -28,6 +31,7 @@
         var ObtenerAutorizacionActualUrl = "@Url.Action("ObtenerAutorizacionActual", "trint", new { area = "pocketppal" })";
         var confirmacionFinalTIUrl = "@Url.Action("ConfirmacionFinalTI", "trint", new { area = "pocketppal" })";
         var validarBoxIngresadoUrl = "@Url.Action("ValidarBoxIngresado", "trint", new { area = "pocketppal" })";
+        var ConfirmarTIUrl = "@Url.Action("index", "trint", new { area = "pocketppal" })";
 
     </script>
     <script src="~/js/app/ti/ticonfirma.js"></script>

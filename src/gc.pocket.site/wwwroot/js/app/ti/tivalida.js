@@ -37,7 +37,19 @@
     });
 
     CargarAutoActual();
+
+    //activa el desarma en funcion del valor inferido al inicio de la vista
+    InicializaVista();
 });
+
+function InicializaVista() {
+    if (activarCheckDesarma === true) {
+        $("#chkDesarma").prop("disabled", false);
+    }
+    else {
+        $("#chkDesarma").prop("disabled", true);
+    }
+}
 
 function InicializaBusqueda() {
     $("#P_id").val("");
@@ -91,6 +103,12 @@ function cargarCarrito() {
                     $("#msjModal").modal("hide");
                     return true;
                 }, false, ["Aceptar"], "error!", null);
+            } else if (obj.warn === true) {
+                CerrarWaiting();
+                AbrirMensaje("Importante", obj.msg, function () {
+                    $("#msjModal").modal("hide");
+                    return true;
+                }, false, ["Aceptar"], "warn!", null);
             }
             else {
                 CerrarWaiting();
@@ -122,8 +140,16 @@ function validaBoxCarrito() {
         }
         else {
             ControlaMensajeSuccess(obj.msg);
-            //solo pasa al otro campo.           
-            $("#Busqueda").focus();
+            if ($("#chkDesarma").prop("disabled") === false && !$("#chkDesarma").is(":checked")) {
+                $("#Busqueda").prop("disabled", true);
+                $("#btnCargarProd").prop("disabled", false);
+            } else {
+                //solo pasa al otro campo.           
+                $("#btnCargarProd").prop("disabled", true);
+                $("#Busqueda").prop("disabled",false);
+                $("#Busqueda").focus();
+            }
+            
             return true;
         }
 
@@ -164,14 +190,16 @@ function verificaEstado() {
 
                 //se procedera a buscar la fecha de vencimiento del producto dependiendo del box en el que estamos trabajando.
                 var bId = $("#txtBox").val();
-                if (bId === "") {
+                if (bId === "" || bId === undefined) {
                     InicializaBusqueda();
                     $("#msjModal").modal("hide");
                     $("#Busqueda").val("");
                     $("#Busqueda").focus();
-                    return true;
                     AbrirMensaje("Atención", "No se ha seleccionado Box aún. Seleccionelo y vuelva a buscar el producto.", function () {
+                        $("#msjModal").modal("hide");
+                        return true;
                     }, false, ["Aceptar"], "warn!", null)
+
                 }
                 else {
                     //buscamos el vencimiento
@@ -224,9 +252,9 @@ function verificaEstado() {
                                 $("#unid").val(0).prop("disabled", true);
                             }
 
-                            if (prod.sinAU === true) {
-                                $("#chkDesarma").prop("disabled", false);
-                            }
+                            //if (prod.sinAU === true) {
+                            //    $("#chkDesarma").prop("disabled", false);
+                            //}
 
 
                             $("#box").val(0).prop("disabled", false);
@@ -237,7 +265,7 @@ function verificaEstado() {
                             //inicializamos el campo de busqueda
                             $("#Busqueda").val("");
 
-                            if (prod.p_con_vto !== "N") {                               
+                            if (prod.p_con_vto !== "N" && prod.p_con_vto !== null && prod.p_con_vto !== " ") {                               
                                 $("#fvto").prop("disabled", false);                             
                                 $("#fvto").focus();
                                

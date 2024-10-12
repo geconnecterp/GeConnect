@@ -237,6 +237,25 @@ namespace gc.pocket.site.Controllers
             }
         }
 
+        public List<TiListaProductoDto> ProductosParaControlar
+        {
+
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("ProductosParaControlar");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<TiListaProductoDto>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("ProductosParaControlar", json);
+            }
+        }
+
         public List<ProductoBusquedaDto> ProductosSeleccionados
         {
             get
@@ -506,7 +525,7 @@ namespace gc.pocket.site.Controllers
             }
         }
 
-        protected ProcuctoGenDto RPRProductoTemp
+        protected ProductoGenDto RPRProductoTemp
         {
             get
             {
@@ -515,7 +534,7 @@ namespace gc.pocket.site.Controllers
                 {
                     return new();
                 }
-                return JsonConvert.DeserializeObject<ProcuctoGenDto>(json);
+                return JsonConvert.DeserializeObject<ProductoGenDto>(json);
             }
             set
             {
@@ -524,21 +543,21 @@ namespace gc.pocket.site.Controllers
             }
         }
 
-        protected List<ProcuctoGenDto> RPRProductoRegs
+        protected List<ProductoGenDto> ProductoGenRegs
         {
             get
             {
-                string json = _context.HttpContext.Session.GetString("RPRProductoRegs");
+                string json = _context.HttpContext.Session.GetString("ProductoGenRegs");
                 if (string.IsNullOrEmpty(json))
                 {
                     return new();
                 }
-                return JsonConvert.DeserializeObject<List<ProcuctoGenDto>>(json);
+                return JsonConvert.DeserializeObject<List<ProductoGenDto>>(json);
             }
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("RPRProductoRegs", json);
+                _context.HttpContext.Session.SetString("ProductoGenRegs", json);
             }
         }
 

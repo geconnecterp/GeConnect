@@ -45,6 +45,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             TIActual = new();
             TI_ModId = string.Empty;
             TI_CS = false;
+            ProductosParaControlar = new();
             //se verificará si el usuario tiene alguna TR PENDIENTE
             var resu = await _productoServicio.TIValidaPendiente(UserName, TokenCookie);
 
@@ -264,6 +265,24 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 return RedirectToAction("Login", "Token", new { area = "seguridad" });
             }
 
+            if (ProductosParaControlar.Count == 0)
+            {
+                List<TiListaProductoDto> lista = new List<TiListaProductoDto>();
+                //voy a traer la lista de box de productos y luego traeré los productos de cada box, por unica vez, para poder controlar si se han cargado todos los productos.
+                var boxs = await _productoServicio.PresentarBoxDeProductos(tr: TIActual.Ti, admId: AdministracionId, usuId: UserName, token: TokenCookie);
+                if (boxs.Count > 0)
+                {
+                    // se buscara por cada box los productos solicitados.
+                    foreach (var box in boxs)
+                    {
+                        var prods = await _productoServicio.BuscaTIListaProductos(tr: TIActual.Ti, admId: AdministracionId, usuId: UserName, boxid: box.Box_id ?? "%", rubId: "%", token: TokenCookie);
+                        lista.AddRange(prods);
+                    }
+                    //resguardamos todos los productos
+                    ProductosParaControlar = lista;
+                }
+            }
+
             string? volver;
             var ti = TIActual;
             List<string> list = new List<string>() { "S", "D", "B" };
@@ -389,7 +408,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 }
                 ti = TIActual;
                 //tengo que verificar si la acción es llamada desde una autorización o viene directamente desde un proceso sin AU
-                if ((string.IsNullOrEmpty(tiId) || string.IsNullOrWhiteSpace(tiId)) && string.IsNullOrEmpty(boxid) && string.IsNullOrEmpty(rubroid))
+                if (ti.SinAU && (string.IsNullOrEmpty(tiId) || string.IsNullOrWhiteSpace(tiId)) && string.IsNullOrEmpty(boxid) && string.IsNullOrEmpty(rubroid))
                 {
                     throw new NegocioException(Constantes.MensajeError.TI_PROC_SIN_ID);
                 }
@@ -473,11 +492,11 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                         ListaProductosActual = regs.OrderBy(x => x.Box_id).ToList();
                         break;
                     case "R":
-                        ListaProductosActual = regs.OrderBy(x=> x.Rub_id).ToList();
+                        ListaProductosActual = regs.OrderBy(x => x.Rub_id).ToList();
                         break;
                     default:
                         //orden producto
-                        ListaProductosActual = regs.OrderBy(x=> x.P_desc).ToList();
+                        ListaProductosActual = regs.OrderBy(x => x.P_desc).ToList();
                         break;
                 }
                 grid = ObtenerGrillaTIListaProductos(regs);
@@ -587,13 +606,21 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 request.Cantidad = 0;
                 request.Fvto = DateTime.MinValue.ToStringYYYYMMDD();
 
-                RespuestaGenerica<RespuestaDto> resp = await _productoServicio.ResguardarProductoCarrito(request, TokenCookie);
-
-                if (resp.Ok)
+                RespuestaGenerica<RespuestaDto> respv = await _productoServicio.VaidaProductoCarrito(request, TokenCookie);
+                if (respv.Ok)
                 {
-                    return Json(new { error = false, warn = false, msg = $"Producto {ProductoBase.P_desc} fue limpiado exitosamente" });
+                    RespuestaGenerica<RespuestaDto> resp = await _productoServicio.ResguardarProductoCarrito(request, TokenCookie);
+
+                    if (resp.Ok)
+                    {
+                        return Json(new { error = false, warn = false, msg = $"Producto {ProductoBase.P_desc} fue limpiado exitosamente" });
+                    }
+                    else { return Json(new { error = false, warn = true, msg = resp.Mensaje }); }
                 }
-                else { return Json(new { error = false, warn = true, msg = resp.Mensaje }); }
+                else
+                {
+                    return Json(new { error = false, warn = true, msg = respv.Mensaje });
+                }
             }
             catch (NegocioException ex)
             {
@@ -641,14 +668,22 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 request.Cantidad = cantidad;
                 request.Fvto = fv ?? DateTime.Today.AddDays(_settings.FechaVtoCota).ToStringYYYYMMDD();   ///debo traer fecha de vencimiento del producto a mostrar
 
-
-                RespuestaGenerica<RespuestaDto> resp = await _productoServicio.ResguardarProductoCarrito(request, TokenCookie);
-
-                if (resp.Ok)
+                RespuestaGenerica<RespuestaDto> respv = await _productoServicio.VaidaProductoCarrito(request, TokenCookie);
+                if (respv.Ok)
                 {
-                    return Json(new { error = false, warn = false, msg = $"Producto {ProductoBase.P_desc} fue cargado exitosamente" });
+                    RespuestaGenerica<RespuestaDto> resp = await _productoServicio.ResguardarProductoCarrito(request, TokenCookie);
+
+                    if (resp.Ok)
+                    {
+                        return Json(new { error = false, warn = false, msg = $"Producto {ProductoBase.P_desc} fue cargado exitosamente" });
+                    }
+                    else { return Json(new { error = false, warn = true, msg = resp.Mensaje }); }
                 }
-                else { return Json(new { error = false, warn = true, msg = resp.Mensaje }); }
+                else
+                {
+                    return Json(new { error = false, warn = true, msg = respv.Mensaje });
+                }
+
             }
             catch (NegocioException ex)
             {
@@ -672,7 +707,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             AutorizacionTIDto sel;
             try
             {
-                return await ValidaBox(boxId,esBoxDest);
+                return await ValidaBox(boxId, esBoxDest);
             }
             catch (NegocioException ex)
             {
@@ -694,9 +729,10 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             }
         }
 
-        private async Task<IActionResult> ValidaBox(string boxId,bool esBoxDestino=false)
+        private async Task<IActionResult> ValidaBox(string boxId, bool esBoxDestino = false)
         {
             AutorizacionTIDto sel = TIActual;
+            boxId = boxId.ToUpper();
 
             if ((sel.TipoTI.Equals("E") || sel.TipoTI.Equals("O") && sel.SinAU))
             {
@@ -706,14 +742,14 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 {
                     return Json(new { error = false, warn = true, msg = res.Resultado_msj });
                 }
-                
+
                 if (esBoxDestino)
                 {
                     sel.PBoxIdDest = boxId;
                 }
                 else
                 {
-                    sel.PBoxId = res.Box_id_sugerido;
+                    sel.PBoxId = res.Box_id_sugerido.ToUpper();
                 }
                 TIActual = sel;
 
@@ -723,7 +759,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             {
                 return Json(new { error = false, warn = false, msg = "Box Correcto" });
             }
-            else if (esBoxDestino) {
+            else if (esBoxDestino)
+            {
                 sel.PBoxIdDest = boxId;
                 TIActual = sel;
                 return Json(new { error = false, warn = false, msg = "Box Correcto" });
@@ -815,6 +852,10 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     throw new NegocioException("No se Reconoce el Identificador de la Transferencia. Intente nuevamente, sino salga e ingrese de nuevo.");
                 }
 
+                if (sel.TipoTI.Equals("S"))
+                {
+                    return Json(new { error = false, warn = false, msg = "El Control de la Transferencia será realizado posteriormente por el encargado." });
+                }
 
                 #region Se realiza el control de Salida
                 var res = await _productoServicio.ControlSalidaTI(sel.Ti, AdministracionId, UserName, TokenCookie);
@@ -983,12 +1024,12 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         }
 
         [HttpPost] //TIRespuestaDto
-        public async Task<JsonResult> BuscarFechaVto(string pId,string bId)
+        public async Task<JsonResult> BuscarFechaVto(string pId, string bId)
         {
-           
+
             try
             {
-                
+
                 if (string.IsNullOrWhiteSpace(pId) || string.IsNullOrWhiteSpace(pId))
                 {
                     throw new NegocioException("No se puede buscar la Fecha de Vencimiento. Falta algunos de los datos necesarios. Intentelo de nuevo.");
