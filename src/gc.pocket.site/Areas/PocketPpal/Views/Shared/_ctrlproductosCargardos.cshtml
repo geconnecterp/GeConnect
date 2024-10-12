@@ -31,7 +31,7 @@
                     {
                         if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
                         var id = $"btnDel{item.p_id}";
-                        <tr class="@clase">   
+                        <tr class="@clase">
                             <td>@item.p_id</td>
                             <td>@item.p_id_desc</td>
                             <td>@item.unidad_pres</td>
@@ -39,10 +39,20 @@
                             <td>@item.us</td>
                             <td>@item.cantidad</td>
                             <td>@item.cantidad_total</td>
-                            <td>@item.diferencia</td>
+                            <td>
+                                @if (item.diferencia == 0)
+                                {
+                                    <i class="text-success bx bx-sm bx-check-circle"></i>
+                                }
+                                else
+                                {
+                                    <i class="text-danger bx bx-sm bx-error-circle"></i>
+                                }
+
+                            </td>
                             <td><button type="button" id=@id class="btnDelete btn btn-sm btn-secondary" onclick="EliminarProducto('@item.p_id')" value="@item.p_id"><i class="bx btn-xs bx-trash-alt"></i></button></td>
                         </tr>
-                    }                 
+                    }
                 </tbody>
             </table>
         </div>

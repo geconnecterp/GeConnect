@@ -208,7 +208,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                 //armo producto a resguardar
                 var item = new ProductoGenDto();
-                item.Ti = TIActual.Ti;
+                item.ti = TIActual.Ti;
 
                 item.item = ProductoGenRegs.Count + 1;
                 item.p_id = ProductoBase.P_id;

@@ -76,17 +76,6 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string TR_Busca_Vto = "/BuscarFechaVto";
         private const string TR_AUT_Sustituto = "/TRObtenerSustituto";
         private const string TR_AUT_Confirma_Auto = "/TRConfirmaAutorizaciones";
-		//Transferencia Interna
-		private const string TR_AU_PENDIENTE = "/TRAutorizacionPendiente";
-		private const string TR_PENDIENTES = "/ObtenerTRPendientes";
-		private const string TR_AUT_SUCURSALES = "/ObtenerTRAutSucursales";
-		private const string TR_AUT_PI = "/ObtenerTRAutPI";
-		private const string TR_AUT_PI_DETALLE = "/ObtenerTRAutPIDetalle";
-		private const string TR_AUT_Depositos = "/ObtenerTRAutDepositos";
-		private const string TR_AUT_Analiza = "/TRAutAnaliza";
-		private const string TR_Busca_Vto = "/BuscarFechaVto";
-		private const string TR_AUT_Sustituto = "/TRObtenerSustituto";
-		private const string TR_AUT_Confirma_Auto = "/TRConfirmaAutorizaciones";
 		private const string TR_Ver_Conteos = "/TRVerConteos";
 		private const string TR_Validar_Transferencia = "/TRValidarTransferencia";
 
