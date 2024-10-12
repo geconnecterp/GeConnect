@@ -209,14 +209,14 @@ function CargarAutoActual() {
         else {
             CerrarWaiting();
             autorizacionActual = obj.auto;
-            //permite activar o no el check que permite o no desarmar el paquete.
-            if ((obj.auto.tipoTI === "B" || obj.auto.tipoTI === "D") && obj.auto.sinAU === true) {
-                //activamos el desarma
-                $("#chkDesarma").prop("disabled", false);
-            }
-            else {
-                $("#chkDesarma").prop("disabled", true);
-            }
+            ////permite activar o no el check que permite o no desarmar el paquete.
+            //if ((obj.auto.tipoTI === "B" || obj.auto.tipoTI === "D") && obj.auto.sinAU === true) {
+            //    //activamos el desarma
+            //    $("#chkDesarma").prop("disabled", false);
+            //}
+            //else {
+            //    $("#chkDesarma").prop("disabled", true);
+            //}
             //permite activar o no el boton de carrito
             if (obj.auto.tipoTI === "S") {
                 $("#btnCargaCarritoNuevo").removeClass("btn-success").addClass("btn-secundary link-noactivo");

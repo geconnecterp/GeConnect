@@ -1,7 +1,7 @@
-﻿@model GridCore<ProcuctoGenDto>
+﻿@model GridCore<ProductoGenDto>
 
 @{
-    var dataMod = new ProcuctoGenDto();
+    var dataMod = new ProductoGenDto();
     var alt = true;
     string clase = string.Empty;
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
@@ -31,7 +31,7 @@
                         <tr class="@clase">
                             <td>@item.item</td>
                             <td>@item.p_id</td>
-                            <td>@item.p_desc</td>
+                            <td>@item.p_id_desc</td>
                             <td>@item.unidad_pres</td>
                             <td>@item.bulto</td>
                             <td>@item.us</td>

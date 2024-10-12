@@ -1,22 +1,59 @@
 ﻿$(function () {
+    AbrirWaiting();
+    CargaInicialProductosCtrl();
     $("#btnBusquedaBase").on("click", function () {
-        InicializaPantalla();
+        InicializaPantallaCtrl();
         buscarProducto();
         return true;
     });
 
     //input del control. Sirve para permitir inicializar pantalla.
     $("input#Busqueda").on("focus", function () {
-        InicializaPantalla();
+        InicializaPantallaCtrl();
     });
 
     $("#estadoFuncion").on("change", verificaEstado); //este control debe ser insertado el mismo o similar para cada modulo.
 
     $(".inputEditable").on("keypress", analizaEnterInput);
     $("#btnCargarProd").on("click", cargarProductos);
+    $("#btnContinua02").on("click", enviarProductos);
 
-    InicializaPantalla();
+    InicializaPantallaCtrl();
 });
+
+function CargaInicialProductosCtrl() {
+    var datos = {};
+    PostGen(datos, cargaProdCtrlDesdeServer, function (obj) {
+        if (obj.error === true) {
+            ControlaMensajeError(obj.msg);
+            CerrarWaiting();
+            return true;
+        }
+        else {
+            CerrarWaiting();
+            return true;
+        }
+    });
+
+}
+
+function enviarProductos() {
+    var data = {};
+    PostGen(data, enviarProductosUrl, function (obj) {
+        if (obj.error === true) {
+            CerrarWaiting();
+            AbrirMensaje("Atención", obj.msg, function () {
+                $("#msjModal").modal("hide");
+                return true;
+            }, false, ["Aceptar"], "error!", null);
+        }
+        else {
+            CerrarWaiting();
+            window.location.href = listaAUPendientes;
+        }
+
+    });
+}
 
 function cargarProductos() {
     //1 tomar datos
@@ -53,20 +90,20 @@ function cargarProductos() {
                 if (resp === "SI") {
                     //boton acumular
                     AcumularProducto();
-                    productosGrid();
+                    productosGridCtrl();
                     $("#msjModal").modal("hide");
                     return true;
                 }
                 else if (resp === "SI2") {
                     //boton remplazar
                     RemplazarProducto();
-                    productosGrid();
+                    productosGridCtrl();
                     $("#msjModal").modal("hide");
 
                     return true;
                 }
                 else {
-                    productosGrid();
+                    productosGridCtrl();
                     $("#msjModal").modal("hide");
                     return true;
                 }
@@ -76,7 +113,7 @@ function cargarProductos() {
         else {
             CerrarWaiting();
             ControlaMensajeSuccess("¡¡Producto cargado!!")
-            productosGrid();
+            productosGridCtrl();
             return true;
         }
     });
@@ -86,7 +123,7 @@ function cargarProductos() {
 
 
 
-function productosGrid() {
+function productosGridCtrl() {
     var data = {};
     PostGenHtml(data, PresentarProductosSeleccionadosUrl, function (obj) {
 
@@ -94,16 +131,18 @@ function productosGrid() {
         $("#divCtrlTIGrid").html(obj);
         var tb = $("#divCtrlTIGrid #tbProdRPR tbody td");
         if (tb.length <= 0) {
-            $("#btnContinuarRpr").hide("fast");
+            $("#btnContinua02").hide("fast");
         } else {
-            $("#btnContinuarRpr").show("fast");
+            $("#btnContinua02").show("fast");
         }
 
         if (typeof ocultarTrash !== 'undefined') {
             if (ocultarTrash === true) {
                 //ocultamos la 8° columna
                 $(".ocultar").toggle();
+                $("#divCtrlTIGrid #tbProdRPR tbody td:nth-child(7)").toggle();
                 $("#divCtrlTIGrid #tbProdRPR tbody td:nth-child(8)").toggle();
+                //$("#divCtrlTIGrid #tbProdRPR tbody td:nth-child(8)").toggle();
             }
         }
 
@@ -165,7 +204,7 @@ function verificaEstado(e) {
         //} else {
         //    //asigno callback para que se ejecute luego que cierre el waiting
         //    /*FunctionCallback = function () {*/
-            $("#up").focus();
+        $("#up").focus();
         //    //    //return true;
         //    //};
         //}
@@ -176,8 +215,8 @@ function verificaEstado(e) {
     return true;
 }
 
-function InicializaPantalla() {
-    productosGrid();
+function InicializaPantallaCtrl() {
+    productosGridCtrl();
     $("#P_id").val("");
     $("#Descipcion").val("");
     $("#Rubro").val("");
@@ -203,7 +242,7 @@ function EliminarProducto(id) {
                 return true;
 
             }, false, ["Aceptar"], "warn!", null);
-            InicializaPantalla();
+            InicializaPantallaCtrl();
             return true;
         }
         else {
@@ -212,7 +251,7 @@ function EliminarProducto(id) {
                 $('#msjModal').modal('hide');
                 return true;
             }, false, ["Aceptar"], "succ!", null);
-            InicializaPantalla();
+            InicializaPantallaCtrl();
             return true;
         }
     })
@@ -235,7 +274,7 @@ function RemplazarProducto() {
                 $('#msjModal').modal('hide');
                 return true;
             }, false, ["Aceptar"], "succ!", null);
-            productosGrid();
+            productosGridCtrl();
         }
         return true;
     });
@@ -257,7 +296,7 @@ function AcumularProducto() {
                 $('#msjModal').modal('hide');
                 return true;
             }, false, ["Aceptar"], "succ!", null);
-            InicializaPantalla();
+            InicializaPantallaCtrl();
 
 
         }

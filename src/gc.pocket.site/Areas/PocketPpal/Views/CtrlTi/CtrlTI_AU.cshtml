@@ -5,15 +5,19 @@
 *@
 @{
     Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
-    var callback = Url.Action("ctrlti_au", "ctrlti", new { area = "pocketppal", tiId = Model.TipoTI});
+    var callback = Url.Action("ctrlti_au", "ctrlti", new { area = "pocketppal", titId = Model.TipoTI});
 
 }
 <div class="row mt-2">
     <div class="d-flex justify-content-around">
         <div class="input-group input-group-sm text-info">
+            <span class="input-group-text" style="width:50px">TI</span>
             <input id="txtTiro" class="form-control" readonly />
+            <span class="input-group-text" style="width:50px">Suc</span>
             <input id="txtNNro" class="form-control" readonly />
+            <span class="input-group-text" style="width:50px">Prov</span>
             <input id="txtUsro" class="form-control" readonly />
+            <span class="input-group-text" style="width:50px">Fec</span>
             <input id="txtFero" class="form-control" readonly />
         </div>
     </div>
@@ -24,6 +28,7 @@
 
 <div class="row mb-3">
     <div class="d-flex justify-content-center">
+        <button type="button" disabled id="btnVerCtrl" class="btn btn-danger btn-sm m-2" title="Observar Detalle de CONTROL"><i class="bx bx-sm bx-list-ol"></i></button>
         <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-2"><i class="bx bx-ms bx-info-circle"></i></a>
         <button type="button" id="btnContinua01" disabled class="btn btn-success btn-sm m-2"><i class="bx bx-ms bx-right-arrow-alt"></i></button>      
     </div>
@@ -31,9 +36,12 @@
 
 @section scripts{
     <script type="text/javascript">
+        var autorizacionActual = null;
         var getAUPendientesUrl = "@Url.Action("ObtenerAutorizacionesPendientes", "trint", new { area = "pocketppal" })";
+        var ObtenerAutorizacionActualUrl = "@Url.Action("ObtenerAutorizacionActual", "trint", new { area = "pocketppal" })";
         var validaUsuarioUrl = "@Url.Action("ValidarUsuario", "trint", new { area = "pocketppal" })";
         var trScr02 = "@Url.Action("CtrlTI_Colector", "ctrlti", new { area = "pocketppal" })";
+        var verCtrlUrl = "@Url.Action("CtrlTI_Control", "ctrlti", new { area = "pocketppal" })";
     </script>
     <script src="~/js/app/ti/ti.js"></script>
     @* <script src="~/js/app/ctrlti/ctrl01.js"></script> *@

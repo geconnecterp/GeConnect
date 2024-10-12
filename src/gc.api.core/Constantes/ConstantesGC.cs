@@ -66,10 +66,13 @@
             public const string SP_TR_Aut_Analiza = "SPGECO_TR_Aut_Analiza";
 			public const string SP_TR_sustituto = "SPGECO_TR_Aut_Sustituto"; //En el docx figura SPGECO_TR_sustituto pero ese SP no existe
 			public const string SP_TR_Aut_Nuevas = "SPGECO_TR_Aut_Nuevas";
+			public const string SP_TR_VER_CTRL_SALIDA = "SPGECO_TR_Ver_CTL_Salida";
+            public const string SP_TR_CARGAR_CTRL_SALIDA = "SPGECO_TR_Cargar_CTL_Salida";
+
+            
+            public const string SP_TI_VALIDA_USUARIO = "SPGECO_USU_OK";
 			public const string SP_TR_Ver_Conteos = "SPGECO_TR_Ver_Conteos";
 			public const string SP_TR_Ctl_Salida = "SPGECO_TR_Ctl_Salida";
-
-			public const string SP_TI_VALIDA_USUARIO = "SPGECO_USU_OK";
 
             public const string SP_RTR_Pendientes = "SPGECO_RTR_Pendientes";
 			public const string SP_RTR_Setea_Estado = "SPGECO_RTR_Setea_Estado";

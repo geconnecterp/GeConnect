@@ -45,8 +45,16 @@ function VerificaCtrlSalida() {
         }
         else {
             CerrarWaiting();
-            ControlaMensajeSuccess(obj.msg);
-            window.location.href = ConfirmarTIUrl;
+            AbrirMensaje("Importante", obj.msg, function () {
+                $("#msjModal").modal("hide");
+                if (autorizacionActual.tipoTI === "S") {
+                    window.location.href = homeModUrl;
+
+                } else {
+                    window.location.href = ConfirmarTIUrl;
+                }
+                return true;
+            }, false, ["Aceptar"], "succ!", null);                     
         }
     });
 }

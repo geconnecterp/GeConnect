@@ -4,8 +4,10 @@ using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.pocket.site.Controllers;
+using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using System.Reflection;
 using X.PagedList;
 
 namespace gc.pocket.site.Areas.PocketPpal.Controllers
@@ -16,13 +18,15 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         private readonly AppSettings _settings;
         private readonly MenuSettings _menuSettings;
         private readonly ILogger<CtrlTiController> _logger;
+        private readonly IProductoServicio _productoServicio;
 
-        public CtrlTiController(IOptions<AppSettings> options, IHttpContextAccessor context,IOptions<MenuSettings> options1,
-            ILogger<CtrlTiController> logger) : base(options, context)
+        public CtrlTiController(IOptions<AppSettings> options, IHttpContextAccessor context, IOptions<MenuSettings> options1,
+            ILogger<CtrlTiController> logger, IProductoServicio productoServicio) : base(options, context)
         {
             _menuSettings = options1.Value;
             _settings = options.Value;
             _logger = logger;
+            _productoServicio = productoServicio;
         }
 
         public IActionResult Index()
@@ -35,8 +39,10 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             ListadoTIAutoPendientes = new();
             TIActual = new();
             TI_ModId = string.Empty;
+            ProductoGenRegs = new(); //inicializo la lista de productos resguardados en la sesion
 
-            string? volver = Url.Action("index", "home", new { area = ""});
+
+            string? volver = Url.Action("index", "home", new { area = "" });
             ViewBag.AppItem = new AppItem { Nombre = "Ctrl Salida Transferencia", VolverUrl = volver ?? "#" };
 
             return View();
@@ -71,7 +77,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                 return View(TIActual);
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "Error carga de Vista CTRLTI_AU");
                 return RedirectToAction("Index");
             }
@@ -82,7 +89,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         {
             try
             {
-                string? volver = Url.Action("index", "home", new { area = "" });
+
+                string? volver = Url.Action("CtrlTI_AU", "ctrlti", new { area = "pocketppal", titid = TIActual.TipoTI });
                 ViewBag.AppItem = new AppItem { Nombre = "Ctrl Salida Transferencia", VolverUrl = volver ?? "#" };
 
                 return View(TIActual);
@@ -92,12 +100,69 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 _logger.LogError(ex, "Error carga de vista CtrlTi_colector");
                 return RedirectToAction("Index");
             }
-           
+
 
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Ctrlti_Control()
+        {
+            try
+            {
+                var sel = TIActual;
+
+                string? volver = Url.Action("CtrlTI_AU", "ctrlti", new { area = "pocketppal", titid = sel.TipoTI });
+                ViewBag.AppItem = new AppItem { Nombre = "Ctrl Salida - VISTA DE CONTROL", VolverUrl = volver ?? "#" };
+
+                return View(TIActual);
+            }
+            catch (NegocioException ex)
+            {
+                TempData["error"] = ex.Message;
+                return RedirectToAction("CtrlTI_AU", "ctrlti", new { area = "pocketppal" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error carga de vista Ctrlti_Control");
+                TempData["error"] = "Hubo un problema al intentar presentar la vista de Control.";
+                return RedirectToAction("Index");
+            }
+        }
 
         #region Métodos POST
+        [HttpPost]
+        public async Task<JsonResult> EnviarProductosCtrl()
+        {
+            try
+            {
+                var resp = await _productoServicio.EnviarProductosCtrl(lista: ProductoGenRegs, Token: TokenCookie);
+                if (resp.Ok)
+                {
+                    return Json(new { error = false, msg = "La carga de los productos para el control de salida fue satisactorio." });
+                }
+                else
+                {
+                    return Json(new { error = true, msg = resp.Mensaje });
+                }
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} No se pudo enviar los productos para Control de Salida");
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} Error durante el proceso");
+                return Json(new { error = true, warn = false, msg = "Algo no fue bien en el procesamiento CtrlSalida. Ingrese de nuevo si fuera necesario. " });
+            }
+        }
+
+
         [HttpPost]
         public JsonResult ReguardarProductoEnLista(int up, string vto, int bulto, decimal unidad)
         {
@@ -142,12 +207,12 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 }
 
                 //armo producto a resguardar
-                var item = new ProcuctoGenDto();
+                var item = new ProductoGenDto();
                 item.Ti = TIActual.Ti;
 
-                item.item = RPRProductoRegs.Count + 1;
+                item.item = ProductoGenRegs.Count + 1;
                 item.p_id = ProductoBase.P_id;
-                item.p_desc = ProductoBase.P_desc;
+                item.p_id_desc = ProductoBase.P_desc;
                 item.up_id = ProductoBase.Up_id;
                 //item.Cta_id = ProductoBase.Cta_id;
                 item.p_id_prov = ProductoBase.P_id_prov;
@@ -167,21 +232,21 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 //}
                 item.cantidad = cantidad;
 
-                var res = RPRProductoRegs.Any(x => x.p_id.Equals(item.p_id));
+                var res = ProductoGenRegs.Any(x => x.p_id.Equals(item.p_id));
 
                 if (res)
                 {
                     //ya se encuentra cargado el producto, se debe avisar.
                     RPRProductoTemp = item;
-                    msg = $"El Producto {item.p_desc} ya se encuentra cargado. ¿Desea CANCELAR la operación, REMPLAZAR las cantidades existentes o ACUMULAR las cantidades?";
+                    msg = $"El Producto {item.p_id_desc} ya se encuentra cargado. ¿Desea CANCELAR la operación, REMPLAZAR las cantidades existentes o ACUMULAR las cantidades?";
                     return Json(new { error = false, warn = true, msg, p_id = item.p_id });
                 }
                 else
                 {
                     //no esta se carga directamente
-                    var lista = RPRProductoRegs;
+                    var lista = ProductoGenRegs;
                     lista.Add(item);
-                    RPRProductoRegs = lista;
+                    ProductoGenRegs = lista;
                     return Json(new { error = false, warn = false });
                 }
             }
@@ -191,23 +256,54 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             }
         }
 
+
         [HttpPost]
-        public ActionResult PresentarProductosSeleccionados()
+        public async Task<JsonResult> BuscaProductosCargados()
         {
-            GridCore<ProcuctoGenDto> datosIP;
+            try
+            {
+                var sel = TIActual;
+                //se buscan la lista de datos cargados
+                var prods = await _productoServicio.ObtenerProductosCargadosCtrlSalida(tr: sel.Ti, user: UserName, token: TokenCookie);
+                if (prods.Ok)
+                {
+                    if (prods.ListaEntidad.Count > 0)
+                    {
+                        ProductoGenRegs = prods.ListaEntidad;
+                    }
+                }
+                else
+                {
+                    throw new Exception(prods.Mensaje);
+                }
+                return Json(new { error = false, msg = "OK" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al Busca Productos Cargados");
+                return Json(new { error = true, msg = "Hubo un problema para recuperar los productos desde la base. Verifique" });
+            }
+        }
 
-            datosIP = ObtenerRPRProdGrid(RPRProductoRegs);
+        [HttpPost]
+        public async Task<ActionResult> PresentarProductosSeleccionados()
+        {
+            GridCore<ProductoGenDto> datosIP;
+            var sel = TIActual;
 
-            return PartialView("_productosCargardos", datosIP);
+
+            datosIP = ObtenerCtrlProdGrid(ProductoGenRegs);
+
+            return PartialView("_ctrlproductosCargardos", datosIP);
         }
 
 
-        private GridCore<ProcuctoGenDto> ObtenerRPRProdGrid(List<ProcuctoGenDto> listaRpr)
+        private GridCore<ProductoGenDto> ObtenerCtrlProdGrid(List<ProductoGenDto> listaRpr)
         {
 
-            var lista = new StaticPagedList<ProcuctoGenDto>(listaRpr, 1, 999, listaRpr.Count);
+            var lista = new StaticPagedList<ProductoGenDto>(listaRpr, 1, 999, listaRpr.Count);
 
-            return new GridCore<ProcuctoGenDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
+            return new GridCore<ProductoGenDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
         }
 
         [HttpPost]
@@ -216,8 +312,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             //busco el producto.
             try
             {
-                ProcuctoGenDto? item = EliminaProductoBase(p_id);
-                return Json(new { error = false, msg = $"El producto {item.p_desc} fue removido de la lista." });
+                ProductoGenDto? item = EliminaProductoBase(p_id);
+                return Json(new { error = false, msg = $"El producto {item.p_id_desc} fue removido de la lista." });
             }
             catch (NegocioException ex)
             {
@@ -232,15 +328,15 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
         }
 
-        private ProcuctoGenDto EliminaProductoBase(string p_id)
+        private ProductoGenDto EliminaProductoBase(string p_id)
         {
-            var item = RPRProductoRegs.SingleOrDefault(p => p.p_id.Equals(p_id));
+            var item = ProductoGenRegs.SingleOrDefault(p => p.p_id.Equals(p_id));
             if (item == null)
             {
                 throw new NegocioException("No se encontró el producto que intenta eliminar de la lista");
             }
-            var lista = RPRProductoRegs.Where(p => !p.p_id.Equals(p_id)).ToList();
-            RPRProductoRegs = lista;
+            var lista = ProductoGenRegs.Where(p => !p.p_id.Equals(p_id)).ToList();
+            ProductoGenRegs = lista;
             return item;
         }
 
@@ -250,7 +346,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             try
             {
                 //Hubo problemas al intentar acumular el producto con la ya cargada en la lista de Productos seleccionados para el RPR."
-                var item = RPRProductoRegs.SingleOrDefault(p => p.p_id.Equals(RPRProductoTemp.p_id));
+                var item = ProductoGenRegs.SingleOrDefault(p => p.p_id.Equals(RPRProductoTemp.p_id));
                 if (item == null)
                 {
                     throw new Exception(infraestructura.Constantes.Constantes.MensajeError.RPR_PRODUCTO_NO_ENCONTRADO_ACUMULACION);
@@ -277,9 +373,9 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 //Para agregar el acumulado primero debo sacar el producto de la lista
                 _ = EliminaProductoBase(RPRProductoTemp.p_id);
                 //traigo la lista, lo agrego y lo vuelvo a resguardar
-                var lista = RPRProductoRegs;
+                var lista = ProductoGenRegs;
                 lista.Add(item);
-                RPRProductoRegs = lista;
+                ProductoGenRegs = lista;
 
                 return Json(new { error = false, msg = infraestructura.Constantes.Constantes.MensajesOK.RPR_PRODUCTO_ACUMULADO });
             }
@@ -296,11 +392,11 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             try
             {
                 //se toma la lista y se extrae el producto a ser reemplazado.
-                var lista = RPRProductoRegs.Where(p => !p.p_id.Equals(RPRProductoTemp.p_id)).ToList();
+                var lista = ProductoGenRegs.Where(p => !p.p_id.Equals(RPRProductoTemp.p_id)).ToList();
                 //Se agrega a lista el producto que esta en temp
                 lista.Add(RPRProductoTemp);
                 //resguardamos la lista
-                RPRProductoRegs = lista;
+                ProductoGenRegs = lista;
 
                 return Json(new { error = false, msg = infraestructura.Constantes.Constantes.MensajesOK.RPR_PRODUCTO_REMPLAZADO });
             }

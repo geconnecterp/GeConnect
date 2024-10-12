@@ -3,8 +3,15 @@
     $("#btnContinua01").on("click", validarUsuario);
 
     $("#btnContinua01").prop("disabled", true);
+
+    $("#btnVerCtrl").on("click", function () {
+        validarUsuario(true);
+    });
+   
+    CargarAutoActual();
     AbrirWaiting();
     cargarAutorizacionesPendientes();
+
 });
 
 function cargarAutorizacionesPendientes() {
@@ -39,9 +46,10 @@ function seleccionarRegistroTR(x) {
     $("#txtFero").val($("#fec" + reg).val());
 
     $("#btnContinua01").prop("disabled", false);
+    $("#btnVerCtrl").prop("disabled", false);
 }
 
-function validarUsuario() {
+function validarUsuario(x) {
     AbrirWaiting();
     PostGen({ auId: $("#txtTiro").val() }, validaUsuarioUrl, function (obj) {
         if (obj.error === true) {
@@ -60,17 +68,13 @@ function validarUsuario() {
         }
         else {
             CerrarWaiting();
-            //no se da el ok al usuario validado. Directamente se direcciona
-            window.location.href = trScr02;
-
-
-            //AbrirMensaje("Usuario Validado", obj.msg, function () {
-            //    $("#msjModal").modal("hide");
-            //    window.location.href = trScr02;
-
-            //    //return true;
-            //}, false, ["Aceptar"], "succ!", null);
-            //ControlaMensajeSuccess(obj.msg);
+            if (x !== true) {
+                //no se da el ok al usuario validado. Directamente se direcciona
+                window.location.href = trScr02;
+            }
+            else {
+                window.location.href = verCtrlUrl;
+            }
         }
     });
     return true;
