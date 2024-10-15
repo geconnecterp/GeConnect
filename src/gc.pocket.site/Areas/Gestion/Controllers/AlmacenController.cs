@@ -26,17 +26,15 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         {
             var sigla = "rpr";
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
-            if (modulo == null)
-            {
-                throw new NegocioException("No se logro encontrar la configuración del Módulo. Si el problema persiste informe al Administrador");
-            }
-            return View("gen",modulo);
+            string? volver = Url.Action("index", "home", new { area = "" });           
+            ViewBag.AppItem = new AppItem { Nombre = modulo.Nombre, VolverUrl = volver ?? "#" };
+            return View("gen", modulo);
         }
 
         [HttpGet]
         public IActionResult BOXALM()
         {
-            var sigla = "boxalm";
+            var sigla = "box alm";
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
             if (modulo == null)
             {
@@ -75,7 +73,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
             {
                 throw new NegocioException("No se logro encontrar la configuración del Módulo. Si el problema persiste informe al Administrador");
             }
-            return View("gen",modulo);
+            return View("gen", modulo);
         }
         [HttpGet]
         public IActionResult CTLTI()

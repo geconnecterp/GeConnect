@@ -5,25 +5,31 @@
     var alt = true;
     string clase = string.Empty;
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+    int cont = 0;
 }
 <div class="table-responsive table-wrapper">
-    <table class="table table-sm mb-0">
+    <table class="table table-sm mb-0" id="tbAuPend">
         <thead class=" table-dark">
             <tr class="header">
+                <th scope="col" style="width:1%"></th>
                 <th scope="col">Proveedores</th>
                 <th scope="col">N° Autorización</th>
-                <th scope="col"></th>
+                @* <th scope="col"></th> *@
             </tr>
         </thead>
         <tbody>
             @foreach (var item in Model.ListaDatos)
             {
+                cont++;
                 if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
-                <tr class="@clase">
+                <tr class="@clase" onclick="seleccionaRegistroAP(this)">
+                    <td>@cont </td>
                     <td style="min-width:200px;">@item.Cta_denominacion</td>
-                    <td>@item.Rp</td>
-                    <td><a asp-action="ResguardarAutorizacionProveedor" asp-controller="rpr" asp-area="pocketppal" class="btn btn-xs btn-secondary" asp-route-rp="@item.Rp"> <i class="bx bxs-send bx-xs"></i></a></td>
+                    <td>@item.Rp
+                        @Html.Hidden("rp" + @cont, item.Rp)
+                    </td>
+                    @* <td><a asp-action="ResguardarAutorizacionProveedor" asp-controller="rpr" asp-area="pocketppal" class="btn btn-xs btn-secondary" asp-route-rp="@item.Rp"> <i class="bx bxs-send bx-xs"></i></a></td> *@
                 </tr>
             }
             @* <tr>

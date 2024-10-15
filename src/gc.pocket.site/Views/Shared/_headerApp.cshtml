@@ -3,30 +3,21 @@
 @{
 }
 <div class="row">
-    <div class="col-12">
-        <div class="card">
-            <dir class="card-header" style="background-color:orangered;color:#000">
-                <div class="row">
-                    <div class="d-flex d-inline-flex justify-content-md-between">
-                        <a asp-action="index" asp-controller="home" asp-area="" class="btn btn-secondary" style="background-color:transparent !important;border-bottom-style:hidden">GECOPocket</a> 
-                        
-                        <span class="textoEncabezado">@Model.Item2.Item1</span>
-                    </div>
-                </div>
-            </dir>
-            <div class="card-body" style="background-color:orange;color:#000">
-                <div class="row">
-                    <div class="col-9 align-content-center  textoEncabezado ">
-                        @Model.Item1.ToUpper()
-                    </div>
-                    <div class="col-3 align-content-end">
-                        @if (!string.IsNullOrEmpty(Model.Item2.Item2) && !Model.Item2.Item2.Equals("#"))
-                        {
-                            <a href="@Model.Item2.Item2" class="btn btn-danger btn-xs"><icon class="bx bx-left-arrow-alt btn-xs me-1"></icon><span>Volver</span></a>
-                        }
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="d-flex d-inline-flex justify-content-md-between cabeceraBarra01">
+        <a asp-action="index" asp-controller="home" asp-area="" class="btn btn-secondary sinbordefondo m-2" style="background-color:transparent !important;border-bottom-style:hidden">GECOPocket</a>
+
+        <span class="textoEncabezado m-3">@Model.Item2.Item1</span>
     </div>
 </div>
+<div class="row">
+    <div class="d-flex d-inline-flex justify-content-md-between cabeceraBarra02">
+        <span class="m-3"> @Model.Item1.ToUpper()</span>
+
+        @if (!string.IsNullOrEmpty(Model.Item2.Item2) && !Model.Item2.Item2.Equals("#"))
+        {
+            <a href="@Model.Item2.Item2" class="btn btn-danger btn-xs sinbordefondo m-2"><icon class="bx bx-left-arrow-alt btn-xs me-1"></icon><span>Volver</span></a>
+        }
+    </div>
+</div>
+
+

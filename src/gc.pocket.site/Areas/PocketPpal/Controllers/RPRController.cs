@@ -94,7 +94,9 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 }
                 //este viewbag es para que aparezca en la segunda fila del encabezado la leyenda que se quiera.
                 //en este caso presenta el numero de autorización pendiente y el proveedor al que le pertenece.
-                ViewBag.AppItem = new AppItem { Nombre = $"Auto:{auto.Rp}-{auto.Cta_denominacion}" };
+                string? volver = Url.Action("index", "rpr", new { area = "pocketppal" });
+                //ViewBag.AppItem = new AppItem { Nombre = $"Auto:{auto.Rp}-{auto.Cta_denominacion}" };
+                ViewBag.AppItem = new AppItem { Nombre = "Carga de Productos para la Aut.Pendiente", VolverUrl = volver ?? "#" };
 
                 ViewBag.FechaCotaJS = _settings.FechaVtoCota;
             }
@@ -155,7 +157,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 item.rp = AutorizacionPendienteSeleccionada.Rp;
                 item.item = ProductoGenRegs.Count + 1;
                 item.p_id = ProductoBase.P_id;
-                item.p_id_desc = ProductoBase.P_desc;
+                item.p_desc = ProductoBase.P_desc;
                 item.up_id = ProductoBase.Up_id;
                 //item.Cta_id = ProductoBase.Cta_id;
                 item.p_id_prov = ProductoBase.P_id_prov;
@@ -181,7 +183,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 {
                     //ya se encuentra cargado el producto, se debe avisar.
                     RPRProductoTemp = item;
-                    msg = $"El Producto {item.p_id_desc} ya se encuentra cargado. ¿Desea CANCELAR la operación, REMPLAZAR las cantidades existentes o ACUMULAR las cantidades?";
+                    msg = $"El Producto {item.p_desc} ya se encuentra cargado. ¿Desea CANCELAR la operación, REMPLAZAR las cantidades existentes o ACUMULAR las cantidades?";
                     return Json(new { error = false, warn = true, msg, p_id = item.p_id });
                 }
                 else
@@ -225,7 +227,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             try
             {
                 ProductoGenDto? item = EliminaProductoBase(p_id);
-                return Json(new { error = false, msg = $"El producto {item.p_id_desc} fue removido de la lista." });
+                return Json(new { error = false, msg = $"El producto {item.p_desc} fue removido de la lista." });
             }
             catch (NegocioException ex)
             {

@@ -1,18 +1,25 @@
-﻿ @model GridCore<AutorizacionPendienteDto> 
+﻿ @model GridCore<AutorizacionPendienteDto>
 
 @{
     Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
-
-    // var grid = ViewBag.GrillaRPRAutorizacion as GridCore<ProductoBusquedaDto>;
 }
-@* <div class="col-sm-12" style="float:inline-end">
-   
-</div> *@
 <div class="container">
-   @*  <div class="row alinearDerecha">
-        <a asp-action="index" asp-controller="home" asp-area="" style="width:100px;box-sizing:border-box;" class="btn btn-xs btn-danger mt-3"><i class="bx bx-left-arrow-circle bx-xs"></i> <span> Volver</span></a>
+    @*  <div class="row alinearDerecha">
+    <a asp-action="index" asp-controller="home" asp-area="" style="width:100px;box-sizing:border-box;" class="btn btn-xs btn-danger mt-3"><i class="bx bx-left-arrow-circle bx-xs"></i> <span> Volver</span></a>
     </div> *@
     <div class="row">
         <partial name="_autopendientegrid" model="@Model" />
-    </div>   
+    </div>
+    <div class="row mb-3">
+        <div class="d-flex justify-content-center">
+            <button type="button" id="btnContinua01" disabled class="btn btn-success btn-sm m-2"><i class="bx bx-ms bx-right-arrow-alt"></i></button>
+        </div>
+    </div>
 </div>
+@section scripts {
+    <script type="text/javascript">
+        var autoPendienteSelect = "";
+        var autoPendienteResguardarUrl = "@Url.Action("ResguardarAutorizacionProveedor","rpr",new{area="pocketppal"})"
+    </script>
+    <script src="~/js/app/rpr/rprap.js"></script>
+}
