@@ -1,3 +1,4 @@
+using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.sitio.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +12,7 @@ namespace gc.sitio.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly IHttpContextAccessor _context;
 
-        public HomeController(ILogger<HomeController> logger,IOptions<AppSettings> options, IHttpContextAccessor context) :base(options, context) 
+        public HomeController(ILogger<HomeController> logger, IOptions<AppSettings> options, IHttpContextAccessor context) : base(options, context)
         {
             _logger = logger;
             _context = context;
@@ -19,8 +20,10 @@ namespace gc.sitio.Controllers
 
         public IActionResult Index()
         {
-            ViewBag.Title=NombreSitio;
-            return View();
+            ViewBag.Title = NombreSitio;
+            ViewBag.PermisosMenuPorUsuario = PermisosMenuPorUsuario;
+			//ViewData["PermisosMenuPorUsuario"] = PermisosMenuPorUsuario;
+			return View();
         }
 
         public IActionResult Privacy()

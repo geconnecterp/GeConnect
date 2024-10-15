@@ -7,10 +7,21 @@ function selectRemitoRow(x) {
 	if (x) {
 		remSeleccionado = x.cells[0].innerText.trim();
 		remQuienEnvia = x.cells[2].innerText.trim();
+		ree_id = x.cells[5].innerText.trim();
 	}
 	else {
 		remQuienEnvia = "";
 		remSeleccionado = "";
+		ree_id = "";
+	}
+	if (ree_id === "") {
+		$('#btnAutorizar').prop('disabled', true);
+	}
+	else if (ree_id === "E") {
+		$('#btnAutorizar').prop('disabled', false);
+	}
+	else {
+		$('#btnAutorizar').prop('disabled', true);
 	}
 }
 
@@ -82,7 +93,7 @@ function autorizarRemito() {
 			}
 			return true;
 		}, true, ["Aceptar", "Cancelar"], "info!", null);
-		
+
 	}
 }
 
@@ -132,6 +143,7 @@ function confirmarRemito() {
 						CerrarWaiting();
 						AbrirMensaje("Atención", o.msg, function (e) {
 							$("#msjModal").modal("hide");
+							window.location.href = RActualizarListadoDeRemitoUrl;
 							return true;
 						}, false, ["Aceptar"], "info!", null);
 					} else {

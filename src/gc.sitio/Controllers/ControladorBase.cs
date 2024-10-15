@@ -175,6 +175,24 @@ namespace gc.sitio.Controllers
 			return query;
 		}
 
+		public List<UsuarioMenu> PermisosMenuPorUsuario
+		{
+			get
+			{
+				string json = _context.HttpContext.Session.GetString("PermisosMenuPorUsuario");
+				if (string.IsNullOrEmpty(json))
+				{
+					return new();
+				}
+				return JsonConvert.DeserializeObject<List<UsuarioMenu>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("PermisosMenuPorUsuario", json);
+			}
+		}
+
 		#region Variables globales
 		protected bool ElementoEditado
 		{

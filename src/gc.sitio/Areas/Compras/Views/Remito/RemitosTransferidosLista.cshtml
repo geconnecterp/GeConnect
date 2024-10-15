@@ -12,7 +12,8 @@
 			</div>
 		</div>
 		<div class="demo-inline-spacing" style="float:right;margin-top: 60px;margin-right: 55px;">
-			<a href="#" class="btn btn-primary" id="btnAutorizar" onclick="autorizarRemito();"><span class="tf-icons bx bxs-edit me-1">Autorizar</span></a>
+			<button id="btnAutorizar" class="btn btn-primary" onclick="autorizarRemito();" disabled><span class="tf-icons bx bxs-edit me-1">Autorizar</span></button>
+			@* <a href="#" class="btn btn-primary" id="btnAutorizar" onclick="autorizarRemito();"><span class="tf-icons bx bxs-edit me-1">Autorizar</span></a> *@
 			<a href="#" id="btnVer" class="btn btn-success" onclick="verRemito();return false;"><span class="tf-icons bx bxs-binoculars me-1">Ver</span></a>
 		</div>
 	</row>
@@ -26,6 +27,7 @@
 						<th style="width:40%;">Sucursal que Envía</th>
 						<th style="width:15%;">Fecha</th>
 						<th style="width:15%;">Estado</th>
+						<th style="width:0%; display:none;">ree_id</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -37,6 +39,7 @@
 							<td>@item.adm_nombre</td>
 							<td>@item.re_fecha.ToString("dd-MM-yyyy")</td>
 							<td>@item.ree_desc</td>
+							<td style="display:none;">@item.ree_id</td>
 						</tr>
 					}
 				</tbody>
@@ -49,6 +52,7 @@
 	<script type="text/javascript">
 		var remSeleccionado = "";
 		var remQuienEnvia = "";
+		var ree_id = "";
 		var RSetearEstadoDeRemitoUrl = "@Url.Action("SetearEstadoDeRemito", "remito", new { area = "Compras" })";
 		var RActualizarListadoDeRemitoUrl = "@Url.Action("RemitosTransferidosLista", "remito", new { area = "Compras" })";
 		var RVerDetalleDeConteosDeRemitoUrl = "@Url.Action("VerConteosLista", "remito", new { area = "Compras" })";

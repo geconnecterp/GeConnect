@@ -47,15 +47,15 @@
 							<td class="table-fontsize">@item.p_id</td>
 							<td class="table-fontsize">@item.p_desc</td>
 							<td class="table-fontsize">@item.p_id_barrado</td>
-							<td class="table-fontsize">@item.enviado</td>
-							<td class="table-fontsize">@item.recibido</td>
+							<td style="text-align: right;" class="table-fontsize">@item.enviado</td>
+							<td style="text-align: right;" class="table-fontsize">@item.recibido</td>
 							@if (item.diferencia != 0)
 							{
-								<td class="table-fontsize" style="border-right: 5px solid @item.Row_color;">@item.diferencia</td>
+								<td class="table-fontsize" style="border-right: 5px solid @item.Row_color; text-align: right;">@item.diferencia</td>
 							}
 							else
 							{
-								<td class="table-fontsize">@item.diferencia</td>
+								<td style="text-align: right;" class="table-fontsize">@item.diferencia</td>
 							}
 						</tr>
 					}
@@ -70,6 +70,7 @@
 		var RVolverARemitosTransferidosListaUrl = "@Url.Action("RemitosTransferidosLista", "remito", new { area = "Compras" })";
 		var RVerDetalleDeConteosDeRemitoUrl = "@Url.Action("VerConteosLista", "remito", new { area = "Compras" })";
 		var RConfirmarRecepcionDeRemitoUrl = "@Url.Action("ConfirmarRecepcion", "remito", new { area = "Compras" })";
+		var RActualizarListadoDeRemitoUrl = "@Url.Action("RemitosTransferidosLista", "remito", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/areas/remitos/remitosTransferidosLista.js"></script>
 	<script src="~/js/app/areas/remitos/verConteos.js"></script>

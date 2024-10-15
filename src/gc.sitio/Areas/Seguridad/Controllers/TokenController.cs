@@ -19,6 +19,12 @@ using gc.infraestructura.Dtos.Seguridad;
 using gc.infraestructura.Dtos.Administracion;
 using gc.infraestructura.Helpers;
 using gc.sitio.core.Servicios.Contratos;
+using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos.Almacen.Tr.Remito;
+using gc.api.core.Entidades;
+using System;
+using Azure;
+using Microsoft.AspNetCore.JsonPatch.Internal;
 
 namespace gc.sitio.Areas.Seguridad.Controllers
 {
@@ -101,8 +107,6 @@ namespace gc.sitio.Areas.Seguridad.Controllers
 
                     var tokenS = handler.ReadToken(token) as JwtSecurityToken;
 
-
-
                     //var roleUser = tokenS.Claims.First(c => c.Type.Contains("role")).Value.Split(',');
                     //var email = tokenS.Claims.First(c => c.Type.Contains("email")).Value;
                     //var user = tokenS.Claims.First(c => c.Type.Contains("User")).Value;
@@ -110,7 +114,12 @@ namespace gc.sitio.Areas.Seguridad.Controllers
                     var email = tokenS.Claims.First(c => c.Type.Contains("email")).Value;
                     var nombre = tokenS.Claims.First(c => c.Type.Contains("nya")).Value;
 
-
+                    if (!string.IsNullOrEmpty(user))
+                    {
+                        PermisosMenuPorUsuario = ObtenerPermisosAMenuPorUsuario(user, cliente).Result;
+                        //ViewData["PermisosMenuPorUsuario"] = ObtenerPermisosAMenuPorUsuario(user, cliente).Result;
+                        ViewBag.PermisosMenuPorUsuario = PermisosMenuPorUsuario;
+                    }
 
                     //se comienza a armar  el usuario autenticado. Se resguardara en una cookie
 
@@ -212,6 +221,28 @@ namespace gc.sitio.Areas.Seguridad.Controllers
 
             //al desloguear redirecciona a HOME
             return RedirectToAction("Index", new RouteValueDictionary(new { area = "", controller = "Home", action = "Index" }));
+        }
+
+        private async Task<List<UsuarioMenu>> ObtenerPermisosAMenuPorUsuario(string user, HttpClient cliente)
+        {
+
+            var link = $"{_appSettings.RutaBase}/api/apisecurity/ObtenerMenuPorUsuario?usuId={user}";
+            var response = await cliente.GetAsync(link);
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(stringData))
+                    _logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda usuId:{user}");
+
+                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<UsuarioMenu>>>(stringData);
+                return apiResponse?.Data;
+            }
+            else
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                return new List<UsuarioMenu>();
+            }
         }
 
         private string ObtenerIpCliente(HttpRequest request)

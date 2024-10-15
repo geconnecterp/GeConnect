@@ -80,16 +80,24 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			try
 			{
+				var result = Json(new { });
 				if (string.IsNullOrWhiteSpace(remCompte))
-					return Json(new { error = false, warn = true, msg = "Debe seleccionar un remito para confirmar selección." });
+					result = Json(new { error = false, warn = true, msg = "Debe seleccionar un remito para confirmar selección." });
 				var respuesta = await _remitoServicio.ConfirmarRecepcion(remCompte, UserName, TokenCookie);
 				if (respuesta == null)
-					return Json(new { error = false, warn = true, msg = "Algo salió mal al intentar confirmar la recepción del remito, intente nuevamente mas tarde." });
-				if (respuesta.Count > 1 && string.IsNullOrWhiteSpace(respuesta.First().resultado_msj))
-					return Json(new { error = false, warn = true, msg = "Algo salió mal al intentar confirmar la recepción del remito, intente nuevamente mas tarde." });
+					result = Json(new { error = false, warn = true, msg = "Algo salió mal al intentar confirmar la recepción del remito, intente nuevamente mas tarde." });
+				if (respuesta.Count > 1 || respuesta.Count == 0)
+					result = Json(new { error = false, warn = true, msg = "Algo salió mal al intentar confirmar la recepción del remito, intente nuevamente mas tarde." });
+				if (string.IsNullOrWhiteSpace(respuesta.First().resultado_msj) && respuesta.First().resultado != "0")
+					result = Json(new { error = false, warn = true, msg = "Algo salió mal al intentar confirmar la recepción del remito, intente nuevamente mas tarde." });
 				if (!string.IsNullOrWhiteSpace(respuesta.First().resultado_msj) && respuesta.First().resultado != "0")
-					return Json(new { error = false, warn = true, msg = $"Error ({respuesta.First().resultado}) {respuesta.First().resultado_msj}" });
-				return Json(new { error = false, warn = false, msg = "" });
+					result = Json(new { error = false, warn = true, msg = $"Error ({respuesta.First().resultado}) {respuesta.First().resultado_msj}" });
+				if (respuesta.First().resultado == "0")
+					result = Json(new { error = false, warn = false, msg = $"Confirmación exitosa." });
+				//else
+				//	result = Json(new { error = false, warn = true, msg = "Algo salió mal al intentar confirmar la recepción del remito, intente nuevamente mas tarde." });
+				Thread.Sleep(500);
+				return result;
 			}
 			catch (Exception ex)
 			{

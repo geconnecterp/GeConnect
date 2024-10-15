@@ -16,16 +16,18 @@ namespace gc.api.Controllers.Security
     {
         private readonly ISecurityServicio _securityServicio;
         private readonly IPasswordService _passwordService;
+        private readonly IMenuService _menuService;
         private readonly ILogger<ApiSecurityController> _logger;
         private readonly IMapper _mapper;
 
-        public ApiSecurityController(ISecurityServicio securityServicio, IPasswordService passwordService,IMapper mapper,
+        public ApiSecurityController(ISecurityServicio securityServicio, IPasswordService passwordService,IMapper mapper, IMenuService menuService,
             ILogger<ApiSecurityController> logger)
         {
             _securityServicio = securityServicio;
             _passwordService = passwordService;
             _logger = logger;
             _mapper = mapper;
+            _menuService = menuService;
         }
 
         [HttpPost]
@@ -42,5 +44,16 @@ namespace gc.api.Controllers.Security
 
             return Ok(response);
         }
-    }
+
+        [HttpGet]
+		[Route("[action]")]
+		public async Task<IActionResult> ObtenerMenuPorUsuario(string usuId)
+		{
+			_logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var respuesta = _menuService.GetMenuList(usuId);
+			var response = new ApiResponse<List<UsuarioMenu>>(respuesta);
+
+			return Ok(response);
+		}
+	}
 }
