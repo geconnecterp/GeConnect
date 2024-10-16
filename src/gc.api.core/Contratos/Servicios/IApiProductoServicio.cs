@@ -1,5 +1,6 @@
 using gc.api.core.Entidades;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
@@ -53,5 +54,7 @@ namespace gc.api.core.Contratos.Servicios
         RespuestaDto TRCargarCtrlSalida(string json);    
         List<TRVerConteosDto> TRVerConteos(string ti);
         List<RespuestaDto> TRValidarTransferencia(TRValidarTransferenciaRequest request);
+
+        List<ProductoNCPIDto> NCPICargarListaDeProductos(NCPICargarListaDeProductosRequest request);
 	}
 }

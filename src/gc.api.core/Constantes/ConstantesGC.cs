@@ -80,6 +80,9 @@
 			public const string SP_RTR_Setea_Estado = "SPGECO_RTR_Setea_Estado";
 			public const string SP_RTR_Ver_Conteos = "SPGECO_RTR_Ver_Conteos";
 			public const string SP_RTR_Confirma = "SPGECO_RTR_Confirmar";
+
+			public const string SP_OC_Productos = "SPGECO_OC_Productos";
+			//SPGECO_OC_Productos
 		}
 	}
 }

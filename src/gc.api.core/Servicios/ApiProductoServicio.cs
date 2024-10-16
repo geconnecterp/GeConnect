@@ -4,6 +4,7 @@ using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
@@ -577,16 +578,29 @@ namespace gc.api.core.Servicios
 			List<RespuestaDto> respuesta = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 			return respuesta;
 		}
+		public List<ProductoNCPIDto> NCPICargarListaDeProductos(NCPICargarListaDeProductosRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OC_Productos;
+			var ps = new List<SqlParameter>()
+			{
+				new("@tipo",request.Tipo),
+				new("@adm_id",request.AdmId),
+				new("@filtro",request.Filtro),
+				new("@id",request.Id),
+			};
+			List<ProductoNCPIDto> respuesta = _repository.EjecutarLstSpExt<ProductoNCPIDto>(sp, ps, true);
+			return respuesta;
+		}
 		//}
 
-        /// <summary>
-        /// para generar una nueva TI para tr sin autorizacion
-        /// </summary>
-        /// <param name="ti">(tipo de TR, pasar “E” 'Depósitos Sin Autorización y “O”  Box Sin Autorización)</param>
-        /// <param name="adm"></param>
-        /// <param name="usu"></param>
-        /// <returns></returns>
-        public TIRespuestaDto TRNuevaSinAuto(string ti, string adm, string usu)
+		/// <summary>
+		/// para generar una nueva TI para tr sin autorizacion
+		/// </summary>
+		/// <param name="ti">(tipo de TR, pasar “E” 'Depósitos Sin Autorización y “O”  Box Sin Autorización)</param>
+		/// <param name="adm"></param>
+		/// <param name="usu"></param>
+		/// <returns></returns>
+		public TIRespuestaDto TRNuevaSinAuto(string ti, string adm, string usu)
         {
             var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Nueva_Sin_Au;
             var ps = new List<SqlParameter>()
