@@ -57,9 +57,9 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 		}
 
-		public async Task<List<RemitoTransferidoDto>> ObtenerRemitosTransferidos(string admId, string token)
+		public async Task<List<RemitoGenDto>> ObtenerRemitosTransferidos(string admId, string token)
         {
-            ApiResponse<List<RemitoTransferidoDto>> apiResponse;
+            ApiResponse<List<RemitoGenDto>> apiResponse;
 
             HelperAPI helper = new HelperAPI();
 
@@ -78,7 +78,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                     _logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda admId:{admId}");
                     return new();
                 }
-                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RemitoTransferidoDto>>>(stringData);
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RemitoGenDto>>>(stringData);
                 return apiResponse.Data;
             }
             else

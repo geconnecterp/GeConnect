@@ -1,7 +1,10 @@
 ﻿
 namespace gc.infraestructura.Dtos.Almacen.Tr.Remito
 {
-    public class RemitoTransferidoDto : Dto
+    /// <summary>
+    /// Se utiliza en el sitio y tambien en el POCKET en RTI
+    /// </summary>
+    public class RemitoGenDto : Dto
     {
         public string re_compte { get; set; } = string.Empty;
         public DateTime re_fecha { get; set; }

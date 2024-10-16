@@ -15,7 +15,7 @@ namespace gc.api.core.Servicios
 		public RemitoServicio(IUnitOfWork uow, IOptions<PaginationOptions> options) : base(uow, options)
 		{
 		}
-		public List<RemitoTransferidoDto> ObtenerRemitosTransferidos(string admId)
+		public List<RemitoGenDto> ObtenerRemitosTransferidos(string admId)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RTR_Pendientes;
 			var ps = new List<SqlParameter>()
@@ -23,7 +23,7 @@ namespace gc.api.core.Servicios
 					new("@adm_id",admId),
 					new("@ree_id","%")
 			};
-			var listaTemp = _repository.EjecutarLstSpExt<RemitoTransferidoDto>(sp, ps, true);
+			var listaTemp = _repository.EjecutarLstSpExt<RemitoGenDto>(sp, ps, true);
 			return listaTemp;
 		}
 

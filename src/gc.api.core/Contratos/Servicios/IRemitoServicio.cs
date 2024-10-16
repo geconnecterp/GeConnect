@@ -7,7 +7,7 @@ namespace gc.api.core.Contratos.Servicios
 {
     public interface IRemitoServicio : IServicio<Remito>
     {
-        List<RemitoTransferidoDto> ObtenerRemitosTransferidos(string admId);
+        List<RemitoGenDto> ObtenerRemitosTransferidos(string admId);
         List<RespuestaDto> SeteaEstado(RSetearEstadoRequest request);
         List<RemitoVerConteoDto> VerConteos(string remCompte);
         List<RespuestaDto> ConfirmaRecepcion(RConfirmaRecepcionRequest reques);
