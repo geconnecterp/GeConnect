@@ -1,7 +1,7 @@
 ﻿
 namespace gc.infraestructura.Dtos.Almacen.Tr.Remito
 {
-    public class RemitoTransferidoDto : Dto
+    public class RemitoGenDto : Dto
     {
         public string re_compte { get; set; } = string.Empty;
         public DateTime re_fecha { get; set; }

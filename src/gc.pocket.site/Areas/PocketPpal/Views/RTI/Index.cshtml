@@ -1,0 +1,28 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
+    var callback = Url.Action("index", "rti", new { area = "pocketppal" });
+}
+
+<div class="row mt-2">
+
+    <div id="divGrRemitos"></div>
+
+</div>
+
+<div class="row mb-3">
+    <div class="d-flex justify-content-center">
+        <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-2"><i class="bx bx-ms bx-info-circle"></i></a>
+        <button type="button" id="btnrtiConf01" asp-action="CargaUL" asp-controller="rti" asp-area="PocketPpal" id="btnContinuarRpr" class="btn btn-success btn-sm m-2"><i class="bx bx-ms bx-right-arrow-alt"></i></button>
+    </div>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        
+    </script>
+
+    <script src="~/js/app/rti/rti01.js"></script>
+}

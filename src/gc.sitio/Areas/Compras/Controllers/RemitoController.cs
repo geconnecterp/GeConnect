@@ -34,12 +34,12 @@ namespace gc.sitio.Areas.Compras.Controllers
 				return RedirectToAction("Login", "Token", new { area = "seguridad" });
 			}
 
-			GridCore<RemitoTransferidoDto> grid;
+			GridCore<RemitoGenDto> grid;
 			try
 			{
 				// Carga por default al iniciar la pantalla
 				var items = await _remitoServicio.ObtenerRemitosTransferidos(AdministracionId, TokenCookie);
-				grid = ObtenerGridCore<RemitoTransferidoDto>(items);
+				grid = ObtenerGridCore<RemitoGenDto>(items);
 			}
 			catch (Exception ex)
 			{

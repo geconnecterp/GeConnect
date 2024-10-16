@@ -37,10 +37,10 @@ namespace gc.api.Controllers.Almacen
         public IActionResult ObtenerRemitosTransferidosLista(string admId)
         {
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-            List<RemitoTransferidoDto> remitos = _remSv.ObtenerRemitosTransferidos(admId);
-            var lista = _mapper.Map<List<RemitoTransferidoDto>>(remitos);
+            List<RemitoGenDto> remitos = _remSv.ObtenerRemitosTransferidos(admId);
+            var lista = _mapper.Map<List<RemitoGenDto>>(remitos);
 
-            var response = new ApiResponse<List<RemitoTransferidoDto>>(lista);
+            var response = new ApiResponse<List<RemitoGenDto>>(lista);
             return Ok(response);
         }
 
