@@ -4,6 +4,7 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
+using gc.infraestructura.Dtos.Gen;
 using Microsoft.Data.SqlClient;
 
 namespace gc.api.core.Servicios
@@ -17,13 +18,15 @@ namespace gc.api.core.Servicios
 
         public RprResponseDto AlmacenaBoxUl(RprABRequest req)
         {
-            var sp = ConstantesGC.StoredProcedures.SP_RPR_BOX_ALMACENA_UL;
+            var sp = ConstantesGC.StoredProcedures.SP_BOX_ALMACENA_UL;
 
             var ps = new List<SqlParameter>()
             {
                 new SqlParameter("@box_id",req.Box),
                 new SqlParameter("@ul_id",req.UL),
-                new SqlParameter("@adm_id",req.AdmId)
+                new SqlParameter("@adm_id",req.AdmId),
+                new SqlParameter("@sm_tipo","RI"),
+
             };
 
             List<RprResponseDto> response = _repository.EjecutarLstSpExt<RprResponseDto>(sp, ps, true);
@@ -50,7 +53,7 @@ namespace gc.api.core.Servicios
 
         public RprResponseDto ValidarBox(string box, string admid)
         {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_VALIDAR_BOX;
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_VALIDAR_BOX;
 
             var ps = new List<SqlParameter>()
             {
@@ -64,18 +67,18 @@ namespace gc.api.core.Servicios
             return response[0];
         }
 
-        public RprResponseDto ValidarUL(string ul, string admid)
+        public RespuestaDto  ValidarUL(string ul, string admid)
         {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_VALIDAR_UL;
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_VALIDAR_UL;
 
             var ps = new List<SqlParameter>()
             {
                 new SqlParameter("@ul_id",ul),
                 new SqlParameter("@adm_id",admid),
-
+                new SqlParameter("@sm_tipo","RI"),
             };
 
-            List<RprResponseDto> response = _repository.EjecutarLstSpExt<RprResponseDto>(sp, ps, true);
+            List<RespuestaDto> response = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 
             return response[0];
         }

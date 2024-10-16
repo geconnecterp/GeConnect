@@ -2,6 +2,7 @@
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
+using gc.infraestructura.Dtos.Gen;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -24,7 +25,7 @@ namespace gc.api.Controllers.Almacen
         }
 
         [HttpPost]
-        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RprResponseDto>))]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
         public IActionResult ValidarUL(RprABRequest req)
@@ -39,7 +40,7 @@ namespace gc.api.Controllers.Almacen
             }
 
             var res = _almSv.ValidarUL(req.UL, req.AdmId);
-            var response = new ApiResponse<RprResponseDto>(res);
+            var response = new ApiResponse<RespuestaDto>(res);
             return Ok(response);
         }
 

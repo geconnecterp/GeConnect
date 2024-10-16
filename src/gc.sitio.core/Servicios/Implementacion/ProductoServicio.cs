@@ -638,9 +638,9 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-        public async Task<RprResponseDto> ValidarUL(string ul, string adm, string token)
+        public async Task<RespuestaDto> ValidarUL(string ul, string adm, string token)
         {
-            ApiResponse<RprResponseDto> apiResponse;
+            ApiResponse<RespuestaDto> apiResponse;
 
             HelperAPI helper = new HelperAPI();
             RprABRequest request = new() { UL = ul, AdmId = adm };
@@ -657,9 +657,9 @@ namespace gc.sitio.core.Servicios.Implementacion
                 if (string.IsNullOrEmpty(stringData))
                 {
                     _logger.LogWarning($"La API no devolvió dato alguno. Parametro de busqueda {JsonConvert.SerializeObject(request)}");
-                    return new RprResponseDto();
+                    return new RespuestaDto() { resultado = -1, resultado_msj = "Hubo algun problema. Verifique el log local y de la api." }; 
                 }
-                apiResponse = JsonConvert.DeserializeObject<ApiResponse<RprResponseDto>>(stringData);
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
                 return apiResponse.Data;
             }
             else
@@ -669,13 +669,12 @@ namespace gc.sitio.core.Servicios.Implementacion
                 try
                 {
                     var res = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
-                    return new RprResponseDto() { Resultado = -1, Resultado_msj = res.Detail ?? "Hubo algun problema. Verifique el log local y de la api." };
+                    return new RespuestaDto() { resultado = -1, resultado_msj = res.Detail ?? "Hubo algun problema. Verifique el log local y de la api." };
                 }
                 catch
                 {
-                    return new RprResponseDto() { Resultado = -1, Resultado_msj = stringData };
+                    return new RespuestaDto() { resultado = -1, resultado_msj = stringData };
                 }
-
             }
         }
 
@@ -1300,7 +1299,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                     return new();
                 }
                 apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
-                if (apiResponse.Data.resultado == "0")
+                if (apiResponse.Data.resultado == 0)
                 {
                     return new RespuestaGenerica<RespuestaDto> { Ok = true, Mensaje = "OK" };
                 }
@@ -1340,7 +1339,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                     return new();
                 }
                 apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
-                if (apiResponse.Data.resultado == "0")
+                if (apiResponse.Data.resultado == 0)
                 {
                     return new RespuestaGenerica<RespuestaDto> { Ok = true, Mensaje = "OK" };
                 }
@@ -1379,7 +1378,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                     return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
                 }
                 apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
-                if (apiResponse.Data.resultado == "0")
+                if (apiResponse.Data.resultado == 0)
                 {
                     return new RespuestaGenerica<RespuestaDto> { Ok = true, Mensaje = "OK" };
                 }
@@ -1418,7 +1417,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                     return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
                 }
                 apiResponse = JsonConvert.DeserializeObject<ApiResponse<TIRespuestaDto>>(stringData);
-                if (apiResponse.Data.resultado == "0")
+                if (apiResponse.Data.resultado == 0)
                 {
                     return new RespuestaGenerica<TIRespuestaDto> { Ok = true, Mensaje = "OK" };
                 }
@@ -1457,7 +1456,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 					return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
-				if (apiResponse.Data.resultado == "0")
+				if (apiResponse.Data.resultado == 0)
 				{
 					return new RespuestaGenerica<RespuestaDto> { Ok = true, Mensaje = "OK" };
 				}
@@ -1496,7 +1495,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                     return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
                 }
                 apiResponse = JsonConvert.DeserializeObject<ApiResponse<TIRespuestaDto>>(stringData);
-                if (apiResponse.Data.resultado == "0")
+                if (apiResponse.Data.resultado == 0)
                 {
                     return new RespuestaGenerica<TIRespuestaDto> { Ok = true, Mensaje = "OK", Entidad = apiResponse.Data };
                 }

@@ -707,7 +707,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				var json = GenerarJsonDesdeListaDeProductosAutDetallelLista();
 				var respuesta = await _productoServicio.TRConfirmaAutorizaciones(json, AdministracionId, UserName, TokenCookie);
-				if (respuesta != null && respuesta.First().resultado == "0") //Genero correctamente el json, limpio variable de sesion de JSON y Detalle de productos
+				if (respuesta != null && respuesta.First().resultado == 0) //Genero correctamente el json, limpio variable de sesion de JSON y Detalle de productos
 				{
 					//Limpiar datos
 					TRAutAnaliza = [];
@@ -867,7 +867,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					return Json(new { error = false, warn = true, msg = "Algo no fue bien al intentar validar la transferencia, intente nuevamente mas tarde." });
 				if (respuesta != null && respuesta.Count > 1)
 					return Json(new { error = false, warn = true, msg = "Algo no fue bien al intentar validar la transferencia, intente nuevamente mas tarde." });
-				if (respuesta?.First().resultado != "0")
+				if (respuesta?.First().resultado != 0)
 					return Json(new { error = false, warn = true, msg = respuesta?.First().resultado_msj });
 				return Json(new { error = false, warn = false, msg = string.Empty });
 			}

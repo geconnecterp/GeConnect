@@ -645,7 +645,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 						}
 						JsonDeRP = aux;
 						var resultado = CargarNuevoComprobante();
-						if (resultado != null && resultado.resultado == "0") //Genero correctamente el json, limpio variable de sesion de JSON y Detalle de productos
+						if (resultado != null && resultado.resultado == 0) //Genero correctamente el json, limpio variable de sesion de JSON y Detalle de productos
 						{
 							JsonDeRP = new();
 							RPRDetalleDeProductosEnRP = [];
@@ -836,7 +836,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				respuesta = await _productoServicio.RPRConfirmarRPR(rp, AdministracionId, TokenCookie);
 				var resultado = respuesta.First();
-				if (resultado.resultado == "0")
+				if (resultado.resultado == 0)
 				{
 					return Json(new { error = false, warn = false, msg = "RPR Confirmado con éxito.", codigo = resultado.resultado });
 				}
@@ -1062,7 +1062,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
-				return new RespuestaDto() { resultado = "9999", resultado_msj = ex.Message };
+				return new RespuestaDto() { resultado = -1, resultado_msj = ex.Message };
 			}
 
 		}

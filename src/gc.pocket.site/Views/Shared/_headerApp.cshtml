@@ -1,5 +1,5 @@
 ﻿<!--(Nombre modulo,(NN,url))-->
-@model (string,(string,string))
+@model (string,(string,(string,bool)))
 @{
 }
 <div class="row">
@@ -11,11 +11,18 @@
 </div>
 <div class="row">
     <div class="d-flex d-inline-flex justify-content-md-between cabeceraBarra02">
-        <span class="m-3"> @Model.Item1.ToUpper()</span>
+        <span class="textoEncabezado m-3"> @Model.Item1.ToUpper()</span>
 
-        @if (!string.IsNullOrEmpty(Model.Item2.Item2) && !Model.Item2.Item2.Equals("#"))
+        @if (!string.IsNullOrEmpty(Model.Item2.Item2.Item1) && !Model.Item2.Item2.Item1.Equals("#"))
         {
-            <a href="@Model.Item2.Item2" class="btn btn-danger btn-xs sinbordefondo m-2"><icon class="bx bx-left-arrow-alt btn-xs me-1"></icon><span>Volver</span></a>
+            if(!Model.Item2.Item2.Item2)//boton especial
+            {
+                <a href="@Model.Item2.Item2" class="volverGen btn btn-danger btn-xs sinbordefondo m-2"><i class="bx bx-left-arrow-alt btn-xs me-1"></i><span>Volver</span></a>
+            }
+            else
+            {
+                <button type="button" id="btnVolverGen" class="volverGen btn btn-danger btn-xs sinbordefondo m-2"><i class="bx bx-left-arrow-alt btn-xs me-1"></i><span>Volver</span></button>
+            }
         }
     </div>
 </div>

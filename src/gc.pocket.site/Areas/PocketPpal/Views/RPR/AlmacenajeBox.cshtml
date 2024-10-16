@@ -1,24 +1,30 @@
 ﻿@{
     Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
 
-    // var grid = ViewBag.GrillaRPRAutorizacion as GridCore<ProductoBusquedaDto>;
+    var callback = Url.Action("almacenajeBox", "rpr", new { area = "pocketppal" });
 }
 
-<div class="row">
+<div class="row mt-3">
     <div class="col-sm-6">
         <div class="input-group input-group-sm">
-            <span class="input-group-text">UL: </span>
+            <span class="input-group-text" style="width:40px;">UL: </span>
             <input type="text" maxlength="16" id="txtUl" class="form-control inputEditable" placeholder="Ingresar UL..." />
         </div>
     </div>
     <div class="col-sm-6">
         <div class="input-group input-group-sm">
-            <span class="input-group-text">Box: </span>
-            <input type="text" maxlength="11" id="txtBox" class="form-control inputEditable" placeholder="Agregar Box" />
+            <span class="input-group-text" style="width:40px;">Box: </span>
+            <input type="text" maxlength="11" id="txtBox" disabled class="form-control inputEditable" placeholder="Agregar Box" />
         </div>
     </div>
 </div>
-<div class="row mt-2">
+<div class="row mb-3">
+    <div class="d-flex justify-content-center">
+        <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-2"><i class="bx bx-ms bx-info-circle"></i></a>
+        <button type="button" id="btnConfirmar" class="btn btn-success btn-sm m-2"><i class="bx bx-ms bx-right-arrow-alt"></i></button>
+    </div>
+</div>
+@* <div class="row mt-2">
     <div class="offset-sm-3 col-sm-2">
         <a asp-action="rpr" asp-controller="almacen" asp-area="gestion" id="btnVolver" class="btn btn-xs btn-danger"><i class="bx bx-left-arrow bx-sm"></i><span> Volver</span></a>
     </div>
@@ -28,7 +34,7 @@
     <div class="col-sm-2">
         <button type="button" id="btnConfirmar" class="btn btn-xs btn-success"><i class="bx bx-check-circle bx-sm"></i><span> Confirma</span></button>
     </div>
-</div>
+</div> *@
 
 @section scripts {
     <script type="text/javascript">

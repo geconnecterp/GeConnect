@@ -7,7 +7,7 @@
 {
     string nya = User.Claims.First(c => c.Type.Contains("nya")).Value;
 
-    var modelHeader = (subtitulo, (nya, "#"));
+    var modelHeader = (subtitulo, (nya, ("#",false)));
 
     <div class="text-center">
         <h1 class="display-4">Bienvenido a GECONet</h1>

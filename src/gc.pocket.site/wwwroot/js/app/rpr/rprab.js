@@ -1,6 +1,10 @@
 ﻿$(function () {
-    //$("#txtUl").on("blur", validaUL);
-    //$("#txtBox").on("blur", validaBox);
+    $("#txtUl").on("click", function () {
+        $("#txtBox").prop("disabled", true);
+    });
+    $("#txtBox").on("click", function () {
+        $("#txtBox").val("");
+    });
 
     $("#btnConfirmar").on("click", ConfirmarBoxUl);
     $(".inputEditable").on("keypress", analizaInput);
@@ -43,8 +47,9 @@ function validaUL() {
         }
         else {
             ControlaMensajeSuccess(obj.msg);
-            //solo pasa al otro campo.           
-            $("#txtBox").focus();
+            //solo pasa al otro campo.      
+
+            $("#txtBox").prop("disabled", false).focus();
             return true;
         }
     });

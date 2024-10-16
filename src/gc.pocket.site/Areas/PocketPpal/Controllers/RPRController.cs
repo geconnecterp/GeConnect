@@ -96,7 +96,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 //en este caso presenta el numero de autorización pendiente y el proveedor al que le pertenece.
                 string? volver = Url.Action("index", "rpr", new { area = "pocketppal" });
                 //ViewBag.AppItem = new AppItem { Nombre = $"Auto:{auto.Rp}-{auto.Cta_denominacion}" };
-                ViewBag.AppItem = new AppItem { Nombre = "Carga de Productos para la Aut.Pendiente", VolverUrl = volver ?? "#" };
+                ViewBag.AppItem = new AppItem { Nombre = "Carga de Productos para la Aut.Pendiente", VolverUrl = volver ?? "#", BotonEspecial = true };
 
                 ViewBag.FechaCotaJS = _settings.FechaVtoCota;
             }
@@ -117,8 +117,9 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             try
             {
                 //validaciones de parametros
-                if (up < 1) { 
-                return Json(new { error = true, msg = "Las unidades del bulto no puede ser 0 (cero) o tener valores negativos. Verifique, por favor." });
+                if (up < 1)
+                {
+                    return Json(new { error = true, msg = "Las unidades del bulto no puede ser 0 (cero) o tener valores negativos. Verifique, por favor." });
                 }
                 if (bulto < 0)
                 {
@@ -134,11 +135,11 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     var fecha = vto.ToDateTimeOrNull();
                     var tope = DateTime.Today.AddDays(_settings.FechaVtoCota);
 
-                    if ( fecha == null)
+                    if (fecha == null)
                     {
                         return Json(new { error = true, msg = "La fecha recepcionada no es válida. Verifique." });
                     }
-                    else if(fecha<tope)
+                    else if (fecha < tope)
                     {
                         return Json(new { error = true, msg = $"La fecha recepcionada no puede ser menor a {tope}. Verifique, por favor." });
                     }
@@ -147,7 +148,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 //valido cantidad. Si el resultado es igual a 0 dar error
                 var cantidad = ProductoBase.Up_id.Equals("07") ? (up * bulto) + unidad : bulto;
 
-                if(cantidad <= 0)
+                if (cantidad <= 0)
                 {
                     return Json(new { error = true, msg = "La cantidad dió como resultado 0 (cero). Verifique." });
                 }
@@ -332,11 +333,11 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     throw new NegocioException("No ha ingresado el numero de la Unidad de Lectura.");
                 }
                 var analisis = ul.Trim().Split('-', StringSplitOptions.RemoveEmptyEntries);
-                if(analisis.Length != 2)
+                if (analisis.Length != 2)
                 {
                     throw new NegocioException("Verifique la Unidad de Lectura. Algo no esta bien.");
                 }
-                if (analisis[0].Length!= 5)
+                if (analisis[0].Length != 5)
                 {
                     throw new NegocioException("Verifique la Unidad de Lectura. Algo no esta bien.");
                 }
@@ -347,7 +348,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                 var res = await _productoServicio.RPRRegistrarProductos(ProductoGenRegs, AdministracionId, ul, TokenCookie);
 
-                if (res.Resultado==0)
+                if (res.Resultado == 0)
                 {
                     return Json(new { error = false, warn = false, msg = $"La Carga del {ul} fue satisfactoria" });
                 }
@@ -356,7 +357,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     return Json(new { error = false, warn = true, msg = res.Resultado_msj });
                 }
             }
-            catch(NegocioException ex)
+            catch (NegocioException ex)
             {
                 return Json(new { error = false, warn = true, msg = ex.Message });
             }
@@ -374,6 +375,11 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         {
             //ComboDepositos();
             ViewBag.AppItem = new AppItem { Nombre = $"Auto:{AutorizacionPendienteSeleccionada.Rp}-{AutorizacionPendienteSeleccionada.Cta_denominacion}" };
+
+            string? volver = Url.Action("ResguardarAutorizacionProveedor", "rpr", new { area = "pocketppal", rp = AutorizacionPendienteSeleccionada.Rp });
+            //ViewBag.AppItem = new AppItem { Nombre = $"Auto:{auto.Rp}-{auto.Cta_denominacion}" };
+            ViewBag.AppItem = new AppItem { Nombre = "Carga de Productos en UL", VolverUrl = volver ?? "#", BotonEspecial = false };
+
             return View(AutorizacionPendienteSeleccionada);
         }
 
@@ -393,7 +399,9 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 return RedirectToAction("Login", "Token", new { area = "seguridad" });
             }
 
-
+            string? volver = Url.Action("rpr", "almacen", new { area = "gestion"});
+            //ViewBag.AppItem = new AppItem { Nombre = $"Auto:{auto.Rp}-{auto.Cta_denominacion}" };
+            ViewBag.AppItem = new AppItem { Nombre = "Almacenamiento en BOX", VolverUrl = volver ?? "#", BotonEspecial = false };
 
             return View();
         }
@@ -403,23 +411,23 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         {
             try
             {
-                if(string.IsNullOrEmpty(ul) || string.IsNullOrWhiteSpace(ul))
+                if (string.IsNullOrEmpty(ul) || string.IsNullOrWhiteSpace(ul))
                 {
                     throw new NegocioException("No se recepcionó la UL. Verifique");
                 }
-                var res = await _productoServicio.ValidarUL(ul,AdministracionId,TokenCookie);
-                if (res.Resultado == 0)
+                var res = await _productoServicio.ValidarUL(ul, AdministracionId, TokenCookie);
+                if (res.resultado == 0)
                 {
                     return Json(new { error = false, warn = false, msg = "La validación del UL fue exitosa." });
                 }
                 else
                 {
-                    throw new NegocioException(res.Resultado_msj);
-                }                
+                    throw new NegocioException(res.resultado_msj);
+                }
             }
             catch (NegocioException ex)
             {
-                return Json(new {error=false,warn=true,msg =ex.Message});
+                return Json(new { error = false, warn = true, msg = ex.Message });
             }
             catch (Exception ex)
             {
@@ -440,13 +448,13 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 var res = await _productoServicio.ValidarBox(box, AdministracionId, TokenCookie);
                 if (res.Resultado == 0)
                 {
-                    return Json(new { error = false, warn = false, msg = "La validación del Box fue exitosa.", box=res.Box_id_sugerido});
+                    return Json(new { error = false, warn = false, msg = "La validación del Box fue exitosa.", box = res.Box_id_sugerido });
                 }
                 else
                 {
                     throw new NegocioException(res.Resultado_msj);
                 }
-               
+
             }
             catch (NegocioException ex)
             {
@@ -460,7 +468,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         }
 
         [HttpPost]
-        public async Task<JsonResult> ConfirmaBoxUl(string box,string ul)
+        public async Task<JsonResult> ConfirmaBoxUl(string box, string ul)
         {
             try
             {
@@ -472,7 +480,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 {
                     throw new NegocioException("No se recepcionó el Box. Verifique");
                 }
-                var res = await _productoServicio.ConfirmaBoxUl(box,ul, AdministracionId, TokenCookie);
+                var res = await _productoServicio.ConfirmaBoxUl(box, ul, AdministracionId, TokenCookie);
                 if (res.Resultado == 0)
                 {
                     return Json(new { error = false, warn = false, msg = "La validación del Box fue exitosa." });

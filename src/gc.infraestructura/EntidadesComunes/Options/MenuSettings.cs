@@ -28,6 +28,7 @@ namespace gc.infraestructura.EntidadesComunes.Options
         public string Controller { get; set; } = string.Empty;
         public string Action { get; set; } = string.Empty;
         public bool ConContraste { get; set; }
+        public bool BotonEspecial { get; set; } = false;
         public int str { get; set; }
         public List<AppItem> Aplicaciones { get; set; } = new();
     }

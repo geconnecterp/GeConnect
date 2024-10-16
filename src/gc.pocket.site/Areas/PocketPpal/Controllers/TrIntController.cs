@@ -49,7 +49,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             //se verificará si el usuario tiene alguna TR PENDIENTE
             var resu = await _productoServicio.TIValidaPendiente(UserName, TokenCookie);
 
-            if (!resu.Ok && resu.Entidad.resultado == "-1")
+            if (!resu.Ok && resu.Entidad.resultado == -1)
             {
                 //tiene un tr pendiente por lo que se redirecciona a la carga de productos (carrito) previamente debo obtener los datos de la tr pendiente para cargar 
                 //la variable de sesion TIActual 

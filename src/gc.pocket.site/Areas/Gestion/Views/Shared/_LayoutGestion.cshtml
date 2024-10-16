@@ -3,15 +3,15 @@
 
     var appItem = ViewBag.AppItem as AppItem;
     var nombre = User.Claims.First(c => c.Type.Contains("nya")).Value;
-    (string, (string, string)) model;
+    (string, (string, (string,bool))) model;
     if (appItem == null)
     {
-        model = ("", (nombre, "#"));
+        model = ("", (nombre, ("#",false)));
     }
     else
     {
         // <!--(Nombre modulo,(NN,url))-->
-        model = (appItem.Nombre, (nombre, appItem.VolverUrl ?? "#"));
+        model = (appItem.Nombre, (nombre, (appItem.VolverUrl ?? "#",appItem.BotonEspecial)));
     }
 }
 <!DOCTYPE html>

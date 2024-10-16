@@ -2,7 +2,8 @@
 
 @{
     Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
-    //var opc = ViewBag.DepoId as IEnumerable<SelectListItem>;
+    var callback = Url.Action("CargaUL", "rpr", new { area = "pocketppal" });
+
 }
 <div class="container">
     <partial name="_rprCabecera" model="@Model" />
@@ -27,8 +28,12 @@
     </div>
     <div class="row">
         <div class="offset-sm-3 col-sm-6">
-            <a asp-action="ResguardarAutorizacionProveedor" asp-controller="rpr" asp-area="pocketppal" asp-route-rp="@Model.Rp" class="btn btn-info btn-sm"><i class="bx bx-sm bx-arrow-back"></i><span> Volver</span></a>
-            <button type="button" id="btnConfirmarRPR" asp-action="CargaUL" asp-controller="rpr" asp-area="PocketPpal" id="btnContinuarRpr" class="btn btn-danger btn-sm" ><i class="bx bx-sm bx-right-arrow"></i><span> Confirmar</span></button>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="d-flex justify-content-center">
+            <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-2"><i class="bx bx-ms bx-info-circle"></i></a>
+            <button type="button" id="btnConfirmarRPR" asp-action="CargaUL" asp-controller="rpr" asp-area="PocketPpal" id="btnContinuarRpr" class="btn btn-success btn-sm m-2"><i class="bx bx-ms bx-right-arrow-alt"></i></button>           
         </div>
     </div>
 </div>

@@ -25,6 +25,7 @@ using gc.api.core.Entidades;
 using System;
 using Azure;
 using Microsoft.AspNetCore.JsonPatch.Internal;
+using gc.infraestructura.Core.Enumeraciones;
 
 namespace gc.sitio.Areas.Seguridad.Controllers
 {
@@ -86,13 +87,13 @@ namespace gc.sitio.Areas.Seguridad.Controllers
             //inyectamos la ip en el header del request
             cliente.DefaultRequestHeaders.Add("X-ClientUsr", ip.ToString());
 
-            cliente.BaseAddress = new Uri(_configuration["AppSettings:RutaBase"]);
+            //cliente.BaseAddress = new Uri(_configuration["AppSettings:RutaBase"]);
             var admid = autenticar.Admid ?? "0000";
             var userModel = new { autenticar.UserName, autenticar.Password, admid };
             var userJson = JsonConvert.SerializeObject(userModel);
             var contentData = new StringContent(userJson, Encoding.UTF8, "application/json");
-
-            var response = await cliente.PostAsync("/api/apitoken", contentData);
+            var link = $"{_appSettings.RutaBase}/api/apitoken";
+            var response = await cliente.PostAsync(link, contentData);
 
             if (response.StatusCode == HttpStatusCode.OK)
             {

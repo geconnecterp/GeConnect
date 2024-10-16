@@ -1,13 +1,10 @@
 ﻿@model AutorizacionPendienteDto
 
-@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-
 @{
     Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
     var buscar = new BusquedaProducto();
     var cota = (int)ViewBag.FechaCotaJS;
+    var callback = Url.Action("ResguardarAutorizacionProveedor", "rpr", new { area = "pocketppal", rp = Model.Rp });
 }
 
 <div class="container">
@@ -50,10 +47,10 @@
             <div id="divRprGrid"></div>
         </div>
     </div>
-    <div class="row">
-        <div class="offset-sm-3 col-sm-6">
-            <button id="btnVolverRpr" class="btn btn-info btn-sm"><i class="bx bx-md bx-arrow-back"></i><span> Volver</span></button>
-            <a asp-action="CargaUL" asp-controller="rpr" asp-area="PocketPpal" id="btnContinuarRpr" class="btn btn-danger btn-sm" style="display:none;"><i class="bx bx-md bx-right-arrow"></i><span> Continuar</span></a>
+    <div class="row mb-3">
+        <div class="d-flex justify-content-center">
+            <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-2"><i class="bx bx-ms bx-info-circle"></i></a>
+            <a asp-action="CargaUL" asp-controller="rpr" asp-area="PocketPpal" id="btnContinuarRpr" class="btn btn-success btn-sm m-2" style="display:none;"><i class="bx bx-ms bx-right-arrow-alt"></i></a>
         </div>
     </div>
 </div>
@@ -74,6 +71,7 @@
         var EliminarProductoUrl = "@Url.Action("EliminarProducto", "rpr", new { area = "PocketPpal" })";
         var AcumularProductoUrl = "@Url.Action("AcumularProducto", "rpr", new { area = "PocketPpal" })";
         var RemplazarProductoUrl = "@Url.Action("RemplazarProducto", "rpr", new { area = "PocketPpal" })";
+        var VolverAnteriorUrl = "@Url.Action("index", "rpr", new { area = "PocketPpal" })";
         var homeRPRUrl = "@Url.Action("rpr", "almacen", new { area = "gestion" })";
         
     </script>
