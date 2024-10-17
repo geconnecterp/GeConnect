@@ -143,6 +143,15 @@ namespace gc.api.core.Servicios
 			return paginas;
 		}
 
+		public List<ProveedorFamiliaListaDto> GetProveedorFamiliaLista(string ctaId)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PROVEEDOR_LISTA;
+			var ps = new List<SqlParameter>();
+			var listaTemp = _repository.EjecutarLstSpExt<ProveedorFamiliaListaDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+
 		public List<ProveedorListaDto> GetProveedorLista()
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PROVEEDOR_LISTA;

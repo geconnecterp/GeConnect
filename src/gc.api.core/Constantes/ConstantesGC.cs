@@ -19,8 +19,9 @@
             public const string SP_CAJA_ACTUALIZA_MEPAID = "dbo.SP_CajaActualizaIdMePa";
             public const string SP_PROVEEDOR_LISTA= "dbo.SPGECO_Proveedores_lista";
             public const string SP_RUBRO_LISTA = "dbo.SPGECO_Rubros_lista";
+			public const string SP_PROVEEDOR_FAMILIA_LISTA = "dbo.SPGECO_Proveedores_Fiamilia_lista";
 
-            public const string SP_PRODUCTO_BUSQUEDA = "dbo.spgeco_p_busqueda";
+			public const string SP_PRODUCTO_BUSQUEDA = "dbo.spgeco_p_busqueda";
 			public const string SP_PRODUCTO_BUSQUEDA_MUCHOS = "dbo.spgeco_p_busqueda_muchos";
 
 			public const string SP_INFOPROD_STKD = "dbo.spgeco_p_info_stk_depo";
@@ -82,7 +83,7 @@
 			public const string SP_RTR_Confirma = "SPGECO_RTR_Confirmar";
 
 			public const string SP_OC_Productos = "SPGECO_OC_Productos";
-			//SPGECO_OC_Productos
+			public const string SP_OC_Carga_Previa = "SPGECO_OC_Carga_previa";//PENDIENTE (No existe en la DB)
 		}
 	}
 }

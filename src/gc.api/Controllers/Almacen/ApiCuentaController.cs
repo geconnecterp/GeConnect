@@ -138,8 +138,20 @@ namespace gc.api.Controllers.Almacen
             return Ok(response);
         }
 
-        // POST api/<cuentasController>
-        [HttpPost]
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult GetProveedorFamiliaLista(string ctaId)
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			List<ProveedorFamiliaListaDto> proveedores = _cuentasSv.GetProveedorFamiliaLista(ctaId);
+			var lista = _mapper.Map<List<ProveedorFamiliaListaDto>>(proveedores);
+
+			var response = new ApiResponse<List<ProveedorFamiliaListaDto>>(lista);
+			return Ok(response);
+		}
+
+		// POST api/<cuentasController>
+		[HttpPost]
         public async Task<IActionResult> Post(CuentaDto datoDto)
         {
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");

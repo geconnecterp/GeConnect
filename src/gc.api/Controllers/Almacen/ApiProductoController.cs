@@ -8,8 +8,9 @@ namespace gc.api.Controllers.Almacen
     using gc.infraestructura.Core.Interfaces;
     using gc.infraestructura.Core.Responses;
     using gc.infraestructura.Dtos.Almacen;
-    using gc.infraestructura.Dtos.Almacen.Rpr;
-    using gc.infraestructura.Dtos.Almacen.Tr;
+	using gc.infraestructura.Dtos.Almacen.Request;
+	using gc.infraestructura.Dtos.Almacen.Rpr;
+	using gc.infraestructura.Dtos.Almacen.Tr;
     using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
     using gc.infraestructura.Dtos.CuentaComercial;
     using gc.infraestructura.Dtos.Gen;
@@ -589,6 +590,21 @@ namespace gc.api.Controllers.Almacen
 			var res = _productosSv.TRValidarTransferencia(request);
 
 			response = new ApiResponse<List<RespuestaDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult NCPICargarListaDeProductos(NCPICargarListaDeProductosRequest request)
+		{
+			ApiResponse<List<ProductoNCPIDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.NCPICargarListaDeProductos(request);
+
+			response = new ApiResponse<List<ProductoNCPIDto>>(res);
 
 			return Ok(response);
 		}

@@ -5,6 +5,7 @@
 	var menuList = ViewData["PermisosMenuPorUsuario"] as List<UsuarioMenu>;
 	var menuList2 = ViewBag.PermisosMenuPorUsuario as List<UsuarioMenu>;
 }
+
 <!-- Módulos -->
 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 	<li class="nav-item">
@@ -23,14 +24,18 @@
 		<ul class="dropdown-menu" aria-labelledby="navbarDropdown">
 			@* @if (menuList.Exists(x => x.mnu_id == 2))
 			{
-				<li><a asp-action="RPRAutorizacionesLista" asp-controller="compra" asp-area="Compras" id="btnRprAutorizacionesLista" class="dropdown-item"><span>RPR Autorizaciones</span></a></li>
+			<li><a asp-action="RPRAutorizacionesLista" asp-controller="compra" asp-area="Compras" id="btnRprAutorizacionesLista" class="dropdown-item"><span>RPR Autorizaciones</span></a></li>
 			} *@
 			<li><a asp-action="RPRAutorizacionesLista" asp-controller="compra" asp-area="Compras" id="btnRprAutorizacionesLista" class="dropdown-item"><span>RPR Autorizaciones</span></a></li>
 			<li><a asp-action="TRAutorizacionesLista" asp-controller="transferencia" asp-area="Compras" id="btnTrAutorizacionesLista" class="dropdown-item"><span>TR Autorizaciones</span></a></li>
 			<li><a asp-action="RemitosTransferidosLista" asp-controller="remito" asp-area="Compras" id="btnRemitosTransfePendLista" class="dropdown-item"><span>Remitos Transferidos Pendientes</span></a></li>
-			<li><a class="dropdown-item" href="javascript:void(0)">Otra función</a></li>
 			<li>
-				<hr class="dropdown-divider">
+				@* <a class="dropdown-item" href="#"> Ingreso de stock &raquo; </a> *@
+				<a class="dropdown-item" href="#"> Ingreso de stock         <i class='bx bxs-chevrons-right'></i> </a>
+				<ul class="submenu dropdown-menu">
+					<li><a asp-action="RPRAutorizacionesLista" asp-controller="compra" asp-area="Compras" id="btnRprAutorizacionesLista" class="dropdown-item"><span>Necesidades de Compra</span></a></li>
+					<li><a asp-action="TRAutorizacionesLista" asp-controller="transferencia" asp-area="Compras" id="btnTrAutorizacionesLista" class="dropdown-item"><span>Pedidos Internos</span></a></li>
+				</ul>
 			</li>
 			<li><a class="dropdown-item" href="javascript:void(0)">Próximamente...</a></li>
 		</ul>
@@ -104,3 +109,4 @@
 	</ul>
 </li>
 <!--/ User -->
+
