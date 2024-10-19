@@ -1,0 +1,44 @@
+﻿@model RemitoGenDto
+
+@{
+    Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
+    var buscar = new BusquedaProducto();
+    //var cota = (int)ViewBag.FechaCotaJS;
+    var callback = Url.Action("CargaProductos", "rti", new { area = "pocketppal", rm = Model.re_compte });
+}
+
+<div class="container">
+    <partial name="_rtiCabecera" model="@Model" />
+    <partial name="~/areas/gestion/views/producto/_ctrbuscarproducto.cshtml" model="@buscar" />
+    <partial name="~/areas/gestion/views/producto/_productoDetalle.cshtml" />
+
+    <div class="row">
+        <div class="col-sm-12">
+            <div id="divRtiGrid"></div>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="d-flex justify-content-center">
+            <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-2"><i class="bx bx-ms bx-info-circle"></i></a>
+            <a asp-action="CargaUL" asp-controller="rti" asp-area="PocketPpal" id="btnContinuarRTI" class="btn btn-success btn-sm m-2" style="display:none;"><i class="bx bx-ms bx-right-arrow-alt"></i></a>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        var productoBase = null; //se hidrata en busquedas.
+        var funcionBusquedaAvanzada = false;
+        var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "gestion" })";
+        var validarEstado = true;
+        var modulo = "rti";
+
+        var VolverAnteriorUrl = "@Url.Action("index", "rti", new { area = "PocketPpal" })";
+        var PresentarProductosSeleccionadosUrl = "@Url.Action("PresentarProductosSeleccionados", "rti", new { area = "PocketPpal" })";
+        var reguardarProductoEnListaUrl = "@Url.Action("ReguardarProductoEnLista", "rti", new { area = "PocketPpal" })";
+        var AcumularProductoUrl = "@Url.Action("AcumularProducto", "rti", new { area = "PocketPpal" })";
+        var RemplazarProductoUrl = "@Url.Action("RemplazarProducto", "rti", new { area = "PocketPpal" })";
+    </script>
+    <script src="~/js/app/busquedas.js" type="text/javascript"></script>
+    <script src="~/js/app/rti/rti02.js" type="text/javascript"></script>
+}

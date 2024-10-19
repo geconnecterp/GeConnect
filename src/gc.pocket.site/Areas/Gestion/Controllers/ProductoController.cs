@@ -19,10 +19,11 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         private readonly ICuentaServicio _ctaSv;
         private readonly IRubroServicio _rubSv;
         private readonly IProductoServicio _productoServicio;
+        private readonly IRemitoServicio _remitoSv;
         private readonly BusquedaProducto _busqueda;
 
         public ProductoController(ILogger<ProductoController> logger, IOptions<MenuSettings> options, IOptions<AppSettings> options1, IOptions<BusquedaProducto> busqueda,
-            ICuentaServicio cuentaServicio, IHttpContextAccessor context, IRubroServicio rubSv, IProductoServicio productoServicio) : base(options1, options, context)
+            ICuentaServicio cuentaServicio, IHttpContextAccessor context, IRubroServicio rubSv, IProductoServicio productoServicio, IRemitoServicio remitoServicio) : base(options1, options, context)
         {
             _logger = logger;
             _menuSettings = options.Value;
@@ -30,6 +31,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
             _rubSv = rubSv;
             _busqueda = busqueda.Value;
             _productoServicio = productoServicio;
+            _remitoSv = remitoServicio;
         }
         public IActionResult Index(bool actualizar = false)
         {
@@ -65,7 +67,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         }
 
         [HttpPost]
-        public async Task<JsonResult> BusquedaBase(string busqueda,bool validarEstado=false, bool acumularProductos = false)
+        public async Task<JsonResult> BusquedaBase(string busqueda,bool validarEstado=false, bool acumularProductos = false,string modulo = "RPR")
         {
             try
             {                
@@ -104,11 +106,23 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
                     }
                     //Validación si pertenece o no al proveedor
 
-                    if (AutorizacionPendienteSeleccionada != null &&
-                        !AutorizacionPendienteSeleccionada.Cta_id.Equals(producto.Cta_id) && validarEstado)
+                    if (modulo.ToUpper().Equals("RTI"))
                     {
-                        warn = true;
-                        msg = $"El Producto NO pertenece al actual proveedor. Pertenece al Proveedor {producto.Cta_denominacion}.";
+                        //verificamos si el producto se encuentra en el remito.
+                        var resp = await _remitoSv.VerificaProductoEnRemito(rm: RemitoActual.re_compte, pId: producto.P_id,TokenCookie);
+                        if (resp.resultado != 0)
+                        {
+                            return Json(new { error = true, msg = resp.resultado_msj });
+                        }
+                    }
+                    else
+                    {
+                        if (AutorizacionPendienteSeleccionada != null &&
+                            !AutorizacionPendienteSeleccionada.Cta_id.Equals(producto.Cta_id) && validarEstado)
+                        {
+                            warn = true;
+                            msg = $"El Producto NO pertenece al actual proveedor. Pertenece al Proveedor {producto.Cta_denominacion}.";
+                        }
                     }
 
                     //se resguarda el producto recien buscado.

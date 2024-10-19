@@ -1,0 +1,58 @@
+﻿@model GridCore<ProductoGenDto>
+
+@{
+    var dataMod = new ProductoGenDto();
+    var alt = true;
+    string clase = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive-sm table-wrapper">
+            <table class="table table-sm mb-0" id="tbProdRTI">
+                <thead class=" table-dark">
+                    <tr class="header">
+                        <th scope="col" style="width:5%">IT</th>
+                        <th scope="col" style="width:10%">ID</th>
+                        <th scope="col" style="width:25%">Desc</th>
+                        <th scope="col" style="width:10%">Un.B.</th>
+                        <th scope="col" style="width:10%">Bto</th>
+                        <th scope="col" style="width:10%">Un</th>
+                        <th scope="col" style="width:20%">Cant</th>
+                       @*  <th scope="col" style="width:10%" class="ocultar"></th> *@
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ListaDatos)
+                    {
+                        if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+                        var id = $"btnDel{item.p_id}";
+                        <tr class="@clase">
+                            <td>@item.item</td>
+                            <td>@item.p_id</td>
+                            <td>@item.p_desc</td>
+                            <td>@item.unidad_pres</td>
+                            <td>@item.bulto</td>
+                            <td>@item.us</td>
+                            <td>@item.cantidad</td>
+                            @* <td><button type="button" id=@id class="btnDelete btn btn-sm btn-secondary" onclick="EliminarProducto('@item.p_id')" value="@item.p_id"><i class="bx btn-xs bx-trash-alt"></i></button></td> *@
+                        </tr>
+                    }
+                    @* <tr>
+                    <td colspan="9">
+                    @Html.PagedListPager(
+                    (IPagedList)Model.ListaDatos,
+                    page => Url.Action("Index", "producto", new { page = page, area = "Personas", sort = Model.Sort, sortdir = sortDirInv }), new PagedListRenderOptions
+                    {
+                    LiElementClasses = new string[] { "page-item" },
+                    PageClasses = new string[] { "page-link" },
+                    Display = PagedListDisplayMode.IfNeeded
+                    })
+                    </td>
+                    </tr> *@
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

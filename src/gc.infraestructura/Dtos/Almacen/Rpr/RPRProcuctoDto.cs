@@ -4,7 +4,8 @@
     {   //                                                                                                              CTRL        sp
         public int item { get; set; }//0                                                                                            X
         //public string Ope { get; set; }                   
-        public string? rp { get; set; }//0                                                                               
+        public string? re { get; set; }//0
+        public string? rp { get; set; }                               //
         public string ti { get; set; }//                                                                                X           X
         public string? ul_id { get; set; }//0                                                                            x
         //public string Nro_auto { get; set; } = string.Empty;

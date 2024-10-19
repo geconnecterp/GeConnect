@@ -294,7 +294,7 @@ namespace gc.api.Controllers.Almacen
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RespuestaDto>>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
-        public IActionResult RPRCargar(RPRCargarRequest request)
+        public IActionResult RPRCargar(CargarJsonGenRequest request)
         {
             ApiResponse<List<RespuestaDto>> response;
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");

@@ -50,5 +50,7 @@
         public decimal Unidad { get; set; }
         public decimal Cantidad { get; set; }
         public string oc_compte { get; set; } = string.Empty;
+        public short p_con_vto_min { get; set; }
+        public DateTime? p_con_vto_ctl { get; set; }
     }
 }
