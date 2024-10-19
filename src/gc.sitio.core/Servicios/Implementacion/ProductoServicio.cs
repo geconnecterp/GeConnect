@@ -459,7 +459,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             ApiResponse<List<RespuestaDto>> apiResponse;
 
             HelperAPI helper = new();
-            RPRCargarRequest request = new() { json_str = json_str };
+            CargarJsonGenRequest request = new() { json_str = json_str };
             HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
             HttpResponseMessage response;
 

@@ -8,12 +8,15 @@ namespace gc.api.Controllers.Almacen
     using gc.infraestructura.Core.Responses;
     using gc.infraestructura.Dtos.Administracion;
     using gc.infraestructura.Dtos.Almacen;
+    using gc.infraestructura.Dtos.Almacen.Rpr;
+    using gc.infraestructura.Dtos.Almacen.Tr.Remito;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json;
     using System.Collections.Generic;
     using System.Net;
     using System.Reflection;
+    using System.Runtime.Intrinsics.Arm;
     using System.Threading.Tasks;
 
     [Authorize]
@@ -105,7 +108,7 @@ namespace gc.api.Controllers.Almacen
             var response = new ApiResponse<bool>(res);
 
             return Ok(response);
-        }
+        }       
 
         // PUT api/<depositosController>/5
         [HttpPut("{id}")]

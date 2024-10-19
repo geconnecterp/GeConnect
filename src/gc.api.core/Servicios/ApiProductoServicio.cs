@@ -294,7 +294,7 @@ namespace gc.api.core.Servicios
             return productos;
         }
 
-        public List<RespuestaDto> RPRCargar(RPRCargarRequest request)
+        public List<RespuestaDto> RPRCargar(CargarJsonGenRequest request)
         {
             var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_CARGAR;
             var ps = new List<SqlParameter>()

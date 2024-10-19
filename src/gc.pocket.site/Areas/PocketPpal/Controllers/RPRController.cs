@@ -80,7 +80,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 auto = AutorizacionesPendientes.SingleOrDefault(x => x.Rp.Equals(rp));
                 if (auto == null)
                 {
-                    TempData["Warn"] = $"No se pudo seleccionar la Autorización {rp}. Intente de nuevo.";
+                    TempData["warn"] = $"No se pudo seleccionar la Autorización {rp}. Intente de nuevo.";
                     return RedirectToAction("Index");
                 }
 
@@ -90,7 +90,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     //si es distinto como en este caso, se inicializan las variables.
                     AutorizacionPendienteSeleccionada = auto;
                     ProductoGenRegs = [];
-                    RPRProductoTemp = new();
+                    ProductoTemp = new();
                 }
                 //este viewbag es para que aparezca en la segunda fila del encabezado la leyenda que se quiera.
                 //en este caso presenta el numero de autorización pendiente y el proveedor al que le pertenece.
@@ -183,7 +183,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 if (res)
                 {
                     //ya se encuentra cargado el producto, se debe avisar.
-                    RPRProductoTemp = item;
+                    ProductoTemp = item;
                     msg = $"El Producto {item.p_desc} ya se encuentra cargado. ¿Desea CANCELAR la operación, REMPLAZAR las cantidades existentes o ACUMULAR las cantidades?";
                     return Json(new { error = false, warn = true, msg, p_id = item.p_id });
                 }
@@ -261,32 +261,32 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             try
             {
                 //Hubo problemas al intentar acumular el producto con la ya cargada en la lista de Productos seleccionados para el RPR."
-                var item = ProductoGenRegs.SingleOrDefault(p => p.p_id.Equals(RPRProductoTemp.p_id));
+                var item = ProductoGenRegs.SingleOrDefault(p => p.p_id.Equals(ProductoTemp.p_id));
                 if (item == null)
                 {
                     throw new Exception(infraestructura.Constantes.Constantes.MensajeError.RPR_PRODUCTO_NO_ENCONTRADO_ACUMULACION);
                 }
                 //acumulando
                 //se verifica cual es el tipo de unidad que se utiliza
-                if (RPRProductoTemp.up_id.Equals("07"))
+                if (ProductoTemp.up_id.Equals("07"))
                 {//son unidades enteras. 
-                    if (!RPRProductoTemp.unidad_pres.Equals(item.unidad_pres))
+                    if (!ProductoTemp.unidad_pres.Equals(item.unidad_pres))
                     {
                         throw new Exception(infraestructura.Constantes.Constantes.MensajeError.RPR_PRODUCTO_ACUMULACION_UNIDAD_BULTO_DISTINTO);
                     }
 
-                    item.bulto += RPRProductoTemp.bulto;
-                    item.cantidad += RPRProductoTemp.cantidad;
-                    item.us += RPRProductoTemp.us;
+                    item.bulto += ProductoTemp.bulto;
+                    item.cantidad += ProductoTemp.cantidad;
+                    item.us += ProductoTemp.us;
                 }
                 else
                 { //son unidades decimales. Directamente se suman.
-                    item.unidad_pres += RPRProductoTemp.unidad_pres;
-                    item.bulto += RPRProductoTemp.bulto;
-                    item.cantidad += RPRProductoTemp.cantidad;
+                    item.unidad_pres += ProductoTemp.unidad_pres;
+                    item.bulto += ProductoTemp.bulto;
+                    item.cantidad += ProductoTemp.cantidad;
                 }
                 //Para agregar el acumulado primero debo sacar el producto de la lista
-                _ = EliminaProductoBase(RPRProductoTemp.p_id);
+                _ = EliminaProductoBase(ProductoTemp.p_id);
                 //traigo la lista, lo agrego y lo vuelvo a resguardar
                 var lista = ProductoGenRegs;
                 lista.Add(item);
@@ -307,9 +307,9 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             try
             {
                 //se toma la lista y se extrae el producto a ser reemplazado.
-                var lista = ProductoGenRegs.Where(p => !p.p_id.Equals(RPRProductoTemp.p_id)).ToList();
+                var lista = ProductoGenRegs.Where(p => !p.p_id.Equals(ProductoTemp.p_id)).ToList();
                 //Se agrega a lista el producto que esta en temp
-                lista.Add(RPRProductoTemp);
+                lista.Add(ProductoTemp);
                 //resguardamos la lista
                 ProductoGenRegs = lista;
 

@@ -4,6 +4,7 @@ using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Administracion;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.Tr.Remito;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -22,6 +23,7 @@ namespace gc.sitio.core.Servicios.Implementacion
     {
         private const string RutaAPI = "/api/apideposito";
         private const string Accion = "/GetDepositoXAdm";
+        private const string RTI_REMITOS_PENDIENTES = "/RemitosPendientes";
         private readonly AppSettings _appSettings;
 
         public DepositoServicio(IOptions<AppSettings> options, ILogger<DepositoServicio> logger) : base(options, logger)
@@ -59,6 +61,47 @@ namespace gc.sitio.core.Servicios.Implementacion
 
             }
             catch (NegocioException ex )
+            {
+                _logger.LogError(ex, "Error al intentar obtener Depositos para el Combo.");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al intentar obtener Depositos para el Combo.");
+                throw;
+            }
+        }
+
+        public async Task<List<RemitoGenDto>> ObtenerRemitos(string admId, string token)
+        {
+            ApiResponse<List<RemitoGenDto>>? respuesta;
+            string stringData;
+            try
+            {
+                HelperAPI helper = new();
+                HttpClient client = helper.InicializaCliente(token);
+                HttpResponseMessage response = null;
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{RTI_REMITOS_PENDIENTES}?adm_id={admId}";
+                response = client.GetAsync(link).GetAwaiter().GetResult();
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                    respuesta = JsonConvert.DeserializeObject<ApiResponse<List<RemitoGenDto>>>(stringData);
+                    if (response == null)
+                    {
+                        throw new NegocioException("No se desserializo correctamente la lista de Depositos. Verifique");
+                    }
+                    return respuesta.Data;
+                }
+                else
+                {
+                    stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                    _logger.LogError($"Error al intentar obtener los Depositos para el Combo: {stringData}");
+                    throw new NegocioException("Hubo un error al intentar obtener los Depositos para el Combo");
+                }
+
+            }
+            catch (NegocioException ex)
             {
                 _logger.LogError(ex, "Error al intentar obtener Depositos para el Combo.");
                 throw;

@@ -6,6 +6,7 @@ using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Info;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
+using gc.infraestructura.Dtos.Almacen.Tr.Remito;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes;
 using gc.infraestructura.EntidadesComunes.Options;
@@ -525,7 +526,7 @@ namespace gc.pocket.site.Controllers
             }
         }
 
-        protected ProductoGenDto RPRProductoTemp
+        protected ProductoGenDto ProductoTemp
         {
             get
             {
@@ -562,6 +563,44 @@ namespace gc.pocket.site.Controllers
         }
 
 
+
+        #endregion
+        #region Variables para RTI
+        public List<RemitoGenDto> RemitosPendientes
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("RemitosPendientes");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<RemitoGenDto>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("RemitosPendientes", json);
+            }
+        }
+
+        public RemitoGenDto RemitoActual
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("RemitoActual");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return null;
+                }
+                return JsonConvert.DeserializeObject<RemitoGenDto>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("RemitoActual", json);
+            }
+        }
 
         #endregion
 

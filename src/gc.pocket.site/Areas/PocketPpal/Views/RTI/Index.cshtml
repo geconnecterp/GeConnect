@@ -15,13 +15,16 @@
 <div class="row mb-3">
     <div class="d-flex justify-content-center">
         <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-2"><i class="bx bx-ms bx-info-circle"></i></a>
-        <button type="button" id="btnrtiConf01" asp-action="CargaUL" asp-controller="rti" asp-area="PocketPpal" id="btnContinuarRpr" class="btn btn-success btn-sm m-2"><i class="bx bx-ms bx-right-arrow-alt"></i></button>
+        <button type="button" disabled id="btnrtiConf01" asp-action="CargaUL" asp-controller="rti" asp-area="PocketPpal" id="btnContinuarRpr" class="btn btn-success btn-sm m-2"><i class="bx bx-ms bx-right-arrow-alt"></i></button>
     </div>
 </div>
 
 @section scripts{
     <script type="text/javascript">
-        
+        var remitoSeleccionado = null;
+        var ObtenerRemitosPendientesURL = "@Url.Action("ObtenerRemitos","rti",new{area="pocketppal"})";
+        var CargaProductosUrl = "@Url.Action("CargaProductos", "rti", new { area = "pocketppal" })";
+
     </script>
 
     <script src="~/js/app/rti/rti01.js"></script>

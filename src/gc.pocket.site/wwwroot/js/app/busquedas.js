@@ -72,34 +72,43 @@ function buscarProducto() {
     AbrirWaiting();
     var _post = busquedaProdBaseUrl;
     var valor = $("#Busqueda").val();
+    var mod = "RPR";
+    var valEst = false;
 
-    var datos = {};
+    if (typeof modulo !== 'undefined') {
+        mod = modulo;
+    }
+   
     if (typeof validarEstado !== 'undefined') {
-        datos = { busqueda: valor, validarEstado };
+        valEst = validarEstado;
     }
-    else {
-        datos = { busqueda: valor };
-    }
+    
+    var datos = { busqueda: valor, validarEstado:valEst,modulo:mod };
 
     PostGen(datos, _post, function (obj) {
+        CerrarWaiting();
+
         if (obj.error === true) {
-            ControlaMensajeError(obj.msg);
-            productoBase = null;
-            $("#estadoFuncion").val(false);
-            $("#btnBusquedaBase").prop("disabled", false);
-            CerrarWaiting();
-            $("#Busqueda").focus();
-            return true;
+            AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                productoBase = null;
+                $("#estadoFuncion").val(false);
+                $("#btnBusquedaBase").prop("disabled", false);
+                    $("#msjModal").modal("hide");
+                $("#Busqueda").focus();
+                return true;
+            }, false, ["Aceptar"], "error!", null);           
         }
         else if (obj.warn === true) {
             if (obj.producto.p_Id === "0000-0000") {
-                //un enter sin ningun codigo
-                productoBase = null;
-                $("#estadoFuncion").val(false);
-                ControlaMensajeWarning(obj.msg);
-                $("#btnBusquedaBase").prop("disabled", false);
-                CerrarWaiting();
-                return true;
+
+                AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                    productoBase = null;
+                    $("#estadoFuncion").val(false);
+                    $("#btnBusquedaBase").prop("disabled", false);
+                    $("#msjModal").modal("hide");
+                    $("#Busqueda").focus();
+                    return true;
+                }, false, ["Aceptar"], "error!", null);                   
             }
             else if (obj.producto.p_Id === "NO") {
                 //se busco un codigo pero no se encontró

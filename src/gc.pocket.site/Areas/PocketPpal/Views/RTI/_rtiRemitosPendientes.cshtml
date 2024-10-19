@@ -1,0 +1,51 @@
+﻿
+@model GridCore<RemitoGenDto>
+@{
+    var dataMod = new RemitoGenDto();
+    var alt = true;
+    string clase = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+    int cont = 0;
+}
+<div class="table-responsive table-wrapper">
+    <table class="table table-sm mb-0" id="tbRemPend">
+        <thead class=" table-dark">
+            <tr class="header">
+                <th scope="col" style="width:1%; display:none"></th>
+                <th scope="col">Remito N°</th>
+                <th scope="col">TR N°</th>
+                <th scope="col">Suc.Origen</th>
+                <th scope="col">Fecha</th>
+                @* <th scope="col"></th> *@
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ListaDatos)
+            {
+                cont++;
+                if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+                <tr class="@clase" onclick="seleccionaRegistroRP(this)">
+                    <td style="display:none;">@cont </td>
+                    <td style="min-width:200px;">@item.re_compte</td>
+                    <td>@item.pv_compte</td>
+                    <td>@item.adm_nombre</td>
+                    <td>@item.re_fecha</td>
+                    @* <td><a asp-action="ResguardarAutorizacionProveedor" asp-controller="rpr" asp-area="pocketppal" class="btn btn-xs btn-secondary" asp-route-rp="@item.Rp"> <i class="bx bxs-send bx-xs"></i></a></td> *@
+                </tr>
+            }
+            @* <tr>
+            <td colspan="9">
+            @Html.PagedListPager(
+            (IPagedList)Model.ListaDatos,
+            page => Url.Action("Index", "producto", new { page = page, area = "Personas", sort = Model.Sort, sortdir = sortDirInv }), new PagedListRenderOptions
+            {
+            LiElementClasses = new string[] { "page-item" },
+            PageClasses = new string[] { "page-link" },
+            Display = PagedListDisplayMode.IfNeeded
+            })
+            </td>
+            </tr> *@
+        </tbody>
+    </table>
+</div>

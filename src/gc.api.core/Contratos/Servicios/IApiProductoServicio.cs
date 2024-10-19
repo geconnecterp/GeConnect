@@ -25,7 +25,7 @@ namespace gc.api.core.Contratos.Servicios
         List<AutorizacionPendienteDto> RPRObtenerAutorizacionPendiente(string adm);
         RegistroResponseDto RPRRegistrarProductos(string json);
         List<AutoComptesPendientesDto> RPRObtenerComptesPendientes(string adm);
-        List<RespuestaDto> RPRCargar(RPRCargarRequest request);
+        List<RespuestaDto> RPRCargar(CargarJsonGenRequest request);
         List<RespuestaDto> RPRElimina(string rp);
         List<RespuestaDto> RPRConfirma(string rp, string adm_id);
 

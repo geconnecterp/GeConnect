@@ -3,12 +3,13 @@ using gc.api.Controllers.Base;
 using gc.api.core.Contratos.Servicios;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Responses;
-using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr.Remito;
 using gc.infraestructura.Dtos.Almacen.Tr.Request;
 using gc.infraestructura.Dtos.Gen;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 using System.Reflection;
 
 namespace gc.api.Controllers.Almacen
@@ -34,50 +35,77 @@ namespace gc.api.Controllers.Almacen
 
         [HttpGet]
         [Route("[action]")]
-        public IActionResult ObtenerRemitosTransferidosLista(string admId)
+        public IActionResult ObtenerRemitosTransferidosLista(string admId, string reeId = "%")
         {
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-            List<RemitoGenDto> remitos = _remSv.ObtenerRemitosTransferidos(admId);
+            List<RemitoGenDto> remitos = _remSv.ObtenerRemitosPendientes(admId, reeId);
             var lista = _mapper.Map<List<RemitoGenDto>>(remitos);
 
             var response = new ApiResponse<List<RemitoGenDto>>(lista);
             return Ok(response);
         }
 
-		[HttpPost]
-		[Route("[action]")]
-		public IActionResult SetearEstado(RSetearEstadoRequest request)
-		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			List<RespuestaDto> remitos = _remSv.SeteaEstado(request);
-			var lista = _mapper.Map<List<RespuestaDto>>(remitos);
+        [HttpPost]
+        [Route("[action]")]
+        public IActionResult SetearEstado(RSetearEstadoRequest request)
+        {
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            List<RespuestaDto> remitos = _remSv.SeteaEstado(request);
+            var lista = _mapper.Map<List<RespuestaDto>>(remitos);
 
-			var response = new ApiResponse<List<RespuestaDto>>(lista);
-			return Ok(response);
-		}
+            var response = new ApiResponse<List<RespuestaDto>>(lista);
+            return Ok(response);
+        }
 
-		[HttpGet]
-		[Route("[action]")]
-		public IActionResult VerConteos(string remCompte)
-		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			List<RemitoVerConteoDto> remitos = _remSv.VerConteos(remCompte);
-			var lista = _mapper.Map<List<RemitoVerConteoDto>>(remitos);
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult VerConteos(string remCompte)
+        {
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            List<RemitoVerConteoDto> remitos = _remSv.VerConteos(remCompte);
+            var lista = _mapper.Map<List<RemitoVerConteoDto>>(remitos);
 
-			var response = new ApiResponse<List<RemitoVerConteoDto>>(lista);
-			return Ok(response);
-		}
+            var response = new ApiResponse<List<RemitoVerConteoDto>>(lista);
+            return Ok(response);
+        }
 
-		[HttpPost]
-		[Route("[action]")]
-		public IActionResult ConfirmarRecepcion(RConfirmaRecepcionRequest request)
-		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			List<RespuestaDto> remitos = _remSv.ConfirmaRecepcion(request);
-			var lista = _mapper.Map<List<RespuestaDto>>(remitos);
+        [HttpPost]
+        [Route("[action]")]
+        public IActionResult ConfirmarRecepcion(RConfirmaRecepcionRequest request)
+        {
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            List<RespuestaDto> remitos = _remSv.ConfirmaRecepcion(request);
+            var lista = _mapper.Map<List<RespuestaDto>>(remitos);
 
-			var response = new ApiResponse<List<RespuestaDto>>(lista);
-			return Ok(response);
-		}
-	}
+            var response = new ApiResponse<List<RespuestaDto>>(lista);
+            return Ok(response);
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult VerificaProductoEnRemito(string remCompte, string pId)
+        {
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            RespuestaDto resp = _remSv.VerificaProductoEnRemito(remCompte, pId);
+            
+
+            var response = new ApiResponse<RespuestaDto>(resp);
+            return Ok(response);
+        }
+
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RespuestaDto>>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult RTRCargarConteos(CargarJsonGenRequest request)
+        {
+            ApiResponse<RespuestaDto> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            RespuestaDto res = _remSv.RTRCargarConteos(request);
+
+            response = new ApiResponse<RespuestaDto>(res);
+
+            return Ok(response);
+        }
+    }
 }
