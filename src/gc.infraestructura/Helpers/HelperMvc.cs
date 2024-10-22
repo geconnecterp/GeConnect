@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using gc.infraestructura.Dtos.Almacen;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace gc.infraestructura.Helpers
 {
@@ -25,5 +26,5 @@ namespace gc.infraestructura.Helpers
         {
             return ListaGenerica(listado, "Id", "Descripcion");
         }
-    }
+	}
 }

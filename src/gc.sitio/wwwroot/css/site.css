@@ -45,6 +45,24 @@ fieldset {
     border-radius: 4px;
 }
 
+.fixed-width {
+    width:100px;
+}
+
+.fixed-padding-top {
+    padding-top: 5px;
+}
+
+.fixed-font-size {
+    font-size: small;
+    width: 96%;
+}
+
+.fixed-font-size-xmall {
+    font-size: x-small;
+    width: 96%;
+}
+
 .table-wrapper {
     max-height: 500px;
     max-width: 98%;
@@ -55,6 +73,12 @@ fieldset {
     max-height: 270px;
     max-width: 98%;
     overflow: auto;
+}
+
+.col-header-small {
+    text-wrap: pretty;
+    font-size: 8px !important;
+    font-weight: 900;
 }
 /*Hide Arrows/Spinners from input type number*/
 /* Chrome, Safari, Edge, Opera */

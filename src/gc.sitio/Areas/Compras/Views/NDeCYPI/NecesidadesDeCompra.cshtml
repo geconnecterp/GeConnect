@@ -1,0 +1,153 @@
+﻿@model NecesidadesDeCompraDto
+@{
+	Layout = "~/views/shared/_Layout.cshtml";
+	var proveedores = Model.ComboProveedores;
+	var familiaProveedores = Model.ComboProveedoresFamilia;
+	var rubros = Model.ComboRubros;
+	BusquedaProducto busquedaProducto = new();
+}
+<div class="card">
+	<div class="container">
+		<div class="row">
+			<div class="col-5">
+				@* Combos *@
+				<div class="col-sm" style="padding-top: 15px;" id="divComboProveedores">
+					<div class="input-group fixed-padding-top">
+						<span class="input-group-text fixed-width">Proveedor: </span>
+						@Html.DropDownList("id", proveedores, "Seleccionar...", new { @id = "listaProveedor", @class = "form-control" })
+					</div>
+				</div>
+				<div class="col-sm" id="divComboProveedoresFamilia" aria-disabled="true">
+					<div class="input-group fixed-padding-top">
+						<span class="input-group-text fixed-width">Familia: </span>
+						@Html.DropDownList("id", familiaProveedores, "Seleccionar...", new { @id = "listaFamiliaProveedor", @class = "form-control" })
+					</div>
+				</div>
+				<div class="col-sm" id="divComboRubros" aria-disabled="true">
+					<div class="input-group fixed-padding-top">
+						<span class="input-group-text fixed-width">Rubro: </span>
+						@Html.DropDownList("id", rubros, "Seleccionar...", new { @id = "listaRubro", @class = "form-control" })
+					</div>
+				</div>
+			</div>
+			<div class="col-5">
+				<div class="row">
+					@* OptionButtons y Buscador de Productos *@
+					<fieldset>
+						<legend>
+							@* empty title *@
+							<div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+								<row>
+									<input type="radio" class="btn-check" name="btnradio" id="btnradioPorProveedor" checked="">
+									<label class="btn btn-outline-primary fixed-font-size-xmall" for="btnradioPorProveedor">Por Proveedor</label>
+									<input type="radio" class="btn-check" name="btnradio" id="btnradioSinStk">
+									<label class="btn btn-outline-primary fixed-font-size-xmall" for="btnradioSinStk">Sin Stk</label>
+									<input type="radio" class="btn-check" name="btnradio" id="btnradioConPI">
+									<label class="btn btn-outline-primary fixed-font-size-xmall" for="btnradioConPI">Con PI</label>
+								</row>
+								<row>
+									<input type="radio" class="btn-check" name="btnradio" id="btnradioPorProveedorFamilia">
+									<label class="btn btn-outline-primary fixed-font-size-xmall" for="btnradioPorProveedorFamilia">Por Proveedor y Familia</label>
+									<input type="radio" class="btn-check" name="btnradio" id="btnradioConStkAVencer">
+									<label class="btn btn-outline-primary fixed-font-size-xmall" for="btnradioConStkAVencer">Con Stk a Vencer</label>
+									<input type="radio" class="btn-check" name="btnradio" id="btnradioConOC">
+									<label class="btn btn-outline-primary fixed-font-size-xmall" for="btnradioConOC">Con OC</label>
+								</row>
+								<row>
+									<input type="radio" class="btn-check" name="btnradio" id="btnradioPorRubro">
+									<label class="btn btn-outline-primary fixed-font-size-xmall" for="btnradioPorRubro">Por Rubros</label>
+									<input type="radio" class="btn-check" name="btnradio" id="btnradioAltaRotacion">
+									<label class="btn btn-outline-primary fixed-font-size-xmall" for="btnradioAltaRotacion">Alta Rotación</label>
+								</row>
+							</div>
+						</legend>
+					</fieldset>
+				</div>
+				<div class="row">
+					<div class="col-8">
+						<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
+					</div>
+					<div class="col-4">
+						<input class="form-check-input" type="checkbox" id="chkProductosSimilares" asp-for="@Model.ProductosSimilares">
+						<label class="form-check-label" for="chkProductosSimilares"> Productos Similares</label>
+					</div>
+				</div>
+			</div>
+			<div class="col-2">
+				@* Botones *@
+				<fieldset>
+					<legend>
+						<a href="#" id="btnOCAuto" class="btn btn-primary fixed-font-size"><span>OC Auto</span></a>
+						<a href="#" id="btnPasarAOC" class="btn btn-primary fixed-font-size"><span>Pasar a OC</span></a>
+						<a href="#" id="btnImprimirCtlStk" class="btn btn-primary fixed-font-size"><span>Imprimir Ctl Stk</span></a>
+					</legend>
+				</fieldset>
+			</div>
+		</div>
+		<div class="row" style="padding-top:10px;">
+			<div class="col-10">
+				<div id="divListaProducto">
+					<div class="table-responsive text-nowrap table-wrapper">
+						<table class="table table-bordered table-hover" id="tbListaProducto">
+							<thead class="table-dark">
+								<tr>
+									<th style="width:5%;" class="col-header-small">Código</th>
+									<th style="width:5%;" class="col-header-small">Descripción</th>
+									<th style="width:5%;" class="col-header-small">Cod. Prov</th>
+									<th style="width:5%;" class="col-header-small">PI Pend</th>
+									<th style="width:5%;" class="col-header-small">OC Pend</th>
+									<th style="width:5%;" class="col-header-small">Stock</th>
+									<th style="width:5%;" class="col-header-small">Stock en Tránsito</th>
+									<th style="width:5%;" class="col-header-small">Stock a Facturar</th>
+									<th style="width:5%;" class="col-header-small">Unidad Pres.</th>
+									<th style="width:5%;" class="col-header-small">UM</th>
+									<th style="width:5%;" class="col-header-small">Pedido Bultos</th>
+									<th style="width:5%;" class="col-header-small">Cantidad</th>
+									<th style="width:5%;" class="col-header-small">Costo</th>
+									<th style="width:5%;" class="col-header-small">Costo Total</th>
+									<th style="width:5%;" class="col-header-small">Pallet</th>
+								</tr>
+							</thead>
+							<tbody>
+								@foreach (var item in Model.Productos.ListaDatos)
+								{
+									<tr onclick="selectListaProductoRow(this)">
+										<td style="text-align: center;">@item.p_id</td>
+										<td>@item.p_desc</td>
+										<td style="text-align: center;">@item.p_id_prov</td>
+										<td style="text-align: right;">@item.pi_pendiente</td>
+										<td style="text-align: right;">@item.oc_pendiente</td>
+										<td style="text-align: right;">@item.stk</td>
+										<td style="text-align: right;">@item.stk_suc_transito</td>
+										<td style="text-align: right;">@item.stk_suc_comprometido</td>
+										<td style="text-align: right;">@item.p_unidad_pres</td>
+										<td style="text-align: right;">@item.up_desc</td>
+										<td style="text-align: right;">@item.pedido</td>
+										<td style="text-align: right;">@item.cantidad</td>
+										<td style="text-align: right;">@item.costo</td>
+										<td style="text-align: right;">@item.costo_total</td>
+										<td style="text-align: right;">@item.paletizado</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div>
+				</div>
+			</div>
+			<div class="col-2">
+			</div>
+		</div>
+	</div>
+</div>
+
+@section scripts {
+	<script type="text/javascript">
+		var BuscarProductosOCPIURL = "@Url.Action("BuscarProductosOCPI", "ndecypi", new { area = "Compras" })";
+	</script>
+	<script src="~/js/app/areas/ndecypi/nc.js"></script>
+	<script src="~/js/app/busquedas.js" type="text/javascript"></script>
+	<script src="~/js/app/controlcomun/rpr.js" type="text/javascript"></script>
+	<script src="~/js/app/controlcomun/infoRpr.js" type="text/javascript"></script>
+}

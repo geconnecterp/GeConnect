@@ -67,5 +67,7 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RespuestaGenerica<RespuestaDto>> EnviarProductosCtrl(List<ProductoGenDto> lista, string Token);    
         Task<List<TRVerConteosDto>> TRVerConteos(string ti, string token);
         Task<List<RespuestaDto>> TRValidarTransferencia(string ti, string admId, string usuId, string token);
+
+        Task<List<ProductoNCPIDto>> NCPICargarListaDeProductos(string tipo, string admId, string filtro, string id, string token);
 	}
 }

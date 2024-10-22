@@ -1,0 +1,48 @@
+﻿@model GridCore<ProductoNCPIDto>
+@{
+}
+<div class="table-responsive text-nowrap table-wrapper">
+	<table class="table table-bordered table-hover" id="tbListaProducto">
+		<thead class="table-dark">
+			<tr>
+				<th style="width:5%;" class="col-header-small">Código</th>
+				<th style="width:5%;" class="col-header-small">Descripción</th>
+				<th style="width:5%;" class="col-header-small">Cod. Prov</th>
+				<th style="width:5%;" class="col-header-small">PI Pend</th>
+				<th style="width:5%;" class="col-header-small">OC Pend</th>
+				<th style="width:5%;" class="col-header-small">Stock</th>
+				<th style="width:5%;" class="col-header-small">Stock en Tránsito</th>
+				<th style="width:5%;" class="col-header-small">Stock a Facturar</th>
+				<th style="width:5%;" class="col-header-small">Unidad Pres.</th>
+				<th style="width:5%;" class="col-header-small">UM</th>
+				<th style="width:5%;" class="col-header-small">Pedido Bultos</th>
+				<th style="width:5%;" class="col-header-small">Cantidad</th>
+				<th style="width:5%;" class="col-header-small">Costo</th>
+				<th style="width:5%;" class="col-header-small">Costo Total</th>
+				<th style="width:5%;" class="col-header-small">Pallet</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in Model.ListaDatos)
+			{
+				<tr onclick="selectListaProductoRow(this)">
+					<td style="text-align: center;">@item.p_id</td>
+					<td>@item.p_desc</td>
+					<td style="text-align: center;">@item.p_id_prov</td>
+					<td style="text-align: right;">@item.pi_pendiente</td>
+					<td style="text-align: right;">@item.oc_pendiente</td>
+					<td style="text-align: right;">@item.stk</td>
+					<td style="text-align: right;">@item.stk_suc_transito</td>
+					<td style="text-align: right;">@item.stk_suc_comprometido</td>
+					<td style="text-align: right;">@item.p_unidad_pres</td>
+					<td style="text-align: right;">@item.up_desc</td>
+					<td style="text-align: right;">@item.pedido</td>
+					<td style="text-align: right;">@item.cantidad</td>
+					<td style="text-align: right;">@item.costo</td>
+					<td style="text-align: right;">@item.costo_total</td>
+					<td style="text-align: right;">@item.paletizado</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>
