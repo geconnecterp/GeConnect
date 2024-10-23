@@ -36,7 +36,7 @@
 					<td style="text-align: right;">@item.stk_suc_comprometido</td>
 					<td style="text-align: right;">@item.p_unidad_pres</td>
 					<td style="text-align: right;">@item.up_desc</td>
-					<td style="text-align: right;">@item.pedido</td>
+					<td contenteditable='true' style="text-align: right;">@item.pedido</td>
 					<td style="text-align: right;">@item.cantidad</td>
 					<td style="text-align: right;">@item.costo</td>
 					<td style="text-align: right;">@item.costo_total</td>
@@ -46,3 +46,11 @@
 		</tbody>
 	</table>
 </div>
+
+@section scripts {
+	<script type="text/javascript">
+		var pedido = "";
+		var pIdEditado = "";
+	</script>
+	<script src="~/js/app/areas/ndecypi/nc.js"></script>
+}

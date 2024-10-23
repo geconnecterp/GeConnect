@@ -9,6 +9,7 @@ namespace gc.api.Controllers.Almacen
     using gc.infraestructura.Core.Responses;
     using gc.infraestructura.Dtos.Almacen;
 	using gc.infraestructura.Dtos.Almacen.Request;
+	using gc.infraestructura.Dtos.Almacen.Response;
 	using gc.infraestructura.Dtos.Almacen.Rpr;
 	using gc.infraestructura.Dtos.Almacen.Tr;
     using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
@@ -595,7 +596,7 @@ namespace gc.api.Controllers.Almacen
 		}
 
 		[HttpPost]
-		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoNCPIDto>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]
 		public IActionResult NCPICargarListaDeProductos(NCPICargarListaDeProductosRequest request)
@@ -605,6 +606,21 @@ namespace gc.api.Controllers.Almacen
 			var res = _productosSv.NCPICargarListaDeProductos(request);
 
 			response = new ApiResponse<List<ProductoNCPIDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<NCPICargaPedidoResponse>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult NCPICargaPedido(NCPICargaPedidoRequest request)
+		{
+			ApiResponse<List<NCPICargaPedidoResponse>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.NCPICargaPedido(request);
+
+			response = new ApiResponse<List<NCPICargaPedidoResponse>>(res);
 
 			return Ok(response);
 		}

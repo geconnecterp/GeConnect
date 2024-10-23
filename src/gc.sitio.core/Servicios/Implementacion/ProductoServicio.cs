@@ -5,6 +5,7 @@ using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Info;
 using gc.infraestructura.Dtos.Almacen.Request;
+using gc.infraestructura.Dtos.Almacen.Response;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
@@ -82,6 +83,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 
 		//NCYPI
 		private const string OC_Productos = "/NCPICargarListaDeProductos";
+		private const string OC_Cargar_Pedido = "/NCPICargaPedido";
 
 		private readonly AppSettings _appSettings;
 
@@ -1099,6 +1101,38 @@ namespace gc.sitio.core.Servicios.Implementacion
 					return new();
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProductoNCPIDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<NCPICargaPedidoResponse>> NCPICargarListaDeProductos(NCPICargaPedidoRequest req, string token)
+		{
+			ApiResponse<List<NCPICargaPedidoResponse>> apiResponse;
+
+			HelperAPI helper = new();
+			NCPICargaPedidoRequest request = req;
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{OC_Cargar_Pedido}";
+
+			response = await client.PostAsync(link, contentData);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros tipo:{req.tipo} admId:{req.admId} p_id:{req.pId} tipo_carga:{req.tipoCarga}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<NCPICargaPedidoResponse>>>(stringData);
 				return apiResponse.Data;
 			}
 			else

@@ -10,6 +10,11 @@
 	DisableComboProveedoresFamilia(true);
 	DisableComboRubros(true);
 	buscarPorProveedor();
+	AddEventListenerToGrid("tbListaProducto");
+	$("#tbListaProducto").on('input', 'td[contenteditable]', function () {
+		console.log("its cool.");
+	});
+	//test2();
 });
 
 var tipoBusqueda = "";
@@ -23,6 +28,11 @@ const FuncionSobreBusquedaDeProductos = {
 	CONPI: 'CONPI',
 	CONOC: 'CONOC'
 }
+
+function tdChange(x) {
+	console.log(x);
+}
+
 
 function buscarPorProveedor() {
 	if ($("#listaProveedor").val() == "") {
@@ -144,8 +154,40 @@ function BuscarProductos(tipoBusqueda) {
 	var datos = { filtro, id, tipo };
 	PostGenHtml(datos, BuscarProductosOCPIURL, function (obj) {
 		$("#divListaProducto").html(obj);
+		addInCellEditHandler();
+		addInCellKeyDownHandler();
+		AddEventListenerToGrid("tbListaProducto");
+		tableUpDownArrow();
 		CerrarWaiting();
 		return true
+	});
+}
+
+function addInCellEditHandler() {
+	$("#tbListaProducto").on('input', 'td[contenteditable]', function (e) {
+		pedido = e.currentTarget.innerText;
+		pIdEditado = e.currentTarget.parentNode.cells[0].innerText;
+	});
+}
+
+function addInCellKeyUpHandler() {
+	$("#tbListaProducto").on('keyup', 'td[contenteditable]', function (e) {
+		if (e.keyCode == 13) {
+			return false;
+		}
+	});
+}
+
+function addInCellKeyDownHandler() {
+	$("#tbListaProducto").on('keydown', 'td[contenteditable]', function (e) {
+		if (e.altKey && e.shiftKey && e.keyCode == 13) {
+			//event.altKey = true;
+			//event.shiftKey = true;
+			//event.code = 'ArrowDown';
+			document.onkeydown();
+			e.preventDefault();
+			//return false;
+		}
 	});
 }
 
@@ -176,3 +218,100 @@ function DisableComboRubros(value) {
 	}
 }
 
+function AddEventListenerToGrid(tabla) {
+	var grilla = document.getElementById(tabla);
+	if (grilla) {
+		document.getElementById(tabla).addEventListener('click', function (e) {
+			if (e.target.nodeName === 'TD') {
+				var selectedRow = this.querySelector('.selected-row');
+				if (selectedRow) {
+					selectedRow.classList.remove('selected-row');
+				}
+				e.target.closest('tr').classList.add('selected-row');
+			}
+		});
+	}
+}
+
+function selectListaProductoRow(x) {
+	if (x) {
+		pIdSeleccionado = x.cells[0].innerText.trim();
+	}
+	else {
+		pIdSeleccionado = "";
+	}
+}
+
+
+function tableUpDownArrow() {
+	const myTable = document.querySelector('#tbListaProducto tbody')
+		, nbRows = myTable.rows.length
+		, nbCells = myTable.rows[0].cells.length
+		, movKey = {
+			ArrowUp: p => { p.r = (--p.r + nbRows) % nbRows }
+			, ArrowLeft: p => { p.c = (--p.c + nbCells) % nbCells }
+			, ArrowDown: p => {
+				p.r = ++p.r % nbRows
+			}
+			, ArrowRight: p => { p.c = ++p.c % nbCells }
+		}
+
+	myTable
+		.querySelectorAll('input, [contenteditable=true]')
+		.forEach(elm => {
+			elm.onfocus = e => {
+				let sPos = myTable.querySelector('.selected-row')
+					, tdPos = elm.parentNode
+
+				if (sPos) sPos.classList.remove('selected-row')
+
+				tdPos.classList.add('selected-row')
+			}
+		})
+
+
+	document.onkeydown = e => {
+		let sPos = myTable.querySelector('.selected-row')
+			, evt = (e == null ? event : e)
+			, pos = {
+				r: sPos ? sPos.rowIndex : -1
+				, c: sPos ? (sPos.cellIndex ? sPos.cellIndex : 10) : -1
+			}
+
+		if (sPos &&
+			(evt.altKey && evt.shiftKey && movKey[evt.code])
+			||
+			(evt.altKey && evt.shiftKey && evt.enterKey))
+		{
+			let loop = true
+				, nxFocus = null
+				, cell = null
+			do {
+				if (evt.code === 'ArrowDown' && pos.r == nbRows)
+					pos.r = 0;
+				movKey[evt.code](pos)
+				cell = myTable.rows[pos.r].cells[pos.c]
+				if (pos.r == 0)
+					pos.r = nbRows;
+				else if (pos.r == nbRows)
+					pos.r = 2;
+				nxFocus = myTable.rows[pos.r - 1].cells[pos.c]
+
+				if (nxFocus
+					&& cell.style.display !== 'none'
+					&& cell.parentNode.style.display !== 'none') {
+					nxFocus.focus()
+					nxFocus.closest('tr').classList.add('selected-row');
+					loop = false
+				}
+			}
+			while (loop)
+			actualizarPedidoBulto();
+		}
+	}
+}
+
+function actualizarPedidoBulto() {
+	console.log(pedido);
+	console.log(pIdEditado);
+}
