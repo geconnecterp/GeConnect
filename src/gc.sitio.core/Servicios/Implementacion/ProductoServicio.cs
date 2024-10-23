@@ -1111,7 +1111,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 		}
 
-		public async Task<List<NCPICargaPedidoResponse>> NCPICargarListaDeProductos(NCPICargaPedidoRequest req, string token)
+		public async Task<List<NCPICargaPedidoResponse>> NCPICargaPedido(NCPICargaPedidoRequest req, string token)
 		{
 			ApiResponse<List<NCPICargaPedidoResponse>> apiResponse;
 

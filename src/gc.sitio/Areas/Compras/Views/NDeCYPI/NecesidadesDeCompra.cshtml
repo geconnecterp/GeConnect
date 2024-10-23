@@ -106,6 +106,8 @@
 									<th style="width:5%;" class="col-header-small">Costo</th>
 									<th style="width:5%;" class="col-header-small">Costo Total</th>
 									<th style="width:5%;" class="col-header-small">Pallet</th>
+									<th style="width:0%; display:none;">pg_id</th>
+									<th style="width:0%; display:none;">rub_id</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -127,6 +129,8 @@
 										<td style="text-align: right;">@item.costo</td>
 										<td style="text-align: right;">@item.costo_total</td>
 										<td style="text-align: right;">@item.paletizado</td>
+										<td style="display:none;">@item.pg_id</td>
+										<td style="display:none;">@item.rub_id</td>
 									</tr>
 								}
 							</tbody>
@@ -144,7 +148,14 @@
 
 @section scripts {
 	<script type="text/javascript">
+		var pedido = "";
+		var pIdSeleccionado = "";
+		var idProvSeleccionado = "";
+		var idFamiliaProvSeleccionado = "";
+		var idRubroSeleccionado = "";
 		var BuscarProductosOCPIURL = "@Url.Action("BuscarProductosOCPI", "ndecypi", new { area = "Compras" })";
+		var CargaPedidoOCPIURL = "@Url.Action("CargaPedidoOCPI", "ndecypi", new { area = "Compras" })";
+		var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun" })";
 	</script>
 	<script src="~/js/app/areas/ndecypi/nc.js"></script>
 	<script src="~/js/app/busquedas.js" type="text/javascript"></script>

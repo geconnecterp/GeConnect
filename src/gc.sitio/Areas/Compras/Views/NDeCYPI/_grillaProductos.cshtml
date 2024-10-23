@@ -20,6 +20,8 @@
 				<th style="width:5%;" class="col-header-small">Costo</th>
 				<th style="width:5%;" class="col-header-small">Costo Total</th>
 				<th style="width:5%;" class="col-header-small">Pallet</th>
+				<th style="width:0%; display:none;">pg_id</th>
+				<th style="width:0%; display:none;">rub_id</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -41,6 +43,8 @@
 					<td style="text-align: right;">@item.costo</td>
 					<td style="text-align: right;">@item.costo_total</td>
 					<td style="text-align: right;">@item.paletizado</td>
+					<td style="display:none;">@item.pg_id</td>
+					<td style="display:none;">@item.rub_id</td>
 				</tr>
 			}
 		</tbody>
@@ -51,6 +55,8 @@
 	<script type="text/javascript">
 		var pedido = "";
 		var pIdEditado = "";
+		var rowIndex = 0;
+		var CargaPedidoOCPIURL = "@Url.Action("CargaPedidoOCPI", "ndecypi", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/areas/ndecypi/nc.js"></script>
 }

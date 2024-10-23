@@ -29,6 +29,11 @@ const FuncionSobreBusquedaDeProductos = {
 	CONOC: 'CONOC'
 }
 
+const colCantidad = 11;
+const colCosto = 12;
+const colCostoTotal = 13;
+const colPallet = 14;
+
 function tdChange(x) {
 	console.log(x);
 }
@@ -167,6 +172,7 @@ function addInCellEditHandler() {
 	$("#tbListaProducto").on('input', 'td[contenteditable]', function (e) {
 		pedido = e.currentTarget.innerText;
 		pIdEditado = e.currentTarget.parentNode.cells[0].innerText;
+		rowIndex = e.currentTarget.parentNode.rowIndex;
 	});
 }
 
@@ -180,14 +186,15 @@ function addInCellKeyUpHandler() {
 
 function addInCellKeyDownHandler() {
 	$("#tbListaProducto").on('keydown', 'td[contenteditable]', function (e) {
-		if (e.altKey && e.shiftKey && e.keyCode == 13) {
-			//event.altKey = true;
-			//event.shiftKey = true;
-			//event.code = 'ArrowDown';
-			document.onkeydown();
-			e.preventDefault();
-			//return false;
-		}
+		if (isNaN(String.fromCharCode(e.which)) && !(e.shiftKey && (e.which == 37 || e.which == 39))) e.preventDefault();
+		//if (e.altKey && e.shiftKey && e.keyCode == 13) {
+		//	//event.altKey = true;
+		//	//event.shiftKey = true;
+		//	//event.code = 'ArrowDown';
+		//	document.onkeydown();
+		//	e.preventDefault();
+		//	//return false;
+		//}
 	});
 }
 
@@ -236,12 +243,33 @@ function AddEventListenerToGrid(tabla) {
 function selectListaProductoRow(x) {
 	if (x) {
 		pIdSeleccionado = x.cells[0].innerText.trim();
+		idProvSeleccionado = x.cells[2].innerText.trim();
+		idFamiliaProvSeleccionado = x.cells[15].innerText.trim();
+		idRubroSeleccionado = x.cells[16].innerText.trim();
+		SeleccionarDesdeFila(idProvSeleccionado, $("#listaProveedor")[0]);
+		SeleccionarDesdeFila(idFamiliaProvSeleccionado, $("#listaFamiliaProveedor")[0]);
+		SeleccionarDesdeFila(idRubroSeleccionado, $("#listaRubro")[0]);
 	}
 	else {
 		pIdSeleccionado = "";
+		idProvSeleccionado = "";
+		idFamiliaProvSeleccionado = "";
+		idRubroSeleccionado = "";
 	}
 }
 
+function SeleccionarDesdeFila(index, ctrol) {
+	if (index === "")
+		return;
+	if (ctrol === undefined)
+		return;
+	for (var i = 0; i < ctrol.options.length; i++) {
+		if (ctrol.options[i].value == index) {
+			ctrol.options[i].selected = true;
+			return;
+		}
+	}
+}
 
 function tableUpDownArrow() {
 	const myTable = document.querySelector('#tbListaProducto tbody')
@@ -281,8 +309,7 @@ function tableUpDownArrow() {
 		if (sPos &&
 			(evt.altKey && evt.shiftKey && movKey[evt.code])
 			||
-			(evt.altKey && evt.shiftKey && evt.enterKey))
-		{
+			(evt.altKey && evt.shiftKey && evt.enterKey)) {
 			let loop = true
 				, nxFocus = null
 				, cell = null
@@ -312,6 +339,55 @@ function tableUpDownArrow() {
 }
 
 function actualizarPedidoBulto() {
-	console.log(pedido);
-	console.log(pIdEditado);
+	if (!pedido)
+		return false;
+	AbrirWaiting();
+	console.log("pedido: " + pedido + " pIdEditado: " + pIdEditado + " rowIndex: " + rowIndex);
+	var tipo = "OC";
+	var pId = pIdEditado;
+	var tipoCarga = "M";
+	var bultos = pedido;
+	var datos = { tipo, pId, tipoCarga, bultos }
+	PostGen(datos, CargaPedidoOCPIURL, function (o) {
+		if (o.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("Atención", o.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		} else if (o.warn === true) {
+			CerrarWaiting();
+			AbrirMensaje("Atención", o.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "warn!", null);
+		} else if (o.msg !== "") {
+			CerrarWaiting();
+			AbrirMensaje("Atención", o.msg, function (e) {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "info!", null);
+		} else {
+			CerrarWaiting();
+			tabla = myTable = document.querySelector('#tbListaProducto tbody');
+			tabla.rows[rowIndex - 1].cells[colCantidad].innerText = o.cantidad;
+			tabla.rows[rowIndex - 1].cells[colCosto].innerText = o.pCosto;
+			tabla.rows[rowIndex - 1].cells[colCostoTotal].innerText = o.cantidad;
+			tabla.rows[rowIndex - 1].cells[colPallet].innerText = o.pallet;
+			return false;
+		}
+	});
+}
+
+function verificaEstado(e) {
+	FunctionCallback = null; //inicializo funcion por si tiene alguna funcionalidad asignada.
+	var res = $("#estadoFuncion").val();
+	CerrarWaiting();
+	if (res === "true") {
+		var prod = productoBase;
+		if (prod) { //Producto existe
+			console.log(prod);
+		}
+	}
+	return true;
 }
