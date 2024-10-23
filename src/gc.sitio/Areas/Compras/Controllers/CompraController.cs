@@ -66,8 +66,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 			try
 			{
 				pendientes = await _productoServicio.RPRObtenerComptesPendiente(AdministracionId, TokenCookie);
-				RPRAutorizacionesPendientesEnRP = pendientes;
-				grid = ObtenerAutorizacionPendienteGrid(pendientes);
+				RPRAutorizacionesPendientesEnRP = ArmarDataRow(pendientes);
+				grid = ObtenerAutorizacionPendienteGrid(RPRAutorizacionesPendientesEnRP);
 			}
 			catch (Exception ex)
 			{
@@ -76,6 +76,53 @@ namespace gc.sitio.Areas.Compras.Controllers
 				grid = new();
 			}
 			return View(grid);
+		}
+
+		private List<AutoComptesPendientesDto> ArmarDataRow(List<AutoComptesPendientesDto> lista)
+		{
+			var returnedList = new List<AutoComptesPendientesDto>();
+			lista = [.. lista.OrderBy(x => x.Rp)];
+			foreach (var item in lista)
+			{
+				if (returnedList.Count == 0)
+				{
+					item.Rp_hidden = item.Rp;
+					returnedList.Add(item);
+					continue;
+				}
+				if (returnedList.Exists(x => x.Rp == item.Rp))
+				{
+					returnedList.Add(ObtenerRPSimplificado(item));
+					continue;
+				}
+				else
+				{
+					item.Rp_hidden = item.Rp;
+					returnedList.Add(item);
+				}
+			}
+			return returnedList;
+		}
+
+		private AutoComptesPendientesDto ObtenerRPSimplificado(AutoComptesPendientesDto item)
+		{
+			return new AutoComptesPendientesDto()
+			{
+				Cm_compte = item.Cm_compte,
+				Cm_fecha = item.Cm_fecha,
+				Cm_importe = item.Cm_importe,
+				Cta_denominacion = string.Empty,
+				Cta_id = item.Cta_id,
+				Fecha = null,
+				Nota = string.Empty,
+				Rp = string.Empty,
+				Rpe_desc = item.Rpe_desc,
+				Rpe_id = item.Rpe_id,
+				Tco_desc = item.Tco_id,
+				Tco_id = item.Tco_id,
+				Usu_id = item.Usu_id,
+				Rp_hidden = item.Rp,
+			};
 		}
 
 		public async Task<IActionResult> VerAut(string rp)
@@ -102,7 +149,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				var detalleVerConteos = await _productoServicio.RPRObtenerItemVerConteos(rp, TokenCookie);
 				if (detalleVerConteos != null)
 				{
-					
+
 					foreach (var item in detalleVerConteos)
 					{
 						item.Row_color = ObtenerColor(item.No_recibido);
@@ -307,7 +354,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					model.Compte = new RPRComptesDeRPDto()
 					{
-						Fecha = RPRAutorizacionSeleccionada.Fecha.ToString("yyyy-MM-dd"),
+						Fecha = RPRAutorizacionSeleccionada.Fecha?.ToString("yyyy-MM-dd"),
 						Importe = RPRAutorizacionSeleccionada.Cm_importe.ToString(),
 						NroComprobante = RPRAutorizacionSeleccionada.Cm_compte,
 						Tipo = RPRAutorizacionSeleccionada.Tco_id,
@@ -332,7 +379,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					{
 						model.Cuenta = !string.IsNullOrWhiteSpace(RPRComprobanteDeRPSeleccionado?.cta_id) ? RPRComprobanteDeRPSeleccionado?.cta_id : RPRAutorizacionSeleccionada.Cta_id;
 						model.Nota = !string.IsNullOrWhiteSpace(RPRComprobanteDeRPSeleccionado?.Nota) ? RPRComprobanteDeRPSeleccionado?.Nota : RPRAutorizacionSeleccionada.Nota;
-						model.FechaTurno = !string.IsNullOrWhiteSpace(RPRComprobanteDeRPSeleccionado?.FechaTurno) ? Convert.ToDateTime(RPRComprobanteDeRPSeleccionado.FechaTurno).ToString("yyyy-MM-dd") : RPRAutorizacionSeleccionada.Fecha.ToString("yyyy-MM-dd");
+						model.FechaTurno = !string.IsNullOrWhiteSpace(RPRComprobanteDeRPSeleccionado?.FechaTurno) ? Convert.ToDateTime(RPRComprobanteDeRPSeleccionado.FechaTurno).ToString("yyyy-MM-dd") : RPRAutorizacionSeleccionada.Fecha?.ToString("yyyy-MM-dd");
 						model.Depo_id = !string.IsNullOrWhiteSpace(RPRComprobanteDeRPSeleccionado?.Depo_id) ? RPRComprobanteDeRPSeleccionado?.Depo_id : "0";
 						model.CantidadUL = !string.IsNullOrWhiteSpace(RPRComprobanteDeRPSeleccionado?.Ul_cantidad) ? Convert.ToInt32(RPRComprobanteDeRPSeleccionado?.Ul_cantidad) : 0;
 					}
@@ -474,9 +521,12 @@ namespace gc.sitio.Areas.Compras.Controllers
 								if (item.Producto == null)
 								{
 									item.Producto = listaDeProductosAux.Where(x => x.P_id == item.P_id).FirstOrDefault();
-									item.Producto.Cantidad = Convert.ToDecimal(item.Cantidad);
+									//item.Producto.Cantidad = Convert.ToDecimal(item.Cantidad);
+									item.Producto.Cantidad = Convert.ToDecimal((Convert.ToInt32(item.Bulto) * Convert.ToInt32(item.Bulto_up)) + Convert.ToDecimal(item.Uni_suelta));
 									item.Producto.Unidad = Convert.ToDecimal(item.Uni_suelta);
 									item.Producto.Bulto = Convert.ToInt32(item.Bulto);
+									item.Producto.P_unidad_pres = item.Bulto_up;
+									//Cantidad = (item.ocd_unidad_pres * item.ocd_bultos) + item.ocd_unidad_x_bulto,
 									lista.Add(item.Producto);
 								}
 								else
@@ -872,7 +922,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				leftPart = no_recibido.Split(',')[0];
 			if (no_recibido.Contains('.'))
 				leftPart = no_recibido.Split('.')[0];
-			
+
 			if (int.TryParse(leftPart, out int numeric_no_recibido))
 			{
 				return IsPositiveOrNegativeUsingBuiltInMethod(numeric_no_recibido) switch
@@ -954,7 +1004,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					lista.Add(new RPRComptesDeRPDto()
 					{
-						Fecha = comprobante.Cm_fecha,
+						//Convert.ToDateTime(comprobante.Cm_fecha).ToString("dd/MM/yyyy")
+						//Fecha = comprobante.Cm_fecha,
+						Fecha = Convert.ToDateTime(comprobante.Cm_fecha).ToString("dd/MM/yyyy"),
 						Importe = comprobante.Cm_importe,
 						NroComprobante = comprobante.Cm_compte,
 						Rp = item.Rp,
@@ -1099,7 +1151,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				var newCompte = new RPRComptesDeRPDto()
 				{
-					Fecha = item.Fecha.ToString("dd/MM/yyyy"),
+					Fecha = item.Fecha?.ToString("dd/MM/yyyy"),
 					Importe = item.Cm_importe.ToString(),
 					NroComprobante = item.Cm_compte,
 					Tipo = item.Tco_id,
@@ -1186,7 +1238,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				P_unidad_pres = item.ocd_unidad_pres.ToString(),
 				Bulto = item.ocd_bultos,
 				Unidad = item.ocd_unidad_x_bulto,
-				Cantidad = item.ocd_cantidad,
+				Cantidad = (item.ocd_unidad_pres * item.ocd_bultos) + item.ocd_unidad_x_bulto,
 				P_id_barrado = producto.P_id_barrado,
 			});
 		}

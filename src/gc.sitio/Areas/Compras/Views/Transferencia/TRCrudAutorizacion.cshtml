@@ -15,9 +15,9 @@
 							<table class="table table-bordered table-hover" id="tbListaSucursales">
 								<thead class="table-dark">
 									<tr>
-										<th style="width:80%;">Sucursal Destino</th>
-										<th style="width:20%;">PS</th>
-										<th style="width:20%;">PI</th>
+										<th style="width:80%;" class="align-center">Sucursal Destino</th>
+										<th style="width:20%;" class="align-center">PS</th>
+										<th style="width:20%;" class="align-center">PI</th>
 										<th style="width:0%; display:none;">adm_id</th>
 									</tr>
 								</thead>
@@ -61,13 +61,13 @@
 							<table class="table table-bordered table-hover" id="tbListaPedidosSucursal">
 								<thead class="table-dark">
 									<tr>
-										<th style="width:15%;">N° PI</th>
-										<th style="width:10%;">Fecha</th>
-										<th style="width:10%;">Estado</th>
-										<th style="width:30%;">Nota</th>
-										<th style="width:15%;">Tipo</th>
-										<th style="width:10%;">Det</th>
-										<th style="width:10%;">Carga</th>
+										<th style="width:15%;" class="align-center">N° PI</th>
+										<th style="width:10%;" class="align-center">Fecha</th>
+										<th style="width:10%;" class="align-center">Estado</th>
+										<th style="width:30%;" class="align-center">Nota</th>
+										<th style="width:15%;" class="align-center">Tipo</th>
+										<th style="width:10%;" class="align-center">Det</th>
+										<th style="width:10%;" class="align-center">Carga</th>
 										<th style="width:0%; display:none;">adm_id</th>
 										<th style="width:0%; display:none;">adm_desc</th>
 									</tr>
@@ -76,11 +76,11 @@
 									@foreach (var item in Model.ListaPedidosSucursal.ListaDatos)
 									{
 										<tr onclick="selectTRPedidoSucursalRow(this)">
-											<td>@item.pi_compte</td>
-											<td>@item.pi_fecha.ToString("dd-MM-yyyy")</td>
-											<td>@item.pie_desc</td>
-											<td>@item.pi_nota</td>
-											<td>@item.pit_desc</td>
+											<td class="align-center">@item.pi_compte</td>
+											<td class="align-center">@item.pi_fecha.ToString("dd/MM/yyyy")</td>
+											<td class="align-center">@item.pie_desc</td>
+											<td class="align-left">@item.pi_nota</td>
+											<td class="align-center">@item.pit_desc</td>
 											@* <td><a asp-action="VerDetallePedidoDeSucursal" asp-controller="Transferencia" asp-area="Compras" class="btn btn-xs btn-outline-success" asp-route-picompte="@item.pi_compte"> <i class="bx bx-detail"></i></a></td> *@
 											<td><a class="btn btn-xs btn-outline-success" data-interaction="@item.pi_compte" onclick="verDetalleDePedido(this);"> <i class="bx bx-detail"></i></a></td>
 											<td><a class="btn btn-xs btn-outline-primary" data-interaction="@item.pi_compte" onclick="agregarAPedidosIncl(this);"> <i class="bx bx-plus-circle"></i></a></td>
@@ -102,26 +102,26 @@
 							<table class="table table-bordered table-hover" id="tbListaPedidosIncluidos">
 								<thead class="table-dark">
 									<tr>
-										<th style="width:15%;">Sucursal</th>
-										<th style="width:10%;">N° PI</th>
-										<th style="width:10%;">Fecha</th>
-										<th style="width:10%;">Estado</th>
-										<th style="width:20%;">Nota</th>
-										<th style="width:15%;">Tipo</th>
-										<th style="width:10%;">Det</th>
-										<th style="width:10%;">Carga</th>
+										<th style="width:15%;" class="align-center">Sucursal</th>
+										<th style="width:10%;" class="align-center">N° PI</th>
+										<th style="width:10%;" class="align-center">Fecha</th>
+										<th style="width:10%;" class="align-center">Estado</th>
+										<th style="width:20%;" class="align-center">Nota</th>
+										<th style="width:15%;" class="align-center">Tipo</th>
+										<th style="width:10%;" class="align-center">Det</th>
+										<th style="width:10%;" class="align-center">Carga</th>
 									</tr>
 								</thead>
 								<tbody>
 									@foreach (var item in Model.ListaPedidosIncluidos.ListaDatos)
 									{
 										<tr onclick="selectTRPedidoIncluidoRow(this)">
-											<td>@item.adm_desc</td>
-											<td>@item.pi_compte</td>
-											<td>@item.pi_fecha.ToString("dd-MM-yyyy")</td>
-											<td>@item.pie_desc</td>
-											<td>@item.pi_nota</td>
-											<td>@item.pit_desc</td>
+											<td class="align-left">@item.adm_desc</td>
+											<td class="align-center">@item.pi_compte</td>
+											<td class="align-center">@item.pi_fecha.ToString("dd/MM/yyyy")</td>
+											<td class="align-left">@item.pie_desc</td>
+											<td class="align-center">@item.pi_nota</td>
+											<td class="align-center">@item.pit_desc</td>
 											@* <td><a asp-action="VerDetallePedidoDeSucursal" asp-controller="Transferencia" asp-area="Compras" class="btn btn-xs btn-outline-success" asp-route-picompte="@item.pi_compte"> <i class="bx bx-detail"></i></a></td> *@
 											<td><a class="btn btn-xs btn-outline-success" data-interaction="@item.pi_compte" onclick="verDetalleDePedido(this);"> <i class="bx bx-detail"></i></a></td>
 											<td><a class="btn btn-xs btn-outline-danger" data-interaction="@item.pi_compte" onclick="quitarDePedidosIncl(this);"> <i class="bx bx-minus-circle"></i></a></td>
@@ -144,8 +144,8 @@
 										<table class="table table-bordered table-hover" id="tbDepositosDeEnvio">
 											<thead class="table-dark">
 												<tr>
-													<th style="width:80%;">Depósito</th>
-													<th style="width:20%;">Sele</th>
+													<th style="width:80%;" class="align-center">Depósito</th>
+													<th style="width:20%;" class="align-center">Sele</th>
 													<th style="width:0%; display:none;">depo_id</th>
 												</tr>
 											</thead>
@@ -154,7 +154,7 @@
 												{
 													<tr onclick="selectTRDepositosDeEnvioRow(this)">
 														<td>@item.depo_nombre</td>
-														<td><input type="checkbox" name="tienePI" id="chkTienePI" value="@item.seleccionado" @((item.seleccionado == false ? "" : "checked")) /></td>
+														<td class="align-center"><input type="checkbox" name="tienePI" id="chkTienePI" value="@item.seleccionado" @((item.seleccionado == false ? "" : "checked")) /></td>
 														@* <td>@item.seleccionado</td> *@
 														<td style="width:0%; display:none;">@item.depo_id</td>
 													</tr>

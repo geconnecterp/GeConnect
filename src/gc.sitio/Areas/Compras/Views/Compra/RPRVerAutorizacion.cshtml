@@ -37,9 +37,9 @@
 											<tr class="header">
 												<th style="width:0%; display:none;">TipoId</th>
 												<th style="width:0%; display:none;">NroCompte</th>
-												<th scope="col" style="width:50%">Tipo</th>
-												<th scope="col" style="width:25%">Fecha</th>
-												<th scope="col" style="width:25%">Importe</th>
+												<th scope="col" style="width:50%" class="align-center">Tipo</th>
+												<th scope="col" style="width:25%" class="align-center">Fecha</th>
+												<th scope="col" style="width:25%" class="align-center">Importe</th>
 											</tr>
 										</thead>
 										<tbody>
@@ -49,8 +49,8 @@
 													<td style="display:none;">@item.Tipo</td>
 													<td style="display:none;">@item.NroComprobante</td>
 													<td>@item.TipoDescripcion @item.NroComprobante</td>
-													<td>@item.Fecha</td>
-													<td>@item.Importe</td>
+													<td class="align-center">@item.Fecha</td>
+													<td class="align-right">@item.Importe</td>
 												</tr>
 											}
 										</tbody>
@@ -102,7 +102,7 @@
 		var buscarDetalleVerCompteUrl = "@Url.Action("ObtenerDetalleVerCompte", "compra", new { area = "Compras" })";
 		var buscarDetalleVerConteosUrl = "@Url.Action("ObtenerDetalleVerConteos", "compra", new { area = "Compras" })";
 		var buscarDetalleVerConteoSeleccionadoUrl = "@Url.Action("BuscarDetalleVerConteoSeleccionado", "compra", new { area = "Compras" })";
-		var confirmarRPRUrl= "@Url.Action("ConfirmarRPR", "compra", new { area = "Compras" })";
+		var confirmarRPRUrl = "@Url.Action("ConfirmarRPR", "compra", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/areas/compras/rprVerAutorizacion.js"></script>
 }

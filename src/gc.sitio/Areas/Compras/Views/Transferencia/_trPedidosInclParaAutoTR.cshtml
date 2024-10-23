@@ -4,24 +4,24 @@
 	<table class="table table-bordered table-hover" id="tbListaPedidosIncluidos">
 		<thead class="table-dark">
 			<tr>
-				<th style="width:15%;">Sucursal</th>
-				<th style="width:10%;">N° PI</th>
-				<th style="width:10%;">Fecha</th>
-				<th style="width:10%;">Estado</th>
-				<th style="width:20%;">Nota</th>
-				<th style="width:15%;">Tipo</th>
-				<th style="width:10%;">Det</th>
-				<th style="width:10%;">Carga</th>
+				<th style="width:15%;" class="align-center">Sucursal</th>
+				<th style="width:10%;" class="align-center">N° PI</th>
+				<th style="width:10%;" class="align-center">Fecha</th>
+				<th style="width:10%;" class="align-center">Estado</th>
+				<th style="width:20%;" class="align-center">Nota</th>
+				<th style="width:15%;" class="align-center">Tipo</th>
+				<th style="width:10%;" class="align-center">Det</th>
+				<th style="width:10%;" class="align-center">Carga</th>
 			</tr>
 		</thead>
 		<tbody>
 			@foreach (var item in Model.ListaDatos)
 			{
 				<tr onclick="selectTRPedidoIncluidoRow(this)">
-					<td>@item.adm_desc</td>
-					<td>@item.pi_compte</td>
-					<td>@item.pi_fecha.ToString("dd-MM-yyyy")</td>
-					<td>@item.pie_desc</td>
+					<td class="align-left">@item.adm_desc</td>
+					<td class="align-center">@item.pi_compte</td>
+					<td class="align-center">@item.pi_fecha.ToString("dd/MM/yyyy")</td>
+					<td class="align-center">@item.pie_desc</td>
 					<td>@item.pi_nota</td>
 					<td>@item.pit_desc</td>
 					@* <td><a asp-action="VerDetallePedidoDeSucursal" asp-controller="Transferencia" asp-area="Compras" class="btn btn-xs btn-outline-success" asp-route-picompte="@item.pi_compte"> <i class="bx bx-detail"></i></a></td> *@

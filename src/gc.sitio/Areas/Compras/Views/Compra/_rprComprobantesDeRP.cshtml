@@ -5,10 +5,10 @@
 		<thead class="table-dark">
 			<tr class="header">
 				<th style="width:0%; display:none;">TipoId</th>
-				<th scope="col" style="width:25%">Tipo</th>
-				<th scope="col" style="width:25%">N° Comprobante</th>
-				<th scope="col" style="width:25%">Fecha</th>
-				<th scope="col" style="width:25%">Importe</th>
+				<th scope="col" style="width:25%" class="align-center">Tipo</th>
+				<th scope="col" style="width:25%" class="align-center">N° Comprobante</th>
+				<th scope="col" style="width:25%" class="align-center">Fecha</th>
+				<th scope="col" style="width:25%" class="align-center">Importe</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -16,10 +16,10 @@
 			{
 				<tr onclick="selectCompteDeRPRow(this)">
 					<td style="display:none;">@item.Tipo</td>
-					<td>@item.TipoDescripcion</td>
-					<td>@item.NroComprobante</td>
-					<td>@item.Fecha</td>
-					<td>@item.Importe</td>
+					<td class="align-left">@item.TipoDescripcion</td>
+					<td class="align-center">@item.NroComprobante</td>
+					<td class="align-center">@item.Fecha</td>
+					<td class="align-right">@item.Importe</td>
 				</tr>
 			}
 		</tbody>

@@ -4,8 +4,8 @@
 	<table class="table table-bordered table-hover" id="tbDepositosDeEnvio">
 		<thead class="table-dark">
 			<tr>
-				<th style="width:80%;">Depósito</th>
-				<th style="width:20%;">Sele</th>
+				<th style="width:80%;" class="align-center">Depósito</th>
+				<th style="width:20%;" class="align-center">Sele</th>
 				<th style="width:0%; display:none;">depo_id</th>
 			</tr>
 		</thead>
@@ -13,7 +13,7 @@
 			@foreach (var item in Model.ListaDatos)
 			{
 				<tr onclick="selectTRDepositosDeEnvioRow(this)">
-					<td>@item.depo_nombre</td>
+					<td class="align-left">@item.depo_nombre</td>
 					<td><input type="checkbox" name="tienePI" id="chkTienePI" value="@item.seleccionado" @((item.seleccionado == false ? "" : "checked")) /></td>
 					<td style="width:0%; display:none;">@item.depo_id</td>
 				</tr>

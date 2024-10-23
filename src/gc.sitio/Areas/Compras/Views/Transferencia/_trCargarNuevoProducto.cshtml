@@ -4,26 +4,26 @@
 	<table class="table table-bordered table-hover" id="tbListaProductosParaAgregar">
 		<thead class="table-dark">
 			<tr>
-				<th style="width:10%;">ID</th>
-				<th style="width:40%;">Descripción</th>
-				<th style="width:10%;">ID Prov</th>
-				<th style="width:10%;">Incluido</th>
-				<th style="width:10%;">Pedido</th>
-				<th style="width:10%;">Box</th>
-				<th style="width:10%;">Stk</th>
+				<th style="width:10%;" class="align-center">ID</th>
+				<th style="width:40%;" class="align-center">Descripción</th>
+				<th style="width:10%;" class="align-center">ID Prov</th>
+				<th style="width:10%;" class="align-center">Incluido</th>
+				<th style="width:10%;" class="align-center">Pedido</th>
+				<th style="width:10%;" class="align-center">Box</th>
+				<th style="width:10%;" class="align-center">Stk</th>
 			</tr>
 		</thead>
 		<tbody>
 			@foreach (var item in Model.Productos.ListaDatos)
 			{
 				<tr onclick="selectProductosParaAgregarRow(this)">
-					<td>@item.p_id</td>
-					<td>@item.p_desc</td>
-					<td>@item.adm_id</td>
-					<td>@item.adm_id</td>
-					<td>@item.stk_adm</td>
-					<td>@item.box_id</td>
-					<td>@item.stk</td>
+					<td class="align-center">@item.p_id</td>
+					<td class="align-left">@item.p_desc</td>
+					<td class="align-center">@item.adm_id</td>
+					<td class="align-center">@item.adm_id</td>
+					<td class="align-right">@item.stk_adm</td>
+					<td class="align-center">@item.box_id</td>
+					<td class="align-right">@item.stk</td>
 				</tr>
 			}
 		</tbody>

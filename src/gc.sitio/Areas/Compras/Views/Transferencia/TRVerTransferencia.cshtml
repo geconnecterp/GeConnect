@@ -32,23 +32,23 @@
 				<table class="table table-bordered table-hover" id="tbListaConteos">
 					<thead class="table-dark">
 						<tr>
-							<th style="width:8%;">ID</th>
+							<th style="width:8%;" class="align-center">ID</th>
 							<th style="width:40%;text-align: center;">Descripcion</th>
-							<th style="width:10%;">ID Prov</th>
-							<th style="width:10%;">UxB</th>
-							<th style="width:8%;">Pedido</th>
-							<th style="width:8%;">CONTEOS</th>
-							<th style="width:8%;">CTL Salida</th>
-							<th style="width:8%;">Diferencia</th>
+							<th style="width:10%;" class="align-center">ID Prov</th>
+							<th style="width:10%;" class="align-center">UxB</th>
+							<th style="width:8%;" class="align-center">Pedido</th>
+							<th style="width:8%;" class="align-center">CONTEOS</th>
+							<th style="width:8%;" class="align-center">CTL Salida</th>
+							<th style="width:8%;" class="align-center">Diferencia</th>
 						</tr>
 					</thead>
 					<tbody>
 						@foreach (var item in Model.ListaTransferencias.ListaDatos)
 						{
 							<tr onclick="selectTRRow(this)">
-								<td>@item.p_id</td>
+								<td class="align-center">@item.p_id</td>
 								<td>@item.p_desc</td>
-								<td>@item.p_id_prov</td>
+								<td class="align-center">@item.p_id_prov</td>
 								<td style="text-align: right;">@item.unidad_pres</td>
 								<td style="text-align: right;">@item.cantidad_pi</td>
 								<td style="text-align: right;">@item.cantidad</td>

@@ -27,10 +27,10 @@ function SelecccionarPrimerRegistro() {
 }
 
 function selectRPRow(x) {
-	$("#idRPSelected").val(x.cells[0].innerText.trim());
-	var link = ModificarAutorizacionRPUrl + "?rp=" + x.cells[0].innerText.trim();
+	$("#idRPSelected").val(x.cells[8].innerText.trim());
+	var link = ModificarAutorizacionRPUrl + "?rp=" + x.cells[8].innerText.trim();
 	$("#btnModificarAut").prop("href", link);
-	var linkVer = VerAutorizacionRPUrl + "?rp=" + x.cells[0].innerText.trim();
+	var linkVer = VerAutorizacionRPUrl + "?rp=" + x.cells[8].innerText.trim();
 	$("#btnVer").prop("href", linkVer);
 };
 

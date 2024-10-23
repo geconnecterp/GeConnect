@@ -9,26 +9,26 @@
 		<table class="table table-bordered table-hover" id="tbDetalleDePedido">
 			<thead class="table-dark">
 				<tr>
-					<th style="width:10%;">PI</th>
-					<th style="width:10%;">Orden</th>
-					<th style="width:10%;">Prod ID</th>
-					<th style="width:40%;">Descripción</th>
-					<th style="width:10%;">Cantidad</th>
-					<th style="width:10%;">Enviado</th>
-					<th style="width:10%;">Stk</th>
+					<th style="width:10%;" class="align-center">PI</th>
+					<th style="width:10%;" class="align-center">Orden</th>
+					<th style="width:10%;" class="align-center">Prod ID</th>
+					<th style="width:40%;" class="align-center">Descripción</th>
+					<th style="width:10%;" class="align-center">Cantidad</th>
+					<th style="width:10%;" class="align-center">Enviado</th>
+					<th style="width:10%;" class="align-center">Stk</th>
 				</tr>
 			</thead>
 			<tbody>
 				@foreach (var item in Model.Detalle.ListaDatos)
 				{
 					<tr onclick="selectTRDetalleDePedido(this)">
-						<td>@item.pi_compte</td>
-						<td>@item.pid_item</td>
-						<td>@item.p_id</td>
-						<td>@item.p_desc</td>
-						<td>@item.pid_cantidad</td>
-						<td>@item.pid_enviado</td>
-						<td>@item.pid_stk</td>
+						<td class="align-center">@item.pi_compte</td>
+						<td class="align-center">@item.pid_item</td>
+						<td class="align-center">@item.p_id</td>
+						<td class="align-left">@item.p_desc</td>
+						<td class="align-right">@item.pid_cantidad</td>
+						<td class="align-right">@item.pid_enviado</td>
+						<td class="align-right">@item.pid_stk</td>
 					</tr>
 				}
 			</tbody>

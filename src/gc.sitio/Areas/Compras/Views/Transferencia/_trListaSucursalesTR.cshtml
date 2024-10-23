@@ -4,9 +4,9 @@
 	<table class="table table-bordered table-hover" id="tbListaSucursales">
 		<thead class="table-dark">
 			<tr>
-				<th style="width:80%;">Sucursal Destino</th>
-				<th style="width:20%;">PS</th>
-				<th style="width:20%;">PI</th>
+				<th style="width:80%;" class="align-center">Sucursal Destino</th>
+				<th style="width:20%;" class="align-center">PS</th>
+				<th style="width:20%;" class="align-center">PI</th>
 				<th style="width:0%; display:none;">adm_id</th>
 			</tr>
 		</thead>
@@ -14,7 +14,7 @@
 			@foreach (var item in Model.ListaDatos)
 			{
 				<tr onclick="selectTRSucursalesRow(this)">
-					<td>@item.adm_nombre</td>
+					<td class="align-left">@item.adm_nombre</td>
 					@if (item.tiene_ordenes)
 					{
 						<td><input type="checkbox" name="tieneOrdenes" value="@item.tiene_ordenes" checked disabled="disabled" /></td>

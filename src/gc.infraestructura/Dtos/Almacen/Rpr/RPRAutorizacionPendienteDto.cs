@@ -5,10 +5,11 @@
 		public string Rp { get; set; } = string.Empty;
 		public string Cta_id { get; set; } = string.Empty;
 		public string Usu_id { get; set; } = string.Empty;
-		public DateTime Fecha { get; set; }
+		public DateTime? Fecha { get; set; }
 		public string Nota { get; set; } = string.Empty;
 		public string Rpe_id { get; set; } = string.Empty;
 		public string Cta_denominacion { get; set; } = string.Empty;
+		public string Rp_hidden { get; set; } = string.Empty;
 	}
 
 	public class RegistroResponseDto
