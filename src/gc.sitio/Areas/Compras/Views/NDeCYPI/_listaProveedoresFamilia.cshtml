@@ -1,0 +1,17 @@
+﻿@model ProveedoresFamiliaDto
+@{
+	var familiaProveedores = Model.ComboProveedoresFamilia;
+}
+
+<div class="col-sm" id="divComboProveedoresFamilia" aria-disabled="true">
+	<div class="input-group fixed-padding-top">
+		<span class="input-group-text fixed-width">Familia: </span>
+		@Html.DropDownList("id", familiaProveedores, "Seleccionar...", new { @id = "listaFamiliaProveedor", @class = "form-control" })
+	</div>
+</div>
+
+@section scripts {
+	<script type="text/javascript">
+	</script>
+	<script src="~/js/app/areas/ndecypi/nc.js"></script>
+}

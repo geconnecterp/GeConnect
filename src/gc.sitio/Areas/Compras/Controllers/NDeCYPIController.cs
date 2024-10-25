@@ -1,4 +1,5 @@
-﻿using gc.api.core.Entidades;
+﻿using Azure;
+using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Request;
@@ -60,16 +61,19 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> PedidosInternos()
 		{
-			NecesidadesDeCompraDto model = new();
-			List<ProveedorListaDto> proveedores = [];
+			PedidosInternosDto model = new();
+			List<ProveedorFamiliaListaDto> proveedoresFamilias = [];
 			try
 			{
-				proveedores = _cuentaServicio.ObtenerListaProveedores(TokenCookie);
+				model.ComboProveedores = ComboProveedores();
+				model.ComboProveedoresFamilia = HelperMvc<ComboGenDto>.ListaGenerica(proveedoresFamilias.Select(x => new ComboGenDto { Id = x.pg_id, Descripcion = x.pg_desc }));
+				model.ComboRubros = ComboRubros();
+				model.Productos = ObtenerGridCore<ProductoNCPIDto>([]);
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al obtener Autorizaciones pendientes");
-				TempData["error"] = "Hubo algun problema al intentar obtener las Autorizaciones Pendientes. Si el problema persiste informe al Administrador";
+				_logger.LogError(ex, "Error al obtener intentar obtener la vista de Pedidos Internos");
+				TempData["error"] = "Hubo algun problema al intentar obtener la vista de Pedidos Internos. Si el problema persiste informe al Administrador";
 				model = new();
 			}
 			return View(model);
@@ -124,6 +128,27 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
+		public async Task<IActionResult> ObtenerProveedoresFamilia(string ctaId)
+		{
+			var model = new ProveedoresFamiliaDto();
+			try
+			{
+				model.ComboProveedoresFamilia = ComboProveedoresFamilia(ctaId);
+				return PartialView("_listaProveedoresFamilia", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_listaProveedoresFamilia", response);
+			}
+		}
+
 		#region Métodos privados
 		private SelectList ComboProveedores()
 		{
@@ -135,6 +160,12 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			var adms = _rubroServicio.ObtenerListaRubros(TokenCookie);
 			var lista = adms.Select(x => new ComboGenDto { Id = x.Rub_Id, Descripcion = x.Rub_Desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		private SelectList ComboProveedoresFamilia(string ctaId)
+		{
+			var adms = _cuentaServicio.ObtenerListaProveedoresFamilia(ctaId, TokenCookie);
+			var lista = adms.Select(x => new ComboGenDto { Id = x.pg_id, Descripcion = x.pg_desc });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
 		#endregion

@@ -145,8 +145,11 @@ namespace gc.api.core.Servicios
 
 		public List<ProveedorFamiliaListaDto> GetProveedorFamiliaLista(string ctaId)
 		{
-			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PROVEEDOR_LISTA;
-			var ps = new List<SqlParameter>();
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PROVEEDOR_FAMILIA_LISTA;
+			var ps = new List<SqlParameter>()
+			{
+				new("@cta_id",ctaId)
+			};
 			var listaTemp = _repository.EjecutarLstSpExt<ProveedorFamiliaListaDto>(sp, ps, true);
 			return listaTemp;
 		}

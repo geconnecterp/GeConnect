@@ -17,10 +17,12 @@
 						@Html.DropDownList("id", proveedores, "Seleccionar...", new { @id = "listaProveedor", @class = "form-control" })
 					</div>
 				</div>
-				<div class="col-sm" id="divComboProveedoresFamilia" aria-disabled="true">
-					<div class="input-group fixed-padding-top">
-						<span class="input-group-text fixed-width">Familia: </span>
-						@Html.DropDownList("id", familiaProveedores, "Seleccionar...", new { @id = "listaFamiliaProveedor", @class = "form-control" })
+				<div id="divComboProveedoresFamilia">
+					<div class="col-sm" id="divComboProveedoresFamilia" aria-disabled="true">
+						<div class="input-group fixed-padding-top">
+							<span class="input-group-text fixed-width">Familia: </span>
+							@Html.DropDownList("id", familiaProveedores, "Seleccionar...", new { @id = "listaFamiliaProveedor", @class = "form-control" })
+						</div>
 					</div>
 				</div>
 				<div class="col-sm" id="divComboRubros" aria-disabled="true">
@@ -156,8 +158,10 @@
 		var BuscarProductosOCPIURL = "@Url.Action("BuscarProductosOCPI", "ndecypi", new { area = "Compras" })";
 		var CargaPedidoOCPIURL = "@Url.Action("CargaPedidoOCPI", "ndecypi", new { area = "Compras" })";
 		var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun" })";
+		var BuscarProveedoresFamiliaURL = "@Url.Action("ObtenerProveedoresFamilia", "ndecypi", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/areas/ndecypi/nc.js"></script>
+	<script src="~/js/app/areas/ndecypi/comun.js"></script>
 	<script src="~/js/app/busquedas.js" type="text/javascript"></script>
 	<script src="~/js/app/controlcomun/rpr.js" type="text/javascript"></script>
 	<script src="~/js/app/controlcomun/infoRpr.js" type="text/javascript"></script>
