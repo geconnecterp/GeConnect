@@ -81,7 +81,6 @@
 											<td class="align-center">@item.pie_desc</td>
 											<td class="align-left">@item.pi_nota</td>
 											<td class="align-center">@item.pit_desc</td>
-											@* <td><a asp-action="VerDetallePedidoDeSucursal" asp-controller="Transferencia" asp-area="Compras" class="btn btn-xs btn-outline-success" asp-route-picompte="@item.pi_compte"> <i class="bx bx-detail"></i></a></td> *@
 											<td><a class="btn btn-xs btn-outline-success" data-interaction="@item.pi_compte" onclick="verDetalleDePedido(this);"> <i class="bx bx-detail"></i></a></td>
 											<td><a class="btn btn-xs btn-outline-primary" data-interaction="@item.pi_compte" onclick="agregarAPedidosIncl(this);"> <i class="bx bx-plus-circle"></i></a></td>
 											<td style="display:none;">@item.adm_id</td>
@@ -122,7 +121,6 @@
 											<td class="align-left">@item.pie_desc</td>
 											<td class="align-center">@item.pi_nota</td>
 											<td class="align-center">@item.pit_desc</td>
-											@* <td><a asp-action="VerDetallePedidoDeSucursal" asp-controller="Transferencia" asp-area="Compras" class="btn btn-xs btn-outline-success" asp-route-picompte="@item.pi_compte"> <i class="bx bx-detail"></i></a></td> *@
 											<td><a class="btn btn-xs btn-outline-success" data-interaction="@item.pi_compte" onclick="verDetalleDePedido(this);"> <i class="bx bx-detail"></i></a></td>
 											<td><a class="btn btn-xs btn-outline-danger" data-interaction="@item.pi_compte" onclick="quitarDePedidosIncl(this);"> <i class="bx bx-minus-circle"></i></a></td>
 										</tr>
@@ -155,7 +153,6 @@
 													<tr onclick="selectTRDepositosDeEnvioRow(this)">
 														<td>@item.depo_nombre</td>
 														<td class="align-center"><input type="checkbox" name="tienePI" id="chkTienePI" value="@item.seleccionado" @((item.seleccionado == false ? "" : "checked")) /></td>
-														@* <td>@item.seleccionado</td> *@
 														<td style="width:0%; display:none;">@item.depo_id</td>
 													</tr>
 												}

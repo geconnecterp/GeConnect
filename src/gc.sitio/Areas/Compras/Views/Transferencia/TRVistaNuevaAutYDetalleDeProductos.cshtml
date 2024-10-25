@@ -40,8 +40,8 @@
 						</div>
 					</div>
 					<div class="container col-sm" style="padding-top: 15px;">
-						<a href="#" id="btnRegresarANuevaAut" class="btn btn-primary"><span class="tf-icons bx bx-left-arrow-circle me-1">Regresar</span></a>
-						<a href="#" id="btnConfirmarAuto" class="btn btn-success"><span class="tf-icons bx bx-check-circle me-1">Confirmar Auto.</span></a>
+						<a href="#" id="btnRegresarANuevaAut" class="btn btn-primary fixed-width-130" title="Volver a pantalla anterior"><span class="tf-icons bx bx-left-arrow-circle me-1">Regresar</span></a>
+						<a href="#" id="btnConfirmarAuto" class="btn btn-success fixed-width-130" title="Confirmar autorizaciones"><span class="tf-icons bx bx-check-circle me-1">Confirmar</span></a>
 					</div>
 				</fieldset>
 			</div>
@@ -113,10 +113,14 @@
 						</div>
 					</div>
 					<div class="container col-sm" style="padding-top: 15px;">
-						<a href="#" id="btnAgregar" class="btn btn-success" onclick="abrirlModalAgregaProductoATR();"><span class="tf-icons bx bx-plus-circle me-1">Agregar</span></a>
-						<button id="btnSustituto" class="btn btn-primary" onclick="abrirlModalSustitutoDeProductoATR();" disabled><span class="tf-icons bx bx-exclude me-1">Sustituto</span></button>
-						<button id="btnEliminar" class="btn btn-danger" onclick="eliminarProductoATR();" disabled><span class="tf-icons bx bx-minus-circle me-1">Eliminar</span></button>
-						<button id="btnModCantidad" class="btn btn-primary" onclick="abrirlModalModCantDeProductoATR();" disabled><span class="tf-icons bx bx-edit-alt me-1">Mod. Cantidad</span></button>
+						<a href="#" id="btnAgregar" class="btn btn-success fixed-width-130" title="Agregar un nuevo producto a la transferencia seleccionada" onclick="abrirlModalAgregaProductoATR();"><span class="tf-icons bx bx-plus-circle me-1">Agregar</span></a>
+						<button type="button" id="btnSustituto" class="btn btn-primary fixed-width-130"
+								onclick="abrirlModalSustitutoDeProductoATR();" disabled
+								title="Buscar sustituto para producto seleccionado.">
+							<span class="tf-icons bx bx-exclude me-1">Sustituto</span>
+						</button>
+						<button id="btnEliminar" class="btn btn-danger fixed-width-130" title="Eliminar Transferencia" onclick="eliminarProductoATR();" disabled><span class="tf-icons bx bx-minus-circle me-1">Eliminar</span></button>
+						<button id="btnModCantidad" class="btn btn-primary fixed-width-130" title="Modificar Transferencia" onclick="abrirlModalModCantDeProductoATR();" disabled><span class="tf-icons bx bx-edit-alt me-1">Modificar</span></button>
 					</div>
 				</fieldset>
 			</div>
@@ -183,6 +187,7 @@
 	<script type="text/javascript">
 		var admSeleccionado = "";
 		var admSeleccionadoNombre = "";
+		var autAGenerarSeleccionado = "";
 		var prodSeleccionado = "";
 		var prodSeleccionadoNombre = "";
 		var stkDeProdSeleccionado = 0;

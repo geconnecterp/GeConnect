@@ -3,6 +3,7 @@
 	AddEventListenerToGrid("tbListaSucursales");
 	setMaxValueTotxtMaxPallet();
 	SeleccionarFila(1, "tbListaSucursales");
+	$("#txtMaxPallet").hide();
 });
 
 function setMaxValueTotxtMaxPallet() {
@@ -22,8 +23,12 @@ function isValid(value) {
 function changeMaxPalletChk(x) {
 	var value = $("#txtMaxPallet").val();
 	if (x.checked) {
+		$("#txtMaxPallet").show();
 		if (value < 10)
 			$("#txtMaxPallet").val(10);
+	}
+	else {
+		$("#txtMaxPallet").hide();
 	}
 }
 
