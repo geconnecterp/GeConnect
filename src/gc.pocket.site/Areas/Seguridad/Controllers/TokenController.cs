@@ -15,6 +15,7 @@ using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.Intrinsics.Arm;
 using System.Security.Claims;
 using System.Text;
 
@@ -26,17 +27,17 @@ namespace gc.pocket.site.Areas.Seguridad.Controllers
         private readonly IConfiguration _configuration;
         private readonly ILogger<TokenController> _logger;
         private readonly IAdministracionServicio _admSv;
+        private readonly AppSettings _appSettings;
         //private readonly IHttpContextAccessor _context;
 
         public TokenController(IConfiguration configuration, ILogger<TokenController> logger, 
-            IOptions<AppSettings> options, IAdministracionServicio servicio,
+            IOptions<AppSettings> options, IAdministracionServicio servicio, IOptions<AppSettings> options1,
             IHttpContextAccessor context) : base(options,context)
         {
             _configuration = configuration;
             _logger = logger;
             _admSv = servicio;
-            //_context = context;
-
+            _appSettings = options1.Value;
         }
 
         [HttpGet]
@@ -80,12 +81,12 @@ namespace gc.pocket.site.Areas.Seguridad.Controllers
                 //inyectamos la ip en el header del request
                 cliente.DefaultRequestHeaders.Add("X-ClientUsr", ip.ToString());
                
-                cliente.BaseAddress = new Uri(_configuration["AppSettings:RutaBase"]);
+                //cliente.BaseAddress = new Uri(_configuration["AppSettings:RutaBase"]);
                 var userModel = new { autenticar.UserName, autenticar.Password, autenticar.Admid };
                 var userJson = JsonConvert.SerializeObject(userModel);
                 var contentData = new StringContent(userJson, Encoding.UTF8, "application/json");
-
-                var response = await cliente.PostAsync("/api/apitoken", contentData);
+                var link = $"{_appSettings.RutaBase}/api/apitoken";
+                var response = await cliente.PostAsync(link, contentData);
 
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
@@ -168,6 +169,7 @@ namespace gc.pocket.site.Areas.Seguridad.Controllers
                 {
                     
                     var respuesta = await response.Content.ReadAsStringAsync();
+
                    //ExceptionValidation valid = JsonConvert.DeserializeObject<ExceptionValidation>(respuesta);
                     _logger.LogError($"Error al autenticar: {respuesta}");
                     throw new NegocioException("No se ha podido autenticar. El usuario o contraseña no son correctos.");

@@ -9,13 +9,13 @@
     string clase = string.Empty;
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
 }
-<div class="table-responsive text-nowrap">
-    <table class="table mb-0 table-dark">
-        <thead>
+<div class="table-responsive table-wrapper text-nowrap">
+    <table class="table mb-0 table-bordered  table-hover">
+        <thead class="table-dark">
             <tr class="header">
                 <th scope="col">Depósito</th>
-                <th scope="col">Stk</th>
-                <th scope="col">FV</th>
+                <th class="text-sm-center" scope="col">Stk</th>
+                <th class="text-sm-center" scope="col">FV</th>
 
             </tr>
         </thead>
@@ -25,8 +25,9 @@
                 if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
                 <tr class="@clase">
-                    <td>@item.Depo_nombre</td>
-                    <td>@if(item.Up_id==7)
+                    <td class="text-sm-start">@item.Depo_nombre</td>
+                    <td class="text-sm-end">
+                        @if (item.Up_id == 7)
                         {
                             var spl = item.Ps_stk.ToString().Split('.');
                             <span>@spl[0]</span>
@@ -36,21 +37,18 @@
                             <span>@item.Ps_stk</span>
                         }
                     </td>
-                    <td>@item.Vto</td>
+                    <td class="text-sm-center">
+                        @if (!item.Vto.HasValue)
+                        {
+                            <span>- - -</span>
+                        }
+                        else
+                        {
+                            <span>@item.Vto</span>
+                        }
+                    </td>
                 </tr>
-            }
-            @* <tr>
-            <td colspan="9">
-            @Html.PagedListPager(
-            (IPagedList)Model.ListaDatos,
-            page => Url.Action("Index", "producto", new { page = page, area = "Personas", sort = Model.Sort, sortdir = sortDirInv }), new PagedListRenderOptions
-            {
-            LiElementClasses = new string[] { "page-item" },
-            PageClasses = new string[] { "page-link" },
-            Display = PagedListDisplayMode.IfNeeded
-            })
-            </td>
-            </tr> *@
+            }          
         </tbody>
     </table>
 </div>

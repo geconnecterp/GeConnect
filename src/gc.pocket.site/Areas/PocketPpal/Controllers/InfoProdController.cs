@@ -355,24 +355,25 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         {
             RespuestaGenerica<EntidadBase> response = new()  ;
             GridCore<InfoProdMovStk> grillaDatos;
+            idTm = idTm ?? "%";
             string depo = "%";
 
             try
             {
                 string id = ProductoBase.P_id;
-                var ids = InfoProdMovStkIds.Split('#');
-                if (!(id.Equals(ids[0]) && depo.Equals(ids[1]) && idTm.Equals(ids[2]) && fdesde == ids[3].ToDateTime() && fhasta == ids[4].ToDateTime()))
-                {
+                //var ids = InfoProdMovStkIds.Split('#');
+                //if (!(id.Equals(ids[0]) && depo.Equals(ids[1]) && idTm.Equals(ids[2]) && fdesde == ids[3].ToDateTime() && fhasta == ids[4].ToDateTime()))
+                //{
 
                     var regs = _productoServicio.InfoProductoMovStk(id, AdministracionId, depo, idTm, fdesde, fhasta, TokenCookie).GetAwaiter().GetResult();
                     InfoProdMovStkIds = $"{id}#{depo}#{idTm}#{fdesde}#{fhasta}";
                     InfoProdMovStkRegs = regs ;
                     grillaDatos = ObtenerInfoProdMovStk(regs);
-                }
-                else
-                {
-                    grillaDatos = ObtenerInfoProdMovStk(InfoProdMovStkRegs);
-                }
+                //}
+                //else
+                //{
+                //    grillaDatos = ObtenerInfoProdMovStk(InfoProdMovStkRegs);
+                //}
                 
             }
             catch (NegocioException ex)

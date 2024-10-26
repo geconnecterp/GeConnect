@@ -6,6 +6,7 @@ using gc.infraestructura.Dtos.Gen;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
+using Windows.ApplicationModel.Resources.Core;
 
 namespace gc.api.Controllers.Almacen
 {
@@ -39,7 +40,7 @@ namespace gc.api.Controllers.Almacen
                 return BadRequest("No se proporcionó la Administración actual.");
             }
 
-            var res = _almSv.ValidarUL(req.UL, req.AdmId);
+            var res = _almSv.ValidarUL(req.UL, req.AdmId,req.Sm);
             var response = new ApiResponse<RespuestaDto>(res);
             return Ok(response);
         }

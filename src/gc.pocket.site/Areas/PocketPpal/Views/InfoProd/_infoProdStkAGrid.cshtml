@@ -9,12 +9,12 @@
     string clase = string.Empty;
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
 }
-<div class="table-responsive text-nowrap">
-    <table class="table mb-0 table-dark">
-        <thead>
+<div class="table-responsive table-wrapper text-nowrap">
+    <table class="table mb-0 table-bordered  table-hover">
+        <thead class="table-dark">            
             <tr class="header">
                 <th scope="col">Sucursal</th>
-                <th scope="col">Stk</th>
+                <th class="text-sm-center" scope="col">Stk</th>
             </tr>
         </thead>
         <tbody>
@@ -24,7 +24,7 @@
 
                 <tr class="@clase">
                     <td>@item.Adm_nombre</td>
-                    <td>
+                    <td class="text-sm-end">
                         @if (item.Up_id == 7)
                         {
                             var spl = item.Ps_stk.ToString().Split('.');

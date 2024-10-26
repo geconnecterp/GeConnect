@@ -36,7 +36,8 @@
             @foreach (var item in Model.Aplicaciones.OrderBy(b => b.Orden))
             {
                 var sigla = item.Sigla.Replace(" ", "");
-                <a href="@item.Url" class="btn btn-outline-@sigla btn-sm espBoton" title="@item.Nombre" data-toggle="tooltip" data-placement="top" >@item.Sigla</a>
+                <a asp-action="@item.Action" asp-controller="@item.Controller" asp-area="@item.Area" class="btn btn-outline-@sigla btn-sm espBoton" title="@item.Nombre" data-toggle="tooltip" data-placement="top" >@item.Sigla</a>
+                @* <a href="@item.Url" class="btn btn-outline-@sigla btn-sm espBoton" title="@item.Nombre" data-toggle="tooltip" data-placement="top" >@item.Sigla</a> *@
             }
         }
     </div>

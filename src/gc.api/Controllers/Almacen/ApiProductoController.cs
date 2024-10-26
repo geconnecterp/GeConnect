@@ -384,7 +384,7 @@ namespace gc.api.Controllers.Almacen
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
-        public IActionResult TRCargarCtrlSalida(TRProdsCtrlSalDto prods)
+        public IActionResult TRCargarCtrlSalida(TRProdsCtrlSalDto prods) ////PARA FACTORIZAR ACA ####################################
         {
             ApiResponse<RespuestaDto> response;
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
@@ -395,13 +395,25 @@ namespace gc.api.Controllers.Almacen
 
             }
 
-            var json = JsonConvert.SerializeObject(prods.ProdsCargar);
+            var json = JsonConvert.SerializeObject(prods.ProdsCargar.Select(x => new { x}));
 
-            ////validar json
-            //if (!JsonValido(json))
-            //{
-            //    return BadRequest("El JSON recepcionado no es válido");
-            //}
+            /*
+             {
+                "item": 1,
+                "ope": "RPR",
+                "nro_auto": "00-00001234",
+                "cta_id": "C0001234",
+                "usu_id": "super",
+                "adm_id": "0000",
+                "p_id": "000145",
+                "bulto_up": "6",
+                "bulto": "100",
+                "uni_suelta": "0",
+                "vto": null,
+                "cantidad": "6000",
+                "nro_tra": "00-0000123415"
+             },
+             */
 
             RespuestaDto res = _productosSv.TRCargarCtrlSalida(json);
             response = new ApiResponse<RespuestaDto>(res);
@@ -413,7 +425,7 @@ namespace gc.api.Controllers.Almacen
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
 
-        public IActionResult RPRRegistrar(List<ProductoGenDto> prods)
+        public IActionResult RPRRegistrar(List<ProductoGenDto> prods)   ////PARA FACTORIZAR ACA ####################################
         {
             ApiResponse<RegistroResponseDto> response;
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");

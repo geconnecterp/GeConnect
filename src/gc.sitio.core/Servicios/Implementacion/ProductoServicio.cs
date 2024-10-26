@@ -76,8 +76,8 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string TR_Busca_Vto = "/BuscarFechaVto";
         private const string TR_AUT_Sustituto = "/TRObtenerSustituto";
         private const string TR_AUT_Confirma_Auto = "/TRConfirmaAutorizaciones";
-		private const string TR_Ver_Conteos = "/TRVerConteos";
-		private const string TR_Validar_Transferencia = "/TRValidarTransferencia";
+        private const string TR_Ver_Conteos = "/TRVerConteos";
+        private const string TR_Validar_Transferencia = "/TRValidarTransferencia";
 
         private readonly AppSettings _appSettings;
 
@@ -353,9 +353,9 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-		public async Task<List<AutorizacionPendienteDto>> RPRObtenerAutorizacionPendiente(string adm, string token)
-		{
-			ApiResponse<List<AutorizacionPendienteDto>> apiResponse;
+        public async Task<List<AutorizacionPendienteDto>> RPRObtenerAutorizacionPendiente(string adm, string token)
+        {
+            ApiResponse<List<AutorizacionPendienteDto>> apiResponse;
 
             HelperAPI helper = new HelperAPI();
 
@@ -366,24 +366,24 @@ namespace gc.sitio.core.Servicios.Implementacion
 
             response = await client.GetAsync(link);
 
-			if (response.StatusCode == HttpStatusCode.OK)
-			{
-				string stringData = await response.Content.ReadAsStringAsync();
-				if (string.IsNullOrEmpty(stringData))
-				{
-					_logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda adm:{adm}");
-					return new();
-				}
-				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AutorizacionPendienteDto>>>(stringData);
-				return apiResponse.Data;
-			}
-			else
-			{
-				string stringData = await response.Content.ReadAsStringAsync();
-				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
-				return new();
-			}
-		}
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(stringData))
+                {
+                    _logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda adm:{adm}");
+                    return new();
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AutorizacionPendienteDto>>>(stringData);
+                return apiResponse.Data;
+            }
+            else
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                return new();
+            }
+        }
 
         public async Task<RegistroResponseDto> RPRRegistrarProductos(List<ProductoGenDto> prods, string admId, string ul, string token)
         {
@@ -403,28 +403,28 @@ namespace gc.sitio.core.Servicios.Implementacion
 
             response = await client.PostAsync(link, contentData);
 
-			if (response.StatusCode == HttpStatusCode.OK)
-			{
-				string stringData = await response.Content.ReadAsStringAsync();
-				if (string.IsNullOrEmpty(stringData))
-				{
-					_logger.LogWarning($"La API no devolvió dato alguno. ");
-					return new();
-				}
-				apiResponse = JsonConvert.DeserializeObject<ApiResponse<RegistroResponseDto>>(stringData);
-				return apiResponse.Data;
-			}
-			else
-			{
-				string stringData = await response.Content.ReadAsStringAsync();
-				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
-				return new();
-			}
-		}
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(stringData))
+                {
+                    _logger.LogWarning($"La API no devolvió dato alguno. ");
+                    return new();
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<RegistroResponseDto>>(stringData);
+                return apiResponse.Data;
+            }
+            else
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                return new() { Resultado = -1, Resultado_msj = stringData };
+            }
+        }
 
-		public async Task<List<AutoComptesPendientesDto>> RPRObtenerComptesPendiente(string adm, string token)
-		{
-			ApiResponse<List<AutoComptesPendientesDto>> apiResponse;
+        public async Task<List<AutoComptesPendientesDto>> RPRObtenerComptesPendiente(string adm, string token)
+        {
+            ApiResponse<List<AutoComptesPendientesDto>> apiResponse;
 
             HelperAPI helper = new();
 
@@ -435,24 +435,24 @@ namespace gc.sitio.core.Servicios.Implementacion
 
             response = await client.GetAsync(link);
 
-			if (response.StatusCode == HttpStatusCode.OK)
-			{
-				string stringData = await response.Content.ReadAsStringAsync();
-				if (string.IsNullOrEmpty(stringData))
-				{
-					_logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda adm:{adm}");
-					return new();
-				}
-				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AutoComptesPendientesDto>>>(stringData);
-				return apiResponse.Data;
-			}
-			else
-			{
-				string stringData = await response.Content.ReadAsStringAsync();
-				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
-				return new();
-			}
-		}
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(stringData))
+                {
+                    _logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda adm:{adm}");
+                    return new();
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AutoComptesPendientesDto>>>(stringData);
+                return apiResponse.Data;
+            }
+            else
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                return new();
+            }
+        }
 
         public async Task<List<RespuestaDto>> RPRCargarCompte(string json_str, string token)
         {
@@ -638,12 +638,12 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-        public async Task<RespuestaDto> ValidarUL(string ul, string adm, string token)
+        public async Task<RespuestaDto> ValidarUL(string ul, string adm, string sm, string token)
         {
             ApiResponse<RespuestaDto> apiResponse;
 
             HelperAPI helper = new HelperAPI();
-            RprABRequest request = new() { UL = ul, AdmId = adm };
+            RprABRequest request = new() { UL = ul, AdmId = adm, Sm = sm };
             HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
             HttpResponseMessage response;
 
@@ -657,7 +657,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 if (string.IsNullOrEmpty(stringData))
                 {
                     _logger.LogWarning($"La API no devolvió dato alguno. Parametro de busqueda {JsonConvert.SerializeObject(request)}");
-                    return new RespuestaDto() { resultado = -1, resultado_msj = "Hubo algun problema. Verifique el log local y de la api." }; 
+                    return new RespuestaDto() { resultado = -1, resultado_msj = "Hubo algun problema. Verifique el log local y de la api." };
                 }
                 apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
                 return apiResponse.Data;
@@ -1010,72 +1010,72 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-		public async Task<List<TRVerConteosDto>> TRVerConteos(string ti, string token)
-		{
-			ApiResponse<List<TRVerConteosDto>> apiResponse;
+        public async Task<List<TRVerConteosDto>> TRVerConteos(string ti, string token)
+        {
+            ApiResponse<List<TRVerConteosDto>> apiResponse;
 
-			HelperAPI helper = new();
-			HttpClient client = helper.InicializaCliente(token);
-			HttpResponseMessage response;
+            HelperAPI helper = new();
+            HttpClient client = helper.InicializaCliente(token);
+            HttpResponseMessage response;
 
-			var link = $"{_appSettings.RutaBase}{RutaAPI}{TR_Ver_Conteos}?ti={ti}";
+            var link = $"{_appSettings.RutaBase}{RutaAPI}{TR_Ver_Conteos}?ti={ti}";
 
-			response = await client.GetAsync(link);
+            response = await client.GetAsync(link);
 
-			if (response.StatusCode == HttpStatusCode.OK)
-			{
-				string stringData = await response.Content.ReadAsStringAsync();
-				if (string.IsNullOrEmpty(stringData))
-				{
-					_logger.LogWarning($"La API devolvió error. Parametros ti:{ti}");
-					return new();
-				}
-				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<TRVerConteosDto>>>(stringData);
-				return apiResponse.Data;
-			}
-			else
-			{
-				string stringData = await response.Content.ReadAsStringAsync();
-				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
-				return new();
-			}
-		}
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(stringData))
+                {
+                    _logger.LogWarning($"La API devolvió error. Parametros ti:{ti}");
+                    return new();
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<TRVerConteosDto>>>(stringData);
+                return apiResponse.Data;
+            }
+            else
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                return new();
+            }
+        }
 
-		public async Task<List<RespuestaDto>> TRValidarTransferencia(string ti, string admId, string usuId, string token)
-		{
-			ApiResponse<List<RespuestaDto>> apiResponse;
+        public async Task<List<RespuestaDto>> TRValidarTransferencia(string ti, string admId, string usuId, string token)
+        {
+            ApiResponse<List<RespuestaDto>> apiResponse;
 
-			HelperAPI helper = new();
-			TRValidarTransferenciaRequest request = new() { ti = ti, admId = admId, usuId = usuId };
-			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
-			HttpResponseMessage response;
+            HelperAPI helper = new();
+            TRValidarTransferenciaRequest request = new() { ti = ti, admId = admId, usuId = usuId };
+            HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+            HttpResponseMessage response;
 
-			var link = $"{_appSettings.RutaBase}{RutaAPI}{TR_Validar_Transferencia}";
+            var link = $"{_appSettings.RutaBase}{RutaAPI}{TR_Validar_Transferencia}";
 
-			response = await client.PostAsync(link, contentData);
+            response = await client.PostAsync(link, contentData);
 
-			if (response.StatusCode == HttpStatusCode.OK)
-			{
-				string stringData = await response.Content.ReadAsStringAsync();
-				if (string.IsNullOrEmpty(stringData))
-				{
-					_logger.LogWarning($"La API devolvió error. Parametros ti:{ti}");
-					return new();
-				}
-				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaDto>>>(stringData);
-				return apiResponse.Data;
-			}
-			else
-			{
-				string stringData = await response.Content.ReadAsStringAsync();
-				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
-				return new();
-			}
-		}
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(stringData))
+                {
+                    _logger.LogWarning($"La API devolvió error. Parametros ti:{ti}");
+                    return new();
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaDto>>>(stringData);
+                return apiResponse.Data;
+            }
+            else
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                return new();
+            }
+        }
 
-		public async Task<List<AutorizacionTIDto>> TRObtenerAutorizacionesPendientes(string admId, string usuId, string titId, string token)
-		{
-			ApiResponse<List<AutorizacionTIDto>> apiResponse;
+        public async Task<List<AutorizacionTIDto>> TRObtenerAutorizacionesPendientes(string admId, string usuId, string titId, string token)
+        {
+            ApiResponse<List<AutorizacionTIDto>> apiResponse;
 
             HelperAPI helper = new HelperAPI();
 
@@ -1453,25 +1453,25 @@ namespace gc.sitio.core.Servicios.Implementacion
                 if (string.IsNullOrEmpty(stringData))
                 {
 
-					return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
-				}
-				apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
-				if (apiResponse.Data.resultado == 0)
-				{
-					return new RespuestaGenerica<RespuestaDto> { Ok = true, Mensaje = "OK" };
-				}
-				else
-				{
-					return new RespuestaGenerica<RespuestaDto> { Ok = false, Mensaje = apiResponse.Data.resultado_msj, Entidad = apiResponse.Data };
-				}
-			}
-			else
-			{
-				string stringData = await response.Content.ReadAsStringAsync();
-				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
-				return new() { Ok = false, Mensaje = "Algo no fue bien y el proceso no se completó. Intente de nuevo más tarde. Si el problema persiste informe al Administrador del sistema." };
-			}
-		}
+                    return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+                if (apiResponse.Data.resultado == 0)
+                {
+                    return new RespuestaGenerica<RespuestaDto> { Ok = true, Mensaje = "OK" };
+                }
+                else
+                {
+                    return new RespuestaGenerica<RespuestaDto> { Ok = false, Mensaje = apiResponse.Data.resultado_msj, Entidad = apiResponse.Data };
+                }
+            }
+            else
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                return new() { Ok = false, Mensaje = "Algo no fue bien y el proceso no se completó. Intente de nuevo más tarde. Si el problema persiste informe al Administrador del sistema." };
+            }
+        }
 
         public async Task<RespuestaGenerica<TIRespuestaDto>> TINueva_SinAu(string tipo, string adm, string usu, string token)
         {

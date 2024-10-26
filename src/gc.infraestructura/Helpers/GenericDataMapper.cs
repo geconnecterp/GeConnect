@@ -263,7 +263,14 @@ namespace gc.infraestructura.Helpers
         {
             if (HasColumn(dr, column, ignoreCase))
             {
-                return Convert.ToDateTime(dr[column]);
+                try
+                {
+                    return Convert.ToDateTime(dr[column]);
+                }
+                catch
+                {
+                    return dr[column].ToString().ToDateFormat_dd_mm_yyyy();
+                }
             }
             return DateTime.MinValue;
         }
@@ -273,7 +280,16 @@ namespace gc.infraestructura.Helpers
             if (HasColumn(dr, column, ignoreCase))
             {
                 if (dr[column] != null && dr[column] != DBNull.Value)
-                    return Convert.ToDateTime(dr[column]);
+                {
+                    try
+                    {
+                        return Convert.ToDateTime(dr[column]);
+                    }
+                    catch
+                    {
+                        return dr[column].ToString().ToDateFormat_dd_mm_yyyy();
+                    }
+                }
             }
             return null;
         }
