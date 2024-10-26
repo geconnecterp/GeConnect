@@ -12,9 +12,8 @@
 			</div>
 		</div>
 		<div class="demo-inline-spacing" style="float:right;margin-top: 60px;margin-right: 55px;">
-			<button id="btnAutorizar" class="btn btn-primary" onclick="autorizarRemito();" disabled><span class="tf-icons bx bxs-edit me-1">Autorizar</span></button>
-			@* <a href="#" class="btn btn-primary" id="btnAutorizar" onclick="autorizarRemito();"><span class="tf-icons bx bxs-edit me-1">Autorizar</span></a> *@
-			<a href="#" id="btnVer" class="btn btn-success" onclick="verRemito();return false;"><span class="tf-icons bx bxs-binoculars me-1">Ver</span></a>
+			<button id="btnAutorizar" class="btn btn-primary fixed-width-130" onclick="autorizarRemito();" disabled><span class="tf-icons bx bxs-edit me-1">Autorizar</span></button>
+			<a href="#" id="btnVer" class="btn btn-success fixed-width-130" onclick="verRemito();return false;"><span class="tf-icons bx bxs-binoculars me-1">Ver</span></a>
 		</div>
 	</row>
 	<div class="card-body">
@@ -22,11 +21,11 @@
 			<table class="table table-bordered table-hover" id="tbListaRemitosTransferidos">
 				<thead class="table-dark">
 					<tr>
-						<th style="width:15%;">N° Remito</th>
-						<th style="width:15%;">TR N°</th>
-						<th style="width:40%;">Sucursal que Envía</th>
-						<th style="width:15%;">Fecha</th>
-						<th style="width:15%;">Estado</th>
+						<th style="width:15%;" class="align-center">N° Remito</th>
+						<th style="width:15%;" class="align-center">TR N°</th>
+						<th style="width:40%;" class="align-center">Sucursal que Envía</th>
+						<th style="width:15%;" class="align-center">Fecha</th>
+						<th style="width:15%;" class="align-center">Estado</th>
 						<th style="width:0%; display:none;">ree_id</th>
 					</tr>
 				</thead>
@@ -34,11 +33,11 @@
 					@foreach (var item in Model.ListaDatos)
 					{
 						<tr onclick="selectRemitoRow(this)">
-							<td>@item.re_compte</td>
-							<td>@item.pv_compte</td>
-							<td>@item.adm_nombre</td>
-							<td>@item.re_fecha.ToString("dd-MM-yyyy")</td>
-							<td>@item.ree_desc</td>
+							<td class="align-center">@item.re_compte</td>
+							<td class="align-center">@item.pv_compte</td>
+							<td class="align-left">@item.adm_nombre</td>
+							<td class="align-center">@item.re_fecha.ToString("dd/MM/yyyy")</td>
+							<td class="align-center">@item.ree_desc</td>
 							<td style="display:none;">@item.ree_id</td>
 						</tr>
 					}

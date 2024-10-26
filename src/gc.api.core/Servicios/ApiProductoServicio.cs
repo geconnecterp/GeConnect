@@ -5,6 +5,7 @@ using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Request;
+using gc.infraestructura.Dtos.Almacen.Response;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
@@ -589,6 +590,21 @@ namespace gc.api.core.Servicios
 				new("@id",request.Id),
 			};
 			List<ProductoNCPIDto> respuesta = _repository.EjecutarLstSpExt<ProductoNCPIDto>(sp, ps, true);
+			return respuesta;
+		}
+		public List<NCPICargaPedidoResponse> NCPICargaPedido(NCPICargaPedidoRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OC_Carga_Pedido;
+			var ps = new List<SqlParameter>()
+			{
+				new("@tipo",request.tipo),
+				new("@adm_id",request.admId),
+				new("@usu_id",request.usuId),
+				new("@p_id",request.pId),
+				new("@tipo_carga",request.tipoCarga),
+				new("@bultos",request.bultos),
+			};
+			List<NCPICargaPedidoResponse> respuesta = _repository.EjecutarLstSpExt<NCPICargaPedidoResponse>(sp, ps, true);
 			return respuesta;
 		}
 		//}

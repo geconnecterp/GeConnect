@@ -8,6 +8,8 @@ using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen.Info;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.General;
+using gc.infraestructura.Dtos.Almacen.Request;
+using gc.infraestructura.Dtos.Almacen.Response;
 
 namespace gc.sitio.core.Servicios.Contratos
 {
@@ -67,5 +69,8 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RespuestaGenerica<RespuestaDto>> EnviarProductosCtrl(List<ProductoGenDto> lista, string Token);    
         Task<List<TRVerConteosDto>> TRVerConteos(string ti, string token);
         Task<List<RespuestaDto>> TRValidarTransferencia(string ti, string admId, string usuId, string token);
+
+        Task<List<ProductoNCPIDto>> NCPICargarListaDeProductos(string tipo, string admId, string filtro, string id, string token);
+        Task<List<NCPICargaPedidoResponse>> NCPICargaPedido(NCPICargaPedidoRequest req, string token);
 	}
 }

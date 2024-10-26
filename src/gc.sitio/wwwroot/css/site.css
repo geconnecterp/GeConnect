@@ -1,24 +1,24 @@
 html {
-  font-size: 14px;
+    font-size: 14px;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    html {
+        font-size: 16px;
+    }
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
 html {
-  position: relative;
-  min-height: 100%;
+    position: relative;
+    min-height: 100%;
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
 }
 
 table > tbody > tr > td {
@@ -45,6 +45,44 @@ fieldset {
     border-radius: 4px;
 }
 
+.align-left {
+    text-align: left !important;
+}
+
+.align-right {
+    text-align: right !important;
+}
+
+.align-center {
+    text-align: center !important;
+}
+
+.fixed-width {
+    width: 100px;
+}
+
+.fixed-width-130 {
+    width: 130px;
+}
+
+.fixed-width-150 {
+    width: 150px;
+}
+
+.fixed-padding-top {
+    padding-top: 5px;
+}
+
+.fixed-font-size {
+    font-size: small;
+    width: 96%;
+}
+
+.fixed-font-size-xmall {
+    font-size: x-small;
+    width: 96%;
+}
+
 .table-wrapper {
     max-height: 500px;
     max-width: 98%;
@@ -55,6 +93,12 @@ fieldset {
     max-height: 270px;
     max-width: 98%;
     overflow: auto;
+}
+
+.col-header-small {
+    text-wrap: pretty;
+    font-size: 8px !important;
+    font-weight: 900;
 }
 /*Hide Arrows/Spinners from input type number*/
 /* Chrome, Safari, Edge, Opera */

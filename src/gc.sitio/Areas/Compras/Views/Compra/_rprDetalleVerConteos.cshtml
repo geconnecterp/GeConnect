@@ -6,29 +6,29 @@
 	<table class="table table-bordered table-hover" id="tbDetalleVerConteos">
 		<thead class="table-dark">
 			<tr class="header">
-				<th scope="col" class="table-fontsize" style="width:8%;">Item</th>
-				<th scope="col" class="table-fontsize" style="width:8%;">ID</th>
-				<th scope="col" class="table-fontsize" style="width:20%;">Descripcion</th>
-				<th scope="col" class="table-fontsize" style="width:10%;">ID Prov</th>
-				<th scope="col" class="table-fontsize" style="width:10%;">UL</th>
-				<th scope="col" class="table-fontsize" style="width:10%;">UxB</th>
-				<th scope="col" class="table-fontsize" style="width:11%;">Conteos en RP</th>
-				<th scope="col" class="table-fontsize" style="width:11%;">Facturado</th>
-				<th scope="col" class="table-fontsize" style="width:12%;">No Recibido</th>
+				<th scope="col" class="table-fontsize align-center" style="width:8%;">Item</th>
+				<th scope="col" class="table-fontsize align-center" style="width:8%;">ID</th>
+				<th scope="col" class="table-fontsize align-center" style="width:20%;">Descripcion</th>
+				<th scope="col" class="table-fontsize align-center" style="width:10%;">ID Prov</th>
+				<th scope="col" class="table-fontsize align-center" style="width:10%;">UL</th>
+				<th scope="col" class="table-fontsize align-center" style="width:10%;">UxB</th>
+				<th scope="col" class="table-fontsize align-center" style="width:11%;">Conteos en RP</th>
+				<th scope="col" class="table-fontsize align-center" style="width:11%;">Facturado</th>
+				<th scope="col" class="table-fontsize align-center" style="width:12%;">No Recibido</th>
 			</tr>
 		</thead>
 		<tbody>
 			@foreach (var item in Model.ListaDatos)
 			{
 				<tr onclick="selectDetalleDeVerConteos(this)">
-					<td class="table-fontsize">@item.Item</td>
-					<td class="table-fontsize">@item.P_id</td>
-					<td class="table-fontsize">@item.P_desc</td>
-					<td class="table-fontsize">@item.P_id_prov</td>
-					<td class="table-fontsize">@item.P_id_prov</td>
-					<td class="table-fontsize">@item.Unidad_x_bulto</td>
-					<td class="table-fontsize">@item.Cantidad</td>
-					<td class="table-fontsize">@item.Cantidad_c</td>
+					<td class="table-fontsize align-center">@item.Item</td>
+					<td class="table-fontsize align-center">@item.P_id</td>
+					<td class="table-fontsize align-left">@item.P_desc</td>
+					<td class="table-fontsize align-center">@item.P_id_prov</td>
+					<td class="table-fontsize align-center">@item.P_id_prov</td>
+					<td class="table-fontsize align-right">@item.Unidad_x_bulto</td>
+					<td class="table-fontsize align-right">@item.Cantidad</td>
+					<td class="table-fontsize align-right">@item.Cantidad_c</td>
 					<td class="table-fontsize" style="border-right: 5px solid @item.Row_color;">@item.No_recibido</td>
 				</tr>
 			}

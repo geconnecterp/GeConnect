@@ -35,7 +35,6 @@ function RegresarANuevaAut() {
 	//Validamos si existe un analisis 
 	datos = {};
 	PostGen(datos, TRValidarSiExisteAnalisisUrl, function (o) {
-		debugger;
 		if (o.error === true) {
 			CerrarWaiting();
 			AbrirMensaje("Atención", o.msg, function () {
@@ -138,8 +137,26 @@ function ConfirmarAuto() {
 function selectNuevaAutListaSucursalesRow(x) {
 	admSeleccionado = x.cells[4].innerText.trim();
 	admSeleccionadoNombre = x.cells[1].innerText.trim();
+	autAGenerarSeleccionado = x.cells[0].innerText.trim();
 
-	filtrarListaDeProductosPorSucursal();
+	//filtrarListaDeProductosPorSucursal();
+	filtrarListaDeProductosPorSucursalYAutAGenerar();
+}
+
+function filtrarListaDeProductosPorSucursalYAutAGenerar() {
+	AbrirWaiting();
+	var admId = admSeleccionado;
+	var aut = autAGenerarSeleccionado;
+	if (admId) {
+		var datos = { admId, aut };
+		PostGenHtml(datos, TRFiltrarListaDeProductosPorSucursalUrl, function (obj) {
+			$("#divNuevaAutListaProductos").html(obj);
+			AddEventListenerToGrid("tbNuevaAutListaProductos");
+			CerrarWaiting();
+			return true
+		});
+	}
+	CerrarWaiting();
 }
 
 function filtrarListaDeProductosPorSucursal() {
@@ -362,7 +379,8 @@ function SeleccionarFila(fila, tabla) {
 			if (tabla === "tbNuevaAutListaSucursales") {
 				admSeleccionado = grilla.rows[fila].cells[4].innerText.trim();
 				admSeleccionadoNombre = grilla.rows[fila].cells[1].innerText.trim();
-				filtrarListaDeProductosPorSucursal();
+				autAGenerarSeleccionado = grilla.rows[fila].cells[0].innerText.trim();
+				filtrarListaDeProductosPorSucursalYAutAGenerar();
 			}
 		}
 	}

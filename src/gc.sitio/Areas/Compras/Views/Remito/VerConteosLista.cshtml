@@ -19,8 +19,8 @@
 				<span class="input-group-text">             </span>
 				<span class="input-group-text">@Model.QuienEnvia</span>
 				<div style="padding-left:50px;">
-					<a href="#" class="btn btn-primary float-right" id="btnAutorizar" onclick="confirmarRemito();"><span class="tf-icons bx bx-check-circle me-1">Confirmar</span></a>
-					<a href="#" id="btnRegresar" class="btn btn-success float-right" onclick="regresarARemitosTransferidosLista();" style="padding-left:5px;"><span class="tf-icons bx bx-left-arrow-circle me-1">Regresar</span></a>
+					<a href="#" class="btn btn-primary float-right fixed-width-130" id="btnAutorizar" onclick="confirmarRemito();"><span class="tf-icons bx bx-check-circle me-1">Confirmar</span></a>
+					<a href="#" id="btnRegresar" class="btn btn-success fixed-width-130 float-right" onclick="regresarARemitosTransferidosLista();" style="padding-left:5px;"><span class="tf-icons bx bx-left-arrow-circle me-1">Regresar</span></a>
 				</div>
 			</div>
 		</row>
@@ -30,25 +30,25 @@
 			<table class="table table-bordered table-hover" id="tbListaVerConteos">
 				<thead class="table-dark">
 					<tr>
-						<th scope="col" class="table-fontsize" style="width:10%;">Item</th>
-						<th scope="col" class="table-fontsize" style="width:10%;">ID</th>
-						<th scope="col" class="table-fontsize" style="width:40%;">Descripción</th>
-						<th scope="col" class="table-fontsize" style="width:10%;">EAN</th>
-						<th scope="col" class="table-fontsize" style="width:10%;">Enviado</th>
-						<th scope="col" class="table-fontsize" style="width:10%;">Conteos</th>
-						<th scope="col" class="table-fontsize" style="width:10%;">Diferencia</th>
+						<th scope="col" class="table-fontsize align-center" style="width:10%;">Item</th>
+						<th scope="col" class="table-fontsize align-center" style="width:10%;">ID</th>
+						<th scope="col" class="table-fontsize align-center" style="width:40%;">Descripción</th>
+						<th scope="col" class="table-fontsize align-center" style="width:10%;">EAN</th>
+						<th scope="col" class="table-fontsize align-center" style="width:10%;">Enviado</th>
+						<th scope="col" class="table-fontsize align-center" style="width:10%;">Conteos</th>
+						<th scope="col" class="table-fontsize align-center" style="width:10%;">Diferencia</th>
 					</tr>
 				</thead>
 				<tbody>
 					@foreach (var item in Model.Productos.ListaDatos)
 					{
 						<tr onclick="selectVerConteosRow(this)">
-							<td class="table-fontsize">@item.item</td>
-							<td class="table-fontsize">@item.p_id</td>
-							<td class="table-fontsize">@item.p_desc</td>
-							<td class="table-fontsize">@item.p_id_barrado</td>
-							<td style="text-align: right;" class="table-fontsize">@item.enviado</td>
-							<td style="text-align: right;" class="table-fontsize">@item.recibido</td>
+							<td class="table-fontsize align-center">@item.item</td>
+							<td class="table-fontsize align-center">@item.p_id</td>
+							<td class="table-fontsize align-left">@item.p_desc</td>
+							<td class="table-fontsize align-center">@item.p_id_barrado</td>
+							<td style="text-align: right;" class="table-fontsize align-right">@item.enviado</td>
+							<td style="text-align: right;" class="table-fontsize align-right">@item.recibido</td>
 							@if (item.diferencia != 0)
 							{
 								<td class="table-fontsize" style="border-right: 5px solid @item.Row_color; text-align: right;">@item.diferencia</td>

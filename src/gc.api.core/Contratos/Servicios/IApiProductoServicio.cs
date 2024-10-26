@@ -1,6 +1,7 @@
 using gc.api.core.Entidades;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Request;
+using gc.infraestructura.Dtos.Almacen.Response;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
@@ -56,5 +57,6 @@ namespace gc.api.core.Contratos.Servicios
         List<RespuestaDto> TRValidarTransferencia(TRValidarTransferenciaRequest request);
 
         List<ProductoNCPIDto> NCPICargarListaDeProductos(NCPICargarListaDeProductosRequest request);
+        List<NCPICargaPedidoResponse> NCPICargaPedido(NCPICargaPedidoRequest request);
 	}
 }

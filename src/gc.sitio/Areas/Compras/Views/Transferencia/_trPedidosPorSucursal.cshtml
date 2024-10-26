@@ -4,13 +4,13 @@
 	<table class="table table-bordered table-hover" id="tbListaPedidosSucursal">
 		<thead class="table-dark">
 			<tr>
-				<th style="width:15%;">N° PI</th>
-				<th style="width:10%;">Fecha</th>
-				<th style="width:10%;">Estado</th>
-				<th style="width:30%;">Nota</th>
-				<th style="width:15%;">Tipo</th>
-				<th style="width:10%;">Det</th>
-				<th style="width:10%;">Carga</th>
+				<th style="width:15%;" class="align-center">N° PI</th>
+				<th style="width:10%;" class="align-center">Fecha</th>
+				<th style="width:10%;" class="align-center">Estado</th>
+				<th style="width:30%;" class="align-center">Nota</th>
+				<th style="width:15%;" class="align-center">Tipo</th>
+				<th style="width:10%;" class="align-center">Det</th>
+				<th style="width:10%;" class="align-center">Carga</th>
 				<th style="width:0%; display:none;">adm_id</th>
 				<th style="width:0%; display:none;">adm_desc</th>
 			</tr>
@@ -19,9 +19,9 @@
 			@foreach (var item in Model.ListaDatos)
 			{
 				<tr onclick="selectTRPedidoSucursalRow(this)">
-					<td>@item.pi_compte</td>
-					<td>@item.pi_fecha.ToString("dd-MM-yyyy")</td>
-					<td>@item.pie_desc</td>
+					<td class ="align-center">@item.pi_compte</td>
+					<td class="align-center">@item.pi_fecha.ToString("dd/MM/yyyy")</td>
+					<td class="align-left">@item.pie_desc</td>
 					<td>@item.pi_nota</td>
 					<td>@item.pit_desc</td>
 					@* <td>

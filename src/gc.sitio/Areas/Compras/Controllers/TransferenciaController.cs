@@ -287,7 +287,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				var orden = 0;
 				var listaSucursales = from i in TRAutAnaliza
-									  group i by new { i.adm_id, i.adm_nombre } into x
+									  group i by new { i.adm_id, i.adm_nombre, i.autorizacion } into x
 									  select new TRNuevaAutSucursalDto() { adm_id = x.Key.adm_id, adm_nombre = x.Key.adm_nombre, pallet_aprox = x.Sum(y => y.unidad_palet), aut_a_generar = x.Max(y => y.autorizacion), orden = orden++ };
 				TRNuevaAutSucursalLista = listaSucursales.ToList();
 				model.Sucursales = ObtenerGridCore<TRNuevaAutSucursalDto>(listaSucursales.ToList());
@@ -327,13 +327,20 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public async Task<IActionResult> FiltrarListaDeProductosPorSucursal(string admId)
+		public async Task<IActionResult> FiltrarListaDeProductosPorSucursal(string admId, string aut = "")
 		{
 			var model = new GridCore<TRNuevaAutDetalleDto>();
 			try
 			{
+				var listaFiltrada = new List<TRNuevaAutDetalleDto>();
 				var listaTemp = TRNuevaAutDetallelLista;
-				var listaFiltrada = listaTemp.Where(x => x.adm_id == admId).ToList();
+				if (string.IsNullOrWhiteSpace(aut))
+					listaFiltrada = listaTemp.Where(x => x.adm_id == admId).ToList();
+				else
+				{
+					if (int.TryParse(aut, out int auto))
+						listaFiltrada = listaTemp.Where(x => x.adm_id == admId && x.autorizacion == auto).ToList();
+				}
 				model = ObtenerGridCore<TRNuevaAutDetalleDto>(listaFiltrada);
 			}
 			catch (Exception ex)

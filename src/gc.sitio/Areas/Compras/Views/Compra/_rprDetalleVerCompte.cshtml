@@ -6,33 +6,33 @@
 	<table class="table table-bordered table-hover" id="tbDetalleVerCompte">
 		<thead class="table-dark">
 			<tr class="header">
-				<th scope="col" class="table-fontsize" style="width:6%;">Item</th>
-				<th scope="col" class="table-fontsize" style="width:6%;">ID</th>
-				<th scope="col" class="table-fontsize" style="width:20%;">Descripcion</th>
-				<th scope="col" class="table-fontsize" style="width:10%;">ID Prov</th>
-				<th scope="col" class="table-fontsize" style="width:8%;">OC N°</th>
-				<th scope="col" class="table-fontsize" style="width:8%;">OC Cant</th>
-				<th scope="col" class="table-fontsize" style="width:8%;">FAC Btos</th>
-				<th scope="col" class="table-fontsize" style="width:8%;">FAC Unid</th>
-				<th scope="col" class="table-fontsize" style="width:8%;">FAC Cant</th>
-				<th scope="col" class="table-fontsize" style="width:8%;">Conteos en RP</th>
-				<th scope="col" class="table-fontsize" style="width:8%;">No Recibido</th>
+				<th scope="col" class="table-fontsize align-center" style="width:6%;">Item</th>
+				<th scope="col" class="table-fontsize align-center" style="width:6%;">ID</th>
+				<th scope="col" class="table-fontsize align-center" style="width:20%;">Descripcion</th>
+				<th scope="col" class="table-fontsize align-center" style="width:10%;">ID Prov</th>
+				<th scope="col" class="table-fontsize align-center" style="width:8%;">OC N°</th>
+				<th scope="col" class="table-fontsize align-center" style="width:8%;">OC Cant</th>
+				<th scope="col" class="table-fontsize align-center" style="width:8%;">FAC Btos</th>
+				<th scope="col" class="table-fontsize align-center" style="width:8%;">FAC Unid</th>
+				<th scope="col" class="table-fontsize align-center" style="width:8%;">FAC Cant</th>
+				<th scope="col" class="table-fontsize align-center" style="width:8%;">Conteos en RP</th>
+				<th scope="col" class="table-fontsize align-center" style="width:8%;">No Recibido</th>
 			</tr>
 		</thead>
 		<tbody>
 			@foreach (var item in Model.ListaDatos)
 			{
 				<tr onclick="selectDetalleDeVerCompte(this)">
-					<td class="table-fontsize">@item.Item</td>
-					<td class="table-fontsize">@item.P_id</td>
-					<td class="table-fontsize">@item.P_desc</td>
-					<td class="table-fontsize">@item.P_id_prov</td>
-					<td class="table-fontsize">@item.Oc_compte</td>
-					<td class="table-fontsize">@item.Oc_cantidad</td>
-					<td class="table-fontsize">@item.Bulto_c</td>
-					<td class="table-fontsize">@item.Us_c</td>
-					<td class="table-fontsize">@item.Cantidad_c</td>
-					<td class="table-fontsize">@item.Cantidad</td>
+					<td class="table-fontsize align-center">@item.Item</td>
+					<td class="table-fontsize align-center">@item.P_id</td>
+					<td class="table-fontsize align-left">@item.P_desc</td>
+					<td class="table-fontsize align-center">@item.P_id_prov</td>
+					<td class="table-fontsize align-center">@item.Oc_compte</td>
+					<td class="table-fontsize align-right">@item.Oc_cantidad</td>
+					<td class="table-fontsize align-right">@item.Bulto_c</td>
+					<td class="table-fontsize align-right">@item.Us_c</td>
+					<td class="table-fontsize align-right">@item.Cantidad_c</td>
+					<td class="table-fontsize align-right">@item.Cantidad</td>
 					<td class="table-fontsize" style="border-right: 5px solid @item.Row_color;">@item.No_recibido</td>
 				</tr>
 			}

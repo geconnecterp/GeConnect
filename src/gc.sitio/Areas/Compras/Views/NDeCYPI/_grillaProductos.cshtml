@@ -1,0 +1,62 @@
+﻿@model GridCore<ProductoNCPIDto>
+@{
+}
+<div class="table-responsive text-nowrap table-wrapper">
+	<table class="table table-bordered table-hover" id="tbListaProducto">
+		<thead class="table-dark">
+			<tr>
+				<th style="width:5%;" class="col-header-small align-center">Código</th>
+				<th style="width:5%;" class="col-header-small align-center">Descripción</th>
+				<th style="width:5%;" class="col-header-small align-center">Cod. Prov</th>
+				<th style="width:5%;" class="col-header-small align-center">PI Pend</th>
+				<th style="width:5%;" class="col-header-small align-center">OC Pend</th>
+				<th style="width:5%;" class="col-header-small align-center">Stock</th>
+				<th style="width:5%;" class="col-header-small align-center">Stock en Tránsito</th>
+				<th style="width:5%;" class="col-header-small align-center">Stock a Facturar</th>
+				<th style="width:5%;" class="col-header-small align-center">Unidad Pres.</th>
+				<th style="width:5%;" class="col-header-small align-center">UM</th>
+				<th style="width:5%;" class="col-header-small align-center">Pedido Bultos</th>
+				<th style="width:5%;" class="col-header-small align-center">Cantidad</th>
+				<th style="width:5%;" class="col-header-small align-center">Costo</th>
+				<th style="width:5%;" class="col-header-small align-center">Costo Total</th>
+				<th style="width:5%;" class="col-header-small align-center">Pallet</th>
+				<th style="width:0%; display:none;">pg_id</th>
+				<th style="width:0%; display:none;">rub_id</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in Model.ListaDatos)
+			{
+				<tr onclick="selectListaProductoRow(this)">
+					<td class="align-center">@item.p_id</td>
+					<td class="align-left">@item.p_desc</td>
+					<td class="align-center">@item.p_id_prov</td>
+					<td class="align-right">@item.pi_pendiente</td>
+					<td class="align-right">@item.oc_pendiente</td>
+					<td class="align-right">@item.stk</td>
+					<td class="align-right">@item.stk_suc_transito</td>
+					<td class="align-right">@item.stk_suc_comprometido</td>
+					<td class="align-right">@item.p_unidad_pres</td>
+					<td class="align-left">@item.up_desc</td>
+					<td contenteditable='true' style="text-align: right;">@item.pedido</td>
+					<td class="align-right">@item.cantidad</td>
+					<td class="align-right">@item.costo</td>
+					<td class="align-right">@item.costo_total</td>
+					<td class="align-right">@item.paletizado</td>
+					<td style="display:none;">@item.pg_id</td>
+					<td style="display:none;">@item.rub_id</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>
+
+@section scripts {
+	<script type="text/javascript">
+		var pedido = "";
+		var pIdEditado = "";
+		var rowIndex = 0;
+		var CargaPedidoOCPIURL = "@Url.Action("CargaPedidoOCPI", "ndecypi", new { area = "Compras" })";
+	</script>
+	<script src="~/js/app/areas/ndecypi/nc.js"></script>
+}

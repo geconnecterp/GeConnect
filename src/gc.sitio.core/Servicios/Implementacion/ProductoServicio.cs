@@ -4,6 +4,8 @@ using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Info;
+using gc.infraestructura.Dtos.Almacen.Request;
+using gc.infraestructura.Dtos.Almacen.Response;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
@@ -79,7 +81,11 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string TR_Ver_Conteos = "/TRVerConteos";
         private const string TR_Validar_Transferencia = "/TRValidarTransferencia";
 
-        private readonly AppSettings _appSettings;
+		//NCYPI
+		private const string OC_Productos = "/NCPICargarListaDeProductos";
+		private const string OC_Cargar_Pedido = "/NCPICargaPedido";
+
+		private readonly AppSettings _appSettings;
 
         public ProductoServicio(IOptions<AppSettings> options, ILogger<ProductoServicio> logger) : base(options, logger)
         {
@@ -1073,9 +1079,73 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-        public async Task<List<AutorizacionTIDto>> TRObtenerAutorizacionesPendientes(string admId, string usuId, string titId, string token)
-        {
-            ApiResponse<List<AutorizacionTIDto>> apiResponse;
+		public async Task<List<ProductoNCPIDto>> NCPICargarListaDeProductos(string tipo, string admId, string filtro, string id, string token)
+		{
+			ApiResponse<List<ProductoNCPIDto>> apiResponse;
+
+			HelperAPI helper = new();
+            NCPICargarListaDeProductosRequest request = new() { Tipo = tipo, AdmId = admId, Filtro = filtro, Id = id };
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{OC_Productos}";
+
+			response = await client.PostAsync(link, contentData);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros tipo:{tipo} admId:{admId} filtro:{filtro} id:{id}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProductoNCPIDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<NCPICargaPedidoResponse>> NCPICargaPedido(NCPICargaPedidoRequest req, string token)
+		{
+			ApiResponse<List<NCPICargaPedidoResponse>> apiResponse;
+
+			HelperAPI helper = new();
+			NCPICargaPedidoRequest request = req;
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{OC_Cargar_Pedido}";
+
+			response = await client.PostAsync(link, contentData);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros tipo:{req.tipo} admId:{req.admId} p_id:{req.pId} tipo_carga:{req.tipoCarga}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<NCPICargaPedidoResponse>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<AutorizacionTIDto>> TRObtenerAutorizacionesPendientes(string admId, string usuId, string titId, string token)
+		{
+			ApiResponse<List<AutorizacionTIDto>> apiResponse;
 
             HelperAPI helper = new HelperAPI();
 

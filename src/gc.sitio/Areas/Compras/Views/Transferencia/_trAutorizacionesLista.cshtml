@@ -4,12 +4,12 @@
 	<table class="table table-bordered table-hover" id="tbListaAutorizaciones">
 		<thead class="table-dark">
 			<tr>
-				<th style="width:10%;">N° Auto</th>
-				<th style="width:10%;">Sucursal</th>
-				<th style="width:10%;">Fecha</th>
-				<th style="width:50%;">Nota</th>
-				<th style="width:10%;">PI</th>
-				<th style="width:10%;">Estado</th>
+				<th style="width:10%;" class="align-center">N° Auto</th>
+				<th style="width:10%;" class="align-center">Sucursal</th>
+				<th style="width:10%;" class="align-center">Fecha</th>
+				<th style="width:50%;" class="align-center">Nota</th>
+				<th style="width:10%;" class="align-center">PI</th>
+				<th style="width:10%;" class="align-center">Estado</th>
 				<th style="width:0%; display:none;">adm_id_des</th>
 				<th style="width:0%; display:none;">usu_id</th>
 				<th style="width:0%; display:none;">tie_id</th>
@@ -19,12 +19,12 @@
 			@foreach (var item in Model.ListaDatos)
 			{
 				<tr onclick="selectTRRow(this)">
-					<td>@item.ti</td>
-					<td>@item.adm_nombre</td>
-					<td>@item.fecha.ToString("dd-MM-yyyy")</td>
-					<td>@item.nota</td>
-					<td>@item.pi_compte</td>
-					<td>@item.tie_desc</td>
+					<td class="align-center">@item.ti</td>
+					<td class="align-right">@item.adm_nombre</td>
+					<td class="align-center">@item.fecha.ToString("dd/MM/yyyy")</td>
+					<td class="align-center">@item.nota</td>
+					<td class="align-center">@item.pi_compte</td>
+					<td class="align-center">@item.tie_desc</td>
 					<td style="display:none;">@item.adm_id_des</td>
 					<td style="display:none;">@item.usu_id</td>
 					<td style="display:none;">@item.tie_id</td>

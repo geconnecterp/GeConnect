@@ -17,10 +17,10 @@
 							<table class="table table-bordered table-hover" id="tbNuevaAutListaSucursales">
 								<thead class="table-dark">
 									<tr>
-										<th style="width:20%;">Aut. a Gen.</th>
-										<th style="width:45%;">Sucursal</th>
-										<th style="width:20%;">Pal. Aprox</th>
-										<th style="width:15%;">Nota</th>
+										<th style="width:20%;" class="align-center">Aut. a Gen.</th>
+										<th style="width:45%;" class="align-center">Sucursal</th>
+										<th style="width:20%;" class="align-center">Pal. Aprox</th>
+										<th style="width:15%;" class="align-center">Nota</th>
 										<th style="width:0%; display:none;">adm_id</th>
 									</tr>
 								</thead>
@@ -40,8 +40,8 @@
 						</div>
 					</div>
 					<div class="container col-sm" style="padding-top: 15px;">
-						<a href="#" id="btnRegresarANuevaAut" class="btn btn-primary"><span class="tf-icons bx bx-left-arrow-circle me-1">Regresar</span></a>
-						<a href="#" id="btnConfirmarAuto" class="btn btn-success"><span class="tf-icons bx bx-check-circle me-1">Confirmar Auto.</span></a>
+						<a href="#" id="btnRegresarANuevaAut" class="btn btn-primary fixed-width-130" title="Volver a pantalla anterior"><span class="tf-icons bx bx-left-arrow-circle me-1">Regresar</span></a>
+						<a href="#" id="btnConfirmarAuto" class="btn btn-success fixed-width-130" title="Confirmar autorizaciones"><span class="tf-icons bx bx-check-circle me-1">Confirmar</span></a>
 					</div>
 				</fieldset>
 			</div>
@@ -55,17 +55,17 @@
 							<table class="table table-bordered table-hover" id="tbNuevaAutListaProductos">
 								<thead class="table-dark">
 									<tr>
-										<th style="width:5%;">ID</th>
-										<th style="width:25%;">Descripción</th>
-										<th style="width:8%;">Id Prov</th>
-										<th style="width:8%;">PI</th>
-										<th style="width:8%;">Stk Suc</th>
-										<th style="width:8%;">Pedido</th>
-										<th style="width:8%;">A transf.</th>
-										<th style="width:10%;">Dif</th>
-										<th style="width:10%;">Box</th>
-										<th style="width:10%;">A transf. Box</th>
-										<th style="width:5%;">Nota</th>
+										<th style="width:5%;" class="align-center">ID</th>
+										<th style="width:25%;" class="align-center">Descripción</th>
+										<th style="width:8%;" class="align-center">Id Prov</th>
+										<th style="width:8%;" class="align-center">PI</th>
+										<th style="width:8%;" class="align-center">Stk Suc</th>
+										<th style="width:8%;" class="align-center">Pedido</th>
+										<th style="width:8%;" class="align-center">A transf.</th>
+										<th style="width:10%;" class="align-center">Dif</th>
+										<th style="width:10%;" class="align-center">Box</th>
+										<th style="width:10%;" class="align-center">A transf. Box</th>
+										<th style="width:5%;" class="align-center">Nota</th>
 										<th style="width:0%; display:none;">sustituto</th>
 										<th style="width:0%; display:none;">adm_id</th>
 										<th style="width:0%; display:none;">depo_id</th>
@@ -79,10 +79,10 @@
 									@foreach (var item in Model.Detalle.ListaDatos)
 									{
 										<tr onclick="selectNuevaAutListaProductosRow(this)">
-											<td>@item.p_id</td>
-											<td>@item.p_desc</td>
-											<td>@item.pi_compte</td> @*TODO: Deberia ir ID Prov, consultar con Carlos*@
-											<td>@item.pi_compte</td>
+											<td class="align-center">@item.p_id</td>
+											<td class="align-left">@item.p_desc</td>
+											<td class="align-center">@item.pi_compte</td> @*TODO: Deberia ir ID Prov, consultar con Carlos*@
+											<td class="align-center">@item.pi_compte</td>
 											<td style="text-align: right;">@item.stk</td>
 											<td style="text-align: right;">@item.stk_adm</td>
 											<td style="text-align: right;">@item.a_transferir</td>
@@ -113,10 +113,14 @@
 						</div>
 					</div>
 					<div class="container col-sm" style="padding-top: 15px;">
-						<a href="#" id="btnAgregar" class="btn btn-success" onclick="abrirlModalAgregaProductoATR();"><span class="tf-icons bx bx-plus-circle me-1">Agregar</span></a>
-						<button id="btnSustituto" class="btn btn-primary" onclick="abrirlModalSustitutoDeProductoATR();" disabled><span class="tf-icons bx bx-exclude me-1">Sustituto</span></button>
-						<button id="btnEliminar" class="btn btn-danger" onclick="eliminarProductoATR();" disabled><span class="tf-icons bx bx-minus-circle me-1">Eliminar</span></button>
-						<button id="btnModCantidad" class="btn btn-primary" onclick="abrirlModalModCantDeProductoATR();" disabled><span class="tf-icons bx bx-edit-alt me-1">Mod. Cantidad</span></button>
+						<a href="#" id="btnAgregar" class="btn btn-success fixed-width-130" title="Agregar un nuevo producto a la transferencia seleccionada" onclick="abrirlModalAgregaProductoATR();"><span class="tf-icons bx bx-plus-circle me-1">Agregar</span></a>
+						<button type="button" id="btnSustituto" class="btn btn-primary fixed-width-130"
+								onclick="abrirlModalSustitutoDeProductoATR();" disabled
+								title="Buscar sustituto para producto seleccionado.">
+							<span class="tf-icons bx bx-exclude me-1">Sustituto</span>
+						</button>
+						<button id="btnEliminar" class="btn btn-danger fixed-width-130" title="Eliminar Transferencia" onclick="eliminarProductoATR();" disabled><span class="tf-icons bx bx-minus-circle me-1">Eliminar</span></button>
+						<button id="btnModCantidad" class="btn btn-primary fixed-width-130" title="Modificar Transferencia" onclick="abrirlModalModCantDeProductoATR();" disabled><span class="tf-icons bx bx-edit-alt me-1">Modificar</span></button>
 					</div>
 				</fieldset>
 			</div>
@@ -183,6 +187,7 @@
 	<script type="text/javascript">
 		var admSeleccionado = "";
 		var admSeleccionadoNombre = "";
+		var autAGenerarSeleccionado = "";
 		var prodSeleccionado = "";
 		var prodSeleccionadoNombre = "";
 		var stkDeProdSeleccionado = 0;

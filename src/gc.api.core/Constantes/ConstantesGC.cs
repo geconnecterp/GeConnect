@@ -86,7 +86,7 @@
         
 
 			public const string SP_OC_Productos = "SPGECO_OC_Productos";
-			public const string SP_OC_Carga_Previa = "SPGECO_OC_Carga_previa";//PENDIENTE (No existe en la DB)
+			public const string SP_OC_Carga_Pedido = "SPGECO_OC_Carga_Pedido";//PENDIENTE (No existe en la DB)
 		}
 	}
 }
