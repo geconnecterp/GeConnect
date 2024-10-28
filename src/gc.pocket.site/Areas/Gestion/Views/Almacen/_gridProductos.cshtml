@@ -9,8 +9,8 @@
 
 <div class="card">
     <div class="card-body">
-        <div class="table-responsive">
-            <table class="table mb-0 table-striped">
+        <div class="table-responsive table-wrapper text-nowrap">
+            <table class="table mb-0 table-bordered table-hover">
                 <thead>
                     <tr class="header">
                         <th scope="col">@nameof(dataMod.P_id)</th>
@@ -31,12 +31,13 @@
 
                             <td>@item.P_id</td>
                             <td>@item.P_desc</td>
-                            <td>@item.Ps_stk</td>
-                            <td>@item.P_id_barrado</td>
-                            <td>@item.P_activo</td>
-                            <td class="text - center">
+                            <td class="text-sm-end">@item.Ps_stk</td>
+                            <td class="text-sm-center">@item.P_id_barrado</td>
+                            <td class="text-sm-center">@item.P_activo</td>
+                            <td class="">
                                 <a asp-area="gestion" asp-controller="producto" asp-action="Selecciona" asp-route-id="@item.P_id">
-                                    <i class="bx bxs-info-circle text-primary font-20"></i> Selec. </a>
+                                    <i class="bx bxs-info-circle text-primary font-20"></i> Selec.
+                                </a>
                             </td>
                         </tr>
                     }

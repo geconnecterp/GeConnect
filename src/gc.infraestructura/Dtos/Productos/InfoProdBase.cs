@@ -38,7 +38,7 @@
     public class InfoProdMovStk
     {
         public string P_id { get; set; }= string.Empty;//
-        public string Sm_fecha { get; set; } = string.Empty;//
+        public DateTime Sm_fecha { get; set; } //
         public string Sm_concepto { get; set; } = string.Empty;//
         public string Sm_tipo { get; set; } = string.Empty;//
         public string Tco_id { get; set; } = string.Empty;//

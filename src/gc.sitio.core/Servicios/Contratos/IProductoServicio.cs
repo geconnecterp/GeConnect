@@ -28,7 +28,7 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RegistroResponseDto> RPRRegistrarProductos(List<ProductoGenDto> json,string admId, string ul, string token);
         Task<List<AutoComptesPendientesDto>> RPRObtenerComptesPendiente(string adm_id, string token);
 
-        Task<RespuestaDto> ValidarUL(string ul,string adm,string token);
+        Task<RespuestaDto> ValidarUL(string ul,string adm, string sm, string token);
         Task<RprResponseDto> ValidarBox(string box,string adm,string token);
         Task<RprResponseDto> ConfirmaBoxUl(string box, string ul, string adm, string token);
 

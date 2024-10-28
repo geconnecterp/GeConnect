@@ -80,13 +80,22 @@
                         <div id="gridInfoProdStkA"></div>
                     </div>
                     <div class="tab-pane fade" id="mov" role="tabpanel">
-                        <div class="d-flex justify-content-sm-start align-items-center">
-                            @Html.DropDownList("TmId", null, "Sel.", new { @class = "form-control" })
-                            <span>Desde:</span>
-                            <input type="date" class="form-control" name="fdesde" id="fdesde" />
-                            <span>Hasta:</span>
-                            <input type="date" class="form-control" name="fhasta" id="fhasta" />
-                            <button type="button" class="btn btn-sm btn-success" id="btnBuscarMov"><i class="bx bx-search-alt bx-sm"></i></button>
+                        <div class="row">
+                            <div class="col-lg-3 col-md-12 col-sm-12">
+                                <span>Tipo</span>
+                                @Html.DropDownList("TmId", null, "Sel.", new { @class = "form-control" })
+                            </div>
+                            <div class="col-lg-3 col-md-12 col-sm-12">
+                                <span>Desde:</span>
+                                <input type="date" class="form-control" name="fdesde" id="fdesde" />
+                            </div>
+                            <div class="col-lg-3 col-md-12 col-sm-12">
+                                <span>Hasta:</span>
+                                <input type="date" class="form-control" name="fhasta" id="fhasta" />
+                            </div>
+                            <div class="col-lg-3 col-md-12 col-sm-12 text-sm-end">
+                                <button type="button" class="btn btn-sm btn-success mt-4" id="btnBuscarMov"><i class="bx bx-search-alt bx-sm"></i></button>
+                            </div>
                         </div>
                         <div id="gridInfoProdMov">
                             <span class="text-muted">Realice la consulta ingresando el periodo de fechas</span>

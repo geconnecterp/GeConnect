@@ -67,7 +67,7 @@ namespace gc.api.core.Servicios
             return response[0];
         }
 
-        public RespuestaDto  ValidarUL(string ul, string admid)
+        public RespuestaDto ValidarUL(string ul, string admid,string sm)
         {
             var sp = Constantes.ConstantesGC.StoredProcedures.SP_VALIDAR_UL;
 
@@ -75,7 +75,7 @@ namespace gc.api.core.Servicios
             {
                 new SqlParameter("@ul_id",ul),
                 new SqlParameter("@adm_id",admid),
-                new SqlParameter("@sm_tipo","RI"),
+                new SqlParameter("@sm_tipo",sm),
             };
 
             List<RespuestaDto> response = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);

@@ -415,7 +415,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 {
                     throw new NegocioException("No se recepcionó la UL. Verifique");
                 }
-                var res = await _productoServicio.ValidarUL(ul, AdministracionId, TokenCookie);
+                var res = await _productoServicio.ValidarUL(ul, AdministracionId,"RC", TokenCookie);  //para RPR es RC, para RTR es RI
                 if (res.resultado == 0)
                 {
                     return Json(new { error = false, warn = false, msg = "La validación del UL fue exitosa." });

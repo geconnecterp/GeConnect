@@ -147,16 +147,38 @@
         /// </summary>
         /// <param name="s">fecha de la forma yyyymmdd</param>
         /// <returns>string "dd/mm/yyyy" o ""</returns>
-        public static string ToDateFormat_dd_mm_yyyy(this String s)
+        public static DateTime ToDateFormat_dd_mm_yyyy(this String s)
         {
-            if(string.IsNullOrEmpty(s)) return "";
-            if (string.IsNullOrWhiteSpace(s)) return "";
-            if (s.ToLongOrNull() == null) return "";
-            if (s.Length != 8) return "";
-            var y = s.Substring(0, 4);
-            var m = s.Substring(4, 2);
-            var d=s.Substring(6,2);
-            return $"{d}/{m}/{y}";
+            string y, m, d;
+            y = m = d = "";
+
+            if(string.IsNullOrEmpty(s)) return new DateTime(1900, 01, 01);
+            if (string.IsNullOrWhiteSpace(s)) return new DateTime(1900, 01, 01);
+            //if (s.ToLongOrNull() == null) return "";
+
+            if (s.Length == 8) //20240102
+            {
+                y = s.Substring(0, 4);
+                m = s.Substring(4, 2);
+                d = s.Substring(6, 2);
+                return Convert.ToDateTime($"{d}/{m}/{y}");
+            }
+            else if (s.Length == 21) //20240102 12:34:16:717
+            {
+                y = s.Substring(0, 4);
+                m = s.Substring(4, 2);
+                d = s.Substring(6, 2);
+
+                var h=s.Substring(8).Trim().Split(':',StringSplitOptions.RemoveEmptyEntries);
+
+                var fecha = Convert.ToDateTime($"{d}/{m}/{y}");
+                //fecha = fecha.AddHours(h[0].ToInt()).AddMinutes(h[1].ToInt()).AddSeconds(h[3].ToInt());
+
+                return fecha;
+            }
+
+            return new DateTime(1900,01,01);
+            
         }
 
         public static DateTime ToDateTime(this String s)

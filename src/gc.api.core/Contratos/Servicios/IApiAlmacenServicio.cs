@@ -7,7 +7,7 @@ namespace gc.api.core.Contratos.Servicios
 {
     public interface IApiAlmacenServicio:IServicio<Producto>
     {
-        RespuestaDto ValidarUL(string ul, string admid);
+        RespuestaDto ValidarUL(string ul, string admid, string sm);
         RprResponseDto ValidarBox(string box, string admid);
         RprResponseDto AlmacenaBoxUl(RprABRequest req);
         List<AutorizacionTIDto> TRObtenerAutorizacionesPendientes(string admId,string usuId,string titId);

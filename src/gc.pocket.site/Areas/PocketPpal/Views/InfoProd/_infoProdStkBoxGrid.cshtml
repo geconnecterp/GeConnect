@@ -9,14 +9,14 @@
     string clase = string.Empty;
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
 }
-<div class="table-responsive text-nowrap">
-    <table class="table mb-0 table-dark">
-        <thead>
+<div class="table-responsive table-wrapper text-nowrap">
+    <table class="table mb-0 table-bordered  table-hover">
+        <thead class="table-dark">
             <tr class="header">
                 <th scope="col">Dep</th>
-                <th scope="col">Box</th>
-                <th scope="col">Stk</th>
-                <th scope="col">FV</th>
+                <th class ="text-sm-center" scope="col">Box</th>
+                <th class="text-sm-center" scope="col">Stk</th>
+                <th class="text-sm-center" scope="col">FV</th>
 
             </tr>
         </thead>
@@ -27,8 +27,8 @@
 
                 <tr class="@clase">
                     <td>@item.Depo_nombre</td>
-                    <td>@item.Box_id</td>
-                    <td>@if (item.Up_id == 7)
+                    <td class="text-sm-center">@item.Box_id</td>
+                    <td class="text-sm-end">@if (item.Up_id == 7)
                         {
                             var spl = item.Ps_stk.ToString().Split('.');
                             <span>@spl[0]</span>
@@ -38,7 +38,16 @@
                             <span>@item.Ps_stk</span>
                         }
                        </td>
-                    <td>@item.Vto</td>
+                    <td class="text-sm-center">
+                        @if (!item.Vto.HasValue)
+                        {
+                            <span>- - -</span>
+                        }
+                        else
+                        {
+                            <span>@item.Vto</span>
+                        }
+                    </td>
                 </tr>
             }
             @* <tr>

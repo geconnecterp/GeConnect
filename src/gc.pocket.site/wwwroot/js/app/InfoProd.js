@@ -36,8 +36,11 @@ function verificaEstado() {
         $("#Marca").val(prod.p_m_marca);
         $("#Descipcion").val(prod.p_desc);
         $("#Capacidad").val(prod.p_m_capacidad);
-        $("#ProveedorId").val("??????");
-        $("#Familia").val("???????");
+        if (prod.p_id_prov !== null) {
+            $("#ProveedorId").val(prod.p_id_prov);
+        }
+
+        $("#Familia").val(prod.pg_desc);
         $("#Rubro").val(prod.rub_desc);
 
         $("#estadoFuncion").val(false);
@@ -51,6 +54,7 @@ function verificaEstado() {
 }
 
 function PresentarStkD(id) {
+    AbrirWaiting();
     var data = {};
     PostGenHtml(data, infoProdStkDUrl, function (obj) {
         $("#gridInfoProdStkD").html(obj);
@@ -62,6 +66,7 @@ function PresentarStkD(id) {
 }
 
 function PresentarStkBox() {
+    AbrirWaiting();
     var data = {};
     PostGenHtml(data, infoProdBoxUrl, function (obj) {
         $("#gridInfoProdStkBox").html(obj);
@@ -73,6 +78,7 @@ function PresentarStkBox() {
     return true;
 }
 function PresentarStkA() {
+    AbrirWaiting();
     var data = {};
     PostGenHtml(data, infoProdStkAUrl, function (obj) {
         $("#gridInfoProdStkA").html(obj);
@@ -84,18 +90,22 @@ function PresentarStkA() {
     return true;
 }
 function PresentarMov() {
+    //AbrirWaiting("Espere... se estan recuperando los datos.");
     var idtm = $("#TmId").find(":selected").val();
     var data = { idTm: idtm, fdesde:$("#fdesde").val(),fhasta:$("#fhasta").val()};
     PostGenHtml(data, infoProdMovUrl, function (obj) {
         $("#gridInfoProdMov").html(obj);
         CerrarWaiting();
+        return true
     }, function (obj) {
         ControlaMensajeError(obj.message);
         CerrarWaiting();
+        return true;
     });
     return true;
 }
 function PresentarLP() {
+    AbrirWaiting();
     var data = {};
     PostGenHtml(data, infoProdLPUrl, function (obj) {
         $("#gridInfoProdLP").html(obj);

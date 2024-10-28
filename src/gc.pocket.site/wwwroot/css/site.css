@@ -1,45 +1,45 @@
 html {
-  font-size: 14px;
+    font-size: 14px;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    html {
+        font-size: 16px;
+    }
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
 html {
-  position: relative;
-  min-height: 100%;
+    position: relative;
+    min-height: 100%;
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
 }
 
 .espBoton {
-    width:100px;
-    margin:2px;
+    width: 100px;
+    margin: 2px;
 }
 
-.textoEncabezado{
-    font-weight:600;
+.textoEncabezado {
+    font-weight: 600;
     font-size: 1em;
 }
 
-.fade.in{
-    opacity:1;
+.fade.in {
+    opacity: 1;
 }
 
 tr.alt {
-    background-color: #C0FFC0;
+    background-color: #C0FFC0 !important;
 }
 
-tr.sel{
+tr.sel {
     background-color: #7b82c8;
 }
 
@@ -49,30 +49,31 @@ th, td {
 
 .table-wrapper {
     max-height: 500px;
-    max-width:98%;
+    max-width: 98%;
     overflow: auto;
     /*display: inline-block;*/
 }
-.alinearDerecha{
-    justify-content:flex-end;
+
+.alinearDerecha {
+    justify-content: flex-end;
 }
 
-.sinbordefondo{
+.sinbordefondo {
     background-color: transparent;
     border: 0;
 }
 
 .inputEditable {
-    border-color:rgb(70, 196, 104);
-    text-align:center;
-    font-weight:700;
+    border-color: rgb(70, 196, 104);
+    text-align: center;
+    font-weight: 700;
 }
 
-.btn-block{
-    display:block;
-    width:100%;
-    text-align:center;
-    cursor:pointer;
+.btn-block {
+    display: block;
+    width: 100%;
+    text-align: center;
+    cursor: pointer;
 }
 
 .table-fontsize {
@@ -84,15 +85,22 @@ th, td {
     color: black;
 }
 
-.link-noactivo{
-    pointer-events:none;
-    cursor:default;
+.link-noactivo {
+    pointer-events: none;
+    cursor: default;
+}
+
+.cabeceraModal {
+    background-color: orangered;
+    color: #000;
+    height: 40px;
+    font-weight: 700;
 }
 
 .cabeceraBarra01 {
     background-color: orangered;
     color: #000;
-    height:50px;
+    height: 50px;
     border-radius: 25px 25px 0px 0px;
 }
 
@@ -103,7 +111,7 @@ th, td {
     border-radius: 0px 0px 25px 25px;
 }
 
-@media screen and (max-width: 480px){
+@media screen and (max-width: 480px) {
     .textoEncabezado {
         font-weight: 500;
         font-size: 0.7em;
