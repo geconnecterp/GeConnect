@@ -13,11 +13,18 @@
 
 	$("#btnRegresarAAutorizacionesRP").on("click", RegresarASelAuto); //Regregar a la pantalla de seleccion de autorizaciones.
 	$("#btnConfirmarRP").on("click", ConfirmarRP);
+	$("#btnActualizar").on("click", ActualizarDatos);
+	//btnActualizar
 	CargarDetalleDeConteos();
 	SeleccionarDeposito();
 	SelecccionarPrimerRegistro("tbVerComptesDeRP");
-	
+
 });
+
+function ActualizarDatos() {
+	CargarVerComptesDeRP();
+	CargarDetalleDeConteos();
+}
 
 function SelecccionarPrimerRegistro(grilla) {
 	var grid = document.getElementById(grilla);
@@ -48,7 +55,21 @@ function SeleccionarDeposito() {
 	}
 }
 
+function CargarVerComptesDeRP() {
+	AbrirWaiting();
+	var rp = $("#Rp").val();
+	var datos = { rp };
+	PostGenHtml(datos, actualizarComptesUrl, function (obj) {
+		$("#divVerComptesDeRP").html(obj);
+		AgregarHandlerDeSeleccion("tbVerComptesDeRP");
+		SelecccionarPrimerRegistro("tbVerComptesDeRP");
+		CerrarWaiting();
+		return true
+	})
+}
+
 function CargarDetalleDeConteos() {
+	AbrirWaiting();
 	var datos = {};
 	PostGenHtml(datos, buscarDetalleVerConteosUrl, function (obj) {
 		$("#divDetalleVerConteos").html(obj);

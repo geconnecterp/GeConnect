@@ -15,6 +15,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using System.Collections.Generic;
 using System.Numerics;
 using System.Reflection;
 using X.PagedList;
@@ -237,6 +238,16 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			datosIP = ObtenerGridCore(RPRItemVerConteoLista);
 			return PartialView("_rprDetalleVerConteos", datosIP);
+		}
+
+		public async Task<IActionResult> ObtenerVerComptesDeRP(string rp)
+		{
+			var model = new List<RPRComptesDeRPDto>();
+			JsonDeRPVerCompte = ObtenerComprobantesDesdeJson(rp).Result;
+			RPRComptesDeRPRegs = CargarComprobantesDeRPDesdeJson(JsonDeRPVerCompte.encabezado);
+			var comptes = RPRComptesDeRPRegs;
+			model = comptes;
+			return PartialView("_rprVerComptesDeRP", model);
 		}
 
 		private async Task<JsonDeRPDto> ObtenerComprobantesDesdeJson(string rp)

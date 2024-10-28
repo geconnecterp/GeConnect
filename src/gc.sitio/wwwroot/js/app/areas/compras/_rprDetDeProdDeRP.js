@@ -61,6 +61,7 @@ function AgregarProdManual() {
 			PostGenHtml(data, CargarDetalleDeProductosEnRPUrl, function (obj) {
 				$("#divDetalleDeProductos").html(obj);
 				AgregarHandlerSelectedRow("tbDetalleDeProd");
+				LimpiarCamposDeCarga(true);
 				CerrarWaiting();
 				return true;
 			}, function (obj) {
@@ -87,6 +88,7 @@ function AgregarProdManual() {
 				PostGenHtml(data, CargarDetalleDeProductosEnRPUrl, function (obj) {
 					$("#divDetalleDeProductos").html(obj);
 					AgregarHandlerSelectedRow("tbDetalleDeProd");
+					LimpiarCamposDeCarga(true);
 					CerrarWaiting();
 					return true;
 				}, function (obj) {
@@ -100,7 +102,16 @@ function AgregarProdManual() {
 	}
 }
 
-
+function LimpiarCamposDeCarga(seteaFoco) {
+	$("#txtIdProdEnComprobanteRP").val("");
+	$("#txtProDescripcion").val("");
+	$("#txtUPEnComprobanteRP").val("");
+	$("#txtBtoEnComprobanteRP").val("");
+	$("#txtUnidEnComprobanteRP").val("");
+	if (seteaFoco) {
+		$("#Busqueda").focus();
+	}
+}
 function CargarDetalleDeProducto() {
 	CargarDetalleDeProductosEnRP(0);
 }

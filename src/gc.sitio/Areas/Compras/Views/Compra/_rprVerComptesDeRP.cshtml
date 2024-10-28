@@ -1,0 +1,34 @@
+﻿@model List<RPRComptesDeRPDto>
+@{
+}
+<div class="table-responsive table-wrapper">
+	<table class="table table-bordered table-hover" id="tbVerComptesDeRP">
+		<thead class="table-dark">
+			<tr class="header">
+				<th style="width:0%; display:none;">TipoId</th>
+				<th style="width:0%; display:none;">NroCompte</th>
+				<th scope="col" style="width:50%" class="align-center">Tipo</th>
+				<th scope="col" style="width:25%" class="align-center">Fecha</th>
+				<th scope="col" style="width:25%" class="align-center">Importe</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in Model)
+			{
+				<tr onclick="selectVerComptesDeRPRow(this)">
+					<td style="display:none;">@item.Tipo</td>
+					<td style="display:none;">@item.NroComprobante</td>
+					<td>@item.TipoDescripcion @item.NroComprobante</td>
+					<td class="align-center">@item.Fecha</td>
+					<td class="align-right">@item.Importe</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>
+
+@section scripts {
+	<script type="text/javascript">
+	</script>
+	<script src="~/js/app/areas/compras/rprVerAutorizacion.js"></script>
+}

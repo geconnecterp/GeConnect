@@ -126,6 +126,10 @@ function buscarProducto() {
                         $("#estadoFuncion").val(true);
                         $("#estadoFuncion").trigger("change");
                         $("#msjModal").modal("hide");
+                        var up = $("#txtUPEnComprobanteRP");
+                        if (up) {
+                            up.focus();
+                        }
                         return true;
                     }
                     else {

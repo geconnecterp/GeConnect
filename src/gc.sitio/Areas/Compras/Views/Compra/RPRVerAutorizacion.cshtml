@@ -30,7 +30,7 @@
 				<row>
 					<div class="container">
 						<div class="row">
-							<div class="col-8">
+							<div id="divVerComptesDeRP" class="col-8">
 								<div class="table-responsive table-wrapper">
 									<table class="table table-bordered table-hover" id="tbVerComptesDeRP">
 										<thead class="table-dark">
@@ -58,10 +58,13 @@
 								</div>
 							</div>
 							<div class="col-4" style="text-align: right;align-content: center;">
-								<button type="button" class="btn btn-success" style="margin-left:5px;" id="btnConfirmarRP">
+								<button type="button" class="btn btn-success fixed-width-130" style="margin-left:5px;" id="btnConfirmarRP">
 									<span class="tf-icons bx bx-check-circle">Confirmar</span>
 								</button>
-								<button type="button" class="btn btn-danger" style="margin-left:5px;" id="btnRegresarAAutorizacionesRP">
+								<button type="button" class="btn btn-primary fixed-width-130" style="margin-left:5px;" id="btnActualizar" title="Refrescar datos...">
+									<span class="tf-icons bx bx-check-circle">Actualizar</span>
+								</button>
+								<button type="button" class="btn btn-danger fixed-width-130" style="margin-left:5px;" id="btnRegresarAAutorizacionesRP">
 									<span class="tf-icons bx bx-left-arrow-circle">Regresar</span>
 								</button>
 							</div>
@@ -101,6 +104,7 @@
 		var volverAListaDeAutorizacionesUrl = "@Url.Action("RPRAutorizacionesLista", "compra", new { area = "Compras" })";
 		var buscarDetalleVerCompteUrl = "@Url.Action("ObtenerDetalleVerCompte", "compra", new { area = "Compras" })";
 		var buscarDetalleVerConteosUrl = "@Url.Action("ObtenerDetalleVerConteos", "compra", new { area = "Compras" })";
+		var actualizarComptesUrl = "@Url.Action("ObtenerVerComptesDeRP", "compra", new { area = "Compras" })";
 		var buscarDetalleVerConteoSeleccionadoUrl = "@Url.Action("BuscarDetalleVerConteoSeleccionado", "compra", new { area = "Compras" })";
 		var confirmarRPRUrl = "@Url.Action("ConfirmarRPR", "compra", new { area = "Compras" })";
 	</script>
