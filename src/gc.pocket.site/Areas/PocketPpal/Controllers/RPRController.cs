@@ -491,7 +491,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 var res = await _productoServicio.ConfirmaBoxUl(box, ul, AdministracionId,sm: "RC", TokenCookie);
                 if (res.Resultado == 0)
                 {
-                    return Json(new { error = false, warn = false, msg = "La validación del Box fue exitosa." });
+                    return Json(new { error = false, warn = false, msg = "Se realizó exitosamente el ingreso de Stock de la Unidad de Lectura." });
                 }
                 else
                 {
