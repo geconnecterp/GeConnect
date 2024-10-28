@@ -30,7 +30,7 @@ namespace gc.sitio.core.Servicios.Contratos
 
         Task<RespuestaDto> ValidarUL(string ul,string adm, string sm, string token);
         Task<RprResponseDto> ValidarBox(string box,string adm,string token);
-        Task<RprResponseDto> ConfirmaBoxUl(string box, string ul, string adm, string token);
+        Task<RprResponseDto> ConfirmaBoxUl(string box, string ul, string adm, string sm, string token);
 
         Task<List<RespuestaDto>> RPRCargarCompte(string json_str, string token);
         Task<List<RespuestaDto>> RPREliminarCompte(string rp, string token);
