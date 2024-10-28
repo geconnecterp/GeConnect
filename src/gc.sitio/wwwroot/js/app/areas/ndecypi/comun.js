@@ -408,7 +408,7 @@ function actualizarPedidoBulto() {
 			CerrarWaiting();
 			tabla = myTable = document.querySelector('#tbListaProducto tbody');
 			tabla.rows[rowIndex - 1].cells[colCantidad].innerText = o.cantidad;
-			tabla.rows[rowIndex - 1].cells[colCosto].innerText = o.pCosto;
+			tabla.rows[rowIndex - 1].cells[colCosto].innerText = (Math.round(o.pCosto * 100) / 100).toFixed(3);
 			tabla.rows[rowIndex - 1].cells[colCostoTotal].innerText = o.cantidad;
 			tabla.rows[rowIndex - 1].cells[colPallet].innerText = o.pallet;
 			return false;

@@ -106,11 +106,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 			try
 			{
 				var request = new NCPICargaPedidoRequest() { admId = AdministracionId, usuId = UserName, tipo = tipo, pId = pId, tipoCarga = tipoCarga, bultos = bultos };
-				//var response = await _productoServicio.NCPICargaPedido(request, TokenCookie);
-				var response = new List<NCPICargaPedidoResponse> //mocked response
-				{
-					new() { bultos = 10, cantidad = 15, pallet = 20, p_pcosto = 12, resultado = 0, resultado_msj = "", unidad_pres = 4 }
-				};
+				var response = await _productoServicio.NCPICargaPedido(request, TokenCookie);
+				//var response = new List<NCPICargaPedidoResponse> //mocked response
+				//{
+				//	new() { bultos = 10, cantidad = 15, pallet = 20, p_pcosto = 12, resultado = 0, resultado_msj = "", unidad_pres = 4 }
+				//};
 				if (response == null)
 					return Json(new { error = true, warn = false, msg = "Error al intentar cargar el pedido." });
 				if (response.Count == 0)
