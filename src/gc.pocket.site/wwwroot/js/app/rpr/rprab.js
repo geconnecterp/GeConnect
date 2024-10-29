@@ -78,6 +78,7 @@ function validaBox() {
             ControlaMensajeSuccess(obj.msg);
             $("#txtBox").val(obj.box);
             //solo pasa al otro campo.
+            $("#btnConfirmar").prop("disabled",false);
             $("#btnConfirmar").focus();
 
 
@@ -108,7 +109,7 @@ function ConfirmarBoxUl() {
         else {
             AbrirMensaje("Importante", obj.msg, function () {
                 $("#msjModal").modal("hide");
-                return true;
+                window.location.href = homeInicio;
             }, false, ["Aceptar"], "succ!", null);
         }
 

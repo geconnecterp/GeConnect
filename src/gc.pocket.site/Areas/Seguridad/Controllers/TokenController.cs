@@ -149,7 +149,7 @@ namespace gc.pocket.site.Areas.Seguridad.Controllers
 
                         };
 
-                        var etiqueta = $"{user}";
+                        var etiqueta = $"{user}{HelperGen.ConvierteStrToHex(user)}";
 
                         var principal = new ClaimsPrincipal(new[] { identity });
                         await _context.HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);

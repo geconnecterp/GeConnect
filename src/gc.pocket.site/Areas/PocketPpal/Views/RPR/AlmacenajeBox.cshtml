@@ -21,7 +21,7 @@
 <div class="row mb-3">
     <div class="d-flex justify-content-center">
         <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-2"><i class="bx bx-ms bx-info-circle"></i></a>
-        <button type="button" id="btnConfirmar" class="btn btn-success btn-sm m-2"><i class="bx bx-ms bx-right-arrow-alt"></i></button>
+        <button type="button"  disabled id="btnConfirmar" class="btn btn-success btn-sm m-2"><i class="bx bx-ms bx-right-arrow-alt"></i></button>
     </div>
 </div>
 @* <div class="row mt-2">
@@ -42,6 +42,7 @@
         var validaBoxUrl = "@Url.Action("validarbox", "rpr", new { area = "pocketppal" })";
         var validaUlUrl = "@Url.Action("validarul", "rpr", new { area = "pocketppal" })";
         var homeRPRUrl = "@Url.Action("rpr", "almacen", new { area = "gestion" })";
+        var homeInicio = "@Url.Action("index", "home", new { area = "" })";
     </script>
 
     <script src="~/js/app/rpr/rprab.js"></script>

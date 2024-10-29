@@ -88,9 +88,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 {
                     //en el caso que haga para atras y vuelva a elegir la misma  Autorización Pendiente no se elimina nada. 
                     //si es distinto como en este caso, se inicializan las variables.
+                    InicializaVariablesSessionRPR();
                     AutorizacionPendienteSeleccionada = auto;
-                    ProductoGenRegs = [];
-                    ProductoTemp = new();
                 }
                 //este viewbag es para que aparezca en la segunda fila del encabezado la leyenda que se quiera.
                 //en este caso presenta el numero de autorización pendiente y el proveedor al que le pertenece.
@@ -108,6 +107,13 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             }
 
             return View("CargarProductos", AutorizacionPendienteSeleccionada);
+        }
+
+        private void InicializaVariablesSessionRPR()
+        {
+            AutorizacionPendienteSeleccionada = new();
+            ProductoGenRegs = [];
+            ProductoTemp = new();
         }
 
         [HttpPost]
@@ -350,6 +356,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                 if (res.Resultado == 0)
                 {
+                    //inicializa variables de sesion
+                    InicializaVariablesSessionRPR();
                     return Json(new { error = false, warn = false, msg = $"La Carga del {ul} fue satisfactoria" });
                 }
                 else
@@ -415,7 +423,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 {
                     throw new NegocioException("No se recepcionó la UL. Verifique");
                 }
-                var res = await _productoServicio.ValidarUL(ul, AdministracionId,"RC", TokenCookie);  //para RPR es RC, para RTR es RI
+                var res = await _productoServicio.ValidarUL(ul.ToUpper(), AdministracionId,"RC", TokenCookie);  //para RPR es RC, para RTR es RI
                 if (res.resultado == 0)
                 {
                     return Json(new { error = false, warn = false, msg = "La validación del UL fue exitosa." });
@@ -480,10 +488,10 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 {
                     throw new NegocioException("No se recepcionó el Box. Verifique");
                 }
-                var res = await _productoServicio.ConfirmaBoxUl(box, ul, AdministracionId, TokenCookie);
+                var res = await _productoServicio.ConfirmaBoxUl(box, ul, AdministracionId,sm: "RC", TokenCookie);
                 if (res.Resultado == 0)
                 {
-                    return Json(new { error = false, warn = false, msg = "La validación del Box fue exitosa." });
+                    return Json(new { error = false, warn = false, msg = "Se realizó exitosamente el ingreso de Stock de la Unidad de Lectura." });
                 }
                 else
                 {

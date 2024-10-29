@@ -25,7 +25,7 @@ namespace gc.api.core.Servicios
                 new SqlParameter("@box_id",req.Box),
                 new SqlParameter("@ul_id",req.UL),
                 new SqlParameter("@adm_id",req.AdmId),
-                new SqlParameter("@sm_tipo","RI"),
+                new SqlParameter("@sm_tipo",req.Sm),
 
             };
 
