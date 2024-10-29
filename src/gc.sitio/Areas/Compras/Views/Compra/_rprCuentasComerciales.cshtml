@@ -1,0 +1,27 @@
+﻿@model GridCore<CuentaDto>
+@{
+}
+
+<div class="table-responsive table-wrapper">
+	<table class="table table-bordered table-hover" id="tbCuentasComerciales">
+		<thead class="table-dark">
+			<tr class="header">
+				<th scope="col" class="table-fontsize align-center" style="width:20%;">ID</th>
+				<th scope="col" class="table-fontsize align-center" style="width:50%">Razón Social</th>
+				<th scope="col" class="table-fontsize align-center" style="width:20%">N° Doc</th>
+				<th scope="col" class="table-fontsize align-center" style="width:10%">TC</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in Model.ListaDatos)
+			{
+				<tr onclick="selectDetalleDeProdRow(this)">
+					<td class="table-fontsize align-center">@item.Cta_Id</td>
+					<td class="table-fontsize align-left">@item.Cta_Denominacion</td>
+					<td class="table-fontsize align-center">@item.Tdoc_Id + " " + @item.Cta_Documento</td>
+					<td class="table-fontsize align-center"></td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>

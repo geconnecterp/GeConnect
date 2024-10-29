@@ -211,6 +211,7 @@ namespace gc.api.core.Servicios
 					Cta_Emp_Legajo = x.Cta_Emp_Legajo,
 					Tipo = x.Tipo,
 					Habilitada = x.Habilitada,
+					Tdoc_Desc = x.Tdoc_Desc,
 					#endregion
 				}).ToList();
 		}

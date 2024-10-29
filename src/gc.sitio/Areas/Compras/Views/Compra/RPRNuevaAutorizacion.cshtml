@@ -1,9 +1,8 @@
-﻿
-@model BuscarCuentaDto
+﻿@model BuscarCuentaDto
 @{
 	Layout = "~/views/shared/_Layout.cshtml";
 	var depositos = Model.ComboDeposito;
-	
+
 }
 
 <div class="card">
@@ -122,6 +121,52 @@
 	</row>
 </div>
 
+<div class="modal fade" id="modalCC" tabindex="-1" style="display: none;" aria-hidden="true">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="modalCenterTitle">Búsqueda de Cuentas Comerciales</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<div class="row">
+					<div class="col-12">
+						<div class="input-group">
+							<button type="button" class="btn btn-icon btn-outline-primary" id="btnBuscarCC" title="Buscar cuenta comercial">
+								<span class="tf-icons bx bx-search"></span>
+							</button>
+							<div class="autocomplete" style="width:300px;">
+								<input type="text" class="form-control" style="max-width: 500px;" id="razonSocialEnModalDeBusqueda" />
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="table-responsive table-wrapper fixed-padding-top">
+					<table class="table table-bordered table-hover" id="tbCuentasComerciales">
+						<thead class="table-dark">
+							<tr class="header">
+								<th scope="col" class="table-fontsize align-center" style="width:20%;">ID</th>
+								<th scope="col" class="table-fontsize align-center" style="width:50%">Razón Social</th>
+								<th scope="col" class="table-fontsize align-center" style="width:20%">N° Doc</th>
+								<th scope="col" class="table-fontsize align-center" style="width:10%">TC</th>
+								<th style="width:0%; display:none;">prov_id</th>
+							</tr>
+						</thead>
+						<tbody>
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+					Cerrar
+				</button>
+				<button type="button" class="btn btn-primary" onclick="seleccionarCuentaComercial();">Seleccionar</button>
+			</div>
+		</div>
+	</div>
+</div>
+
 
 @section scripts {
 	<script type="text/javascript">
@@ -129,6 +174,9 @@
 		var tipoCuenta = "B";
 		var seccionEnVista = "#sectionNuevaAutorizacionRP";
 		var vistaParcial = "_rprAutoCargaComptes";
+		var idCuentaSeleccionada = "";
+		var razonSocialSeleccionada = "";
+		var provIdSeleccionado = "";
 		var CargarComptesDeRPUrl = "@Url.Action("CargarComprobantesDeRP", "compra", new { area = "Compras" })";
 		var ActualizarComptesDeRPUrl = "@Url.Action("ActualizarComprobantesDeRP", "compra", new { area = "Compras" })";
 		var verificarDetalleCargadoURL = "@Url.Action("VerificarDetalleCargado", "compra", new { area = "Compras" })";
