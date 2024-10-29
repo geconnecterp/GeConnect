@@ -55,6 +55,20 @@ fieldset {
 
 .align-center {
     text-align: center !important;
+    align-content: center !important;
+}
+
+.custom-lbl {
+    font-weight:500;
+    font-style: normal;
+}
+
+.fixed-width-50 {
+    width: 50px;
+}
+
+.fixed-width-75 {
+    width: 75px;
 }
 
 .fixed-width {
@@ -85,6 +99,42 @@ fieldset {
 
 .table-wrapper {
     max-height: 500px;
+    max-width: 98%;
+    overflow: auto;
+}
+
+.table-wrapper-500 {
+    max-height: 500px;
+    max-width: 98%;
+    overflow: auto;
+}
+
+.table-wrapper-400 {
+    max-height: 400px;
+    max-width: 98%;
+    overflow: auto;
+}
+
+.table-wrapper-300 {
+    max-height: 300px;
+    max-width: 98%;
+    overflow: auto;
+}
+
+.table-wrapper-200 {
+    max-height: 200px;
+    max-width: 98%;
+    overflow: auto;
+}
+
+.table-wrapper-200-full {
+    max-height: 200px;
+    max-width: 100%;
+    overflow: auto;
+}
+
+.table-wrapper-100 {
+    max-height: 100px;
     max-width: 98%;
     overflow: auto;
 }

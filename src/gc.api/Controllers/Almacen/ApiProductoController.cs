@@ -8,10 +8,11 @@ namespace gc.api.Controllers.Almacen
     using gc.infraestructura.Core.Interfaces;
     using gc.infraestructura.Core.Responses;
     using gc.infraestructura.Dtos.Almacen;
-	using gc.infraestructura.Dtos.Almacen.Request;
-	using gc.infraestructura.Dtos.Almacen.Response;
-	using gc.infraestructura.Dtos.Almacen.Rpr;
-	using gc.infraestructura.Dtos.Almacen.Tr;
+    using gc.infraestructura.Dtos.Almacen.Request;
+    using gc.infraestructura.Dtos.Almacen.Response;
+    using gc.infraestructura.Dtos.Almacen.Rpr;
+    using gc.infraestructura.Dtos.Almacen.Tr;
+    using gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
     using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
     using gc.infraestructura.Dtos.CuentaComercial;
     using gc.infraestructura.Dtos.Gen;
@@ -272,11 +273,41 @@ namespace gc.api.Controllers.Almacen
             var res = _tmServicio.ObtenerTiposMotivo();
             return Ok(new ApiResponse<List<TipoMotivo>>(res));
         }
-        #endregion
 
-        #region Acciones para modulo RPR
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<InfoProdIExMesDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult InfoProdIExMes(string admId, string pId, int meses)
+		{
+			ApiResponse<List<InfoProdIExMesDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.InfoProdIExMes(admId, pId, meses);
 
-        [HttpGet]
+			response = new ApiResponse<List<InfoProdIExMesDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<InfoProdIExSemanaDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult InfoProdIExSemana(string admId, string pId, int semanas)
+		{
+			ApiResponse<List<InfoProdIExSemanaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.InfoProdIExSemana(admId, pId, semanas);
+
+			response = new ApiResponse<List<InfoProdIExSemanaDto>>(res);
+
+			return Ok(response);
+		}
+		#endregion
+
+		#region Acciones para modulo RPR
+
+		[HttpGet]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<AutorizacionPendienteDto>>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]

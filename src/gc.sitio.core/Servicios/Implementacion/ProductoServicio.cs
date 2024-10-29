@@ -8,6 +8,7 @@ using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Almacen.Response;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
+using gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
@@ -36,8 +37,10 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string INFOPROD_MovStk = "/InfoProductoMovStk";
         private const string INFOPROD_LP = "/InfoProductoLP";
         private const string INFOPROD_TM = "/ObtenerTiposMotivo";
+		private const string INFOPROD_IE_MES = "/InfoProdIExMes";
+		private const string INFOPROD_IE_SEMANA = "/InfoProdIExSemana";
 
-        private const string RPRAUTOPEND = "/RPRAutorizacionPendiente";
+		private const string RPRAUTOPEND = "/RPRAutorizacionPendiente";
         private const string RPRCOMPTESPEND = "/RPRObtenerAutoComptesPendientes";
         private const string RPRREGISTRAR = "/RPRRegistrar";
         private const string RPRCARGAR = "/RPRCargar";
@@ -359,7 +362,71 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-        public async Task<List<AutorizacionPendienteDto>> RPRObtenerAutorizacionPendiente(string adm, string token)
+		public async Task<List<InfoProdIExMesDto>> InfoProdIExMes(string admId, string pId, int meses, string token)
+		{
+			ApiResponse<List<InfoProdIExMesDto>> apiResponse;
+
+			HelperAPI helper = new HelperAPI();
+
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{INFOPROD_IE_MES}?admId={admId}&pId={pId}&meses={meses}";
+
+			response = await client.GetAsync(link);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda admId:{admId} pId:{pId} meses:{meses}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<InfoProdIExMesDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<InfoProdIExSemanaDto>> InfoProdIExSemana(string admId, string pId, int semanas, string token)
+		{
+			ApiResponse<List<InfoProdIExSemanaDto>> apiResponse;
+
+			HelperAPI helper = new HelperAPI();
+
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{INFOPROD_IE_SEMANA}?admId={admId}&pId={pId}&semanas={semanas}";
+
+			response = await client.GetAsync(link);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda admId:{admId} pId:{pId} semanas:{semanas}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<InfoProdIExSemanaDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<AutorizacionPendienteDto>> RPRObtenerAutorizacionPendiente(string adm, string token)
         {
             ApiResponse<List<AutorizacionPendienteDto>> apiResponse;
 

@@ -17,7 +17,7 @@ using System.Linq.Expressions;
 
 namespace gc.sitio.Areas.Compras.Controllers
 {
-	[Area("Compras")]
+    [Area("Compras")]
 	public class NDeCYPIController : ControladorBase
 	{
 		private readonly AppSettings _appSettings;
@@ -25,13 +25,16 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private readonly ICuentaServicio _cuentaServicio;
 		private readonly IRubroServicio _rubroServicio;
 		private readonly IProductoServicio _productoServicio;
-		public NDeCYPIController(ICuentaServicio cuentaServicio, IRubroServicio rubroServicio, IProductoServicio productoServicio, ILogger<CompraController> logger, IOptions<AppSettings> options, IHttpContextAccessor context) : base(options, context)
+		private readonly IAdministracionServicio _administracionServicio;
+		public NDeCYPIController(ICuentaServicio cuentaServicio, IRubroServicio rubroServicio, IProductoServicio productoServicio, 
+								 IAdministracionServicio administracionServicio, ILogger<CompraController> logger, IOptions<AppSettings> options, IHttpContextAccessor context) : base(options, context)
 		{
 			_logger = logger;
 			_appSettings = options.Value;
 			_cuentaServicio = cuentaServicio;
 			_rubroServicio = rubroServicio;
 			_productoServicio = productoServicio;
+			_administracionServicio = administracionServicio;
 		}
 
 		public IActionResult Index()
@@ -49,6 +52,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				model.ComboProveedoresFamilia = HelperMvc<ComboGenDto>.ListaGenerica(proveedoresFamilias.Select(x => new ComboGenDto { Id = x.pg_id, Descripcion = x.pg_desc }));
 				model.ComboRubros = ComboRubros();
 				model.Productos = ObtenerGridCore<ProductoNCPIDto>([]);
+				model.ComboSucursales = ComboSucursales();
 			}
 			catch (Exception ex)
 			{
@@ -87,6 +91,50 @@ namespace gc.sitio.Areas.Compras.Controllers
 				var productos = _productoServicio.NCPICargarListaDeProductos(tipo, AdministracionId, filtro, id, TokenCookie).Result;
 				model = ObtenerGridCore<ProductoNCPIDto>(productos);
 				return PartialView("_grillaProductos", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public async Task<IActionResult> BuscarInfoProdIExMeses(string pId, string admId, int meses)
+		{
+			var model = new GridCore<InfoProdIExMesDto>();
+			try
+			{
+				var info = await _productoServicio.InfoProdIExMes(admId, pId, meses, TokenCookie);
+				model = ObtenerGridCore<InfoProdIExMesDto>(info);
+				return PartialView("_infoProdIExMeses", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public async Task<IActionResult> BuscarInfoProdIExSemanas(string pId, string admId, int semanas)
+		{
+			var model = new GridCore<InfoProdIExSemanaDto>();
+			try
+			{
+				var info = await _productoServicio.InfoProdIExSemana(admId, pId, semanas, TokenCookie);
+				model = ObtenerGridCore<InfoProdIExSemanaDto>(info);
+				return PartialView("_infoProdIExSemanas", model);
 			}
 			catch (Exception ex)
 			{
@@ -166,6 +214,12 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			var adms = _cuentaServicio.ObtenerListaProveedoresFamilia(ctaId, TokenCookie);
 			var lista = adms.Select(x => new ComboGenDto { Id = x.pg_id, Descripcion = x.pg_desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		private SelectList ComboSucursales()
+		{
+			var adms = _administracionServicio.GetAdministracionLogin();
+			var lista = adms.Select(x => new ComboGenDto { Id = x.Id, Descripcion = x.Descripcion });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
 		#endregion
