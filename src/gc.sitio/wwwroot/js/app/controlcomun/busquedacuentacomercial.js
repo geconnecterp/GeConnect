@@ -16,7 +16,7 @@
 	dateControl.value = local;
 	$("#dtpFechaTurno").val(local);
 	$("#btnBuscarCC").on("click", buscarCuentasComercial);
-	InicializaPantallaCC();
+	InicializaPantallaCC("");
 	$("#VerDetalle").on("click", VerDetalleClick);
 	$("#btnNuevoCompteDeRP").on("click", NuevoCompteDeRP);
 	$("#btnEliminarCompteDeRP").on("click", EliminarCompteDeRP);
@@ -263,8 +263,13 @@ function GuardarDetalleDeProductos(guardado) {
 	});
 }
 
-function InicializaPantallaCC() {
-	switch (tipoCuenta) {
+function InicializaPantallaCC(tipo) {
+	var compareValue = "";
+	if (tipo !== "")
+		compareValue = tipo;
+	else
+		compareValue = tipoCuenta;
+	switch (compareValue) {
 		case 'C':
 			//Celeste 
 			$("#iconTipoCC").removeClass(["text-primary", "text-secondary", "text-info", "text-danger"]).addClass("text-success");
@@ -467,13 +472,112 @@ function buscarCuentasComercial() {
 			CargarComboTiposComptes(cuenta);
 			return true;
 		} else {
-			AbrirMensaje("Atención", "Trae una banda.....habilitar el modal para mostar la lista", function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "warn!", null);
+			MostrarModalCuentasComerciales(obj.cuenta);
 		}
 	});
 	return true;
+}
+
+var ctas = [];
+
+function MostrarModalCuentasComerciales(lista) {
+	if (lista.length > 0) {
+		AbrirWaiting();
+		$("#tbCuentasComerciales tbody tr").remove();
+		var tableBody = document.getElementById("tbCuentasComerciales").getElementsByTagName('tbody')[0];
+		ctas = [];
+		for (var i = 0; i < lista.length; i++) {
+			var row = tableBody.insertRow();
+			var celda0 = row.insertCell(0);
+			var celda1 = row.insertCell(1);
+			var celda2 = row.insertCell(2);
+			var celda3 = row.insertCell(3);
+			var celda4 = row.insertCell(4);
+			celda0.innerText = lista[i].cta_Id;
+			celda1.innerText = lista[i].cta_Denominacion;
+			celda2.innerText = lista[i].tdoc_Desc + " " + lista[i].cta_Documento;
+			if (lista[i].prov_Id === "C")
+				celda3.innerHTML = '<i class="bx bx-user bx-md text-success" id="iconTipoCC"></i>';
+			else if (lista[i].prov_Id === "B")
+				celda3.innerHTML = '<i class="bx bx-user bx-md text-info" id="iconTipoCC"></i>';
+			else if (lista[i].prov_Id === "P")
+				celda3.innerHTML = '<i class="bx bx-user bx-md text-danger" id="iconTipoCC"></i>';
+			else
+				celda3.innerHTML = '<i class="bx bx-user bx-md text-secondary" id="iconTipoCC"></i>';
+			celda4.innerText = lista[i].prov_Id;
+			celda0.className = "align-center";
+			celda1.className = "align-left";
+			celda2.className = "align-center";
+			celda3.className = "align-center";
+			celda4.className = "align-center";
+			celda4.hidden = true;
+			ctas.push(lista[i].cta_Denominacion);
+		}
+		AddEventListenerToGrid("tbCuentasComerciales");
+		addRowHandlers("tbCuentasComerciales");
+		autocomplete(document.getElementById("razonSocialEnModalDeBusqueda"), ctas);
+		$('#modalCC').modal('show')
+		CerrarWaiting();
+	}
+}
+
+function MostrarOcultarRowsEnModalDeBusquedaDeCC(texto) {
+	var tableBody = document.getElementById("tbCuentasComerciales").getElementsByTagName('tbody')[0];
+	for (var i = 0; i < tableBody.rows.length; i++) {
+	if (texto.toUpperCase() == tableBody.rows[i].cells[1].innerText.toUpperCase()) {
+			tableBody.rows[i].style.display = '';
+		}
+		else if (tableBody.rows[i].cells[1].innerText.includes(texto.toUpperCase())) {
+			tableBody.rows[i].style.display = '';
+		}
+		else {
+			tableBody.rows[i].style.display = 'none';
+		}
+	}
+}
+
+function addRowHandlers(table) {
+	var table = document.getElementById(table);
+	var rows = table.getElementsByTagName("tr");
+	for (i = 0; i < rows.length; i++) {
+		var currentRow = table.rows[i];
+		var createClickHandler = function (row) {
+			return function () {
+				var cell = row.getElementsByTagName("td")[0];
+				idCuentaSeleccionada = cell.innerHTML;
+				cell = row.getElementsByTagName("td")[1];
+				razonSocialSeleccionada = cell.innerHTML;
+				cell = row.getElementsByTagName("td")[4];
+				provIdSeleccionado = cell.innerHTML;
+			};
+		};
+		currentRow.onclick = createClickHandler(currentRow);
+	}
+}
+
+function AddEventListenerToGrid(tabla) {
+	var grilla = document.getElementById(tabla);
+	if (grilla) {
+		document.getElementById(tabla).addEventListener('click', function (e) {
+			if (e.target.nodeName === 'TD') {
+				var selectedRow = this.querySelector('.selected-row');
+				if (selectedRow) {
+					selectedRow.classList.remove('selected-row');
+				}
+				e.target.closest('tr').classList.add('selected-row');
+			}
+		});
+	}
+}
+
+function seleccionarCuentaComercial() {
+	if (idCuentaSeleccionada !== "") {
+		$("#razonsocial").val(razonSocialSeleccionada);
+		$("#Cuenta").val(idCuentaSeleccionada);
+		CargarComboTiposComptes(idCuentaSeleccionada);
+		InicializaPantallaCC(provIdSeleccionado);
+	}
+	$('#modalCC').modal('hide')
 }
 
 function CargarComboTiposComptes(cuenta) {
@@ -508,4 +612,108 @@ function selectCompteDeRPRow(x) {
 	var cta = $("#Cuenta").val();
 	var link = VerDetalleDeCompteDeRPUrl + "?idTipoCompte=" + tipoCompte + "&nroCompte=" + nroCompte + "&depoSelec=" + depoSelec + "&notaAuto=" + notaAuto + "&turno=" + turno + "&ponerEnCurso=" + ponerEnCurso + "&ulCantidad=" + ul + "&rp=" + rp + "&ctaId=" + cta + "&tipoCuenta=" + tipoCuenta + "&fechaCompte=" + fechaCompte + "&monto=" + monto + "&descTipoCompte" + descTipoCompte;
 	$("#VerDetalle").prop("href", link);
+}
+
+
+function autocomplete(inp, arr) {
+	console.log(arr);
+	/*the autocomplete function takes two arguments,
+	the text field element and an array of possible autocompleted values:*/
+	var currentFocus;
+	/*execute a function when someone writes in the text field:*/
+	inp.addEventListener("input", function (e) {
+		var a, b, i, val = this.value;
+		/*close any already open lists of autocompleted values*/
+		closeAllLists();
+		if (!val) {
+			MostrarOcultarRowsEnModalDeBusquedaDeCC(val);
+			return false;
+		}
+		currentFocus = -1;
+		/*create a DIV element that will contain the items (values):*/
+		a = document.createElement("DIV");
+		a.setAttribute("id", this.id + "autocomplete-list");
+		a.setAttribute("class", "autocomplete-items");
+		/*append the DIV element as a child of the autocomplete container:*/
+		this.parentNode.appendChild(a);
+		/*for each item in the array...*/
+		for (i = 0; i < arr.length; i++) {
+			/*check if the item starts with the same letters as the text field value:*/
+			if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+				/*create a DIV element for each matching element:*/
+				b = document.createElement("DIV");
+				/*make the matching letters bold:*/
+				b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
+				b.innerHTML += arr[i].substr(val.length);
+				/*insert a input field that will hold the current array item's value:*/
+				b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
+				/*execute a function when someone clicks on the item value (DIV element):*/
+				b.addEventListener("click", function (e) {
+					/*insert the value for the autocomplete text field:*/
+					inp.value = this.getElementsByTagName("input")[0].value;
+					/*close the list of autocompleted values,
+					(or any other open lists of autocompleted values:*/
+					closeAllLists();
+					MostrarOcultarRowsEnModalDeBusquedaDeCC(inp.value);
+				});
+				a.appendChild(b);
+			}
+		}
+		MostrarOcultarRowsEnModalDeBusquedaDeCC(val);
+	});
+	/*execute a function presses a key on the keyboard:*/
+	inp.addEventListener("keydown", function (e) {
+		var x = document.getElementById(this.id + "autocomplete-list");
+		if (x) x = x.getElementsByTagName("div");
+		if (e.keyCode == 40) {
+			/*If the arrow DOWN key is pressed,
+			increase the currentFocus variable:*/
+			currentFocus++;
+			/*and and make the current item more visible:*/
+			addActive(x);
+		} else if (e.keyCode == 38) { //up
+			/*If the arrow UP key is pressed,
+			decrease the currentFocus variable:*/
+			currentFocus--;
+			/*and and make the current item more visible:*/
+			addActive(x);
+		} else if (e.keyCode == 13) {
+			/*If the ENTER key is pressed, prevent the form from being submitted,*/
+			e.preventDefault();
+			if (currentFocus > -1) {
+				/*and simulate a click on the "active" item:*/
+				if (x) x[currentFocus].click();
+			}
+		}
+	});
+	function addActive(x) {
+		/*a function to classify an item as "active":*/
+		if (!x) return false;
+		/*start by removing the "active" class on all items:*/
+		removeActive(x);
+		if (currentFocus >= x.length) currentFocus = 0;
+		if (currentFocus < 0) currentFocus = (x.length - 1);
+		/*add class "autocomplete-active":*/
+		x[currentFocus].classList.add("autocomplete-active");
+	}
+	function removeActive(x) {
+		/*a function to remove the "active" class from all autocomplete items:*/
+		for (var i = 0; i < x.length; i++) {
+			x[i].classList.remove("autocomplete-active");
+		}
+	}
+	function closeAllLists(elmnt) {
+		/*close all autocomplete lists in the document,
+		except the one passed as an argument:*/
+		var x = document.getElementsByClassName("autocomplete-items");
+		for (var i = 0; i < x.length; i++) {
+			if (elmnt != x[i] && elmnt != inp) {
+				x[i].parentNode.removeChild(x[i]);
+			}
+		}
+	}
+	/*execute a function when someone clicks in the document:*/
+	document.addEventListener("click", function (e) {
+		closeAllLists(e.target);
+	});
 }

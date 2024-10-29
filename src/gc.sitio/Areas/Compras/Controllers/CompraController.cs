@@ -18,6 +18,7 @@ using Newtonsoft.Json.Serialization;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using X.PagedList;
 
 namespace gc.sitio.Areas.Compras.Controllers
@@ -1003,6 +1004,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			List<CuentaDto> Lista = new();
 			Lista = await _cuentaServicio.ObtenerListaCuentaComercial(cuenta, tipo, TokenCookie);
+			if (Lista.Count > 0)
+			{
+				foreach (var item in Lista)
+				{
+					RegexOptions options = RegexOptions.None;
+					Regex regex = new("[ ]{2,}", options);
+					item.Cta_Denominacion = regex.Replace(item.Cta_Denominacion, " ");
+				}
+			}
 			return Lista;
 		}
 		private List<RPRComptesDeRPDto> CargarComprobantesDeRPDesdeJson(List<JsonEncabezadoDeRPDto> encabezados)

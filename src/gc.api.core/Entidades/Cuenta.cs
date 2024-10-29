@@ -35,7 +35,8 @@ namespace gc.api.core.Entidades
         public string Cta_Id { get; set; }
         public string Cta_Denominacion { get; set; }
         public string? Tdoc_Id { get; set; }
-        public string? Cta_Documento { get; set; }
+		public string? Tdoc_Desc { get; set; }
+		public string? Cta_Documento { get; set; }
         public string? Cta_Domicilio { get; set; }
         public string? Cta_Localidad { get; set; }
         public string? Cta_Cpostal { get; set; }

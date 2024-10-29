@@ -24,6 +24,7 @@ namespace gc.infraestructura.Dtos.Almacen
             Cta_Obs = string.Empty;
             Cta_Emp_Legajo = string.Empty;
             Cta_Emp_Ctaf = string.Empty;
+            Tdoc_Desc = string.Empty;
         }
         public string Cta_Id { get; set; }
         public string Cta_Denominacion { get; set; }
@@ -55,6 +56,6 @@ namespace gc.infraestructura.Dtos.Almacen
         public char? Cta_Actu { get; set; }
         public char? Tipo { get; set;}
         public char? Habilitada { get; set; }
-
-    }
+		public string Tdoc_Desc { get; set; }
+	}
 }
