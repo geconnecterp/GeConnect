@@ -35,8 +35,13 @@ namespace gc.sitio.Controllers
 		{
 			get { return _options.Nombre; }
 		}
+        public string Etiqueta
+        {
+            get { return _context.HttpContext.Session.GetString("Etiqueta"); }
 
-		public string Token
+            set { HttpContext.Session.SetString("Etiqueta", value); }
+        }
+        public string Token
 		{
 			get { return HttpContext.Session.GetString("JwtToken"); }
 
@@ -47,8 +52,8 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var nombre = User.Claims.First(c => c.Type.Contains("name")).Value;
-				return _context.HttpContext.Request.Cookies[nombre];
+				//var nombre = User.Claims.First(c => c.Type.Contains("name")).Value;
+				return _context.HttpContext.Request.Cookies[Etiqueta];
 			}
 
 		}

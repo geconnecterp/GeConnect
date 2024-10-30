@@ -1,31 +1,24 @@
-﻿using gc.infraestructura.Core.EntidadesComunes;
+﻿using gc.api.core.Entidades;
+using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Helpers;
-using gc.infraestructura.Core.Interfaces;
+using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Administracion;
+using gc.infraestructura.Dtos.Seguridad;
+using gc.infraestructura.Helpers;
 using gc.sitio.Controllers;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.Sockets;
 using System.Net;
+using System.Net.Sockets;
 using System.Security.Claims;
 using System.Text;
-using gc.infraestructura.Dtos;
-using gc.infraestructura.Dtos.Seguridad;
-using gc.infraestructura.Dtos.Administracion;
-using gc.infraestructura.Helpers;
-using gc.sitio.core.Servicios.Contratos;
-using gc.infraestructura.Core.Responses;
-using gc.infraestructura.Dtos.Almacen.Tr.Remito;
-using gc.api.core.Entidades;
-using System;
-using Azure;
-using Microsoft.AspNetCore.JsonPatch.Internal;
-using gc.infraestructura.Core.Enumeraciones;
 
 namespace gc.sitio.Areas.Seguridad.Controllers
 {
@@ -114,6 +107,8 @@ namespace gc.sitio.Areas.Seguridad.Controllers
                     var user = tokenS.Claims.First(c => c.Type.Contains("name")).Value;
                     var email = tokenS.Claims.First(c => c.Type.Contains("email")).Value;
                     var nombre = tokenS.Claims.First(c => c.Type.Contains("nya")).Value;
+                    //29/10/2024 Ñoquis - se resguarda etiqueta, que sera la que almacene los datos en la cookie
+                    Etiqueta = $"{user}GCSitio";
 
                     if (!string.IsNullOrEmpty(user))
                     {
@@ -162,11 +157,11 @@ namespace gc.sitio.Areas.Seguridad.Controllers
 
                     };
 
-                    var etiqueta = $"{user}";
+                   // var etiqueta = $"{user}";
 
                     var principal = new ClaimsPrincipal([identity]);
                     await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
-                    HttpContext.Response.Cookies.Append(etiqueta, token, cookieOptions);
+                    HttpContext.Response.Cookies.Append(Etiqueta, token, cookieOptions);
                     //if (roleUser[0].Equals(RolesUsuario.VENDEDOR.ToString()))
                     //{
                     //    return RedirectToAction("Venta", new RouteValueDictionary(new { area = "Salon", controller = "Bandeja", action = "Venta" }));

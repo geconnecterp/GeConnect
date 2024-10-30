@@ -57,6 +57,12 @@ namespace gc.pocket.site.Controllers
 
         #region Autenticación
 
+        public string Etiqueta
+        {
+            get { return _context.HttpContext.Session.GetString("Etiqueta"); }
+
+            set { HttpContext.Session.SetString("Etiqueta", value); }
+        }
      
         public string Token
         {
@@ -69,8 +75,9 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var nombre = User.Claims.First(c => c.Type.Contains("name")).Value;
-                return _context.HttpContext.Request.Cookies[nombre];
+                //la Cookie se resgardará con una etiqueta distinta cada vez que se mandara desde el servidor. 
+                //var nombre = User.Claims.First(c => c.Type.Contains("name")).Value;
+                return _context.HttpContext.Request.Cookies[Etiqueta];
             }
 
         }

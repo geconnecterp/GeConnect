@@ -15,7 +15,6 @@ using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.Intrinsics.Arm;
 using System.Security.Claims;
 using System.Text;
 
@@ -30,9 +29,9 @@ namespace gc.pocket.site.Areas.Seguridad.Controllers
         private readonly AppSettings _appSettings;
         //private readonly IHttpContextAccessor _context;
 
-        public TokenController(IConfiguration configuration, ILogger<TokenController> logger, 
+        public TokenController(IConfiguration configuration, ILogger<TokenController> logger,
             IOptions<AppSettings> options, IAdministracionServicio servicio, IOptions<AppSettings> options1,
-            IHttpContextAccessor context) : base(options,context)
+            IHttpContextAccessor context) : base(options, context)
         {
             _configuration = configuration;
             _logger = logger;
@@ -80,7 +79,7 @@ namespace gc.pocket.site.Areas.Seguridad.Controllers
 
                 //inyectamos la ip en el header del request
                 cliente.DefaultRequestHeaders.Add("X-ClientUsr", ip.ToString());
-               
+
                 //cliente.BaseAddress = new Uri(_configuration["AppSettings:RutaBase"]);
                 var userModel = new { autenticar.UserName, autenticar.Password, autenticar.Admid };
                 var userJson = JsonConvert.SerializeObject(userModel);
@@ -106,8 +105,8 @@ namespace gc.pocket.site.Areas.Seguridad.Controllers
                         var user = tokenS.Claims.First(c => c.Type.Contains("name")).Value;
                         var email = tokenS.Claims.First(c => c.Type.Contains("email")).Value;
                         var nombre = tokenS.Claims.First(c => c.Type.Contains("nya")).Value;
-
-
+                        //29/10/2024 Ñoquis - se resguarda etiqueta, que sera la que almacene los datos en la cookie
+                        Etiqueta = $"{user}GCPocket";
 
                         //se comienza a armar  el usuario autenticado. Se resguardara en una cookie
 
@@ -149,11 +148,11 @@ namespace gc.pocket.site.Areas.Seguridad.Controllers
 
                         };
 
-                        var etiqueta = $"{user}{HelperGen.ConvierteStrToHex(user)}";
+                        //var etiqueta = $"{user}";//{HelperGen.ConvierteStrToHex(user)}
 
                         var principal = new ClaimsPrincipal(new[] { identity });
                         await _context.HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
-                        _context.HttpContext.Response.Cookies.Append(etiqueta, token, cookieOptions); //se resguarda el token con el nombre del usuario
+                        _context.HttpContext.Response.Cookies.Append(Etiqueta, token, cookieOptions); //se resguarda el token con el nombre del usuario
                         //if (roleUser[0].Equals(RolesUsuario.VENDEDOR.ToString()))
                         //{
                         //    return RedirectToAction("Venta", new RouteValueDictionary(new { area = "Salon", controller = "Bandeja", action = "Venta" }));
@@ -167,10 +166,10 @@ namespace gc.pocket.site.Areas.Seguridad.Controllers
                 }
                 else
                 {
-                    
+
                     var respuesta = await response.Content.ReadAsStringAsync();
 
-                   //ExceptionValidation valid = JsonConvert.DeserializeObject<ExceptionValidation>(respuesta);
+                    //ExceptionValidation valid = JsonConvert.DeserializeObject<ExceptionValidation>(respuesta);
                     _logger.LogError($"Error al autenticar: {respuesta}");
                     throw new NegocioException("No se ha podido autenticar. El usuario o contraseña no son correctos.");
                 }
@@ -179,7 +178,7 @@ namespace gc.pocket.site.Areas.Seguridad.Controllers
             }
             catch (Exception ex)
             {
-                TempData["error"]=ex.Message;
+                TempData["error"] = ex.Message;
                 ComboAdministracion();
                 var login = new LoginDto { Fecha = DateTime.Now };
                 return View(login);
