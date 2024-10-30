@@ -12,7 +12,7 @@
 		<div class="row">
 			<div class="col-5">
 				@* Combos *@
-				<div class="col-sm" style="padding-top: 15px;" id="divComboProveedores">
+				<div class="col-sm" style="padding-top: 4px;" id="divComboProveedores">
 					<div class="input-group fixed-padding-top">
 						<span class="input-group-text fixed-width">Proveedor: </span>
 						@Html.DropDownList("id", proveedores, "Seleccionar...", new { @id = "listaProveedor", @class = "form-control" })
@@ -33,69 +33,69 @@
 					</div>
 				</div>
 			</div>
-			<div class="col-5">
+			<div class="col-5" style="padding-top: 8px;">
 				<div class="row">
 					@* OptionButtons y Buscador de Productos *@
-					<fieldset>
+					<fieldset style="margin: 2px;padding: 2px;">
 						<legend>
 							@* empty title *@
 							<div class="btn-group" role="group" aria-label="Basic radio toggle button group">
-								<row>
+								<row style="margin-left:4px;">
 									<input type="radio" class="btn-check" name="btnradio" id="btnradioPorProveedor" checked="">
-									<label class="btn btn-outline-primary fixed-font-size-xmall" for="btnradioPorProveedor">Por Proveedor</label>
+									<label class="btn btn-sm btn-outline-primary fixed-font-size-xmall" for="btnradioPorProveedor">Por Proveedor</label>
 									<input type="radio" class="btn-check" name="btnradio" id="btnradioSinStk">
-									<label class="btn btn-outline-primary fixed-font-size-xmall" for="btnradioSinStk">Sin Stk</label>
+									<label class="btn btn-sm btn-outline-primary fixed-font-size-xmall" for="btnradioSinStk">Sin Stk</label>
 									<input type="radio" class="btn-check" name="btnradio" id="btnradioConPI">
-									<label class="btn btn-outline-primary fixed-font-size-xmall" for="btnradioConPI">Con PI</label>
+									<label class="btn btn-sm btn-outline-primary fixed-font-size-xmall" for="btnradioConPI">Con PI</label>
 								</row>
 								<row>
 									<input type="radio" class="btn-check" name="btnradio" id="btnradioPorProveedorFamilia">
-									<label class="btn btn-outline-primary fixed-font-size-xmall" for="btnradioPorProveedorFamilia">Por Proveedor y Familia</label>
+									<label class="btn btn-sm btn-outline-primary fixed-font-size-xmall" for="btnradioPorProveedorFamilia">Por Proveedor y Familia</label>
 									<input type="radio" class="btn-check" name="btnradio" id="btnradioConStkAVencer">
-									<label class="btn btn-outline-primary fixed-font-size-xmall" for="btnradioConStkAVencer">Con Stk a Vencer</label>
+									<label class="btn btn-sm btn-outline-primary fixed-font-size-xmall" for="btnradioConStkAVencer">Con Stk a Vencer</label>
 									<input type="radio" class="btn-check" name="btnradio" id="btnradioConOC">
-									<label class="btn btn-outline-primary fixed-font-size-xmall" for="btnradioConOC">Con OC</label>
+									<label class="btn btn-sm btn-outline-primary fixed-font-size-xmall" for="btnradioConOC">Con OC</label>
 								</row>
 								<row>
 									<input type="radio" class="btn-check" name="btnradio" id="btnradioPorRubro">
-									<label class="btn btn-outline-primary fixed-font-size-xmall" for="btnradioPorRubro">Por Rubros</label>
+									<label class="btn btn-sm btn-outline-primary fixed-font-size-xmall" for="btnradioPorRubro">Por Rubros</label>
 									<input type="radio" class="btn-check" name="btnradio" id="btnradioAltaRotacion">
-									<label class="btn btn-outline-primary fixed-font-size-xmall" for="btnradioAltaRotacion">Alta Rotación</label>
+									<label class="btn btn-sm btn-outline-primary fixed-font-size-xmall" for="btnradioAltaRotacion">Alta Rotación</label>
 								</row>
 							</div>
 						</legend>
 					</fieldset>
 				</div>
-				<div class="row">
-					<div class="col-8">
-						<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
-					</div>
-					<div class="col-4">
-						<input class="form-check-input" type="checkbox" id="chkProductosSimilares" asp-for="@Model.ProductosSimilares">
-						<label class="form-check-label" for="chkProductosSimilares"> Productos Similares</label>
-					</div>
+				@* <div class="row">
+				<div class="col-8">
+				<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
 				</div>
+				<div class="col-4">
+				<input class="form-check-input" type="checkbox" id="chkProductosSimilares" asp-for="@Model.ProductosSimilares">
+				<label class="form-check-label" for="chkProductosSimilares"> Productos Similares</label>
+				</div>
+				</div> *@
 			</div>
 			<div class="col-2">
 				@* Botones *@
-				<fieldset>
+				<fieldset style="padding-top: 6px;">
 					<legend>
-						<a href="#" id="btnOCAuto" class="btn btn-primary fixed-font-size"><span>OC Auto</span></a>
-						<a href="#" id="btnPasarAOC" class="btn btn-primary fixed-font-size"><span>Pasar a OC</span></a>
-						<a href="#" id="btnImprimirCtlStk" class="btn btn-primary fixed-font-size"><span>Imprimir Ctl Stk</span></a>
+						<a href="#" id="btnOCAuto" class="btn btn-sm btn-primary fixed-font-size"><span>OC Auto</span></a>
+						<a href="#" id="btnPasarAOC" class="btn btn-sm btn-primary fixed-font-size"><span>Pasar a OC</span></a>
+						<a href="#" id="btnImprimirCtlStk" class="btn btn-sm btn-primary fixed-font-size"><span>Imprimir Ctl Stk</span></a>
 					</legend>
 				</fieldset>
 			</div>
 		</div>
-		<div class="row" style="padding-top:10px;">
+		<div class="row">
 			<div class="col-12">
 				<div id="divListaProducto">
-					<div class="table-responsive text-nowrap table-wrapper-300">
+					<div class="table-responsive table-wrapper-300-full-width">
 						<table class="table table-bordered table-hover" id="tbListaProducto">
 							<thead class="table-dark">
 								<tr>
 									<th style="width:5%;" class="col-header-small align-center">Código</th>
-									<th style="width:5%;" class="col-header-small align-center">Descripción</th>
+									<th style="width:20%;" class="col-header-small align-center">Descripción</th>
 									<th style="width:5%;" class="col-header-small align-center">Cod. Prov</th>
 									<th style="width:5%;" class="col-header-small align-center">PI Pend</th>
 									<th style="width:5%;" class="col-header-small align-center">OC Pend</th>
@@ -144,104 +144,166 @@
 				</div>
 			</div>
 			@* <div class="col-2">
-				<div class="row">
-					<div id="divDatosDeStock">
-					</div>
-				</div>
-				<div class="row">
-					<div class="input-group">
-						<span class="input-group-text">Datos EI/Mes</span>
-						<span class="input-group-text fixed-width">Suc: </span>
-						@Html.DropDownList("id", sucursales, "Seleccionar...", new { @id = "listaSucursales", @class = "form-control" })
-						<span class="input-group-text fixed-width">Meses: </span>
-						<input type="number" id="txtMeses" />
-					</div>
-					<div id="divInfoProdIExMeses">
+			<div class="row">
+			<div id="divDatosDeStock">
+			</div>
+			</div>
+			<div class="row">
+			<div class="input-group">
+			<span class="input-group-text">Datos EI/Mes</span>
+			<span class="input-group-text fixed-width">Suc: </span>
+			@Html.DropDownList("id", sucursales, "Seleccionar...", new { @id = "listaSucursales", @class = "form-control" })
+			<span class="input-group-text fixed-width">Meses: </span>
+			<input type="number" id="txtMeses" />
+			</div>
+			<div id="divInfoProdIExMeses">
 
-					</div>
-				</div>
-				<div class="row">
-					<div id="divInfoProdIExSemanas">
+			</div>
+			</div>
+			<div class="row">
+			<div id="divInfoProdIExSemanas">
 
-					</div>
-				</div>
+			</div>
+			</div>
 			</div> *@
 		</div>
 		<div class="row" style="padding-top:10px;">
-			<div class="nav-align-top mb-4">
-				<ul class="nav nav-tabs" role="tablist">
-					<li class="nav-item" role="presentation">
-						<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-home" aria-controls="navs-top-home" aria-selected="true">
-							<span id="tabOne" class="custom-lbl">Info. Producto</span>
-						</button>
-					</li>
-					<li class="nav-item" role="presentation">
-						<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-profile" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1">
-							<span id="tabTwo" class="custom-lbl">Datos de Entrada/Salida</span>
-						</button>
-					</li>
-				</ul>
-				<div class="tab-content">
-					<div class="tab-pane fade active show" id="navs-top-home" role="tabpanel">
-						<div id="divInfoProducto">
-						</div>
-					</div>
-					<div class="tab-pane fade" id="navs-top-profile" role="tabpanel">
-						<div id="divInfoES" class="row">
-							<div class="col-6">
-								<div class="row">
-									<div class="input-group">
-										<span class="input-group-text custom-lbl">Datos EI/Mes</span>
-										<span class="input-group-text fixed-width">Sucursal: </span>
-										@Html.DropDownList("id", sucursales, "Seleccionar...", new { @id = "listaSucursales", @class = "form-control fixed-width" })
-										<span class="input-group-text fixed-width-75">Meses: </span>
-										<input type="number" id="txtMeses" class="fixed-width-50 align-right" value="1" />
-									</div>
-								</div>
-								<div class="row">
-									<div id="divInfoProdIExMeses"></div>
-								</div>
-							</div>
-							<div class="col-6">
-								<div class="row">
-									<div class="input-group">
-										<span class="input-group-text custom-lbl">Datos de Entrada y Salidas</span>
-										<span class="input-group-text fixed-width-75">Semanas: </span>
-										<input type="number" id="txtSemanas" class="fixed-width-50 align-right" value="1" />
-									</div>
-								</div>
-								<div class="row">
-									<div id="divInfoProdIExSemanas"></div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
+			@* <div class="nav-align-top mb-4">
+			<ul class="nav nav-tabs" role="tablist">
+			<li class="nav-item" role="presentation">
+			<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-home" aria-controls="navs-top-home" aria-selected="true">
+			<span id="tabOne" class="custom-lbl">Info. Producto</span>
+			</button>
+			</li>
+			<li class="nav-item" role="presentation">
+			<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-profile" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1">
+			<span id="tabTwo" class="custom-lbl">Datos de Entrada/Salida</span>
+			</button>
+			</li>
+			<li role="presentation" style="margin-left: 500px;">
+			<div class="row">
+			<div class="col-7">
+			<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
 			</div>
-			@* <div>
-				<a class="btn btn-primary me-1 collapsed" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+			<div class="col-5" style="padding-top:5px;">
+			<input class="form-check-input" type="checkbox" id="chkProductosSimilares" asp-for="@Model.ProductosSimilares">
+			<label class="form-check-label" for="chkProductosSimilares"> Productos Similares</label>
+			</div>
+			</div>
+			</li>
+			</ul>
+			<div class="tab-content">
+			<div class="tab-pane fade active show" id="navs-top-home" role="tabpanel">
+			<div id="divInfoProducto">
+			</div>
+			</div>
+			<div class="tab-pane fade" id="navs-top-profile" role="tabpanel">
+			<div id="divInfoES" class="row">
+			<div class="col-6">
+			<div class="row">
+			<div class="input-group">
+			<span class="input-group-text custom-lbl">Datos Entradas y Salidas del Mes</span>
+			<span class="input-group-text fixed-width">Sucursal: </span>
+			@Html.DropDownList("id", sucursales, "Seleccionar...", new { @id = "listaSucursales", @class = "form-control fixed-width" })
+			<span class="input-group-text fixed-width-75">Meses: </span>
+			<input type="number" id="txtMeses" class="fixed-width-50 align-right" value="1" />
+			</div>
+			</div>
+			<div class="row">
+			<div id="divInfoProdIExMeses"></div>
+			</div>
+			</div>
+			<div class="col-6">
+			<div class="row">
+			<div class="input-group">
+			<span class="input-group-text custom-lbl">Datos de Entrada y Salidas últimas semanas</span>
+			<span class="input-group-text fixed-width-75">Semanas: </span>
+			<input type="number" id="txtSemanas" class="fixed-width-50 align-right" value="1" />
+			</div>
+			</div>
+			<div class="row">
+			<div id="divInfoProdIExSemanas"></div>
+			</div>
+			</div>
+			</div>
+			</div>
+			</div>
+			</div> *@
+			<div>
+				<a class="btn btn-sm btn-primary me-1 collapsed" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
 					Info. Adicional
 				</a>
 			</div>
 			<div class="collapse" id="collapseExample" style="">
 				<div class="d-grid d-sm-flex p-3 border">
-					<img src="../assets/img/elements/1.jpg" alt="collapse-image" height="125" class="me-4 mb-sm-0 mb-2">
-					<span>
-						Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has
-						been the industry's standard dummy text ever since the 1500s, when an unknown printer took a
-						galley of type and scrambled it to make a type specimen book. It has survived not only five
-						centuries, but also the leap into electronic typesetting, remaining essentially unchanged.
-						It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum
-						passages, and more recently with desktop publishing software like Aldus PageMaker including
-						versions of Lorem Ipsum.It is a long established fact that a reader will be distracted by
-						the readable content of a page when looking at its layout. The point of using Lorem Ipsum is
-						that it has a more-or-less normal distribution of letters.
-					</span>
+					<div class="row" style="padding-top:10px;">
+						<div class="nav-align-top mb-4">
+							<ul class="nav nav-tabs" role="tablist">
+								<li class="nav-item" role="presentation">
+									<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-home" aria-controls="navs-top-home" aria-selected="true">
+										<span id="tabOne" class="custom-lbl">Info. Producto</span>
+									</button>
+								</li>
+								<li class="nav-item" role="presentation">
+									<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-profile" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1">
+										<span id="tabTwo" class="custom-lbl">Datos de Entrada/Salida</span>
+									</button>
+								</li>
+								<li role="presentation" style="margin-left: 500px;">
+									<div class="row">
+										<div class="col-7">
+											<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
+										</div>
+										<div class="col-5" style="padding-top:5px;">
+											<input class="form-check-input" type="checkbox" id="chkProductosSimilares" asp-for="@Model.ProductosSimilares">
+											<label class="form-check-label" for="chkProductosSimilares"> Productos Similares</label>
+										</div>
+									</div>
+								</li>
+							</ul>
+							<div class="tab-content">
+								<div class="tab-pane fade active show" id="navs-top-home" role="tabpanel">
+									<div id="divInfoProducto">
+									</div>
+								</div>
+								<div class="tab-pane fade" id="navs-top-profile" role="tabpanel">
+									<div id="divInfoES" class="row">
+										<div class="col-6">
+											<div class="row">
+												<div class="input-group">
+													<span class="input-group-text custom-lbl">Datos Entradas y Salidas del Mes</span>
+													<span class="input-group-text fixed-width">Sucursal: </span>
+													@Html.DropDownList("id", sucursales, "Seleccionar...", new { @id = "listaSucursales", @class = "form-control fixed-width" })
+													<span class="input-group-text fixed-width-75">Meses: </span>
+													<input type="number" id="txtMeses" class="fixed-width-50 align-right" value="1" />
+												</div>
+											</div>
+											<div class="row">
+												<div id="divInfoProdIExMeses"></div>
+											</div>
+										</div>
+										<div class="col-6">
+											<div class="row">
+												<div class="input-group">
+													<span class="input-group-text custom-lbl">Datos de Entrada y Salidas últimas semanas</span>
+													<span class="input-group-text fixed-width-75">Semanas: </span>
+													<input type="number" id="txtSemanas" class="fixed-width-50 align-right" value="1" />
+												</div>
+											</div>
+											<div class="row">
+												<div id="divInfoProdIExSemanas"></div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
 				</div>
-			</div> *@
+			</div>
 			@* <div class="col-10">
-				<div id="divInfoProducto">
-				</div>
+			<div id="divInfoProducto">
+			</div>
 			</div> *@
 		</div>
 	</div>
@@ -258,8 +320,8 @@
 		var CargaPedidoOCPIURL = "@Url.Action("CargaPedidoOCPI", "ndecypi", new { area = "Compras" })";
 		var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun" })";
 		var BuscarProveedoresFamiliaURL = "@Url.Action("ObtenerProveedoresFamilia", "ndecypi", new { area = "Compras" })";
-		var BuscarInfoProdIExMesesURL = "@Url.Action("BuscarInfoProdIExMeses", "ndecypi", new { area = "Compras" })";
-		var BuscarInfoProdIExSemanasURL = "@Url.Action("BuscarInfoProdIExSemanas", "ndecypi", new { area = "Compras" })";
+				var BuscarInfoProdIExMesesURL = "@Url.Action("BuscarInfoProdIExMeses", "ndecypi", new { area = "Compras" })";
+						var BuscarInfoProdIExSemanasURL = "@Url.Action("BuscarInfoProdIExSemanas", "ndecypi", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/areas/ndecypi/comun.js"></script>
 	<script src="~/js/app/areas/ndecypi/nc.js"></script>

@@ -97,6 +97,12 @@ fieldset {
     width: 96%;
 }
 
+.table-wrapper-full-width {
+    max-height: 500px;
+    max-width: 100%;
+    overflow: auto;
+}
+
 .table-wrapper {
     max-height: 500px;
     max-width: 98%;
@@ -118,6 +124,12 @@ fieldset {
 .table-wrapper-300 {
     max-height: 300px;
     max-width: 98%;
+    overflow: auto;
+}
+
+.table-wrapper-300-full-width {
+    max-height: 300px;
+    max-width: 100%;
     overflow: auto;
 }
 
@@ -145,6 +157,9 @@ fieldset {
     overflow: auto;
 }
 
+.tiny-row {
+    padding: 0.325rem 0.30rem !important;
+}
 .col-header-small {
     text-wrap: pretty;
     font-size: 8px !important;
