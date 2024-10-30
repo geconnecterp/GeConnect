@@ -28,7 +28,7 @@ builder.Services.Configure<CookieAuthenticationOptions>(opt => {
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, opt =>
     {
-        opt.Cookie.Name = "GecoLoginCookie";
+        opt.Cookie.Name = "GCPocketCookie";
         opt.LoginPath = new PathString("/seguridad/token/login");
         opt.LogoutPath = new PathString("/seguridad/token/logout");
         opt.AccessDeniedPath = new PathString("/seguridad/token/login");  //aca debere generar la ruta para indicar el acceso denegado y volver al login
@@ -51,6 +51,7 @@ builder.Services.AddHsts(opt =>
 
 builder.Services.AddSession(opt =>
 {
+    opt.Cookie.Name = ".gcpocket.session";
     opt.IdleTimeout = TimeSpan.FromMinutes(60);
     opt.Cookie.HttpOnly = true;
     opt.Cookie.IsEssential = true;
