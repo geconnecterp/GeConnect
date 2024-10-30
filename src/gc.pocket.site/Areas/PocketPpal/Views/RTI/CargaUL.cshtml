@@ -41,8 +41,9 @@
 @section scripts {
     <script type="text/javascript">
         var ocultarTrash = true;
+        var NroAuto = "@Model.re_compte";
         var PresentarProductosSeleccionadosUrl = "@Url.Action("PresentarProductosSeleccionados", "rti", new { area = "PocketPpal" })";
-        var ConfirmarRPRUrl = "@Url.Action("ConfirmarRTI", "rti", new { area = "PocketPpal" })";
+        var ConfirmarRTIUrl = "@Url.Action("ConfirmarRTI", "rti", new { area = "PocketPpal" })";
         var remitoNro = "@Model.re_compte";
         var homeUrl = "@Url.Action("index", "home", new { area = "" })";
     </script>

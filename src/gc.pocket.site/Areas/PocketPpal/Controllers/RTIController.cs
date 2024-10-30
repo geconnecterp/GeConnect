@@ -7,9 +7,9 @@ using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.pocket.site.Controllers;
 using gc.sitio.core.Servicios.Contratos;
-using gc.sitio.core.Servicios.Implementacion;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Logging;
 using System.Reflection;
 using X.PagedList;
 
@@ -111,9 +111,10 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 {
                     //en el caso que haga para atras y vuelva a elegir la misma  Autorización Pendiente no se elimina nada. 
                     //si es distinto como en este caso, se inicializan las variables.
+                    InicializaVariablesSessionRTI();
                     RemitoActual = remito;
-                    ProductoGenRegs = [];
-                    ProductoTemp = new();
+
+
                 }
 
                 string? volver = Url.Action("ObtenerRemitos", "rti", new { area = "pocketppal" });
@@ -128,6 +129,13 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             }
 
             return View(RemitoActual);
+        }
+
+        private void InicializaVariablesSessionRTI()
+        {
+            RemitoActual = new();
+            ProductoGenRegs = [];
+            ProductoTemp = new();
         }
 
         [HttpPost]
@@ -389,7 +397,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 {
                     throw new NegocioException("Verifique la Unidad de Lectura. Algo no esta bien.");
                 }
-                if (analisis[1].Length != 4)
+                if (analisis[1].Length != 2)
                 {
                     throw new NegocioException("Verifique la Unidad de Lectura. Algo no esta bien.");
                 }
@@ -402,11 +410,17 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     throw new NegocioException("Verifique la Unidad de Lectura. Algo no esta bien.");
                 }
                 var lista = ProductoGenRegs;
-                lista.ForEach(x=>x.ul_id = ul);
+                foreach (var item in lista) { 
+                    item.ul_id = ul;
+                    item.re = RemitoActual.re_compte;
+                    
+                }
+                //lista.ForEach(x=> x.ul_id = ul).ForeEach(s=> s.re_compte = RemitoActual.re_compte);
                 var res = await _remitoServicio.RTRCargarConteos(lista,  TokenCookie);
 
                 if (res.resultado == 0)
                 {
+                    InicializaVariablesSessionRTI();
                     return Json(new { error = false, warn = false, msg = $"La Carga del {ul} fue satisfactoria" });
                 }
                 else

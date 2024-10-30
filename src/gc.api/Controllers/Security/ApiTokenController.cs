@@ -179,6 +179,7 @@ namespace gc.api.Controllers.Security
                 new Claim("AdmId",admId),
                 new Claim("expires",DateTime.Now.AddHours(1).Ticks.ToString()),
                 new Claim("user",usuario.Usu_id),
+                //new Claim("etiqueta",DateTime.Now.Ticks.ToString())
 
                 //new Claim("Id",usuario.Id.ToString()),
                 //new Claim(ClaimTypes.Role,sRoles),

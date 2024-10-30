@@ -78,7 +78,7 @@ namespace gc.api.core.Servicios
 
         public RespuestaDto RTRCargarConteos(CargarJsonGenRequest request)
         {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_RTR_Verifica_Producto;
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_RTR_Cargar_Conteos;
             var ps = new List<SqlParameter>()
             {
                 new("@json",request.json_str),                    
