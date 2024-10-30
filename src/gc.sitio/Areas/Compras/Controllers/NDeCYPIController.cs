@@ -6,6 +6,7 @@ using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Almacen.Response;
 using gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Helpers;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
@@ -135,6 +136,50 @@ namespace gc.sitio.Areas.Compras.Controllers
 				var info = await _productoServicio.InfoProdIExSemana(admId, pId, semanas, TokenCookie);
 				model = ObtenerGridCore<InfoProdIExSemanaDto>(info);
 				return PartialView("_infoProdIExSemanas", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public async Task<IActionResult> BuscarInfoProdStkDeposito(string pId, string admId)
+		{
+			var model = new GridCore<InfoProdStkD>();
+			try
+			{
+				var info = await _productoServicio.InfoProductoStkD(pId, admId, TokenCookie);
+				model = ObtenerGridCore<InfoProdStkD>(info);
+				return PartialView("_infoProdPorDeposito", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public async Task<IActionResult> BuscarInfoProdStkSucursal(string pId, string admId)
+		{
+			var model = new GridCore<InfoProdStkA>();
+			try
+			{
+				var info = await _productoServicio.InfoProductoStkA(pId, admId, TokenCookie);
+				model = ObtenerGridCore<InfoProdStkA>(info);
+				return PartialView("_infoProdPorSucursal", model);
 			}
 			catch (Exception ex)
 			{

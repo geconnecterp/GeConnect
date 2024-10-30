@@ -7,15 +7,16 @@
 	$("#btnradioConOC").on("click", buscarConOC);
 	$("#btnradioPorRubro").on("click", buscarPorRubro);
 	$("#btnradioAltaRotacion").on("click", buscarAltaRotacion);
+	$("#btnCollapseSection").on("click", btnCollapseSectionClicked);
 	$("#listaProveedor").on("change", listaProveedorChange);
 	$("#listaFamiliaProveedor").on("change", listaFamiliaProveedorChange);
 	$("#listaRubro").on("change", listaRubroChange);
 	DisableComboProveedoresFamilia(true);
 	DisableComboRubros(true);
 	buscarPorProveedor();
+	SelecccionarSucursal();
 	AddEventListenerToGrid("tbListaProducto");
 	$("#tbListaProducto").on('input', 'td[contenteditable]', function () {
-		console.log("its cool.");
 	});
 });
 
@@ -282,6 +283,7 @@ function selectListaProductoRow(x) {
 		SeleccionarDesdeFila(idProvSeleccionado, $("#listaProveedor")[0]);
 		SeleccionarDesdeFila(idFamiliaProvSeleccionado, $("#listaFamiliaProveedor")[0]);
 		SeleccionarDesdeFila(idRubroSeleccionado, $("#listaRubro")[0]);
+		BuscarInfoAdicional();
 	}
 	else {
 		pIdSeleccionado = "";
@@ -427,4 +429,23 @@ function verificaEstado(e) {
 		}
 	}
 	return true;
+}
+
+
+function SelecccionarSucursal() {
+	$("#listaSucursales").val()
+	if ($("#listaSucursales").val() == "") {
+		$("#listaSucursales").prop("selectedIndex", 1).change();
+	}
+}
+
+function btnCollapseSectionClicked() {
+	var tabla = $("#containerListaProducto");
+	if ($("#containerListaProducto").hasClass('table-wrapper-full-width')) {
+		$("#containerListaProducto").removeClass('table-wrapper-full-width');
+		$("#containerListaProducto").addClass('table-wrapper-300-full-width');
+	} else {
+		$("#containerListaProducto").removeClass('table-wrapper-300-full-width');
+		$("#containerListaProducto").addClass('table-wrapper-full-width');
+	}
 }

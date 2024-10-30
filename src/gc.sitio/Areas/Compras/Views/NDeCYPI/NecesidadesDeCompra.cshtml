@@ -90,7 +90,7 @@
 		<div class="row">
 			<div class="col-12">
 				<div id="divListaProducto">
-					<div class="table-responsive table-wrapper-300-full-width">
+					<div class="table-responsive table-wrapper-full-width" id="containerListaProducto">
 						<table class="table table-bordered table-hover" id="tbListaProducto">
 							<thead class="table-dark">
 								<tr>
@@ -230,11 +230,11 @@
 			</div>
 			</div> *@
 			<div>
-				<a class="btn btn-sm btn-primary me-1 collapsed" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+				<a class="btn btn-sm btn-primary me-1 collapsed" id="btnCollapseSection" data-bs-toggle="collapse" href="#collapseSection" role="button" aria-expanded="false" aria-controls="collapseSection">
 					Info. Adicional
 				</a>
 			</div>
-			<div class="collapse" id="collapseExample" style="">
+			<div class="collapse" id="collapseSection" style="">
 				<div class="d-grid d-sm-flex p-3 border">
 					<div class="row" style="padding-top:10px;">
 						<div class="nav-align-top mb-4">
@@ -249,7 +249,12 @@
 										<span id="tabTwo" class="custom-lbl">Datos de Entrada/Salida</span>
 									</button>
 								</li>
-								<li role="presentation" style="margin-left: 500px;">
+								<li class="nav-item" role="presentation">
+									<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-panda" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1">
+										<span id="tabThree" class="custom-lbl">Datos de Stock</span>
+									</button>
+								</li>
+								<li role="presentation" style="margin-left: 300px;">
 									<div class="row">
 										<div class="col-7">
 											<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
@@ -296,6 +301,29 @@
 										</div>
 									</div>
 								</div>
+								<div class="tab-pane fade" id="navs-top-panda" role="tabpanel">
+									@* <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+										<input type="radio" class="btn-check" name="btnradio" id="btnradioPorSucursal" checked="">
+										<label class="btn btn-sm btn-outline-primary fixed-font-size-xmall" for="btnradioPorSucursal">Por Sucursal</label>
+										<input type="radio" class="btn-check" name="btnradio" id="btnradioPorDeposito" checked="">
+										<label class="btn btn-sm btn-outline-primary fixed-font-size-xmall" for="btnradioPorDeposito">Por Depósito</label>
+									</div> *@
+									<div id="divInfoStk" class="row">
+										<div class="col-6">
+											<div class="row">
+												<div id="divInfoProductoStkD">
+												</div>
+											</div>
+										</div>
+										<div class="col-6">
+											<div class="row">
+												<div id="divInfoProductoStkA">
+												</div>
+											</div>
+										</div>
+									</div>
+									
+								</div>
 							</div>
 						</div>
 					</div>
@@ -320,8 +348,10 @@
 		var CargaPedidoOCPIURL = "@Url.Action("CargaPedidoOCPI", "ndecypi", new { area = "Compras" })";
 		var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun" })";
 		var BuscarProveedoresFamiliaURL = "@Url.Action("ObtenerProveedoresFamilia", "ndecypi", new { area = "Compras" })";
-				var BuscarInfoProdIExMesesURL = "@Url.Action("BuscarInfoProdIExMeses", "ndecypi", new { area = "Compras" })";
-						var BuscarInfoProdIExSemanasURL = "@Url.Action("BuscarInfoProdIExSemanas", "ndecypi", new { area = "Compras" })";
+		var BuscarInfoProdIExMesesURL = "@Url.Action("BuscarInfoProdIExMeses", "ndecypi", new { area = "Compras" })";
+		var BuscarInfoProdIExSemanasURL = "@Url.Action("BuscarInfoProdIExSemanas", "ndecypi", new { area = "Compras" })";
+		var BuscarInfoProdStkDepositoURL = "@Url.Action("BuscarInfoProdStkDeposito", "ndecypi", new { area = "Compras" })";
+		var BuscarInfoProdStkSucursalURL = "@Url.Action("BuscarInfoProdStkSucursal", "ndecypi", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/areas/ndecypi/comun.js"></script>
 	<script src="~/js/app/areas/ndecypi/nc.js"></script>
