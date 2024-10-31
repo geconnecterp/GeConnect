@@ -32,7 +32,10 @@
        
         public string Adm_id { get; set; } = string.Empty;
         public string Adm_nombre { get; set; } = string.Empty;
-      
+        public decimal Proy_vtas { get; set; } = 0.000M;
+        public decimal Proy_vtas_dia { get; set; } = 0.000M;
+        public DateTime? Proy_vtas_fecha { get; set; }
+        public int orden { get; set; }
     }
 
     public class InfoProdMovStk

@@ -440,7 +440,6 @@ function SelecccionarSucursal() {
 }
 
 function btnCollapseSectionClicked() {
-	var tabla = $("#containerListaProducto");
 	if ($("#containerListaProducto").hasClass('table-wrapper-full-width')) {
 		$("#containerListaProducto").removeClass('table-wrapper-full-width');
 		$("#containerListaProducto").addClass('table-wrapper-300-full-width');

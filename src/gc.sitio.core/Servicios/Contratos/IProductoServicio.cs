@@ -27,6 +27,7 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<List<InfoProdLP>> InfoProductoLP(string id, string token);
         Task<List<InfoProdIExMesDto>> InfoProdIExMes(string admId, string pId, int meses, string token);
         Task<List<InfoProdIExSemanaDto>> InfoProdIExSemana(string admId, string pId, int semanas, string token);
+        Task<List<ProductoNCPISustitutoDto>> InfoProdSustituto(string pId, string tipo, string admId, bool soloProv, string token);
 
 		Task<List<AutorizacionPendienteDto>> RPRObtenerAutorizacionPendiente(string adm, string token);
         Task<RegistroResponseDto> RPRRegistrarProductos(List<ProductoGenDto> json,string admId, string ul, string token);

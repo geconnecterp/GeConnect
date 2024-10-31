@@ -10,19 +10,19 @@
 				<th colspan="3" class="col-header-small align-center">Egresos</th>
 			</tr>
 			<tr>
-				<th style="width:12%;" class="col-header-small align-center">Compras</th>
-				<th style="width:12%;" class="col-header-small align-center">RI</th>
-				<th style="width:12%;" class="col-header-small align-center">Otros</th>
+				<th style="width:12%;" class="col-header-small align-center">Compra</th>
+				<th style="width:12%;" class="col-header-small align-center">Ingreso RI</th>
+				<th style="width:12%;" class="col-header-small align-center">Ingreso Otros</th>
 				<th style="width:12%;" class="col-header-small align-center">Ventas</th>
-				<th style="width:12%;" class="col-header-small align-center">RI</th>
-				<th style="width:12%;" class="col-header-small align-center">Otros</th>
+				<th style="width:12%;" class="col-header-small align-center">Egreso RI</th>
+				<th style="width:12%;" class="col-header-small align-center">Egreso Otros</th>
 			</tr>
 		</thead>
 		<tbody>
 			@foreach (var item in Model.ListaDatos)
 			{
 				<tr onclick="selectListaInfoProdIExSemanaRow(this)">
-					<td class="align-center">@item.desde.ToString("dd/MM/yyyy")-@item.hasta.ToString("dd/MM/yyyy")</td>
+					<td class="align-center">@item.desde.ToString("dd/MM/yy")-@item.hasta.ToString("dd/MM/yy")</td>
 					<td class="align-center">@item.e_compra</td>
 					<td class="align-center">@item.e_ri</td>
 					<td class="align-center">@item.e_otros</td>

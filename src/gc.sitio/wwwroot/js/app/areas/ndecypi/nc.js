@@ -66,6 +66,15 @@ function BuscarInfoAdicional() {
 		CerrarWaiting();
 		return true
 	});
+	var tipo = "OC";
+	var soloProv = true; //TODO: agregar un check en alguna parte del form, a lo mejor dentro del mismo tab de infoProdSustituto
+	datos = { pId, tipo, soloProv }
+	PostGenHtml(datos, BuscarInfoProdSustitutoURL, function (obj) {
+		$("#divInfoProdSustituto").html(obj);
+		AddEventListenerToGrid("tbListaProductoSust");
+		CerrarWaiting();
+		return true
+	});
 }
 
 function selectListaInfoProdIExMesRow(x) {

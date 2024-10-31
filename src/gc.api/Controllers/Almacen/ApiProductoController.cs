@@ -303,6 +303,21 @@ namespace gc.api.Controllers.Almacen
 
 			return Ok(response);
 		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<ProductoNCPISustitutoDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult InfoProdSustituto(string pId, string tipo, string admId, bool soloProv)
+		{
+			ApiResponse<List<ProductoNCPISustitutoDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.InfoProdSustituto(pId, tipo, admId, soloProv);
+
+			response = new ApiResponse<List<ProductoNCPISustitutoDto>>(res);
+
+			return Ok(response);
+		}
 		#endregion
 
 		#region Acciones para modulo RPR

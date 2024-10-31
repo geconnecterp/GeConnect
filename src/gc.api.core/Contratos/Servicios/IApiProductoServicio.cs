@@ -27,6 +27,7 @@ namespace gc.api.core.Contratos.Servicios
         List<InfoProdLP> InfoProductoLP(string id);
         List<InfoProdIExMesDto> InfoProdIExMes(string admId, string pId, int meses);
         List<InfoProdIExSemanaDto> InfoProdIExSemana(string admId, string pId, int semanas);
+        List<ProductoNCPISustitutoDto> InfoProdSustituto(string pId, string tipo, string admId, bool soloProv);
 
 		List<AutorizacionPendienteDto> RPRObtenerAutorizacionPendiente(string adm);
         RegistroResponseDto RPRRegistrarProductos(string json);
