@@ -21,6 +21,10 @@ body {
     margin-bottom: 60px;
 }
 
+input[type="text"] {
+    text-transform: uppercase !important;
+}
+
 .espBoton {
     width: 100px;
     margin: 2px;
@@ -41,6 +45,13 @@ tr.alt {
 
 tr.sel {
     background-color: #7b82c8;
+}
+
+td.corta-linea{
+    max-width:150px;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+    overflow:hidden;
 }
 
 th, td {
@@ -111,9 +122,30 @@ th, td {
     border-radius: 0px 0px 25px 25px;
 }
 
-@media screen and (max-width: 480px) {
+@media screen and (max-width: 768px) {
     .textoEncabezado {
         font-weight: 500;
         font-size: 0.7em;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .textoEncabezado {
+        font-weight: 500;
+        font-size: 0.6em;
+    }
+}
+
+
+@media screen and (max-width: 480px) {
+    .textoEncabezado {
+        font-weight: 500;
+        font-size: 0.5em;
+    }
+}
+@media screen and (max-width: 400px) {
+    .textoEncabezado {
+        font-weight: 500;
+        font-size: 0.4em;
     }
 }

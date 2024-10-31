@@ -25,7 +25,7 @@
 
                 <tr class="@clase" onclick="seleccionaRegistroAP(this)">
                     <td>@cont </td>
-                    <td style="min-width:200px;">@item.Cta_denominacion</td>
+                    <td style="min-width:200px;" class="corta-linea">@item.Cta_denominacion</td>
                     <td>@item.Rp
                         @Html.Hidden("rp" + @cont, item.Rp)
                     </td>

@@ -7,6 +7,7 @@ using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.pocket.site.Controllers;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Implementacion;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Logging;
@@ -21,12 +22,15 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         private readonly AppSettings _settings;
         private readonly ILogger<RTIController> _logger;
         private readonly IRemitoServicio _remitoServicio;
+        private readonly IProductoServicio _productoServicio;
 
-        public RTIController(IOptions<AppSettings> option, IHttpContextAccessor context, ILogger<RTIController> logger, IRemitoServicio remitoServicio) : base(option, context)
+        public RTIController(IOptions<AppSettings> option, IHttpContextAccessor context,
+            ILogger<RTIController> logger, IRemitoServicio remitoServicio, IProductoServicio productoServicio) : base(option, context)
         {
             _settings = option.Value;
             _logger = logger;
             _remitoServicio = remitoServicio;
+            _productoServicio = productoServicio;
         }
 
         [HttpGet]
@@ -58,7 +62,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 RemitosPendientes = remitos;
                 datosIP = ObtenerRPRProdGrid(RemitosPendientes);
 
-                return PartialView("_rtiRemitosPendientes",datosIP);
+                return PartialView("_rtiRemitosPendientes", datosIP);
             }
             catch (NegocioException ex)
             {
@@ -101,8 +105,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     return RedirectToAction("Login", "Token", new { area = "seguridad" });
                 }
 
-                remito = RemitosPendientes.SingleOrDefault(x=>x.re_compte.Equals(rm));
-                if(remito == null)
+                remito = RemitosPendientes.SingleOrDefault(x => x.re_compte.Equals(rm));
+                if (remito == null)
                 {
                     TempData["warn"] = $"No se pudo seleccionar el Remito N° {rm}. Intente de nuevo";
                 }
@@ -197,8 +201,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 }
 
                 //armo producto a resguardar
-                var item = new ProductoGenDto();                
-                item.re = RemitoActual.re_compte    ;
+                var item = new ProductoGenDto();
+                item.re = RemitoActual.re_compte;
                 item.item = ProductoGenRegs.Count + 1;
                 item.p_id = ProductoBase.P_id;
                 item.p_desc = ProductoBase.P_desc;
@@ -210,7 +214,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 item.unidad_pres = up;
                 item.bulto = bulto;
                 item.us = unidad;
-                
+
                 if (string.IsNullOrEmpty(vto) && string.IsNullOrWhiteSpace(vto))
                 {
                     item.vto = null;
@@ -370,7 +374,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
         [HttpGet]
         public IActionResult CargaUL()
-        {            
+        {
             string? volver = Url.Action("CargaProductos", "rti", new { area = "pocketppal", rm = RemitoActual.re_compte });
             //ViewBag.AppItem = new AppItem { Nombre = $"Auto:{auto.Rp}-{auto.Cta_denominacion}" };
             ViewBag.AppItem = new AppItem { Nombre = "Carga de Productos en UL", VolverUrl = volver ?? "#", BotonEspecial = false };
@@ -401,7 +405,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 {
                     throw new NegocioException("Verifique la Unidad de Lectura. Algo no esta bien.");
                 }
-                if (analisis[2].Length !=8)
+                if (analisis[2].Length != 8)
                 {
                     throw new NegocioException("Verifique la Unidad de Lectura. Algo no esta bien.");
                 }
@@ -410,13 +414,14 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     throw new NegocioException("Verifique la Unidad de Lectura. Algo no esta bien.");
                 }
                 var lista = ProductoGenRegs;
-                foreach (var item in lista) { 
+                foreach (var item in lista)
+                {
                     item.ul_id = ul;
                     item.re = RemitoActual.re_compte;
-                    
+
                 }
                 //lista.ForEach(x=> x.ul_id = ul).ForeEach(s=> s.re_compte = RemitoActual.re_compte);
-                var res = await _remitoServicio.RTRCargarConteos(lista,  TokenCookie);
+                var res = await _remitoServicio.RTRCargarConteos(lista, TokenCookie);
 
                 if (res.resultado == 0)
                 {
@@ -439,6 +444,117 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             }
 
             return Json(new { error = true, msg });
+        }
+
+        [HttpGet]
+        public IActionResult AlmacenajeBox()
+        {
+            var auth = EstaAutenticado;
+            if (!auth.Item1 || auth.Item2 < DateTime.Now)
+            {
+                return RedirectToAction("Login", "Token", new { area = "seguridad" });
+            }
+
+            string? volver = Url.Action("rti", "almacen", new { area = "gestion" });
+            //ViewBag.AppItem = new AppItem { Nombre = $"Auto:{auto.Rp}-{auto.Cta_denominacion}" };
+            ViewBag.AppItem = new AppItem { Nombre = "Almacenamiento en BOX", VolverUrl = volver ?? "#", BotonEspecial = false };
+
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> ValidarUl(string ul)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(ul) || string.IsNullOrWhiteSpace(ul))
+                {
+                    throw new NegocioException("No se recepcionó la UL. Verifique");
+                }
+                var res = await _productoServicio.ValidarUL(ul.ToUpper(), AdministracionId, "RI", TokenCookie);  //para RPR es RC, para RTR es RI
+                if (res.resultado == 0)
+                {
+                    return Json(new { error = false, warn = false, msg = "La validación del UL fue exitosa." });
+                }
+                else
+                {
+                    throw new NegocioException(res.resultado_msj);
+                }
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error al validar la UL {ul}");
+                return Json(new { error = true, msg = "Algo no fué bien en la Validación de la UL. Intente nuevamente." });
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> ValidarBox(string box)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(box) || string.IsNullOrWhiteSpace(box))
+                {
+                    throw new NegocioException("No se recepcionó el Box. Verifique");
+                }
+                var res = await _productoServicio.ValidarBox(box, AdministracionId, TokenCookie);
+                if (res.Resultado == 0)
+                {
+                    return Json(new { error = false, warn = false, msg = "La validación del Box fue exitosa.", box = res.Box_id_sugerido });
+                }
+                else
+                {
+                    throw new NegocioException(res.Resultado_msj);
+                }
+
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error al validar el Box {box}");
+                return Json(new { error = true, msg = "Algo no fué bien en la Validación de la UL. Intente nuevamente." });
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> ConfirmaBoxUl(string box, string ul)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(ul) || string.IsNullOrWhiteSpace(ul))
+                {
+                    throw new NegocioException("No se recepcionó la UL. Verifique");
+                }
+                if (string.IsNullOrEmpty(box) || string.IsNullOrWhiteSpace(box))
+                {
+                    throw new NegocioException("No se recepcionó el Box. Verifique");
+                }
+                var res = await _productoServicio.ConfirmaBoxUl(box, ul, AdministracionId, sm: "RI", TokenCookie);
+                if (res.Resultado == 0)
+                {
+                    return Json(new { error = false, warn = false, msg = "Se realizó exitosamente el ingreso de Stock de la Unidad de Lectura." });
+                }
+                else
+                {
+                    throw new NegocioException(res.Resultado_msj);
+                }
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error al Confirmar el Box {box} Ul {ul}");
+                return Json(new { error = true, msg = "Algo no fué bien en la Validación de la UL. Intente nuevamente." });
+            }
         }
     }
 }
