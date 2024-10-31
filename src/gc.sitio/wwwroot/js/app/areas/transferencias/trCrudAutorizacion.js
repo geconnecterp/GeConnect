@@ -10,7 +10,7 @@ function setMaxValueTotxtMaxPallet() {
 	const cant = document.getElementById("txtMaxPallet");
 	cant.addEventListener('input', function (e) {
 		if (!isValid(this.value))
-			cant.value = 80;
+			cant.value = 100;
 	});
 }
 function isValid(value) {
