@@ -30,9 +30,10 @@
             public const string SP_INFOPROD_MOVSTK = "dbo.spgeco_p_info_mov_stk";
             public const string SP_INFOPROD_LP = "dbo.spgeco_p_info_lp";
             public const string SP_INFOPROD_TM = "SPGECO_P_Info_Tipos_Mov_Stk";
+			public const string SP_INFOPROD_IE_MESES = "SPGECO_P_Info_IE_x_Mes";
+			public const string SP_INFOPROD_IE_SEMANAS = "SPGECO_P_Info_IE_x_Semanas";
 
-
-            public const string SP_RPR_PENDIENTES = "spgeco_RPR_Pendientes";
+			public const string SP_RPR_PENDIENTES = "spgeco_RPR_Pendientes";
             public const string SP_RPR_REGISTRA = "SPGECO_RPR_Cargar_Conteos";
             public const string SP_RPR_DEPOSITOS = "SPGECO_RPR_Depositos";
             public const string SP_RPR_COMPTES_PENDIENTES = "spgeco_RPR_Comptes_Pendientes";

@@ -1,0 +1,28 @@
+﻿@model GridCore<gc.infraestructura.Dtos.Productos.InfoProdStkD>
+@{
+}
+<div class="table-responsive text-nowrap table-wrapper-200-full">
+	<table class="table table-bordered table-hover" id="tbInfoProdStkD">
+		<thead class="table-dark">
+			<tr>
+				<th style="width:40%;" class="col-header-small align-left">Depósito</th>
+				<th style="width:20%;" class="col-header-small align-center">Stk</th>
+				<th style="width:20%;" class="col-header-small align-center">Bulto</th>
+				<th style="width:20%;" class="col-header-small align-center">UM</th>
+				<th style="width:0%;display:none;" class="col-header-small align-center">depo_id</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in Model.ListaDatos)
+			{
+				<tr onclick="selectListaInfoProdStkD(this)">
+					<td class="align-center">@item.Depo_nombre</td>
+					<td class="align-center">@item.Ps_stk</td>
+					<td class="align-center">@item.Ps_bulto</td>
+					<td class="align-center">@item.Up_desc</td>
+					<td style="display:none;">@item.Depo_id</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>

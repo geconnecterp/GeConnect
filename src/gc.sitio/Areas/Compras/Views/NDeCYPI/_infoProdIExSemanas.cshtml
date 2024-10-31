@@ -1,0 +1,36 @@
+﻿@model GridCore<InfoProdIExSemanaDto>
+@{
+}
+<div class="table-responsive text-nowrap table-wrapper-200-full">
+	<table class="table table-bordered table-hover" id="tbInfoProdIExSemana">
+		<thead class="table-dark">
+			<tr>
+				<th rowspan="2" class="col-header-small align-center">Semana</th>
+				<th colspan="3" class="col-header-small align-center">Ingresos</th>
+				<th colspan="3" class="col-header-small align-center">Egresos</th>
+			</tr>
+			<tr>
+				<th style="width:12%;" class="col-header-small align-center">Compras</th>
+				<th style="width:12%;" class="col-header-small align-center">RI</th>
+				<th style="width:12%;" class="col-header-small align-center">Otros</th>
+				<th style="width:12%;" class="col-header-small align-center">Ventas</th>
+				<th style="width:12%;" class="col-header-small align-center">RI</th>
+				<th style="width:12%;" class="col-header-small align-center">Otros</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in Model.ListaDatos)
+			{
+				<tr onclick="selectListaInfoProdIExSemanaRow(this)">
+					<td class="align-center">@item.desde.ToString("dd/MM/yyyy")-@item.hasta.ToString("dd/MM/yyyy")</td>
+					<td class="align-center">@item.e_compra</td>
+					<td class="align-center">@item.e_ri</td>
+					<td class="align-center">@item.e_otros</td>
+					<td class="align-center">@item.s_ventas</td>
+					<td class="align-center">@item.s_ri</td>
+					<td class="align-center">@item.s_otros</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>

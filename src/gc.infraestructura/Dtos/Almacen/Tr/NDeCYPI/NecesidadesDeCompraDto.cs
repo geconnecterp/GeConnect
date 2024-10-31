@@ -8,6 +8,7 @@ namespace gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI
 		public SelectList ComboProveedores { get; set; }
 		public SelectList ComboProveedoresFamilia { get; set; }
 		public SelectList ComboRubros { get; set; }
+		public SelectList ComboSucursales { get; set; }
 		public GridCore<ProductoNCPIDto> Productos { get; set; }
         public bool ProductosSimilares { get; set; }
 
