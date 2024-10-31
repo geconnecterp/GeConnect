@@ -25,7 +25,8 @@
 
                 <tr class="@clase" onclick="seleccionarRegistroTR(this)" >
                     <td>@cont </td>
-                    <td>@item.Adm_nombre 
+                    <td class="corta-linea">
+                        @item.Adm_nombre
                         @Html.Hidden("ti"+@cont,item.Ti)
                         @Html.Hidden("usu" + cont, item.Usu_id)
                         @Html.Hidden("fec" + cont, item.Fecha.ToShortDateString())
