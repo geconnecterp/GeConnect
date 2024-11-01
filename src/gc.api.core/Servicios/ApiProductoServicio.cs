@@ -247,6 +247,22 @@ namespace gc.api.core.Servicios
 			return producto;
 		}
 
+		public List<ProductoNCPISustitutoDto> InfoProdSustituto(string pId, string tipo, string admId, bool soloProv)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_INFOPROD_SUSTITUTO;
+
+			var ps = new List<SqlParameter>()
+			{
+					new SqlParameter("@p_id",pId),
+					new SqlParameter("@tipo",tipo),
+					new SqlParameter("@adm_id",admId),
+					new SqlParameter("@solo_prov",soloProv),
+			};
+
+			List<ProductoNCPISustitutoDto> producto = _repository.EjecutarLstSpExt<ProductoNCPISustitutoDto>(sp, ps, true);
+
+			return producto;
+		}
 
 		public ProductoBusquedaDto ProductoBuscar(BusquedaBase busqueda)
 		{

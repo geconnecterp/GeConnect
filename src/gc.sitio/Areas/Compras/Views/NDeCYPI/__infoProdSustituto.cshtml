@@ -1,0 +1,52 @@
+﻿@model GridCore<ProductoNCPISustitutoDto>
+@{
+}
+<div class="table-responsive table-wrapper-200-full" id="containerListaProductoSust">
+	<table class="table table-bordered table-hover" id="tbListaProductoSust">
+		<thead class="table-dark">
+			<tr>
+				<th style="width:5%;" class="col-header-small align-center tiny-row">Código</th>
+				<th style="width:20%;" class="col-header-small align-center tiny-row">Descripción</th>
+				<th style="width:5%;" class="col-header-small align-center tiny-row">Cod. Prov</th>
+				<th style="width:5%;" class="col-header-small align-center tiny-row">PI Pend</th>
+				<th style="width:5%;" class="col-header-small align-center tiny-row">OC Pend</th>
+				<th style="width:5%;" class="col-header-small align-center tiny-row">Stock</th>
+				<th style="width:5%;" class="col-header-small align-center tiny-row">Stock en Tránsito</th>
+				<th style="width:5%;" class="col-header-small align-center tiny-row">Stock a Facturar</th>
+				<th style="width:5%;" class="col-header-small align-center tiny-row">Unidad Pres.</th>
+				<th style="width:5%;" class="col-header-small align-center tiny-row">UM</th>
+				<th style="width:5%;" class="col-header-small align-center tiny-row">Pedido Bultos</th>
+				<th style="width:5%;" class="col-header-small align-center tiny-row">Cantidad</th>
+				<th style="width:5%;" class="col-header-small align-center tiny-row">Costo</th>
+				<th style="width:5%;" class="col-header-small align-center tiny-row">Costo Total</th>
+				<th style="width:5%;" class="col-header-small align-center tiny-row">Pallet</th>
+				<th style="width:0%; display:none;">pg_id</th>
+				<th style="width:0%; display:none;">rub_id</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in Model.ListaDatos)
+			{
+				<tr onclick="selectListaProductoRow(this)">
+					<td class="align-center tiny-row">@item.p_id</td>
+					<td class="align-left tiny-row">@item.p_desc</td>
+					<td class="align-center tiny-row">@item.p_id_prov</td>
+					<td class="align-right tiny-row">@item.pi_pendiente</td>
+					<td class="align-right tiny-row">@item.oc_pendiente</td>
+					<td class="align-right tiny-row">@item.stk</td>
+					<td class="align-right tiny-row">@item.stk_suc_transito</td>
+					<td class="align-right tiny-row">@item.stk_suc_comprometido</td>
+					<td class="align-right tiny-row">@item.p_unidad_pres</td>
+					<td class="align-center tiny-row">@item.up_desc</td>
+					<td class="align-center tiny-row">@item.pedido</td>
+					<td class="align-right tiny-row">@item.cantidad</td>
+					<td class="align-right tiny-row">@item.costo</td>
+					<td class="align-right tiny-row">@item.costo_total</td>
+					<td class="align-right tiny-row">@item.paletizado</td>
+					<td style="display:none;">@item.pg_id</td>
+					<td style="display:none;">@item.rub_id</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>

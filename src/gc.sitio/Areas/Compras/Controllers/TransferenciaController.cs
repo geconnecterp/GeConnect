@@ -314,6 +314,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					stk = x.stk,
 					stk_adm = x.stk_adm,
 					unidad_palet = x.unidad_palet,
+					p_id_prov = x.p_id_prov,
 					#endregion
 				}).OrderBy(y => y.p_id).ToList();
 				model.Detalle = ObtenerGridCore<TRNuevaAutDetalleDto>(TRNuevaAutDetallelLista);
@@ -633,7 +634,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public async Task<IActionResult> EliminarProducto(string pId, string admId)
+		public async Task<IActionResult> EliminarProducto(string pId, string admId, int autorizacion)
 		{
 			var model = new GridCore<TRNuevaAutDetalleDto>();
 			try
@@ -646,7 +647,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				var listaTemp = TRNuevaAutDetallelLista;
 				listaTemp.RemoveAll(y => y.p_id == pId && y.adm_id == admId);
 				TRNuevaAutDetallelLista = listaTemp;
-				model = ObtenerGridCore<TRNuevaAutDetalleDto>(listaTemp);
+				model = ObtenerGridCore<TRNuevaAutDetalleDto>(listaTemp.Where(x => x.adm_id == admId && x.autorizacion == autorizacion).ToList());
 				return PartialView("_trNuevaAutListaProductos", model);
 			}
 			catch (Exception ex)
@@ -719,6 +720,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 					//Limpiar datos
 					TRAutAnaliza = [];
 					TRNuevaAutDetallelLista = [];
+					TRAutPedidosIncluidosILista = [];
+					TRSucursalesLista.ForEach(x => x.tiene_pi = false);
 					return Json(new { error = false, warn = false, codigo = 0, msg = "" });
 				}
 				return Json(new { error = false, warn = true, msg = respuesta?.First()?.resultado_msj, codigo = respuesta?.First()?.resultado });
@@ -732,7 +735,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 
 
-		public async Task<IActionResult> EditarNotaEnSucursal(string admId)
+		public async Task<IActionResult> EditarNotaEnSucursal(string admId, int autorizacion)
 		{
 			//TODO: Charlar con carlos para ver si modificamos lo que se muestra en esta vista
 			var model = new TRNotaEnSucursalDto();
@@ -743,12 +746,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				model.Titulo = $"Nota de Sucursal {admId} - {TRSucursalesLista.Where(x => x.adm_id == admId).Select(y => y.adm_nombre).First()}";
 				var listaSucursalTemp = TRNuevaAutSucursalLista;
-				var sucursalTemp = listaSucursalTemp.Where(x => x.adm_id == admId).First();
+				var sucursalTemp = listaSucursalTemp.Where(x => x.adm_id == admId && x.aut_a_generar == autorizacion).First();
 				if (sucursalTemp == null)
 					return ObtenerMensajeDeError("No se ha encontrado la sucursal seleccionada. Si el problema persiste informe al Administrador.");
 
 				model.Nota = sucursalTemp.nota;
 				model.adm_id = admId;
+				model.autorizacion = autorizacion;
 			}
 			catch (Exception ex)
 			{
@@ -759,7 +763,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return PartialView("_trNotaEnSucursal", model);
 		}
 
-		public async Task<JsonResult> AgregarNotaASucursalNuevaAutTR(string nota, string admId)
+		public async Task<JsonResult> AgregarNotaASucursalNuevaAutTR(string nota, string admId, int autorizacion)
 		{
 			try
 			{
@@ -768,11 +772,14 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (string.IsNullOrEmpty(admId))
 					return Json(new { error = false, warn = true, vacio = "Debe seleccionar una sucursal para anexar una nota.", msg = "" });
 				var listaSucursalTemp = TRNuevaAutSucursalLista;
-				var sucursalTemp = listaSucursalTemp.Where(x => x.adm_id == admId).First();
+				var sucursalTemp = listaSucursalTemp.Where(x => x.adm_id == admId && x.aut_a_generar == autorizacion).First();
 				if (sucursalTemp != null)
 				{
 					sucursalTemp.nota = nota;
 					TRNuevaAutSucursalLista = listaSucursalTemp;
+					var listaProTemp = TRNuevaAutDetallelLista;
+					listaProTemp.Where(x => x.adm_id == sucursalTemp.adm_id && x.autorizacion == sucursalTemp.aut_a_generar).ToList().ForEach(y => y.nota = nota);
+					TRNuevaAutDetallelLista = listaProTemp;
 				}
 				else
 					return Json(new { error = false, warn = true, vacio = "No se ha encontrado la sucursal seleccionada, solicite soporte.", msg = "" });

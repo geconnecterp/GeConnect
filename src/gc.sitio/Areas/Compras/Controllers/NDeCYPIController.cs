@@ -155,7 +155,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new GridCore<InfoProdStkD>();
 			try
 			{
-				var info = await _productoServicio.InfoProductoStkD(pId, admId, TokenCookie);
+				var info = await _productoServicio.InfoProductoStkD(pId, AdministracionId, TokenCookie);
 				model = ObtenerGridCore<InfoProdStkD>(info);
 				return PartialView("_infoProdPorDeposito", model);
 			}
@@ -177,9 +177,31 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new GridCore<InfoProdStkA>();
 			try
 			{
-				var info = await _productoServicio.InfoProductoStkA(pId, admId, TokenCookie);
+				var info = await _productoServicio.InfoProductoStkA(pId, AdministracionId, TokenCookie);
 				model = ObtenerGridCore<InfoProdStkA>(info);
 				return PartialView("_infoProdPorSucursal", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public async Task<IActionResult> BuscarInfoProdSustituto(string pId, string tipo, bool soloProv)
+		{
+			var model = new GridCore<ProductoNCPISustitutoDto>();
+			try
+			{
+				var info = await _productoServicio.InfoProdSustituto(pId, tipo, AdministracionId, soloProv, TokenCookie);
+				model = ObtenerGridCore<ProductoNCPISustitutoDto>(info);
+				return PartialView("_infoProdSustituto", model);
 			}
 			catch (Exception ex)
 			{

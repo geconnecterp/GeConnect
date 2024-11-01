@@ -31,7 +31,7 @@
 											<td style="text-align: right;">@item.aut_a_generar</td>
 											<td>@item.adm_nombre</td>
 											<td style="text-align: right;">@item.pallet_aprox</td>
-											<td><a class="btn btn-xs btn-outline-success" data-interaction="@item.adm_id" onclick="verNotaEnSucursal(this);"> <i class="bx bx-detail"></i></a></td>
+											<td><a class="btn btn-xs btn-outline-success" data-interaction="@item.adm_id" data-interaction2="@item.aut_a_generar" onclick="verNotaEnSucursal(this);"> <i class="bx bx-detail"></i></a></td>
 											<td style="display:none;">@item.adm_id</td>
 										</tr>
 									}
@@ -81,7 +81,7 @@
 										<tr onclick="selectNuevaAutListaProductosRow(this)">
 											<td class="align-center">@item.p_id</td>
 											<td class="align-left">@item.p_desc</td>
-											<td class="align-center">@item.pi_compte</td> @*TODO: Deberia ir ID Prov, consultar con Carlos*@
+											<td class="align-center">@item.p_id_prov</td> @*TODO: Deberia ir ID Prov, consultar con Carlos*@
 											<td class="align-center">@item.pi_compte</td>
 											<td style="text-align: right;">@item.stk</td>
 											<td style="text-align: right;">@item.stk_adm</td>

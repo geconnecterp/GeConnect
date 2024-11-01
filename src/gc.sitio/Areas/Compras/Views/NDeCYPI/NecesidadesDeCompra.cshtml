@@ -78,7 +78,7 @@
 			</div>
 			<div class="col-2">
 				@* Botones *@
-				<fieldset style="padding-top: 6px;">
+				<fieldset style="padding-top: 0px;">
 					<legend>
 						<a href="#" id="btnOCAuto" class="btn btn-sm btn-primary fixed-font-size"><span>OC Auto</span></a>
 						<a href="#" id="btnPasarAOC" class="btn btn-sm btn-primary fixed-font-size"><span>Pasar a OC</span></a>
@@ -254,7 +254,12 @@
 										<span id="tabThree" class="custom-lbl">Datos de Stock</span>
 									</button>
 								</li>
-								<li role="presentation" style="margin-left: 300px;">
+								<li class="nav-item" role="presentation">
+									<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-dog" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1">
+										<span id="tabThree" class="custom-lbl">Prod. Sustituto</span>
+									</button>
+								</li>
+								<li role="presentation" style="margin-left: 200px;">
 									<div class="row">
 										<div class="col-7">
 											<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
@@ -280,7 +285,7 @@
 													<span class="input-group-text fixed-width">Sucursal: </span>
 													@Html.DropDownList("id", sucursales, "Seleccionar...", new { @id = "listaSucursales", @class = "form-control fixed-width" })
 													<span class="input-group-text fixed-width-75">Meses: </span>
-													<input type="number" id="txtMeses" class="fixed-width-50 align-right" value="1" />
+													<input type="number" id="txtMeses" class="fixed-width-50 align-right" value="12" />
 												</div>
 											</div>
 											<div class="row">
@@ -292,7 +297,7 @@
 												<div class="input-group">
 													<span class="input-group-text custom-lbl">Datos de Entrada y Salidas últimas semanas</span>
 													<span class="input-group-text fixed-width-75">Semanas: </span>
-													<input type="number" id="txtSemanas" class="fixed-width-50 align-right" value="1" />
+													<input type="number" id="txtSemanas" class="fixed-width-50 align-right" value="4" />
 												</div>
 											</div>
 											<div class="row">
@@ -302,12 +307,6 @@
 									</div>
 								</div>
 								<div class="tab-pane fade" id="navs-top-panda" role="tabpanel">
-									@* <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
-										<input type="radio" class="btn-check" name="btnradio" id="btnradioPorSucursal" checked="">
-										<label class="btn btn-sm btn-outline-primary fixed-font-size-xmall" for="btnradioPorSucursal">Por Sucursal</label>
-										<input type="radio" class="btn-check" name="btnradio" id="btnradioPorDeposito" checked="">
-										<label class="btn btn-sm btn-outline-primary fixed-font-size-xmall" for="btnradioPorDeposito">Por Depósito</label>
-									</div> *@
 									<div id="divInfoStk" class="row">
 										<div class="col-6">
 											<div class="row">
@@ -323,6 +322,11 @@
 										</div>
 									</div>
 									
+								</div>
+								<div class="tab-pane fade" id="navs-top-dog" role="tabpanel">
+									<div class="row">
+										<div id="divInfoProdSustituto"></div>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -352,6 +356,7 @@
 		var BuscarInfoProdIExSemanasURL = "@Url.Action("BuscarInfoProdIExSemanas", "ndecypi", new { area = "Compras" })";
 		var BuscarInfoProdStkDepositoURL = "@Url.Action("BuscarInfoProdStkDeposito", "ndecypi", new { area = "Compras" })";
 		var BuscarInfoProdStkSucursalURL = "@Url.Action("BuscarInfoProdStkSucursal", "ndecypi", new { area = "Compras" })";
+		var BuscarInfoProdSustitutoURL = "@Url.Action("BuscarInfoProdSustituto", "ndecypi", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/areas/ndecypi/comun.js"></script>
 	<script src="~/js/app/areas/ndecypi/nc.js"></script>

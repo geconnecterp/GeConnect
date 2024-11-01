@@ -23,5 +23,6 @@ namespace gc.infraestructura.Dtos.Almacen.Tr.Transferencia
 		public bool p_sustituto { get; set; }
 		public string p_id_sustituto { get; set; } = string.Empty;
 		public string nota { get; set; } = string.Empty;
-	}
+		public string p_id_prov { get; set; } = string.Empty;
+    }
 }

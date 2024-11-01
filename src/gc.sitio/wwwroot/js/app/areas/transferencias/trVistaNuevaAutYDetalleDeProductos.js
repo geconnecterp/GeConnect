@@ -201,8 +201,9 @@ function AddEventListenerToGrid(tabla) {
 function verNotaEnSucursal(x) {
 	AbrirWaiting();
 	var admId = x.dataset.interaction;
+	var autorizacion = x.dataset.interaction2;
 	if (admId) {
-		var datos = { admId };
+		var datos = { admId, autorizacion };
 		PostGenHtml(datos, TREditarNotaEnSucursalUrl, function (obj) {
 			$("#divNotaEnSucursal").html(obj);
 			$('#modalNotaEnSucursal').modal('show')
@@ -232,7 +233,8 @@ function guardarNotaDeSucursal() {
 	AbrirWaiting();
 	var nota = $("#txtNotaEnSucursal").val();
 	var admId = $("#adm_id_en_modal_sucursal").val();
-	var datos = { nota, admId };
+	var autorizacion = $("#autorizacion_en_modal_sucursal").val();
+	var datos = { nota, admId, autorizacion };
 	if (admId && nota) {
 		PostGen(datos, TRAgregarNotaASucursalNuevaAutUrl, function (o) {
 			if (o.error === true) {
@@ -585,7 +587,7 @@ function eliminarProductoATR() {
 		$("#msjModal").modal("hide");
 		switch (e) {
 			case "SI": //Confirmar comprobante RPR
-				var datos = { pId: prodSeleccionado, admId: admSeleccionado };
+				var datos = { pId: prodSeleccionado, admId: admSeleccionado, autorizacion: autAGenerarSeleccionado };
 				PostGenHtml(datos, TREliminarProductoUrl, function (obj) {
 					$("#tbNuevaAutListaProductos").html(obj);
 					AddEventListenerToGrid("tbListaProductosParaAgregar");
