@@ -73,7 +73,16 @@
 			public const string SP_TR_VER_CTRL_SALIDA = "SPGECO_TR_Ver_CTL_Salida";
             public const string SP_TR_CARGAR_CTRL_SALIDA = "SPGECO_TR_Cargar_CTL_Salida";
 
-            
+            #region SP Depositos
+            public const string SP_DEPOSITO_LISTA = "SPGECO_Depo_Lista";
+            public const string SP_DEPOSITO_INFO_BOX = "SPGECO_DEPO_Info_BOX";
+            public const string SP_DEPOSITO_INFO_STK = "SPGECO_DEPO_Info_Stk";
+            public const string SP_DEPOSITO_INFO_STK_VAL = "SPGECO_DEPO_Info_Stk_Valorizado";
+
+
+
+            #endregion
+
             public const string SP_TI_VALIDA_USUARIO = "SPGECO_USU_OK";
 			public const string SP_TR_Ver_Conteos = "SPGECO_TR_Ver_Conteos";
 			public const string SP_TR_Ctl_Salida = "SPGECO_TR_Ctl_Salida";

@@ -10,6 +10,7 @@ namespace gc.api.Controllers.Almacen
     using gc.infraestructura.Dtos.Almacen;
     using gc.infraestructura.Dtos.Almacen.Rpr;
     using gc.infraestructura.Dtos.Almacen.Tr.Remito;
+    using gc.infraestructura.Dtos.Deposito;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json;
@@ -19,7 +20,7 @@ namespace gc.api.Controllers.Almacen
     using System.Runtime.Intrinsics.Arm;
     using System.Threading.Tasks;
 
-    [Authorize]
+    //[Authorize]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
@@ -97,40 +98,73 @@ namespace gc.api.Controllers.Almacen
             return Ok(response);
         }
 
-        // POST api/<depositosController>
-        [HttpPost]
-        public async Task<IActionResult> Post(DepositoDto datoDto)
-        {
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult GetDepositoInfoBox(string depo_id, bool soloLibre) {
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-            var depo = _mapper.Map<Deposito>(datoDto);
-            var res = await _depositosSv.AddAsync(depo);
-
-            var response = new ApiResponse<bool>(res);
-
-            return Ok(response);
-        }       
-
-        // PUT api/<depositosController>/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Put(string id, [FromBody] DepositoDto datoDto)
-        {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-            var depositos = _mapper.Map<Deposito>(datoDto);
-            depositos.Depo_Id = id; //garantizo que el id buscado es el que se envia al negocio
-            var result = await _depositosSv.Update(depositos);
-            var response = new ApiResponse<bool>(result);
-            return Ok(response);
-
-        }
-
-        // DELETE api/<depositosController>/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(string id)
-        {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-            var res = await _depositosSv.Delete(id);
-            var response = new ApiResponse<bool>(res);
+            var depositos = _depositosSv.ObtenerDepositioInfoBox(depo_id,soloLibre);
+           
+            var response = new ApiResponse<List<DepositoInfoBoxDto>>(depositos);
             return Ok(response);
         }
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult GetDepositoInfoStk(string depo_id)
+        {
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var depositos = _depositosSv.ObtenerDepositoInfoStk(depo_id);
+            var response = new ApiResponse<List<DepositoInfoStkDto>>(depositos);
+            return Ok(response);
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult GetDepositoInfoStkVal(string adm_id, string depo_id, string concepto)
+        {
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var depositos = _depositosSv.ObtenerDepositoInfoStkValorizado(adm_id,depo_id,concepto);
+            var response = new ApiResponse<List<DepositoInfoStkValDto>>(depositos);
+            return Ok(response);
+        }
+
+        #region metodos desactivados - No se usaran
+
+        //// POST api/<depositosController>
+        //[HttpPost]
+        //public async Task<IActionResult> Post(DepositoDto datoDto)
+        //{
+        //    _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+        //    var depo = _mapper.Map<Deposito>(datoDto);
+        //    var res = await _depositosSv.AddAsync(depo);
+
+        //    var response = new ApiResponse<bool>(res);
+
+        //    return Ok(response);
+        //}       
+
+        //// PUT api/<depositosController>/5
+        //[HttpPut("{id}")]
+        //public async Task<IActionResult> Put(string id, [FromBody] DepositoDto datoDto)
+        //{
+        //    _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+        //    var depositos = _mapper.Map<Deposito>(datoDto);
+        //    depositos.Depo_Id = id; //garantizo que el id buscado es el que se envia al negocio
+        //    var result = await _depositosSv.Update(depositos);
+        //    var response = new ApiResponse<bool>(result);
+        //    return Ok(response);
+
+        //}
+
+        //// DELETE api/<depositosController>/5
+        //[HttpDelete("{id}")]
+        //public async Task<IActionResult> Delete(string id)
+        //{
+        //    _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+        //    var res = await _depositosSv.Delete(id);
+        //    var response = new ApiResponse<bool>(res);
+        //    return Ok(response);
+        //}
+        #endregion
     }
 }
