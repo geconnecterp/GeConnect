@@ -1,0 +1,29 @@
+﻿@model GridCore<DepositoInfoStkValDto>
+
+@{
+    var dataMod = new DepositoInfoStkValDto();
+    var alt = true;
+    string clase = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+}
+<div class="table-responsive table-wrapper text-nowrap">
+    <table class="table mb-0 table-bordered  table-hover">
+        <thead class="table-dark">
+            <tr class="header">
+                <th class="text-sm-center" scope="col">Rubro</th>
+                <th class="text-sm-center" scope="col">Valorización</th>               
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ListaDatos)
+            {
+                if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+                <tr class="@clase">
+                    <td class="text-sm-start corta-linea">@item.Descripcion</td>
+                    <td class="text-sm-end">@item.Valorizacion</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

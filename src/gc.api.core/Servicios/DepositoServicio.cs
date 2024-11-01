@@ -4,6 +4,7 @@ using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen.Tr.Remito;
+using gc.infraestructura.Dtos.Deposito;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using System.Linq.Dynamic.Core;
@@ -55,7 +56,7 @@ namespace gc.api.core.Servicios
 
         public  List<Deposito> ObtenerDepositosDeAdministracion(string adm_id)
         {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_DEPOSITOS;
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_DEPOSITO_LISTA;
 
             var ps = new List<SqlParameter>() {
                 new SqlParameter("@adm_id",adm_id)
@@ -66,6 +67,47 @@ namespace gc.api.core.Servicios
             return res;
         }
 
+        public List<DepositoInfoBoxDto> ObtenerDepositioInfoBox(string depo_id,bool soloLibre) {
+
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_DEPOSITO_INFO_BOX;
+
+            var ps = new List<SqlParameter>() {
+                new SqlParameter("@depo_id",depo_id),
+                new SqlParameter("@solo_libre",soloLibre),
+            };
+
+            var res = _repository.EjecutarLstSpExt<DepositoInfoBoxDto>(sp, ps, true);
+
+            return res;
+        }
       
+        public List<DepositoInfoStkDto> ObtenerDepositoInfoStk(string depo_id)
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_DEPOSITO_INFO_STK;
+
+            var ps = new List<SqlParameter>() {
+                new SqlParameter("@depo_id",depo_id),
+            };
+
+            var res = _repository.EjecutarLstSpExt<DepositoInfoStkDto>(sp, ps, true);
+
+            return res;
+        }
+
+        public List<DepositoInfoStkValDto> ObtenerDepositoInfoStkValorizado(string adm_id, string depo_id,string concepto)
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_DEPOSITO_INFO_STK_VAL;
+
+            var ps = new List<SqlParameter>() {
+                new SqlParameter("@adm_id",adm_id),
+                new SqlParameter("@depo_id",depo_id),
+                new SqlParameter("@concepto",concepto),
+            };
+
+            var res = _repository.EjecutarLstSpExt<DepositoInfoStkValDto>(sp, ps, true);
+
+            return res;
+        }
+
     }
 }

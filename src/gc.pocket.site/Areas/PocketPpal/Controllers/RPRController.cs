@@ -19,7 +19,6 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         private readonly MenuSettings _menuSettings;
         private readonly ILogger<RPRController> _logger;
         private readonly IProductoServicio _productoServicio;
-        private readonly IDepositoServicio _depositoServicio;
         private readonly AppSettings _settings;
 
         public RPRController(IOptions<AppSettings> options, IHttpContextAccessor context, IOptions<MenuSettings> options1,
@@ -28,7 +27,6 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             _menuSettings = options1.Value;
             _logger = logger;
             _productoServicio = productoServicio;
-            _depositoServicio = depositoServicio;
             _settings = options.Value;
         }
         public async Task<IActionResult> Index()
@@ -391,12 +389,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             return View(AutorizacionPendienteSeleccionada);
         }
 
-        private void ComboDepositos()
-        {
-            var adms = _depositoServicio.ObtenerDepositosDeAdministracion(AdministracionId, TokenCookie);
-            var lista = adms.Select(x => new ComboGenDto { Id = x.Depo_Id, Descripcion = x.Depo_Nombre });
-            ViewBag.DepoId = HelperMvc<ComboGenDto>.ListaGenerica(lista);
-        }
+       
 
         [HttpGet]
         public IActionResult AlmacenajeBox()
@@ -488,7 +481,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 {
                     throw new NegocioException("No se recepcionó el Box. Verifique");
                 }
-                var res = await _productoServicio.ConfirmaBoxUl(box, ul, AdministracionId,sm: "RC", TokenCookie);
+                var res = await _productoServicio.ConfirmaBoxUl(box, ul.ToUpper(), AdministracionId,sm: "RC", TokenCookie);
                 if (res.Resultado == 0)
                 {
                     return Json(new { error = false, warn = false, msg = "Se realizó exitosamente el ingreso de Stock de la Unidad de Lectura." });

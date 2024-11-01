@@ -75,14 +75,15 @@ function cargarCarrito() {
     var up = parseInt($("#up").val());
     var bulto = parseInt($("#box").val());
     var unid = parseFloat($("#unid").val())
-    var fv = null;
+    var fv = $("#fvto").val();
     if (upId === "07") {
         cantidad = (up * bulto) + unid;
     } else {
-        cantidad = bulto;
+        cantidad = unid;
     }
 
-    if (cantidad > cantSolic && autorizacionActual.sinAU===false) {
+    ////los que tienen que tener cantidad exacta seran tambien los que tengan upId!==07
+    if (cantidad > cantSolic && upId==="07" && autorizacionActual.sinAU===false) {
         CerrarWaiting();
 
         AbrirMensaje("Atención", "La cantidad ingresada" + cantidad + "no corresponde a la cantidad solicitada (" + cantSolic + "). Verifique.", function () {
@@ -230,13 +231,13 @@ function verificaEstado() {
                             $("#Marca").val(prod.p_m_marca);
                             $("#Descipcion").val(prod.p_desc);
                             $("#Rubro").val(prod.rub_desc);
-                            $("#up").mask("000.000.000.000", { reverse: true });
+                            //$("#up").mask("000.000.000.000", { reverse: true });
                             if (autoAct.pUnidPres === 0) {
                                 $("#up").val(prod.p_unidad_pres).prop("disabled", false);
                             } else {
                                 $("#up").val(autoAct.pUnidPres).prop("disabled", false);
                             }
-                            $("#unid").mask("000.000.000.000", { reverse: true });
+                            $("#unid").mask("000,000,000,000", { reverse: true });
 
                             if (obj.vto !== "") {
                                 var f = new Date(obj.vto);
@@ -244,12 +245,14 @@ function verificaEstado() {
                             }
 
                             if (prod.up_id === "07") {  //unidades enteras
-                                $("#box").mask("000.000.000.000", { reverse: true });
+                                $("#unid").mask("000,000,000,000", { reverse: true });
                                 $("#unid").val(0).prop("disabled", false);
+                                $("#box").val(0).prop("disabled", false);
                             }
                             else { //unidades decimales
-                                $("#box").mask("000.000.000.000,00", { reverse: true });
-                                $("#unid").val(0).prop("disabled", true);
+                                $("#unid").mask("000,000,000,000.000", { reverse: true });
+                                $("#unid").val(0).prop("disabled", false);
+                                $("#box").val(0).prop("disabled", true);
                             }
 
                             //if (prod.sinAU === true) {
@@ -257,7 +260,7 @@ function verificaEstado() {
                             //}
 
 
-                            $("#box").val(0).prop("disabled", false);
+                            
 
                             //activamos el boton
                             $("#btnCargarProd").prop("disabled", false);

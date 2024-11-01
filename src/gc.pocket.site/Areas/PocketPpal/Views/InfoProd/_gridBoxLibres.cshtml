@@ -1,0 +1,48 @@
+﻿@model GridCore<DepositoInfoBoxDto>
+
+@using X.PagedList.Web.Common
+
+@{
+    var dataMod = new DepositoInfoBoxDto();
+    var alt = true;
+    string clase = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+}
+<div class="table-responsive table-wrapper text-nowrap">
+    <table class="table mb-0 table-bordered  table-hover">
+        <thead class="table-dark">
+            <tr class="header">
+                <th scope="col">BOX</th>
+                <th class="text-sm-center" scope="col">GONDOLA</th>
+                <th class="text-sm-center" scope="col">NIVEL</th>
+                <th class="text-sm-center" scope="col">RACK</th>
+                <th class="text-sm-center" scope="col">ZONA</th>
+                <th class="text-sm-center" scope="col">ZONA</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ListaDatos)
+            {
+                if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+                <tr class="@clase">
+                    <td class="text-sm-start corta-linea">@item.Box_Id</td>
+                    <td class="text-sm-center">@item.Box_gondola.Trim()</td>
+                    <td class="text-sm-center">@item.Box_nivel.Trim()</td>
+                    <td class="text-sm-center">@item.Box_rack.Trim()</td>
+                    <td class="text-sm-center">@item.Box_zona.Trim()</td>
+                    <td class="text-sm-center">
+                        @if (item.Boxe_id.Equals("O"))
+                        {
+                            <span>OCUPADO</span>
+                        }
+                        else
+                        {
+                            <span>Libre</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
