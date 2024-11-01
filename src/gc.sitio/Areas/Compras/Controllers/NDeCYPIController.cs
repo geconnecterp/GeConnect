@@ -90,6 +90,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			try
 			{
 				var productos = _productoServicio.NCPICargarListaDeProductos(tipo, AdministracionId, filtro, id, TokenCookie).Result;
+				ObtenerColor(ref productos);
 				model = ObtenerGridCore<ProductoNCPIDto>(productos);
 				return PartialView("_grillaProductos", model);
 			}
@@ -103,6 +104,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 					Mensaje = ex.Message
 				};
 				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		private static void ObtenerColor(ref List<ProductoNCPIDto> listaProd)
+		{
+			foreach (var item in listaProd)
+			{
+				if (item.p_activo == "D") //Discontinuo
+					item.Row_color = "#fc4641";
 			}
 		}
 

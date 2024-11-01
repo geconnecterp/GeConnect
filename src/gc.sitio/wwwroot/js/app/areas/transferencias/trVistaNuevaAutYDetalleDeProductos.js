@@ -454,7 +454,6 @@ function selectProductosParaAgregarRow(x) {
 	pedidoDeProdSeleccionado = x.cells[3].innerText.trim();
 	idProvDeProdSeleccionado = x.cells[2].innerText.trim();
 	idProdDeProdSeleccionado = x.cells[0].innerText.trim();
-	console.log(idProdDeProdSeleccionado + " " + idProvDeProdSeleccionado + " " + pedidoDeProdSeleccionado + " " + boxDeProdSeleccionado + " " + stkDeProdSeleccionado);
 }
 
 function EditarCantidad() {

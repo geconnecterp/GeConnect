@@ -21,6 +21,7 @@
 });
 
 var tipoBusqueda = "";
+var viendeDesdeBusquedaDeProducto = false;
 const FuncionSobreBusquedaDeProductos = {
 	PROVEEDORES: 'PROVEEDORES',
 	PROVEEDORESYFAMILIA: 'PROVEEDORESYFAMILIA',
@@ -32,13 +33,13 @@ const FuncionSobreBusquedaDeProductos = {
 	CONOC: 'CONOC'
 }
 
+const colBulto = 10;
 const colCantidad = 11;
 const colCosto = 12;
 const colCostoTotal = 13;
 const colPallet = 14;
 
 function tdChange(x) {
-	console.log(x);
 }
 
 function listaProveedorChange() {
@@ -140,16 +141,14 @@ function BuscarProveedoresFamilia() {
 	PostGenHtml(datos, BuscarProveedoresFamiliaURL, function (obj) {
 		$("#divComboProveedoresFamilia").html(obj);
 		$("#listaFamiliaProveedor").on("change", listaFamiliaProveedorChange);
-		//addInCellEditHandler();
-		//addInCellKeyDownHandler();
-		//AddEventListenerToGrid("tbListaProducto");
-		//tableUpDownArrow();
-		CerrarWaiting();
+		if (!viendeDesdeBusquedaDeProducto)
+			CerrarWaiting();
 		return true
 	});
 }
 
 function BuscarProductos(tipoBusqueda) {
+	viendeDesdeBusquedaDeProducto = true;
 	AbrirWaiting();
 	var filtro = "";
 	var id = "";
@@ -198,37 +197,8 @@ function BuscarProductos(tipoBusqueda) {
 		AddEventListenerToGrid("tbListaProducto");
 		tableUpDownArrow();
 		CerrarWaiting();
+		viendeDesdeBusquedaDeProducto = false;
 		return true
-	});
-}
-
-function addInCellEditHandler() {
-	$("#tbListaProducto").on('input', 'td[contenteditable]', function (e) {
-		pedido = e.currentTarget.innerText;
-		pIdEditado = e.currentTarget.parentNode.cells[0].innerText;
-		rowIndex = e.currentTarget.parentNode.rowIndex;
-	});
-}
-
-function addInCellKeyUpHandler() {
-	$("#tbListaProducto").on('keyup', 'td[contenteditable]', function (e) {
-		if (e.keyCode == 13) {
-			return false;
-		}
-	});
-}
-
-function addInCellKeyDownHandler() {
-	$("#tbListaProducto").on('keydown', 'td[contenteditable]', function (e) {
-		if (isNaN(String.fromCharCode(e.which)) && !(e.shiftKey && (e.which == 37 || e.which == 39))) e.preventDefault();
-		//if (e.altKey && e.shiftKey && e.keyCode == 13) {
-		//	//event.altKey = true;
-		//	//event.shiftKey = true;
-		//	//event.code = 'ArrowDown';
-		//	document.onkeydown();
-		//	e.preventDefault();
-		//	//return false;
-		//}
 	});
 }
 
@@ -306,6 +276,28 @@ function SeleccionarDesdeFila(index, ctrol) {
 	}
 }
 
+function addInCellEditHandler() {
+	$("#tbListaProducto").on('input', 'td[contenteditable]', function (e) {
+		pedido = e.currentTarget.innerText;
+		pIdEditado = e.currentTarget.parentNode.cells[0].innerText;
+		rowIndex = e.currentTarget.parentNode.rowIndex;
+	});
+}
+
+function addInCellKeyUpHandler() {
+	$("#tbListaProducto").on('keyup', 'td[contenteditable]', function (e) {
+		if (e.keyCode == 13) {
+			return false;
+		}
+	});
+}
+
+function addInCellKeyDownHandler() {
+	$("#tbListaProducto").on('keydown', 'td[contenteditable]', function (e) {
+		if (isNaN(String.fromCharCode(e.which)) && !(e.which >= 96 && e.which <= 105) && !(e.shiftKey && (e.which == 37 || e.which == 39))) e.preventDefault();
+	});
+}
+
 function tableUpDownArrow() {
 	var table = document.querySelector('#tbListaProducto tbody');
 	if (table == undefined)
@@ -349,7 +341,7 @@ function tableUpDownArrow() {
 		if (sPos &&
 			(evt.altKey && evt.shiftKey && movKey[evt.code])
 			||
-			(evt.altKey && evt.shiftKey && evt.enterKey)) {
+			(evt.ctrlKey && movKey[evt.code])) {
 			let loop = true
 				, nxFocus = null
 				, cell = null
@@ -367,14 +359,31 @@ function tableUpDownArrow() {
 				if (nxFocus
 					&& cell.style.display !== 'none'
 					&& cell.parentNode.style.display !== 'none') {
-					nxFocus.focus()
+					nxFocus.focus();
 					nxFocus.closest('tr').classList.add('selected-row');
+					nxFocus.focus();
 					loop = false
 				}
 			}
 			while (loop)
 			actualizarPedidoBulto();
 		}
+	}
+}
+
+function focusOnTdPedido(x) {
+	var cell = x;
+	var range, selection;
+	if (document.body.createTextRange) {
+		range = document.body.createTextRange();
+		range.moveToElementText(cell);
+		range.select();
+	} else if (window.getSelection) {
+		selection = window.getSelection();
+		range = document.createRange();
+		range.selectNodeContents(cell);
+		selection.removeAllRanges();
+		selection.addRange(range);
 	}
 }
 
@@ -409,10 +418,26 @@ function actualizarPedidoBulto() {
 		} else {
 			CerrarWaiting();
 			tabla = myTable = document.querySelector('#tbListaProducto tbody');
-			tabla.rows[rowIndex - 1].cells[colCantidad].innerText = o.cantidad;
-			tabla.rows[rowIndex - 1].cells[colCosto].innerText = (Math.round(o.pCosto * 100) / 100).toFixed(3);
-			tabla.rows[rowIndex - 1].cells[colCostoTotal].innerText = o.cantidad;
-			tabla.rows[rowIndex - 1].cells[colPallet].innerText = o.pallet;
+			if (o.cantidad != 0) {
+				tabla.rows[rowIndex - 1].cells[colCantidad].innerText = o.cantidad;
+				tabla.rows[rowIndex - 1].cells[colCantidad].style.backgroundColor = "lightgreen";
+				tabla.rows[rowIndex - 1].cells[colCosto].innerText = (Math.round(o.pCosto * 100) / 100).toFixed(3);
+				tabla.rows[rowIndex - 1].cells[colCosto].style.backgroundColor = "lightgreen";
+				tabla.rows[rowIndex - 1].cells[colCostoTotal].innerText = o.cantidad;
+				tabla.rows[rowIndex - 1].cells[colCostoTotal].style.backgroundColor = "lightgreen";
+				tabla.rows[rowIndex - 1].cells[colPallet].innerText = o.pallet;
+				tabla.rows[rowIndex - 1].cells[colBulto].style.backgroundColor = "lightgreen";
+			}
+			else {
+				tabla.rows[rowIndex - 1].cells[colCantidad].innerText = o.cantidad;
+				tabla.rows[rowIndex - 1].cells[colCantidad].style.backgroundColor = "";
+				tabla.rows[rowIndex - 1].cells[colCosto].innerText = (Math.round(o.pCosto * 100) / 100).toFixed(3);
+				tabla.rows[rowIndex - 1].cells[colCosto].style.backgroundColor = "";
+				tabla.rows[rowIndex - 1].cells[colCostoTotal].innerText = o.cantidad;
+				tabla.rows[rowIndex - 1].cells[colCostoTotal].style.backgroundColor = "";
+				tabla.rows[rowIndex - 1].cells[colPallet].innerText = o.pallet;
+				tabla.rows[rowIndex - 1].cells[colBulto].style.backgroundColor = "";
+			}
 			return false;
 		}
 	});
@@ -425,7 +450,6 @@ function verificaEstado(e) {
 	if (res === "true") {
 		var prod = productoBase;
 		if (prod) { //Producto existe
-			console.log(prod);
 		}
 	}
 	return true;

@@ -1,6 +1,12 @@
 ﻿@model GridCore<ProductoNCPIDto>
 @{
 }
+<style>
+	thead th {
+		position: sticky;
+		top: 0px;
+	}
+</style>
 <div class="table-responsive table-wrapper-full-width" id="containerListaProducto">
 	<table class="table table-bordered table-hover" id="tbListaProducto">
 		<thead class="table-dark">
@@ -29,19 +35,50 @@
 			{
 				<tr onclick="selectListaProductoRow(this)">
 					<td class="align-center tiny-row">@item.p_id</td>
-					<td class="align-left tiny-row">@item.p_desc</td>
+					@if (item.p_activo == "D")
+					{
+						<td class="align-left tiny-row">@item.p_desc<span style="float:right;" title="Producto discontínuo"><i class="bx bx-dislike"></i></span></td>
+					}
+					else
+					{
+						<td class="align-left tiny-row">@item.p_desc</td>
+					}
 					<td class="align-center tiny-row">@item.p_id_prov</td>
-					<td class="align-right tiny-row">@item.pi_pendiente</td>
-					<td class="align-right tiny-row">@item.oc_pendiente</td>
+					@if (item.pi_pendiente == 0)
+					{
+						<td class="align-right tiny-row"></td>
+					}
+					else
+					{
+						<td class="align-right tiny-row" style="font-weight:bold;">@item.pi_pendiente</td>
+					}
+					@if (item.oc_pendiente == 0)
+					{
+						<td class="align-right tiny-row"></td>
+					}
+					else
+					{
+						<td class="align-right tiny-row" style="font-weight:bold;" >@item.oc_pendiente</td>
+					}
 					<td class="align-right tiny-row">@item.stk</td>
 					<td class="align-right tiny-row">@item.stk_suc_transito</td>
 					<td class="align-right tiny-row">@item.stk_suc_comprometido</td>
 					<td class="align-right tiny-row">@item.p_unidad_pres</td>
 					<td class="align-center tiny-row">@item.up_desc</td>
-					<td contenteditable='true' style="text-align: right;padding: 0.325rem 0.30rem;">@item.pedido</td>
-					<td class="align-right tiny-row">@item.cantidad</td>
-					<td class="align-right tiny-row">@item.costo</td>
-					<td class="align-right tiny-row">@item.costo_total</td>
+					@if (item.pedido == 0)
+					{
+						<td id="tdPedido" contenteditable='true' style="text-align: right;padding: 0.325rem 0.30rem;" onfocusin="focusOnTdPedido(this);">@item.pedido</td>
+						<td class="align-right tiny-row">@item.cantidad</td>
+						<td class="align-right tiny-row">@item.costo</td>
+						<td class="align-right tiny-row">@item.costo_total</td>
+					}
+					else
+					{
+						<td id="tdPedido" contenteditable='true' style="text-align: right;padding: 0.325rem 0.30rem;background-color: lightgreen;" onfocusin="focusOnTdPedido(this);">@item.pedido</td>
+						<td class="align-right tiny-row" style="background-color: lightgreen;">@item.cantidad</td>
+						<td class="align-right tiny-row" style="background-color: lightgreen;">@item.costo</td>
+						<td class="align-right tiny-row" style="background-color: lightgreen;">@item.costo_total</td>
+					}
 					<td class="align-right tiny-row">@item.paletizado</td>
 					<td style="display:none;">@item.pg_id</td>
 					<td style="display:none;">@item.rub_id</td>

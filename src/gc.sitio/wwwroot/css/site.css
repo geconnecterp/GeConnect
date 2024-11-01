@@ -157,6 +157,11 @@ fieldset {
     overflow: auto;
 }
 
+.table-fixed-header {
+    position: sticky;
+    top: 0px;
+}
+
 .tiny-row {
     padding: 0.325rem 0.30rem !important;
 }

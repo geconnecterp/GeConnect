@@ -82,3 +82,6 @@ function selectListaInfoProdIExMesRow(x) {
 
 function selectListaInfoProdIExSemanaRow(x) {
 }
+
+function selectListaProductoSustitutoRow(x) {
+}

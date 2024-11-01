@@ -25,7 +25,7 @@ namespace gc.infraestructura.Dtos.Almacen
 		public string cta_denominacion { get; set; } = string.Empty;
 		public string pg_id { get; set; } = string.Empty;
 		public string pg_desc { get; set; } = string.Empty;
-		public string p_activo { get; set; } = string.Empty;
+		public string p_activo { get; set; } = string.Empty; //Discontinuos?
 		public string p_activo_des { get; set; } = string.Empty;
 		public string adm_may_excluye { get; set; } = string.Empty;
 		public string adm_min_excluye { get; set; } = string.Empty;
@@ -43,6 +43,7 @@ namespace gc.infraestructura.Dtos.Almacen
 		public int cantidad { get; set; }
 		public decimal costo_total { get; set; } = 0.000M;
 		public decimal paletizado { get; set; } = 0.000M;
+		public string Row_color { get; set; } = "#ffffff";
 	}
 
 	public class ProductoNCPISustitutoDto : ProductoNCPIDto

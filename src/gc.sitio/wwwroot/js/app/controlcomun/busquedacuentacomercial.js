@@ -140,7 +140,6 @@ function ActualizarLinkBotonVerDetalle() {
 
 function CargarCompteEnGrilla(obj) {
 	if (obj != null) {
-		console.log("CargarCompteEnGrilla (135): " + obj.fechaTurno.substring(0, 10));
 		$("#txtCantidadUL").val(obj.cantidadUL);
 		if (obj.fechaTurno !== "")
 			$("#dtpFechaTurno").val(obj.fechaTurno.substring(0, 10));
@@ -292,7 +291,6 @@ function NuevoCompteDeRP() {
 		return;
 	}
 	else {
-		console.log("NuevoCompteDeRP (269): " + $("#Rp").val());
 		comptesDeRPGrid($("#tco_id").val(), $("#tco_id")[0].selectedOptions[0].text, $("#txtNroCompte").val(), $("#dtpFechCompte").val(), $("#txtMonto").val(), $("#Rp").val());
 	}
 }
@@ -616,7 +614,6 @@ function selectCompteDeRPRow(x) {
 
 
 function autocomplete(inp, arr) {
-	console.log(arr);
 	/*the autocomplete function takes two arguments,
 	the text field element and an array of possible autocompleted values:*/
 	var currentFocus;
