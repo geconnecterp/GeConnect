@@ -639,7 +639,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             }
         }
         [HttpPost]
-        public async Task<IActionResult> ResguardarProductoCarrito(string p_id, int up, int bulto, decimal unid, decimal cantidad, string? fv, bool desarma = true)
+        public async Task<IActionResult> ResguardarProductoCarrito(string p_id, int up, int bulto, decimal unid, decimal cantidad, DateTime? fv, bool desarma = true)
         {
             try
             {
@@ -648,9 +648,21 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 {
                     return Json(new { error = false, warn = true, msg = $"La cantidades de los productos a cargar siempre tienen que ser positivas, mayores a 0 (cero)." });
                 }
-                if (ti.PPedido < cantidad && (!TIActual.SinAU || !desarma)) //verificamos las cantidades siempre y cuando haya una autorización o en el caso de transferencia de box completo con desarma = false
+                if (ti.PPedido < cantidad && ProductoBase.Up_id.Equals("07") && (!TIActual.SinAU || !desarma)) //verificamos las cantidades siempre y cuando haya una autorización o en el caso de transferencia de box completo con desarma = false
                 {
                     return Json(new { error = false, warn = true, msg = $"No se puede cargar más unidades o cantidades ({cantidad}) que las pedidas ({ti.PPedido})" });
+                }
+                //DEBO VALIAR SI ES PESABLE UP_ID != 07 QUE LA UP==1
+                if(!ProductoBase.Up_id.Equals("07") && up != 1)
+                {
+                    return Json(new { error = false, warn = true, msg = $"EL PRODUCTO NO ES POR UNIDADES. LA UNIDAD DE PRESENTACIÓN TIENE QUE SER IGUAL A 1 SIEMPRE." });
+                }
+                //VALIDAR LA FECHA FV CON LA FECHA DE CONTROL (SOLO PARA TRANSFERENCIA DE SUCURSALES)
+                var fechaControl = ProductoBase.p_con_vto_ctl;  
+                
+                if(ProductoBase.P_con_vto.Equals("S") && (fv == null || fechaControl > fv.Value ) && ti.TipoTI.Equals("S") ) 
+                {
+                    return Json(new { error = false, warn = true, msg = $"LA FECHA DE CONTROL DEL PRODUCTO {ProductoBase.P_desc} NO ES VALIDA." });
                 }
 
                 TiProductoCarritoDto request = new TiProductoCarritoDto();
@@ -666,7 +678,10 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 request.Bulto = bulto;
                 request.Us = unid;
                 request.Cantidad = cantidad;
-                request.Fvto = fv ?? DateTime.Today.AddDays(_settings.FechaVtoCota).ToStringYYYYMMDD();   ///debo traer fecha de vencimiento del producto a mostrar
+                if (fv.HasValue)
+                {
+                    request.Fvto = fv.Value.ToStringYYYYMMDD();   ///debo traer fecha de vencimiento del producto a mostrar
+                }
 
                 RespuestaGenerica<RespuestaDto> respv = await _productoServicio.VaidaProductoCarrito(request, TokenCookie);
                 if (respv.Ok)

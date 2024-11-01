@@ -1,9 +1,7 @@
-﻿using Azure;
-using gc.api.core.Entidades;
+﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Administracion;
-using gc.infraestructura.Dtos.Almacen.Info;
 using gc.infraestructura.Dtos.Deposito;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
@@ -13,7 +11,6 @@ using gc.infraestructura.Helpers;
 using gc.pocket.site.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Build.ObjectModelRemoting;
 using Microsoft.Extensions.Options;
 using X.PagedList;
 

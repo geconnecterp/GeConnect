@@ -70,6 +70,10 @@ function presentaListaProducto(orden) {
             $("#btnCtrlSalida").show("fast");
         }
         CerrarWaiting();
+
+        //verifico si tiene el producto actual
+        //si lo tiene lo posiciona en el registro de ese mismo producto
+
     });
 }
 
