@@ -442,7 +442,7 @@ namespace gc.api.Controllers.Almacen
 
             }
 
-            var json = JsonConvert.SerializeObject(prods.ProdsCargar.Select(x => new { x}));
+            var json = JsonConvert.SerializeObject(prods.ProdsCargar);
 
             /*
              {

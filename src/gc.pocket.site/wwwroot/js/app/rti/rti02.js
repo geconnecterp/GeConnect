@@ -152,20 +152,18 @@ function verificaEstadoRTI02(e) {
         $("#Descipcion").val(prod.p_desc);
         $("#Rubro").val(prod.rub_desc);
         $("#estadoFuncion").val(false);
-        $("#up").mask("000.000.000.000", { reverse: true });
+        $("#up").mask("000,000,000,000", { reverse: true });
         $("#up").val(prod.p_unidad_pres).prop("disabled", false);
-        $("#unid").mask("000.000.000.000", { reverse: true });
+        $("#box").mask("000,000,000,000", { reverse: true });
 
         if (prod.up_id === "07") {  //unidades enteras
-            $("#box").mask("000.000.000.000", { reverse: true });
-            $("#unid").val(0).prop("disabled", false);
+            $("#unid").mask("000,000,000,000", { reverse: true });
+            $("#box").val(0).prop("disabled", false);
         }
         else { //unidades decimales
-            $("#box").mask("000.000.000.000,00", { reverse: true });
-            $("#unid").val(0).prop("disabled", true);
+            $("#unid").mask("000,000,000,000.000", { reverse: true });
         }
-
-        $("#box").val(0).prop("disabled", false);
+        $("#unid").val(0).prop("disabled", false);
 
         //activamos el boton
         $("#btnCargarProd").prop("disabled", false);
@@ -173,25 +171,27 @@ function verificaEstadoRTI02(e) {
         //inicializamos el campo de busqueda
         $("#Busqueda").val("");
 
-        //verificamos que el producto tenga vencimiento
-        if (prod.p_con_vto !== "N") {
-            //var f = new Date();
-            //var month = ('0' + (f.getMonth() + 1)).slice(-2); // Asegura que el mes siempre tenga dos dígitos
-            //var day = ('0' + f.getDate()).slice(-2); // Asegura que el día siempre tenga dos dígitos
-            //var newfecha = f.getFullYear() + '-' + month + '-' + day;
-            $("#fvto").prop("disabled", false).val(cotaVto);
-            //asigno callback para que se ejecute luego que cierre el waiting
-            /* FunctionCallback = function () {*/
-            $("#fvto").focus();
-            //    //return true;
-            //};
-        } else {
-            //asigno callback para que se ejecute luego que cierre el waiting
-            /*FunctionCallback = function () {*/
-            $("#up").focus();
-            //    //return true;
-            //};
-        }
+        ////verificamos que el producto tenga vencimiento
+        //if (prod.p_con_vto !== "N") {
+        //    //var f = new Date();
+        //    //var month = ('0' + (f.getMonth() + 1)).slice(-2); // Asegura que el mes siempre tenga dos dígitos
+        //    //var day = ('0' + f.getDate()).slice(-2); // Asegura que el día siempre tenga dos dígitos
+        //    //var newfecha = f.getFullYear() + '-' + month + '-' + day;
+        //    $("#fvto").prop("disabled", false).val(cotaVto);
+        //    //asigno callback para que se ejecute luego que cierre el waiting
+        //    /* FunctionCallback = function () {*/
+        //    $("#fvto").focus();
+        //    //    //return true;
+        //    //};
+        //} else {
+        //    //asigno callback para que se ejecute luego que cierre el waiting
+        //    /*FunctionCallback = function () {*/
+        //    $("#up").focus();
+        //    //    //return true;
+        //    //};
+        //}
+        $("#up").focus();
+
     }
 
     return true;

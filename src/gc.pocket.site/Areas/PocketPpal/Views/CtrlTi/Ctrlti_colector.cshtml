@@ -8,9 +8,9 @@
     var callback = Url.Action("ctrlti_colector", "ctrlti", new { area = "pocketppal", tiId = Model.TipoTI });
     var buscar = new BusquedaProducto();
 }
-
+<partial name="_tiNroAutorizacion" model="@Model.Ti" />
 <partial name="~/areas/gestion/views/producto/_ctrbuscarproducto.cshtml" model="@buscar" />
-<partial name="~/areas/gestion/views/producto/_productoDetalle.cshtml" />
+<partial name="~/areas/gestion/views/producto/_productoDetalle.cshtml" model="false"/>
 <div class="row">
     <div class="col-sm-12">
         <div id="divCtrlTIGrid"></div>

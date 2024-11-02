@@ -1778,7 +1778,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                     return new();
                 }
                 apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
-                if (apiResponse.Data.resultado.Equals("0"))
+                if (apiResponse.Data.resultado ==0)
                 {
                     return new RespuestaGenerica<RespuestaDto> { Ok = true, Entidad = apiResponse.Data };
                 }
