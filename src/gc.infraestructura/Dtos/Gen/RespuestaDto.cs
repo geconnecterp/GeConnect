@@ -3,7 +3,7 @@ namespace gc.infraestructura.Dtos.Gen
 {
 	public class RespuestaDto
 	{
-		public int resultado { get; set; } 
+		public short resultado { get; set; } 
 		public string resultado_msj { get; set; } = string.Empty;
 	}
 

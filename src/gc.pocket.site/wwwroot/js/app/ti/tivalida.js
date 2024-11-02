@@ -237,7 +237,7 @@ function verificaEstado() {
                             } else {
                                 $("#up").val(autoAct.pUnidPres).prop("disabled", false);
                             }
-                            $("#unid").mask("000,000,000,000", { reverse: true });
+                            //$("#unid").mask("000,000,000,000", { reverse: true });
 
                             if (obj.vto !== "") {
                                 var f = new Date(obj.vto);
@@ -252,7 +252,7 @@ function verificaEstado() {
                             else { //unidades decimales
                                 $("#unid").mask("000,000,000,000.000", { reverse: true });
                                 $("#unid").val(0).prop("disabled", false);
-                                $("#box").val(0).prop("disabled", true);
+                               // $("#box").val(0).prop("disabled", true);
                             }
 
                             //if (prod.sinAU === true) {
