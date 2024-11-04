@@ -13,5 +13,6 @@ namespace gc.infraestructura.Dtos.Almacen.Tr.Remito
         public string ree_id { get; set; } = string.Empty;
         public string ree_desc { get; set; } = string.Empty;
         public string pv_compte { get; set; } = string.Empty;
+        public string ti { get; set; }= string.Empty;
     }
 }

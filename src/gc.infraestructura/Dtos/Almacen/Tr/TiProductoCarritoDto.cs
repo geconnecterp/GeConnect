@@ -8,7 +8,7 @@ namespace gc.infraestructura.Dtos.Almacen.Tr
         public int Bulto { get; set; }
         public decimal Us { get; set; }
         public decimal Cantidad { get; set; }
-        public string Fvto { get; set; }
+        public string? Fvto { get; set; }
         public string Ti { get; set; } = string.Empty;
         public string AdmId { get; set; } = string.Empty;
         public string UsuId { get; set; }

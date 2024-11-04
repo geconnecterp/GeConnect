@@ -1466,7 +1466,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 if (string.IsNullOrEmpty(stringData))
                 {
                     _logger.LogWarning($"La API devolvió error. Parametros {JsonConvert.SerializeObject(request)}");
-                    return new();
+                    return new() { Ok = false, Mensaje = "No se recepciono datos alguno." };
                 }
                 apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
                 if (apiResponse.Data.resultado == 0)
@@ -1482,7 +1482,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             {
                 string stringData = await response.Content.ReadAsStringAsync();
                 _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
-                return new();
+                return new() { Ok = false, Mensaje = "Algo no fue bien. Verifique el log." };
             }
         }
 

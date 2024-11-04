@@ -644,7 +644,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             try
             {
                 var ti = TIActual;
-                if (cantidad < 1)
+                if (cantidad <  1 && desarma)
                 {
                     return Json(new { error = false, warn = true, msg = $"La cantidades de los productos a cargar siempre tienen que ser positivas, mayores a 0 (cero)." });
                 }
@@ -653,7 +653,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     return Json(new { error = false, warn = true, msg = $"No se puede cargar más unidades o cantidades ({cantidad}) que las pedidas ({ti.PPedido})" });
                 }
                 //DEBO VALIAR SI ES PESABLE UP_ID != 07 QUE LA UP==1
-                if(!ProductoBase.Up_id.Equals("07") && up != 1)
+                if(!ProductoBase.Up_id.Equals("07") && up != 1 && desarma)
                 {
                     return Json(new { error = false, warn = true, msg = $"EL PRODUCTO NO ES POR UNIDADES. LA UNIDAD DE PRESENTACIÓN TIENE QUE SER IGUAL A 1 SIEMPRE." });
                 }
@@ -681,6 +681,10 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 if (fv.HasValue)
                 {
                     request.Fvto = fv.Value.ToStringYYYYMMDD();   ///debo traer fecha de vencimiento del producto a mostrar
+                }
+                else
+                {
+                    request.Fvto = "19700101";
                 }
 
                 RespuestaGenerica<RespuestaDto> respv = await _productoServicio.VaidaProductoCarrito(request, TokenCookie);

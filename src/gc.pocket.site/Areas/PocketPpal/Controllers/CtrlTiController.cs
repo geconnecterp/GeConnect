@@ -1,5 +1,4 @@
-﻿using Azure.Core;
-using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Gen;
@@ -8,7 +7,6 @@ using gc.pocket.site.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using X.PagedList;
 
@@ -42,7 +40,6 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             TIActual = new();
             TI_ModId = string.Empty;
             ProductoGenRegs = new(); //inicializo la lista de productos resguardados en la sesion
-
 
             string? volver = Url.Action("index", "home", new { area = "" });
             ViewBag.AppItem = new AppItem { Nombre = "Ctrl Salida Transferencia", VolverUrl = volver ?? "#" };
