@@ -243,8 +243,9 @@ function GuardarDetalleDeProductos(guardado) {
 	var fechaTurno = $("#dtpFechaTurno").val();
 	var depoId = $("#listaDeposito").val();
 	var nota = $("#txtNota").val();
+	var ponerEnCurso = $("#chkPonerEnCurso")[0].checked;
 	var generar = true;
-	datos = { guardado, generar, ulCantidad, fechaTurno, depoId, nota };
+	datos = { guardado, generar, ponerEnCurso, ulCantidad, fechaTurno, depoId, nota };
 	PostGen(datos, GuardarDetalleDeComprobanteRPUrl, function (o) {
 		if (o.error === true) {
 			AbrirMensaje("Atención", o.msg, function () {

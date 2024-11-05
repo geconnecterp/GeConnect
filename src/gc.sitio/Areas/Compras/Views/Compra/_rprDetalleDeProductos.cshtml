@@ -2,24 +2,25 @@
 @{
 }
 
-<div class="table-responsive table-wrapper">
-	<table class="table table-bordered table-hover" id="tbDetalleDeProd">
+<div class="table-responsive table-wrapper-700">
+	<table class="drageable-table table table-bordered table-hover" id="tbDetalleDeProd">
 		<thead class="table-dark">
 			<tr class="header">
-				<th scope="col" class="table-fontsize align-center" style="width:10%;">ID</th>
-				<th scope="col" class="table-fontsize align-center" style="width:20%">Descripción</th>
-				<th scope="col" class="table-fontsize align-center" style="width:10%">ID Prov</th>
-				<th scope="col" class="table-fontsize align-center" style="width:10%">OC</th>
-				<th scope="col" class="table-fontsize align-center" style="width:10%">UP</th>
-				<th scope="col" class="table-fontsize align-center" style="width:10%">Btos</th>
-				<th scope="col" class="table-fontsize align-center" style="width:15%">Unidades</th>
-				<th scope="col" class="table-fontsize align-center" style="width:15%">Cantidad</th>
+				<th scope="col" class="table-fontsize align-center col-header-small" style="width:10%;">ID</th>
+				<th scope="col" class="table-fontsize align-center col-header-small" style="width:20%">Descripción</th>
+				<th scope="col" class="table-fontsize align-center col-header-small" style="width:10%">ID Prov</th>
+				<th scope="col" class="table-fontsize align-center col-header-small" style="width:10%">OC</th>
+				<th scope="col" class="table-fontsize align-center col-header-small" style="width:10%">UP</th>
+				<th scope="col" class="table-fontsize align-center col-header-small" style="width:10%">Btos</th>
+				<th scope="col" class="table-fontsize align-center col-header-small" style="width:15%">Unidades</th>
+				<th scope="col" class="table-fontsize align-center col-header-small" style="width:15%">Cantidad</th>
+				<th style="width:0%; display:none;">Item</th>
 			</tr>
 		</thead>
 		<tbody>
 			@foreach (var item in Model.ListaDatos)
 			{
-				<tr onclick="selectDetalleDeProdRow(this)">
+				<tr onclick="selectDetalleDeProdRow(this)" class="sortme" id="productRow">
 					<td class ="table-fontsize align-center">@item.P_id</td>
 					<td class="table-fontsize align-left">@item.P_desc</td>
 					<td class="table-fontsize align-center">@item.P_id_prov</td>
@@ -28,6 +29,7 @@
 					<td class="table-fontsize align-right">@item.Bulto</td>
 					<td class="table-fontsize align-right">@item.Unidad</td>
 					<td class="table-fontsize align-right">@item.Cantidad</td>
+					<td style="display:none;">@item.Item</td>
 				</tr>
 			}
 		</tbody>

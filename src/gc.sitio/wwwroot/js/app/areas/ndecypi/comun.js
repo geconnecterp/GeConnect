@@ -472,3 +472,4 @@ function btnCollapseSectionClicked() {
 		$("#containerListaProducto").addClass('table-wrapper-full-width');
 	}
 }
+

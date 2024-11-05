@@ -8,5 +8,6 @@ namespace gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI
 {
 	public class InfoProductoDto : Dto
 	{
+
 	}
 }

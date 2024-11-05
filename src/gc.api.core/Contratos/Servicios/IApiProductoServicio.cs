@@ -4,7 +4,7 @@ using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Almacen.Response;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
-using gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
+using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
@@ -25,9 +25,10 @@ namespace gc.api.core.Contratos.Servicios
         List<InfoProdStkA> InfoProductoStkA(string id, string admId);
         List<InfoProdMovStk> InfoProductoMovStk(string id, string adm, string depo, string tmov, DateTime desde, DateTime hasta);
         List<InfoProdLP> InfoProductoLP(string id);
-        List<InfoProdIExMesDto> InfoProdIExMes(string admId, string pId, int meses);
-        List<InfoProdIExSemanaDto> InfoProdIExSemana(string admId, string pId, int semanas);
+        List<NDeCYPI.InfoProdIExMesDto> InfoProdIExMes(string admId, string pId, int meses);
+        List<NDeCYPI.InfoProdIExSemanaDto> InfoProdIExSemana(string admId, string pId, int semanas);
         List<ProductoNCPISustitutoDto> InfoProdSustituto(string pId, string tipo, string admId, bool soloProv);
+        List<NDeCYPI.InfoProductoDto> InfoProd(string pId);
 
 		List<AutorizacionPendienteDto> RPRObtenerAutorizacionPendiente(string adm);
         RegistroResponseDto RPRRegistrarProductos(string json);

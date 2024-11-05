@@ -253,14 +253,23 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		private async Task<JsonDeRPDto> ObtenerComprobantesDesdeJson(string rp)
 		{
-			List<JsonDto> json_string = [];
+			//List<JsonDto> json_string = [];
 
 			try
 			{
-				JsonDeRPDto resObj = new JsonDeRPDto();
+				JsonDeRPDto resObj = new();
 				var res = await _productoServicio.RPObtenerJsonDesdeRP(rp, TokenCookie);
 				if (res != null && res.FirstOrDefault() != null)
+				{
 					resObj = JsonConvert.DeserializeObject<JsonDeRPDto>(res?.FirstOrDefault()?.Json);
+					if (resObj != null)
+					{
+						foreach (var item in resObj.encabezado)
+						{
+							item.Ope = TipoAltaRP.MODIFICA.ToString();
+						}
+					}
+				}
 				return resObj;
 			}
 			catch (Exception ex)
@@ -420,6 +429,12 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		}
 
+		private void ReCargarRPRComptesDeRPRegs(string rp)
+		{
+			JsonDeRPVerCompte = ObtenerComprobantesDesdeJson(rp).Result;
+			RPRComptesDeRPRegs = CargarComprobantesDeRPDesdeJson(JsonDeRPVerCompte.encabezado);
+		}
+
 		public async Task<IActionResult> VerDetalleDeComprobanteDeRP(string idTipoCompte, string nroCompte, string depoSelec, string notaAuto, string turno, string ponerEnCurso, string ulCantidad, string rp = "", string ctaId = "", char tipoCuenta = char.MinValue, string fechaCompte = "", string monto = "", string descTipoCompte = "")
 		{
 			var compte = new RPRComptesDeRPDto();
@@ -431,6 +446,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				Leyenda = $"Carga de Detalle de Comprobante RP Proveedor ({CuentaComercialSeleccionada.Cta_Id}) {CuentaComercialSeleccionada.Cta_Denominacion}"
 			};
+			if (RPRComptesDeRPRegs == null && !string.IsNullOrWhiteSpace(rp))
+			{
+				ReCargarRPRComptesDeRPRegs(rp);
+			}
 			//Aca modifique 23/09
 			if (RPRComptesDeRPRegs != null && RPRComptesDeRPRegs.Exists(x => x.Tipo == idTipoCompte && x.NroComprobante == nroCompte && x.Rp == rp))
 			{
@@ -478,7 +497,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 
-		public async Task<IActionResult> CargarDetalleDeProductosEnRP(string oc_compte, string id_prod, string up, string bulto, string unidad, int accion, string tco_id, string cm_compte, string up_id = "", string p_desc = "", string prov_id = "", string id_barrado = "")
+		public async Task<IActionResult> CargarDetalleDeProductosEnRP(string oc_compte, string id_prod, string up, string bulto, string unidad, int accion, string tco_id, string cm_compte, string up_id = "", string p_desc = "", string prov_id = "", string id_barrado = "", string listaProd = "")
 		{
 			GridCore<ProductoBusquedaDto> datosIP;
 			var lista = new List<ProductoBusquedaDto>();
@@ -491,17 +510,23 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					ElementoEditado = true;
 					lista = RPRDetalleDeProductosEnRP;
+					var listaProdSeleccionados = listaProd.Split('#');
 					foreach (var item in detalleDeOC)
 					{
+						if (!listaProdSeleccionados.Contains(item.p_id))
+						{
+							continue;
+						}
 						var itemTemp = lista.Where(x => x.P_id == item.p_id).FirstOrDefault();
+						var itemNextValue = lista.Max(x => x.Item) + 1;
 						//No lo encuentra
 						if (default(ProductoBusquedaDto) == itemTemp)
 						{
-							CargarItemEnGrillaDeProductos(lista, item, accion, null);
+							CargarItemEnGrillaDeProductos(lista, item, accion, null, itemNextValue);
 						}
 						else
 						{
-							CargarItemEnGrillaDeProductos(lista, item, accion, itemTemp);
+							CargarItemEnGrillaDeProductos(lista, item, accion, itemTemp, itemNextValue);
 						}
 					}
 					RPRDetalleDeProductosEnRP = lista;
@@ -538,6 +563,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 									item.Producto.Unidad = Convert.ToDecimal(item.Uni_suelta);
 									item.Producto.Bulto = Convert.ToInt32(item.Bulto);
 									item.Producto.P_unidad_pres = item.Bulto_up;
+									item.Producto.Item = item.Item;
 									//Cantidad = (item.ocd_unidad_pres * item.ocd_bultos) + item.ocd_unidad_x_bulto,
 									lista.Add(item.Producto);
 								}
@@ -568,13 +594,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 							Bulto = Convert.ToInt32(bulto),
 							oc_compte = "",
 							Unidad = Convert.ToInt32(unidad),
-							Cantidad = CalcularCantidadDeProductoParaAgregar(up_id, bulto, up, unidad)
+							Cantidad = CalcularCantidadDeProductoParaAgregar(up_id, bulto, up, unidad),
+							Item = RPRDetalleDeProductosEnRP.Max(x => x.Item) + 1
 						});
 					}
 					else
 					{
 						if (accion == 1)//Reemplazar
 						{
+							var ubicacionActual = existeProd.Item;
 							lista.Remove(existeProd);
 							lista.Add(new ProductoBusquedaDto()
 							{
@@ -587,7 +615,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 								Bulto = Convert.ToInt32(bulto),
 								oc_compte = "",
 								Unidad = Convert.ToInt32(unidad),
-								Cantidad = CalcularCantidadDeProductoParaAgregar(up_id, bulto, up, unidad)
+								Cantidad = CalcularCantidadDeProductoParaAgregar(up_id, bulto, up, unidad),
+								Item = ubicacionActual
 							});
 						}
 						else //Acumular
@@ -644,7 +673,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public async Task<JsonResult> GuardarDetalleDeComprobanteRP(bool guardado, bool generar, string ulCantidad = "", string fechaTurno = "", string depoId = "", string nota = "")
+		public async Task<JsonResult> GuardarDetalleDeComprobanteRP(bool guardado, bool generar, string listaProd, bool ponerEnCurso = false, string ulCantidad = "", string fechaTurno = "", string depoId = "", string nota = "")
 		{
 			try
 			{
@@ -656,6 +685,23 @@ namespace gc.sitio.Areas.Compras.Controllers
 					//Nuevo RP -> lo agrego de pechardi, porque evalúo generar? Porque si es true no tengo que agregar nada, tengo que guardar
 					if (!generar)
 					{
+						//Actualizo las ubicaciones de los productos
+						//listaProd es un string que viene de la forma EJ: 081672@1#030329@2
+						//IdDeProducto@Ubicacion
+						string[] arr = [];
+						Dictionary<string, string> keyValuePairs = [];
+						if (!string.IsNullOrWhiteSpace(listaProd))
+							arr = listaProd.Split('#');
+
+						if (arr.Length > 0)
+						{
+							for (int i = 0; i < arr.Length; i++)
+							{
+								var item = arr[i].Split('@');
+								if (item.Length == 2)
+									keyValuePairs.Add(item[0], item[1]);
+							}
+						}
 						var listaTemp = new JsonDeRPDto();
 						listaTemp = JsonDeRP;
 
@@ -680,6 +726,14 @@ namespace gc.sitio.Areas.Compras.Controllers
 								else
 								{
 									encabezadoTemp.Comprobantes.RemoveAll(x => x.Tco_id == encabezado.Tco_id && x.Cm_compte == encabezado.Cm_compte);
+									foreach (var x in encabezado.Comprobantes)
+									{
+										if (keyValuePairs.ContainsKey(x.P_id))
+										{
+											if (int.TryParse(keyValuePairs.GetValueOrDefault(x.P_id), out int order))
+												x.Item = order;
+										}
+									}
 									encabezadoTemp.Comprobantes.AddRange(encabezado.Comprobantes);
 								}
 								encabezadoTemp.Nota = encabezado.Nota;
@@ -1128,6 +1182,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 			try
 			{
 				List<RespuestaDto> Respuesta = [];
+				JsonDeRPDto jsonAux= new();
+				foreach (var item in JsonDeRP.encabezado)
+				{
+
+					var compAuxOrdered = item.Comprobantes.OrderBy(x => x.Item).ToList();
+					item.Comprobantes = compAuxOrdered;
+					jsonAux.encabezado.Add(item);
+				}
+				JsonDeRP = jsonAux;
 				var json_string = GenerarJsonDesdeJsonEncabezadoDeRPLista();
 				Respuesta = _productoServicio.RPRCargarCompte(json_string, TokenCookie).Result;
 				return Respuesta?.FirstOrDefault();
@@ -1236,7 +1299,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		/// <param name="lista">Lista de productos en sesión</param>
 		/// <param name="item">Elemento a agregar/reemplazar/acumular</param>
 		/// <param name="accion">Acción a realizar con el elemento, en relación al segundo parámetro</param>
-		private void CargarItemEnGrillaDeProductos(List<ProductoBusquedaDto> lista, RPROrdenDeCompraDetalleDto item, int accion, ProductoBusquedaDto itemAQuitar)
+		private void CargarItemEnGrillaDeProductos(List<ProductoBusquedaDto> lista, RPROrdenDeCompraDetalleDto item, int accion, ProductoBusquedaDto itemAQuitar, int itemNextValue)
 		{
 			if (accion == 1 && itemAQuitar != null)
 			{
@@ -1261,6 +1324,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				Unidad = item.ocd_unidad_x_bulto,
 				Cantidad = (item.ocd_unidad_pres * item.ocd_bultos) + item.ocd_unidad_x_bulto,
 				P_id_barrado = producto.P_id_barrado,
+				Item = itemNextValue,
 			});
 		}
 

@@ -8,7 +8,7 @@ using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Almacen.Response;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
-using gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
+using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
@@ -40,6 +40,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string INFOPROD_IE_MES = "/InfoProdIExMes";
 		private const string INFOPROD_IE_SEMANA = "/InfoProdIExSemana";
 		private const string INFOPROD_SUSTITUTO = "/InfoProdSustituto";
+		private const string INFOPROD = "/InfoProd";
 
 		private const string RPRAUTOPEND = "/RPRAutorizacionPendiente";
         private const string RPRCOMPTESPEND = "/RPRObtenerAutoComptesPendientes";
@@ -363,9 +364,9 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-		public async Task<List<InfoProdIExMesDto>> InfoProdIExMes(string admId, string pId, int meses, string token)
+		public async Task<List<NDeCYPI.InfoProdIExMesDto>> InfoProdIExMes(string admId, string pId, int meses, string token)
 		{
-			ApiResponse<List<InfoProdIExMesDto>> apiResponse;
+			ApiResponse<List<NDeCYPI.InfoProdIExMesDto>> apiResponse;
 
 			HelperAPI helper = new HelperAPI();
 
@@ -384,7 +385,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 					_logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda admId:{admId} pId:{pId} meses:{meses}");
 					return new();
 				}
-				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<InfoProdIExMesDto>>>(stringData);
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<NDeCYPI.InfoProdIExMesDto>>>(stringData);
 				return apiResponse.Data;
 			}
 			else
@@ -395,9 +396,9 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 		}
 
-		public async Task<List<InfoProdIExSemanaDto>> InfoProdIExSemana(string admId, string pId, int semanas, string token)
+		public async Task<List<NDeCYPI.InfoProdIExSemanaDto>> InfoProdIExSemana(string admId, string pId, int semanas, string token)
 		{
-			ApiResponse<List<InfoProdIExSemanaDto>> apiResponse;
+			ApiResponse<List<NDeCYPI.InfoProdIExSemanaDto>> apiResponse;
 
 			HelperAPI helper = new HelperAPI();
 
@@ -416,7 +417,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 					_logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda admId:{admId} pId:{pId} semanas:{semanas}");
 					return new();
 				}
-				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<InfoProdIExSemanaDto>>>(stringData);
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<NDeCYPI.InfoProdIExSemanaDto>>>(stringData);
 				return apiResponse.Data;
 			}
 			else
@@ -449,6 +450,38 @@ namespace gc.sitio.core.Servicios.Implementacion
 					return new();
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProductoNCPISustitutoDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<NDeCYPI.InfoProductoDto>> InfoProd(string pId, string token)
+		{
+			ApiResponse<List<NDeCYPI.InfoProductoDto>> apiResponse;
+
+			HelperAPI helper = new HelperAPI();
+
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{INFOPROD}?pId={pId}";
+
+			response = await client.GetAsync(link);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda pId:{pId}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<NDeCYPI.InfoProductoDto>>>(stringData);
 				return apiResponse.Data;
 			}
 			else

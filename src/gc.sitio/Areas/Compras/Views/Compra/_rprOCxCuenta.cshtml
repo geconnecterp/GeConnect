@@ -1,17 +1,22 @@
 ﻿@model GridCore<RPROrdenDeCompraDto>
 @{
 }
-
+<style>
+	thead th {
+		position: sticky;
+		top: 0px;
+	}
+</style>
 <input type="text" id="ocCompteSelected" style="display:none;" />
-<div class="table-responsive table-wrapper">
+<div class="table-responsive table-wrapper-200">
 	<table class="table table-bordered table-hover" id="tbOCxCuenta">
 		<thead class="table-dark">
 			<tr class="header">
-				<th scope="col" class="table-fontsize" style="width:20%;">N° OC</th>
-				<th scope="col" class="table-fontsize" style="width:20%">Fecha</th>
-				<th scope="col" class="table-fontsize" style="width:20%">Sucursal</th>
-				<th scope="col" class="table-fontsize" style="width:20%">Generada</th>
-				<th scope="col" class="table-fontsize" style="width:20%">Estado</th>
+				<th scope="col" class="table-fontsize col-header-small align-center" style="width:20%;">N° OC</th>
+				<th scope="col" class="table-fontsize col-header-small align-center" style="width:20%">Fecha</th>
+				<th scope="col" class="table-fontsize col-header-small align-center" style="width:20%">Sucursal</th>
+				<th scope="col" class="table-fontsize col-header-small align-center" style="width:20%">Generada</th>
+				<th scope="col" class="table-fontsize col-header-small align-center" style="width:20%">Estado</th>
 			</tr>
 		</thead>
 		<tbody>

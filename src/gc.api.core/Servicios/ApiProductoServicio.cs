@@ -8,7 +8,7 @@ using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Almacen.Response;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
-using gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
+using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
@@ -215,7 +215,7 @@ namespace gc.api.core.Servicios
 			return producto;
 		}
 
-		public List<InfoProdIExMesDto> InfoProdIExMes(string admId, string pId, int meses)
+		public List<NDeCYPI.InfoProdIExMesDto> InfoProdIExMes(string admId, string pId, int meses)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_INFOPROD_IE_MESES;
 
@@ -226,12 +226,12 @@ namespace gc.api.core.Servicios
 					new SqlParameter("@meses",meses),
 			};
 
-			List<InfoProdIExMesDto> producto = _repository.EjecutarLstSpExt<InfoProdIExMesDto>(sp, ps, true);
+			List<NDeCYPI.InfoProdIExMesDto> producto = _repository.EjecutarLstSpExt<NDeCYPI.InfoProdIExMesDto>(sp, ps, true);
 
 			return producto;
 		}
 
-		public List<InfoProdIExSemanaDto> InfoProdIExSemana(string admId, string pId, int semanas)
+		public List<NDeCYPI.InfoProdIExSemanaDto> InfoProdIExSemana(string admId, string pId, int semanas)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_INFOPROD_IE_SEMANAS;
 
@@ -242,7 +242,7 @@ namespace gc.api.core.Servicios
 					new SqlParameter("@semanas",semanas),
 			};
 
-			List<InfoProdIExSemanaDto> producto = _repository.EjecutarLstSpExt<InfoProdIExSemanaDto>(sp, ps, true);
+			List<NDeCYPI.InfoProdIExSemanaDto> producto = _repository.EjecutarLstSpExt<NDeCYPI.InfoProdIExSemanaDto>(sp, ps, true);
 
 			return producto;
 		}
@@ -260,6 +260,20 @@ namespace gc.api.core.Servicios
 			};
 
 			List<ProductoNCPISustitutoDto> producto = _repository.EjecutarLstSpExt<ProductoNCPISustitutoDto>(sp, ps, true);
+
+			return producto;
+		}
+
+		public List<NDeCYPI.InfoProductoDto> InfoProd(string pId)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_INFOPROD;
+
+			var ps = new List<SqlParameter>()
+			{
+					new SqlParameter("@p_id",pId),
+			};
+
+			List<NDeCYPI.InfoProductoDto> producto = _repository.EjecutarLstSpExt<NDeCYPI.InfoProductoDto>(sp, ps, true);
 
 			return producto;
 		}

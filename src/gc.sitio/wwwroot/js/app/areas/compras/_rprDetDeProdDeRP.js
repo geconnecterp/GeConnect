@@ -9,7 +9,29 @@
 	$("#txtBtoEnComprobanteRP").on("keyup", analizaInputBto);
 	$("#txtUnidEnComprobanteRP").on("keyup", analizaInputUnid);
 	CargarDetalleDeProducto();
-	
+
+	function moveColumn(table, sourceIndex, targetIndex) {
+		console.log("Move Col " + sourceIndex + " to " + targetIndex);
+		var body = $("tbody", table);
+		$("tr", body).each(function (i, row) {
+			$("td", row).eq(sourceIndex).insertAfter($("td", row).eq(targetIndex - 1));
+		});
+	}
+
+	$(".mytable > thead > tr").sortable({
+		items: "> th.sortme",
+		start: function (event, ui) {
+			ui.item.data("source", ui.item.index());
+		},
+		update: function (event, ui) {
+			moveColumn($(this).closest("table"), ui.item.data("source"), ui.item.index());
+			$(".mytable > tbody").sortable("refresh");
+		}
+	});
+
+	$(".mytable > tbody").sortable({
+		items: "> tr.sortme"
+	});
 });
 
 function analizaInputUP(x) {
@@ -206,8 +228,20 @@ function RegresarDesdeComprobanteRP() {
 
 function GuardarDetalleDeProductos(guardado) {
 	AbrirWaiting();
+	var listaProd = "";
+	$("#tbDetalleDeProd").find('tr').each(function (i, el) {
+		var td = $(this).find('td');
+		if (td.length > 0 && td[8].innerText !== undefined) {
+			if (listaProd.length == 0)
+				listaProd = td[0].innerText + "@" + td[8].innerText;
+			else {
+				listaProd = listaProd + "#" + td[0].innerText + "@" + td[8].innerText;
+				//return false;
+			}
+		}
+	});
 	var generar = false;
-	datos = { guardado, generar };
+	datos = { guardado, generar, listaProd };
 	PostGen(datos, GuardarDetalleDeComprobanteRPUrl, function (o) {
 		if (o.error === true) {
 			AbrirMensaje("Atención", o.msg, function () {
@@ -231,15 +265,17 @@ function GuardarDetalleDeProductos(guardado) {
 
 function AgregarProdDesdeDetalleDeOC() {
 	if ($("#ocCompteSelected").val() !== "") {
-		if (ExistenciaProdEnGrilla()) {
+		if (ExistenciaProdEnGrilla("")) {
 			AbrirMensaje("Atención", "Existen productos en el detalle con igual ID, seleccione la opción deseada.", function (e) {
 				$("#msjModal").modal("hide");
 				switch (e) {
 					case "SI": //Reemplazar
 						CargarDetalleDeProductosEnRP(1);
+						DesmarcarItemsDeOC();
 						break;
 					case "SI2": //Acumular
 						CargarDetalleDeProductosEnRP(2);
+						DesmarcarItemsDeOC();
 						break;
 					default: //NO
 						break;
@@ -269,7 +305,10 @@ function ExistenciaProdEnGrilla(id) {
 		//Levanto los id de producto de la OC seleccionada
 		$("#tbDetalleDeOC").find('tr').each(function (i, el) {
 			var td = $(this).find('td');
-			ids.push(td.eq(0).text());
+			if (td.eq(0)[0]) {
+				if (td.eq(0)[0].children[0].checked)
+					ids.push(td.eq(1).text());
+			}
 		});
 	} else {
 		ids.push(id);
@@ -321,7 +360,7 @@ function AgregarHandlerSelectedRow(grilla) {
 //1-> Reemplazar
 //2-> Acumular
 function CargarDetalleDeProductosEnRP(accion) {
-	AbrirWaiting();
+	//AbrirWaiting();
 	var oc_compte = $("#ocCompteSelected").val();
 	var id_prod = $("txtIdProdEnComprobanteRP").val();
 	var up = $("#txtUPEnComprobanteRP").val();
@@ -329,10 +368,37 @@ function CargarDetalleDeProductosEnRP(accion) {
 	var unidad = $("#txtUnidEnComprobanteRP").val();
 	var tco_id = $("#tco_id").val();
 	var cm_compte = $("#cm_compte").val();
-	var data = { oc_compte, id_prod, up, bulto, unidad, accion, tco_id, cm_compte };
+	var listaProd = "";
+
+	if (oc_compte !== undefined && oc_compte !== "") {
+		$("#tbDetalleDeOC").find('tr').each(function (i, el) {
+			var td = $(this).find('td');
+			if (td.eq(0)[0]) {
+				if (td.eq(0)[0].children[0].checked) {
+					if (listaProd === "") {
+						listaProd = td.eq(1).text();
+					}
+					else {
+						listaProd = listaProd + "#" + td.eq(1).text(); 
+					}
+				}
+			}
+		});
+
+		if (listaProd.length == 0) {
+			AbrirMensaje("Atención", "Debe seleccionar al menos un producto de la OC.", function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "warn!", null);
+			return false;
+		}
+	}
+	AbrirWaiting();
+	var data = { oc_compte, id_prod, up, bulto, unidad, accion, tco_id, cm_compte, listaProd };
 	PostGenHtml(data, CargarDetalleDeProductosEnRPUrl, function (obj) {
 		$("#divDetalleDeProductos").html(obj);
 		AgregarHandlerSelectedRow("tbDetalleDeProd");
+		temporal();
 		CerrarWaiting();
 		return true;
 	}, function (obj) {
@@ -342,6 +408,62 @@ function CargarDetalleDeProductosEnRP(accion) {
 	});
 }
 
+function moveColumn(table, sourceIndex, targetIndex) {
+	console.log("Move Col " + sourceIndex + " to " + targetIndex);
+	var body = $("tbody", table);
+	$("tr", body).each(function (i, row) {
+		$("td", row).eq(sourceIndex).insertAfter($("td", row).eq(targetIndex - 1));
+	});
+}
+
+function temporal() {
+	$(".drageable-table > thead > tr").sortable({
+		items: "> th.sortme",
+		start: function (event, ui) {
+			ui.item.data("source", ui.item.index());
+		},
+		update: function (event, ui) {
+			moveColumn($(this).closest("table"), ui.item.data("source"), ui.item.index());
+			$(".drageable-table > tbody").sortable("refresh");
+		}
+	});
+
+	$(".drageable-table > tbody").sortable({
+		items: "> tr.sortme"
+	});
+
+	$(document).on("mouseup", "#tbDetalleDeProd tbody tr", function (e) {
+		setTimeout(() => {
+			RecalcularItemValue()
+		}, 500);
+	});
+}
+
+function RecalcularItemValue() {
+	AbrirWaiting();
+	var index = 1;
+	$("#tbDetalleDeProd").find('tr').each(function (i, el) {
+		var td = $(this).find('td');
+		if (td.length > 0 && td[8].innerText !== undefined) {
+			td[8].innerText = index.toString();
+			index++;
+		}
+	});
+	CerrarWaiting();
+}
+
+//let items = document.querySelectorAll('.drageable-table > tbody > tr');
+//items.forEach(function (item) {
+//	item.addEventListener('dragstart', handleDragStart);
+//	item.addEventListener('dragend', handleDragEnd);
+//});
+
+//function handleDragEnd(e) {
+//	console.log("handleDragEnd");
+//}
+
+///Reacomodar los valores de la columna Item, luego de arrastra y soltar elementos de la grilla.
+
 function selectOCRow(x) {
 	$("#ocCompteSelected").val(x.cells[0].innerText.trim());
 	var oc_compte = x.cells[0].innerText.trim();
@@ -349,9 +471,37 @@ function selectOCRow(x) {
 	PostGenHtml(data, VerDetalleDeOCRPUrl, function (obj) {
 		$("#divDetalleDeOrdenDeCompra").html(obj);
 		document.getElementById("leyendDetalleOC").outerHTML = "<h5 id=\"leyendDetalleOC\"> Detalle de OC " + oc_compte + "</h5>";
+		AgregarHandlerAGrillaDetalleDeOC();
 		return true;
 	}, function (obj) {
 		ControlaMensajeError(obj.message);
 		return true;
 	});
+}
+
+function AgregarHandlerAGrillaDetalleDeOC() {
+	var dataTable = document.getElementById('tbDetalleDeOC');
+	var checkItAll = dataTable.querySelector('input[name="select_all"]');
+	var inputs = dataTable.querySelectorAll('tbody>tr>td>input');
+
+	checkItAll.addEventListener('change', function () {
+		if (checkItAll.checked) {
+			inputs.forEach(function (input) {
+				input.checked = true;
+			});
+		}
+		else {
+			inputs.forEach(function (input) {
+				input.checked = false;
+			});
+		}
+	});
+}
+
+function DesmarcarItemsDeOC() {
+	var dataTable = document.getElementById('tbDetalleDeOC');
+	var checkItAll = dataTable.querySelector('input[name="select_all"]');
+	checkItAll.checked = false;
+	let event = new Event('change');
+	checkItAll.dispatchEvent(event);
 }

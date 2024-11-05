@@ -12,8 +12,8 @@ namespace gc.api.Controllers.Almacen
     using gc.infraestructura.Dtos.Almacen.Response;
     using gc.infraestructura.Dtos.Almacen.Rpr;
     using gc.infraestructura.Dtos.Almacen.Tr;
-    using gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
-    using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
+	using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
+	using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
     using gc.infraestructura.Dtos.CuentaComercial;
     using gc.infraestructura.Dtos.Gen;
     using gc.infraestructura.Dtos.General;
@@ -275,31 +275,31 @@ namespace gc.api.Controllers.Almacen
         }
 
 		[HttpGet]
-		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<InfoProdIExMesDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<NDeCYPI.InfoProdIExMesDto>>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]
 		public IActionResult InfoProdIExMes(string admId, string pId, int meses)
 		{
-			ApiResponse<List<InfoProdIExMesDto>> response;
+			ApiResponse<List<NDeCYPI.InfoProdIExMesDto>> response;
 			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
 			var res = _productosSv.InfoProdIExMes(admId, pId, meses);
 
-			response = new ApiResponse<List<InfoProdIExMesDto>>(res);
+			response = new ApiResponse<List<NDeCYPI.InfoProdIExMesDto>>(res);
 
 			return Ok(response);
 		}
 
 		[HttpGet]
-		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<InfoProdIExSemanaDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<NDeCYPI.InfoProdIExSemanaDto>>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]
 		public IActionResult InfoProdIExSemana(string admId, string pId, int semanas)
 		{
-			ApiResponse<List<InfoProdIExSemanaDto>> response;
+			ApiResponse<List<NDeCYPI.InfoProdIExSemanaDto>> response;
 			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
 			var res = _productosSv.InfoProdIExSemana(admId, pId, semanas);
 
-			response = new ApiResponse<List<InfoProdIExSemanaDto>>(res);
+			response = new ApiResponse<List<NDeCYPI.InfoProdIExSemanaDto>>(res);
 
 			return Ok(response);
 		}
@@ -315,6 +315,21 @@ namespace gc.api.Controllers.Almacen
 			var res = _productosSv.InfoProdSustituto(pId, tipo, admId, soloProv);
 
 			response = new ApiResponse<List<ProductoNCPISustitutoDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<NDeCYPI.InfoProductoDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult InfoProd(string pId)
+		{
+			ApiResponse<List<NDeCYPI.InfoProductoDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.InfoProd(pId);
+
+			response = new ApiResponse<List<NDeCYPI.InfoProductoDto>>(res);
 
 			return Ok(response);
 		}

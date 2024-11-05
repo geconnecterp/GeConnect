@@ -33,6 +33,7 @@
 			public const string SP_INFOPROD_IE_MESES = "dbo.SPGECO_P_Info_IE_x_Mes";
 			public const string SP_INFOPROD_IE_SEMANAS = "dbo.SPGECO_P_Info_IE_x_Semanas";
 			public const string SP_INFOPROD_SUSTITUTO = "dbo.SPGECO_P_Info_Sustituto";
+			public const string SP_INFOPROD = "dbo.SPGECO_P_Info";
 
 			public const string SP_RPR_PENDIENTES = "spgeco_RPR_Pendientes";
             public const string SP_RPR_REGISTRA = "SPGECO_RPR_Cargar_Conteos";
