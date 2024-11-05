@@ -694,7 +694,14 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                     if (resp.Ok)
                     {
-                        return Json(new { error = false, warn = false, msg = $"Producto {ProductoBase.P_desc} fue cargado exitosamente" });
+                        if (desarma)
+                        {
+                            return Json(new { error = false, warn = false, msg = $"Producto {ProductoBase.P_desc} fue cargado exitosamente" });
+                        }
+                        else
+                        {
+                            return Json(new { error = false, warn = false, msg = $"Todos los productos almacenados en el " });
+                        }
                     }
                     else { return Json(new { error = false, warn = true, msg = resp.Mensaje }); }
                 }

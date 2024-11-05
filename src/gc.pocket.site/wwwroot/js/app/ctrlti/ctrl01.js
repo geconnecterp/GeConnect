@@ -177,6 +177,10 @@ function verificaEstado(e) {
             $("#box").val(0).prop("disabled", false);            
         }
         else { //unidades decimales
+            $("#up").prop("readonly", true);
+            $("#up").val(1);
+            $("#up").addClass("backReadOnly");
+
             $("#unid").mask("000,000,000,000.000", { reverse: true });       
         }
         $("#unid").val(0).prop("disabled", false);
@@ -203,7 +207,11 @@ function verificaEstado(e) {
         //} else {
         //    //asigno callback para que se ejecute luego que cierre el waiting
         //    /*FunctionCallback = function () {*/
-        $("#up").focus();
+        if (prod.up_id === "07") {
+            $("#up").focus();
+        } else {
+            $("#unid").focus();
+        }
         //    //    //return true;
         //    //};
         //}
@@ -220,6 +228,8 @@ function InicializaPantallaCtrl() {
     $("#Descipcion").val("");
     $("#Rubro").val("");
     $("#up").val(0).prop("disabled", true);
+    $("#up").prop("readonly", false);
+    $("#up").removeClass("backReadOnly");
     $("#fvto").val("").prop("disabled", true);
 
     $("#box").val(0).prop("disabled", true);

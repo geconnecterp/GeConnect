@@ -211,20 +211,22 @@ function verificaEstado(e) {
         $("#Descipcion").val(prod.p_desc);
         $("#Rubro").val(prod.rub_desc);
         $("#estadoFuncion").val(false);
-        $("#up").mask("000.000.000.000", { reverse: true });
+        $("#up").mask("000,000,000,000", { reverse: true });
         $("#up").val(prod.p_unidad_pres).prop("disabled", false);
-        $("#unid").mask("000.000.000.000", { reverse: true });
+        $("#box").mask("000,000,000,000", { reverse: true });
 
         if (prod.up_id === "07") {  //unidades enteras
-            $("#box").mask("000.000.000.000", { reverse: true });
-            $("#unid").val(0).prop("disabled", false);
+            $("#unid").mask("000,000,000,000", { reverse: true });
+            $("#box").val(0).prop("disabled", false);
         }
         else { //unidades decimales
-            $("#box").mask("000.000.000.000,00", { reverse: true });
-            $("#unid").val(0).prop("disabled", true);
-        }
+            $("#up").prop("readonly", true);
+            $("#up").val(1);
+            $("#up").addClass("backReadOnly");
 
-        $("#box").val(0).prop("disabled", false);
+            $("#unid").mask("000,000,000,000.000", { reverse: true });
+        }
+        $("#unid").val(0).prop("disabled", false);
 
         //activamos el boton
         $("#btnCargarProd").prop("disabled", false);
@@ -247,7 +249,11 @@ function verificaEstado(e) {
         } else {
             //asigno callback para que se ejecute luego que cierre el waiting
             /*FunctionCallback = function () {*/
-            $("#up").focus();
+            if (prod.up_id === "07") {
+                $("#up").focus();
+            } else {
+                $("#unid").focus();
+            }
             //    //return true;
             //};
         }
@@ -264,6 +270,8 @@ function InicializaPantalla() {
     $("#Descipcion").val("");
     $("#Rubro").val("");
     $("#up").val(0).prop("disabled", true);
+    $("#up").prop("readonly", false);
+    $("#up").removeClass("backReadOnly");
     $("#fvto").val("").prop("disabled", true);
 
     $("#box").val(0).prop("disabled", true);
