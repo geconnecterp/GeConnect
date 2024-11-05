@@ -6,11 +6,12 @@
 @if (User.Identity.IsAuthenticated)
 {
     string nya = User.Claims.First(c => c.Type.Contains("nya")).Value;
-
+    string a = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
+    var adm = a.Split("#");
     var modelHeader = (subtitulo, (nya, ("#",false)));
 
     <div class="text-center">
-        <h1 class="display-4">Bienvenidos</h1>
+        <h1 class="display-4">Bienvenidos - Sucursal @adm[1]</h1>
         <p>Menú Principal</p>
     </div>
     <partial name="_headerApp" model="@modelHeader"/>

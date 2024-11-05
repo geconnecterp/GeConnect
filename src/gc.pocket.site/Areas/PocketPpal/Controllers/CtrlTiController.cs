@@ -41,7 +41,6 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             TI_ModId = string.Empty;
             ProductoGenRegs = new(); //inicializo la lista de productos resguardados en la sesion
 
-
             string? volver = Url.Action("index", "home", new { area = "" });
             ViewBag.AppItem = new AppItem { Nombre = "Ctrl Salida Transferencia", VolverUrl = volver ?? "#" };
 
@@ -135,7 +134,13 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         {
             try
             {
-                var resp = await _productoServicio.EnviarProductosCtrl(lista: ProductoGenRegs, Token: TokenCookie);
+                var lista = ProductoGenRegs;
+                foreach (var item in lista)
+                {
+                    item.usu_id = UserName;
+                }
+                //ProductoGenRegs.ForEach(x => x.usu_id = UserName);
+                var resp = await _productoServicio.EnviarProductosCtrl(lista: lista, Token: TokenCookie);
                 if (resp.Ok)
                 {
                     return Json(new { error = false, msg = "La carga de los productos para el control de salida fue satisactorio." });
@@ -164,11 +169,12 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
 
         [HttpPost]
-        public JsonResult ReguardarProductoEnLista(int up, string vto, int bulto, decimal unidad)
+        public JsonResult ReguardarProductoEnLista(int up, DateTime? vto, int bulto, decimal unidad)
         {
             string msg;
             try
             {
+                var ti = TIActual;
                 //validaciones de parametros
                 if (up < 1)
                 {
@@ -183,23 +189,34 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 {
                     return Json(new { error = true, msg = "Las unidades sueltas no puede tener valores negativos. Verifique, por favor." });
                 }
-                if (!string.IsNullOrEmpty(vto) && !string.IsNullOrWhiteSpace(vto))
+                if(!ProductoBase.Up_id.Equals("07") && up != 1)
                 {
-                    var fecha = vto.ToDateTimeOrNull();
-                    var tope = DateTime.Today.AddDays(_settings.FechaVtoCota);
-
-                    if (fecha == null)
-                    {
-                        return Json(new { error = true, msg = "La fecha recepcionada no es válida. Verifique." });
-                    }
-                    else if (fecha < tope)
-                    {
-                        return Json(new { error = true, msg = $"La fecha recepcionada no puede ser menor a {tope}. Verifique, por favor." });
-                    }
+                    return Json(new { error = true, msg = "EL PRODUCTO NO ES POR UNIDADES. LA UNIDAD DE PRESENTACIÓN TIENE QUE SER IGUAL A 1 SIEMPRE." });
                 }
+                //// VALIDAR LA FECHA FV CON LA FECHA DE CONTROL(SOLO PARA TRANSFERENCIA DE SUCURSALES)
+                //var fechaControl = ProductoBase.p_con_vto_ctl;
+                //if (ProductoBase.P_con_vto.Equals("S") && (vto == null || fechaControl > vto.Value) && ti.TipoTI.Equals("S"))
+                //{
+                //    return Json(new { error = true, warn = false, msg = $"LA FECHA DE CONTROL DEL PRODUCTO {ProductoBase.P_desc} NO ES VALIDA." });
+                //}
+
+                //if (!string.IsNullOrEmpty(vto) && !string.IsNullOrWhiteSpace(vto))
+                //{
+                //    var fecha = vto.ToDateTimeOrNull();
+                //    var tope = DateTime.Today.AddDays(_settings.FechaVtoCota);
+
+                //    if (fecha == null)
+                //    {
+                //        return Json(new { error = true, msg = "La fecha recepcionada no es válida. Verifique." });
+                //    }
+                //    else if (fecha < tope)
+                //    {
+                //        return Json(new { error = true, msg = $"La fecha recepcionada no puede ser menor a {tope}. Verifique, por favor." });
+                //    }
+                //}
 
                 //valido cantidad. Si el resultado es igual a 0 dar error
-                var cantidad = ProductoBase.Up_id.Equals("07") ? (up * bulto) + unidad : bulto;
+                var cantidad = ProductoBase.Up_id.Equals("07") ? (up * bulto) + unidad : unidad;
 
                 if (cantidad <= 0)
                 {
@@ -231,7 +248,10 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 //    item.vto = new DateTime(f[0].ToInt(), f[1].ToInt(), f[2].ToInt());
                 //}
                 item.cantidad = cantidad;
-
+                if (vto.HasValue)
+                {
+                    item.vto = vto.Value;   ///debo traer fecha de vencimiento del producto a mostrar
+                }
                 var res = ProductoGenRegs.Any(x => x.p_id.Equals(item.p_id));
 
                 if (res)

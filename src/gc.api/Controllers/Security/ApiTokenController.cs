@@ -1,4 +1,5 @@
 ﻿using gc.api.Controllers.Base;
+using gc.api.core.Contratos.Servicios;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Servicios;
 using gc.api.infra.Datos.Contratos.Security;
@@ -22,16 +23,18 @@ namespace gc.api.Controllers.Security
         private readonly IConfiguration _configuration;
         private readonly ISecurityServicio _securityServicio;
         private readonly IPasswordService _passwordService;
+        private readonly IAdministracionServicio _adminServicio;
         private readonly ILogger<ApiTokenController> _logger;
 
         public ApiTokenController(IOptions<ConfigNegocioOption> options, IConfiguration configuration,
-            ISecurityServicio securityServicio,
+            ISecurityServicio securityServicio, IAdministracionServicio adminServicio,
             IPasswordService passwordService, ILogger<ApiTokenController> logger)
         {
             _options = options;
             _configuration = configuration;
             _securityServicio = securityServicio;
             _passwordService = passwordService;
+            _adminServicio = adminServicio;
             _logger = logger;
         }
 
@@ -45,8 +48,8 @@ namespace gc.api.Controllers.Security
             var validation = await IsValidUser(login);
             if (validation.Item1)
             {   //el usuario es valido. Verificamos si esta logueado o no.
-              
-                var token = GenerateToken(validation.Item2,login.Admid);
+                var adm = _adminServicio.Find(login.Admid);
+                var token = GenerateToken(validation.Item2,login.Admid,adm.Adm_nombre);
                 return Ok(new { token });
 
             }
@@ -137,7 +140,7 @@ namespace gc.api.Controllers.Security
             return (isValid, user);
         }
 
-        private string GenerateToken(Usuario usuario, string admId)/**/
+        private string GenerateToken(Usuario usuario, string admId,string admName)/**/
         {
             _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
             //bool first = true;
@@ -176,7 +179,7 @@ namespace gc.api.Controllers.Security
                 new Claim(ClaimTypes.NameIdentifier, usuario.Usu_id),
                 new Claim("nya",usuario.Usu_apellidoynombre),
                 new Claim(ClaimTypes.Email,usuario.Usu_email),
-                new Claim("AdmId",admId),
+                new Claim("AdmId", $"{admId}#{admName}"),
                 new Claim("expires",DateTime.Now.AddHours(1).Ticks.ToString()),
                 new Claim("user",usuario.Usu_id),
                 //new Claim("etiqueta",DateTime.Now.Ticks.ToString())

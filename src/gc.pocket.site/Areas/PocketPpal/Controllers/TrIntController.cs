@@ -468,8 +468,26 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 {
                     volver = Url.Action("TiProdBoxRubro", "trint", new { area = "pocketppal" });
                 }
-
-                ViewBag.AppItem = new AppItem { Nombre = "TI e/ Sucs - Producto a colectar en Carrito", VolverUrl = volver ?? "#" };
+                string nombre="";
+                switch (TIActual.TipoTI)
+                {
+                    case "S":
+                        nombre = "TI e/ Sucs";
+                        break;
+                    case "D":
+                        nombre = "TI e/ Deps";
+                        break;
+                    case "E":
+                        nombre = "TI e/ Deps s/ Au";
+                        break;
+                    case "B":
+                        nombre = "TI e/ Box ";
+                        break;
+                    case "O":
+                        nombre = "TI e/ Box s/ Au";
+                        break;
+                }
+                ViewBag.AppItem = new AppItem { Nombre = $"{nombre} - Producto a colectar en Carrito", VolverUrl = volver ?? "#" };
                 return View(TIActual);
             }
             catch (Exception ex)
@@ -644,7 +662,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             try
             {
                 var ti = TIActual;
-                if (cantidad < 1)
+                if (cantidad <  1 && desarma)
                 {
                     return Json(new { error = false, warn = true, msg = $"La cantidades de los productos a cargar siempre tienen que ser positivas, mayores a 0 (cero)." });
                 }
@@ -653,7 +671,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     return Json(new { error = false, warn = true, msg = $"No se puede cargar más unidades o cantidades ({cantidad}) que las pedidas ({ti.PPedido})" });
                 }
                 //DEBO VALIAR SI ES PESABLE UP_ID != 07 QUE LA UP==1
-                if(!ProductoBase.Up_id.Equals("07") && up != 1)
+                if(!ProductoBase.Up_id.Equals("07") && up != 1 && desarma)
                 {
                     return Json(new { error = false, warn = true, msg = $"EL PRODUCTO NO ES POR UNIDADES. LA UNIDAD DE PRESENTACIÓN TIENE QUE SER IGUAL A 1 SIEMPRE." });
                 }
@@ -682,6 +700,10 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 {
                     request.Fvto = fv.Value.ToStringYYYYMMDD();   ///debo traer fecha de vencimiento del producto a mostrar
                 }
+                else
+                {
+                    request.Fvto = "19700101";
+                }
 
                 RespuestaGenerica<RespuestaDto> respv = await _productoServicio.VaidaProductoCarrito(request, TokenCookie);
                 if (respv.Ok)
@@ -690,7 +712,14 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                     if (resp.Ok)
                     {
-                        return Json(new { error = false, warn = false, msg = $"Producto {ProductoBase.P_desc} fue cargado exitosamente" });
+                        if (desarma)
+                        {
+                            return Json(new { error = false, warn = false, msg = $"Producto {ProductoBase.P_desc} fue cargado exitosamente" });
+                        }
+                        else
+                        {
+                            return Json(new { error = false, warn = false, msg = $"Todos los productos almacenados en el " });
+                        }
                     }
                     else { return Json(new { error = false, warn = true, msg = resp.Mensaje }); }
                 }

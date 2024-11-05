@@ -67,35 +67,68 @@ function cargarCarrito() {
     //aca se validará previamente si la cantidad ingresada corresponde a lo solicitado
     AbrirWaiting()
     var cantSolic = autorizacionActual.pPedido;
+    var desarma = $("#chkDesarma").is(":checked");
+    //var upId = 0;
     if (autorizacionActual.sinAU === true) {
         autorizacionActual.pId = $("#P_id").val();
     }
-    var upId = productoBase.up_id;
-    var cantidad = 0;
-    var up = parseInt($("#up").val());
-    var bulto = parseInt($("#box").val());
-    var unid = parseFloat($("#unid").val())
-    var fv = $("#fvto").val();
-    if (upId === "07") {
-        cantidad = (up * bulto) + unid;
+    
+
+    if (desarma === true) {
+        var upId = productoBase.up_id;
+        var cantidad = 0;
+        var up = parseInt($("#up").val());
+        var bulto = parseInt($("#box").val());
+        var unid = parseFloat($("#unid").val())
+        var fv = $("#fvto").val();
+        if (upId === "07") {
+            cantidad = (up * bulto) + unid;
+        } else {
+            cantidad = unid;
+        }
+
+        ////los que tienen que tener cantidad exacta seran tambien los que tengan upId!==07
+        if (cantidad > cantSolic && upId === "07" && autorizacionActual.sinAU === false) {
+            CerrarWaiting();
+
+            AbrirMensaje("Atención", "La cantidad ingresada" + cantidad + "no corresponde a la cantidad solicitada (" + cantSolic + "). Verifique.", function () {
+                $("#msjModal").modal("hide");
+                $("#up").focus();
+                return true;
+            }, false, ["Aceptar"], "warn!", null);
+        }
+        else {
+            //ControlaMensajeSuccess("Cantidad correcta");
+            //se procede a enviar el producto a cargar
+            var dato = { p_id: autorizacionActual.pId, up, bulto, unid, cantidad, fv}
+            PostGen(dato, ResguardarProductoCarritoUrl, function (obj) {
+                if (obj.error === true) {
+                    CerrarWaiting();
+
+                    AbrirMensaje("Importante", obj.msg, function () {
+                        $("#msjModal").modal("hide");
+                        return true;
+                    }, false, ["Aceptar"], "error!", null);
+                } else if (obj.warn === true) {
+                    CerrarWaiting();
+                    AbrirMensaje("Importante", obj.msg, function () {
+                        $("#msjModal").modal("hide");
+                        return true;
+                    }, false, ["Aceptar"], "warn!", null);
+                }
+                else {
+                    CerrarWaiting();
+
+                    ControlaMensajeSuccess(obj.msg);
+                    window.location.href = proximoProductoUrl + "?esrubro=false&esbox=false&tiId=" + autorizacionActual.tipoTI;
+                }
+            });
+
+        }
     } else {
-        cantidad = unid;
-    }
-
-    ////los que tienen que tener cantidad exacta seran tambien los que tengan upId!==07
-    if (cantidad > cantSolic && upId==="07" && autorizacionActual.sinAU===false) {
-        CerrarWaiting();
-
-        AbrirMensaje("Atención", "La cantidad ingresada" + cantidad + "no corresponde a la cantidad solicitada (" + cantSolic + "). Verifique.", function () {
-            $("#msjModal").modal("hide");
-            $("#up").focus();
-            return true;
-        }, false, ["Aceptar"], "warn!", null);
-    }
-    else {
         //ControlaMensajeSuccess("Cantidad correcta");
         //se procede a enviar el producto a cargar
-        var dato = { p_id: autorizacionActual.pId, up, bulto, unid, cantidad, fv }
+        var dato = { p_id: autorizacionActual.pId, up: 0, bulto: 0, unid: 0, cantidad: 0, fv: null, desarma }
         PostGen(dato, ResguardarProductoCarritoUrl, function (obj) {
             if (obj.error === true) {
                 CerrarWaiting();
@@ -118,7 +151,6 @@ function cargarCarrito() {
                 window.location.href = proximoProductoUrl + "?esrubro=false&esbox=false&tiId=" + autorizacionActual.tipoTI;
             }
         });
-
     }
 }
 
@@ -237,7 +269,7 @@ function verificaEstado() {
                             } else {
                                 $("#up").val(autoAct.pUnidPres).prop("disabled", false);
                             }
-                            $("#unid").mask("000,000,000,000", { reverse: true });
+                            //$("#unid").mask("000,000,000,000", { reverse: true });
 
                             if (obj.vto !== "") {
                                 var f = new Date(obj.vto);
@@ -252,7 +284,7 @@ function verificaEstado() {
                             else { //unidades decimales
                                 $("#unid").mask("000,000,000,000.000", { reverse: true });
                                 $("#unid").val(0).prop("disabled", false);
-                                $("#box").val(0).prop("disabled", true);
+                               // $("#box").val(0).prop("disabled", true);
                             }
 
                             //if (prod.sinAU === true) {

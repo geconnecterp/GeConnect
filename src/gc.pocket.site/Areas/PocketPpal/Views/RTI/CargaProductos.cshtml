@@ -10,7 +10,7 @@
 <div class="container">
     <partial name="_rtiCabecera" model="@Model" />
     <partial name="~/areas/gestion/views/producto/_ctrbuscarproducto.cshtml" model="@buscar" />
-    <partial name="~/areas/gestion/views/producto/_productoDetalle.cshtml" />
+    <partial name="~/areas/gestion/views/producto/_productoDetalle.cshtml" model="false"/>
 
     <div class="row">
         <div class="col-sm-12">
@@ -38,6 +38,7 @@
         var reguardarProductoEnListaUrl = "@Url.Action("ReguardarProductoEnLista", "rti", new { area = "PocketPpal" })";
         var AcumularProductoUrl = "@Url.Action("AcumularProducto", "rti", new { area = "PocketPpal" })";
         var RemplazarProductoUrl = "@Url.Action("RemplazarProducto", "rti", new { area = "PocketPpal" })";
+        var homeRPRUrl = "@Url.Action("index", "rti", new { area = "PocketPpal" })";
     </script>
     <script src="~/js/app/busquedas.js" type="text/javascript"></script>
     <script src="~/js/app/rti/rti02.js" type="text/javascript"></script>

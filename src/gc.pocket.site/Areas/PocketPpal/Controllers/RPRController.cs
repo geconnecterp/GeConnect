@@ -134,6 +134,12 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 {
                     return Json(new { error = true, msg = "Las unidades sueltas no puede tener valores negativos. Verifique, por favor." });
                 }
+
+                if (!ProductoBase.Up_id.Equals("07") && up != 1)
+                {
+                    return Json(new { error = true, msg = "EL PRODUCTO NO ES POR UNIDADES. LA UNIDAD DE PRESENTACIÓN TIENE QUE SER IGUAL A 1 SIEMPRE." });
+                }
+
                 if (!string.IsNullOrEmpty(vto) && !string.IsNullOrWhiteSpace(vto))
                 {
                     var fecha = vto.ToDateTimeOrNull();

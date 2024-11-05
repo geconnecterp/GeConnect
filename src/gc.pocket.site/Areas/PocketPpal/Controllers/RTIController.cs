@@ -163,19 +163,24 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     return Json(new { error = true, msg = "Las unidades sueltas no puede tener valores negativos. Verifique, por favor." });
                 }
 
-                if (ProductoBase.P_con_vto.Equals("S"))
+                if (!ProductoBase.Up_id.Equals("07") && up != 1)
                 {
-                    var fecha = vto.ToDateTimeOrNull();
-                    var tope = ProductoBase.p_con_vto_ctl;
-                    if (fecha == null)
-                    {
-                        return Json(new { error = true, msg = "La fecha recepcionada no es válida. Verifique." });
-                    }
-                    else if (fecha < tope)
-                    {
-                        return Json(new { error = true, msg = $"La fecha recepcionada no puede ser menor a {tope}. Verifique, por favor." });
-                    }
+                    return Json(new { error = true, msg = "EL PRODUCTO NO ES POR UNIDADES. LA UNIDAD DE PRESENTACIÓN TIENE QUE SER IGUAL A 1 SIEMPRE." });
                 }
+
+                //if (ProductoBase.P_con_vto.Equals("S"))
+                //{
+                //    var fecha = vto.ToDateTimeOrNull();
+                //    var tope = ProductoBase.p_con_vto_ctl;
+                //    if (fecha == null)
+                //    {
+                //        return Json(new { error = true, msg = "La fecha recepcionada no es válida. Verifique." });
+                //    }
+                //    else if (fecha < tope)
+                //    {
+                //        return Json(new { error = true, msg = $"La fecha recepcionada no puede ser menor a {tope}. Verifique, por favor." });
+                //    }
+                //}
 
                 //if (!string.IsNullOrEmpty(vto) && !string.IsNullOrWhiteSpace(vto))
                 //{
@@ -193,7 +198,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 //}
 
                 //valido cantidad. Si el resultado es igual a 0 dar error
-                var cantidad = ProductoBase.Up_id.Equals("07") ? (up * bulto) + unidad : bulto;
+                var cantidad = ProductoBase.Up_id.Equals("07") ? (up * bulto) + unidad : unidad;
 
                 if (cantidad <= 0)
                 {
@@ -418,7 +423,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 {
                     item.ul_id = ul;
                     item.re = RemitoActual.re_compte;
-
+                    item.usu_id = UserName;
                 }
                 //lista.ForEach(x=> x.ul_id = ul).ForeEach(s=> s.re_compte = RemitoActual.re_compte);
                 var res = await _remitoServicio.RTRCargarConteos(lista, TokenCookie);
