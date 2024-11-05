@@ -468,8 +468,26 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 {
                     volver = Url.Action("TiProdBoxRubro", "trint", new { area = "pocketppal" });
                 }
-
-                ViewBag.AppItem = new AppItem { Nombre = "TI e/ Sucs - Producto a colectar en Carrito", VolverUrl = volver ?? "#" };
+                string nombre="";
+                switch (TIActual.TipoTI)
+                {
+                    case "S":
+                        nombre = "TI e/ Sucs";
+                        break;
+                    case "D":
+                        nombre = "TI e/ Deps";
+                        break;
+                    case "E":
+                        nombre = "TI e/ Deps s/ Au";
+                        break;
+                    case "B":
+                        nombre = "TI e/ Box ";
+                        break;
+                    case "O":
+                        nombre = "TI e/ Box s/ Au";
+                        break;
+                }
+                ViewBag.AppItem = new AppItem { Nombre = $"{nombre} - Producto a colectar en Carrito", VolverUrl = volver ?? "#" };
                 return View(TIActual);
             }
             catch (Exception ex)

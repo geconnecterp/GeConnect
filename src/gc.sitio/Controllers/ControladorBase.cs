@@ -57,20 +57,38 @@ namespace gc.sitio.Controllers
 			}
 
 		}
-		public string AdministracionId
-		{
-			get
-			{
-				var adm = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
-				if (string.IsNullOrEmpty(adm))
-				{
-					return string.Empty;
-				}
-				return adm;
-			}
-		}
+        public string AdministracionId
+        {
+            get
+            {
+                var adm = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
+                if (string.IsNullOrEmpty(adm))
+                {
+                    return string.Empty;
+                }
+                var parts = adm.Split('#');
 
-		public (bool, DateTime?) EstaAutenticado
+                return parts[0];
+            }
+        }
+
+        public string AdministracionName
+        {
+            get
+            {
+                var adm = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
+                if (string.IsNullOrEmpty(adm))
+                {
+                    return string.Empty;
+                }
+
+                var parts = adm.Split('#');
+
+                return parts[1];
+            }
+        }
+
+        public (bool, DateTime?) EstaAutenticado
 		{
 			get
 			{

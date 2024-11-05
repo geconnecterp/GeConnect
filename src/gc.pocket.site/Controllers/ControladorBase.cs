@@ -91,7 +91,25 @@ namespace gc.pocket.site.Controllers
                 {
                     return string.Empty;
                 }
-                return adm;
+                var parts = adm.Split('#');
+
+                return parts[0];
+            }
+        }
+
+        public string AdministracionName
+        {
+            get
+            {
+                var adm = User.Claims.First(c => c.Type.Contains("AdmId")).Value;                
+                if (string.IsNullOrEmpty(adm))
+                {
+                    return string.Empty;
+                }
+
+                var parts = adm.Split('#');
+
+                return parts[1];
             }
         }
 
