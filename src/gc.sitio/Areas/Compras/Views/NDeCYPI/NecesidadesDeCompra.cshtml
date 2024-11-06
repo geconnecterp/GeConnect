@@ -136,10 +136,16 @@
 			</div>
 		</div>
 		<div class="row" style="padding-top:10px;">
-			<div>
-				<a class="btn btn-sm btn-primary me-1 collapsed" id="btnCollapseSection" data-bs-toggle="collapse" href="#collapseSection" role="button" aria-expanded="false" aria-controls="collapseSection">
-					Info. Adicional
-				</a>
+			<div class="row">
+				<div class="col-2">
+					<a class="btn btn-sm btn-primary me-1 collapsed" id="btnCollapseSection" data-bs-toggle="collapse" href="#collapseSection" role="button" aria-expanded="false" aria-controls="collapseSection">
+						Info. Adicional
+					</a>
+				</div>
+				<div class="col-5"></div>
+				<div class="col-5">
+					<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
+				</div>
 			</div>
 			<div class="collapse" id="collapseSection" style="">
 				<div class="d-grid d-sm-flex p-3 border">
@@ -166,17 +172,13 @@
 										<span id="tabThree" class="custom-lbl">Prod. Sustituto</span>
 									</button>
 								</li>
-								<li role="presentation" style="margin-left: 200px;">
+								@* <li role="presentation" style="margin-left: 200px;">
 									<div class="row">
-										<div class="col-7">
+										<div class="col-12">
 											<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
 										</div>
-										<div class="col-5" style="padding-top:5px;">
-											<input class="form-check-input" type="checkbox" id="chkProductosSimilares" asp-for="@Model.ProductosSimilares">
-											<label class="form-check-label" for="chkProductosSimilares"> Productos Similares</label>
-										</div>
 									</div>
-								</li>
+								</li> *@
 							</ul>
 							<div class="tab-content">
 								<div class="tab-pane fade active show" id="navs-top-home" role="tabpanel">
