@@ -51,9 +51,11 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string RPROBTENERJSON = "/RPRObtenerJson";
         private const string RPROBTENERDATOSVERCOMPTE = "/RPRObtenerItemVerCompte";
         private const string RPROBTENERDATOSVERCONTEOS = "/RPRObtenerVerConteos";
+		private const string RPRxULOBTENER = "/RPRxUL";
+		private const string RPRxULDETALLEOBTENER = "/RPRxULDetalle";
 
-        //almacena Box 
-        private const string RutaApiAlmacen = "/api/apialmacen";
+		//almacena Box 
+		private const string RutaApiAlmacen = "/api/apialmacen";
         private const string RPR_AB_VALIDA_UL = "/ValidarUL";
         private const string RPR_AB_VALIDA_BOX = "/ValidarBox";
         private const string RPR_AB_ALMACENA_BOX = "/AlmacenaBoxUl";
@@ -687,7 +689,67 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-        public async Task<List<JsonDto>> RPObtenerJsonDesdeRP(string rp, string token)
+		public async Task<List<RPRxULDto>> RPRxUL(string rp, string token)
+		{
+			ApiResponse<List<RPRxULDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{RPRxULOBTENER}?rp={rp}";
+			response = await client.GetAsync(link);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros rp:{rp}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RPRxULDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<RPRxULDetalleDto>> RPRxULDetalle(string ulId, string token)
+		{
+			ApiResponse<List<RPRxULDetalleDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{RPRxULDETALLEOBTENER}?ulId={ulId}";
+			response = await client.GetAsync(link);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros ulId:{ulId}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RPRxULDetalleDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<JsonDto>> RPObtenerJsonDesdeRP(string rp, string token)
         {
             ApiResponse<List<JsonDto>> apiResponse;
 

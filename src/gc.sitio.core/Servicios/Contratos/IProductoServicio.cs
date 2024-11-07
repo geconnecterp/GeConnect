@@ -53,8 +53,11 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<List<BoxRubProductoDto>> PresentarRubrosDeProductos(string tr, string admId, string usuId, string token);
         Task<List<TiListaProductoDto>> BuscaTIListaProductos(string tr, string admId, string usuId, string? boxid, string? rubId, string token);
         Task<List<RespuestaDto>> RPRConfirmarRPR(string rp, string adm_id, string token);
+        Task<List<RPRxULDto>> RPRxUL(string rp, string token);
+        Task<List<RPRxULDetalleDto>> RPRxULDetalle(string ulId, string token);
 
-        Task<List<TipoMotivoDto>> ObtenerTiposMotivo(string token);
+
+		Task<List<TipoMotivoDto>> ObtenerTiposMotivo(string token);
         Task<RespuestaGenerica<RespuestaDto>> ResguardarProductoCarrito(TiProductoCarritoDto request,string token);
         Task<RespuestaGenerica<RespuestaDto>> VaidaProductoCarrito(TiProductoCarritoDto request, string tokenCookie);
         Task<List<TRAutSucursalesDto>> TRObtenerAutSucursales(string admId, string token);

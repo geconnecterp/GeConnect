@@ -25,6 +25,19 @@ function selectRemitoRow(x) {
 	}
 }
 
+function selectULxRTRRow(x) {
+	var ul_id = x.cells[2].innerText.trim();
+	var datos = { ul_id };
+	PostGenHtml(datos, BuscarDetalleULxRTRUrl, function (obj) {
+		$("#divULxRTRDetalle").html(obj);
+		AgregarHandlerDeSeleccion("tbULxRTRDetalle");
+		CerrarWaiting();
+		return true
+	})
+}
+
+function selectListaULxRTRDetalleRow(x) { }
+
 function verRemito() {
 	if (remSeleccionado === "") {
 		AbrirMensaje("Atención", "Debe seleccionar un remito.", function () {

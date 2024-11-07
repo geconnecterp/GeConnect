@@ -161,6 +161,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				model.Depo_id = objeto?.Depo_id;
 				model.Leyenda = $"Autorización RP {rp} Cuenta: {cuenta.FirstOrDefault().Cta_Denominacion} ({objeto.Cta_id}) Turno: {FormateoDeFecha(objeto.Turno, FechaTipoFormato.PARAUSUARIO)}";
+				//Cargar conteos x UL
+				var conteosxul = await _productoServicio.RPRxUL(rp, TokenCookie);
+				model.ConteosxUL = conteosxul;
 				return PartialView("RPRVerAutorizacion", model);
 			}
 			catch (Exception ex)
@@ -170,6 +173,23 @@ namespace gc.sitio.Areas.Compras.Controllers
 				return null;
 			}
 
+		}
+
+		public async Task<IActionResult> BuscarDetalleULxRPR(string ul_id)
+		{
+			GridCore<RPRxULDetalleDto> datosIP = new();
+			try
+			{
+				var detalle =await _productoServicio.RPRxULDetalle(ul_id, TokenCookie);
+				datosIP = ObtenerGridCore<RPRxULDetalleDto>(detalle);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar obtener el detalle del comprobante UL.");
+				TempData["error"] = "Hubo algun problema al intentar obtener el detalle del comprobante UL. Si el problema persiste informe al Administrador";
+				return PartialView("_rprULxRPRDetalle", datosIP);
+			}
+			return PartialView("_rprULxRPRDetalle", datosIP);
 		}
 
 		public async Task<IActionResult> ObtenerDetalleVerCompte(string rp, string tco_id, string cc_compte)

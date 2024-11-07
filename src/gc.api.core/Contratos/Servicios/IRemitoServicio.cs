@@ -14,5 +14,7 @@ namespace gc.api.core.Contratos.Servicios
         List<RespuestaDto> ConfirmaRecepcion(RConfirmaRecepcionRequest reques);
         RespuestaDto VerificaProductoEnRemito(string remCompte, string pId);
         RespuestaDto RTRCargarConteos(CargarJsonGenRequest request);
-    }
+        List<RTRxULDto> RTRCargarConteosXUL(string reCompte);
+
+	}
 }

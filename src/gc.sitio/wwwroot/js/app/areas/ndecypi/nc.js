@@ -75,6 +75,13 @@ function BuscarInfoAdicional() {
 		CerrarWaiting();
 		return true
 	});
+	datos = { pId }
+	PostGenHtml(datos, BuscarInfoProdURL, function (obj) {
+		$("#divInfoProducto").html(obj);
+		AddEventListenerToGrid("tbInfoProducto");
+		CerrarWaiting();
+		return true
+	});
 }
 
 function changeProductosDelMismoProveedor(x) {
@@ -104,4 +111,7 @@ function selectListaInfoProdIExSemanaRow(x) {
 }
 
 function selectListaProductoSustitutoRow(x) {
+}
+
+function selectListaInfoProductoRow() {
 }

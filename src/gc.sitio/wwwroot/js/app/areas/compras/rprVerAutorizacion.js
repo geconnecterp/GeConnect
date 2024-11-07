@@ -162,6 +162,20 @@ function selectDetalleVerConteoSeleccionado(x) {
 function selectDetalleDeVerCompte(x) {
 }
 
+function selectULxRPRRow(x) {
+	var ul_id = x.cells[2].innerText.trim();
+	var datos = { ul_id };
+	PostGenHtml(datos, buscarDetalleULxRPRUrl, function (obj) {
+		$("#divULxRPRDetalle").html(obj);
+		AgregarHandlerDeSeleccion("tbULxRPRDetalle");
+		CerrarWaiting();
+		return true
+	})
+}
+
+function selectListaULxRPRDetalleRow(x) {
+}
+
 function selectDetalleDeVerConteos(x) {
 	var p_id = x.cells[1].innerText.trim();
 	var datos = { p_id };

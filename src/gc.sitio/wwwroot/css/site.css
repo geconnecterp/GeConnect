@@ -59,8 +59,12 @@ fieldset {
 }
 
 .custom-lbl {
-    font-weight:500;
+    font-weight: 500;
     font-style: normal;
+}
+
+.font-bold {
+    font-weight: bold;
 }
 
 .fixed-width-50 {
@@ -171,6 +175,7 @@ fieldset {
 .tiny-row {
     padding: 0.325rem 0.30rem !important;
 }
+
 .col-header-small {
     text-wrap: pretty;
     font-size: 8px !important;

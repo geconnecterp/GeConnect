@@ -397,7 +397,37 @@ namespace gc.api.Controllers.Almacen
             return Ok(response);
         }
 
-        [HttpGet]
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RPRxULDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult RPRxUL(string rp)
+		{
+			ApiResponse<List<RPRxULDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.RPRxUL(rp);
+
+			response = new ApiResponse<List<RPRxULDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RPRxULDetalleDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult RPRxULDetalle(string ulId)
+		{
+			ApiResponse<List<RPRxULDetalleDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.RPRxULDetalle(ulId);
+
+			response = new ApiResponse<List<RPRxULDetalleDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<JsonDto>>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]

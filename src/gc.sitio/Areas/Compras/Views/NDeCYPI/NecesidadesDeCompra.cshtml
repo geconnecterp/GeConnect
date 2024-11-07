@@ -148,7 +148,7 @@
 				</div>
 			</div>
 			<div class="collapse" id="collapseSection" style="">
-				<div class="d-grid d-sm-flex p-3 border">
+				<div class="d-grid p-3 border">
 					<div class="row" style="padding-top:10px;">
 						<div class="nav-align-top mb-4">
 							<ul class="nav nav-tabs" role="tablist">
@@ -169,7 +169,7 @@
 								</li>
 								<li class="nav-item" role="presentation">
 									<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-dog" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1">
-										<span id="tabThree" class="custom-lbl">Prod. Sustituto</span>
+										<span id="tabFour" class="custom-lbl">Prod. Sustituto</span>
 									</button>
 								</li>
 								@* <li role="presentation" style="margin-left: 200px;">
@@ -182,7 +182,8 @@
 							</ul>
 							<div class="tab-content">
 								<div class="tab-pane fade active show" id="navs-top-home" role="tabpanel">
-									<div id="divInfoProducto">
+									<div class="row">
+										<div class="col-12" id="divInfoProducto"></div>
 									</div>
 								</div>
 								<div class="tab-pane fade" id="navs-top-profile" role="tabpanel">
@@ -268,6 +269,7 @@
 		var BuscarInfoProdStkDepositoURL = "@Url.Action("BuscarInfoProdStkDeposito", "ndecypi", new { area = "Compras" })";
 		var BuscarInfoProdStkSucursalURL = "@Url.Action("BuscarInfoProdStkSucursal", "ndecypi", new { area = "Compras" })";
 		var BuscarInfoProdSustitutoURL = "@Url.Action("BuscarInfoProdSustituto", "ndecypi", new { area = "Compras" })";
+		var BuscarInfoProdURL = "@Url.Action("BuscarInfoProd", "ndecypi", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/areas/ndecypi/comun.js"></script>
 	<script src="~/js/app/areas/ndecypi/nc.js"></script>

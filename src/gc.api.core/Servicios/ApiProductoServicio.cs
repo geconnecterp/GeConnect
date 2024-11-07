@@ -397,6 +397,30 @@ namespace gc.api.core.Servicios
 			return productos;
 		}
 
+		public List<RPRxULDto> RPRxUL(string rp)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_UL;
+			var ps = new List<SqlParameter>()
+			{
+				new("@rp",rp),
+			};
+			List<RPRxULDto> rpr_ul = _repository.EjecutarLstSpExt<RPRxULDto>(sp, ps, true);
+
+			return rpr_ul;
+		}
+
+		public List<RPRxULDetalleDto> RPRxULDetalle(string ulId)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_UL_D;
+			var ps = new List<SqlParameter>()
+			{
+				new("@ul_id",ulId),
+			};
+			List<RPRxULDetalleDto> rpr_ul = _repository.EjecutarLstSpExt<RPRxULDetalleDto>(sp, ps, true);
+
+			return rpr_ul;
+		}
+
 		public List<JsonDto> RPREObtenerDatosJsonDesdeRP(string rp)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_DATOS_JSON;

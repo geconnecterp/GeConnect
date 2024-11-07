@@ -36,8 +36,11 @@ namespace gc.api.core.Contratos.Servicios
         List<RespuestaDto> RPRCargar(CargarJsonGenRequest request);
         List<RespuestaDto> RPRElimina(string rp);
         List<RespuestaDto> RPRConfirma(string rp, string adm_id);
+        List<RPRxULDto> RPRxUL(string rp);
+        List<RPRxULDetalleDto> RPRxULDetalle(string ulId);
 
-        List<JsonDto> RPREObtenerDatosJsonDesdeRP(string rp);
+
+		List<JsonDto> RPREObtenerDatosJsonDesdeRP(string rp);
         List<RPRItemVerCompteDto> RPRObtenerDatosVerCompte(string rp);
         List<RPRVerConteoDto> RPRObtenerConteos(string rp);
         RespuestaDto ResguardarProductoCarrito(TiProductoCarritoDto request);

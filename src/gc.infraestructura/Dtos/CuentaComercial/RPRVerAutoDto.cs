@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using gc.infraestructura.Dtos.Almacen.Rpr;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace gc.infraestructura.Dtos.CuentaComercial
 {
@@ -8,6 +9,13 @@ namespace gc.infraestructura.Dtos.CuentaComercial
 		public string Depo_id { get; set; } = string.Empty;
 		public SelectList ComboDeposito { get; set; }
 		public List<RPRComptesDeRPDto> Comprobantes { get; set; }
-		public string Rp { get; set; } = string.Empty;
+        public List<RPRxULDto> ConteosxUL { get; set; }
+        public string Rp { get; set; } = string.Empty;
+
+		public RPRVerAutoDto() 
+		{
+			Comprobantes = [];
+			ConteosxUL = [];
+		}
     }
 }

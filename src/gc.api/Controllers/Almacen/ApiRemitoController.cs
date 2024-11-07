@@ -107,5 +107,17 @@ namespace gc.api.Controllers.Almacen
 
             return Ok(response);
         }
-    }
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult RTRCargarConteosXUL(string reCompte)
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			List<RTRxULDto> remitos = _remSv.RTRCargarConteosXUL(reCompte);
+			var lista = _mapper.Map<List<RTRxULDto>>(remitos);
+
+			var response = new ApiResponse<List<RTRxULDto>>(lista);
+			return Ok(response);
+		}
+	}
 }

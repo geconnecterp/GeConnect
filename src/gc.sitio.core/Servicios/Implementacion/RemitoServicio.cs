@@ -25,8 +25,10 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string RemitosConfirmarRecepcion = "/ConfirmarRecepcion";
         private const string Verif_ProductoEnRemito = "/VerificaProductoEnRemito";
         private const string RemitoCargarConteos = "/RTRCargarConteos";
+        private const string RemitosCargarConteosXUL = "/RTRCargarConteosXUL";
 
-        private readonly AppSettings _appSettings;
+
+		private readonly AppSettings _appSettings;
         public RemitoServicio(IOptions<AppSettings> options, ILogger<RemitoServicio> logger) : base(options, logger, RutaAPI)
         {
             _appSettings = options.Value;
@@ -244,5 +246,37 @@ namespace gc.sitio.core.Servicios.Implementacion
                 return new() { resultado_msj = "Algo no fue bien al intentar Cargar el Conteo de productos. Verifique Log.", resultado = -1 };
             }
         }
-    }
+
+		public async Task<List<RTRxULDto>> RTRCargarConteosXUL(string reCompte, string token)
+		{
+			ApiResponse<List<RTRxULDto>> apiResponse;
+
+			HelperAPI helper = new();
+
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{RemitosCargarConteosXUL}?reCompte={reCompte}";
+
+			response = await client.GetAsync(link);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda reCompte:{reCompte}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RTRxULDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+	}
 }

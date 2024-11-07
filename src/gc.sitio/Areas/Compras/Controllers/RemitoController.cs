@@ -1,8 +1,10 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr.Remito;
 using gc.infraestructura.Dtos.Gen;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Implementacion;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -13,13 +15,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 	{
 		private readonly AppSettings _appSettings;
 		private readonly IRemitoServicio _remitoServicio;
+		private readonly IProductoServicio _productoServicio;
 		private readonly ILogger<CompraController> _logger;
 
-		public RemitoController(ILogger<CompraController> logger, IOptions<AppSettings> options, IHttpContextAccessor context, IRemitoServicio remitoServicio) : base(options, context)
+		public RemitoController(ILogger<CompraController> logger, IOptions<AppSettings> options, IHttpContextAccessor context, IRemitoServicio remitoServicio, IProductoServicio productoServicio) : base(options, context)
 		{
 			_logger = logger;
 			_appSettings = options.Value;
 			_remitoServicio = remitoServicio;
+			_productoServicio = productoServicio;
 		}
 		public IActionResult Index()
 		{
@@ -124,7 +128,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 				remito.Remito = $"Remito N°: {remCompte}";
 				remito.QuienEnvia = $"Enviado por: {quienEnvia}";
 				remito.rem_compte = remCompte;
-
+				var conteosxul = await _remitoServicio.RTRCargarConteosXUL(remCompte, TokenCookie);
+				remito.ConteosxUL = ObtenerGridCore<RTRxULDto>(conteosxul);
 			}
 			catch (Exception ex)
 			{
@@ -133,6 +138,23 @@ namespace gc.sitio.Areas.Compras.Controllers
 				remito = new();
 			}
 			return View(remito);
+		}
+
+		public async Task<IActionResult> BuscarDetalleULxRTR(string ul_id)
+		{
+			GridCore<RPRxULDetalleDto> datosIP = new();
+			try
+			{
+				var detalle = await _productoServicio.RPRxULDetalle(ul_id, TokenCookie);
+				datosIP = ObtenerGridCore<RPRxULDetalleDto>(detalle);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar obtener el detalle del comprobante UL.");
+				TempData["error"] = "Hubo algun problema al intentar obtener el detalle del comprobante UL. Si el problema persiste informe al Administrador";
+				return PartialView("_rprULxRPRDetalle", datosIP);
+			}
+			return PartialView("_rprULxRPRDetalle", datosIP);
 		}
 
 		private static string ObtenerColor(decimal diferencia)
