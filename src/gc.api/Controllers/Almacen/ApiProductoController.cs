@@ -28,6 +28,7 @@ namespace gc.api.Controllers.Almacen
     using System.Reflection;
     using System.Runtime.Intrinsics.Arm;
     using System.Threading.Tasks;
+	using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 
     [Authorize]
     [Produces("application/json")]
@@ -330,6 +331,21 @@ namespace gc.api.Controllers.Almacen
 			var res = _productosSv.InfoProd(pId);
 
 			response = new ApiResponse<List<NDeCYPI.InfoProductoDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<TipoAjusteDeStockDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerTipoDeAjusteDeStock()
+		{
+			ApiResponse<List<TipoAjusteDeStockDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.ObtenerTipoDeAjusteDeStock();
+
+			response = new ApiResponse<List<TipoAjusteDeStockDto>>(res);
 
 			return Ok(response);
 		}

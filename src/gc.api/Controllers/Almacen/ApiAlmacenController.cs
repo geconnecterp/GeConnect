@@ -2,6 +2,7 @@
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
+using gc.infraestructura.Dtos.Deposito;
 using gc.infraestructura.Dtos.Gen;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -160,5 +161,18 @@ namespace gc.api.Controllers.Almacen
             var response = new ApiResponse<List<TiListaProductoDto>>(lista);
             return Ok(response);
         }
-    }
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult ObtenerListaDeBoxesPorDeposito(string depoId)
+		{
+			if (string.IsNullOrEmpty(depoId))
+			{
+				return BadRequest("Faltó especificar el ID de depósito.");
+			}
+			var lista = _almSv.ObtenerListaDeBoxesPorDeposito(depoId);
+			var response = new ApiResponse<List<DepositoInfoBoxDto>>(lista);
+			return Ok(response);
+		}
+	}
 }

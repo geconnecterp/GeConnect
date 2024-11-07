@@ -18,6 +18,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using System.Data;
 using System.Linq.Dynamic.Core;
+using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 
 
 namespace gc.api.core.Servicios
@@ -276,6 +277,17 @@ namespace gc.api.core.Servicios
 			List<NDeCYPI.InfoProductoDto> producto = _repository.EjecutarLstSpExt<NDeCYPI.InfoProductoDto>(sp, ps, true);
 
 			return producto;
+		}
+
+		public List<TipoAjusteDeStockDto> ObtenerTipoDeAjusteDeStock()
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_AJ_TIPOS;
+
+			var ps = new List<SqlParameter>();
+
+			List<TipoAjusteDeStockDto> ajustes = _repository.EjecutarLstSpExt<TipoAjusteDeStockDto>(sp, ps, true);
+
+			return ajustes;
 		}
 
 		public ProductoBusquedaDto ProductoBuscar(BusquedaBase busqueda)

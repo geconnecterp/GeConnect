@@ -1,0 +1,107 @@
+﻿@model AjusteDeStockDto
+@{
+	Layout = "~/views/shared/_Layout.cshtml";
+	var depositos = Model.ComboDepositos;
+	var boxes = Model.ComboBoxes;
+	var motivos = Model.ComboMotivos;
+}
+
+<div class="card">
+	<div class="container">
+		<div class="row">
+			<div class="col-5" style="padding-top: 8px;">
+				<div class="row">
+					<fieldset style="margin: 2px;padding: 2px;">
+						@* <legend> *@
+						@* empty title *@
+						<div class="col-6" style="float:left;">
+							<div class="btn-group" role="group" aria-label="Basic radio toggle button group" style="width: 95%;">
+								<row style="padding:4px; width: 100% !important">
+									<input type="radio" class="btn-check" name="btnradio" id="btnradioManual" checked="">
+									<label class="btn btn btn-outline-primary fixed-font-size-xmall" for="btnradioManual">Manual</label>
+									<div style="height: 5px;"></div>
+									<input type="radio" class="btn-check" name="btnradio" id="btnradioRevertirAjuste">
+									<label class="btn btn btn-outline-primary fixed-font-size-xmall" for="btnradioRevertirAjuste">Revertir Ajuste</label>
+									<div style="height: 5px;"></div>
+									<input type="radio" class="btn-check" name="btnradio" id="btnradioCargaPrevia">
+									<label class="btn btn btn-outline-primary fixed-font-size-xmall" for="btnradioCargaPrevia">Carga Previa</label>
+								</row>
+							</div>
+						</div>
+						<div class="col-6" style="float:left;">
+							<div class="row" style="min-height: 37px;">
+							</div>
+							<div class="row">
+								<div class="input-group">
+									<span class="input-group-text fixed-width-75" style="height:35px;">N°: </span>
+									<input type="text" id="txtNroAjuste" class="align-left" style="width: 50%;" value="" />
+									<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px;" id="btnRevertirAjuste">
+										<span class="tf-icons bx bx-left-arrow-circle"></span>
+									</button>
+								</div>
+							</div>
+							<div class="row" style="padding-top:4px;padding-left:7px;">
+								<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px; width:88%;" id="btnCargaPrevia">
+									<span class="tf-icons bx bx-cloud-download">Carga Previa</span>
+								</button>
+							</div>
+						</div>
+						@* </legend> *@
+					</fieldset>
+				</div>
+			</div>
+			<div class="col-7" style="padding-top: 8px;">
+				<div class="row">
+					<div class="col-6">
+						<div class="col-sm" id="divDepositos">
+							<div class="input-group fixed-padding-top">
+								<span class="input-group-text fixed-width">Depósito: </span>
+								@Html.DropDownList("id", depositos, "Seleccionar...", new { @id = "listaDeposito", @class = "form-control" })
+							</div>
+						</div>
+						<div id="divComboProveedoresFamilia">
+							<div class="col-sm" id="divComboBoxes" aria-disabled="true">
+								<div class="input-group fixed-padding-top">
+									<span class="input-group-text fixed-width">Box: </span>
+									@Html.DropDownList("id", boxes, "Seleccionar...", new { @id = "listaBox", @class = "form-control" })
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-6">
+						<div class="col-sm" id="divComboMotivos">
+							<div class="input-group fixed-padding-top">
+								<span class="input-group-text fixed-width">Motivo: </span>
+								@Html.DropDownList("id", motivos, "Seleccionar...", new { @id = "listaDeposito", @class = "form-control" })
+							</div>
+						</div>
+						<div class="input-group" style="padding-top: 5px;">
+							<span class="input-group-text fixed-width-75">Nota: </span>
+							<input type="text" id="txtNota" class="align-left" style="width: 80%;" value="" />
+						</div>
+					</div>
+				</div>
+				<div class="row" style="padding-top: 5px;">
+					@* botones *@
+					<div style="text-align: right;align-content: center;">
+						<button type="button" class="btn btn-primary fixed-width-130" style="margin-left:5px;" id="btnRegresar">
+							<span class="tf-icons bx bx-left-arrow-circle">Regresar</span>
+						</button>
+						<button type="button" class="btn btn-danger fixed-width-130" style="margin-left:5px;" id="btnCancelar">
+							<span class="tf-icons bx bx-block">Cancelar</span>
+						</button>
+						<button type="button" class="btn btn-success fixed-width-130" style="margin-left:5px;" id="btnConfirmar">
+							<span class="tf-icons bx bx-check-circle">Confirmar</span>
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section scripts {
+	<script type="text/javascript">
+	</script>
+	<script src="~/js/app/areas/ajustedestock/ajdestk.js"></script>
+}

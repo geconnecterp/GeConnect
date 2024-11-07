@@ -11,6 +11,7 @@ using gc.infraestructura.Dtos.General;
 using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Almacen.Response;
 using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
+using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 
 namespace gc.sitio.core.Servicios.Contratos
 {
@@ -29,6 +30,7 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<List<NDeCYPI.InfoProdIExSemanaDto>> InfoProdIExSemana(string admId, string pId, int semanas, string token);
         Task<List<ProductoNCPISustitutoDto>> InfoProdSustituto(string pId, string tipo, string admId, bool soloProv, string token);
         Task<List<NDeCYPI.InfoProductoDto>> InfoProd(string pId, string token);
+        Task<List<TipoAjusteDeStockDto>> ObtenerTipoDeAjusteDeStock(string token);
 
 		Task<List<AutorizacionPendienteDto>> RPRObtenerAutorizacionPendiente(string adm, string token);
         Task<RegistroResponseDto> RPRRegistrarProductos(List<ProductoGenDto> json,string admId, string ul, string token);

@@ -34,13 +34,15 @@
 			public const string SP_INFOPROD_IE_SEMANAS = "dbo.SPGECO_P_Info_IE_x_Semanas";
 			public const string SP_INFOPROD_SUSTITUTO = "dbo.SPGECO_P_Info_Sustituto";
 			public const string SP_INFOPROD = "dbo.SPGECO_P_Info";
+			public const string SP_AJ_TIPOS = "dbo.SPGECO_AJ_Tipos";
 
 			public const string SP_RPR_PENDIENTES = "spgeco_RPR_Pendientes";
             public const string SP_RPR_REGISTRA = "SPGECO_RPR_Cargar_Conteos";
             public const string SP_RPR_DEPOSITOS = "SPGECO_RPR_Depositos";
             public const string SP_RPR_COMPTES_PENDIENTES = "spgeco_RPR_Comptes_Pendientes";
 			public const string SP_RPR_TIPOS_COMPTES = "spgeco_RPR_Tipos_Comptes";
-            public const string SP_VALIDAR_UL = "SPGECO_BOX_Valida_UL";
+			public const string SP_BOX_LISTA = "SPGECO_BOX_Lista";
+			public const string SP_VALIDAR_UL = "SPGECO_BOX_Valida_UL";
             public const string SP_VALIDAR_BOX = "SPGECO_BOX_Valida";
             public const string SP_BOX_ALMACENA_UL = "SPGECO_BOX_Almacena_UL";
 			public const string SP_RPR_OC = "spgeco_rpr_oc";

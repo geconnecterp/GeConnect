@@ -22,6 +22,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net;
 using System.Runtime.Intrinsics.Arm;
+using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 
 namespace gc.sitio.core.Servicios.Implementacion
 {
@@ -41,6 +42,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string INFOPROD_IE_SEMANA = "/InfoProdIExSemana";
 		private const string INFOPROD_SUSTITUTO = "/InfoProdSustituto";
 		private const string INFOPROD = "/InfoProd";
+		private const string TIPO_DE_AJUSTE = "/ObtenerTipoDeAjusteDeStock";
 
 		private const string RPRAUTOPEND = "/RPRAutorizacionPendiente";
         private const string RPRCOMPTESPEND = "/RPRObtenerAutoComptesPendientes";
@@ -71,11 +73,11 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string TI_NUEVA_SIN_AUTO = "/TRNuevaSinAuto";
         private const string TI_VER_CTRL_SALIDA = "/TRVerCtrlSalida";
         private const string TI_CARGAR_CTRL_SALIDA = "/TRCargarCtrlSalida";
+		
 
 
-
-        //Transferencia Interna
-        private const string TR_AU_PENDIENTE = "/TRAutorizacionPendiente";
+		//Transferencia Interna
+		private const string TR_AU_PENDIENTE = "/TRAutorizacionPendiente";
         private const string TR_PENDIENTES = "/ObtenerTRPendientes";
         private const string TR_AUT_SUCURSALES = "/ObtenerTRAutSucursales";
         private const string TR_AUT_PI = "/ObtenerTRAutPI";
@@ -484,6 +486,38 @@ namespace gc.sitio.core.Servicios.Implementacion
 					return new();
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<NDeCYPI.InfoProductoDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<TipoAjusteDeStockDto>> ObtenerTipoDeAjusteDeStock(string token)
+		{
+			ApiResponse<List<TipoAjusteDeStockDto>> apiResponse;
+
+			HelperAPI helper = new HelperAPI();
+
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{TIPO_DE_AJUSTE}";
+
+			response = await client.GetAsync(link);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API no devolvió dato alguno.");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<TipoAjusteDeStockDto>>>(stringData);
 				return apiResponse.Data;
 			}
 			else
