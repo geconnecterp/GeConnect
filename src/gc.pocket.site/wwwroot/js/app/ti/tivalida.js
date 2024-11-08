@@ -118,9 +118,10 @@ function cargarCarrito() {
                 }
                 else {
                     CerrarWaiting();
-
-                    ControlaMensajeSuccess(obj.msg);
-                    window.location.href = proximoProductoUrl + "?esrubro=false&esbox=false&tiId=" + autorizacionActual.tipoTI;
+                    AbrirMensaje("Importante", obj.msg, function () {
+                        $("#msjModal").modal("hide");
+                        window.location.href = proximoProductoUrl + "?esrubro=false&esbox=false&tiId=" + autorizacionActual.tipoTI;                        
+                    }, false, ["Aceptar"], "succ!", null);                                     
                 }
             });
 

@@ -175,6 +175,8 @@ namespace gc.sitio.Areas.Seguridad.Controllers
             }
             else
             {
+                ComboAdministracion();
+
                 TempData["error"] = "No se ha podido autenticar. El usuario o contraseña no son correctos.";
                 var respuesta = await response.Content.ReadAsStringAsync();
                 ExceptionValidation valid = JsonConvert.DeserializeObject<ExceptionValidation>(respuesta);

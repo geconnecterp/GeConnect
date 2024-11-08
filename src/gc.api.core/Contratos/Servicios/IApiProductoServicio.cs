@@ -6,6 +6,7 @@ using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
+using gc.infraestructura.Dtos.Box;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
@@ -63,5 +64,9 @@ namespace gc.api.core.Contratos.Servicios
 
         List<ProductoNCPIDto> NCPICargarListaDeProductos(NCPICargarListaDeProductosRequest request);
         List<NCPICargaPedidoResponse> NCPICargaPedido(NCPICargaPedidoRequest request);
-	}
+
+        BoxInfoDto ObtenerBoxInfo(string box_id);
+        List<BoxInfoStkDto> ObtenerBoxInfoStk(string box_id);
+        List<BoxInfoMovStkDto> ObtenerBoxInfoMovStk(string box_id,string sm_tipo,DateTime desde,DateTime hasta);
+    }
 }

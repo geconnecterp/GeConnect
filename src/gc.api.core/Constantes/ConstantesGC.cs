@@ -98,6 +98,11 @@
 
 			public const string SP_OC_Productos = "SPGECO_OC_Productos";
 			public const string SP_OC_Carga_Pedido = "SPGECO_OC_Carga_Pedido";//PENDIENTE (No existe en la DB)
-		}
+
+            public const string SP_BOX_INFO = "SPGECO_BOX_Info";
+            public const string SP_BOX_INFO_STK = "SPGECO_BOX_Info_Stk";
+            public const string SP_BOX_INFO_MOV_STK = "SPGECO_BOX_Info_Mov_Stk";
+
+        }
 	}
 }

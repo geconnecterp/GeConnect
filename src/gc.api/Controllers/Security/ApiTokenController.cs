@@ -51,7 +51,6 @@ namespace gc.api.Controllers.Security
                 var adm = _adminServicio.Find(login.Admid);
                 var token = GenerateToken(validation.Item2,login.Admid,adm.Adm_nombre);
                 return Ok(new { token });
-
             }
             return NotFound();
         }       

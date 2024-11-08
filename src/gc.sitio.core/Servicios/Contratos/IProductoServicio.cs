@@ -11,6 +11,7 @@ using gc.infraestructura.Dtos.General;
 using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Almacen.Response;
 using gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
+using gc.infraestructura.Dtos.Box;
 
 namespace gc.sitio.core.Servicios.Contratos
 {
@@ -77,5 +78,6 @@ namespace gc.sitio.core.Servicios.Contratos
 
         Task<List<ProductoNCPIDto>> NCPICargarListaDeProductos(string tipo, string admId, string filtro, string id, string token);
         Task<List<NCPICargaPedidoResponse>> NCPICargaPedido(NCPICargaPedidoRequest req, string token);
-	}
+      
+    }
 }

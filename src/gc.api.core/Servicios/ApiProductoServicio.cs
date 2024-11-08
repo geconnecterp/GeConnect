@@ -10,6 +10,7 @@ using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
+using gc.infraestructura.Dtos.Box;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
@@ -745,5 +746,47 @@ namespace gc.api.core.Servicios
 
 			return productos.First();
 		}
-	}
+
+        public BoxInfoDto ObtenerBoxInfo(string box_id)
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_BOX_INFO;
+            var ps = new List<SqlParameter>()
+            {
+                new("@box_id",box_id),
+            };
+
+            List<BoxInfoDto> info = _repository.EjecutarLstSpExt<BoxInfoDto>(sp, ps, true);
+
+            return info.First();
+        }
+
+        public List<BoxInfoStkDto> ObtenerBoxInfoStk(string box_id)
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_BOX_INFO_STK;
+            var ps = new List<SqlParameter>()
+            {
+                new("@box_id",box_id),
+            };
+
+            List<BoxInfoStkDto> stks = _repository.EjecutarLstSpExt<BoxInfoStkDto>(sp, ps, true);
+
+            return stks;
+        }
+
+        public List<BoxInfoMovStkDto> ObtenerBoxInfoMovStk(string box_id, string sm_tipo, DateTime desde, DateTime hasta)
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_BOX_INFO_MOV_STK;
+            var ps = new List<SqlParameter>()
+            {
+                new("@box_id",box_id),
+                new("@sm_tipo",sm_tipo),
+                new("@d",desde),
+                new("@h",hasta),
+            };
+
+            List<BoxInfoMovStkDto> movs = _repository.EjecutarLstSpExt<BoxInfoMovStkDto>(sp, ps, true);
+
+            return movs;
+        }
+    }
 }

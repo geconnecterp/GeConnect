@@ -10,6 +10,7 @@ using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
+using gc.infraestructura.Dtos.Box;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.General;
@@ -21,6 +22,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net;
+using System.Reflection;
 using System.Runtime.Intrinsics.Arm;
 
 namespace gc.sitio.core.Servicios.Implementacion
@@ -84,6 +86,8 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string TR_AUT_Confirma_Auto = "/TRConfirmaAutorizaciones";
         private const string TR_Ver_Conteos = "/TRVerConteos";
         private const string TR_Validar_Transferencia = "/TRValidarTransferencia";
+
+        
 
         //NCYPI
         private const string OC_Productos = "/NCPICargarListaDeProductos";
@@ -1794,5 +1798,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 return new() { Ok = false, Mensaje = "Hubo un problema al intentar enviar los productos para el control de salida. Verifique log, de ser necesario." };
             }
         }
+
+
     }
 }
