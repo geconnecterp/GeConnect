@@ -31,6 +31,7 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<List<ProductoNCPISustitutoDto>> InfoProdSustituto(string pId, string tipo, string admId, bool soloProv, string token);
         Task<List<NDeCYPI.InfoProductoDto>> InfoProd(string pId, string token);
         Task<List<TipoAjusteDeStockDto>> ObtenerTipoDeAjusteDeStock(string token);
+        Task<List<AjustePrevioCargadoDto>> ObtenerAJPreviosCargados(string admId, string token);
 
 		Task<List<AutorizacionPendienteDto>> RPRObtenerAutorizacionPendiente(string adm, string token);
         Task<RegistroResponseDto> RPRRegistrarProductos(List<ProductoGenDto> json,string admId, string ul, string token);

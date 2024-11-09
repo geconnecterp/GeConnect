@@ -23,6 +23,7 @@ using Newtonsoft.Json.Linq;
 using System.Net;
 using System.Runtime.Intrinsics.Arm;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
+using System.Security.Cryptography;
 
 namespace gc.sitio.core.Servicios.Implementacion
 {
@@ -43,6 +44,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string INFOPROD_SUSTITUTO = "/InfoProdSustituto";
 		private const string INFOPROD = "/InfoProd";
 		private const string TIPO_DE_AJUSTE = "/ObtenerTipoDeAjusteDeStock";
+		private const string AJUSTE_PREVIO_CARGADO = "/ObtenerAJPreviosCargados";
 
 		private const string RPRAUTOPEND = "/RPRAutorizacionPendiente";
         private const string RPRCOMPTESPEND = "/RPRObtenerAutoComptesPendientes";
@@ -518,6 +520,38 @@ namespace gc.sitio.core.Servicios.Implementacion
 					return new();
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<TipoAjusteDeStockDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<AjustePrevioCargadoDto>> ObtenerAJPreviosCargados(string admId, string token)
+		{
+			ApiResponse<List<AjustePrevioCargadoDto>> apiResponse;
+
+			HelperAPI helper = new HelperAPI();
+
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{AJUSTE_PREVIO_CARGADO}?admId={admId}";
+
+			response = await client.GetAsync(link);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API no devolvió dato alguno.");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AjustePrevioCargadoDto>>>(stringData);
 				return apiResponse.Data;
 			}
 			else

@@ -349,6 +349,21 @@ namespace gc.api.Controllers.Almacen
 
 			return Ok(response);
 		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<AjustePrevioCargadoDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerAJPreviosCargados(string admId)
+		{
+			ApiResponse<List<AjustePrevioCargadoDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.ObtenerAJPreviosCargados(admId);
+
+			response = new ApiResponse<List<AjustePrevioCargadoDto>>(res);
+
+			return Ok(response);
+		}
 		#endregion
 
 		#region Acciones para modulo RPR

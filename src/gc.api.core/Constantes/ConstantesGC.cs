@@ -35,6 +35,8 @@
 			public const string SP_INFOPROD_SUSTITUTO = "dbo.SPGECO_P_Info_Sustituto";
 			public const string SP_INFOPROD = "dbo.SPGECO_P_Info";
 			public const string SP_AJ_TIPOS = "dbo.SPGECO_AJ_Tipos";
+			public const string SP_AJ_PREVIOS_CARGADOS = "dbo.SPGECO_AJ_Previos_Cargados";
+			//
 
 			public const string SP_RPR_PENDIENTES = "spgeco_RPR_Pendientes";
             public const string SP_RPR_REGISTRA = "SPGECO_RPR_Cargar_Conteos";

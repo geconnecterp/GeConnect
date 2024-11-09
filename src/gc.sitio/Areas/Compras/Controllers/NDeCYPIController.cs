@@ -292,7 +292,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					EsWarn = false,
 					Mensaje = ex.Message
 				};
-				return PartialView("_listaProveedoresFamilia", response);
+				return PartialView("_gridMensaje", response);
 			}
 		}
 

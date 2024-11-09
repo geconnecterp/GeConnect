@@ -19,6 +19,7 @@ using Microsoft.Extensions.Options;
 using System.Data;
 using System.Linq.Dynamic.Core;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
+using System.Security.Cryptography;
 
 
 namespace gc.api.core.Servicios
@@ -286,6 +287,20 @@ namespace gc.api.core.Servicios
 			var ps = new List<SqlParameter>();
 
 			List<TipoAjusteDeStockDto> ajustes = _repository.EjecutarLstSpExt<TipoAjusteDeStockDto>(sp, ps, true);
+
+			return ajustes;
+		}
+
+		public List<AjustePrevioCargadoDto> ObtenerAJPreviosCargados(string admId)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_AJ_PREVIOS_CARGADOS;
+
+			var ps = new List<SqlParameter>()
+			{
+					new SqlParameter("@adm_id",admId),
+			};
+
+			List<AjustePrevioCargadoDto> ajustes = _repository.EjecutarLstSpExt<AjustePrevioCargadoDto>(sp, ps, true);
 
 			return ajustes;
 		}
