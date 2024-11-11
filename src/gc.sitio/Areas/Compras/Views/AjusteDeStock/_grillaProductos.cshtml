@@ -1,0 +1,28 @@
+﻿@model GridCore<ProductoAAjustarDto>;
+
+<div class="table-responsive table-wrapper-full-width">
+	<table class="table table-bordered table-hover" id="tbDetalleDeProductosAAjustar">
+		<thead class="table-dark">
+			<tr>
+				<th style="width:5%;" class="col-header-small align-center">ID</th>
+				<th style="width:20%;" class="col-header-small align-center">Descripción</th>
+				<th style="width:5%;" class="col-header-small align-center">Cod. Prov</th>
+				<th style="width:5%;" class="col-header-small align-center">Stk Actual</th>
+				<th style="width:5%;" class="col-header-small align-center">Ajuste</th>
+				<th style="width:5%;" class="col-header-small align-center">Stock Ajustado</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in Model.ListaDatos)
+			{
+				<tr onclick="selectListaProductoRow(this)">
+					<td class="align-center">@item.p_id</td>
+					<td class="align-left">@item.p_desc</td>
+					<td class="align-center">@item.as_stock</td>
+					<td class="align-right">@item.as_ajuste</td>
+					<td class="align-right">@item.as_resultado</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>

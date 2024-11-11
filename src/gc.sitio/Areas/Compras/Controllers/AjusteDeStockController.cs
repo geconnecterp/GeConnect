@@ -40,11 +40,14 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			AjusteDeStockDto model = new AjusteDeStockDto();
 			List<DepositoInfoBoxDto> boxes = [];
+			List<ProductoAAjustarDto> listaProdAAjustar = [];
 			try
 			{
 				model.ComboDepositos = CargarComboDepositos();
 				model.ComboBoxes = HelperMvc<ComboGenDto>.ListaGenerica(boxes.Select(x => new ComboGenDto { Id = x.Box_Id, Descripcion = $"{x.Box_Id}__{x.Box_desc}" }));
 				model.ComboMotivos = CargarComboTiposDeAjusteDeStock();
+				model.ProductosAAjustar = ObtenerGridCore<ProductoAAjustarDto>(listaProdAAjustar);
+				AjusteProductosLista = [];
 				return View(model);
 			}
 			catch (Exception ex)
@@ -135,7 +138,56 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return PartialView("_modalCargaPrevia", model);
 		}
 
+		public async Task<IActionResult> ObtenerProductosDesdeAJRevertido(string ajId)
+		{
+			var model = new GridCore<ProductoAAjustarDto>();
+			try
+			{
+				if (ajId == null)
+					return ObtenerMensajeDeError("No se ha especificado un ID de Ajuste válido. Si el problema persiste informe al Administrador.");
+
+				var listaAjustesPrevios = await _productoServicio.ObtenerAJREVERTIDO(ajId, TokenCookie);
+				var productosMapeados = ObtenerProductoAAjustaDesdeListaDeProductoARevertir(listaAjustesPrevios);
+				var listaTemp = AjusteProductosLista;
+				listaTemp.AddRange(productosMapeados);
+				AjusteProductosLista=listaTemp;
+				model = ObtenerGridCore<ProductoAAjustarDto>(listaTemp);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+			return PartialView("_grillaProductos", model);
+		}
+
 		#region Métodos Privados
+		private List<ProductoAAjustarDto> ObtenerProductoAAjustaDesdeListaDeProductoARevertir(List<AjusteRevertidoDto> listaAjustesPrevios)
+		{
+			if (!listaAjustesPrevios.Any())
+				return [];
+			var listaMapeada= new List<ProductoAAjustarDto>();
+			foreach (var item in listaAjustesPrevios)
+			{
+				listaMapeada.Add(new ProductoAAjustarDto()
+				{
+					p_id = item.p_id,
+					p_desc = item.p_desc,
+					id_prov = item.id_prov,
+					as_ajuste = item.as_ajuste,
+					as_stock = item.as_stock,
+					as_resultado = item.as_resultado,
+				});
+			}
+			return listaMapeada;
+		}
+
 		private SelectList CargarComboDepositos()
 		{
 			var adms = _depositoServicio.ObtenerDepositosDeAdministracion(AdministracionId, TokenCookie);

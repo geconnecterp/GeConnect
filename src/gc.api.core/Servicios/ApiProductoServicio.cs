@@ -305,6 +305,20 @@ namespace gc.api.core.Servicios
 			return ajustes;
 		}
 
+		public List<AjusteRevertidoDto> ObtenerAJREVERTIDO(string ajId)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_AJ_AJUSTE_REVERTIDO;
+
+			var ps = new List<SqlParameter>()
+			{
+					new SqlParameter("@as_compte",ajId),
+			};
+
+			List<AjusteRevertidoDto> ajustes = _repository.EjecutarLstSpExt<AjusteRevertidoDto>(sp, ps, true);
+
+			return ajustes;
+		}
+
 		public ProductoBusquedaDto ProductoBuscar(BusquedaBase busqueda)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PRODUCTO_BUSQUEDA;

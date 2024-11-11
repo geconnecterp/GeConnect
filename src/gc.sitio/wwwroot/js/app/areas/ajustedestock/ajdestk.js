@@ -1,11 +1,14 @@
 ﻿$(function () {
 	$("#btnCargaPrevia").on("click", AbrirCargaPrevia);
+	$("#btnRevertirAjuste").on("click", RevertirAjuste);
+	//
 	$("#txtUPEnComprobanteRP").on("keyup", analizaInputUP);
 	$("#txtBtoEnComprobanteRP").on("keyup", analizaInputBto);
 	$("#txtUnidEnComprobanteRP").on("keyup", analizaInputUnid);
 	$("#listaDeposito").on("change", listaDepositoChange);
 	$("#listaBox").on("change", listaBoxesChange);
 	$("#listaDepositoEnCargaPrevia").on("change", listaDepositoEnCargaPreviaChange);
+	$("#listaMotivo").on("change", listalistaMotivoChange);
 	//
 });
 
@@ -31,6 +34,43 @@ function seleccionarProductosDesdeCargaPrevia() {
 }
 
 function listaBoxesChange() {
+}
+
+function RevertirAjuste() {
+	var ajId = $("#txtNroAjuste").val();
+	if (ajId === "") {
+		AbrirMensaje("Atención", "Debe ingresar un ID de Ajuste.", function () {
+			$("#msjModal").modal("hide");
+			$("#txtNroAjuste").focus();
+			return true;
+		}, false, ["Aceptar"], "warn!", null);
+	}
+	AbrirWaiting();
+	var datos = { ajId }
+	PostGenHtml(datos, ObtenerProductosDesdeAJRevertidoURL, function (obj) {
+		$("#divDetalleDeProductosAAjustar").html(obj);
+		AddEventListenerToGrid("tbDetalleDeProductosAAjustar");
+		CerrarWaiting();
+		return true
+	});
+	CerrarWaiting();
+}
+
+function listalistaMotivoChange() {
+	var motivoSelected = $("#listaMotivo").val();
+	if (motivoSelected != "") {
+		motivoSelected = motivoSelected.split('#');
+		if (motivoSelected.length == 2) {
+			tipoMotivoSeleccionado = motivoSelected[1];
+		}
+		else {
+			tipoMotivoSeleccionado = "";
+		}
+	}
+	else {
+		tipoMotivoSeleccionado = "";
+	}
+	console.log(tipoMotivoSeleccionado);
 }
 
 function AbrirCargaPrevia() {

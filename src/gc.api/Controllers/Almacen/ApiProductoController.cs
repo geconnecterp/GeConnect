@@ -364,6 +364,21 @@ namespace gc.api.Controllers.Almacen
 
 			return Ok(response);
 		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<AjusteRevertidoDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerAJREVERTIDO(string ajId)
+		{
+			ApiResponse<List<AjusteRevertidoDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.ObtenerAJREVERTIDO(ajId);
+
+			response = new ApiResponse<List<AjusteRevertidoDto>>(res);
+
+			return Ok(response);
+		}
 		#endregion
 
 		#region Acciones para modulo RPR

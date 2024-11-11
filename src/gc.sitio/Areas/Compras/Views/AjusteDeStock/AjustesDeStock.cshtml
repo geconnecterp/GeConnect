@@ -73,7 +73,7 @@
 						<div class="col-sm" id="divComboMotivos">
 							<div class="input-group fixed-padding-top">
 								<span class="input-group-text fixed-width">Motivo: </span>
-								@Html.DropDownList("id", motivos, "Seleccionar...", new { @id = "listaDeposito", @class = "form-control" })
+								@Html.DropDownList("id", motivos, "Seleccionar...", new { @id = "listaMotivo", @class = "form-control" })
 							</div>
 						</div>
 						<div class="input-group" style="padding-top: 5px;">
@@ -143,28 +143,16 @@
 										</tr>
 									</thead>
 									<tbody>
-										@* @foreach (var item in Model.Productos.ListaDatos)
+										@foreach (var item in Model.ProductosAAjustar.ListaDatos)
 										{
-										<tr onclick="selectListaProductoRow(this)">
-										<td class="align-center">@item.p_id</td>
-										<td class="align-left">@item.p_desc</td>
-										<td class="align-center">@item.p_id_prov</td>
-										<td class="align-right">@item.pi_pendiente</td>
-										<td class="align-right">@item.oc_pendiente</td>
-										<td class="align-right">@item.stk</td>
-										<td class="align-right">@item.stk_suc_transito</td>
-										<td class="align-right">@item.stk_suc_comprometido</td>
-										<td class="align-right">@item.p_unidad_pres</td>
-										<td class="align-left">@item.up_desc</td>
-										<td class="align-right">@item.pedido</td>
-										<td class="align-right">@item.cantidad</td>
-										<td class="align-right">@item.costo</td>
-										<td class="align-right">@item.costo_total</td>
-										<td class="align-right">@item.paletizado</td>
-										<td style="display:none;">@item.pg_id</td>
-										<td style="display:none;">@item.rub_id</td>
-										</tr>
-										} *@
+											<tr onclick="selectListaProductoRow(this)">
+												<td class="align-center">@item.p_id</td>
+												<td class="align-left">@item.p_desc</td>
+												<td class="align-center">@item.as_stock</td>
+												<td class="align-right">@item.as_ajuste</td>
+												<td class="align-right">@item.as_resultado</td>
+											</tr>
+										}
 									</tbody>
 								</table>
 							</div>
@@ -221,7 +209,7 @@
 									</tr>
 								</thead>
 								<tbody>
-									
+
 								</tbody>
 							</table>
 						</div>
@@ -240,10 +228,12 @@
 
 @section scripts {
 	<script type="text/javascript">
+		var tipoMotivoSeleccionado = "";
 		var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun" })";
 		var BuscarBoxesDesdeDepositoURL = "@Url.Action("ObtenerBoxesDesdeDeposito", "ajustedestock", new { area = "Compras" })";
 		var ObtenerDatosModalCargaPreviaUrl = "@Url.Action("ObtenerDatosModalCargaPrevia", "ajustedestock", new { area = "Compras" })";
 		var ObtenerBoxesDesdeDepositoDesdeCargaPreviaURL = "@Url.Action("ObtenerBoxesDesdeDepositoDesdeCargaPrevia", "ajustedestock", new { area = "Compras" })";
+		var ObtenerProductosDesdeAJRevertidoURL = "@Url.Action("ObtenerProductosDesdeAJRevertido", "ajustedestock", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/areas/ajustedestock/ajdestk.js"></script>
 	<script src="~/js/app/busquedas.js" type="text/javascript"></script>

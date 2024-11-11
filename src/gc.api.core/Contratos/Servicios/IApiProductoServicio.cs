@@ -32,6 +32,7 @@ namespace gc.api.core.Contratos.Servicios
         List<NDeCYPI.InfoProductoDto> InfoProd(string pId);
         List<TipoAjusteDeStockDto> ObtenerTipoDeAjusteDeStock();
         List<AjustePrevioCargadoDto> ObtenerAJPreviosCargados(string admId);
+        List<AjusteRevertidoDto> ObtenerAJREVERTIDO(string ajId);
 
 		List<AutorizacionPendienteDto> RPRObtenerAutorizacionPendiente(string adm);
         RegistroResponseDto RPRRegistrarProductos(string json);

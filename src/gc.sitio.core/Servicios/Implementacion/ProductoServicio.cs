@@ -45,6 +45,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string INFOPROD = "/InfoProd";
 		private const string TIPO_DE_AJUSTE = "/ObtenerTipoDeAjusteDeStock";
 		private const string AJUSTE_PREVIO_CARGADO = "/ObtenerAJPreviosCargados";
+		private const string AJUSTE_REVERTIDO = "/ObtenerAJREVERTIDO";
 
 		private const string RPRAUTOPEND = "/RPRAutorizacionPendiente";
         private const string RPRCOMPTESPEND = "/RPRObtenerAutoComptesPendientes";
@@ -552,6 +553,38 @@ namespace gc.sitio.core.Servicios.Implementacion
 					return new();
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AjustePrevioCargadoDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<AjusteRevertidoDto>> ObtenerAJREVERTIDO(string ajId, string token)
+		{
+			ApiResponse<List<AjusteRevertidoDto>> apiResponse;
+
+			HelperAPI helper = new HelperAPI();
+
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{AJUSTE_REVERTIDO}?ajId={ajId}";
+
+			response = await client.GetAsync(link);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API no devolvió dato alguno.");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AjusteRevertidoDto>>>(stringData);
 				return apiResponse.Data;
 			}
 			else
