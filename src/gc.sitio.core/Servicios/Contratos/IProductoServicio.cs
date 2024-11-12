@@ -1,17 +1,16 @@
 ﻿using gc.infraestructura.Dtos.Almacen;
-using gc.infraestructura.Dtos.Almacen.Rpr;
-using gc.infraestructura.Dtos.CuentaComercial;
-using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Almacen.Tr;
-using gc.infraestructura.Dtos.Productos;
-using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen.Info;
-using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
-using gc.infraestructura.Dtos.General;
 using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Almacen.Response;
-using gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
-using gc.infraestructura.Dtos.Box;
+using gc.infraestructura.Dtos.Almacen.Rpr;
+using gc.infraestructura.Dtos.Almacen.Tr;
+using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
+using gc.infraestructura.Dtos.CuentaComercial;
+using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.General;
+using gc.infraestructura.Dtos.Productos;
+using gc.infraestructura.EntidadesComunes.Options;
+using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 
 namespace gc.sitio.core.Servicios.Contratos
 {
@@ -26,12 +25,13 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<List<InfoProdStkA>> InfoProductoStkA(string id, string admId, string token);
         Task<List<InfoProdMovStk>> InfoProductoMovStk(string id, string adm, string depo, string tmov, DateTime desde, DateTime hasta, string token);
         Task<List<InfoProdLP>> InfoProductoLP(string id, string token);
-        Task<List<InfoProdIExMesDto>> InfoProdIExMes(string admId, string pId, int meses, string token);
-        Task<List<InfoProdIExSemanaDto>> InfoProdIExSemana(string admId, string pId, int semanas, string token);
+        Task<List<NDeCYPI.InfoProdIExMesDto>> InfoProdIExMes(string admId, string pId, int meses, string token);
+        Task<List<NDeCYPI.InfoProdIExSemanaDto>> InfoProdIExSemana(string admId, string pId, int semanas, string token);
         Task<List<ProductoNCPISustitutoDto>> InfoProdSustituto(string pId, string tipo, string admId, bool soloProv, string token);
+        Task<List<NDeCYPI.InfoProductoDto>> InfoProd(string pId, string token);
 
 		Task<List<AutorizacionPendienteDto>> RPRObtenerAutorizacionPendiente(string adm, string token);
-        Task<RegistroResponseDto> RPRRegistrarProductos(List<ProductoGenDto> json,string admId, string ul, string token);
+        Task<RegistroResponseDto> RPRRegistrarProductos(List<ProductoGenDto> json,string admId, string ul,bool esModificacion, string token);
         Task<List<AutoComptesPendientesDto>> RPRObtenerComptesPendiente(string adm_id, string token);
 
         Task<RespuestaDto> ValidarUL(string ul,string adm, string sm, string token);
@@ -53,8 +53,11 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<List<BoxRubProductoDto>> PresentarRubrosDeProductos(string tr, string admId, string usuId, string token);
         Task<List<TiListaProductoDto>> BuscaTIListaProductos(string tr, string admId, string usuId, string? boxid, string? rubId, string token);
         Task<List<RespuestaDto>> RPRConfirmarRPR(string rp, string adm_id, string token);
+        Task<List<RPRxULDto>> RPRxUL(string rp, string token);
+        Task<List<RPRxULDetalleDto>> RPRxULDetalle(string ulId, string token);
 
-        Task<List<TipoMotivoDto>> ObtenerTiposMotivo(string token);
+
+		Task<List<TipoMotivoDto>> ObtenerTiposMotivo(string token);
         Task<RespuestaGenerica<RespuestaDto>> ResguardarProductoCarrito(TiProductoCarritoDto request,string token);
         Task<RespuestaGenerica<RespuestaDto>> VaidaProductoCarrito(TiProductoCarritoDto request, string tokenCookie);
         Task<List<TRAutSucursalesDto>> TRObtenerAutSucursales(string admId, string token);

@@ -8,7 +8,7 @@ using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Almacen.Response;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
-using gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
+using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.Box;
 using gc.infraestructura.Dtos.CuentaComercial;
@@ -216,7 +216,7 @@ namespace gc.api.core.Servicios
 			return producto;
 		}
 
-		public List<InfoProdIExMesDto> InfoProdIExMes(string admId, string pId, int meses)
+		public List<NDeCYPI.InfoProdIExMesDto> InfoProdIExMes(string admId, string pId, int meses)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_INFOPROD_IE_MESES;
 
@@ -227,12 +227,12 @@ namespace gc.api.core.Servicios
 					new SqlParameter("@meses",meses),
 			};
 
-			List<InfoProdIExMesDto> producto = _repository.EjecutarLstSpExt<InfoProdIExMesDto>(sp, ps, true);
+			List<NDeCYPI.InfoProdIExMesDto> producto = _repository.EjecutarLstSpExt<NDeCYPI.InfoProdIExMesDto>(sp, ps, true);
 
 			return producto;
 		}
 
-		public List<InfoProdIExSemanaDto> InfoProdIExSemana(string admId, string pId, int semanas)
+		public List<NDeCYPI.InfoProdIExSemanaDto> InfoProdIExSemana(string admId, string pId, int semanas)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_INFOPROD_IE_SEMANAS;
 
@@ -243,7 +243,7 @@ namespace gc.api.core.Servicios
 					new SqlParameter("@semanas",semanas),
 			};
 
-			List<InfoProdIExSemanaDto> producto = _repository.EjecutarLstSpExt<InfoProdIExSemanaDto>(sp, ps, true);
+			List<NDeCYPI.InfoProdIExSemanaDto> producto = _repository.EjecutarLstSpExt<NDeCYPI.InfoProdIExSemanaDto>(sp, ps, true);
 
 			return producto;
 		}
@@ -261,6 +261,20 @@ namespace gc.api.core.Servicios
 			};
 
 			List<ProductoNCPISustitutoDto> producto = _repository.EjecutarLstSpExt<ProductoNCPISustitutoDto>(sp, ps, true);
+
+			return producto;
+		}
+
+		public List<NDeCYPI.InfoProductoDto> InfoProd(string pId)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_INFOPROD;
+
+			var ps = new List<SqlParameter>()
+			{
+					new SqlParameter("@p_id",pId),
+			};
+
+			List<NDeCYPI.InfoProductoDto> producto = _repository.EjecutarLstSpExt<NDeCYPI.InfoProductoDto>(sp, ps, true);
 
 			return producto;
 		}
@@ -384,6 +398,30 @@ namespace gc.api.core.Servicios
 			return productos;
 		}
 
+		public List<RPRxULDto> RPRxUL(string rp)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_UL;
+			var ps = new List<SqlParameter>()
+			{
+				new("@rp",rp),
+			};
+			List<RPRxULDto> rpr_ul = _repository.EjecutarLstSpExt<RPRxULDto>(sp, ps, true);
+
+			return rpr_ul;
+		}
+
+		public List<RPRxULDetalleDto> RPRxULDetalle(string ulId)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_UL_D;
+			var ps = new List<SqlParameter>()
+			{
+				new("@ul_id",ulId),
+			};
+			List<RPRxULDetalleDto> rpr_ul = _repository.EjecutarLstSpExt<RPRxULDetalleDto>(sp, ps, true);
+
+			return rpr_ul;
+		}
+
 		public List<JsonDto> RPREObtenerDatosJsonDesdeRP(string rp)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_DATOS_JSON;
@@ -420,13 +458,14 @@ namespace gc.api.core.Servicios
 			return items;
 		}
 
-		public RegistroResponseDto RPRRegistrarProductos(string json)
+		public RegistroResponseDto RPRRegistrarProductos(string json, bool esModificacion)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_REGISTRA;
 			/// varchar(30),  varchar(3),  varchar(4), varchar(8), @ bit, @ varchar(10) , @ bit, @ bit, @ bit, @ bit, @ bit, @ bit)  
 			var ps = new List<SqlParameter>()
 			{
 				new("@json",json),
+				new("@ul_modifica",esModificacion)
 			};
 
 			List<RegistroResponseDto> productos = _repository.EjecutarLstSpExt<RegistroResponseDto>(sp, ps, true);

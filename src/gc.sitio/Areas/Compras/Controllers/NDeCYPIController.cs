@@ -4,7 +4,7 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Almacen.Response;
-using gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
+using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Helpers;
@@ -45,7 +45,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> NecesidadesDeCompra()
 		{
-			NecesidadesDeCompraDto model = new();
+			NDeCYPI.NecesidadesDeCompraDto model = new();
 			List<ProveedorFamiliaListaDto> proveedoresFamilias = [];
 			try
 			{
@@ -66,7 +66,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> PedidosInternos()
 		{
-			PedidosInternosDto model = new();
+			NDeCYPI.PedidosInternosDto model = new();
 			List<ProveedorFamiliaListaDto> proveedoresFamilias = [];
 			try
 			{
@@ -118,11 +118,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> BuscarInfoProdIExMeses(string pId, string admId, int meses)
 		{
-			var model = new GridCore<InfoProdIExMesDto>();
+			var model = new GridCore<NDeCYPI.InfoProdIExMesDto>();
 			try
 			{
 				var info = await _productoServicio.InfoProdIExMes(admId, pId, meses, TokenCookie);
-				model = ObtenerGridCore<InfoProdIExMesDto>(info);
+				model = ObtenerGridCore<NDeCYPI.InfoProdIExMesDto>(info);
 				return PartialView("_infoProdIExMeses", model);
 			}
 			catch (Exception ex)
@@ -140,11 +140,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> BuscarInfoProdIExSemanas(string pId, string admId, int semanas)
 		{
-			var model = new GridCore<InfoProdIExSemanaDto>();
+			var model = new GridCore<NDeCYPI.InfoProdIExSemanaDto>();
 			try
 			{
 				var info = await _productoServicio.InfoProdIExSemana(admId, pId, semanas, TokenCookie);
-				model = ObtenerGridCore<InfoProdIExSemanaDto>(info);
+				model = ObtenerGridCore<NDeCYPI.InfoProdIExSemanaDto>(info);
 				return PartialView("_infoProdIExSemanas", model);
 			}
 			catch (Exception ex)
@@ -226,6 +226,28 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
+		public async Task<IActionResult> BuscarInfoProd(string pId)
+		{
+			var model = new GridCore<NDeCYPI.InfoProductoDto>();
+			try
+			{
+				var info = await _productoServicio.InfoProd(pId, TokenCookie);
+				model = ObtenerGridCore<NDeCYPI.InfoProductoDto>(info);
+				return PartialView("_infoProducto", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
 		public async Task<JsonResult> CargaPedidoOCPI(string tipo, string pId, string tipoCarga, int bultos)
 		{
 			try
@@ -255,7 +277,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> ObtenerProveedoresFamilia(string ctaId)
 		{
-			var model = new ProveedoresFamiliaDto();
+			var model = new NDeCYPI.ProveedoresFamiliaDto();
 			try
 			{
 				model.ComboProveedoresFamilia = ComboProveedoresFamilia(ctaId);

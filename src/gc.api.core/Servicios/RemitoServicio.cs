@@ -86,5 +86,16 @@ namespace gc.api.core.Servicios
             var resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
             return resp.First();
         }
-    }
+
+		public List<RTRxULDto> RTRCargarConteosXUL(string reCompte)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RTR_Cargar_Conteos_x_ul;
+			var ps = new List<SqlParameter>()
+			{
+				new("@re_compte",reCompte),
+			};
+			var resp = _repository.EjecutarLstSpExt<RTRxULDto>(sp, ps, true);
+			return resp;
+		}
+	}
 }

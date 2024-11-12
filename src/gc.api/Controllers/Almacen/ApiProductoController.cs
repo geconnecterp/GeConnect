@@ -12,6 +12,8 @@ namespace gc.api.Controllers.Almacen
     using gc.infraestructura.Dtos.Almacen.Response;
     using gc.infraestructura.Dtos.Almacen.Rpr;
     using gc.infraestructura.Dtos.Almacen.Tr;
+	using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
+	using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
     using gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
     using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
     using gc.infraestructura.Dtos.Box;
@@ -275,32 +277,32 @@ namespace gc.api.Controllers.Almacen
             return Ok(new ApiResponse<List<TipoMotivo>>(res));
         }
 
-        [HttpGet]
-        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<InfoProdIExMesDto>>))]
-        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-        [Route("[action]")]
-        public IActionResult InfoProdIExMes(string admId, string pId, int meses)
-        {
-            ApiResponse<List<InfoProdIExMesDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-            var res = _productosSv.InfoProdIExMes(admId, pId, meses);
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<NDeCYPI.InfoProdIExMesDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult InfoProdIExMes(string admId, string pId, int meses)
+		{
+			ApiResponse<List<NDeCYPI.InfoProdIExMesDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.InfoProdIExMes(admId, pId, meses);
 
-            response = new ApiResponse<List<InfoProdIExMesDto>>(res);
+			response = new ApiResponse<List<NDeCYPI.InfoProdIExMesDto>>(res);
 
             return Ok(response);
         }
 
-        [HttpGet]
-        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<InfoProdIExSemanaDto>>))]
-        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-        [Route("[action]")]
-        public IActionResult InfoProdIExSemana(string admId, string pId, int semanas)
-        {
-            ApiResponse<List<InfoProdIExSemanaDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-            var res = _productosSv.InfoProdIExSemana(admId, pId, semanas);
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<NDeCYPI.InfoProdIExSemanaDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult InfoProdIExSemana(string admId, string pId, int semanas)
+		{
+			ApiResponse<List<NDeCYPI.InfoProdIExSemanaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.InfoProdIExSemana(admId, pId, semanas);
 
-            response = new ApiResponse<List<InfoProdIExSemanaDto>>(res);
+			response = new ApiResponse<List<NDeCYPI.InfoProdIExSemanaDto>>(res);
 
             return Ok(response);
         }
@@ -317,9 +319,24 @@ namespace gc.api.Controllers.Almacen
 
             response = new ApiResponse<List<ProductoNCPISustitutoDto>>(res);
 
-            return Ok(response);
-        }
-        #endregion
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<NDeCYPI.InfoProductoDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult InfoProd(string pId)
+		{
+			ApiResponse<List<NDeCYPI.InfoProductoDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.InfoProd(pId);
+
+			response = new ApiResponse<List<NDeCYPI.InfoProductoDto>>(res);
+
+			return Ok(response);
+		}
+		#endregion
 
         #region Acciones para modulo RPR
 
@@ -383,7 +400,37 @@ namespace gc.api.Controllers.Almacen
             return Ok(response);
         }
 
-        [HttpGet]
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RPRxULDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult RPRxUL(string rp)
+		{
+			ApiResponse<List<RPRxULDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.RPRxUL(rp);
+
+			response = new ApiResponse<List<RPRxULDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RPRxULDetalleDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult RPRxULDetalle(string ulId)
+		{
+			ApiResponse<List<RPRxULDetalleDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.RPRxULDetalle(ulId);
+
+			response = new ApiResponse<List<RPRxULDetalleDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<JsonDto>>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
@@ -473,7 +520,7 @@ namespace gc.api.Controllers.Almacen
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
 
-        public IActionResult RPRRegistrar(List<ProductoGenDto> prods)   ////PARA FACTORIZAR ACA ####################################
+        public IActionResult RPRRegistrar(List<ProductoGenDto> prods,bool esMod=false)   ////PARA FACTORIZAR ACA ####################################
         {
             ApiResponse<RegistroResponseDto> response;
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
@@ -492,7 +539,7 @@ namespace gc.api.Controllers.Almacen
             //    return BadRequest("El JSON recepcionado no es válido");
             //}
 
-            var res = _productosSv.RPRRegistrarProductos(json);
+            var res = _productosSv.RPRRegistrarProductos(json,esMod);
             response = new ApiResponse<RegistroResponseDto>(res);
             return Ok(response);
         }

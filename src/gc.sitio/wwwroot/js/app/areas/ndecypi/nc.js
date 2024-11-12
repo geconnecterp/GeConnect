@@ -67,7 +67,34 @@ function BuscarInfoAdicional() {
 		return true
 	});
 	var tipo = "OC";
-	var soloProv = true; //TODO: agregar un check en alguna parte del form, a lo mejor dentro del mismo tab de infoProdSustituto
+	var soloProv = true; //Valor por default
+	datos = { pId, tipo, soloProv }
+	PostGenHtml(datos, BuscarInfoProdSustitutoURL, function (obj) {
+		$("#divInfoProdSustituto").html(obj);
+		AddEventListenerToGrid("tbListaProductoSust");
+		CerrarWaiting();
+		return true
+	});
+	datos = { pId }
+	PostGenHtml(datos, BuscarInfoProdURL, function (obj) {
+		$("#divInfoProducto").html(obj);
+		AddEventListenerToGrid("tbInfoProducto");
+		CerrarWaiting();
+		return true
+	});
+}
+
+function changeProductosDelMismoProveedor(x) {
+	if (NoHayProdSeleccionado()) {
+		AbrirMensaje("Atención", "Debe seleccionar un producto.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	AbrirWaiting();
+	var pId = pIdSeleccionado;
+	var tipo = "OC";
+	var soloProv = $("#chkProductosDelMismoProveedor")[0].checked;
 	datos = { pId, tipo, soloProv }
 	PostGenHtml(datos, BuscarInfoProdSustitutoURL, function (obj) {
 		$("#divInfoProdSustituto").html(obj);
@@ -84,4 +111,7 @@ function selectListaInfoProdIExSemanaRow(x) {
 }
 
 function selectListaProductoSustitutoRow(x) {
+}
+
+function selectListaInfoProductoRow() {
 }

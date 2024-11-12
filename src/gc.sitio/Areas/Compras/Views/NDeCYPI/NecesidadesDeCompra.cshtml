@@ -66,15 +66,6 @@
 						</legend>
 					</fieldset>
 				</div>
-				@* <div class="row">
-				<div class="col-8">
-				<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
-				</div>
-				<div class="col-4">
-				<input class="form-check-input" type="checkbox" id="chkProductosSimilares" asp-for="@Model.ProductosSimilares">
-				<label class="form-check-label" for="chkProductosSimilares"> Productos Similares</label>
-				</div>
-				</div> *@
 			</div>
 			<div class="col-2">
 				@* Botones *@
@@ -143,99 +134,21 @@
 				<div>
 				</div>
 			</div>
-			@* <div class="col-2">
-			<div class="row">
-			<div id="divDatosDeStock">
-			</div>
-			</div>
-			<div class="row">
-			<div class="input-group">
-			<span class="input-group-text">Datos EI/Mes</span>
-			<span class="input-group-text fixed-width">Suc: </span>
-			@Html.DropDownList("id", sucursales, "Seleccionar...", new { @id = "listaSucursales", @class = "form-control" })
-			<span class="input-group-text fixed-width">Meses: </span>
-			<input type="number" id="txtMeses" />
-			</div>
-			<div id="divInfoProdIExMeses">
-
-			</div>
-			</div>
-			<div class="row">
-			<div id="divInfoProdIExSemanas">
-
-			</div>
-			</div>
-			</div> *@
 		</div>
 		<div class="row" style="padding-top:10px;">
-			@* <div class="nav-align-top mb-4">
-			<ul class="nav nav-tabs" role="tablist">
-			<li class="nav-item" role="presentation">
-			<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-home" aria-controls="navs-top-home" aria-selected="true">
-			<span id="tabOne" class="custom-lbl">Info. Producto</span>
-			</button>
-			</li>
-			<li class="nav-item" role="presentation">
-			<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-profile" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1">
-			<span id="tabTwo" class="custom-lbl">Datos de Entrada/Salida</span>
-			</button>
-			</li>
-			<li role="presentation" style="margin-left: 500px;">
 			<div class="row">
-			<div class="col-7">
-			<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
-			</div>
-			<div class="col-5" style="padding-top:5px;">
-			<input class="form-check-input" type="checkbox" id="chkProductosSimilares" asp-for="@Model.ProductosSimilares">
-			<label class="form-check-label" for="chkProductosSimilares"> Productos Similares</label>
-			</div>
-			</div>
-			</li>
-			</ul>
-			<div class="tab-content">
-			<div class="tab-pane fade active show" id="navs-top-home" role="tabpanel">
-			<div id="divInfoProducto">
-			</div>
-			</div>
-			<div class="tab-pane fade" id="navs-top-profile" role="tabpanel">
-			<div id="divInfoES" class="row">
-			<div class="col-6">
-			<div class="row">
-			<div class="input-group">
-			<span class="input-group-text custom-lbl">Datos Entradas y Salidas del Mes</span>
-			<span class="input-group-text fixed-width">Sucursal: </span>
-			@Html.DropDownList("id", sucursales, "Seleccionar...", new { @id = "listaSucursales", @class = "form-control fixed-width" })
-			<span class="input-group-text fixed-width-75">Meses: </span>
-			<input type="number" id="txtMeses" class="fixed-width-50 align-right" value="1" />
-			</div>
-			</div>
-			<div class="row">
-			<div id="divInfoProdIExMeses"></div>
-			</div>
-			</div>
-			<div class="col-6">
-			<div class="row">
-			<div class="input-group">
-			<span class="input-group-text custom-lbl">Datos de Entrada y Salidas últimas semanas</span>
-			<span class="input-group-text fixed-width-75">Semanas: </span>
-			<input type="number" id="txtSemanas" class="fixed-width-50 align-right" value="1" />
-			</div>
-			</div>
-			<div class="row">
-			<div id="divInfoProdIExSemanas"></div>
-			</div>
-			</div>
-			</div>
-			</div>
-			</div>
-			</div> *@
-			<div>
-				<a class="btn btn-sm btn-primary me-1 collapsed" id="btnCollapseSection" data-bs-toggle="collapse" href="#collapseSection" role="button" aria-expanded="false" aria-controls="collapseSection">
-					Info. Adicional
-				</a>
+				<div class="col-2">
+					<a class="btn btn-sm btn-primary me-1 collapsed" id="btnCollapseSection" data-bs-toggle="collapse" href="#collapseSection" role="button" aria-expanded="false" aria-controls="collapseSection">
+						Info. Adicional
+					</a>
+				</div>
+				<div class="col-5"></div>
+				<div class="col-5">
+					<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
+				</div>
 			</div>
 			<div class="collapse" id="collapseSection" style="">
-				<div class="d-grid d-sm-flex p-3 border">
+				<div class="d-grid p-3 border">
 					<div class="row" style="padding-top:10px;">
 						<div class="nav-align-top mb-4">
 							<ul class="nav nav-tabs" role="tablist">
@@ -256,24 +169,21 @@
 								</li>
 								<li class="nav-item" role="presentation">
 									<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-dog" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1">
-										<span id="tabThree" class="custom-lbl">Prod. Sustituto</span>
+										<span id="tabFour" class="custom-lbl">Prod. Sustituto</span>
 									</button>
 								</li>
-								<li role="presentation" style="margin-left: 200px;">
+								@* <li role="presentation" style="margin-left: 200px;">
 									<div class="row">
-										<div class="col-7">
+										<div class="col-12">
 											<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
 										</div>
-										<div class="col-5" style="padding-top:5px;">
-											<input class="form-check-input" type="checkbox" id="chkProductosSimilares" asp-for="@Model.ProductosSimilares">
-											<label class="form-check-label" for="chkProductosSimilares"> Productos Similares</label>
-										</div>
 									</div>
-								</li>
+								</li> *@
 							</ul>
 							<div class="tab-content">
 								<div class="tab-pane fade active show" id="navs-top-home" role="tabpanel">
-									<div id="divInfoProducto">
+									<div class="row">
+										<div class="col-12" id="divInfoProducto"></div>
 									</div>
 								</div>
 								<div class="tab-pane fade" id="navs-top-profile" role="tabpanel">
@@ -324,6 +234,8 @@
 									
 								</div>
 								<div class="tab-pane fade" id="navs-top-dog" role="tabpanel">
+									<input class="form-check-input" type="checkbox" id="chkProductosDelMismoProveedor" onchange="changeProductosDelMismoProveedor(this);" @((Model.ProductosDelMismoProveedor == false ? "" : "checked")) asp-for="@Model.ProductosDelMismoProveedor">
+									<label class="form-check-label" for="chkProductosDelMismoProveedor"> Productos del mismo Proveedor</label>
 									<div class="row">
 										<div id="divInfoProdSustituto"></div>
 									</div>
@@ -357,6 +269,7 @@
 		var BuscarInfoProdStkDepositoURL = "@Url.Action("BuscarInfoProdStkDeposito", "ndecypi", new { area = "Compras" })";
 		var BuscarInfoProdStkSucursalURL = "@Url.Action("BuscarInfoProdStkSucursal", "ndecypi", new { area = "Compras" })";
 		var BuscarInfoProdSustitutoURL = "@Url.Action("BuscarInfoProdSustituto", "ndecypi", new { area = "Compras" })";
+		var BuscarInfoProdURL = "@Url.Action("BuscarInfoProd", "ndecypi", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/areas/ndecypi/comun.js"></script>
 	<script src="~/js/app/areas/ndecypi/nc.js"></script>

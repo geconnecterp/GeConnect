@@ -2,13 +2,14 @@
 
 @{
     Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
+    string modifica = "true";
 }
 
 <partial name="_viewIndex" model="Model" />
 
-
 @section scripts {
     <script type="text/javascript">
+        var rprModificacion = @modifica;
         var autoPendienteSelect = "";
         var autoPendienteResguardarUrl = "@Url.Action("ResguardarAutorizacionProveedor","rpr",new{area="pocketppal"})"
     </script>

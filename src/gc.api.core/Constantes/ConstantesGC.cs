@@ -33,6 +33,7 @@
 			public const string SP_INFOPROD_IE_MESES = "dbo.SPGECO_P_Info_IE_x_Mes";
 			public const string SP_INFOPROD_IE_SEMANAS = "dbo.SPGECO_P_Info_IE_x_Semanas";
 			public const string SP_INFOPROD_SUSTITUTO = "dbo.SPGECO_P_Info_Sustituto";
+			public const string SP_INFOPROD = "dbo.SPGECO_P_Info";
 
 			public const string SP_RPR_PENDIENTES = "spgeco_RPR_Pendientes";
             public const string SP_RPR_REGISTRA = "SPGECO_RPR_Cargar_Conteos";
@@ -50,6 +51,8 @@
 			public const string SP_RPR_VER_COMPTES = "spgeco_rpr_ver_comptes";
 			public const string SP_RPR_VER_CONTEOS = "spgeco_rpr_ver_conteos";
 			public const string SP_RPR_CONFIRMA = "spgeco_rpr_confirmar";
+			public const string SP_RPR_UL = "SPGECO_UL_x_RPR";
+			public const string SP_RPR_UL_D = "SPGECO_UL_d";
 
 			public const string SP_CUENTA_BUSQUEDA = "dbo.spgeco_c_busqueda_lista";
 
@@ -94,7 +97,7 @@
 			public const string SP_RTR_Confirma = "SPGECO_RTR_Confirmar";
 			public const string SP_RTR_Verifica_Producto = "SPGECO_RTR_VERIFICA_PRODUCTO";
 			public const string SP_RTR_Cargar_Conteos = "SPGECO_RTR_Cargar_Conteos";
-        
+			public const string SP_RTR_Cargar_Conteos_x_ul = "SPGECO_UL_x_RTR";
 
 			public const string SP_OC_Productos = "SPGECO_OC_Productos";
 			public const string SP_OC_Carga_Pedido = "SPGECO_OC_Carga_Pedido";//PENDIENTE (No existe en la DB)

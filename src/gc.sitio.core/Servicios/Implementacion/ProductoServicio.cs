@@ -8,7 +8,7 @@ using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Almacen.Response;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
-using gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
+using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.Box;
 using gc.infraestructura.Dtos.CuentaComercial;
@@ -42,6 +42,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string INFOPROD_IE_MES = "/InfoProdIExMes";
 		private const string INFOPROD_IE_SEMANA = "/InfoProdIExSemana";
 		private const string INFOPROD_SUSTITUTO = "/InfoProdSustituto";
+		private const string INFOPROD = "/InfoProd";
 
 		private const string RPRAUTOPEND = "/RPRAutorizacionPendiente";
         private const string RPRCOMPTESPEND = "/RPRObtenerAutoComptesPendientes";
@@ -52,9 +53,11 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string RPROBTENERJSON = "/RPRObtenerJson";
         private const string RPROBTENERDATOSVERCOMPTE = "/RPRObtenerItemVerCompte";
         private const string RPROBTENERDATOSVERCONTEOS = "/RPRObtenerVerConteos";
+		private const string RPRxULOBTENER = "/RPRxUL";
+		private const string RPRxULDETALLEOBTENER = "/RPRxULDetalle";
 
-        //almacena Box 
-        private const string RutaApiAlmacen = "/api/apialmacen";
+		//almacena Box 
+		private const string RutaApiAlmacen = "/api/apialmacen";
         private const string RPR_AB_VALIDA_UL = "/ValidarUL";
         private const string RPR_AB_VALIDA_BOX = "/ValidarBox";
         private const string RPR_AB_ALMACENA_BOX = "/AlmacenaBoxUl";
@@ -367,9 +370,9 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-		public async Task<List<InfoProdIExMesDto>> InfoProdIExMes(string admId, string pId, int meses, string token)
+		public async Task<List<NDeCYPI.InfoProdIExMesDto>> InfoProdIExMes(string admId, string pId, int meses, string token)
 		{
-			ApiResponse<List<InfoProdIExMesDto>> apiResponse;
+			ApiResponse<List<NDeCYPI.InfoProdIExMesDto>> apiResponse;
 
 			HelperAPI helper = new HelperAPI();
 
@@ -388,7 +391,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 					_logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda admId:{admId} pId:{pId} meses:{meses}");
 					return new();
 				}
-				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<InfoProdIExMesDto>>>(stringData);
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<NDeCYPI.InfoProdIExMesDto>>>(stringData);
 				return apiResponse.Data;
 			}
 			else
@@ -399,9 +402,9 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 		}
 
-		public async Task<List<InfoProdIExSemanaDto>> InfoProdIExSemana(string admId, string pId, int semanas, string token)
+		public async Task<List<NDeCYPI.InfoProdIExSemanaDto>> InfoProdIExSemana(string admId, string pId, int semanas, string token)
 		{
-			ApiResponse<List<InfoProdIExSemanaDto>> apiResponse;
+			ApiResponse<List<NDeCYPI.InfoProdIExSemanaDto>> apiResponse;
 
 			HelperAPI helper = new HelperAPI();
 
@@ -420,7 +423,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 					_logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda admId:{admId} pId:{pId} semanas:{semanas}");
 					return new();
 				}
-				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<InfoProdIExSemanaDto>>>(stringData);
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<NDeCYPI.InfoProdIExSemanaDto>>>(stringData);
 				return apiResponse.Data;
 			}
 			else
@@ -463,6 +466,38 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 		}
 
+		public async Task<List<NDeCYPI.InfoProductoDto>> InfoProd(string pId, string token)
+		{
+			ApiResponse<List<NDeCYPI.InfoProductoDto>> apiResponse;
+
+			HelperAPI helper = new HelperAPI();
+
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{INFOPROD}?pId={pId}";
+
+			response = await client.GetAsync(link);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda pId:{pId}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<NDeCYPI.InfoProductoDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
 		public async Task<List<AutorizacionPendienteDto>> RPRObtenerAutorizacionPendiente(string adm, string token)
         {
             ApiResponse<List<AutorizacionPendienteDto>> apiResponse;
@@ -495,7 +530,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-        public async Task<RegistroResponseDto> RPRRegistrarProductos(List<ProductoGenDto> prods, string admId, string ul, string token)
+        public async Task<RegistroResponseDto> RPRRegistrarProductos(List<ProductoGenDto> prods, string admId, string ul, bool esModificacion, string token)
         {
             ApiResponse<RegistroResponseDto> apiResponse;
 
@@ -509,7 +544,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             HttpClient client = helper.InicializaCliente(prods, token, out StringContent contentData);
             HttpResponseMessage response;
 
-            var link = $"{_appSettings.RutaBase}{RutaAPI}{RPRREGISTRAR}";
+            var link = $"{_appSettings.RutaBase}{RutaAPI}{RPRREGISTRAR}?esMod={esModificacion}";
 
             response = await client.PostAsync(link, contentData);
 
@@ -658,7 +693,67 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-        public async Task<List<JsonDto>> RPObtenerJsonDesdeRP(string rp, string token)
+		public async Task<List<RPRxULDto>> RPRxUL(string rp, string token)
+		{
+			ApiResponse<List<RPRxULDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{RPRxULOBTENER}?rp={rp}";
+			response = await client.GetAsync(link);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros rp:{rp}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RPRxULDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<RPRxULDetalleDto>> RPRxULDetalle(string ulId, string token)
+		{
+			ApiResponse<List<RPRxULDetalleDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{RPRxULDETALLEOBTENER}?ulId={ulId}";
+			response = await client.GetAsync(link);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros ulId:{ulId}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RPRxULDetalleDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<JsonDto>> RPObtenerJsonDesdeRP(string rp, string token)
         {
             ApiResponse<List<JsonDto>> apiResponse;
 

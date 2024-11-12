@@ -17,7 +17,14 @@
         <div class="col-sm-6">
             <div class="input-group input-group-sm">
                 <span class="input-group-text">UL:</span>
-                <input type="text" maxlength="16" id="ul_Id" class="form-control" />
+                @if (Model.EsModificacion)
+                {
+                    <input type="text" maxlength="16" id="ul_Id" class="form-control text-danger fw-bolder" value="@Model.Ul" readonly/>
+                }
+                else
+                {
+                    <input type="text" maxlength="16" id="ul_Id" class="form-control" />
+                }
             </div>
         </div>
     </div>
@@ -33,14 +40,14 @@
     <div class="row mb-3">
         <div class="d-flex justify-content-center">
             <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-2"><i class="bx bx-ms bx-info-circle"></i></a>
-            <button type="button" id="btnConfirmarRPR" asp-action="CargaUL" asp-controller="rpr" asp-area="PocketPpal" id="btnContinuarRpr" class="btn btn-success btn-sm m-2"><i class="bx bx-ms bx-right-arrow-alt"></i></button>           
+            <button type="button" id="btnConfirmarRPR" esMod="@Model.EsModificacion" class="btn btn-success btn-sm m-2"><i class="bx bx-ms bx-right-arrow-alt"></i></button>             
         </div>
     </div>
 </div>
 
 @section scripts {
     <script type="text/javascript">
-        var ocultarTrash = true;
+        var ocultarTrash = true;  
         var PresentarProductosSeleccionadosUrl = "@Url.Action("PresentarProductosSeleccionados", "rpr", new { area = "PocketPpal" })";
         var ConfirmarRPRUrl = "@Url.Action("ConfirmarRPR", "rpr", new { area = "PocketPpal" })";
         var NroAuto = "@Model.Rp";

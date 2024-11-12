@@ -1,11 +1,7 @@
 ﻿using gc.api.infra.Datos.Contratos;
-using gc.infraestructura.Core.Helpers;
-using log4net.Core;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using System.Data;
-using System.Diagnostics;
 
 namespace gc.api.infra.Datos.Implementacion
 {

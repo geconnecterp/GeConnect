@@ -10,9 +10,9 @@ namespace gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI
 		public SelectList ComboRubros { get; set; }
 		public SelectList ComboSucursales { get; set; }
 		public GridCore<ProductoNCPIDto> Productos { get; set; }
-        public bool ProductosSimilares { get; set; }
-
-        public NecesidadesDeCompraDto()
+		public bool ProductosSimilares { get; set; }
+		public bool ProductosDelMismoProveedor { get; set; } = true;
+		public NecesidadesDeCompraDto()
 		{
 			Productos = new GridCore<ProductoNCPIDto>();
 		}

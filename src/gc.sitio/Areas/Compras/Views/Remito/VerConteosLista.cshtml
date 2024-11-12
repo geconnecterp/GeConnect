@@ -2,7 +2,12 @@
 @{
 	Layout = "~/views/shared/_Layout.cshtml";
 }
-
+<style>
+	thead th {
+		position: sticky;
+		top: 0px;
+	}
+</style>
 <div class="card">
 	<row>
 		@Html.Hidden("remCompte", Model.rem_compte)
@@ -26,42 +31,94 @@
 		</row>
 	</div>
 	<div class="card-body">
-		<div class="table-responsive text-nowrap table-wrapper">
-			<table class="table table-bordered table-hover" id="tbListaVerConteos">
-				<thead class="table-dark">
-					<tr>
-						<th scope="col" class="table-fontsize align-center" style="width:10%;">Item</th>
-						<th scope="col" class="table-fontsize align-center" style="width:10%;">ID</th>
-						<th scope="col" class="table-fontsize align-center" style="width:40%;">Descripción</th>
-						<th scope="col" class="table-fontsize align-center" style="width:10%;">EAN</th>
-						<th scope="col" class="table-fontsize align-center" style="width:10%;">Enviado</th>
-						<th scope="col" class="table-fontsize align-center" style="width:10%;">Conteos</th>
-						<th scope="col" class="table-fontsize align-center" style="width:10%;">Diferencia</th>
-					</tr>
-				</thead>
-				<tbody>
-					@foreach (var item in Model.Productos.ListaDatos)
-					{
-						<tr onclick="selectVerConteosRow(this)">
-							<td class="table-fontsize align-center">@item.item</td>
-							<td class="table-fontsize align-center">@item.p_id</td>
-							<td class="table-fontsize align-left">@item.p_desc</td>
-							<td class="table-fontsize align-center">@item.p_id_barrado</td>
-							<td style="text-align: right;" class="table-fontsize align-right">@item.enviado</td>
-							<td style="text-align: right;" class="table-fontsize align-right">@item.recibido</td>
-							@if (item.diferencia != 0)
-							{
-								<td class="table-fontsize" style="border-right: 5px solid @item.Row_color; text-align: right;">@item.diferencia</td>
-							}
-							else
-							{
-								<td style="text-align: right;" class="table-fontsize">@item.diferencia</td>
-							}
-						</tr>
-					}
-				</tbody>
-			</table>
+		<div class="nav-align-top mb-4">
+			<ul class="nav nav-tabs" role="tablist">
+				<li class="nav-item" role="presentation">
+					<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-home" aria-controls="navs-top-home" aria-selected="true">
+						<span id="tabOne">Conteos</span>
+					</button>
+				</li>
+				<li class="nav-item" role="presentation">
+					<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-profile" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1">
+						<span id="tabTwo">Conteos x UL</span>
+					</button>
+				</li>
+			</ul>
+			<div class="tab-content">
+				<div class="tab-pane fade active show" id="navs-top-home" role="tabpanel">
+					<div class="table-responsive text-nowrap table-wrapper">
+						<table class="table table-bordered table-hover" id="tbListaVerConteos">
+							<thead class="table-dark">
+								<tr>
+									<th scope="col" class="table-fontsize align-center" style="width:10%;">Item</th>
+									<th scope="col" class="table-fontsize align-center" style="width:10%;">ID</th>
+									<th scope="col" class="table-fontsize align-center" style="width:40%;">Descripción</th>
+									<th scope="col" class="table-fontsize align-center" style="width:10%;">EAN</th>
+									<th scope="col" class="table-fontsize align-center" style="width:10%;">Enviado</th>
+									<th scope="col" class="table-fontsize align-center" style="width:10%;">Conteos</th>
+									<th scope="col" class="table-fontsize align-center" style="width:10%;">Diferencia</th>
+								</tr>
+							</thead>
+							<tbody>
+								@foreach (var item in Model.Productos.ListaDatos)
+								{
+									<tr onclick="selectVerConteosRow(this)">
+										<td class="table-fontsize align-center">@item.item</td>
+										<td class="table-fontsize align-center">@item.p_id</td>
+										<td class="table-fontsize align-left">@item.p_desc</td>
+										<td class="table-fontsize align-center">@item.p_id_barrado</td>
+										<td style="text-align: right;" class="table-fontsize align-right">@item.enviado</td>
+										<td style="text-align: right;" class="table-fontsize align-right">@item.recibido</td>
+										@if (item.diferencia != 0)
+										{
+											<td class="table-fontsize" style="border-right: 5px solid @item.Row_color; text-align: right;">@item.diferencia</td>
+										}
+										else
+										{
+											<td style="text-align: right;" class="table-fontsize">@item.diferencia</td>
+										}
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="tab-pane fade" id="navs-top-profile" role="tabpanel">
+					<div class="row">
+						<div class="col-6" id="divULxRTR">
+							<div class="table-responsive table-wrapper">
+								<table class="table table-bordered table-hover" id="tbULxRTR">
+									<thead class="table-dark">
+										<tr class="header">
+											<th style="width:0%; display:none;">tipo</th>
+											<th style="width:0%; display:none;">id</th>
+											<th scope="col" style="width:33%" class="align-center">UL</th>
+											<th scope="col" style="width:33%" class="align-center">Usuario</th>
+											<th scope="col" style="width:33%" class="align-center">Estado</th>
+										</tr>
+									</thead>
+									<tbody>
+										@foreach (var item in Model.ConteosxUL.ListaDatos)
+										{
+											<tr onclick="selectULxRTRRow(this)">
+												<td style="display:none;">@item.tipo</td>
+												<td style="display:none;">@item.id</td>
+												<td class="align-center">@item.ul_id</td>
+												<td class="align-center">@item.usu_apellidoynombre</td>
+												<td class="align-center">@item.ule_desc</td>
+											</tr>
+										}
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div class="col-6" id="divULxRTRDetalle">
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
+
 	</div>
 </div>
 
@@ -71,6 +128,7 @@
 		var RVerDetalleDeConteosDeRemitoUrl = "@Url.Action("VerConteosLista", "remito", new { area = "Compras" })";
 		var RConfirmarRecepcionDeRemitoUrl = "@Url.Action("ConfirmarRecepcion", "remito", new { area = "Compras" })";
 		var RActualizarListadoDeRemitoUrl = "@Url.Action("RemitosTransferidosLista", "remito", new { area = "Compras" })";
+		var BuscarDetalleULxRTRUrl = "@Url.Action("BuscarDetalleULxRTR", "remito", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/areas/remitos/remitosTransferidosLista.js"></script>
 	<script src="~/js/app/areas/remitos/verConteos.js"></script>
