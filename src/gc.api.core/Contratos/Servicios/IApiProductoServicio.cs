@@ -11,6 +11,7 @@ using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 
 namespace gc.api.core.Contratos.Servicios
 {
@@ -30,6 +31,9 @@ namespace gc.api.core.Contratos.Servicios
         List<NDeCYPI.InfoProdIExSemanaDto> InfoProdIExSemana(string admId, string pId, int semanas);
         List<ProductoNCPISustitutoDto> InfoProdSustituto(string pId, string tipo, string admId, bool soloProv);
         List<NDeCYPI.InfoProductoDto> InfoProd(string pId);
+        List<TipoAjusteDeStockDto> ObtenerTipoDeAjusteDeStock();
+        List<AjustePrevioCargadoDto> ObtenerAJPreviosCargados(string admId);
+        List<AjusteRevertidoDto> ObtenerAJREVERTIDO(string ajId);
 
 		List<AutorizacionPendienteDto> RPRObtenerAutorizacionPendiente(string adm);
         RegistroResponseDto RPRRegistrarProductos(string json,bool esModificacion);

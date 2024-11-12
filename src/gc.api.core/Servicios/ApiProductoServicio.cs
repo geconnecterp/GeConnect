@@ -19,6 +19,8 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using System.Data;
 using System.Linq.Dynamic.Core;
+using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
+using System.Security.Cryptography;
 
 
 namespace gc.api.core.Servicios
@@ -277,6 +279,45 @@ namespace gc.api.core.Servicios
 			List<NDeCYPI.InfoProductoDto> producto = _repository.EjecutarLstSpExt<NDeCYPI.InfoProductoDto>(sp, ps, true);
 
 			return producto;
+		}
+
+		public List<TipoAjusteDeStockDto> ObtenerTipoDeAjusteDeStock()
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_AJ_TIPOS;
+
+			var ps = new List<SqlParameter>();
+
+			List<TipoAjusteDeStockDto> ajustes = _repository.EjecutarLstSpExt<TipoAjusteDeStockDto>(sp, ps, true);
+
+			return ajustes;
+		}
+
+		public List<AjustePrevioCargadoDto> ObtenerAJPreviosCargados(string admId)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_AJ_PREVIOS_CARGADOS;
+
+			var ps = new List<SqlParameter>()
+			{
+					new SqlParameter("@adm_id",admId),
+			};
+
+			List<AjustePrevioCargadoDto> ajustes = _repository.EjecutarLstSpExt<AjustePrevioCargadoDto>(sp, ps, true);
+
+			return ajustes;
+		}
+
+		public List<AjusteRevertidoDto> ObtenerAJREVERTIDO(string ajId)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_AJ_AJUSTE_REVERTIDO;
+
+			var ps = new List<SqlParameter>()
+			{
+					new SqlParameter("@as_compte",ajId),
+			};
+
+			List<AjusteRevertidoDto> ajustes = _repository.EjecutarLstSpExt<AjusteRevertidoDto>(sp, ps, true);
+
+			return ajustes;
 		}
 
 		public ProductoBusquedaDto ProductoBuscar(BusquedaBase busqueda)

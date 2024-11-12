@@ -29,8 +29,11 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string AccionInfoStk = "/GetDepositoInfoStk";
         private const string AccionInfoStkVal = "/GetDepositoInfoStkVal";
 
-        private const string RTI_REMITOS_PENDIENTES = "/RemitosPendientes";
-        private readonly AppSettings _appSettings;
+		private const string RTI_REMITOS_PENDIENTES = "/RemitosPendientes";
+
+		private const string RutaApiAlmacen = "/api/apialmacen";
+		private const string BOX_BUSCAR_POR_DEPOSITO = "/ObtenerListaDeBoxesPorDeposito";
+		private readonly AppSettings _appSettings;
 
         public DepositoServicio(IOptions<AppSettings> options, ILogger<DepositoServicio> logger) : base(options, logger)
         {
@@ -241,5 +244,46 @@ namespace gc.sitio.core.Servicios.Implementacion
                 throw;
             }
         }
-    }
+
+		public async Task<List<DepositoInfoBoxDto>> BuscarBoxPorDeposito(string depoId, string token)
+		{
+			ApiResponse<List<DepositoInfoBoxDto>>? respuesta;
+			string stringData;
+			try
+			{
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response = null;
+				var link = $"{_appSettings.RutaBase}{RutaApiAlmacen}{BOX_BUSCAR_POR_DEPOSITO}?depoId={depoId}";
+				response = await client.GetAsync(link);
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					respuesta = JsonConvert.DeserializeObject<ApiResponse<List<DepositoInfoBoxDto>>>(stringData);
+					if (response == null)
+					{
+						throw new NegocioException("No se desserializo correctamente la lista de Box. Verifique");
+					}
+					return respuesta.Data;
+				}
+				else
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogError($"Error al intentar obtener los BOX del Depósito: {stringData}");
+					throw new NegocioException("Hubo un error al intentar obtener los BOX del Depósito");
+				}
+
+			}
+			catch (NegocioException ex)
+			{
+				_logger.LogError(ex, "Error al intentar obtener los BOX del Depósito.");
+				throw;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar obtener los BOX del Depósito.");
+				throw;
+			}
+		}
+	}
 }

@@ -31,6 +31,7 @@ namespace gc.api.Controllers.Almacen
     using System.Reflection;
     using System.Security.Cryptography;
     using System.Threading.Tasks;
+	using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 
     [Authorize]
     [Produces("application/json")]
@@ -333,6 +334,51 @@ namespace gc.api.Controllers.Almacen
 			var res = _productosSv.InfoProd(pId);
 
 			response = new ApiResponse<List<NDeCYPI.InfoProductoDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<TipoAjusteDeStockDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerTipoDeAjusteDeStock()
+		{
+			ApiResponse<List<TipoAjusteDeStockDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.ObtenerTipoDeAjusteDeStock();
+
+			response = new ApiResponse<List<TipoAjusteDeStockDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<AjustePrevioCargadoDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerAJPreviosCargados(string admId)
+		{
+			ApiResponse<List<AjustePrevioCargadoDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.ObtenerAJPreviosCargados(admId);
+
+			response = new ApiResponse<List<AjustePrevioCargadoDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<AjusteRevertidoDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerAJREVERTIDO(string ajId)
+		{
+			ApiResponse<List<AjusteRevertidoDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.ObtenerAJREVERTIDO(ajId);
+
+			response = new ApiResponse<List<AjusteRevertidoDto>>(res);
 
 			return Ok(response);
 		}

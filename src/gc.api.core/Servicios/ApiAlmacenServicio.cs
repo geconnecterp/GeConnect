@@ -4,6 +4,7 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
+using gc.infraestructura.Dtos.Deposito;
 using gc.infraestructura.Dtos.Gen;
 using Microsoft.Data.SqlClient;
 
@@ -134,5 +135,19 @@ namespace gc.api.core.Servicios
 
             return response;
         }
-    }
+
+		public List<DepositoInfoBoxDto> ObtenerListaDeBoxesPorDeposito(string depoId)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_BOX_LISTA;
+
+			var ps = new List<SqlParameter>()
+			{
+				new("@depo_id",depoId),
+			};
+
+			List<DepositoInfoBoxDto> response = _repository.EjecutarLstSpExt<DepositoInfoBoxDto>(sp, ps, true);
+
+			return response;
+		}
+	}
 }

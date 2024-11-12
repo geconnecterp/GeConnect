@@ -1,0 +1,134 @@
+﻿$(function () {
+	$("#btnCargaPrevia").on("click", AbrirCargaPrevia);
+	$("#btnRevertirAjuste").on("click", RevertirAjuste);
+	//
+	$("#txtUPEnComprobanteRP").on("keyup", analizaInputUP);
+	$("#txtBtoEnComprobanteRP").on("keyup", analizaInputBto);
+	$("#txtUnidEnComprobanteRP").on("keyup", analizaInputUnid);
+	$("#listaDeposito").on("change", listaDepositoChange);
+	$("#listaBox").on("change", listaBoxesChange);
+	$("#listaDepositoEnCargaPrevia").on("change", listaDepositoEnCargaPreviaChange);
+	$("#listaMotivo").on("change", listalistaMotivoChange);
+	//
+});
+
+function analizaInputUP(x) {
+	if (x.which == "13") {
+		$("#txtBtoEnComprobanteRP").focus();
+	}
+}
+
+function analizaInputBto(x) {
+	if (x.which == "13") {
+		$("#txtUnidEnComprobanteRP").focus();
+	}
+}
+
+function analizaInputUnid(x) {
+	if (x.which == "13") {
+		$("#btnAddProd").focus();
+	}
+}
+
+function seleccionarProductosDesdeCargaPrevia() {
+}
+
+function listaBoxesChange() {
+}
+
+function RevertirAjuste() {
+	var ajId = $("#txtNroAjuste").val();
+	if (ajId === "") {
+		AbrirMensaje("Atención", "Debe ingresar un ID de Ajuste.", function () {
+			$("#msjModal").modal("hide");
+			$("#txtNroAjuste").focus();
+			return true;
+		}, false, ["Aceptar"], "warn!", null);
+	}
+	AbrirWaiting();
+	var datos = { ajId }
+	PostGenHtml(datos, ObtenerProductosDesdeAJRevertidoURL, function (obj) {
+		$("#divDetalleDeProductosAAjustar").html(obj);
+		AddEventListenerToGrid("tbDetalleDeProductosAAjustar");
+		CerrarWaiting();
+		return true
+	});
+	CerrarWaiting();
+}
+
+function listalistaMotivoChange() {
+	var motivoSelected = $("#listaMotivo").val();
+	if (motivoSelected != "") {
+		motivoSelected = motivoSelected.split('#');
+		if (motivoSelected.length == 2) {
+			tipoMotivoSeleccionado = motivoSelected[1];
+		}
+		else {
+			tipoMotivoSeleccionado = "";
+		}
+	}
+	else {
+		tipoMotivoSeleccionado = "";
+	}
+	console.log(tipoMotivoSeleccionado);
+}
+
+function AbrirCargaPrevia() {
+	AbrirWaiting();
+	var datos = { };
+	PostGenHtml(datos, ObtenerDatosModalCargaPreviaUrl, function (obj) {
+		$("#divModalCargaPrevia").html(obj);
+		AddEventListenerToGrid("tbListaProductosParaAgregar");
+		$("#listaDepositoEnCargaPrevia").on("change", listaDepositoEnCargaPreviaChange);
+		$('#modalCargaPrevia').modal('show')
+		CerrarWaiting();
+		return true
+	});
+	CerrarWaiting();
+}
+
+function listaDepositoChange() {
+	BuscarBoxDesdeDeposito();
+}
+
+function listaBoxEnCargaPreviaChange() {
+}
+
+function BuscarBoxDesdeDeposito() {
+	AbrirWaiting();
+	var depoId = $("#listaDeposito").val();
+	var datos = { depoId };
+	PostGenHtml(datos, BuscarBoxesDesdeDepositoURL, function (obj) {
+		$("#divComboBoxes").html(obj);
+		$("#listaBox").on("change", listaBoxesChange);
+		CerrarWaiting();
+		return true
+	});
+}
+
+function listaDepositoEnCargaPreviaChange() {
+	AbrirWaiting();
+	var depoId = $("#listaDepositoEnCargaPrevia").val();
+	var datos = { depoId };
+	PostGenHtml(datos, ObtenerBoxesDesdeDepositoDesdeCargaPreviaURL, function (obj) {
+		$("#divComboBoxesEnCargaPrevia").html(obj);
+		$("#listaBoxEnCargaPrevia").on("change", listaBoxEnCargaPreviaChange);
+		CerrarWaiting();
+		return true
+	});
+}
+
+function AddEventListenerToGrid(tabla) {
+	var grilla = document.getElementById(tabla);
+	if (grilla) {
+		document.getElementById(tabla).addEventListener('click', function (e) {
+			if (e.target.nodeName === 'TD') {
+				var selectedRow = this.querySelector('.selected-row');
+				if (selectedRow) {
+					selectedRow.classList.remove('selected-row');
+				}
+				e.target.closest('tr').classList.add('selected-row');
+			}
+		});
+	}
+}
