@@ -1,21 +1,25 @@
 ﻿@model AutorizacionPendienteDto
+@{
+    string red = Model.EsModificacion ? "text-danger" : "";
+    string bold = Model.EsModificacion ? "fw-bolder" : "";
+}
 <div class="row">
-    <div class="col-sm-4">
+    <div class="col-sm-4 ">
         <div class="input-group input-group-sm">
             <span class="input-group-text">Auto.:</span>
-            <input type="text" value="@Model.Rp" class="form-control " readonly />
+            <input type="text" value="@Model.Rp" class="form-control @red @bold" readonly />
         </div>
     </div>
     <div class="col-sm-4">
         <div class="input-group input-group-sm">
             <span class="input-group-text">Prvd.:</span>
-            <input type="text" value="@Model.Cta_denominacion" class="form-control " readonly />            
+            <input type="text" value="@Model.Cta_denominacion" class="form-control @red @bold" readonly />
         </div>
     </div>
     <div class="col-sm-4">
         <div class="input-group input-group-sm">
             <span class="input-group-text">Cta.:</span>
-            <input type="text" value="@Model.Cta_id" class="form-control " readonly />
+            <input type="text" value="@Model.Cta_id" class="form-control @red @bold" readonly />
         </div>
     </div>
 </div>

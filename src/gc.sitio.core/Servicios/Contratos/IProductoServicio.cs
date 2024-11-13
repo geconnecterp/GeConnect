@@ -1,15 +1,15 @@
 ﻿using gc.infraestructura.Dtos.Almacen;
-using gc.infraestructura.Dtos.Almacen.Rpr;
-using gc.infraestructura.Dtos.CuentaComercial;
-using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Almacen.Tr;
-using gc.infraestructura.Dtos.Productos;
-using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen.Info;
-using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
-using gc.infraestructura.Dtos.General;
 using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Almacen.Response;
+using gc.infraestructura.Dtos.Almacen.Rpr;
+using gc.infraestructura.Dtos.Almacen.Tr;
+using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
+using gc.infraestructura.Dtos.CuentaComercial;
+using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.General;
+using gc.infraestructura.Dtos.Productos;
+using gc.infraestructura.EntidadesComunes.Options;
 using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 
@@ -35,8 +35,8 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<List<AjusteRevertidoDto>> ObtenerAJREVERTIDO(string ajId, string token);
 
 		Task<List<AutorizacionPendienteDto>> RPRObtenerAutorizacionPendiente(string adm, string token);
-		Task<RegistroResponseDto> RPRRegistrarProductos(List<ProductoGenDto> json, string admId, string ul, string token);
-		Task<List<AutoComptesPendientesDto>> RPRObtenerComptesPendiente(string adm_id, string token);
+        Task<RegistroResponseDto> RPRRegistrarProductos(List<ProductoGenDto> json,string admId, string ul,bool esModificacion, string token);
+        Task<List<AutoComptesPendientesDto>> RPRObtenerComptesPendiente(string adm_id, string token);
 
 		Task<RespuestaDto> ValidarUL(string ul, string adm, string sm, string token);
 		Task<RprResponseDto> ValidarBox(string box, string adm, string token);
@@ -83,7 +83,8 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<List<TRVerConteosDto>> TRVerConteos(string ti, string token);
 		Task<List<RespuestaDto>> TRValidarTransferencia(string ti, string admId, string usuId, string token);
 
-		Task<List<ProductoNCPIDto>> NCPICargarListaDeProductos(string tipo, string admId, string filtro, string id, string token);
-		Task<List<NCPICargaPedidoResponse>> NCPICargaPedido(NCPICargaPedidoRequest req, string token);
-	}
+        Task<List<ProductoNCPIDto>> NCPICargarListaDeProductos(string tipo, string admId, string filtro, string id, string token);
+        Task<List<NCPICargaPedidoResponse>> NCPICargaPedido(NCPICargaPedidoRequest req, string token);
+      
+    }
 }

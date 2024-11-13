@@ -1,7 +1,9 @@
-﻿using gc.api.core.Entidades;
+﻿using Azure;
+using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Administracion;
+using gc.infraestructura.Dtos.Box;
 using gc.infraestructura.Dtos.Deposito;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
@@ -22,6 +24,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         private readonly MenuSettings _menuSettings;
         private readonly ILogger<InfoProdController> _logger;
         private readonly IProductoServicio _productoServicio;
+        private readonly IProducto2Servicio _producto2Servicio;
         private readonly IDepositoServicio _depositoServicio;
         private readonly ICuentaServicio _ctaSv;
         private readonly IRubroServicio _rubSv;
@@ -29,7 +32,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
         public InfoProdController(IOptions<AppSettings> options, IOptions<MenuSettings> options1,
             IHttpContextAccessor context, IProductoServicio productoServicio, ILogger<InfoProdController> logger,
-            ICuentaServicio cta, IRubroServicio rubro, IDepositoServicio depositoServicio) : base(options, options1, context)
+            ICuentaServicio cta, IRubroServicio rubro, IDepositoServicio depositoServicio, IProducto2Servicio producto2Servicio) : base(options, options1, context)
         {
             _menuSettings = options1.Value;
             _productoServicio = productoServicio;
@@ -38,6 +41,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             _rubSv = rubro;
             _settings = options.Value;
             _depositoServicio = depositoServicio;
+            _producto2Servicio = producto2Servicio;
         }
 
         /// <summary>
@@ -113,18 +117,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 return RedirectToAction("Login", "Token", new { area = "Seguridad" });
             }
 
-            //obtengo datos TipoMotivo
-            if (TiposMotivo.Count == 0)
-            {
-                var res = await _productoServicio.ObtenerTiposMotivo(TokenCookie);
-                if (res != null)
-                {
-                    TiposMotivo = res;
-                }
-            }
-            var lista = TiposMotivo.Select(x => new ComboGenDto { Id = x.Sm_tipo, Descripcion = x.Sm_Desc });
-
-            ViewBag.TmId = HelperMvc<ComboGenDto>.ListaGenerica(lista);
+            await ObtenerTiposMotivo();
 
             if (!string.IsNullOrEmpty(callback))
             {
@@ -139,7 +132,21 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             return View();
         }
 
+        private async Task ObtenerTiposMotivo()
+        {
+            //obtengo datos TipoMotivo
+            if (TiposMotivo.Count == 0)
+            {
+                var res = await _productoServicio.ObtenerTiposMotivo(TokenCookie);
+                if (res != null)
+                {
+                    TiposMotivo = res;
+                }
+            }
+            var lista = TiposMotivo.Select(x => new ComboGenDto { Id = x.Sm_tipo, Descripcion = x.Sm_Desc });
 
+            ViewBag.TmId = HelperMvc<ComboGenDto>.ListaGenerica(lista);
+        }
 
         [HttpGet]
         public IActionResult Box()
@@ -500,7 +507,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             ComboDepositos();
 
             string volver = Url.Action("info", "almacen", new { area = "gestion" });
-            ViewBag.AppItem = new AppItem { Nombre = "Información de Productos", VolverUrl = volver ?? "#" };
+            ViewBag.AppItem = new AppItem { Nombre = "Información de Productos - Gestión de Depósitos", VolverUrl = volver ?? "#" };
 
             return View();
         }
@@ -614,7 +621,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
             try
             {
-                List<DepositoInfoStkValDto> regs = await _depositoServicio.BuscarDepositoInfoStkVal(AdministracionId,depo_id,concepto, TokenCookie);
+                List<DepositoInfoStkValDto> regs = await _depositoServicio.BuscarDepositoInfoStkVal(AdministracionId, depo_id, concepto, TokenCookie);
 
                 grillaDatos = PreparaGridInfoStkVal(regs);
             }
@@ -652,6 +659,167 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
             return new GridCore<DepositoInfoStkValDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" };
         }
+        #endregion
+
+        #region Vistas INFO BOX
+        [HttpGet]
+        public async Task<IActionResult> InfoBox()
+        {
+            var auth = EstaAutenticado;
+            if (!auth.Item1 || (auth.Item1 && !auth.Item2.HasValue) || (auth.Item1 && auth.Item2.HasValue && auth.Item2.Value < DateTime.Now))
+            {
+                return RedirectToAction("Login", "Token", new { area = "Seguridad" });
+            }
+            ComboDepositos();
+            await ObtenerTiposMotivo();
+
+            string volver = Url.Action("info", "almacen", new { area = "gestion" });
+            ViewBag.AppItem = new AppItem { Nombre = "Información de Productos - Gestión de Box", VolverUrl = volver ?? "#" };
+
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> ValidarBox(string boxId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(boxId) || string.IsNullOrWhiteSpace(boxId))
+                {
+                    throw new NegocioException("No se recepcionó el Box. Verifique");
+                }
+                var res = await _productoServicio.ValidarBox(boxId, AdministracionId, TokenCookie);
+                if (res.Resultado == 0)
+                {
+                    //se llama al sp con información del box
+                    RespuestaGenerica<BoxInfoDto> info = await _producto2Servicio.ObtenerBoxInfo(boxId, TokenCookie);
+                    if (info.Ok)
+                    {
+                        return Json(new { error = false, warn = false, info = info.Entidad, msg = "EL BOX SE VALIDO, SATISFACTORIAMENTE." });
+                    }
+                    else
+                    {
+                        throw new NegocioException(info.Mensaje);
+                    }
+                }
+                else
+                {
+                    throw new NegocioException(res.Resultado_msj);
+                }
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ObtenerBoxInfoStk(string boxId)
+        {
+            RespuestaGenerica<EntidadBase> response = new();
+            GridCore<BoxInfoStkDto> grillaDatos;
+            try
+            {
+                if (string.IsNullOrEmpty(boxId) || string.IsNullOrWhiteSpace(boxId))
+                {
+                    throw new NegocioException("No se recepcionó el Box. Verifique");
+                }
+                var res = await _producto2Servicio.ObtenerBoxInfoStk(boxId, TokenCookie);
+                if (res.Ok)
+                {
+                    grillaDatos = GenerarGrilla(res.ListaEntidad, "P_id");
+                }
+                else
+                {
+                    throw new NegocioException(res.Mensaje);
+                }
+            }
+            catch (NegocioException ex)
+            {
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = true;
+                response.EsError = false;
+                return PartialView("_gridMensaje", response);
+            }
+            catch (UnauthorizedException ex)
+            {
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = true;
+                response.EsError = false;
+                return PartialView("_gridMensaje", response);
+            }
+            catch (Exception ex)
+            {
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
+            }
+            return PartialView("_gridBoxInfoStk", grillaDatos);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ObtenerBoxInfoMovStk(string boxId, string sm, DateTime desde, DateTime hasta)
+        {
+            RespuestaGenerica<EntidadBase> response = new();
+            GridCore<BoxInfoMovStkDto> grillaDatos;
+            try
+            {
+                if (string.IsNullOrEmpty(boxId) || string.IsNullOrWhiteSpace(boxId))
+                {
+                    throw new NegocioException("No se recepcionó el Box. Verifique");
+                }
+
+                //sm = sm ?? "%";
+
+                var res = await _producto2Servicio.ObtenerBoxInfoMovStk(boxId, sm, desde, hasta, TokenCookie);
+                if (res.Ok)
+                {
+                    grillaDatos = GenerarGrilla(res.ListaEntidad, "P_id");
+                }
+                else
+                {
+                    throw new NegocioException(res.Mensaje);
+                }
+            }
+            catch (NegocioException ex)
+            {
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = true;
+                response.EsError = false;
+                return PartialView("_gridMensaje", response);
+            }
+            catch (UnauthorizedException ex)
+            {
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = true;
+                response.EsError = false;
+                return PartialView("_gridMensaje", response);
+            }
+            catch (Exception ex)
+            {
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
+            }
+            return PartialView("_gridBoxInfoMovStk", grillaDatos);
+        }
+
         #endregion
     }
 }

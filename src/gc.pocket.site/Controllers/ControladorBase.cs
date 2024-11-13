@@ -7,6 +7,7 @@ using gc.infraestructura.Dtos.Almacen.Info;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.Almacen.Tr.Remito;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes;
 using gc.infraestructura.EntidadesComunes.Options;
@@ -15,6 +16,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq.Dynamic.Core;
+using X.PagedList;
 
 namespace gc.pocket.site.Controllers
 {
@@ -782,5 +784,13 @@ namespace gc.pocket.site.Controllers
 
             return query;
         }
+
+        protected GridCore<T> GenerarGrilla<T>(List<T>? lista,string nnCol)
+        {
+            var l = new StaticPagedList<T>(lista, 1, 999, lista.Count);
+
+            return new GridCore<T>() { ListaDatos = l, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "nnCol", SortDir = "ASC" };
+        }
+
     }
 }

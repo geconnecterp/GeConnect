@@ -1,0 +1,34 @@
+﻿@model GridCore<BoxInfoMovStkDto>
+
+
+@{
+    var dataMod = new BoxInfoMovStkDto();
+    var alt = true;
+    string clase = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+}
+<div class="table-responsive table-wrapper text-nowrap">
+    <table class="table mb-0 table-bordered  table-hover">
+        <thead class="table-dark">
+            <tr class="header">
+                <th scope="col">FECHA</th>
+                <th class="text-sm-center" scope="col">ID</th>
+                <th class="text-sm-start" scope="col">DESC.PROD</th>
+                <th class="text-sm-center" scope="col">E/S</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ListaDatos)
+            {
+                if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+                <tr class="@clase">
+                    <td class="text-sm-center">@item.Sm_Fecha</td>
+                    <td class="text-sm-center corta-linea">@item.P_id</td>
+                    <td class="text-sm-start">@item.Tco_id</td>
+                    <td class="text-sm-end">@item.Sm_es</td>                   
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

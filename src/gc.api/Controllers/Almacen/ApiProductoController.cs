@@ -14,6 +14,23 @@ namespace gc.api.Controllers.Almacen
 	using gc.infraestructura.Dtos.Almacen.Tr;
 	using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 	using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
+    using gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
+    using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
+    using gc.infraestructura.Dtos.Box;
+    using gc.infraestructura.Dtos.CuentaComercial;
+    using gc.infraestructura.Dtos.Gen;
+    using gc.infraestructura.Dtos.General;
+    using gc.infraestructura.Dtos.Productos;
+    using gc.infraestructura.EntidadesComunes.Options;
+    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Mvc;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
+    using System.Collections.Generic;
+    using System.Net;
+    using System.Reflection;
+    using System.Security.Cryptography;
+    using System.Threading.Tasks;
 	using gc.infraestructura.Dtos.CuentaComercial;
 	using gc.infraestructura.Dtos.Gen;
 	using gc.infraestructura.Dtos.General;
@@ -287,8 +304,8 @@ namespace gc.api.Controllers.Almacen
 
 			response = new ApiResponse<List<NDeCYPI.InfoProdIExMesDto>>(res);
 
-			return Ok(response);
-		}
+            return Ok(response);
+        }
 
 		[HttpGet]
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<NDeCYPI.InfoProdIExSemanaDto>>))]
@@ -302,20 +319,20 @@ namespace gc.api.Controllers.Almacen
 
 			response = new ApiResponse<List<NDeCYPI.InfoProdIExSemanaDto>>(res);
 
-			return Ok(response);
-		}
+            return Ok(response);
+        }
 
-		[HttpGet]
-		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<ProductoNCPISustitutoDto>>))]
-		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
-		[Route("[action]")]
-		public IActionResult InfoProdSustituto(string pId, string tipo, string admId, bool soloProv)
-		{
-			ApiResponse<List<ProductoNCPISustitutoDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			var res = _productosSv.InfoProdSustituto(pId, tipo, admId, soloProv);
+        [HttpGet]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<ProductoNCPISustitutoDto>>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult InfoProdSustituto(string pId, string tipo, string admId, bool soloProv)
+        {
+            ApiResponse<List<ProductoNCPISustitutoDto>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.InfoProdSustituto(pId, tipo, admId, soloProv);
 
-			response = new ApiResponse<List<ProductoNCPISustitutoDto>>(res);
+            response = new ApiResponse<List<ProductoNCPISustitutoDto>>(res);
 
 			return Ok(response);
 		}
@@ -381,7 +398,7 @@ namespace gc.api.Controllers.Almacen
 		}
 		#endregion
 
-		#region Acciones para modulo RPR
+        #region Acciones para modulo RPR
 
 		[HttpGet]
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<AutorizacionPendienteDto>>))]
@@ -518,14 +535,14 @@ namespace gc.api.Controllers.Almacen
 			return Ok(response);
 		}
 
-		[HttpPost]
-		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
-		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
-		[Route("[action]")]
-		public IActionResult TRCargarCtrlSalida(TRProdsCtrlSalDto prods) ////PARA FACTORIZAR ACA ####################################
-		{
-			ApiResponse<RespuestaDto> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult TRCargarCtrlSalida(TRProdsCtrlSalDto prods) ////PARA FACTORIZAR ACA ####################################
+        {
+            ApiResponse<RespuestaDto> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
 
 			if (prods.ProdsCargar.Count == 0)
 			{
@@ -563,10 +580,10 @@ namespace gc.api.Controllers.Almacen
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]
 
-		public IActionResult RPRRegistrar(List<ProductoGenDto> prods)   ////PARA FACTORIZAR ACA ####################################
-		{
-			ApiResponse<RegistroResponseDto> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+        public IActionResult RPRRegistrar(List<ProductoGenDto> prods,bool esMod=false)   ////PARA FACTORIZAR ACA ####################################
+        {
+            ApiResponse<RegistroResponseDto> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
 
 			if (prods.Count == 0)
 			{
@@ -582,10 +599,10 @@ namespace gc.api.Controllers.Almacen
 			//    return BadRequest("El JSON recepcionado no es válido");
 			//}
 
-			var res = _productosSv.RPRRegistrarProductos(json);
-			response = new ApiResponse<RegistroResponseDto>(res);
-			return Ok(response);
-		}
+            var res = _productosSv.RPRRegistrarProductos(json,esMod);
+            response = new ApiResponse<RegistroResponseDto>(res);
+            return Ok(response);
+        }
 
 		[HttpGet]
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<AutoComptesPendientesDto>))]
@@ -722,69 +739,69 @@ namespace gc.api.Controllers.Almacen
 			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
 			var res = _productosSv.TRConfirmaAutorizaciones(request);
 
-			//response = new ApiResponse<RespuestaDto>(res);
-			response = new ApiResponse<List<RespuestaDto>>(res);
-			response = new ApiResponse<List<RespuestaDto>>(res);
+            //response = new ApiResponse<RespuestaDto>(res);
+            response = new ApiResponse<List<RespuestaDto>>(res);
+            response = new ApiResponse<List<RespuestaDto>>(res);
 
-			return Ok(response);
-		}
+            return Ok(response);
+        }
 
-		[HttpPost]
-		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
-		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
-		[Route("[action]")]
-		public IActionResult TRValidarTransferencia(TRValidarTransferenciaRequest request)
-		{
-			ApiResponse<List<RespuestaDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			var res = _productosSv.TRValidarTransferencia(request);
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult TRValidarTransferencia(TRValidarTransferenciaRequest request)
+        {
+            ApiResponse<List<RespuestaDto>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.TRValidarTransferencia(request);
 
-			response = new ApiResponse<List<RespuestaDto>>(res);
+            response = new ApiResponse<List<RespuestaDto>>(res);
 
-			return Ok(response);
-		}
+            return Ok(response);
+        }
 
-		[HttpPost]
-		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoNCPIDto>))]
-		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
-		[Route("[action]")]
-		public IActionResult NCPICargarListaDeProductos(NCPICargarListaDeProductosRequest request)
-		{
-			ApiResponse<List<ProductoNCPIDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			var res = _productosSv.NCPICargarListaDeProductos(request);
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoNCPIDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult NCPICargarListaDeProductos(NCPICargarListaDeProductosRequest request)
+        {
+            ApiResponse<List<ProductoNCPIDto>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.NCPICargarListaDeProductos(request);
 
-			response = new ApiResponse<List<ProductoNCPIDto>>(res);
+            response = new ApiResponse<List<ProductoNCPIDto>>(res);
 
-			return Ok(response);
-		}
+            return Ok(response);
+        }
 
-		[HttpPost]
-		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<NCPICargaPedidoResponse>))]
-		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
-		[Route("[action]")]
-		public IActionResult NCPICargaPedido(NCPICargaPedidoRequest request)
-		{
-			ApiResponse<List<NCPICargaPedidoResponse>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			var res = _productosSv.NCPICargaPedido(request);
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<NCPICargaPedidoResponse>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult NCPICargaPedido(NCPICargaPedidoRequest request)
+        {
+            ApiResponse<List<NCPICargaPedidoResponse>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.NCPICargaPedido(request);
 
-			response = new ApiResponse<List<NCPICargaPedidoResponse>>(res);
+            response = new ApiResponse<List<NCPICargaPedidoResponse>>(res);
 
-			return Ok(response);
-		}
+            return Ok(response);
+        }
 
-		[HttpGet]
-		[Route("[action]")]
-		public IActionResult TRVerConteos(string ti)
-		{
-			if (string.IsNullOrWhiteSpace(ti)) return BadRequest("No se recepcionaron los datos");
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult TRVerConteos(string ti)
+        {
+            if (string.IsNullOrWhiteSpace(ti)) return BadRequest("No se recepcionaron los datos");
 
-			List<TRVerConteosDto> resp = _productosSv.TRVerConteos(ti);
+            List<TRVerConteosDto> resp = _productosSv.TRVerConteos(ti);
 
-			var response = new ApiResponse<List<TRVerConteosDto>>(resp);
-			return Ok(response);
-		}
+            var response = new ApiResponse<List<TRVerConteosDto>>(resp);
+            return Ok(response);
+        }
 
 		[HttpGet]
 		[Route("[action]")]
@@ -805,24 +822,24 @@ namespace gc.api.Controllers.Almacen
 			return Ok(response);
 		}
 
-		[HttpGet]
-		[Route("[action]")]
-		public IActionResult TRVerCtrlSalida(string tr, string user)
-		{
-			if (string.IsNullOrEmpty(tr) || string.IsNullOrEmpty(user))
-			{
-				return BadRequest("Algunos de los Parametros necesarios para el Control de Salida no se recepcionaron.");
-			}
-			if (string.IsNullOrWhiteSpace(tr) || string.IsNullOrWhiteSpace(user))
-			{
-				return BadRequest("Algunos de los Parametros necesarios para el Control de Salida no se recepcionaron.");
-			}
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult TRVerCtrlSalida(string tr, string user)
+        {
+            if (string.IsNullOrEmpty(tr) || string.IsNullOrEmpty(user))
+            {
+                return BadRequest("Algunos de los Parametros necesarios para el Control de Salida no se recepcionaron.");
+            }
+            if (string.IsNullOrWhiteSpace(tr) || string.IsNullOrWhiteSpace(user))
+            {
+                return BadRequest("Algunos de los Parametros necesarios para el Control de Salida no se recepcionaron.");
+            }
 
 			List<ProductoGenDto> resp = _productosSv.TRVerCtrlSalida(tr, user);
 
-			var response = new ApiResponse<List<ProductoGenDto>>(resp);
-			return Ok(response);
-		}
+            var response = new ApiResponse<List<ProductoGenDto>>(resp);
+            return Ok(response);
+        }
 
 		[HttpGet]
 		[Route("[action]")]
@@ -900,30 +917,89 @@ namespace gc.api.Controllers.Almacen
 			}
 		}
 
-		/// <summary>
-		/// Método destinado a validar la estructura del Json antes de ser enviado a la base de datos
-		/// </summary>
-		/// <param name = "json" ></ param >
-		/// < returns ></ returns >
-		private bool JsonValido(string json)
-		{
-			try
-			{
-				JObject.Parse(json);
-				return true;
-			}
-			catch (JsonReaderException ex)
-			{
-				_logger.LogError(ex.Message, "JSON No válido.");
-				return false;
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex.Message, "JSON No válido.");
-				return false;
-			}
-		}
-		#endregion
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult ObtenerBoxInfo(string box_id)
+        {
+            if (string.IsNullOrWhiteSpace(box_id) || string.IsNullOrWhiteSpace(box_id))
+            {
+                throw new NegocioException("No se ha recepcionado el BOX.");
+            }
+            var res = _productosSv.ObtenerBoxInfo(box_id);
+            if (res == null)
+            {
+                return NotFound("No se encontro el Box.");
+            }
+            else
+            {
+                return Ok(new ApiResponse<BoxInfoDto>(res));
+            }
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult ObtenerBoxInfoStk(string box_id)
+        {
+            if (string.IsNullOrWhiteSpace(box_id) || string.IsNullOrWhiteSpace(box_id))
+            {
+                throw new NegocioException("No se ha recepcionado el BOX.");
+            }
+            var res = _productosSv.ObtenerBoxInfoStk(box_id);
+            if (res == null)
+            {
+                return NotFound("No se encontró el detalle del STK.");
+            }
+            else
+            {
+                return Ok(new ApiResponse<List<BoxInfoStkDto>>(res));
+            }
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult ObtenerBoxInfoMovStk(string box_id, string? sm_tipo, long desde, long hasta)
+        {
+            if (string.IsNullOrWhiteSpace(box_id) || string.IsNullOrWhiteSpace(box_id))
+            {
+                throw new NegocioException("No se ha recepcionado el BOX.");
+            }
+            sm_tipo = sm_tipo ?? "%";
+
+            var res = _productosSv.ObtenerBoxInfoMovStk(box_id, sm_tipo, new DateTime(desde), new DateTime(hasta));
+            if (res == null || res.Count==0)
+            {
+                return NotFound("No se encontraró el detalle de Movimientos.");
+            }
+            else
+            {
+                return Ok(new ApiResponse<List<BoxInfoMovStkDto>>(res));
+            }
+        }
+
+        /// <summary>
+        /// Método destinado a validar la estructura del Json antes de ser enviado a la base de datos
+        /// </summary>
+        /// <param name = "json" ></ param >
+        /// < returns ></ returns >
+        private bool JsonValido(string json)
+        {
+            try
+            {
+                JObject.Parse(json);
+                return true;
+            }
+            catch (JsonReaderException ex)
+            {
+                _logger.LogError(ex.Message, "JSON No válido.");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message, "JSON No válido.");
+                return false;
+            }
+        }
+        #endregion
 
 	}
 }

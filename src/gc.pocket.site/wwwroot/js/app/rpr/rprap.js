@@ -16,6 +16,14 @@ function seleccionaRegistroAP(x) {
     $("#btnContinua01").prop("disabled", false);
 }
 
-function continuaAutorizacionPendiente() {    
-    window.location.href = autoPendienteResguardarUrl + "?rp=" + autoPendienteSelect;
+function continuaAutorizacionPendiente() { 
+    if (typeof rprModificacion !== 'undefined') {
+        if (rprModificacion === true) {
+            window.location.href = autoPendienteResguardarUrl + "?rp=" + autoPendienteSelect + "&esUpdate=true";
+        }
+    }
+    else {
+        window.location.href = autoPendienteResguardarUrl + "?rp=" + autoPendienteSelect;
+    }
+
 }

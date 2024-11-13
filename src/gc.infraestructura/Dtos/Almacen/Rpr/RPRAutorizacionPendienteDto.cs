@@ -3,6 +3,7 @@
 	public class AutorizacionPendienteDto : Dto
 	{
 		public string Rp { get; set; } = string.Empty;
+		public string Ul {  get; set; }= string.Empty;
 		public string Cta_id { get; set; } = string.Empty;
 		public string Usu_id { get; set; } = string.Empty;
 		public DateTime? Fecha { get; set; }
@@ -10,7 +11,8 @@
 		public string Rpe_id { get; set; } = string.Empty;
 		public string Cta_denominacion { get; set; } = string.Empty;
 		public string Rp_hidden { get; set; } = string.Empty;
-	}
+		public bool EsModificacion { get; set; } = false;
+    }
 
 	public class RegistroResponseDto
 	{

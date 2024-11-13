@@ -42,8 +42,8 @@
 function confirmarRPR() {
     //obtener deposito y UL
     var ul = $("#ul_Id").val();
-    var dp = $("#DepoId").val();
-    datos = { dp, ul }
+//    var dp = $("#DepoId").val();
+    datos = { ul } //dp,
     AbrirWaiting("Espere... se estan grabando los datos...");
     PostGen(datos, ConfirmarRPRUrl, function (obj) {
         if (obj.error === true) {

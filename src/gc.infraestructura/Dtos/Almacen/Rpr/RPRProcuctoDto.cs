@@ -19,7 +19,10 @@
         public int unidad_pres { get; set; } //0                                                                        x
         public int bulto { get; set; } //0                                                                              x
         public decimal us { get; set; }//0                                                                              x
-        public DateTime? vto { get; set; }//0                                                                           x
+        public DateTime? vto { get; set; }//0
+        public string? p_con_vto { get; set; }
+        public int p_con_vto_min {  get; set; }
+        public string? p_con_vto_ctl { get; set; }
         public decimal cantidad { get; set; }//0                                                                        x
         public decimal cantidad_total { get; set; }//0                                                                  x
         public decimal diferencia { get; set; }//0                                                                      x

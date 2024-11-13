@@ -3,7 +3,7 @@
 @{
     Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
     var buscar = new BusquedaProducto();
-    var cota = (int)ViewBag.FechaCotaJS;
+    //var cota = (int)ViewBag.FechaCotaJS;
     var callback = Url.Action("ResguardarAutorizacionProveedor", "rpr", new { area = "pocketppal", rp = Model.Rp });
 }
 
@@ -29,7 +29,7 @@
     <script type="text/javascript">
         //funcionalidad busqueda avanzada
         var fecha = new Date();
-        var cotaVto = formatoFechaYMD(sumarFecha(fecha, @cota));
+        //var cotaVto = formatoFechaYMD(sumarFecha(fecha, cota));
         var ocultarTrash = false;
         var productoBase = null; //se hidrata en busquedas.
         var funcionBusquedaAvanzada = false;

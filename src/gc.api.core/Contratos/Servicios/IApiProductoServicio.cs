@@ -6,6 +6,7 @@ using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
 using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
+using gc.infraestructura.Dtos.Box;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
@@ -35,13 +36,13 @@ namespace gc.api.core.Contratos.Servicios
 		List<AjusteRevertidoDto> ObtenerAJREVERTIDO(string ajId);
 
 		List<AutorizacionPendienteDto> RPRObtenerAutorizacionPendiente(string adm);
-		RegistroResponseDto RPRRegistrarProductos(string json);
-		List<AutoComptesPendientesDto> RPRObtenerComptesPendientes(string adm);
-		List<RespuestaDto> RPRCargar(CargarJsonGenRequest request);
-		List<RespuestaDto> RPRElimina(string rp);
-		List<RespuestaDto> RPRConfirma(string rp, string adm_id);
-		List<RPRxULDto> RPRxUL(string rp);
-		List<RPRxULDetalleDto> RPRxULDetalle(string ulId);
+        RegistroResponseDto RPRRegistrarProductos(string json,bool esModificacion);
+        List<AutoComptesPendientesDto> RPRObtenerComptesPendientes(string adm);
+        List<RespuestaDto> RPRCargar(CargarJsonGenRequest request);
+        List<RespuestaDto> RPRElimina(string rp);
+        List<RespuestaDto> RPRConfirma(string rp, string adm_id);
+        List<RPRxULDto> RPRxUL(string rp);
+        List<RPRxULDetalleDto> RPRxULDetalle(string ulId);
 
 
 		List<JsonDto> RPREObtenerDatosJsonDesdeRP(string rp);
@@ -69,7 +70,11 @@ namespace gc.api.core.Contratos.Servicios
 		List<TRVerConteosDto> TRVerConteos(string ti);
 		List<RespuestaDto> TRValidarTransferencia(TRValidarTransferenciaRequest request);
 
-		List<ProductoNCPIDto> NCPICargarListaDeProductos(NCPICargarListaDeProductosRequest request);
-		List<NCPICargaPedidoResponse> NCPICargaPedido(NCPICargaPedidoRequest request);
-	}
+        List<ProductoNCPIDto> NCPICargarListaDeProductos(NCPICargarListaDeProductosRequest request);
+        List<NCPICargaPedidoResponse> NCPICargaPedido(NCPICargaPedidoRequest request);
+
+        BoxInfoDto ObtenerBoxInfo(string box_id);
+        List<BoxInfoStkDto> ObtenerBoxInfoStk(string box_id);
+        List<BoxInfoMovStkDto> ObtenerBoxInfoMovStk(string box_id,string sm_tipo,DateTime desde,DateTime hasta);
+    }
 }

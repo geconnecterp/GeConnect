@@ -10,6 +10,7 @@ using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
 using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
+using gc.infraestructura.Dtos.Box;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.General;
@@ -21,6 +22,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net;
+using System.Reflection;
 using System.Runtime.Intrinsics.Arm;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 using System.Security.Cryptography;
@@ -93,9 +95,11 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string TR_Ver_Conteos = "/TRVerConteos";
 		private const string TR_Validar_Transferencia = "/TRValidarTransferencia";
 
-		//NCYPI
-		private const string OC_Productos = "/NCPICargarListaDeProductos";
-		private const string OC_Cargar_Pedido = "/NCPICargaPedido";
+        
+
+        //NCYPI
+        private const string OC_Productos = "/NCPICargarListaDeProductos";
+        private const string OC_Cargar_Pedido = "/NCPICargaPedido";
 
 		private readonly AppSettings _appSettings;
 
@@ -627,9 +631,9 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 		}
 
-		public async Task<RegistroResponseDto> RPRRegistrarProductos(List<ProductoGenDto> prods, string admId, string ul, string token)
-		{
-			ApiResponse<RegistroResponseDto> apiResponse;
+        public async Task<RegistroResponseDto> RPRRegistrarProductos(List<ProductoGenDto> prods, string admId, string ul, bool esModificacion, string token)
+        {
+            ApiResponse<RegistroResponseDto> apiResponse;
 
 			HelperAPI helper = new HelperAPI();
 
@@ -641,7 +645,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			HttpClient client = helper.InicializaCliente(prods, token, out StringContent contentData);
 			HttpResponseMessage response;
 
-			var link = $"{_appSettings.RutaBase}{RutaAPI}{RPRREGISTRAR}";
+            var link = $"{_appSettings.RutaBase}{RutaAPI}{RPRREGISTRAR}?esMod={esModificacion}";
 
 			response = await client.PostAsync(link, contentData);
 
@@ -1965,30 +1969,32 @@ namespace gc.sitio.core.Servicios.Implementacion
 
 			response = await client.PostAsync(link, contentData);
 
-			if (response.StatusCode == HttpStatusCode.OK)
-			{
-				string stringData = await response.Content.ReadAsStringAsync();
-				if (string.IsNullOrEmpty(stringData))
-				{
-					_logger.LogWarning($"La API no devolvió dato alguno. ");
-					return new();
-				}
-				apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
-				if (apiResponse.Data.resultado == 0)
-				{
-					return new RespuestaGenerica<RespuestaDto> { Ok = true, Entidad = apiResponse.Data };
-				}
-				else
-				{
-					return new RespuestaGenerica<RespuestaDto> { Ok = false, Entidad = apiResponse.Data, Mensaje = apiResponse.Data.resultado_msj };
-				}
-			}
-			else
-			{
-				string stringData = await response.Content.ReadAsStringAsync();
-				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
-				return new() { Ok = false, Mensaje = "Hubo un problema al intentar enviar los productos para el control de salida. Verifique log, de ser necesario." };
-			}
-		}
-	}
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(stringData))
+                {
+                    _logger.LogWarning($"La API no devolvió dato alguno. ");
+                    return new();
+                }
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+                if (apiResponse.Data.resultado ==0)
+                {
+                    return new RespuestaGenerica<RespuestaDto> { Ok = true, Entidad = apiResponse.Data };
+                }
+                else
+                {
+                    return new RespuestaGenerica<RespuestaDto> { Ok = false, Entidad = apiResponse.Data, Mensaje = apiResponse.Data.resultado_msj };
+                }
+            }
+            else
+            {
+                string stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                return new() { Ok = false, Mensaje = "Hubo un problema al intentar enviar los productos para el control de salida. Verifique log, de ser necesario." };
+            }
+        }
+
+
+    }
 }

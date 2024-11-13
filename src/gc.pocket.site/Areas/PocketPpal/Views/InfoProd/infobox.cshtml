@@ -1,0 +1,95 @@
+﻿@{
+    Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
+
+    var callback = Url.Action("depo", "infoprod", new { area = "pocketppal" });
+}
+<div class="row mt-1">
+    <div class="col-sm-12">
+        <div class="input-group input-group-sm">
+            <span class="input-group-text" style="width:70px;">box:</span>
+            <input type="text" id="boxId" maxlength="11" class="form-control" />
+            <button id="btnVerifica" type="button" class="btn btn-sm btn-success"><i class="bx bx-sm bx-check-circle"></i></button>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="input-group input-group-sm">
+            <span class="input-group-text" style="width:70px;">Depo:</span>
+            <input type="text" id="depoId" class="form-control backReadOnly" readonly />
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12 col-md-6">
+        <div class="input-group input-group-sm">
+            <span class="input-group-text" style="width:70px;">Gónd.:</span>
+            <input type="text" id="gondId" class="form-control backReadOnly" readonly />
+            <span class="input-group-text" style="width:70px;">Nivel:</span>
+            <input type="text" id="nivId" class="form-control backReadOnly" readonly />
+        </div>
+    </div>
+    <div class="col-sm-12 col-md-6">
+        <div class="input-group input-group-sm">
+            <span class="input-group-text" style="width:70px;">Rack:</span>
+            <input type="text" id="rackId" class="form-control backReadOnly" readonly />
+            <span class="input-group-text" style="width:70px;">Zona:</span>
+            <input type="text" id="zonaId" class="form-control backReadOnly" readonly />
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="nav-align-top mb-4">
+            <ul class="nav nav-tabs nav-fill" role="tablist">
+                <li class="nav-item" role="presentation" title="Stk Box">
+                    <button type="button" id="btnStkBox" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#stkbox" aria-controls="stkbox" aria-selected="false" tabindex="-1">
+                        <i class="tf-icon bx bx-box me-1"></i><span class="d-none d-sm-block">Stk Box</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation" title="Mov">
+                    <button type="button" id="btnMov" class="nav-link " role="tab" data-bs-toggle="tab" data-bs-target="#movs" aria-controls="movs" aria-selected="true">
+                        <i class="tf-icon bx bx-store-alt me-1"></i><span class="d-none d-sm-block">Mov</span>
+                    </button>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade active show" id="stkbox" role="tabpanel">
+                    <div id="gridStkBox"></div>
+                </div>
+                <div class="tab-pane fade" id="movs" role="tabpanel">
+                    <div class="row">
+                        <div class="col-lg-3 col-md-12 col-sm-12">
+                            <span>Tipo</span>
+                            @Html.DropDownList("TmId", null, "Sel.", new { @class = "form-control" })
+                        </div>
+                        <div class="col-lg-3 col-md-12 col-sm-12">
+                            <span>Desde:</span>
+                            <input type="date" class="form-control" name="fdesde" id="fdesde" />
+                        </div>
+                        <div class="col-lg-3 col-md-12 col-sm-12">
+                            <span>Hasta:</span>
+                            <input type="date" class="form-control" name="fhasta" id="fhasta" />
+                        </div>
+                        <div class="col-lg-3 col-md-12 col-sm-12 text-sm-end">
+                            <button type="button" class="btn btn-sm btn-success mt-4" id="btnBuscarMov"><i class="bx bx-search-alt bx-sm"></i></button>
+                        </div>
+                    </div>
+                    <div id="gridMov">
+                        <span class="text-muted">Realice la consulta ingresando el periodo de fechas</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script type="text/javascript">
+        var validaBoxUrl = "@Url.Action("ValidarBox", "infoprod", new { area = "pocketppal" })";
+        var ObtenerBoxInfoStkUrl = "@Url.Action("ObtenerBoxInfoStk", "infoprod", new { area = "pocketppal" })";
+        var ObtenerBoxInfoMovStkUrl = "@Url.Action("ObtenerBoxInfoMovStk", "infoprod", new { area = "pocketppal" })";
+
+    </script>
+    <script src="~/js/app/infoprod/infobox.js"></script>
+}
