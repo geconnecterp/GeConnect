@@ -45,6 +45,7 @@
             public const string SP_RPR_COMPTES_PENDIENTES = "spgeco_RPR_Comptes_Pendientes";
 			public const string SP_RPR_TIPOS_COMPTES = "spgeco_RPR_Tipos_Comptes";
 			public const string SP_BOX_LISTA = "SPGECO_BOX_Lista";
+			public const string SP_BOX_INFO = "SPGECO_BOX_Info";
 			public const string SP_VALIDAR_UL = "SPGECO_BOX_Valida_UL";
             public const string SP_VALIDAR_BOX = "SPGECO_BOX_Valida";
             public const string SP_BOX_ALMACENA_UL = "SPGECO_BOX_Almacena_UL";

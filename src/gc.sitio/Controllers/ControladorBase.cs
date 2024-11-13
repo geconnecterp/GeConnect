@@ -628,6 +628,23 @@ namespace gc.sitio.Controllers
 				_context.HttpContext.Session.SetString("AjusteProductosLista", json);
 			}
 		}
+		protected List<DepositoDto> DepositoLista
+		{
+			get
+			{
+				string json = _context.HttpContext.Session.GetString("DepositoLista");
+				if (string.IsNullOrEmpty(json))
+				{
+					return new();
+				}
+				return JsonConvert.DeserializeObject<List<DepositoDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("DepositoLista", json);
+			}
+		}
 		#endregion
 
 		#region Metodos generales

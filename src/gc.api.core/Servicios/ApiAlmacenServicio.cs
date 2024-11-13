@@ -149,5 +149,19 @@ namespace gc.api.core.Servicios
 
 			return response;
 		}
+
+		public List<DepositoInfoBoxDto> ObtenerInfoDeBox(string boxId)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_BOX_INFO;
+
+			var ps = new List<SqlParameter>()
+			{
+				new("@box_id",boxId),
+			};
+
+			List<DepositoInfoBoxDto> response = _repository.EjecutarLstSpExt<DepositoInfoBoxDto>(sp, ps, true);
+
+			return response;
+		}
 	}
 }

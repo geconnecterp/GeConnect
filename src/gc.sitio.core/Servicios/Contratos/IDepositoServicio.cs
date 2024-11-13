@@ -12,6 +12,6 @@ namespace gc.sitio.core.Servicios.Contratos
         List<DepositoDto> ObtenerDepositosDeAdministracion(string adm_id,string token);
         Task<List<RemitoGenDto>> ObtenerRemitos(string admId, string token);
         Task<List<DepositoInfoBoxDto>> BuscarBoxPorDeposito(string depoId, string token);
-
+        Task<List<DepositoInfoBoxDto>> ObtenerInfoDeBox(string boxId, string token);
 	}
 }

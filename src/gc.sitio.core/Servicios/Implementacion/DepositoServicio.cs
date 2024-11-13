@@ -33,6 +33,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 
 		private const string RutaApiAlmacen = "/api/apialmacen";
 		private const string BOX_BUSCAR_POR_DEPOSITO = "/ObtenerListaDeBoxesPorDeposito";
+		private const string BOX_BUSCAR = "/ObtenerInfoDeBox";
 		private readonly AppSettings _appSettings;
 
         public DepositoServicio(IOptions<AppSettings> options, ILogger<DepositoServicio> logger) : base(options, logger)
@@ -282,6 +283,47 @@ namespace gc.sitio.core.Servicios.Implementacion
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Error al intentar obtener los BOX del Depósito.");
+				throw;
+			}
+		}
+
+		public async Task<List<DepositoInfoBoxDto>> ObtenerInfoDeBox(string boxId, string token)
+		{
+			ApiResponse<List<DepositoInfoBoxDto>>? respuesta;
+			string stringData;
+			try
+			{
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response = null;
+				var link = $"{_appSettings.RutaBase}{RutaApiAlmacen}{BOX_BUSCAR}?boxId={boxId}";
+				response = await client.GetAsync(link);
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					respuesta = JsonConvert.DeserializeObject<ApiResponse<List<DepositoInfoBoxDto>>>(stringData);
+					if (response == null)
+					{
+						throw new NegocioException("No se desserializo correctamente la lista de Box. Verifique");
+					}
+					return respuesta.Data;
+				}
+				else
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogError($"Error al intentar obtener la información del BOX: {stringData}");
+					throw new NegocioException("Hubo un error al intentar obtener la información del BOX");
+				}
+
+			}
+			catch (NegocioException ex)
+			{
+				_logger.LogError(ex, "Error al intentar obtener la información del BOX.");
+				throw;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar obtener la información del BOX.");
 				throw;
 			}
 		}
