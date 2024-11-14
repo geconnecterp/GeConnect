@@ -14,8 +14,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System.Reflection;
 using System.Security.Cryptography;
+using static gc.sitio.Areas.Compras.Controllers.CompraController;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace gc.sitio.Areas.Compras.Controllers
@@ -266,7 +268,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					AjusteProductosLista = listaTemp;
 					model = ObtenerGridCore<ProductoAAjustarDto>(listaTemp);
 				}
-				else 
+				else
 				{
 					model = ObtenerGridCore<ProductoAAjustarDto>(AjusteProductosLista);
 				}
@@ -320,7 +322,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					model = ObtenerGridCore<ProductoAAjustarDto>(AjusteProductosLista);
 				}
-				else 
+				else
 				{
 					var listaTemp = AjusteProductosLista;
 					var productoStk = await _productoServicio.InfoProductoStkBoxes(pId, AdministracionId, depoId, TokenCookie, boxId);
@@ -373,7 +375,89 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return PartialView("_grillaProductos", model);
 		}
 
+		public async Task<JsonResult> ConfirmarAjusteDeStock(string atId, string nota, string atTipo)
+		{
+			try
+			{
+				if (string.IsNullOrWhiteSpace(atId) || string.IsNullOrWhiteSpace(atTipo))
+				{
+					return Json(new { error = true, warn = false, msg = "Debe especificar un 'Tipo' antes de confirmar." });
+				}
+				if (string.IsNullOrWhiteSpace(nota))
+				{
+					return Json(new { error = true, warn = false, msg = "Debe especificar una nota antes de confirmar." });
+				}
+				if (AjusteProductosLista == null || AjusteProductosLista.Count == 0)
+				{
+					return Json(new { error = true, warn = false, msg = "Debe agregar al menos un producto en el Ajuste de Stock antes de confirmar." });
+				}
+
+				var listaTemp = AjusteProductosLista;
+				listaTemp.ForEach(x => { x.ta_id = atId; x.nota = nota; });
+				if (atId=="")
+				AjusteProductosLista = listaTemp;
+				var json_string = GenerarJsonDesdeLista();
+
+				return Json(new { error = false, warn = false, msg = json_string });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				return Json(new { error = true, warn = false, msg = "Algo no fue bien al validar el ajuste, intente nuevamente mas tarde." });
+			}
+		}
+
+		public async Task<JsonResult> VerificaExistenciaDeAjusteDeStock()
+		{
+			try
+			{
+				if (AjusteProductosLista == null || AjusteProductosLista.Count == 0)
+				{
+					return Json(new { error = false, warn = true, msg = "No existen Ajustes de Stock cargado por cancelar." });
+				}
+				else
+				{
+					return Json(new { error = false, warn = false, msg = "" });
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				return Json(new { error = true, warn = false, msg = "Algo no fue bien al validar el ajuste, intente nuevamente mas tarde." });
+			}
+		}
+
+		public async Task<IActionResult> CancelarAjusteDeStock()
+		{
+			var model = new GridCore<ProductoAAjustarDto>();
+			try
+			{
+				var listaTemp = AjusteProductosLista;
+				listaTemp = [];
+				AjusteProductosLista = listaTemp;
+				model = ObtenerGridCore<ProductoAAjustarDto>(listaTemp);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+			return PartialView("_grillaProductos", model);
+		}
+
 		#region Métodos Privados
+		private string GenerarJsonDesdeLista()
+		{
+			var jsonstring = JsonConvert.SerializeObject(AjusteProductosLista, new JsonSerializerSettings() { ContractResolver = new IgnorePropertiesResolver(new[] { "Producto" }) });
+			return jsonstring;
+		}
+
 		private List<ProductoAAjustarDto> ObtenerProductoAAjustaDesdeAjustePrevio(List<AjustePrevioCargadoDto> listaAjustesPrevios)
 		{
 			if (!listaAjustesPrevios.Any())

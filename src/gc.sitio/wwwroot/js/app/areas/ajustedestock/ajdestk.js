@@ -3,6 +3,8 @@
 	$("#btnCargaPrevia").on("click", AbrirCargaPrevia);
 	$("#btnRevertirAjuste").on("click", ValidarAjuste);
 	$("#btnAddProd").on("click", AgregarProdManual);
+	$("#btnConfirmar").on("click", ConfirmarAjuste);
+	$("#btnCancelar").on("click", VerificarAntesDeCancelarAjuste);
 	$("#txtUP").on("keyup", analizaInputUP);
 	$("#txtBto").on("keyup", analizaInputBto);
 	$("#txtUnid").on("keyup", analizaInputUnid);
@@ -20,6 +22,98 @@
 		$(this).attr('disabled', 'disabled');
 	});
 });
+
+function VerificarAntesDeCancelarAjuste() {
+	var datos = {};
+	PostGen(datos, VerificaExistenciaDeAjusteDeStockURL, function (o) {
+		CerrarWaiting();
+		if (o.error === true) {
+			AbrirMensaje("Atención", o.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		} else if (o.warn === true) {
+			AbrirMensaje("Atención", o.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "warn!", null);
+		} else {
+			CancelarAjuste();
+		}
+	});
+}
+
+function CancelarAjuste() {
+	AbrirWaiting();
+	var datos = {};
+	PostGenHtml(datos, CancelarAjusteDeStockURL, function (obj) {
+		$("#divDetalleDeProductosAAjustar").html(obj);
+		AddEventListenerToGrid("tbDetalleDeProductosAAjustar");
+		CerrarWaiting();
+		return true
+	});
+}
+
+function ConfirmarAjuste() {
+	var hayError = false;
+	var nota = $("#txtNota").val();
+	if (nota === "") {
+		AbrirMensaje("Atención", "Debe especificar una nota antes de confirmar.", function () {
+			$("#msjModal").modal("hide");
+			$("#txtNota").focus();
+			hayError = true;
+			return true;
+		}, false, ["Aceptar"], "warn!", null);
+	}
+	var rows = $("#tbDetalleDeProductosAAjustar tr").length;
+	if (rows <= 0) {
+		AbrirMensaje("Atención", "Debe agregar al menos un producto en el Ajuste de Stock antes de confirmar.", function () {
+			$("#msjModal").modal("hide");
+			hayError = true;
+			return true;
+		}, false, ["Aceptar"], "warn!", null);
+	}
+	var motivo = $("#listaMotivo").val();
+	if (motivo === "") {
+		AbrirMensaje("Atención", "Debe especificar un 'Tipo' antes de confirmar.", function () {
+			$("#msjModal").modal("hide");
+			$("#listaMotivo").focus();
+			hayError = true;
+			return true;
+		}, false, ["Aceptar"], "warn!", null);
+	}
+	motivoSplited = motivo.split('#');
+	if (motivoSplited.length !== 2) {
+		AbrirMensaje("Atención", "El tipo de ajuste no tiene la configuracion correcta, consulte con el Administrador. Tipo: " + motivoSplited, function () {
+			$("#msjModal").modal("hide");
+			$("#listaMotivo").focus();
+			hayError = true;
+			return true;
+		}, false, ["Aceptar"], "warn!", null);
+	}
+	if (!hayError) {
+		AbrirWaiting();
+		var atId = motivoSplited[0];
+		var atTipo = motivoSplited[1];
+		var datos = { atId, nota, atTipo }
+		PostGen(datos, ConfirmarAjusteDeStockURL, function (o) {
+			CerrarWaiting();
+			if (o.error === true) {
+				AbrirMensaje("Atención", o.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			} else if (o.warn === true) {
+				AbrirMensaje("Atención", o.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "warn!", null);
+			} else {
+				console.log(o.msg);
+			}
+		});
+	}
+}
 
 function DelProd() {
 	if (pIdSeleccionado === "") {
