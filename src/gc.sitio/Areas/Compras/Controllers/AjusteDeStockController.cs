@@ -394,7 +394,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				var listaTemp = AjusteProductosLista;
 				listaTemp.ForEach(x => { x.ta_id = atId; x.nota = nota; });
-				if (atId=="")
+				if (atTipo == "B")
+					listaTemp.ForEach(x => { if (x.cantidad > 0) { x.cantidad *= -1; } });
 				AjusteProductosLista = listaTemp;
 				var json_string = GenerarJsonDesdeLista();
 
