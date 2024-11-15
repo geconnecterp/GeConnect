@@ -1,14 +1,31 @@
 ﻿@model RemitoGenDto
-
+@{
+    string red = Model.EsModificacion ? "text-danger" : "";
+    string bold = Model.EsModificacion ? "fw-bolder" : "";
+}
 <div class="row">
-    <div class="input-group input-group-sm">
-        <span class="input-group-text" sty>RE</span>
-        <input type="text" value="@Model.re_compte" class="form-control " readonly />
-        <span class="input-group-text">TR</span>
-        <input type="text" value="@Model.pv_compte" class="form-control " readonly />
-        <scan class="input-group-text">Suc</scan>
-        <input type="text" value="@Model.adm_nombre" class="form-control " readonly />
-        <scan class="input-group-text">Fec</scan>
-        <input type="text" value="@Model.re_fecha" class="form-control " readonly />
+    <div class="col-sm-3">
+        <div class="input-group input-group-sm">
+            <span class="input-group-text">RE</span>
+            <input type="text" value="@Model.re_compte" class="form-control @red @bold" readonly />
+        </div>
+    </div>
+    <div class="col-sm-3">
+        <div class="input-group input-group-sm">
+            <span class="input-group-text">TR</span>
+            <input type="text" value="@Model.ti" class="form-control @red @bold" readonly />
+        </div>
+    </div>
+    <div class="col-sm-3">
+        <div class="input-group input-group-sm">
+            <scan class="input-group-text">Suc</scan>
+            <input type="text" value="@Model.adm_nombre" class="form-control @red @bold" readonly />
+        </div>
+    </div>
+    <div class="col-sm-3">
+        <div class="input-group input-group-sm">
+            <scan class="input-group-text">Fec</scan>
+            <input type="text" value="@Model.re_fecha" class="form-control @red @bold" readonly />
+        </div>
     </div>
 </div>

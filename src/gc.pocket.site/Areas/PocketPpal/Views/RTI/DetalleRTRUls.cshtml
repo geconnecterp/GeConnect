@@ -1,0 +1,28 @@
+﻿@model RemitoGenDto
+
+@{
+    Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
+}
+
+<div class="container">
+    <partial name="_rtiCabecera" model="@Model" />
+    <div class="row">
+        <div id="gridDetalleULs"></div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="d-flex justify-content-center">
+            <button type="button" id="btnContinua01" disabled class="btn btn-success btn-sm m-2"><i class="bx bx-ms bx-right-arrow-alt"></i></button>
+        </div>
+    </div>
+</div>
+@section scripts {
+    <script type="text/javascript">
+        var ObtenerDetalleUlsUrl = "@Url.Action("ObtenerDetalleUls", "rti", new { area = "pocketppal" })"
+        var ulSeleccionada = "";
+        var CargarProductosUrl = "@Url.Action("CargarProductos", "rti", new { area = "pocketppal" })"
+
+
+    </script>
+    <script src="~/js/app/rti/rtiul01.js"></script>
+}

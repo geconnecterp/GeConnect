@@ -7,10 +7,8 @@ using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.pocket.site.Controllers;
 using gc.sitio.core.Servicios.Contratos;
-using gc.sitio.core.Servicios.Implementacion;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Logging;
 using System.Reflection;
 using X.PagedList;
 
@@ -36,14 +34,32 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         [HttpGet]
         public IActionResult Index()
         {
+            return MetodoGenericoInicialRTR();
+        }
+
+        private IActionResult MetodoGenericoInicialRTR(bool modifica = false)
+        {
             var auth = EstaAutenticado;
             if (!auth.Item1 || auth.Item2 < DateTime.Now)
             {
                 return RedirectToAction("Login", "Token", new { area = "seguridad" });
             }
             string? volver = Url.Action("index", "home", new { area = "" });
-            ViewBag.AppItem = new AppItem { Nombre = "Recepción de Transferencia de otra Sucursal", VolverUrl = volver ?? "#" };
+            if (modifica)
+            {
+                ViewBag.AppItem = new AppItem { Nombre = "Recepción de Transferencia de otra Sucursal - MODIFICA UL", VolverUrl = volver ?? "#" };
+            }
+            else
+            {
+                ViewBag.AppItem = new AppItem { Nombre = "Recepción de Transferencia de otra Sucursal", VolverUrl = volver ?? "#" };
+            }
             return View();
+        }
+
+        [HttpGet]
+        public IActionResult ModificaDetalleUL()
+        {
+            return MetodoGenericoInicialRTR(true);
         }
 
         [HttpPost]
@@ -92,7 +108,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         }
 
         [HttpGet]
-        public IActionResult CargaProductos(string rm)
+        public IActionResult ResguardarRemito(string rm, bool esUpdate = false)
         {
             RemitoGenDto remito = new();
             try
@@ -111,18 +127,35 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     TempData["warn"] = $"No se pudo seleccionar el Remito N° {rm}. Intente de nuevo";
                 }
 
-                if (RemitoActual == null || !RemitoActual.re_compte.Equals(rm))
+                if (RemitoActual == null || !RemitoActual.re_compte.Equals(rm) || RemitoActual.EsModificacion)
                 {
                     //en el caso que haga para atras y vuelva a elegir la misma  Autorización Pendiente no se elimina nada. 
                     //si es distinto como en este caso, se inicializan las variables.
                     InicializaVariablesSessionRTI();
                     RemitoActual = remito;
+                }
+                string? volver;
+                if (esUpdate)
+                {
+                    remito.EsModificacion = true;
+                    RemitoActual = remito;
 
+                    volver = Url.Action("ModificaDetalleUL", "rti", new { area = "pocketppal" });
+                    ViewBag.AppItem = new AppItem { Nombre = $"Detalle de ULs de Remito Actual {remito.re_compte}", VolverUrl = volver ?? "#", BotonEspecial = false };
+
+                }
+                else
+                {
+
+                    volver = Url.Action("ObtenerRemitos", "rti", new { area = "pocketppal" });
+                    ViewBag.AppItem = new AppItem { Nombre = "Carga de Productos - Remito Actual", VolverUrl = volver ?? "#", BotonEspecial = true };
 
                 }
 
-                string? volver = Url.Action("ObtenerRemitos", "rti", new { area = "pocketppal" });
-                ViewBag.AppItem = new AppItem { Nombre = "Carga de Productos - Remito Actual", VolverUrl = volver ?? "#", BotonEspecial = true };
+                if (RemitoActual.EsModificacion)
+                {
+                    return View("DetalleRTRUls", RemitoActual);
+                }
 
             }
             catch (Exception ex)
@@ -132,7 +165,45 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 return RedirectToAction("Index");
             }
 
-            return View(RemitoActual);
+            return View("CargarProductos", RemitoActual);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ObtenerDetalleUls()
+        {
+            RespuestaGenerica<EntidadBase> response = new();
+            GridCore<RTRxULDto> grillaDatos;
+
+            try
+            {
+                var regs = await _remitoServicio.RTRCargarConteosXUL(RemitoActual.re_compte, TokenCookie);
+                grillaDatos = GenerarGrilla(regs, "ul_id");
+            }
+            catch (NegocioException ex)
+            {
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = true;
+                response.EsError = false;
+                return PartialView("_gridMensaje", response);
+            }
+            catch (UnauthorizedException ex)
+            {
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = true;
+                response.EsError = false;
+                return PartialView("_gridMensaje", response);
+            }
+            catch (Exception ex)
+            {
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
+            }
+            return PartialView("_detalleULsGrid", grillaDatos);
         }
 
         private void InicializaVariablesSessionRTI()
@@ -140,6 +211,63 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             RemitoActual = new();
             ProductoGenRegs = [];
             ProductoTemp = new();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> CargarProductos(string ul)
+        {
+            try
+            {
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return RedirectToAction("Login", "Token", new { area = "seguridad" });
+                }
+
+                if (string.IsNullOrEmpty(ul) || string.IsNullOrWhiteSpace(ul))
+                {
+                    TempData["warn"] = "No se recepcionó la UL seleccionada";
+                    return RedirectToAction("ResguardarRemito", "rti", new { area = "pocketppal", rm = RemitoActual.re_compte, esUpdate = true });
+                }
+                //debo resguardar la UL en la AutorizacionPendienteSeleccionada
+                var remito = RemitoActual;
+                remito.Ul = ul;
+                RemitoActual = remito;
+
+                var prods = await _productoServicio.RPRxULDetalle(ul, TokenCookie);
+                var lista = prods.Select(x => new ProductoGenDto
+                {
+                    bulto = x.bulto,
+                    cantidad = x.cantidad,
+                    cantidad_total = x.up_id == "07" ? (x.unidad_pres * x.bulto) + x.us : x.us,
+                    item = x.item,
+                    p_con_vto = x.p_con_vto,
+                    p_con_vto_ctl = x.p_con_vto,
+                    p_con_vto_min = x.p_con_vto_min,
+                    p_desc = x.p_desc,
+                    p_id = x.p_id,
+                    p_id_barrado = x.p_id_barrado,
+                    ul_id = x.ul_id,
+                    p_id_prov = x.p_id_prov,
+                    unidad_pres = x.unidad_pres,
+                    up_id = x.up_id,
+                    us = x.us,
+                    usu_id = x.usu_id,
+                    vto = x.vto.ToDateTimeOrNull()
+                }).ToList();
+                ProductoGenRegs = lista;
+
+                string volver = Url.Action("ResguardarRemito", "rti", new { area = "pocketppal", rm = remito.re_compte, esUpdate = true });
+
+                ViewBag.AppItem = new AppItem { Nombre = $"Detalle de ULs de {remito.re_compte}", VolverUrl = volver ?? "#", BotonEspecial = false };
+                return View(RemitoActual);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name}");
+                TempData["error"] = "Hubo algun problema. Si el mismo persiste informe al Administrador";
+                return RedirectToAction("Index");
+            }
         }
 
         [HttpPost]
@@ -380,9 +508,20 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         [HttpGet]
         public IActionResult CargaUL()
         {
-            string? volver = Url.Action("CargaProductos", "rti", new { area = "pocketppal", rm = RemitoActual.re_compte });
-            //ViewBag.AppItem = new AppItem { Nombre = $"Auto:{auto.Rp}-{auto.Cta_denominacion}" };
-            ViewBag.AppItem = new AppItem { Nombre = "Carga de Productos en UL", VolverUrl = volver ?? "#", BotonEspecial = false };
+            string? volver;
+            var remito = RemitoActual;
+            if (remito.EsModificacion)
+            {
+                volver = Url.Action("CargaProductos", "rti", new { area = "pocketppal", rm = RemitoActual.re_compte });
+                //ViewBag.AppItem = new AppItem { Nombre = $"Auto:{auto.Rp}-{auto.Cta_denominacion}" };
+                ViewBag.AppItem = new AppItem { Nombre = "Carga de Productos en UL", VolverUrl = volver ?? "#", BotonEspecial = false };
+            }
+            else
+            {
+                volver = Url.Action("ResguardarRemito", "rti", new { area = "pocketppal", rm = RemitoActual.re_compte });
+                //ViewBag.AppItem = new AppItem { Nombre = $"Auto:{auto.Rp}-{auto.Cta_denominacion}" };
+                ViewBag.AppItem = new AppItem { Nombre = "Carga de Productos en UL", VolverUrl = volver ?? "#", BotonEspecial = false };
+            }
 
             return View(RemitoActual);
         }
@@ -398,23 +537,20 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     throw new NegocioException("No ha ingresado el numero de la Unidad de Lectura.");
                 }
                 var analisis = ul.Trim().Split('-', StringSplitOptions.RemoveEmptyEntries);
-                if (analisis.Length != 4)
+                if (analisis.Length != 3)
                 {
                     throw new NegocioException("Verifique la Unidad de Lectura. Algo no esta bien.");
                 }
-                if (analisis[0].Length != 3)
+               
+                if (analisis[0].Length != 5)
                 {
                     throw new NegocioException("Verifique la Unidad de Lectura. Algo no esta bien.");
                 }
-                if (analisis[1].Length != 2)
+                if (analisis[1].Length != 8)
                 {
                     throw new NegocioException("Verifique la Unidad de Lectura. Algo no esta bien.");
                 }
-                if (analisis[2].Length != 8)
-                {
-                    throw new NegocioException("Verifique la Unidad de Lectura. Algo no esta bien.");
-                }
-                if (analisis[3].Length != 2)
+                if (analisis[2].Length != 2)
                 {
                     throw new NegocioException("Verifique la Unidad de Lectura. Algo no esta bien.");
                 }
@@ -426,7 +562,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     item.usu_id = UserName;
                 }
                 //lista.ForEach(x=> x.ul_id = ul).ForeEach(s=> s.re_compte = RemitoActual.re_compte);
-                var res = await _remitoServicio.RTRCargarConteos(lista, TokenCookie);
+                var res = await _remitoServicio.RTRCargarConteos(lista,RemitoActual.EsModificacion, TokenCookie);
 
                 if (res.resultado == 0)
                 {

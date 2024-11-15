@@ -25,10 +25,10 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string RemitosConfirmarRecepcion = "/ConfirmarRecepcion";
         private const string Verif_ProductoEnRemito = "/VerificaProductoEnRemito";
         private const string RemitoCargarConteos = "/RTRCargarConteos";
-        private const string RemitosCargarConteosXUL = "/RTRCargarConteosXUL";
+        private const string RemitosCargarConteosXUL = "/RTRCargarConteosXUL"; 
 
 
-		private readonly AppSettings _appSettings;
+        private readonly AppSettings _appSettings;
         public RemitoServicio(IOptions<AppSettings> options, ILogger<RemitoServicio> logger) : base(options, logger, RutaAPI)
         {
             _appSettings = options.Value;
@@ -203,7 +203,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-        public async Task<RespuestaDto> RTRCargarConteos(List<ProductoGenDto> lista,string token)
+        public async Task<RespuestaDto> RTRCargarConteos(List<ProductoGenDto> lista,bool esModificacion,string token)
         {
             try
             {
@@ -217,7 +217,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 HttpClient client = helper.InicializaCliente(req, token,out StringContent contentData);
                 HttpResponseMessage response;
 
-                var link = $"{_appSettings.RutaBase}{RutaAPI}{RemitoCargarConteos}";
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{RemitoCargarConteos}?esMod={esModificacion}";
 
                 response = await client.PostAsync(link,contentData);
 

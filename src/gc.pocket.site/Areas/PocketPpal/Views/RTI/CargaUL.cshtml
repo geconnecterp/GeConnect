@@ -17,7 +17,14 @@
         <div class="d-flex justify-content-center">
             <div class="input-group input-group-sm">
                 <span class="input-group-text">UL:</span>
-                <input type="text" maxlength="20" id="ul_Id" class="form-control" />
+                @if (Model.EsModificacion)
+                {
+                    <input type="text" maxlength="20" id="ul_Id" class="form-control text-danger fw-bolder" value="@Model.Ul" readonly />
+                }
+                else
+                {
+                    <input type="text" maxlength="20" id="ul_Id" class="form-control" />
+                }
             </div>
         </div>
     </div>

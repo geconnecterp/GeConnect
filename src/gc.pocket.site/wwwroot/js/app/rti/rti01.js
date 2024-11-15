@@ -1,7 +1,13 @@
 ﻿$(function () {
 
     $("#btnrtiConf01").on("click", function () {
-        window.location.href = CargaProductosUrl + "?rm=" + remitoSeleccionado;
+        if (typeof rtrModifica !== 'undefined') {
+            if (rtrModifica === true) {
+                window.location.href = CargaProductosUrl + "?rm=" + remitoSeleccionado + "&esUpdate=true";
+            }
+        } else {
+            window.location.href = CargaProductosUrl + "?rm=" + remitoSeleccionado;
+        }
     });
 
     AbrirWaiting();

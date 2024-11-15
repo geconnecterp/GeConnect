@@ -13,7 +13,7 @@ namespace gc.api.core.Contratos.Servicios
         List<RemitoVerConteoDto> VerConteos(string remCompte);
         List<RespuestaDto> ConfirmaRecepcion(RConfirmaRecepcionRequest reques);
         RespuestaDto VerificaProductoEnRemito(string remCompte, string pId);
-        RespuestaDto RTRCargarConteos(CargarJsonGenRequest request);
+        RespuestaDto RTRCargarConteos(CargarJsonGenRequest request,bool esModificacion);
         List<RTRxULDto> RTRCargarConteosXUL(string reCompte);
 
 	}

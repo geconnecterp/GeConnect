@@ -3,7 +3,6 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.pocket.site.Controllers;
 using gc.sitio.core.Servicios.Contratos;
@@ -122,17 +121,13 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     AutorizacionPendienteSeleccionada = auto;
 
                 }
+                string? volver;
                 if (esUpdate)
                 {
                     //si es modificación de UL voy a marcar la rp
                     auto.EsModificacion = true;
                     AutorizacionPendienteSeleccionada = auto;
-                }
-                string? volver;
-
-                if (esUpdate)
-                {
-                    //
+                
                     volver = Url.Action("ModificaDetalleUL", "rpr", new { area = "pocketppal" });
 
                     ViewBag.AppItem = new AppItem { Nombre = $"Detalle de ULs de {auto.Rp}", VolverUrl = volver ?? "#", BotonEspecial = true };
