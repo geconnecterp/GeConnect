@@ -513,6 +513,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					up_id = item.up_id,
 					bulto = 0,
 					cantidad = (item.as_ajuste * -1) + item.ps_stk,
+					as_motivo = item.as_motivo,
 				});
 			}
 			return listaMapeada;

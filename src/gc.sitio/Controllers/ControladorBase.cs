@@ -3,6 +3,7 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
+using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.CuentaComercial;
@@ -643,6 +644,26 @@ namespace gc.sitio.Controllers
 			{
 				var json = JsonConvert.SerializeObject(value);
 				_context.HttpContext.Session.SetString("DepositoLista", json);
+			}
+		}
+		#endregion
+
+		#region DEVOLUCION A PROVEEDOR
+		protected List<ProductoADevolverDto> DevolucionProductosLista
+		{
+			get
+			{
+				string json = _context.HttpContext.Session.GetString("DevolucionProductosLista");
+				if (string.IsNullOrEmpty(json))
+				{
+					return new();
+				}
+				return JsonConvert.DeserializeObject<List<ProductoADevolverDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("DevolucionProductosLista", json);
 			}
 		}
 		#endregion

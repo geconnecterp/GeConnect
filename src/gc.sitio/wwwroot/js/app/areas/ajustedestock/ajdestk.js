@@ -18,6 +18,9 @@
 	$("#divRevertirAjuste").find('input').each(function () {
 		$(this).attr('disabled', 'disabled');
 	});
+	$("#divRevertirAjuste").find('button').each(function () {
+		$(this).attr('disabled', 'disabled');
+	});
 	$("#divCargaPrevia").find('button').each(function () {
 		$(this).attr('disabled', 'disabled');
 	});
@@ -137,6 +140,9 @@ function BtnRadioManual() {
 	$("#divRevertirAjuste").find('input').each(function () {
 		$(this).attr('disabled', 'disabled');
 	});
+	$("#divRevertirAjuste").find('button').each(function () {
+		$(this).attr('disabled', 'disabled');
+	});
 	$("#divCargaPrevia").find('button').each(function () {
 		$(this).attr('disabled', 'disabled');
 	});
@@ -146,6 +152,9 @@ function BtnRadioRevertirAjuste() {
 	$("#divRevertirAjuste").find('input').each(function () {
 		$(this).removeAttr('disabled');
 	});
+	$("#divRevertirAjuste").find('button').each(function () {
+		$(this).removeAttr('disabled');
+	});
 	$("#divCargaPrevia").find('button').each(function () {
 		$(this).attr('disabled', 'disabled');
 	});
@@ -153,6 +162,9 @@ function BtnRadioRevertirAjuste() {
 
 function BtnRadioCargaPrevia() {
 	$("#divRevertirAjuste").find('input').each(function () {
+		$(this).attr('disabled', 'disabled');
+	});
+	$("#divRevertirAjuste").find('button').each(function () {
 		$(this).attr('disabled', 'disabled');
 	});
 	$("#divCargaPrevia").find('button').each(function () {
@@ -387,10 +399,16 @@ function RevertirAjuste(ajId) {
 	PostGenHtml(datos, ObtenerProductosDesdeAJRevertidoURL, function (obj) {
 		$("#divDetalleDeProductosAAjustar").html(obj);
 		AddEventListenerToGrid("tbDetalleDeProductosAAjustar");
+		if ($("#tbDetalleDeProductosAAjustar tr")[1] !== undefined && $("#tbDetalleDeProductosAAjustar tr")[1] !== null)
+			ObtenerNotaDesdeProductosRevertidos($("#tbDetalleDeProductosAAjustar tr")[1].children[7].innerText);
 		CerrarWaiting();
 		return true
 	});
 	CerrarWaiting();
+}
+
+function ObtenerNotaDesdeProductosRevertidos(nota) {
+	$("#txtNota").val("Revertido " + nota);
 }
 
 function listalistaMotivoChange() {

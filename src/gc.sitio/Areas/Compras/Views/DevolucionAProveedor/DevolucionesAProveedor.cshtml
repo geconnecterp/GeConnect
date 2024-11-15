@@ -1,0 +1,109 @@
+﻿@model DevolucionAProveedorDto
+@{
+	Layout = "~/views/shared/_Layout.cshtml";
+	var depositos = Model.ComboDepositos;
+	var boxes = Model.ComboBoxes;
+}
+
+<div class="card">
+	<div class="container">
+		<div class="row">
+			<div class="col-4" style="padding-top: 5px;">
+				<div class="row">
+					<fieldset style="margin: 2px;padding: 2px;">
+						<div class="col-5" style="float:left;">
+							<div class="btn-group" role="group" aria-label="Basic radio toggle button group" style="width: 95%;">
+								<row style="padding:4px; width: 100% !important">
+									<input type="radio" class="btn-check" name="btnradio" id="btnradioManual" checked="">
+									<label class="btn btn btn-outline-primary fixed-font-size-xmall" for="btnradioManual">Manual</label>
+									<div style="height: 5px;"></div>
+									<input type="radio" class="btn-check" name="btnradio" id="btnradioRevertirDevolucion">
+									<label class="btn btn btn-outline-primary fixed-font-size-xmall" for="btnradioRevertirAjuste">Revertir Devolucion</label>
+									<div style="height: 5px;"></div>
+									<input type="radio" class="btn-check" name="btnradio" id="btnradioCargaPrevia">
+									<label class="btn btn btn-outline-primary fixed-font-size-xmall" for="btnradioCargaPrevia">Carga Previa</label>
+								</row>
+							</div>
+						</div>
+						<div class="col-7" style="float:left;">
+							<div class="row" style="min-height: 37px;">
+							</div>
+							<div class="row">
+								<div class="input-group" id="divRevertirDevolucion">
+									<span class="input-group-text fixed-width-75" style="height:35px;">N°: </span>
+									<input type="text" id="txtNroDevolucion" class="align-left" style="width: 50%;" value="" />
+									<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px;" id="btnRevertirDevolucion">
+										<span class="tf-icons bx bx-left-arrow-circle"></span>
+									</button>
+								</div>
+							</div>
+							<div class="row" style="padding-top:4px;padding-left:7px;" id="divCargaPrevia">
+								<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px; width:88%;" id="btnCargaPrevia">
+									<span class="tf-icons bx bx-cloud-download">Carga Previa</span>
+								</button>
+							</div>
+						</div>
+					</fieldset>
+				</div>
+			</div>
+			<div class="col-8" style="padding-top: 8px;">
+				<div class="row">
+					<div class="col-4">
+						<div class="col-sm" id="divDepositos">
+							<div class="input-group">
+								<span class="input-group-text" style="padding-left: 5px;">Depósito: </span>
+								@Html.DropDownList("id", depositos, "Seleccionar...", new { @id = "listaDeposito", @class = "form-control" })
+							</div>
+						</div>
+						<div id="divComboBoxes">
+							<div class="col-sm" id="divComboBox" aria-disabled="true">
+								<div class="input-group fixed-padding-top">
+									<span class="input-group-text" style="padding-left: 5px;padding-left: 40px;">Box: </span>
+									@Html.DropDownList("id", boxes, "Seleccionar...", new { @id = "listaBox", @class = "form-control" })
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-8">
+						<div>
+							<partial name="~/areas/controlcomun/views/cuentacomercial/_ctrBuscarCC.cshtml" />
+						</div>
+						<div class="input-group" style="padding-top: 5px;">
+							<span class="input-group-text fixed-width-75">Nota: </span>
+							<input type="text" id="txtNota" class="align-left" style="width: 80%;" value="" />
+						</div>
+					</div>
+				</div>
+				<div class="row" style="padding-top: 5px;">
+					@* botones *@
+					<div style="text-align: right;align-content: center;">
+						<button type="button" class="btn btn-primary fixed-width-130" style="margin-left:5px;" id="btnRegresar">
+							<span class="tf-icons bx bx-left-arrow-circle">Regresar</span>
+						</button>
+						<button type="button" class="btn btn-danger fixed-width-130" style="margin-left:5px;" id="btnCancelar">
+							<span class="tf-icons bx bx-block">Cancelar</span>
+						</button>
+						<button type="button" class="btn btn-success fixed-width-130" style="margin-left:5px;" id="btnConfirmar">
+							<span class="tf-icons bx bx-check-circle">Confirmar</span>
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section scripts {
+	<script type="text/javascript">
+		var tipoCuenta = "B";
+		var seccionEnVista = "";
+		var vistaParcial = "";
+		var modelObj = null;
+		var buscarTiposComptesUrl = "";
+		var VerDetalleDeCompteDeRPUrl = "";
+		var BuscarBoxesDesdeDepositoURL = "@Url.Action("ObtenerBoxesDesdeDeposito", "devolucionaproveedor", new { area = "Compras" })";
+		var buscarCuentaUrl = "@Url.Action("BuscarCuentaComercial", "compra", new { area = "Compras" })";
+	</script>
+	<script src="~/js/app/areas/devolucionaproveedor/devaprov.js"></script>
+	<script src="~/js/app/controlcomun/busquedacuentacomercial.js"></script>
+}

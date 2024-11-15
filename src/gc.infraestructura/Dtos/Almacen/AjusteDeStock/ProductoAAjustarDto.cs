@@ -15,22 +15,22 @@ namespace gc.infraestructura.Dtos.Almacen.AjusteDeStock
 		[JsonProperty("p_desc")]
 		public string p_desc { get; set; } = string.Empty;
 		[JsonProperty("p_id_prov")]
-		[JsonIgnore]
+		//[JsonIgnore]
 		public string p_id_prov { get; set; } = string.Empty;
 		[DataMember]
 		[JsonProperty("box_id")]
 		public string box_id { get; set; } = string.Empty;
 		[JsonProperty("box_desc")]
-		[JsonIgnore]
+		//[JsonIgnore]
 		public string box_desc { get; set; } = string.Empty;
 		[JsonProperty("as_stock")]
-		[JsonIgnore]
+		//[JsonIgnore]
 		public decimal as_stock { get; set; } = 0.000M;
 		[JsonProperty("as_ajuste")]
-		[JsonIgnore]
+		//[JsonIgnore]
 		public decimal as_ajuste { get; set; } = 0.000M;
 		[JsonProperty("as_resultado")]
-		[JsonIgnore]
+		//[JsonIgnore]
 		public decimal as_resultado { get; set; } = 0.000M;
 		[DataMember]
 		[JsonProperty("tipo")]
@@ -65,5 +65,8 @@ namespace gc.infraestructura.Dtos.Almacen.AjusteDeStock
 		[DataMember]
 		[JsonProperty("cantidad")]
 		public decimal cantidad { get; set; } = 0.000M;
+		[JsonProperty("as_motivo")]
+		//[JsonIgnore]
+		public string as_motivo { get; set; } = string.Empty;
 	}
 }

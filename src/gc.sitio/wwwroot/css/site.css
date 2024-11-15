@@ -75,6 +75,10 @@ fieldset {
     width: 75px;
 }
 
+.fixed-width-80 {
+    width: 80px;
+}
+
 .fixed-width {
     width: 100px;
 }
