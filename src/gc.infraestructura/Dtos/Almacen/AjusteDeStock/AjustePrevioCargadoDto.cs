@@ -3,8 +3,8 @@ namespace gc.infraestructura.Dtos.Almacen.AjusteDeStock
 {
 	public class AjustePrevioCargadoDto : Dto
 	{
-        public string adm_id { get; set; } = string.Empty;
-        public string adm_nombre { get; set; } = string.Empty;
+		public string adm_id { get; set; } = string.Empty;
+		public string adm_nombre { get; set; } = string.Empty;
 		public string depo_id { get; set; } = string.Empty;
 		public string depo_nombre { get; set; } = string.Empty;
 		public DateTime fecha_carga { get; set; }
@@ -16,9 +16,14 @@ namespace gc.infraestructura.Dtos.Almacen.AjusteDeStock
 		public string box_desc { get; set; } = string.Empty;
 		public string p_id { get; set; } = string.Empty;
 		public string p_desc { get; set; } = string.Empty;
+		public string p_id_prov { get; set; } = string.Empty;
 		public int unidad_pres { get; set; }
-        public int bulto { get; set; }
-        public decimal us { get; set; } = 0.000M;
-        public decimal cantidad { get; set; } = 0.000M;
-    }
+		public int bulto { get; set; }
+		public decimal us { get; set; } = 0.000M;
+		public decimal cantidad { get; set; } = 0.000M;
+		public decimal ps_stk { get; set; } = 0.000M;
+		public decimal ps_bulto { get; set; } = 0.000M;
+		public DateTime vto { get; set; }
+		public string up_id { get; set; } = string.Empty;
+	}
 }

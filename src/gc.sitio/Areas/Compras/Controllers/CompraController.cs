@@ -180,7 +180,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			GridCore<RPRxULDetalleDto> datosIP = new();
 			try
 			{
-				var detalle =await _productoServicio.RPRxULDetalle(ul_id, TokenCookie);
+				var detalle = await _productoServicio.RPRxULDetalle(ul_id, TokenCookie);
 				datosIP = ObtenerGridCore<RPRxULDetalleDto>(detalle);
 			}
 			catch (Exception ex)
@@ -615,7 +615,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 							oc_compte = "",
 							Unidad = Convert.ToInt32(unidad),
 							Cantidad = CalcularCantidadDeProductoParaAgregar(up_id, bulto, up, unidad),
-							Item = RPRDetalleDeProductosEnRP.Max(x => x.Item) + 1
+							Item = RPRDetalleDeProductosEnRP.Count > 0 ? RPRDetalleDeProductosEnRP.Max(x => x.Item) + 1 : 1
 						});
 					}
 					else
@@ -1202,7 +1202,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			try
 			{
 				List<RespuestaDto> Respuesta = [];
-				JsonDeRPDto jsonAux= new();
+				JsonDeRPDto jsonAux = new();
 				foreach (var item in JsonDeRP.encabezado)
 				{
 

@@ -174,5 +174,18 @@ namespace gc.api.Controllers.Almacen
 			var response = new ApiResponse<List<DepositoInfoBoxDto>>(lista);
 			return Ok(response);
 		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult ObtenerInfoDeBox(string boxId)
+		{
+			if (string.IsNullOrEmpty(boxId))
+			{
+				return BadRequest("Faltó especificar el ID de box.");
+			}
+			var lista = _almSv.ObtenerInfoDeBox(boxId);
+			var response = new ApiResponse<List<DepositoInfoBoxDto>>(lista);
+			return Ok(response);
+		}
 	}
 }

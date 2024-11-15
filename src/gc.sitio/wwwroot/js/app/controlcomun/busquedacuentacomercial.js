@@ -13,7 +13,8 @@
 			dateControl2[i].setAttribute('min', local);
 		}
 	}
-	dateControl.value = local;
+	if (dateControl !== undefined && dateControl !== null)
+		dateControl.value = local;
 	$("#dtpFechaTurno").val(local);
 	$("#btnBuscarCC").on("click", buscarCuentasComercial);
 	InicializaPantallaCC("");
@@ -39,18 +40,20 @@
 	if ($("#DepoId").val() !== "") {
 		$("#listaDeposito").val($("#DepoId").val());
 	}
-	CargarCompteEnGrilla(modelObj);
-	//if ($("#FechaTurno").val() !== "") {
-	//	$("#dtpFechaTurno").val($("#FechaTurno").val())
+	if (modelObj !== undefined && modelObj !== null)
+		CargarCompteEnGrilla(modelObj);
 
-	//}
 	const cantUL = document.getElementById("txtCantidadUL");
-	cantUL.addEventListener('input', function (e) {
-		if (!isValid(this.value))
-			cantUL.value = 999;
-	});
+	if (cantUL !== undefined && cantUL !== null) {
+		cantUL.addEventListener('input', function (e) {
+			if (!isValid(this.value))
+				cantUL.value = 999;
+		});
+	}
 
-	AddEventListenerToComptesGrid();
+	var grilla = document.getElementById("tbComptesDeRP");
+	if (grilla !== undefined && grilla !== null)
+		AddEventListenerToComptesGrid();
 });
 
 function AddEventListenerToComptesGrid() {
@@ -121,6 +124,9 @@ function analizaInputCantidadUL() {
 }
 
 function ActualizarLinkBotonVerDetalle() {
+	if (VerDetalleDeCompteDeRPUrl === "") {
+		return false;
+	}
 	var depoSelec = $("#listaDeposito").val();
 	var notaAuto = $("#txtNota").val();
 	var turno = moment($("#dtpFechaTurno").val()).format("X");
@@ -446,10 +452,12 @@ function SelecccionarPrimerRegistro(grilla) {
 }
 
 function buscarCuentasComercial() {
-	if ($("#CtaId").val() !== "") {
+	if ($("#CtaId").val() !== "" && $("#CtaId").val() !== undefined) {
 		$("#Cuenta").val($("#CtaId").val());
 	}
 	var cuenta = $("#Cuenta").val();
+	if (cuenta === "")
+		return false;
 	var tipo = tipoCuenta;
 	var seccion = seccionEnVista; //-> Aca inyectar el html con los datos 
 	var vista = vistaParcial;
@@ -523,7 +531,7 @@ function MostrarModalCuentasComerciales(lista) {
 function MostrarOcultarRowsEnModalDeBusquedaDeCC(texto) {
 	var tableBody = document.getElementById("tbCuentasComerciales").getElementsByTagName('tbody')[0];
 	for (var i = 0; i < tableBody.rows.length; i++) {
-	if (texto.toUpperCase() == tableBody.rows[i].cells[1].innerText.toUpperCase()) {
+		if (texto.toUpperCase() == tableBody.rows[i].cells[1].innerText.toUpperCase()) {
 			tableBody.rows[i].style.display = '';
 		}
 		else if (tableBody.rows[i].cells[1].innerText.includes(texto.toUpperCase())) {
@@ -580,6 +588,9 @@ function seleccionarCuentaComercial() {
 }
 
 function CargarComboTiposComptes(cuenta) {
+	if (buscarTiposComptesUrl === "") {
+		return false;
+	}
 	var datos = { cuenta };
 	PostGenHtml(datos, buscarTiposComptesUrl, function (obj) {
 		$("#divTiposComptes").html(obj);

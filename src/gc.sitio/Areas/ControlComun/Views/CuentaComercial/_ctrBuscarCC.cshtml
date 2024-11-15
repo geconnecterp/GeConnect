@@ -1,10 +1,10 @@
-﻿@model BuscarCuentaDto
-
+﻿@* @model BuscarCuentaDto
+ *@
 <div class="row">
 	<div class="col-12">
 		<div class="input-group">
 			<span class="input-group-text">Cuenta: </span>
-			<input type="text" asp-for="Cuenta" class="form-control"/>
+			<input type="text" @* asp-for="Cuenta" *@ id="Cuenta" class="form-control" style="width:10%;"/>
 			<button type="button" class="btn btn-icon btn-outline-primary" id="btnBuscarCC" title="Buscar cuenta comercial">
 				<span class="tf-icons bx bx-search"></span>
 			</button>

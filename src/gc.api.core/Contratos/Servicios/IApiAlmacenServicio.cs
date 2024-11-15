@@ -16,6 +16,6 @@ namespace gc.api.core.Contratos.Servicios
         List<BoxRubProductoDto> TIObtenerListaRubro(string admId, string usuId, string ti);
         List<TiListaProductoDto> BuscaTIListaProductos(string admId, string usuId, string ti, string boxid, string rubroid);
         List<DepositoInfoBoxDto> ObtenerListaDeBoxesPorDeposito(string depoId);
-
+		List<DepositoInfoBoxDto> ObtenerInfoDeBox(string boxId);
 	}
 }

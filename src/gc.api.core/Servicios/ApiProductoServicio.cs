@@ -25,7 +25,7 @@ using System.Security.Cryptography;
 
 namespace gc.api.core.Servicios
 {
-    public class ApiProductoServicio : Servicio<Producto>, IApiProductoServicio
+	public class ApiProductoServicio : Servicio<Producto>, IApiProductoServicio
 	{
 		public ApiProductoServicio(IUnitOfWork uow, IOptions<PaginationOptions> options) : base(uow, options)
 		{
@@ -187,7 +187,7 @@ namespace gc.api.core.Servicios
 			return producto;
 		}
 
-		public List<InfoProdStkBox> InfoProductoStkBoxes(string id, string adm, string depo)
+		public List<InfoProdStkBox> InfoProductoStkBoxes(string id, string adm, string depo, string box = "")
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_INFOPROD_STKBOX;
 
@@ -196,6 +196,7 @@ namespace gc.api.core.Servicios
 					new SqlParameter("@p_id",id),
 					new SqlParameter("@adm_id",adm),
 					new SqlParameter("@depo_id",depo),
+					new SqlParameter("@box_id",box),
 			};
 
 			List<InfoProdStkBox> producto = _repository.EjecutarLstSpExt<InfoProdStkBox>(sp, ps, true);

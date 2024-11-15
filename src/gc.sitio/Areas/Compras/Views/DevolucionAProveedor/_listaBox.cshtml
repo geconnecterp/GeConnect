@@ -3,9 +3,9 @@
 	var cmbBoxes = Model.ComboBoxes;
 }
 
-<div class="col-sm" id="divComboBox" aria-disabled="true">
+<div class="col-sm" id="divComboBox1" aria-disabled="true">
 	<div class="input-group fixed-padding-top">
-		<span class="input-group-text fixed-width">Box: </span>
+		<span class="input-group-text" style="padding-left: 5px;padding-left: 40px;">Box: </span>
 		@Html.DropDownList("id", cmbBoxes, "Seleccionar...", new { @id = "listaBox", @class = "form-control" })
 	</div>
 </div>
@@ -13,5 +13,5 @@
 @section scripts {
 	<script type="text/javascript">
 	</script>
-	<script src="~/js/app/areas/ajustedestock/ajdestk.js"></script>
+	<script src="~/js/app/areas/devolucionaproveedor/devaprov.js"></script>
 }

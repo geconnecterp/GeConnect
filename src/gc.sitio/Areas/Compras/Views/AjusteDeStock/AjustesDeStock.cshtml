@@ -33,7 +33,7 @@
 							<div class="row" style="min-height: 37px;">
 							</div>
 							<div class="row">
-								<div class="input-group">
+								<div class="input-group" id="divRevertirAjuste">
 									<span class="input-group-text fixed-width-75" style="height:35px;">N°: </span>
 									<input type="text" id="txtNroAjuste" class="align-left" style="width: 50%;" value="" />
 									<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px;" id="btnRevertirAjuste">
@@ -41,7 +41,7 @@
 									</button>
 								</div>
 							</div>
-							<div class="row" style="padding-top:4px;padding-left:7px;">
+							<div class="row" style="padding-top:4px;padding-left:7px;" id="divCargaPrevia">
 								<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px; width:88%;" id="btnCargaPrevia">
 									<span class="tf-icons bx bx-cloud-download">Carga Previa</span>
 								</button>
@@ -72,7 +72,7 @@
 					<div class="col-6">
 						<div class="col-sm" id="divComboMotivos">
 							<div class="input-group fixed-padding-top">
-								<span class="input-group-text fixed-width">Motivo: </span>
+								<span class="input-group-text fixed-width">Tipo: </span>
 								@Html.DropDownList("id", motivos, "Seleccionar...", new { @id = "listaMotivo", @class = "form-control" })
 							</div>
 						</div>
@@ -111,16 +111,17 @@
 						<div class="col-8">
 							<div class="input-group input-group-sm">
 								<span style="display: none;" class="input-group-text">ID: </span>
-								<input type="text" id="txtIdProdEnComprobanteRP" class="form-control" style="width:10%;display: none;" readonly />
-								<input type="text" id="txtProDescripcion" class="form-control" style="width: 40%;" readonly />
-								<span class="input-group-text">UP: </span>
-								<input type="text" id="txtUPEnComprobanteRP" class="form-control" />
-								<span class="input-group-text">Bto: </span>
-								<input type="number" id="txtBtoEnComprobanteRP" class="form-control" min="0" />
-								<span class="input-group-text">Unid: </span>
-								<input type="text" id="txtUnidEnComprobanteRP" class="form-control" />
+								<input type="text" id="txtIdProd" class="form-control" style="width:10%;display: none;" readonly />
+								<input type="text" id="txtProDescripcion" class="form-control" style="width: 33%;" readonly />
+								<span class="input-group-text" style="width:5%;">UP: </span>
+								<input type="text" id="txtUP" class="form-control align-right" style="width:10%;"/>
+								<span class="input-group-text" style="width:5%;">Bto: </span>
+								<input type="number" id="txtBto" class="form-control align-right" min="0" style="width:10%;" />
+								<span class="input-group-text" style="width:5%;">Unid: </span>
+								<input type="text" id="txtUnid" class="form-control align-right" style="width:25%;" />
 								<input type="text" id="txtUP_ID" style="display:none;" />
 								<input type="text" id="txtBARRADO_ID" style="display:none;" />
+								<input type="text" id="txtID_PROV" style="display:none;" />
 								<button type="button" class="btn btn-sm btn-icon btn-success fixed-width" style="margin-left:5px;" id="btnAddProd">
 									<span class="tf-icons bx bx-plus-circle"></span>
 								</button>
@@ -137,6 +138,7 @@
 											<th style="width:5%;" class="col-header-small align-center">ID</th>
 											<th style="width:20%;" class="col-header-small align-center">Descripción</th>
 											<th style="width:5%;" class="col-header-small align-center">Cod. Prov</th>
+											<th style="width:5%;" class="col-header-small align-center">Box</th>
 											<th style="width:5%;" class="col-header-small align-center">Stk Actual</th>
 											<th style="width:5%;" class="col-header-small align-center">Ajuste</th>
 											<th style="width:5%;" class="col-header-small align-center">Stock Ajustado</th>
@@ -148,6 +150,8 @@
 											<tr onclick="selectListaProductoRow(this)">
 												<td class="align-center">@item.p_id</td>
 												<td class="align-left">@item.p_desc</td>
+												<td class="align-center">@item.p_id_prov</td>
+												<td class="align-center">@item.box_desc</td>
 												<td class="align-center">@item.as_stock</td>
 												<td class="align-right">@item.as_ajuste</td>
 												<td class="align-right">@item.as_resultado</td>
@@ -171,72 +175,26 @@
 		</div>
 	</div>
 </div>
-@* <div class="modal fade" id="modalCargaPrevia" tabindex="-1" style="display: none;" aria-hidden="true">
-	<div class="modal-dialog modal-lg" role="document">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title" id="modalCenterTitle"></h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-			</div>
-			<div class="modal-body">
-				<fieldset>
-					<legend>
-						<h5 id="leyendaNuevoProducto">Ptoductos de Depósito/Box</h5>
-					</legend>
-					<div class="col-sm" id="divDepositosEnCargaPrevia">
-						<div class="input-group fixed-padding-top">
-							<span class="input-group-text fixed-width">Depósito: </span>
-							@Html.DropDownList("id", depositos, "Seleccionar...", new { @id = "listaDepositoEnCargaPrevia", @class = "form-control" })
-						</div>
-					</div>
-					<div id="divComboBoxesEnCargaPrevia">
-						<div class="col-sm" id="divComboBoxEnCargaPrevia" aria-disabled="true">
-							<div class="input-group fixed-padding-top">
-								<span class="input-group-text fixed-width">Box: </span>
-								@Html.DropDownList("id", boxes, "Seleccionar...", new { @id = "listaBoxEnCargaPrevia", @class = "form-control" })
-							</div>
-						</div>
-					</div>
-					<div id="divListaProductosParaAgregar" style="padding-top:5px;">
-						<div class="table-responsive table-wrapper-full-width">
-							<table class="table table-bordered table-hover" id="tbListaProductosParaAgregar">
-								<thead class="table-dark">
-									<tr>
-										<th style="width:5%;" class="col-header-small align-center">ID</th>
-										<th style="width:20%;" class="col-header-small align-center">Descripción</th>
-										<th style="width:5%;" class="col-header-small align-center">Cod. Prov</th>
-										<th style="width:5%;" class="col-header-small align-center">Ajuste</th>
-									</tr>
-								</thead>
-								<tbody>
-
-								</tbody>
-							</table>
-						</div>
-					</div>
-				</fieldset>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-					Cerrar
-				</button>
-				<button type="button" class="btn btn-primary" onclick="seleccionarProductosDesdeCargaPrevia();">Seleccionar</button>
-			</div>
-		</div>
-	</div>
-</div> *@
-
 @section scripts {
 	<script type="text/javascript">
 		var tipoMotivoSeleccionado = "";
+		var pIdSeleccionado = "";
 		var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun" })";
 		var BuscarBoxesDesdeDepositoURL = "@Url.Action("ObtenerBoxesDesdeDeposito", "ajustedestock", new { area = "Compras" })";
 		var ObtenerDatosModalCargaPreviaUrl = "@Url.Action("ObtenerDatosModalCargaPrevia", "ajustedestock", new { area = "Compras" })";
 		var ObtenerBoxesDesdeDepositoDesdeCargaPreviaURL = "@Url.Action("ObtenerBoxesDesdeDepositoDesdeCargaPrevia", "ajustedestock", new { area = "Compras" })";
 		var ObtenerProductosDesdeAJRevertidoURL = "@Url.Action("ObtenerProductosDesdeAJRevertido", "ajustedestock", new { area = "Compras" })";
+		var ValidarNroDeAjusteARevertirURL = "@Url.Action("ValidarNroDeAjusteARevertir", "ajustedestock", new { area = "Compras" })";
+		var FiltrarProductosModalCargaPreviaURL = "@Url.Action("FiltrarProductosModalCargaPrevia", "ajustedestock", new { area = "Compras" })";
+		var ActaulizarListaProductosDesdeModalCargaPreviaURL = "@Url.Action("ActaulizarListaProductosDesdeModalCargaPrevia", "ajustedestock", new { area = "Compras" })";
+		var QuitarProductoDeListaURL = "@Url.Action("QuitarProductoDeLista", "ajustedestock", new { area = "Compras" })";
+		var AgregarProductoAListaURL = "@Url.Action("AgregarProductoALista", "ajustedestock", new { area = "Compras" })";
+		var ConfirmarAjusteDeStockURL = "@Url.Action("ConfirmarAjusteDeStock", "ajustedestock", new { area = "Compras" })";
+		var VerificaExistenciaDeAjusteDeStockURL = "@Url.Action("VerificaExistenciaDeAjusteDeStock", "ajustedestock", new { area = "Compras" })";
+		var CancelarAjusteDeStockURL = "@Url.Action("CancelarAjusteDeStock", "ajustedestock", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/areas/ajustedestock/ajdestk.js"></script>
 	<script src="~/js/app/busquedas.js" type="text/javascript"></script>
-	<script src="~/js/app/controlcomun/rpr.js" type="text/javascript"></script>
+	@* <script src="~/js/app/controlcomun/rpr.js" type="text/javascript"></script> *@
 	<script src="~/js/app/controlcomun/infoRpr.js" type="text/javascript"></script>
 }
