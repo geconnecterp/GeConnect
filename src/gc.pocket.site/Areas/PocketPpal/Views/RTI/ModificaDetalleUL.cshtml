@@ -3,16 +3,17 @@
 *@
 @{
     Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
-    // var callback = Url.Action("index", "rti", new { area = "pocketppal" });
+    var callback = Url.Action("index", "rti", new { area = "pocketppal" });
+    string modifica = "true";
 }
 
 <partial name="_viewIndexRTR" />
 
-@section scripts{
+@section scripts {
     <script type="text/javascript">
-        
+        var rtrModifica = @modifica;
         var remitoSeleccionado = null;
-        var ObtenerRemitosPendientesURL = "@Url.Action("ObtenerRemitos","rti",new{area="pocketppal"})";
+        var ObtenerRemitosPendientesURL = "@Url.Action("ObtenerRemitos", "rti", new { area = "pocketppal" })";
         var CargaProductosUrl = "@Url.Action("ResguardarRemito", "rti", new { area = "pocketppal" })";
 
     </script>

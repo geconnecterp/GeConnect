@@ -97,11 +97,11 @@ namespace gc.api.Controllers.Almacen
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RespuestaDto>>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
-        public IActionResult RTRCargarConteos(CargarJsonGenRequest request)
+        public IActionResult RTRCargarConteos(CargarJsonGenRequest request,bool esMod =false)
         {
             ApiResponse<RespuestaDto> response;
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-            RespuestaDto res = _remSv.RTRCargarConteos(request);
+            RespuestaDto res = _remSv.RTRCargarConteos(request,esMod);
 
             response = new ApiResponse<RespuestaDto>(res);
 

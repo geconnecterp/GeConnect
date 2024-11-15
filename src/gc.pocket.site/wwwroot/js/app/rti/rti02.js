@@ -31,7 +31,7 @@
                 case 1:
                 case 2:
                     valor = ('0' + valor).slice(-2); // Asegura que el numero siempre tenga dos dígitos
-                    $("#ul_Id").val("RTR-" + NroAuto +'-'+ valor);
+                    $("#ul_Id").val("RTR" + NroAuto +'-'+ valor);
                     break;
                 default:
 

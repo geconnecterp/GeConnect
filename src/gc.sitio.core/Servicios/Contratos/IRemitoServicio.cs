@@ -11,7 +11,7 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<List<RemitoVerConteoDto>> VerConteos(string remCompte, string token);
         Task<List<RespuestaDto>> ConfirmarRecepcion(string remCompte, string usuario, string token);
         Task<RespuestaDto> VerificaProductoEnRemito(string rm, string pId, string token);
-        Task<RespuestaDto> RTRCargarConteos(List<ProductoGenDto> lista, string token);
+        Task<RespuestaDto> RTRCargarConteos(List<ProductoGenDto> lista,bool esModificacion, string token);
         Task<List<RTRxULDto>> RTRCargarConteosXUL(string reCompte, string token);
 
 	}

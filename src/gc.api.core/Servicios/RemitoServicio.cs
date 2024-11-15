@@ -76,12 +76,13 @@ namespace gc.api.core.Servicios
             return resp.First();
         }
 
-        public RespuestaDto RTRCargarConteos(CargarJsonGenRequest request)
+        public RespuestaDto RTRCargarConteos(CargarJsonGenRequest request, bool esModificacion)
         {
             var sp = Constantes.ConstantesGC.StoredProcedures.SP_RTR_Cargar_Conteos;
             var ps = new List<SqlParameter>()
             {
-                new("@json",request.json_str),                    
+                new("@json",request.json_str),
+                new("@ul_modifica",esModificacion),     				
             };
             var resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
             return resp.First();

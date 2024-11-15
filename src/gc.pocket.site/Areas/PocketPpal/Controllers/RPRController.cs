@@ -3,7 +3,6 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.pocket.site.Controllers;
 using gc.sitio.core.Servicios.Contratos;
@@ -122,20 +121,16 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     AutorizacionPendienteSeleccionada = auto;
 
                 }
+                string? volver;
                 if (esUpdate)
                 {
                     //si es modificación de UL voy a marcar la rp
                     auto.EsModificacion = true;
                     AutorizacionPendienteSeleccionada = auto;
-                }
-                string? volver;
-
-                if (esUpdate)
-                {
-                    //
+                
                     volver = Url.Action("ModificaDetalleUL", "rpr", new { area = "pocketppal" });
 
-                    ViewBag.AppItem = new AppItem { Nombre = $"Detalle de ULs de {auto.Rp}", VolverUrl = volver ?? "#", BotonEspecial = true };
+                    ViewBag.AppItem = new AppItem { Nombre = $"Detalle de ULs de {auto.Rp}", VolverUrl = volver ?? "#", BotonEspecial = false };
                 }
                 else
                 {
@@ -386,13 +381,13 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         }
 
         [HttpPost]
-        public JsonResult EliminarProducto(string p_id)
+        public JsonResult EliminarProducto(string p_id,int item)
         {
             //busco el producto.
             try
             {
-                ProductoGenDto? item = EliminaProductoBase(p_id);
-                return Json(new { error = false, msg = $"El producto {item.p_desc} fue removido de la lista." });
+                ProductoGenDto? prod = EliminaProductoBase(p_id,item);
+                return Json(new { error = false, msg = $"El producto {prod.p_desc} fue removido de la lista." });
             }
             catch (NegocioException ex)
             {
@@ -407,16 +402,17 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
         }
 
-        private ProductoGenDto EliminaProductoBase(string p_id)
+        private ProductoGenDto EliminaProductoBase(string p_id,int item)
         {
-            var item = ProductoGenRegs.SingleOrDefault(p => p.p_id.Equals(p_id));
-            if (item == null)
+            
+            var prod = ProductoGenRegs.SingleOrDefault(p => p.p_id.Equals(p_id) && p.item == item);
+            if (prod == null)
             {
                 throw new NegocioException("No se encontró el producto que intenta eliminar de la lista");
             }
-            var lista = ProductoGenRegs.Where(p => !p.p_id.Equals(p_id)).ToList();
+            var lista = ProductoGenRegs.Where(p => !(p.p_id.Equals(p_id) && p.item == item)).ToList();
             ProductoGenRegs = lista;
-            return item;
+            return prod;
         }
 
         [HttpPost]
@@ -450,7 +446,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     item.cantidad += ProductoTemp.cantidad;
                 }
                 //Para agregar el acumulado primero debo sacar el producto de la lista
-                _ = EliminaProductoBase(ProductoTemp.p_id);
+                _ = EliminaProductoBase(ProductoTemp.p_id,ProductoTemp.item);
                 //traigo la lista, lo agrego y lo vuelvo a resguardar
                 var lista = ProductoGenRegs;
                 lista.Add(item);
