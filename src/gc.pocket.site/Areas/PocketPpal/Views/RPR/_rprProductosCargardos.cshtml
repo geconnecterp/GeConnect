@@ -36,7 +36,7 @@
                             <td class="text-sm-end">@item.bulto</td>
                             <td class="text-sm-end">@item.us</td>
                             <td class="text-sm-end">@item.cantidad</td>
-                            <td><button type="button" id=@id class="btnDelete btn btn-sm btn-secondary" onclick="EliminarProducto('@item.p_id')" value="@item.p_id"><i class="bx btn-xs bx-trash-alt"></i></button></td>
+                            <td><button type="button" id=@id class="btnDelete btn btn-sm btn-secondary" onclick="EliminarProducto('@item.p_id','@item.item')" value="@item.p_id"><i class="bx btn-xs bx-trash-alt"></i></button></td>
                         </tr>
                     }
                     @* <tr>

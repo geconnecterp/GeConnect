@@ -88,9 +88,9 @@ function RemplazarProducto() {
     });
 }
 
-function EliminarProducto(id) {
+function EliminarProducto(id,item) {
     AbrirWaiting("Espere... estamos procesando la solicitud...");
-    PostGen({ p_id: id }, EliminarProductoUrl, function (obj) {
+    PostGen({ p_id: id, item }, EliminarProductoUrl, function (obj) {
         if (obj.error === true) {
             CerrarWaiting();
             AbrirMensaje("Eliminar Producto", obj.msg, function () {
