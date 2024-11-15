@@ -509,7 +509,15 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                         throw new NegocioException("Verifique la Unidad de Lectura. Algo no esta bien.");
                     }
                 }
-                var res = await _productoServicio.RPRRegistrarProductos(ProductoGenRegs, AdministracionId, ul,auto.EsModificacion, TokenCookie);
+
+                var lista = ProductoGenRegs;
+                foreach (var item in lista)
+                {
+                    item.ul_id = ul;
+                    item.rp = auto.Rp;
+                }
+
+                var res = await _productoServicio.RPRRegistrarProductos(lista, AdministracionId, ul,auto.EsModificacion, TokenCookie);
 
                 if (res.Resultado == 0)
                 {
