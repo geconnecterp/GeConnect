@@ -32,7 +32,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
         }
 
         [HttpPost]
-        public async Task<JsonResult> BusquedaBase(string busqueda, bool validarEstado = false, bool acumularProductos = false)
+        public async Task<JsonResult> BusquedaBase(string busqueda, bool validarEstado = false, bool acumularProductos = false, bool validarPertenenciaDeProveedor = true)
         {
             try
             {
@@ -69,12 +69,15 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                     }
                     //Validación si pertenece o no al proveedor
 
-                    if (CuentaComercialSeleccionada != null &&
-                        !CuentaComercialSeleccionada.Cta_Id.Equals(producto.Cta_id) && validarEstado)
+                    if (validarPertenenciaDeProveedor)
                     {
-                        warn = true;
-                        msg = $"El Producto NO pertenece al actual proveedor. Pertenece al Proveedor {producto.Cta_denominacion}.";
-                    }
+						if (CuentaComercialSeleccionada != null &&
+						!CuentaComercialSeleccionada.Cta_Id.Equals(producto.Cta_id) && validarEstado)
+						{
+							warn = true;
+							msg = $"El Producto NO pertenece al actual proveedor. Pertenece al Proveedor {producto.Cta_denominacion}.";
+						}
+					}
 
                     //se resguarda el producto recien buscado.
                     ProductoBase = producto;

@@ -179,7 +179,7 @@
 	<script type="text/javascript">
 		var tipoMotivoSeleccionado = "";
 		var pIdSeleccionado = "";
-		var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun" })";
+		var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun", validarPertenenciaDeProveedor = false })";
 		var BuscarBoxesDesdeDepositoURL = "@Url.Action("ObtenerBoxesDesdeDeposito", "ajustedestock", new { area = "Compras" })";
 		var ObtenerDatosModalCargaPreviaUrl = "@Url.Action("ObtenerDatosModalCargaPrevia", "ajustedestock", new { area = "Compras" })";
 		var ObtenerBoxesDesdeDepositoDesdeCargaPreviaURL = "@Url.Action("ObtenerBoxesDesdeDepositoDesdeCargaPrevia", "ajustedestock", new { area = "Compras" })";

@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Globalization;
 using System.Reflection;
 using System.Security.Cryptography;
 using static gc.sitio.Areas.Compras.Controllers.CompraController;
@@ -330,6 +331,23 @@ namespace gc.sitio.Areas.Compras.Controllers
 					var box = await _depositoServicio.ObtenerInfoDeBox(boxId, TokenCookie);
 					if (productoStk != null && productoStk.Count > 0 && producto != null)
 					{
+						var stkEnteroAux = 0;
+						var stkDecimalAux = 0.000M;
+						var cantidadAux = 0.000M;
+						var unidadPresDecimalAux = Convert.ToDecimal(unidadPres);
+						var bultoDecimalAux = Convert.ToDecimal(bto);
+						if (producto.Up_id == "07") //Entero
+						{
+							stkEnteroAux = Int32.Parse(productoStk.First().Ps_stk.ToString(), NumberStyles.AllowThousands, CultureInfo.CurrentCulture);
+							var upxbto = unidadPres * bto;
+							cantidadAux = stkEnteroAux - (upxbto < 0 ? upxbto * -1 : upxbto);
+						}
+						else
+						{
+							stkDecimalAux = productoStk.First().Ps_stk;
+							cantidadAux = stkDecimalAux - (unidadPresDecimalAux * bultoDecimalAux);
+						}
+
 						var newProduct = new ProductoAAjustarDto()
 						{
 							tipo = "M",
@@ -345,11 +363,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 							up_id = upId,
 							unidad_pres = unidadPres,
 							bulto = bto,
-							us = (unidadPres * bto) + us,
+							us = us,
 							as_stock = productoStk.First().Ps_stk,
 							as_ajuste = (unidadPres * bto) + us,
-							cantidad = productoStk.First().Ps_stk - ((unidadPres * bto) + us),
-							as_resultado = productoStk.First().Ps_stk - ((unidadPres * bto) + us),
+							cantidad = (unidadPres * bto) + us,
+							as_resultado = cantidadAux,
 						};
 						listaTemp.Add(newProduct);
 						AjusteProductosLista = listaTemp;
@@ -473,7 +491,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					p_id_prov = item.p_id_prov,
 					as_ajuste = item.cantidad,
 					as_stock = item.ps_stk,
-					as_resultado = item.cantidad + item.ps_stk,
+					as_resultado = item.ps_stk - item.cantidad,
 					box_id = item.box_id,
 					box_desc = item.box_desc,
 					depo_id = item.depo_id,
@@ -482,7 +500,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					as_nro_revierte = null,
 					us = item.us,
 					bulto = item.bulto,
-					cantidad = item.cantidad + item.ps_stk,
+					cantidad = item.ps_stk - item.cantidad,
 					unidad_pres = item.unidad_pres,
 					up_id = item.up_id,
 				});
@@ -496,6 +514,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var listaMapeada = new List<ProductoAAjustarDto>();
 			foreach (var item in listaAjustesPrevios)
 			{
+
+
 				listaMapeada.Add(new ProductoAAjustarDto()
 				{
 					p_id = item.p_id,
@@ -503,16 +523,16 @@ namespace gc.sitio.Areas.Compras.Controllers
 					p_id_prov = item.p_id_prov,
 					as_ajuste = item.as_ajuste * -1,
 					as_stock = item.ps_stk,
-					as_resultado = (item.as_ajuste * -1) + item.ps_stk,
+					as_resultado = item.ps_stk - (item.as_ajuste * -1),
 					box_id = item.box_id,
 					box_desc = item.box_desc,
 					tipo = "R",
 					depo_id = item.depo_id,
 					usu_id = UserName,
-					us = 0,
+					us = item.ps_stk - (item.as_ajuste * -1),
 					up_id = item.up_id,
-					bulto = 0,
-					cantidad = (item.as_ajuste * -1) + item.ps_stk,
+					bulto = Convert.ToInt32(item.ps_bulto),
+					cantidad = item.ps_stk - (item.as_ajuste * -1),
 					as_motivo = item.as_motivo,
 				});
 			}

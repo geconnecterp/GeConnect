@@ -269,7 +269,30 @@ function verificaEstado(e) {
 		$("#txtBARRADO_ID").val(prod.p_id_barrado);
 		$("#txtID_PROV").val(prod.p_id_prov);
 		$("#txtUP").mask("000.000.000.000", { reverse: true });
-		$("#txtBto").mask("000.000.000.000", { reverse: true });
+		$("txtBto").mask('#,##0', {
+			reverse: true,
+			translation: {
+				'#': {
+					pattern: /-|\d/,
+					recursive: true
+				}
+			},
+			onChange: function (value, e) {
+				e.target.value = value.replace(/(?!^)-/g, '').replace(/^,/, '').replace(/^-,/, '-');
+			}
+		});
+		//$("#txtBto").mask("000.000.000.000", {
+		//	reverse: true,
+		//	translation: {
+		//		'#': {
+		//			pattern: /-|\d/,
+		//			recursive: true
+		//		}
+		//	},
+		//	onChange: function (value, e) {
+		//		e.target.value = value.replace(/(?!^)-/g, '').replace(/^,/, '').replace(/^-,/, '-');
+		//	}
+		//});
 		$("#txtUP").val(prod.p_unidad_pres).prop("disabled", false);
 		$("#txtBto").val(prod.bulto).prop("disabled", false);
 		$("#txtUnid").mask("000.000.000.000", { reverse: true });
@@ -280,7 +303,7 @@ function verificaEstado(e) {
 			$("#txtUnid").val(0).prop("disabled", false);
 		}
 		else { //unidades decimales
-			$("#txtUnid").val(0).prop("disabled", true);
+			//$("#txtUnid").val(0).prop("disabled", true);
 		}
 		$("#Busqueda").val("");
 		if (prod.p_con_vto !== "N") {

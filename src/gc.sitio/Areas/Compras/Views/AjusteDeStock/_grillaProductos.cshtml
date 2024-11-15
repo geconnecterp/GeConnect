@@ -1,4 +1,5 @@
-﻿@model GridCore<ProductoAAjustarDto>;
+﻿
+@model GridCore<ProductoAAjustarDto>;
 
 <div class="table-responsive table-wrapper-full-width">
 	<table class="table table-bordered table-hover" id="tbDetalleDeProductosAAjustar">
@@ -17,14 +18,18 @@
 		<tbody>
 			@foreach (var item in Model.ListaDatos)
 			{
+				var res = string.Format(CultureInfo.InvariantCulture,"{0:#,0.00}", @item.as_resultado);
+				var stk_actual = string.Format(CultureInfo.InvariantCulture, "{0:#,0.00}", @item.as_stock);
+				var ajuste = string.Format(CultureInfo.InvariantCulture, "{0:#,0.00}", @item.as_ajuste);
 				<tr onclick="selectListaProductoRow(this)">
 					<td class="align-center">@item.p_id</td>
 					<td class="align-left">@item.p_desc</td>
 					<td class="align-center">@item.p_id_prov</td>
 					<td class="align-center">@item.box_desc</td>
-					<td class="align-center">@item.as_stock</td>
-					<td class="align-right">@item.as_ajuste</td>
-					<td class="align-right">@item.as_resultado</td>
+					<td class="align-center">@stk_actual</td>
+					<td class="align-right">@ajuste</td>
+					<td class="align-right">@res</td>
+					@* <td class="align-right">@item.as_resultado</td> *@
 					<td style="display:none;">@item.as_motivo</td>
 				</tr>
 			}
