@@ -12,6 +12,7 @@ using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
+using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
 
 namespace gc.api.core.Contratos.Servicios
 {
@@ -34,6 +35,7 @@ namespace gc.api.core.Contratos.Servicios
 		List<TipoAjusteDeStockDto> ObtenerTipoDeAjusteDeStock();
 		List<AjustePrevioCargadoDto> ObtenerAJPreviosCargados(string admId);
 		List<AjusteRevertidoDto> ObtenerAJREVERTIDO(string ajId);
+		List<RespuestaDto> ConfirmarAjusteStk(ConfirmarAjusteStkRequest request);
 
 		List<AutorizacionPendienteDto> RPRObtenerAutorizacionPendiente(string adm);
         RegistroResponseDto RPRRegistrarProductos(string json,bool esModificacion);

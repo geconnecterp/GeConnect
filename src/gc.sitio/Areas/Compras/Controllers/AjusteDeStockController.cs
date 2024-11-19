@@ -340,12 +340,12 @@ namespace gc.sitio.Areas.Compras.Controllers
 						{
 							stkEnteroAux = Int32.Parse(productoStk.First().Ps_stk.ToString(), NumberStyles.AllowThousands, CultureInfo.CurrentCulture);
 							var upxbto = unidadPres * bto;
-							cantidadAux = stkEnteroAux - (upxbto < 0 ? upxbto * -1 : upxbto);
+							cantidadAux = stkEnteroAux - ((upxbto < 0 ? upxbto * -1 : upxbto) + us);
 						}
 						else
 						{
 							stkDecimalAux = productoStk.First().Ps_stk;
-							cantidadAux = stkDecimalAux - (unidadPresDecimalAux * bultoDecimalAux);
+							cantidadAux = stkDecimalAux - ((unidadPresDecimalAux * bultoDecimalAux) * us);
 						}
 
 						var newProduct = new ProductoAAjustarDto()
@@ -416,13 +416,22 @@ namespace gc.sitio.Areas.Compras.Controllers
 					listaTemp.ForEach(x => { if (x.cantidad > 0) { x.cantidad *= -1; } });
 				AjusteProductosLista = listaTemp;
 				var json_string = GenerarJsonDesdeLista();
+				var respuesta = await _productoServicio.ConfirmarAjusteStk(json_string, AdministracionId, UserName, string.Empty, TokenCookie);
 
-				return Json(new { error = false, warn = false, msg = json_string });
+				if (respuesta == null)
+					return Json(new { error = true, warn = false, msg = "Algo no fue bien al confirmar el ajuste, intente nuevamente mas tarde.", jsonstring = json_string });
+				if (respuesta.Count == 0)
+					return Json(new { error = true, warn = false, msg = "Algo no fue bien al confirmar el ajuste, intente nuevamente mas tarde.", jsonstring = json_string });
+				if (respuesta.First().resultado != 0)
+					return Json(new { error = false, warn = true, msg = respuesta.First().resultado_msj, jsonstring = json_string });
+
+				AjusteProductosLista = [];
+				return Json(new { error = false, warn = false, msg = respuesta.First().resultado_msj, jsonstring = json_string });
 			}
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
-				return Json(new { error = true, warn = false, msg = "Algo no fue bien al validar el ajuste, intente nuevamente mas tarde." });
+				return Json(new { error = true, warn = false, msg = "Algo no fue bien al confirmar el ajuste, intente nuevamente mas tarde." });
 			}
 		}
 

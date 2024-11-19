@@ -46,6 +46,7 @@ namespace gc.api.Controllers.Almacen
 	using System.Runtime.Intrinsics.Arm;
 	using System.Threading.Tasks;
 	using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
+	using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
 
 	[Authorize]
 	[Produces("application/json")]
@@ -396,9 +397,24 @@ namespace gc.api.Controllers.Almacen
 
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RespuestaDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ConfirmarAjusteStk(ConfirmarAjusteStkRequest request)
+		{
+			ApiResponse<List<RespuestaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.ConfirmarAjusteStk(request);
+
+			response = new ApiResponse<List<RespuestaDto>>(res);
+
+			return Ok(response);
+		}
 		#endregion
 
-        #region Acciones para modulo RPR
+		#region Acciones para modulo RPR
 
 		[HttpGet]
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<AutorizacionPendienteDto>>))]
