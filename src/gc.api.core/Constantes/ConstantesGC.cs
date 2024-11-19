@@ -112,6 +112,9 @@
             public const string SP_BOX_INFO_STK = "SPGECO_BOX_Info_Stk";
             public const string SP_BOX_INFO_MOV_STK = "SPGECO_BOX_Info_Mov_Stk";
 
+            #region Usuarios
+            public const string SP_USU_X_IDYADM = "SPGECO_USU_X_IDYADM";
+            #endregion
         }
-	}
+    }
 }

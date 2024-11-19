@@ -1,9 +1,13 @@
-﻿using gc.api.core.Entidades;
+﻿using Azure.Core;
+using gc.api.core.Constantes;
+using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.api.core.Interfaces.Servicios;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -17,13 +21,33 @@ namespace gc.api.core.Servicios
             _settings = options.Value;
         }
 
-        public async Task<Usuario?> GetLoginByCredential(UserLogin login)
+        public async Task<Usuario?> GetLoginByCredential(UserLogin login,bool esUp = false)
         {
-            return await GetAllIq().Include(x=>x.UsuarioAdministraciones)
-                .FirstOrDefaultAsync(u => u.Usu_id != null && u.Usu_id.Equals(login.UserName) && u.UsuarioAdministraciones.Any(a=>a.Adm_Id.Equals(login.Admid)));
+            var sp = ConstantesGC.StoredProcedures.SP_USU_X_IDYADM;
+            var ps = new List<SqlParameter>()
+            {
+                    new("@usu_id",login.UserName),
+                    new("@adm_id",login.Admid),
+                    new("@sinAdm",esUp),
+            };
+            var usuario = _repository.EjecutarLstSpExt<Usuario>(sp, ps, true);
+            return usuario.FirstOrDefault();
+
+            //if (esUp) {
+            //    var regs = GetAllIq();
+            //    return await regs
+            //        .FirstOrDefaultAsync(u => u.Usu_id != null && u.Usu_id.Equals(login.UserName));
+            //}
+            //else {
+            //    var user =  await GetAllIq()
+            //        .FirstOrDefaultAsync(u => u.Usu_id != null && u.Usu_id.Equals(login.UserName) && u.UsuarioAdministraciones.Any(a => a.Adm_Id.Equals(login.Admid)));
+
+                
+            //}
+            
         }
 
-        public async Task<bool> RegistrerUser(Usuario registro)
+        public async Task<bool> RegistrerUser(Usuario registro,bool esUp=false)
         {
             if (registro == null)
             {
@@ -44,17 +68,20 @@ namespace gc.api.core.Servicios
             {
                 throw new NegocioException("El correo ingresado, no es válido.");
             }
-
-
-
-            registro.Usu_alta = DateTime.Now;
+            if (!esUp)            
+            {
+                registro.Usu_alta = DateTime.Now;
+            }
             registro.Usu_bloqueado = false;
             registro.Usu_expira = true;
             registro.Usu_pin = string.Empty;
 
-            //
-
-            await _repository.AddAsync(registro);
+            if (esUp) { 
+                _repository.Update(registro);
+            } else
+            {
+                await _repository.AddAsync(registro);
+            }
 
             _uow.SaveChanges();
             
