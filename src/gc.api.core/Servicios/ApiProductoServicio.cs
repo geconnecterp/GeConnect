@@ -21,6 +21,7 @@ using System.Data;
 using System.Linq.Dynamic.Core;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 using System.Security.Cryptography;
+using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
 
 
 namespace gc.api.core.Servicios
@@ -319,6 +320,23 @@ namespace gc.api.core.Servicios
 			List<AjusteRevertidoDto> ajustes = _repository.EjecutarLstSpExt<AjusteRevertidoDto>(sp, ps, true);
 
 			return ajustes;
+		}
+
+		public List<RespuestaDto> ConfirmarAjusteStk(ConfirmarAjusteStkRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_AJ_CONFIRMA;
+
+			var ps = new List<SqlParameter>()
+			{
+					new SqlParameter("@json",request.json),
+					new SqlParameter("@adm_id",request.admId),
+					new SqlParameter("@usu_id",request.usuId),
+					new SqlParameter("@compte_ori",request.compteOri==string.Empty?null:request.compteOri),
+			};
+
+			List<RespuestaDto> respuesta = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+
+			return respuesta;
 		}
 
 		public ProductoBusquedaDto ProductoBuscar(BusquedaBase busqueda)
@@ -828,46 +846,46 @@ namespace gc.api.core.Servicios
 			return productos.First();
 		}
 
-        public BoxInfoDto ObtenerBoxInfo(string box_id)
-        {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_BOX_INFO;
-            var ps = new List<SqlParameter>()
-            {
-                new("@box_id",box_id),
-            };
+		public BoxInfoDto ObtenerBoxInfo(string box_id)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_BOX_INFO;
+			var ps = new List<SqlParameter>()
+			{
+				new("@box_id",box_id),
+			};
 
-            List<BoxInfoDto> info = _repository.EjecutarLstSpExt<BoxInfoDto>(sp, ps, true);
+			List<BoxInfoDto> info = _repository.EjecutarLstSpExt<BoxInfoDto>(sp, ps, true);
 
-            return info.First();
-        }
+			return info.First();
+		}
 
-        public List<BoxInfoStkDto> ObtenerBoxInfoStk(string box_id)
-        {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_BOX_INFO_STK;
-            var ps = new List<SqlParameter>()
-            {
-                new("@box_id",box_id),
-            };
+		public List<BoxInfoStkDto> ObtenerBoxInfoStk(string box_id)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_BOX_INFO_STK;
+			var ps = new List<SqlParameter>()
+			{
+				new("@box_id",box_id),
+			};
 
-            List<BoxInfoStkDto> stks = _repository.EjecutarLstSpExt<BoxInfoStkDto>(sp, ps, true);
+			List<BoxInfoStkDto> stks = _repository.EjecutarLstSpExt<BoxInfoStkDto>(sp, ps, true);
 
-            return stks;
-        }
+			return stks;
+		}
 
-        public List<BoxInfoMovStkDto> ObtenerBoxInfoMovStk(string box_id, string sm_tipo, DateTime desde, DateTime hasta)
-        {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_BOX_INFO_MOV_STK;
-            var ps = new List<SqlParameter>()
-            {
-                new("@box_id",box_id),
-                new("@sm_tipo",sm_tipo),
-                new("@d",desde),
-                new("@h",hasta),
-            };
+		public List<BoxInfoMovStkDto> ObtenerBoxInfoMovStk(string box_id, string sm_tipo, DateTime desde, DateTime hasta)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_BOX_INFO_MOV_STK;
+			var ps = new List<SqlParameter>()
+			{
+				new("@box_id",box_id),
+				new("@sm_tipo",sm_tipo),
+				new("@d",desde),
+				new("@h",hasta),
+			};
 
-            List<BoxInfoMovStkDto> movs = _repository.EjecutarLstSpExt<BoxInfoMovStkDto>(sp, ps, true);
+			List<BoxInfoMovStkDto> movs = _repository.EjecutarLstSpExt<BoxInfoMovStkDto>(sp, ps, true);
 
-            return movs;
-        }
-    }
+			return movs;
+		}
+	}
 }

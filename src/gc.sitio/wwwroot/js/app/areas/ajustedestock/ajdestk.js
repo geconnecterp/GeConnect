@@ -106,13 +106,21 @@ function ConfirmarAjuste() {
 					$("#msjModal").modal("hide");
 					return true;
 				}, false, ["Aceptar"], "error!", null);
+				console.log(o.jsonstring);
 			} else if (o.warn === true) {
 				AbrirMensaje("Atención", o.msg, function () {
 					$("#msjModal").modal("hide");
 					return true;
 				}, false, ["Aceptar"], "warn!", null);
+				console.log(o.jsonstring);
 			} else {
-				console.log(o.msg);
+				AbrirMensaje("Atención", o.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "succ!", null);
+				$("#tbDetalleDeProductosAAjustar tbody tr").remove(); 
+				$("#txtNota").val("");
+				console.log(o.jsonstring);
 			}
 		});
 	}

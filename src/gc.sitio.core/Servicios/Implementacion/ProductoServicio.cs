@@ -26,6 +26,7 @@ using System.Reflection;
 using System.Runtime.Intrinsics.Arm;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 using System.Security.Cryptography;
+using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
 
 namespace gc.sitio.core.Servicios.Implementacion
 {
@@ -48,6 +49,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string TIPO_DE_AJUSTE = "/ObtenerTipoDeAjusteDeStock";
 		private const string AJUSTE_PREVIO_CARGADO = "/ObtenerAJPreviosCargados";
 		private const string AJUSTE_REVERTIDO = "/ObtenerAJREVERTIDO";
+		private const string AJUSTE_CONFIRMAR = "/ConfirmarAjusteStk";
 
 		private const string RPRAUTOPEND = "/RPRAutorizacionPendiente";
 		private const string RPRCOMPTESPEND = "/RPRObtenerAutoComptesPendientes";
@@ -95,11 +97,11 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string TR_Ver_Conteos = "/TRVerConteos";
 		private const string TR_Validar_Transferencia = "/TRValidarTransferencia";
 
-        
 
-        //NCYPI
-        private const string OC_Productos = "/NCPICargarListaDeProductos";
-        private const string OC_Cargar_Pedido = "/NCPICargaPedido";
+
+		//NCYPI
+		private const string OC_Productos = "/NCPICargarListaDeProductos";
+		private const string OC_Cargar_Pedido = "/NCPICargaPedido";
 
 		private readonly AppSettings _appSettings;
 
@@ -599,6 +601,38 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 		}
 
+		public async Task<List<RespuestaDto>> ConfirmarAjusteStk(string json, string admId, string usuId, string compteOri, string token)
+		{
+			ApiResponse<List<RespuestaDto>> apiResponse;
+
+			HelperAPI helper = new();
+			ConfirmarAjusteStkRequest request = new() { json = json, admId = admId, usuId = usuId, compteOri = compteOri };
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{AJUSTE_CONFIRMAR}";
+
+			response = await client.PostAsync(link, contentData);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros json:{json}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
 		public async Task<List<AutorizacionPendienteDto>> RPRObtenerAutorizacionPendiente(string adm, string token)
 		{
 			ApiResponse<List<AutorizacionPendienteDto>> apiResponse;
@@ -631,9 +665,9 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 		}
 
-        public async Task<RegistroResponseDto> RPRRegistrarProductos(List<ProductoGenDto> prods, string admId, string ul, bool esModificacion, string token)
-        {
-            ApiResponse<RegistroResponseDto> apiResponse;
+		public async Task<RegistroResponseDto> RPRRegistrarProductos(List<ProductoGenDto> prods, string admId, string ul, bool esModificacion, string token)
+		{
+			ApiResponse<RegistroResponseDto> apiResponse;
 
 			HelperAPI helper = new HelperAPI();
 
@@ -645,7 +679,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			HttpClient client = helper.InicializaCliente(prods, token, out StringContent contentData);
 			HttpResponseMessage response;
 
-            var link = $"{_appSettings.RutaBase}{RutaAPI}{RPRREGISTRAR}?esMod={esModificacion}";
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{RPRREGISTRAR}?esMod={esModificacion}";
 
 			response = await client.PostAsync(link, contentData);
 
@@ -1969,32 +2003,32 @@ namespace gc.sitio.core.Servicios.Implementacion
 
 			response = await client.PostAsync(link, contentData);
 
-            if (response.StatusCode == HttpStatusCode.OK)
-            {
-                string stringData = await response.Content.ReadAsStringAsync();
-                if (string.IsNullOrEmpty(stringData))
-                {
-                    _logger.LogWarning($"La API no devolvió dato alguno. ");
-                    return new();
-                }
-                apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
-                if (apiResponse.Data.resultado ==0)
-                {
-                    return new RespuestaGenerica<RespuestaDto> { Ok = true, Entidad = apiResponse.Data };
-                }
-                else
-                {
-                    return new RespuestaGenerica<RespuestaDto> { Ok = false, Entidad = apiResponse.Data, Mensaje = apiResponse.Data.resultado_msj };
-                }
-            }
-            else
-            {
-                string stringData = await response.Content.ReadAsStringAsync();
-                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
-                return new() { Ok = false, Mensaje = "Hubo un problema al intentar enviar los productos para el control de salida. Verifique log, de ser necesario." };
-            }
-        }
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API no devolvió dato alguno. ");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+				if (apiResponse.Data.resultado == 0)
+				{
+					return new RespuestaGenerica<RespuestaDto> { Ok = true, Entidad = apiResponse.Data };
+				}
+				else
+				{
+					return new RespuestaGenerica<RespuestaDto> { Ok = false, Entidad = apiResponse.Data, Mensaje = apiResponse.Data.resultado_msj };
+				}
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new() { Ok = false, Mensaje = "Hubo un problema al intentar enviar los productos para el control de salida. Verifique log, de ser necesario." };
+			}
+		}
 
 
-    }
+	}
 }
