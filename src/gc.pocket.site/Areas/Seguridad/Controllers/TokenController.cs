@@ -106,7 +106,7 @@ namespace gc.pocket.site.Areas.Seguridad.Controllers
                         var email = tokenS.Claims.First(c => c.Type.Contains("email")).Value;
                         var nombre = tokenS.Claims.First(c => c.Type.Contains("nya")).Value;
                         //29/10/2024 Ñoquis - se resguarda etiqueta, que sera la que almacene los datos en la cookie
-                        Etiqueta = $"{user}GCPocket";
+                        Etiqueta = $"{user.Trim()}GCPocket";
 
                         //se comienza a armar  el usuario autenticado. Se resguardara en una cookie
 
