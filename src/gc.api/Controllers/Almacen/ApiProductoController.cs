@@ -47,6 +47,7 @@ namespace gc.api.Controllers.Almacen
 	using System.Threading.Tasks;
 	using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 	using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
+	using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
 
 	[Authorize]
 	[Produces("application/json")]
@@ -384,7 +385,7 @@ namespace gc.api.Controllers.Almacen
 		}
 
 		[HttpGet]
-		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<AjusteRevertidoDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<DevolucionRevertidoDto>>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]
 		public IActionResult ObtenerAJREVERTIDO(string ajId)
@@ -409,6 +410,21 @@ namespace gc.api.Controllers.Almacen
 			var res = _productosSv.ConfirmarAjusteStk(request);
 
 			response = new ApiResponse<List<RespuestaDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<DevolucionPrevioCargadoDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerDPPreviosCargados(string admId)
+		{
+			ApiResponse<List<DevolucionPrevioCargadoDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.ObtenerDPPreviosCargados(admId);
+
+			response = new ApiResponse<List<DevolucionPrevioCargadoDto>>(res);
 
 			return Ok(response);
 		}

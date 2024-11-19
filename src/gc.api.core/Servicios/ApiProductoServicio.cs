@@ -22,6 +22,7 @@ using System.Linq.Dynamic.Core;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 using System.Security.Cryptography;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
+using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
 
 
 namespace gc.api.core.Servicios
@@ -337,6 +338,20 @@ namespace gc.api.core.Servicios
 			List<RespuestaDto> respuesta = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 
 			return respuesta;
+		}
+
+		public List<DevolucionPrevioCargadoDto> ObtenerDPPreviosCargados(string admId)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_DP_PREVIOS_CARGADOS;
+
+			var ps = new List<SqlParameter>()
+			{
+					new SqlParameter("@adm_id",admId),
+			};
+
+			List<DevolucionPrevioCargadoDto> ajustes = _repository.EjecutarLstSpExt<DevolucionPrevioCargadoDto>(sp, ps, true);
+
+			return ajustes;
 		}
 
 		public ProductoBusquedaDto ProductoBuscar(BusquedaBase busqueda)

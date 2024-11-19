@@ -27,6 +27,7 @@ using System.Runtime.Intrinsics.Arm;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 using System.Security.Cryptography;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
+using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
 
 namespace gc.sitio.core.Servicios.Implementacion
 {
@@ -50,6 +51,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string AJUSTE_PREVIO_CARGADO = "/ObtenerAJPreviosCargados";
 		private const string AJUSTE_REVERTIDO = "/ObtenerAJREVERTIDO";
 		private const string AJUSTE_CONFIRMAR = "/ConfirmarAjusteStk";
+
+		private const string DEVOLUCION_PREVIO_CARGADO = "/ObtenerDPPreviosCargados";
 
 		private const string RPRAUTOPEND = "/RPRAutorizacionPendiente";
 		private const string RPRCOMPTESPEND = "/RPRObtenerAutoComptesPendientes";
@@ -623,6 +626,38 @@ namespace gc.sitio.core.Servicios.Implementacion
 					return new();
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<DevolucionPrevioCargadoDto>> ObtenerDPPreviosCargados(string admId, string token)
+		{
+			ApiResponse<List<DevolucionPrevioCargadoDto>> apiResponse;
+
+			HelperAPI helper = new HelperAPI();
+
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{DEVOLUCION_PREVIO_CARGADO}?admId={admId}";
+
+			response = await client.GetAsync(link);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API no devolvió dato alguno.");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<DevolucionPrevioCargadoDto>>>(stringData);
 				return apiResponse.Data;
 			}
 			else
