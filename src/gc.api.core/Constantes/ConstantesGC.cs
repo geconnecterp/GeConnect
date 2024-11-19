@@ -37,6 +37,7 @@
 			public const string SP_AJ_TIPOS = "dbo.SPGECO_AJ_Tipos";
 			public const string SP_AJ_PREVIOS_CARGADOS = "dbo.SPGECO_AJ_Previos_Cargados";
 			public const string SP_AJ_AJUSTE_REVERTIDO = "dbo.SPGECO_AJ_Datos";
+			public const string SP_AJ_CONFIRMA = "dbo.SPGECO_AJ_Confirma";
 			//
 
 			public const string SP_RPR_PENDIENTES = "spgeco_RPR_Pendientes";
