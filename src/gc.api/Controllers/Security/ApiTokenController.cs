@@ -71,46 +71,62 @@ namespace gc.api.Controllers.Security
         public async Task<IActionResult> CambioClave(CambioClaveDto cambio)
         {
             _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-            //if (string.IsNullOrEmpty(cambio.PassAct))
-            //{
-            //    return BadRequest("No se recepcionó la clave.");
-            //}
-            //if (string.IsNullOrEmpty(cambio.PassNew) || string.IsNullOrEmpty(cambio.PassNewVer))
-            //{
-            //    return BadRequest("No se recepcionó la clave nueva.");
-            //}
-            //if (string.Compare(cambio.PassNew, cambio.PassNewVer) != 0)
-            //{
-            //    return BadRequest("La clave no pudo ser validada correctamente.");
-            //}
+            if (string.IsNullOrEmpty(cambio.PassAct))
+            {
+                return BadRequest("No se recepcionó la clave.");
+            }
+            if (string.IsNullOrEmpty(cambio.PassNew) || string.IsNullOrEmpty(cambio.PassNewVer))
+            {
+                return BadRequest("No se recepcionó la clave nueva.");
+            }
+            if (string.Compare(cambio.PassNew, cambio.PassNewVer) != 0)
+            {
+                return BadRequest("La clave no pudo ser validada correctamente.");
+            }
 
             ////obtenemos el usuario desde el token
             //var res = ObtenerTokenDesdeRequestAsync(false);
             //var validacion = await IsValidUser(new UserLogin { UserName = res.Item2, Password = cambio.PassAct });
-            //if (validacion.Item1)
-            //{
-            //    //la clave fue valida.. ahora se modifica la clave.
-            //    cambio.PassNew = _passwordService.Hash(cambio.PassNew);
-            //    bool resultado = await _empleadoServicio.CambioClave(res.Item1.ToGuid(),cambio);
-            //    if (resultado)
-            //    {
-            //        return Ok(new ApiResponse<bool>(resultado));
-            //    }
-            //    else
-            //    {
-            //        return BadRequest("No se pudo actualizar la clave.");
-            //    }
-            //}
-            //else
-            //{
-            //    return BadRequest("El usuario o clave o ambos son erroreos.");
-            //}
+            var validacion = await IsValidUser(new UserLogin { UserName = cambio.UserName, Password = cambio.PassAct },true);
+            if (validacion.Item1)
+            {
+                //    //la clave fue valida.. ahora se modifica la clave.
+                var pass = _passwordService.CalculaClave(new RegistroUserDto { User=cambio.UserName, Password=cambio.PassNew });
+                var usu = validacion.Item2;
+                usu.Usu_password = pass;
+                usu.Usu_email = $"{usu.Usu_id.Trim()}@geco.com.ar";
+                var res = await _securityServicio.RegistrerUser(usu, true);
+
+                if (res)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest("No se pudo modificar la clave del operador.");
+                }
+
+                //    cambio.PassNew = _passwordService.Hash(cambio.PassNew);
+                //    bool resultado = await _empleadoServicio.CambioClave(res.Item1.ToGuid(),cambio);
+                //    if (resultado)
+                //    {
+                //        return Ok(new ApiResponse<bool>(resultado));
+                //    }
+                //    else
+                //    {
+                //        return BadRequest("No se pudo actualizar la clave.");
+                //    }
+            }
+            else
+            {
+                return BadRequest("El usuario o clave o ambos son erroreos.");
+            }
 
             throw new NotImplementedException();
         }
 
 
-        private async Task<(bool, Usuario?)> IsValidUser(UserLogin login)
+        private async Task<(bool, Usuario?)> IsValidUser(UserLogin login,bool esUp=false)
         {
             _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
 
@@ -119,19 +135,37 @@ namespace gc.api.Controllers.Security
                 return (false, null);
                 //throw new NegocioException("No se recepcinaron las credenciales del Usuario a autenticarse.");
             }
-            if (string.IsNullOrEmpty(login.UserName) || string.IsNullOrWhiteSpace(login.UserName) ||
-                string.IsNullOrEmpty(login.Password) || string.IsNullOrWhiteSpace(login.Password) ||
-                string.IsNullOrEmpty(login.Admid) || string.IsNullOrWhiteSpace(login.Admid))
+            if (esUp)
             {
-                return (false, null);
-                //throw new NegocioException("Las credenciales no son correctas.");
+                if (string.IsNullOrEmpty(login.UserName) || string.IsNullOrWhiteSpace(login.UserName) ||
+                string.IsNullOrEmpty(login.Password) || string.IsNullOrWhiteSpace(login.Password) )
+                {
+                    return (false, null);
+                    //throw new NegocioException("Las credenciales no son correctas.");
+                }
             }
-            var user = await _securityServicio.GetLoginByCredential(login);
+            else
+            {
+                if (string.IsNullOrEmpty(login.UserName) || string.IsNullOrWhiteSpace(login.UserName) ||
+                    string.IsNullOrEmpty(login.Password) || string.IsNullOrWhiteSpace(login.Password) ||
+                    string.IsNullOrEmpty(login.Admid) || string.IsNullOrWhiteSpace(login.Admid))
+                {
+                    return (false, null);
+                    //throw new NegocioException("Las credenciales no son correctas.");
+                }
+            }
+            var user = await _securityServicio.GetLoginByCredential(login,esUp);
             if (user == null)
             {
                 return (false, null);
             }
-            var isValid = _passwordService.Check(user.Usu_password, login.UserName, login.Password);
+            bool isValid;
+            //es un usuario existente pero se le fuerza el cambio de contraseña.
+            if (login.Password.Equals("##newuser##"))
+            {
+                return (true, user);
+            }
+            isValid = _passwordService.Check(user.Usu_password, login.UserName, login.Password);
             if (!isValid)
             {
                 return (false, null);
