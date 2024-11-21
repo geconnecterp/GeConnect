@@ -1,0 +1,17 @@
+﻿@model BoxListDto
+@{
+	var cmbBoxes = Model.ComboBoxes;
+}
+
+<div class="col-sm" id="divComboBoxEnCargaPrevia" aria-disabled="true">
+	<div class="input-group fixed-padding-top">
+		<span class="input-group-text fixed-width">Box: </span>
+		@Html.DropDownList("id", cmbBoxes, "Seleccionar...", new { @id = "listaBoxEnCargaPrevia", @class = "form-control" })
+	</div>
+</div>
+
+@section scripts {
+	<script type="text/javascript">
+	</script>
+	<script src="~/js/app/areas/devolucionaproveedor/devaprov.js"></script>
+}

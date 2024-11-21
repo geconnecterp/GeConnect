@@ -23,6 +23,7 @@ using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 using System.Security.Cryptography;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
+using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor.Request;
 
 
 namespace gc.api.core.Servicios
@@ -340,18 +341,49 @@ namespace gc.api.core.Servicios
 			return respuesta;
 		}
 
-		public List<DevolucionPrevioCargadoDto> ObtenerDPPreviosCargados(string admId)
+		public List<DevolucionPrevioCargadoDto> ObtenerDPPreviosCargados(string admId, string ctaId)
 		{
-			var sp = Constantes.ConstantesGC.StoredProcedures.SP_DP_PREVIOS_CARGADOS;
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_DV_PREVIOS_CARGADOS;
 
 			var ps = new List<SqlParameter>()
 			{
 					new SqlParameter("@adm_id",admId),
+					new SqlParameter("@cta_id",ctaId),
 			};
 
 			List<DevolucionPrevioCargadoDto> ajustes = _repository.EjecutarLstSpExt<DevolucionPrevioCargadoDto>(sp, ps, true);
 
 			return ajustes;
+		}
+
+		public List<DevolucionRevertidoDto> ObtenerDPREVERTIDO(string dvCompte)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_DV_DATOS;
+
+			var ps = new List<SqlParameter>()
+			{
+					new SqlParameter("@dv_compte",dvCompte),
+			};
+
+			List<DevolucionRevertidoDto> ajustes = _repository.EjecutarLstSpExt<DevolucionRevertidoDto>(sp, ps, true);
+
+			return ajustes;
+		}
+
+		public List<RespuestaDto> ConfirmarDP(ConfirmarDPRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_DV_CONFIRMA;
+
+			var ps = new List<SqlParameter>()
+			{
+					new SqlParameter("@json",request.json),
+					new SqlParameter("@adm_id",request.admId),
+					new SqlParameter("@usu_id",request.usuId),
+			};
+
+			List<RespuestaDto> respuesta = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+
+			return respuesta;
 		}
 
 		public ProductoBusquedaDto ProductoBuscar(BusquedaBase busqueda)

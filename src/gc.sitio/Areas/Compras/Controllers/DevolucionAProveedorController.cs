@@ -12,9 +12,13 @@ using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
+using Newtonsoft.Json;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.Intrinsics.Arm;
+using System.Security.Claims;
+using static gc.sitio.Areas.Compras.Controllers.CompraController;
 
 namespace gc.sitio.Areas.Compras.Controllers
 {
@@ -238,17 +242,14 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					return Json(new { error = true, warn = false, msg = "Se debe indicar un valor válido para devolución a revertir." });
 				}
-				//TODO: Modificar cuando este listo el SP
-				var listaAjustesPrevios = await _productoServicio.ObtenerAJREVERTIDO(dpId, TokenCookie);
-				var depo_id = listaAjustesPrevios.First().depo_id;
-				if (DepositoLista != null && DepositoLista.Count > 0)
-				{
-					if (!DepositoLista.Exists(x => x.Depo_Id.Equals(depo_id)))
-					{
-						return Json(new { error = false, warn = true, msg = $"La devolución indicada '{dpId}' no corresponde al proveedor." });
-					}
-					return Json(new { error = false, warn = false, msg = "" });
-				}
+				var listaAjustesPrevios = await _productoServicio.ObtenerDPREVERTIDO(dpId, TokenCookie);
+				if (listaAjustesPrevios == null)
+					return Json(new { error = true, warn = false, msg = $"La devolución indicada '{dpId}' no existe." });
+				if (listaAjustesPrevios.Count == 0)
+					return Json(new { error = false, warn = true, msg = $"La devolución indicada '{dpId}' no posee datos." });
+				var unProducto = listaAjustesPrevios.First();
+				if (unProducto.cta_id != ctaId)
+					return Json(new { error = false, warn = true, msg = $"La devolución indicada '{dpId}' no corresponde al proveedor {ctaId}." });
 				return Json(new { error = false, warn = false, msg = "" });
 			}
 			catch (Exception ex)
@@ -260,32 +261,30 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> ObtenerProductosDesdeDPRevertido(string dpId)
 		{
-			var model = new GridCore<ProductoAAjustarDto>();
+			var model = new GridCore<ProductoADevolverDto>();
 			try
 			{
 				if (dpId == null)
 					return ObtenerMensajeDeError("No se ha especificado un ID de devolucion válido. Si el problema persiste informe al Administrador.");
 
-				//TODO: Modificar cuando este el SP 
-				var listaAjustesPrevios = await _productoServicio.ObtenerAJREVERTIDO(dpId, TokenCookie);
+				var listaAjustesPrevios = await _productoServicio.ObtenerDPREVERTIDO(dpId, TokenCookie);
 				if (listaAjustesPrevios == null || listaAjustesPrevios.Count == 0)
 				{
-					model = ObtenerGridCore<ProductoAAjustarDto>(AjusteProductosLista);
+					model = ObtenerGridCore<ProductoADevolverDto>(DevolucionProductosLista);
 					return PartialView("_grillaProductos", model);
 				}
-				listaAjustesPrevios.RemoveAll(x => AjusteProductosLista.Exists(y => y.p_id.Equals(x.p_id)));
+				listaAjustesPrevios.RemoveAll(x => DevolucionProductosLista.Exists(y => y.p_id.Equals(x.p_id)));
 				if (listaAjustesPrevios.Count > 0)
 				{
-					//TODO: Descomentar cuando existan los SP que faltan
-					//var productosMapeados = ObtenerProductoADevolverDesdeListaDeProductoARevertir(listaAjustesPrevios);
-					var listaTemp = AjusteProductosLista;
-					//listaTemp.AddRange(productosMapeados);
-					AjusteProductosLista = listaTemp;
-					model = ObtenerGridCore<ProductoAAjustarDto>(listaTemp);
+					var productosMapeados = ObtenerProductoADevolverDesdeListaDeProductoARevertir(listaAjustesPrevios);
+					var listaTemp = DevolucionProductosLista;
+					listaTemp.AddRange(productosMapeados);
+					DevolucionProductosLista = listaTemp;
+					model = ObtenerGridCore<ProductoADevolverDto>(listaTemp);
 				}
 				else
 				{
-					model = ObtenerGridCore<ProductoAAjustarDto>(AjusteProductosLista);
+					model = ObtenerGridCore<ProductoADevolverDto>(DevolucionProductosLista);
 				}
 			}
 			catch (Exception ex)
@@ -302,7 +301,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return PartialView("_grillaProductos", model);
 		}
 
-		public async Task<IActionResult> ObtenerDatosModalCargaPrevia()
+		public async Task<IActionResult> ObtenerDatosModalCargaPrevia(string ctaId)
 		{
 			var model = new DatosModalCargaPreviaDPDto();
 			try
@@ -310,9 +309,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (AdministracionId == null)
 					return ObtenerMensajeDeError("No hay sucural de logueo establecida. Si el problema persiste informe al Administrador.");
 
-				//TODO: Descomentar cuando este listo el SP
-				var listaDevolucionPrevios = await _productoServicio.ObtenerDPPreviosCargados(AdministracionId, TokenCookie);
-				//var listaDevolucionPrevios = new List<DevolucionPrevioCargadoDto>();
+				var listaDevolucionPrevios = await _productoServicio.ObtenerDPPreviosCargados(AdministracionId, ctaId, TokenCookie);
 				DevolucionPrevioCargadoLista = listaDevolucionPrevios;
 				model.ListaProductos = ObtenerGridCore<DevolucionPrevioCargadoDto>([]);
 				var auxdepositos = listaDevolucionPrevios.Select(x => new { x.depo_id, x.depo_nombre }).Distinct();
@@ -336,12 +333,62 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		}
 
-		public async Task<IActionResult> ActualizarListaProductosDesdeModalCargaPrevia(string depoId, string boxId)
+		public async Task<IActionResult> ObtenerBoxesDesdeDepositoDesdeCargaPrevia(string depoId)
+		{
+			var model = new BoxListDto();
+			try
+			{
+				var boxesAux = DevolucionPrevioCargadoLista.Where(x => x.depo_id == depoId).Select(x => new { x.box_id, x.box_desc }).Distinct();
+				var boxes = boxesAux.Select(x => new ComboGenDto { Id = x.box_id, Descripcion = $"{x.box_id}__{x.box_desc}" });
+				model.ComboBoxes = HelperMvc<ComboGenDto>.ListaGenerica(boxes);
+				return PartialView("_listaBoxEnCargaPrevia", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public async Task<IActionResult> QuitarProductoDeLista(string pId)
 		{
 			var model = new GridCore<ProductoADevolverDto>();
 			try
 			{
-				var listaDevolucionPrevios = DevolucionPrevioCargadoLista.Where(x => x.depo_id.Equals(depoId) && x.box_id.Equals(boxId)).ToList();
+				if (pId == null)
+					return ObtenerMensajeDeError("No se ha especificado un producto válido. Si el problema persiste informe al Administrador.");
+
+				var listaTemp = DevolucionProductosLista.Where(x => x.p_id != pId).ToList();
+				DevolucionProductosLista = listaTemp;
+				model = ObtenerGridCore<ProductoADevolverDto>(listaTemp);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+			return PartialView("_grillaProductos", model);
+		}
+
+		public async Task<IActionResult> ActualizarListaProductosDesdeModalCargaPrevia(string depoId, string boxId, string[] ids)
+		{
+			var model = new GridCore<ProductoADevolverDto>();
+			try
+			{
+				var listaDevolucionPrevios = DevolucionPrevioCargadoLista.Where(x => x.depo_id.Equals(depoId) && x.box_id.Equals(boxId) && ids.Contains(x.p_id)).ToList();
+				//Si no existen ya, los agregamos
 				listaDevolucionPrevios.RemoveAll(x => DevolucionProductosLista.Exists(y => y.p_id.Equals(x.p_id)));
 				if (listaDevolucionPrevios.Count > 0)
 				{
@@ -369,7 +416,73 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
+		public async Task<JsonResult> ValidarExistenciaDeProductosCargadosParaDevolucion(bool esConfirmación)
+		{
+			try
+			{
+				if (DevolucionProductosLista == null)
+					return Json(new { error = true, warn = false, msg = $"No se han cargado productos aún." });
+				if (DevolucionProductosLista.Count == 0)
+					return Json(new { error = false, warn = true, msg = $"No se han cargado productos aún." });
+				if (esConfirmación)
+					return Json(new { error = false, warn = false, msg = $"Desea confirmar la carga de devolución a proveedor? Esta acción no se puede revertir." });
+				else
+					return Json(new { error = false, warn = false, msg = $"Desea cancelar la carga de devolución a proveedor? Esta acción no se puede revertir." });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				return Json(new { error = true, warn = false, msg = "Algo no fue bien al validar la existencia de productos a devolver, intente nuevamente mas tarde." });
+			}
+		}
+
+		public async Task<JsonResult> LimpiarDatosCargadosParaDevolucion()
+		{
+			try
+			{
+				DevolucionProductosLista = [];
+				DevolucionPrevioCargadoLista = [];
+				return Json(new { error = false, warn = false, msg = $"" });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				return Json(new { error = true, warn = false, msg = "Algo no fue bien al lipiar la lista de productos a devolver, intente nuevamente mas tarde." });
+			}
+		}
+
+		public async Task<JsonResult> ConfirmarDevolucion(string nota)
+		{
+			try
+			{
+				var listaTemp = DevolucionProductosLista;
+				listaTemp.ForEach(x => { x.nota = nota; });
+				DevolucionProductosLista = listaTemp;
+				var json_string = GenerarJsonDesdeLista();
+				var respuesta = await _productoServicio.ConfirmarDP(json_string, AdministracionId, UserName, TokenCookie);
+				if (respuesta == null)
+					return Json(new { error = true, warn = false, msg = "Algo no fue bien al confirmar la devolución, intente nuevamente mas tarde.", jsonstring = json_string });
+				if (respuesta.Count == 0)
+					return Json(new { error = true, warn = false, msg = "Algo no fue bien al confirmar la devolución, intente nuevamente mas tarde.", jsonstring = json_string });
+				if (respuesta.First().resultado != 0)
+					return Json(new { error = false, warn = true, msg = respuesta.First().resultado_msj, jsonstring = json_string });
+
+				DevolucionProductosLista = [];
+				return Json(new { error = false, warn = false, msg = respuesta.First().resultado_msj, jsonstring = json_string });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				return Json(new { error = true, warn = false, msg = "Algo no fue bien al validar la existencia de productos a devolver, intente nuevamente mas tarde." });
+			}
+		}
+
 		#region Métodos Privados
+		private string GenerarJsonDesdeLista()
+		{
+			var jsonstring = JsonConvert.SerializeObject(DevolucionProductosLista, new JsonSerializerSettings() { ContractResolver = new IgnorePropertiesResolver(new[] { "Producto" }) });
+			return jsonstring;
+		}
 		private List<ProductoADevolverDto> ObtenerProductoADevolverDesdeDevolucionPrevia(List<DevolucionPrevioCargadoDto> listaAjustesPrevios)
 		{
 			if (!listaAjustesPrevios.Any())
@@ -414,7 +527,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					p_id = item.p_id,
 					p_desc = item.p_desc,
-					//cta_id = item.cta_id, //TODO: Descomentar cuando el campo exista
+					cta_id = item.cta_id,
 					as_ajuste = item.as_ajuste * -1,
 					as_stock = item.ps_stk,
 					as_resultado = item.ps_stk - (item.as_ajuste * -1),
@@ -427,7 +540,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					up_id = item.up_id,
 					bulto = Convert.ToInt32(item.ps_bulto),
 					cantidad = item.ps_stk - (item.as_ajuste * -1),
-					as_motivo = item.as_motivo,
+					as_motivo = item.dv_motivo,
 				});
 			}
 			return listaMapeada;

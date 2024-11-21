@@ -126,6 +126,18 @@ function ConfirmarAjuste() {
 	}
 }
 
+function ObtenerIdsDeProdSeleccionadosEnModal() {
+	var ids = [];
+	$("#tbListaProductosParaAgregar").find('tr').each(function (i, el) {
+		var td = $(this).find('td');
+		if (td.eq(0)[0]) {
+			if (td.eq(0)[0].children[0].checked)
+				ids.push(td.eq(1).text());
+		}
+	});
+	return ids;
+}
+
 function DelProd() {
 	if (pIdSeleccionado === "") {
 		AbrirMensaje("Atención", "Debe seleccionar un producto.", function () {
@@ -203,14 +215,43 @@ function analizaInputUnid(x) {
 	}
 }
 
+function AgregarHandlerAGrillaDetalleDeProductosEnModal() {
+	var dataTable = document.getElementById('tbListaProductosParaAgregar');
+	var checkItAll = dataTable.querySelector('input[name="select_all"]');
+	var inputs = dataTable.querySelectorAll('tbody>tr>td>input');
+
+	if (checkItAll != null) {
+		checkItAll.addEventListener('change', function () {
+			if (checkItAll.checked) {
+				inputs.forEach(function (input) {
+					input.checked = true;
+				});
+			}
+			else {
+				inputs.forEach(function (input) {
+					input.checked = false;
+				});
+			}
+		});
+	}
+}
+
 function seleccionarProductosDesdeCargaPrevia() {
+	var ids = ObtenerIdsDeProdSeleccionadosEnModal();
+	if (ids.length == 0) {
+		AbrirMensaje("Atención", "Debe seleccionar al menos un producto.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "warn!", null);
+		return false;
+	}
 	var depoId = $("#listaDepositoEnCargaPrevia").val();
 	var boxId = $("#listaBoxEnCargaPrevia").val();
 	var nota = $("#txtNota").val();
 	if (depoId == "" || boxId == "") {
 		return false;
 	}
-	var datos = { depoId, boxId };
+	var datos = { depoId, boxId, ids };
 	AbrirWaiting();
 	PostGenHtml(datos, ActaulizarListaProductosDesdeModalCargaPreviaURL, function (obj) {
 		$('#modalCargaPrevia').modal('hide')
@@ -488,7 +529,7 @@ function listaBoxEnCargaPreviaChange() {
 	var datos = { depoId, boxId };
 	PostGenHtml(datos, FiltrarProductosModalCargaPreviaURL, function (obj) {
 		$("#divListaProductosParaAgregar").html(obj);
-		$("#listaBox").on("change", listaBoxesChange);
+		AgregarHandlerAGrillaDetalleDeProductosEnModal();
 		CerrarWaiting();
 		return true
 	});
@@ -520,7 +561,7 @@ function listaDepositoEnCargaPreviaChange() {
 	var datos = { depoId, boxId };
 	PostGenHtml(datos, FiltrarProductosModalCargaPreviaURL, function (obj) {
 		$("#divListaProductosParaAgregar").html(obj);
-		$("#listaBox").on("change", listaBoxesChange);
+		AgregarHandlerAGrillaDetalleDeProductosEnModal();
 		CerrarWaiting();
 		return true
 	});

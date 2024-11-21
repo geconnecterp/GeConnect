@@ -48,6 +48,7 @@ namespace gc.api.Controllers.Almacen
 	using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 	using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
 	using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
+	using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor.Request;
 
 	[Authorize]
 	[Produces("application/json")]
@@ -418,13 +419,43 @@ namespace gc.api.Controllers.Almacen
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<DevolucionPrevioCargadoDto>>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]
-		public IActionResult ObtenerDPPreviosCargados(string admId)
+		public IActionResult ObtenerDPPreviosCargados(string admId, string ctaId)
 		{
 			ApiResponse<List<DevolucionPrevioCargadoDto>> response;
 			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			var res = _productosSv.ObtenerDPPreviosCargados(admId);
+			var res = _productosSv.ObtenerDPPreviosCargados(admId, ctaId);
 
 			response = new ApiResponse<List<DevolucionPrevioCargadoDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<DevolucionRevertidoDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerDPREVERTIDO(string dvCompte)
+		{
+			ApiResponse<List<DevolucionRevertidoDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.ObtenerDPREVERTIDO(dvCompte);
+
+			response = new ApiResponse<List<DevolucionRevertidoDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RespuestaDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ConfirmarDP(ConfirmarDPRequest request)
+		{
+			ApiResponse<List<RespuestaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.ConfirmarDP(request);
+
+			response = new ApiResponse<List<RespuestaDto>>(res);
 
 			return Ok(response);
 		}

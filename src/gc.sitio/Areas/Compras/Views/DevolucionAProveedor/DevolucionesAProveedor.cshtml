@@ -177,6 +177,7 @@
 		var modelObj = null;
 		var buscarTiposComptesUrl = "";
 		var VerDetalleDeCompteDeRPUrl = "";
+		var pIdSeleccionado = "";
 		var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun", validarPertenenciaDeProveedor = false })";
 		var BuscarBoxesDesdeDepositoURL = "@Url.Action("ObtenerBoxesDesdeDeposito", "devolucionaproveedor", new { area = "Compras" })";
 		var buscarCuentaUrl = "@Url.Action("BuscarCuentaComercial", "compra", new { area = "Compras" })";
@@ -188,6 +189,10 @@
 		var ObtenerBoxesDesdeDepositoDesdeCargaPreviaURL = "@Url.Action("ObtenerBoxesDesdeDepositoDesdeCargaPrevia", "devolucionaproveedor", new { area = "Compras" })";
 		var ValidarNroDeDevARevertirURL = "@Url.Action("ValidarNroDeDevARevertir", "devolucionaproveedor", new { area = "Compras" })";
 		var ObtenerProductosDesdeDPRevertidoURL = "@Url.Action("ObtenerProductosDesdeDPRevertido", "devolucionaproveedor", new { area = "Compras" })";
+		var ValidarExistenciaDeProductosCargadosParaDevolucionURL = "@Url.Action("ValidarExistenciaDeProductosCargadosParaDevolucion", "devolucionaproveedor", new { area = "Compras" })";
+		var LimpiarDatosCargadosParaDevolucionURL = "@Url.Action("LimpiarDatosCargadosParaDevolucion", "devolucionaproveedor", new { area = "Compras" })";
+		var ConfirmarDevolucionURL = "@Url.Action("ConfirmarDevolucion", "devolucionaproveedor", new { area = "Compras" })";
+		var QuitarProductoDeListaURL = "@Url.Action("QuitarProductoDeLista", "devolucionaproveedor", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/areas/devolucionaproveedor/devaprov.js"></script>
 	<script src="~/js/app/controlcomun/busquedacuentacomercial.js"></script>

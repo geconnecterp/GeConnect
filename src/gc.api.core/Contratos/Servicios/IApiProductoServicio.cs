@@ -14,6 +14,7 @@ using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
+using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor.Request;
 
 namespace gc.api.core.Contratos.Servicios
 {
@@ -38,7 +39,9 @@ namespace gc.api.core.Contratos.Servicios
 		List<AjusteRevertidoDto> ObtenerAJREVERTIDO(string ajId);
 		List<RespuestaDto> ConfirmarAjusteStk(ConfirmarAjusteStkRequest request);
 
-		List<DevolucionPrevioCargadoDto> ObtenerDPPreviosCargados(string admId);
+		List<DevolucionPrevioCargadoDto> ObtenerDPPreviosCargados(string admId, string ctaId);
+		List<DevolucionRevertidoDto> ObtenerDPREVERTIDO(string dvCompte);
+		List<RespuestaDto> ConfirmarDP(ConfirmarDPRequest request);
 
 		List<AutorizacionPendienteDto> RPRObtenerAutorizacionPendiente(string adm);
         RegistroResponseDto RPRRegistrarProductos(string json,bool esModificacion);
