@@ -1,4 +1,4 @@
-﻿@model DatosModalCargaPreviaDto
+﻿@model DatosModalCargaPreviaDPDto
 @{
 	var depositos = Model.ComboDepositos;
 	var boxes = Model.ComboBoxes;
@@ -47,7 +47,7 @@
 								<td><input type="checkbox" name=@nombre /></td>
 								<td class="align-center">@item.p_id</td>
 								<td class="align-left">@item.p_desc</td>
-								<td class="align-center">@item.p_id_prov</td>
+								<td class="align-center">@item.cta_id</td>
 								<td class="align-right">@item.cantidad</td>
 							</tr>
 						}

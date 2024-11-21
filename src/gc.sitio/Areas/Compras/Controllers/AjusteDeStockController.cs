@@ -186,12 +186,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public async Task<IActionResult> ActaulizarListaProductosDesdeModalCargaPrevia(string depoId, string boxId)
+		public async Task<IActionResult> ActaulizarListaProductosDesdeModalCargaPrevia(string depoId, string boxId, string[] ids)
 		{
 			var model = new GridCore<ProductoAAjustarDto>();
 			try
 			{
-				var listaAjustesPrevios = AjustePrevioCargadoLista.Where(x => x.depo_id.Equals(depoId) && x.box_id.Equals(boxId)).ToList();
+				var listaAjustesPrevios = AjustePrevioCargadoLista.Where(x => x.depo_id.Equals(depoId) && x.box_id.Equals(boxId) && ids.Contains(x.p_id)).ToList();
+				//Si no existen ya, los agregamos
 				listaAjustesPrevios.RemoveAll(x => AjusteProductosLista.Exists(y => y.p_id.Equals(x.p_id)));
 				if (listaAjustesPrevios.Count > 0)
 				{

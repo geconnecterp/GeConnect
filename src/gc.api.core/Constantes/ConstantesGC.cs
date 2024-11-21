@@ -38,6 +38,10 @@
 			public const string SP_AJ_PREVIOS_CARGADOS = "dbo.SPGECO_AJ_Previos_Cargados";
 			public const string SP_AJ_AJUSTE_REVERTIDO = "dbo.SPGECO_AJ_Datos";
 			public const string SP_AJ_CONFIRMA = "dbo.SPGECO_AJ_Confirmar";
+
+			public const string SP_DV_PREVIOS_CARGADOS = "dbo.SPGECO_DV_Previos_Cargados";
+			public const string SP_DV_DATOS = "dbo.SPGECO_DV_Datos";
+			public const string SP_DV_CONFIRMA = "dbo.SPGECO_DV_Confirmar";
 			//
 
 			public const string SP_RPR_PENDIENTES = "spgeco_RPR_Pendientes";
