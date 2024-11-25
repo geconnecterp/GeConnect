@@ -12,6 +12,7 @@ using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
 using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
+using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
 
 namespace gc.sitio.core.Servicios.Contratos
 {
@@ -34,6 +35,10 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<List<AjustePrevioCargadoDto>> ObtenerAJPreviosCargados(string admId, string token);
 		Task<List<AjusteRevertidoDto>> ObtenerAJREVERTIDO(string ajId, string token);
 		Task<List<RespuestaDto>> ConfirmarAjusteStk(string json, string admId, string usuId, string compteOri, string token);
+
+		Task<List<DevolucionPrevioCargadoDto>> ObtenerDPPreviosCargados(string admId, string ctaId, string token);
+		Task<List<DevolucionRevertidoDto>> ObtenerDPREVERTIDO(string dvCompte, string token);
+		Task<List<RespuestaDto>> ConfirmarDP(string json, string admId, string usuId, string token);
 
 		Task<List<AutorizacionPendienteDto>> RPRObtenerAutorizacionPendiente(string adm, string token);
         Task<RegistroResponseDto> RPRRegistrarProductos(List<ProductoGenDto> json,string admId, string ul,bool esModificacion, string token);

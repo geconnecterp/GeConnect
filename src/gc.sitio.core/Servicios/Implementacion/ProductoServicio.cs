@@ -27,6 +27,8 @@ using System.Runtime.Intrinsics.Arm;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 using System.Security.Cryptography;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
+using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
+using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor.Request;
 using System.Diagnostics;
 
 namespace gc.sitio.core.Servicios.Implementacion
@@ -51,6 +53,10 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string AJUSTE_PREVIO_CARGADO = "/ObtenerAJPreviosCargados";
 		private const string AJUSTE_REVERTIDO = "/ObtenerAJREVERTIDO";
 		private const string AJUSTE_CONFIRMAR = "/ConfirmarAjusteStk";
+
+		private const string DEVOLUCION_PREVIO_CARGADO = "/ObtenerDPPreviosCargados";
+		private const string DEVOLUCION_REVERTIDO = "/ObtenerDPREVERTIDO";
+		private const string DEVOLUCION_CONFIRMAR = "/ConfirmarDP";
 
 		private const string RPRAUTOPEND = "/RPRAutorizacionPendiente";
 		private const string RPRCOMPTESPEND = "/RPRObtenerAutoComptesPendientes";
@@ -617,6 +623,102 @@ namespace gc.sitio.core.Servicios.Implementacion
 			HttpResponseMessage response;
 
 			var link = $"{_appSettings.RutaBase}{RutaAPI}{AJUSTE_CONFIRMAR}";
+
+			response = await client.PostAsync(link, contentData);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros json:{json}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<DevolucionPrevioCargadoDto>> ObtenerDPPreviosCargados(string admId, string ctaId, string token)
+		{
+			ApiResponse<List<DevolucionPrevioCargadoDto>> apiResponse;
+
+			HelperAPI helper = new HelperAPI();
+
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{DEVOLUCION_PREVIO_CARGADO}?admId={admId}&ctaId={ctaId}";
+
+			response = await client.GetAsync(link);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API no devolvió dato alguno.");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<DevolucionPrevioCargadoDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<DevolucionRevertidoDto>> ObtenerDPREVERTIDO(string dvCompte, string token)
+		{
+			ApiResponse<List<DevolucionRevertidoDto>> apiResponse;
+
+			HelperAPI helper = new HelperAPI();
+
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{DEVOLUCION_REVERTIDO}?dvCompte={dvCompte}";
+
+			response = await client.GetAsync(link);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API no devolvió dato alguno.");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<DevolucionRevertidoDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<RespuestaDto>> ConfirmarDP(string json, string admId, string usuId, string token)
+		{
+			ApiResponse<List<RespuestaDto>> apiResponse;
+
+			HelperAPI helper = new();
+			ConfirmarDPRequest request = new() { json = json, admId = admId, usuId = usuId };
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{DEVOLUCION_CONFIRMAR}";
 
 			response = await client.PostAsync(link, contentData);
 

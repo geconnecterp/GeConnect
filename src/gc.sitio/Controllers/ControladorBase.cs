@@ -470,6 +470,24 @@ namespace gc.sitio.Controllers
 				_context.HttpContext.Session.SetString("RPRAutorizacionesPendientesEnRP", json);
 			}
 		}
+
+		protected AutoComptesPendientesDto RPRAutorizacionPendienteSeleccionadoEnLista
+		{
+			get
+			{
+				string json = _context.HttpContext.Session.GetString("RPRAutorizacionPendienteSeleccionadoEnLista");
+				if (string.IsNullOrEmpty(json))
+				{
+					return new();
+				}
+				return JsonConvert.DeserializeObject<AutoComptesPendientesDto>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("RPRAutorizacionPendienteSeleccionadoEnLista", json);
+			}
+		}
 		#endregion
 
 		#region TRANSFERENCIAS
@@ -664,6 +682,63 @@ namespace gc.sitio.Controllers
 			{
 				var json = JsonConvert.SerializeObject(value);
 				_context.HttpContext.Session.SetString("DevolucionProductosLista", json);
+			}
+		}
+		protected List<DevolucionPrevioCargadoDto> DevolucionPrevioCargadoLista
+		{
+			get
+			{
+				string json = _context.HttpContext.Session.GetString("DevolucionPrevioCargadoLista");
+				if (string.IsNullOrEmpty(json))
+				{
+					return new();
+				}
+				return JsonConvert.DeserializeObject<List<DevolucionPrevioCargadoDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("DevolucionPrevioCargadoLista", json);
+			}
+		}
+		#endregion
+
+		#region PROVEEDOR
+		public List<ProveedorListaDto> ProveedoresLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("ProveedoresLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<ProveedorListaDto>();
+				}
+				return JsonConvert.DeserializeObject<List<ProveedorListaDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("ProveedoresLista", json);
+			}
+		}
+		#endregion
+
+		#region RUBRO
+		public List<RubroListaDto> RubroLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("RubroLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<RubroListaDto>();
+				}
+				return JsonConvert.DeserializeObject<List<RubroListaDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("RubroLista", json);
 			}
 		}
 		#endregion

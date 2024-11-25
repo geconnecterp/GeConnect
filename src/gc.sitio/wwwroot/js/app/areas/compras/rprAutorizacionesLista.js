@@ -16,14 +16,76 @@
 });
 
 function SelecccionarPrimerRegistro() {
-	var grid = document.getElementById("tbListaAutorizaciones");
-	if (grid) {
-		var rowsBody = grid.getElementsByTagName('tbody')[0];
-		if (rowsBody && rowsBody.firstElementChild) {
-			rowsBody.firstElementChild.className = "selected-row"
-			selectRPRow(rowsBody.firstElementChild);
+	//Primero vemos si el usuario esta trabajando sobre algun registro seleccionado de la grilla
+	var rpSeleccionado = ObtenerRPRAutorizacionPendienteSeleccionadoEnLista();
+	//if (rpSeleccionado == "") {
+	//	var grid = document.getElementById("tbListaAutorizaciones");
+	//	if (grid) {
+	//		var rowsBody = grid.getElementsByTagName('tbody')[0];
+	//		if (rowsBody && rowsBody.firstElementChild) {
+	//			rowsBody.firstElementChild.className = "selected-row"
+	//			selectRPRow(rowsBody.firstElementChild);
+	//		}
+	//	}
+	//}
+	//else {
+	//	$("#tbListaAutorizaciones").find('tr').each(function (i, el) {
+	//		var td = $(this).find('td');
+	//		if (td.eq(0)[0]) {
+	//			if (td.eq(0)[0].children[0].innerText == rpSeleccionado) {
+	//				el.firstElementChild.className = "selected-row";
+	//				selectRPRow(el);
+	//			}
+	//		}
+	//	});
+	//}
+}
+
+function ObtenerRPRAutorizacionPendienteSeleccionadoEnLista() {
+	datos = {};
+	PostGen(datos, ObtenerRPRAutorizacionPendienteSeleccionadoEnListaURL, function (o) {
+		if (o.error === true) {
+			var grid = document.getElementById("tbListaAutorizaciones");
+			if (grid) {
+				var rowsBody = grid.getElementsByTagName('tbody')[0];
+				if (rowsBody && rowsBody.lastElementChild) {
+					rowsBody.lastElementChild.className = "selected-row"
+					selectRPRow(rowsBody.lastElementChild);
+				}
+			}
+			return "";
+		} else if (o.warn === true) {
+			return "";
+		} else if (o.codigo === "") {
+			return "";
+		} else {
+			if (o.codigo == "") {
+				var grid = document.getElementById("tbListaAutorizaciones");
+				if (grid) {
+					var rowsBody = grid.getElementsByTagName('tbody')[0];
+					if (rowsBody && rowsBody.firstElementChild) {
+						rowsBody.firstElementChild.className = "selected-row"
+						selectRPRow(rowsBody.firstElementChild);
+					}
+				}
+			}
+			else {
+				$("#tbListaAutorizaciones").find('tr').each(function (i, el) {
+					var td = $(this).find('td');
+					if (td.eq(0).length > 0) {
+						if (td[0]) {
+							if (td[0].innerText == o.codigo) {
+								el.className = "selected-row";
+								selectRPRow(el);
+							}
+						}
+					}
+					
+				});
+			}
+			return o.codigo;
 		}
-	}
+	});
 }
 
 function selectRPRow(x) {

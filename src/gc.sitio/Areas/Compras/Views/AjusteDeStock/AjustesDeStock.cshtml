@@ -118,7 +118,7 @@
 								<span class="input-group-text" style="width:5%;">Bto: </span>
 								<input type="number" id="txtBto" class="form-control align-right" min="0" style="width:10%;" />
 								<span class="input-group-text" style="width:5%;">Unid: </span>
-								<input type="text" id="txtUnid" class="form-control align-right" style="width:25%;" />
+								<input type="text" id="txtUnid" class="form-control align-right" style="width:25%;" value="0"/>
 								<input type="text" id="txtUP_ID" style="display:none;" />
 								<input type="text" id="txtBARRADO_ID" style="display:none;" />
 								<input type="text" id="txtID_PROV" style="display:none;" />
@@ -179,6 +179,8 @@
 	<script type="text/javascript">
 		var tipoMotivoSeleccionado = "";
 		var pIdSeleccionado = "";
+		var funcionBusquedaAvanzada = true;
+		var buscarProveedorUrl = "@Url.Action("Buscar", "proveedor", new { area = "ControlComun" })";
 		var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun", validarPertenenciaDeProveedor = false })";
 		var BuscarBoxesDesdeDepositoURL = "@Url.Action("ObtenerBoxesDesdeDeposito", "ajustedestock", new { area = "Compras" })";
 		var ObtenerDatosModalCargaPreviaUrl = "@Url.Action("ObtenerDatosModalCargaPrevia", "ajustedestock", new { area = "Compras" })";

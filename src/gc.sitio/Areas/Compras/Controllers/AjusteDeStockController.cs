@@ -4,6 +4,7 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
+using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Dtos.Deposito;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
@@ -77,7 +78,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new BoxListDto();
 			try
 			{
-				model.ComboBoxes = CargarComboBoxes(depoId);
+				if (depoId != "0")
+					model.ComboBoxes = CargarComboBoxes(depoId);
+				else
+				{
+					List<DepositoInfoBoxDto> boxes = [];
+					model.ComboBoxes = HelperMvc<ComboGenDto>.ListaGenerica(boxes.Select(x => new ComboGenDto { Id = x.Box_Id, Descripcion = $"{x.Box_Id}__{x.Box_desc}" }));
+				}
 				return PartialView("_listaBox", model);
 			}
 			catch (Exception ex)
@@ -186,12 +193,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public async Task<IActionResult> ActaulizarListaProductosDesdeModalCargaPrevia(string depoId, string boxId)
+		public async Task<IActionResult> ActaulizarListaProductosDesdeModalCargaPrevia(string depoId, string boxId, string[] ids)
 		{
 			var model = new GridCore<ProductoAAjustarDto>();
 			try
 			{
-				var listaAjustesPrevios = AjustePrevioCargadoLista.Where(x => x.depo_id.Equals(depoId) && x.box_id.Equals(boxId)).ToList();
+				var listaAjustesPrevios = AjustePrevioCargadoLista.Where(x => x.depo_id.Equals(depoId) && x.box_id.Equals(boxId) && ids.Contains(x.p_id)).ToList();
+				//Si no existen ya, los agregamos
 				listaAjustesPrevios.RemoveAll(x => AjusteProductosLista.Exists(y => y.p_id.Equals(x.p_id)));
 				if (listaAjustesPrevios.Count > 0)
 				{
@@ -327,9 +335,17 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					var listaTemp = AjusteProductosLista;
 					var productoStk = await _productoServicio.InfoProductoStkBoxes(pId, AdministracionId, depoId, TokenCookie, boxId);
+					if (productoStk == null)
+					{
+						productoStk = [new InfoProdStkBox() { Ps_stk = 0 }];
+					}
+					else if (productoStk.Count == 0)
+					{
+						productoStk.Add(new InfoProdStkBox() { Ps_stk = 0 });
+					}
 					var producto = ObtenerDatosDeProducto(pId);
 					var box = await _depositoServicio.ObtenerInfoDeBox(boxId, TokenCookie);
-					if (productoStk != null && productoStk.Count > 0 && producto != null)
+					if (producto != null)
 					{
 						var stkEnteroAux = 0;
 						var stkDecimalAux = 0.000M;
@@ -351,14 +367,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 						var newProduct = new ProductoAAjustarDto()
 						{
 							tipo = "M",
-							as_nro_revierte = null,
+							as_compte_revierte = null,
 							depo_id = depoId,
 							box_id = boxId,
 							box_desc = box.FirstOrDefault()?.Box_desc,
-							ta_id = atId,
+							at_id = atId,
 							usu_id = UserName,
 							p_id = pId,
 							p_desc = producto.P_desc,
+							p_id_barrado = producto.P_id_barrado,
 							p_id_prov = producto.P_id_prov,
 							up_id = upId,
 							unidad_pres = unidadPres,
@@ -411,7 +428,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				}
 
 				var listaTemp = AjusteProductosLista;
-				listaTemp.ForEach(x => { x.ta_id = atId; x.nota = nota; });
+				listaTemp.ForEach(x => { x.at_id = atId; x.nota = nota; });
 				if (atTipo == "B")
 					listaTemp.ForEach(x => { if (x.cantidad > 0) { x.cantidad *= -1; } });
 				AjusteProductosLista = listaTemp;
@@ -506,7 +523,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					depo_id = item.depo_id,
 					tipo = "P",
 					usu_id = UserName,
-					as_nro_revierte = null,
+					as_compte_revierte = null,
 					us = item.us,
 					bulto = item.bulto,
 					cantidad = item.ps_stk - item.cantidad,
@@ -532,16 +549,16 @@ namespace gc.sitio.Areas.Compras.Controllers
 					p_id_prov = item.p_id_prov,
 					as_ajuste = item.as_ajuste * -1,
 					as_stock = item.ps_stk,
-					as_resultado = item.ps_stk - (item.as_ajuste * -1),
+					as_resultado = item.ps_stk - (item.as_ajuste),
 					box_id = item.box_id,
 					box_desc = item.box_desc,
 					tipo = "R",
 					depo_id = item.depo_id,
 					usu_id = UserName,
-					us = item.ps_stk - (item.as_ajuste * -1),
+					us = item.ps_stk - (item.as_ajuste),
 					up_id = item.up_id,
 					bulto = Convert.ToInt32(item.ps_bulto),
-					cantidad = item.ps_stk - (item.as_ajuste * -1),
+					cantidad = item.ps_stk - (item.as_ajuste),
 					as_motivo = item.as_motivo,
 				});
 			}

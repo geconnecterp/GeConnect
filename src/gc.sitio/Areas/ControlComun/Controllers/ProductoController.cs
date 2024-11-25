@@ -1,6 +1,9 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos.Administracion;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Seguridad;
 using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Helpers;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
@@ -26,10 +29,38 @@ namespace gc.sitio.Areas.ControlComun.Controllers
             _busqueda = busqueda.Value;
             _productoServicio = productoServicio;
         }
-        public IActionResult Index()
+        public IActionResult Index(bool actualizar = false)
         {
-            return View();
-        }
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || (auth.Item1 && !auth.Item2.HasValue) || (auth.Item1 && auth.Item2.HasValue && auth.Item2.Value < DateTime.Now))
+				{
+					return RedirectToAction("Login", "Token", new { area = "Seguridad" });
+				}
+
+
+				if (ProveedoresLista.Count == 0 || actualizar)
+				{
+					ObtenerProveedores();
+				}
+
+				if (RubroLista.Count == 0 || actualizar)
+				{
+					ObtenerRubros();
+				}
+
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error en la carga de datos periféricos.");
+				TempData["error"] = "Hubo algún error al intentar cargar la vista de autenticación. Si el problema persiste, avise al administardor.";
+				var lv = new List<AdministracionLoginDto>();
+				ViewBag.Admid = HelperMvc<AdministracionLoginDto>.ListaGenerica(lv);
+				var login = new LoginDto { Fecha = DateTime.Now };
+			}
+			return View();
+		}
 
         [HttpPost]
         public async Task<JsonResult> BusquedaBase(string busqueda, bool validarEstado = false, bool acumularProductos = false, bool validarPertenenciaDeProveedor = true)
@@ -39,7 +70,8 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                 ProductoBusquedaDto producto = new ProductoBusquedaDto { P_id = "0000-0000" };
                 if (string.IsNullOrEmpty(busqueda))
                 {
-                    return Json(new { error = false, producto });
+                    producto.P_id = "NO";
+					return Json(new { error = false, warn = true, producto });
                 }
 
                 if (busqueda.Trim().Length < 6)
@@ -101,9 +133,18 @@ namespace gc.sitio.Areas.ControlComun.Controllers
             }
         }
 
-        #region Privados
+		#region Privados
+		private void ObtenerProveedores()
+		{
+			//se guardan los proveedores en session. Para ser utilizados posteriormente
 
-        #endregion
+			ProveedoresLista = _ctaSv.ObtenerListaProveedores(TokenCookie);
+		}
+		private void ObtenerRubros()
+		{
+			RubroLista = _rubSv.ObtenerListaRubros(TokenCookie);
+		}
+		#endregion
 
-    }
+	}
 }
