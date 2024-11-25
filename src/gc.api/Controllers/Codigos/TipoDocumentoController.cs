@@ -15,7 +15,7 @@ namespace gc.api.Controllers.Codigos
     using System.Reflection;
     using System.Threading.Tasks;
 
-    //[Authorize]
+    [Authorize]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]

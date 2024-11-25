@@ -59,8 +59,8 @@
 			public const string SP_RPR_CONFIRMA = "spgeco_rpr_confirmar";
 			public const string SP_RPR_UL = "SPGECO_UL_x_RPR";
 			public const string SP_RPR_UL_D = "SPGECO_UL_d";
-
-			public const string SP_CUENTA_BUSQUEDA = "dbo.spgeco_c_busqueda_lista";
+            
+            public const string SP_CUENTA_BUSQUEDA = "dbo.spgeco_c_busqueda_lista";
 
             public const string SP_TR_AUTORIZACIONES_PENDIENTES = "SPGECO_TR_Pendientes";
             public const string SP_TR_Lista_BOX = "SPGECO_TR_Lista_BOX";
@@ -110,7 +110,7 @@
 
             public const string SP_BOX_INFO = "SPGECO_BOX_Info";
             public const string SP_BOX_INFO_STK = "SPGECO_BOX_Info_Stk";
-            public const string SP_BOX_INFO_MOV_STK = "SPGECO_BOX_Info_Mov_Stk";
+            public const string SP_BOX_INFO_MOV_STK = "SPGECO_BOX_Info_Mov_Stk";          
 
             #region Usuarios
             public const string SP_USU_X_IDYADM = "SPGECO_USU_X_IDYADM";

@@ -339,7 +339,9 @@ namespace gc.api.core.Servicios
 			return respuesta;
 		}
 
-		public ProductoBusquedaDto ProductoBuscar(BusquedaBase busqueda)
+      
+
+        public ProductoBusquedaDto ProductoBuscar(BusquedaBase busqueda)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PRODUCTO_BUSQUEDA;
 

@@ -27,6 +27,7 @@ using System.Runtime.Intrinsics.Arm;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 using System.Security.Cryptography;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
+using System.Diagnostics;
 
 namespace gc.sitio.core.Servicios.Implementacion
 {
@@ -248,6 +249,11 @@ namespace gc.sitio.core.Servicios.Implementacion
 
 			HttpClient client = helper.InicializaCliente(token);
 			HttpResponseMessage response;
+
+			if (string.IsNullOrEmpty(box) || string.IsNullOrWhiteSpace(box))
+			{
+				box = "%";
+			}
 
 			var link = $"{_appSettings.RutaBase}{RutaAPI}{INFOPROD_StkBoxes}?id={id}&adm={adm}&depo={depo}&box={box}";
 
