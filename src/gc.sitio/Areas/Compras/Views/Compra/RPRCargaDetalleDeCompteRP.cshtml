@@ -131,6 +131,8 @@
 @section scripts {
 	<script type="text/javascript">
 		var p_id_selected = "";
+		var funcionBusquedaAvanzada = true;
+		var buscarProveedorUrl = "@Url.Action("Buscar", "proveedor", new { area = "ControlComun" })";
 		var CargarDetalleDeProductosEnRPUrl = "@Url.Action("CargarDetalleDeProductosEnRP", "compra", new { area = "Compras" })";
 		var CargarOCxCuentaEnRPUrl = "@Url.Action("CargarOCxCuentaEnRP", "compra", new { area = "Compras" })";
 		var VerDetalleDeOCRPUrl = "@Url.Action("VerDetalleDeOCRP", "compra", new { area = "Compras" })";

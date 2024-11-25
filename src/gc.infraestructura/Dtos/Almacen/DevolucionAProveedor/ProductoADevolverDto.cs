@@ -40,7 +40,7 @@ namespace gc.infraestructura.Dtos.Almacen.DevolucionAProveedor
 		[JsonProperty("tipo")]
 		public string tipo { get; set; } = string.Empty;
 		[DataMember]
-		[JsonProperty("dp_nro_revierte")]
+		[JsonProperty("dv_compte_revierte")]
 		public string dp_nro_revierte { get; set; } = string.Empty;
 		[DataMember]
 		[JsonProperty("depo_id")]

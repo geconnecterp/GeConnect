@@ -583,8 +583,32 @@ function seleccionarCuentaComercial() {
 		$("#Cuenta").val(idCuentaSeleccionada);
 		CargarComboTiposComptes(idCuentaSeleccionada);
 		InicializaPantallaCC(provIdSeleccionado);
+		ActualizarCuentaComercialSeleccionada(idCuentaSeleccionada);
 	}
 	$('#modalCC').modal('hide')
+}
+
+function ActualizarCuentaComercialSeleccionada(ctaId) {
+	var tipo = tipoCuenta;
+	var datos = { ctaId, tipo }
+	PostGen(datos, ActualizarCuentaComercialSeleccionadaUrl, function (obj) {
+		if (obj.error === true) {
+			AbrirMensaje("Atención", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		} else if (obj.warn === true) {
+			AbrirMensaje("Atención", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "warn!", null);
+		} else if (obj.unico === true) {
+			//$("#razonsocial").val(obj.cuenta.cta_Denominacion);
+			//CargarComboTiposComptes(cuenta);
+			return true;
+		} else {
+		}
+	});
 }
 
 function CargarComboTiposComptes(cuenta) {

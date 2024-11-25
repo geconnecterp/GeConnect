@@ -52,6 +52,12 @@ function CancelarAjuste() {
 	PostGenHtml(datos, CancelarAjusteDeStockURL, function (obj) {
 		$("#divDetalleDeProductosAAjustar").html(obj);
 		AddEventListenerToGrid("tbDetalleDeProductosAAjustar");
+		$("#txtNroAjuste").val("");
+		$("#txtNota").val("");
+		//$("#listaDeposito").val(0);
+		$('#listaDeposito>option:eq(0)').attr('selected', true);
+		$('#listaBox>option:eq(0)').attr('selected', true);
+		$('#listaMotivo>option:eq(0)').attr('selected', true);
 		CerrarWaiting();
 		return true
 	});
@@ -379,6 +385,13 @@ function AgregarProdManual() {
 			return true;
 		}, false, ["Aceptar"], "warn!", null);
 	}
+	else if ($("#listaMotivo").val() == "") {
+		AbrirMensaje("Atención", "Debe especificar un valor para tipo.", function () {
+			$("#msjModal").modal("hide");
+			$("#listaMotivo").focus();
+			return true;
+		}, false, ["Aceptar"], "warn!", null);
+	}
 	else {
 		if ($("#txtUnid").prop('disabled')) {
 			if ($("#txtUP").val() === "") {
@@ -395,7 +408,7 @@ function AgregarProdManual() {
 					return true;
 				}, false, ["Aceptar"], "warn!", null);
 			}
-			ajuste = $("#txtUP").val() * $("#txtBto").val();
+			ajuste = Number($("#txtUP").val()) * Number($("#txtBto").val());
 			if (tipoMotivoSeleccionado === "B" && ajuste > 0) {
 				ajuste = ajuste * -1;
 			}
@@ -408,7 +421,7 @@ function AgregarProdManual() {
 					return true;
 				}, false, ["Aceptar"], "warn!", null);
 			}
-			ajuste = $("#txtUnid").val();
+			ajuste = (Number($("#txtUP").val()) * Number($("#txtBto").val())) + Number($("#txtUnid").val());
 			if (tipoMotivoSeleccionado === "B" && ajuste > 0) {
 				ajuste = ajuste * -1;
 			}
@@ -431,6 +444,13 @@ function AgregarProdManual() {
 				return true
 			});
 			CerrarWaiting();
+		}
+		else {
+			AbrirMensaje("Atención", "No se puede cargar un ajuste con '0'.", function () {
+				$("#msjModal").modal("hide");
+				$("#txtUP").focus();
+				return true;
+			}, false, ["Aceptar"], "warn!", null);
 		}
 	}
 }
@@ -517,7 +537,26 @@ function AbrirCargaPrevia() {
 }
 
 function listaDepositoChange() {
+	if ($("#listaDeposito").val() == "") {
+		BlanquearComboBoxes();
+		return false;
+	}
+	if ($("#listaDeposito").val() == "0") {
+		BlanquearComboBoxes();
+		return false;
+	}
 	BuscarBoxDesdeDeposito();
+}
+
+function BlanquearComboBoxes() {
+	var depoId = "0";
+	var datos = { depoId };
+	PostGenHtml(datos, BuscarBoxesDesdeDepositoURL, function (obj) {
+		$("#divComboBoxes").html(obj);
+		$("#listaBox").on("change", listaBoxesChange);
+		CerrarWaiting();
+		return true
+	});
 }
 
 function listaBoxEnCargaPreviaChange() {
