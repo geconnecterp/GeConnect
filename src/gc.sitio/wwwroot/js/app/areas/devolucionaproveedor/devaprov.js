@@ -100,7 +100,10 @@ function ValidarExistenciaDeProductosCargadosParaDevolucion(confirma) {
 								} else {
 									$("#Cuenta").val("");
 									$("#razonsocial").val("");
+									$("#txtNroDevolucion").val("");
 									$("#tbDetalleDeProductosADevolver tbody tr").remove();
+									$('#listaDeposito>option:eq(0)').attr('selected', true);
+									$('#listaBox>option:eq(0)').attr('selected', true);
 									$("#txtNota").val("");
 								}
 							});
@@ -178,10 +181,29 @@ function BtnRadioCargaPrevia() {
 }
 
 function listaDepositoChange() {
+	if ($("#listaDeposito").val() == "") {
+		BlanquearComboBoxes();
+		return false;
+	}
+	if ($("#listaDeposito").val() == "0") {
+		BlanquearComboBoxes();
+		return false;
+	}
 	BuscarBoxDesdeDeposito();
 }
 
 function listaBoxesChange() {
+}
+
+function BlanquearComboBoxes() {
+	var depoId = "0";
+	var datos = { depoId };
+	PostGenHtml(datos, BuscarBoxesDesdeDepositoURL, function (obj) {
+		$("#divComboBoxes").html(obj);
+		$("#listaBox").on("change", listaBoxesChange);
+		CerrarWaiting();
+		return true
+	});
 }
 
 function BuscarBoxDesdeDeposito() {

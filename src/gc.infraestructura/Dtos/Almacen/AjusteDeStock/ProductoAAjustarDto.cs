@@ -14,6 +14,9 @@ namespace gc.infraestructura.Dtos.Almacen.AjusteDeStock
 		[DataMember]
 		[JsonProperty("p_desc")]
 		public string p_desc { get; set; } = string.Empty;
+		[DataMember]
+		[JsonProperty("p_id_barrado")]
+		public string p_id_barrado { get; set; } = string.Empty;
 		[JsonProperty("p_id_prov")]
 		//[JsonIgnore]
 		public string p_id_prov { get; set; } = string.Empty;
@@ -36,14 +39,14 @@ namespace gc.infraestructura.Dtos.Almacen.AjusteDeStock
 		[JsonProperty("tipo")]
 		public string tipo { get; set; } = string.Empty;
 		[DataMember]
-		[JsonProperty("as_nro_revierte")]
-		public string as_nro_revierte { get; set; } = string.Empty;
+		[JsonProperty("as_compte_revierte")]
+		public string as_compte_revierte { get; set; } = string.Empty;
 		[DataMember]
 		[JsonProperty("depo_id")]
 		public string depo_id { get; set; } = string.Empty;
 		[DataMember]
-		[JsonProperty("ta_id")]
-		public string ta_id { get; set; } = string.Empty;
+		[JsonProperty("at_id")]
+		public string at_id { get; set; } = string.Empty;
 		[DataMember]
 		[JsonProperty("nota")]
 		public string nota { get; set; } = string.Empty;

@@ -73,7 +73,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new BoxListDto();
 			try
 			{
-				model.ComboBoxes = CargarComboBoxes(depoId);
+				if (depoId != "0")
+				{
+					model.ComboBoxes = CargarComboBoxes(depoId);
+				}
+				else
+				{
+					List<DepositoInfoBoxDto> boxes = [];
+					model.ComboBoxes = HelperMvc<ComboGenDto>.ListaGenerica(boxes.Select(x => new ComboGenDto { Id = x.Box_Id, Descripcion = $"{x.Box_Id}__{x.Box_desc}" }));
+				}
 				return PartialView("~/Areas/Compras/Views/DevolucionAProveedor/_listaBox.cshtml", model);
 			}
 			catch (Exception ex)

@@ -93,7 +93,7 @@ function buscarProducto() {
             return true;
         }
         else if (obj.warn === true) {
-            if (obj.producto.p_Id === "0000-0000") {
+            if (obj.producto.p_id === "0000-0000") {
                 //un enter sin ningun codigo
                 productoBase = null;
                 $("#estadoFuncion").val(false);
@@ -102,10 +102,24 @@ function buscarProducto() {
                 CerrarWaiting();
                 return true;
             }
-            else if (obj.producto.p_Id === "NO") {
+            else if (obj.producto.p_id === "NO") {
                 //se busco un codigo pero no se encontró
-                if (typeof funcionBusquedaAvanzada !== 'undefined' || funcionBusquedaAvanzada === false) {
-                    //si no esta la variable funcionBusquedaAvanzada o la misma es false, no se realiza la busqueda avanzada
+                if (typeof funcionBusquedaAvanzada !== 'undefined') {
+                    if (funcionBusquedaAvanzada) {
+                        ///se abre el modal de la busqueda avanzada
+                        $("#busquedaModal").modal("toggle");
+                    }
+                    else {
+                        //si no esta la variable funcionBusquedaAvanzada o la misma es false, no se realiza la busqueda avanzada
+                        productoBase = null;
+                        $("#estadoFuncion").val(false);
+                        $("#btnBusquedaBase").prop("disabled", false);
+                        $("#msjModal").modal("hide");
+                        $("#Busqueda").focus();
+                        return true;
+                    }
+                }
+                else {
                     productoBase = null;
                     $("#estadoFuncion").val(false);
                     $("#btnBusquedaBase").prop("disabled", false);
@@ -113,10 +127,7 @@ function buscarProducto() {
                     $("#Busqueda").focus();
                     return true;
                 }
-                else {
-                    ///se abre el modal de la busqueda avanzada
-                    $("#busquedaModal").modal("toggle");
-                }
+                CerrarWaiting();
             } else {
                 //encontro producto pero hay warning
                 CerrarWaiting();

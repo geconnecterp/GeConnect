@@ -80,51 +80,21 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return View(grid);
 		}
 
-		private List<AutoComptesPendientesDto> ArmarDataRow(List<AutoComptesPendientesDto> lista)
+		public async Task<JsonResult> ObtenerRPRAutorizacionPendienteSeleccionadoEnLista()
 		{
-			var returnedList = new List<AutoComptesPendientesDto>();
-			lista = [.. lista.OrderBy(x => x.Rp)];
-			foreach (var item in lista)
+			try
 			{
-				if (returnedList.Count == 0)
-				{
-					item.Rp_hidden = item.Rp;
-					returnedList.Add(item);
-					continue;
-				}
-				if (returnedList.Exists(x => x.Rp == item.Rp))
-				{
-					returnedList.Add(ObtenerRPSimplificado(item));
-					continue;
-				}
+				if (RPRAutorizacionPendienteSeleccionadoEnLista != null && RPRAutorizacionPendienteSeleccionadoEnLista.Rp != "")
+					return Json(new { error = false, warn = false, codigo = RPRAutorizacionPendienteSeleccionadoEnLista.Rp, msg = $"" });
 				else
-				{
-					item.Rp_hidden = item.Rp;
-					returnedList.Add(item);
-				}
+					return Json(new { error = true, warn = false, codigo = "", msg = $"" });
 			}
-			return returnedList;
-		}
-
-		private AutoComptesPendientesDto ObtenerRPSimplificado(AutoComptesPendientesDto item)
-		{
-			return new AutoComptesPendientesDto()
+			catch (Exception ex)
 			{
-				Cm_compte = item.Cm_compte,
-				Cm_fecha = item.Cm_fecha,
-				Cm_importe = item.Cm_importe,
-				Cta_denominacion = string.Empty,
-				Cta_id = item.Cta_id,
-				Fecha = null,
-				Nota = string.Empty,
-				Rp = string.Empty,
-				Rpe_desc = item.Rpe_desc,
-				Rpe_id = item.Rpe_id,
-				Tco_desc = item.Tco_id,
-				Tco_id = item.Tco_id,
-				Usu_id = item.Usu_id,
-				Rp_hidden = item.Rp,
-			};
+				_logger.LogError(ex, "Error al intentar generar y cargar JSON de nuevo comprobante RPR.");
+				TempData["error"] = "Hubo algun problema al intentar generar y cargar JSON de nuevo comprobante RPR. Si el problema persiste informe al Administrador";
+				return Json(new { error = true, warn = false, codigo = "", msg = $"" });
+			}
 		}
 
 		public async Task<IActionResult> VerAut(string rp)
@@ -133,6 +103,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				var lista = new List<RPRItemVerCompteDto>();
 				var model = new RPRVerAutoDto();
+				if (rp != null && rp != "")
+					RPRAutorizacionPendienteSeleccionadoEnLista = RPRAutorizacionesPendientesEnRP.Where(x => x.Rp == rp).First();
 				JsonDeRPVerCompte = ObtenerComprobantesDesdeJson(rp).Result;
 				var adms = _tiposComprobantesServicio.BuscarTiposComptesPorCuenta(JsonDeRPVerCompte.encabezado.First().Cta_id, TokenCookie).GetAwaiter().GetResult();
 				TiposComprobantePorCuenta = adms;
@@ -378,11 +350,14 @@ namespace gc.sitio.Areas.Compras.Controllers
 				//Precargo el comprobante desde el json
 				if (!string.IsNullOrWhiteSpace(rp))
 				{
+					RPRAutorizacionPendienteSeleccionadoEnLista = RPRAutorizacionesPendientesEnRP.Where(x => x.Rp == rp).First();
 					jsonAux = ObtenerComprobantesDesdeJson(rp).Result;
 					//RPRComptesDeRPRegs = [];
 					var adms = _tiposComprobantesServicio.BuscarTiposComptesPorCuenta(rpSelected.Cta_id, TokenCookie).GetAwaiter().GetResult();
 					TiposComprobantePorCuenta = adms;
 				}
+				else
+					RPRAutorizacionPendienteSeleccionadoEnLista = null;
 				if (RPRComprobanteDeRPSeleccionado != null && string.IsNullOrEmpty(rp))
 				{
 					model.Cuenta = RPRComprobanteDeRPSeleccionado.cta_id;
@@ -538,7 +513,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 							continue;
 						}
 						var itemTemp = lista.Where(x => x.P_id == item.p_id).FirstOrDefault();
-						var itemNextValue = lista.Max(x => x.Item) + 1;
+						var itemNextValue = 0;
+						if (lista.Count == 0 && itemNextValue == 0)
+							itemNextValue = 1;
+						else
+							itemNextValue = lista.Max(x => x.Item) + 1;
 						//No lo encuentra
 						if (default(ProductoBusquedaDto) == itemTemp)
 						{
@@ -778,6 +757,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 							item.Depo_id = depoId;
 							item.Nota = nota;
 							item.Turno = fechaTurno;
+							item.Rpe_id = ponerEnCurso ? "C" : "P";
 						}
 						JsonDeRP = aux;
 						var resultado = CargarNuevoComprobante();
@@ -833,6 +813,30 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
 				return Json(new { error = true, msg = "Algo no fue bien al quitar un producto del detalle, intente nuevamente mas tarde." });
+			}
+		}
+
+		public async Task<JsonResult> ActualizarCuentaComercialSeleccionada(string ctaId, char tipo)
+		{
+			try
+			{
+				List<CuentaDto> Lista = new();
+				Lista = BuscarCuentaComercial(ctaId, tipo).Result;
+				if (Lista.Count == 0)
+				{
+					throw new NegocioException("No se obtuvierion resultados");
+				}
+				if (Lista.Count == 1)
+				{
+					CuentaComercialSeleccionada = Lista[0];
+					return Json(new { error = false, warn = false, unico = true, cuenta = Lista[0] });
+				}
+				return Json(new { error = false, warn = false, unico = false, cuenta = Lista });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				return Json(new { error = true, msg = "Algo no fue bien al actualizar la cuenta comercial, intente nuevamente mas tarde." });
 			}
 		}
 
@@ -1072,6 +1076,53 @@ namespace gc.sitio.Areas.Compras.Controllers
 				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name} intentando genera objeto para almacenar");
 				return null;
 			}
+		}
+
+		private List<AutoComptesPendientesDto> ArmarDataRow(List<AutoComptesPendientesDto> lista)
+		{
+			var returnedList = new List<AutoComptesPendientesDto>();
+			lista = [.. lista.OrderBy(x => x.Rp)];
+			foreach (var item in lista)
+			{
+				if (returnedList.Count == 0)
+				{
+					item.Rp_hidden = item.Rp;
+					returnedList.Add(item);
+					continue;
+				}
+				if (returnedList.Exists(x => x.Rp == item.Rp))
+				{
+					returnedList.Add(ObtenerRPSimplificado(item));
+					continue;
+				}
+				else
+				{
+					item.Rp_hidden = item.Rp;
+					returnedList.Add(item);
+				}
+			}
+			return returnedList;
+		}
+
+		private AutoComptesPendientesDto ObtenerRPSimplificado(AutoComptesPendientesDto item)
+		{
+			return new AutoComptesPendientesDto()
+			{
+				Cm_compte = item.Cm_compte,
+				Cm_fecha = item.Cm_fecha,
+				Cm_importe = item.Cm_importe,
+				Cta_denominacion = string.Empty,
+				Cta_id = item.Cta_id,
+				Fecha = null,
+				Nota = string.Empty,
+				Rp = string.Empty,
+				Rpe_desc = item.Rpe_desc,
+				Rpe_id = item.Rpe_id,
+				Tco_desc = item.Tco_id,
+				Tco_id = item.Tco_id,
+				Usu_id = item.Usu_id,
+				Rp_hidden = item.Rp,
+			};
 		}
 
 		private async Task<List<CuentaDto>> BuscarCuentaComercial(string cuenta, char tipo)
