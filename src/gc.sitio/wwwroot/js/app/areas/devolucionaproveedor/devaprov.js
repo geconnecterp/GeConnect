@@ -124,10 +124,12 @@ function ValidarExistenciaDeProductosCargadosParaDevolucion(confirma) {
 										return true;
 									}, false, ["Aceptar"], "warn!", null);
 								} else {
+									console.log(o.jsonstring);
 									$("#Cuenta").val("");
 									$("#razonsocial").val("");
 									$("#tbDetalleDeProductosADevolver tbody tr").remove();
 									$("#txtNota").val("");
+									$("#txtNroDevolucion").val("");
 								}
 							});
 						}
