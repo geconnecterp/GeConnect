@@ -402,11 +402,26 @@ namespace gc.api.Controllers.Almacen
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RespuestaDto>>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
-        public IActionResult AJ_CargaConteosPrevios(ConfirmarAjusteStkRequest request)
+        public IActionResult AJ_CargaConteosPrevios(CargarJsonGenRequest request)
         {
             ApiResponse<RespuestaDto> response;
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-            var res = _productosSv.AJ_CargaConteosPrevios(request.json,request.admId);
+            var res = _productosSv.AJ_CargaConteosPrevios(request.json_str,request.admid);
+
+            response = new ApiResponse<RespuestaDto>(res);
+
+            return Ok(response);
+        }
+
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RespuestaDto>>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult DV_CargaConteosPrevios(CargarJsonGenRequest request)
+        {
+            ApiResponse<RespuestaDto> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.DV_CargaConteosPrevios(request.json_str, request.admid);
 
             response = new ApiResponse<RespuestaDto>(res);
 

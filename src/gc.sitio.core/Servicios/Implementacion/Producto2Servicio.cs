@@ -27,6 +27,7 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string BOX_INFO_MOV_STK = "/ObtenerBoxInfoMovStk";
 
         private const string AJ_CARGA_CONTEO_PREVIOS = "/AJ_CargaConteosPrevios";
+        private const string DV_CARGA_CONTEO_PREVIOS = "/DV_CargaConteosPrevios";
 
 
         private readonly AppSettings _appSettings;
@@ -219,8 +220,63 @@ namespace gc.sitio.core.Servicios.Implementacion
             {
                 _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
 
-                return new RespuestaGenerica<RespuestaDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener los movimientos del BOX" };
+                return new RespuestaGenerica<RespuestaDto> { Ok = false, Mensaje = "Algo no fue bien al intentar cargar los conteos previso de ajustes." };
             }
         }
+
+        public async Task<RespuestaGenerica<RespuestaDto>> DV_CargaConteosPrevios(List<ProductoGenDto> lista, string admid, string depo, string box, string token)
+        {
+            try
+            {
+                ApiResponse<RespuestaDto>? apiResponse;
+                HelperAPI helper = new();
+
+                #region Armado de Json
+                var j = lista.Select(x => new { depo_id = depo, box_id = box, x.usu_id, x.p_id, x.p_desc, x.up_id, x.unidad_pres, x.bulto, x.us, x.cantidad });
+                var json = JsonConvert.SerializeObject(j);
+                #endregion
+                var ent = new CargarJsonGenRequest { json_str = json, admid = admid };
+
+                HttpClient client = helper.InicializaCliente(ent, token, out StringContent contentData);
+                HttpResponseMessage response;
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{DV_CARGA_CONTEO_PREVIOS}";
+
+                response = await client.PostAsync(link, contentData);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
+                    }
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+
+                    var resp = apiResponse.Data;
+                    if (resp.resultado == 0)
+                    {
+                        return new RespuestaGenerica<RespuestaDto> { Ok = true, Mensaje = "OK", Entidad = resp };
+                    }
+                    else
+                    {
+                        return new RespuestaGenerica<RespuestaDto> { Ok = false, Mensaje = resp.resultado_msj, Entidad = resp };
+                    }
+                }
+                else
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                    return new() { Ok = false, Mensaje = "Algo no fue bien y el proceso no se completó. Intente de nuevo más tarde. Si el problema persiste informe al Administrador del sistema." };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+
+                return new RespuestaGenerica<RespuestaDto> { Ok = false, Mensaje = "Algo no fue bien al intentar cargar conteos previos de devolución de proveedores" };
+            }
+        }
+
     }
 }

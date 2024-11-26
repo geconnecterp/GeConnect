@@ -313,10 +313,10 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             var box = BoxSeleccionado;
 
 
-            string volver = Url.Action("CargarProductos", "astk", new { area = "pocketppal", box });
+            string volver = Url.Action("CargarProductos", "devp", new { area = "pocketppal", box });
 
-            ViewBag.AppItem = new AppItem { Nombre = $"CARGA DE PRODUCTOS A AJUSTAR STOCK", VolverUrl = volver ?? "#", BotonEspecial = false };
-            return View(box);
+            ViewBag.AppItem = new AppItem { Nombre = $"CARGA DE PRODUCTOS A DEVOLVER AL PROVEEDOR", VolverUrl = volver ?? "#", BotonEspecial = false };
+            return View("PresentaAjustes", box);
         }
 
         [HttpPost]
@@ -325,10 +325,10 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             try
             {
                 var box = BoxSeleccionado;
-                var res = await _producto2Servicio.AJ_CargaConteosPrevios(ProductoGenRegs, AdministracionId, box.Substring(0, 2), box, TokenCookie);
+                var res = await _producto2Servicio.DV_CargaConteosPrevios(ProductoGenRegs, AdministracionId, box.Substring(0, 2), box, TokenCookie);
                 if (res.Ok)
                 {
-                    return Json(new { error = false, msg = "Se realizo exitosamente la Carga de Conteos Previos por Ajustes de Control." });
+                    return Json(new { error = false, msg = "Se realizo exitosamente la Carga de Conteos Previos por Devolución a Proveedores." });
                 }
                 else
                 {

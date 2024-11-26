@@ -43,9 +43,10 @@
             public const string SP_DV_PREVIOS_CARGADOS = "dbo.SPGECO_DV_Previos_Cargados";
 			public const string SP_DV_DATOS = "dbo.SPGECO_DV_Datos";
 			public const string SP_DV_CONFIRMA = "dbo.SPGECO_DV_Confirmar";
-			//
+            public const string SP_DV_CARGA_CONTEOS_PREVIA = "SPGECO_DV_Cargar_Conteos_Previa";
+            //
 
-			public const string SP_RPR_PENDIENTES = "spgeco_RPR_Pendientes";
+            public const string SP_RPR_PENDIENTES = "spgeco_RPR_Pendientes";
             public const string SP_RPR_REGISTRA = "SPGECO_RPR_Cargar_Conteos";
             public const string SP_RPR_DEPOSITOS = "SPGECO_RPR_Depositos";
             public const string SP_RPR_COMPTES_PENDIENTES = "spgeco_RPR_Comptes_Pendientes";

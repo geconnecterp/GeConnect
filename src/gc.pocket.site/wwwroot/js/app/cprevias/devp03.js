@@ -6,7 +6,7 @@
 function ConfirmarAjustes() {
     var datos = {};
     AbrirWaiting();
-    PostGen(datos, confirmarAJURL, function (obj) {
+    PostGen(datos, confirmarDVURL, function (obj) {
         if (obj.error === true) {
             CerrarWaiting();
             AbrirMensaje("ATENCIÓN", obj.msg, function () {
@@ -18,7 +18,7 @@ function ConfirmarAjustes() {
         else {
             CerrarWaiting();
             AbrirMensaje("Carga Satisfactoria", obj.msg, function () {
-                window.location.href = homeASTKUrl;
+                window.location.href = homeDevpUrl;
             }, false, ["Cerrar"], "succ!", null);
             
             return true;

@@ -947,5 +947,18 @@ namespace gc.api.core.Servicios
             List<RespuestaDto> resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 			return resp.First();
         }
+
+        public RespuestaDto DV_CargaConteosPrevios(string json, string admid)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_DV_CARGA_CONTEOS_PREVIA;
+            var ps = new List<SqlParameter>()
+            {
+                new("@json",json),
+                new("@adm_id",admid),
+            };
+
+            List<RespuestaDto> resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+            return resp.First();
+        }
     }
 }
