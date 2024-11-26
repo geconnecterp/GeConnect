@@ -1,14 +1,18 @@
+using gc.api.core.Constantes;
 using gc.api.core.Contratos.Servicios;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
+using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
+using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
+using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor.Request;
 using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Almacen.Response;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
-using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.Box;
 using gc.infraestructura.Dtos.CuentaComercial;
@@ -19,16 +23,12 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using System.Data;
 using System.Linq.Dynamic.Core;
-using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
-using System.Security.Cryptography;
-using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
-using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
-using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor.Request;
+using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 
 
 namespace gc.api.core.Servicios
 {
-	public class ApiProductoServicio : Servicio<Producto>, IApiProductoServicio
+    public class ApiProductoServicio : Servicio<Producto>, IApiProductoServicio
 	{
 		public ApiProductoServicio(IUnitOfWork uow, IOptions<PaginationOptions> options) : base(uow, options)
 		{
@@ -934,5 +934,18 @@ namespace gc.api.core.Servicios
 
 			return movs;
 		}
-	}
+
+        public RespuestaDto AJ_CargaConteosPrevios(string json, string admid)
+        {
+			var sp = ConstantesGC.StoredProcedures.SP_AJ_CARGA_CONTEOS_PREVIA;
+			var ps = new List<SqlParameter>()
+			{
+				new("@json",json),
+				new("@adm_id",admid),
+			};
+
+            List<RespuestaDto> resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return resp.First();
+        }
+    }
 }

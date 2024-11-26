@@ -195,5 +195,16 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
             return View(modulo);
         }
 
+        [HttpGet]
+        public IActionResult cprev()
+        {
+            var sigla = "cprev";
+            var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
+            if (modulo == null)
+            {
+                throw new NegocioException("No se logro encontrar la configuración del Módulo. Si el problema persiste informe al Administrador");
+            }
+            return View("gen", modulo);
+        }
     }
 }

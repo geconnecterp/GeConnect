@@ -47,6 +47,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="Areas\PocketPpal\Views\AStk\CargarProductos.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
     <Content Update="Areas\PocketPpal\Views\RPR\_detalleULsGrid.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>

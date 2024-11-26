@@ -38,8 +38,9 @@
 			public const string SP_AJ_PREVIOS_CARGADOS = "dbo.SPGECO_AJ_Previos_Cargados";
 			public const string SP_AJ_AJUSTE_REVERTIDO = "dbo.SPGECO_AJ_Datos";
 			public const string SP_AJ_CONFIRMA = "dbo.SPGECO_AJ_Confirmar";
+            public const string SP_AJ_CARGA_CONTEOS_PREVIA = "SPGECO_AJ_Cargar_Conteos_Previa";
 
-			public const string SP_DV_PREVIOS_CARGADOS = "dbo.SPGECO_DV_Previos_Cargados";
+            public const string SP_DV_PREVIOS_CARGADOS = "dbo.SPGECO_DV_Previos_Cargados";
 			public const string SP_DV_DATOS = "dbo.SPGECO_DV_Datos";
 			public const string SP_DV_CONFIRMA = "dbo.SPGECO_DV_Confirmar";
 			//
@@ -63,8 +64,8 @@
 			public const string SP_RPR_CONFIRMA = "spgeco_rpr_confirmar";
 			public const string SP_RPR_UL = "SPGECO_UL_x_RPR";
 			public const string SP_RPR_UL_D = "SPGECO_UL_d";
-
-			public const string SP_CUENTA_BUSQUEDA = "dbo.spgeco_c_busqueda_lista";
+            
+            public const string SP_CUENTA_BUSQUEDA = "dbo.spgeco_c_busqueda_lista";
 
             public const string SP_TR_AUTORIZACIONES_PENDIENTES = "SPGECO_TR_Pendientes";
             public const string SP_TR_Lista_BOX = "SPGECO_TR_Lista_BOX";
@@ -114,7 +115,7 @@
 
             public const string SP_BOX_INFO = "SPGECO_BOX_Info";
             public const string SP_BOX_INFO_STK = "SPGECO_BOX_Info_Stk";
-            public const string SP_BOX_INFO_MOV_STK = "SPGECO_BOX_Info_Mov_Stk";
+            public const string SP_BOX_INFO_MOV_STK = "SPGECO_BOX_Info_Mov_Stk";          
 
             #region Usuarios
             public const string SP_USU_X_IDYADM = "SPGECO_USU_X_IDYADM";

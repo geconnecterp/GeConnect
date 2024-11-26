@@ -336,6 +336,7 @@ function verificaEstado(e) {
 				e.target.value = value.replace(/(?!^)-/g, '').replace(/^,/, '').replace(/^-,/, '-');
 			}
 		});
+
 		//$("#txtBto").mask("000.000.000.000", {
 		//	reverse: true,
 		//	translation: {
@@ -348,6 +349,7 @@ function verificaEstado(e) {
 		//		e.target.value = value.replace(/(?!^)-/g, '').replace(/^,/, '').replace(/^-,/, '-');
 		//	}
 		//});
+
 		$("#txtUP").val(prod.p_unidad_pres).prop("disabled", false);
 		$("#txtBto").val(prod.bulto).prop("disabled", false);
 		$("#txtUnid").mask("000.000.000.000", { reverse: true });

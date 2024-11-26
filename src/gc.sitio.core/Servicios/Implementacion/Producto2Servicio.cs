@@ -2,18 +2,22 @@
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
+using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Box;
 using gc.infraestructura.Dtos.Gen;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Net;
 using System.Reflection;
+using System.Security.Policy;
 
 namespace gc.sitio.core.Servicios.Implementacion
 {
-    public  class Producto2Servicio: Servicio<ProductoDto>, IProducto2Servicio
+    public class Producto2Servicio : Servicio<ProductoDto>, IProducto2Servicio
     {
         private const string RutaAPI = "/api/apiproducto";
 
@@ -21,6 +25,9 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string BOX_INFO = "/ObtenerBoxInfo";
         private const string BOX_INFO_STK = "/ObtenerBoxInfoStk";
         private const string BOX_INFO_MOV_STK = "/ObtenerBoxInfoMovStk";
+
+        private const string AJ_CARGA_CONTEO_PREVIOS = "/AJ_CargaConteosPrevios";
+
 
         private readonly AppSettings _appSettings;
 
@@ -159,6 +166,60 @@ namespace gc.sitio.core.Servicios.Implementacion
                 _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
 
                 return new RespuestaGenerica<BoxInfoMovStkDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener los movimientos del BOX" };
+            }
+        }
+
+        public async Task<RespuestaGenerica<RespuestaDto>> AJ_CargaConteosPrevios(List<ProductoGenDto> lista,string admid,string depo,string box,string token)
+        {
+            try
+            {
+                ApiResponse<RespuestaDto>? apiResponse;
+                HelperAPI helper = new();
+
+                #region Armado de Json
+                var j = lista.Select(x => new { depo_id = depo, box_id = box, x.at_id, x.usu_id, x.p_id, x.p_desc, x.up_id, x.unidad_pres, x.bulto, x.us, x.cantidad });
+                var json = JsonConvert.SerializeObject(j);
+                #endregion
+                var ent = new CargarJsonGenRequest { json_str = json, admid = admid };
+
+                HttpClient client = helper.InicializaCliente(ent, token,out StringContent contentData);
+                HttpResponseMessage response;
+             
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{AJ_CARGA_CONTEO_PREVIOS}";
+
+                response = await client.PostAsync(link,contentData);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
+                    }
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+
+                    var resp = apiResponse.Data;
+                    if (resp.resultado == 0)
+                    {
+                        return new RespuestaGenerica<RespuestaDto> { Ok = true, Mensaje = "OK", Entidad = resp};
+                    }
+                    else
+                    {
+                        return new RespuestaGenerica<RespuestaDto> { Ok = false, Mensaje = resp.resultado_msj, Entidad = resp };
+                    }
+                }               
+                else
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                    return new() { Ok = false, Mensaje = "Algo no fue bien y el proceso no se completó. Intente de nuevo más tarde. Si el problema persiste informe al Administrador del sistema." };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+
+                return new RespuestaGenerica<RespuestaDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener los movimientos del BOX" };
             }
         }
     }

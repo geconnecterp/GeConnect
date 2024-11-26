@@ -3,6 +3,7 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 using gc.infraestructura.Dtos.Almacen.Info;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
@@ -65,7 +66,7 @@ namespace gc.pocket.site.Controllers
 
             set { HttpContext.Session.SetString("Etiqueta", value); }
         }
-     
+
         public string Token
         {
             get { return _context.HttpContext.Session.GetString("JwtToken"); }
@@ -103,7 +104,7 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var adm = User.Claims.First(c => c.Type.Contains("AdmId")).Value;                
+                var adm = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
                 if (string.IsNullOrEmpty(adm))
                 {
                     return string.Empty;
@@ -216,7 +217,54 @@ namespace gc.pocket.site.Controllers
                 return usuario;
             }
         }
-  #endregion
+        #endregion
+
+        public string BoxSeleccionado
+        {
+            get
+            {
+                var box = _context.HttpContext.Session.GetString("BoxSeleccionado");
+                if (string.IsNullOrEmpty(box) || string.IsNullOrWhiteSpace(box))
+                {
+                    return string.Empty;
+                }
+                return box.Trim().ToUpper();
+            }
+            set { _context.HttpContext.Session.SetString("BoxSeleccionado", value); }
+        }
+
+        public string TipoAjusteStk
+        {
+            get
+            {
+                var taj = _context.HttpContext.Session.GetString("TipoAjusteStk");
+                if (string.IsNullOrEmpty(taj) || string.IsNullOrWhiteSpace(taj))
+                {
+                    return string.Empty;
+                }
+                return taj.Trim().ToUpper();
+            }
+            set { _context.HttpContext.Session.SetString("TipoAjusteStk", value); }
+        }
+
+        public List<TipoAjusteDeStockDto> ListaTipoAjuste
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("ListaTipoAjuste");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return new List<TipoAjusteDeStockDto>();
+                }
+                return JsonConvert.DeserializeObject<List<TipoAjusteDeStockDto>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("ListaTipoAjuste", json);
+            }
+        }
+
         public List<ProveedorListaDto> ProveedoresLista
         {
             get
@@ -255,12 +303,13 @@ namespace gc.pocket.site.Controllers
 
         public string IdentificaModulo
         {
-            get {
+            get
+            {
                 AutorizacionTIDto sel = TIActual;
-                return sel.TipoTI.Equals("S") ? "S => S" : 
-                    sel.TipoTI.Equals("D") ? "D => D " : 
-                    sel.TipoTI.Equals("E") ? "D => D (S/AU)" : 
-                    sel.TipoTI.Equals("B") ? "B => B" : 
+                return sel.TipoTI.Equals("S") ? "S => S" :
+                    sel.TipoTI.Equals("D") ? "D => D " :
+                    sel.TipoTI.Equals("E") ? "D => D (S/AU)" :
+                    sel.TipoTI.Equals("B") ? "B => B" :
                     sel.TipoTI.Equals("O") ? "B => B (S/AU)" : "DEBE REINICIAR MODULO";
             }
         }
@@ -646,7 +695,7 @@ namespace gc.pocket.site.Controllers
             }
             set
             {
-               
+
                 _context.HttpContext.Session.SetString("TIModuloActual", value);
             }
         }
@@ -785,7 +834,7 @@ namespace gc.pocket.site.Controllers
             return query;
         }
 
-        protected GridCore<T> GenerarGrilla<T>(List<T>? lista,string nnCol)
+        protected GridCore<T> GenerarGrilla<T>(List<T>? lista, string nnCol)
         {
             var l = new StaticPagedList<T>(lista, 1, 999, lista.Count);
 

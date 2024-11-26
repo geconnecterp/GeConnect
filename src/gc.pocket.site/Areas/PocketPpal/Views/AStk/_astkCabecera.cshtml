@@ -1,0 +1,19 @@
+﻿@model (string,(string,string))
+@{
+
+}
+
+<div class="row mt-2">
+    <div class="col-md-6 col-sm-12">
+        <div class="input-group input-group-sm">
+            <span class="input-group-text" style="width:50px">Box</span>
+            <input type="text" class="form-control backReadOnly" readonly value="@Model.Item1" />
+        </div>
+    </div>
+    <div class="col-md-6 col-sm-12">
+        <div class="input-group input-group-sm">
+            <span class="input-group-text" style="width:50px">Aj.</span>
+            <input type="text" class="form-control backReadOnly" readonly value="@Model.Item2.Item2" />
+        </div>
+    </div>
+</div>

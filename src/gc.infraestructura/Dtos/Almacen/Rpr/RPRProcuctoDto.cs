@@ -28,6 +28,9 @@
         public decimal diferencia { get; set; }//0                                                                      x
         public string? adm_min_excluye { get; set; }//                                                                   x
         public string? adm_may_excluye { get; set; }//                                                                   x                                                                     
+        public string? depo_id { get; set; }
+        public string? box_id { get; set; }
+        public string? at_id { get; set; }
 
     }
 }

@@ -1,0 +1,56 @@
+﻿@model string
+
+@{
+    Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
+    var buscar = new BusquedaProducto();
+    //var cota = (int)ViewBag.FechaCotaJS;
+    //var callback = Url.Action("CargarProductos", "astk", new { area = "pocketppal", box = Model.Item1, taj = Model.Item2 });
+}
+
+<div class="container">
+    <partial name="_devpCabecera" model="@Model" />
+    <span id="spanSoloNegativos" class="text-danger">Atención: <strong>Solo se admiten valores NEGATIVOS</strong></span>
+    <partial name="~/areas/gestion/views/producto/_ctrbuscarproducto.cshtml" model="@buscar" />    
+    <partial name="_valorPosneg">
+    <partial name="~/areas/gestion/views/producto/_productoDetalle.cshtml" model="false" />
+    <div class="row">
+        <div class="col-sm-12">
+            <div id="divProdCargGrid"></div>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="d-flex justify-content-center">
+           @*  <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-2"><i class="bx bx-ms bx-info-circle"></i></a> *@
+                <a asp-action="PresentaAjustes" asp-controller="astk" asp-area="PocketPpal" id="btnContinua01" class="btn btn-success btn-sm m-2" style="display:none;"><i class="bx bx-ms bx-right-arrow-alt"></i></a>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script type="text/javascript">
+        //funcionalidad busqueda avanzada
+        var fecha = new Date();
+        //var cotaVto = formatoFechaYMD(sumarFecha(fecha, cota));
+        var ocultarTrash = false;
+        var productoBase = null; //se hidrata en busquedas.
+        var funcionBusquedaAvanzada = false;
+        var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "gestion" })";
+        var validarEstado = true;
+        var tajValor = "B";
+        //de funcionalidad RPR2
+        var reguardarProductoEnListaUrl = "@Url.Action("ReguardarProductoEnLista", "astk", new { area = "PocketPpal" })";
+        var PresentarProductosSeleccionadosUrl = "@Url.Action("PresentarProductosSeleccionados", "astk", new { area = "PocketPpal" })";
+        var EliminarProductoUrl = "@Url.Action("EliminarProducto", "astk", new { area = "PocketPpal" })";
+        var AcumularProductoUrl = "@Url.Action("AcumularProducto", "astk", new { area = "PocketPpal" })";
+        var RemplazarProductoUrl = "@Url.Action("RemplazarProducto", "astk", new { area = "PocketPpal" })";
+        var VolverAnteriorUrl = "@Url.Action("index", "astk", new { area = "PocketPpal" })";
+        var homeRPRUrl = "@Url.Action("astk", "almacen", new { area = "gestion" })";
+
+    </script>
+    <script src="~/js/app/busquedas.js" type="text/javascript"></script>
+    <script src="~/js/app/cprevias/devpgen.js" type="text/javascript"></script>
+    <script src="~/js/app/cprevias/devp02.js" type="text/javascript"></script>
+    @*   
+    <script src="~/js/app/rpr/infoRpr.js" type="text/javascript"></script> *@
+
+}
