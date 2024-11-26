@@ -1,0 +1,25 @@
+﻿@{
+    Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
+}
+<div class="row mt-1">
+    <div class="col-sm-12">
+        <div class="input-group input-group-sm">
+            <span class="input-group-text" style="width:70px;">box:</span>
+            <input type="text" id="boxId" maxlength="11" class="form-control inputEditable" />
+            <button id="btnVerifica" type="button" class="btn btn-sm btn-success"><i class="bx bx-sm bx-check-circle"></i></button>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="d-flex justify-content-center">
+        <button type="button" id="btnContinua01" disabled class="btn btn-success btn-sm m-2"><i class="bx bx-ms bx-right-arrow-alt"></i></button>
+    </div>
+</div>
+@section scripts{
+    <script type="text/javascript">
+        var validaBoxUrl = "@Url.Action("ValidarBox", "infoprod", new { area = "pocketppal" })";
+        var cargaProducto = "@Url.Action("CargarProductos", "devp", new { area = "pocketppal" })";
+    </script>
+    <script src="~/js/app/cprevias/devp.js" ></script>
+}

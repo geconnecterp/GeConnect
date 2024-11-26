@@ -38,8 +38,9 @@
 			public const string SP_AJ_PREVIOS_CARGADOS = "dbo.SPGECO_AJ_Previos_Cargados";
 			public const string SP_AJ_AJUSTE_REVERTIDO = "dbo.SPGECO_AJ_Datos";
 			public const string SP_AJ_CONFIRMA = "dbo.SPGECO_AJ_Confirmar";
+            public const string SP_AJ_CARGA_CONTEOS_PREVIA = "SPGECO_AJ_Cargar_Conteos_Previa";
 
-			public const string SP_DV_PREVIOS_CARGADOS = "dbo.SPGECO_DV_Previos_Cargados";
+            public const string SP_DV_PREVIOS_CARGADOS = "dbo.SPGECO_DV_Previos_Cargados";
 			public const string SP_DV_DATOS = "dbo.SPGECO_DV_Datos";
 			public const string SP_DV_CONFIRMA = "dbo.SPGECO_DV_Confirmar";
 			//

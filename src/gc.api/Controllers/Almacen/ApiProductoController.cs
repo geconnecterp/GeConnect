@@ -1,20 +1,21 @@
 namespace gc.api.Controllers.Almacen
 {
-	using AutoMapper;
-	using gc.api.core.Contratos.Servicios;
-	using gc.api.core.Entidades;
-	using gc.infraestructura.Core.EntidadesComunes;
-	using gc.infraestructura.Core.Exceptions;
-	using gc.infraestructura.Core.Interfaces;
-	using gc.infraestructura.Core.Responses;
-	using gc.infraestructura.Dtos.Almacen;
-	using gc.infraestructura.Dtos.Almacen.Request;
-	using gc.infraestructura.Dtos.Almacen.Response;
-	using gc.infraestructura.Dtos.Almacen.Rpr;
-	using gc.infraestructura.Dtos.Almacen.Tr;
-	using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
-	using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
-    using gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
+    using AutoMapper;
+    using gc.api.core.Contratos.Servicios;
+    using gc.api.core.Entidades;
+    using gc.infraestructura.Core.EntidadesComunes;
+    using gc.infraestructura.Core.Exceptions;
+    using gc.infraestructura.Core.Interfaces;
+    using gc.infraestructura.Core.Responses;
+    using gc.infraestructura.Dtos.Almacen;
+    using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
+    using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
+    using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
+    using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor.Request;
+    using gc.infraestructura.Dtos.Almacen.Request;
+    using gc.infraestructura.Dtos.Almacen.Response;
+    using gc.infraestructura.Dtos.Almacen.Rpr;
+    using gc.infraestructura.Dtos.Almacen.Tr;
     using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
     using gc.infraestructura.Dtos.Box;
     using gc.infraestructura.Dtos.CuentaComercial;
@@ -29,28 +30,10 @@ namespace gc.api.Controllers.Almacen
     using System.Collections.Generic;
     using System.Net;
     using System.Reflection;
-    using System.Security.Cryptography;
     using System.Threading.Tasks;
-	using gc.infraestructura.Dtos.CuentaComercial;
-	using gc.infraestructura.Dtos.Gen;
-	using gc.infraestructura.Dtos.General;
-	using gc.infraestructura.Dtos.Productos;
-	using gc.infraestructura.EntidadesComunes.Options;
-	using Microsoft.AspNetCore.Authorization;
-	using Microsoft.AspNetCore.Mvc;
-	using Newtonsoft.Json;
-	using Newtonsoft.Json.Linq;
-	using System.Collections.Generic;
-	using System.Net;
-	using System.Reflection;
-	using System.Runtime.Intrinsics.Arm;
-	using System.Threading.Tasks;
-	using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
-	using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
-	using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
-	using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor.Request;
+    using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 
-	[Authorize]
+    [Authorize]
 	[Produces("application/json")]
 	[Route("api/[controller]")]
 	[ApiController]
@@ -415,7 +398,22 @@ namespace gc.api.Controllers.Almacen
 			return Ok(response);
 		}
 
-		[HttpGet]
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RespuestaDto>>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult AJ_CargaConteosPrevios(ConfirmarAjusteStkRequest request)
+        {
+            ApiResponse<RespuestaDto> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.AJ_CargaConteosPrevios(request.json,request.admId);
+
+            response = new ApiResponse<RespuestaDto>(res);
+
+            return Ok(response);
+        }
+
+        [HttpGet]
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<DevolucionPrevioCargadoDto>>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]

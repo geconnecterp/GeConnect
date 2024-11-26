@@ -14,7 +14,7 @@ using X.PagedList;
 namespace gc.pocket.site.Areas.PocketPpal.Controllers
 {
     [Area("PocketPpal")]
-    public class AStkController : ControladorBase
+    public class DevPController : ControladorBase
     {
         private readonly MenuSettings _menuSettings;
         private readonly ILogger<RPRController> _logger;
@@ -22,8 +22,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         private readonly IProducto2Servicio _producto2Servicio;
         private readonly AppSettings _settings;
 
-        public AStkController(IOptions<AppSettings> options, IHttpContextAccessor context, IOptions<MenuSettings> options1,
-            ILogger<RPRController> logger, IProductoServicio productoServicio, IDepositoServicio depositoServicio,IProducto2Servicio producto2Servicio) : base(options, context)
+        public DevPController(IOptions<AppSettings> options, IHttpContextAccessor context, IOptions<MenuSettings> options1,
+            ILogger<RPRController> logger, IProductoServicio productoServicio, IDepositoServicio depositoServicio, IProducto2Servicio producto2Servicio) : base(options, context)
         {
             _menuSettings = options1.Value;
             _logger = logger;
@@ -42,13 +42,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 return RedirectToAction("Login", "Token", new { area = "seguridad" });
             }
             string volver = Url.Action("cprev", "almacen", new { area = "gestion" });
-            ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Ajuste de Stock", VolverUrl = volver ?? "#" };
+            ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Devolución a Proveedores", VolverUrl = volver ?? "#" };
 
-            var aj = await _productoServicio.ObtenerTipoDeAjusteDeStock(TokenCookie);
-            ListaTipoAjuste = aj;
-            var lista = aj.Select(x => new ComboGenDto { Id = $"{x.at_id}-{x.at_tipo}", Descripcion = x.at_desc});
-
-            ViewBag.ddlTipoAjuste = HelperMvc<ComboGenDto>.ListaGenerica(lista);
             //inicializamos lista de productos a ajustar
             ProductoGenRegs = new List<ProductoGenDto>();
             BoxSeleccionado = string.Empty;
@@ -57,7 +52,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> CargarProductos(string box, string taj)
+        public async Task<IActionResult> CargarProductos(string box)
         {
             try
             {
@@ -74,14 +69,12 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 }
 
                 BoxSeleccionado = box;
-                TipoAjusteStk = taj;
-                var t = taj.Split('-');
-                var tajDesc = ListaTipoAjuste.Single(x => x.at_id.Equals(t[0])).at_desc;
 
-                string volver = Url.Action("index", "astk", new { area = "pocketppal" });
 
-                ViewBag.AppItem = new AppItem { Nombre = $"CARGA DE PRODUCTOS A AJUSTAR STOCK", VolverUrl = volver ?? "#", BotonEspecial = false };
-                return View((box,(t[1],tajDesc)));
+                string volver = Url.Action("index", "devp", new { area = "pocketppal" });
+
+                ViewBag.AppItem = new AppItem { Nombre = $"CARGA DE PRODUCTOS A DEVOLVER A PROVEEDORES", VolverUrl = volver ?? "#", BotonEspecial = false };
+                return View("CargarProductos", box);
             }
             catch (Exception ex)
             {
@@ -92,7 +85,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         }
 
         [HttpPost]
-        public async Task<JsonResult> ReguardarProductoEnLista(int up, string vto, int bulto, decimal unidad,bool sig = true)
+        public async Task<JsonResult> ReguardarProductoEnLista(int up, string vto, int bulto, decimal unidad, bool sig = true)
         {
             string msg;
             try
@@ -117,61 +110,25 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     return Json(new { error = true, msg = "EL PRODUCTO NO ES POR UNIDADES. LA UNIDAD DE PRESENTACIÓN TIENE QUE SER IGUAL A 1 SIEMPRE." });
                 }
 
-                //if (ProductoBase.P_con_vto.Equals("S"))
-                //{
-                //    var fecha = vto.ToDateTimeOrNull();
-                //    var tope = ProductoBase.p_con_vto_ctl;
-                //    if (fecha == null)
-                //    {
-                //        return Json(new { error = true, msg = "La fecha recepcionada no es válida. Verifique." });
-                //    }
-                //    else if (fecha < tope)
-                //    {
-                //        return Json(new { error = true, msg = $"La fecha recepcionada no puede ser menor a {tope}. Verifique, por favor." });
-                //    }
-                //}
-
-                //if (!string.IsNullOrEmpty(vto) && !string.IsNullOrWhiteSpace(vto))
-                //{
-                //    var fecha = vto.ToDateTimeOrNull();
-                //    var tope = DateTime.Today.AddDays(_settings.FechaVtoCota);
-
-                //    if (fecha == null)
-                //    {
-                //        return Json(new { error = true, msg = "La fecha recepcionada no es válida. Verifique." });
-                //    }
-                //    else if (fecha < tope)
-                //    {
-                //        return Json(new { error = true, msg = $"La fecha recepcionada no puede ser menor a {tope}. Verifique, por favor." });
-                //    }
-                //}
-
                 //valido cantidad. Si el resultado es igual a 0 dar error
-                if (!sig)
-                {                  
-                    if (ProductoBase.Up_id.Equals("07"))
-                    {
-                        bulto *= -1;
-                        unidad *= -1;
-                    }
-                    else
-                    {
-                        unidad *= -1;
-                    }
-                }
-                var cantidad = ProductoBase.Up_id.Equals("07") ? (up * bulto) + unidad : unidad;
-               
 
-                //if (cantidad <= 0)
-                //{
-                //    return Json(new { error = true, msg = "La cantidad dió como resultado 0 (cero). Verifique." });
-                //}
+                if (ProductoBase.Up_id.Equals("07"))
+                {
+                    bulto *= -1;
+                    unidad *= -1;
+                }
+                else
+                {
+                    unidad *= -1;
+                }
+
+                var cantidad = ProductoBase.Up_id.Equals("07") ? (up * bulto) + unidad : unidad;
 
                 //armo producto a resguardar
                 var item = new ProductoGenDto();
-                item.depo_id = BoxSeleccionado.Substring(0,2);
+                item.depo_id = BoxSeleccionado.Substring(0, 2);
                 item.box_id = BoxSeleccionado;
-                item.at_id = TipoAjusteStk.Substring(0, 1);
+               
                 item.item = ProductoGenRegs.Count + 1;
                 item.p_id = ProductoBase.P_id;
                 item.p_desc = ProductoBase.P_desc;
@@ -183,16 +140,6 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 item.unidad_pres = up;
                 item.bulto = bulto;
                 item.us = unidad;
-
-                //if (string.IsNullOrEmpty(vto) && string.IsNullOrWhiteSpace(vto))
-                //{
-                //    item.vto = null;
-                //}
-                //else
-                //{
-                //    var f = vto.Split('-', StringSplitOptions.RemoveEmptyEntries);
-                //    item.vto = new DateTime(f[0].ToInt(), f[1].ToInt(), f[2].ToInt());
-                //}
                 item.cantidad = cantidad;
 
                 var res = ProductoGenRegs.Any(x => x.p_id.Equals(item.p_id));
@@ -207,15 +154,15 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 else
                 {
                     //antes de cargarlo se revisa que el stock actual + ajuste sea >= 0
-                    var restk =await _productoServicio.InfoProductoStkBoxes(item.p_id, AdministracionId, item.depo_id, TokenCookie, item.box_id);
+                    var restk = await _productoServicio.InfoProductoStkBoxes(item.p_id, AdministracionId, item.depo_id, TokenCookie, item.box_id);
 
                     if (restk.Count > 0)
                     {
                         //hay algun producto en el box.
                         var prod = restk.Single();
-                        if((prod.Ps_stk + item.cantidad) < 0)
+                        if ((prod.Ps_stk + item.cantidad) < 0)
                         {
-                            return Json(new { error = true,msg=$"Verifique el ajuste del producto {item.p_desc} ya que el ajuste daria un Stock NEGATIVO."});
+                            return Json(new { error = true, msg = $"Verifique el ajuste del producto {item.p_desc} ya que la devolución daria un Stock NEGATIVO." });
                         }
                     }
 
@@ -364,14 +311,12 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             }
 
             var box = BoxSeleccionado;
-            var taj = TipoAjusteStk;
-            var t = taj.Split('-');
-            var tajDesc = ListaTipoAjuste.Single(x => x.at_id.Equals(t[0])).at_desc;
 
-            string volver = Url.Action("CargarProductos", "astk", new { area = "pocketppal",box = box,taj=taj });
+
+            string volver = Url.Action("CargarProductos", "astk", new { area = "pocketppal", box });
 
             ViewBag.AppItem = new AppItem { Nombre = $"CARGA DE PRODUCTOS A AJUSTAR STOCK", VolverUrl = volver ?? "#", BotonEspecial = false };
-            return View((box, (t[1], tajDesc)));
+            return View(box);
         }
 
         [HttpPost]
@@ -380,7 +325,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             try
             {
                 var box = BoxSeleccionado;
-                var res =await _producto2Servicio.AJ_CargaConteosPrevios(ProductoGenRegs, AdministracionId, box.Substring(0, 2), box, TokenCookie);
+                var res = await _producto2Servicio.AJ_CargaConteosPrevios(ProductoGenRegs, AdministracionId, box.Substring(0, 2), box, TokenCookie);
                 if (res.Ok)
                 {
                     return Json(new { error = false, msg = "Se realizo exitosamente la Carga de Conteos Previos por Ajustes de Control." });

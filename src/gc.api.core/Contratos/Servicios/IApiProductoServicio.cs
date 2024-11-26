@@ -84,5 +84,8 @@ namespace gc.api.core.Contratos.Servicios
         BoxInfoDto ObtenerBoxInfo(string box_id);
         List<BoxInfoStkDto> ObtenerBoxInfoStk(string box_id);
         List<BoxInfoMovStkDto> ObtenerBoxInfoMovStk(string box_id,string sm_tipo,DateTime desde,DateTime hasta);
+
+        RespuestaDto AJ_CargaConteosPrevios(string json,string admid);
+
     }
 }
