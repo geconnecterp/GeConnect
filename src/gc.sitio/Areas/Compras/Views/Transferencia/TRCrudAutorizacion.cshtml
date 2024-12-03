@@ -172,13 +172,27 @@
 										<div>
 											<div class="col-sm">
 												<div class="form-check">
-													<input class="form-check-input" type="checkbox" id="chkConsiderarStock" @((Model.ConsiderarStockExistente == false ? "" : "checked")) asp-for="@Model.ConsiderarStockExistente">
+													@if (Model.ConsiderarStockExistente == false)
+													{
+														<input class="form-check-input" type="checkbox" id="chkConsiderarStock" asp-for="@Model.ConsiderarStockExistente">
+													}
+													else
+													{
+														<input class="form-check-input" type="checkbox" id="chkConsiderarStock" checked asp-for="@Model.ConsiderarStockExistente">
+													}
 													<label class="form-check-label" for="chkConsiderarStock"> Considerar STK Existente de Sucursales</label>
 												</div>
 											</div>
 											<div class="col-sm">
 												<div class="form-check">
-													<input class="form-check-input" type="checkbox" id="chkModificarYSustituto" @((Model.ModificarYSustituto == false ? "" : "checked")) asp-for="@Model.ModificarYSustituto">
+													@if (Model.ModificarYSustituto == false)
+													{
+														<input class="form-check-input" type="checkbox" id="chkModificarYSustituto" asp-for="@Model.ModificarYSustituto">
+													}
+													else
+													{
+														<input class="form-check-input" type="checkbox" id="chkModificarYSustituto" checked asp-for="@Model.ModificarYSustituto">
+													}
 													<label class="form-check-label" for="chkModificarYSustituto"> Modificar y Sustituto</label>
 												</div>
 											</div>
@@ -186,7 +200,14 @@
 												<div>
 													<div class="row">
 														<div class="form-check col-7" style="padding-left: 6.8%;">
-															<input class="form-check-input" onchange="changeMaxPalletChk(this);" type="checkbox" id="chkMaxPallet" @((Model.MaximoPalletXAuto == false ? "" : "checked")) asp-for="@Model.MaximoPalletXAuto">
+															@if (Model.MaximoPalletXAuto == false)
+															{
+																<input class="form-check-input" onchange="changeMaxPalletChk(this);" type="checkbox" id="chkMaxPallet" asp-for="@Model.MaximoPalletXAuto">
+															}
+															else
+															{
+																<input class="form-check-input" onchange="changeMaxPalletChk(this);" type="checkbox" id="chkMaxPallet" checked asp-for="@Model.MaximoPalletXAuto">
+															}
 															<label class="form-check-label" for="chkMaxPallet"> Máximo Pallet x Autorización de TR</label>
 														</div>
 														<div class="col-5">

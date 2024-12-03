@@ -234,7 +234,14 @@
 									
 								</div>
 								<div class="tab-pane fade" id="navs-top-dog" role="tabpanel">
-									<input class="form-check-input" type="checkbox" id="chkProductosDelMismoProveedor" onchange="changeProductosDelMismoProveedor(this);" @((Model.ProductosDelMismoProveedor == false ? "" : "checked")) asp-for="@Model.ProductosDelMismoProveedor">
+									@if (Model.ProductosDelMismoProveedor == false)
+									{
+										<input class="form-check-input" type="checkbox" id="chkProductosDelMismoProveedor" onchange="changeProductosDelMismoProveedor(this);" asp-for="@Model.ProductosDelMismoProveedor">
+									}
+									else
+									{
+										<input class="form-check-input" type="checkbox" id="chkProductosDelMismoProveedor" onchange="changeProductosDelMismoProveedor(this);" checked asp-for="@Model.ProductosDelMismoProveedor">
+									}
 									<label class="form-check-label" for="chkProductosDelMismoProveedor"> Productos del mismo Proveedor</label>
 									<div class="row">
 										<div id="divInfoProdSustituto"></div>
