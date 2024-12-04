@@ -45,12 +45,12 @@ namespace gc.api.Controllers.Codigos
             var tipos_documentosDtos = _mapper.Map<IEnumerable<TipoDocumentoDto>>(tipos_documentoss);
 
             // presentando en el header información basica sobre la paginación
-            var metadata = new Metadata
+            var metadata = new MetadataGrid
             {
                 TotalCount = tipos_documentoss.TotalCount,
                 PageSize = tipos_documentoss.PageSize,
                 CurrentPage = tipos_documentoss.CurrentPage,
-                TatalPages = tipos_documentoss.TotalPages,
+                TotalPages = tipos_documentoss.TotalPages,
                 HasNextPage = tipos_documentoss.HasNextPage,
                 HasPreviousPage = tipos_documentoss.HasPreviousPage,
                 NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Gettipos_documentoss))).ToString(),

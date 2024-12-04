@@ -232,7 +232,7 @@ namespace gc.notificacion.api.Controllers
 
         private BilleteraDto ObtenerDatosBilletera(string bill)
         {
-            ApiResponse<BilleteraDto> response;
+            ApiResponse<BilleteraDto>? response;
             HelperAPI helper = new HelperAPI();
             HttpClient client = helper.InicializaCliente("");
             HttpResponseMessage resp;

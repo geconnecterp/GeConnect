@@ -17,8 +17,8 @@ namespace gc.api.core.Servicios
 
         public override PagedList<TipoDocumento> GetAll(QueryFilters filters)
         {
-            filters.PageNumber = filters.PageNumber == default ? _paginationOptions.DefaultPageNumber : filters.PageNumber;
-            filters.PageSize = filters.PageSize == default ? _paginationOptions.DefaultPageSize : filters.PageSize;
+            filters.Pagina = filters.Pagina == default ? _pagSet.DefaultPageNumber : filters.Pagina;
+            filters.Registros = filters.Registros == default ? _pagSet.DefaultPageSize : filters.Registros;
 
             var tipos_documentoss = GetAllIq();
             tipos_documentoss = tipos_documentoss.OrderBy($"{filters.Sort} {filters.SortDir}");
@@ -31,12 +31,12 @@ namespace gc.api.core.Servicios
                 }
             }           
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                tipos_documentoss = tipos_documentoss.Where(r => r.Tdoc_Desc.Contains(filters.Search));
+                tipos_documentoss = tipos_documentoss.Where(r => r.Tdoc_Desc.Contains(filters.Buscar));
             }
 
-            var paginas = PagedList<TipoDocumento>.Create(tipos_documentoss, filters.PageNumber ?? 1, filters.PageSize ?? 20);
+            var paginas = PagedList<TipoDocumento>.Create(tipos_documentoss, filters.Pagina ?? 1, filters.Registros ?? 20);
 
             return paginas;
         }

@@ -18,8 +18,8 @@ namespace geco_0000.Core.Servicios
 
        public override PagedList<BilleteraConfiguracion> GetAll(QueryFilters filters)
        {
-            filters.PageNumber = filters.PageNumber == default ? _paginationOptions.DefaultPageNumber : filters.PageNumber;
-            filters.PageSize = filters.PageSize == default ? _paginationOptions.DefaultPageSize : filters.PageSize;
+            filters.Pagina = filters.Pagina == default ? _pagSet.DefaultPageNumber : filters.Pagina;
+            filters.Registros = filters.Registros == default ? _pagSet.DefaultPageSize : filters.Registros;
 
             var billetera_configuracions = GetAllIq();
             billetera_configuracions = billetera_configuracions.OrderBy($"{filters.Sort} {filters.SortDir}");
@@ -32,17 +32,17 @@ namespace geco_0000.Core.Servicios
                 }
             }           
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                billetera_configuracions = billetera_configuracions.Where(r => r.Bc_Ruta_Publickey.Contains(filters.Search));
+                billetera_configuracions = billetera_configuracions.Where(r => r.Bc_Ruta_Publickey.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                billetera_configuracions = billetera_configuracions.Where(r => r.Bc_Ruta_Privatekey.Contains(filters.Search));
+                billetera_configuracions = billetera_configuracions.Where(r => r.Bc_Ruta_Privatekey.Contains(filters.Buscar));
             }
 
-            var paginas = PagedList<BilleteraConfiguracion>.Create(billetera_configuracions, filters.PageNumber??1, filters.PageSize??20);
+            var paginas = PagedList<BilleteraConfiguracion>.Create(billetera_configuracions, filters.Pagina??1, filters.Registros??20);
 
             return paginas;
         }

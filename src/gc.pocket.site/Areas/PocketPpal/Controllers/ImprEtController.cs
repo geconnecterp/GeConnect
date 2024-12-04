@@ -37,5 +37,14 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
             return View();
         }
+
+        [HttpGet]
+        public IActionResult LabMenu()
+        {
+            string volver = Url.Action("cprev", "almacen", new { area = "gestion" });
+            ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
+
+            return View();
+        }
     }
 }

@@ -1,7 +1,9 @@
 ﻿using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Interfaces;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Contratos.ABM;
 using gc.sitio.core.Servicios.Implementacion;
+using gc.sitio.core.Servicios.Implementacion.ABM;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -23,7 +25,8 @@ namespace gc.sitio.core.Extensions
             services.AddScoped<IProducto2Servicio, Producto2Servicio>();
             services.AddScoped<IDepositoServicio, DepositoServicio>();
 			services.AddScoped<IRemitoServicio, RemitoServicio>();
-			return services;
+			services.AddScoped<IABMProductoServicio, ABMProductoServicio>();
+            return services;
         }
     }
 }

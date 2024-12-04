@@ -44,12 +44,12 @@ namespace gc.api.Controllers.Almacen
             var depositosDtos = _mapper.Map<IEnumerable<DepositoDto>>(depositoss);
 
             // presentando en el header información basica sobre la paginación
-            var metadata = new Metadata
+            var metadata = new MetadataGrid
             {
                 TotalCount = depositoss.TotalCount,
                 PageSize = depositoss.PageSize,
                 CurrentPage = depositoss.CurrentPage,
-                TatalPages = depositoss.TotalPages,
+                TotalPages = depositoss.TotalPages,
                 HasNextPage = depositoss.HasNextPage,
                 HasPreviousPage = depositoss.HasPreviousPage,
                 NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getdepositoss))).ToString(),

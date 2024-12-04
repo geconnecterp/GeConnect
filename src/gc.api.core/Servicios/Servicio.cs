@@ -18,14 +18,14 @@
     {
         protected readonly IUnitOfWork _uow;
         protected readonly IRepository<T> _repository;
-        protected readonly PaginationOptions? _paginationOptions;
+        protected readonly PaginationOptions? _pagSet;
         protected readonly ConfigNegocioOption? _configTradeOption;
 
         public Servicio(IUnitOfWork uow, IOptions<PaginationOptions> options)
         {
             _uow = uow;
             _repository = _uow.GetRepository<T>();
-            _paginationOptions = options.Value;
+            _pagSet = options.Value;
         }
 
         public Servicio(IUnitOfWork uow, IOptions<ConfigNegocioOption> options, IOptions<PaginationOptions> options2)
@@ -33,7 +33,7 @@
             _uow = uow;
             _repository = _uow.GetRepository<T>();
             _configTradeOption = options.Value;
-            _paginationOptions = options2.Value;
+            _pagSet = options2.Value;
         }
 
         public Servicio(IUnitOfWork uow, IOptions<ConfigNegocioOption> options)
@@ -101,15 +101,15 @@
         public virtual PagedList<T> GetAll(QueryFilters filters)
         {
             //validando los parametros sensibles de filter
-            if (_paginationOptions != null)
+            if (_pagSet != null)
             {
-                filters.PageNumber = filters.PageNumber == default ? _paginationOptions.DefaultPageNumber : filters.PageNumber;
-                filters.PageSize = filters.PageSize == default ? _paginationOptions.DefaultPageSize : filters.PageSize;
+                filters.Pagina = filters.Pagina == default ? _pagSet.DefaultPageNumber : filters.Pagina;
+                filters.Registros = filters.Registros == default ? _pagSet.DefaultPageSize : filters.Registros;
             }
             else
             {
-                filters.PageNumber = default;
-                filters.PageSize = default;
+                filters.Pagina = default;
+                filters.Registros = default;
             }
 
             var entidades = GetAllIq();
@@ -118,7 +118,7 @@
                 entidades = entidades.OrderBy($"{filters.Sort} {filters.SortDir}");
             }
 
-            var pagina = PagedList<T>.Create(entidades, filters.PageNumber ?? 1, filters.PageSize ?? 20);
+            var pagina = PagedList<T>.Create(entidades, filters.Pagina ?? 1, filters.Registros ?? 20);
             return pagina;
         }
 

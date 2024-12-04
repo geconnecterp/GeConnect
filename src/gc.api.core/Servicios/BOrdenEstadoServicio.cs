@@ -17,8 +17,8 @@ namespace gc.api.core.Servicios
 
         public override PagedList<BOrdenEstado> GetAll(QueryFilters filters)
         {
-            filters.PageNumber = filters.PageNumber == default ? _paginationOptions.DefaultPageNumber : filters.PageNumber;
-            filters.PageSize = filters.PageSize == default ? _paginationOptions.DefaultPageSize : filters.PageSize;
+            filters.Pagina = filters.Pagina == default ? _pagSet.DefaultPageNumber : filters.Pagina;
+            filters.Registros = filters.Registros == default ? _pagSet.DefaultPageSize : filters.Registros;
 
             var billeteras_ordenes_es = GetAllIq();
             billeteras_ordenes_es = billeteras_ordenes_es.OrderBy($"{filters.Sort} {filters.SortDir}");
@@ -31,17 +31,17 @@ namespace gc.api.core.Servicios
                 }
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                billeteras_ordenes_es = billeteras_ordenes_es.Where(r => r.Boe_id.Contains(filters.Search));
+                billeteras_ordenes_es = billeteras_ordenes_es.Where(r => r.Boe_id.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                billeteras_ordenes_es = billeteras_ordenes_es.Where(r => r.Boe_desc.Contains(filters.Search));
+                billeteras_ordenes_es = billeteras_ordenes_es.Where(r => r.Boe_desc.Contains(filters.Buscar));
             }
 
-            var paginas = PagedList<BOrdenEstado>.Create(billeteras_ordenes_es, filters.PageNumber??1, filters.PageSize??20);
+            var paginas = PagedList<BOrdenEstado>.Create(billeteras_ordenes_es, filters.Pagina??1, filters.Registros??20);
 
             return paginas;
         }

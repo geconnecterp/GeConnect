@@ -46,12 +46,12 @@ namespace gc.api.Controllers.Almacen
             var cuentasDtos = _mapper.Map<IEnumerable<CuentaDto>>(cuentass);
 
             // presentando en el header información basica sobre la paginación
-            var metadata = new Metadata
+            var metadata = new MetadataGrid
             {
                 TotalCount = cuentass.TotalCount,
                 PageSize = cuentass.PageSize,
                 CurrentPage = cuentass.CurrentPage,
-                TatalPages = cuentass.TotalPages,
+                TotalPages = cuentass.TotalPages,
                 HasNextPage = cuentass.HasNextPage,
                 HasPreviousPage = cuentass.HasPreviousPage,
                 NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getcuentass))).ToString(),

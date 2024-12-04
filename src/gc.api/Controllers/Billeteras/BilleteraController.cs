@@ -45,12 +45,12 @@ namespace gc.api.Controllers.Billeteras
             var billeterasDtos = _mapper.Map<IEnumerable<BilleteraDto>>(billeterass);
 
             // presentando en el header información basica sobre la paginación
-            var metadata = new Metadata
+            var metadata = new MetadataGrid
             {
                 TotalCount = billeterass.TotalCount,
                 PageSize = billeterass.PageSize,
                 CurrentPage = billeterass.CurrentPage,
-                TatalPages = billeterass.TotalPages,
+                TotalPages = billeterass.TotalPages,
                 HasNextPage = billeterass.HasNextPage,
                 HasPreviousPage = billeterass.HasPreviousPage,
                 NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getbilleterass))).ToString(),
