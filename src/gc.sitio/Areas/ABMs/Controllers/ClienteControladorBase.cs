@@ -57,29 +57,29 @@ namespace gc.sitio.Areas.ABMs.Controllers
             }
         }
 
-        public List<ABMProductoSearchDto> ProductosBuscados
+        public List<ABMClienteSearchDto> ClientesBuscados
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("ProductosBuscados");
+                var json = _context.HttpContext.Session.GetString("ClientesBuscados");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
                 }
-                return JsonConvert.DeserializeObject<List<ABMProductoSearchDto>>(json);
+                return JsonConvert.DeserializeObject<List<ABMClienteSearchDto>>(json);
             }
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("ProductosBuscados", json);
+                _context.HttpContext.Session.SetString("ClientesBuscados", json);
             }
         }
 
-        public MetadataGrid MetadataProd
+        public MetadataGrid MetadataCliente
         {
             get
             {
-                var txt = _context.HttpContext.Session.GetString("MetadataProd");
+                var txt = _context.HttpContext.Session.GetString("MetadataCliente");
                 if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
                 {
                     return new MetadataGrid();
@@ -89,7 +89,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             set
             {
                 var valor = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("MetadataProd", valor);
+                _context.HttpContext.Session.SetString("MetadataCliente", valor);
             }
 
         }

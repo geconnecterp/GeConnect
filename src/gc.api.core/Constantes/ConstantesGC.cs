@@ -128,7 +128,7 @@
 
             #region ABM
             public const string SP_ABM_P_LISTA = "SPGECO_ABM_P_Lista";
-
+            public const string SP_ABM_CLI_LISTA = "SPGECO_ABM_Cli_Lista";
             #endregion
 
             #region Tipos
