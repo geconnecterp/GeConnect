@@ -2,6 +2,10 @@
 {
     public static class ConstantesGC
     {
+        public static class Ordenamientos
+        {
+            public const string Ord_Productos = "p_id,p_desc,cta_denominacion,cta_lista,rub_id,rub_lista,p_activo,p_activo_des";
+        }
         public static class StoredProcedures
         {
             public const string FX_PASSWORD_ENCRIPTA = "dbo.sf_pass_e";
@@ -121,6 +125,12 @@
             #region Usuarios
             public const string SP_USU_X_IDYADM = "SPGECO_USU_X_IDYADM";
             #endregion
+
+            #region ABM
+            public const string SP_ABM_P_LISTA = "SPGECO_ABM_P_Lista";
+
+            #endregion
+
         }
     }
 }

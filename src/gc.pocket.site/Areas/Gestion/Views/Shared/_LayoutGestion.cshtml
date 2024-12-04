@@ -1,6 +1,4 @@
 ﻿@{
-
-
     var appItem = ViewBag.AppItem as AppItem;
     var nombre = User.Claims.First(c => c.Type.Contains("nya")).Value;
     (string, (string, (string,bool))) model;
@@ -30,6 +28,7 @@
     <link rel="stylesheet" href="~/fonts/boxicons.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/gc.pocket.site.styles.css" asp-append-version="true" />
+    @await RenderSectionAsync("styles", required: false)
 </head>
 <body>
     <partial name="_headerApp" model="model" />

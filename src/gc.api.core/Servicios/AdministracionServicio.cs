@@ -42,8 +42,8 @@ namespace gc.api.core.Servicios
 
         public override PagedList<Administracion> GetAll(QueryFilters filters)
         {
-            filters.PageNumber = filters.PageNumber == default ? _paginationOptions.DefaultPageNumber : filters.PageNumber;
-            filters.PageSize = filters.PageSize == default ? _paginationOptions.DefaultPageSize : filters.PageSize;
+            filters.Pagina = filters.Pagina == default ? _pagSet.DefaultPageNumber : filters.Pagina;
+            filters.Registros = filters.Registros == default ? _pagSet.DefaultPageSize : filters.Registros;
 
             var administraciones = GetAllIq();
             if (string.IsNullOrEmpty(filters.Sort)) { filters.Sort = "Adm_id"; }
@@ -58,47 +58,47 @@ namespace gc.api.core.Servicios
                 }
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                administraciones = administraciones.Where(r => r.Adm_id.Contains(filters.Search));
+                administraciones = administraciones.Where(r => r.Adm_id.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                administraciones = administraciones.Where(r => r.Adm_nombre.Contains(filters.Search));
+                administraciones = administraciones.Where(r => r.Adm_nombre.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                administraciones = administraciones.Where(r => r.Adm_direccion.Contains(filters.Search));
+                administraciones = administraciones.Where(r => r.Adm_direccion.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                administraciones = administraciones.Where(r => r.Usu_id_encargado.Contains(filters.Search));
+                administraciones = administraciones.Where(r => r.Usu_id_encargado.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                administraciones = administraciones.Where(r => r.Cx_profile.Contains(filters.Search));
+                administraciones = administraciones.Where(r => r.Cx_profile.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                administraciones = administraciones.Where(r => r.Cx_base.Contains(filters.Search));
+                administraciones = administraciones.Where(r => r.Cx_base.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                administraciones = administraciones.Where(r => r.Cx_login.Contains(filters.Search));
+                administraciones = administraciones.Where(r => r.Cx_login.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                administraciones = administraciones.Where(r => r.Cx_pass.Contains(filters.Search));
+                administraciones = administraciones.Where(r => r.Cx_pass.Contains(filters.Buscar));
             }
 
-            var paginas = PagedList<Administracion>.Create(administraciones, filters.PageNumber ?? 1, filters.PageSize ?? 20);
+            var paginas = PagedList<Administracion>.Create(administraciones, filters.Pagina ?? 1, filters.Registros ?? 20);
 
             return paginas;
         }

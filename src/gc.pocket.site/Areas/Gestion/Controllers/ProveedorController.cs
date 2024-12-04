@@ -54,7 +54,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
 
         private async Task<GridCore<ProveedorDto>> ObtenerProveedorAsync(string buscar, string sortdir, string sort, int page, string token)
         {
-            var proveedoress = await _provSv.BuscarAsync(new QueryFilters { Search = buscar, PageNumber = page, Sort = sort, SortDir = sortdir }, token);
+            var proveedoress = await _provSv.BuscarAsync(new QueryFilters { Buscar = buscar, Pagina = page, Sort = sort, SortDir = sortdir }, token);
             List<ProveedorDto> entidades = proveedoress.Item1;
             var lista = new StaticPagedList<ProveedorDto>(entidades, proveedoress.Item2.CurrentPage, proveedoress.Item2.PageSize, proveedoress.Item2.TotalCount);
 

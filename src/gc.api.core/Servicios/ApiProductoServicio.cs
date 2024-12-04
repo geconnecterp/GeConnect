@@ -37,8 +37,8 @@ namespace gc.api.core.Servicios
 
 		public override PagedList<Producto> GetAll(QueryFilters filters)
 		{
-			filters.PageNumber = filters.PageNumber == default ? _paginationOptions.DefaultPageNumber : filters.PageNumber;
-			filters.PageSize = filters.PageSize == default ? _paginationOptions.DefaultPageSize : filters.PageSize;
+			filters.Pagina = filters.Pagina == default ? _pagSet.DefaultPageNumber : filters.Pagina;
+			filters.Registros = filters.Registros == default ? _pagSet.DefaultPageSize : filters.Registros;
 
 			var productoss = GetAllIq();
 			productoss = productoss.OrderBy($"{filters.Sort} {filters.SortDir}");
@@ -51,92 +51,92 @@ namespace gc.api.core.Servicios
 				}
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				productoss = productoss.Where(r => r.P_Id.Contains(filters.Search));
+				productoss = productoss.Where(r => r.P_Id.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				productoss = productoss.Where(r => r.P_M_Marca.Contains(filters.Search));
+				productoss = productoss.Where(r => r.P_M_Marca.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				productoss = productoss.Where(r => r.P_M_Desc.Contains(filters.Search));
+				productoss = productoss.Where(r => r.P_M_Desc.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				productoss = productoss.Where(r => r.P_M_Capacidad.Contains(filters.Search));
+				productoss = productoss.Where(r => r.P_M_Capacidad.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				productoss = productoss.Where(r => r.P_Id_Prov.Contains(filters.Search));
+				productoss = productoss.Where(r => r.P_Id_Prov.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				productoss = productoss.Where(r => r.P_Desc.Contains(filters.Search));
+				productoss = productoss.Where(r => r.P_Desc.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				productoss = productoss.Where(r => r.P_Desc_Ticket.Contains(filters.Search));
+				productoss = productoss.Where(r => r.P_Desc_Ticket.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				productoss = productoss.Where(r => r.Up_Id.Contains(filters.Search));
+				productoss = productoss.Where(r => r.Up_Id.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				productoss = productoss.Where(r => r.Rub_Id.Contains(filters.Search));
+				productoss = productoss.Where(r => r.Rub_Id.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				productoss = productoss.Where(r => r.Cta_Id.Contains(filters.Search));
+				productoss = productoss.Where(r => r.Cta_Id.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				productoss = productoss.Where(r => r.Pg_Id.Contains(filters.Search));
+				productoss = productoss.Where(r => r.Pg_Id.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				productoss = productoss.Where(r => r.P_Boni.Contains(filters.Search));
+				productoss = productoss.Where(r => r.P_Boni.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				productoss = productoss.Where(r => r.Usu_Id_Alta.Contains(filters.Search));
+				productoss = productoss.Where(r => r.Usu_Id_Alta.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				productoss = productoss.Where(r => r.Usu_Id_Modi.Contains(filters.Search));
+				productoss = productoss.Where(r => r.Usu_Id_Modi.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				productoss = productoss.Where(r => r.P_Obs.Contains(filters.Search));
+				productoss = productoss.Where(r => r.P_Obs.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				productoss = productoss.Where(r => r.P_Balanza_Id.Contains(filters.Search));
+				productoss = productoss.Where(r => r.P_Balanza_Id.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				productoss = productoss.Where(r => r.Lp_Id_Default.Contains(filters.Search));
+				productoss = productoss.Where(r => r.Lp_Id_Default.Contains(filters.Buscar));
 			}
 
-			var paginas = PagedList<Producto>.Create(productoss, filters.PageNumber ?? 1, filters.PageSize ?? 20);
+			var paginas = PagedList<Producto>.Create(productoss, filters.Pagina ?? 1, filters.Registros ?? 20);
 
 			return paginas;
 		}

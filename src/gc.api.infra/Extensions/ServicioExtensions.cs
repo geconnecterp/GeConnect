@@ -13,6 +13,7 @@ using gc.api.Core.Servicios;
 using gc.api.Core.Interfaces.Servicios;
 using gc.api.infra.Datos.Contratos;
 using Microsoft.AspNetCore.Http;
+using gc.api.core.Servicios.ABM;
 
 namespace gc.api.infra.Extensions
 {
@@ -43,9 +44,10 @@ namespace gc.api.infra.Extensions
             services.AddScoped<ITipoMotivoServicio, TipoMotivoServicio>();
             services.AddScoped<IProductoDepositoServicio, ProductoDepositoServicio>();
 			services.AddScoped<IRemitoServicio, RemitoServicio>();
+			services.AddScoped<IABMProductoServicio, ABMProductoServicio>();
 
 
-			services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));
             services.AddScoped(typeof(IServicio<>), typeof(Servicio<>));
             services.AddScoped(typeof(IExceptionManager), typeof(ExceptionManager));

@@ -24,8 +24,8 @@ namespace gc.api.core.Servicios
 
 		public override PagedList<Cuenta> GetAll(QueryFilters filters)
 		{
-			filters.PageNumber = filters.PageNumber == default ? _paginationOptions.DefaultPageNumber : filters.PageNumber;
-			filters.PageSize = filters.PageSize == default ? _paginationOptions.DefaultPageSize : filters.PageSize;
+			filters.Pagina = filters.Pagina == default ? _pagSet.DefaultPageNumber : filters.Pagina;
+			filters.Registros = filters.Registros == default ? _pagSet.DefaultPageSize : filters.Registros;
 
 			var cuentass = GetAllIq();
 			cuentass = cuentass.OrderBy($"{filters.Sort} {filters.SortDir}");
@@ -38,107 +38,107 @@ namespace gc.api.core.Servicios
 				}
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				cuentass = cuentass.Where(r => r.Cta_Id.Contains(filters.Search));
+				cuentass = cuentass.Where(r => r.Cta_Id.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				cuentass = cuentass.Where(r => r.Cta_Denominacion.Contains(filters.Search));
+				cuentass = cuentass.Where(r => r.Cta_Denominacion.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				cuentass = cuentass.Where(r => r.Tdoc_Id.Contains(filters.Search));
+				cuentass = cuentass.Where(r => r.Tdoc_Id.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				cuentass = cuentass.Where(r => r.Cta_Documento.Contains(filters.Search));
+				cuentass = cuentass.Where(r => r.Cta_Documento.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				cuentass = cuentass.Where(r => r.Cta_Domicilio.Contains(filters.Search));
+				cuentass = cuentass.Where(r => r.Cta_Domicilio.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				cuentass = cuentass.Where(r => r.Cta_Localidad.Contains(filters.Search));
+				cuentass = cuentass.Where(r => r.Cta_Localidad.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				cuentass = cuentass.Where(r => r.Cta_Cpostal.Contains(filters.Search));
+				cuentass = cuentass.Where(r => r.Cta_Cpostal.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				cuentass = cuentass.Where(r => r.Dep_Id.Contains(filters.Search));
+				cuentass = cuentass.Where(r => r.Dep_Id.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				cuentass = cuentass.Where(r => r.Cta_Te.Contains(filters.Search));
+				cuentass = cuentass.Where(r => r.Cta_Te.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				cuentass = cuentass.Where(r => r.Cta_Celu.Contains(filters.Search));
+				cuentass = cuentass.Where(r => r.Cta_Celu.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				cuentass = cuentass.Where(r => r.Cta_Email.Contains(filters.Search));
+				cuentass = cuentass.Where(r => r.Cta_Email.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				cuentass = cuentass.Where(r => r.Cta_Www.Contains(filters.Search));
+				cuentass = cuentass.Where(r => r.Cta_Www.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				cuentass = cuentass.Where(r => r.Afip_Id.Contains(filters.Search));
+				cuentass = cuentass.Where(r => r.Afip_Id.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				cuentass = cuentass.Where(r => r.Nj_Id.Contains(filters.Search));
+				cuentass = cuentass.Where(r => r.Nj_Id.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				cuentass = cuentass.Where(r => r.Cta_Ib_Nro.Contains(filters.Search));
+				cuentass = cuentass.Where(r => r.Cta_Ib_Nro.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				cuentass = cuentass.Where(r => r.Cta_Bco_Cuenta_Nro.Contains(filters.Search));
+				cuentass = cuentass.Where(r => r.Cta_Bco_Cuenta_Nro.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				cuentass = cuentass.Where(r => r.Cta_Bco_Cuenta_Cbu.Contains(filters.Search));
+				cuentass = cuentass.Where(r => r.Cta_Bco_Cuenta_Cbu.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				cuentass = cuentass.Where(r => r.Cta_Obs.Contains(filters.Search));
+				cuentass = cuentass.Where(r => r.Cta_Obs.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				cuentass = cuentass.Where(r => r.Cta_Emp_Legajo.Contains(filters.Search));
+				cuentass = cuentass.Where(r => r.Cta_Emp_Legajo.Contains(filters.Buscar));
 			}
 
-			if (!string.IsNullOrEmpty(filters.Search))
+			if (!string.IsNullOrEmpty(filters.Buscar))
 			{
-				cuentass = cuentass.Where(r => r.Cta_Emp_Ctaf.Contains(filters.Search));
+				cuentass = cuentass.Where(r => r.Cta_Emp_Ctaf.Contains(filters.Buscar));
 			}
 
-			var paginas = PagedList<Cuenta>.Create(cuentass, filters.PageNumber ?? 1, filters.PageSize ?? 20);
+			var paginas = PagedList<Cuenta>.Create(cuentass, filters.Pagina ?? 1, filters.Registros ?? 20);
 
 			return paginas;
 		}

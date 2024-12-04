@@ -20,8 +20,8 @@ namespace gc.api.core.Servicios
 
         public override PagedList<Deposito> GetAll(QueryFilters filters)
         {
-            filters.PageNumber = filters.PageNumber == default ? _paginationOptions.DefaultPageNumber : filters.PageNumber;
-            filters.PageSize = filters.PageSize == default ? _paginationOptions.DefaultPageSize : filters.PageSize;
+            filters.Pagina = filters.Pagina == default ? _pagSet.DefaultPageNumber : filters.Pagina;
+            filters.Registros = filters.Registros == default ? _pagSet.DefaultPageSize : filters.Registros;
 
             var depositoss = GetAllIq();
             depositoss = depositoss.OrderBy($"{filters.Sort} {filters.SortDir}");
@@ -34,22 +34,22 @@ namespace gc.api.core.Servicios
                 }
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                depositoss = depositoss.Where(r => r.Depo_Id.Contains(filters.Search));
+                depositoss = depositoss.Where(r => r.Depo_Id.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                depositoss = depositoss.Where(r => r.Depo_Nombre.Contains(filters.Search));
+                depositoss = depositoss.Where(r => r.Depo_Nombre.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                depositoss = depositoss.Where(r => r.Adm_Id.Contains(filters.Search));
+                depositoss = depositoss.Where(r => r.Adm_Id.Contains(filters.Buscar));
             }
 
-            var paginas = PagedList<Deposito>.Create(depositoss, filters.PageNumber ?? 1, filters.PageSize ?? 20);
+            var paginas = PagedList<Deposito>.Create(depositoss, filters.Pagina ?? 1, filters.Registros ?? 20);
 
             return paginas;
         }

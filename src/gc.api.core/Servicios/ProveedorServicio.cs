@@ -3,9 +3,6 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
-using gc.infraestructura.Dtos.Almacen;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Linq.Dynamic.Core;
 
@@ -20,8 +17,8 @@ namespace gc.api.core.Servicios
 
         public override PagedList<Proveedor> GetAll(QueryFilters filters)
         {
-            filters.PageNumber = filters.PageNumber == default ? _paginationOptions.DefaultPageNumber : filters.PageNumber;
-            filters.PageSize = filters.PageSize == default ? _paginationOptions.DefaultPageSize : filters.PageSize;
+            filters.Pagina = filters.Pagina == default ? _pagSet.DefaultPageNumber : filters.Pagina;
+            filters.Registros = filters.Registros == default ? _pagSet.DefaultPageSize : filters.Registros;
 
             var proveedoress = GetAllIq();
             proveedoress = proveedoress.OrderBy($"{filters.Sort} {filters.SortDir}");
@@ -34,72 +31,72 @@ namespace gc.api.core.Servicios
                 }
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                proveedoress = proveedoress.Where(r => r.Cta_Id.Contains(filters.Search));
+                proveedoress = proveedoress.Where(r => r.Cta_Id.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                proveedoress = proveedoress.Where(r => r.Ctap_Ean.Contains(filters.Search));
+                proveedoress = proveedoress.Where(r => r.Ctap_Ean.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                proveedoress = proveedoress.Where(r => r.Ctap_Id_Externo.Contains(filters.Search));
+                proveedoress = proveedoress.Where(r => r.Ctap_Id_Externo.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                proveedoress = proveedoress.Where(r => r.Ctap_Viajante.Contains(filters.Search));
+                proveedoress = proveedoress.Where(r => r.Ctap_Viajante.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                proveedoress = proveedoress.Where(r => r.Ctap_Viajante_Ce.Contains(filters.Search));
+                proveedoress = proveedoress.Where(r => r.Ctap_Viajante_Ce.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                proveedoress = proveedoress.Where(r => r.Ctap_Viajante_Email.Contains(filters.Search));
+                proveedoress = proveedoress.Where(r => r.Ctap_Viajante_Email.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                proveedoress = proveedoress.Where(r => r.Ctap_Valores_A_Nombre.Contains(filters.Search));
+                proveedoress = proveedoress.Where(r => r.Ctap_Valores_A_Nombre.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                proveedoress = proveedoress.Where(r => r.Rgan_Id.Contains(filters.Search));
+                proveedoress = proveedoress.Where(r => r.Rgan_Id.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                proveedoress = proveedoress.Where(r => r.Ope_Iva.Contains(filters.Search));
+                proveedoress = proveedoress.Where(r => r.Ope_Iva.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                proveedoress = proveedoress.Where(r => r.Ctag_Id.Contains(filters.Search));
+                proveedoress = proveedoress.Where(r => r.Ctag_Id.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                proveedoress = proveedoress.Where(r => r.Ctap_Obs_Op.Contains(filters.Search));
+                proveedoress = proveedoress.Where(r => r.Ctap_Obs_Op.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                proveedoress = proveedoress.Where(r => r.Ctap_Obs_Precios.Contains(filters.Search));
+                proveedoress = proveedoress.Where(r => r.Ctap_Obs_Precios.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                proveedoress = proveedoress.Where(r => r.Id_Old.Contains(filters.Search));
+                proveedoress = proveedoress.Where(r => r.Id_Old.Contains(filters.Buscar));
             }
 
-            var paginas = PagedList<Proveedor>.Create(proveedoress, filters.PageNumber ?? 1, filters.PageSize ?? 20);
+            var paginas = PagedList<Proveedor>.Create(proveedoress, filters.Pagina ?? 1, filters.Registros ?? 20);
 
             return paginas;
         }

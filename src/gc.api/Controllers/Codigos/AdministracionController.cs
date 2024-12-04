@@ -43,12 +43,12 @@ namespace gc.api.Controllers.Codigos
             var administracionesDtos = _mapper.Map<IEnumerable<AdministracionDto>>(administracioness);
 
             // presentando en el header información basica sobre la paginación
-            var metadata = new Metadata
+            var metadata = new MetadataGrid
             {
                 TotalCount = administracioness.TotalCount,
                 PageSize = administracioness.PageSize,
                 CurrentPage = administracioness.CurrentPage,
-                TatalPages = administracioness.TotalPages,
+                TotalPages = administracioness.TotalPages,
                 HasNextPage = administracioness.HasNextPage,
                 HasPreviousPage = administracioness.HasPreviousPage,
                 NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getadministraciones)) ?? "").ToString(),

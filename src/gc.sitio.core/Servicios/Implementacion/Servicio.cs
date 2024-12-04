@@ -6,12 +6,11 @@ using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.ViewModels;
 using gc.sitio.core.Servicios.Contratos;
-using log4net.Filter;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System.Net;
 using System.Reflection;
-using System.Text.Json;
 
 namespace gc.sitio.core.Servicios.Implementacion
 {
@@ -35,7 +34,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             _rutaEntidad = string.Empty;
         }
 
-        public virtual async Task<(List<T>?, Metadata?)> BuscarAsync(string? token)
+        public virtual async Task<(List<T>?, MetadataGrid?)> BuscarAsync(string? token)
         {
             ValidaToken(token);
             ApiResponse<List<T>> respuesta;
@@ -51,12 +50,11 @@ namespace gc.sitio.core.Servicios.Implementacion
                 throw new NegocioException("Hay un problema al intentar generar la conexión. JWT.");
             }
             HttpResponseMessage response = client.GetAsync($"{appSettings.RutaBase}{_rutaEntidad}").Result;
-            _logger.LogInformation($"Response: {JsonSerializer.Serialize(response)}");
             if (response.StatusCode == HttpStatusCode.OK)
             {
                 string stringData = await response.Content.ReadAsStringAsync();
                 //_logger.Log(TraceEventType.Information, $"String Response: {stringData}");
-                respuesta = JsonSerializer.Deserialize<ApiResponse<List<T>>>(stringData);
+                respuesta = JsonConvert.DeserializeObject<ApiResponse<List<T>>>(stringData);
                 return (respuesta.Data, respuesta.Meta);
             }
             else if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -82,7 +80,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-        public virtual async Task<(List<T>?, Metadata?)> BuscarAsync(QueryFilters filters, string? token)
+        public virtual async Task<(List<T>?, MetadataGrid?)> BuscarAsync(QueryFilters filters, string? token)
         {
             ValidaToken(token);
 
@@ -90,28 +88,27 @@ namespace gc.sitio.core.Servicios.Implementacion
             try
             {
                 HelperAPI helperAPI = new HelperAPI();
-                _logger.LogInformation($"Buscando todos los Items '{_rutaEntidad}' - Filtro: {JsonSerializer.Serialize(filters)}");
                 HttpClient client = helperAPI.InicializaCliente(token);
 
                 HttpResponseMessage response;
                 if (filters.Todo)
                 {
                     response = await client.GetAsync($"{appSettings.RutaBase}{_rutaEntidad}");
-                    _logger.LogInformation($"Response: {JsonSerializer.Serialize(response)}");
+                    //_logger.LogInformation($"Response: {JsonConvert.SerializeObject(response)}");
                 }
                 else
                 {
                     var link = $"{appSettings.RutaBase}{_rutaEntidad}?{EvaluarQueryFilter(filters)}";
 
                     response = await client.GetAsync(link);
-                    _logger.LogInformation($"Response: {JsonSerializer.Serialize(response)}");
+                    //_logger.LogInformation($"Response: {JsonConvert.SerializeObject(response)}");
                 }
 
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     string stringData = await response.Content.ReadAsStringAsync();
                     //_logger.Log(TraceEventType.Information, $"String Response: {stringData}");
-                    respuesta = JsonSerializer.Deserialize<ApiResponse<List<T>>>(stringData);
+                    respuesta = JsonConvert.DeserializeObject<ApiResponse<List<T>>>(stringData);
                     return (respuesta.Data, respuesta.Meta);
                 }
                 else if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -152,13 +149,12 @@ namespace gc.sitio.core.Servicios.Implementacion
                 string link = $"{appSettings.RutaBase}{_rutaEntidad}/{id}";
 
                 response = await client.GetAsync(link);
-                _logger.LogInformation($"Response: {JsonSerializer.Serialize(response)}");
 
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     string stringData = await response.Content.ReadAsStringAsync();
                     //_logger.Log(TraceEventType.Information, $"String Response: {stringData}");
-                    respuesta = JsonSerializer.Deserialize<ApiResponse<T>>(stringData);
+                    respuesta = JsonConvert.DeserializeObject<ApiResponse<T>>(stringData);
                     return respuesta.Data;
                 }
                 else if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -196,13 +192,12 @@ namespace gc.sitio.core.Servicios.Implementacion
                 string link = $"{appSettings.RutaBase}{_rutaEntidad}";
 
                 response = await client.GetAsync(link);
-                _logger.LogInformation($"Response: {JsonSerializer.Serialize(response)}");
 
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     string stringData = await response.Content.ReadAsStringAsync();
                     //_logger.Log(TraceEventType.Information, $"String Response: {stringData}");
-                    respuesta = JsonSerializer.Deserialize<ApiResponse<T>>(stringData);
+                    respuesta = JsonConvert.DeserializeObject<ApiResponse<T>>(stringData);
                     return respuesta.Data;
                 }
                 else if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -452,7 +447,6 @@ namespace gc.sitio.core.Servicios.Implementacion
             {
                 HelperAPI helperAPI = new HelperAPI();
                 _logger.LogInformation("Agregando los datos de la entidad.");
-                _logger.LogInformation($"A Agregar: {JsonSerializer.Serialize(entidad)}");
 
                 HttpClient client = helperAPI.InicializaCliente(entidad, token, out StringContent content);
                 client.BaseAddress = new Uri(appSettings.RutaBase);
@@ -465,7 +459,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                     string stringData = await response.Content.ReadAsStringAsync();
                     _logger.LogInformation($"stringData: {stringData}");
 
-                    respuesta = JsonSerializer.Deserialize<ApiResponse<bool>>(stringData);
+                    respuesta = JsonConvert.DeserializeObject<ApiResponse<bool>>(stringData);
                     return respuesta.Data;
                 }
                 else if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -490,7 +484,7 @@ namespace gc.sitio.core.Servicios.Implementacion
         {
             string stringData = await response.Content.ReadAsStringAsync();
             _logger.LogInformation($"stringData: {stringData}");
-            ErrorExceptionValidation resp = JsonSerializer.Deserialize<ErrorExceptionValidation>(stringData);
+            ErrorExceptionValidation resp = JsonConvert.DeserializeObject<ErrorExceptionValidation>(stringData);
             if (resp.Error != null)
             {
                 var error = resp.Error.First();
@@ -522,20 +516,18 @@ namespace gc.sitio.core.Servicios.Implementacion
             {
                 HelperAPI helperAPI = new HelperAPI();
                 _logger.LogInformation("Actualizando los datos de la entidad");
-                _logger.LogInformation($"A Modificar: {JsonSerializer.Serialize(entidad)}");
                 HttpClient client = helperAPI.InicializaCliente(entidad, token, out StringContent content);
                 client.BaseAddress = new Uri(appSettings.RutaBase);
 
                 var link = $"{_rutaEntidad}/{id}";
 
                 HttpResponseMessage response = await client.PutAsync(link, content);
-                _logger.LogInformation($"Response: {JsonSerializer.Serialize(response)}");
 
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     string stringData = await response.Content.ReadAsStringAsync();
                     _logger.LogInformation($"String Response: {stringData}");
-                    respuesta = JsonSerializer.Deserialize<ApiResponse<bool>>(stringData);
+                    respuesta = JsonConvert.DeserializeObject<ApiResponse<bool>>(stringData);
                     return respuesta.Data;
                 }
                 else if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -549,7 +541,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 
                     if (!string.IsNullOrWhiteSpace(stringData))
                     {
-                        ErrorExceptionValidation resp = JsonSerializer.Deserialize<ErrorExceptionValidation>(stringData);
+                        ErrorExceptionValidation resp = JsonConvert.DeserializeObject<ErrorExceptionValidation>(stringData);
                         if (resp.Error != null)
                         {
                             var error = resp.Error.First();
@@ -624,13 +616,12 @@ namespace gc.sitio.core.Servicios.Implementacion
                 var link = $"{_rutaEntidad}/{id}";
 
                 response = await client.DeleteAsync(link);
-                _logger.LogInformation($"Response: {JsonSerializer.Serialize(response)}");
 
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     string stringData = await response.Content.ReadAsStringAsync();
                     _logger.LogInformation($"String Response: {stringData}");
-                    respuesta = JsonSerializer.Deserialize<ApiResponse<bool>>(stringData);
+                    respuesta = JsonConvert.DeserializeObject<ApiResponse<bool>>(stringData);
                     return respuesta.Data;
                 }
                 else if (response.StatusCode == HttpStatusCode.Unauthorized)

@@ -124,8 +124,8 @@ namespace gc.api.core.Servicios
 
         public override PagedList<BilleteraOrden> GetAll(QueryFilters filters)
         {
-            filters.PageNumber = filters.PageNumber == default ? _paginationOptions.DefaultPageNumber : filters.PageNumber;
-            filters.PageSize = filters.PageSize == default ? _paginationOptions.DefaultPageSize : filters.PageSize;
+            filters.Pagina = filters.Pagina == default ? _pagSet.DefaultPageNumber : filters.Pagina;
+            filters.Registros = filters.Registros == default ? _pagSet.DefaultPageSize : filters.Registros;
 
             var billeteras_ordeness = GetAllIq();
             billeteras_ordeness = billeteras_ordeness.OrderBy($"{filters.Sort} {filters.SortDir}");
@@ -138,72 +138,72 @@ namespace gc.api.core.Servicios
                 }
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                billeteras_ordeness = billeteras_ordeness.Where(r => r.Bo_Id.Contains(filters.Search));
+                billeteras_ordeness = billeteras_ordeness.Where(r => r.Bo_Id.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                billeteras_ordeness = billeteras_ordeness.Where(r => r.Rb_Compte.Contains(filters.Search));
+                billeteras_ordeness = billeteras_ordeness.Where(r => r.Rb_Compte.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                billeteras_ordeness = billeteras_ordeness.Where(r => r.Adm_Id.Contains(filters.Search));
+                billeteras_ordeness = billeteras_ordeness.Where(r => r.Adm_Id.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                billeteras_ordeness = billeteras_ordeness.Where(r => r.Caja_Id.Contains(filters.Search));
+                billeteras_ordeness = billeteras_ordeness.Where(r => r.Caja_Id.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                billeteras_ordeness = billeteras_ordeness.Where(r => r.Bill_Id.Contains(filters.Search));
+                billeteras_ordeness = billeteras_ordeness.Where(r => r.Bill_Id.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                billeteras_ordeness = billeteras_ordeness.Where(r => r.Boe_Id.Contains(filters.Search));
+                billeteras_ordeness = billeteras_ordeness.Where(r => r.Boe_Id.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                billeteras_ordeness = billeteras_ordeness.Where(r => r.Cuit.Contains(filters.Search));
+                billeteras_ordeness = billeteras_ordeness.Where(r => r.Cuit.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                billeteras_ordeness = billeteras_ordeness.Where(r => r.Tco_Id.Contains(filters.Search));
+                billeteras_ordeness = billeteras_ordeness.Where(r => r.Tco_Id.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                billeteras_ordeness = billeteras_ordeness.Where(r => r.Cm_Compte.Contains(filters.Search));
+                billeteras_ordeness = billeteras_ordeness.Where(r => r.Cm_Compte.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                billeteras_ordeness = billeteras_ordeness.Where(r => r.Bo_Clave.Contains(filters.Search));
+                billeteras_ordeness = billeteras_ordeness.Where(r => r.Bo_Clave.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                billeteras_ordeness = billeteras_ordeness.Where(r => r.Bo_Id_Ext.Contains(filters.Search));
+                billeteras_ordeness = billeteras_ordeness.Where(r => r.Bo_Id_Ext.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                billeteras_ordeness = billeteras_ordeness.Where(r => r.Bo_Notificado_Desc.Contains(filters.Search));
+                billeteras_ordeness = billeteras_ordeness.Where(r => r.Bo_Notificado_Desc.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                billeteras_ordeness = billeteras_ordeness.Where(r => r.Ip.Contains(filters.Search));
+                billeteras_ordeness = billeteras_ordeness.Where(r => r.Ip.Contains(filters.Buscar));
             }
 
-            var paginas = PagedList<BilleteraOrden>.Create(billeteras_ordeness, filters.PageNumber ?? 1, filters.PageSize ?? 20);
+            var paginas = PagedList<BilleteraOrden>.Create(billeteras_ordeness, filters.Pagina ?? 1, filters.Registros ?? 20);
 
             return paginas;
         }

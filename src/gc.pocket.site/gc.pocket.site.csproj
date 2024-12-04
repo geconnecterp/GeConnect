@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Areas\ABMs\Views\AbmProducto\LabMenu.cshtml" />
     <Content Remove="log4net.config" />
   </ItemGroup>
 
@@ -15,12 +16,14 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.6" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Log4Net.AspNetCore" Version="8.0.0" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.6" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
     <PackageReference Include="System.Linq.Dynamic.Core" Version="1.4.3" />
     <PackageReference Include="X.PagedList.Mvc.Core" Version="8.4.7" />
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Areas\ABMs\Data\" />
+    <Folder Include="Areas\ABMs\Models\" />
     <Folder Include="Areas\ControlComun\Controllers\" />
     <Folder Include="Areas\ControlComun\Data\" />
     <Folder Include="Areas\ControlComun\Models\" />

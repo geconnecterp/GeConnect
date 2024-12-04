@@ -84,12 +84,12 @@ namespace gc.api.Controllers.Almacen
 			var productosDtos = _mapper.Map<IEnumerable<ProductoDto>>(productoss);
 
 			// presentando en el header información basica sobre la paginación
-			var metadata = new Metadata
+			var metadata = new MetadataGrid
 			{
 				TotalCount = productoss.TotalCount,
 				PageSize = productoss.PageSize,
 				CurrentPage = productoss.CurrentPage,
-				TatalPages = productoss.TotalPages,
+				TotalPages = productoss.TotalPages,
 				HasNextPage = productoss.HasNextPage,
 				HasPreviousPage = productoss.HasPreviousPage,
 				NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getproductoss))).ToString(),

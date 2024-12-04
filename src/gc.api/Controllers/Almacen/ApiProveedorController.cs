@@ -45,12 +45,12 @@ namespace gc.api.Controllers.Almacen
             var proveedoresDtos = _mapper.Map<IEnumerable<ProveedorDto>>(proveedoress);
 
             // presentando en el header información basica sobre la paginación
-            var metadata = new Metadata
+            var metadata = new MetadataGrid
             {
                 TotalCount = proveedoress.TotalCount,
                 PageSize = proveedoress.PageSize,
                 CurrentPage = proveedoress.CurrentPage,
-                TatalPages = proveedoress.TotalPages,
+                TotalPages = proveedoress.TotalPages,
                 HasNextPage = proveedoress.HasNextPage,
                 HasPreviousPage = proveedoress.HasPreviousPage,
                 NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getproveedoress))).ToString(),

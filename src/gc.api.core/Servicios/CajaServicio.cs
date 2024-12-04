@@ -21,8 +21,8 @@ namespace gc.api.core.Servicios
 
         public override PagedList<Caja> GetAll(QueryFilters filters)
         {
-            filters.PageNumber = filters.PageNumber == default ? _paginationOptions.DefaultPageNumber : filters.PageNumber;
-            filters.PageSize = filters.PageSize == default ? _paginationOptions.DefaultPageSize : filters.PageSize;
+            filters.Pagina = filters.Pagina == default ? _pagSet.DefaultPageNumber : filters.Pagina;
+            filters.Registros = filters.Registros == default ? _pagSet.DefaultPageSize : filters.Registros;
 
             var cajas = GetAllIq();
             cajas = cajas.OrderBy($"{filters.Sort} {filters.SortDir}");
@@ -35,59 +35,59 @@ namespace gc.api.core.Servicios
                 }
             }
           
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                cajas = cajas.Where(r => r.Adm_Id.Contains(filters.Search));
+                cajas = cajas.Where(r => r.Adm_Id.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                cajas = cajas.Where(r => r.Depo_Id.Contains(filters.Search));
+                cajas = cajas.Where(r => r.Depo_Id.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                cajas = cajas.Where(r => r.Dia_Movi.Contains(filters.Search));
+                cajas = cajas.Where(r => r.Dia_Movi.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                cajas = cajas.Where(r => r.Usu_Id.Contains(filters.Search));
+                cajas = cajas.Where(r => r.Usu_Id.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                cajas = cajas.Where(r => r.Caja_Nombre.Contains(filters.Search));
+                cajas = cajas.Where(r => r.Caja_Nombre.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                cajas = cajas.Where(r => r.Caja_Modalidad.Contains(filters.Search));
+                cajas = cajas.Where(r => r.Caja_Modalidad.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                cajas = cajas.Where(r => r.Caja_Maquina.Contains(filters.Search));
+                cajas = cajas.Where(r => r.Caja_Maquina.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                cajas = cajas.Where(r => r.Caja_Nro_Proceso.Contains(filters.Search));
-            }
-
-
-            if (!string.IsNullOrEmpty(filters.Search))
-            {
-                cajas = cajas.Where(r => r.Caja_Mepa_Categoria.Contains(filters.Search));
-            }
-
-            if (!string.IsNullOrEmpty(filters.Search))
-            {
-                cajas = cajas.Where(r => r.Caja_Mepa_Id.Contains(filters.Search));
+                cajas = cajas.Where(r => r.Caja_Nro_Proceso.Contains(filters.Buscar));
             }
 
 
-            var paginas = PagedList<Caja>.Create(cajas, filters.PageNumber ?? 1, filters.PageSize ?? 20);
+            if (!string.IsNullOrEmpty(filters.Buscar))
+            {
+                cajas = cajas.Where(r => r.Caja_Mepa_Categoria.Contains(filters.Buscar));
+            }
+
+            if (!string.IsNullOrEmpty(filters.Buscar))
+            {
+                cajas = cajas.Where(r => r.Caja_Mepa_Id.Contains(filters.Buscar));
+            }
+
+
+            var paginas = PagedList<Caja>.Create(cajas, filters.Pagina ?? 1, filters.Registros ?? 20);
 
             return paginas;
         }

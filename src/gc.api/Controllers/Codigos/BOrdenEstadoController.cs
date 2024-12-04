@@ -45,12 +45,12 @@ namespace gc.api.Controllers.Codigos
             var billeteras_ordenes_eDtos = _mapper.Map<IEnumerable<BOrdenEstadoDto>>(billeteras_ordenes_es);
 
             // presentando en el header información basica sobre la paginación
-            var metadata = new Metadata
+            var metadata = new MetadataGrid
             {
                 TotalCount = billeteras_ordenes_es.TotalCount,
                 PageSize = billeteras_ordenes_es.PageSize,
                 CurrentPage = billeteras_ordenes_es.CurrentPage,
-                TatalPages = billeteras_ordenes_es.TotalPages,
+                TotalPages = billeteras_ordenes_es.TotalPages,
                 HasNextPage = billeteras_ordenes_es.HasNextPage,
                 HasPreviousPage = billeteras_ordenes_es.HasPreviousPage,
                 NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getbilleteras_ordenes_es))).ToString(),

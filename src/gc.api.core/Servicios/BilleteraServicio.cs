@@ -18,8 +18,8 @@ namespace gc.api.core.Servicios
 
         public override PagedList<Billetera> GetAll(QueryFilters filters)
         {
-            filters.PageNumber = filters.PageNumber == default ? _paginationOptions.DefaultPageNumber : filters.PageNumber;
-            filters.PageSize = filters.PageSize == default ? _paginationOptions.DefaultPageSize : filters.PageSize;
+            filters.Pagina = filters.Pagina == default ? _pagSet.DefaultPageNumber : filters.Pagina;
+            filters.Registros = filters.Registros == default ? _pagSet.DefaultPageSize : filters.Registros;
 
             var billeterass = GetAllIq();
             billeterass = billeterass.OrderBy($"{filters.Sort} {filters.SortDir}");
@@ -32,17 +32,17 @@ namespace gc.api.core.Servicios
                 }
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                billeterass = billeterass.Where(r => r.Bill_id.Contains(filters.Search));
+                billeterass = billeterass.Where(r => r.Bill_id.Contains(filters.Buscar));
             }
 
-            if (!string.IsNullOrEmpty(filters.Search))
+            if (!string.IsNullOrEmpty(filters.Buscar))
             {
-                billeterass = billeterass.Where(r => r.Bill_desc.Contains(filters.Search));
+                billeterass = billeterass.Where(r => r.Bill_desc.Contains(filters.Buscar));
             }
 
-            var paginas = PagedList<Billetera>.Create(billeterass, filters.PageNumber ?? 1, filters.PageSize ?? 20);
+            var paginas = PagedList<Billetera>.Create(billeterass, filters.Pagina ?? 1, filters.Registros ?? 20);
 
             return paginas;
         }

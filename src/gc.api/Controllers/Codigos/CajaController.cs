@@ -47,12 +47,12 @@ namespace geco_0000.API.Controllers.Codigos
             var cajasDtos = _mapper.Map<IEnumerable<CajaDto>>(cajass);
 
             // presentando en el header información basica sobre la paginación
-            var metadata = new Metadata
+            var metadata = new MetadataGrid
             {
                 TotalCount = cajass.TotalCount,
                 PageSize = cajass.PageSize,
                 CurrentPage = cajass.CurrentPage,
-                TatalPages = cajass.TotalPages,
+                TotalPages = cajass.TotalPages,
                 HasNextPage = cajass.HasNextPage,
                 HasPreviousPage = cajass.HasPreviousPage,
                 NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getcajass))).ToString(),
