@@ -734,10 +734,50 @@ namespace gc.sitio.Controllers
 				_context.HttpContext.Session.SetString("RubroLista", json);
 			}
 		}
-		#endregion
+        #endregion
 
-		#region Metodos generales
-		public PartialViewResult ObtenerMensajeDeError(string mensaje)
+        #region TIPO DE NEGOCIO
+        public List<TipoNegocioDto> TipoNegocioLista
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("TipoNegocioLista");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return new List<TipoNegocioDto>();
+                }
+                return JsonConvert.DeserializeObject<List<TipoNegocioDto>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("TipoNegocioLista", json);
+            }
+        }
+        #endregion
+
+        #region ZONAS
+        public List<ZonaDto> ZonasLista
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("ZonasLista");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return new List<ZonaDto>();
+                }
+                return JsonConvert.DeserializeObject<List<ZonaDto>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("ZonasLista", json);
+            }
+        }
+        #endregion
+
+        #region Metodos generales
+        public PartialViewResult ObtenerMensajeDeError(string mensaje)
 		{
 			RespuestaGenerica<EntidadBase> response = new()
 			{
@@ -810,6 +850,20 @@ namespace gc.sitio.Controllers
 
 			ProveedoresLista = _ctaSv.ObtenerListaProveedores(TokenCookie);
 		}
-		#endregion
-	}
+
+        protected void ObtenerTiposNegocio(ITipoNegocioServicio _tipoNegSv)
+        {
+            //se guardan los tipos de negocio en session. Para ser utilizados posteriormente
+
+            TipoNegocioLista = _tipoNegSv.ObtenerTiposDeNegocio(TokenCookie);
+        }
+
+        protected void ObtenerZonas(IZonaServicio _zonaSv)
+        {
+            //se guardan las zonas en session. Para ser utilizados posteriormente
+
+            ZonasLista = _zonaSv.GetZonaLista(TokenCookie);
+        }
+        #endregion
+    }
 }

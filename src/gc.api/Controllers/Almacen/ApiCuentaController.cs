@@ -6,6 +6,7 @@ namespace gc.api.Controllers.Almacen
     using gc.infraestructura.Core.EntidadesComunes;
     using gc.infraestructura.Core.Interfaces;
     using gc.infraestructura.Core.Responses;
+    using gc.infraestructura.Dtos;
     using gc.infraestructura.Dtos.Almacen;
     using gc.infraestructura.Dtos.CuentaComercial;
     using Microsoft.AspNetCore.Authorization;
@@ -24,15 +25,20 @@ namespace gc.api.Controllers.Almacen
     {
         private readonly IMapper _mapper;
         private ICuentaServicio _cuentasSv;
+        private ITipoNegocioServicio _tipoNegocioServicio;
+        private IZonaServicio _zonaServicio;
         private readonly IUriService _uriService;
         private readonly ILogger<ApiCuentaController> _logger;
 
-        public ApiCuentaController(ICuentaServicio servicio, IMapper mapper, IUriService uriService, ILogger<ApiCuentaController> logger)
+        public ApiCuentaController(IZonaServicio zonaServicio, ICuentaServicio servicio, ITipoNegocioServicio tipoNegocioServicio, 
+                                   IMapper mapper, IUriService uriService, ILogger<ApiCuentaController> logger)
         {
             _cuentasSv = servicio;
             _mapper = mapper;
             _uriService = uriService;
             _logger = logger;
+            _tipoNegocioServicio = tipoNegocioServicio;
+            _zonaServicio = zonaServicio;
         }
 
 
@@ -138,7 +144,31 @@ namespace gc.api.Controllers.Almacen
             return Ok(response);
         }
 
-		[HttpGet]
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult GetTiposDeNegocio()
+        {
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            List<TipoNegocioDto> tipoNegocio = _tipoNegocioServicio.GetTiposDeNegocio();
+            var lista = _mapper.Map<List<TipoNegocioDto>>(tipoNegocio);
+
+            var response = new ApiResponse<List<TipoNegocioDto>>(lista);
+            return Ok(response);
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult GetZonaLista()
+        {
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            List<ZonaDto> tipoNegocio = _zonaServicio.GetZonaLista();
+            var lista = _mapper.Map<List<ZonaDto>>(tipoNegocio);
+
+            var response = new ApiResponse<List<ZonaDto>>(lista);
+            return Ok(response);
+        }
+
+        [HttpGet]
 		[Route("[action]")]
 		public IActionResult GetProveedorFamiliaLista(string ctaId)
 		{

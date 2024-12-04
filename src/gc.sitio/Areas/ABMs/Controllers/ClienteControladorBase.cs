@@ -9,13 +9,13 @@ using Newtonsoft.Json;
 namespace gc.sitio.Areas.ABMs.Controllers
 {
     [Area("ABMs")]
-    public class ProductoControladorBase : ControladorBase
+    public class ClienteControladorBase : ControladorBase
     {
-        public ProductoControladorBase(IOptions<AppSettings> options, IHttpContextAccessor accessor) :base(options,accessor)
-        {
-            
-        }
 
+        public ClienteControladorBase(IOptions<AppSettings> options, IHttpContextAccessor accessor) : base(options, accessor)
+        {
+
+        }
 
         #region ABM
         /// <summary>
