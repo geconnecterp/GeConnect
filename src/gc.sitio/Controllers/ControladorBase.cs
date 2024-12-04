@@ -10,6 +10,7 @@ using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes;
 using gc.infraestructura.EntidadesComunes.Options;
+using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -190,14 +191,6 @@ namespace gc.sitio.Controllers
 				if (string.IsNullOrEmpty(usuario)) { return string.Empty; }
 				return usuario;
 			}
-		}
-
-		public IQueryable<T> OrdenarEntidad<T>(IQueryable<T> lista, string sortdir, string sort) where T : Dto
-		{
-			IQueryable<T> query = null;
-			query = lista.AsQueryable().OrderBy($"{sort} {sortdir}");
-
-			return query;
 		}
 
 		public List<UsuarioMenu> PermisosMenuPorUsuario
@@ -776,6 +769,46 @@ namespace gc.sitio.Controllers
 		{
 			var listaDetalle = new StaticPagedList<T>(lista, 1, 999, lista.Count);
 			return new GridCore<T>() { ListaDatos = listaDetalle, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
+		}
+		#endregion
+
+		public IQueryable<T> OrdenarEntidad<T>(IQueryable<T> lista, string sortdir, string sort) where T : Dto
+		{
+			IQueryable<T> query = null;
+			query = lista.AsQueryable().OrderBy($"{sort} {sortdir}");
+
+			return query;
+		}
+
+		public List<T> OrdenarEntidad<T>(List<T> lista, string sortdir, string sort) where T : Dto
+		{
+			IQueryable<T> result;
+			result = lista.AsQueryable().OrderBy($"{sort} {sortdir}");
+			return result.ToList();
+		}
+
+		protected GridCore<T> GenerarGrilla<T>(List<T>? lista, string nnCol, int cantReg, int pagina, int totalReg, int totalPag = 0, string sortDir = "ASC")
+		{
+			var l = new StaticPagedList<T>(lista, pagina, cantReg, lista.Count);
+
+			return new GridCore<T>() { ListaDatos = l, CantidadReg = cantReg, PaginaActual = pagina, CantidadPaginas = totalPag, Sort = nnCol, SortDir = sortDir };
+		}
+		protected GridCore<T> GenerarGrilla<T>(List<T>? lista, string sort)
+		{
+			return GenerarGrilla(lista, sort, _options.NroRegistrosPagina, 1, 99999);
+		}
+
+		#region Metodos unicos para realizar busquedas con autocomplete
+		protected void ObtenerRubros(IRubroServicio _rubSv)
+		{
+			RubroLista = _rubSv.ObtenerListaRubros(TokenCookie);
+		}
+
+		protected void ObtenerProveedores(ICuentaServicio _ctaSv)
+		{
+			//se guardan los proveedores en session. Para ser utilizados posteriormente
+
+			ProveedoresLista = _ctaSv.ObtenerListaProveedores(TokenCookie);
 		}
 		#endregion
 	}
