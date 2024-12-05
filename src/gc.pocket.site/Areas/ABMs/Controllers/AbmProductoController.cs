@@ -3,9 +3,11 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Helpers;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.ABM;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 
 namespace gc.pocket.site.Areas.ABMs.Controllers
@@ -55,6 +57,10 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
 
             string volver = Url.Action("index", "home", new { area = "" });
             ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
+
+            var listR02 = new List<ComboGenDto>();
+
+            ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR02);            
 
             return View();
         }
@@ -107,6 +113,16 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
             {
                 return Json(new { error = true, msg = "No se pudo obtener la información de paginación. Verifica" });
             }
+        }
+
+        [HttpPost]     
+        public JsonResult BuscarR02(string prefix)
+        {
+            //var nombres = await _provSv.BuscarAsync(new QueryFilters { Search = prefix }, TokenCookie);
+            //var lista = nombres.Item1.Select(c => new EmpleadoVM { Nombre = c.NombreCompleto, Id = c.Id, Cuil = c.CUIT });
+            var rub = RubroLista.Where(x => x.Rub_Desc.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
+            var rubros = rub.Select(x => new ComboGenDto { Id = x.Rub_Id, Descripcion = x.Rub_Desc });
+            return Json(rubros);
         }
     }
 }

@@ -228,4 +228,28 @@ function CargarAutoActual() {
     });
 }
 
-//metodo se utliliza en inforpr y ti
+//codigo generico para autocomplete
+$("#Rel02").autocomplete({
+    source: function (request, response) {
+        data = { prefix: request.term }
+        $.ajax({
+            url: autoComRel02Url,
+            type: "POST",
+            dataType: "json",
+            data: data,
+            success: function (obj) {
+                response($.map(obj, function (item) {
+                    var texto = item.descripcion;
+                    return { label: texto, value: item.descripcion, id: item.id };
+                }));
+            }
+        })
+    },
+    minLength: 3,
+    select: function (event, ui) {
+        $("#Rel02Item").val(ui.item.id);
+        var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
+        $("#Rel02List").append(opc);
+        return true;
+    }
+});

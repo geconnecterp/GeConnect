@@ -5,6 +5,18 @@
     $("#pagEstado").on("change", cargaPaginacion);
     $("#btnBuscar").on("click", function () { buscarProductos(pagina); });
 
+    //check generico REL02 activando componentes disables
+    $("#chkRel02").on("click", function () {
+        if ($("#chkRel02").is(":checked")) {
+            $("#Rel02").prop("disabled", false);
+            $("#Rel02List").prop("disabled", false);
+        }
+        else {
+            $("#Rel02").prop("disabled", true);
+            $("#Rel02List").prop("disabled", true);
+        }
+    })
+
     InicializaPantallaAbmProd();
 /*    AbrirWaiting();*/
     return true;
@@ -15,6 +27,9 @@ function InicializaPantallaAbmProd() {
     if (tb.length === 0) {
         $("#collapseExample").collapse("show")
     } 
+
+    $("#lbRel02").text("RUBRO");
+
 
     CerrarWaiting();
     return true;
