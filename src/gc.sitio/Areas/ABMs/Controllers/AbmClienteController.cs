@@ -3,6 +3,7 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Helpers;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.ABM;
 using Microsoft.AspNetCore.Mvc;
@@ -47,6 +48,12 @@ namespace gc.sitio.Areas.ABMs.Controllers
             {
                 ObtenerZonas(_zonaServicio);
             }
+
+            var listR02 = new List<ComboGenDto>();
+            ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR02);
+
+            var listR01 = new List<ComboGenDto>();
+            ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
             return View();
         }
 
@@ -84,7 +91,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             //string volver = Url.Action("index", "home", new { area = "" });
             //ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
 
-            return View("_gridAbmClientes", grillaDatos);
+            return View("_gridAbmCliente", grillaDatos);
         }
 
         [HttpPost]
@@ -98,6 +105,26 @@ namespace gc.sitio.Areas.ABMs.Controllers
             {
                 return Json(new { error = true, msg = "No se pudo obtener la información de paginación. Verifica" });
             }
+        }
+
+        [HttpPost]
+        public JsonResult BuscarR01(string prefix)
+        {
+            //var nombres = await _provSv.BuscarAsync(new QueryFilters { Search = prefix }, TokenCookie);
+            //var lista = nombres.Item1.Select(c => new EmpleadoVM { Nombre = c.NombreCompleto, Id = c.Id, Cuil = c.CUIT });
+            var tipoNeg = TipoNegocioLista.Where(x => x.ctn_desc.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
+            var tipoNegs = tipoNeg.Select(x => new ComboGenDto { Id = x.ctn_id, Descripcion = x.ctn_desc });
+            return Json(tipoNegs);
+        }
+
+        [HttpPost]
+        public JsonResult BuscarR02(string prefix)
+        {
+            //var nombres = await _provSv.BuscarAsync(new QueryFilters { Search = prefix }, TokenCookie);
+            //var lista = nombres.Item1.Select(c => new EmpleadoVM { Nombre = c.NombreCompleto, Id = c.Id, Cuil = c.CUIT });
+            var zona = ZonasLista.Where(x => x.zn_desc.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
+            var zonas = zona.Select(x => new ComboGenDto { Id = x.zn_id, Descripcion = x.zn_desc });
+            return Json(zonas);
         }
     }
 }

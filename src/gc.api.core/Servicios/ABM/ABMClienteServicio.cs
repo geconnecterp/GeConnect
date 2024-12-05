@@ -22,7 +22,7 @@ namespace gc.api.core.Servicios.ABM
             filtros.Pagina = filtros.Pagina == null || filtros.Pagina <= 0 ? _pagSet.DefaultPageNumber : filtros.Pagina;
             filtros.Registros = filtros.Registros == null || filtros.Registros <= 0 ? _pagSet.DefaultPageSize : filtros.Registros;
 
-            string sp = ConstantesGC.StoredProcedures.SP_ABM_P_LISTA;
+            string sp = ConstantesGC.StoredProcedures.SP_ABM_CLI_LISTA;
 
             var ps = new List<SqlParameter>();
 

@@ -1,44 +1,56 @@
 ﻿$(function () {
-    $("#btnCancel").on("click", function () {
-        $("#btnFiltro").trigger("click");
-    });
-    $("#pagEstado").on("change", cargaPaginacion);
-    $("#btnBuscar").on("click", function () { buscarProductos(pagina); });
+	$("#btnCancel").on("click", function () {
+		$("#btnFiltro").trigger("click");
+	});
+	$("#pagEstado").on("change", cargaPaginacion);
+    $("#btnBuscar").on("click", function () { buscarClientes(pagina); });
 
-    //check generico REL02 activando componentes disables
-    $("#chkRel02").on("click", function () {
-        if ($("#chkRel02").is(":checked")) {
-            $("#Rel02").prop("disabled", false);
-            $("#Rel02List").prop("disabled", false);
+    //check generico REL01 activando componentes disables
+    $("#chkRel01").on("click", function () {
+        if ($("#chkRel01").is(":checked")) {
+            $("#Rel01").prop("disabled", false);
+            $("#Rel01List").prop("disabled", false);
         }
         else {
-            $("#Rel02").prop("disabled", true);
-            $("#Rel02List").prop("disabled", true);
+            $("#Rel01").prop("disabled", true);
+            $("#Rel01List").prop("disabled", true);
         }
     })
 
-    InicializaPantallaAbmProd();
-/*    AbrirWaiting();*/
-    return true;
+	//check generico REL02 activando componentes disables
+	$("#chkRel02").on("click", function () {
+		if ($("#chkRel02").is(":checked")) {
+			$("#Rel02").prop("disabled", false);
+			$("#Rel02List").prop("disabled", false);
+		}
+		else {
+			$("#Rel02").prop("disabled", true);
+			$("#Rel02List").prop("disabled", true);
+		}
+	})
+
+	InicializaPantallaAbmProd();
+	/*    AbrirWaiting();*/
+	return true;
 });
 
-function InicializaPantallaAbmProd() {   
-    var tb = $("#tbGridProd tbody tr");
-    if (tb.length === 0) {
-        $("#collapseExample").collapse("show")
-    } 
+function InicializaPantallaAbmProd() {
+	var tb = $("#tbGridProd tbody tr");
+	if (tb.length === 0) {
+		$("#collapseExample").collapse("show")
+	}
 
-    $("#lbRel02").text("RUBRO");
+    $("#lbRel01").text("TIPO");
+	$("#lbRel02").text("ZONA");
 
-
-    CerrarWaiting();
-    return true;
+	CerrarWaiting();
+	return true;
 }
- 
+
 function cargaPaginacion() {
     $("#divPaginacion").pagination({
         items: totalRegs,
-        itemsOnPage: pagRegs,        
+        itemsOnPage: pagRegs,
         cssStyle: "dark-theme",
         currentPage: pagina,
         onPageClick: function (num) {
@@ -50,7 +62,7 @@ function cargaPaginacion() {
     return true;
 }
 
-function buscarProductos(pag) {
+function buscarClientes(pag) {
     AbrirWaiting();
     var buscar = $("#Buscar").val();
     var id = $("#Id").val();
@@ -84,7 +96,7 @@ function buscarProductos(pag) {
                 AbrirMensaje("ATENCIÓN", obj.msg, function () {
                     $("#msjModal").modal("hide");
                     return true;
-                }, false, ["Aceptar"], "error!", null);   
+                }, false, ["Aceptar"], "error!", null);
             }
             else {
                 totalRegs = obj.metadata.totalCount;
