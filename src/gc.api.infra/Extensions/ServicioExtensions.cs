@@ -47,9 +47,9 @@ namespace gc.api.infra.Extensions
             services.AddScoped<IProductoDepositoServicio, ProductoDepositoServicio>();
 			services.AddScoped<IRemitoServicio, RemitoServicio>();
 			services.AddScoped<IABMProductoServicio, ABMProductoServicio>();
+			services.AddScoped<IABMClienteServicio, ABMClienteServicio>();
 
-
-            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+			services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));
             services.AddScoped(typeof(IServicio<>), typeof(Servicio<>));
             services.AddScoped(typeof(IExceptionManager), typeof(ExceptionManager));

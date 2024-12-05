@@ -57,5 +57,42 @@ namespace gc.infraestructura.Dtos.Almacen
         public char? Tipo { get; set;}
         public char? Habilitada { get; set; }
 		public string Tdoc_Desc { get; set; }
-	}
+    }
+
+    public partial class  CuentaABMDto : CuentaDto
+	{
+		public string Prov_Nombre { get; set; } = string.Empty;
+		public string Dep_Nombre { get; set; } = string.Empty;
+		public string Afip_Desc { get; set; } = string.Empty;
+		public string Nj_Desc { get; set; } = string.Empty;
+		public string Ib_Id { get; set; } = string.Empty;
+		public string Ib_Desc { get; set; } = string.Empty;
+		public string Tcb_Desc { get; set; } = string.Empty;
+		public decimal Ctac_Tope_Credito { get; set; } = 0.000M;
+		public decimal? Ctac_Tope_Credito_Dia { get; set; } = 0.000M;
+		public decimal? Ctac_Tope_Credito_Dia_Ult { get; set; } = 0.000M;
+		public decimal Ctac_Dto_Operacion { get; set; } = 0.000M;
+		public decimal? Ctac_Dto_Operacion_Dia { get; set; } = 0.000M;
+		public decimal? Ctac_Dto_Operacion_Dia_Ult { get; set; } = 0.000M;
+        public string Piva_Cert { get; set; } = string.Empty;
+        public DateTime? Piva_Cert_Vto { get; set; }
+		public string Pib_Cert { get; set; } = string.Empty;
+		public DateTime? Pib_Cert_Vto { get; set; }
+        public int? Ctac_Ptos_Vtas { get; set; }
+        public DateTime? Ctac_Negocio_Inicio { get; set; }
+        public string Ctn_Id { get; set; } = string.Empty;
+		public string Ctn_Desc { get; set; } = string.Empty;
+		public string Ctc_Id { get; set; } = string.Empty;
+		public string Ctc_Desc { get; set; } = string.Empty;
+		public string Ve_Id { get; set; } = string.Empty;
+		public string Ve_Nombre { get; set; } = string.Empty;
+		public char? Ve_Visita { get; set; }
+		public string Zn_Id { get; set; } = string.Empty;
+		public string Zn_Desc { get; set; } = string.Empty;
+		public string Rp_Id { get; set; } = string.Empty;
+		public string Rp_Nombre { get; set; } = string.Empty;
+		public string Lp_Id { get; set; } = string.Empty;
+		public string Lp_Desc { get; set; } = string.Empty;
+        public char Ctac_Habilitada { get; set; }
+    }
 }

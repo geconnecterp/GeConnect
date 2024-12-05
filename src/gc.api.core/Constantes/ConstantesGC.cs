@@ -129,10 +129,11 @@
             #region ABM
             public const string SP_ABM_P_LISTA = "SPGECO_ABM_P_Lista";
             public const string SP_ABM_CLI_LISTA = "SPGECO_ABM_Cli_Lista";
-            #endregion
+			public const string SP_ABM_CLI_Datos = "SPGECO_ABM_Cli_Datos";
+			#endregion
 
-            #region Tipos
-            public const string SP_TIPOS_NEGOCIO_LISTA = "SPGECO_Tipos_Negocios_Lista";
+			#region Tipos
+			public const string SP_TIPOS_NEGOCIO_LISTA = "SPGECO_Tipos_Negocios_Lista";
             public const string SP_ZONAS_LISTA = "SPGECO_Zonas_Lista";
             #endregion
         }

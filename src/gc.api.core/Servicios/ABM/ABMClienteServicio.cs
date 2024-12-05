@@ -1,5 +1,5 @@
 ﻿using gc.api.core.Constantes;
-using gc.api.core.Contratos.Servicios.ABM;
+using gc.api.core.Contratos.Servicios;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes;

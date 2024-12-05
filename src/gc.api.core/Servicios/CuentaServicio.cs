@@ -239,5 +239,16 @@ namespace gc.api.core.Servicios
 			listaTemp.ForEach(x => x.oc_fecha = Convert.ToDateTime(x.oc_fecha).ToString("dd/MM/yyyy"));
 			return listaTemp;
 		}
+
+		public List<CuentaABMDto> GetCuentaParaABM(string cta_id)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_ABM_CLI_Datos;
+			var ps = new List<SqlParameter>()
+			{
+					new("@cta_id", cta_id)
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<CuentaABMDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

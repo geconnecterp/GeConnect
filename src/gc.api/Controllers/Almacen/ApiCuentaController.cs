@@ -120,6 +120,21 @@ namespace gc.api.Controllers.Almacen
 			return Ok(response);
 		}
 
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaABMDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetCuentaParaABM(string cta_id)
+		{
+			ApiResponse<List<CuentaABMDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _cuentasSv.GetCuentaParaABM(cta_id);
+
+			response = new ApiResponse<List<CuentaABMDto>>(res);
+
+			return Ok(response);
+		}
+
 		// GET api/<cuentasController>/5
 		[HttpGet("{id}")]
         public async Task<IActionResult> Get(string id)
