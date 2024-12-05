@@ -15,17 +15,19 @@ namespace gc.sitio.core.Extensions
         {
             services.AddSingleton<ILoggerHelper, LoggerHelper>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddScoped<IAdministracionServicio,AdministracionServicio>();
+            services.AddScoped<IAdministracionServicio, AdministracionServicio>();
             services.AddScoped<ITipoDocumentoServicio, TipoDocumentoServicio>();
-			services.AddScoped<ITipoComprobanteServicio, TipoComprobanteServicio>();
-			services.AddScoped<ICuentaServicio, CuentaServicio>();
+            services.AddScoped<ITipoComprobanteServicio, TipoComprobanteServicio>();
+            services.AddScoped<ITipoNegocioServicio, TipoNegocioServicio>();
+            services.AddScoped<IZonaServicio, ZonaServicio>();
+            services.AddScoped<ICuentaServicio, CuentaServicio>();
             services.AddScoped<IProveedorServicio, ProveedorServicio>();
             services.AddScoped<IRubroServicio, RubroServicio>();
             services.AddScoped<IProductoServicio, ProductoServicio>();
             services.AddScoped<IProducto2Servicio, Producto2Servicio>();
             services.AddScoped<IDepositoServicio, DepositoServicio>();
-			services.AddScoped<IRemitoServicio, RemitoServicio>();
-			services.AddScoped<IABMProductoServicio, ABMProductoServicio>();
+            services.AddScoped<IRemitoServicio, RemitoServicio>();
+            services.AddScoped<IABMProductoServicio, ABMProductoServicio>();
             return services;
         }
     }

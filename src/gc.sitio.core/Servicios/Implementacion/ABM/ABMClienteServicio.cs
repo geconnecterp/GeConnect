@@ -6,12 +6,12 @@ using Microsoft.Extensions.Options;
 
 namespace gc.sitio.core.Servicios.Implementacion.ABM
 {
-    public class ABMProductoServicio : Servicio<ABMProductoSearchDto>,IABMProductoServicio
+    public class ABMClienteServicio : Servicio<ABMClienteSearchDto>, IABMClienteServicio
     {
-        private const string RUTABASE = "/api/abmproducto";
-        public ABMProductoServicio(IOptions<AppSettings> options, ILogger<ABMProductoServicio> logger):base(options,logger,RUTABASE)
+        private const string RUTABASE = "/api/abmcliente";
+        public ABMClienteServicio(IOptions<AppSettings> options, ILogger<ABMClienteServicio> logger) : base(options, logger, RUTABASE)
         {
-            
+
         }
     }
 }

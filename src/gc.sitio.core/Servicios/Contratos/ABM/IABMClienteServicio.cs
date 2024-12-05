@@ -2,7 +2,7 @@
 
 namespace gc.sitio.core.Servicios.Contratos.ABM
 {
-    public interface IABMProductoServicio : IServicio<ABMProductoSearchDto>
+    public interface IABMClienteServicio : IServicio<ABMClienteSearchDto>
     {
     }
 }

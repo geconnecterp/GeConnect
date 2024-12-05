@@ -1,0 +1,83 @@
+﻿@model QueryFilters
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+<form id="frmFiltro" asp-action="index" asp-controller="abmproducto" asp-area="abms" method="get">
+
+    <div class="row">
+        <div class=" col-md-4 col-sm-12 mb-1 mt-1">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text">Descr:</span>
+                <input type="text" class="form-control" asp-for="Buscar" placeholder="Ingresar descripción a buscar" style="background-color:rgb(251,255,195);font-weight:900;" autofocus />
+            </div>
+        </div>
+        <div class=" col-sm-6 col-md-4 mb-1">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text">Id Desde:</span>
+                <input type="text" class="form-control" asp-for="Id" placeholder="Ingresar Id a buscar" style="background-color:rgb(251,255,195);font-weight:900;" autofocus />
+            </div>
+        </div>
+        <div class=" col-sm-6 col-md-4 mb-1">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text">Id Hasta:</span>
+                <input type="text" class="form-control" asp-for="Id2" placeholder="Ingresar otro Id (no obligatorio)" style="background-color:rgb(251,255,195);font-weight:900;" autofocus />
+            </div>
+        </div>
+    </div>
+    <!---------------------------BUSQUEDA DE PROVEEDORES------------------------------------>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="input-group input-group-sm">
+                <div class="form-check form-check-inline form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkProveedor" />
+                    <label class="form-check-label" for="chkProveedor">Proveedor</label>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="input-group  input-group-sm">
+                <span class="input-group-text">Nombre</span>
+                <input type="text" class="form-control" name="ProveedorNombre" id="ProveedorNombre" disabled />
+                @Html.Hidden("CtaProveedorId")
+            </div>
+        </div>
+        <div class="col-sm-6">
+            @Html.ListBoxFor(p => p.Rel01, Model.Rel01.Select(X => new SelectListItem { Text = X.Descripcion, Value = X.Id }), new { @class = "form-control", @disabled = "disabled" })
+        </div>
+    </div>
+    <!---------------------------FIN BUSQUEDA DE PROVEEDORES------------------------------------>
+    <!---------------------------BUSQUEDA DE RUBROS------------------------------------>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="input-group input-group-sm">
+                <div class="form-check form-check-inline form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkRubro" />
+                    <label class="form-check-label" for="chkRubro">Rubro</label>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text">Nombre</span>
+                <input type="text" class="form-control" name="RubroNombre" id="RubroNombre" disabled />
+                @Html.Hidden("RubroId")
+            </div>
+        </div>
+        <div class="col-sm-6">
+            @Html.ListBoxFor(p => p.Rel02, Model.Rel02.Select(X => new SelectListItem { Text = X.Descripcion, Value = X.Id }), new { @class = "form-control", @disabled = "disabled" })
+        </div>
+    </div>
+    <!---------------------------FIN BUSQUEDA DE RUBROS------------------------------------>
+    <div class="row">
+        <div class="d-flex justify-content-around">
+            <button type="button" id="btnCancel" class="btn btn-sm btn-danger"><i class="bx bx-sm bx-x-circle"></i></button>
+            <button type="button" id="btnBuscar" class="btn btn-sm btn-success"><i class="bx bx-sm bx-search"></i></button>
+        </div>
+    </div>
+</form>

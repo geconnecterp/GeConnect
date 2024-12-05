@@ -51,6 +51,14 @@
 	<li class="nav-item">
 		<a class="nav-link" href="javascript:void(0)">Contabilidad</a>
 	</li>
+	<li class="nav-item dropdown">
+		<a class="nav-link dropdown-toggle" href="javascript:void(0)" id="navbarDropdownHerramientas" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+			Herramientas
+		</a>
+		<ul class="dropdown-menu" aria-labelledby="navbarDropdownHerramientas">
+			<li><a asp-action="Index" asp-controller="abmproducto" asp-area="ABMs" id="btnAbmProductos" class="dropdown-item"><span>Productos</span></a></li>
+		</ul>
+	</li>
 </ul>
 <!-- User -->
 <li class="nav-item navbar-dropdown dropdown-user dropdown">
@@ -111,4 +119,3 @@
 	</ul>
 </li>
 <!--/ User -->
-
