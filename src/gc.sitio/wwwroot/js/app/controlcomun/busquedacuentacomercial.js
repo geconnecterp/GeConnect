@@ -147,6 +147,15 @@ function ActualizarLinkBotonVerDetalle() {
 function CargarCompteEnGrilla(obj) {
 	if (obj != null) {
 		$("#txtCantidadUL").val(obj.cantidadUL);
+		if (obj.rpe_id == "P") {
+			$("#chkPonerEnCurso")[0].checked = false;
+		}
+		else if (obj.rpe_id == "C") {
+			$("#chkPonerEnCurso")[0].checked = true;
+		}
+		else {
+			$("#chkPonerEnCurso")[0].checked = false;
+		}
 		if (obj.fechaTurno !== "")
 			$("#dtpFechaTurno").val(obj.fechaTurno.substring(0, 10));
 		if (obj.compte != null && obj.compte.tipo != "") {
@@ -192,7 +201,7 @@ function EliminarComprobanteRPR(rp) {
 				window.location.href = volverAListaDeAutorizacionesUrl;
 				return true;
 			}, false, ["Aceptar"], "warn!", null);
-		} else if (o.codigo !== "") {
+		} else if (o.codigo.toString() !== "0") {
 			AbrirMensaje("Atención", o.msg, function (e) {
 				$("#msjModal").modal("hide");
 				window.location.href = volverAListaDeAutorizacionesUrl;

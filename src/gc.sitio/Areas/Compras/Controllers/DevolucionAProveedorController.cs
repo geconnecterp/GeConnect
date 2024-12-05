@@ -9,6 +9,7 @@ using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.Models.Dto;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
@@ -157,13 +158,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 						else
 						{
 							stkDecimalAux = productoStk.First().Ps_stk;
-							cantidadAux = stkDecimalAux - ((unidadPresDecimalAux * bultoDecimalAux) * us);
+							cantidadAux = stkDecimalAux - ((unidadPresDecimalAux * bultoDecimalAux) + us);
 						}
 
 						var newProduct = new ProductoADevolverDto()
 						{
 							tipo = "M",
-							dp_nro_revierte = null,
+							dv_compte_revierte = null,
 							depo_id = depoId,
 							box_id = boxId,
 							box_desc = box.FirstOrDefault()?.Box_desc,
@@ -488,7 +489,27 @@ namespace gc.sitio.Areas.Compras.Controllers
 		#region Métodos Privados
 		private string GenerarJsonDesdeLista()
 		{
-			var jsonstring = JsonConvert.SerializeObject(DevolucionProductosLista, new JsonSerializerSettings() { ContractResolver = new IgnorePropertiesResolver(new[] { "Producto" }) });
+            var listaSerializada = new List<ProductoADevolverSerializedDto>();
+            DevolucionProductosLista.ForEach(x => listaSerializada.Add(new ProductoADevolverSerializedDto()
+            {
+                #region Campos
+                tipo = x.tipo,
+                dv_compte_revierte = x.dv_compte_revierte,
+				cta_id = x.cta_id,
+                depo_id = x.depo_id,
+                box_id = x.box_id,
+                nota = x.nota,
+                usu_id = x.usu_id,
+                p_id = x.p_id,
+                p_desc = x.p_desc,
+                up_id = x.up_id,
+                unidad_pres = x.unidad_pres,
+                bulto = x.bulto,
+                us = x.us,
+                cantidad = x.cantidad,
+                #endregion
+            }));
+            var jsonstring = JsonConvert.SerializeObject(DevolucionProductosLista, new JsonSerializerSettings() { ContractResolver = new IgnorePropertiesResolver(new[] { "Producto" }) });
 			return jsonstring;
 		}
 		private List<ProductoADevolverDto> ObtenerProductoADevolverDesdeDevolucionPrevia(List<DevolucionPrevioCargadoDto> listaAjustesPrevios)
@@ -511,7 +532,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					depo_id = item.depo_id,
 					tipo = "P",
 					usu_id = UserName,
-					dp_nro_revierte = null,
+                    dv_compte_revierte = null,
 					us = item.us,
 					bulto = item.bulto,
 					cantidad = item.ps_stk - item.cantidad,
@@ -549,7 +570,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					bulto = Convert.ToInt32(item.ps_bulto),
 					cantidad = item.ps_stk - (item.as_ajuste * -1),
 					as_motivo = item.dv_motivo,
-					dp_nro_revierte = item.dv_compte,
+                    dv_compte_revierte = item.dv_compte,
 				});
 			}
 			return listaMapeada;
