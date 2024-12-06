@@ -380,6 +380,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					{
 						model.Cuenta = jsonAux.encabezado.First().Cta_id;
 						model.Nota = jsonAux.encabezado.First().Nota;
+						model.Rpe_id = jsonAux.encabezado.First().Rpe_id;
 						if (int.TryParse(jsonAux.encabezado.First().Ul_cantidad, out int ulCantidad))
 							model.CantidadUL = ulCantidad;
 						else
@@ -398,7 +399,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 						model.FechaTurno = !string.IsNullOrWhiteSpace(RPRComprobanteDeRPSeleccionado?.FechaTurno) ? Convert.ToDateTime(RPRComprobanteDeRPSeleccionado.FechaTurno).ToString("yyyy-MM-dd") : RPRAutorizacionSeleccionada.Fecha?.ToString("yyyy-MM-dd");
 						model.Depo_id = !string.IsNullOrWhiteSpace(RPRComprobanteDeRPSeleccionado?.Depo_id) ? RPRComprobanteDeRPSeleccionado?.Depo_id : "0";
 						model.CantidadUL = !string.IsNullOrWhiteSpace(RPRComprobanteDeRPSeleccionado?.Ul_cantidad) ? Convert.ToInt32(RPRComprobanteDeRPSeleccionado?.Ul_cantidad) : 0;
-					}
+						model.Rpe_id = !string.IsNullOrWhiteSpace(RPRAutorizacionSeleccionada?.Rpe_id) ? RPRComprobanteDeRPSeleccionado?.Ul_cantidad : "P";
+                    }
 				}
 				if (rp == null)
 				{
