@@ -23,7 +23,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         private readonly BusquedaProducto _busqueda;
 
         public ProductoController(ILogger<ProductoController> logger, IOptions<MenuSettings> options, IOptions<AppSettings> options1, IOptions<BusquedaProducto> busqueda,
-            ICuentaServicio cuentaServicio, IHttpContextAccessor context, IRubroServicio rubSv, IProductoServicio productoServicio, IRemitoServicio remitoServicio) : base(options1, options, context)
+            ICuentaServicio cuentaServicio, IHttpContextAccessor context, IRubroServicio rubSv, IProductoServicio productoServicio, IRemitoServicio remitoServicio) : base(options1, options, context, logger)
         {
             _logger = logger;
             _menuSettings = options.Value;
@@ -46,12 +46,12 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
               
                 if (ProveedoresLista.Count == 0 || actualizar)
                 {
-                    ObtenerProveedores();
+                    ObtenerProveedores(_ctaSv);
                 }
 
                 if (RubroLista.Count == 0 || actualizar)
                 {
-                    ObtenerRubros();
+                    ObtenerRubros(_rubSv);
                 }
 
             }
@@ -164,39 +164,24 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
             #endregion
         }
 
+
+
+        //private void ObtenerRubros()
+        //{
+        //    RubroLista = _rubSv.ObtenerListaRubros(TokenCookie);
+        //}
+
+        //private void ObtenerProveedores()
+        //{
+        //    //se guardan los proveedores en session. Para ser utilizados posteriormente
+
+        //    ProveedoresLista = _ctaSv.ObtenerListaProveedores(TokenCookie);
+        //}
+
         [HttpPost]
-        public async Task<JsonResult> BusquedaAvanzada(BusquedaProducto search)
+        public async Task<IActionResult> BusquedaAvanzada(string ri01, string ri02, bool act, bool dis, bool ina, bool cstk, bool sstk, string search)
         {
-            try
-            {
-                search.SinStock = !search.ConStock;
-
-                List<ProductoListaDto> productos = await _productoServicio.BusquedaListaProductos(search, TokenCookie);
-
-                return Json(new { error = false, lista = productos });
-            }
-            catch (Exception ex)
-            {
-                string msg = "Error en la invocación de la API - Busqueda Avanzada";
-                _logger.LogError(ex, "Error en la invocación de la API - Busqueda Avanzada");
-
-                return Json(new { error = true, msg });
-            }
+            return await BusquedaAvanzada(ri01, ri02, act, dis, ina, cstk, sstk, search, _productoServicio);
         }
-
-
-        private void ObtenerRubros()
-        {
-            RubroLista = _rubSv.ObtenerListaRubros(TokenCookie);
-        }
-
-        private void ObtenerProveedores()
-        {
-            //se guardan los proveedores en session. Para ser utilizados posteriormente
-
-            ProveedoresLista = _ctaSv.ObtenerListaProveedores(TokenCookie);
-        }
-
-
     }
 }

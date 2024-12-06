@@ -189,19 +189,18 @@ namespace gc.sitio.core.Servicios.Implementacion
 
 			HelperAPI helper = new HelperAPI();
 
-			HttpClient client = helper.InicializaCliente(token);
+			HttpClient client = helper.InicializaCliente(busqueda,token,out StringContent content);
 			HttpResponseMessage response;
-			string parametros = EvaluarEntidad4Link(busqueda);
-			var link = $"{_appSettings.RutaBase}{RutaAPI}{BUSCAR_LISTA}?{parametros}";
+			
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{BUSCAR_LISTA}";
 
-			response = await client.GetAsync(link);
+			response = await client.PostAsync(link,content);
 
 			if (response.StatusCode == HttpStatusCode.OK)
 			{
 				string stringData = await response.Content.ReadAsStringAsync();
 				if (string.IsNullOrEmpty(stringData))
 				{
-					_logger.LogWarning($"La API no devolvió dato alguno. Parametro de busqueda {parametros}");
 					return new();
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProductoListaDto>>>(stringData);

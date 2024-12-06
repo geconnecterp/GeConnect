@@ -14,7 +14,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         private readonly ILogger<AlmacenController> _logger;
 
         public AlmacenController(ILogger<AlmacenController> logger, IOptions<MenuSettings> options,
-            IOptions<AppSettings> options1, IHttpContextAccessor context) : base(options1, options, context)
+            IOptions<AppSettings> options1, IHttpContextAccessor context) : base(options1, options, context, logger)
         {
             _logger = logger;
             _menuSettings = options.Value;

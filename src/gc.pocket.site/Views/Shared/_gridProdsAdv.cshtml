@@ -1,0 +1,44 @@
+﻿@model GridCore<ProductoListaDto>
+
+@{
+    var dataMod = new ProductoListaDto();
+    var alt = true;
+    string clase = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive text-nowrap  table-wrapper">
+            <table class="table table-sm mb-0 table-hover" id="tbGridProd">
+                <thead class="table-dark">
+                    <tr class="header">
+                        <th scope="col">ID</th>
+                        <th scope="col">DESC</th>                       
+                        <th scope="col">EAN</th>
+                        <th scope="col">ID PROV</th>
+                        <th scope="col">E</th>
+                        <th scope="col">PRECIO</th>
+                        <th scope="col">STOCK</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ListaDatos)
+                    {
+                        if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+                        <tr class="@clase">
+                            <td class="text-sm-center">@item.P_id</td>
+                            <td class="text-sm-start">@item.P_desc</td>
+                            <td class="text-sm-center">@item.P_id_barrado</td>
+                            <td class="text-sm-center">@item.P_id_prov</td>
+                            <td class="text-sm-center">@item.P_activo </td>
+                            <td class="text-sm-end">@item.P_pcosto</td>
+                            <td class="text-sm-end">@item.Ps_stk</td>
+                        </tr>
+                    }                    
+                </tbody>             
+            </table>           
+        </div>
+    </div>
+</div>

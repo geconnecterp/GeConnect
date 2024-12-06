@@ -431,7 +431,7 @@ namespace gc.api.core.Servicios
 
 		public List<ProductoListaDto> ProductoListaBuscar(BusquedaProducto search)
 		{
-			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PRODUCTO_BUSQUEDA;
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PRODUCTO_BUSQUEDA_LISTA;
 			/// varchar(30),  varchar(3),  varchar(4), varchar(8), @ bit, @ varchar(10) , @ bit, @ bit, @ bit, @ bit, @ bit, @ bit)  
 			var ps = new List<SqlParameter>()
 			{

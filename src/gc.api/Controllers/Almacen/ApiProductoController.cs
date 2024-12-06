@@ -59,11 +59,11 @@ namespace gc.api.Controllers.Almacen
 
 
 
-		[HttpGet]
+		[HttpPost]
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<ProductoListaDto>>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]
-		public IActionResult ProductoListaBuscar([FromQuery] BusquedaProducto search)
+		public IActionResult ProductoListaBuscar(BusquedaProducto search)
 		{
 			ApiResponse<List<ProductoListaDto>> response;
 			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");

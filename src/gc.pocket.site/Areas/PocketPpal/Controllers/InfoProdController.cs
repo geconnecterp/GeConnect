@@ -32,7 +32,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
         public InfoProdController(IOptions<AppSettings> options, IOptions<MenuSettings> options1,
             IHttpContextAccessor context, IProductoServicio productoServicio, ILogger<InfoProdController> logger,
-            ICuentaServicio cta, IRubroServicio rubro, IDepositoServicio depositoServicio, IProducto2Servicio producto2Servicio) : base(options, options1, context)
+            ICuentaServicio cta, IRubroServicio rubro, IDepositoServicio depositoServicio, IProducto2Servicio producto2Servicio) : base(options, options1, context,logger)
         {
             _menuSettings = options1.Value;
             _productoServicio = productoServicio;
@@ -115,6 +115,16 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             if (!auth.Item1 || (auth.Item1 && !auth.Item2.HasValue) || (auth.Item1 && auth.Item2.HasValue && auth.Item2.Value < DateTime.Now))
             {
                 return RedirectToAction("Login", "Token", new { area = "Seguridad" });
+            }
+
+            if (ProveedoresLista.Count == 0 )
+            {
+                ObtenerProveedores();
+            }
+
+            if (RubroLista.Count == 0 )
+            {
+                ObtenerRubros();
             }
 
             await ObtenerTiposMotivo();

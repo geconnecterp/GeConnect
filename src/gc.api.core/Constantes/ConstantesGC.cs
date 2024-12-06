@@ -26,7 +26,9 @@
 			public const string SP_PROVEEDOR_FAMILIA_LISTA = "dbo.SPGECO_Proveedores_Fiamilia_lista";
 
 			public const string SP_PRODUCTO_BUSQUEDA = "dbo.spgeco_p_busqueda";
-			public const string SP_PRODUCTO_BUSQUEDA_MUCHOS = "dbo.spgeco_p_busqueda_muchos";
+			public const string SP_PRODUCTO_BUSQUEDA_LISTA = "SPGECO_P_Busqueda_Lista";
+            
+            public const string SP_PRODUCTO_BUSQUEDA_MUCHOS = "dbo.spgeco_p_busqueda_muchos";
 
 			public const string SP_INFOPROD_STKD = "dbo.spgeco_p_info_stk_depo";
             public const string SP_INFOPROD_STKBOX = "dbo.spgeco_p_info_stk_box";
