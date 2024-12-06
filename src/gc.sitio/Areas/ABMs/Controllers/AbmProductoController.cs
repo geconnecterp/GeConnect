@@ -59,8 +59,9 @@ namespace gc.sitio.Areas.ABMs.Controllers
             string volver = Url.Action("index", "home", new { area = "" });
             ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
 
+            var listR01 = new List<ComboGenDto>();
+            ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
             var listR02 = new List<ComboGenDto>();
-
             ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR02);
 
             return View();
@@ -117,7 +118,17 @@ namespace gc.sitio.Areas.ABMs.Controllers
         }
 
         [HttpPost]
-        public JsonResult BuscarR02(string prefix)
+        public JsonResult BuscarProvs(string prefix)
+        {
+            //var nombres = await _provSv.BuscarAsync(new QueryFilters { Search = prefix }, TokenCookie);
+            //var lista = nombres.Item1.Select(c => new EmpleadoVM { Nombre = c.NombreCompleto, Id = c.Id, Cuil = c.CUIT });
+            var rub = ProveedoresLista.Where(x => x.Cta_Lista.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
+            var rubros = rub.Select(x => new ComboGenDto { Id = x.Cta_Id, Descripcion = x.Cta_Lista });
+            return Json(rubros);
+        }
+
+        [HttpPost]
+        public JsonResult BuscarRubros(string prefix)
         {
             //var nombres = await _provSv.BuscarAsync(new QueryFilters { Search = prefix }, TokenCookie);
             //var lista = nombres.Item1.Select(c => new EmpleadoVM { Nombre = c.NombreCompleto, Id = c.Id, Cuil = c.CUIT });

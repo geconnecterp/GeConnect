@@ -10,5 +10,6 @@ namespace gc.api.core.Entidades
     {
         public string Cta_Id { get; set; } = string.Empty;
         public string Cta_Denominacion { get; set; } = string.Empty;
+        public string Cta_Lista { get; set; } = string.Empty;
     }
 }

@@ -154,20 +154,26 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
-
-		public List<ProveedorListaDto> GetProveedorLista()
+		/// <summary>
+		/// Se obtienen los proveedores. Tener en cuenta que se invocan con parametro ope_iva = 'BI'
+		/// </summary>
+		/// <returns>Se obtiene la lista de proveedores</returns>
+		public List<ProveedorLista> GetProveedorLista()
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PROVEEDOR_LISTA;
-			var ps = new List<SqlParameter>();
-			var res = _repository.InvokarSp2Lst(sp, ps, true);
+			var ps = new List<SqlParameter>() {
+				new SqlParameter("@ope_iva","BI")
+			};
+			var _repProdLista = _uow.GetRepository<ProveedorLista>();
+			var res = _repProdLista.InvokarSp2Lst(sp, ps, true);
 
 			if (res.Count == 0)
 			{
-				return new List<ProveedorListaDto>();
+				return new List<ProveedorLista>();
 			}
 			else
 			{
-				return res.Select(x => new ProveedorListaDto() { Cta_Id = x.Cta_Id, Cta_Denominacion = x.Cta_Denominacion, }).ToList();
+				return res.ToList();
 			}
 		}
 
