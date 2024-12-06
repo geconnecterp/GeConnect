@@ -1,4 +1,29 @@
-﻿
+﻿$(function () {
+    //check generico REL01 activando componentes disables
+    $("#chkRel01").on("click", function () {
+        if ($("#chkRel01").is(":checked")) {
+            $("#Rel01").prop("disabled", false);
+            $("#Rel01List").prop("disabled", false);
+        }
+        else {
+            $("#Rel01").prop("disabled", true);
+            $("#Rel01List").prop("disabled", true);
+        }
+    });
+
+    //check generico REL02 activando componentes disables
+    $("#chkRel02").on("click", function () {
+        if ($("#chkRel02").is(":checked")) {
+            $("#Rel02").prop("disabled", false);
+            $("#Rel02List").prop("disabled", false);
+        }
+        else {
+            $("#Rel02").prop("disabled", true);
+            $("#Rel02List").prop("disabled", true);
+        }
+    });
+
+});
 function PostGenHtml(data, path, retorno) {
     PostGen(data, path, retorno, fnError, "HTML");
 }

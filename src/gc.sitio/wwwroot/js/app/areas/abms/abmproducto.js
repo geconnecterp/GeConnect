@@ -5,17 +5,19 @@
     $("#pagEstado").on("change", cargaPaginacion);
     $("#btnBuscar").on("click", function () { buscarProductos(pagina); });
 
-    //check generico REL02 activando componentes disables
-    $("#chkRel02").on("click", function () {
-        if ($("#chkRel02").is(":checked")) {
-            $("#Rel02").prop("disabled", false);
-            $("#Rel02List").prop("disabled", false);
-        }
-        else {
-            $("#Rel02").prop("disabled", true);
-            $("#Rel02List").prop("disabled", true);
-        }
-    })
+    /*        CODIGO TRASLADADO AL SITIGEN.JS            */
+
+    ////check generico REL02 activando componentes disables
+    //$("#chkRel02").on("click", function () {
+    //    if ($("#chkRel02").is(":checked")) {
+    //        $("#Rel02").prop("disabled", false);
+    //        $("#Rel02List").prop("disabled", false);
+    //    }
+    //    else {
+    //        $("#Rel02").prop("disabled", true);
+    //        $("#Rel02List").prop("disabled", true);
+    //    }
+    //})
 
     InicializaPantallaAbmProd();
 /*    AbrirWaiting();*/
@@ -28,6 +30,7 @@ function InicializaPantallaAbmProd() {
         $("#collapseExample").collapse("show")
     } 
 
+    $("#lbRel01").text("PROVEEDOR");
     $("#lbRel02").text("RUBRO");
 
 

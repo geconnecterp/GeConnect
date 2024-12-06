@@ -152,7 +152,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult GetProveedorLista()
         {
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-            List<ProveedorListaDto> proveedores = _cuentasSv.GetProveedorLista();
+            List<ProveedorLista> proveedores = _cuentasSv.GetProveedorLista();
             var lista = _mapper.Map<List<ProveedorListaDto>>(proveedores);
 
             var response = new ApiResponse<List<ProveedorListaDto>>(lista);
