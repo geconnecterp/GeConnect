@@ -125,7 +125,13 @@
         //funcionalidad busqueda avanzada
         var productoBase = null; //se hidrata en busquedas.
 
-        var funcionBusquedaAvanzada = false;
+        //parapaginacion
+        var totalRegs = 0;
+        var pagRegs = 0;
+        var pags = 0;
+        var pagina = 1;
+
+        var funcionBusquedaAvanzada = true;
         var autoComRel01Url = "@Url.Action("BuscarProvs", "abmproducto", new { area = "abms" })";
         var autoComRel02Url = "@Url.Action("BuscarRubros", "abmproducto", new { area = "abms" })";
         var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "gestion" })";

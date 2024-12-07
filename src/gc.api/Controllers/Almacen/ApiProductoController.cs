@@ -23,6 +23,7 @@ namespace gc.api.Controllers.Almacen
     using gc.infraestructura.Dtos.General;
     using gc.infraestructura.Dtos.Productos;
     using gc.infraestructura.EntidadesComunes.Options;
+    using log4net.Filter;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json;
@@ -59,17 +60,40 @@ namespace gc.api.Controllers.Almacen
 
 
 
-		[HttpPost]
+		[HttpPost(Name = "ProductoListaBuscar")]
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<ProductoListaDto>>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]
-		public IActionResult ProductoListaBuscar(BusquedaProducto search)
+		public IActionResult ProductoListaBuscar(BusquedaProducto filters)
 		{
-			ApiResponse<List<ProductoListaDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			List<ProductoListaDto> res = _productosSv.ProductoListaBuscar(search);
+			var reg = new ProductoListaDto { Total_Paginas = 0, Total_Registros = 0 };
 
-			response = new ApiResponse<List<ProductoListaDto>>(res);
+            ApiResponse<List<ProductoListaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			List<ProductoListaDto> res = _productosSv.ProductoListaBuscar(filters);
+
+			if (res.Count > 0)
+			{
+				reg = res.First();
+			}
+
+            var metadata = new MetadataGrid
+            {
+                TotalCount = reg.Total_Registros,
+                PageSize = filters.Registros.Value,
+                CurrentPage = filters.Pagina.Value,
+                TotalPages = reg.Total_Paginas,
+                HasNextPage = filters.Pagina.Value < reg.Total_Paginas,
+                HasPreviousPage = filters.Pagina.Value > 1,
+                NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(ProductoListaBuscar)) ?? "").ToString(),
+                PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(ProductoListaBuscar)) ?? "").ToString(),
+
+            };
+
+            response = new ApiResponse<List<ProductoListaDto>>(res)
+			{
+				Meta = metadata,
+			};
 
 			return Ok(response);
 		}

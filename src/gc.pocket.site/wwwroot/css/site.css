@@ -64,6 +64,12 @@ th, td {
     overflow: auto;
     /*display: inline-block;*/
 }
+.table-wrapper-modal {
+    max-height: 150px;
+    max-width: 100%;
+    overflow: auto;
+    /*display: inline-block;*/
+}
 
 .table-thead, .table-tbody{display:block;  }
 

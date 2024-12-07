@@ -1,6 +1,7 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.ABM;
+using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
@@ -32,9 +33,9 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
         [HttpGet]
         public async Task<IActionResult> Index( bool actualizar = false)
         {
-            List<ABMProductoSearchDto> lista;
+            List<ProductoListaDto> lista;
             MetadataGrid metadata;
-            GridCore<ABMProductoSearchDto> grillaDatos;
+            GridCore<ProductoListaDto> grillaDatos;
 
             
             
@@ -68,9 +69,9 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
         [HttpPost]
         public async Task<IActionResult> Buscar(QueryFilters query, string sort = "p_id", string sortDir = "asc", int pag = 1, bool actualizar = false)
         {
-            List<ABMProductoSearchDto> lista;
+            List<ProductoListaDto> lista;
             MetadataGrid metadata;
-            GridCore<ABMProductoSearchDto> grillaDatos;
+            GridCore<ProductoListaDto> grillaDatos;
 
             if (PaginaProd == pag && ProductosBuscados.Count > 0)
             {

@@ -1,10 +1,8 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Constantes;
-using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos;
-using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 using gc.infraestructura.Dtos.Almacen.Info;
@@ -902,8 +900,11 @@ namespace gc.pocket.site.Controllers
                 var busc = new BusquedaProducto { Busqueda=search,ConStock=cstk,SinStock=sstk,CtaProveedorId=ri01,
                 RubroId=ri02,EstadoActivo=act,EstadoDiscont=dis,EstadoInactivo=ina};
 
-                List<ProductoListaDto> productos = await _productoServicio.BusquedaListaProductos(busc, TokenCookie);
-                grillaDatos = GenerarGrilla<ProductoListaDto>(productos, "p_id");
+                var res = await _productoServicio.BusquedaListaProductos(busc, TokenCookie);
+                if(res.Item1.Count > 0){
+
+                }
+                grillaDatos = GenerarGrilla<ProductoListaDto>(res.Item1, "p_desc");
                 return PartialView("_gridProdsAdv", grillaDatos);
             }
             catch (Exception ex)

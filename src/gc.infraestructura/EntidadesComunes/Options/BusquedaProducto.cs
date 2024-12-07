@@ -27,7 +27,7 @@
         public bool ConStock { get; set; }
         public bool SinStock { get; set; }
         public bool AbrirAppBusqueda { get; set; }
-
-
+        public int? Registros { get; set; }
+        public int? Pagina { get; set; }
     }
 }

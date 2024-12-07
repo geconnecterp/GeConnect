@@ -28,6 +28,7 @@ function InicializaPantallaAbmProd() {
         $("#collapseExample").collapse("show")
     } 
 
+    $("#lbRel01").text("PROVEEDORES");
     $("#lbRel02").text("RUBRO");
 
 
@@ -76,6 +77,7 @@ function buscarProductos(pag) {
         "sortDir": null,
         pag
     };
+
     PostGenHtml(data, buscarUrl, function (obj) {
         $("#divGrilla").html(obj);
         $("#collapseExample").collapse("hide")

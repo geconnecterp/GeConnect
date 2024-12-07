@@ -1,6 +1,7 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.ABM;
+using gc.infraestructura.Dtos.Almacen;
 using gc.pocket.site.Controllers;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -55,7 +56,7 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
             }
         }
 
-        public List<ABMProductoSearchDto> ProductosBuscados
+        public List<ProductoListaDto> ProductosBuscados
         {
             get
             {
@@ -64,7 +65,7 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
                 {
                     return [];
                 }
-                return JsonConvert.DeserializeObject<List<ABMProductoSearchDto>>(json);
+                return JsonConvert.DeserializeObject<List<ProductoListaDto>>(json);
             }
             set
             {

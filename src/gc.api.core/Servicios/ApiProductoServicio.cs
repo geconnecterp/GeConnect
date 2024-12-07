@@ -445,8 +445,8 @@ namespace gc.api.core.Servicios
 				new("@activo",search.EstadoActivo),
 				new("@discontinuo",search.EstadoDiscont),
 				new("@inactivo",search.EstadoInactivo),
-				new("@stk_no",search.SinStock),
-				new("@stk_si", search.ConStock)
+				new("@stk_no",!search.SinStock),
+				new("@stk_si", !search.ConStock)
 			};
 
 			List<ProductoListaDto> productos = _repository.EjecutarLstSpExt<ProductoListaDto>(sp, ps, true);

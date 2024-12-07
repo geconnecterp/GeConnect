@@ -183,7 +183,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 		}
 
-		public async Task<List<ProductoListaDto>> BusquedaListaProductos(BusquedaProducto busqueda, string token)
+		public async Task<(List<ProductoListaDto>,MetadataGrid?)> BusquedaListaProductos(BusquedaProducto busqueda, string token)
 		{
 			ApiResponse<List<ProductoListaDto>> apiResponse;
 
@@ -204,13 +204,13 @@ namespace gc.sitio.core.Servicios.Implementacion
 					return new();
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProductoListaDto>>>(stringData);
-				return apiResponse.Data;
+				return (apiResponse.Data,apiResponse.Meta);
 			}
 			else
 			{
 				string stringData = await response.Content.ReadAsStringAsync();
 				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
-				return new();
+				return (new(),null);
 			}
 		}
 
