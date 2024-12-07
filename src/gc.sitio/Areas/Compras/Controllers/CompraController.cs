@@ -1150,17 +1150,30 @@ namespace gc.sitio.Areas.Compras.Controllers
 				var comprobante = item.Comprobantes.FirstOrDefault();
 				if (comprobante != null)
 				{
-					lista.Add(new RPRComptesDeRPDto()
+					if (TiposComprobantePorCuenta.Where(x => x.tco_id == comprobante.Tco_id).Any())
 					{
-						//Convert.ToDateTime(comprobante.Cm_fecha).ToString("dd/MM/yyyy")
-						//Fecha = comprobante.Cm_fecha,
-						Fecha = Convert.ToDateTime(comprobante.Cm_fecha).ToString("dd/MM/yyyy"),
-						Importe = comprobante.Cm_importe,
-						NroComprobante = comprobante.Cm_compte,
-						Rp = item.Rp,
-						Tipo = comprobante.Tco_id,
-						TipoDescripcion = string.IsNullOrEmpty(comprobante.Tco_desc) ? TiposComprobantePorCuenta.Where(x => x.tco_id == comprobante.Tco_id).Select(y => y.tco_desc).First() : comprobante.Tco_desc
-					});
+						lista.Add(new RPRComptesDeRPDto()
+						{
+							Fecha = Convert.ToDateTime(comprobante.Cm_fecha).ToString("dd/MM/yyyy"),
+							Importe = comprobante.Cm_importe,
+							NroComprobante = comprobante.Cm_compte,
+							Rp = item.Rp,
+							Tipo = comprobante.Tco_id,
+							TipoDescripcion = string.IsNullOrEmpty(comprobante.Tco_desc) ? TiposComprobantePorCuenta.Where(x => x.tco_id == comprobante.Tco_id).Select(y => y.tco_desc).First() : comprobante.Tco_desc
+						});
+					}
+					else
+					{
+                        lista.Add(new RPRComptesDeRPDto()
+                        {
+                            Fecha = Convert.ToDateTime(comprobante.Cm_fecha).ToString("dd/MM/yyyy"),
+                            Importe = comprobante.Cm_importe,
+                            NroComprobante = comprobante.Cm_compte,
+                            Rp = item.Rp,
+                            Tipo = comprobante.Tco_id,
+                            TipoDescripcion = string.IsNullOrEmpty(comprobante.Tco_desc) ? string.Empty : comprobante.Tco_desc
+                        });
+                    }
 				}
 			}
 			return lista;

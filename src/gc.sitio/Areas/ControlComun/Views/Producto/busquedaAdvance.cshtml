@@ -1,23 +1,23 @@
 ﻿@model List<ProductoListaDto>
 
-<div class="modal fade" id="busquedaModal" tabindex="-1" role="dialog" aria-labelledby="msjTitulo" data-keyboard="false" data-backdrop="static" aria-hidden="true" style="z-index: 999999;">
-    <div class="modal-dialog modal-dialog-centered" role="document">
+<div class="modal fade ui-front" id="busquedaModal" tabindex="-1" role="dialog" aria-labelledby="msjTitulo" data-keyboard="false" data-backdrop="static" aria-hidden="true" style="z-index: 999999;">
+    <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header cabeceraModal">
-                <span>Busqueda de Productos</span>                
+                <span>Busqueda de Productos</span>
                 <button type="button" class="close sinbordefondo" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div id="msjContenidoAdv" class="modal-body">
+            <div id="msjContenido" class="modal-body">
                 <div class="row">
                     <div class="input-group input-group-sm">
-                        <small class="input-group-text">Proveedor</small>
-                        <input type="text" class="form-control" name="ProveedorNombre" id="ProveedorNombre" />
-                        <small class="input-group-text">Rubro</small>
-                        <input type="text" class="form-control" name="RubroNombre" id="RubroNombre" />
-                        @Html.Hidden("CtaProveedorId")
-                        @Html.Hidden("RubroId")
+                        <span class="input-group-text">Proveedor</span>
+                        <input type="text" class="form-control" name="Rel01" id="Rel01" />
+                        @Html.Hidden("Rel01Item")
+                        <span class="input-group-text">Rubro</span>
+                        <input type="text" class="form-control" name="Rel02" id="Rel02" />
+                        @Html.Hidden("Rel02Item")
                     </div>
                 </div>
                 <div class="row mt-1">
@@ -49,13 +49,19 @@
                     </div>
                 </div>
                 <div class="row mt-1">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text">BUSCAR</span>
+                        <input type="text" class="form-control" name="Search" id="Search" />
+                    </div>
+                </div>
+                <div class="row mt-1">
                     <div class="d-flex justify-content-end">
                         <button type="button" class="btn btn-success btn-sm m-2" id="btnBuscarProd"> <i class="bx bx-ms bx-search"></i><span> Buscar</span> </button>
                     </div>
                 </div>
                 <div class="row mt-1">
                     <div id="divBusquedaAvanzada"></div>
-                </div>               
+                </div>
             </div>
         </div>
     </div>

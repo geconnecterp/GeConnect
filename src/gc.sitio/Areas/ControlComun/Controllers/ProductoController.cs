@@ -21,14 +21,24 @@ namespace gc.sitio.Areas.ControlComun.Controllers
         private readonly BusquedaProducto _busqueda;
 
         public ProductoController(ILogger<ProductoController> logger, IOptions<MenuSettings> options, IOptions<AppSettings> options1, IOptions<BusquedaProducto> busqueda,
-            ICuentaServicio cuentaServicio, IHttpContextAccessor context, IRubroServicio rubSv, IProductoServicio productoServicio) : base(options1, context)
+            ICuentaServicio cuentaServicio, IHttpContextAccessor context, IRubroServicio rubSv, IProductoServicio productoServicio) : base(options1, context, logger)
         {
             _logger = logger;
             _ctaSv = cuentaServicio;
             _rubSv = rubSv;
             _busqueda = busqueda.Value;
             _productoServicio = productoServicio;
-        }
+
+			if (ProveedoresLista.Count == 0)
+			{
+				ObtenerProveedores(_ctaSv);
+			}
+
+			if (RubroLista.Count == 0)
+			{
+				ObtenerRubros(_rubSv);
+			}
+		}
         public IActionResult Index(bool actualizar = false)
         {
 			try
@@ -42,12 +52,12 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 
 				if (ProveedoresLista.Count == 0 || actualizar)
 				{
-					ObtenerProveedores();
+					ObtenerProveedores(_ctaSv);
 				}
 
 				if (RubroLista.Count == 0 || actualizar)
 				{
-					ObtenerRubros();
+					ObtenerRubros(_rubSv);
 				}
 
 			}
@@ -133,18 +143,23 @@ namespace gc.sitio.Areas.ControlComun.Controllers
             }
         }
 
-		#region Privados
-		private void ObtenerProveedores()
-		{
-			//se guardan los proveedores en session. Para ser utilizados posteriormente
+        //private void ObtenerRubros()
+        //{
+        //    RubroLista = _rubSv.ObtenerListaRubros(TokenCookie);
+        //}
 
-			ProveedoresLista = _ctaSv.ObtenerListaProveedores(TokenCookie);
-		}
-		private void ObtenerRubros()
-		{
-			RubroLista = _rubSv.ObtenerListaRubros(TokenCookie);
-		}
-		#endregion
+        //private void ObtenerProveedores()
+        //{
+        //    //se guardan los proveedores en session. Para ser utilizados posteriormente
 
-	}
+        //    ProveedoresLista = _ctaSv.ObtenerListaProveedores(TokenCookie);
+        //}
+
+        [HttpPost]
+        public async Task<IActionResult> BusquedaAvanzada(string ri01, string ri02, bool act, bool dis, bool ina, bool cstk, bool sstk, string search)
+        {
+            return await BusquedaAvanzada(ri01, ri02, act, dis, ina, cstk, sstk, search, _productoServicio);
+        }
+
+    }
 }

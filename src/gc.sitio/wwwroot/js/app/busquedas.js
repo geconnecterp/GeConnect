@@ -5,65 +5,88 @@
 
     $("#btnBuscarProd").on("click",busquedaAvanzadaProductos)
 
-    //declaramos el input de proveedor como autocomplete
-    $("#ProveedorNombre").autocomplete({
-        source: function (request, response) {
-            data = { prefix: request.term }
-            $.ajax({
-                url: buscarProveedorUrl,
-                type: "POST",
-                dataType: "json",
-                data: data,
-                success: function (obj) {
-                    response($.map(obj, function (item) {
-                        var texto = item.cta_Id + "-" + item.cta_Denominacion;
-                        return { label: texto, value: item.cta_Denominacion, id: item.cta_Id };
-                    }));
-                }
-            })
-        },
-        minLength: 3,
-        select: function (event, ui) {
-            $("#CtaProveedorId").val(ui.item.id);
-            return true;
-        }
-    });
+    ////declaramos el input de proveedor como autocomplete
+    //$("#ProveedorNombre").autocomplete({
+    //    source: function (request, response) {
+    //        data = { prefix: request.term }
+    //        $.ajax({
+    //            url: buscarProveedorUrl,
+    //            type: "POST",
+    //            dataType: "json",
+    //            data: data,
+    //            success: function (obj) {
+    //                response($.map(obj, function (item) {
+    //                    var texto = item.cta_Id + "-" + item.cta_Denominacion;
+    //                    return { label: texto, value: item.cta_Denominacion, id: item.cta_Id };
+    //                }));
+    //            }
+    //        })
+    //    },
+    //    minLength: 3,
+    //    select: function (event, ui) {
+    //        $("#CtaProveedorId").val(ui.item.id);
+    //        return true;
+    //    }
+    //});
 
-    $("#RubroNombre").autocomplete({
-        source: function (request, response) {
-            data = { prefix: request.term }
-            $.ajax({
-                url: buscarRubroUrl,
-                type: "POST",
-                dataType: "json",
-                data: data,
-                success: function (obj) {
-                    response($.map(obj, function (item) {
-                        var texto = item.rub_Desc;
-                        return { label: texto, value: item.rub_Desc, id: item.rub_Id };
-                    }));
-                }
-            })
-        },
-        minLength: 3,
-        select: function (event, ui) {
-            $("#RubroId").val(ui.item.id);
-            return true;
-        }
-    });
+    //$("#RubroNombre").autocomplete({
+    //    source: function (request, response) {
+    //        data = { prefix: request.term }
+    //        $.ajax({
+    //            url: buscarRubroUrl,
+    //            type: "POST",
+    //            dataType: "json",
+    //            data: data,
+    //            success: function (obj) {
+    //                response($.map(obj, function (item) {
+    //                    var texto = item.rub_Desc;
+    //                    return { label: texto, value: item.rub_Desc, id: item.rub_Id };
+    //                }));
+    //            }
+    //        })
+    //    },
+    //    minLength: 3,
+    //    select: function (event, ui) {
+    //        $("#RubroId").val(ui.item.id);
+    //        return true;
+    //    }
+    //});
 
     return true;
 });
 
 function busquedaAvanzadaProductos() {
-    var pr = $("#CtaProveedorId").val();
-    var rb = $("#RubroId").val();
+    var ri01 = $("#Rel01Item").val();
+    var ri02 = $("#Rel02Item").val();
     //activos
-    var act = $("#chkActivos").val();
+    var act = $("#chkActivos").is(":checked");
     //discontinuos
-    var dis = $("#chkDisc").val();
+    var dis = $("#chkDisc").is(":checked");
     //inactivos
-    var ina = $("#chkInact").val();
+    var ina = $("#chkInact").is(":checked");
+    var cstk = true;
+    var sstk = true;
+    if ($("#rdConStk").is(":checked") || $("#rdSinStk").is(":checked")) {
+        if ($("#rdSinStk").is(":checked")) {
+            sstk = true;
+            cstk = false
+        }
+        else {
+            sstk = false;
+            cstk = true;
+        }
+    }
+
+    var search = $("#Search").val();
+
+    var data = {
+        ri01, ri02, act, dis, ina, cstk, sstk, search
+    };
+
+    PostGenHtml(data, busquedaAvanzadaUrl, function (obj) {
+        $("#divBusquedaAvanzada").html(obj);
+
+    });
 
     return true;
 }

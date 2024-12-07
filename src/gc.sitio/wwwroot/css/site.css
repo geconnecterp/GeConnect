@@ -274,3 +274,7 @@ input[type=number] {
     background-color: DodgerBlue !important;
     color: #ffffff;
 }
+
+.ui-front {
+    z-index: 9999999 !important;
+}

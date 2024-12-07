@@ -27,14 +27,22 @@ namespace gc.sitio.Controllers
 		protected readonly IHttpContextAccessor _context;
 
 		public List<Orden> _orden;
+        private readonly ILogger _logger;
 
-		public ControladorBase(IOptions<AppSettings> options, IHttpContextAccessor contexto)
+        public ControladorBase(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger logger)
 		{
 			_options = options.Value;
 			_context = contexto;
+			_logger = logger;
 		}
 
-		public string NombreSitio
+        public ControladorBase(IOptions<AppSettings> options, IHttpContextAccessor contexto)
+        {
+            _options = options.Value;
+            _context = contexto;
+        }
+
+        public string NombreSitio
 		{
 			get { return _options.Nombre; }
 		}
@@ -851,7 +859,7 @@ namespace gc.sitio.Controllers
 			ProveedoresLista = _ctaSv.ObtenerListaProveedores(TokenCookie);
 		}
 
-        protected void ObtenerTiposNegocio(ITipoNegocioServicio _tipoNegSv)
+		protected void ObtenerTiposNegocio(ITipoNegocioServicio _tipoNegSv)
         {
             //se guardan los tipos de negocio en session. Para ser utilizados posteriormente
 
@@ -864,6 +872,62 @@ namespace gc.sitio.Controllers
 
             ZonasLista = _zonaSv.GetZonaLista(TokenCookie);
         }
+
+        [HttpPost]
+        public JsonResult BuscarProvs(string prefix)
+        {
+            //var nombres = await _provSv.BuscarAsync(new QueryFilters { Search = prefix }, TokenCookie);
+            //var lista = nombres.Item1.Select(c => new EmpleadoVM { Nombre = c.NombreCompleto, Id = c.Id, Cuil = c.CUIT });
+            var prov = ProveedoresLista.Where(x => x.Cta_Lista.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
+            var proveedores = prov.Select(x => new ComboGenDto { Id = x.Cta_Id, Descripcion = x.Cta_Lista });
+            return Json(proveedores);
+        }
+
+        [HttpPost]
+        public JsonResult BuscarRubros(string prefix)
+        {
+            //var nombres = await _provSv.BuscarAsync(new QueryFilters { Search = prefix }, TokenCookie);
+            //var lista = nombres.Item1.Select(c => new EmpleadoVM { Nombre = c.NombreCompleto, Id = c.Id, Cuil = c.CUIT });
+            var rub = RubroLista.Where(x => x.Rub_Desc.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
+            var rubros = rub.Select(x => new ComboGenDto { Id = x.Rub_Id, Descripcion = x.Rub_Desc });
+            return Json(rubros);
+        }
+
+
+        protected async Task<IActionResult> BusquedaAvanzada(string ri01, string ri02, bool act, bool dis, bool ina, bool cstk, bool sstk, string search, IProductoServicio _productoServicio)
+        {
+            GridCore<ProductoListaDto> grillaDatos;
+            RespuestaGenerica<EntidadBase> response = new();
+            try
+            {
+                var busc = new BusquedaProducto
+                {
+                    Busqueda = search,
+                    ConStock = cstk,
+                    SinStock = sstk,
+                    CtaProveedorId = ri01,
+                    RubroId = ri02,
+                    EstadoActivo = act,
+                    EstadoDiscont = dis,
+                    EstadoInactivo = ina
+                };
+
+                List<ProductoListaDto> productos = await _productoServicio.BusquedaListaProductos(busc, TokenCookie);
+                grillaDatos = GenerarGrilla<ProductoListaDto>(productos, "p_id");
+                return PartialView("_gridProdsAdv", grillaDatos);
+            }
+            catch (Exception ex)
+            {
+                string msg = "Error en la invocación de la API - Busqueda Avanzada";
+                _logger.LogError(ex, "Error en la invocación de la API - Busqueda Avanzada");
+                response.Mensaje = msg;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
+            }
+        }
+
         #endregion
     }
 }
