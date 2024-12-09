@@ -130,8 +130,16 @@
 
 @section scripts {
 	<script type="text/javascript">
+		//funcionalidad busqueda avanzada
+		var productoBase = null; //se hidrata en busquedas.
 		var p_id_selected = "";
 		var funcionBusquedaAvanzada = true;
+		//parapaginacion
+		var totalRegs = 0;
+		var pagRegs = 0;
+		var pags = 0;
+		var pagina = 1;
+		var funcCallBack = null;
 		var dataBak = {};
 		var buscarProveedorUrl = "@Url.Action("Buscar", "proveedor", new { area = "ControlComun" })";
 		var CargarDetalleDeProductosEnRPUrl = "@Url.Action("CargarDetalleDeProductosEnRP", "compra", new { area = "Compras" })";
