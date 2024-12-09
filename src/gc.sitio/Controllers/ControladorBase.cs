@@ -12,6 +12,7 @@ using gc.infraestructura.EntidadesComunes;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -27,32 +28,32 @@ namespace gc.sitio.Controllers
 		protected readonly IHttpContextAccessor _context;
 
 		public List<Orden> _orden;
-        private readonly ILogger _logger;
+		private readonly ILogger _logger;
 
-        public ControladorBase(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger logger)
+		public ControladorBase(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger logger)
 		{
 			_options = options.Value;
 			_context = contexto;
 			_logger = logger;
 		}
 
-        public ControladorBase(IOptions<AppSettings> options, IHttpContextAccessor contexto)
-        {
-            _options = options.Value;
-            _context = contexto;
-        }
+		public ControladorBase(IOptions<AppSettings> options, IHttpContextAccessor contexto)
+		{
+			_options = options.Value;
+			_context = contexto;
+		}
 
-        public string NombreSitio
+		public string NombreSitio
 		{
 			get { return _options.Nombre; }
 		}
-        public string Etiqueta
-        {
-            get { return _context.HttpContext.Session.GetString("Etiqueta"); }
+		public string Etiqueta
+		{
+			get { return _context.HttpContext.Session.GetString("Etiqueta"); }
 
-            set { HttpContext.Session.SetString("Etiqueta", value); }
-        }
-        public string Token
+			set { HttpContext.Session.SetString("Etiqueta", value); }
+		}
+		public string Token
 		{
 			get { return HttpContext.Session.GetString("JwtToken"); }
 
@@ -68,38 +69,38 @@ namespace gc.sitio.Controllers
 			}
 
 		}
-        public string AdministracionId
-        {
-            get
-            {
-                var adm = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
-                if (string.IsNullOrEmpty(adm))
-                {
-                    return string.Empty;
-                }
-                var parts = adm.Split('#');
+		public string AdministracionId
+		{
+			get
+			{
+				var adm = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
+				if (string.IsNullOrEmpty(adm))
+				{
+					return string.Empty;
+				}
+				var parts = adm.Split('#');
 
-                return parts[0];
-            }
-        }
+				return parts[0];
+			}
+		}
 
-        public string AdministracionName
-        {
-            get
-            {
-                var adm = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
-                if (string.IsNullOrEmpty(adm))
-                {
-                    return string.Empty;
-                }
+		public string AdministracionName
+		{
+			get
+			{
+				var adm = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
+				if (string.IsNullOrEmpty(adm))
+				{
+					return string.Empty;
+				}
 
-                var parts = adm.Split('#');
+				var parts = adm.Split('#');
 
-                return parts[1];
-            }
-        }
+				return parts[1];
+			}
+		}
 
-        public (bool, DateTime?) EstaAutenticado
+		public (bool, DateTime?) EstaAutenticado
 		{
 			get
 			{
@@ -128,6 +129,8 @@ namespace gc.sitio.Controllers
 				var handler = new JwtSecurityTokenHandler(); //Libreria System.IdentityModel.Token.Jwt (6.7.1)
 				var tokenS = handler.ReadToken(Token) as JwtSecurityToken;
 
+				if (tokenS == null)
+					return false;
 				var rolesUser = tokenS.Claims.First(c => c.Type.Contains("role")).Value;
 				if (string.IsNullOrEmpty(rolesUser)) { return false; }
 				return true;
@@ -140,6 +143,8 @@ namespace gc.sitio.Controllers
 			{
 				var handler = new JwtSecurityTokenHandler(); //Libreria System.IdentityModel.Token.Jwt (6.7.1)
 				var tokenS = handler.ReadToken(TokenCookie) as JwtSecurityToken;
+				if (tokenS == null)
+					return string.Empty;
 				var rolesUser = tokenS.Claims.First(c => c.Type.Contains("role")).Value;
 
 				#region codigo despreciable para saber el rol
@@ -183,6 +188,8 @@ namespace gc.sitio.Controllers
 			{
 				var handler = new JwtSecurityTokenHandler(); //Libreria System.IdentityModel.Token.Jwt (6.7.1)
 				var tokenS = handler.ReadToken(TokenCookie) as JwtSecurityToken;
+				if (tokenS == null)
+					return Guid.Empty;
 				var id = tokenS.Claims.First(c => c.Type.Contains("id")).Value;
 				if (string.IsNullOrEmpty(id)) { return default; }
 				return id.ToGuid();
@@ -195,6 +202,8 @@ namespace gc.sitio.Controllers
 			{
 				var handler = new JwtSecurityTokenHandler(); //Libreria System.IdentityModel.Token.Jwt (6.7.1)
 				var tokenS = handler.ReadToken(TokenCookie) as JwtSecurityToken;
+				if (tokenS == null)
+					return string.Empty;
 				var usuario = tokenS.Claims.First(c => c.Type.Contains("user")).Value;
 				if (string.IsNullOrEmpty(usuario)) { return string.Empty; }
 				return usuario;
@@ -614,7 +623,7 @@ namespace gc.sitio.Controllers
 		#endregion
 
 		#region AJUSTES DE STOCK
-		protected List<AjustePrevioCargadoDto> AjustePrevioCargadoLista 
+		protected List<AjustePrevioCargadoDto> AjustePrevioCargadoLista
 		{
 			get
 			{
@@ -742,50 +751,50 @@ namespace gc.sitio.Controllers
 				_context.HttpContext.Session.SetString("RubroLista", json);
 			}
 		}
-        #endregion
+		#endregion
 
-        #region TIPO DE NEGOCIO
-        public List<TipoNegocioDto> TipoNegocioLista
-        {
-            get
-            {
-                var json = _context.HttpContext.Session.GetString("TipoNegocioLista");
-                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
-                {
-                    return new List<TipoNegocioDto>();
-                }
-                return JsonConvert.DeserializeObject<List<TipoNegocioDto>>(json);
-            }
-            set
-            {
-                var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("TipoNegocioLista", json);
-            }
-        }
-        #endregion
+		#region TIPO DE NEGOCIO
+		public List<TipoNegocioDto> TipoNegocioLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("TipoNegocioLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<TipoNegocioDto>();
+				}
+				return JsonConvert.DeserializeObject<List<TipoNegocioDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("TipoNegocioLista", json);
+			}
+		}
+		#endregion
 
-        #region ZONAS
-        public List<ZonaDto> ZonasLista
-        {
-            get
-            {
-                var json = _context.HttpContext.Session.GetString("ZonasLista");
-                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
-                {
-                    return new List<ZonaDto>();
-                }
-                return JsonConvert.DeserializeObject<List<ZonaDto>>(json);
-            }
-            set
-            {
-                var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("ZonasLista", json);
-            }
-        }
-        #endregion
+		#region ZONAS
+		public List<ZonaDto> ZonasLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("ZonasLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<ZonaDto>();
+				}
+				return JsonConvert.DeserializeObject<List<ZonaDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("ZonasLista", json);
+			}
+		}
+		#endregion
 
-        #region Metodos generales
-        public PartialViewResult ObtenerMensajeDeError(string mensaje)
+		#region Metodos generales
+		public PartialViewResult ObtenerMensajeDeError(string mensaje)
 		{
 			RespuestaGenerica<EntidadBase> response = new()
 			{
@@ -837,7 +846,7 @@ namespace gc.sitio.Controllers
 
 		protected GridCore<T> GenerarGrilla<T>(List<T>? lista, string nnCol, int cantReg, int pagina, int totalReg, int totalPag = 0, string sortDir = "ASC")
 		{
-			var l = new StaticPagedList<T>(lista, pagina, cantReg, lista.Count);
+			var l = new StaticPagedList<T>(lista, pagina, cantReg, lista != null ? lista.Count : 0);
 
 			return new GridCore<T>() { ListaDatos = l, CantidadReg = cantReg, PaginaActual = pagina, CantidadPaginas = totalPag, Sort = nnCol, SortDir = sortDir };
 		}
@@ -860,74 +869,74 @@ namespace gc.sitio.Controllers
 		}
 
 		protected void ObtenerTiposNegocio(ITipoNegocioServicio _tipoNegSv)
-        {
-            //se guardan los tipos de negocio en session. Para ser utilizados posteriormente
+		{
+			//se guardan los tipos de negocio en session. Para ser utilizados posteriormente
 
-            TipoNegocioLista = _tipoNegSv.ObtenerTiposDeNegocio(TokenCookie);
-        }
+			TipoNegocioLista = _tipoNegSv.ObtenerTiposDeNegocio(TokenCookie);
+		}
 
-        protected void ObtenerZonas(IZonaServicio _zonaSv)
-        {
-            //se guardan las zonas en session. Para ser utilizados posteriormente
+		protected void ObtenerZonas(IZonaServicio _zonaSv)
+		{
+			//se guardan las zonas en session. Para ser utilizados posteriormente
 
-            ZonasLista = _zonaSv.GetZonaLista(TokenCookie);
-        }
+			ZonasLista = _zonaSv.GetZonaLista(TokenCookie);
+		}
 
-        [HttpPost]
-        public JsonResult BuscarProvs(string prefix)
-        {
-            //var nombres = await _provSv.BuscarAsync(new QueryFilters { Search = prefix }, TokenCookie);
-            //var lista = nombres.Item1.Select(c => new EmpleadoVM { Nombre = c.NombreCompleto, Id = c.Id, Cuil = c.CUIT });
-            var prov = ProveedoresLista.Where(x => x.Cta_Lista.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
-            var proveedores = prov.Select(x => new ComboGenDto { Id = x.Cta_Id, Descripcion = x.Cta_Lista });
-            return Json(proveedores);
-        }
+		[HttpPost]
+		public JsonResult BuscarProvs(string prefix)
+		{
+			//var nombres = await _provSv.BuscarAsync(new QueryFilters { Search = prefix }, TokenCookie);
+			//var lista = nombres.Item1.Select(c => new EmpleadoVM { Nombre = c.NombreCompleto, Id = c.Id, Cuil = c.CUIT });
+			var prov = ProveedoresLista.Where(x => x.Cta_Lista.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
+			var proveedores = prov.Select(x => new ComboGenDto { Id = x.Cta_Id, Descripcion = x.Cta_Lista });
+			return Json(proveedores);
+		}
 
-        [HttpPost]
-        public JsonResult BuscarRubros(string prefix)
-        {
-            //var nombres = await _provSv.BuscarAsync(new QueryFilters { Search = prefix }, TokenCookie);
-            //var lista = nombres.Item1.Select(c => new EmpleadoVM { Nombre = c.NombreCompleto, Id = c.Id, Cuil = c.CUIT });
-            var rub = RubroLista.Where(x => x.Rub_Desc.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
-            var rubros = rub.Select(x => new ComboGenDto { Id = x.Rub_Id, Descripcion = x.Rub_Desc });
-            return Json(rubros);
-        }
+		[HttpPost]
+		public JsonResult BuscarRubros(string prefix)
+		{
+			//var nombres = await _provSv.BuscarAsync(new QueryFilters { Search = prefix }, TokenCookie);
+			//var lista = nombres.Item1.Select(c => new EmpleadoVM { Nombre = c.NombreCompleto, Id = c.Id, Cuil = c.CUIT });
+			var rub = RubroLista.Where(x => x.Rub_Desc.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
+			var rubros = rub.Select(x => new ComboGenDto { Id = x.Rub_Id, Descripcion = x.Rub_Desc });
+			return Json(rubros);
+		}
 
 
-        protected async Task<IActionResult> BusquedaAvanzada(string ri01, string ri02, bool act, bool dis, bool ina, bool cstk, bool sstk, string search, IProductoServicio _productoServicio)
-        {
-            GridCore<ProductoListaDto> grillaDatos;
-            RespuestaGenerica<EntidadBase> response = new();
-            try
-            {
-                var busc = new BusquedaProducto
-                {
-                    Busqueda = search,
-                    ConStock = cstk,
-                    SinStock = sstk,
-                    CtaProveedorId = ri01,
-                    RubroId = ri02,
-                    EstadoActivo = act,
-                    EstadoDiscont = dis,
-                    EstadoInactivo = ina
-                };
+		protected async Task<IActionResult> BusquedaAvanzada(string ri01, string ri02, bool act, bool dis, bool ina, bool cstk, bool sstk, string search, IProductoServicio _productoServicio)
+		{
+			GridCore<ProductoListaDto> grillaDatos;
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				var busc = new BusquedaProducto
+				{
+					Busqueda = search,
+					ConStock = cstk,
+					SinStock = sstk,
+					CtaProveedorId = ri01,
+					RubroId = ri02,
+					EstadoActivo = act,
+					EstadoDiscont = dis,
+					EstadoInactivo = ina
+				};
 
-                List<ProductoListaDto> productos = await _productoServicio.BusquedaListaProductos(busc, TokenCookie);
-                grillaDatos = GenerarGrilla<ProductoListaDto>(productos, "p_id");
-                return PartialView("_gridProdsAdv", grillaDatos);
-            }
-            catch (Exception ex)
-            {
-                string msg = "Error en la invocación de la API - Busqueda Avanzada";
-                _logger.LogError(ex, "Error en la invocación de la API - Busqueda Avanzada");
-                response.Mensaje = msg;
-                response.Ok = false;
-                response.EsWarn = false;
-                response.EsError = true;
-                return PartialView("_gridMensaje", response);
-            }
-        }
+				List<ProductoListaDto> productos = await _productoServicio.BusquedaListaProductos(busc, TokenCookie);
+				grillaDatos = GenerarGrilla<ProductoListaDto>(productos, "p_id");
+				return PartialView("_gridProdsAdv", grillaDatos);
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda Avanzada";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda Avanzada");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
 
-        #endregion
-    }
+		#endregion
+	}
 }
