@@ -1,6 +1,7 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.ABM;
+using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
@@ -19,9 +20,11 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
         private readonly IABMProductoServicio _abmProdServ;
         private readonly ICuentaServicio _ctaSv;
         private readonly IRubroServicio _rubSv;
+        private readonly ILogger<AbmProductoController> _logger;
+
 
         public AbmProductoController(IOptions<AppSettings> options, IHttpContextAccessor accessor, IABMProductoServicio productoServicio,
-             ICuentaServicio cta, IRubroServicio rubro) : base(options, accessor)
+             ICuentaServicio cta, IRubroServicio rubro, ILogger<AbmProductoController> logger) : base(options, accessor, logger)
         {
             _settings = options.Value;
             _abmProdServ = productoServicio;
@@ -32,9 +35,9 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
         [HttpGet]
         public async Task<IActionResult> Index( bool actualizar = false)
         {
-            List<ABMProductoSearchDto> lista;
+            List<ProductoListaDto> lista;
             MetadataGrid metadata;
-            GridCore<ABMProductoSearchDto> grillaDatos;
+            GridCore<ProductoListaDto> grillaDatos;
 
             
             
@@ -68,9 +71,9 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
         [HttpPost]
         public async Task<IActionResult> Buscar(QueryFilters query, string sort = "p_id", string sortDir = "asc", int pag = 1, bool actualizar = false)
         {
-            List<ABMProductoSearchDto> lista;
+            List<ProductoListaDto> lista;
             MetadataGrid metadata;
-            GridCore<ABMProductoSearchDto> grillaDatos;
+            GridCore<ProductoListaDto> grillaDatos;
 
             if (PaginaProd == pag && ProductosBuscados.Count > 0)
             {

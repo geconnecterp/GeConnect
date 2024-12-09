@@ -4,7 +4,7 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
-using gc.infraestructura.Dtos.ABM;
+using gc.infraestructura.Dtos.Almacen;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using System.Text;
@@ -18,7 +18,7 @@ namespace gc.api.core.Servicios.ABM
         {
         }
 
-        public List<ABMProductoSearchDto> Buscar(QueryFilters filtros)
+        public List<ProductoListaDto> Buscar(QueryFilters filtros)
         {
             filtros.Pagina = filtros.Pagina == null || filtros.Pagina <= 0 ? _pagSet.DefaultPageNumber : filtros.Pagina;
             filtros.Registros = filtros.Registros == null || filtros.Registros <= 0 ? _pagSet.DefaultPageSize : filtros.Registros;            
@@ -111,7 +111,7 @@ namespace gc.api.core.Servicios.ABM
             ps.Add(new SqlParameter("@pagina", filtros.Pagina));
             ps.Add(new SqlParameter("@ordenar", filtros.Sort??""));
 
-            List<ABMProductoSearchDto> producto = _repository.EjecutarLstSpExt<ABMProductoSearchDto>(sp, ps, true);
+            List<ProductoListaDto> producto = _repository.EjecutarLstSpExt<ProductoListaDto>(sp, ps, true);
 
             //var items = PagedList<ABMProductoSearchDto>.Create(producto, filtros.Pagina.Value, filtros.Registros.Value);
 

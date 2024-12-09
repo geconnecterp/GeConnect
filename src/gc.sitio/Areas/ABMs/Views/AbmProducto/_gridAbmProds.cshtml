@@ -1,7 +1,7 @@
-﻿@model GridCore<ABMProductoSearchDto>
+﻿@model GridCore<ProductoListaDto>
 
 @{
-    var dataMod = new ABMProductoSearchDto();
+    var dataMod = new ProductoListaDto();
     var alt = true;
     string clase = string.Empty;
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
@@ -15,14 +15,14 @@
                     <tr class="header">
                         <th scope="col">@nameof(dataMod.P_id)</th>
                         <th scope="col">@nameof(dataMod.P_desc)</th>
-                        <th scope="col">@nameof(dataMod.cta_id)</th>
+                        <th scope="col">@nameof(dataMod.Cta_id)</th>
                         <th scope="col">@nameof(dataMod.Cta_denominacion)</th>
                         <th scope="col">@nameof(dataMod.Cta_lista)</th>
-                        <th scope="col">@nameof(dataMod.rub_id)</th>
-                        <th scope="col">@nameof(dataMod.rub_desc)</th>
-                        <th scope="col">@nameof(dataMod.rub_lista)</th>
-                        <th scope="col">@nameof(dataMod.p_activo)</th>
-                        <th scope="col">@nameof(dataMod.p_activo_des)</th>
+                        <th scope="col">@nameof(dataMod.Rub_id)</th>
+                        <th scope="col">@nameof(dataMod.Rub_desc)</th>
+                        <th scope="col">@nameof(dataMod.Rub_lista)</th>
+                        <th scope="col">@nameof(dataMod.P_activo)</th>
+                        <th scope="col">@nameof(dataMod.P_activo_des)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -33,33 +33,18 @@
                         <tr class="@clase">
                             <td class="text-sm-center">@item.P_id</td>
                             <td class="text-sm-start">@item.P_desc</td>
-                            <td class="text-sm-end">@item.cta_id</td>
+                            <td class="text-sm-end">@item.Cta_id</td>
                             <td class="text-sm-start">@item.Cta_denominacion</td>
                             <td class="text-sm-start">@item.Cta_lista</td>
-                            <td class="text-sm-end">@item.rub_id</td>
-                            <td class="text-sm-start">@item.rub_desc</td>
-                            <td class="text-sm-start">@item.rub_lista</td>
-                            <td class="text-sm-center">@item.p_activo</td>
-                            <td class="text-sm-start">@item.p_activo_des</td>
+                            <td class="text-sm-end">@item.Rub_id</td>
+                            <td class="text-sm-start">@item.Rub_desc</td>
+                            <td class="text-sm-start">@item.Rub_lista</td>
+                            <td class="text-sm-center">@item.P_activo</td>
+                            <td class="text-sm-start">@item.P_activo_des</td>
                         </tr>
                     }
                     
-                </tbody>
-               @*  <tfoot>
-                    <tr>
-                        <td colspan="10">
-                            
-                           @*  @Html.PagedListPager(
-                                     (IPagedList)Model.ListaDatos,
-                                     page => Url.Action("Index", "abmproducto", new { page = page, area = "abms", sort = Model.Sort, sortdir = sortDirInv }), new PagedListRenderOptions
-                            {
-                                LiElementClasses = new string[] { "page-item" },
-                                PageClasses = new string[] { "page-link" },
-                                Display = PagedListDisplayMode.IfNeeded
-                            }) * @
-                        </td>
-                    </tr>
-                </tfoot> *@
+                </tbody>              
             </table>           
         </div>
     </div>

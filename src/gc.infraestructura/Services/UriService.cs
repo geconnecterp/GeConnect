@@ -5,6 +5,7 @@ namespace gc.infraestructura.Core.Services
     using System;
     using gc.infraestructura.Core.EntidadesComunes;
     using gc.infraestructura.Core.Interfaces;
+    using gc.infraestructura.EntidadesComunes.Options;
 
     public class UriService : IUriService
     {
@@ -20,5 +21,11 @@ namespace gc.infraestructura.Core.Services
             string baseUrl = $"{_baseUri}{actionUrl}";
             return new Uri(baseUrl);
         }
+        public Uri GetPostPaginationUri(BusquedaProducto filter, string actionUrl)
+        {
+            string baseUrl = $"{_baseUri}{actionUrl}";
+            return new Uri(baseUrl);
+        }
+        
     }
 }

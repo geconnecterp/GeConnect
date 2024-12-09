@@ -23,7 +23,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         private readonly AppSettings _settings;
 
         public DevPController(IOptions<AppSettings> options, IHttpContextAccessor context, IOptions<MenuSettings> options1,
-            ILogger<RPRController> logger, IProductoServicio productoServicio, IDepositoServicio depositoServicio, IProducto2Servicio producto2Servicio) : base(options, context)
+            ILogger<RPRController> logger, IProductoServicio productoServicio, IDepositoServicio depositoServicio, IProducto2Servicio producto2Servicio) : base(options, context, logger)
         {
             _menuSettings = options1.Value;
             _logger = logger;

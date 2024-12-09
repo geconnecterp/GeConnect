@@ -2,7 +2,10 @@
     $("#btnCancel").on("click", function () {
         $("#btnFiltro").trigger("click");
     });
-    $("#pagEstado").on("change", cargaPaginacion);
+    $("#pagEstado").on("change", function () {
+        var div = $("#divPaginacion");
+        presentaPaginacion(div);
+    });
     $("#btnBuscar").on("click", function () { buscarProductos(pagina); });
 
     //check generico REL02 activando componentes disables
@@ -28,6 +31,7 @@ function InicializaPantallaAbmProd() {
         $("#collapseExample").collapse("show")
     } 
 
+    $("#lbRel01").text("PROVEEDORES");
     $("#lbRel02").text("RUBRO");
 
 
@@ -35,20 +39,20 @@ function InicializaPantallaAbmProd() {
     return true;
 }
  
-function cargaPaginacion() {
-    $("#divPaginacion").pagination({
-        items: totalRegs,
-        itemsOnPage: pagRegs,        
-        cssStyle: "dark-theme",
-        currentPage: pagina,
-        onPageClick: function (num) {
-            buscarProductos(num);
-        }
-    });
-    $("#pagEstado").val(false);
-    $("#collapseExample").collapse("hide")
-    return true;
-}
+//function cargaPaginacion() {
+//    $("#divPaginacion").pagination({
+//        items: totalRegs,
+//        itemsOnPage: pagRegs,        
+//        cssStyle: "dark-theme",
+//        currentPage: pagina,
+//        onPageClick: function (num) {
+//            buscarProductos(num);
+//        }
+//    });
+//    $("#pagEstado").val(false);
+//    $("#collapseExample").collapse("hide")
+//    return true;
+//}
 
 function buscarProductos(pag) {
     AbrirWaiting();
@@ -76,6 +80,7 @@ function buscarProductos(pag) {
         "sortDir": null,
         pag
     };
+
     PostGenHtml(data, buscarUrl, function (obj) {
         $("#divGrilla").html(obj);
         $("#collapseExample").collapse("hide")

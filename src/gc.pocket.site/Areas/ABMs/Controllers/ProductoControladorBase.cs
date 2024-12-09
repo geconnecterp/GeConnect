@@ -1,17 +1,29 @@
-﻿using gc.infraestructura.Core.EntidadesComunes;
+﻿using gc.api.core.Entidades;
+using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.ABM;
+using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.EntidadesComunes.Options;
 using gc.pocket.site.Controllers;
+using gc.sitio.core.Servicios.Contratos;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace gc.pocket.site.Areas.ABMs.Controllers
 {
     public class ProductoControladorBase:ControladorBase
     {
-        public ProductoControladorBase(IOptions<AppSettings> options, IHttpContextAccessor accessor) :base(options,accessor)
+        private readonly AppSettings _setting;
+        private readonly ILogger _logger;
+
+        public ProductoControladorBase(IOptions<AppSettings> options,  IHttpContextAccessor accessor, ILogger logger) :base(options,accessor,logger)
         {
-            
+            _setting = options.Value;
+            _logger = logger;
         }
 
 
@@ -55,7 +67,7 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
             }
         }
 
-        public List<ABMProductoSearchDto> ProductosBuscados
+        public List<ProductoListaDto> ProductosBuscados
         {
             get
             {
@@ -64,7 +76,7 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
                 {
                     return [];
                 }
-                return JsonConvert.DeserializeObject<List<ABMProductoSearchDto>>(json);
+                return JsonConvert.DeserializeObject<List<ProductoListaDto>>(json);
             }
             set
             {
@@ -93,5 +105,65 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
         }
 
         #endregion
+
+        protected async Task<IActionResult> BusquedaAvanzada(string ri01, string ri02, bool act, bool dis, bool ina,
+
+        bool cstk, bool sstk, string search, bool buscaNew, IProductoServicio _productoServicio, string sort = "p_id", string sortDir = "asc", int pag = 1)
+        {
+            List<ProductoListaDto> lista;
+            MetadataGrid metadata;
+            GridCore<ProductoListaDto> grillaDatos;
+            RespuestaGenerica<EntidadBase> response = new();
+            try
+            {
+                if (!buscaNew && PaginaProd==pag)
+                {
+                    //es la misma pagina y hay registros, se realiza el reordenamiento de los datos.
+                    lista = ProductosBuscados.ToList();
+                    lista = OrdenarEntidad(lista, sortDir, sort);
+                    ProductosBuscados = lista;
+                }
+                else  
+                {
+                    PaginaProd = pag;
+                    //traemos datos desde la base
+                    var busc = new BusquedaProducto
+                    {
+                        Busqueda = search,
+                        ConStock = cstk,
+                        SinStock = sstk,
+                        CtaProveedorId = ri01,
+                        RubroId = ri02,
+                        EstadoActivo = act,
+                        EstadoDiscont = dis,
+                        EstadoInactivo = ina,
+                        Registros = _setting.NroRegistrosPagina,
+                        Pagina = pag,
+                        Sort = sort,
+                        SortDir = sortDir
+                    };
+
+                    var res = await _productoServicio.BusquedaListaProductos(busc, TokenCookie);
+                    lista = res.Item1 ?? [];
+                    MetadataProd = res.Item2 ?? null;
+                    metadata = MetadataProd;
+                    ProductosBuscados = lista;
+                }
+
+                grillaDatos = GenerarGrilla<ProductoListaDto>(ProductosBuscados, "p_desc");
+                return PartialView("_gridProdsAdv", grillaDatos);
+            }
+            catch (Exception ex)
+            {
+                string msg = "Error en la invocación de la API - Busqueda Avanzada";
+                _logger.LogError(ex, "Error en la invocación de la API - Busqueda Avanzada");
+                response.Mensaje = msg;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
+            }
+        }
+
     }
 }

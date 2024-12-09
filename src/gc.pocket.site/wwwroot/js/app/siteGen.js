@@ -279,3 +279,20 @@ $("#Rel02").autocomplete({
         return true;
     }
 });
+
+
+function presentaPaginacion(div) {
+    div.pagination({
+        items: totalRegs,
+        itemsOnPage: pagRegs,
+        cssStyle: "dark-theme",
+        currentPage: pagina,
+        onPageClick: function (num) {
+            //buscarProductos(num);
+            if (funcCallBack !== null) {
+                funcCallBack(num);
+            }
+        }
+    });
+    $("#pagEstado").val(false);
+}
