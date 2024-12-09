@@ -16,7 +16,7 @@ namespace gc.pocket.site.Areas.ControlComun.Controllers
         private readonly ILogger<CuentaController> _logger;
         private readonly ICuentaServicio _cuentaServicio;
 
-        public CuentaController(ILogger<CuentaController> logger, ICuentaServicio cuentaServicio, IOptions<AppSettings> options1, IHttpContextAccessor context) : base(options1, context)
+        public CuentaController(ILogger<CuentaController> logger, ICuentaServicio cuentaServicio, IOptions<AppSettings> options1, IHttpContextAccessor context) : base(options1, context,logger)
         { 
             _logger = logger;
             _cuentaServicio = cuentaServicio;

@@ -1,61 +1,31 @@
 ﻿$(function () {
-    
+
     $("input#Busqueda").keypress(verificaTeclaDeBusqueda);
+    $("input#Rel01").on("click", function () {
+        $("input#Rel01").val("");
+        $("#Rel01Item").val("");
+    });
+    $("input#Rel02").on("click", function () {
+        $("input#Rel02").text("");
+        $("#Rel02Item").val("");
+    });
+
     $("input").on("focus", function () { $(this).select(); })
 
-    $("#btnBuscarProd").on("click",busquedaAvanzadaProductos)
+    $("#btnBuscarProd").on("click", function () { busquedaAvanzadaProductos(pagina); })
 
-    ////declaramos el input de proveedor como autocomplete
-    //$("#ProveedorNombre").autocomplete({
-    //    source: function (request, response) {
-    //        data = { prefix: request.term }
-    //        $.ajax({
-    //            url: buscarProveedorUrl,
-    //            type: "POST",
-    //            dataType: "json",
-    //            data: data,
-    //            success: function (obj) {
-    //                response($.map(obj, function (item) {
-    //                    var texto = item.cta_Id + "-" + item.cta_Denominacion;
-    //                    return { label: texto, value: item.cta_Denominacion, id: item.cta_Id };
-    //                }));
-    //            }
-    //        })
-    //    },
-    //    minLength: 3,
-    //    select: function (event, ui) {
-    //        $("#CtaProveedorId").val(ui.item.id);
-    //        return true;
-    //    }
-    //});
+    //le especifico dinamicamente cual sera el div a cargar el paginado
+    $("#pagEstado").on("change", function () {
+        var div = $("#divPaginacionAdv");
+        presentaPaginacion(div);
+    });
 
-    //$("#RubroNombre").autocomplete({
-    //    source: function (request, response) {
-    //        data = { prefix: request.term }
-    //        $.ajax({
-    //            url: buscarRubroUrl,
-    //            type: "POST",
-    //            dataType: "json",
-    //            data: data,
-    //            success: function (obj) {
-    //                response($.map(obj, function (item) {
-    //                    var texto = item.rub_Desc;
-    //                    return { label: texto, value: item.rub_Desc, id: item.rub_Id };
-    //                }));
-    //            }
-    //        })
-    //    },
-    //    minLength: 3,
-    //    select: function (event, ui) {
-    //        $("#RubroId").val(ui.item.id);
-    //        return true;
-    //    }
-    //});
+    funcCallBack = busquedaAvanzadaProductos;
 
     return true;
 });
 
-function busquedaAvanzadaProductos() {
+function busquedaAvanzadaProductos(pag) {
     var ri01 = $("#Rel01Item").val();
     var ri02 = $("#Rel02Item").val();
     //activos
@@ -76,16 +46,50 @@ function busquedaAvanzadaProductos() {
             cstk = true;
         }
     }
-
-    var search = $("#Search").val();
-
-    var data = {
-        ri01, ri02, act,dis, ina, cstk, sstk,search
+    var buscar = $("#Search").val();
+    var data1= {
+        ri01, ri02, act, dis, ina, cstk, sstk, buscar
     };
+    //si es distinto es TRUE    
+    var buscaNew = JSON.stringify(dataBak) != JSON.stringify(data1)
+    if (buscaNew===false) {
+        //son iguales las condiciones cambia de pagina
+        pagina = pag;
+    }
+    else {
+        dataBak = data1;
+        pagina = 1;
+        pag = 1;
+    }
+
+    var sort = null;
+    var sortDir = null
+
+    var data2 = {sort,sortDir,pag,buscaNew}
+
+    var data = $.extend({}, data1, data2);
+    //{
+    //    ri01, ri02, act, dis, ina, cstk, sstk,buscar,sort,sortDir,pag
+    //};
 
     PostGenHtml(data, busquedaAvanzadaUrl, function (obj) {
         $("#divBusquedaAvanzada").html(obj);
+        PostGen({}, buscarMetadataURL, function (obj) {
+            if (obj.error === true) {
+                AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                    $("#msjModal").modal("hide");
+                    return true;
+                }, false, ["Aceptar"], "error!", null);
+            }
+            else {
+                totalRegs = obj.metadata.totalCount;
+                pags = obj.metadata.totalPages;
+                pagRegs = obj.metadata.pageSize;
 
+                $("#pagEstado").val(true).trigger("change");
+            }
+
+        });
     });
 
     return true;
@@ -101,12 +105,12 @@ function buscarProducto() {
     if (typeof modulo !== 'undefined') {
         mod = modulo;
     }
-   
+
     if (typeof validarEstado !== 'undefined') {
         valEst = validarEstado;
     }
-    
-    var datos = { busqueda: valor, validarEstado:valEst,modulo:mod };
+
+    var datos = { busqueda: valor, validarEstado: valEst, modulo: mod };
 
     PostGen(datos, _post, function (obj) {
         CerrarWaiting();
@@ -116,13 +120,13 @@ function buscarProducto() {
                 productoBase = null;
                 $("#estadoFuncion").val(false);
                 $("#btnBusquedaBase").prop("disabled", false);
-                    $("#msjModal").modal("hide");
+                $("#msjModal").modal("hide");
                 $("#Busqueda").focus();
                 return true;
-            }, false, ["Aceptar"], "error!", null);           
+            }, false, ["Aceptar"], "error!", null);
         }
         else if (obj.warn === true) {
-            if (obj.producto.p_Id === "0000-0000") {
+            if (obj.producto.p_id === "0000-0000") {
 
                 AbrirMensaje("ATENCIÓN", obj.msg, function () {
                     productoBase = null;
@@ -131,23 +135,45 @@ function buscarProducto() {
                     $("#msjModal").modal("hide");
                     $("#Busqueda").focus();
                     return true;
-                }, false, ["Aceptar"], "error!", null);                   
+                }, false, ["Aceptar"], "error!", null);
             }
-            else if (obj.producto.p_Id === "NO") {
-                //se busco un codigo pero no se encontró
-                if (typeof funcionBusquedaAvanzada !== 'undefined' || funcionBusquedaAvanzada === false) {
-                    //si no esta la variable funcionBusquedaAvanzada o la misma es false, no se realiza la busqueda avanzada
-                    productoBase = null;
-                    $("#estadoFuncion").val(false);
-                    $("#btnBusquedaBase").prop("disabled", false);
-                    $("#msjModal").modal("hide");
-                    $("#Busqueda").focus();
+            else if (obj.producto.p_id === "NO") {
+                CerrarWaiting();
+
+                if (funcionBusquedaAvanzada === true) {
+                    AbrirMensaje("ATENCIÓN", "NO SE ENCONTRO EL PRODUCTO QUE INTENTO BUSCAR. SE ABRIRÁ LA BUSQUEDA AVANZADA.", function () {
+                        $("#msjModal").modal("hide");                        
+                        productoBase = null;
+                        $("#estadoFuncion").val(false);
+                        $("#busquedaModal").modal("toggle");
+                        return true;
+                    }, false, ["Aceptar"], "error!", null);
+
                     return true;
                 }
                 else {
-                    ///se abre el modal de la busqueda avanzada
-                    $("#busquedaModal").modal("toggle");
+                    AbrirMensaje("ATENCIÓN", "NO SE ENCONTRO EL PRODUCTO QUE INTENTO BUSCAR.", function () {                       
+                        $("#msjModal").modal("hide");
+                        $("#Busqueda").focus();
+                        return true;
+                    }, false, ["Aceptar"], "error!", null);
+
                 }
+
+                ////se busco un codigo pero no se encontró
+                //if (typeof funcionBusquedaAvanzada !== 'undefined' || funcionBusquedaAvanzada === false) {
+                //    //si no esta la variable funcionBusquedaAvanzada o la misma es false, no se realiza la busqueda avanzada
+                //    productoBase = null;
+                //    $("#estadoFuncion").val(false);
+                //    $("#btnBusquedaBase").prop("disabled", false);
+                //    $("#msjModal").modal("hide");
+                //    $("#Busqueda").focus();
+                //    return true;
+                //}
+                //else {
+                //    ///se abre el modal de la busqueda avanzada
+                //    $("#busquedaModal").modal("toggle");
+                //}
             } else {
                 //encontro producto pero hay warning
                 CerrarWaiting();

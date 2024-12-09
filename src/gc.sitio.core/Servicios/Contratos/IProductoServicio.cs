@@ -13,6 +13,7 @@ using gc.infraestructura.EntidadesComunes.Options;
 using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
+using gc.infraestructura.Core.EntidadesComunes;
 
 namespace gc.sitio.core.Servicios.Contratos
 {
@@ -21,7 +22,7 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<ProductoBusquedaDto> BusquedaBaseProductos(BusquedaBase busqueda, string token);
 		Task<List<ProductoBusquedaDto>> BusquedaBaseProductosPorIds(BusquedaBase busqueda, string token);
 
-		Task<List<ProductoListaDto>> BusquedaListaProductos(BusquedaProducto search, string tokenCookie);
+		Task<(List<ProductoListaDto>,MetadataGrid?)> BusquedaListaProductos(BusquedaProducto search, string tokenCookie);
 		Task<List<InfoProdStkD>> InfoProductoStkD(string id, string admId, string token);
 		Task<List<InfoProdStkBox>> InfoProductoStkBoxes(string id, string adm, string depo, string token, string box = "");
 		Task<List<InfoProdStkA>> InfoProductoStkA(string id, string admId, string token);

@@ -3,7 +3,7 @@ using gc.api.core.Contratos.Servicios;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Responses;
-using gc.infraestructura.Dtos.ABM;
+using gc.infraestructura.Dtos.Almacen;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Net;
@@ -29,11 +29,11 @@ namespace gc.api.Controllers.Entidades
 
 
         [HttpGet(Name = nameof(GetProductos))]
-        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<IEnumerable<ABMProductoSearchDto>>))]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<IEnumerable<ProductoListaDto>>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public IActionResult GetProductos([FromQuery] QueryFilters filters)
         {
-            ABMProductoSearchDto reg = new ABMProductoSearchDto() { total_paginas = 0, total_registros = 0 };
+            ProductoListaDto reg = new ProductoListaDto() { Total_Paginas = 0, Total_Registros = 0 };
             //_logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
             var prods = _abmProductoServicio.Buscar(filters);
             if (prods.Count > 0)
@@ -44,18 +44,18 @@ namespace gc.api.Controllers.Entidades
             // presentando en el header información basica sobre la paginación
             var metadata = new MetadataGrid
             {
-                TotalCount = reg.total_registros,
+                TotalCount = reg.Total_Registros,
                 PageSize = filters.Registros.Value,
                 CurrentPage = filters.Pagina.Value,
-                TotalPages = reg.total_paginas,
-                HasNextPage = filters.Pagina.Value<reg.total_paginas,
+                TotalPages = reg.Total_Paginas,
+                HasNextPage = filters.Pagina.Value<reg.Total_Paginas,
                 HasPreviousPage = filters.Pagina.Value > 1,
                 NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(GetProductos)) ?? "").ToString(),
                 PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(GetProductos)) ?? "").ToString(),
 
             };
 
-            var response = new ApiResponse<IEnumerable<ABMProductoSearchDto>>(prods)
+            var response = new ApiResponse<IEnumerable<ProductoListaDto>>(prods)
             {
                 Meta = metadata
             };

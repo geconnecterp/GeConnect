@@ -23,7 +23,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         private readonly IProductoServicio _productoServicio;
 
         public RTIController(IOptions<AppSettings> option, IHttpContextAccessor context,
-            ILogger<RTIController> logger, IRemitoServicio remitoServicio, IProductoServicio productoServicio) : base(option, context)
+            ILogger<RTIController> logger, IRemitoServicio remitoServicio, IProductoServicio productoServicio) : base(option, context, logger)
         {
             _settings = option.Value;
             _logger = logger;

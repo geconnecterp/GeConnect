@@ -19,7 +19,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         private readonly AppSettings _appSettings;
         private readonly IProveedorServicio _provSv;
 
-        public ProveedorController(IProveedorServicio proveedoresServicio, ILogger<ProveedorController> logger, IOptions<AppSettings> options, IHttpContextAccessor context) : base(options, context)
+        public ProveedorController(IProveedorServicio proveedoresServicio, ILogger<ProveedorController> logger, IOptions<AppSettings> options, IHttpContextAccessor context) : base(options, context,logger)
         {
             _appSettings = options.Value;
             _logger = logger;

@@ -31,7 +31,7 @@ namespace gc.pocket.site.Areas.Seguridad.Controllers
 
         public TokenController(IConfiguration configuration, ILogger<TokenController> logger,
             IOptions<AppSettings> options, IAdministracionServicio servicio, IOptions<AppSettings> options1,
-            IHttpContextAccessor context) : base(options, context)
+            IHttpContextAccessor context) : base(options, context, logger)
         {
             _configuration = configuration;
             _logger = logger;

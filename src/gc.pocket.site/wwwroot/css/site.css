@@ -60,7 +60,13 @@ th, td {
 
 .table-wrapper {
     max-height: 500px;
-    max-width: 90%;
+    max-width: 100%;
+    overflow: auto;
+    /*display: inline-block;*/
+}
+.table-wrapper-modal {
+    max-height: 150px;
+    max-width: 100%;
     overflow: auto;
     /*display: inline-block;*/
 }
