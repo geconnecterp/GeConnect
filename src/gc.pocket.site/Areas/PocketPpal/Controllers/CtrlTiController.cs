@@ -21,7 +21,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         private readonly IProductoServicio _productoServicio;
 
         public CtrlTiController(IOptions<AppSettings> options, IHttpContextAccessor context, IOptions<MenuSettings> options1,
-            ILogger<CtrlTiController> logger, IProductoServicio productoServicio) : base(options, context)
+            ILogger<CtrlTiController> logger, IProductoServicio productoServicio) : base(options, context, logger)
         {
             _menuSettings = options1.Value;
             _settings = options.Value;

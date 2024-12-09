@@ -288,7 +288,10 @@ function presentaPaginacion(div) {
         cssStyle: "dark-theme",
         currentPage: pagina,
         onPageClick: function (num) {
-            buscarProductos(num);
+            //buscarProductos(num);
+            if (funcCallBack !== null) {
+                funcCallBack(num);
+            }
         }
     });
     $("#pagEstado").val(false);

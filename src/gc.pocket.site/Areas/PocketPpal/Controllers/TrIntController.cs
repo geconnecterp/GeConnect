@@ -24,7 +24,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         private readonly AppSettings _settings;
 
         public TrIntController(IOptions<AppSettings> options, IHttpContextAccessor context, IOptions<MenuSettings> options1,
-            ILogger<TrIntController> logger, IProductoServicio productoServicio, IAdministracionServicio admiServicio) : base(options, context)
+            ILogger<TrIntController> logger, IProductoServicio productoServicio, IAdministracionServicio admiServicio) : base(options, context, logger)
         {
             _menuSettings = options1.Value;
             _logger = logger;

@@ -1,11 +1,9 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
-using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
-using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.ABM;
 using Microsoft.AspNetCore.Mvc;
@@ -37,8 +35,6 @@ namespace gc.sitio.Areas.ABMs.Controllers
             List<ProductoListaDto> lista;
             MetadataGrid metadata;
             GridCore<ProductoListaDto> grillaDatos;
-
-            
             
             var auth = EstaAutenticado;
             if (!auth.Item1 || auth.Item2 < DateTime.Now)

@@ -4,6 +4,7 @@ using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Seguridad;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
+using gc.pocket.site.Areas.ABMs.Controllers;
 using gc.pocket.site.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +13,7 @@ using Microsoft.Extensions.Options;
 namespace gc.pocket.site.Areas.Gestion.Controllers
 {
     [Area("Gestion")]
-    public class ProductoController : ControladorBase
+    public class ProductoController : ProductoControladorBase
     {
         private readonly MenuSettings _menuSettings;
         private readonly ILogger<ProductoController> _logger;
@@ -23,7 +24,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         private readonly BusquedaProducto _busqueda;
 
         public ProductoController(ILogger<ProductoController> logger, IOptions<MenuSettings> options, IOptions<AppSettings> options1, IOptions<BusquedaProducto> busqueda,
-            ICuentaServicio cuentaServicio, IHttpContextAccessor context, IRubroServicio rubSv, IProductoServicio productoServicio, IRemitoServicio remitoServicio) : base(options1, options, context, logger)
+            ICuentaServicio cuentaServicio, IHttpContextAccessor context, IRubroServicio rubSv, IProductoServicio productoServicio, IRemitoServicio remitoServicio) : base(options1, context, logger)
         {
             _logger = logger;
             _menuSettings = options.Value;
@@ -179,9 +180,9 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         //}
 
         [HttpPost]
-        public async Task<IActionResult> BusquedaAvanzada(string ri01, string ri02, bool act, bool dis, bool ina, bool cstk, bool sstk, string search)
+        public async Task<IActionResult> BusquedaAvanzada(string ri01, string ri02, bool act, bool dis, bool ina, bool cstk, bool sstk, string buscar, bool buscaNew, string sort = "p_id", string sortDir = "asc", int pag = 1)
         {
-            return await BusquedaAvanzada(ri01, ri02, act, dis, ina, cstk, sstk, search, _productoServicio);
+            return await BusquedaAvanzada(ri01, ri02, act, dis, ina, cstk, sstk, buscar, buscaNew, _productoServicio, sort, sortDir, pag);
         }
     }
 }

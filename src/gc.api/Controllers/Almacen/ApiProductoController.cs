@@ -60,7 +60,7 @@ namespace gc.api.Controllers.Almacen
 
 
 
-		[HttpPost(Name = "ProductoListaBuscar")]
+		[HttpPost]
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<ProductoListaDto>>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]
@@ -85,8 +85,8 @@ namespace gc.api.Controllers.Almacen
                 TotalPages = reg.Total_Paginas,
                 HasNextPage = filters.Pagina.Value < reg.Total_Paginas,
                 HasPreviousPage = filters.Pagina.Value > 1,
-                NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(ProductoListaBuscar)) ?? "").ToString(),
-                PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(ProductoListaBuscar)) ?? "").ToString(),
+                //NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(ProductoListaBuscar)) ?? "").ToString(),
+                //PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(ProductoListaBuscar)) ?? "").ToString(),
 
             };
 

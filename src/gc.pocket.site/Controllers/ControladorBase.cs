@@ -1,5 +1,6 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Constantes;
+using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos;
@@ -15,11 +16,13 @@ using gc.infraestructura.EntidadesComunes;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq.Dynamic.Core;
 using X.PagedList;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace gc.pocket.site.Controllers
 {
@@ -31,18 +34,19 @@ namespace gc.pocket.site.Controllers
         public List<Orden> _orden;
         private readonly ILogger _logger;
 
-        public ControladorBase(IOptions<AppSettings> options, IOptions<MenuSettings> options1, IHttpContextAccessor contexto,ILogger logger)
+        public ControladorBase(IOptions<AppSettings> options, IOptions<MenuSettings> options1, IHttpContextAccessor contexto, ILogger logger)
         {
             _options = options.Value;
             _menuSettings = options1.Value;
             _context = contexto;
             _logger = logger;
         }
-        public ControladorBase(IOptions<AppSettings> options, IHttpContextAccessor contexto)
+        public ControladorBase(IOptions<AppSettings> options, IHttpContextAccessor contexto,ILogger logger)
         {
             _options = options.Value;
             _menuSettings = null;
             _context = contexto;
+            _logger = logger;
         }
 
         protected AppItem ObtenerModulo(string sigla)
@@ -837,25 +841,25 @@ namespace gc.pocket.site.Controllers
             return query;
         }
 
-        public List<T> OrdenarEntidad<T>(List<T> lista,string sortdir,string sort) where T : Dto
+        public List<T> OrdenarEntidad<T>(List<T> lista, string sortdir, string sort) where T : Dto
         {
-            IQueryable<T> result ;
+            IQueryable<T> result;
             result = lista.AsQueryable().OrderBy($"{sort} {sortdir}");
             return result.ToList();
         }
 
-        protected GridCore<T> GenerarGrilla<T>(List<T>? lista, string nnCol,int cantReg,int pagina,int totalReg,int totalPag=0,string sortDir = "ASC")
+        protected GridCore<T> GenerarGrilla<T>(List<T>? lista, string nnCol, int cantReg, int pagina, int totalReg, int totalPag = 0, string sortDir = "ASC")
         {
-            var l = new StaticPagedList<T>(lista,pagina, cantReg, lista.Count);
+            var l = new StaticPagedList<T>(lista, pagina, cantReg, lista.Count);
 
-            return new GridCore<T>() { ListaDatos = l, CantidadReg = cantReg, PaginaActual = pagina, CantidadPaginas = totalPag, Sort = nnCol, SortDir = sortDir};
+            return new GridCore<T>() { ListaDatos = l, CantidadReg = cantReg, PaginaActual = pagina, CantidadPaginas = totalPag, Sort = nnCol, SortDir = sortDir };
         }
         protected GridCore<T> GenerarGrilla<T>(List<T>? lista, string sort)
         {
             return GenerarGrilla(lista, sort, _options.NroRegistrosPagina, 1, 99999);
         }
 
-  
+
         #region Metodos unicos para realizar busquedas con autocomplete
         protected void ObtenerRubros(IRubroServicio _rubSv)
         {
@@ -890,35 +894,8 @@ namespace gc.pocket.site.Controllers
             return Json(rubros);
         }
 
-   
-        protected async Task<IActionResult> BusquedaAvanzada(string ri01,string ri02,bool act,bool dis,bool ina,bool cstk,bool sstk,string search, IProductoServicio _productoServicio)
-        {
-            GridCore<ProductoListaDto> grillaDatos;
-            RespuestaGenerica<EntidadBase> response = new();
-            try
-            {
-                var busc = new BusquedaProducto { Busqueda=search,ConStock=cstk,SinStock=sstk,CtaProveedorId=ri01,
-                RubroId=ri02,EstadoActivo=act,EstadoDiscont=dis,EstadoInactivo=ina};
 
-                var res = await _productoServicio.BusquedaListaProductos(busc, TokenCookie);
-                if(res.Item1.Count > 0){
-
-                }
-                grillaDatos = GenerarGrilla<ProductoListaDto>(res.Item1, "p_desc");
-                return PartialView("_gridProdsAdv", grillaDatos);
-            }
-            catch (Exception ex)
-            {
-                string msg = "Error en la invocación de la API - Busqueda Avanzada";
-                _logger.LogError(ex, "Error en la invocación de la API - Busqueda Avanzada");
-                response.Mensaje = msg;
-                response.Ok = false;
-                response.EsWarn = false;
-                response.EsError = true;
-                return PartialView("_gridMensaje", response);
-            }
-        }
-
+    
         #endregion
     }
 }
