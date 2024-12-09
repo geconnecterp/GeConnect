@@ -140,7 +140,8 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
                         Registros = _setting.NroRegistrosPagina,
                         Pagina = pag,
                         Sort = sort,
-                        SortDir = sortDir
+                        SortDir = sortDir,
+                        Administracion = AdministracionId
                     };
 
                     var res = await _productoServicio.BusquedaListaProductos(busc, TokenCookie);
