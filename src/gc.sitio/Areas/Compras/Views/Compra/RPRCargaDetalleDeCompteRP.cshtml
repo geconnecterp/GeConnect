@@ -3,8 +3,12 @@
 	Layout = "~/views/shared/_Layout.cshtml";
 	BusquedaProducto busquedaProducto = new();
 }
+@section styles {
+	<link rel="stylesheet" href="~/css/simplePagination.css"   />
+}
 
 <style>
+
 	fieldset {
 		margin: 8px;
 		border: 1px solid silver;
@@ -159,4 +163,5 @@
 	<script src="~/js/app/busquedas.js" type="text/javascript"></script>
 	<script src="~/js/app/controlcomun/rpr.js" type="text/javascript"></script>
 	<script src="~/js/app/controlcomun/infoRpr.js" type="text/javascript"></script>
+	<script src="~/js/plugins/jquery.simplePagination.js"></script>
 }

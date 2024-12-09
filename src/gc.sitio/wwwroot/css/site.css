@@ -113,7 +113,7 @@ fieldset {
 
 .table-wrapper {
     max-height: 500px;
-    max-width: 98%;
+    max-width: 100%;
     overflow: auto;
 }
 
@@ -175,6 +175,23 @@ fieldset {
     position: sticky;
     top: 0px;
 }
+
+.table-wrapper-modal {
+    max-height: 150px;
+    max-width: 100%;
+    overflow: auto;
+}
+
+/*.table-thead, .table-tbody {
+    display: block;
+}
+
+.table-tbody-ext {
+    max-width: 90%;
+    overflow-y: auto;
+    overflow-x:  hidden;
+}*/
+
 
 .tiny-row {
     padding: 0.325rem 0.30rem !important;
@@ -278,3 +295,4 @@ input[type=number] {
 .ui-front {
     z-index: 9999999 !important;
 }
+

@@ -1,8 +1,8 @@
 ﻿@model List<ProductoListaDto>
 
 <div class="modal fade ui-front" id="busquedaModal" tabindex="-1" role="dialog" aria-labelledby="msjTitulo" data-keyboard="false" data-backdrop="static" aria-hidden="true" style="z-index: 999999;">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content modal-lg ">
             <div class="modal-header cabeceraModal">
                 <span>Busqueda de Productos</span>
                 <button type="button" class="close sinbordefondo" data-dismiss="modal" aria-label="Close">
@@ -39,7 +39,7 @@
                 <div class="row mt-1">
                     <div class="input-group input-group-sm">
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" name="ConStock" type="radio" value="true" id="rdConStk">
+                            <input class="form-check-input" name="ConStock" type="radio" value="true" id="rdConStk" checked>
                             <label class="form-check-label" for="rdConStk">Con Stk</label>
                         </div>
                         <div class="form-check form-check-inline">
@@ -60,7 +60,16 @@
                     </div>
                 </div>
                 <div class="row mt-1">
-                    <div id="divBusquedaAvanzada"></div>
+                    <div class="col-md-12">
+                        <div id="divBusquedaAvanzada"></div>
+                        @Html.Hidden("pagEstado", false)
+                    </div>
+                </div>
+                <div class="row mt-1">
+                    <div class="offset-md-2 col-md-8">
+                        <div id="divPaginacionAdv" class="">
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
