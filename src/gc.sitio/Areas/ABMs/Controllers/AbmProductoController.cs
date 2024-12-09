@@ -19,9 +19,10 @@ namespace gc.sitio.Areas.ABMs.Controllers
         private readonly IABMProductoServicio _abmProdServ;
         private readonly ICuentaServicio _ctaSv;
         private readonly IRubroServicio _rubSv;
+		private readonly ILogger<AbmProductoController> _logger;
 
-        public AbmProductoController(IOptions<AppSettings> options, IHttpContextAccessor accessor, IABMProductoServicio productoServicio,
-             ICuentaServicio cta, IRubroServicio rubro) : base(options, accessor)
+		public AbmProductoController(IOptions<AppSettings> options, IHttpContextAccessor accessor, IABMProductoServicio productoServicio,
+             ICuentaServicio cta, IRubroServicio rubro, ILogger<AbmProductoController> logger) : base(options, accessor, logger)
         {
             _settings = options.Value;
             _abmProdServ = productoServicio;

@@ -2,7 +2,10 @@
     $("#btnCancel").on("click", function () {
         $("#btnFiltro").trigger("click");
     });
-    $("#pagEstado").on("change", cargaPaginacion);
+    $("#pagEstado").on("change", function () {
+        var div = $("#divPaginacion");
+        presentaPaginacion(div);
+    });
     $("#btnBuscar").on("click", function () { buscarProductos(pagina); });
 
     /*        CODIGO TRASLADADO AL SITIGEN.JS            */

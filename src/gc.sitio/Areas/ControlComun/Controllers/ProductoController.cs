@@ -4,6 +4,7 @@ using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Seguridad;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
+using gc.sitio.Areas.ABMs.Controllers;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
@@ -12,8 +13,8 @@ using Microsoft.Extensions.Options;
 namespace gc.sitio.Areas.ControlComun.Controllers
 {
     [Area("ControlComun")]
-    public class ProductoController : ControladorBase
-    {
+    public class ProductoController : ProductoControladorBase
+	{
         private readonly ILogger<ProductoController> _logger;
         private readonly ICuentaServicio _ctaSv;
         private readonly IRubroServicio _rubSv;
@@ -143,22 +144,21 @@ namespace gc.sitio.Areas.ControlComun.Controllers
             }
         }
 
-        //private void ObtenerRubros()
-        //{
-        //    RubroLista = _rubSv.ObtenerListaRubros(TokenCookie);
-        //}
+		//private void ObtenerRubros()
+		//{
+		//    RubroLista = _rubSv.ObtenerListaRubros(TokenCookie);
+		//}
 
-        //private void ObtenerProveedores()
-        //{
-        //    //se guardan los proveedores en session. Para ser utilizados posteriormente
+		//private void ObtenerProveedores()
+		//{
+		//    //se guardan los proveedores en session. Para ser utilizados posteriormente
 
-        //    ProveedoresLista = _ctaSv.ObtenerListaProveedores(TokenCookie);
-        //}
-
-        [HttpPost]
-        public async Task<IActionResult> BusquedaAvanzada(string ri01, string ri02, bool act, bool dis, bool ina, bool cstk, bool sstk, string search)
+		//    ProveedoresLista = _ctaSv.ObtenerListaProveedores(TokenCookie);
+		//}
+		[HttpPost]
+		public async Task<IActionResult> BusquedaAvanzada(string ri01, string ri02, bool act, bool dis, bool ina, bool cstk, bool sstk, string buscar, bool buscaNew, string sort = "p_id", string sortDir = "asc", int pag = 1)
         {
-            return await BusquedaAvanzada(ri01, ri02, act, dis, ina, cstk, sstk, search, _productoServicio);
+            return await BusquedaAvanzada(ri01, ri02, act, dis, ina, cstk, sstk, buscar, buscaNew, _productoServicio, sort, sortDir, pag);
         }
 
     }
