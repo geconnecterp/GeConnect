@@ -147,6 +147,9 @@
             public const string SP_LISTA_PRECIO = "SPGECO_LP_Lista";
             public const string SP_TIPO_CANAL_LISTA = "SPGECO_Tipos_Canales_Lista";
             public const string SP_VENDEDOR_LISTA = "SPGECO_Vendedores_Lista";
+            public const string SP_REPARTIDOR_LISTA = "SPGECO_Repartidores_Lista";
+            public const string SP_FINANCIEROS_LISTA = "SPGECO_Financieros_Lista";
+            public const string SP_FORMA_PAGO_LISTA = "SPGECO_Formas_Pagos_Lista";
             #endregion
         }
     }
