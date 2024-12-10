@@ -8,26 +8,27 @@ using Microsoft.Extensions.Options;
 
 namespace gc.api.core.Servicios
 {
-    public class CondicionIBServicio : Servicio<CondicionIB>, ICondicionIBServicio
+    public class VendedorServicio : Servicio<Vendedor>, IVendedorServicio
     {
-        public CondicionIBServicio(IUnitOfWork uow, IOptions<PaginationOptions> options) : base(uow, options)
+        public VendedorServicio(IUnitOfWork uow, IOptions<PaginationOptions> options) : base(uow, options)
         {
+
         }
 
-        public List<CondicionIBDto> GetCondicionIBLista()
+        public List<VendedorDto> GetVendedorLista()
         {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_CONDICION_IB_LISTA;
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_VENDEDOR_LISTA;
             var ps = new List<SqlParameter>();
             var res = _repository.InvokarSp2Lst(sp, ps, true);
             if (res.Count == 0)
                 return [];
             else
-                return res.Select(x => new CondicionIBDto()
+                return res.Select(x => new VendedorDto()
                 {
                     #region Campos
-                    id_id = x.Ib_id,
-                    ib_desc = x.Ib_desc,
-                    ib_lista = x.Ib_lista,
+                    ve_id = x.Ve_id,
+                    ve_nombre = x.Ve_nombre,
+                    ve_lista = x.Ve_lista,
                     #endregion
                 }).ToList();
         }

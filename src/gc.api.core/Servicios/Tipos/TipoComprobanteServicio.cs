@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace gc.api.core.Servicios
 {
-    public class TipoComprobanteServicio :Servicio<TipoComprobante>, ITiposComprobanteServicio
+    public class TipoComprobanteServicio : Servicio<TipoComprobante>, ITiposComprobanteServicio
     {
 		public TipoComprobanteServicio(IUnitOfWork uow, IOptions<PaginationOptions> options) : base(uow, options)
 		{

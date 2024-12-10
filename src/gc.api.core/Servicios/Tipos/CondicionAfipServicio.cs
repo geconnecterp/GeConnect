@@ -7,7 +7,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 
 
-namespace gc.api.core.Servicios.Tipos
+namespace gc.api.core.Servicios
 {
     public class CondicionAfipServicio : Servicio<CondicionAfip>, ICondicionAfipServicio
     {

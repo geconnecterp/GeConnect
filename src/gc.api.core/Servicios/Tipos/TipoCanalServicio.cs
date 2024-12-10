@@ -8,26 +8,26 @@ using Microsoft.Extensions.Options;
 
 namespace gc.api.core.Servicios
 {
-    public class CondicionIBServicio : Servicio<CondicionIB>, ICondicionIBServicio
+    public class TipoCanalServicio : Servicio<TipoCanal>, ITipoCanalServicio
     {
-        public CondicionIBServicio(IUnitOfWork uow, IOptions<PaginationOptions> options) : base(uow, options)
+        public TipoCanalServicio(IUnitOfWork uow, IOptions<PaginationOptions> options) : base(uow, options)
         {
         }
 
-        public List<CondicionIBDto> GetCondicionIBLista()
+        public List<TipoCanalDto> GetTipoCanalLista()
         {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_CONDICION_IB_LISTA;
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_TIPO_CUENTA_BCO_LISTA;
             var ps = new List<SqlParameter>();
             var res = _repository.InvokarSp2Lst(sp, ps, true);
             if (res.Count == 0)
                 return [];
             else
-                return res.Select(x => new CondicionIBDto()
+                return res.Select(x => new TipoCanalDto()
                 {
                     #region Campos
-                    id_id = x.Ib_id,
-                    ib_desc = x.Ib_desc,
-                    ib_lista = x.Ib_lista,
+                    ctc_id = x.Ctc_id,
+                    ctc_desc = x.Ctc_desc,
+                    ctc_lista = x.Ctc_lista,
                     #endregion
                 }).ToList();
         }

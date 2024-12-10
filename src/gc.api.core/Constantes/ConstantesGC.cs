@@ -145,6 +145,8 @@
             public const string SP_PROVINCIA_DEPTOS_LISTA = "SPGECO_Provincias_Departamentos_Lista";
             public const string SP_TIPO_CUENTA_BCO_LISTA = "SPGECO_Tipos_Cuentas_BCO_Lista";
             public const string SP_LISTA_PRECIO = "SPGECO_LP_Lista";
+            public const string SP_TIPO_CANAL_LISTA = "SPGECO_Tipos_Canales_Lista";
+            public const string SP_VENDEDOR_LISTA = "SPGECO_Vendedores_Lista";
             #endregion
         }
     }
