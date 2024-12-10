@@ -140,7 +140,9 @@
             public const string SP_CONDICION_AFIP_LISTA = "SPGECO_Condiciones_AFIP_Lista";
             public const string SP_NATURALEZA_JURIDICA_LISTA = "SPGECO_Naturaleza_Juridicas_Lista";
             public const string SP_TIPO_DOCUMENTO_LISTA = "SPGECO_Tipos_Documentos_Lista";
-            public const string SP_CONDICION_IB_LISTA = "SPGECO_Tipos_Documentos_Lista";
+            public const string SP_CONDICION_IB_LISTA = "SPGECO_Condiciones_IB_Lista";
+            public const string SP_PROVINCIA_LISTA = "SPGECO_Provincias_Lista";
+            public const string SP_PROVINCIA_DEPTOS_LISTA = "SPGECO_Provincias_Departamentos_Lista";
             #endregion
         }
     }
