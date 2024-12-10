@@ -137,6 +137,7 @@
 			#region Tipos
 			public const string SP_TIPOS_NEGOCIO_LISTA = "SPGECO_Tipos_Negocios_Lista";
             public const string SP_ZONAS_LISTA = "SPGECO_Zonas_Lista";
+            public const string SP_CONDICIONES_AFIP_LISTA = "SPGECO_Condiciones_AFIP_Lista";
             #endregion
         }
     }
