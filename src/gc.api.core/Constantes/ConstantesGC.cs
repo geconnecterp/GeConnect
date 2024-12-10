@@ -143,6 +143,8 @@
             public const string SP_CONDICION_IB_LISTA = "SPGECO_Condiciones_IB_Lista";
             public const string SP_PROVINCIA_LISTA = "SPGECO_Provincias_Lista";
             public const string SP_PROVINCIA_DEPTOS_LISTA = "SPGECO_Provincias_Departamentos_Lista";
+            public const string SP_TIPO_CUENTA_BCO_LISTA = "SPGECO_Tipos_Cuentas_BCO_Lista";
+            public const string SP_LISTA_PRECIO = "SPGECO_LP_Lista";
             #endregion
         }
     }
