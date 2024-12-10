@@ -20,10 +20,39 @@
         presentaPaginacion(div);
     });
 
+    /*    $("input[type='button'],.btn-grid").on("click", ordenarColumna);*/
+
     funcCallBack = busquedaAvanzadaProductos;
 
     return true;
 });
+
+function ordenarColumna(x) {
+    AbrirWaiting();
+    var sortdir = $(x).attr("sortDir");
+    var sort = $(x).attr("sort");
+    if (sortdir === "asc") {
+        $(x).attr("sortDir", "desc");
+        sortdir = "desc";
+        var icon = $(x).find("i");
+        $(icon).removeClass("bx-chevron-down-circle").addClass("bx-chevron-up-circle");
+    }
+    else {
+        $(x).attr("sortDir", "asc");
+        sortdir = "asc";
+        var icon = $(x).find("i");
+        $(icon).removeClass("bx-chevron-up-circle").addClass("bx-chevron-down-circle");
+    }
+
+    var data = $.extend({}, dataBak, { buscaNew: false, sort, sortDir: sortdir, pag: pagina });
+
+    PostGenHtml(data, busquedaAvanzadaUrl, function (obj) {
+        CerrarWaiting();
+        $("#divBusquedaAvanzada").html(obj);
+        return true;
+    });
+    return true;
+}
 
 function busquedaAvanzadaProductos(pag) {
     var ri01 = $("#Rel01Item").val();
@@ -47,12 +76,12 @@ function busquedaAvanzadaProductos(pag) {
         }
     }
     var buscar = $("#Search").val();
-    var data1= {
+    var data1 = {
         ri01, ri02, act, dis, ina, cstk, sstk, buscar
     };
     //si es distinto es TRUE    
     var buscaNew = JSON.stringify(dataBak) != JSON.stringify(data1)
-    if (buscaNew===false) {
+    if (buscaNew === false) {
         //son iguales las condiciones cambia de pagina
         pagina = pag;
     }
@@ -65,7 +94,7 @@ function busquedaAvanzadaProductos(pag) {
     var sort = null;
     var sortDir = null
 
-    var data2 = {sort,sortDir,pag,buscaNew}
+    var data2 = { sort, sortDir, pag, buscaNew }
 
     var data = $.extend({}, data1, data2);
     //{
@@ -142,7 +171,7 @@ function buscarProducto() {
 
                 if (funcionBusquedaAvanzada === true) {
                     AbrirMensaje("ATENCIÓN", "NO SE ENCONTRO EL PRODUCTO QUE INTENTO BUSCAR. SE ABRIRÁ LA BUSQUEDA AVANZADA.", function () {
-                        $("#msjModal").modal("hide");                        
+                        $("#msjModal").modal("hide");
                         productoBase = null;
                         $("#estadoFuncion").val(false);
                         $("#busquedaModal").modal("toggle");
@@ -152,7 +181,7 @@ function buscarProducto() {
                     return true;
                 }
                 else {
-                    AbrirMensaje("ATENCIÓN", "NO SE ENCONTRO EL PRODUCTO QUE INTENTO BUSCAR.", function () {                       
+                    AbrirMensaje("ATENCIÓN", "NO SE ENCONTRO EL PRODUCTO QUE INTENTO BUSCAR.", function () {
                         $("#msjModal").modal("hide");
                         $("#Busqueda").focus();
                         return true;
@@ -217,4 +246,18 @@ function verificaTeclaDeBusqueda(e) {
         return true;
 
     }
+}
+
+function selectReg(x) {
+    $("#tbGridProd tbody tr").each(function (index) {
+        $(this).removeClass("selected-row");
+    });
+    $(x).addClass("selected-row");
+    var id = x.cells[0].innerText.trim();
+
+    //agrego el id en el control de busqueda simple y acciono el buscar.
+    $("#busquedaModal").modal("toggle");
+    $("input#Busqueda").val(id);
+    $("#btnBusquedaBase").trigger("click");
+
 }

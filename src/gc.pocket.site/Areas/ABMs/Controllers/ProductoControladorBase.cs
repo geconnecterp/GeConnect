@@ -15,12 +15,12 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace gc.pocket.site.Areas.ABMs.Controllers
 {
-    public class ProductoControladorBase:ControladorBase
+    public class ProductoControladorBase : ControladorBase
     {
         private readonly AppSettings _setting;
         private readonly ILogger _logger;
 
-        public ProductoControladorBase(IOptions<AppSettings> options,  IHttpContextAccessor accessor, ILogger logger) :base(options,accessor,logger)
+        public ProductoControladorBase(IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger logger) : base(options, accessor, logger)
         {
             _setting = options.Value;
             _logger = logger;
@@ -116,14 +116,14 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
             RespuestaGenerica<EntidadBase> response = new();
             try
             {
-                if (!buscaNew && PaginaProd==pag)
+                if (!buscaNew && PaginaProd == pag)
                 {
                     //es la misma pagina y hay registros, se realiza el reordenamiento de los datos.
                     lista = ProductosBuscados.ToList();
                     lista = OrdenarEntidad(lista, sortDir, sort);
                     ProductosBuscados = lista;
                 }
-                else  
+                else
                 {
                     PaginaProd = pag;
                     //traemos datos desde la base
@@ -147,11 +147,12 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
                     var res = await _productoServicio.BusquedaListaProductos(busc, TokenCookie);
                     lista = res.Item1 ?? [];
                     MetadataProd = res.Item2 ?? null;
-                    metadata = MetadataProd;
+
                     ProductosBuscados = lista;
                 }
+                metadata = MetadataProd;
 
-                grillaDatos = GenerarGrilla<ProductoListaDto>(ProductosBuscados, "p_desc");
+                grillaDatos = GenerarGrilla<ProductoListaDto>(ProductosBuscados, sort, _setting.NroRegistrosPagina, pag, metadata.TotalCount, metadata.TotalPages, sortDir);
                 return PartialView("_gridProdsAdv", grillaDatos);
             }
             catch (Exception ex)

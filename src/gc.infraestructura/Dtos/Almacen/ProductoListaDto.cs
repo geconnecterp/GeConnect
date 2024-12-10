@@ -22,11 +22,11 @@ namespace gc.infraestructura.Dtos.Almacen
         public string Cta_lista { get; set; } = string.Empty;
         public string P_activo { get; set; } = string.Empty;//+
         public string P_activo_des { get; set; } = string.Empty;//+
-        public string P_pneto { get; set; } = string.Empty;
-        public string P_pvta { get; set; } = string.Empty;
-        public string P_pcosto { get; set; } = string.Empty;
-        public string P_pcosto_repo { get; set; } = string.Empty;
-        public string Ps_stk { get; set; } = string.Empty;
+        public decimal P_pneto { get; set; }
+        public decimal P_pvta { get; set; } 
+        public decimal P_pcosto { get; set; }
+        public decimal P_pcosto_repo { get; set; }
+        public decimal Ps_stk { get; set; } 
 
     }
 }
