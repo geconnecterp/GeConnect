@@ -17,9 +17,9 @@
 		<tbody>
 			@foreach (var item in Model.ListaDatos)
 			{
-				var res = string.Format(CultureInfo.InvariantCulture,"{0:#,0.00}", @item.as_resultado);
-				var stk_actual = string.Format(CultureInfo.InvariantCulture, "{0:#,0.00}", @item.as_stock);
-				var ajuste = string.Format(CultureInfo.InvariantCulture, "{0:#,0.00}", @item.as_ajuste);
+				var res = string.Format(CultureInfo.InvariantCulture,"{0:#,0.000}", @item.as_resultado);
+				var stk_actual = string.Format(CultureInfo.InvariantCulture, "{0:#,0.000}", @item.as_stock);
+				var ajuste = string.Format(CultureInfo.InvariantCulture, "{0:#,0.000}", @item.as_ajuste);
 				<tr onclick="selectListaProductoRow(this)">
 					<td class="align-center">@item.p_id</td>
 					<td class="align-left">@item.p_desc</td>
