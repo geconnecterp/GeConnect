@@ -43,6 +43,10 @@
 	if (modelObj !== undefined && modelObj !== null)
 		CargarCompteEnGrilla(modelObj);
 
+	if (modelObj !== undefined && modelObj !== null && modelObj.rp == null) {
+		$("#btnEliminarAutoRP").attr('disabled', 'disabled');
+	}
+
 	const cantUL = document.getElementById("txtCantidadUL");
 	if (cantUL !== undefined && cantUL !== null) {
 		cantUL.addEventListener('input', function (e) {
@@ -183,6 +187,12 @@ function EliminarAutoRP() {
 			}
 			return true;
 		}, true, ["Aceptar", "Cancelar"], "info!", null);
+	}
+	else {
+		AbrirMensaje("Atención", "La autorización no ha sido registrada, no se puede 'Eliminar'.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
 	}
 }
 
@@ -325,6 +335,7 @@ function AgregarComprobante() {
 			}, false, ["Aceptar"], "warn!", null);
 		} else if (obj.unico === true) {
 			$("#razonsocial").val(obj.cuenta.cta_Denominacion);
+			$("#Cuenta").val(obj.cuenta.cta_Id)
 			CargarComboTiposComptes(cuenta);
 			return true;
 		} else {
@@ -485,7 +496,8 @@ function buscarCuentasComercial() {
 			}, false, ["Aceptar"], "warn!", null);
 		} else if (obj.unico === true) {
 			$("#razonsocial").val(obj.cuenta.cta_Denominacion);
-			CargarComboTiposComptes(cuenta);
+			$("#Cuenta").val(obj.cuenta.cta_Id)
+			CargarComboTiposComptes(obj.cuenta.cta_Id);
 			return true;
 		} else {
 			MostrarModalCuentasComerciales(obj.cuenta);

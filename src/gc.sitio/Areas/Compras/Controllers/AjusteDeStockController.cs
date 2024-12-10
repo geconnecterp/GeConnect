@@ -350,15 +350,17 @@ namespace gc.sitio.Areas.Compras.Controllers
                     var box = await _depositoServicio.ObtenerInfoDeBox(boxId, TokenCookie);
                     if (producto != null)
                     {
-                        var stkEnteroAux = 0;
+                        var stkEnteroAux = 0.000M;
                         var stkDecimalAux = 0.000M;
                         var cantidadAux = 0.000M;
                         var unidadPresDecimalAux = Convert.ToDecimal(unidadPres);
                         var bultoDecimalAux = Convert.ToDecimal(bto);
                         if (producto.Up_id == "07") //Entero
                         {
-                            stkEnteroAux = Int32.Parse(productoStk.First().Ps_stk.ToString(), NumberStyles.AllowThousands, CultureInfo.CurrentCulture);
-                            var upxbto = unidadPres * bto;
+
+                            //stkEnteroAux = Int32.Parse(productoStk.First().Ps_stk.ToString(), NumberStyles.AllowThousands, CultureInfo.CurrentCulture);
+                            stkEnteroAux = ObtenerValorDeStock(productoStk.First().Ps_stk.ToString());
+							var upxbto = unidadPres * bto;
                             cantidadAux = stkEnteroAux - ((upxbto < 0 ? upxbto * -1 : upxbto) + us);
                         }
                         else
@@ -411,6 +413,29 @@ namespace gc.sitio.Areas.Compras.Controllers
                 return PartialView("_gridMensaje", response);
             }
             return PartialView("_grillaProductos", model);
+        }
+
+        private static decimal ObtenerValorDeStock(string strStk)
+        {
+            try
+            {
+				System.Globalization.NumberFormatInfo numberFormatInfo = new System.Globalization.NumberFormatInfo();
+                if (System.Globalization.CultureInfo.CurrentCulture.Name == "es-AR")
+                {
+                    numberFormatInfo.NumberDecimalSeparator = ".";
+                    numberFormatInfo.NumberGroupSeparator = ",";
+				}
+                return Convert.ToDecimal(strStk, numberFormatInfo);
+				//return Int32.Parse(strStk, NumberStyles.AllowThousands, numberFormatInfo);
+			}
+            catch (System.FormatException)
+            {
+				return Int32.Parse(strStk, NumberStyles.AllowThousands, CultureInfo.InvariantCulture);
+			}
+            catch (Exception)
+            {
+                return 0;
+            }
         }
 
         public async Task<JsonResult> ConfirmarAjusteDeStock(string atId, string nota, string atTipo)

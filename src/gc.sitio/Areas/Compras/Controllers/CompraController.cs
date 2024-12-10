@@ -400,7 +400,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 						model.Depo_id = !string.IsNullOrWhiteSpace(RPRComprobanteDeRPSeleccionado?.Depo_id) ? RPRComprobanteDeRPSeleccionado?.Depo_id : "0";
 						model.CantidadUL = !string.IsNullOrWhiteSpace(RPRComprobanteDeRPSeleccionado?.Ul_cantidad) ? Convert.ToInt32(RPRComprobanteDeRPSeleccionado?.Ul_cantidad) : 0;
 						model.Rpe_id = !string.IsNullOrWhiteSpace(RPRAutorizacionSeleccionada?.Rpe_id) ? RPRComprobanteDeRPSeleccionado?.Ul_cantidad : "P";
-                    }
+					}
 				}
 				if (rp == null)
 				{
@@ -752,6 +752,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 					}
 					if (generar)
 					{
+						if (JsonDeRP.encabezado.Count == 0 && RPRAutorizacionSeleccionada != null)
+						{
+							if (RPRAutorizacionSeleccionada.Rp != "")
+								PreCargarJson(RPRAutorizacionSeleccionada.Rp, "", "");
+						}
+						else
+						{
+							return Json(new { error = false, warn = true, msg = "No se puede generar una autorización sin detalle", codigo = 1 });
+						}
 						var aux = JsonDeRP;
 						foreach (var item in aux.encabezado)
 						{
@@ -1164,16 +1173,16 @@ namespace gc.sitio.Areas.Compras.Controllers
 					}
 					else
 					{
-                        lista.Add(new RPRComptesDeRPDto()
-                        {
-                            Fecha = Convert.ToDateTime(comprobante.Cm_fecha).ToString("dd/MM/yyyy"),
-                            Importe = comprobante.Cm_importe,
-                            NroComprobante = comprobante.Cm_compte,
-                            Rp = item.Rp,
-                            Tipo = comprobante.Tco_id,
-                            TipoDescripcion = string.IsNullOrEmpty(comprobante.Tco_desc) ? string.Empty : comprobante.Tco_desc
-                        });
-                    }
+						lista.Add(new RPRComptesDeRPDto()
+						{
+							Fecha = Convert.ToDateTime(comprobante.Cm_fecha).ToString("dd/MM/yyyy"),
+							Importe = comprobante.Cm_importe,
+							NroComprobante = comprobante.Cm_compte,
+							Rp = item.Rp,
+							Tipo = comprobante.Tco_id,
+							TipoDescripcion = string.IsNullOrEmpty(comprobante.Tco_desc) ? string.Empty : comprobante.Tco_desc
+						});
+					}
 				}
 			}
 			return lista;

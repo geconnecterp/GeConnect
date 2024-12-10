@@ -20,6 +20,8 @@
 		<tbody>
 			@foreach (var item in Model.ListaDatos)
 			{
+				var resCantidad = string.Format(CultureInfo.InvariantCulture, "{0:#,0.000}", @item.Cantidad);
+				var resUnidad = string.Format(CultureInfo.InvariantCulture, "{0:#,0.000}", @item.Unidad);
 				<tr onclick="selectDetalleDeProdRow(this)" class="sortme" id="productRow">
 					<td class ="table-fontsize align-center">@item.P_id</td>
 					<td class="table-fontsize align-left">@item.P_desc</td>
@@ -27,8 +29,8 @@
 					<td class="table-fontsize align-center">@item.oc_compte</td>
 					<td class="table-fontsize align-right">@item.P_unidad_pres</td>
 					<td class="table-fontsize align-right">@item.Bulto</td>
-					<td class="table-fontsize align-right">@item.Unidad</td>
-					<td class="table-fontsize align-right">@item.Cantidad</td>
+					<td class="table-fontsize align-right">@resUnidad</td>
+					<td class="table-fontsize align-right">@resCantidad</td>
 					<td style="display:none;">@item.Item</td>
 				</tr>
 			}
