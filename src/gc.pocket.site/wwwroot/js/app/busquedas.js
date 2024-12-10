@@ -1,5 +1,9 @@
 ﻿$(function () {
 
+    $("button[type='button'].close.buscAdv").on("click", function () {
+        $("#busquedaModal").modal("toggle");
+
+    })
     $("input#Busqueda").keypress(verificaTeclaDeBusqueda);
     $("input#Rel01").on("click", function () {
         $("input#Rel01").val("");
@@ -174,6 +178,7 @@ function buscarProducto() {
                         $("#msjModal").modal("hide");
                         productoBase = null;
                         $("#estadoFuncion").val(false);
+                        inicializaBusquedaAvanzada();
                         $("#busquedaModal").modal("toggle");
                         return true;
                     }, false, ["Aceptar"], "error!", null);
@@ -248,7 +253,7 @@ function verificaTeclaDeBusqueda(e) {
     }
 }
 
-function selectReg(x) {
+function selectRegDbl(x) {
     $("#tbGridProd tbody tr").each(function (index) {
         $(this).removeClass("selected-row");
     });
@@ -260,4 +265,49 @@ function selectReg(x) {
     $("input#Busqueda").val(id);
     $("#btnBusquedaBase").trigger("click");
 
+}
+
+function selectReg(x) {
+    $("#tbGridProd tbody tr").each(function (index) {
+        $(this).removeClass("selected-row");
+    });
+    $(x).addClass("selected-row");    
+}
+
+function inicializaBusquedaAvanzada() {
+    //configurando proveedor
+    if (typeof provUnico !== 'undefined' &&
+        provUnico === true) {
+        $("input#Rel01").val(provDesc).prop("disabled",true);
+        $("input#Rel01Item").val(provId);
+    }
+    else {
+        $("input#Rel01").val("").prop("disabled", false);
+        $("input#Rel01Item").val("");
+    }
+
+    //configurando RUBROS
+    if (typeof rubUnico !== 'undefined' &&
+        rubUnico === true) {
+        $("input#Rel02").val(rubDesc).prop("disabled", true);
+        $("input#Rel02Item").val(rubId);
+    }
+    else {
+        $("input#Rel02").val("").prop("disabled", false);
+        $("input#Rel02Item").val("");
+    }
+
+    //configurando ESTADOS
+    if (typeof estadoUnico !== 'undefined' &&
+        estadoUnico === true) {
+        $("#chkActivos").prop("checked",estActivo).prop("disabled", true);
+        $("#chkDisc").prop("checked", estDiscon).prop("disabled", true);
+        $("#chkInact").prop("checked", estInacti).prop("disabled", true);
+    }
+    else {
+        $("#chkActivos").prop("checked", true).prop("disabled", false);
+        $("#chkDisc").prop("checked", false).prop("disabled", false);
+        $("#chkInact").prop("checked", false).prop("disabled", false);
+    }
+    return true;
 }

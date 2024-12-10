@@ -1,4 +1,6 @@
 ﻿
+
+
 function PostGenHtml(data, path, retorno) {
     PostGen(data, path, retorno, fnError, "HTML");
 }
