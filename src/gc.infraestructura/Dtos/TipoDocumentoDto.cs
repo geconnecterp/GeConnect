@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gc.infraestructura.Dtos
 {
@@ -10,9 +7,10 @@ namespace gc.infraestructura.Dtos
         {
             Tdoc_Id = string.Empty;
             Tdoc_Desc = string.Empty;
+            Tdoc_Lista = string.Empty;
         }
         public string Tdoc_Id { get; set; }
         public string Tdoc_Desc { get; set; }
-
+        public string Tdoc_Lista { get; set; }
     }
 }

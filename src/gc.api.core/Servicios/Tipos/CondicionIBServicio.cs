@@ -6,30 +6,28 @@ using gc.infraestructura.Dtos;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 
-
 namespace gc.api.core.Servicios.Tipos
 {
-    public class CondicionAfipServicio : Servicio<CondicionAfip>, ICondicionAfipServicio
+    public class CondicionIBServicio : Servicio<CondicionIB>, ICondicionIBServicio
     {
-        public CondicionAfipServicio(IUnitOfWork uow, IOptions<PaginationOptions> options) : base(uow, options)
+        public CondicionIBServicio(IUnitOfWork uow, IOptions<PaginationOptions> options) : base(uow, options)
         {
         }
 
-        public List<CondicionAfipDto> GetCondicionesAfipLista()
+        public List<CondicionIBDto> GetCondicionIBLista()
         {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_CONDICION_AFIP_LISTA;
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_CONDICION_IB_LISTA;
             var ps = new List<SqlParameter>();
             var res = _repository.InvokarSp2Lst(sp, ps, true);
             if (res.Count == 0)
                 return [];
             else
-                return res.Select(x => new CondicionAfipDto()
+                return res.Select(x => new CondicionIBDto()
                 {
                     #region Campos
-                    afip_id = x.Afip_id,
-                    afip_desc = x.Afip_desc,
-                    afip_desc_sort = x.Afip_desc_sort,
-                    afip_lista = x.Afip_lista,
+                    id_id = x.Ib_id,
+                    ib_desc = x.Ib_desc,
+                    ib_lista = x.Ib_lista,
                     #endregion
                 }).ToList();
         }

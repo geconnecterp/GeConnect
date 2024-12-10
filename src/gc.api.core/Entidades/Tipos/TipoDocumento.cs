@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gc.api.core.Entidades
 {
@@ -10,11 +7,12 @@ namespace gc.api.core.Entidades
         {
             Tdoc_Id = string.Empty;
             Tdoc_Desc = string.Empty;
+            Tdoc_Lista = string.Empty;
         }
 
         public string Tdoc_Id { get; set; }
         public string Tdoc_Desc { get; set; }
-
+        public string Tdoc_Lista { get; set; }
 
         //public virtual ICollection<cuentas> Cuentass { get; set; }
 

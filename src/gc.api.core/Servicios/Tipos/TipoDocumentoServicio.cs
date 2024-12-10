@@ -3,6 +3,8 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using System.Linq.Dynamic.Core;
 
@@ -39,6 +41,24 @@ namespace gc.api.core.Servicios
             var paginas = PagedList<TipoDocumento>.Create(tipos_documentoss, filters.Pagina ?? 1, filters.Registros ?? 20);
 
             return paginas;
+        }
+
+        public List<TipoDocumentoDto> GetTipoDocumentoLista()
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_TIPO_DOCUMENTO_LISTA;
+            var ps = new List<SqlParameter>();
+            var res = _repository.InvokarSp2Lst(sp, ps, true);
+            if (res.Count == 0)
+                return [];
+            else
+                return res.Select(x => new TipoDocumentoDto()
+                {
+                    #region Campos
+                    Tdoc_Id = x.Tdoc_Id,
+                    Tdoc_Desc = x.Tdoc_Desc,
+                    Tdoc_Lista = x.Tdoc_Lista,
+                    #endregion
+                }).ToList();
         }
     }
 }

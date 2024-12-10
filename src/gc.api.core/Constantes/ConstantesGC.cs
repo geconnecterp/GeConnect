@@ -137,7 +137,10 @@
 			#region Tipos
 			public const string SP_TIPOS_NEGOCIO_LISTA = "SPGECO_Tipos_Negocios_Lista";
             public const string SP_ZONAS_LISTA = "SPGECO_Zonas_Lista";
-            public const string SP_CONDICIONES_AFIP_LISTA = "SPGECO_Condiciones_AFIP_Lista";
+            public const string SP_CONDICION_AFIP_LISTA = "SPGECO_Condiciones_AFIP_Lista";
+            public const string SP_NATURALEZA_JURIDICA_LISTA = "SPGECO_Naturaleza_Juridicas_Lista";
+            public const string SP_TIPO_DOCUMENTO_LISTA = "SPGECO_Tipos_Documentos_Lista";
+            public const string SP_CONDICION_IB_LISTA = "SPGECO_Tipos_Documentos_Lista";
             #endregion
         }
     }
