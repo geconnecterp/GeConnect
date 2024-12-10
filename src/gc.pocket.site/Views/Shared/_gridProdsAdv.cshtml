@@ -63,7 +63,7 @@
                         <button class="btn btn-sm btn-secondary btn-grid btn-block" sortDir="asc" sort="p_activo" onclick="ordenarColumna(this);"><span>E </span><i class="bx  bx-chevron-down-circle btn-xs"></i> </button>
                     }
                 </th>
-                <th scope="col">
+               @*  <th scope="col">
                     @if (sort.Equals("p_pcosto", StringComparison.InvariantCultureIgnoreCase) && Model.SortDir.Equals("desc"))
                     {
                         <button class="btn btn-sm btn-secondary btn-grid btn-block" sortDir="desc" sort="p_pcosto" onclick="ordenarColumna(this);"><span>PRECIO </span><i class="bx  bx-chevron-up-circle btn-xs"></i> </button>
@@ -82,7 +82,7 @@
                     {
                         <button class="btn btn-sm btn-secondary btn-grid btn-block" sortDir="asc" sort="ps_stk" onclick="ordenarColumna(this);"><span>STOCK </span><i class="bx  bx-chevron-down-circle btn-xs"></i> </button>
                     }
-                </th>
+                </th> *@
             </tr>
         </thead>
         <tbody>
@@ -90,14 +90,14 @@
             {
                 if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
-                <tr class="@clase" ondblclick="selectReg(this)">
+                <tr class="@clase" onclick="selectReg(this)" ondblclick="selectRegDbl(this)">
                     <td class="text-sm-center">@item.P_id</td>
                     <td class="text-sm-start">@item.P_desc</td>
                     <td class="text-sm-center">@item.P_id_barrado</td>
                     <td class="text-sm-center">@item.P_id_prov</td>
                     <td class="text-sm-center">@item.P_activo </td>
-                    <td class="text-sm-end">@item.P_pcosto</td>
-                    <td class="text-sm-end">@item.Ps_stk</td>
+@*                     <td class="text-sm-end">@item.P_pcosto</td>
+                    <td class="text-sm-end">@item.Ps_stk</td> *@
                 </tr>
             }
         </tbody>

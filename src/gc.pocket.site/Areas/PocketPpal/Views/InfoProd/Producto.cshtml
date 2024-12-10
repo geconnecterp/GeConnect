@@ -137,6 +137,21 @@
         var funcCallBack=null;
         var dataBak = {};
 
+        //seteos de inicialización
+        var provUnico = true;
+        var provId = "C0017180";
+        var provDesc = "MOLINOS RIO DE LA PLATA  ( E ) (C0017180)";
+        
+        var rubUnico = false;
+        var rubId = "";
+        var rubDesc = "";
+
+        //seteo de ESTADOS
+        var estadoUnico = true;
+        var estActivo = false;
+        var estDiscon = false;
+        var estInacti = true;
+
         var funcionBusquedaAvanzada = true;
         var autoComRel01Url = "@Url.Action("BuscarProvs", "abmproducto", new { area = "abms" })";
         var autoComRel02Url = "@Url.Action("BuscarRubros", "abmproducto", new { area = "abms" })";

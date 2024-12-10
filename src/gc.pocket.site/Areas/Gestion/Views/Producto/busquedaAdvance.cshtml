@@ -1,12 +1,13 @@
 ﻿@model List<ProductoListaDto>
 
-<div class="modal fade ui-front" id="busquedaModal" tabindex="-1" role="dialog" aria-labelledby="msjTitulo" data-keyboard="false" data-backdrop="static" aria-hidden="true" style="z-index: 999999;">
+<div class="modal" id="busquedaModal" tabindex="-1" role="dialog" aria-labelledby="buscTitulo" data-keyboard="false"
+     data-backdrop="static" aria-hidden="true" style="z-index: 999999;">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content modal-lg ">
             <div class="modal-header cabeceraModal">
-                <span>Busqueda de Productos</span>
-                <button type="button" class="close sinbordefondo" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+                <span id="buscTitulo">Busqueda de Productos</span>
+                <button type="button" class="close buscAdv mb-1" aria-label="Close">
+                    <span aria-hidden="false">&times;</span>
                 </button>
             </div>
             <div id="msjContenido" class="modal-body">
