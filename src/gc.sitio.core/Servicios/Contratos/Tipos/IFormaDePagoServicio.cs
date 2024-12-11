@@ -4,6 +4,6 @@ namespace gc.sitio.core.Servicios.Contratos
 {
 	public interface IFormaDePagoServicio : IServicio<FormaDePagoDto>
 	{
-		List<FormaDePagoDto> GetFormaDePagoLista(string token);
+		List<FormaDePagoDto> GetFormaDePagoLista(string token, string tipo = "C");
 	}
 }

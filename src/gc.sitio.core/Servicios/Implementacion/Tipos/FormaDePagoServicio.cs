@@ -20,7 +20,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			_appSettings = options.Value;
 		}
 
-		public List<FormaDePagoDto> GetFormaDePagoLista(string token)
+		public List<FormaDePagoDto> GetFormaDePagoLista(string token, string tipo = "C")
 		{
 			try
 			{
@@ -29,7 +29,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 				HttpClient client = helper.InicializaCliente(token);
 				HttpResponseMessage response;
 
-				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerFormaDePagoLista}";
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerFormaDePagoLista}?tipo={tipo}";
 				response = client.GetAsync(link).GetAwaiter().GetResult();
 
 				if (response.StatusCode == HttpStatusCode.OK)

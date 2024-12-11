@@ -85,10 +85,10 @@ namespace gc.api.Controllers.Codigos
 
 		[HttpGet]
 		[Route("[action]")]
-		public IActionResult GetFormaDePagoLista()
+		public IActionResult GetFormaDePagoLista(string tipo = "C")
 		{
 			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			List<FormaDePagoDto> tipoNegocio = _formaDePagoServicio.GetFormaDePagoLista();
+			List<FormaDePagoDto> tipoNegocio = _formaDePagoServicio.GetFormaDePagoLista(tipo);
 			var lista = _mapper.Map<List<FormaDePagoDto>>(tipoNegocio);
 
 			var response = new ApiResponse<List<FormaDePagoDto>>(lista);

@@ -18,14 +18,32 @@ namespace gc.sitio.Areas.ABMs.Controllers
         private readonly IABMClienteServicio _abmCliServ;
         private readonly ITipoNegocioServicio _tipoNegocioServicio;
         private readonly IZonaServicio _zonaServicio;
+        private readonly ICondicionAfipServicio _condicionAfipServicio;
+        private readonly INaturalezaJuridicaServicio _naturalezaJuridicaServicio;
+        private readonly ICondicionIBServicio _condicionIBServicio;
+        private readonly IFormaDePagoServicio _formaDePagoServicio;
+        private readonly IProvinciaServicio _provinciaServicio;
+        private readonly ITipoCanalServicio _tipoCanalServicio;
+        private readonly ITipoCuentaBcoServicio _tipoCuentaBcoServicio;
 
         public AbmClienteController(IZonaServicio zonaServicio, ITipoNegocioServicio tipoNegocioServicio, IOptions<AppSettings> options,
-                                    IABMClienteServicio abmClienteServicio, IHttpContextAccessor accessor) : base(options, accessor)
+                                    IABMClienteServicio abmClienteServicio, IHttpContextAccessor accessor, 
+                                    ICondicionAfipServicio condicionAfipServicio, INaturalezaJuridicaServicio naturalezaJuridicaServicio,
+                                    ICondicionIBServicio condicionIBServicio, IFormaDePagoServicio formaDePagoServicio,
+                                    IProvinciaServicio provinciaServicio, ITipoCanalServicio tipoCanalServicio,
+                                    ITipoCuentaBcoServicio tipoCuentaBcoServicio) : base(options, accessor)
         {
             _settings = options.Value;
             _tipoNegocioServicio = tipoNegocioServicio;
             _zonaServicio = zonaServicio;
             _abmCliServ = abmClienteServicio;
+            _condicionAfipServicio = condicionAfipServicio;
+            _naturalezaJuridicaServicio = naturalezaJuridicaServicio;
+            _condicionIBServicio = condicionIBServicio;
+            _formaDePagoServicio = formaDePagoServicio;
+            _provinciaServicio = provinciaServicio;
+            _tipoCanalServicio = tipoCanalServicio;
+            _tipoCuentaBcoServicio = tipoCuentaBcoServicio;
         }
 
         [HttpGet]
@@ -39,15 +57,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 return RedirectToAction("Login", "Token", new { area = "seguridad" });
             }
 
-            if (TipoNegocioLista.Count == 0 || actualizar)
-            {
-                ObtenerTiposNegocio(_tipoNegocioServicio);
-            }
-
-            if (ZonasLista.Count == 0 || actualizar)
-            {
-                ObtenerZonas(_zonaServicio);
-            }
+            CargarDatosIniciales(actualizar);
 
             var listR02 = new List<ComboGenDto>();
             ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR02);
@@ -110,8 +120,6 @@ namespace gc.sitio.Areas.ABMs.Controllers
         [HttpPost]
         public JsonResult BuscarR01(string prefix)
         {
-            //var nombres = await _provSv.BuscarAsync(new QueryFilters { Search = prefix }, TokenCookie);
-            //var lista = nombres.Item1.Select(c => new EmpleadoVM { Nombre = c.NombreCompleto, Id = c.Id, Cuil = c.CUIT });
             var tipoNeg = TipoNegocioLista.Where(x => x.ctn_desc.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
             var tipoNegs = tipoNeg.Select(x => new ComboGenDto { Id = x.ctn_id, Descripcion = x.ctn_lista });
             return Json(tipoNegs);
@@ -120,11 +128,41 @@ namespace gc.sitio.Areas.ABMs.Controllers
         [HttpPost]
         public JsonResult BuscarR02(string prefix)
         {
-            //var nombres = await _provSv.BuscarAsync(new QueryFilters { Search = prefix }, TokenCookie);
-            //var lista = nombres.Item1.Select(c => new EmpleadoVM { Nombre = c.NombreCompleto, Id = c.Id, Cuil = c.CUIT });
             var zona = ZonasLista.Where(x => x.zn_desc.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
             var zonas = zona.Select(x => new ComboGenDto { Id = x.zn_id, Descripcion = x.zn_lista });
             return Json(zonas);
         }
-    }
+
+        #region Métodos Privados
+        private void CargarDatosIniciales(bool actualizar)
+        {
+			if (TipoNegocioLista.Count == 0 || actualizar)
+				ObtenerTiposNegocio(_tipoNegocioServicio);
+
+			if (ZonasLista.Count == 0 || actualizar)
+				ObtenerZonas(_zonaServicio);
+
+            if (CondicionesAfipLista.Count == 0 || actualizar)
+                ObtenerCondicionesAfip(_condicionAfipServicio);
+
+            if (NaturalezaJuridicaLista.Count == 0 || actualizar)
+                ObtenerNaturalezaJuridica(_naturalezaJuridicaServicio);
+
+            if (CondicionIBLista.Count == 0 || actualizar)
+                ObtenerCondicionesIB(_condicionIBServicio);
+
+            if (FormaDePagoLista.Count == 0 || actualizar)
+                ObtenerFormasDePago(_formaDePagoServicio);
+
+            if (ProvinciaLista.Count == 0 || actualizar)
+                ObtenerProvincias(_provinciaServicio);
+
+            if (TipoCanalLista.Count == 0 || actualizar)
+                ObtenerTiposDeCanal(_tipoCanalServicio);
+
+            if (TipoCuentaBcoLista.Count == 0 || actualizar)
+                ObtenerTiposDeCuentaBco(_tipoCuentaBcoServicio);
+		}
+		#endregion
+	}
 }

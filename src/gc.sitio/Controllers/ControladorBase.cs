@@ -793,6 +793,166 @@ namespace gc.sitio.Controllers
 		}
 		#endregion
 
+		#region CONDICIONES AFIP
+		public List<CondicionAfipDto> CondicionesAfipLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("CondicionesAfipLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<CondicionAfipDto>();
+				}
+				return JsonConvert.DeserializeObject<List<CondicionAfipDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("CondicionesAfipLista", json);
+			}
+		}
+		#endregion
+
+		#region CONDICIONES AFIP
+		public List<CondicionIBDto> CondicionIBLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("CondicionIBLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<CondicionIBDto>();
+				}
+				return JsonConvert.DeserializeObject<List<CondicionIBDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("CondicionIBLista", json);
+			}
+		}
+		#endregion
+
+		#region NATURALEZA JURIDICA
+		public List<NaturalezaJuridicaDto> NaturalezaJuridicaLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("NaturalezaJuridicaLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<NaturalezaJuridicaDto>();
+				}
+				return JsonConvert.DeserializeObject<List<NaturalezaJuridicaDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("NaturalezaJuridicaLista", json);
+			}
+		}
+		#endregion
+
+		#region DEPARTAMENTOS
+		public List<DepartamentoDto> DepartamentoLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("DepartamentoLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<DepartamentoDto>();
+				}
+				return JsonConvert.DeserializeObject<List<DepartamentoDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("DepartamentoLista", json);
+			}
+		}
+		#endregion
+
+		#region FORMA DE PAGO
+		public List<FormaDePagoDto> FormaDePagoLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("FormaDePagoLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<FormaDePagoDto>();
+				}
+				return JsonConvert.DeserializeObject<List<FormaDePagoDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("FormaDePagoLista", json);
+			}
+		}
+		#endregion
+
+		#region PROVINCIA
+		public List<ProvinciaDto> ProvinciaLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("ProvinciaLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<ProvinciaDto>();
+				}
+				return JsonConvert.DeserializeObject<List<ProvinciaDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("ProvinciaLista", json);
+			}
+		}
+		#endregion
+
+		#region TIPO CANAL
+		public List<TipoCanalDto> TipoCanalLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("TipoCanalLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<TipoCanalDto>();
+				}
+				return JsonConvert.DeserializeObject<List<TipoCanalDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("TipoCanalLista", json);
+			}
+		}
+		#endregion
+
+		#region TIPO CUENTA BANCO
+		public List<TipoCuentaBcoDto> TipoCuentaBcoLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("TipoCuentaBcoLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<TipoCuentaBcoDto>();
+				}
+				return JsonConvert.DeserializeObject<List<TipoCuentaBcoDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("TipoCuentaBcoLista", json);
+			}
+		}
+		#endregion
+
 		#region Metodos generales
 		public PartialViewResult ObtenerMensajeDeError(string mensaje)
 		{
@@ -880,6 +1040,41 @@ namespace gc.sitio.Controllers
 			//se guardan las zonas en session. Para ser utilizados posteriormente
 
 			ZonasLista = _zonaSv.GetZonaLista(TokenCookie);
+		}
+
+		protected void ObtenerCondicionesAfip(ICondicionAfipServicio _condAfip)
+		{ 
+			CondicionesAfipLista = _condAfip.GetCondicionesAfipLista(TokenCookie);
+		}
+
+		protected void ObtenerNaturalezaJuridica(INaturalezaJuridicaServicio _natJur)
+		{
+			NaturalezaJuridicaLista = _natJur.GetNaturalezaJuridicaLista(TokenCookie);
+		}
+
+		protected void ObtenerCondicionesIB(ICondicionIBServicio _condIB)
+		{
+			CondicionIBLista = _condIB.GetCondicionIBLista(TokenCookie);
+		}
+
+		protected void ObtenerProvincias(IProvinciaServicio _provin)
+		{
+			ProvinciaLista = _provin.GetProvinciaLista(TokenCookie);
+		}
+
+		protected void ObtenerFormasDePago(IFormaDePagoServicio _formPago)
+		{
+			FormaDePagoLista = _formPago.GetFormaDePagoLista(TokenCookie, "C");
+		}
+
+		protected void ObtenerTiposDeCanal(ITipoCanalServicio _tipoCanal)
+		{
+			TipoCanalLista = _tipoCanal.GetTipoCanalLista(TokenCookie);
+		}
+
+		protected void ObtenerTiposDeCuentaBco(ITipoCuentaBcoServicio _tipoCueBco)
+		{
+			TipoCuentaBcoLista = _tipoCueBco.GetTipoCuentaBcoLista(TokenCookie);
 		}
 
 		[HttpPost]
