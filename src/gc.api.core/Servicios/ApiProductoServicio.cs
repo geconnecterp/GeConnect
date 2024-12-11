@@ -920,7 +920,8 @@ namespace gc.api.core.Servicios
             {
                 IsNullable = true,
                 Direction = ParameterDirection.Input,
-                SqlDbType = SqlDbType.DateTime
+                SqlDbType = SqlDbType.DateTime,
+				SqlValue = desde
             };
             ps.Add(p);
 
@@ -928,7 +929,8 @@ namespace gc.api.core.Servicios
             {
                 IsNullable = true,
                 Direction = ParameterDirection.Input,
-                SqlDbType = SqlDbType.DateTime
+                SqlDbType = SqlDbType.DateTime,
+				SqlValue = hasta
             };
             ps.Add(p);
 
