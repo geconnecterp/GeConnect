@@ -14,11 +14,14 @@ namespace gc.api.core.Servicios
         {
         }
 
-        public List<FormaDePagoDto> GetFormaDePagoLista()
+        public List<FormaDePagoDto> GetFormaDePagoLista(string tipo = "C")
         {
             var sp = Constantes.ConstantesGC.StoredProcedures.SP_FORMA_PAGO_LISTA;
-            var ps = new List<SqlParameter>();
-            var res = _repository.InvokarSp2Lst(sp, ps, true);
+            var ps = new List<SqlParameter>()
+            {
+				new("@tipo",tipo)
+			};
+			var res = _repository.InvokarSp2Lst(sp, ps, true);
             if (res.Count == 0)
                 return [];
             else

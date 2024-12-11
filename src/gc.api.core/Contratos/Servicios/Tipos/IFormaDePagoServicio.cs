@@ -5,6 +5,6 @@ namespace gc.api.core.Contratos.Servicios
 {
     public interface IFormaDePagoServicio : IServicio<FormaDePago>
     {
-        List<FormaDePagoDto> GetFormaDePagoLista();
+        List<FormaDePagoDto> GetFormaDePagoLista(string tipo = "C");
     }
 }
