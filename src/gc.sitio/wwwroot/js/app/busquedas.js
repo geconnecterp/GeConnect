@@ -1,5 +1,8 @@
 ﻿$(function () {
-    
+    $("button[type='button'].close.buscAdv").on("click", function () {
+        $("#busquedaModal").modal("toggle");
+
+    })
     $("input#Busqueda").keypress(verificaTeclaDeBusqueda);
     $("input#Rel01").on("click", function () {
         $("input#Rel01").val("");
@@ -20,10 +23,39 @@
         presentaPaginacion(div);
     });
 
+    /*    $("input[type='button'],.btn-grid").on("click", ordenarColumna);*/
+
     funcCallBack = busquedaAvanzadaProductos;
 
     return true;
 });
+
+function ordenarColumna(x) {
+    AbrirWaiting();
+    var sortdir = $(x).attr("sortDir");
+    var sort = $(x).attr("sort");
+    if (sortdir === "asc") {
+        $(x).attr("sortDir", "desc");
+        sortdir = "desc";
+        var icon = $(x).find("i");
+        $(icon).removeClass("bx-chevron-down-circle").addClass("bx-chevron-up-circle");
+    }
+    else {
+        $(x).attr("sortDir", "asc");
+        sortdir = "asc";
+        var icon = $(x).find("i");
+        $(icon).removeClass("bx-chevron-up-circle").addClass("bx-chevron-down-circle");
+    }
+
+    var data = $.extend({}, dataBak, { buscaNew: false, sort, sortDir: sortdir, pag: pagina });
+
+    PostGenHtml(data, busquedaAvanzadaUrl, function (obj) {
+        CerrarWaiting();
+        $("#divBusquedaAvanzada").html(obj);
+        return true;
+    });
+    return true;
+}
 
 function busquedaAvanzadaProductos(pag) {
     var ri01 = $("#Rel01Item").val();
@@ -111,50 +143,74 @@ function buscarProducto() {
 
     PostGen(datos, _post, function (obj) {
         if (obj.error === true) {
-            ControlaMensajeError(obj.msg);
-            productoBase = null;
-            $("#estadoFuncion").val(false);
-            $("#btnBusquedaBase").prop("disabled", false);
-            CerrarWaiting();
-            $("#Busqueda").focus();
-            return true;
+            AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                productoBase = null;
+                $("#estadoFuncion").val(false);
+                $("#btnBusquedaBase").prop("disabled", false);
+                $("#msjModal").modal("hide");
+                $("#Busqueda").focus();
+                return true;
+            }, false, ["Aceptar"], "error!", null);
         }
         else if (obj.warn === true) {
             if (obj.producto.p_id === "0000-0000") {
-                //un enter sin ningun codigo
-                productoBase = null;
-                $("#estadoFuncion").val(false);
-                ControlaMensajeWarning(obj.msg);
-                $("#btnBusquedaBase").prop("disabled", false);
-                CerrarWaiting();
-                return true;
-            }
-            else if (obj.producto.p_id === "NO") {
-                //se busco un codigo pero no se encontró
-                if (typeof funcionBusquedaAvanzada !== 'undefined') {
-                    if (funcionBusquedaAvanzada) {
-                        ///se abre el modal de la busqueda avanzada
-                        $("#busquedaModal").modal("toggle");
-                    }
-                    else {
-                        //si no esta la variable funcionBusquedaAvanzada o la misma es false, no se realiza la busqueda avanzada
-                        productoBase = null;
-                        $("#estadoFuncion").val(false);
-                        $("#btnBusquedaBase").prop("disabled", false);
-                        $("#msjModal").modal("hide");
-                        $("#Busqueda").focus();
-                        return true;
-                    }
-                }
-                else {
+                AbrirMensaje("ATENCIÓN", obj.msg, function () {
                     productoBase = null;
                     $("#estadoFuncion").val(false);
                     $("#btnBusquedaBase").prop("disabled", false);
                     $("#msjModal").modal("hide");
                     $("#Busqueda").focus();
                     return true;
-                }
+                }, false, ["Aceptar"], "error!", null);
+            }
+            else if (obj.producto.p_id === "NO") {
                 CerrarWaiting();
+
+                if (funcionBusquedaAvanzada === true) {
+                    AbrirMensaje("ATENCIÓN", "NO SE ENCONTRO EL PRODUCTO QUE INTENTO BUSCAR. SE ABRIRÁ LA BUSQUEDA AVANZADA.", function () {
+                        $("#msjModal").modal("hide");
+                        productoBase = null;
+                        $("#estadoFuncion").val(false);
+                        inicializaBusquedaAvanzada();
+                        $("#busquedaModal").modal("toggle");
+                        return true;
+                    }, false, ["Aceptar"], "error!", null);
+
+                    return true;
+                }
+                else {
+                    AbrirMensaje("ATENCIÓN", "NO SE ENCONTRO EL PRODUCTO QUE INTENTO BUSCAR.", function () {
+                        $("#msjModal").modal("hide");
+                        $("#Busqueda").focus();
+                        return true;
+                    }, false, ["Aceptar"], "error!", null);
+
+                }
+                ////se busco un codigo pero no se encontró
+                //if (typeof funcionBusquedaAvanzada !== 'undefined') {
+                //    if (funcionBusquedaAvanzada) {
+                //        ///se abre el modal de la busqueda avanzada
+                //        $("#busquedaModal").modal("toggle");
+                //    }
+                //    else {
+                //        //si no esta la variable funcionBusquedaAvanzada o la misma es false, no se realiza la busqueda avanzada
+                //        productoBase = null;
+                //        $("#estadoFuncion").val(false);
+                //        $("#btnBusquedaBase").prop("disabled", false);
+                //        $("#msjModal").modal("hide");
+                //        $("#Busqueda").focus();
+                //        return true;
+                //    }
+                //}
+                //else {
+                //    productoBase = null;
+                //    $("#estadoFuncion").val(false);
+                //    $("#btnBusquedaBase").prop("disabled", false);
+                //    $("#msjModal").modal("hide");
+                //    $("#Busqueda").focus();
+                //    return true;
+                //}
+                //CerrarWaiting();
             } else {
                 //encontro producto pero hay warning
                 CerrarWaiting();
@@ -202,4 +258,63 @@ function verificaTeclaDeBusqueda(e) {
         return true;
 
     }
+}
+
+function selectRegDbl(x) {
+    $("#tbGridProd tbody tr").each(function (index) {
+        $(this).removeClass("selected-row");
+    });
+    $(x).addClass("selected-row");
+    var id = x.cells[0].innerText.trim();
+
+    //agrego el id en el control de busqueda simple y acciono el buscar.
+    $("#busquedaModal").modal("toggle");
+    $("input#Busqueda").val(id);
+    $("#btnBusquedaBase").trigger("click");
+
+}
+
+function selectReg(x) {
+    $("#tbGridProd tbody tr").each(function (index) {
+        $(this).removeClass("selected-row");
+    });
+    $(x).addClass("selected-row");
+}
+
+function inicializaBusquedaAvanzada() {
+    //configurando proveedor
+    if (typeof provUnico !== 'undefined' &&
+        provUnico === true) {
+        $("input#Rel01").val(provDesc).prop("disabled", true);
+        $("input#Rel01Item").val(provId);
+    }
+    else {
+        $("input#Rel01").val("").prop("disabled", false);
+        $("input#Rel01Item").val("");
+    }
+
+    //configurando RUBROS
+    if (typeof rubUnico !== 'undefined' &&
+        rubUnico === true) {
+        $("input#Rel02").val(rubDesc).prop("disabled", true);
+        $("input#Rel02Item").val(rubId);
+    }
+    else {
+        $("input#Rel02").val("").prop("disabled", false);
+        $("input#Rel02Item").val("");
+    }
+
+    //configurando ESTADOS
+    if (typeof estadoUnico !== 'undefined' &&
+        estadoUnico === true) {
+        $("#chkActivos").prop("checked", estActivo).prop("disabled", true);
+        $("#chkDisc").prop("checked", estDiscon).prop("disabled", true);
+        $("#chkInact").prop("checked", estInacti).prop("disabled", true);
+    }
+    else {
+        $("#chkActivos").prop("checked", true).prop("disabled", false);
+        $("#chkDisc").prop("checked", false).prop("disabled", false);
+        $("#chkInact").prop("checked", false).prop("disabled", false);
+    }
+    return true;
 }

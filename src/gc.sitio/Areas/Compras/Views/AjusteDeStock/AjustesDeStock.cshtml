@@ -6,6 +6,9 @@
 	var motivos = Model.ComboMotivos;
 	BusquedaProducto busquedaProducto = new();
 }
+@section styles {
+	<link rel="stylesheet" href="~/css/simplePagination.css"   />
+}
 
 <div class="card">
 	<div class="container">
@@ -180,6 +183,13 @@
 		var tipoMotivoSeleccionado = "";
 		var pIdSeleccionado = "";
 		var funcionBusquedaAvanzada = true;
+		//parapaginacion
+		var totalRegs = 0;
+		var pagRegs = 0;
+		var pags = 0;
+		var pagina = 1;
+		var funcCallBack = null;
+		var dataBak = {};
 		var buscarProveedorUrl = "@Url.Action("Buscar", "proveedor", new { area = "ControlComun" })";
 		var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun", validarPertenenciaDeProveedor = false })";
 		var BuscarBoxesDesdeDepositoURL = "@Url.Action("ObtenerBoxesDesdeDeposito", "ajustedestock", new { area = "Compras" })";
@@ -194,9 +204,14 @@
 		var ConfirmarAjusteDeStockURL = "@Url.Action("ConfirmarAjusteDeStock", "ajustedestock", new { area = "Compras" })";
 		var VerificaExistenciaDeAjusteDeStockURL = "@Url.Action("VerificaExistenciaDeAjusteDeStock", "ajustedestock", new { area = "Compras" })";
 		var CancelarAjusteDeStockURL = "@Url.Action("CancelarAjusteDeStock", "ajustedestock", new { area = "Compras" })";
+		var autoComRel01Url = "@Url.Action("BuscarProvs", "abmproducto", new { area = "abms" })";
+		var autoComRel02Url = "@Url.Action("BuscarRubros", "abmproducto", new { area = "abms" })";
+		var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "abmproducto", new { area = "abms" })";
+		var busquedaAvanzadaUrl = "@Url.Action("BusquedaAvanzada", "producto", new { area = "ControlComun" })";
 	</script>
 	<script src="~/js/app/areas/ajustedestock/ajdestk.js"></script>
 	<script src="~/js/app/busquedas.js" type="text/javascript"></script>
 	@* <script src="~/js/app/controlcomun/rpr.js" type="text/javascript"></script> *@
 	<script src="~/js/app/controlcomun/infoRpr.js" type="text/javascript"></script>
+	<script src="~/js/plugins/jquery.simplePagination.js"></script>
 }

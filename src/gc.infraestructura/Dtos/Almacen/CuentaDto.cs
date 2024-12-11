@@ -25,7 +25,9 @@ namespace gc.infraestructura.Dtos.Almacen
             Cta_Emp_Legajo = string.Empty;
             Cta_Emp_Ctaf = string.Empty;
             Tdoc_Desc = string.Empty;
+            Ib_id = string.Empty;
         }
+        public string Ib_id { get; set; }
         public string Cta_Id { get; set; }
         public string Cta_Denominacion { get; set; }
         public string Tdoc_Id { get; set; }
