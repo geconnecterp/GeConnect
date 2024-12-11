@@ -144,12 +144,14 @@ namespace gc.sitio.Areas.ABMs.Controllers
 					var res = await _productoServicio.BusquedaListaProductos(busc, TokenCookie);
 					lista = res.Item1 ?? [];
 					MetadataProd = res.Item2 ?? null;
-					metadata = MetadataProd;
+					//metadata = MetadataProd;
 					ProductosBuscados = lista;
 				}
+                metadata = MetadataProd;
 
-				grillaDatos = GenerarGrilla<ProductoListaDto>(ProductosBuscados, "p_desc");
-				return PartialView("_gridProdsAdv", grillaDatos);
+                //grillaDatos = GenerarGrilla<ProductoListaDto>(ProductosBuscados, "p_desc");
+                grillaDatos = GenerarGrilla<ProductoListaDto>(ProductosBuscados, sort, _setting.NroRegistrosPagina, pag, metadata.TotalCount, metadata.TotalPages, sortDir);
+                return PartialView("_gridProdsAdv", grillaDatos);
 			}
 			catch (Exception ex)
 			{

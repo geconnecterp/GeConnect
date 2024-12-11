@@ -218,6 +218,7 @@ namespace gc.api.core.Servicios
 					Tipo = x.Tipo,
 					Habilitada = x.Habilitada,
 					Tdoc_Desc = x.Tdoc_Desc,
+					Ib_id = x.Ib_id,
 					#endregion
 				}).ToList();
 		}

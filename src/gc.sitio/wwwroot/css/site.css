@@ -177,7 +177,7 @@ fieldset {
 }
 
 .table-wrapper-modal {
-    max-height: 150px;
+    max-height: 300px;
     max-width: 100%;
     overflow: auto;
 }
