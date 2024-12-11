@@ -9,10 +9,7 @@ using Newtonsoft.Json;
 using System.Net;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Almacen.Tr.Request;
-using Newtonsoft.Json.Linq;
-using Microsoft.Extensions.Primitives;
 using gc.infraestructura.Dtos.Almacen.Rpr;
-using System.Security.Cryptography;
 
 namespace gc.sitio.core.Servicios.Implementacion
 {
