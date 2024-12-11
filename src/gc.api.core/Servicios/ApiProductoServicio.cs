@@ -9,6 +9,7 @@ using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor.Request;
+using gc.infraestructura.Dtos.Almacen.Info;
 using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Almacen.Response;
 using gc.infraestructura.Dtos.Almacen.Rpr;
@@ -909,6 +910,35 @@ namespace gc.api.core.Servicios
 
 			return info.First();
 		}
+
+		public List<ConsULDto> ConsultarUL(string tipo, string admId, DateTime? desde,DateTime? hasta)
+		{
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_INFO_UL_REPO;
+			var ps = new List<SqlParameter>();
+			ps.Add(new SqlParameter("@tipo", tipo));
+            var p = new SqlParameter("@desde", desde)
+            {
+                IsNullable = true,
+                Direction = ParameterDirection.Input,
+                SqlDbType = SqlDbType.DateTime
+            };
+            ps.Add(p);
+
+            p = new SqlParameter("@hasta", hasta)
+            {
+                IsNullable = true,
+                Direction = ParameterDirection.Input,
+                SqlDbType = SqlDbType.DateTime
+            };
+            ps.Add(p);
+
+			ps.Add(new SqlParameter("@adm_id", admId));
+            
+
+            List<ConsULDto> uls = _repository.EjecutarLstSpExt<ConsULDto>(sp, ps, true);
+
+            return uls;
+        }
 
 		public List<BoxInfoStkDto> ObtenerBoxInfoStk(string box_id)
 		{

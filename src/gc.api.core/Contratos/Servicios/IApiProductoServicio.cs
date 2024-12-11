@@ -15,6 +15,7 @@ using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor.Request;
+using gc.infraestructura.Dtos.Almacen.Info;
 
 namespace gc.api.core.Contratos.Servicios
 {
@@ -87,5 +88,7 @@ namespace gc.api.core.Contratos.Servicios
 
         RespuestaDto AJ_CargaConteosPrevios(string json,string admid);
         RespuestaDto DV_CargaConteosPrevios(string json, string admid);
+
+		List<ConsULDto> ConsultarUL(string tipo, string admId, DateTime? desde, DateTime? hasta);
     }
 }

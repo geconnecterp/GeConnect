@@ -3,6 +3,7 @@ using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
+using gc.infraestructura.Dtos.Almacen.Info;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Box;
 using gc.infraestructura.Dtos.Gen;
@@ -25,9 +26,11 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string BOX_INFO = "/ObtenerBoxInfo";
         private const string BOX_INFO_STK = "/ObtenerBoxInfoStk";
         private const string BOX_INFO_MOV_STK = "/ObtenerBoxInfoMovStk";
+        private const string UL_CONSULTA = "/ConsultaUL";
 
         private const string AJ_CARGA_CONTEO_PREVIOS = "/AJ_CargaConteosPrevios";
         private const string DV_CARGA_CONTEO_PREVIOS = "/DV_CargaConteosPrevios";
+
 
 
         private readonly AppSettings _appSettings;
@@ -278,5 +281,47 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
+        public async Task<RespuestaGenerica<ConsULDto>> ConsultaUL(string tipo, DateTime fecD, DateTime fecH, string admId, string token)
+        {
+            try
+            {
+                ApiResponse<List<ConsULDto>> apiResponse;
+
+                HelperAPI helper = new();
+
+                HttpClient client = helper.InicializaCliente(token);
+                HttpResponseMessage response;
+                var d=fecD.Ticks;
+                var h=fecH.Ticks;
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{UL_CONSULTA}?tipo={tipo}&fecD={d}&fecH={h}&admId={admId}";
+
+                response = await client.GetAsync(link);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
+                    }
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ConsULDto>>>(stringData);
+
+                    return new RespuestaGenerica<ConsULDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
+                }
+                else
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                    return new() { Ok = false, Mensaje = "Algo no fue bien y el proceso no se completó. Intente de nuevo más tarde. Si el problema persiste informe al Administrador del sistema." };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+
+                return new RespuestaGenerica<ConsULDto> { Ok = false, Mensaje = "Algo no fue bien al intentar " };
+            }
+        }
     }
 }

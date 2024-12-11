@@ -71,7 +71,9 @@
 			public const string SP_RPR_CONFIRMA = "spgeco_rpr_confirmar";
 			public const string SP_RPR_UL = "SPGECO_UL_x_RPR";
 			public const string SP_RPR_UL_D = "SPGECO_UL_d";
-            
+            public const string SP_INFO_UL_REPO = "SPGECO_UL_repo";
+
+
             public const string SP_CUENTA_BUSQUEDA = "dbo.spgeco_c_busqueda_lista";
 
             public const string SP_TR_AUTORIZACIONES_PENDIENTES = "SPGECO_TR_Pendientes";

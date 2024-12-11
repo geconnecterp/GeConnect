@@ -1,4 +1,7 @@
-﻿using System.Net.Mail;
+﻿using IronBarCode;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Net.Mail;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -350,6 +353,58 @@ namespace gc.infraestructura.Core.Helpers
             }
 
             return texto;
+        }
+
+        /// <summary>
+        /// Se codifica un id en code bar 3of9 y se devuelve en una imagen en b64. 
+        /// </summary>
+        /// <returns></returns>
+        public static string GeneraIdEnCodeBar3of9(string id)
+        {
+          string b64=string.Empty;
+            var  barcode = BarcodeWriter.CreateBarcode(id, BarcodeEncoding.Code39);
+            using(MemoryStream ms = new MemoryStream())
+            {
+                using (Bitmap bmp = barcode.ToBitmap())
+                {
+                    bmp.Save(ms, ImageFormat.Png);
+                }
+
+                byte[] data = ms.ToArray();
+                b64 =Convert.ToBase64String(data);
+            }
+            return b64;
+            
+        }
+
+        public static string GeneraIdEnCodeBar3of9WithText(string id)
+        {
+            string b64 = string.Empty;
+            var barcode = BarcodeWriter.CreateBarcode(id, BarcodeEncoding.Code39, 100, 50);
+            using (MemoryStream ms = new MemoryStream())
+            {
+                using (var finalImg = new Bitmap(barcode.Width, barcode.Height + 50))
+                {
+                    using (var graphics= Graphics.FromImage(finalImg))
+                    {
+                        graphics.DrawImage(barcode.ToImage(), 0, 0);
+
+                        // Configurar la fuente y el color del texto
+                        using (var font = new Font("Arial", 12, FontStyle.Regular))
+                        {
+                            using (var brush = new SolidBrush(Color.Black))
+                            {
+                                // Dibujar el texto debajo del código de barras
+                                graphics.DrawString($"*{id}*", font, brush, new PointF(10, barcode.Height + 5)); // Ajusta la posición según sea necesario
+                            }
+                        }
+                    }
+                    finalImg.Save(ms, ImageFormat.Png);
+                }
+                byte[] data = ms.ToArray();
+                b64 = Convert.ToBase64String(data);
+            }
+            return b64;
         }
     }
 }

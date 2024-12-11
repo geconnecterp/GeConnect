@@ -2,7 +2,10 @@
 using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Dtos.Administracion;
+using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.Info;
 using gc.infraestructura.Dtos.Box;
 using gc.infraestructura.Dtos.Deposito;
 using gc.infraestructura.Dtos.Gen;
@@ -830,6 +833,90 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             return PartialView("_gridBoxInfoMovStk", grillaDatos);
         }
 
+        #endregion
+
+        #region INFO UL
+        [HttpGet]
+        public async Task<IActionResult> InfoUL()
+        {
+            var auth = EstaAutenticado;
+            if (!auth.Item1 || (auth.Item1 && !auth.Item2.HasValue) || (auth.Item1 && auth.Item2.HasValue && auth.Item2.Value < DateTime.Now))
+            {
+                return RedirectToAction("Login", "Token", new { area = "Seguridad" });
+            }
+
+            string volver = Url.Action("info", "almacen", new { area = "gestion" });
+            ViewBag.AppItem = new AppItem { Nombre = "Información de Productos - CONSULTA DE UL", VolverUrl = volver ?? "#" };
+
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ConsultarUL(string tipo,DateTime desde,DateTime hasta)
+        {
+            GridCore<ConsULDto> grillaDatos;
+            RespuestaGenerica<EntidadBase> response = new();
+            try
+            {
+                if (desde > hasta)
+                {
+                    throw new NegocioException("Verifique el Periodo de fechas, ya que es incorrecta.");
+                }
+                var res = await _producto2Servicio.ConsultaUL(tipo, desde, hasta, AdministracionId, TokenCookie);
+                if (res.Ok)
+                {
+                    if (res.ListaEntidad.Count > 0)
+                    {
+                        foreach (var item in res.ListaEntidad)
+                        {
+                            //generando imagen png en base 64 con el code 3of9
+                            item.ImgB64 = HelperGen.GeneraIdEnCodeBar3of9WithText(item.UL_id);
+                        }
+
+                        grillaDatos = GenerarGrilla<ConsULDto>(res.ListaEntidad, "UL_id");
+                        return PartialView("_gridListadoUL", grillaDatos);
+                    }
+                    else
+                    {
+                        if (tipo == "F")
+                        {
+                            response.Mensaje = $"No se encontraron datos para el periodo {desde.ToShortDateString()} - {hasta.ToShortDateString()}";
+                        }
+                        else
+                        {
+                            response.Mensaje = $"No se encontraron UL sin almacenar.";
+                        }
+                        response.Ok = true;
+                        response.EsWarn = false;
+                        response.EsError = false;
+                        return PartialView("_gridMensaje", response);
+                    }
+                }
+                else
+                {
+                    throw new NegocioException(res.Mensaje);
+                }
+            }
+            catch(NegocioException ex)
+            {
+                _logger.LogError(ex, "Error al consultar las ULs");
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
+            }
+            catch (Exception ex)
+            {
+                string msg = "Error al Intentar consultar las ULs. Verifique.";
+                _logger.LogError(ex, "Error al consultar las ULs");
+                response.Mensaje = msg;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
+            }
+        }
         #endregion
     }
 }

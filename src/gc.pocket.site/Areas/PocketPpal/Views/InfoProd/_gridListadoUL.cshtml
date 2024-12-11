@@ -1,0 +1,40 @@
+﻿@model GridCore<ConsULDto>
+
+
+
+@{
+    var dataMod = new ConsULDto();
+    var alt = true;
+    string clase = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+}
+<div class="table-responsive table-wrapper text-nowrap">
+    <table class="table mb-0 table-bordered  table-hover">
+        <thead class="table-dark">
+            <tr class="header">
+                <th scope="col">ULs</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ListaDatos)
+            {
+                if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+                <tr class="@clase">
+                    <td class="text-sm-start">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <span>@item.UL_id</span>
+                                <img src="data:image/png;base64,@item.ImgB64" alt="CodeBar" width="200" height="50" />
+                            </div>
+                            <div class="col-sm-6">
+                                <span><strong>Obs: </strong>@item.Obs [@item.ULe_desc]</span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
