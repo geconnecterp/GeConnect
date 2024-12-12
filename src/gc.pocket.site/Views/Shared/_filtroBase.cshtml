@@ -31,8 +31,8 @@
         <div class="col-sm-6">
             <div class="input-group input-group-sm">
                 <div class="form-check form-check-inline form-switch mb-2">
-                    <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkProveedor" />
-                    <label class="form-check-label" for="chkProveedor">Proveedor</label>
+                    <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkRel01" />
+                    <label class="form-check-label" for="chkRel01" id="lbRel01"></label>
                 </div>
             </div>
         </div>
@@ -41,12 +41,13 @@
         <div class="col-sm-6">
             <div class="input-group  input-group-sm">
                 <span class="input-group-text">Nombre</span>
-                <input type="text" class="form-control" name="ProveedorNombre" id="ProveedorNombre" disabled />
-                @Html.Hidden("CtaProveedorId")
+                <input type="text" class="form-control" name="Rel01" id="Rel01" disabled />
+                @Html.Hidden("Rel01Item")
             </div>
         </div>
         <div class="col-sm-6">
-            @Html.ListBoxFor(p => p.Rel01, Model.Rel01.Select(X => new SelectListItem { Text = X.Descripcion, Value = X.Id }), new { @class = "form-control", @disabled = "disabled" })
+            @Html.ListBox("Rel01List", null, new { @class = "form-control", @disabled = "disabled" })
+            @* @Html.ListBoxFor(p => p.Rel01, Model.Rel01.Select(X => new SelectListItem { Text = X.Descripcion, Value = X.Id }), new { @class = "form-control", @disabled = "disabled" }) *@
         </div>
     </div>
     <!---------------------------FIN BUSQUEDA DE PROVEEDORES------------------------------------>
@@ -70,7 +71,7 @@
             </div>
         </div>
         <div class="col-sm-6">
-            @Html.ListBox("Rel02List",null, new { @class = "form-control", @disabled = "disabled" })
+            @Html.ListBox("Rel02List", null, new { @class = "form-control", @disabled = "disabled" })
         </div>
     </div>
     <!---------------------------FIN BUSQUEDA DE RUBROS------------------------------------>

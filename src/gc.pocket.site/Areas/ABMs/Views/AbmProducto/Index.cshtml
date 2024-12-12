@@ -5,7 +5,7 @@
 *@
 @{
     Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
-    var filtro = new QueryFilters() { Rel01 = new List<ComboGenDto>(), Rel02 = new List<ComboGenDto>() };
+    var filtro = new QueryFilters() { Rel01 = new List<string>(), Rel02 = new List<string>() };
 }
 
 @section styles {
@@ -14,7 +14,7 @@
 
 <div class="container">
     <div class="d-flex justify-content-sm-between">
-        <button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample" aria-expanded="true" aria-controls="collapseExample">
+        <button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
             <i class="bx bx-filter bx-xs"></i>
         </button>
 
@@ -22,7 +22,7 @@
             <i class="bx bx-arrow-to-bottom bx-xs"></i>
         </button>
     </div>
-    <div class="collapse" id="collapseExample" style="">
+    <div class="collapse" id="divFiltro" style="">
         <partial name="_filtroBase" model="filtro" />
         @Html.Hidden("pagEstado", false);
     </div>

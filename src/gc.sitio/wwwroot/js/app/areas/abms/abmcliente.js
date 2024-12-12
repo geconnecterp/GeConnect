@@ -15,7 +15,7 @@
 function InicializaPantallaAbmProd() {
 	var tb = $("#tbGridProd tbody tr");
 	if (tb.length === 0) {
-		$("#collapseExample").collapse("show")
+        $("#divFiltro").collapse("show")
 	}
 
     $("#lbRel01").text("TIPO");
@@ -36,7 +36,7 @@ function cargaPaginacion() {
         }
     });
     $("#pagEstado").val(false);
-    $("#collapseExample").collapse("hide")
+    $("#divFiltro").collapse("hide")
     return true;
 }
 
@@ -68,7 +68,7 @@ function buscarClientes(pag) {
     };
     PostGenHtml(data, buscarUrl, function (obj) {
         $("#divGrilla").html(obj);
-        $("#collapseExample").collapse("hide")
+        $("#divFiltro").collapse("hide")
         PostGen({}, buscarMetadataURL, function (obj) {
             if (obj.error === true) {
                 AbrirMensaje("ATENCIÓN", obj.msg, function () {

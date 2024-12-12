@@ -1,4 +1,5 @@
-﻿using gc.infraestructura.Core.EntidadesComunes;
+﻿using gc.api.core.Entidades;
+using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
@@ -66,40 +67,55 @@ namespace gc.sitio.Areas.ABMs.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Buscar(QueryFilters query, string sort = "p_id", string sortDir = "asc", int pag = 1, bool actualizar = false)
+        public async Task<IActionResult> Buscar(QueryFilters query, bool buscaNew, string sort = "p_desc", string sortDir = "asc", int pag = 1, bool actualizar = false)
         {
             List<ProductoListaDto> lista;
             MetadataGrid metadata;
             GridCore<ProductoListaDto> grillaDatos;
-
-            if (PaginaProd == pag && ProductosBuscados.Count > 0)
+            RespuestaGenerica<EntidadBase> response = new();
+            try
             {
-                //es la misma pagina y hay registros, se realiza el reordenamiento de los datos.
-                lista = ProductosBuscados.ToList();
-                lista = OrdenarEntidad(lista, sortDir, sort);
-                ProductosBuscados = lista;
-            }
-            else if (PaginaProd != pag)  //&& PaginaProd >= 0 && !query.Todo
-            {
-                //traemos datos desde la base
-                query.Sort = sort;
-                query.SortDir = sortDir;
-                query.Registros = _settings.NroRegistrosPagina;
-                query.Pagina = pag;
+                if (PaginaProd == pag && !buscaNew)
+                {
+                    //es la misma pagina y hay registros, se realiza el reordenamiento de los datos.
+                    lista = ProductosBuscados.ToList();
+                    lista = OrdenarEntidad(lista, sortDir, sort);
+                    ProductosBuscados = lista;
+                }
+                else
+                {
+                    PaginaProd = pag;
+                    //traemos datos desde la base
+                    query.Sort = sort;
+                    query.SortDir = sortDir;
+                    query.Registros = _settings.NroRegistrosPagina;
+                    query.Pagina = pag;
 
-                var res = await _abmProdServ.BuscarAsync(query, TokenCookie);
-                lista = res.Item1 ?? [];
-                MetadataProd = res.Item2 ?? null;
+                    var res = await _abmProdServ.BuscarProducto(query, TokenCookie);
+                    lista = res.Item1 ?? [];
+                    MetadataProd = res.Item2 ?? null;
+                    ProductosBuscados = lista;
+                }
                 metadata = MetadataProd;
-                ProductosBuscados = lista;
+
+                //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
+                grillaDatos = GenerarGrilla(ProductosBuscados, sort, _settings.NroRegistrosPagina, pag, MetadataProd.TotalCount, MetadataProd.TotalPages, sortDir);
+
+                string volver = Url.Action("index", "home", new { area = "" });
+                ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
+
+                return View("_gridAbmProds", grillaDatos);
             }
-            //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
-            grillaDatos = GenerarGrilla(ProductosBuscados, sort, _settings.NroRegistrosPagina, pag, MetadataProd.TotalCount, MetadataProd.TotalPages, sortDir);
+            catch (Exception ex) {
 
-            string volver = Url.Action("index", "home", new { area = "" });
-            ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
-
-            return View("_gridAbmProds",grillaDatos);
+                string msg = "Error en la invocación de la API - Busqueda Producto";
+                _logger.LogError(ex, "Error en la invocación de la API - Busqueda Producto");
+                response.Mensaje = msg;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
+            }
         }
 
         [HttpPost]

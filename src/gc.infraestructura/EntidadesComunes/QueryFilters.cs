@@ -21,11 +21,11 @@ namespace gc.infraestructura.Core.EntidadesComunes
         /// <summary>
         /// Campo especificamente para buscar una serie de registros de una relacion primaria
         /// </summary>
-        public List<ComboGenDto>? Rel01 { get; set; }
+        public List<string>? Rel01 { get; set; }
         /// <summary>
         /// Campo especificamente para buscar una serie de registros de una relacion secundaria
         /// </summary>
-        public List<ComboGenDto>? Rel02 { get; set; }
+        public List<string>? Rel02 { get; set; }
         /// <summary>
         /// Campo especificamente para buscar una serie de registros de una relacion terciaria
         /// </summary>

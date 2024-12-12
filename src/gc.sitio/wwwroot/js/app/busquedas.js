@@ -9,9 +9,13 @@
         $("#Rel01Item").val("");
     });
     $("input#Rel02").on("click", function () {
-        $("input#Rel02").text("");
+        $("input#Rel02").val("");
         $("#Rel02Item").val("");
     });
+
+    //elimina item de la lista
+    $("#Rel01List").on("dblclick", 'option', function () { $(this).remove(); })
+    $("#Rel02List").on("dblclick", 'option', function () { $(this).remove(); })
 
     $("input").on("focus", function () { $(this).select(); })
 
@@ -185,32 +189,7 @@ function buscarProducto() {
                         return true;
                     }, false, ["Aceptar"], "error!", null);
 
-                }
-                ////se busco un codigo pero no se encontró
-                //if (typeof funcionBusquedaAvanzada !== 'undefined') {
-                //    if (funcionBusquedaAvanzada) {
-                //        ///se abre el modal de la busqueda avanzada
-                //        $("#busquedaModal").modal("toggle");
-                //    }
-                //    else {
-                //        //si no esta la variable funcionBusquedaAvanzada o la misma es false, no se realiza la busqueda avanzada
-                //        productoBase = null;
-                //        $("#estadoFuncion").val(false);
-                //        $("#btnBusquedaBase").prop("disabled", false);
-                //        $("#msjModal").modal("hide");
-                //        $("#Busqueda").focus();
-                //        return true;
-                //    }
-                //}
-                //else {
-                //    productoBase = null;
-                //    $("#estadoFuncion").val(false);
-                //    $("#btnBusquedaBase").prop("disabled", false);
-                //    $("#msjModal").modal("hide");
-                //    $("#Busqueda").focus();
-                //    return true;
-                //}
-                //CerrarWaiting();
+                }               
             } else {
                 //encontro producto pero hay warning
                 CerrarWaiting();

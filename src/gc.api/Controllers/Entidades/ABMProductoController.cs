@@ -64,5 +64,43 @@ namespace gc.api.Controllers.Entidades
 
             return Ok(response);
         }
+
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<IEnumerable<ProductoListaDto>>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult BuscaProductos(QueryFilters filters)
+        {
+            ProductoListaDto reg = new ProductoListaDto() { Total_Paginas = 0, Total_Registros = 0 };
+            //_logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var prods = _abmProductoServicio.Buscar(filters);
+            if (prods.Count > 0)
+            {
+                reg = prods.First();
+            }
+
+            // presentando en el header información basica sobre la paginación
+            var metadata = new MetadataGrid
+            {
+                TotalCount = reg.Total_Registros,
+                PageSize = filters.Registros.Value,
+                CurrentPage = filters.Pagina.Value,
+                TotalPages = reg.Total_Paginas,
+                HasNextPage = filters.Pagina.Value < reg.Total_Paginas,
+                HasPreviousPage = filters.Pagina.Value > 1,
+                NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(GetProductos)) ?? "").ToString(),
+                PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(GetProductos)) ?? "").ToString(),
+
+            };
+
+            var response = new ApiResponse<IEnumerable<ProductoListaDto>>(prods)
+            {
+                Meta = metadata
+            };
+
+            Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
+
+            return Ok(response);
+        }
     }
 }
