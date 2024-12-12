@@ -1,6 +1,9 @@
-﻿using gc.infraestructura.Core.EntidadesComunes;
+﻿using Azure;
+using gc.api.core.Entidades;
+using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.ABM;
+using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
@@ -25,13 +28,16 @@ namespace gc.sitio.Areas.ABMs.Controllers
         private readonly IProvinciaServicio _provinciaServicio;
         private readonly ITipoCanalServicio _tipoCanalServicio;
         private readonly ITipoCuentaBcoServicio _tipoCuentaBcoServicio;
+        private readonly ICuentaServicio _cuentaServicio;
+        private readonly ILogger<AbmClienteController> _logger;
 
         public AbmClienteController(IZonaServicio zonaServicio, ITipoNegocioServicio tipoNegocioServicio, IOptions<AppSettings> options,
                                     IABMClienteServicio abmClienteServicio, IHttpContextAccessor accessor, 
                                     ICondicionAfipServicio condicionAfipServicio, INaturalezaJuridicaServicio naturalezaJuridicaServicio,
                                     ICondicionIBServicio condicionIBServicio, IFormaDePagoServicio formaDePagoServicio,
                                     IProvinciaServicio provinciaServicio, ITipoCanalServicio tipoCanalServicio,
-                                    ITipoCuentaBcoServicio tipoCuentaBcoServicio) : base(options, accessor)
+                                    ITipoCuentaBcoServicio tipoCuentaBcoServicio, ICuentaServicio cuentaServicio, 
+                                    ILogger<AbmClienteController> logger) : base(options, accessor, logger)
         {
             _settings = options.Value;
             _tipoNegocioServicio = tipoNegocioServicio;
@@ -44,6 +50,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             _provinciaServicio = provinciaServicio;
             _tipoCanalServicio = tipoCanalServicio;
             _tipoCuentaBcoServicio = tipoCuentaBcoServicio;
+            _cuentaServicio = cuentaServicio;
         }
 
         [HttpGet]
@@ -68,40 +75,55 @@ namespace gc.sitio.Areas.ABMs.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Buscar(QueryFilters query, string sort = "cta_id", string sortDir = "asc", int pag = 1, bool actualizar = false)
+        public async Task<IActionResult> Buscar(QueryFilters query, bool buscaNew, string sort = "cta_id", string sortDir = "asc", int pag = 1, bool actualizar = false)
         {
             List<ABMClienteSearchDto> lista;
             MetadataGrid metadata;
             GridCore<ABMClienteSearchDto> grillaDatos;
-
-            if (PaginaProd == pag && ClientesBuscados.Count > 0)
+            RespuestaGenerica<EntidadBase> response = new();
+            try
             {
-                //es la misma pagina y hay registros, se realiza el reordenamiento de los datos.
-                lista = ClientesBuscados.ToList();
-                lista = OrdenarEntidad(lista, sortDir, sort);
-                ClientesBuscados = lista;
+                if (PaginaProd == pag && !buscaNew)
+                {
+                    //es la misma pagina y hay registros, se realiza el reordenamiento de los datos.
+                    lista = ClientesBuscados.ToList();
+                    lista = OrdenarEntidad(lista, sortDir, sort);
+                    ClientesBuscados = lista;
+                }
+                else if (PaginaProd != pag)  //&& PaginaProd >= 0 && !query.Todo
+                {
+                    //traemos datos desde la base
+                    query.Sort = sort;
+                    query.SortDir = sortDir;
+                    query.Registros = _settings.NroRegistrosPagina;
+                    query.Pagina = pag;
+
+                    var res = await _abmCliServ.BuscarClientes(query, TokenCookie);
+                    lista = res.Item1 ?? [];
+                    MetadataCliente = res.Item2 ?? null;
+                    metadata = MetadataCliente;
+                    ClientesBuscados = lista;
+                }
+                //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
+                grillaDatos = GenerarGrilla(ClientesBuscados, sort, _settings.NroRegistrosPagina, pag, MetadataCliente.TotalCount, MetadataCliente.TotalPages, sortDir);
+
+                //string volver = Url.Action("index", "home", new { area = "" });
+                //ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
+
+                return View("_gridAbmCliente", grillaDatos);
             }
-            else if (PaginaProd != pag)  //&& PaginaProd >= 0 && !query.Todo
+            catch (Exception ex)
             {
-                //traemos datos desde la base
-                query.Sort = sort;
-                query.SortDir = sortDir;
-                query.Registros = _settings.NroRegistrosPagina;
-                query.Pagina = pag;
-
-                var res = await _abmCliServ.BuscarClientes(query, TokenCookie);
-                lista = res.Item1 ?? [];
-                MetadataCliente = res.Item2 ?? null;
-                metadata = MetadataCliente;
-                ClientesBuscados = lista;
+                string msg = "Error en la invocación de la API - Busqueda Cliente";
+                _logger.LogError(ex, "Error en la invocación de la API - Busqueda Cliente");
+                response.Mensaje = msg;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
             }
-            //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
-            grillaDatos = GenerarGrilla(ClientesBuscados, sort, _settings.NroRegistrosPagina, pag, MetadataCliente.TotalCount, MetadataCliente.TotalPages, sortDir);
 
-            //string volver = Url.Action("index", "home", new { area = "" });
-            //ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
-
-            return View("_gridAbmCliente", grillaDatos);
+            
         }
 
         [HttpPost]
@@ -114,6 +136,30 @@ namespace gc.sitio.Areas.ABMs.Controllers
             catch (Exception ex)
             {
                 return Json(new { error = true, msg = "No se pudo obtener la información de paginación. Verifica" });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> BuscarCliente(string ctaId)
+        {
+            RespuestaGenerica<EntidadBase> response = new();
+            try
+            {
+                var res = _cuentaServicio.GetCuentaParaABM(ctaId, TokenCookie);
+                if (res == null)
+                    return PartialView("_tabDatosCliente", new CuentaABMDto());
+
+                return PartialView("_tabDatosCliente", res.First());
+            }
+            catch (Exception ex)
+            {
+                string msg = "Error en la invocación de la API - Busqueda Cliente";
+                _logger.LogError(ex, "Error en la invocación de la API - Busqueda Cliente");
+                response.Mensaje = msg;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
             }
         }
 

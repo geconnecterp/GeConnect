@@ -109,3 +109,25 @@ function buscarClientes(pag) {
     });
 
 }
+
+function selectReg(e) {
+    $("#tbGridProd tbody tr").each(function (index) {
+        $(this).removeClass("selected-row");
+    });
+    $(e).addClass("selected-row");
+
+    var cta_id = e.cells[0].innerText.trim();
+    if (cta_id !== "") {
+        BuscarCliente(cta_id);
+    }
+}
+
+function BuscarCliente(ctaId) {
+    var data = { ctaId };
+    PostGenHtml(data, buscarClienteUrl, function (obj) {
+
+    }, function (obj) {
+        ControlaMensajeError(obj.message);
+        CerrarWaiting();
+    });
+}

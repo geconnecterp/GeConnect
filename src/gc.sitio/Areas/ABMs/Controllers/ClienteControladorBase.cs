@@ -11,10 +11,12 @@ namespace gc.sitio.Areas.ABMs.Controllers
     [Area("ABMs")]
     public class ClienteControladorBase : ControladorBase
     {
-
-        public ClienteControladorBase(IOptions<AppSettings> options, IHttpContextAccessor accessor) : base(options, accessor)
+        private readonly AppSettings _setting;
+        private readonly ILogger _logger;
+        public ClienteControladorBase(IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger logger) : base(options, accessor, logger)
         {
-
+            _setting = options.Value;
+            _logger = logger;
         }
 
         #region ABM

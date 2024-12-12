@@ -25,6 +25,7 @@
     //})
 
     InicializaPantallaAbmProd();
+    funcCallBack = buscarProductos;
 /*    AbrirWaiting();*/
     return true;
 });
