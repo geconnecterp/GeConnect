@@ -1,6 +1,9 @@
 ﻿$(function () {
     $("#rdULsAlm").on("click", limpiaRbULFec);
     $("#rdULFec").on("click", ActivaRbULFec);
+    $("#btnBuscarUL").on("click", ConsultarUL);
+    $(".inputEditable").on("keypress", analizaEnterInput);
+
     CargaFechaCamposFecUL();
     ConsultarUL();
 });
@@ -18,7 +21,7 @@ function ActivaRbULFec() {
     if ($("#rdULFec").is(":checked")) {
         $("#ulFecD").prop("disabled", false);
         $("#ulFecH").prop("disabled", false);
-        //CargaFechaCamposFecUL();
+        CargaFechaCamposFecUL();
         ConsultarUL();
 
     }

@@ -362,7 +362,7 @@ namespace gc.infraestructura.Core.Helpers
         public static string GeneraIdEnCodeBar3of9(string id)
         {
           string b64=string.Empty;
-            var  barcode = BarcodeWriter.CreateBarcode(id, BarcodeEncoding.Code39);
+            var  barcode = BarcodeWriter.CreateBarcode($"*{id}*", BarcodeEncoding.Code39);
             using(MemoryStream ms = new MemoryStream())
             {
                 using (Bitmap bmp = barcode.ToBitmap())
@@ -395,7 +395,7 @@ namespace gc.infraestructura.Core.Helpers
                             using (var brush = new SolidBrush(Color.Black))
                             {
                                 // Dibujar el texto debajo del código de barras
-                                graphics.DrawString($"*{id}*", font, brush, new PointF(10, barcode.Height + 5)); // Ajusta la posición según sea necesario
+                                graphics.DrawString(id, font, brush, new PointF(10, barcode.Height + 5)); // Ajusta la posición según sea necesario
                             }
                         }
                     }

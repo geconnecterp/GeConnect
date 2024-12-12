@@ -8,7 +8,7 @@
     });
     $("#btnBuscar").on("click", function () { buscarProductos(pagina); });
 
-
+    $(".inputEditable").on("keypress", analizaEnterInput);
 
     /*        CODIGO TRASLADADO AL SITIGEN.JS            */
 

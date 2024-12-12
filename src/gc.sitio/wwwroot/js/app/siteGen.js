@@ -237,3 +237,35 @@ function presentaPaginacion(div) {
     });
     $("#pagEstado").val(false);
 }
+
+function analizaEnterInput(e) {
+    if (e.which == "13") {
+        tope = 99999;
+        index = -1;
+        //obtengo los inputs dentro del div
+        var inputss = $("main :input:not(:disabled)");
+        tope = inputss.length;
+        //le el id del input en el que he dado enter
+        var cual = $(this).prop("id");
+        inputss.each(function (i, item) {
+            if ($(item).prop("id") === cual) {
+                index = i;
+                return false;
+            }
+        });
+        if (index > -1 && tope > index + 1) {
+            inputss[index + 1].focus();
+        }
+
+        ////verifico cuantos input habilitados encuentro
+        //var $nextInput = $(this).nextAll("input:not(:disabled)");
+        //if ($nextInput.length>0) {
+        //    $nextInput.first().focus();
+        //    return true;
+        //} else if ($(this).prop("id") === "unid") {
+        //    e.preventDefault();
+        //    $("#btnCargarProd").focus();
+        //}
+    }
+    return true;
+}
