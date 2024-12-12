@@ -1,8 +1,4 @@
 ﻿@model QueryFilters
-
-@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
 @{
     Layout = "~/views/shared/_Layout.cshtml";
     var filtro = new QueryFilters() { Rel01 = new List<string>(), Rel02 = new List<string>() };
@@ -13,16 +9,12 @@
 }
 
 <div class="container">
-    @*  <p class="demo-inline-spacing">
-
-    </p> *@
     <div class="d-flex justify-content-sm-start">
-
-        <button id="btnFiltro" class="btn btn-primary btn-sm me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
+        <button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
             <i class="bx bx-filter bx-xs"></i>
         </button>
 
-        <button class="btn btn-primary btn-sm mt-1" type="button" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle">
+        <button class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle">
             <i class="bx bx-arrow-to-bottom bx-xs"></i>
         </button>
     </div>
@@ -57,54 +49,18 @@
             <div class="tab-pane fade show active" id="navs-top-home" role="tabpanel">
                 <div id="divDatosCliente">
                 </div>
-                @* <p>
-                    Icing pastry pudding oat cake. Lemon drops cotton candy caramels cake caramels sesame snaps
-                    powder. Bear claw candy topping.
-                </p>
-                <p class="mb-0">
-                    Tootsie roll fruitcake cookie. Dessert topping pie. Jujubes wafer carrot cake jelly. Bonbon
-                    jelly-o jelly-o ice cream jelly beans candy canes cake bonbon. Cookie jelly beans marshmallow
-                    jujubes sweet.
-                </p> *@
             </div>
             <div class="tab-pane fade" id="navs-top-profile" role="tabpanel">
                 <div id="divFormasDePago">
                 </div>
-                @* <p>
-                    Donut dragée jelly pie halvah. Danish gingerbread bonbon cookie wafer candy oat cake ice
-                    cream. Gummies halvah tootsie roll muffin biscuit icing dessert gingerbread. Pastry ice cream
-                    cheesecake fruitcake.
-                </p>
-                <p class="mb-0">
-                    Jelly-o jelly beans icing pastry cake cake lemon drops. Muffin muffin pie tiramisu halvah
-                    cotton candy liquorice caramels.
-                </p> *@
             </div>
             <div class="tab-pane fade" id="navs-top-messages" role="tabpanel">
                 <div id="divOtrosContactos">
                 </div>
-                @* <p>
-                    Oat cake chupa chups dragée donut toffee. Sweet cotton candy jelly beans macaroon gummies
-                    cupcake gummi bears cake chocolate.
-                </p>
-                <p class="mb-0">
-                    Cake chocolate bar cotton candy apple pie tootsie roll ice cream apple pie brownie cake. Sweet
-                    roll icing sesame snaps caramels danish toffee. Brownie biscuit dessert dessert. Pudding jelly
-                    jelly-o tart brownie jelly.
-                </p> *@
             </div>
             <div class="tab-pane fade" id="navs-top-notes" role="tabpanel">
                 <div id="divNotas">
                 </div>
-                @* <p>
-                Oat cake chupa chups dragée donut toffee. Sweet cotton candy jelly beans macaroon gummies
-                cupcake gummi bears cake chocolate.
-                </p>
-                <p class="mb-0">
-                Cake chocolate bar cotton candy apple pie tootsie roll ice cream apple pie brownie cake. Sweet
-                roll icing sesame snaps caramels danish toffee. Brownie biscuit dessert dessert. Pudding jelly
-                jelly-o tart brownie jelly.
-                </p> *@
             </div>
         </div>
     </div>
@@ -136,6 +92,8 @@
         var pags = 0;
         var pagina = 1;
         var search = "";
+        var funcCallBack = "buscarClientes";
+        var dataBak = {};
 
         var buscarUrl = "@Url.Action("buscar", "abmcliente", new { area = "abms" })";
         var buscarProveedorUrl = "@Url.Action("Buscar", "proveedor", new { area = "gestion" })";

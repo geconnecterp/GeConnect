@@ -2,13 +2,17 @@
 	$("#btnCancel").on("click", function () {
 		$("#btnFiltro").trigger("click");
 	});
-	$("#pagEstado").on("change", cargaPaginacion);
+    $("#pagEstado").on("change", function () {
+        var div = $("#divPaginacion");
+        presentaPaginacion(div);
+    });
     $("#btnBuscar").on("click", function () { buscarClientes(pagina); });
 
     //codigo trasladado a siteGen
 
 	InicializaPantallaAbmProd();
-	/*    AbrirWaiting();*/
+    /*    AbrirWaiting();*/
+    funcCallBack = buscarClientes;
 	return true;
 });
 
@@ -32,7 +36,7 @@ function cargaPaginacion() {
         cssStyle: "dark-theme",
         currentPage: pagina,
         onPageClick: function (num) {
-            buscarProductos(num);
+            buscarClientes(num);
         }
     });
     $("#pagEstado").val(false);
@@ -45,27 +49,40 @@ function buscarClientes(pag) {
     var buscar = $("#Buscar").val();
     var id = $("#Id").val();
     var id2 = $("#Id2").val();
-    if (buscar !== search) {
-        pagina = 1;
-        pag = 1;
-        search = buscar;
-    }
-    else {
-        pagina = pag;
-    }
+    var r01 = [];
+    var r02 = [];    
+    $("#Rel01List").children().each(function (i, item) { r01.push($(item).val()) });
+    $("#Rel02List").children().each(function (i, item) { r02.push($(item).val()) });
 
-    var data = {
+    var data1 = {
         id, id2,
-        rel01: [],
-        rel02: [],
+        rel01: r01,
+        rel02: r02,
         rel03: [],
         "fechaD": null, //"0001-01-01T00:00:00",
         "fechaH": null, //"0001-01-01T00:00:00",
-        buscar,
-        "sort": null,
-        "sortDir": null,
-        pag
+        buscar
     };
+
+    var buscaNew = JSON.stringify(dataBak) != JSON.stringify(data1)
+
+    if (buscaNew === false) {
+        //son iguales las condiciones cambia de pagina
+        pagina = pag;
+    }
+    else {
+        dataBak = data1;
+        pagina = 1;
+        pag = 1;
+    }
+
+    var sort = null;
+    var sortDir = null
+
+    var data2 = { sort, sortDir, pag, buscaNew }
+
+    var data = $.extend({}, data1, data2);
+
     PostGenHtml(data, buscarUrl, function (obj) {
         $("#divGrilla").html(obj);
         $("#divFiltro").collapse("hide")

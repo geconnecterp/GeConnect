@@ -89,7 +89,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 query.Registros = _settings.NroRegistrosPagina;
                 query.Pagina = pag;
 
-                var res = await _abmCliServ.BuscarAsync(query, TokenCookie);
+                var res = await _abmCliServ.BuscarClientes(query, TokenCookie);
                 lista = res.Item1 ?? [];
                 MetadataCliente = res.Item2 ?? null;
                 metadata = MetadataCliente;
