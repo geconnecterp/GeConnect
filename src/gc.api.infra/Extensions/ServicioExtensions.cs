@@ -60,6 +60,7 @@ namespace gc.api.infra.Extensions
             services.AddScoped<IVendedorServicio, VendedorServicio>();
             services.AddScoped<IFinancieroServicio, FinancieroServicio>();
             services.AddScoped<IFormaDePagoServicio, FormaDePagoServicio>();
+            services.AddScoped<ITiposDocumentoServicio, TipoDocumentoServicio>();
 
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));

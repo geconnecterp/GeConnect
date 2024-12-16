@@ -27,12 +27,12 @@ namespace gc.api.Controllers.Codigos
         private readonly IProvinciaServicio _provinciaServicio;
         private readonly ITipoCanalServicio _tipoCanalServicio;
         private readonly ITipoCuentaBcoServicio _tipoCuentaBcoServicio;
-
+		private readonly ITiposDocumentoServicio _tiposDocumentoServicio;
 
 		public TiposVsController( IMapper mapper, IUriService uriService, ILogger<TiposVsController> logger, ICondicionAfipServicio condicionAfipServicio,
 								ICondicionIBServicio condicionIBServicio, IDepartamentoServicio departamentoServicio, IFormaDePagoServicio formaDePagoServicio,
 								INaturalezaJuridicaServicio naturalezaJuridicaServicio, IProvinciaServicio provinciaServicio, ITipoCanalServicio tipoCanalServicio,
-								ITipoCuentaBcoServicio tipoCuentaBcoServicio)
+								ITipoCuentaBcoServicio tipoCuentaBcoServicio, ITiposDocumentoServicio tiposDocumentoServicio)
         {
             _mapper = mapper;
             _uriService = uriService;
@@ -45,6 +45,7 @@ namespace gc.api.Controllers.Codigos
             _provinciaServicio = provinciaServicio;
             _tipoCanalServicio = tipoCanalServicio;
             _tipoCuentaBcoServicio = tipoCuentaBcoServicio;
+			_tiposDocumentoServicio = tiposDocumentoServicio;
         }
 
 		[HttpGet]
@@ -142,5 +143,17 @@ namespace gc.api.Controllers.Codigos
 			var response = new ApiResponse<List<TipoCuentaBcoDto>>(lista);
 			return Ok(response);
 		}
-	}
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult GetTipoDocumentoLista()
+        {
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            List<TipoDocumentoDto> tipoNegocio = _tiposDocumentoServicio.GetTipoDocumentoLista();
+            var lista = _mapper.Map<List<TipoDocumentoDto>>(tipoNegocio);
+
+            var response = new ApiResponse<List<TipoDocumentoDto>>(lista);
+            return Ok(response);
+        }
+    }
 }

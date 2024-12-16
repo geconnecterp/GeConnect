@@ -791,10 +791,30 @@ namespace gc.sitio.Controllers
 				_context.HttpContext.Session.SetString("ZonasLista", json);
 			}
 		}
-		#endregion
+        #endregion
 
-		#region CONDICIONES AFIP
-		public List<CondicionAfipDto> CondicionesAfipLista
+        #region DOCUMENTOS TIPO
+        public List<TipoDocumentoDto> TipoDocumentoLista
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("TipoDocumentoLista");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return new List<TipoDocumentoDto>();
+                }
+                return JsonConvert.DeserializeObject<List<TipoDocumentoDto>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("TipoDocumentoLista", json);
+            }
+        }
+        #endregion
+
+        #region CONDICIONES AFIP
+        public List<CondicionAfipDto> CondicionesAfipLista
 		{
 			get
 			{
@@ -1077,6 +1097,14 @@ namespace gc.sitio.Controllers
 			TipoCuentaBcoLista = _tipoCueBco.GetTipoCuentaBcoLista(TokenCookie);
 		}
 
+        protected void ObtenerTiposDocumento(ITipoDocumentoServicio _tipoDoc)
+        {
+            TipoDocumentoLista = _tipoDoc.GetTipoDocumentoLista(TokenCookie);
+        }
+		protected void ObtenerDepartamentos(IDepartamentoServicio _depto, string prov_id)
+		{
+			DepartamentoLista = _depto.GetDepartamentoPorProvinciaLista(prov_id, TokenCookie);
+		}
 		[HttpPost]
 		public JsonResult BuscarProvs(string prefix)
 		{

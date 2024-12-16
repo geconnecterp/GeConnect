@@ -1,3 +1,5 @@
+using System;
+
 namespace gc.infraestructura.Dtos.Almacen
 {
     public partial class CuentaDto:Dto
@@ -96,5 +98,16 @@ namespace gc.infraestructura.Dtos.Almacen
 		public string Lp_Id { get; set; } = string.Empty;
 		public string Lp_Desc { get; set; } = string.Empty;
         public char Ctac_Habilitada { get; set; }
+        public bool Cta_Activa
+        {
+            get 
+            {
+                if (char.IsWhiteSpace(Ctac_Habilitada) || string.IsNullOrWhiteSpace(char.ToString(Ctac_Habilitada)))
+                    return false;
+                return Ctac_Habilitada == 'S';
+            }
+            set { cta_Activa = value; }
+        }
+        private bool cta_Activa;
     }
 }

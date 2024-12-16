@@ -124,8 +124,10 @@ function selectReg(e) {
 
 function BuscarCliente(ctaId) {
     var data = { ctaId };
+    AbrirWaiting();
     PostGenHtml(data, buscarClienteUrl, function (obj) {
-
+        $("#divDatosCliente").html(obj);
+        CerrarWaiting();
     }, function (obj) {
         ControlaMensajeError(obj.message);
         CerrarWaiting();
