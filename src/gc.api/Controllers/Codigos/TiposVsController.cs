@@ -29,11 +29,13 @@ namespace gc.api.Controllers.Codigos
         private readonly ITipoCuentaBcoServicio _tipoCuentaBcoServicio;
 		private readonly ITiposDocumentoServicio _tiposDocumentoServicio;
 		private readonly IListaPrecioServicio _listaPrecioServicio;
+		private readonly IVendedorServicio _vendedorServicio;
 
 		public TiposVsController( IMapper mapper, IUriService uriService, ILogger<TiposVsController> logger, ICondicionAfipServicio condicionAfipServicio,
 								ICondicionIBServicio condicionIBServicio, IDepartamentoServicio departamentoServicio, IFormaDePagoServicio formaDePagoServicio,
 								INaturalezaJuridicaServicio naturalezaJuridicaServicio, IProvinciaServicio provinciaServicio, ITipoCanalServicio tipoCanalServicio,
-								ITipoCuentaBcoServicio tipoCuentaBcoServicio, ITiposDocumentoServicio tiposDocumentoServicio, IListaPrecioServicio listaPrecioServicio)
+								ITipoCuentaBcoServicio tipoCuentaBcoServicio, ITiposDocumentoServicio tiposDocumentoServicio, IListaPrecioServicio listaPrecioServicio,
+								IVendedorServicio vendedorServicio)
         {
             _mapper = mapper;
             _uriService = uriService;
@@ -48,6 +50,7 @@ namespace gc.api.Controllers.Codigos
             _tipoCuentaBcoServicio = tipoCuentaBcoServicio;
 			_tiposDocumentoServicio = tiposDocumentoServicio;
 			_listaPrecioServicio = listaPrecioServicio;
+			_vendedorServicio = vendedorServicio;
         }
 
 		[HttpGet]
@@ -167,6 +170,18 @@ namespace gc.api.Controllers.Codigos
 			var lista = _mapper.Map<List<ListaPrecioDto>>(tipoNegocio);
 
 			var response = new ApiResponse<List<ListaPrecioDto>>(lista);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult GetVendedoresLista()
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			List<VendedorDto> tipoNegocio = _vendedorServicio.GetVendedorLista();
+			var lista = _mapper.Map<List<VendedorDto>>(tipoNegocio);
+
+			var response = new ApiResponse<List<VendedorDto>>(lista);
 			return Ok(response);
 		}
 	}

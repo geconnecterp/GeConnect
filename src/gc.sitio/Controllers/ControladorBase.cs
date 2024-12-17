@@ -993,6 +993,26 @@ namespace gc.sitio.Controllers
 		}
 		#endregion
 
+		#region VENDEDORES
+		public List<VendedorDto> VendedoresLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("VendedoresLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<VendedorDto>();
+				}
+				return JsonConvert.DeserializeObject<List<VendedorDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("VendedoresLista", json);
+			}
+		}
+		#endregion
+
 		#region Metodos generales
 		public PartialViewResult ObtenerMensajeDeError(string mensaje)
 		{
@@ -1128,6 +1148,10 @@ namespace gc.sitio.Controllers
 		protected void ObtenerListaDePrecios(IListaDePrecioServicio _listaPrec)
 		{
 			ListaDePreciosLista = _listaPrec.GetListaPrecio(TokenCookie);
+		}
+		protected void ObtenerListaDeVendedores(IVendedorServicio _vendedor)
+		{
+			VendedoresLista = _vendedor.GetVendedorLista(TokenCookie);
 		}
 		[HttpPost]
 		public JsonResult BuscarProvs(string prefix)

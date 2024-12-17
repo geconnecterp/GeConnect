@@ -12,6 +12,7 @@
 	var tipoNeg = Model.ComboTipoNegocio;
 	var listaPrec = Model.ComboListaDePrecios;
 	var tipoCanal = Model.ComboTipoCanal;
+	var vendedor = Model.ComboVendedores;
 }
 <div class="container">
 	<div class="row">
@@ -122,6 +123,8 @@
 				@Html.DropDownListFor(m => m.Cliente.Ctc_Id, tipoCanal, "Seleccionar...", new { @id = "listaTipoCanal", @class = "form-control" })
 			</div>
 			<div class="input-group input-group-sm">
+				<span class="input-group-text">Vendedor:</span>
+				@Html.DropDownListFor(m => m.Cliente.Ve_Id, vendedor, "Seleccionar...", new { @id = "listaVendedor", @class = "form-control" })
 			</div>
 			<div class="input-group input-group-sm">
 			</div>

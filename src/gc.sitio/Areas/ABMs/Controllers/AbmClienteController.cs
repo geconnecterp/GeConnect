@@ -34,6 +34,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		private readonly ITipoDocumentoServicio _tipoDocumentoServicio;
 		private readonly IDepartamentoServicio _departamentoServicio;
 		private readonly IListaDePrecioServicio _listaDePrecioServicio;
+		private readonly IVendedorServicio _vendedorServicio;
 		private readonly ILogger<AbmClienteController> _logger;
 
 		public AbmClienteController(IZonaServicio zonaServicio, ITipoNegocioServicio tipoNegocioServicio, IOptions<AppSettings> options,
@@ -43,7 +44,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
 									IProvinciaServicio provinciaServicio, ITipoCanalServicio tipoCanalServicio,
 									ITipoCuentaBcoServicio tipoCuentaBcoServicio, ICuentaServicio cuentaServicio,
 									ITipoDocumentoServicio tipoDocumentoServicio, ILogger<AbmClienteController> logger,
-									IDepartamentoServicio departamentoServicio, IListaDePrecioServicio listaDePrecioServicio) : base(options, accessor, logger)
+									IDepartamentoServicio departamentoServicio, IListaDePrecioServicio listaDePrecioServicio,
+									IVendedorServicio vendedorServicio) : base(options, accessor, logger)
 		{
 			_settings = options.Value;
 			_tipoNegocioServicio = tipoNegocioServicio;
@@ -60,6 +62,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			_tipoDocumentoServicio = tipoDocumentoServicio;
 			_departamentoServicio = departamentoServicio;
 			_listaDePrecioServicio = listaDePrecioServicio;
+			_vendedorServicio = vendedorServicio;
 		}
 
 		[HttpGet]
@@ -171,6 +174,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 					ComboTipoNegocio = ComboTipoNegocio(),
 					ComboListaDePrecios = ComboListaDePrecios(),
 					ComboTipoCanal = ComboTipoCanal(),
+					ComboVendedores = ComboVendedores(),
 				};
 				return PartialView("_tabDatosCliente", ClienteModel);
 			}
@@ -254,6 +258,11 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			var lista = TipoCanalLista.Select(x => new ComboGenDto { Id = x.ctc_id, Descripcion = x.ctc_desc });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
+		private SelectList ComboVendedores()
+		{
+			var lista = VendedoresLista.Select(x => new ComboGenDto { Id = x.ve_id, Descripcion = x.ve_nombre });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
 		private void CargarDepartametos(string prov_id)
 		{
 			if (DepartamentoLista == null || DepartamentoLista.Count == 0)
@@ -295,6 +304,9 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
 			if (ListaDePreciosLista.Count == 0 || actualizar)
 				ObtenerListaDePrecios(_listaDePrecioServicio);
+
+			if (VendedoresLista.Count == 0 || actualizar)
+				ObtenerListaDeVendedores(_vendedorServicio);
 		}
 		#endregion
 	}
