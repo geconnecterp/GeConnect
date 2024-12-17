@@ -10,6 +10,7 @@ using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes;
 using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Helpers;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -791,30 +792,30 @@ namespace gc.sitio.Controllers
 				_context.HttpContext.Session.SetString("ZonasLista", json);
 			}
 		}
-        #endregion
+		#endregion
 
-        #region DOCUMENTOS TIPO
-        public List<TipoDocumentoDto> TipoDocumentoLista
-        {
-            get
-            {
-                var json = _context.HttpContext.Session.GetString("TipoDocumentoLista");
-                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
-                {
-                    return new List<TipoDocumentoDto>();
-                }
-                return JsonConvert.DeserializeObject<List<TipoDocumentoDto>>(json);
-            }
-            set
-            {
-                var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("TipoDocumentoLista", json);
-            }
-        }
-        #endregion
+		#region DOCUMENTOS TIPO
+		public List<TipoDocumentoDto> TipoDocumentoLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("TipoDocumentoLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<TipoDocumentoDto>();
+				}
+				return JsonConvert.DeserializeObject<List<TipoDocumentoDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("TipoDocumentoLista", json);
+			}
+		}
+		#endregion
 
-        #region CONDICIONES AFIP
-        public List<CondicionAfipDto> CondicionesAfipLista
+		#region CONDICIONES AFIP
+		public List<CondicionAfipDto> CondicionesAfipLista
 		{
 			get
 			{
@@ -1013,6 +1014,66 @@ namespace gc.sitio.Controllers
 		}
 		#endregion
 
+		#region REPARTIDORES
+		public List<RepartidorDto> RepartidoresLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("RepartidoresLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<RepartidorDto>();
+				}
+				return JsonConvert.DeserializeObject<List<RepartidorDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("RepartidoresLista", json);
+			}
+		}
+		#endregion
+
+		#region DIA DE LA SEMANA
+		public List<DiaDeLaSemanaDto> DiasDeLaSemanaLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("DiasDeLaSemanaLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<DiaDeLaSemanaDto>();
+				}
+				return JsonConvert.DeserializeObject<List<DiaDeLaSemanaDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("DiasDeLaSemanaLista", json);
+			}
+		}
+		#endregion
+
+		#region FINANCIEROS
+		public List<FinancieroDto> FinancierosLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("FinancierosLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<FinancieroDto>();
+				}
+				return JsonConvert.DeserializeObject<List<FinancieroDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("FinancierosLista", json);
+			}
+		}
+		#endregion
+
 		#region Metodos generales
 		public PartialViewResult ObtenerMensajeDeError(string mensaje)
 		{
@@ -1103,7 +1164,7 @@ namespace gc.sitio.Controllers
 		}
 
 		protected void ObtenerCondicionesAfip(ICondicionAfipServicio _condAfip)
-		{ 
+		{
 			CondicionesAfipLista = _condAfip.GetCondicionesAfipLista(TokenCookie);
 		}
 
@@ -1137,10 +1198,10 @@ namespace gc.sitio.Controllers
 			TipoCuentaBcoLista = _tipoCueBco.GetTipoCuentaBcoLista(TokenCookie);
 		}
 
-        protected void ObtenerTiposDocumento(ITipoDocumentoServicio _tipoDoc)
-        {
-            TipoDocumentoLista = _tipoDoc.GetTipoDocumentoLista(TokenCookie);
-        }
+		protected void ObtenerTiposDocumento(ITipoDocumentoServicio _tipoDoc)
+		{
+			TipoDocumentoLista = _tipoDoc.GetTipoDocumentoLista(TokenCookie);
+		}
 		protected void ObtenerDepartamentos(IDepartamentoServicio _depto, string prov_id)
 		{
 			DepartamentoLista = _depto.GetDepartamentoPorProvinciaLista(prov_id, TokenCookie);
@@ -1153,6 +1214,98 @@ namespace gc.sitio.Controllers
 		{
 			VendedoresLista = _vendedor.GetVendedorLista(TokenCookie);
 		}
+		protected void ObtenerListaDeRepartidores(IRepartidorServicio _repartidor)
+		{
+			RepartidoresLista = _repartidor.GetRepartidorLista(TokenCookie);
+		}
+		protected void ObteneFinancieros(IFinancieroServicio _finan, string ctf_id)
+		{
+			FinancierosLista = _finan.GetFinancierosPorTipoCfLista(ctf_id, TokenCookie);
+		}
+		protected void ObtenerDiasDeLaSemana()
+		{
+			var listaTemp = new List<DiaDeLaSemanaDto>();
+			var lista = Enum.GetValues(typeof(DiasDeLaSemana)).Cast<DiasDeLaSemana>().ToList();
+			foreach (var item in lista)
+			{
+				var newItem = new DiaDeLaSemanaDto();
+				newItem.dia_id = (int)item;
+				newItem.dia_desc = item.ToString();
+				listaTemp.Add(newItem);
+			};
+			DiasDeLaSemanaLista = listaTemp;
+			lista.ForEach(x => DiasDeLaSemanaLista.Add(new DiaDeLaSemanaDto() { dia_id = (int)x, dia_desc = x.ToString() }));
+		}
+
+		#region COMBOS
+		protected SelectList ComboAfip()
+		{
+			var lista = CondicionesAfipLista.Select(x => new ComboGenDto { Id = x.afip_id, Descripcion = x.afip_desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		protected SelectList ComboNatJud()
+		{
+			var lista = NaturalezaJuridicaLista.Select(x => new ComboGenDto { Id = x.nj_id, Descripcion = x.nj_desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		protected SelectList ComboTipoDoc()
+		{
+			var lista = TipoDocumentoLista.Select(x => new ComboGenDto { Id = x.Tdoc_Id, Descripcion = x.Tdoc_Desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		protected SelectList ComboIB()
+		{
+			var lista = CondicionIBLista.Select(x => new ComboGenDto { Id = x.id_id, Descripcion = x.ib_desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		protected SelectList ComboProv()
+		{
+			var lista = ProvinciaLista.Select(x => new ComboGenDto { Id = x.prov_id, Descripcion = x.prov_nombre });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		protected SelectList ComboTipoCuentaBco()
+		{
+			var lista = TipoCuentaBcoLista.Select(x => new ComboGenDto { Id = x.tcb_id, Descripcion = x.tcb_desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+
+		protected SelectList ComboTipoNegocio()
+		{
+			var lista = TipoNegocioLista.Select(x => new ComboGenDto { Id = x.ctn_id, Descripcion = x.ctn_desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		protected SelectList ComboListaDePrecios()
+		{
+			var lista = ListaDePreciosLista.Select(x => new ComboGenDto { Id = x.lp_id, Descripcion = x.lp_desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		protected SelectList ComboTipoCanal()
+		{
+			var lista = TipoCanalLista.Select(x => new ComboGenDto { Id = x.ctc_id, Descripcion = x.ctc_desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		protected SelectList ComboVendedores()
+		{
+			var lista = VendedoresLista.Select(x => new ComboGenDto { Id = x.ve_id, Descripcion = x.ve_nombre });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		protected SelectList ComboDiasDeLaSemana()
+		{
+			var lista = DiasDeLaSemanaLista.Select(x => new ComboGenDto { Id = x.dia_id.ToString(), Descripcion = x.dia_desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		protected SelectList ComboZonas()
+		{
+			var lista = ZonasLista.Select(x => new ComboGenDto { Id = x.zn_id, Descripcion = x.zn_desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		protected SelectList ComboRepartidores()
+		{
+			var lista = RepartidoresLista.Select(x => new ComboGenDto { Id = x.rp_id, Descripcion = x.rp_nombre });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		#endregion
+
 		[HttpPost]
 		public JsonResult BuscarProvs(string prefix)
 		{
@@ -1173,5 +1326,16 @@ namespace gc.sitio.Controllers
 			return Json(rubros);
 		}
 		#endregion
+
+		protected enum DiasDeLaSemana
+		{
+			Domingo = 1,
+			Lunes = 2,
+			Martes = 3,
+			Miércoles = 4,
+			Jueves = 5,
+			Viernes = 6,
+			Sábado = 7
+		}
 	}
 }

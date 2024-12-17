@@ -13,6 +13,10 @@
 	var listaPrec = Model.ComboListaDePrecios;
 	var tipoCanal = Model.ComboTipoCanal;
 	var vendedor = Model.ComboVendedores;
+	var dias = Model.ComboDiasDeLaSemana;
+	var zonas = Model.ComboZonas;
+	var repartidor = Model.ComboRepartidores;
+	var financieros = Model.ComboFinancieros;
 }
 <div class="container">
 	<div class="row">
@@ -61,7 +65,7 @@
 				<span class="input-group-text">Domi</span>
 				<input type="text" asp-for="Cliente.Cta_Domicilio" class="form-control" readonly />
 			</div>
-			<div class="input-group input-group-sm">
+			@* <div class="input-group input-group-sm">
 				<span class="input-group-text">TE</span>
 				<input type="text" asp-for="Cliente.Cta_Te" class="form-control" readonly />
 			</div>
@@ -72,7 +76,7 @@
 			<div class="input-group input-group-sm">
 				<span class="input-group-text">Email</span>
 				<input type="text" asp-for="Cliente.Cta_Email" class="form-control" readonly />
-			</div>
+			</div> *@
 			<div class="input-group input-group-sm">
 				<span class="input-group-text">WWW</span>
 				<input type="text" asp-for="Cliente.Cta_Www" class="form-control" readonly />
@@ -125,14 +129,47 @@
 			<div class="input-group input-group-sm">
 				<span class="input-group-text">Vendedor:</span>
 				@Html.DropDownListFor(m => m.Cliente.Ve_Id, vendedor, "Seleccionar...", new { @id = "listaVendedor", @class = "form-control" })
+				<span class="input-group-text">Visita:</span>
+				@Html.DropDownListFor(m => m.Cliente.Ve_Visita, dias, "Seleccionar...", new { @id = "listaDias", @class = "form-control" })
 			</div>
 			<div class="input-group input-group-sm">
+				<span class="input-group-text">Zona:</span>
+				@Html.DropDownListFor(m => m.Cliente.Zn_Id, zonas, "Seleccionar...", new { @id = "listaZonas", @class = "form-control" })
+				<span class="input-group-text">Repartidor:</span>
+				@Html.DropDownListFor(m => m.Cliente.Rp_Id, repartidor, "Seleccionar...", new { @id = "listaRepartidor", @class = "form-control" })
 			</div>
 			<div class="input-group input-group-sm">
+				<input type="checkbox" asp-for="Cliente.Piva_Cert_Activa" class="form-check-input" value="" id="chkPivaCertActiva">
+				<label class="form-check-label" for="chkPivaCertActiva"> Cert. No Percep. IVA</label>
+				<span class="input-group-text">Vto:</span>
+				@if (Model.Cliente.Piva_Cert_Vto == null)
+				{
+					<input type="text" asp-for="Cliente.Piva_Cert_Vto" class="form-control" readonly />
+				}
+				else
+				{
+					<input type="date" asp-for="Cliente.Piva_Cert_Vto" class="form-control" readonly />
+				}
 			</div>
 			<div class="input-group input-group-sm">
+				<input type="checkbox" asp-for="Cliente.Pib_Cert_Activa" class="form-check-input" value="" id="chkIbCertActiva">
+				<label class="form-check-label" for="chkIbCertActiva"> Cert. No Percep IB</label>
+				<span class="input-group-text">Vto:</span>
+				@if (Model.Cliente.Pib_Cert_Vto == null)
+				{
+					<input type="text" asp-for="Cliente.Pib_Cert_Vto" class="form-control" readonly />
+				}
+				else
+				{
+					<input type="date" asp-for="Cliente.Pib_Cert_Vto" class="form-control" readonly />
+				}
 			</div>
 			<div class="input-group input-group-sm">
+				<input type="checkbox" asp-for="Cliente.Cta_Emp_Activa" class="form-check-input" value="" id="chkCtaEmpActiva">
+				<label class="form-check-label" for="chkCtaEmpActiva"> Legajo Emp</label>
+				<input type="text" asp-for="Cliente.Cta_Emp_Legajo" class="form-control" readonly />
+				<label class="form-check-label" for="chkCtaEmpActiva"> Bco</label>
+				@Html.DropDownListFor(m => m.Cliente.Cta_Emp_Ctaf, financieros, "Seleccionar...", new { @id = "listaFinancieros", @class = "form-control" })
 			</div>
 		</div>
 		<div class="col-4">

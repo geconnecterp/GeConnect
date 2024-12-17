@@ -109,5 +109,41 @@ namespace gc.infraestructura.Dtos.Almacen
             set { cta_Activa = value; }
         }
         private bool cta_Activa;
-    }
+
+		public bool Piva_Cert_Activa
+		{
+			get
+			{
+				if (string.IsNullOrWhiteSpace(Piva_Cert))
+					return false;
+				return Piva_Cert.Trim() == "S";
+			}
+			set { piva_Cert_Activa = value; }
+		}
+		private bool piva_Cert_Activa;
+
+		public bool Pib_Cert_Activa
+		{
+			get
+			{
+				if (string.IsNullOrWhiteSpace(Pib_Cert))
+					return false;
+				return Pib_Cert.Trim() == "S";
+			}
+			set { pib_Cert_Activa = value; }
+		}
+		private bool pib_Cert_Activa;
+
+		public bool Cta_Emp_Activa
+		{
+			get
+			{
+				if (char.IsWhiteSpace(Cta_Emp) || string.IsNullOrWhiteSpace(char.ToString(Cta_Emp)))
+					return false;
+				return Cta_Emp == 'S';
+			}
+			set { cta_Emp_Activa = value; }
+		}
+		private bool cta_Emp_Activa;
+	}
 }

@@ -35,6 +35,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		private readonly IDepartamentoServicio _departamentoServicio;
 		private readonly IListaDePrecioServicio _listaDePrecioServicio;
 		private readonly IVendedorServicio _vendedorServicio;
+		private readonly IRepartidorServicio _repartidorServicio;
+		private readonly IFinancieroServicio _financieroServicio;
 		private readonly ILogger<AbmClienteController> _logger;
 
 		public AbmClienteController(IZonaServicio zonaServicio, ITipoNegocioServicio tipoNegocioServicio, IOptions<AppSettings> options,
@@ -45,7 +47,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
 									ITipoCuentaBcoServicio tipoCuentaBcoServicio, ICuentaServicio cuentaServicio,
 									ITipoDocumentoServicio tipoDocumentoServicio, ILogger<AbmClienteController> logger,
 									IDepartamentoServicio departamentoServicio, IListaDePrecioServicio listaDePrecioServicio,
-									IVendedorServicio vendedorServicio) : base(options, accessor, logger)
+									IVendedorServicio vendedorServicio, IRepartidorServicio repartidorServicio,
+									IFinancieroServicio financieroServicio) : base(options, accessor, logger)
 		{
 			_settings = options.Value;
 			_tipoNegocioServicio = tipoNegocioServicio;
@@ -63,6 +66,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			_departamentoServicio = departamentoServicio;
 			_listaDePrecioServicio = listaDePrecioServicio;
 			_vendedorServicio = vendedorServicio;
+			_repartidorServicio = repartidorServicio;
+			_financieroServicio = financieroServicio;
 		}
 
 		[HttpGet]
@@ -175,6 +180,10 @@ namespace gc.sitio.Areas.ABMs.Controllers
 					ComboListaDePrecios = ComboListaDePrecios(),
 					ComboTipoCanal = ComboTipoCanal(),
 					ComboVendedores = ComboVendedores(),
+					ComboDiasDeLaSemana = ComboDiasDeLaSemana(),
+					ComboZonas = ComboZonas(),
+					ComboRepartidores = ComboRepartidores(),
+					ComboFinancieros = ComboFinanciero("BA")
 				};
 				return PartialView("_tabDatosCliente", ClienteModel);
 			}
@@ -207,60 +216,16 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		}
 
 		#region Métodos Privados
-		private SelectList ComboAfip()
-		{
-			var lista = CondicionesAfipLista.Select(x => new ComboGenDto { Id = x.afip_id, Descripcion = x.afip_desc });
-			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
-		}
-		private SelectList ComboNatJud()
-		{
-			var lista = NaturalezaJuridicaLista.Select(x => new ComboGenDto { Id = x.nj_id, Descripcion = x.nj_desc });
-			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
-		}
-		private SelectList ComboTipoDoc()
-		{
-			var lista = TipoDocumentoLista.Select(x => new ComboGenDto { Id = x.Tdoc_Id, Descripcion = x.Tdoc_Desc });
-			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
-		}
-		private SelectList ComboIB()
-		{
-			var lista = CondicionIBLista.Select(x => new ComboGenDto { Id = x.id_id, Descripcion = x.ib_desc });
-			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
-		}
-		private SelectList ComboProv()
-		{
-			var lista = ProvinciaLista.Select(x => new ComboGenDto { Id = x.prov_id, Descripcion = x.prov_nombre });
-			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
-		}
-		private SelectList ComboTipoCuentaBco()
-		{
-			var lista = TipoCuentaBcoLista.Select(x => new ComboGenDto { Id = x.tcb_id, Descripcion = x.tcb_desc });
-			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
-		}
-		private SelectList ComboDepto(string prov_id)
+		protected SelectList ComboDepto(string prov_id)
 		{
 			CargarDepartametos(prov_id);
 			var lista = DepartamentoLista.Select(x => new ComboGenDto { Id = x.dep_id, Descripcion = x.dep_nombre });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
-		private SelectList ComboTipoNegocio()
-		{ 
-			var lista = TipoNegocioLista.Select(x => new ComboGenDto { Id = x.ctn_id, Descripcion = x.ctn_desc });
-			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
-		}
-		private SelectList ComboListaDePrecios()
+		private SelectList ComboFinanciero(string tcf_id)
 		{
-			var lista = ListaDePreciosLista.Select(x => new ComboGenDto { Id = x.lp_id, Descripcion = x.lp_desc });
-			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
-		}
-		private SelectList ComboTipoCanal()
-		{
-			var lista = TipoCanalLista.Select(x => new ComboGenDto { Id = x.ctc_id, Descripcion = x.ctc_desc });
-			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
-		}
-		private SelectList ComboVendedores()
-		{
-			var lista = VendedoresLista.Select(x => new ComboGenDto { Id = x.ve_id, Descripcion = x.ve_nombre });
+			CargarFinancieros(tcf_id);
+			var lista = FinancierosLista.Select(x => new ComboGenDto { Id = x.ctaf_id, Descripcion = x.ctaf_denominacion });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
 		private void CargarDepartametos(string prov_id)
@@ -269,6 +234,11 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				ObtenerDepartamentos(_departamentoServicio, prov_id);
 			else if (DepartamentoLista.First().prov_id != prov_id)
 				ObtenerDepartamentos(_departamentoServicio, prov_id);
+		}
+		private void CargarFinancieros(string tcf_id)
+		{
+			if (FinancierosLista == null || FinancierosLista.Count == 0)
+				ObteneFinancieros(_financieroServicio, tcf_id);
 		}
 		private void CargarDatosIniciales(bool actualizar)
 		{
@@ -307,6 +277,12 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
 			if (VendedoresLista.Count == 0 || actualizar)
 				ObtenerListaDeVendedores(_vendedorServicio);
+
+			if (DiasDeLaSemanaLista.Count == 0 || actualizar)
+				ObtenerDiasDeLaSemana();
+
+			if (RepartidoresLista.Count == 0 || actualizar)
+				ObtenerListaDeRepartidores(_repartidorServicio);
 		}
 		#endregion
 	}

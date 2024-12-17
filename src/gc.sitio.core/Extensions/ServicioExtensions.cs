@@ -39,6 +39,8 @@ namespace gc.sitio.core.Extensions
 			services.AddScoped<ITipoCuentaBcoServicio, TipoCuentaBcoServicio>();
 			services.AddScoped<IListaDePrecioServicio, ListaDePrecioServicio>();
 			services.AddScoped<IVendedorServicio, VendedorServicio>();
+			services.AddScoped<IRepartidorServicio, RepartidorServicio>();
+			services.AddScoped<IFinancieroServicio, FinancieroServicio>();
 			return services;
         }
     }

@@ -18,7 +18,7 @@ namespace gc.api.core.Entidades
         public decimal? Ctaf_saldo { get; set; } = 0.000M;
         public DateTime? Ctaf_actu_fecha { get; set; }
         public char Ctaf_actu { get; set; }
-        public char Ctaf_activo { get; set; }
+        public string Ctaf_activo { get; set; } = string.Empty;
         public string Ctaf_lista { get; set; } = string.Empty;
     }
 }
