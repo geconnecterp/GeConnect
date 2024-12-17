@@ -973,6 +973,26 @@ namespace gc.sitio.Controllers
 		}
 		#endregion
 
+		#region LISTA DE PRECIOS
+		public List<ListaPrecioDto> ListaDePreciosLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("ListaDePreciosLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<ListaPrecioDto>();
+				}
+				return JsonConvert.DeserializeObject<List<ListaPrecioDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("ListaDePreciosLista", json);
+			}
+		}
+		#endregion
+
 		#region Metodos generales
 		public PartialViewResult ObtenerMensajeDeError(string mensaje)
 		{
@@ -1105,6 +1125,10 @@ namespace gc.sitio.Controllers
 		{
 			DepartamentoLista = _depto.GetDepartamentoPorProvinciaLista(prov_id, TokenCookie);
 		}
+		protected void ObtenerListaDePrecios(IListaDePrecioServicio _listaPrec)
+		{
+			ListaDePreciosLista = _listaPrec.GetListaPrecio(TokenCookie);
+		}
 		[HttpPost]
 		public JsonResult BuscarProvs(string prefix)
 		{
@@ -1124,42 +1148,6 @@ namespace gc.sitio.Controllers
 			var rubros = rub.Select(x => new ComboGenDto { Id = x.Rub_Id, Descripcion = x.Rub_Desc });
 			return Json(rubros);
 		}
-
-
-		//protected async Task<IActionResult> BusquedaAvanzada(string ri01, string ri02, bool act, bool dis, bool ina, bool cstk, bool sstk, string search, IProductoServicio _productoServicio)
-		//{
-		//	GridCore<ProductoListaDto> grillaDatos;
-		//	RespuestaGenerica<EntidadBase> response = new();
-		//	try
-		//	{
-		//		var busc = new BusquedaProducto
-		//		{
-		//			Busqueda = search,
-		//			ConStock = cstk,
-		//			SinStock = sstk,
-		//			CtaProveedorId = ri01,
-		//			RubroId = ri02,
-		//			EstadoActivo = act,
-		//			EstadoDiscont = dis,
-		//			EstadoInactivo = ina
-		//		};
-
-		//		List<ProductoListaDto> productos = await _productoServicio.BusquedaListaProductos(busc, TokenCookie);
-		//		grillaDatos = GenerarGrilla<ProductoListaDto>(productos, "p_id");
-		//		return PartialView("_gridProdsAdv", grillaDatos);
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		string msg = "Error en la invocación de la API - Busqueda Avanzada";
-		//		_logger.LogError(ex, "Error en la invocación de la API - Busqueda Avanzada");
-		//		response.Mensaje = msg;
-		//		response.Ok = false;
-		//		response.EsWarn = false;
-		//		response.EsError = true;
-		//		return PartialView("_gridMensaje", response);
-		//	}
-		//}
-
 		#endregion
 	}
 }

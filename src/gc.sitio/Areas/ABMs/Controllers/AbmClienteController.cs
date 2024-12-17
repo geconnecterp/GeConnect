@@ -33,6 +33,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		private readonly ICuentaServicio _cuentaServicio;
 		private readonly ITipoDocumentoServicio _tipoDocumentoServicio;
 		private readonly IDepartamentoServicio _departamentoServicio;
+		private readonly IListaDePrecioServicio _listaDePrecioServicio;
 		private readonly ILogger<AbmClienteController> _logger;
 
 		public AbmClienteController(IZonaServicio zonaServicio, ITipoNegocioServicio tipoNegocioServicio, IOptions<AppSettings> options,
@@ -42,7 +43,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 									IProvinciaServicio provinciaServicio, ITipoCanalServicio tipoCanalServicio,
 									ITipoCuentaBcoServicio tipoCuentaBcoServicio, ICuentaServicio cuentaServicio,
 									ITipoDocumentoServicio tipoDocumentoServicio, ILogger<AbmClienteController> logger,
-									IDepartamentoServicio departamentoServicio) : base(options, accessor, logger)
+									IDepartamentoServicio departamentoServicio, IListaDePrecioServicio listaDePrecioServicio) : base(options, accessor, logger)
 		{
 			_settings = options.Value;
 			_tipoNegocioServicio = tipoNegocioServicio;
@@ -58,6 +59,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			_cuentaServicio = cuentaServicio;
 			_tipoDocumentoServicio = tipoDocumentoServicio;
 			_departamentoServicio = departamentoServicio;
+			_listaDePrecioServicio = listaDePrecioServicio;
 		}
 
 		[HttpGet]
@@ -166,6 +168,9 @@ namespace gc.sitio.Areas.ABMs.Controllers
 					ComboProvincia = ComboProv(),
 					ComboDepartamento = ComboDepto(res.First().Prov_Id.ToString()),
 					ComboTipoCuentaBco = ComboTipoCuentaBco(),
+					ComboTipoNegocio = ComboTipoNegocio(),
+					ComboListaDePrecios = ComboListaDePrecios(),
+					ComboTipoCanal = ComboTipoCanal(),
 				};
 				return PartialView("_tabDatosCliente", ClienteModel);
 			}
@@ -234,6 +239,21 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			var lista = DepartamentoLista.Select(x => new ComboGenDto { Id = x.dep_id, Descripcion = x.dep_nombre });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
+		private SelectList ComboTipoNegocio()
+		{ 
+			var lista = TipoNegocioLista.Select(x => new ComboGenDto { Id = x.ctn_id, Descripcion = x.ctn_desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		private SelectList ComboListaDePrecios()
+		{
+			var lista = ListaDePreciosLista.Select(x => new ComboGenDto { Id = x.lp_id, Descripcion = x.lp_desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		private SelectList ComboTipoCanal()
+		{
+			var lista = TipoCanalLista.Select(x => new ComboGenDto { Id = x.ctc_id, Descripcion = x.ctc_desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
 		private void CargarDepartametos(string prov_id)
 		{
 			if (DepartamentoLista == null || DepartamentoLista.Count == 0)
@@ -273,6 +293,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			if (TipoDocumentoLista.Count == 0 || actualizar)
 				ObtenerTiposDocumento(_tipoDocumentoServicio);
 
+			if (ListaDePreciosLista.Count == 0 || actualizar)
+				ObtenerListaDePrecios(_listaDePrecioServicio);
 		}
 		#endregion
 	}

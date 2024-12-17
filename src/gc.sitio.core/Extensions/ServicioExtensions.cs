@@ -37,6 +37,7 @@ namespace gc.sitio.core.Extensions
 			services.AddScoped<IProvinciaServicio, ProvinciaServicio>();
 			services.AddScoped<ITipoCanalServicio, TipoCanalServicio>();
 			services.AddScoped<ITipoCuentaBcoServicio, TipoCuentaBcoServicio>();
+			services.AddScoped<IListaDePrecioServicio, ListaDePrecioServicio>();
 			return services;
         }
     }

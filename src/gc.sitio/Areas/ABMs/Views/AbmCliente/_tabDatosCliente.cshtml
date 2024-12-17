@@ -9,6 +9,9 @@
 	var provi = Model.ComboProvincia;
 	var depto = Model.ComboDepartamento;
 	var tipoCueBco = Model.ComboTipoCuentaBco;
+	var tipoNeg = Model.ComboTipoNegocio;
+	var listaPrec = Model.ComboListaDePrecios;
+	var tipoCanal = Model.ComboTipoCanal;
 }
 <div class="container">
 	<div class="row">
@@ -85,6 +88,49 @@
 			</div>
 		</div>
 		<div class="col-4">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text">Tipo:</span>
+				@Html.DropDownListFor(m => m.Cliente.Ctn_Id, tipoNeg, "Seleccionar...", new { @id = "listaTipoNeg", @class = "form-control" })
+				<span class="input-group-text">Inicio:</span>
+				@if (Model.Cliente.Ctac_Negocio_Inicio == null)
+				{
+					<input type="text" asp-for="Cliente.Ctac_Negocio_Inicio" class="form-control" readonly />
+				}
+				else
+				{
+					<input type="date" asp-for="Cliente.Ctac_Negocio_Inicio" class="form-control" readonly />
+				}
+				<span class="input-group-text">Cant PV:</span>
+				<input type="text" asp-for="Cliente.Ctac_Ptos_Vtas" class="form-control" readonly />
+			</div>
+			<div class="input-group input-group-sm">
+				<span class="input-group-text">% dto</span>
+				<input type="text" asp-for="Cliente.Ctac_Dto_Operacion" class="form-control" readonly />
+				<span class="input-group-text">del día</span>
+				<input type="text" asp-for="Cliente.Ctac_Dto_Operacion_Dia" class="form-control" readonly />
+			</div>
+			<div class="input-group input-group-sm">
+				<span class="input-group-text">Tope Cred</span>
+				<input type="text" asp-for="Cliente.Ctac_Tope_Credito" class="form-control" readonly />
+				<span class="input-group-text">del Día</span>
+				<input type="text" asp-for="Cliente.Ctac_Tope_Credito_Dia" class="form-control" readonly />
+			</div>
+			<div class="input-group input-group-sm">
+				<span class="input-group-text">LPxD:</span>
+				@Html.DropDownListFor(m => m.Cliente.Lp_Id, listaPrec, "Seleccionar...", new { @id = "listaPrecio", @class = "form-control" })
+				<span class="input-group-text">Canal:</span>
+				@Html.DropDownListFor(m => m.Cliente.Ctc_Id, tipoCanal, "Seleccionar...", new { @id = "listaTipoCanal", @class = "form-control" })
+			</div>
+			<div class="input-group input-group-sm">
+			</div>
+			<div class="input-group input-group-sm">
+			</div>
+			<div class="input-group input-group-sm">
+			</div>
+			<div class="input-group input-group-sm">
+			</div>
+			<div class="input-group input-group-sm">
+			</div>
 		</div>
 		<div class="col-4">
 		</div>

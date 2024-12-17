@@ -12,6 +12,9 @@ namespace gc.sitio.Areas.Compras.Models
 		public SelectList ComboProvincia { get; set; }
 		public SelectList ComboDepartamento { get; set; }
 		public SelectList ComboTipoCuentaBco { get; set; }
+		public SelectList ComboTipoNegocio { get; set; }
+		public SelectList ComboListaDePrecios { get; set; }
+		public SelectList ComboTipoCanal { get; set; }
 		public CuentaABMDto Cliente { get; set; }
 
         public CuentaAbmModel()
