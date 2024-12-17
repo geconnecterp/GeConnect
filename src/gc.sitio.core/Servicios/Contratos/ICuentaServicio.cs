@@ -11,5 +11,9 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<List<RPROrdenDeCompraDetalleDto>> ObtenerDetalleDeOC(string oc_compte, string token);
         List<ProveedorFamiliaListaDto> ObtenerListaProveedoresFamilia(string ctaId, string token);
 		List<CuentaABMDto> GetCuentaParaABM(string ctaId, string token);
+        List<CuentaFPDto> GetCuentaFormaDePago(string ctaId, string token);
+        List<CuentaContactoDto> GetCuentaContactos(string cta_id, string token);
+		List<CuentaObsDto> GetCuentaObs(string cta_id, string token);
+		List<CuentaNotaDto> GetCuentaNota(string cta_id, string token);
 	}
 }

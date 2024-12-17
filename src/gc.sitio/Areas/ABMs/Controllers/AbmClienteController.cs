@@ -166,6 +166,11 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				if (res == null)
 					return PartialView("_tabDatosCliente", new CuentaABMDto());
 
+				var cfp = _cuentaServicio.GetCuentaFormaDePago(ctaId, TokenCookie);
+				var ccon = _cuentaServicio.GetCuentaContactos(ctaId, TokenCookie);
+				var cobs = _cuentaServicio.GetCuentaObs(ctaId, TokenCookie);
+				var cnota = _cuentaServicio.GetCuentaNota(ctaId, TokenCookie);
+
 				var ClienteModel = new CuentaAbmModel()
 				{
 					Cliente = res.First(),
@@ -183,7 +188,11 @@ namespace gc.sitio.Areas.ABMs.Controllers
 					ComboDiasDeLaSemana = ComboDiasDeLaSemana(),
 					ComboZonas = ComboZonas(),
 					ComboRepartidores = ComboRepartidores(),
-					ComboFinancieros = ComboFinanciero("BA")
+					ComboFinancieros = ComboFinanciero("BA"),
+					CuentaFormasDePago = ObtenerGridCore<CuentaFPDto>(cfp),
+					CuentaContactos = ObtenerGridCore<CuentaContactoDto>(ccon),
+					CuentaObs = ObtenerGridCore<CuentaObsDto>(cobs),
+					CuentaNota = ObtenerGridCore<CuentaNotaDto>(cnota)
 				};
 				return PartialView("_tabDatosCliente", ClienteModel);
 			}

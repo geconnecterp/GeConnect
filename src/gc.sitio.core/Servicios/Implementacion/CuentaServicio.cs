@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Net;
+using System.Security.Claims;
 
 namespace gc.sitio.core.Servicios.Implementacion
 {
@@ -21,6 +22,10 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string DetalleOCBuscar = "/GetOCDetalle";
 		private const string ProveedorFamiliaLista = "/GetProveedorFamiliaLista";
 		private const string ObtenerCuentaParaABM = "/GetCuentaParaABM";
+		private const string ObtenerCuentaFormaDePago = "/GetCuentaFormaDePago";
+		private const string ObtenerCuentaContactos = "/GetCuentaContactos";
+		private const string ObtenerCuentaObs = "/GetCuentaObs";
+		private const string ObtenerCuentaNota = "/GetCuentaNota";
 		private readonly AppSettings _appSettings;
 		public CuentaServicio(IOptions<AppSettings> options, ILogger<CuentaServicio> logger) : base(options, logger)
 		{
@@ -255,6 +260,178 @@ namespace gc.sitio.core.Servicios.Implementacion
 					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 					_logger.LogError($"Error al intentar obtener los datos de la cuenta: {stringData}");
 					throw new NegocioException("Hubo un error al intentar obtener los datos de la cuenta");
+				}
+
+			}
+			catch (NegocioException)
+			{
+				throw;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar obtener los datos de la cuenta.");
+				throw;
+			}
+		}
+
+		public List<CuentaFPDto> GetCuentaFormaDePago(string ctaId, string token)
+		{
+			ApiResponse<List<CuentaFPDto>> respuesta;
+			string stringData;
+			try
+			{
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerCuentaFormaDePago}?cta_id={ctaId}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (!string.IsNullOrEmpty(stringData))
+					{
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<CuentaFPDto>>>(stringData);
+					}
+					else
+					{
+						throw new Exception("No se logro obtener la respuesta de la API con los datos de forma de pago la cuenta. Verifique.");
+					}
+					return respuesta.Data;
+				}
+				else
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogError($"Error al intentar obtener los datos de forma de pago de la cuenta: {stringData}");
+					throw new NegocioException("Hubo un error al intentar obtener los datos de forma de pago de la cuenta");
+				}
+
+			}
+			catch (NegocioException)
+			{
+				throw;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar obtener los datos de la cuenta.");
+				throw;
+			}
+		}
+
+		public List<CuentaContactoDto> GetCuentaContactos(string cta_id, string token)
+		{
+			ApiResponse<List<CuentaContactoDto>> respuesta;
+			string stringData;
+			try
+			{
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerCuentaContactos}?cta_id={cta_id}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (!string.IsNullOrEmpty(stringData))
+					{
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<CuentaContactoDto>>>(stringData);
+					}
+					else
+					{
+						throw new Exception("No se logro obtener la respuesta de la API con los datos de contactos la cuenta. Verifique.");
+					}
+					return respuesta.Data;
+				}
+				else
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogError($"Error al intentar obtener los datos de contactos de la cuenta: {stringData}");
+					throw new NegocioException("Hubo un error al intentar obtener los datos de contactos de la cuenta");
+				}
+
+			}
+			catch (NegocioException)
+			{
+				throw;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar obtener los datos de la cuenta.");
+				throw;
+			}
+		}
+
+		public List<CuentaObsDto> GetCuentaObs(string cta_id, string token)
+		{
+			ApiResponse<List<CuentaObsDto>> respuesta;
+			string stringData;
+			try
+			{
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerCuentaObs}?cta_id={cta_id}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (!string.IsNullOrEmpty(stringData))
+					{
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<CuentaObsDto>>>(stringData);
+					}
+					else
+					{
+						throw new Exception("No se logro obtener la respuesta de la API con los datos de observaciones la cuenta. Verifique.");
+					}
+					return respuesta.Data;
+				}
+				else
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogError($"Error al intentar obtener los datos de observaciones de la cuenta: {stringData}");
+					throw new NegocioException("Hubo un error al intentar obtener los datos de observaciones de la cuenta");
+				}
+
+			}
+			catch (NegocioException)
+			{
+				throw;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar obtener los datos de la cuenta.");
+				throw;
+			}
+		}
+
+		public List<CuentaNotaDto> GetCuentaNota(string cta_id, string token)
+		{
+			ApiResponse<List<CuentaNotaDto>> respuesta;
+			string stringData;
+			try
+			{
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerCuentaNota}?cta_id={cta_id}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (!string.IsNullOrEmpty(stringData))
+					{
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<CuentaNotaDto>>>(stringData);
+					}
+					else
+					{
+						throw new Exception("No se logro obtener la respuesta de la API con los datos de notas de la cuenta. Verifique.");
+					}
+					return respuesta.Data;
+				}
+				else
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogError($"Error al intentar obtener los datos de notas de la cuenta: {stringData}");
+					throw new NegocioException("Hubo un error al intentar obtener los datos de notas de la cuenta");
 				}
 
 			}

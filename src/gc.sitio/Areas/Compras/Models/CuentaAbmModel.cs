@@ -1,4 +1,5 @@
 ﻿using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Gen;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace gc.sitio.Areas.Compras.Models
@@ -21,8 +22,12 @@ namespace gc.sitio.Areas.Compras.Models
 		public SelectList ComboRepartidores { get; set; }
 		public SelectList ComboFinancieros { get; set; }
 		public CuentaABMDto Cliente { get; set; }
+		public GridCore<CuentaFPDto> CuentaFormasDePago { get; set; }
+		public GridCore<CuentaContactoDto> CuentaContactos { get; set; }
+		public GridCore<CuentaObsDto> CuentaObs { get; set; }
+		public GridCore<CuentaNotaDto> CuentaNota { get; set; }
 
-        public CuentaAbmModel()
+		public CuentaAbmModel()
         { 
             Cliente = new CuentaABMDto();
         }

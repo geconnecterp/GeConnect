@@ -13,5 +13,9 @@ namespace gc.api.core.Contratos.Servicios
         List<RPROrdenDeCompraDetalleDto> GetDetalleDeOC(string oc_compte);
         List<ProveedorFamiliaListaDto> GetProveedorFamiliaLista(string ctaId);
         List<CuentaABMDto> GetCuentaParaABM(string cta_id);
+        List<CuentaFPDto> GetCuentaFormaDePago(string cta_id);
+        List<CuentaContactoDto> GetCuentContactos(string cta_id);
+        List<CuentaObsDto> GetCuentaObs(string cta_id);
+        List<CuentaNotaDto> GetCuentaNota(string cta_id);
 	}
 }
