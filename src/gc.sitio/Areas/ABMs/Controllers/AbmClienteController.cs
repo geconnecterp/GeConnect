@@ -5,9 +5,8 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
-using gc.sitio.Areas.Compras.Models;
+using gc.sitio.Areas.ABMs.Models;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.ABM;
 using Microsoft.AspNetCore.Mvc;
@@ -37,6 +36,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		private readonly IVendedorServicio _vendedorServicio;
 		private readonly IRepartidorServicio _repartidorServicio;
 		private readonly IFinancieroServicio _financieroServicio;
+		private readonly ITipoContactoServicio _tipoContactoServicio;
 		private readonly ILogger<AbmClienteController> _logger;
 
 		public AbmClienteController(IZonaServicio zonaServicio, ITipoNegocioServicio tipoNegocioServicio, IOptions<AppSettings> options,
@@ -48,7 +48,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 									ITipoDocumentoServicio tipoDocumentoServicio, ILogger<AbmClienteController> logger,
 									IDepartamentoServicio departamentoServicio, IListaDePrecioServicio listaDePrecioServicio,
 									IVendedorServicio vendedorServicio, IRepartidorServicio repartidorServicio,
-									IFinancieroServicio financieroServicio) : base(options, accessor, logger)
+									IFinancieroServicio financieroServicio, ITipoContactoServicio tipoContactoServicio) : base(options, accessor, logger)
 		{
 			_settings = options.Value;
 			_tipoNegocioServicio = tipoNegocioServicio;
@@ -68,6 +68,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			_vendedorServicio = vendedorServicio;
 			_repartidorServicio = repartidorServicio;
 			_financieroServicio = financieroServicio;
+			_tipoContactoServicio = tipoContactoServicio;
 		}
 
 		[HttpGet]
@@ -156,12 +157,20 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			}
 		}
 
+		/// <summary>
+		/// Método que llena el Tab "Cliente" en el ABM
+		/// </summary>
+		/// <param name="ctaId">Valor de cuenta seleccionada en la grilla principal</param>
+		/// <returns>CuentaAbmModel</returns>
 		[HttpPost]
 		public async Task<IActionResult> BuscarCliente(string ctaId)
 		{
 			RespuestaGenerica<EntidadBase> response = new();
 			try
 			{
+				if (string.IsNullOrEmpty(ctaId))
+					return PartialView("_tabDatosCliente", new CuentaABMDto());
+
 				var res = _cuentaServicio.GetCuentaParaABM(ctaId, TokenCookie);
 				if (res == null)
 					return PartialView("_tabDatosCliente", new CuentaABMDto());
@@ -198,8 +207,118 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			}
 			catch (Exception ex)
 			{
-				string msg = "Error en la invocación de la API - Busqueda Cliente";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda Cliente");
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Cliente";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Cliente");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		/// <summary>
+		/// Método que llena el Tab "Formas de Pago" en el ABM
+		/// </summary>
+		/// <param name="ctaId"></param>
+		/// <returns></returns>
+		[HttpPost]
+		public async Task<IActionResult> BuscarFormasDePago(string ctaId)
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				if (string.IsNullOrEmpty(ctaId))
+					return PartialView("_tabDatosFormaDePago", new CuentaAbmFPModel());
+
+				var cfp = _cuentaServicio.GetCuentaFormaDePago(ctaId, TokenCookie);
+				var FPModel = new CuentaAbmFPModel()
+				{
+					ComboTipoCuentaBco = ComboTipoCuentaBco(),
+					ComboFormasDePago = ComboFormaDePago(),
+					CuentaFormasDePago = ObtenerGridCore<CuentaFPDto>(cfp),
+				};
+				return PartialView("_tabDatosFormaDePago", FPModel);
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Formas de Pago";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Formas de Pago");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+
+		/// <summary>
+		/// Método que trae los campos de la Forma de Pago seleccionada en la grilla del tab Formas de Pago
+		/// </summary>
+		/// <param name="ctaId">Cuenta seleccionad en grilla principal</param>
+		/// <param name="fpId">Forma de pago seleccionada en la grilla de FP del Tab Formas de Pago</param>
+		/// <returns></returns>
+		[HttpPost]
+		public async Task<IActionResult> BuscarDatosFormasDePago(string ctaId, string fpId)
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				if (string.IsNullOrWhiteSpace(ctaId) || string.IsNullOrWhiteSpace(fpId))
+					return PartialView("_tabDatosFormaDePagoSelected", new CuentaAbmFPSelectedModel());
+
+				var cfp = _cuentaServicio.GetFormaDePagoPorCuentaYFP(ctaId, fpId, TokenCookie);
+				if (cfp == null)
+					return PartialView("_tabDatosFormaDePagoSelected", new CuentaAbmFPSelectedModel());
+
+				var FPSelectedModel = new CuentaAbmFPSelectedModel()
+				{
+					ComboTipoCuentaBco = ComboTipoCuentaBco(),
+					ComboFormasDePago = ComboFormaDePago(),
+					FormaDePago = ObtenerFormaDePagoModel(cfp.First())
+				};
+
+				return PartialView("_tabDatosFormaDePagoSelected", FPSelectedModel);
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Formas de Pago -> FP Selected";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Formas de Pago -> FP Selected");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		/// <summary>
+		/// Método que llena el Tab "Formas de Pago" en el ABM
+		/// </summary>
+		/// <param name="ctaId"></param>
+		/// <returns></returns>
+		[HttpPost]
+		public async Task<IActionResult> BuscarOtrosContactos(string ctaId)
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				if (string.IsNullOrEmpty(ctaId))
+					return PartialView("_tabDatosOtroContacto", new CuentaABMDto());
+
+				var coc = _cuentaServicio.GetCuentaContactos(ctaId, TokenCookie);
+				var FPModel = new CuentaAbmOCModel()
+				{
+					ComboTipoContacto = ComboTipoContacto(),
+					CuentaOtrosContactos = ObtenerGridCore<CuentaContactoDto>(coc),
+				};
+				return PartialView("_tabDatosOtroContacto", FPModel);
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -225,6 +344,28 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		}
 
 		#region Métodos Privados
+		private FormaDePagoModel ObtenerFormaDePagoModel(CuentaFPDto fp)
+		{
+			var fpm = new FormaDePagoModel();
+			if (fp == null)
+				return fpm;
+			#region mapp
+			fpm.fp_deufault = fp.fp_deufault;
+			fpm.fp_lista = fp.fp_lista;
+			fpm.fp_desc = fp.fp_desc;
+			fpm.fp_id = fp.fp_id;
+			fpm.cta_valores_a_nombre = fp.cta_valores_a_nombre;
+			fpm.tcb_lista = fp.tcb_lista;
+			fpm.cta_bco_cuenta_cbu = fp.cta_bco_cuenta_cbu;
+			fpm.cta_bco_cuenta_nro=fp.cta_bco_cuenta_nro;
+			fpm.cta_obs=fp.cta_obs;
+			fpm.tcb_id=fp.tcb_id;
+			fpm.tcb_desc=fp.tcb_desc;
+			fpm.fp_dias=fp.fp_dias;
+			fpm.cta_id=fp.cta_id;
+			#endregion
+			return fpm;	
+		}
 		protected SelectList ComboDepto(string prov_id)
 		{
 			CargarDepartametos(prov_id);
@@ -292,6 +433,9 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
 			if (RepartidoresLista.Count == 0 || actualizar)
 				ObtenerListaDeRepartidores(_repartidorServicio);
+
+			if (TipoContactoLista.Count == 0 || actualizar)
+				ObtenerTipoContacto(_tipoContactoServicio, "P");
 		}
 		#endregion
 	}

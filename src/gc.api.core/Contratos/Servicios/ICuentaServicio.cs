@@ -17,5 +17,6 @@ namespace gc.api.core.Contratos.Servicios
         List<CuentaContactoDto> GetCuentContactos(string cta_id);
         List<CuentaObsDto> GetCuentaObs(string cta_id);
         List<CuentaNotaDto> GetCuentaNota(string cta_id);
+        List<CuentaFPDto> GetFormaDePagoPorCuentaYFP(string cta_id, string fp_id);
 	}
 }

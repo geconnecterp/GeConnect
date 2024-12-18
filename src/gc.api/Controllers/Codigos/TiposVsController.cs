@@ -33,12 +33,14 @@ namespace gc.api.Controllers.Codigos
 		private readonly IVendedorServicio _vendedorServicio;
 		private readonly IRepartidorServicio _repartidorServicio;
 		private readonly IFinancieroServicio _financieroServicio;
+		private readonly ITipoContactoServicio _tipoContactoServicio;
 
 		public TiposVsController( IMapper mapper, IUriService uriService, ILogger<TiposVsController> logger, ICondicionAfipServicio condicionAfipServicio,
 								ICondicionIBServicio condicionIBServicio, IDepartamentoServicio departamentoServicio, IFormaDePagoServicio formaDePagoServicio,
 								INaturalezaJuridicaServicio naturalezaJuridicaServicio, IProvinciaServicio provinciaServicio, ITipoCanalServicio tipoCanalServicio,
 								ITipoCuentaBcoServicio tipoCuentaBcoServicio, ITiposDocumentoServicio tiposDocumentoServicio, IListaPrecioServicio listaPrecioServicio,
-								IVendedorServicio vendedorServicio, IRepartidorServicio repartidorServicio, IFinancieroServicio financieroServicio)
+								IVendedorServicio vendedorServicio, IRepartidorServicio repartidorServicio, IFinancieroServicio financieroServicio,
+								ITipoContactoServicio tipoContactoServicio)
         {
             _mapper = mapper;
             _uriService = uriService;
@@ -56,6 +58,7 @@ namespace gc.api.Controllers.Codigos
 			_vendedorServicio = vendedorServicio;
 			_repartidorServicio = repartidorServicio;
 			_financieroServicio = financieroServicio;
+			_tipoContactoServicio = tipoContactoServicio;
         }
 
 		[HttpGet]
@@ -211,6 +214,18 @@ namespace gc.api.Controllers.Codigos
 			var lista = _mapper.Map<List<FinancieroDto>>(financiero);
 
 			var response = new ApiResponse<List<FinancieroDto>>(lista);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult GetTipoContactoLista(string tipo = "P")
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			List<TipoContactoDto> tipoCanal = _tipoContactoServicio.GetTipoContactoLista(tipo);
+			var lista = _mapper.Map<List<TipoContactoDto>>(tipoCanal);
+
+			var response = new ApiResponse<List<TipoContactoDto>>(lista);
 			return Ok(response);
 		}
 		//

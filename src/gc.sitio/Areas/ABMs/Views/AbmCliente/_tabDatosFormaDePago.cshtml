@@ -1,5 +1,63 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model CuentaAbmFPModel
 @{
+	var firstObj = Model.CuentaFormasDePago.ListaDatos?.First();
+	if (firstObj == null)
+		firstObj = new CuentaFPDto();
+	var tipoCueBco = Model.ComboTipoCuentaBco;
+	var fp = Model.ComboFormasDePago;
 }
+<div class="container">
+	<div class="col-6">
+		<div class="row">
+			<div class="table-responsive text-nowrap table-wrapper-200-full">
+				<table class="table table-sm mb-0 table-hover" id="tbClienteFormaPagoEnTab">
+					<thead class="table-dark">
+						<tr class="header">
+							<th class="col-header-small align-center">Forma de Pago</th>
+							<th class="col-header-small align-center">Plazo</th>
+							<th style="width:0%; display:none;">fp_id</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var item in Model.CuentaFormasDePago.ListaDatos)
+						{
+							<tr onclick="selectFPenTab(this)">
+								<td class="align-left">@item.fp_desc</td>
+								<td class="align-center">@item.fp_dias</td>
+								<td style="display:none;">@item.fp_id</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div id="divDatosDeFPSelected">
+			<div class="row" style="padding-top: 10px;">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text">FP: </span>
+					@Html.DropDownListFor(m => firstObj.fp_id, fp, "Seleccionar...", new { @id = "listaFP", @class = "form-control" })
+					<span class="input-group-text">Plazo: </span>
+					<input type="text" asp-for="CuentaFormasDePago.ListaDatos.First().fp_dias" class="form-control" readonly />
+				</div>
+				<div class="input-group input-group-sm">
+					<span class="input-group-text">Obs: </span>
+					<input type="text" asp-for="CuentaFormasDePago.ListaDatos.First().cta_obs" class="form-control" readonly />
+				</div>
+				<div class="input-group input-group-sm">
+					<span class="input-group-text">Cta: </span>
+					@Html.DropDownListFor(m => firstObj.tcb_id, tipoCueBco, "Seleccionar...", new { @id = "listaTipoCueBco", @class = "form-control" })
+					<span class="input-group-text">N°: </span>
+					<input type="text" asp-for="CuentaFormasDePago.ListaDatos.First().cta_bco_cuenta_nro" class="form-control" readonly />
+				</div>
+				<div class="input-group input-group-sm">
+					<span class="input-group-text">CBU: </span>
+					<input type="text" asp-for="CuentaFormasDePago.ListaDatos.First().cta_bco_cuenta_cbu" class="form-control" readonly />
+				</div>
+				<div class="input-group input-group-sm">
+					<span class="input-group-text">Valores a: </span>
+					<input type="text" asp-for="CuentaFormasDePago.ListaDatos.First().cta_valores_a_nombre" class="form-control" readonly />
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

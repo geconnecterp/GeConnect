@@ -195,6 +195,21 @@ namespace gc.api.Controllers.Almacen
 			return Ok(response);
 		}
 
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaFPDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetFormaDePagoPorCuentaYFP(string cta_id, string fp_id)
+		{
+			ApiResponse<List<CuentaFPDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _cuentasSv.GetFormaDePagoPorCuentaYFP(cta_id, fp_id);
+
+			response = new ApiResponse<List<CuentaFPDto>>(res);
+
+			return Ok(response);
+		}
+
 		// GET api/<cuentasController>/5
 		[HttpGet("{id}")]
         public async Task<IActionResult> Get(string id)

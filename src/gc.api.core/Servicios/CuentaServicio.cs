@@ -301,5 +301,17 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<CuentaNotaDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<CuentaFPDto> GetFormaDePagoPorCuentaYFP(string cta_id, string fp_id)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_ABM_CLI_FP_Datos;
+			var ps = new List<SqlParameter>()
+			{
+					new("@cta_id", cta_id),
+					new("@fp_id", fp_id)
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<CuentaFPDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

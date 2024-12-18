@@ -914,6 +914,26 @@ namespace gc.sitio.Controllers
 		}
 		#endregion
 
+		#region TIPO DE PAGO
+		public List<TipoContactoDto> TipoContactoLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("TipoContactoLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<TipoContactoDto>();
+				}
+				return JsonConvert.DeserializeObject<List<TipoContactoDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("TipoContactoLista", json);
+			}
+		}
+		#endregion
+
 		#region PROVINCIA
 		public List<ProvinciaDto> ProvinciaLista
 		{
@@ -1222,6 +1242,10 @@ namespace gc.sitio.Controllers
 		{
 			FinancierosLista = _finan.GetFinancierosPorTipoCfLista(ctf_id, TokenCookie);
 		}
+		protected void ObtenerTipoContacto(ITipoContactoServicio _tipoCon, string tipo)
+		{
+			TipoContactoLista = _tipoCon.GetTipoContactoLista(TokenCookie, tipo);
+		}
 		protected void ObtenerDiasDeLaSemana()
 		{
 			var listaTemp = new List<DiaDeLaSemanaDto>();
@@ -1302,6 +1326,16 @@ namespace gc.sitio.Controllers
 		protected SelectList ComboRepartidores()
 		{
 			var lista = RepartidoresLista.Select(x => new ComboGenDto { Id = x.rp_id, Descripcion = x.rp_nombre });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		protected SelectList ComboFormaDePago()
+		{
+			var lista = FormaDePagoLista.Select(x => new ComboGenDto { Id = x.fp_id, Descripcion = x.fp_desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		protected SelectList ComboTipoContacto()
+		{
+			var lista = TipoContactoLista.Select(x => new ComboGenDto { Id = x.tc_id, Descripcion = x.tc_desc });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
 		#endregion

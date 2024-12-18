@@ -26,6 +26,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string ObtenerCuentaContactos = "/GetCuentaContactos";
 		private const string ObtenerCuentaObs = "/GetCuentaObs";
 		private const string ObtenerCuentaNota = "/GetCuentaNota";
+		private const string ObtenerFormaDePagoPorCuentaYFP = "/GetFormaDePagoPorCuentaYFP";
 		private readonly AppSettings _appSettings;
 		public CuentaServicio(IOptions<AppSettings> options, ILogger<CuentaServicio> logger) : base(options, logger)
 		{
@@ -442,6 +443,49 @@ namespace gc.sitio.core.Servicios.Implementacion
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Error al intentar obtener los datos de la cuenta.");
+				throw;
+			}
+		}
+
+		public List<CuentaFPDto> GetFormaDePagoPorCuentaYFP(string cta_id, string fp_id, string token)
+		{
+			ApiResponse<List<CuentaFPDto>> respuesta;
+			string stringData;
+			try
+			{
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerFormaDePagoPorCuentaYFP}?cta_id={cta_id}&fp_id={fp_id}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (!string.IsNullOrEmpty(stringData))
+					{
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<CuentaFPDto>>>(stringData);
+					}
+					else
+					{
+						throw new Exception("No se logro obtener la respuesta de la API con los datos de forma de pago por cuenta y fp. Verifique.");
+					}
+					return respuesta.Data;
+				}
+				else
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogError($"Error al intentar obtener los datos de forma de pago por cuenta y fp: {stringData}");
+					throw new NegocioException("Hubo un error al intentar obtener los datos de forma de pago por cuenta y fp");
+				}
+
+			}
+			catch (NegocioException)
+			{
+				throw;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar obtener los datos de forma de pago por cuenta y fp.");
 				throw;
 			}
 		}

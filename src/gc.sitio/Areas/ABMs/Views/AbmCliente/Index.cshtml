@@ -29,17 +29,17 @@
                     Cliente
                 </button>
             </li>
-            <li class="nav-item" role="presentation">
+            <li class="nav-item" role="presentation" id="tabFormaDePago">
                 <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-profile" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1">
                     Formas de Pago
                 </button>
             </li>
-            <li class="nav-item" role="presentation">
+            <li class="nav-item" role="presentation" id="tabOtrosContactos">
                 <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-messages" aria-controls="navs-top-messages" aria-selected="false" tabindex="-1">
                     Otros Contactos
                 </button>
             </li>
-            <li class="nav-item" role="presentation">
+            <li class="nav-item" role="presentation" id="tabNotas">
                 <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-notes" aria-controls="navs-top-notes" aria-selected="false" tabindex="-1">
                     notas
                 </button>
@@ -94,13 +94,15 @@
         var search = "";
         var funcCallBack = "buscarClientes";
         var dataBak = {};
-
+        var ctaId = "";
         var buscarUrl = "@Url.Action("buscar", "abmcliente", new { area = "abms" })";
         var buscarProveedorUrl = "@Url.Action("Buscar", "proveedor", new { area = "gestion" })";
         var autoComRel01Url = "@Url.Action("BuscarR01", "abmcliente", new { area = "abms" })";
         var autoComRel02Url = "@Url.Action("BuscarR02", "abmcliente", new { area = "abms" })";
         var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "abmcliente", new { area = "abms" })";
         var buscarClienteUrl = "@Url.Action("BuscarCliente", "abmcliente", new { area = "abms" })";
+        var buscarFormaDePagoUrl = "@Url.Action("BuscarFormasDePago", "abmcliente", new { area = "abms" })";
+        var buscarDatosFormasDePagoUrl = "@Url.Action("BuscarDatosFormasDePago", "abmcliente", new { area = "abms" })";
     </script>
     <script src="~/js/plugins/jquery.simplePagination.js"></script>
     <script src="~/js/app/busquedas.js"></script>

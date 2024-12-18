@@ -135,6 +135,8 @@
             public const string SP_ABM_CLI_LISTA = "SPGECO_ABM_Cli_Lista";
 			public const string SP_ABM_CLI_Datos = "SPGECO_ABM_Cli_Datos";
 			public const string SP_ABM_CLI_FP_Lista = "SPGECO_ABM_Cli_FP_Lista";
+			public const string SP_ABM_CLI_FP_Datos = "SPGECO_ABM_Cli_FP_Datos";
+			//
 			public const string SP_ABM_CLI_CONTACTOS_Lista = "SPGECO_ABM_Cli_CONTACTOS_Lista";
             public const string SP_ABM_CLI_OBS_Lista = "SPGECO_ABM_Cli_Obs_Lista";
 			public const string SP_ABM_CLI_NOTA_Lista = "SPGECO_ABM_Cli_Nota_Lista";
@@ -156,7 +158,9 @@
             public const string SP_REPARTIDOR_LISTA = "SPGECO_Repartidores_Lista";
             public const string SP_FINANCIEROS_LISTA = "SPGECO_Financieros_Lista";
             public const string SP_FORMA_PAGO_LISTA = "SPGECO_Formas_Pagos_Lista";
-            #endregion
-        }
-    }
+			public const string SP_TIPO_CONTACTO_LISTA = "SPGECO_Tipos_Contactos_Lista";
+			//
+			#endregion
+		}
+	}
 }
