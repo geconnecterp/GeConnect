@@ -165,7 +165,22 @@ namespace gc.api.Controllers.Almacen
 			return Ok(response);
 		}
 
-		[HttpGet]
+        [HttpGet]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaContactoDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult GetCuentaContactosPorCuentaYTC(string cta_id, string tc_id)
+        {
+            ApiResponse<List<CuentaContactoDto>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _cuentasSv.GetCuentContactosporCuentaYTC(cta_id, tc_id);
+
+            response = new ApiResponse<List<CuentaContactoDto>>(res);
+
+            return Ok(response);
+        }
+
+        [HttpGet]
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaObsDto>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]

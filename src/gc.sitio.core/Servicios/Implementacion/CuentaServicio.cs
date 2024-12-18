@@ -27,7 +27,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string ObtenerCuentaObs = "/GetCuentaObs";
 		private const string ObtenerCuentaNota = "/GetCuentaNota";
 		private const string ObtenerFormaDePagoPorCuentaYFP = "/GetFormaDePagoPorCuentaYFP";
-		private readonly AppSettings _appSettings;
+        private const string ObtenerCuentaContactosPorCuentaYTC = "/GetCuentaContactosPorCuentaYTC";
+        private readonly AppSettings _appSettings;
 		public CuentaServicio(IOptions<AppSettings> options, ILogger<CuentaServicio> logger) : base(options, logger)
 		{
 			_appSettings = options.Value;
@@ -489,5 +490,48 @@ namespace gc.sitio.core.Servicios.Implementacion
 				throw;
 			}
 		}
-	}
+
+        public List<CuentaContactoDto> GetCuentContactosporCuentaYTC(string cta_id, string tc_id, string token)
+        {
+            ApiResponse<List<CuentaContactoDto>> respuesta;
+            string stringData;
+            try
+            {
+                HelperAPI helper = new();
+                HttpClient client = helper.InicializaCliente(token);
+                HttpResponseMessage response;
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerCuentaContactosPorCuentaYTC}?cta_id={cta_id}&tc_id={tc_id}";
+                response = client.GetAsync(link).GetAwaiter().GetResult();
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                    if (!string.IsNullOrEmpty(stringData))
+                    {
+                        respuesta = JsonConvert.DeserializeObject<ApiResponse<List<CuentaContactoDto>>>(stringData);
+                    }
+                    else
+                    {
+                        throw new Exception("No se logro obtener la respuesta de la API con los datos de otros contactos por cuenta y tc. Verifique.");
+                    }
+                    return respuesta.Data;
+                }
+                else
+                {
+                    stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                    _logger.LogError($"Error al intentar obtener los datos de otros contactos por cuenta y tc: {stringData}");
+                    throw new NegocioException("Hubo un error al intentar obtener los datos de otros contactos por cuenta y tc");
+                }
+
+            }
+            catch (NegocioException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al intentar obtener los datos de forma de pago por cuenta y fp.");
+                throw;
+            }
+        }
+    }
 }

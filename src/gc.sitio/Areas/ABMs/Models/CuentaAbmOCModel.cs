@@ -8,5 +8,11 @@ namespace gc.sitio.Areas.ABMs.Models
 	{
 		public SelectList ComboTipoContacto { get; set; }
 		public GridCore<CuentaContactoDto> CuentaOtrosContactos { get; set; }
+        public OtroContactoModel OtroContacto { get; set; }
+
+		public CuentaAbmOCModel()
+		{
+			OtroContacto = new OtroContactoModel();
+		}
 	}
 }

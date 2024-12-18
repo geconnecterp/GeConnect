@@ -1,8 +1,5 @@
 ﻿@model CuentaAbmFPModel
 @{
-	var firstObj = Model.CuentaFormasDePago.ListaDatos?.First();
-	if (firstObj == null)
-		firstObj = new CuentaFPDto();
 	var tipoCueBco = Model.ComboTipoCuentaBco;
 	var fp = Model.ComboFormasDePago;
 }
@@ -35,27 +32,27 @@
 			<div class="row" style="padding-top: 10px;">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text">FP: </span>
-					@Html.DropDownListFor(m => firstObj.fp_id, fp, "Seleccionar...", new { @id = "listaFP", @class = "form-control" })
+					@Html.DropDownListFor(m => Model.FormaDePago.fp_id, fp, "Seleccionar...", new { @id = "listaFP", @class = "form-control" })
 					<span class="input-group-text">Plazo: </span>
-					<input type="text" asp-for="CuentaFormasDePago.ListaDatos.First().fp_dias" class="form-control" readonly />
+					<input type="text" asp-for="FormaDePago.fp_dias" class="form-control" readonly />
 				</div>
 				<div class="input-group input-group-sm">
 					<span class="input-group-text">Obs: </span>
-					<input type="text" asp-for="CuentaFormasDePago.ListaDatos.First().cta_obs" class="form-control" readonly />
+					<input type="text" asp-for="FormaDePago.cta_obs" class="form-control" readonly />
 				</div>
 				<div class="input-group input-group-sm">
 					<span class="input-group-text">Cta: </span>
-					@Html.DropDownListFor(m => firstObj.tcb_id, tipoCueBco, "Seleccionar...", new { @id = "listaTipoCueBco", @class = "form-control" })
+					@Html.DropDownListFor(m => Model.FormaDePago.tcb_id, tipoCueBco, "Seleccionar...", new { @id = "listaTipoCueBco", @class = "form-control" })
 					<span class="input-group-text">N°: </span>
-					<input type="text" asp-for="CuentaFormasDePago.ListaDatos.First().cta_bco_cuenta_nro" class="form-control" readonly />
+					<input type="text" asp-for="FormaDePago.cta_bco_cuenta_nro" class="form-control" readonly />
 				</div>
 				<div class="input-group input-group-sm">
 					<span class="input-group-text">CBU: </span>
-					<input type="text" asp-for="CuentaFormasDePago.ListaDatos.First().cta_bco_cuenta_cbu" class="form-control" readonly />
+					<input type="text" asp-for="FormaDePago.cta_bco_cuenta_cbu" class="form-control" readonly />
 				</div>
 				<div class="input-group input-group-sm">
 					<span class="input-group-text">Valores a: </span>
-					<input type="text" asp-for="CuentaFormasDePago.ListaDatos.First().cta_valores_a_nombre" class="form-control" readonly />
+					<input type="text" asp-for="FormaDePago.cta_valores_a_nombre" class="form-control" readonly />
 				</div>
 			</div>
 		</div>

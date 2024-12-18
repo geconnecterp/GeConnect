@@ -280,7 +280,19 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
-		public List<CuentaObsDto> GetCuentaObs(string cta_id)
+        public List<CuentaContactoDto> GetCuentContactosporCuentaYTC(string cta_id, string tc_id)
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_ABM_CLI_CONTACTOS_Datos;
+            var ps = new List<SqlParameter>()
+            {
+                    new("@cta_id", cta_id),
+                    new("@tc_id", tc_id)
+            };
+            var listaTemp = _repository.EjecutarLstSpExt<CuentaContactoDto>(sp, ps, true);
+            return listaTemp;
+        }
+
+        public List<CuentaObsDto> GetCuentaObs(string cta_id)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_ABM_CLI_OBS_Lista;
 			var ps = new List<SqlParameter>()

@@ -9,7 +9,8 @@
 	$("#btnBuscar").on("click", function () { buscarClientes(pagina); });
 
 	$("#tabFormaDePago").on("click", function () { BuscarFormaDePago(); });
-
+	$("#tabOtrosContactos").on("click", function () { BuscarOtrosContactos(); });
+	//
 	//codigo trasladado a siteGen
 
 	InicializaPantallaAbmProd();
@@ -17,6 +18,21 @@
 	funcCallBack = buscarClientes;
 	return true;
 });
+
+function BuscarOtrosContactos() {
+	if (ctaId != "") {
+		var data = { ctaId };
+		AbrirWaiting();
+		PostGenHtml(data, buscarOtrosContactosUrl, function (obj) {
+			$("#divOtrosContactos").html(obj);
+			AgregarHandlerSelectedRow("tbClienteOtroContacto");
+			CerrarWaiting();
+		}, function (obj) {
+			ControlaMensajeError(obj.message);
+			CerrarWaiting();
+		});
+	}
+}
 
 function BuscarFormaDePago() {
 	if (ctaId != "") {
@@ -42,6 +58,19 @@ function AgregarHandlerSelectedRow(grilla) {
 			}
 			e.target.closest('tr').classList.add('selected-row');
 		}
+	});
+}
+
+function selectOCenTab(x) {
+	var tcId = x.cells[5].innerText.trim();
+	var data = { ctaId, tcId };
+	AbrirWaiting();
+	PostGenHtml(data, buscarDatosOtrosContactosUrl, function (obj) {
+		$("#divDatosDeOCSelected").html(obj);
+		CerrarWaiting();
+	}, function (obj) {
+		ControlaMensajeError(obj.message);
+		CerrarWaiting();
 	});
 }
 
@@ -163,6 +192,7 @@ function selectReg(e) {
 		ctaId = cta_id;
 		BuscarCliente(cta_id);
 		BuscarFormaDePago();
+		BuscarOtrosContactos();
 	}
 }
 
