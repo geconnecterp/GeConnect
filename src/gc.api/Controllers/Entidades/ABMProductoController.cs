@@ -65,6 +65,14 @@ namespace gc.api.Controllers.Entidades
             return Ok(response);
         }
 
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult BuscarProducto(string p_id)
+        {
+            var prod = _abmProductoServicio.Buscar(p_id);
+            return Ok(new ApiResponse<ProductoDto>(prod));
+        }
+
         [HttpPost]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<IEnumerable<ProductoListaDto>>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]

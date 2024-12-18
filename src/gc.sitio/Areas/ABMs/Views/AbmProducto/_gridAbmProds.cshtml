@@ -30,7 +30,7 @@
                     {
                         if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
-                        <tr class="@clase" onclick="selectReg(this)">
+                        <tr class="@clase" onclick="selectReg(this)" ondblclick="selectAbmRegDbl(this)" >
                             <td class="text-sm-center">@item.P_id</td>
                             <td class="text-sm-start">@item.P_desc</td>
                             <td class="text-sm-end">@item.Cta_id</td>

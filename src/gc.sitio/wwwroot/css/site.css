@@ -38,6 +38,12 @@ table > thead > tr > th {
     color: black;
 }
 
+.selectedEdit-row > td {
+    background-color: firebrick;
+    color: black;
+}
+
+
 fieldset {
     margin: 8px;
     border: 1px solid silver;

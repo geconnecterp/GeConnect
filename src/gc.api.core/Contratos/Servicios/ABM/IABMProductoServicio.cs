@@ -7,5 +7,6 @@ namespace gc.api.core.Contratos.Servicios
     public interface IABMProductoServicio : IServicio<Producto>
     {
         List<ProductoListaDto> Buscar(QueryFilters filtro);
+        ProductoDto Buscar(string p_id);
     }
 }

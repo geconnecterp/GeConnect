@@ -246,6 +246,31 @@ namespace gc.sitio.Controllers
 				_context.HttpContext.Session.SetString("ElementoEditado", json);
 			}
 		}
+
+		/// <summary>
+		/// Producto seleccionado para su edición.
+		/// </summary>
+		protected ProductoDto ProductoABMSeleccionado
+		{
+            get
+            {
+                string json = _context.HttpContext.Session.GetString("ProductoABMSeleccionado");
+                if (string.IsNullOrEmpty(json))
+                {
+                    return new();
+                }
+                return JsonConvert.DeserializeObject<ProductoDto>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("ProductoABMSeleccionado", json);
+            }
+        }
+
+		/// <summary>
+		/// Producto buscado con el control de busqueda de productos. Es utilizado para carga de datos en grid
+		/// </summary>
 		protected ProductoBusquedaDto ProductoBase
 		{
 			get

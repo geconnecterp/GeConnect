@@ -33,6 +33,7 @@
                     Status = (int)HttpStatusCode.BadRequest,
                     Title = "Bad Request",
                     Detail = exception.Message,
+                    TypeException = "NegocioException"
                 };
 
                 context.Result = new BadRequestObjectResult(new { error = new[] { validation } });
@@ -48,6 +49,8 @@
                     Status = (int)HttpStatusCode.NotFound,
                     Title = "Not Found",
                     Detail = exception.Message,
+                    TypeException = "NotFoundException"
+
                 };
 
 
@@ -63,6 +66,8 @@
                     Status = (int)HttpStatusCode.Forbidden,
                     Title = "Not Found",
                     Detail = exception.Message,
+                    TypeException = "SecurityException"
+
                 };
 
 
@@ -76,7 +81,8 @@
                 {
                     Status = (int)HttpStatusCode.Conflict,
                     Title = "Conflict",
-                    Detail = $"{exception.Message} Si el mismo persiste, avise al Administrador del Sistema."
+                    Detail = $"{exception.Message} Si el mismo persiste, avise al Administrador del Sistema.",
+                    TypeException = "Exception"
 
                 };
 

@@ -4,6 +4,7 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Almacen;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
@@ -16,6 +17,27 @@ namespace gc.api.core.Servicios.ABM
 
         public ABMProductoServicio(IUnitOfWork uow,IOptions<PaginationOptions> pag):base(uow,pag)
         {
+        }
+
+        public ProductoDto Buscar(string p_id)
+        {
+            if(string.IsNullOrEmpty(p_id)|| string.IsNullOrWhiteSpace(p_id))
+            {
+                throw new NegocioException("No se recepcionó el identificador del producto buscado");
+            }
+
+            string sp = ConstantesGC.StoredProcedures.SP_ABM_P_DATOS;
+            var ps = new List<SqlParameter> { new SqlParameter("@p_id", p_id) };
+
+            List<ProductoDto> producto = _repository.EjecutarLstSpExt<ProductoDto>(sp, ps, true);
+            if (producto.Count > 0)
+            {
+                return producto.First();
+            }
+            else
+            {
+                throw new NegocioException($"No se encontró el Producto buscado ({p_id})");
+            }
         }
 
         public List<ProductoListaDto> Buscar(QueryFilters filtros)

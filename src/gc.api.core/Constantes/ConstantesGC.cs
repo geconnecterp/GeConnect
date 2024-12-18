@@ -132,6 +132,8 @@
 
             #region ABM
             public const string SP_ABM_P_LISTA = "SPGECO_ABM_P_Lista";
+            public const string SP_ABM_P_DATOS = "SPGECO_ABM_P_Datos";
+            
             public const string SP_ABM_CLI_LISTA = "SPGECO_ABM_Cli_Lista";
 			public const string SP_ABM_CLI_Datos = "SPGECO_ABM_Cli_Datos";
 			#endregion

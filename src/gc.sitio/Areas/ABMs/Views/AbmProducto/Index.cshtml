@@ -18,7 +18,7 @@
             <i class="bx bx-filter bx-xs"></i>
         </button>
 
-        <button class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle">
+        <button class="btn btn-primary btn-sm mt-1 me-1" type="button" id="btnDetalle" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle">
             <i class="bx bx-arrow-to-bottom bx-xs"></i>
         </button>
     </div>
@@ -56,6 +56,8 @@
         var dataBak = {};
 
         var buscarUrl = "@Url.Action("buscar", "abmproducto", new { area = "abms" })";
+        var buscarProdUrl = "@Url.Action("BuscarProd", "abmproducto", new { area = "abms" })";
+        
         var buscarProveedorUrl = "@Url.Action("Buscar", "proveedor", new { area = "gestion" })";
         var autoComRel01Url = "@Url.Action("BuscarProvs", "abmproducto", new { area = "abms" })";
         var autoComRel02Url = "@Url.Action("BuscarRubros", "abmproducto", new { area = "abms" })";

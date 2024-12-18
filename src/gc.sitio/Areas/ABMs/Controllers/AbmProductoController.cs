@@ -1,6 +1,7 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
@@ -64,6 +65,44 @@ namespace gc.sitio.Areas.ABMs.Controllers
             ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR02);
 
             return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> BuscarProd(string p_id)
+        {
+            RespuestaGenerica<EntidadBase> response = new();
+
+            try
+            {
+                var prod = await _abmProdServ.BuscarProducto(p_id, TokenCookie);
+                if (prod == null)
+                {
+                    throw new Exception("No se recepcionó el producto buscado.");
+                }
+
+                ProductoABMSeleccionado = prod;
+
+                return View("_n02panel01Producto", prod);
+            
+            }
+            catch (NegocioException ex)
+            {               
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = true;
+                response.EsError = false;
+                return PartialView("_gridMensaje", response);
+            }
+            catch (Exception ex)
+            {
+                string msg = "Error en la invocación de la API - Busqueda Producto";
+                _logger.LogError(ex, "Error en la invocación de la API - Busqueda Producto");
+                response.Mensaje = msg;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
+            }
         }
 
         [HttpPost]
