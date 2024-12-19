@@ -12,6 +12,7 @@ using gc.sitio.core.Servicios.Contratos.ABM;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
+using System;
 
 namespace gc.sitio.Areas.ABMs.Controllers
 {
@@ -37,6 +38,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
         private readonly IRepartidorServicio _repartidorServicio;
         private readonly IFinancieroServicio _financieroServicio;
         private readonly ITipoContactoServicio _tipoContactoServicio;
+        private readonly ITipoObsServicio _tipoObsServicio;
         private readonly ILogger<AbmClienteController> _logger;
 
         public AbmClienteController(IZonaServicio zonaServicio, ITipoNegocioServicio tipoNegocioServicio, IOptions<AppSettings> options,
@@ -48,7 +50,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
                                     ITipoDocumentoServicio tipoDocumentoServicio, ILogger<AbmClienteController> logger,
                                     IDepartamentoServicio departamentoServicio, IListaDePrecioServicio listaDePrecioServicio,
                                     IVendedorServicio vendedorServicio, IRepartidorServicio repartidorServicio,
-                                    IFinancieroServicio financieroServicio, ITipoContactoServicio tipoContactoServicio) : base(options, accessor, logger)
+                                    IFinancieroServicio financieroServicio, ITipoContactoServicio tipoContactoServicio,
+                                    ITipoObsServicio tipoObsServicio) : base(options, accessor, logger)
         {
             _settings = options.Value;
             _tipoNegocioServicio = tipoNegocioServicio;
@@ -69,6 +72,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             _repartidorServicio = repartidorServicio;
             _financieroServicio = financieroServicio;
             _tipoContactoServicio = tipoContactoServicio;
+            _tipoObsServicio = tipoObsServicio;
         }
 
         [HttpGet]
@@ -339,7 +343,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 if (coc == null)
                     return PartialView("_tabDatosOtroContactoSelected", new CuentaAbmOCSelectedModel());
                 var model = new CuentaAbmOCSelectedModel()
-                { 
+                {
                     ComboTipoContacto = ComboTipoContacto(),
                     OtroContacto = ObtenerOtroContactoModel(coc.First())
                 };
@@ -406,8 +410,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
             }
             catch (Exception ex)
             {
-                string msg = "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> OC Selected";
-                _logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> OC Selected");
+                string msg = "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Notas Selected";
+                _logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Notas Selected");
                 response.Mensaje = msg;
                 response.Ok = false;
                 response.EsWarn = false;
@@ -415,6 +419,69 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 return PartialView("_gridMensaje", response);
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> BuscarObservaciones(string ctaId)
+        {
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				if (string.IsNullOrEmpty(ctaId))
+					return PartialView("_tabDatosObs", new CuentaABMObservacionesModel());
+
+                var cob = _cuentaServicio.GetCuentaObs(ctaId, TokenCookie);
+                if (cob== null)
+					return PartialView("_tabDatosObs", new CuentaABMObservacionesModel());
+
+				var ObsModel = new CuentaABMObservacionesModel()
+				{
+                    ComboTipoObs = ComboTipoObservaciones(),
+					CuentaObservaciones = ObtenerGridCore<CuentaObsDto>(cob),
+				};
+				return PartialView("_tabDatosObs", ObsModel);
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Observaciones";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Observaciones");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+        [HttpPost]
+        public async Task<IActionResult> BuscarDatosObservaciones(string ctaId, string toId)
+        {
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				if (string.IsNullOrWhiteSpace(ctaId) || string.IsNullOrWhiteSpace(toId))
+					return PartialView("_tabDatosObsSelected", new CuentaABMObservacionesSelectedModel());
+				var cob = _cuentaServicio.GetCuentaObsDatos(ctaId, toId, TokenCookie);
+				if (cob == null)
+					return PartialView("_tabDatosObsSelected", new CuentaABMObservacionesSelectedModel());
+				var model = new CuentaABMObservacionesSelectedModel()
+				{
+                    ComboTipoObs = ComboTipoObservaciones(),
+					Observacion = ObtenerObservacionModel(cob.First())
+				};
+				return PartialView("_tabDatosObsSelected", model);
+
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Obs Selected";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Obs Selected");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
 
         [HttpPost]
         public JsonResult BuscarR01(string prefix)
@@ -433,7 +500,22 @@ namespace gc.sitio.Areas.ABMs.Controllers
         }
 
         #region Métodos Privados
-        private NotaModel ObtenerNotaModel(CuentaNotaDto nota)
+        private ObservacionesModel ObtenerObservacionModel(CuentaObsDto obs)
+        { 
+            var mod = new ObservacionesModel();
+            if (obs == null)
+                return mod;
+
+			#region map
+            mod.to_lista = obs.to_lista;
+            mod.to_id = obs.to_id;
+            mod.to_desc = obs.to_desc;
+            mod.cta_obs = obs.cta_obs;
+            mod.cta_id = obs.cta_id;
+			#endregion
+            return mod;
+		}
+		private NotaModel ObtenerNotaModel(CuentaNotaDto nota)
         { 
             var nom = new NotaModel();
             if (nota == null)
@@ -559,6 +641,9 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
             if (TipoContactoLista.Count == 0 || actualizar)
                 ObtenerTipoContacto(_tipoContactoServicio, "P");
+
+            if (TipoObservacionesLista.Count == 0 || actualizar)
+                ObtenerTipoObservaciones(_tipoObsServicio, "P");
         }
         #endregion
     }

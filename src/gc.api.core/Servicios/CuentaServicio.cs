@@ -303,12 +303,13 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
-		public List<CuentaObsDto> GetCuentaObsDatos(string cta_id)
+		public List<CuentaObsDto> GetCuentaObsDatos(string cta_id, string to_id)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_ABM_CLI_OBS_Datos;
 			var ps = new List<SqlParameter>()
 			{
-					new("@cta_id", cta_id)
+					new("@cta_id", cta_id),
+					new("@to_id", to_id)
 			};
 			var listaTemp = _repository.EjecutarLstSpExt<CuentaObsDto>(sp, ps, true);
 			return listaTemp;

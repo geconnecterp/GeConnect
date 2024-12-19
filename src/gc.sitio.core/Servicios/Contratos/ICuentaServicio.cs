@@ -18,5 +18,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		List<CuentaFPDto> GetFormaDePagoPorCuentaYFP(string cta_id, string fp_id, string token);
         List<CuentaContactoDto> GetCuentContactosporCuentaYTC(string cta_id, string tc_id, string token);
         List<CuentaNotaDto> GetCuentaNotaDatos(string cta_id, string usu_id, string token);
-    }
+		List<CuentaObsDto> GetCuentaObsDatos(string cta_id, string to_id, string token);
+	}
 }

@@ -11,6 +11,7 @@
 	$("#tabFormaDePago").on("click", function () { BuscarFormaDePago(); });
 	$("#tabOtrosContactos").on("click", function () { BuscarOtrosContactos(); });
 	$("#tabNotas").on("click", function () { BuscarNotas(); });
+	$("#tabObservaciones").on("click", function () { BuscarObservaciones(); });
 	//
 	//codigo trasladado a siteGen
 
@@ -20,13 +21,28 @@
 	return true;
 });
 
+function BuscarObservaciones() {
+	if (ctaId != "") {
+		var data = { ctaId };
+		AbrirWaiting();
+		PostGenHtml(data, buscarObservacionesUrl, function (obj) {
+			$("#divObservaciones").html(obj);
+			AgregarHandlerSelectedRow("tbClienteObservaciones");
+			CerrarWaiting();
+		}, function (obj) {
+			ControlaMensajeError(obj.message);
+			CerrarWaiting();
+		});
+	}
+}
+
 function BuscarNotas() {
 	if (ctaId != "") {
 		var data = { ctaId };
 		AbrirWaiting();
 		PostGenHtml(data, buscarNotasUrl, function (obj) {
 			$("#divNotas").html(obj);
-			AgregarHandlerSelectedRow("tbClienteOtroContacto");
+			AgregarHandlerSelectedRow("tbClienteNotas");
 			CerrarWaiting();
 		}, function (obj) {
 			ControlaMensajeError(obj.message);
@@ -109,6 +125,19 @@ function selectNotaenTab(x) {
 	AbrirWaiting();
 	PostGenHtml(data, buscarDatosNotaUrl, function (obj) {
 		$("#divDatosDeNotaSelected").html(obj);
+		CerrarWaiting();
+	}, function (obj) {
+		ControlaMensajeError(obj.message);
+		CerrarWaiting();
+	});
+}
+
+function selectObsEnTab(x) {
+	var toId = x.cells[2].innerText.trim();
+	var data = { ctaId, toId };
+	AbrirWaiting();
+	PostGenHtml(data, buscarDatosObservacionesUrl, function (obj) {
+		$("#divDatosDeObsSelected").html(obj);
 		CerrarWaiting();
 	}, function (obj) {
 		ControlaMensajeError(obj.message);
@@ -223,6 +252,7 @@ function selectReg(e) {
 		BuscarFormaDePago();
 		BuscarOtrosContactos();
 		BuscarNotas();
+		BuscarObservaciones();
 	}
 }
 

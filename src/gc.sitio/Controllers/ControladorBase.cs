@@ -1094,6 +1094,26 @@ namespace gc.sitio.Controllers
 		}
 		#endregion
 
+		#region TIPO OBSERVACIONES
+		public List<TipoObsDto> TipoObservacionesLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("TipoObservacionesLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<TipoObsDto>();
+				}
+				return JsonConvert.DeserializeObject<List<TipoObsDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("TipoObservacionesLista", json);
+			}
+		}
+		#endregion
+
 		#region Metodos generales
 		public PartialViewResult ObtenerMensajeDeError(string mensaje)
 		{
@@ -1246,6 +1266,10 @@ namespace gc.sitio.Controllers
 		{
 			TipoContactoLista = _tipoCon.GetTipoContactoLista(TokenCookie, tipo);
 		}
+		protected void ObtenerTipoObservaciones(ITipoObsServicio _tipoObs, string tipo)
+		{
+			TipoObservacionesLista = _tipoObs.GetTiposDeObs(TokenCookie, tipo);
+		}
 		protected void ObtenerDiasDeLaSemana()
 		{
 			var listaTemp = new List<DiaDeLaSemanaDto>();
@@ -1336,6 +1360,11 @@ namespace gc.sitio.Controllers
 		protected SelectList ComboTipoContacto()
 		{
 			var lista = TipoContactoLista.Select(x => new ComboGenDto { Id = x.tc_id, Descripcion = x.tc_desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		protected SelectList ComboTipoObservaciones()
+		{
+			var lista = TipoObservacionesLista.Select(x => new ComboGenDto { Id = x.to_id, Descripcion = x.to_desc });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
 		#endregion

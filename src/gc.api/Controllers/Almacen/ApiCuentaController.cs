@@ -196,6 +196,21 @@ namespace gc.api.Controllers.Almacen
 		}
 
 		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaObsDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetCuentaObsDatos(string cta_id, string to_id)
+		{
+			ApiResponse<List<CuentaObsDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _cuentasSv.GetCuentaObsDatos(cta_id, to_id);
+
+			response = new ApiResponse<List<CuentaObsDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaNotaDto>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]

@@ -29,8 +29,9 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string ObtenerFormaDePagoPorCuentaYFP = "/GetFormaDePagoPorCuentaYFP";
         private const string ObtenerCuentaContactosPorCuentaYTC = "/GetCuentaContactosPorCuentaYTC";
         private const string ObtenerCuentaNotaDatos = "/GetCuentaNotaDatos";
-        //
-        private readonly AppSettings _appSettings;
+		private const string ObtenerCuentaObsDatos = "/GetCuentaObsDatos";
+		//
+		private readonly AppSettings _appSettings;
 		public CuentaServicio(IOptions<AppSettings> options, ILogger<CuentaServicio> logger) : base(options, logger)
 		{
 			_appSettings = options.Value;
@@ -578,5 +579,48 @@ namespace gc.sitio.core.Servicios.Implementacion
                 throw;
             }
         }
-    }
+
+		public List<CuentaObsDto> GetCuentaObsDatos(string cta_id, string to_id, string token)
+		{
+			ApiResponse<List<CuentaObsDto>> respuesta;
+			string stringData;
+			try
+			{
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerCuentaObsDatos}?cta_id={cta_id}&to_id={to_id}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (!string.IsNullOrEmpty(stringData))
+					{
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<CuentaObsDto>>>(stringData);
+					}
+					else
+					{
+						throw new Exception("No se logro obtener la respuesta de la API con los datos de notas por cuenta y usuID. Verifique.");
+					}
+					return respuesta.Data;
+				}
+				else
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogError($"Error al intentar obtener los datos de notas por cuenta y usuID: {stringData}");
+					throw new NegocioException("Hubo un error al intentar obtener los datos de notas por cuenta y usuID");
+				}
+
+			}
+			catch (NegocioException)
+			{
+				throw;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar obtener los datos de forma de pago por cuenta y fp.");
+				throw;
+			}
+		}
+	}
 }
