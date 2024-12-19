@@ -358,6 +358,63 @@ namespace gc.sitio.Areas.ABMs.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> BuscarNotas(string ctaId)
+        {
+            RespuestaGenerica<EntidadBase> response = new();
+            try
+            {
+                if (string.IsNullOrEmpty(ctaId))
+                    return PartialView("_tabDatosNota", new CuentaABMNotaModel());
+
+                var cno = _cuentaServicio.GetCuentaNota(ctaId, TokenCookie);
+                var FPModel = new CuentaABMNotaModel()
+                {
+                    CuentaNotas = ObtenerGridCore<CuentaNotaDto>(cno),
+                };
+                return PartialView("_tabDatosNota", FPModel);
+            }
+            catch (Exception ex)
+            {
+                string msg = "Error en la invocación de la API - Busqueda datos TAB -> Notas";
+                _logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Notas");
+                response.Mensaje = msg;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> BuscarDatosNotas(string ctaId, string usuId)
+        {
+            RespuestaGenerica<EntidadBase> response = new();
+            try
+            {
+                if (string.IsNullOrWhiteSpace(ctaId) || string.IsNullOrWhiteSpace(usuId))
+                    return PartialView("_tabDatosNotaSelected", new CuentaABMNotaSelectedModel());
+                var cno = _cuentaServicio.GetCuentaNotaDatos(ctaId, usuId, TokenCookie);
+                if (cno == null)
+                    return PartialView("_tabDatosNotaSelected", new CuentaABMNotaSelectedModel());
+                var model = new CuentaABMNotaSelectedModel()
+                {
+                    Nota = ObtenerNotaModel(cno.First())
+                };
+                return PartialView("_tabDatosNotaSelected", model);
+
+            }
+            catch (Exception ex)
+            {
+                string msg = "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> OC Selected";
+                _logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> OC Selected");
+                response.Mensaje = msg;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
+            }
+        }
 
         [HttpPost]
         public JsonResult BuscarR01(string prefix)
@@ -376,6 +433,22 @@ namespace gc.sitio.Areas.ABMs.Controllers
         }
 
         #region Métodos Privados
+        private NotaModel ObtenerNotaModel(CuentaNotaDto nota)
+        { 
+            var nom = new NotaModel();
+            if (nota == null)
+                return nom;
+
+            #region map
+            nom.usu_lista = nota.usu_lista;
+            nom.usu_id = nota.usu_id;
+            nom.usu_apellidoynombre = nota.usu_apellidoynombre;
+            nom.nota = nota.nota;
+            nom.fecha = nota.fecha;
+            nom.cta_id = nota.cta_id;
+            #endregion
+            return nom;
+        }
         private OtroContactoModel ObtenerOtroContactoModel(CuentaContactoDto contacto)
         { 
             var ocm=new OtroContactoModel();

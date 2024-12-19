@@ -34,13 +34,14 @@ namespace gc.api.Controllers.Codigos
 		private readonly IRepartidorServicio _repartidorServicio;
 		private readonly IFinancieroServicio _financieroServicio;
 		private readonly ITipoContactoServicio _tipoContactoServicio;
+		private readonly ITipoObsServicio _tipoObsServicio;
 
 		public TiposVsController( IMapper mapper, IUriService uriService, ILogger<TiposVsController> logger, ICondicionAfipServicio condicionAfipServicio,
 								ICondicionIBServicio condicionIBServicio, IDepartamentoServicio departamentoServicio, IFormaDePagoServicio formaDePagoServicio,
 								INaturalezaJuridicaServicio naturalezaJuridicaServicio, IProvinciaServicio provinciaServicio, ITipoCanalServicio tipoCanalServicio,
 								ITipoCuentaBcoServicio tipoCuentaBcoServicio, ITiposDocumentoServicio tiposDocumentoServicio, IListaPrecioServicio listaPrecioServicio,
 								IVendedorServicio vendedorServicio, IRepartidorServicio repartidorServicio, IFinancieroServicio financieroServicio,
-								ITipoContactoServicio tipoContactoServicio)
+								ITipoContactoServicio tipoContactoServicio, ITipoObsServicio tipoObsServicio)
         {
             _mapper = mapper;
             _uriService = uriService;
@@ -59,6 +60,7 @@ namespace gc.api.Controllers.Codigos
 			_repartidorServicio = repartidorServicio;
 			_financieroServicio = financieroServicio;
 			_tipoContactoServicio = tipoContactoServicio;
+			_tipoObsServicio = tipoObsServicio;
         }
 
 		[HttpGet]
@@ -228,6 +230,18 @@ namespace gc.api.Controllers.Codigos
 			var response = new ApiResponse<List<TipoContactoDto>>(lista);
 			return Ok(response);
 		}
-		//
-	}
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult GetTipoObsLista(string tipo = "C")
+        {
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			List<TipoObsDto> tipoCanal = _tipoObsServicio.GetTiposDeObs(tipo);
+            var lista = _mapper.Map<List<TipoObsDto>>(tipoCanal);
+
+            var response = new ApiResponse<List<TipoObsDto>>(lista);
+            return Ok(response);
+        }
+        //
+    }
 }

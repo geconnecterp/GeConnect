@@ -303,6 +303,17 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
+		public List<CuentaObsDto> GetCuentaObsDatos(string cta_id)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_ABM_CLI_OBS_Datos;
+			var ps = new List<SqlParameter>()
+			{
+					new("@cta_id", cta_id)
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<CuentaObsDto>(sp, ps, true);
+			return listaTemp;
+		}
+
 		public List<CuentaNotaDto> GetCuentaNota(string cta_id)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_ABM_CLI_NOTA_Lista;
@@ -310,6 +321,18 @@ namespace gc.api.core.Servicios
 			{
 					new("@cta_id", cta_id)
 			};
+			var listaTemp = _repository.EjecutarLstSpExt<CuentaNotaDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<CuentaNotaDto> GetCuentaNotaDatos(string cta_id, string usu_id)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_ABM_CLI_NOTA_Datos;
+			var ps = new List<SqlParameter>()
+			{
+					new("@cta_id", cta_id),
+                    new("@usu_id", usu_id)
+            };
 			var listaTemp = _repository.EjecutarLstSpExt<CuentaNotaDto>(sp, ps, true);
 			return listaTemp;
 		}

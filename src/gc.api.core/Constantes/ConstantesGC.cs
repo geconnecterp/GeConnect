@@ -140,7 +140,9 @@
             public const string SP_ABM_CLI_CONTACTOS_Lista = "SPGECO_ABM_Cli_CONTACTOS_Lista";
             public const string SP_ABM_CLI_CONTACTOS_Datos = "SPGECO_ABM_Cli_CONTACTOS_Datos";
             public const string SP_ABM_CLI_OBS_Lista = "SPGECO_ABM_Cli_Obs_Lista";
+			public const string SP_ABM_CLI_OBS_Datos = "SPGECO_ABM_Cli_Obs_Datos";
 			public const string SP_ABM_CLI_NOTA_Lista = "SPGECO_ABM_Cli_Nota_Lista";
+			public const string SP_ABM_CLI_NOTA_Datos = "SPGECO_ABM_Cli_Nota_Datos";
 			#endregion
 
 			#region Tipos
@@ -160,8 +162,9 @@
             public const string SP_FINANCIEROS_LISTA = "SPGECO_Financieros_Lista";
             public const string SP_FORMA_PAGO_LISTA = "SPGECO_Formas_Pagos_Lista";
 			public const string SP_TIPO_CONTACTO_LISTA = "SPGECO_Tipos_Contactos_Lista";
-			//
-			#endregion
-		}
-	}
+            public const string SP_TIPO_OBS_LISTA = "SPGECO_Tipos_Obs_Lista";
+            //
+            #endregion
+        }
+    }
 }

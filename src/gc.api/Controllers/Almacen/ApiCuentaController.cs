@@ -210,7 +210,22 @@ namespace gc.api.Controllers.Almacen
 			return Ok(response);
 		}
 
-		[HttpGet]
+        [HttpGet]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaNotaDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult GetCuentaNotaDatos(string cta_id, string usu_id)
+        {
+            ApiResponse<List<CuentaNotaDto>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _cuentasSv.GetCuentaNotaDatos(cta_id, usu_id);
+
+            response = new ApiResponse<List<CuentaNotaDto>>(res);
+
+            return Ok(response);
+        }
+
+        [HttpGet]
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaFPDto>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]

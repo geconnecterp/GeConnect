@@ -10,6 +10,7 @@
 
 	$("#tabFormaDePago").on("click", function () { BuscarFormaDePago(); });
 	$("#tabOtrosContactos").on("click", function () { BuscarOtrosContactos(); });
+	$("#tabNotas").on("click", function () { BuscarNotas(); });
 	//
 	//codigo trasladado a siteGen
 
@@ -18,6 +19,21 @@
 	funcCallBack = buscarClientes;
 	return true;
 });
+
+function BuscarNotas() {
+	if (ctaId != "") {
+		var data = { ctaId };
+		AbrirWaiting();
+		PostGenHtml(data, buscarNotasUrl, function (obj) {
+			$("#divNotas").html(obj);
+			AgregarHandlerSelectedRow("tbClienteOtroContacto");
+			CerrarWaiting();
+		}, function (obj) {
+			ControlaMensajeError(obj.message);
+			CerrarWaiting();
+		});
+	}
+}
 
 function BuscarOtrosContactos() {
 	if (ctaId != "") {
@@ -80,6 +96,19 @@ function selectFPenTab(x) {
 	AbrirWaiting();
 	PostGenHtml(data, buscarDatosFormasDePagoUrl, function (obj) {
 		$("#divDatosDeFPSelected").html(obj);
+		CerrarWaiting();
+	}, function (obj) {
+		ControlaMensajeError(obj.message);
+		CerrarWaiting();
+	});
+}
+
+function selectNotaenTab(x) {
+	var usuId = x.cells[3].innerText.trim();
+	var data = { ctaId, usuId };
+	AbrirWaiting();
+	PostGenHtml(data, buscarDatosNotaUrl, function (obj) {
+		$("#divDatosDeNotaSelected").html(obj);
 		CerrarWaiting();
 	}, function (obj) {
 		ControlaMensajeError(obj.message);
@@ -193,6 +222,7 @@ function selectReg(e) {
 		BuscarCliente(cta_id);
 		BuscarFormaDePago();
 		BuscarOtrosContactos();
+		BuscarNotas();
 	}
 }
 
