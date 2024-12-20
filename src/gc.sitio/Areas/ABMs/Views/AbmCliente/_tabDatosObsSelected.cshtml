@@ -1,0 +1,14 @@
+﻿@model CuentaABMObservacionesSelectedModel
+@{
+	var cmb = Model.ComboTipoObs;
+}
+<div class="row" style="padding-top: 10px;">
+	<div class="input-group input-group-sm">
+		<span class="input-group-text">Tipo: </span>
+		@Html.DropDownListFor(m => Model.Observacion.to_id, cmb, "Seleccionar...", new { @id = "listaTipoObs", @class = "form-control" })
+	</div>
+	<div class="input-group input-group-sm">
+		<span class="input-group-text">Observación: </span>
+		<input type="text" asp-for="Observacion.cta_obs" class="form-control" readonly />
+	</div>
+</div>

@@ -1,3 +1,5 @@
+using System;
+
 namespace gc.infraestructura.Dtos.Almacen
 {
     public partial class CuentaDto:Dto
@@ -96,5 +98,52 @@ namespace gc.infraestructura.Dtos.Almacen
 		public string Lp_Id { get; set; } = string.Empty;
 		public string Lp_Desc { get; set; } = string.Empty;
         public char Ctac_Habilitada { get; set; }
-    }
+        public bool Cta_Activa
+        {
+            get 
+            {
+                if (char.IsWhiteSpace(Ctac_Habilitada) || string.IsNullOrWhiteSpace(char.ToString(Ctac_Habilitada)))
+                    return false;
+                return Ctac_Habilitada == 'S';
+            }
+            set { cta_Activa = value; }
+        }
+        private bool cta_Activa;
+
+		public bool Piva_Cert_Activa
+		{
+			get
+			{
+				if (string.IsNullOrWhiteSpace(Piva_Cert))
+					return false;
+				return Piva_Cert.Trim() == "S";
+			}
+			set { piva_Cert_Activa = value; }
+		}
+		private bool piva_Cert_Activa;
+
+		public bool Pib_Cert_Activa
+		{
+			get
+			{
+				if (string.IsNullOrWhiteSpace(Pib_Cert))
+					return false;
+				return Pib_Cert.Trim() == "S";
+			}
+			set { pib_Cert_Activa = value; }
+		}
+		private bool pib_Cert_Activa;
+
+		public bool Cta_Emp_Activa
+		{
+			get
+			{
+				if (char.IsWhiteSpace(Cta_Emp) || string.IsNullOrWhiteSpace(char.ToString(Cta_Emp)))
+					return false;
+				return Cta_Emp == 'S';
+			}
+			set { cta_Emp_Activa = value; }
+		}
+		private bool cta_Emp_Activa;
+	}
 }

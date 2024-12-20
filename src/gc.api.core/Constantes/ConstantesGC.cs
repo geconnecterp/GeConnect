@@ -25,6 +25,7 @@
             public const string SP_RUBRO_LISTA = "dbo.SPGECO_Rubros_lista";
 			public const string SP_PROVEEDOR_FAMILIA_LISTA = "dbo.SPGECO_Proveedores_Familia_lista";
             public const string SP_UP_LISTA = "SPGECO_UP_Lista";
+            public const string SP_BARRADO_LISTA = "SPGECO_ABM_P_Barrados_Lista";
 
             public const string SP_PRODUCTO_BUSQUEDA = "dbo.spgeco_p_busqueda";
 			public const string SP_PRODUCTO_BUSQUEDA_LISTA = "SPGECO_P_Busqueda_Lista";
@@ -139,6 +140,15 @@
             
             public const string SP_ABM_CLI_LISTA = "SPGECO_ABM_Cli_Lista";
 			public const string SP_ABM_CLI_Datos = "SPGECO_ABM_Cli_Datos";
+			public const string SP_ABM_CLI_FP_Lista = "SPGECO_ABM_Cli_FP_Lista";
+			public const string SP_ABM_CLI_FP_Datos = "SPGECO_ABM_Cli_FP_Datos";
+            //
+            public const string SP_ABM_CLI_CONTACTOS_Lista = "SPGECO_ABM_Cli_CONTACTOS_Lista";
+            public const string SP_ABM_CLI_CONTACTOS_Datos = "SPGECO_ABM_Cli_CONTACTOS_Datos";
+            public const string SP_ABM_CLI_OBS_Lista = "SPGECO_ABM_Cli_Obs_Lista";
+			public const string SP_ABM_CLI_OBS_Datos = "SPGECO_ABM_Cli_Obs_Datos";
+			public const string SP_ABM_CLI_NOTA_Lista = "SPGECO_ABM_Cli_Nota_Lista";
+			public const string SP_ABM_CLI_NOTA_Datos = "SPGECO_ABM_Cli_Nota_Datos";
 			#endregion
 
 			#region Tipos
@@ -157,6 +167,9 @@
             public const string SP_REPARTIDOR_LISTA = "SPGECO_Repartidores_Lista";
             public const string SP_FINANCIEROS_LISTA = "SPGECO_Financieros_Lista";
             public const string SP_FORMA_PAGO_LISTA = "SPGECO_Formas_Pagos_Lista";
+			public const string SP_TIPO_CONTACTO_LISTA = "SPGECO_Tipos_Contactos_Lista";
+            public const string SP_TIPO_OBS_LISTA = "SPGECO_Tipos_Obs_Lista";
+            //
             #endregion
         }
     }

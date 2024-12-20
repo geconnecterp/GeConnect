@@ -16,7 +16,7 @@ namespace gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI
         public char up_tipo { get; set; }
         public string up_desc { get; set; } = string.Empty;
         public char p_balanza { get; set; }
-        public int p_balanza_dvto { get; set; }
+        public int? p_balanza_dvto { get; set; }
         public string p_balanza_id { get; set; } = string.Empty;
         public char p_activo { get; set; }
         public string p_activo_des { get; set; } = string.Empty;

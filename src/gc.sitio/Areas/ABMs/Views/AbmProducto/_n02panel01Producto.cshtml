@@ -5,6 +5,23 @@
 @{
     var list = new List<ComboGenDto> { new ComboGenDto { Id = "S", Descripcion = "S" }, new ComboGenDto { Id = "N", Descripcion = "N" }, new ComboGenDto { Id = "D", Descripcion = "D" } };
     var listAct = new SelectList(list, "Id", "Descripcion");
+
+    //reglas iniciales
+    //-BALANZA
+    string balDis = "";
+    bool balVal = false;
+    if (Model.Up_Id.Equals("07"))
+    {
+        balDis = "disabled";
+    }
+    else
+    {
+        if (Model.P_Balanza.Equals("S"))
+        {
+            balVal = true;
+        }
+    }
+
 }
 
 <div class="row">
@@ -36,19 +53,19 @@
             <div class="col-sm-6">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text" style="width:50px;">Marca </span>
-                    <input type="text" asp-for="P_M_Marca" class="form-control"  />
+                    <input type="text" asp-for="P_M_Marca" class="form-control" />
                 </div>
             </div>
             <div class="col-sm-6">
                 <div class="input-group input-group-sm">
                     <div class="form-check form-check-inline form-switch mb-2">
-                        <input class="form-check-input" type="checkbox" name="pBalanza" value='@Model.P_Balanza=="S"' id="pBalanza" />
-                        <label class="form-check-label" for="pBalanza" >Balanza</label>
+                        <input class="form-check-input" type="checkbox" name="pBalanza" value='@Model.P_Balanza=="S"' id="pBalanza"  />
+                        <label class="form-check-label" for="pBalanza">Balanza</label>
                     </div>
                     <span class="input-group-text">Días Vto </span>
                     <input type="number" min="0" class="form-control" asp-for="P_Balanza_Dvto" />
                     <span class="input-group-text">Peso </span>
-                    <input type="number" min="0" class="form-control" asp-for="P_Peso"/>
+                    <input type="number" min="0" class="form-control" asp-for="P_Peso" />
                 </div>
             </div>
         </div>
@@ -57,7 +74,7 @@
             <div class="col-sm-6">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text" style="width:50px;">Desc.</span>
-                    <input type="text" asp-for="P_Desc" class="form-control"  />
+                    <input type="text" asp-for="P_Desc" class="form-control" />
                 </div>
             </div>
             <div class="col-sm-6">
@@ -67,7 +84,7 @@
                         <label class="form-check-label" for="pConVto">Vto Stk</label>
                     </div>
                     <span class="input-group-text">Días Vto </span>
-                    <input type="number" min="0" class="form-control" asp-for="P_Con_Vto_Min"/>
+                    <input type="number" min="0" class="form-control" asp-for="P_Con_Vto_Min" />
                 </div>
             </div>
         </div>
@@ -76,14 +93,14 @@
             <div class="col-sm-6">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text" style="width:50px;">Capac.</span>
-                    <input type="text" asp-for="P_M_Capacidad" class="form-control"  style="width:50px;" />
+                    <input type="text" asp-for="P_M_Capacidad" class="form-control" style="width:50px;" />
                 </div>
             </div>
             <div class="col-sm-6">
                 <div class="input-group input-group-sm">
                     <div class="form-check form-check-inline form-switch mb-2">
                         <input class="form-check-input" type="checkbox" name="pAltaRot" value='@Model.P_Alta_Rotacion=="S"' id="pAltaRot" />
-                        <label class="form-check-label" for="pAltaRot" >Alta Rotación</label>
+                        <label class="form-check-label" for="pAltaRot">Alta Rotación</label>
                     </div>
                 </div>
             </div>
@@ -93,17 +110,17 @@
             <div class="col-sm-6">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text" style="width:50px;">ID Prov.</span>
-                    <input type="text" asp-for="P_Id_Prov" class="form-control"  style="width:50px;" />
+                    <input type="text" asp-for="P_Id_Prov" class="form-control" style="width:50px;" />
                 </div>
             </div>
             <div class="col-sm-6">
                 <div class="form-check form-check-inline form-switch mb-2">
                     <input class="form-check-input" type="checkbox" name="pMatPri" value='@Model.P_Materia_Prima=="S"' id="pMatPri" />
-                    <label class="form-check-label" for="pMatPri" >Materia Prima</label>
+                    <label class="form-check-label" for="pMatPri">Materia Prima</label>
                 </div>
                 <div class="form-check form-check-inline form-switch mb-2">
                     <input class="form-check-input" type="checkbox" name="pElabora" value='@Model.P_Elaboracion=="S"' id="pElabora" />
-                    <label class="form-check-label" for="pElabora" >Elaboración Propia</label>
+                    <label class="form-check-label" for="pElabora">Elaboración Propia</label>
                 </div>
             </div>
         </div>
@@ -112,8 +129,8 @@
             <div class="col-sm-6">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text" style="width:50px;">Prov.</span>
-                    <input type="text" asp-for="Cta_Lista" class="form-control"  />
-                    @Html.HiddenFor(x=>x.Cta_Id)
+                    <input type="text" asp-for="Cta_Lista" class="form-control" />
+                    @Html.HiddenFor(x => x.Cta_Id)
                 </div>
             </div>
             <div class="col-sm-6">
@@ -132,20 +149,17 @@
             <div class="col-sm-6">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text" style="width:50px;">Familia</span>
-                    @* <select asp-for="Pg_Lista" class="form-control" ></select> *@
-                    @Html.DropDownList("Pg_Lista",null,"Seleccionar...",new{@class="form-control"})
-                  @*   <input type="text" asp-for="Pg_Lista" class="form-control" disabled />
-                    @Html.HiddenFor(x => x.Pg_Id) *@
+                    @Html.DropDownListFor(x => x.Pg_Id, null, "Seleccionar...", new { @class = "form-control" })
                 </div>
             </div>
             <div class="col-sm-6">
                 <div class="form-check form-check-inline form-switch mb-2">
                     <input class="form-check-input" type="checkbox" name="piAutoExcl" value='@Model.Pi_Auto_Excluye=="S"' id="piAutoExcl" />
-                    <label class="form-check-label" for="piAutoExcl" >Excluye PI Auto</label>
+                    <label class="form-check-label" for="piAutoExcl">Excluye PI Auto</label>
                 </div>
                 <div class="form-check form-check-inline form-switch mb-2">
                     <input class="form-check-input" type="checkbox" name="pNoSe" value='@Model.Lp_Id_Default=="S"' id="pNoSe" />
-                    <label class="form-check-label" for="pNoSe" >Excluye OC Auto</label>
+                    <label class="form-check-label" for="pNoSe">Excluye OC Auto</label>
                 </div>
             </div>
         </div>
@@ -154,7 +168,7 @@
             <div class="col-sm-6">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text" style="width:50px;">Rubro</span>
-                    <input type="text" asp-for="Rub_Lista" class="form-control"  />
+                    <input type="text" asp-for="Rub_Lista" class="form-control" />
                     @Html.HiddenFor(x => x.Rub_Id)
                 </div>
             </div>
@@ -173,7 +187,7 @@
             <div class="col-sm-6">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text" style="width:50px;">LPxD</span>
-                    <select class="form-control"></select>
+                    @Html.DropDownListFor(x => x.Lp_Id_Default, null, "Selecciona...", new { @class = "form-control" })
                 </div>
             </div>
             <div class="col-sm-6">

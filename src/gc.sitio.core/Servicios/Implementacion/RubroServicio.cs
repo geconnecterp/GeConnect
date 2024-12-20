@@ -12,7 +12,7 @@ using System.Net;
 
 namespace gc.sitio.core.Servicios.Implementacion
 {
-    public class RubroServicio : Servicio<RubroDto>, IRubroServicio
+    public class RubroServicio : Servicio<RubroDto>,IRubroServicio
     {
         private const string RutaAPI = "/api/apirubro";
         private const string RubroLista = "/GetRubroLista";

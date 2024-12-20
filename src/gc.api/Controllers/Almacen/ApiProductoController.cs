@@ -1125,10 +1125,14 @@ namespace gc.api.Controllers.Almacen
 
         [HttpGet]
         [Route("[action]")]
-        public IActionResult ObtenerListaPrecio()
+        public IActionResult ObtenerBarradoDeProd(string p_id)
         {
-            var res = _lpSv.GetListaPrecio();
-            return Ok(new ApiResponse<List<ListaPrecioDto>>(res));
+            if (string.IsNullOrEmpty(p_id))
+            {
+                return BadRequest("No se recepcionó el identificador del producto");
+            }
+            var res = _productosSv.ObtenerBarradoDeProd(p_id);
+            return Ok(new ApiResponse<List<ProductoBarradoDto>>(res));
         }
 
 

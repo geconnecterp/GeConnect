@@ -135,6 +135,126 @@ namespace gc.api.Controllers.Almacen
 			return Ok(response);
 		}
 
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaFPDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetCuentaFormaDePago(string cta_id)
+		{
+			ApiResponse<List<CuentaFPDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _cuentasSv.GetCuentaFormaDePago(cta_id);
+
+			response = new ApiResponse<List<CuentaFPDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaContactoDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetCuentaContactos(string cta_id)
+		{
+			ApiResponse<List<CuentaContactoDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _cuentasSv.GetCuentContactos(cta_id);
+
+			response = new ApiResponse<List<CuentaContactoDto>>(res);
+
+			return Ok(response);
+		}
+
+        [HttpGet]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaContactoDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult GetCuentaContactosPorCuentaYTC(string cta_id, string tc_id)
+        {
+            ApiResponse<List<CuentaContactoDto>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _cuentasSv.GetCuentContactosporCuentaYTC(cta_id, tc_id);
+
+            response = new ApiResponse<List<CuentaContactoDto>>(res);
+
+            return Ok(response);
+        }
+
+        [HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaObsDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetCuentaObs(string cta_id)
+		{
+			ApiResponse<List<CuentaObsDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _cuentasSv.GetCuentaObs(cta_id);
+
+			response = new ApiResponse<List<CuentaObsDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaObsDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetCuentaObsDatos(string cta_id, string to_id)
+		{
+			ApiResponse<List<CuentaObsDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _cuentasSv.GetCuentaObsDatos(cta_id, to_id);
+
+			response = new ApiResponse<List<CuentaObsDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaNotaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetCuentaNota(string cta_id)
+		{
+			ApiResponse<List<CuentaNotaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _cuentasSv.GetCuentaNota(cta_id);
+
+			response = new ApiResponse<List<CuentaNotaDto>>(res);
+
+			return Ok(response);
+		}
+
+        [HttpGet]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaNotaDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult GetCuentaNotaDatos(string cta_id, string usu_id)
+        {
+            ApiResponse<List<CuentaNotaDto>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _cuentasSv.GetCuentaNotaDatos(cta_id, usu_id);
+
+            response = new ApiResponse<List<CuentaNotaDto>>(res);
+
+            return Ok(response);
+        }
+
+        [HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaFPDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetFormaDePagoPorCuentaYFP(string cta_id, string fp_id)
+		{
+			ApiResponse<List<CuentaFPDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _cuentasSv.GetFormaDePagoPorCuentaYFP(cta_id, fp_id);
+
+			response = new ApiResponse<List<CuentaFPDto>>(res);
+
+			return Ok(response);
+		}
+
 		// GET api/<cuentasController>/5
 		[HttpGet("{id}")]
         public async Task<IActionResult> Get(string id)

@@ -1023,5 +1023,14 @@ namespace gc.api.core.Servicios
             List<IVAAlicuotaDto> resp = _repository.EjecutarLstSpExt<IVAAlicuotaDto>(sp, ps, true);
             return resp;
         }
+
+		public List<ProductoBarradoDto> ObtenerBarradoDeProd(string p_id)
+		{
+            var sp = ConstantesGC.StoredProcedures.SP_BARRADO_LISTA;
+            var ps = new List<SqlParameter>() { new SqlParameter("@p_id",p_id) };
+
+            List<ProductoBarradoDto> resp = _repository.EjecutarLstSpExt<ProductoBarradoDto>(sp, ps, true);
+            return resp;
+        }
     }
 }

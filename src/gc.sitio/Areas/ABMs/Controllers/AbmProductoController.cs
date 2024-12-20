@@ -22,10 +22,12 @@ namespace gc.sitio.Areas.ABMs.Controllers
         private readonly ICuentaServicio _ctaSv;
         private readonly IRubroServicio _rubSv;
         private readonly IProducto2Servicio _prodSv;
+        private readonly IListaDePrecioServicio _listaDePrecioServicio;
         private readonly ILogger<AbmProductoController> _logger;
 
         public AbmProductoController(IOptions<AppSettings> options, IHttpContextAccessor accessor, IABMProductoServicio productoServicio,
-             ICuentaServicio cta, IRubroServicio rubro, ILogger<AbmProductoController> logger, IProducto2Servicio producto2Servicio) : base(options, accessor, logger)
+             ICuentaServicio cta, IRubroServicio rubro, ILogger<AbmProductoController> logger, 
+             IProducto2Servicio producto2Servicio, IListaDePrecioServicio listaDePrecio) : base(options, accessor, logger)
         {
             _settings = options.Value;
             _abmProdServ = productoServicio;
@@ -33,6 +35,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             _rubSv = rubro;
             _logger = logger;
             _prodSv = producto2Servicio;
+            _listaDePrecioServicio = listaDePrecio;
         }
 
         [HttpGet]
@@ -47,16 +50,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
             {
                 return RedirectToAction("Login", "Token", new { area = "seguridad" });
             }
-
-            if (ProveedoresLista.Count == 0 || actualizar)
-            {
-                ObtenerProveedores(_ctaSv);
-            }
-
-            if (RubroLista.Count == 0 || actualizar)
-            {
-                ObtenerRubros(_rubSv);
-            }
+            CargarDatosIniciales(actualizar);
+           
 
 
             string volver = Url.Action("index", "home", new { area = "" });
@@ -85,10 +80,11 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
                 ProductoABMSeleccionado = prod;
                 //busca combo familia
-                ViewBag.Pg_Lista = ComboProveedoresFamilia(prod.Cta_Id, _ctaSv, prod.Pg_Id);
+                ViewBag.Pg_Id = ComboProveedoresFamilia(prod.Cta_Id, _ctaSv, prod.Pg_Id);
                 ViewBag.Up_Id = await ComboMedidas(_prodSv);
                 ViewBag.Iva_Situacion = await ComboIVASituacion(_prodSv);
                 ViewBag.Iva_Alicuota = await ComboIVAAlicuota(_prodSv);
+                ViewBag.Lp_Id_Default = ComboListaDePrecios();
 
                 return View("_n02panel01Producto", prod);
 
@@ -194,6 +190,68 @@ namespace gc.sitio.Areas.ABMs.Controllers
             }
         }
 
+        private void CargarDatosIniciales(bool actualizar)
+        {
+            //if (TipoNegocioLista.Count == 0 || actualizar)
+            //    ObtenerTiposNegocio(_tipoNegocioServicio);
+
+            //if (ZonasLista.Count == 0 || actualizar)
+            //    ObtenerZonas(_zonaServicio);
+
+            //if (CondicionesAfipLista.Count == 0 || actualizar)
+            //    ObtenerCondicionesAfip(_condicionAfipServicio);
+
+            //if (NaturalezaJuridicaLista.Count == 0 || actualizar)
+            //    ObtenerNaturalezaJuridica(_naturalezaJuridicaServicio);
+
+            //if (CondicionIBLista.Count == 0 || actualizar)
+            //    ObtenerCondicionesIB(_condicionIBServicio);
+
+            //if (FormaDePagoLista.Count == 0 || actualizar)
+            //    ObtenerFormasDePago(_formaDePagoServicio);
+
+            //if (ProvinciaLista.Count == 0 || actualizar)
+            //    ObtenerProvincias(_provinciaServicio);
+
+            //if (TipoCanalLista.Count == 0 || actualizar)
+            //    ObtenerTiposDeCanal(_tipoCanalServicio);
+
+            //if (TipoCuentaBcoLista.Count == 0 || actualizar)
+            //    ObtenerTiposDeCuentaBco(_tipoCuentaBcoServicio);
+
+            //if (TipoDocumentoLista.Count == 0 || actualizar)
+            //    ObtenerTiposDocumento(_tipoDocumentoServicio);
+
+            if (ListaDePreciosLista.Count == 0 || actualizar)
+            {
+                ObtenerListaDePrecios(_listaDePrecioServicio);
+            }
+
+            if (ProveedoresLista.Count == 0 || actualizar)
+            {
+                ObtenerProveedores(_ctaSv);
+            }
+
+            if (RubroLista.Count == 0 || actualizar)
+            {
+                ObtenerRubros(_rubSv);
+            }
+
+            //if (VendedoresLista.Count == 0 || actualizar)
+            //    ObtenerListaDeVendedores(_vendedorServicio);
+
+            //if (DiasDeLaSemanaLista.Count == 0 || actualizar)
+            //    ObtenerDiasDeLaSemana();
+
+            //if (RepartidoresLista.Count == 0 || actualizar)
+            //    ObtenerListaDeRepartidores(_repartidorServicio);
+
+            //if (TipoContactoLista.Count == 0 || actualizar)
+            //    ObtenerTipoContacto(_tipoContactoServicio, "P");
+
+            //if (TipoObservacionesLista.Count == 0 || actualizar)
+            //    ObtenerTipoObservaciones(_tipoObsServicio, "P");
+        }
 
 
         //[HttpPost]

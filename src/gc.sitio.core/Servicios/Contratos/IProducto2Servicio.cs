@@ -21,5 +21,6 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RespuestaGenerica<MedidaDto>> ObtenerMedidas(string token);
         Task<RespuestaGenerica<IVASituacionDto>> ObtenerIVASituacion(string token);
         Task<RespuestaGenerica<IVAAlicuotaDto>> ObtenerIVAAlicuotas(string token);
+        Task<RespuestaGenerica<ProductoBarradoDto>> ObtenerBarradoDeProd(string p_id,string token);      
     }
 }

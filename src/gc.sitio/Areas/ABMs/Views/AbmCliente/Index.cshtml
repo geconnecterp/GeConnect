@@ -29,19 +29,24 @@
                     Cliente
                 </button>
             </li>
-            <li class="nav-item" role="presentation">
+            <li class="nav-item" role="presentation" id="tabFormaDePago">
                 <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-profile" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1">
                     Formas de Pago
                 </button>
             </li>
-            <li class="nav-item" role="presentation">
+            <li class="nav-item" role="presentation" id="tabOtrosContactos">
                 <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-messages" aria-controls="navs-top-messages" aria-selected="false" tabindex="-1">
                     Otros Contactos
                 </button>
             </li>
-            <li class="nav-item" role="presentation">
+            <li class="nav-item" role="presentation" id="tabNotas">
                 <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-notes" aria-controls="navs-top-notes" aria-selected="false" tabindex="-1">
-                    notas
+                    Notas
+                </button>
+            </li>
+            <li class="nav-item" role="presentation" id="tabObservaciones">
+                <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-obs" aria-controls="navs-top-obs" aria-selected="false" tabindex="-1">
+                    Observaciones
                 </button>
             </li>
         </ul>
@@ -60,6 +65,10 @@
             </div>
             <div class="tab-pane fade" id="navs-top-notes" role="tabpanel">
                 <div id="divNotas">
+                </div>
+            </div>
+            <div class="tab-pane fade" id="navs-top-obs" role="tabpanel">
+                <div id="divObservaciones">
                 </div>
             </div>
         </div>
@@ -94,13 +103,21 @@
         var search = "";
         var funcCallBack = "buscarClientes";
         var dataBak = {};
-
+        var ctaId = "";
         var buscarUrl = "@Url.Action("buscar", "abmcliente", new { area = "abms" })";
         var buscarProveedorUrl = "@Url.Action("Buscar", "proveedor", new { area = "gestion" })";
         var autoComRel01Url = "@Url.Action("BuscarR01", "abmcliente", new { area = "abms" })";
         var autoComRel02Url = "@Url.Action("BuscarR02", "abmcliente", new { area = "abms" })";
         var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "abmcliente", new { area = "abms" })";
         var buscarClienteUrl = "@Url.Action("BuscarCliente", "abmcliente", new { area = "abms" })";
+        var buscarFormaDePagoUrl = "@Url.Action("BuscarFormasDePago", "abmcliente", new { area = "abms" })";
+        var buscarDatosFormasDePagoUrl = "@Url.Action("BuscarDatosFormasDePago", "abmcliente", new { area = "abms" })";
+        var buscarOtrosContactosUrl = "@Url.Action("BuscarOtrosContactos", "abmcliente", new { area = "abms" })";
+        var buscarDatosOtrosContactosUrl = "@Url.Action("BuscarDatosOtrosContactos", "abmcliente", new { area = "abms" })";
+        var buscarNotasUrl = "@Url.Action("BuscarNotas", "abmcliente", new { area = "abms" })";
+        var buscarDatosNotaUrl = "@Url.Action("BuscarDatosNotas", "abmcliente", new { area = "abms" })";
+        var buscarObservacionesUrl = "@Url.Action("BuscarObservaciones", "abmcliente", new { area = "abms" })";
+        var buscarDatosObservacionesUrl = "@Url.Action("BuscarDatosObservaciones", "abmcliente", new { area = "abms" })";
     </script>
     <script src="~/js/plugins/jquery.simplePagination.js"></script>
     <script src="~/js/app/busquedas.js"></script>

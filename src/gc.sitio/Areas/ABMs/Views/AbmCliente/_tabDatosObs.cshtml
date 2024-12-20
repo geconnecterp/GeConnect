@@ -1,0 +1,43 @@
+﻿@model CuentaABMObservacionesModel
+@{
+	var cmb = Model.ComboTipoObs;
+}
+<div class="container">
+	<div class="col-8">
+		<div class="row">
+			<div class="table-responsive text-nowrap table-wrapper-200-full">
+				<table class="table table-sm mb-0 table-hover" id="tbClienteObservaciones">
+					<thead class="table-dark">
+						<tr class="header">
+							<th class="col-header-small align-center">Observacion</th>
+							<th class="col-header-small align-center">Tipo</th>
+							<th style="width:0%; display:none;">to_id</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var item in Model.CuentaObservaciones.ListaDatos)
+						{
+							<tr onclick="selectObsEnTab(this)">
+								<td class="align-left">@item.cta_obs</td>
+								<td class="align-left">@item.to_desc</td>
+								<td style="display:none;">@item.to_id</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div id="divDatosDeObsSelected">
+			<div class="row" style="padding-top: 10px;">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text">Tipo: </span>
+					@Html.DropDownListFor(m => Model.Observacion.to_id, cmb, "Seleccionar...", new { @id = "listaTipoObs", @class = "form-control" })
+				</div>
+				<div class="input-group input-group-sm">
+					<span class="input-group-text">Observación: </span>
+					<input type="text" asp-for="Observacion.cta_obs" class="form-control" readonly />
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

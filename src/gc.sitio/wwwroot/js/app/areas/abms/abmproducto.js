@@ -31,7 +31,7 @@
                     }
                     else {
                         //armado del ddl de Familia
-                        var combo = $("#Pg_Lista");
+                        var combo = $("#Pg_Id");
                         combo.empty();
                         var opc = "<option value=''>Seleccionar...</option>";
                         combo.append(opc);

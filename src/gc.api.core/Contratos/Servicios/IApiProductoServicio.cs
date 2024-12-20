@@ -92,5 +92,7 @@ namespace gc.api.core.Contratos.Servicios
 		List<MedidaDto> ObtenerMedidas();
         List<IVASituacionDto> ObtenerIVASituacion();
         List<IVAAlicuotaDto> ObtenerIVAAlicuotas();
+		List<ProductoBarradoDto> ObtenerBarradoDeProd(string p_id);
+
     }
 }

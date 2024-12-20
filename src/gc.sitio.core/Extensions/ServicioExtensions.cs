@@ -37,7 +37,13 @@ namespace gc.sitio.core.Extensions
 			services.AddScoped<IProvinciaServicio, ProvinciaServicio>();
 			services.AddScoped<ITipoCanalServicio, TipoCanalServicio>();
 			services.AddScoped<ITipoCuentaBcoServicio, TipoCuentaBcoServicio>();
-			return services;
+			services.AddScoped<IListaDePrecioServicio, ListaDePrecioServicio>();
+			services.AddScoped<IVendedorServicio, VendedorServicio>();
+			services.AddScoped<IRepartidorServicio, RepartidorServicio>();
+			services.AddScoped<IFinancieroServicio, FinancieroServicio>();
+			services.AddScoped<ITipoContactoServicio, TipoContactoServicio>();
+            services.AddScoped<ITipoObsServicio, TipoObsServicio>();
+            return services;
         }
     }
 }

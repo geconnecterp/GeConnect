@@ -1,0 +1,13 @@
+﻿@model CuentaABMNotaSelectedModel
+@{
+}
+<div class="row" style="padding-top: 10px;">
+	<div class="input-group input-group-sm">
+		<span class="input-group-text">Usuario: </span>
+		<input type="text" asp-for="Nota.usu_apellidoynombre" class="form-control" readonly />
+	</div>
+	<div class="input-group input-group-sm">
+		<span class="input-group-text">Nota: </span>
+		<input type="text" asp-for="Nota.nota" class="form-control" readonly />
+	</div>
+</div>

@@ -1,0 +1,26 @@
+﻿@model CuentaAbmOCSelectedModel
+@{
+	var tipoCon = Model.ComboTipoContacto;
+}
+<div class="row" style="padding-top: 10px;">
+	<div class="input-group input-group-sm">
+		<span class="input-group-text">Contacto: </span>
+		<input type="text" asp-for="OtroContacto.cta_nombre" class="form-control" readonly />
+	</div>
+	<div class="input-group input-group-sm">
+		<span class="input-group-text">Tipo: </span>
+		@Html.DropDownListFor(m => Model.OtroContacto.tc_id, tipoCon, "Seleccionar...", new { @id = "listaTC", @class = "form-control" })
+	</div>
+	<div class="input-group input-group-sm">
+		<span class="input-group-text">Celu: </span>
+		<input type="text" asp-for="OtroContacto.cta_celu" class="form-control" readonly />
+	</div>
+	<div class="input-group input-group-sm">
+		<span class="input-group-text">Email: </span>
+		<input type="text" asp-for="OtroContacto.cta_email" class="form-control" readonly />
+	</div>
+	<div class="input-group input-group-sm">
+		<span class="input-group-text">TE: </span>
+		<input type="text" asp-for="OtroContacto.cta_te" class="form-control" readonly />
+	</div>
+</div>

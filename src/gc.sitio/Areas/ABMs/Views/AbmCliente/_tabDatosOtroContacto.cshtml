@@ -1,5 +1,64 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model CuentaAbmOCModel
 @{
+	var tipoCon = Model.ComboTipoContacto;
 }
+<div class="container">
+	<div class="col-8">
+		<div class="row">
+			<div class="table-responsive text-nowrap table-wrapper-200-full">
+				<table class="table table-sm mb-0 table-hover" id="tbClienteOtroContacto">
+					<thead class="table-dark">
+						<tr class="header">
+							<th class="col-header-small align-center">Contacto</th>
+							<th class="col-header-small align-center">Tipo</th>
+							<th class="col-header-small align-center">Email</th>
+							<th class="col-header-small align-center">Celular</th>
+							<th class="col-header-small align-center">TE</th>
+							<th style="width:0%; display:none;">tc_id</th>
+						</tr>
+					</thead>
+					<tbody>
+						@if (Model.CuentaOtrosContactos != null && Model.CuentaOtrosContactos.ListaDatos != null && Model.CuentaOtrosContactos.ListaDatos.Count > 0)
+						{
+							@foreach (var item in Model.CuentaOtrosContactos.ListaDatos)
+							{
+								<tr onclick="selectOCenTab(this)">
+									<td class="align-left">@item.cta_nombre</td>
+									<td class="align-left">@item.tc_desc</td>
+									<td class="align-left">@item.cta_email</td>
+									<td class="align-left">@item.cta_celu</td>
+									<td class="align-left">@item.cta_te</td>
+									<td style="display:none;">@item.tc_id</td>
+								</tr>
+							}
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div id="divDatosDeOCSelected">
+			<div class="row" style="padding-top: 10px;">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text">Contacto: </span>
+					<input type="text" asp-for="OtroContacto.cta_nombre" class="form-control" readonly />
+				</div>
+				<div class="input-group input-group-sm">
+					<span class="input-group-text">Tipo: </span>
+					@Html.DropDownListFor(m => Model.OtroContacto.tc_id, tipoCon, "Seleccionar...", new { @id = "listaTC", @class = "form-control" })
+				</div>
+				<div class="input-group input-group-sm">
+					<span class="input-group-text">Celu: </span>
+					<input type="text" asp-for="OtroContacto.cta_celu" class="form-control" readonly />
+				</div>
+				<div class="input-group input-group-sm">
+					<span class="input-group-text">Email: </span>
+					<input type="text" asp-for="OtroContacto.cta_email" class="form-control" readonly />
+				</div>
+				<div class="input-group input-group-sm">
+					<span class="input-group-text">TE: </span>
+					<input type="text" asp-for="OtroContacto.cta_te" class="form-control" readonly />
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

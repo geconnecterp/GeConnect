@@ -16,7 +16,7 @@ namespace gc.api.core.Servicios
 
         public List<TipoCanalDto> GetTipoCanalLista()
         {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_TIPO_CUENTA_BCO_LISTA;
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_TIPO_CANAL_LISTA;
             var ps = new List<SqlParameter>();
             var res = _repository.InvokarSp2Lst(sp, ps, true);
             if (res.Count == 0)

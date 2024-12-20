@@ -1,4 +1,6 @@
-﻿$(function () {
+﻿/*const { event } = require("jquery");*/
+
+$(function () {
 	$("#btnradioPorProveedor").on("click", buscarPorProveedor);
 	$("#btnradioSinStk").on("click", buscarSinStk);
 	$("#btnradioConPI").on("click", buscarConPI);
@@ -314,6 +316,9 @@ function tableUpDownArrow() {
 				p.r = ++p.r % nbRows
 			}
 			, ArrowRight: p => { p.c = ++p.c % nbCells }
+			, Tab: p => {
+				p.r = ++p.r % nbRows
+			}
 		}
 
 	myTable
@@ -341,14 +346,22 @@ function tableUpDownArrow() {
 		if (sPos &&
 			(evt.altKey && evt.shiftKey && movKey[evt.code])
 			||
-			(evt.ctrlKey && movKey[evt.code])) {
+			(evt.ctrlKey && movKey[evt.code])
+			||
+			evt.code === 'Tab') {
 			let loop = true
 				, nxFocus = null
 				, cell = null
 			do {
 				if (evt.code === 'ArrowDown' && pos.r == nbRows)
 					pos.r = 0;
-				movKey[evt.code](pos)
+				if (evt.code === 'Tab' && evt.shiftKey && pos.r == 1)
+					pos.r = nbRows;
+				if (evt.code === 'Tab' && evt.shiftKey) {
+					movKey['ArrowUp'](pos)
+				}
+				else
+					movKey[evt.code](pos);
 				cell = myTable.rows[pos.r].cells[pos.c]
 				if (pos.r == 0)
 					pos.r = nbRows;
@@ -367,6 +380,9 @@ function tableUpDownArrow() {
 			}
 			while (loop)
 			actualizarPedidoBulto();
+			if (evt.code === 'Tab') {
+				event.preventDefault();
+			}
 		}
 	}
 }

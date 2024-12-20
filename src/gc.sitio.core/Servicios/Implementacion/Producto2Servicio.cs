@@ -37,7 +37,7 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string UP_MEDIDAS = "/ObtenerMedidas";
         private const string IVA_SITUACION = "/ObtenerIVASituacion";
         private const string IVA_ALICUOTAS = "/ObtenerIVAAlicuotas";
-
+        private const string PROD_BARRADO = "/ObtenerBarradoDeProd";
 
         private readonly AppSettings _appSettings;
 
@@ -396,7 +396,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 HttpClient client = helper.InicializaCliente(token);
                 HttpResponseMessage response;
 
-                var link = $"{_appSettings.RutaBase}{RutaAPI}{UP_MEDIDAS}";
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{IVA_SITUACION}";
 
                 response = await client.GetAsync(link);
 
@@ -451,7 +451,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 HttpClient client = helper.InicializaCliente(token);
                 HttpResponseMessage response;
 
-                var link = $"{_appSettings.RutaBase}{RutaAPI}{UP_MEDIDAS}";
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{IVA_ALICUOTAS}";
 
                 response = await client.GetAsync(link);
 
@@ -492,6 +492,61 @@ namespace gc.sitio.core.Servicios.Implementacion
                 _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
 
                 return new RespuestaGenerica<IVAAlicuotaDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener las medidas de productos." };
+            }
+        }
+
+        public async Task<RespuestaGenerica<ProductoBarradoDto>> ObtenerBarradoDeProd(string p_id, string token)
+        {
+            try
+            {
+                ApiResponse<List<ProductoBarradoDto>> apiResponse;
+
+                HelperAPI helper = new();
+
+                HttpClient client = helper.InicializaCliente(token);
+                HttpResponseMessage response;
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{PROD_BARRADO}?p_id={p_id}";
+
+                response = await client.GetAsync(link);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+
+                        return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
+                    }
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProductoBarradoDto>>>(stringData);
+
+                    return new RespuestaGenerica<ProductoBarradoDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
+
+                }
+                else
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    {
+                        return new RespuestaGenerica<ProductoBarradoDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    {
+                        return new RespuestaGenerica<ProductoBarradoDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else
+                    {
+                        throw new Exception(error.Detail);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+
+                return new RespuestaGenerica<ProductoBarradoDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener las medidas de productos." };
             }
         }
     }
