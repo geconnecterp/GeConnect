@@ -3,7 +3,7 @@
 	var cmb = Model.ComboTipoObs;
 }
 <div class="container">
-	<div class="col-8">
+	<div class="col-md-8">
 		<div class="row">
 			<div class="table-responsive text-nowrap table-wrapper-200-full">
 				<table class="table table-sm mb-0 table-hover" id="tbClienteObservaciones">
@@ -29,13 +29,17 @@
 		</div>
 		<div id="divDatosDeObsSelected">
 			<div class="row" style="padding-top: 10px;">
-				<div class="input-group input-group-sm">
-					<span class="input-group-text">Tipo: </span>
-					@Html.DropDownListFor(m => Model.Observacion.to_id, cmb, "Seleccionar...", new { @id = "listaTipoObs", @class = "form-control" })
+				<div class="row mt-1">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text fixed-lbl-for-abm-70">Tipo: </span>
+						@Html.DropDownListFor(m => Model.Observacion.to_id, cmb, "Seleccionar...", new { @id = "listaTipoObs", @class = "form-control" })
+					</div>
 				</div>
-				<div class="input-group input-group-sm">
-					<span class="input-group-text">Observación: </span>
-					<input type="text" asp-for="Observacion.cta_obs" class="form-control" readonly />
+				<div class="row mt-1">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text fixed-lbl-for-abm-70">Observación: </span>
+						<input type="text" asp-for="Observacion.cta_obs" class="form-control" readonly />
+					</div>
 				</div>
 			</div>
 		</div>

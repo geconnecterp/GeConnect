@@ -302,3 +302,23 @@ input[type=number] {
     z-index: 9999999 !important;
 }
 
+.fixed-lbl-for-abm-50 {
+    width: 50px;
+    display: block;
+    float: right;
+    text-align: right;
+}
+
+.fixed-lbl-for-abm-60 {
+    width: 60px;
+    display: block;
+    float: right;
+    text-align: right;
+}
+
+.fixed-lbl-for-abm-70 {
+    width: 70px;
+    display: block;
+    float: right;
+    text-align: right;
+}

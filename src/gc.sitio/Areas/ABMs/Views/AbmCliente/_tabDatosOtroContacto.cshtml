@@ -3,7 +3,7 @@
 	var tipoCon = Model.ComboTipoContacto;
 }
 <div class="container">
-	<div class="col-8">
+	<div class="col-md-8">
 		<div class="row">
 			<div class="table-responsive text-nowrap table-wrapper-200-full">
 				<table class="table table-sm mb-0 table-hover" id="tbClienteOtroContacto">
@@ -38,25 +38,35 @@
 		</div>
 		<div id="divDatosDeOCSelected">
 			<div class="row" style="padding-top: 10px;">
-				<div class="input-group input-group-sm">
-					<span class="input-group-text">Contacto: </span>
-					<input type="text" asp-for="OtroContacto.cta_nombre" class="form-control" readonly />
+				<div class="row mt-1">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text fixed-lbl-for-abm-70">Contacto: </span>
+						<input type="text" asp-for="OtroContacto.cta_nombre" class="form-control" readonly />
+					</div>
 				</div>
-				<div class="input-group input-group-sm">
-					<span class="input-group-text">Tipo: </span>
-					@Html.DropDownListFor(m => Model.OtroContacto.tc_id, tipoCon, "Seleccionar...", new { @id = "listaTC", @class = "form-control" })
+				<div class="row mt-1">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text fixed-lbl-for-abm-70">Tipo: </span>
+						@Html.DropDownListFor(m => Model.OtroContacto.tc_id, tipoCon, "Seleccionar...", new { @id = "listaTC", @class = "form-control" })
+					</div>
 				</div>
-				<div class="input-group input-group-sm">
-					<span class="input-group-text">Celu: </span>
-					<input type="text" asp-for="OtroContacto.cta_celu" class="form-control" readonly />
+				<div class="row mt-1">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text fixed-lbl-for-abm-70">Celu: </span>
+						<input type="text" asp-for="OtroContacto.cta_celu" class="form-control" readonly />
+					</div>
 				</div>
-				<div class="input-group input-group-sm">
-					<span class="input-group-text">Email: </span>
-					<input type="text" asp-for="OtroContacto.cta_email" class="form-control" readonly />
+				<div class="row mt-1">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text fixed-lbl-for-abm-70">Email: </span>
+						<input type="text" asp-for="OtroContacto.cta_email" class="form-control" readonly />
+					</div>
 				</div>
-				<div class="input-group input-group-sm">
-					<span class="input-group-text">TE: </span>
-					<input type="text" asp-for="OtroContacto.cta_te" class="form-control" readonly />
+				<div class="row mt-1">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text fixed-lbl-for-abm-70">TE: </span>
+						<input type="text" asp-for="OtroContacto.cta_te" class="form-control" readonly />
+					</div>
 				</div>
 			</div>
 		</div>
