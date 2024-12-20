@@ -10,6 +10,6 @@ namespace gc.api.core.Contratos.Servicios
 {
     public interface IRubroServicio : IServicio<Rubro>
     {
-        List<RubroListaDto> GetRubroLista();
+        List<RubroListaDto> GetRubroLista(string cta_id = "%");
     }
 }

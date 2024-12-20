@@ -222,6 +222,32 @@ $("#Rel02").autocomplete({
     }
 });
 
+//exclusivo para Proveedor en EDIT PRODUCTO
+$("input#Cta_Lista").autocomplete({
+    source: function (request, response) {
+        data = { prefix: request.term }
+        $.ajax({
+            url: autoComRel01Url,
+            type: "POST",
+            dataType: "json",
+            data: data,
+            success: function (obj) {
+                response($.map(obj, function (item) {
+                    var texto = item.descripcion;
+                    return { label: texto, value: item.descripcion, id: item.id };
+                }));
+            }
+        })
+    },
+    minLength: 3,
+    select: function (event, ui) {
+        $("#Cta_Id").val(ui.item.id);
+        //var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
+        //$("#Rel01List").append(opc);
+        return true;
+    }
+});
+
 function presentaPaginacion(div) {
     div.pagination({
         items: totalRegs,

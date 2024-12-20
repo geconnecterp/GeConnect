@@ -10,5 +10,6 @@ namespace gc.infraestructura.Dtos.Almacen
         }
         public string Rub_Id { get; set; }
         public string Rub_Desc { get; set; }
+        public string Rub_Lista { get; set; }
     }
 }

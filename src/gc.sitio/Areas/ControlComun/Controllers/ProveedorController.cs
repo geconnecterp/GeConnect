@@ -270,7 +270,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
             //var lista = nombres.Item1.Select(c => new EmpleadoVM { Nombre = c.NombreCompleto, Id = c.Id, Cuil = c.CUIT });
             if (ProveedoresLista == null || ProveedoresLista.Count == 0)
             {
-				ProveedoresLista = _ctaSv.ObtenerListaProveedores(TokenCookie);
+				ProveedoresLista = _ctaSv.ObtenerListaProveedores("BI", TokenCookie);
 			}
             var nombres = ProveedoresLista.Where(x => x.Cta_Denominacion.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
             return Json(nombres);

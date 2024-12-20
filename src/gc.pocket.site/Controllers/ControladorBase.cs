@@ -863,14 +863,14 @@ namespace gc.pocket.site.Controllers
         #region Metodos unicos para realizar busquedas con autocomplete
         protected void ObtenerRubros(IRubroServicio _rubSv)
         {
-            RubroLista = _rubSv.ObtenerListaRubros(TokenCookie);
+            RubroLista = _rubSv.ObtenerListaRubros("",TokenCookie);
         }
 
         protected void ObtenerProveedores(ICuentaServicio _ctaSv)
         {
             //se guardan los proveedores en session. Para ser utilizados posteriormente
 
-            ProveedoresLista = _ctaSv.ObtenerListaProveedores(TokenCookie);
+            ProveedoresLista = _ctaSv.ObtenerListaProveedores("BI", TokenCookie);
         }
 
 

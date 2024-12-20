@@ -41,10 +41,13 @@ namespace gc.api.Controllers.Almacen
 
         [HttpGet]
         [Route("[action]")]
-        public IActionResult GetRubroLista()
+        public IActionResult GetRubroLista(string? cta_id)
         {
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-            List<RubroListaDto> rubros = _rubSv.GetRubroLista();
+            if (string.IsNullOrEmpty(cta_id)) { cta_id = "%"; }
+            
+            List<RubroListaDto> rubros = _rubSv.GetRubroLista(cta_id);
+
             var lista = _mapper.Map<List<RubroListaDto>>(rubros);
 
             var response = new ApiResponse<List<RubroListaDto>>(lista);

@@ -12,7 +12,7 @@ using System.Net;
 
 namespace gc.sitio.core.Servicios.Implementacion
 {
-    public class RubroServicio:Servicio<RubroDto>,IRubroServicio
+    public class RubroServicio : Servicio<RubroDto>, IRubroServicio
     {
         private const string RutaAPI = "/api/apirubro";
         private const string RubroLista = "/GetRubroLista";
@@ -23,7 +23,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             _appSettings = options.Value;
         }
 
-        public List<RubroListaDto> ObtenerListaRubros(string token)
+        public List<RubroListaDto> ObtenerListaRubros(string cta_id, string token)
         {
             ApiResponse<List<RubroListaDto>> respuesta;
             string stringData;
@@ -32,7 +32,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 HelperAPI helper = new();
                 HttpClient client = helper.InicializaCliente(token);
                 HttpResponseMessage response;
-                var link = $"{_appSettings.RutaBase}{RutaAPI}{RubroLista}";
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{RubroLista}?cta_id={cta_id ?? ""}";
                 response = client.GetAsync(link).GetAwaiter().GetResult();
                 if (response.StatusCode == HttpStatusCode.OK)
                 {

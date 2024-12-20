@@ -25,8 +25,7 @@ namespace gc.api.core.Contratos.Servicios
 		List<ProductoBusquedaDto> ProductoBuscarPorIds(BusquedaBase busqueda);
 
 		List<ProductoListaDto> ProductoListaBuscar(BusquedaProducto search);
-
-		List<InfoProdStkD> InfoProductoStkD(string id, string admId);
+        List<InfoProdStkD> InfoProductoStkD(string id, string admId);
 		List<InfoProdStkBox> InfoProductoStkBoxes(string id, string adm, string depo, string box = "");
 		List<InfoProdStkA> InfoProductoStkA(string id, string admId);
 		List<InfoProdMovStk> InfoProductoMovStk(string id, string adm, string depo, string tmov, DateTime desde, DateTime hasta);
@@ -90,5 +89,8 @@ namespace gc.api.core.Contratos.Servicios
         RespuestaDto DV_CargaConteosPrevios(string json, string admid);
 
 		List<ConsULDto> ConsultarUL(string tipo, string admId, DateTime? desde, DateTime? hasta);
+		List<MedidaDto> ObtenerMedidas();
+        List<IVASituacionDto> ObtenerIVASituacion();
+        List<IVAAlicuotaDto> ObtenerIVAAlicuotas();
     }
 }

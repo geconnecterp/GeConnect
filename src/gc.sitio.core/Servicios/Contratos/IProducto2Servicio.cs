@@ -3,6 +3,7 @@ using gc.infraestructura.Dtos.Almacen.Info;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Box;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos;
 
 namespace gc.sitio.core.Servicios.Contratos
 {
@@ -16,5 +17,9 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RespuestaGenerica<RespuestaDto>> DV_CargaConteosPrevios(List<ProductoGenDto> lista, string admid, string depo, string box, string token);
 
         Task<RespuestaGenerica<ConsULDto>> ConsultaUL(string tipo, DateTime fecD, DateTime fecH, string admId, string token);
+
+        Task<RespuestaGenerica<MedidaDto>> ObtenerMedidas(string token);
+        Task<RespuestaGenerica<IVASituacionDto>> ObtenerIVASituacion(string token);
+        Task<RespuestaGenerica<IVAAlicuotaDto>> ObtenerIVAAlicuotas(string token);
     }
 }

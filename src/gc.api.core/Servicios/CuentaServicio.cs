@@ -3,11 +3,8 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
-using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen;
-using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.CuentaComercial;
-using gc.infraestructura.EntidadesComunes.ControlComun.CuentaComercial;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 
@@ -15,7 +12,7 @@ using System.Linq.Dynamic.Core;
 
 namespace gc.api.core.Servicios
 {
-	public class CuentaServicio : Servicio<Cuenta>, ICuentaServicio
+    public class CuentaServicio : Servicio<Cuenta>, ICuentaServicio
 	{
 		public CuentaServicio(IUnitOfWork uow, IOptions<PaginationOptions> options) : base(uow, options)
 		{
@@ -158,11 +155,11 @@ namespace gc.api.core.Servicios
 		/// Se obtienen los proveedores. Tener en cuenta que se invocan con parametro ope_iva = 'BI'
 		/// </summary>
 		/// <returns>Se obtiene la lista de proveedores</returns>
-		public List<ProveedorLista> GetProveedorLista()
+		public List<ProveedorLista> GetProveedorLista(string ope_iva)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PROVEEDOR_LISTA;
 			var ps = new List<SqlParameter>() {
-				new SqlParameter("@ope_iva","BI")
+				new SqlParameter("@ope_iva",ope_iva)
 			};
 			var _repProdLista = _uow.GetRepository<ProveedorLista>();
 			var res = _repProdLista.InvokarSp2Lst(sp, ps, true);

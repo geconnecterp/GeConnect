@@ -100,14 +100,14 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
         private void ObtenerRubros()
         {
-            RubroLista = _rubSv.ObtenerListaRubros(TokenCookie);
+            RubroLista = _rubSv.ObtenerListaRubros("",TokenCookie);
         }
 
         private void ObtenerProveedores()
         {
             //se guardan los proveedores en session. Para ser utilizados posteriormente
 
-            ProveedoresLista = _ctaSv.ObtenerListaProveedores(TokenCookie);
+            ProveedoresLista = _ctaSv.ObtenerListaProveedores("BI", TokenCookie);
         }
 
 

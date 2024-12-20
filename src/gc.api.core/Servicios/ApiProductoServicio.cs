@@ -996,5 +996,32 @@ namespace gc.api.core.Servicios
             List<RespuestaDto> resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
             return resp.First();
         }
+
+		public List<MedidaDto> ObtenerMedidas()
+		{
+            var sp = ConstantesGC.StoredProcedures.SP_UP_LISTA;
+            var ps = new List<SqlParameter>();
+
+            List<MedidaDto> resp = _repository.EjecutarLstSpExt<MedidaDto>(sp, ps, true);
+			return resp;
+        }
+
+		public List<IVASituacionDto> ObtenerIVASituacion()
+		{
+            var sp = ConstantesGC.StoredProcedures.SP_IVA_SITUACION_LISTA;
+            var ps = new List<SqlParameter>();
+
+            List<IVASituacionDto> resp = _repository.EjecutarLstSpExt<IVASituacionDto>(sp, ps, true);
+            return resp;
+        }
+
+        public List<IVAAlicuotaDto> ObtenerIVAAlicuotas()
+        {
+			var sp = ConstantesGC.StoredProcedures.SP_IVA_ALICUOTA_LISTA;
+            var ps = new List<SqlParameter>();
+
+            List<IVAAlicuotaDto> resp = _repository.EjecutarLstSpExt<IVAAlicuotaDto>(sp, ps, true);
+            return resp;
+        }
     }
 }

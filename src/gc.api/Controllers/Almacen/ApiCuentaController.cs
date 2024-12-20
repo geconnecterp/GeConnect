@@ -149,10 +149,10 @@ namespace gc.api.Controllers.Almacen
 
         [HttpGet]
         [Route("[action]")]
-        public IActionResult GetProveedorLista()
+        public IActionResult GetProveedorLista(string ope_iva)
         {
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-            List<ProveedorLista> proveedores = _cuentasSv.GetProveedorLista();
+            List<ProveedorLista> proveedores = _cuentasSv.GetProveedorLista(ope_iva);
             var lista = _mapper.Map<List<ProveedorListaDto>>(proveedores);
 
             var response = new ApiResponse<List<ProveedorListaDto>>(lista);

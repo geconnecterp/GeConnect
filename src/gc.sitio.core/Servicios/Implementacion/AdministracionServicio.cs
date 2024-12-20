@@ -98,8 +98,20 @@ namespace gc.sitio.core.Servicios.Implementacion
                 _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
 
                 try
-                {
-                    var res = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                {                
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    {
+                        throw new NegocioException(error.Detail);
+                    }
+                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    {
+                        throw new NegocioException(error.Detail);
+                    }
+                    else
+                    {
+                        throw new Exception(error.Detail);
+                    }
                     return new();
                 }
                 catch

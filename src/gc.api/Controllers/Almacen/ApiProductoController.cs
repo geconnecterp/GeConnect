@@ -7,6 +7,7 @@ namespace gc.api.Controllers.Almacen
     using gc.infraestructura.Core.Exceptions;
     using gc.infraestructura.Core.Interfaces;
     using gc.infraestructura.Core.Responses;
+    using gc.infraestructura.Dtos;
     using gc.infraestructura.Dtos.Almacen;
     using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
     using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
@@ -24,7 +25,6 @@ namespace gc.api.Controllers.Almacen
     using gc.infraestructura.Dtos.General;
     using gc.infraestructura.Dtos.Productos;
     using gc.infraestructura.EntidadesComunes.Options;
-    using log4net.Filter;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json;
@@ -33,7 +33,6 @@ namespace gc.api.Controllers.Almacen
     using System.Net;
     using System.Reflection;
     using System.Threading.Tasks;
-    using Windows.UI.WebUI;
     using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 
     [Authorize]
@@ -48,9 +47,10 @@ namespace gc.api.Controllers.Almacen
         private readonly IUriService _uriService;
         private readonly ILogger<ApiProductoController> _logger;
         private readonly IProductoDepositoServicio _prodDepoSv;
+        private readonly IListaPrecioServicio _lpSv;
 
         public ApiProductoController(IApiProductoServicio servicio, IMapper mapper, IUriService uriService,
-            ILogger<ApiProductoController> logger, ITipoMotivoServicio tipo, IProductoDepositoServicio prodDepoSv)
+            ILogger<ApiProductoController> logger, ITipoMotivoServicio tipo, IProductoDepositoServicio prodDepoSv, IListaPrecioServicio lpSv)
         {
             _productosSv = servicio;
             _mapper = mapper;
@@ -58,6 +58,7 @@ namespace gc.api.Controllers.Almacen
             _logger = logger;
             _tmServicio = tipo;
             _prodDepoSv = prodDepoSv;
+            _lpSv = lpSv;
         }
 
 
@@ -1097,6 +1098,39 @@ namespace gc.api.Controllers.Almacen
                 return Ok(new ApiResponse<List<BoxInfoMovStkDto>>(res));
             }
         }
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult ObtenerMedidas()
+        {
+            var res = _productosSv.ObtenerMedidas();
+            return Ok(new ApiResponse<List<MedidaDto>>(res));   
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult ObtenerIVASituacion()
+        {
+            var res = _productosSv.ObtenerIVASituacion();
+            return Ok(new ApiResponse<List<IVASituacionDto>>(res));
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult ObtenerIVAAlicuotas()
+        {
+            var res = _productosSv.ObtenerIVAAlicuotas();
+            return Ok(new ApiResponse<List<IVAAlicuotaDto>>(res));
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult ObtenerListaPrecio()
+        {
+            var res = _lpSv.GetListaPrecio();
+            return Ok(new ApiResponse<List<ListaPrecioDto>>(res));
+        }
+
 
         /// <summary>
         /// Método destinado a validar la estructura del Json antes de ser enviado a la base de datos

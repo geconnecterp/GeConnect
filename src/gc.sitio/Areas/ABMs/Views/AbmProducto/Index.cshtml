@@ -27,7 +27,7 @@
         @Html.Hidden("pagEstado", false)
     </div>
     <div class="collapse" id="divDetalle" style="">
-       <partial name="_n01tabsAbmProds" />
+        <partial name="_n01tabsAbmProds" />
     </div>
     <div class="row">
         @* <partial name="_gridAbmProds"  /> *@
@@ -57,11 +57,12 @@
 
         var buscarUrl = "@Url.Action("buscar", "abmproducto", new { area = "abms" })";
         var buscarProdUrl = "@Url.Action("BuscarProd", "abmproducto", new { area = "abms" })";
-        
+
         var buscarProveedorUrl = "@Url.Action("Buscar", "proveedor", new { area = "gestion" })";
         var autoComRel01Url = "@Url.Action("BuscarProvs", "abmproducto", new { area = "abms" })";
         var autoComRel02Url = "@Url.Action("BuscarRubros", "abmproducto", new { area = "abms" })";
         var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "abmproducto", new { area = "abms" })";
+        var comboFamiliaUrl = "@Url.Action("ComboProveedorFamilia", "abmproducto", new { area = "abms" })";
 
     </script>
     <script src="~/js/plugins/jquery.simplePagination.js"></script>

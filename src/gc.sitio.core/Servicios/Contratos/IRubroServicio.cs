@@ -4,6 +4,6 @@ namespace gc.sitio.core.Servicios.Contratos
 {
     public interface IRubroServicio : IServicio<RubroDto>
     {
-        List<RubroListaDto> ObtenerListaRubros(string tokenCookie);
+        List<RubroListaDto> ObtenerListaRubros(string cta_id,string tokenCookie);
     }
 }

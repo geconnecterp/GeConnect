@@ -9,8 +9,8 @@ using gc.infraestructura.Helpers;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.ABM;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Options;
+using System.Reflection;
 
 namespace gc.sitio.Areas.ABMs.Controllers
 {
@@ -21,30 +21,33 @@ namespace gc.sitio.Areas.ABMs.Controllers
         private readonly IABMProductoServicio _abmProdServ;
         private readonly ICuentaServicio _ctaSv;
         private readonly IRubroServicio _rubSv;
-		private readonly ILogger<AbmProductoController> _logger;
+        private readonly IProducto2Servicio _prodSv;
+        private readonly ILogger<AbmProductoController> _logger;
 
-		public AbmProductoController(IOptions<AppSettings> options, IHttpContextAccessor accessor, IABMProductoServicio productoServicio,
-             ICuentaServicio cta, IRubroServicio rubro, ILogger<AbmProductoController> logger) : base(options, accessor, logger)
+        public AbmProductoController(IOptions<AppSettings> options, IHttpContextAccessor accessor, IABMProductoServicio productoServicio,
+             ICuentaServicio cta, IRubroServicio rubro, ILogger<AbmProductoController> logger, IProducto2Servicio producto2Servicio) : base(options, accessor, logger)
         {
             _settings = options.Value;
             _abmProdServ = productoServicio;
             _ctaSv = cta;
             _rubSv = rubro;
+            _logger = logger;
+            _prodSv = producto2Servicio;
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index( bool actualizar = false)
+        public async Task<IActionResult> Index(bool actualizar = false)
         {
             List<ProductoListaDto> lista;
             MetadataGrid metadata;
             GridCore<ProductoListaDto> grillaDatos;
-            
+
             var auth = EstaAutenticado;
             if (!auth.Item1 || auth.Item2 < DateTime.Now)
             {
                 return RedirectToAction("Login", "Token", new { area = "seguridad" });
             }
-            
+
             if (ProveedoresLista.Count == 0 || actualizar)
             {
                 ObtenerProveedores(_ctaSv);
@@ -54,7 +57,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             {
                 ObtenerRubros(_rubSv);
             }
-            
+
 
             string volver = Url.Action("index", "home", new { area = "" });
             ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
@@ -81,12 +84,17 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 }
 
                 ProductoABMSeleccionado = prod;
+                //busca combo familia
+                ViewBag.Pg_Lista = ComboProveedoresFamilia(prod.Cta_Id, _ctaSv, prod.Pg_Id);
+                ViewBag.Up_Id = await ComboMedidas(_prodSv);
+                ViewBag.Iva_Situacion = await ComboIVASituacion(_prodSv);
+                ViewBag.Iva_Alicuota = await ComboIVAAlicuota(_prodSv);
 
                 return View("_n02panel01Producto", prod);
-            
+
             }
             catch (NegocioException ex)
-            {               
+            {
                 response.Mensaje = ex.Message;
                 response.Ok = false;
                 response.EsWarn = true;
@@ -145,7 +153,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
                 return View("_gridAbmProds", grillaDatos);
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
 
                 string msg = "Error en la invocación de la API - Busqueda Producto";
                 _logger.LogError(ex, "Error en la invocación de la API - Busqueda Producto");
@@ -162,13 +171,30 @@ namespace gc.sitio.Areas.ABMs.Controllers
         {
             try
             {
-                return Json(new {error = false, Metadata = MetadataProd });
+                return Json(new { error = false, Metadata = MetadataProd });
             }
             catch (Exception ex)
             {
                 return Json(new { error = true, msg = "No se pudo obtener la información de paginación. Verifica" });
             }
         }
+
+        [HttpPost]
+        public JsonResult ComboProveedorFamilia(string cta_id)
+        {
+            try
+            {
+                var lista = ComboProveedoresFamilia(cta_id, _ctaSv);
+                return Json(new { error = false, lista });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error en {this.GetType().Name}-{MethodBase.GetCurrentMethod().Name}");
+                return Json(new { error = true, msg = ex.Message });
+            }
+        }
+
+
 
         //[HttpPost]
         //public JsonResult BuscarProvs(string prefix)

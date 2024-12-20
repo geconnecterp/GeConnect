@@ -15,11 +15,11 @@ namespace gc.api.core.Servicios
 
         }
 
-        public List<RubroListaDto> GetRubroLista()
+        public List<RubroListaDto> GetRubroLista(string cta_id="%")
         {
             var sp = Constantes.ConstantesGC.StoredProcedures.SP_RUBRO_LISTA;
-            var ps = new List<SqlParameter>();
-            var res = _repository.InvokarSp2Lst(sp, ps, true);
+            var ps = new List<SqlParameter>() { new SqlParameter("@cta_id",cta_id) };
+            var res = _repository.EjecutarLstSpExt<RubroListaDto>(sp, ps, true);
 
             if (res.Count == 0)
             {
@@ -27,7 +27,7 @@ namespace gc.api.core.Servicios
             }
             else
             {
-                return res.Select(x => new RubroListaDto() { Rub_Id = x.Rub_Id, Rub_Desc = x.Rub_Desc, }).ToList();
+                return res.ToList();
             }
         }
       

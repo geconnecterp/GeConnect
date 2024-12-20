@@ -140,7 +140,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		}
 
 
-		public List<ProveedorListaDto> ObtenerListaProveedores(string token)
+		public List<ProveedorListaDto> ObtenerListaProveedores(string ope_iva,string token)
 		{
 			ApiResponse<List<ProveedorListaDto>> respuesta;
 			string stringData;
@@ -149,7 +149,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 				HelperAPI helper = new();
 				HttpClient client = helper.InicializaCliente(token);
 				HttpResponseMessage response;
-				var link = $"{_appSettings.RutaBase}{RutaAPI}{ProveedorLista}";
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{ProveedorLista}?ope_iva={ope_iva}";
 				response = client.GetAsync(link).GetAwaiter().GetResult();
 				if (response.StatusCode == HttpStatusCode.OK)
 				{

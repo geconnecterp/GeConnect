@@ -23,11 +23,14 @@
             public const string SP_CAJA_ACTUALIZA_MEPAID = "dbo.SP_CajaActualizaIdMePa";
             public const string SP_PROVEEDOR_LISTA= "dbo.SPGECO_Proveedores_lista";
             public const string SP_RUBRO_LISTA = "dbo.SPGECO_Rubros_lista";
-			public const string SP_PROVEEDOR_FAMILIA_LISTA = "dbo.SPGECO_Proveedores_Fiamilia_lista";
+			public const string SP_PROVEEDOR_FAMILIA_LISTA = "dbo.SPGECO_Proveedores_Familia_lista";
+            public const string SP_UP_LISTA = "SPGECO_UP_Lista";
 
-			public const string SP_PRODUCTO_BUSQUEDA = "dbo.spgeco_p_busqueda";
+            public const string SP_PRODUCTO_BUSQUEDA = "dbo.spgeco_p_busqueda";
 			public const string SP_PRODUCTO_BUSQUEDA_LISTA = "SPGECO_P_Busqueda_Lista";
-            
+			public const string SP_IVA_SITUACION_LISTA = "SPGECO_IVA_Situacion_Lista";            
+			public const string SP_IVA_ALICUOTA_LISTA = "SPGECO_IVA_Alicuotas_Lista";
+
             public const string SP_PRODUCTO_BUSQUEDA_MUCHOS = "dbo.spgeco_p_busqueda_muchos";
 
 			public const string SP_INFOPROD_STKD = "dbo.spgeco_p_info_stk_depo";

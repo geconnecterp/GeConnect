@@ -1,4 +1,6 @@
-﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Almacen;
@@ -7,6 +9,7 @@ using gc.infraestructura.Dtos.Almacen.Info;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Box;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -31,6 +34,9 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string AJ_CARGA_CONTEO_PREVIOS = "/AJ_CargaConteosPrevios";
         private const string DV_CARGA_CONTEO_PREVIOS = "/DV_CargaConteosPrevios";
 
+        private const string UP_MEDIDAS = "/ObtenerMedidas";
+        private const string IVA_SITUACION = "/ObtenerIVASituacion";
+        private const string IVA_ALICUOTAS = "/ObtenerIVAAlicuotas";
 
 
         private readonly AppSettings _appSettings;
@@ -321,6 +327,171 @@ namespace gc.sitio.core.Servicios.Implementacion
                 _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
 
                 return new RespuestaGenerica<ConsULDto> { Ok = false, Mensaje = "Algo no fue bien al intentar " };
+            }
+        }
+
+        public async Task<RespuestaGenerica<MedidaDto>> ObtenerMedidas(string token)
+        {
+            try
+            {
+                ApiResponse<List<MedidaDto>> apiResponse;
+
+                HelperAPI helper = new();
+
+                HttpClient client = helper.InicializaCliente(token);
+                HttpResponseMessage response;
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{UP_MEDIDAS}";
+
+                response = await client.GetAsync(link);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+
+                        return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
+                    }
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<MedidaDto>>>(stringData);
+
+                    return new RespuestaGenerica<MedidaDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
+
+                }
+                else
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    {
+                        return new RespuestaGenerica<MedidaDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    {
+                        return new RespuestaGenerica<MedidaDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else
+                    {
+                        throw new Exception(error.Detail);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+
+                return new RespuestaGenerica<MedidaDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener las medidas de productos." };
+            }
+        }
+
+        public async Task<RespuestaGenerica<IVASituacionDto>> ObtenerIVASituacion(string token)
+        {
+            try
+            {
+                ApiResponse<List<IVASituacionDto>> apiResponse;
+
+                HelperAPI helper = new();
+
+                HttpClient client = helper.InicializaCliente(token);
+                HttpResponseMessage response;
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{UP_MEDIDAS}";
+
+                response = await client.GetAsync(link);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+
+                        return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
+                    }
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<IVASituacionDto>>>(stringData);
+
+                    return new RespuestaGenerica<IVASituacionDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
+
+                }
+                else
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    {
+                        return new RespuestaGenerica<IVASituacionDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    {
+                        return new RespuestaGenerica<IVASituacionDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else
+                    {
+                        throw new Exception(error.Detail);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+
+                return new RespuestaGenerica<IVASituacionDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener las medidas de productos." };
+            }
+        }
+
+        public async Task<RespuestaGenerica<IVAAlicuotaDto>> ObtenerIVAAlicuotas(string token)
+        {
+            try
+            {
+                ApiResponse<List<IVAAlicuotaDto>> apiResponse;
+
+                HelperAPI helper = new();
+
+                HttpClient client = helper.InicializaCliente(token);
+                HttpResponseMessage response;
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{UP_MEDIDAS}";
+
+                response = await client.GetAsync(link);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+
+                        return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
+                    }
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<IVAAlicuotaDto>>>(stringData);
+
+                    return new RespuestaGenerica<IVAAlicuotaDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
+
+                }
+                else
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    {
+                        return new RespuestaGenerica<IVAAlicuotaDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    {
+                        return new RespuestaGenerica<IVAAlicuotaDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else
+                    {
+                        throw new Exception(error.Detail);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+
+                return new RespuestaGenerica<IVAAlicuotaDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener las medidas de productos." };
             }
         }
     }

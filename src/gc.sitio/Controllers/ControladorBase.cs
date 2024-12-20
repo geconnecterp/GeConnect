@@ -10,6 +10,7 @@ using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes;
 using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Helpers;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -1043,14 +1044,14 @@ namespace gc.sitio.Controllers
 		#region Metodos unicos para realizar busquedas con autocomplete
 		protected void ObtenerRubros(IRubroServicio _rubSv)
 		{
-			RubroLista = _rubSv.ObtenerListaRubros(TokenCookie);
+			RubroLista = _rubSv.ObtenerListaRubros("",TokenCookie);
 		}
 
 		protected void ObtenerProveedores(ICuentaServicio _ctaSv)
 		{
 			//se guardan los proveedores en session. Para ser utilizados posteriormente
 
-			ProveedoresLista = _ctaSv.ObtenerListaProveedores(TokenCookie);
+			ProveedoresLista = _ctaSv.ObtenerListaProveedores("BI",TokenCookie);
 		}
 
 		protected void ObtenerTiposNegocio(ITipoNegocioServicio _tipoNegSv)
@@ -1118,45 +1119,103 @@ namespace gc.sitio.Controllers
 			//var nombres = await _provSv.BuscarAsync(new QueryFilters { Search = prefix }, TokenCookie);
 			//var lista = nombres.Item1.Select(c => new EmpleadoVM { Nombre = c.NombreCompleto, Id = c.Id, Cuil = c.CUIT });
 			var rub = RubroLista.Where(x => x.Rub_Desc.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
-			var rubros = rub.Select(x => new ComboGenDto { Id = x.Rub_Id, Descripcion = x.Rub_Desc });
+			var rubros = rub.Select(x => new ComboGenDto { Id = x.Rub_Id, Descripcion = x.Rub_Lista });
 			return Json(rubros);
 		}
 
+        protected SelectList ComboProveedoresFamilia(string ctaId,ICuentaServicio _cuentaServicio, string? fam=null)
+        {
+            var adms = _cuentaServicio.ObtenerListaProveedoresFamilia(ctaId, TokenCookie);
+            var lista = adms.Select(x => new ComboGenDto { Id = x.pg_id, Descripcion = x.pg_lista });
+			if (string.IsNullOrEmpty(fam))
+			{
+                return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+            }
+			else
+			{
+                return HelperMvc<ComboGenDto>.ListaGenerica(lista, fam);
+            }
+        }
 
-		//protected async Task<IActionResult> BusquedaAvanzada(string ri01, string ri02, bool act, bool dis, bool ina, bool cstk, bool sstk, string search, IProductoServicio _productoServicio)
-		//{
-		//	GridCore<ProductoListaDto> grillaDatos;
-		//	RespuestaGenerica<EntidadBase> response = new();
-		//	try
-		//	{
-		//		var busc = new BusquedaProducto
-		//		{
-		//			Busqueda = search,
-		//			ConStock = cstk,
-		//			SinStock = sstk,
-		//			CtaProveedorId = ri01,
-		//			RubroId = ri02,
-		//			EstadoActivo = act,
-		//			EstadoDiscont = dis,
-		//			EstadoInactivo = ina
-		//		};
+		protected async Task< SelectList> ComboMedidas(IProducto2Servicio _prodSv)
+		{
+			IEnumerable<ComboGenDto> lista;
+			var medidas = await _prodSv.ObtenerMedidas(TokenCookie);
+			if (medidas.Ok)
+			{
+                lista = medidas.ListaEntidad.Select(x => new ComboGenDto { Id = x.Up_Id, Descripcion = x.Up_Lista });
+            }
+			else
+			{
+				lista = new List<ComboGenDto>() { new ComboGenDto { Id = "", Descripcion= "SIN MEDIDAS" } };
+			}
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+        }
 
-		//		List<ProductoListaDto> productos = await _productoServicio.BusquedaListaProductos(busc, TokenCookie);
-		//		grillaDatos = GenerarGrilla<ProductoListaDto>(productos, "p_id");
-		//		return PartialView("_gridProdsAdv", grillaDatos);
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		string msg = "Error en la invocación de la API - Busqueda Avanzada";
-		//		_logger.LogError(ex, "Error en la invocación de la API - Busqueda Avanzada");
-		//		response.Mensaje = msg;
-		//		response.Ok = false;
-		//		response.EsWarn = false;
-		//		response.EsError = true;
-		//		return PartialView("_gridMensaje", response);
-		//	}
-		//}
+        protected async Task<SelectList> ComboIVASituacion(IProducto2Servicio _prodSv)
+        {
+            IEnumerable<ComboGenDto> lista;
+            var iva = await _prodSv.ObtenerIVASituacion(TokenCookie);
+            if (iva.Ok)
+            {
+                lista = iva.ListaEntidad.Select(x => new ComboGenDto { Id = x.Iva_Situacion, Descripcion = x.Iva_Situacion_Desc });
+            }
+            else
+            {
+                lista = new List<ComboGenDto>() { new ComboGenDto { Id = "", Descripcion = "SIN IVA SITUACION" } };
+            }
+            return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+        }
 
-		#endregion
-	}
+        protected async Task<SelectList> ComboIVAAlicuota(IProducto2Servicio _prodSv)
+        {
+            IEnumerable<ComboGenDto> lista;
+            var iva = await _prodSv.ObtenerIVAAlicuotas(TokenCookie);
+            if (iva.Ok)
+            {
+                lista = iva.ListaEntidad.Select(x => new ComboGenDto { Id = x.IVA_Alicuota, Descripcion = x.IVA_Alicuota });
+            }
+            else
+            {
+                lista = new List<ComboGenDto>() { new ComboGenDto { Id = "", Descripcion = "SIN ALICUOTA" } };
+            }
+            return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+        }
+
+        //protected async Task<IActionResult> BusquedaAvanzada(string ri01, string ri02, bool act, bool dis, bool ina, bool cstk, bool sstk, string search, IProductoServicio _productoServicio)
+        //{
+        //	GridCore<ProductoListaDto> grillaDatos;
+        //	RespuestaGenerica<EntidadBase> response = new();
+        //	try
+        //	{
+        //		var busc = new BusquedaProducto
+        //		{
+        //			Busqueda = search,
+        //			ConStock = cstk,
+        //			SinStock = sstk,
+        //			CtaProveedorId = ri01,
+        //			RubroId = ri02,
+        //			EstadoActivo = act,
+        //			EstadoDiscont = dis,
+        //			EstadoInactivo = ina
+        //		};
+
+        //		List<ProductoListaDto> productos = await _productoServicio.BusquedaListaProductos(busc, TokenCookie);
+        //		grillaDatos = GenerarGrilla<ProductoListaDto>(productos, "p_id");
+        //		return PartialView("_gridProdsAdv", grillaDatos);
+        //	}
+        //	catch (Exception ex)
+        //	{
+        //		string msg = "Error en la invocación de la API - Busqueda Avanzada";
+        //		_logger.LogError(ex, "Error en la invocación de la API - Busqueda Avanzada");
+        //		response.Mensaje = msg;
+        //		response.Ok = false;
+        //		response.EsWarn = false;
+        //		response.EsError = true;
+        //		return PartialView("_gridMensaje", response);
+        //	}
+        //}
+
+        #endregion
+    }
 }

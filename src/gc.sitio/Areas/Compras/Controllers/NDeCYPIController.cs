@@ -280,7 +280,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new NDeCYPI.ProveedoresFamiliaDto();
 			try
 			{
-				model.ComboProveedoresFamilia = ComboProveedoresFamilia(ctaId);
+				model.ComboProveedoresFamilia = ComboProveedoresFamilia(ctaId, _cuentaServicio);
 				return PartialView("_listaProveedoresFamilia", model);
 			}
 			catch (Exception ex)
@@ -299,22 +299,22 @@ namespace gc.sitio.Areas.Compras.Controllers
 		#region Métodos privados
 		private SelectList ComboProveedores()
 		{
-			var adms = _cuentaServicio.ObtenerListaProveedores(TokenCookie);
+			var adms = _cuentaServicio.ObtenerListaProveedores("BI",TokenCookie);
 			var lista = adms.Select(x => new ComboGenDto { Id = x.Cta_Id, Descripcion = x.Cta_Denominacion });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
 		private SelectList ComboRubros()
 		{
-			var adms = _rubroServicio.ObtenerListaRubros(TokenCookie);
+			var adms = _rubroServicio.ObtenerListaRubros("", TokenCookie);
 			var lista = adms.Select(x => new ComboGenDto { Id = x.Rub_Id, Descripcion = x.Rub_Desc });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
-		private SelectList ComboProveedoresFamilia(string ctaId)
-		{
-			var adms = _cuentaServicio.ObtenerListaProveedoresFamilia(ctaId, TokenCookie);
-			var lista = adms.Select(x => new ComboGenDto { Id = x.pg_id, Descripcion = x.pg_desc });
-			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
-		}
+		//private SelectList ComboProveedoresFamilia(string ctaId)
+		//{
+		//	var adms = _cuentaServicio.ObtenerListaProveedoresFamilia(ctaId, TokenCookie);
+		//	var lista = adms.Select(x => new ComboGenDto { Id = x.pg_id, Descripcion = x.pg_lista });
+		//	return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		//}
 		private SelectList ComboSucursales()
 		{
 			var adms = _administracionServicio.GetAdministracionLogin();

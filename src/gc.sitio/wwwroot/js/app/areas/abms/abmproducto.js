@@ -1,5 +1,80 @@
 ﻿$(function () {
 
+    $(document).on("keydown.autocomplete", "input#Cta_Lista", function () {
+        $(this).autocomplete({
+            source: function (request, response) {
+                data = { prefix: request.term }
+                $.ajax({
+                    url: autoComRel01Url,
+                    type: "POST",
+                    dataType: "json",
+                    data: data,
+                    success: function (obj) {
+                        response($.map(obj, function (item) {
+                            var texto = item.descripcion;
+                            return { label: texto, value: item.descripcion, id: item.id };
+                        }));
+                    }
+                })
+            },
+            minLength: 3,
+            select: function (event, ui) {
+                AbrirWaiting("Armando combo Familia. Espere...");
+                $("input#Cta_Id").val(ui.item.id);
+                var data = { cta_id: ui.item.id };
+                PostGen(data, comboFamiliaUrl, function (obj) {
+                    if (obj.error === true) {
+                        CerrarWaiting();
+                        AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                            $("#msjModal").modal("hide");
+                        }, false, ["Entendido"], "error!", null);
+                    }
+                    else {
+                        //armado del ddl de Familia
+                        var combo = $("#Pg_Lista");
+                        combo.empty();
+                        var opc = "<option value=''>Seleccionar...</option>";
+                        combo.append(opc);
+                        $.each(obj.lista, function (i, item) {
+                            opc = "<option value='" + item.value + "'>" + item.text + "</option>";
+                            combo.append(opc);
+                        });
+                        CerrarWaiting();
+                    }
+                });
+
+                //var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
+                //$("#Rel01List").append(opc);
+                return true;
+            }
+        });
+    });
+
+    $(document).on("keydown.autocomplete", "input#Rub_Lista", function () {
+        $(this).autocomplete({
+            source: function (request, response) {
+                data = { prefix: request.term }
+                $.ajax({
+                    url: autoComRel02Url,
+                    type: "POST",
+                    dataType: "json",
+                    data: data,
+                    success: function (obj) {
+                        response($.map(obj, function (item) {
+                            var texto = item.descripcion;
+                            return { label: texto, value: item.descripcion, id: item.id };
+                        }));
+                    }
+                })
+            },
+            minLength: 3,
+            select: function (event, ui) {                
+                $("input#Rub_Id").val(ui.item.id);
+                return true;
+            }
+        });
+    });
+
     $("#btnDetalle").prop("disabled", true);
 
     $("#btnCancel").on("click", function () {
@@ -30,19 +105,7 @@
         }, 0); // Asegura que la ejecución se realice después del clic
     });
 
-    /*        CODIGO TRASLADADO AL SITIGEN.JS            */
-
-    ////check generico REL02 activando componentes disables
-    //$("#chkRel02").on("click", function () {
-    //    if ($("#chkRel02").is(":checked")) {
-    //        $("#Rel02").prop("disabled", false);
-    //        $("#Rel02List").prop("disabled", false);
-    //    }
-    //    else {
-    //        $("#Rel02").prop("disabled", true);
-    //        $("#Rel02List").prop("disabled", true);
-    //    }
-    //})
+    
 
     InicializaPantallaAbmProd();
     funcCallBack = buscarProductos;
@@ -169,3 +232,5 @@ function selectAbmRegDbl(x) {
     //$("input#Busqueda").val(id);
     //$("#btnBusquedaBase").trigger("click");
 }
+
+//codigo generico para autocomplete 01

@@ -7,7 +7,7 @@ namespace gc.api.core.Contratos.Servicios
     public interface ICuentaServicio : IServicio<Cuenta>
     {
         //List<ProveedorListaDto> GetProveedorLista();
-        List<ProveedorLista> GetProveedorLista();
+        List<ProveedorLista> GetProveedorLista(string ope_iva);
         List<CuentaDto> GetCuentaComercialLista(string texto, char tipo);
         List<RPROrdenDeCompraDto> GetOCporCuenta(string cta_id);
         List<RPROrdenDeCompraDetalleDto> GetDetalleDeOC(string oc_compte);
