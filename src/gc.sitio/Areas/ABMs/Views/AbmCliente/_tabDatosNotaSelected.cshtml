@@ -2,12 +2,16 @@
 @{
 }
 <div class="row" style="padding-top: 10px;">
-	<div class="input-group input-group-sm">
-		<span class="input-group-text">Usuario: </span>
-		<input type="text" asp-for="Nota.usu_apellidoynombre" class="form-control" readonly />
+	<div class="row mt-1">
+		<div class="input-group input-group-sm">
+			<span class="input-group-text fixed-lbl-for-abm-70">Usuario: </span>
+			<input type="text" asp-for="Nota.usu_apellidoynombre" class="form-control" readonly />
+		</div>
 	</div>
-	<div class="input-group input-group-sm">
-		<span class="input-group-text">Nota: </span>
-		<input type="text" asp-for="Nota.nota" class="form-control" readonly />
+	<div class="row mt-1">
+		<div class="input-group input-group-sm">
+			<span class="input-group-text fixed-lbl-for-abm-70">Nota: </span>
+			<input type="text" asp-for="Nota.nota" class="form-control" readonly />
+		</div>
 	</div>
 </div>

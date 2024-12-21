@@ -6,11 +6,16 @@
     string clase = string.Empty;
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
 }
-
+<style>
+    thead th {
+        position: sticky;
+        top: 0px;
+    }
+</style>
 <div class="card">
     <div class="card-body">
         <div class="table-responsive text-nowrap  table-wrapper">
-            <table class="table table-sm mb-0 table-hover" id="tbGridProd">
+            <table class="table table-sm mb-0 table-hover" id="tbGridCliente">
                 <thead class="table-dark">
                     <tr class="header">
                         <th scope="col">@nameof(dataMod.cta_id)</th>
@@ -25,7 +30,7 @@
                     {
                         if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
-                        <tr class="@clase" onclick="selectReg(this)">
+                        <tr class="@clase" onclick="selectReg(this)" ondblclick="selectRegDbl(this)">
                             <td class="text-sm-center">@item.cta_id</td>
                             <td class="text-sm-start">@item.cta_denominacion</td>
                             <td class="text-sm-end">@item.tdoc_desc</td>

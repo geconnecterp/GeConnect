@@ -146,7 +146,7 @@ function selectObsEnTab(x) {
 }
 
 function InicializaPantallaAbmProd() {
-	var tb = $("#tbGridProd tbody tr");
+	var tb = $("#tbGridCliente tbody tr");
 	if (tb.length === 0) {
 		$("#divFiltro").collapse("show")
 	}
@@ -240,20 +240,20 @@ function buscarClientes(pag) {
 }
 
 function selectReg(e) {
-	$("#tbGridProd tbody tr").each(function (index) {
+	$("#tbGridCliente tbody tr").each(function (index) {
 		$(this).removeClass("selected-row");
 	});
 	$(e).addClass("selected-row");
 
-	var cta_id = e.cells[0].innerText.trim();
-	if (cta_id !== "") {
-		ctaId = cta_id;
-		BuscarCliente(cta_id);
-		BuscarFormaDePago();
-		BuscarOtrosContactos();
-		BuscarNotas();
-		BuscarObservaciones();
-	}
+	//var cta_id = e.cells[0].innerText.trim();
+	//if (cta_id !== "") {
+	//	ctaId = cta_id;
+	//	BuscarCliente(cta_id);
+	//	BuscarFormaDePago();
+	//	BuscarOtrosContactos();
+	//	BuscarNotas();
+	//	BuscarObservaciones();
+	//}
 }
 
 function BuscarCliente(ctaId) {
@@ -266,4 +266,22 @@ function BuscarCliente(ctaId) {
 		ControlaMensajeError(obj.message);
 		CerrarWaiting();
 	});
+}
+
+function selectRegDbl(x) {
+	AbrirWaiting("Espere mientras se busca el cliente seleccionado...");
+	$("#tbGridCliente tbody tr").each(function (index) {
+		$(this).removeClass("selectedEdit-row");
+	});
+	$(x).addClass("selectedEdit-row");
+
+	var cta_id = x.cells[0].innerText.trim();
+	if (cta_id !== "") {
+		ctaId = cta_id;
+		BuscarCliente(cta_id);
+		BuscarFormaDePago();
+		BuscarOtrosContactos();
+		BuscarNotas();
+		BuscarObservaciones();
+	}
 }
