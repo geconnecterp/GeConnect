@@ -30,16 +30,62 @@ namespace gc.infraestructura.Dtos.Almacen
         public string P_M_Desc { get; set; }//
         [Display(Name = "Capacidad")]
         public string P_M_Capacidad { get; set; }//
-        [Display(Name ="Prov.Id")]
+        [Display(Name = "Prov.Id")]
         public string P_Id_Prov { get; set; }//
-        [Display(Name ="Descripción")]
+        [Display(Name = "Descripción")]
         public string P_Desc { get; set; }//
         public char? P_Alta_Rotacion { get; set; }//
         public char? P_Con_Vto { get; set; }//
-        public  short P_Con_Vto_Min { get; set; }
+        private bool pConVto { get; set; }//
+        public bool PConVto
+        {
+            get
+            {
+                if (!P_Con_Vto.HasValue ||
+                    string.IsNullOrWhiteSpace(char.ToString(P_Con_Vto.Value)))
+                    return false;
+                return P_Con_Vto.Equals('S');
+            }
+            set
+            {
+                P_Con_Vto = value ? 'S' : 'N';
+                pConVto = value;
+            }
+        }
+        public short P_Con_Vto_Min { get; set; }
         public decimal? P_Peso { get; set; }//
         public char P_Elaboracion { get; set; }//
+        private bool pElaboracion { get; set; }//
+        public bool PElaboracion
+        {
+            get
+            {
+                if (char.IsWhiteSpace(P_Elaboracion) ||
+                    string.IsNullOrWhiteSpace(char.ToString(P_Elaboracion)))
+                    return false;
+                return P_Elaboracion.Equals('S');
+            }
+            set
+            {
+                //P_Elaboracion = value ? 'S' : 'N';
+                pElaboracion = value;
+            }
+        }
         public char P_Materia_Prima { get; set; }//
+
+        private bool pMatPri;
+        public bool PMatPri
+        {
+            get
+            {
+                if (char.IsWhiteSpace(P_Materia_Prima) || string.IsNullOrWhiteSpace(char.ToString(P_Materia_Prima)))
+                    return false;
+                return P_Materia_Prima == 'S';
+            }
+            set {
+                //P_Materia_Prima = value ? 'S' : 'N';
+                pMatPri = value; }
+        }
         public string Up_Id { get; set; }//
         public string Up_Desc { get; set; }
         public string Up_List { get; set; }

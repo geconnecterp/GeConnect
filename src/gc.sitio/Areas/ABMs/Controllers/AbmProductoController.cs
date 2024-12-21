@@ -4,6 +4,7 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
 using gc.sitio.core.Servicios.Contratos;
@@ -66,6 +67,83 @@ namespace gc.sitio.Areas.ABMs.Controllers
         }
 
         [HttpPost]
+        public async Task<IActionResult> BuscarBarrado(string p_id)
+        {
+            RespuestaGenerica<EntidadBase> response = new();
+            GridCore<ProductoBarradoDto> grillaDatos;
+            try
+            {
+                var barr = await _prodSv.ObtenerBarradoDeProd(p_id, TokenCookie);
+                if (barr == null || !barr.Ok)
+                {
+                    throw new NegocioException(barr.Mensaje);
+                }else if(barr.Ok && barr.ListaEntidad.Count() == 0)
+                {
+                    throw new NegocioException("No se encontraron barrados para el producto.");
+                }
+                grillaDatos = GenerarGrilla<ProductoBarradoDto>(barr.ListaEntidad, "P_Id_barrado");
+                return View("_gridBarrado", grillaDatos);
+            }
+            catch (NegocioException ex)
+            {
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = true;
+                response.EsError = false;
+                return PartialView("_gridMensaje", response);
+            }
+            catch (Exception ex)
+            {
+                string msg = "Error en la invocación de la API - Busqueda Producto";
+                _logger.LogError(ex, "Error en la invocación de la API - Busqueda Producto");
+                response.Mensaje = msg;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ObtenerLimiteStk(string p_id)
+        {
+            RespuestaGenerica<EntidadBase> response = new();
+            GridCore<LimiteStkDto> grillaDatos;
+            try
+            {
+                var lim = await _prodSv.ObtenerLimiteStk(p_id, TokenCookie);
+                if (lim == null || !lim.Ok)
+                {
+                    throw new NegocioException(lim.Mensaje);
+                }
+                else if (lim.Ok && lim.ListaEntidad.Count() == 0)
+                {
+                    throw new NegocioException("No se recepcionaron los limites de stock.");
+                }
+                grillaDatos = GenerarGrilla<LimiteStkDto>(lim.ListaEntidad, "Adm_Id");
+                return View("_gridLimStk", grillaDatos);
+            }
+            catch (NegocioException ex)
+            {
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = true;
+                response.EsError = false;
+                return PartialView("_gridMensaje", response);
+            }
+            catch (Exception ex)
+            {
+                string msg = "Error en la invocación de la API - Busqueda Producto";
+                _logger.LogError(ex, "Error en la invocación de la API - Busqueda Producto");
+                response.Mensaje = msg;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
+            }
+        }
+
+        [HttpPost]
         public async Task<IActionResult> BuscarProd(string p_id)
         {
             RespuestaGenerica<EntidadBase> response = new();
@@ -75,7 +153,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 var prod = await _abmProdServ.BuscarProducto(p_id, TokenCookie);
                 if (prod == null)
                 {
-                    throw new Exception("No se recepcionó el producto buscado.");
+                    throw new NegocioException("No se recepcionó el producto buscado.");
                 }
 
                 ProductoABMSeleccionado = prod;

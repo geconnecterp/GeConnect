@@ -1,15 +1,19 @@
-﻿namespace gc.infraestructura.Dtos.Productos
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace gc.infraestructura.Dtos.Productos
 {
     public class ProductoBarradoDto
     {
-        public string P_Id { get; set; }
-        public string P_Id_barrado { get; set; }
-        public string P_Unidad_Pres { get; set; }
-        public string P_Unidad_X_Bulto { get; set; }
-        public string P_Bulto_X_Piso { get; set; }
-        public string P_Piso_X_Pallet { get; set; }
-        public string Tba_Id{ get; set; }
-        public string Tba_Desc { get; set; }
-        public string Tba_Lista { get; set; }
+        [Display(Name = "ID")]
+        public string P_Id { get; set; } = string.Empty;
+        [Display(Name = "BARRADO")]
+        public string P_Id_barrado { get; set; } = string.Empty;
+        public string P_Unidad_Pres { get; set; } = string.Empty;
+        public string P_Unidad_X_Bulto { get; set; } = string.Empty;
+        public string P_Bulto_X_Piso { get; set; } = string.Empty;
+        public string P_Piso_X_Pallet { get; set; } = string.Empty;
+        public string Tba_Id { get; set; } = string.Empty;
+        public string Tba_Desc { get; set; } = string.Empty;
+        public string Tba_Lista { get; set; } = string.Empty;
     }
 }

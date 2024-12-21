@@ -1,5 +1,10 @@
 ﻿$(function () {
-
+    $("#btnFiltro").on("click", function () {
+        if ($("#divFiltro").hasClass("show")) {
+            $("#divDetalle").collapse("hide");
+        }
+    });
+    //busqueda no gen de proveedores
     $(document).on("keydown.autocomplete", "input#Cta_Lista", function () {
         $(this).autocomplete({
             source: function (request, response) {
@@ -49,7 +54,7 @@
             }
         });
     });
-
+    //busqueda no gen de rubros
     $(document).on("keydown.autocomplete", "input#Rub_Lista", function () {
         $(this).autocomplete({
             source: function (request, response) {
@@ -219,6 +224,11 @@ function selectAbmRegDbl(x) {
     var data = { p_id: id };
     PostGenHtml(data, buscarProdUrl, function (obj) {
         $("#divpanel01").html(obj);
+        //se procede a buscar la grilla de barrado
+        buscarBarrado(data);
+        //se procede a buscar la grilla de Sucursales
+        buscarLimite(data);
+
         $("#btnDetalle").prop("disabled", false);
         $("#divFiltro").collapse("hide");
         $("#divDetalle").collapse("show");
@@ -233,4 +243,14 @@ function selectAbmRegDbl(x) {
     //$("#btnBusquedaBase").trigger("click");
 }
 
-//codigo generico para autocomplete 01
+function buscarBarrado(data) {
+    PostGenHtml(data, buscarBarradoUrl, function (obj) {
+        $("#divBarrado").html(obj);
+    });
+}
+
+function buscarLimite(data) {
+    PostGenHtml(data, buscarLimiteUrl, function (obj) {
+        $("#divSucursal").html(obj);
+    });
+}

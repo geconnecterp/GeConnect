@@ -1032,5 +1032,14 @@ namespace gc.api.core.Servicios
             List<ProductoBarradoDto> resp = _repository.EjecutarLstSpExt<ProductoBarradoDto>(sp, ps, true);
             return resp;
         }
+
+        public List<LimiteStkDto> ObtenerLimiteStk(string p_id)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_LIMITESTK_LISTA;
+            var ps = new List<SqlParameter>() { new SqlParameter("@p_id", p_id) };
+
+            List<LimiteStkDto> resp = _repository.EjecutarLstSpExt<LimiteStkDto>(sp, ps, true);
+            return resp;
+        }
     }
 }

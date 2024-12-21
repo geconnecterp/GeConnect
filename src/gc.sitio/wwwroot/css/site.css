@@ -21,6 +21,16 @@ body {
     margin-bottom: 60px;
 }
 
+input.form-control, select.form-control{
+    font-weight:700 !important;
+    text-transform:uppercase !important;
+}
+
+span.input-group {
+    width:50px;
+    font-size:0.7em;
+}
+
 table > tbody > tr > td {
     font-size: 11px !important;
 }
@@ -110,6 +120,13 @@ fieldset {
     font-size: x-small;
     width: 96%;
 }
+
+.table-wrapper-fixed-head thead th 
+{
+    position: sticky;
+    top: 0px;
+}
+
 
 .table-wrapper-full-width {
     max-height: 500px;

@@ -7,7 +7,6 @@ namespace gc.api.Controllers.Almacen
     using gc.infraestructura.Core.Exceptions;
     using gc.infraestructura.Core.Interfaces;
     using gc.infraestructura.Core.Responses;
-    using gc.infraestructura.Dtos;
     using gc.infraestructura.Dtos.Almacen;
     using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
     using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
@@ -1135,6 +1134,18 @@ namespace gc.api.Controllers.Almacen
             return Ok(new ApiResponse<List<ProductoBarradoDto>>(res));
         }
 
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult ObtenerLimiteStk(string p_id)
+        {
+            if (string.IsNullOrEmpty(p_id))
+            {
+                return BadRequest("No se recepcionó el identificador del producto");
+            }
+            var res = _productosSv.ObtenerLimiteStk(p_id);
+
+            return Ok(new ApiResponse<List<LimiteStkDto>>(res));
+        }
 
         /// <summary>
         /// Método destinado a validar la estructura del Json antes de ser enviado a la base de datos

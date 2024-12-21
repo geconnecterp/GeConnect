@@ -1,0 +1,38 @@
+﻿@model GridCore<LimiteStkDto>
+
+@{
+    var dataMod = new LimiteStkDto();
+    var alt = true;
+    string clase = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive text-nowrap  table-wrapper">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridLim">
+                <thead class="table-dark">
+                    <tr class="header">
+                        <th scope="col">@nameof(dataMod.Adm_Id)</th>
+                        <th scope="col">@nameof(dataMod.Adm_Lista)</th>
+                        <th scope="col">@nameof(dataMod.P_Stk_Min)</th>
+                        <th scope="col">@nameof(dataMod.P_Stk_Max)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ListaDatos)
+                    {
+                        if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+                        <tr class="@clase" onclick="selectReg(this,'tbGridLim')">
+                            <td class="text-sm-center">@item.Adm_Id</td>
+                            <td class="text-sm-start">@item.Adm_Lista</td>
+                            <td class="text-sm-end">@item.P_Stk_Min</td>
+                            <td class="text-sm-start">@item.P_Stk_Max</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

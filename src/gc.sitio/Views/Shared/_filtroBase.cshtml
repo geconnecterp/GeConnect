@@ -6,20 +6,20 @@
 }
 <form id="frmFiltro" asp-action="index" asp-controller="abmproducto" asp-area="abms" method="get">
 
-    <div class="row">
-        <div class=" col-md-4 col-sm-12 mb-1 mt-1">
+    <div class="row  mb-1 mt-1">
+        <div class=" col-md-4 col-sm-12">
             <div class="input-group input-group-sm">
                 <span class="input-group-text">Descr:</span>
                 <input type="text" class="form-control inputEditable" asp-for="Buscar" placeholder="Ingresar descripción a buscar" style="background-color:rgb(251,255,195);font-weight:900;" autofocus />
             </div>
         </div>
-        <div class=" col-sm-6 col-md-4 mb-1">
+        <div class=" col-sm-6 col-md-4 ">
             <div class="input-group input-group-sm">
                 <span class="input-group-text">Id Desde:</span>
                 <input type="text" class="form-control inputEditable" asp-for="Id" placeholder="Ingresar Id a buscar" style="background-color:rgb(251,255,195);font-weight:900;" autofocus />
             </div>
         </div>
-        <div class=" col-sm-6 col-md-4 mb-1">
+        <div class=" col-sm-6 col-md-4">
             <div class="input-group input-group-sm">
                 <span class="input-group-text">Id Hasta:</span>
                 <input type="text" class="form-control inputEditable" asp-for="Id2" placeholder="Ingresar otro Id (no obligatorio)" style="background-color:rgb(251,255,195);font-weight:900;" autofocus />

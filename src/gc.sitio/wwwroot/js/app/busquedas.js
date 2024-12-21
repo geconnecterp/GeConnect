@@ -260,6 +260,13 @@ function selectReg(x) {
     $(x).addClass("selected-row");
 }
 
+function selectReg(x,gridId) {
+    $("#"+gridId+" tbody tr").each(function (index) {
+        $(this).removeClass("selected-row");
+    });
+    $(x).addClass("selected-row");
+}
+
 function inicializaBusquedaAvanzada() {
     //configurando proveedor
     if (typeof provUnico !== 'undefined' &&
