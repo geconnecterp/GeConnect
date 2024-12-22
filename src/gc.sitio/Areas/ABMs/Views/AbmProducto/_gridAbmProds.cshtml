@@ -13,6 +13,7 @@
             <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridProd">
                 <thead class="table-dark">
                     <tr class="header">
+
                         <th scope="col">@nameof(dataMod.P_id)</th>
                         <th scope="col">@nameof(dataMod.P_desc)</th>
                         <th scope="col">@nameof(dataMod.Cta_id)</th>
@@ -29,9 +30,21 @@
                     @foreach (var item in Model.ListaDatos)
                     {
                         if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-
-                        <tr class="@clase" onclick="selectReg(this)" ondblclick="selectAbmRegDbl(this)" >
-                            <td class="text-sm-center">@item.P_id</td>
+                        string estilo = string.Empty;
+                        switch (item.P_activo)
+                        {
+                            case "N":
+                                estilo = "estilo-N";
+                                break;
+                            case "D":
+                                estilo = "estilo-D";
+                                break;
+                            default:
+                                estilo = "estilo-S";
+                                break;
+                        }
+                        <tr class="@clase" onclick="selectReg(this)" ondblclick="selectAbmRegDbl(this)">
+                            <td class="@estilo text-sm-center ">@item.P_id</td>
                             <td class="text-sm-start">@item.P_desc</td>
                             <td class="text-sm-end">@item.Cta_id</td>
                             <td class="text-sm-start">@item.Cta_denominacion</td>
@@ -43,9 +56,9 @@
                             <td class="text-sm-start">@item.P_activo_des</td>
                         </tr>
                     }
-                    
-                </tbody>              
-            </table>           
+
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
