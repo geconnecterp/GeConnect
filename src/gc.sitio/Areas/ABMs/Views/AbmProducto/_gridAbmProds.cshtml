@@ -1,9 +1,10 @@
-﻿@model GridCore<ProductoListaDto>
+﻿@using System.Text
+@model GridCore<ProductoListaDto>
 
 @{
     var dataMod = new ProductoListaDto();
     var alt = true;
-    string clase = string.Empty;
+    StringBuilder clase = new StringBuilder();
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
 }
 
@@ -29,22 +30,23 @@
                 <tbody>
                     @foreach (var item in Model.ListaDatos)
                     {
-                        if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-                        string estilo = string.Empty;
+                        clase.Clear();
+                        if (alt) { clase.Append( "alt"); alt = false; } else { alt = true; }
                         switch (item.P_activo)
                         {
                             case "N":
-                                estilo = "estilo-N";
+                                clase.Append(" estilo-N");
                                 break;
                             case "D":
-                                estilo = "estilo-D";
+                                clase.Append(" estilo-D");
                                 break;
                             default:
-                                estilo = "estilo-S";
+                                clase.Append(" estilo-S");
                                 break;
                         }
-                        <tr class="@clase" onclick="selectReg(this)" ondblclick="selectAbmRegDbl(this)">
-                            <td class="@estilo text-sm-center ">@item.P_id</td>
+
+                        <tr class="@clase.ToString()" onclick="selectReg(this)" ondblclick="selectAbmRegDbl(this)">
+                            <td class="text-sm-center" >@item.P_id</td>
                             <td class="text-sm-start">@item.P_desc</td>
                             <td class="text-sm-end">@item.Cta_id</td>
                             <td class="text-sm-start">@item.Cta_denominacion</td>
