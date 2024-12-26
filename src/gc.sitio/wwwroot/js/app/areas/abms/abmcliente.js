@@ -154,6 +154,11 @@ function InicializaPantallaAbmProd() {
 	$("#lbRel01").text("TIPO");
 	$("#lbRel02").text("ZONA");
 
+	$("#lbChkDescr").text("Denominación");
+	$("#lbDescr").html("Desc");
+
+	$("#lbChkDesdeHasta").text("ID Cuenta");
+
 	CerrarWaiting();
 	return true;
 }
@@ -175,13 +180,25 @@ function cargaPaginacion() {
 
 function buscarClientes(pag) {
 	AbrirWaiting();
-	var buscar = $("#Buscar").val();
-	var id = $("#Id").val();
-	var id2 = $("#Id2").val();
+	var buscar = "";
+	var id = "";
+	var id2 = "";
 	var r01 = [];
 	var r02 = [];
-	$("#Rel01List").children().each(function (i, item) { r01.push($(item).val()) });
-	$("#Rel02List").children().each(function (i, item) { r02.push($(item).val()) });
+
+	if ($("#chkDescr").is(":checked")) {
+		buscar = $("#Buscar").val();
+	}
+	if ($("#chkDesdeHasta").is(":checked")) {
+		id = $("#Id").val();
+		id2 = $("#Id2").val();
+	}
+	if ($("#chkRel01").is(":checked")) {
+		$("#Rel01List").children().each(function (i, item) { r01.push($(item).val()) });
+	}
+	if ($("#chkRel02").is(":checked")) {
+		$("#Rel02List").children().each(function (i, item) { r02.push($(item).val()) });
+	}
 
 	var data1 = {
 		id, id2,
@@ -244,16 +261,6 @@ function selectReg(e) {
 		$(this).removeClass("selected-row");
 	});
 	$(e).addClass("selected-row");
-
-	//var cta_id = e.cells[0].innerText.trim();
-	//if (cta_id !== "") {
-	//	ctaId = cta_id;
-	//	BuscarCliente(cta_id);
-	//	BuscarFormaDePago();
-	//	BuscarOtrosContactos();
-	//	BuscarNotas();
-	//	BuscarObservaciones();
-	//}
 }
 
 function BuscarCliente(ctaId) {

@@ -23,6 +23,27 @@
         }
     });
 
+    //check generico chkDescr activando componentes disables
+    $("#chkDescr").on("click", function () {
+        if ($("#chkDescr").is(":checked")) {
+            $("#Buscar").prop("disabled", false);
+        }
+        else {
+            $("#Buscar").prop("disabled", true);
+        }
+    });
+
+    //check generico chkDescr activando componentes disables
+    $("#chkDesdeHasta").on("click", function () {
+        if ($("#chkDesdeHasta").is(":checked")) {
+            $("#Id").prop("disabled", false);
+            $("#Id2").prop("disabled", false);
+        }
+        else {
+            $("#Id").prop("disabled", true);
+            $("#Id2").prop("disabled", true);
+        }
+    });
 });
 function PostGenHtml(data, path, retorno) {
     PostGen(data, path, retorno, fnError, "HTML");
@@ -189,9 +210,11 @@ $("#Rel01").autocomplete({
     },
     minLength: 3,
     select: function (event, ui) {
-        $("#Rel01Item").val(ui.item.id);
-        var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
-        $("#Rel01List").append(opc);
+        if ($("#Rel01List").has('option:contains("' + ui.item.id +'")').length == 0) {
+            $("#Rel01Item").val(ui.item.id);
+            var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
+            $("#Rel01List").append(opc);
+        }
         return true;
     }
 });
@@ -215,9 +238,11 @@ $("#Rel02").autocomplete({
     },
     minLength: 3,
     select: function (event, ui) {
-        $("#Rel02Item").val(ui.item.id);
-        var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
-        $("#Rel02List").append(opc);
+        if ($("#Rel02List").has('option:contains("' + ui.item.id + '")').length == 0) {
+            $("#Rel02Item").val(ui.item.id);
+            var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
+            $("#Rel02List").append(opc);
+        }
         return true;
     }
 });

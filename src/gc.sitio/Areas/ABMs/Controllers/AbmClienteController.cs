@@ -2,6 +2,7 @@
 using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
@@ -112,7 +113,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
                     lista = OrdenarEntidad(lista, sortDir, sort);
                     ClientesBuscados = lista;
                 }
-                else if (PaginaProd != pag)  //&& PaginaProd >= 0 && !query.Todo
+                //else if (PaginaProd != pag)  //&& PaginaProd >= 0 && !query.Todo
+                else
                 {
                     //traemos datos desde la base
                     query.Sort = sort;
@@ -201,7 +203,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                     ComboDiasDeLaSemana = ComboDiasDeLaSemana(),
                     ComboZonas = ComboZonas(),
                     ComboRepartidores = ComboRepartidores(),
-                    ComboFinancieros = ComboFinanciero("BA"),
+                    ComboFinancieros = ComboFinanciero("BA", res.First().Cta_Emp.ToString()),
                     CuentaFormasDePago = ObtenerGridCore<CuentaFPDto>(cfp),
                     CuentaContactos = ObtenerGridCore<CuentaContactoDto>(ccon),
                     CuentaObs = ObtenerGridCore<CuentaObsDto>(cobs),
@@ -423,65 +425,65 @@ namespace gc.sitio.Areas.ABMs.Controllers
         [HttpPost]
         public async Task<IActionResult> BuscarObservaciones(string ctaId)
         {
-			RespuestaGenerica<EntidadBase> response = new();
-			try
-			{
-				if (string.IsNullOrEmpty(ctaId))
-					return PartialView("_tabDatosObs", new CuentaABMObservacionesModel());
+            RespuestaGenerica<EntidadBase> response = new();
+            try
+            {
+                if (string.IsNullOrEmpty(ctaId))
+                    return PartialView("_tabDatosObs", new CuentaABMObservacionesModel());
 
                 var cob = _cuentaServicio.GetCuentaObs(ctaId, TokenCookie);
-                if (cob== null)
-					return PartialView("_tabDatosObs", new CuentaABMObservacionesModel());
+                if (cob == null)
+                    return PartialView("_tabDatosObs", new CuentaABMObservacionesModel());
 
-				var ObsModel = new CuentaABMObservacionesModel()
-				{
+                var ObsModel = new CuentaABMObservacionesModel()
+                {
                     ComboTipoObs = ComboTipoObservaciones(),
-					CuentaObservaciones = ObtenerGridCore<CuentaObsDto>(cob),
-				};
-				return PartialView("_tabDatosObs", ObsModel);
-			}
-			catch (Exception ex)
-			{
-				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Observaciones";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Observaciones");
-				response.Mensaje = msg;
-				response.Ok = false;
-				response.EsWarn = false;
-				response.EsError = true;
-				return PartialView("_gridMensaje", response);
-			}
-		}
+                    CuentaObservaciones = ObtenerGridCore<CuentaObsDto>(cob),
+                };
+                return PartialView("_tabDatosObs", ObsModel);
+            }
+            catch (Exception ex)
+            {
+                string msg = "Error en la invocación de la API - Busqueda datos TAB -> Observaciones";
+                _logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Observaciones");
+                response.Mensaje = msg;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
+            }
+        }
 
         [HttpPost]
         public async Task<IActionResult> BuscarDatosObservaciones(string ctaId, string toId)
         {
-			RespuestaGenerica<EntidadBase> response = new();
-			try
-			{
-				if (string.IsNullOrWhiteSpace(ctaId) || string.IsNullOrWhiteSpace(toId))
-					return PartialView("_tabDatosObsSelected", new CuentaABMObservacionesSelectedModel());
-				var cob = _cuentaServicio.GetCuentaObsDatos(ctaId, toId, TokenCookie);
-				if (cob == null)
-					return PartialView("_tabDatosObsSelected", new CuentaABMObservacionesSelectedModel());
-				var model = new CuentaABMObservacionesSelectedModel()
-				{
+            RespuestaGenerica<EntidadBase> response = new();
+            try
+            {
+                if (string.IsNullOrWhiteSpace(ctaId) || string.IsNullOrWhiteSpace(toId))
+                    return PartialView("_tabDatosObsSelected", new CuentaABMObservacionesSelectedModel());
+                var cob = _cuentaServicio.GetCuentaObsDatos(ctaId, toId, TokenCookie);
+                if (cob == null)
+                    return PartialView("_tabDatosObsSelected", new CuentaABMObservacionesSelectedModel());
+                var model = new CuentaABMObservacionesSelectedModel()
+                {
                     ComboTipoObs = ComboTipoObservaciones(),
-					Observacion = ObtenerObservacionModel(cob.First())
-				};
-				return PartialView("_tabDatosObsSelected", model);
+                    Observacion = ObtenerObservacionModel(cob.First())
+                };
+                return PartialView("_tabDatosObsSelected", model);
 
-			}
-			catch (Exception ex)
-			{
-				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Obs Selected";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Obs Selected");
-				response.Mensaje = msg;
-				response.Ok = false;
-				response.EsWarn = false;
-				response.EsError = true;
-				return PartialView("_gridMensaje", response);
-			}
-		}
+            }
+            catch (Exception ex)
+            {
+                string msg = "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Obs Selected";
+                _logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Obs Selected");
+                response.Mensaje = msg;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
+            }
+        }
 
         [HttpPost]
         public JsonResult BuscarR01(string prefix)
@@ -501,22 +503,22 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
         #region Métodos Privados
         private ObservacionesModel ObtenerObservacionModel(CuentaObsDto obs)
-        { 
+        {
             var mod = new ObservacionesModel();
             if (obs == null)
                 return mod;
 
-			#region map
+            #region map
             mod.to_lista = obs.to_lista;
             mod.to_id = obs.to_id;
             mod.to_desc = obs.to_desc;
             mod.cta_obs = obs.cta_obs;
             mod.cta_id = obs.cta_id;
-			#endregion
+            #endregion
             return mod;
-		}
-		private NotaModel ObtenerNotaModel(CuentaNotaDto nota)
-        { 
+        }
+        private NotaModel ObtenerNotaModel(CuentaNotaDto nota)
+        {
             var nom = new NotaModel();
             if (nota == null)
                 return nom;
@@ -532,8 +534,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
             return nom;
         }
         private OtroContactoModel ObtenerOtroContactoModel(CuentaContactoDto contacto)
-        { 
-            var ocm=new OtroContactoModel();
+        {
+            var ocm = new OtroContactoModel();
             if (contacto == null)
                 return ocm;
             #region mapp
@@ -577,11 +579,16 @@ namespace gc.sitio.Areas.ABMs.Controllers
             var lista = DepartamentoLista.Select(x => new ComboGenDto { Id = x.dep_id, Descripcion = x.dep_nombre });
             return HelperMvc<ComboGenDto>.ListaGenerica(lista);
         }
-        private SelectList ComboFinanciero(string tcf_id)
+        private SelectList ComboFinanciero(string tcf_id, string cta_emp)
         {
-            CargarFinancieros(tcf_id);
-            var lista = FinancierosLista.Select(x => new ComboGenDto { Id = x.ctaf_id, Descripcion = x.ctaf_denominacion });
-            return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+            if (cta_emp == "S")
+            {
+                CargarFinancieros(tcf_id);
+                var lista = FinancierosLista.Select(x => new ComboGenDto { Id = x.ctaf_id, Descripcion = x.ctaf_denominacion });
+                return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+            }
+            else
+                return HelperMvc<ComboGenDto>.ListaGenerica(new List<FinancieroDto>().Select(x => new ComboGenDto { Id = x.ctaf_id, Descripcion = x.ctaf_denominacion }));
         }
         private void CargarDepartametos(string prov_id)
         {
