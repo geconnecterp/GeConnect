@@ -1,125 +1,154 @@
 ﻿@model QueryFilters
 @{
-    Layout = "~/views/shared/_Layout.cshtml";
-    var filtro = new QueryFilters() { Rel01 = new List<string>(), Rel02 = new List<string>() };
+	Layout = "~/views/shared/_Layout.cshtml";
+	var filtro = new QueryFilters() { Rel01 = new List<string>(), Rel02 = new List<string>() };
 }
 
 @section styles {
-    <link rel="stylesheet" href="~/css/simplePagination.css" />
+	<link rel="stylesheet" href="~/css/simplePagination.css" />
 }
 
 <div class="container">
-    <div class="d-flex justify-content-sm-between">
-        <button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
-            <i class="bx bx-filter bx-xs"></i>
-        </button>
+	<div class="row">
+		<div class="col-md-6">
+			<div class="d-flex justify-content-sm-between">
+				<button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
+					<i class="bx bx-filter bx-xs"></i>
+				</button>
 
-        <button class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle">
-            <i class="bx bx-arrow-to-bottom bx-xs"></i>
-        </button>
-    </div>
-    <div class="collapse" id="divFiltro" style="">
-        <partial name="_filtroBase" model="filtro" />
-        @Html.Hidden("pagEstado", false);
-    </div>
-    <div class="collapse" id="divDetalle" style="">
-        <ul class="nav nav-tabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-home" aria-controls="navs-top-home" aria-selected="true">
-                    Cliente
+				<button class="btn btn-primary btn-sm mt-1 me-1" type="button" id="btnDetalle" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle">
+					<i class="bx bx-arrow-to-bottom bx-xs"></i>
+				</button>
+			</div>
+		</div>
+		<div class="col-md-2">
+            <div class="d-flex justify-content-sm-center">
+                <button id="btnAbmAceptar" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Aceptar" disabled>
+                    <i class="bx bx-check-circle bx-xs"></i>
                 </button>
-            </li>
-            <li class="nav-item" role="presentation" id="tabFormaDePago">
-                <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-profile" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1">
-                    Formas de Pago
-                </button>
-            </li>
-            <li class="nav-item" role="presentation" id="tabOtrosContactos">
-                <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-messages" aria-controls="navs-top-messages" aria-selected="false" tabindex="-1">
-                    Otros Contactos
-                </button>
-            </li>
-            <li class="nav-item" role="presentation" id="tabNotas">
-                <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-notes" aria-controls="navs-top-notes" aria-selected="false" tabindex="-1">
-                    Notas
-                </button>
-            </li>
-            <li class="nav-item" role="presentation" id="tabObservaciones">
-                <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-obs" aria-controls="navs-top-obs" aria-selected="false" tabindex="-1">
-                    Observaciones
-                </button>
-            </li>
-        </ul>
-        <div class="tab-content">
-            <div class="tab-pane fade show active" id="navs-top-home" role="tabpanel">
-                <div id="divDatosCliente">
-                </div>
-            </div>
-            <div class="tab-pane fade" id="navs-top-profile" role="tabpanel">
-                <div id="divFormasDePago">
-                </div>
-            </div>
-            <div class="tab-pane fade" id="navs-top-messages" role="tabpanel">
-                <div id="divOtrosContactos">
-                </div>
-            </div>
-            <div class="tab-pane fade" id="navs-top-notes" role="tabpanel">
-                <div id="divNotas">
-                </div>
-            </div>
-            <div class="tab-pane fade" id="navs-top-obs" role="tabpanel">
-                <div id="divObservaciones">
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        @* <partial name="_gridAbmProds"  /> *@
-        <div id="divGrilla">
-            <p style="background-color:gray">
-                <h5>No se han especificado datos aún.</h5>
-            </p>
-        </div>
-    </div>
-    <div class="row d-flex p-2 flex-fill">
-        <div class="col-2"></div>
-        <div id="divPaginacion" class="">
-          
-        </div>
-        <div class="col-2"></div>
-    </div>
 
-   
+                <button id="btnAbmCancelar" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar" disabled>
+                    <i class="bx bx-x-circle bx-xs"></i>
+                </button>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="d-flex justify-content-sm-center">
+                <button id="btnAbmNuevo" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Nuevo">
+                    <i class="bx bx-check-circle bx-xs"></i>
+                </button>
+
+                <button id="btnAbmModif" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Editar" disabled>
+                    <i class="bx bx-x-circle bx-xs"></i>
+                </button>
+                <button id="btnAbmElimi" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Eliminar/Discontinuar" disabled>
+                    <i class="bx bx-x-circle bx-xs"></i>
+                </button>
+            </div>
+        </div>
+	</div>
+	
+	<div class="collapse" id="divFiltro" style="">
+		<partial name="_filtroBase" model="filtro" />
+		@Html.Hidden("pagEstado", false);
+	</div>
+	<div class="collapse" id="divDetalle" style="">
+		<ul class="nav nav-tabs" role="tablist">
+			<li class="nav-item" role="presentation">
+				<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-home" aria-controls="navs-top-home" aria-selected="true">
+					Cliente
+				</button>
+			</li>
+			<li class="nav-item" role="presentation" id="tabFormaDePago">
+				<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-profile" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1">
+					Formas de Pago
+				</button>
+			</li>
+			<li class="nav-item" role="presentation" id="tabOtrosContactos">
+				<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-messages" aria-controls="navs-top-messages" aria-selected="false" tabindex="-1">
+					Otros Contactos
+				</button>
+			</li>
+			<li class="nav-item" role="presentation" id="tabNotas">
+				<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-notes" aria-controls="navs-top-notes" aria-selected="false" tabindex="-1">
+					Notas
+				</button>
+			</li>
+			<li class="nav-item" role="presentation" id="tabObservaciones">
+				<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-obs" aria-controls="navs-top-obs" aria-selected="false" tabindex="-1">
+					Observaciones
+				</button>
+			</li>
+		</ul>
+		<div class="tab-content">
+			<div class="tab-pane fade show active" id="navs-top-home" role="tabpanel">
+				<div id="divDatosCliente">
+				</div>
+			</div>
+			<div class="tab-pane fade" id="navs-top-profile" role="tabpanel">
+				<div id="divFormasDePago">
+				</div>
+			</div>
+			<div class="tab-pane fade" id="navs-top-messages" role="tabpanel">
+				<div id="divOtrosContactos">
+				</div>
+			</div>
+			<div class="tab-pane fade" id="navs-top-notes" role="tabpanel">
+				<div id="divNotas">
+				</div>
+			</div>
+			<div class="tab-pane fade" id="navs-top-obs" role="tabpanel">
+				<div id="divObservaciones">
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		@* <partial name="_gridAbmProds"  /> *@
+		<div id="divGrilla">
+			<p style="background-color:gray">
+				<h5>No se han especificado datos aún.</h5>
+			</p>
+		</div>
+	</div>
+	<div class="row d-flex p-2 flex-fill">
+		<div class="col-2"></div>
+		<div id="divPaginacion" class="">
+		</div>
+		<div class="col-2"></div>
+	</div>
+
+
 
 </div>
 
 
 @section scripts {
-    <script type="text/javascript">
-        var totalRegs = 0;
-        var pagRegs = 0;
-        var pags = 0;
-        var pagina = 1;
-        var search = "";
-        var funcCallBack = "buscarClientes";
-        var dataBak = {};
-        var ctaId = "";
-        var buscarUrl = "@Url.Action("buscar", "abmcliente", new { area = "abms" })";
-        var buscarProveedorUrl = "@Url.Action("Buscar", "proveedor", new { area = "gestion" })";
-        var autoComRel01Url = "@Url.Action("BuscarR01", "abmcliente", new { area = "abms" })";
-        var autoComRel02Url = "@Url.Action("BuscarR02", "abmcliente", new { area = "abms" })";
-        var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "abmcliente", new { area = "abms" })";
-        var buscarClienteUrl = "@Url.Action("BuscarCliente", "abmcliente", new { area = "abms" })";
-        var buscarFormaDePagoUrl = "@Url.Action("BuscarFormasDePago", "abmcliente", new { area = "abms" })";
-        var buscarDatosFormasDePagoUrl = "@Url.Action("BuscarDatosFormasDePago", "abmcliente", new { area = "abms" })";
-        var buscarOtrosContactosUrl = "@Url.Action("BuscarOtrosContactos", "abmcliente", new { area = "abms" })";
-        var buscarDatosOtrosContactosUrl = "@Url.Action("BuscarDatosOtrosContactos", "abmcliente", new { area = "abms" })";
-        var buscarNotasUrl = "@Url.Action("BuscarNotas", "abmcliente", new { area = "abms" })";
-        var buscarDatosNotaUrl = "@Url.Action("BuscarDatosNotas", "abmcliente", new { area = "abms" })";
-        var buscarObservacionesUrl = "@Url.Action("BuscarObservaciones", "abmcliente", new { area = "abms" })";
-        var buscarDatosObservacionesUrl = "@Url.Action("BuscarDatosObservaciones", "abmcliente", new { area = "abms" })";
-    </script>
-    <script src="~/js/plugins/jquery.simplePagination.js"></script>
-    <script src="~/js/app/busquedas.js"></script>
-    <script src="~/js/app/areas/abms/abmcliente.js" type="text/javascript"></script>
+	<script type="text/javascript">
+		var totalRegs = 0;
+		var pagRegs = 0;
+		var pags = 0;
+		var pagina = 1;
+		var search = "";
+		var funcCallBack = "buscarClientes";
+		var dataBak = {};
+		var ctaId = "";
+		var buscarUrl = "@Url.Action("buscar", "abmcliente", new { area = "abms" })";
+		var buscarProveedorUrl = "@Url.Action("Buscar", "proveedor", new { area = "gestion" })";
+		var autoComRel01Url = "@Url.Action("BuscarR01", "abmcliente", new { area = "abms" })";
+		var autoComRel02Url = "@Url.Action("BuscarR02", "abmcliente", new { area = "abms" })";
+		var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "abmcliente", new { area = "abms" })";
+		var buscarClienteUrl = "@Url.Action("BuscarCliente", "abmcliente", new { area = "abms" })";
+			var buscarFormaDePagoUrl = "@Url.Action("BuscarFormasDePago", "abmcliente", new { area = "abms" })";
+				var buscarDatosFormasDePagoUrl = "@Url.Action("BuscarDatosFormasDePago", "abmcliente", new { area = "abms" })";
+				var buscarOtrosContactosUrl = "@Url.Action("BuscarOtrosContactos", "abmcliente", new { area = "abms" })";
+				var buscarDatosOtrosContactosUrl = "@Url.Action("BuscarDatosOtrosContactos", "abmcliente", new { area = "abms" })";
+				var buscarNotasUrl = "@Url.Action("BuscarNotas", "abmcliente", new { area = "abms" })";
+				var buscarDatosNotaUrl = "@Url.Action("BuscarDatosNotas", "abmcliente", new { area = "abms" })";
+				var buscarObservacionesUrl = "@Url.Action("BuscarObservaciones", "abmcliente", new { area = "abms" })";
+				var buscarDatosObservacionesUrl = "@Url.Action("BuscarDatosObservaciones", "abmcliente", new { area = "abms" })";
+	</script>
+	<script src="~/js/plugins/jquery.simplePagination.js"></script>
+	<script src="~/js/app/busquedas.js"></script>
+	<script src="~/js/app/areas/abms/abmcliente.js" type="text/javascript"></script>
 }

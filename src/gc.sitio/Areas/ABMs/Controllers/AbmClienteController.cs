@@ -41,6 +41,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
         private readonly IFinancieroServicio _financieroServicio;
         private readonly ITipoContactoServicio _tipoContactoServicio;
         private readonly ITipoObsServicio _tipoObsServicio;
+        private readonly IAbmServicio _abmServicio;
         private readonly ILogger<AbmClienteController> _logger;
 
         public AbmClienteController(IZonaServicio zonaServicio, ITipoNegocioServicio tipoNegocioServicio, IOptions<AppSettings> options,
@@ -53,7 +54,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                                     IDepartamentoServicio departamentoServicio, IListaDePrecioServicio listaDePrecioServicio,
                                     IVendedorServicio vendedorServicio, IRepartidorServicio repartidorServicio,
                                     IFinancieroServicio financieroServicio, ITipoContactoServicio tipoContactoServicio,
-                                    ITipoObsServicio tipoObsServicio) : base(options, accessor, logger)
+                                    ITipoObsServicio tipoObsServicio, IAbmServicio abmServicio) : base(options, accessor, logger)
         {
             _settings = options.Value;
             _tipoNegocioServicio = tipoNegocioServicio;
@@ -75,6 +76,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             _financieroServicio = financieroServicio;
             _tipoContactoServicio = tipoContactoServicio;
             _tipoObsServicio = tipoObsServicio;
+            _abmServicio = abmServicio;
         }
 
         [HttpGet]
@@ -509,22 +511,17 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		/// <param name="ctaId"></param>
 		/// <returns></returns>
 		[HttpPost]
-        public async Task<IActionResult> DataOpsCliente(ABMClienteRequest request)
+        public JsonResult DataOpsCliente(ABMClienteRequest request)
         {
 			RespuestaGenerica<EntidadBase> response = new();
 			try
             {
 
-            }
+				return Json(new { error = false, msg = "OK." });
+			}
             catch (Exception ex)
             {
-				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Obs Selected";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Obs Selected");
-				response.Mensaje = msg;
-				response.Ok = false;
-				response.EsWarn = false;
-				response.EsError = true;
-				return PartialView("_gridMensaje", response);
+				return Json(new { error = true, msg = "Ha ocurrido un error al intentar actualizar la información." });
 			}
         }
 		#endregion

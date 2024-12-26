@@ -13,6 +13,14 @@
 	$("#tabNotas").on("click", function () { BuscarNotas(); });
 	$("#tabObservaciones").on("click", function () { BuscarObservaciones(); });
 
+	/*ABM Botones*/
+	$("#btnAbmNuevo").on("click", function () { btnNuevoClick(); });
+	$("#btnAbmModif").on("click", function () { btnModiClick(); });
+	$("#btnAbmElimi").on("click", function () { btnBajaClick(); });
+	$("#btnAbmAceptar").on("click", function () { btnSubmitClick(); });
+	$("#btnAbmCancelar").on("click", function () { btnCancelClick(); });
+
+
 	InicializaPantallaAbmProd();
 	funcCallBack = buscarClientes;
 	return true;
@@ -28,7 +36,9 @@ const AbmObject = {
 const AbmAction = {
 	ALTA: 'A', 
 	BAJA: 'B', 
-	MODIFICACION: 'M' 
+	MODIFICACION: 'M', 
+	SUBMIT: 'S',
+	CANCEL: 'C'
 }
 
 function BuscarObservaciones() {
@@ -301,4 +311,55 @@ function selectRegDbl(x) {
 		BuscarNotas();
 		BuscarObservaciones();
 	}
+}
+
+function HabilitarBotonesPorAccion(accion) {
+	switch (accion) {
+		case AbmAction.ALTA:
+			HabilitarBotones(true, true, true, false, false);
+			break;
+		case AbmAction.BAJA:
+			HabilitarBotones(true, true, true, false, false);
+			break;
+		case AbmAction.MODIFICACION:
+			HabilitarBotones(true, true, true, false, false);
+			break;
+		case AbmAction.SUBMIT:
+			HabilitarBotones(false, false, false, true, true);
+			break;
+		case AbmAction.CANCEL:
+			HabilitarBotones(false, false, false, true, true);
+			break;
+		default:
+			HabilitarBotones(false, false, false, true, true);
+			break;
+	}
+}
+
+function HabilitarBotones(btnAlta, btnBaja, btnModi, btnSubmit, btnCancel) {
+	$("#btnAbmNuevo").prop("disabled", btnAlta);
+	$("#btnAbmModif").prop("disabled", btnModi);
+	$("#btnAbmElimi").prop("disabled", btnBaja);
+	$("#btnAbmAceptar").prop("disabled", btnSubmit);
+	$("#btnAbmCancelar").prop("disabled", btnCancel);
+}
+
+function btnNuevoClick() {
+	HabilitarBotonesPorAccion(AbmAction.ALTA);
+}
+
+function btnModiClick() {
+	HabilitarBotonesPorAccion(AbmAction.MODIFICACION);
+}
+
+function btnBajaClick() {
+	HabilitarBotonesPorAccion(AbmAction.BAJA);
+}
+
+function btnSubmitClick() {
+	HabilitarBotonesPorAccion(AbmAction.SUBMIT);
+}
+
+function btnCancelClick() {
+	HabilitarBotonesPorAccion(AbmAction.CANCEL);
 }
