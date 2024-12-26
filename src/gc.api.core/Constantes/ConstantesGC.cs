@@ -151,10 +151,12 @@
 			public const string SP_ABM_CLI_OBS_Datos = "SPGECO_ABM_Cli_Obs_Datos";
 			public const string SP_ABM_CLI_NOTA_Lista = "SPGECO_ABM_Cli_Nota_Lista";
 			public const string SP_ABM_CLI_NOTA_Datos = "SPGECO_ABM_Cli_Nota_Datos";
-			#endregion
 
-			#region Tipos
-			public const string SP_TIPOS_NEGOCIO_LISTA = "SPGECO_Tipos_Negocios_Lista";
+            public const string SP_ABM_CONFIRMAR = "SPSPGECO_ABM_Confirmar";
+            #endregion
+
+            #region Tipos
+            public const string SP_TIPOS_NEGOCIO_LISTA = "SPGECO_Tipos_Negocios_Lista";
             public const string SP_ZONAS_LISTA = "SPGECO_Zonas_Lista";
             public const string SP_CONDICION_AFIP_LISTA = "SPGECO_Condiciones_AFIP_Lista";
             public const string SP_NATURALEZA_JURIDICA_LISTA = "SPGECO_Naturaleza_Juridicas_Lista";

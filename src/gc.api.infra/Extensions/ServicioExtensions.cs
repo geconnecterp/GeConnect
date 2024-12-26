@@ -14,6 +14,7 @@ using gc.api.Core.Interfaces.Servicios;
 using gc.api.infra.Datos.Contratos;
 using Microsoft.AspNetCore.Http;
 using gc.api.core.Servicios.ABM;
+using gc.api.core.Contratos.Servicios.ABM;
 
 namespace gc.api.infra.Extensions
 {
@@ -63,6 +64,8 @@ namespace gc.api.infra.Extensions
             services.AddScoped<ITiposDocumentoServicio, TipoDocumentoServicio>();
 			services.AddScoped<ITipoContactoServicio, TipoContactoServicio>();
             services.AddScoped<ITipoObsServicio, TipoObsServicio>();
+            services.AddScoped<IAbmServicio, AbmServicio>();
+
 
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));

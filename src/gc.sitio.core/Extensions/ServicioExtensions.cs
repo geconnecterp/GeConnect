@@ -43,6 +43,7 @@ namespace gc.sitio.core.Extensions
 			services.AddScoped<IFinancieroServicio, FinancieroServicio>();
 			services.AddScoped<ITipoContactoServicio, TipoContactoServicio>();
             services.AddScoped<ITipoObsServicio, TipoObsServicio>();
+            services.AddScoped<IAbmServicio, AbmServicio>();
             return services;
         }
     }

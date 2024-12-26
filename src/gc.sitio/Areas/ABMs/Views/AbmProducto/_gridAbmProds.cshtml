@@ -4,7 +4,8 @@
 @{
     var dataMod = new ProductoListaDto();
     var alt = true;
-    StringBuilder clase = new StringBuilder();
+    string clase = string.Empty;
+    string color = string.Empty;
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
 }
 
@@ -30,23 +31,21 @@
                 <tbody>
                     @foreach (var item in Model.ListaDatos)
                     {
-                        clase.Clear();
-                        if (alt) { clase.Append( "alt"); alt = false; } else { alt = true; }
+                        if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
                         switch (item.P_activo)
                         {
                             case "N":
-                                clase.Append(" estilo-N");
+                                color = "#0000ff";
                                 break;
                             case "D":
-                                clase.Append(" estilo-D");
+                                color = "#ff0000";
                                 break;
                             default:
-                                clase.Append(" estilo-S");
+                                color = "#00ff00";
                                 break;
                         }
-
-                        <tr class="@clase.ToString()" onclick="selectReg(this)" ondblclick="selectAbmRegDbl(this)">
-                            <td class="text-sm-center" >@item.P_id</td>
+                        <tr class="@clase" onclick="selectReg(this,'tbGridProd')" ondblclick="selectAbmRegDbl(this)">
+                            <td class="text-sm-center" style="border-left: 5px solid @color;text-align: left;">@item.P_id</td>
                             <td class="text-sm-start">@item.P_desc</td>
                             <td class="text-sm-end">@item.Cta_id</td>
                             <td class="text-sm-start">@item.Cta_denominacion</td>
@@ -58,8 +57,16 @@
                             <td class="text-sm-start">@item.P_activo_des</td>
                         </tr>
                     }
-
                 </tbody>
+            </table>
+        </div>
+        <div class="row m-3">
+            <table style="width:100px;text-align:center">
+                <tr>
+                    <td style="background-color: #00ff00;color:#FFFFFF;font-weight:600;">S</td>
+                    <td style="background-color: #0000ff;color:#FFFFFF;font-weight:600;">N</td>
+                    <td style="background-color: #ff0000;color:#FFFFFF;font-weight:600;">D</td>
+                </tr>
             </table>
         </div>
     </div>
