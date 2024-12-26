@@ -5,7 +5,8 @@ namespace gc.infraestructura.Dtos.Gen
 	{
 		public short resultado { get; set; } 
 		public string resultado_msj { get; set; } = string.Empty;
-	}
+		public string resultado_setfocus { get; set; } = string.Empty;
+    }
 
 	public class TIRespuestaDto : RespuestaDto {
         public string Ti { get; set; }=string.Empty;

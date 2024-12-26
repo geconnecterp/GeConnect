@@ -45,7 +45,7 @@ table > thead > tr > th {
 
 /*---CONFIGURACION SOBRE TABLAS----*/
 tr.alt {
-    background-color: #C0FFC0 !important;
+    background-color: #C0FFC0; /*!important**/
 }
 
 tr.sel {
@@ -59,17 +59,15 @@ td.corta-linea {
     overflow: hidden;
 }
 
-tr.estado-S {
-    border-left: 5px solid #0f0 !important;
-    text-align: left;
+
+.estados {
+    border-left: 5px solid #00ff00;text-align: left;
 }
-tr.estado-N {
-    border-left: 5px solid #00f !important;
-    text-align: left;
+.estadon {
+    border-left: 5px solid #0000ff;text-align: left;
 }
-tr.estado-D {
-    border-left: 5px solid #f00 !important;
-    text-align: left;
+.estadod {
+    border-left: 5px solid #ff0000;text-align: left;
 }
 
 .selected-row > td {
@@ -290,9 +288,12 @@ input[type=number] {
         background-color: #f1f1f1
     }
 
-        .dropdown-menu > li:hover > .submenu {
+    .dropdown-menu > li:hover > .submenu {
             display: block;
-        }
+    }
+
+  
+
 }
 /* ============ desktop view .end// ============ */
 

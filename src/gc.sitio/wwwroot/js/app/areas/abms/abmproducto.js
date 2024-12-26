@@ -149,6 +149,11 @@ function cargaPaginacion() {
 
 function buscarProductos(pag) {
     AbrirWaiting();
+
+    //desactivamos los botones de acción
+    activarBotones(false);
+
+
     var buscar = $("#Buscar").val();
     var id = $("#Id").val();
     var id2 = $("#Id2").val();
@@ -232,7 +237,10 @@ function selectAbmRegDbl(x) {
         $("#btnDetalle").prop("disabled", false);
         $("#divFiltro").collapse("hide");
         $("#divDetalle").collapse("show");
-        
+
+        //activar botones de acción
+        activarBotones(true);
+
         CerrarWaiting();
 
     });
@@ -254,3 +262,4 @@ function buscarLimite(data) {
         $("#divSucursal").html(obj);
     });
 }
+

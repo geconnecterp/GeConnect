@@ -332,24 +332,6 @@ namespace gc.sitio.Areas.ABMs.Controllers
         }
 
 
-        //[HttpPost]
-        //public JsonResult BuscarProvs(string prefix)
-        //{
-        //    //var nombres = await _provSv.BuscarAsync(new QueryFilters { Search = prefix }, TokenCookie);
-        //    //var lista = nombres.Item1.Select(c => new EmpleadoVM { Nombre = c.NombreCompleto, Id = c.Id, Cuil = c.CUIT });
-        //    var rub = ProveedoresLista.Where(x => x.Cta_Lista.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
-        //    var rubros = rub.Select(x => new ComboGenDto { Id = x.Cta_Id, Descripcion = x.Cta_Lista });
-        //    return Json(rubros);
-        //}
-
-        //[HttpPost]
-        //public JsonResult BuscarRubros(string prefix)
-        //{
-        //    //var nombres = await _provSv.BuscarAsync(new QueryFilters { Search = prefix }, TokenCookie);
-        //    //var lista = nombres.Item1.Select(c => new EmpleadoVM { Nombre = c.NombreCompleto, Id = c.Id, Cuil = c.CUIT });
-        //    var rub = RubroLista.Where(x => x.Rub_Desc.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
-        //    var rubros = rub.Select(x => new ComboGenDto { Id = x.Rub_Id, Descripcion = x.Rub_Desc });
-        //    return Json(rubros);
-        //}
+       
     }
 }

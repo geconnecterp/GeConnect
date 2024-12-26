@@ -5,23 +5,6 @@
 @{
     var list = new List<ComboGenDto> { new ComboGenDto { Id = "S", Descripcion = "S" }, new ComboGenDto { Id = "N", Descripcion = "N" }, new ComboGenDto { Id = "D", Descripcion = "D" } };
     var listAct = new SelectList(list, "Id", "Descripcion");
-
-    //reglas iniciales
-    //-BALANZA
-    string balDis = "";
-    bool balVal = false;
-    if (Model.Up_Id.Equals("07"))
-    {
-        balDis = "disabled";
-    }
-    else
-    {
-        if (Model.P_Balanza.Equals("S"))
-        {
-            balVal = true;
-        }
-    }
-
 }
 
 <div class="row">
@@ -59,7 +42,7 @@
             <div class="col-sm-6">
                 <div class="input-group input-group-sm">
                     <div class="form-check form-check-inline form-switch mb-2">
-                        <input class="form-check-input" type="checkbox" name="pBalanza" value='@Model.P_Balanza=="S"' id="pBalanza"  />
+                        <input class="form-check-input" type="checkbox" asp-for="PBalanza" />
                         <label class="form-check-label" for="pBalanza">Balanza</label>
                     </div>
                     <span class="input-group-text">Días Vto </span>
@@ -80,7 +63,7 @@
             <div class="col-sm-6">
                 <div class="input-group input-group-sm">
                     <div class="form-check form-check-inline form-switch mb-2">
-                        <input class="form-check-input" type="checkbox" name="pConVto" value='@Model.P_Con_Vto' id="pConVto" />
+                        <input class="form-check-input" type="checkbox" asp-for="PConVto" />
                         <label class="form-check-label" for="pConVto">Vto Stk</label>
                     </div>
                     <span class="input-group-text">Días Vto </span>
@@ -99,7 +82,7 @@
             <div class="col-sm-6">
                 <div class="input-group input-group-sm">
                     <div class="form-check form-check-inline form-switch mb-2">
-                        <input class="form-check-input" type="checkbox" name="pAltaRot" value='@Model.P_Alta_Rotacion=="S"' id="pAltaRot" />
+                        <input class="form-check-input" type="checkbox" asp-for="PAltaRotacion" />
                         <label class="form-check-label" for="pAltaRot">Alta Rotación</label>
                     </div>
                 </div>
@@ -135,11 +118,11 @@
             </div>
             <div class="col-sm-6">
                 <div class="form-check form-check-inline form-switch mb-2">
-                    <input class="form-check-input" type="checkbox" name="admMayExcl" value='@Model.Adm_May_Excluye=="S"' id="admMayExcl" />
+                    <input class="form-check-input" type="checkbox" asp-for="AdmMayExcluye" />
                     <label class="form-check-label" for="admMayExcl" id="lbRel01">Excluye Minorista</label>
                 </div>
                 <div class="form-check form-check-inline form-switch mb-2">
-                    <input class="form-check-input" type="checkbox" name="admMinExcl" value='@Model.Adm_Min_Excluye=="S"' id="admMinExcl" />
+                    <input class="form-check-input" type="checkbox" asp-for="AdmMinExcluye" />
                     <label class="form-check-label" for="admMinExcl" id="lbRel01">Excluye Mayorista</label>
                 </div>
             </div>
@@ -154,13 +137,13 @@
             </div>
             <div class="col-sm-6">
                 <div class="form-check form-check-inline form-switch mb-2">
-                    <input class="form-check-input" type="checkbox" name="piAutoExcl" value='@Model.Pi_Auto_Excluye=="S"' id="piAutoExcl" />
+                    <input class="form-check-input" type="checkbox" asp-for="PiAutoExluye" />
                     <label class="form-check-label" for="piAutoExcl">Excluye PI Auto</label>
                 </div>
-                <div class="form-check form-check-inline form-switch mb-2">
-                    <input class="form-check-input" type="checkbox" name="pNoSe" value='@Model.Lp_Id_Default=="S"' id="pNoSe" />
+               @*  <div class="form-check form-check-inline form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" asp-for="LpIdDefault" />
                     <label class="form-check-label" for="pNoSe">Excluye OC Auto</label>
-                </div>
+                </div> *@
             </div>
         </div>
         <!--Linea 08-->
