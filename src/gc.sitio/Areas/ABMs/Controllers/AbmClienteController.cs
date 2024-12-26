@@ -4,6 +4,7 @@ using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.ABM;
+using gc.infraestructura.Dtos.ABM.Request;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Helpers;
@@ -501,8 +502,35 @@ namespace gc.sitio.Areas.ABMs.Controllers
             return Json(zonas);
         }
 
-        #region Métodos Privados
-        private ObservacionesModel ObtenerObservacionModel(CuentaObsDto obs)
+		#region Guardado de datos
+		/// <summary>
+		/// Metodo que engloba las tres operaciones de ABM de cliente
+		/// </summary>
+		/// <param name="ctaId"></param>
+		/// <returns></returns>
+		[HttpPost]
+        public async Task<IActionResult> DataOpsCliente(ABMClienteRequest request)
+        {
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+            {
+
+            }
+            catch (Exception ex)
+            {
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Obs Selected";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Obs Selected");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+        }
+		#endregion
+
+		#region Métodos Privados
+		private ObservacionesModel ObtenerObservacionModel(CuentaObsDto obs)
         {
             var mod = new ObservacionesModel();
             if (obs == null)

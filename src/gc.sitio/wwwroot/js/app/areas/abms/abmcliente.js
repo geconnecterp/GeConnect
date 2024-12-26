@@ -12,14 +12,24 @@
 	$("#tabOtrosContactos").on("click", function () { BuscarOtrosContactos(); });
 	$("#tabNotas").on("click", function () { BuscarNotas(); });
 	$("#tabObservaciones").on("click", function () { BuscarObservaciones(); });
-	//
-	//codigo trasladado a siteGen
 
 	InicializaPantallaAbmProd();
-	/*    AbrirWaiting();*/
 	funcCallBack = buscarClientes;
 	return true;
 });
+
+const AbmObject = {
+	CLIENTES: 'clientes', //ABM principal clientes
+	CLIENTES_CONDICIONES_VTA: 'clientes_condiciones_vtas', //ABM relacionado clientes formas de pago
+	CUENTAS_CONTACTOS: 'cuentas_contactos', //ABM relacionado contactos
+	CUENTAS_NOTAS: 'cuentas_notas' //ABM relacionado notas de clientes
+}
+
+const AbmAction = {
+	ALTA: 'A', 
+	BAJA: 'B', 
+	MODIFICACION: 'M' 
+}
 
 function BuscarObservaciones() {
 	if (ctaId != "") {

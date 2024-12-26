@@ -1474,40 +1474,6 @@ namespace gc.sitio.Controllers
             return HelperMvc<ComboGenDto>.ListaGenerica(lista);
         }
 
-        //protected async Task<IActionResult> BusquedaAvanzada(string ri01, string ri02, bool act, bool dis, bool ina, bool cstk, bool sstk, string search, IProductoServicio _productoServicio)
-        //{
-        //	GridCore<ProductoListaDto> grillaDatos;
-        //	RespuestaGenerica<EntidadBase> response = new();
-        //	try
-        //	{
-        //		var busc = new BusquedaProducto
-        //		{
-        //			Busqueda = search,
-        //			ConStock = cstk,
-        //			SinStock = sstk,
-        //			CtaProveedorId = ri01,
-        //			RubroId = ri02,
-        //			EstadoActivo = act,
-        //			EstadoDiscont = dis,
-        //			EstadoInactivo = ina
-        //		};
-
-        //		List<ProductoListaDto> productos = await _productoServicio.BusquedaListaProductos(busc, TokenCookie);
-        //		grillaDatos = GenerarGrilla<ProductoListaDto>(productos, "p_id");
-        //		return PartialView("_gridProdsAdv", grillaDatos);
-        //	}
-        //	catch (Exception ex)
-        //	{
-        //		string msg = "Error en la invocación de la API - Busqueda Avanzada";
-        //		_logger.LogError(ex, "Error en la invocación de la API - Busqueda Avanzada");
-        //		response.Mensaje = msg;
-        //		response.Ok = false;
-        //		response.EsWarn = false;
-        //		response.EsError = true;
-        //		return PartialView("_gridMensaje", response);
-        //	}
-        //}
-
         protected enum DiasDeLaSemana
         {
             Domingo = 1,
@@ -1518,5 +1484,12 @@ namespace gc.sitio.Controllers
             Viernes = 6,
             Sábado = 7
         }
-    }
+
+        public enum AbmActionType
+		{ 
+            A = 1,
+            B = 2,
+            M = 3
+        }
+	}
 }
