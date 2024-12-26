@@ -1,9 +1,10 @@
-﻿@model GridCore<ProductoListaDto>
+﻿@using System.Text
+@model GridCore<ProductoListaDto>
 
 @{
     var dataMod = new ProductoListaDto();
     var alt = true;
-    string clase = string.Empty;
+    StringBuilder clase = new StringBuilder();
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
 }
 
@@ -13,6 +14,7 @@
             <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridProd">
                 <thead class="table-dark">
                     <tr class="header">
+
                         <th scope="col">@nameof(dataMod.P_id)</th>
                         <th scope="col">@nameof(dataMod.P_desc)</th>
                         <th scope="col">@nameof(dataMod.Cta_id)</th>
@@ -28,10 +30,23 @@
                 <tbody>
                     @foreach (var item in Model.ListaDatos)
                     {
-                        if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+                        clase.Clear();
+                        if (alt) { clase.Append( "alt"); alt = false; } else { alt = true; }
+                        switch (item.P_activo)
+                        {
+                            case "N":
+                                clase.Append(" estilo-N");
+                                break;
+                            case "D":
+                                clase.Append(" estilo-D");
+                                break;
+                            default:
+                                clase.Append(" estilo-S");
+                                break;
+                        }
 
-                        <tr class="@clase" onclick="selectReg(this)" ondblclick="selectAbmRegDbl(this)" >
-                            <td class="text-sm-center">@item.P_id</td>
+                        <tr class="@clase.ToString()" onclick="selectReg(this)" ondblclick="selectAbmRegDbl(this)">
+                            <td class="text-sm-center" >@item.P_id</td>
                             <td class="text-sm-start">@item.P_desc</td>
                             <td class="text-sm-end">@item.Cta_id</td>
                             <td class="text-sm-start">@item.Cta_denominacion</td>
@@ -43,9 +58,9 @@
                             <td class="text-sm-start">@item.P_activo_des</td>
                         </tr>
                     }
-                    
-                </tbody>              
-            </table>           
+
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
