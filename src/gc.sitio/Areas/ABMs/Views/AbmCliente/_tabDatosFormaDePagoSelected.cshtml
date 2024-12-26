@@ -10,13 +10,13 @@
 			<span class="input-group-text fixed-lbl-for-abm-70">FP: </span>
 			@Html.DropDownListFor(m => Model.FormaDePago.fp_id, fp, "Seleccionar...", new { @id = "listaFP", @class = "form-control" })
 			<span class="input-group-text fixed-lbl-for-abm-70">Plazo: </span>
-			<input type="text" asp-for="FormaDePago.fp_dias" class="form-control"  />
+			<input type="number" asp-for="FormaDePago.fp_dias" class="form-control"  />
 		</div>
 	</div>
 	<div class="row mt-1">
 		<div class="input-group input-group-sm">
 			<span class="input-group-text fixed-lbl-for-abm-70">Obs: </span>
-			<input type="text" asp-for="FormaDePago.cta_obs" class="form-control"  />
+			<input type="text" asp-for="FormaDePago.cta_obs.ToUpper()" class="form-control" />
 		</div>
 	</div>
 	<div class="row mt-1">

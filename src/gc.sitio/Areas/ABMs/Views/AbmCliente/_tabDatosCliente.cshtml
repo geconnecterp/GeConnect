@@ -34,7 +34,7 @@
 			<div class="row mt-1">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text fixed-lbl-for-abm-70">Deno</span>
-					<input type="text" asp-for="Cliente.Cta_Denominacion" class="form-control"  />
+					<input type="text" asp-for="Cliente.Cta_Denominacion.ToUpper()" class="form-control"  />
 				</div>
 			</div>
 			<div class="row mt-1">
@@ -82,7 +82,7 @@
 			<div class="row mt-1">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text fixed-lbl-for-abm-70">Domi</span>
-					<input type="text" asp-for="Cliente.Cta_Domicilio" class="form-control"  />
+					<input type="text" asp-for="Cliente.Cta_Domicilio.ToUpper()" class="form-control" />
 				</div>
 			</div>
 			<div class="row mt-1">
@@ -121,23 +121,23 @@
 						<input type="date" asp-for="Cliente.Ctac_Negocio_Inicio" class="form-control"  />
 					}
 					<span class="input-group-text" style="width:50px;">Cant PV:</span>
-					<input type="text" asp-for="Cliente.Ctac_Ptos_Vtas" class="form-control"  />
+					<input type="number" asp-for="Cliente.Ctac_Ptos_Vtas" class="form-control"  />
 				</div>
 			</div>
 			<div class="row mt-1">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text fixed-lbl-for-abm-70">% dto</span>
-					<input type="text" asp-for="Cliente.Ctac_Dto_Operacion" class="form-control"  />
+					<input type="number" asp-for="Cliente.Ctac_Dto_Operacion" class="form-control" />
 					<span class="input-group-text fixed-lbl-for-abm-70">del día</span>
-					<input type="text" asp-for="Cliente.Ctac_Dto_Operacion_Dia" class="form-control"  />
+					<input type="number" asp-for="Cliente.Ctac_Dto_Operacion_Dia" class="form-control" />
 				</div>
 			</div>
 			<div class="row mt-1">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text fixed-lbl-for-abm-70">Tope Cred</span>
-					<input type="text" asp-for="Cliente.Ctac_Tope_Credito" class="form-control"  />
+					<input type="number" asp-for="Cliente.Ctac_Tope_Credito" class="form-control" />
 					<span class="input-group-text fixed-lbl-for-abm-70">del Día</span>
-					<input type="text" asp-for="Cliente.Ctac_Tope_Credito_Dia" class="form-control"  />
+					<input type="number" asp-for="Cliente.Ctac_Tope_Credito_Dia" class="form-control" />
 				</div>
 			</div>
 			<div class="row mt-1">
