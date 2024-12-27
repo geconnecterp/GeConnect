@@ -219,6 +219,23 @@ namespace gc.infraestructura.Dtos.Almacen
                 piAutoExluye = value;
             }
         }
+        public char? Oc_Auto_Excluye { get; set; }
+        private bool ocAutoExluye;
+        public bool OcAutoExluye
+        {
+            get
+            {
+                if (!Oc_Auto_Excluye.HasValue ||
+                    string.IsNullOrWhiteSpace(char.ToString(Oc_Auto_Excluye.Value)))
+                    return false;
+                return Oc_Auto_Excluye.Equals('S');
+            }
+            set
+            {
+                ocAutoExluye = value;
+            }
+        }
+
         public char? Lp_Id_Default { get; set; }
         private bool lpIdDefault;
         public bool LpIdDefault

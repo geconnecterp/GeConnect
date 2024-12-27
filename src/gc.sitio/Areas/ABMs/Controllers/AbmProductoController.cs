@@ -25,10 +25,11 @@ namespace gc.sitio.Areas.ABMs.Controllers
         private readonly IProducto2Servicio _prodSv;
         private readonly IListaDePrecioServicio _listaDePrecioServicio;
         private readonly ILogger<AbmProductoController> _logger;
+        private readonly IAbmServicio _abmSv;
 
         public AbmProductoController(IOptions<AppSettings> options, IHttpContextAccessor accessor, IABMProductoServicio productoServicio,
              ICuentaServicio cta, IRubroServicio rubro, ILogger<AbmProductoController> logger, 
-             IProducto2Servicio producto2Servicio, IListaDePrecioServicio listaDePrecio) : base(options, accessor, logger)
+             IProducto2Servicio producto2Servicio, IListaDePrecioServicio listaDePrecio,IAbmServicio abmServicio) : base(options, accessor, logger)
         {
             _settings = options.Value;
             _abmProdServ = productoServicio;
@@ -37,6 +38,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             _logger = logger;
             _prodSv = producto2Servicio;
             _listaDePrecioServicio = listaDePrecio;
+            _abmSv = abmServicio;
         }
 
         [HttpGet]
@@ -171,6 +173,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 return PartialView("_gridMensaje", response);
             }
         }
+
+
 
         [HttpPost]
         public async Task<IActionResult> BuscarProd(string p_id)

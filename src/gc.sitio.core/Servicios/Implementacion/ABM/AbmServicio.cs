@@ -38,7 +38,7 @@ namespace gc.sitio.core.Servicios.Implementacion.ABM
                 HttpClient client = helper.InicializaCliente(abmGen, token, out StringContent contentData);
                 HttpResponseMessage response;
 
-                var link = $"{_appSettings.RutaBase}{RutaAPI}";
+                var link = $"{_appSettings.RutaBase}{RutaAPI}?user=";
 
                 response = await client.PostAsync(link, contentData);
 

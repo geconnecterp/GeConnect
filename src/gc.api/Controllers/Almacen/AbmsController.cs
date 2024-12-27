@@ -38,6 +38,14 @@ namespace gc.api.Controllers.Almacen
             {
                 return BadRequest("Se desconoce que operación desea realizar.");
             }
+            if (string.IsNullOrEmpty(abmGen.Usuario))
+            {
+                return BadRequest("No se recepcionó el usuario que está llevando adelante la operación.");
+            }
+            if (string.IsNullOrEmpty(abmGen.Administracion))
+            {
+                return BadRequest("No se recepcionó la Administración a la que pertenece la operación.");
+            }
 
             var res = _abmSv.ConfirmarABM(abmGen);
             return  Ok(new ApiResponse<RespuestaDto>(res));

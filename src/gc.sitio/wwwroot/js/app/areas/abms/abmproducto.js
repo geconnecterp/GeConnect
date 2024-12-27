@@ -128,12 +128,16 @@ function InicializaPantallaAbmProd() {
     $("#lbRel02").text("RUBRO");
 
     accionBotones("C");
+
+    configuracionControlesAbmProd();
+
     $("#divDetalle").collapse("hide");
 
     //borra seleccion de registro si hubiera cargdo algun grid
     $("#tbGridProd tbody tr").each(function (index) {
         $(this).removeClass("selectedEdit-row");
     });
+
 
 
     CerrarWaiting();
@@ -271,3 +275,13 @@ function buscarLimite(data) {
     });
 }
 
+function configuracionControlesAbmProd() {
+    //Imp Int
+    $("#In_Alicuota").mask("000,000,000,000", { reverse: true });
+    $("#P_Balanza_Dvto").mask("000,000,000,000", { reverse: true });
+    $("#P_Con_Vto_Min").mask("000,000,000,000", { reverse: true });
+
+    $("#P_Peso").mask("000,000,000,000.000", { reverse: true });
+    $("#P_M_Capacidad").mask("000,000,000,000.000", { reverse: true });
+ 
+}

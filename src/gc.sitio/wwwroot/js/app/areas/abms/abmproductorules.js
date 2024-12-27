@@ -26,11 +26,10 @@
         $("#divFiltro").collapse("hide");
         accionBotones("M");
         activarControles(true);
-
-
     });
 
     $("#btnAbmCancelar").on("click", InicializaPantallaAbmProd);
+    $("#btnAbmAceptar").on("click", confirmarOperacionAbmProducto);
 
     //balanza
     $(document).on("click", "#PBalanza", controlaBalanza);
@@ -107,6 +106,7 @@ function activarBotones(activar) {
 
 function accionBotones(btn) {
     if (btn === 'A' || btn === 'M' || btn === 'B') {
+        accion = btn;
         $("#btnFiltro").prop("disabled", true);
 
         $("#btnAbmNuevo").prop("disabled", true);
@@ -179,7 +179,7 @@ function activarControles(act) {
         //Linea 07
         $("#Pg_Id").prop("disabled", act);
         $("#PiAutoExluye").prop("disabled", act);
-        //$("#LpIdDefault").prop("disabled", act);
+        $("#OcAutoExluye").prop("disabled", act);
         //Linea 08
         $("#Rub_Lista").prop("disabled", act);
         $("#Iva_Situacion").prop("disabled", act);
@@ -190,4 +190,8 @@ function activarControles(act) {
         //Linea 10
         $("#P_Obs").prop("disabled", act);
     }
+}
+
+function confirmarOperacionAbmProducto() {
+
 }

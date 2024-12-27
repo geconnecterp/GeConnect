@@ -5,3 +5,4 @@ var pags = 0;
 var pagina = 1;
 var funcCallBack = "";
 var dataBak = {};
+var accion = "";
