@@ -38,7 +38,7 @@
         </div>
         <div class="col-md-4">
             <div class="d-flex justify-content-sm-center">
-                <button id="btnAbmNuevo" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Nuevo" disabled>
+                <button id="btnAbmNuevo" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Alta" disabled>
                     <i class="bx bx-check-circle bx-xs"></i>
                 </button>
 
@@ -78,7 +78,6 @@
 
 @section scripts {
     <script type="text/javascript">
-       
 
         var buscarUrl = "@Url.Action("buscar", "abmproducto", new { area = "abms" })";
         var buscarProdUrl = "@Url.Action("BuscarProd", "abmproducto", new { area = "abms" })";
@@ -90,7 +89,8 @@
         var comboFamiliaUrl = "@Url.Action("ComboProveedorFamilia", "abmproducto", new { area = "abms" })";
         var buscarBarradoUrl = "@Url.Action("buscarBarrado", "abmproducto", new { area = "abms" })";
         var buscarLimiteUrl = "@Url.Action("ObtenerLimiteStk", "abmproducto", new { area = "abms" })";
-
+        var nuevoProductoUrl = "@Url.Action("NuevoProducto", "abmproducto", new { area = "abms" })";
+            
 
     </script>
     <script src="~/js/plugins/jquery.simplePagination.js"></script>

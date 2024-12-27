@@ -24,9 +24,10 @@
     });
 
     //check generico chkDescr activando componentes disables
-    $("#chkDescr").on("click", function () {
-        if ($("#chkDescr").is(":checked")) {
+    $(document).on("click", "#chkDescr", function () {
+        if ($(this).is(":checked")) {
             $("#Buscar").prop("disabled", false);
+            $("#Buscar").trigger("focus");
         }
         else {
             $("#Buscar").prop("disabled", true);
@@ -34,10 +35,12 @@
     });
 
     //check generico chkDescr activando componentes disables
-    $("#chkDesdeHasta").on("click", function () {
-        if ($("#chkDesdeHasta").is(":checked")) {
+    $(document).on("click", "#chkDesdeHasta", function () {
+        if ($(this).is(":checked")) {
             $("#Id").prop("disabled", false);
             $("#Id2").prop("disabled", false);
+            $("#Id").trigger("focus");
+
         }
         else {
             $("#Id").prop("disabled", true);
