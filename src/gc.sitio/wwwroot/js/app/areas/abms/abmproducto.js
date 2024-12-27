@@ -127,6 +127,14 @@ function InicializaPantallaAbmProd() {
     $("#lbRel01").text("PROVEEDOR");
     $("#lbRel02").text("RUBRO");
 
+    accionBotones("C");
+    $("#divDetalle").collapse("hide");
+
+    //borra seleccion de registro si hubiera cargdo algun grid
+    $("#tbGridProd tbody tr").each(function (index) {
+        $(this).removeClass("selectedEdit-row");
+    });
+
 
     CerrarWaiting();
     return true;

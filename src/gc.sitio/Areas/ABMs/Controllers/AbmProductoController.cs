@@ -144,6 +144,35 @@ namespace gc.sitio.Areas.ABMs.Controllers
         }
 
         [HttpPost]
+        public IActionResult NuevoProducto()
+        {
+            RespuestaGenerica<EntidadBase> response = new();
+            try
+            {
+                string id = "000000";
+                ProductoABMSeleccionado = new ProductoDto();
+                //busca combo familia
+                ViewBag.Pg_Id = ComboProveedoresFamilia(id, _ctaSv);
+                ViewBag.Up_Id = ComboMedidas(_prodSv).GetAwaiter().GetResult();
+                ViewBag.Iva_Situacion = ComboIVASituacion(_prodSv).GetAwaiter().GetResult();
+                ViewBag.Iva_Alicuota = ComboIVAAlicuota(_prodSv).GetAwaiter().GetResult();
+                ViewBag.Lp_Id_Default = ComboListaDePrecios();
+
+                return View("_n02panel01Producto", ProductoABMSeleccionado);
+            }
+            catch (Exception ex)
+            {
+                string msg = "Error en la invocación de la API - Inicializar Producto";
+                _logger.LogError(ex, "Error en la invocación de la API - al Inicializar Producto");
+                response.Mensaje = msg;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
+            }
+        }
+
+        [HttpPost]
         public async Task<IActionResult> BuscarProd(string p_id)
         {
             RespuestaGenerica<EntidadBase> response = new();
