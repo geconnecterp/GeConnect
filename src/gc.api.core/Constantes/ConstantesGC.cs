@@ -152,7 +152,7 @@
 			public const string SP_ABM_CLI_NOTA_Lista = "SPGECO_ABM_Cli_Nota_Lista";
 			public const string SP_ABM_CLI_NOTA_Datos = "SPGECO_ABM_Cli_Nota_Datos";
 
-            public const string SP_ABM_CONFIRMAR = "SPSPGECO_ABM_Confirmar";
+            public const string SP_ABM_CONFIRMAR = "SPGECO_ABM_Confirmar";
             #endregion
 
             #region Tipos

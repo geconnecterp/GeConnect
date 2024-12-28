@@ -9,25 +9,36 @@
 
 <div class="row">
     <div class="col-md-8">
+        @Html.HiddenFor(x=>x.p_alta)
+        @Html.HiddenFor(x => x.usu_id_alta)
+        @Html.HiddenFor(x => x.p_modi)
+        @Html.HiddenFor(x => x.usu_id_modi)
+        @Html.HiddenFor(x => x.p_balanza_id)
+        @Html.HiddenFor(x => x.p_id_barrado_ean)
+        @Html.HiddenFor(x => x.p_unidad_pres_ean)
+        @Html.HiddenFor(x => x.p_unidad_x_bulto_ean)
+        @Html.HiddenFor(x => x.p_bulto_x_piso_ean)
+        @Html.HiddenFor(x => x.p_piso_x_pallet_ean)
+        @Html.HiddenFor(x => x.p_id_barrado_dun)
+        @Html.HiddenFor(x => x.p_unidad_pres_dun)
+        @Html.HiddenFor(x => x.p_unidad_x_bulto_dun)
+        @Html.HiddenFor(x => x.p_bulto_x_piso_dun)
+        @Html.HiddenFor(x => x.p_piso_x_pallet_dun)
+        
         <!--Linea 01-->
         <div class="row mt-1">
             <div class="col-sm-6">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text" style="width:50px;">ID </span>
-                    <input type="text" asp-for="P_Id" class="form-control" disabled style="width:50px;margin-right:20px;" />
+                    <input type="text" asp-for="p_id" class="form-control" disabled style="width:50px;margin-right:20px;" />
                     <span class="input-group-text">Activo</span>
-                    @Html.DropDownListFor(x => x.P_Activo, listAct, "Sel.", new { @class = "form-control", style = "width:50px;", disabled = "disabled" })
-                   @*  <div class="form-check">
-                        <!--form-check-inline form-switch-->
-                        <input class="form-check-input tristate" type="checkbox" id="p_activo" />
-                        <label class="form-check-label" for="p_activo">Activo</label>
-                    </div> *@
+                    @Html.DropDownListFor(x => x.p_activo, listAct, "Sel.", new { @class = "form-control", style = "width:50px;", disabled = "disabled" })                  
                 </div>
             </div>
             <div class="col-sm-6">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text">Un.Med: </span>
-                    @Html.DropDownListFor(x => x.Up_Id, null, "Selecciona...", new { @class = "form-control", disabled = "disabled"  })
+                    @Html.DropDownListFor(x => x.up_id, null, "Selecciona...", new { @class = "form-control", disabled = "disabled"  })
                 </div>
             </div>
         </div>
@@ -36,7 +47,7 @@
             <div class="col-sm-6">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text" style="width:50px;">Marca </span>
-                    <input type="text" asp-for="P_M_Marca" class="form-control" disabled />
+                    <input type="text" asp-for="p_m_marca" class="form-control inputEditable" disabled />
                 </div>
             </div>
             <div class="col-sm-6">
@@ -46,9 +57,9 @@
                         <label class="form-check-label" for="pBalanza">Balanza</label>
                     </div>
                     <span class="input-group-text">Días Vto </span>
-                    <input type="number" min="0" class="form-control" asp-for="P_Balanza_Dvto" disabled />
+                    <input type="number" min="0" class="form-control" asp-for="p_balanza_dvto" disabled />
                     <span class="input-group-text">Peso </span>
-                    <input type="number" min="0" class="form-control inputEditable" asp-for="P_Peso" disabled/>
+                    <input type="number" min="0" class="form-control inputEditable" asp-for="p_peso" disabled/>
                 </div>
             </div>
         </div>
@@ -57,7 +68,7 @@
             <div class="col-sm-6">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text" style="width:50px;">Desc.</span>
-                    <input type="text" asp-for="P_Desc" class="form-control" disabled/>
+                    <input type="text" asp-for="p_m_desc" class="form-control inputEditable" disabled />
                 </div>
             </div>
             <div class="col-sm-6">
@@ -67,7 +78,7 @@
                         <label class="form-check-label" for="pConVto">Vto Stk</label>
                     </div>
                     <span class="input-group-text">Días Vto </span>
-                    <input type="number" min="0" class="form-control inputEditable" asp-for="P_Con_Vto_Min" disabled />
+                    <input type="number" min="0" class="form-control inputEditable" asp-for="p_con_vto_min" disabled />
                 </div>
             </div>
         </div>
@@ -76,7 +87,7 @@
             <div class="col-sm-6">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text" style="width:50px;">Capac.</span>
-                    <input type="number" asp-for="P_M_Capacidad" class="form-control inputEditable" style="width:50px;" disabled />
+                    <input type="number" asp-for="p_m_capacidad" class="form-control inputEditable" style="width:50px;" disabled />
                 </div>
             </div>
             <div class="col-sm-6">
@@ -93,7 +104,7 @@
             <div class="col-sm-6">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text" style="width:50px;">ID Prov.</span>
-                    <input type="text" asp-for="P_Id_Prov" class="form-control inputEditable" style="width:50px;" disabled />
+                    <input type="text" asp-for="p_id_prov" class="form-control inputEditable" style="width:50px;" disabled />
                 </div>
             </div>
             <div class="col-sm-6">
@@ -112,8 +123,8 @@
             <div class="col-sm-6">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text" style="width:50px;">Prov.</span>
-                    <input type="text" asp-for="Cta_Lista" class="form-control inputEditable" disabled />
-                    @Html.HiddenFor(x => x.Cta_Id)
+                    <input type="text" asp-for="cta_lista" class="form-control inputEditable" disabled />
+                    @Html.HiddenFor(x => x.cta_id)
                 </div>
             </div>
             <div class="col-sm-6">
@@ -132,7 +143,7 @@
             <div class="col-sm-6">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text" style="width:50px;">Familia</span>
-                    @Html.DropDownListFor(x => x.Pg_Id, null, "Seleccionar...", new { @class = "form-control", disabled = "disabled" })
+                    @Html.DropDownListFor(x => x.pg_id, null, "Seleccionar...", new { @class = "form-control", disabled = "disabled" })
                 </div>
             </div>
             <div class="col-sm-6">
@@ -151,17 +162,17 @@
             <div class="col-sm-6">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text" style="width:50px;">Rubro</span>
-                    <input type="text" asp-for="Rub_Lista" class="form-control inputEditable" disabled />
-                    @Html.HiddenFor(x => x.Rub_Id)
+                    <input type="text" asp-for="rub_lista" class="form-control inputEditable" disabled />
+                    @Html.HiddenFor(x => x.rub_id)
                 </div>
             </div>
             <div class="col-sm-6">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text" style="width:50px;">IVA</span>
-                    @Html.DropDownListFor(x => x.Iva_Situacion, null, "Selecciona...", new { @class = "form-control", disabled="disabled"})
+                    @Html.DropDownListFor(x => x.iva_situacion, null, "Selecciona...", new { @class = "form-control", disabled="disabled"})
 
                     <span class="input-group-text" style="width:50px;">Ali.IVA</span>
-                    @Html.DropDownListFor(x => x.Iva_Alicuota, null, "Selecciona...", new { @class = "form-control", disabled = "disabled" })
+                    @Html.DropDownListFor(x => x.iva_alicuota, null, "Selecciona...", new { @class = "form-control", disabled = "disabled" })
                 </div>
             </div>
         </div>
@@ -170,13 +181,13 @@
             <div class="col-sm-6">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text" style="width:50px;">LPxD</span>
-                    @Html.DropDownListFor(x => x.Lp_Id_Default, null, "Selecciona...", new { @class = "form-control", disabled = "disabled" })
+                    @Html.DropDownListFor(x => x.lp_id_default, null, "Selecciona...", new { @class = "form-control", disabled = "disabled" })
                 </div>
             </div>
             <div class="col-sm-6">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text" style="width:50px;">II:</span>
-                    <input type="number" min="0" max="50" asp-for="In_Alicuota" class="form-control inputEditable" disabled style="width:50px;" />
+                    <input type="number" min="0" max="50" asp-for="in_alicuota" class="form-control inputEditable" disabled style="width:50px;" />
                 </div>
             </div>
         </div>
@@ -185,7 +196,7 @@
             <div class="col-sm-12">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text" style="width:50px;">Obs:</span>
-                    <input type="text" asp-for="P_Obs" class="form-control inputEditable" disabled />
+                    <input type="text" asp-for="p_obs" class="form-control inputEditable" disabled />
                 </div>
             </div>
         </div>

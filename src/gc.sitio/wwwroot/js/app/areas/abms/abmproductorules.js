@@ -18,8 +18,8 @@
             accionBotones("A");
             activarControles(true);
 
-            CerrarWaiting();        
-        });      
+            CerrarWaiting();
+        });
     });
 
     $("#btnAbmModif").on("click", function () {
@@ -53,7 +53,7 @@ function controlaBalanza() {
 
 function controlaVencimiento() {
     if ($(this).is(":checked")) {
-        $("#P_Con_Vto_Min").prop("disabled", false);        
+        $("#P_Con_Vto_Min").prop("disabled", false);
     }
     else {
         $("#P_Con_Vto_Min").prop("disabled", true);
@@ -86,7 +86,7 @@ function activarBotones(activar) {
         $("#btnAbmModif").prop("disabled", false);
         $("#btnAbmElimi").prop("disabled", false);
 
-        
+
         $("#btnAbmAceptar").prop("disabled", true);
         $("#btnAbmCancelar").prop("disabled", true);
         $("#btnAbmAceptar").hide();
@@ -144,54 +144,152 @@ function activarControles(act) {
         act = !act; //se cambia el sentido del valor ya que con true, se activa el disabled.-
         //Linea 1
         //p_id NUNCA SE ACTIVA
-        $("#P_Activo").prop("disabled", act);
-        $("#Up_Id").prop("disabled", act);
+        $("#p_activo").prop("disabled", act);
+        $("#up_Id").prop("disabled", act);
         //Linea 02
-        $("#P_M_Marca").prop("disabled", act);
+        $("#p_m_marca").prop("disabled", act);
 
         //SI EL UP_ID ES DISTINTO DE 07 SE PUEDE ACTIVAR EL CHECK DE BALANZA
-        if ($("#Up_Id option:selected").val() !== "07") {
+        if ($("#up_Id option:selected").val() !== "07") {
             $("#PBalanza").prop("disabled", act);
             if (act === false && $("#PBalanza").is(":checked")) {
-                $("#P_Balanza_Dvto").prop("disabled", act);
-                $("#P_Peso").prop("disabled", act);
+                $("#p_balanza_dvto").prop("disabled", act);
+                $("#p_peso").prop("disabled", act);
             }
         }
         //Linea 03
-        $("#P_Desc").prop("disabled", act);
+        $("#p_m_desc").prop("disabled", act);
         $("#PConVto").prop("disabled", act);
         if (act === false && $("#PConVto").is(":checked")) {
-            $("#P_Con_Vto_Min").prop("disabled", act);
+            $("#p_con_vto_min").prop("disabled", act);
         }
         //Linea 04
-        $("#P_M_Capacidad").prop("disabled", act);
+        $("#p_m_capacidad").prop("disabled", act);
         $("#PAltaRotacion").prop("disabled", act);
         //Linea 05
-        $("#P_Id_Prov").prop("disabled", act);
+        $("#p_id_prov").prop("disabled", act);
         $("#PMatPri").prop("disabled", act);
         if (act === false && $("#PMatPri").is(":checked")) { //este campo se activa cuando el check PMatPri es TRUE
             $("#PElaboracion").prop("disabled", act);
         }
         //Linea 06
-        $("#Cta_Lista").prop("disabled", act);
+        $("#cta_lista").prop("disabled", act);
         $("#AdmMayExcluye").prop("disabled", act);
         $("#AdmMinExcluye").prop("disabled", act);
         //Linea 07
-        $("#Pg_Id").prop("disabled", act);
+        $("#pg_id").prop("disabled", act);
         $("#PiAutoExluye").prop("disabled", act);
         $("#OcAutoExluye").prop("disabled", act);
         //Linea 08
-        $("#Rub_Lista").prop("disabled", act);
-        $("#Iva_Situacion").prop("disabled", act);
-        $("#Iva_Alicuota").prop("disabled", act);
+        $("#rub_lista").prop("disabled", act);
+        $("#iva_situacion").prop("disabled", act);
+        $("#iva_alicuota").prop("disabled", act);
         //Linea 09
-        $("#Lp_Id_Default").prop("disabled", act);
-        $("#In_Alicuota").prop("disabled", act);
+        $("#lp_id_default").prop("disabled", act);
+        $("#in_alicuota").prop("disabled", act);
         //Linea 10
-        $("#P_Obs").prop("disabled", act);
+        $("#p_obs").prop("disabled", act);
     }
 }
 
-function confirmarOperacionAbmProducto() {
+//se debe enviar que operacion se esta confirmando
+//enviando todos los campos de la entidad
 
+function confirmarOperacionAbmProducto() {
+    //linea 01
+    var p_id = $("#p_id").val();
+    var p_activo = $("#p_activo option:selected").val();
+    var up_Id = $("#up_Id option:selected").val();
+    //linea 02
+    var p_m_marca = $("#p_m_marca").val();
+    var p_balanza = "N"
+    if ($("#PBalanza").is(":checked")) { p_balanza = "S" }
+    var p_balanza_dvto = $("#p_balanza_dvto").val();
+    var p_peso = $("#p_peso").val();
+    //linea 03
+    var p_m_desc = $("#p_m_desc").val();
+    var p_con_vto = "N";
+    if ($("#PConVto").is(":checked")) { p_con_vto = "S" }
+    var p_con_vto_min = $("#p_con_vto_min").val();
+    //linea 04
+    var p_m_capacidad = $("#p_m_capacidad").val();
+    var p_alta_rotacion = "N";
+    if ($("#PAltaRotacion").is(":checked")) { p_alta_rotacion = "S" }
+    //Linea 05
+    var p_id_prov = $("#p_id_prov").val();
+    var p_mat_pri = "N";
+    if ($("#PMatPri").is(":checked")) { p_mat_pri = "S" }
+    var p_elaboracion = "N";
+    if ($("#PElaboracion").is(":checked")) { p_elaboracion = "S" }
+    //Linea 06
+    var cta_id = $("#cta_id").val();
+    var adm_may_excluye = "N";
+    if ($("#AdmMayExcluye").is(":checked")) { adm_may_excluye = "S" }
+    var adm_min_excluye = "N";
+    if ($("#AdmMinExcluye").is(":checked")) { adm_min_excluye = "S" }
+    //Linea 07
+    var pg_id = $("#pg_id option:selected").val();
+    var pi_auto_exluye = "N";
+    if ($("#PiAutoExluye").is(":checked")) { pi_auto_exluye = "S" }
+    var oc_auto_exluye = "N";
+    if ($("#OcAutoExluye").is(":checked")) { oc_auto_exluye = "S" }
+    //linea 08
+    var rub_id = $("#rub_id").val();
+    var iva_situacion = $("#iva_situacion option:selected").val();
+    var iva_alicuota = $("#iva_alicuota option:selected").val();
+    //linea 09
+    var lp_id_default = $("#lp_id_default option:selected").val();
+    var in_alicuota = $("#in_alicuota").val();
+    //Linea 10
+    var p_obs = $("#p_obs").val();
+
+    //contoles hidden
+    var p_alta = $("#p_alta").val();
+    var usu_id_alta = $("#usu_id_alta").val();
+    var p_modi = $("#p_modi").val();
+    var usu_id_modi = $("#usu_id_modi").val();
+    var p_balanza_id = $("#p_balanza_id").val();
+    var p_id_barrado_ean = $("#p_id_barrado_ean").val();
+    var p_unidad_pres_ean = $("#p_unidad_pres_ean").val();
+    var p_unidad_x_bulto_ean = $("#p_unidad_x_bulto_ean").val();
+    var p_bulto_x_piso_ean = $("#p_bulto_x_piso_ean").val();
+    var p_piso_x_pallet_ean = $("#p_piso_x_pallet_ean").val();
+    var p_id_barrado_dun = $("#p_id_barrado_dun").val();
+    var p_unidad_pres_dun = $("#p_unidad_pres_dun").val();
+    var p_unidad_x_bulto_dun = $("#p_unidad_x_bulto_dun").val();
+    var p_bulto_x_piso_dun = $("#p_bulto_x_piso_dun").val();
+    var p_piso_x_pallet_dun = $("#p_piso_x_pallet_dun").val();
+
+    var data = {
+        P_Id, P_Activo, Up_Id, P_M_Marca, P_Balanza, P_Balanza_Dvto, P_Peso, P_M_Desc, P_Con_Vto, P_Con_Vto_Min, P_M_Capacidad, P_Alta_Rotacion,
+        P_Id_Prov, P_Mat_Pri, P_Elaboracion, Cta_Id, Adm_May_Excluye, Adm_Min_Excluye, Pg_Id, Pi_Auto_Exluye, Oc_Auto_Exluye, Rub_Id, Iva_Situacion,
+        Iva_Alicuota, Lp_Id_Default, In_Alicuota, P_Obs, p_alta, usu_id_alta, p_modi, usu_id_modi, p_balanza_id, p_id_barrado_ean, p_unidad_pres_ean,
+        p_unidad_x_bulto_ean, p_bulto_x_piso_ean, p_piso_x_pallet_ean, p_id_barrado_dun, p_unidad_pres_dun, p_unidad_x_bulto_dun, p_bulto_x_piso_dun,
+        p_piso_x_pallet_dun, accion
+    };
+    AbrirWaiting("Completando proceso...");
+    PostGen(data, confirmarAbmProductoUrl, function (obj) {
+        if (obj.error === true) {
+            CerrarWaiting();
+            AbrirMensaje("ALGO NO SALIO BIEN!", obj.msg, function () {
+
+                $("#msjModal").modal("hide");
+            }, false, ["CONTINUAR"], "error!", null);
+        }
+        else if (obj.warn === true) {
+            CerrarWaiting();
+            AbrirMensaje("ATENCIÓN", obj.msg, function () {
+
+                $("#msjModal").modal("hide");
+            }, false, ["CONTINUAR"], "warn!", null);
+        }
+        else {
+            CerrarWaiting();
+            AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                //todo fue bien, por lo que se deberia reinicializar la pantalla.
+                InicializaPantallaAbmProd();
+                $("#msjModal").modal("hide");
+            }, false, ["CONTINUAR"], "succ!", null);
+        }
+    });
 }

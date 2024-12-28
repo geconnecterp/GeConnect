@@ -6,44 +6,44 @@ namespace gc.infraestructura.Dtos.Almacen
     {
         public ProductoDto()
         {
-            P_Id = string.Empty;
-            P_M_Marca = string.Empty;
-            P_M_Desc = string.Empty;
-            P_M_Capacidad = string.Empty;
-            P_Id_Prov = string.Empty;
-            P_Desc = string.Empty;
-            Up_Id = string.Empty;
-            Rub_Id = string.Empty;
-            Cta_Id = string.Empty;
-            Pg_Id = string.Empty;
-            Usu_Id_Alta = string.Empty;
-            Usu_Id_Modi = string.Empty;
-            P_Obs = string.Empty;
-            P_Balanza_Id = string.Empty;
+            p_id = string.Empty;
+            p_m_marca = string.Empty;
+            p_m_desc = string.Empty;
+            p_m_capacidad = string.Empty;
+            p_id_prov = string.Empty;
+            p_desc = string.Empty;
+            up_id = string.Empty;
+            rub_id = string.Empty;
+            cta_id = string.Empty;
+            pg_id = string.Empty;
+            usu_id_alta = string.Empty;
+            usu_id_modi = string.Empty;
+            p_obs = string.Empty;
+            p_balanza_id = string.Empty;
         }
         [Display(Name = "Id")]
-        public string P_Id { get; set; }//
+        public string p_id { get; set; }//
         [Display(Name = "Marca")]
-        public string P_M_Marca { get; set; }//
+        public string p_m_marca { get; set; }//
         [Display(Name = "Descripción")]
-        public string P_M_Desc { get; set; }//
+        public string p_m_desc { get; set; }//
         [Display(Name = "Capacidad")]
-        public string P_M_Capacidad { get; set; }//
+        public string p_m_capacidad { get; set; }//
         [Display(Name = "Prov.Id")]
-        public string P_Id_Prov { get; set; }//
+        public string p_id_prov { get; set; }//
         [Display(Name = "Descripción")]
-        public string P_Desc { get; set; }//
+        public string p_desc { get; set; }//
         /*----------------------------------------------*/
-        public char? P_Alta_Rotacion { get; set; }//
+        public char? p_alta_rotacion { get; set; }//
         private bool pAltaRotacion { get; set; }//
         public bool PAltaRotacion
         {
             get
             {
-                if (!P_Alta_Rotacion.HasValue ||
-                    string.IsNullOrWhiteSpace(char.ToString(P_Alta_Rotacion.Value)))
+                if (!p_alta_rotacion.HasValue ||
+                    string.IsNullOrWhiteSpace(char.ToString(p_alta_rotacion.Value)))
                     return false;
-                return P_Alta_Rotacion.Equals('S');
+                return p_alta_rotacion.Equals('S');
             }
             set
             {
@@ -51,35 +51,35 @@ namespace gc.infraestructura.Dtos.Almacen
             }
         }
         /*----------------------------------------------*/
-        public char? P_Con_Vto { get; set; }//
+        public char? p_con_vto { get; set; }//
         private bool pConVto { get; set; }//
         public bool PConVto
         {
             get
             {
-                if (!P_Con_Vto.HasValue ||
-                    string.IsNullOrWhiteSpace(char.ToString(P_Con_Vto.Value)))
+                if (!p_con_vto.HasValue ||
+                    string.IsNullOrWhiteSpace(char.ToString(p_con_vto.Value)))
                     return false;
-                return P_Con_Vto.Equals('S');
+                return p_con_vto.Equals('S');
             }
             set
             {
                 pConVto = value;
             }
         }
-        public short P_Con_Vto_Min { get; set; }
-        public decimal? P_Peso { get; set; }//
+        public short p_con_vto_min { get; set; }
+        public decimal? p_peso { get; set; }//
         /*----------------------------------------------*/
-        public char P_Elaboracion { get; set; }//
+        public char p_elaboracion { get; set; }//
         private bool pElaboracion { get; set; }//
         public bool PElaboracion
         {
             get
             {
-                if (char.IsWhiteSpace(P_Elaboracion) ||
-                    string.IsNullOrWhiteSpace(char.ToString(P_Elaboracion)))
+                if (char.IsWhiteSpace(p_elaboracion) ||
+                    string.IsNullOrWhiteSpace(char.ToString(p_elaboracion)))
                     return false;
-                return P_Elaboracion.Equals('S');
+                return p_elaboracion.Equals('S');
             }
             set
             {
@@ -88,32 +88,32 @@ namespace gc.infraestructura.Dtos.Almacen
             }
         }
         /*----------------------------------------------*/
-        public char P_Materia_Prima { get; set; }//
+        public char p_materia_prima { get; set; }//
         private bool pMatPri;
         public bool PMatPri
         {
             get
             {
-                if (char.IsWhiteSpace(P_Materia_Prima) || string.IsNullOrWhiteSpace(char.ToString(P_Materia_Prima)))
+                if (char.IsWhiteSpace(p_materia_prima) || string.IsNullOrWhiteSpace(char.ToString(p_materia_prima)))
                     return false;
-                return P_Materia_Prima == 'S';
+                return p_materia_prima == 'S';
             }
             set {
                 //P_Materia_Prima = value ? 'S' : 'N';
                 pMatPri = value; }
         }
-        public string Up_Id { get; set; }//
-        public string Up_Desc { get; set; }
-        public string Up_List { get; set; }
-        public string Rub_Id { get; set; }
-        public string Rub_Desc { get; set; }
-        public string Rub_Lista { get; set; }
-        public string Cta_Id { get; set; }
-        public string Cta_Denominacion { get; set; }
-        public string Cta_Lista { get; set; }
-        public string Pg_Id { get; set; }
-        public string Pg_Desc { get; set; }
-        public string Pg_Lista { get; set; }
+        public string up_id { get; set; }//
+        public string up_desc { get; set; }
+        public string up_list { get; set; }
+        public string rub_id { get; set; }
+        public string rub_desc { get; set; }
+        public string rub_lista { get; set; }
+        public string cta_id { get; set; }
+        public string cta_denominacion { get; set; }
+        public string cta_lista { get; set; }
+        public string pg_id { get; set; }
+        public string pg_desc { get; set; }
+        public string pg_lista { get; set; }
         //public short? P_Orden_Pg { get; set; }
         //public decimal P_Plista { get; set; }
         //public decimal P_Dto1 { get; set; }
@@ -125,27 +125,27 @@ namespace gc.infraestructura.Dtos.Almacen
         //public decimal P_Dto_Pa { get; set; }
         //public string P_Boni { get; set; }
         //public decimal P_Porc_Flete { get; set; }
-        public decimal In_Alicuota { get; set; }
-        public decimal Iva_Alicuota { get; set; }
-        public char Iva_Situacion { get; set; }
+        public decimal in_alicuota { get; set; }
+        public decimal iva_alicuota { get; set; }
+        public char iva_situacion { get; set; }
         //public decimal P_Pcosto { get; set; }
         //public decimal P_Pcosto_Repo { get; set; }
-        public DateTime? P_Alta { get; set; }
-        public string Usu_Id_Alta { get; set; }
-        public DateTime? P_Modi { get; set; }
-        public string Usu_Id_Modi { get; set; }
-        public char? P_Actu { get; set; }
-        public string P_Obs { get; set; }
-        public char P_Activo { get; set; }
+        public DateTime? p_alta { get; set; }
+        public string usu_id_alta { get; set; }
+        public DateTime? p_modi { get; set; }
+        public string usu_id_modi { get; set; }
+        public char? p_actu { get; set; }
+        public string p_obs { get; set; }
+        public char p_activo { get; set; }
         private bool pActivo;
         public bool PActivo
         {
             get
             {
-                if (char.IsWhiteSpace(P_Activo) || 
-                    string.IsNullOrWhiteSpace(char.ToString(P_Activo)))
+                if (char.IsWhiteSpace(p_activo) || 
+                    string.IsNullOrWhiteSpace(char.ToString(p_activo)))
                     return false;
-                return P_Activo == 'S';
+                return p_activo == 'S';
             }
             set
             {
@@ -153,82 +153,82 @@ namespace gc.infraestructura.Dtos.Almacen
                 pActivo = value;
             }
         }
-        public char? P_Balanza { get; set; }
+        public char? p_balanza { get; set; }
         private bool pBalaza;
         public bool PBalanza
         {
             get
             {
-                if (!P_Balanza.HasValue ||
-                    string.IsNullOrWhiteSpace(char.ToString(P_Balanza.Value)))
+                if (!p_balanza.HasValue ||
+                    string.IsNullOrWhiteSpace(char.ToString(p_balanza.Value)))
                     return false;
-                return P_Balanza.Equals('S');
+                return p_balanza.Equals('S');
             }
             set
             {
                 pBalaza = value;
             }
         }
-        public short? P_Balanza_Dvto { get; set; }
-        public string P_Balanza_Id { get; set; }
-        public char? Adm_Min_Excluye { get; set; }
+        public short? p_balanza_dvto { get; set; }
+        public string p_balanza_id { get; set; }
+        public char? adm_min_excluye { get; set; }
         private bool admMinExcluye;
         public bool AdmMinExcluye
         {
             get
             {
-                if (!Adm_Min_Excluye.HasValue ||
-                    string.IsNullOrWhiteSpace(char.ToString(Adm_Min_Excluye.Value)))
+                if (!adm_min_excluye.HasValue ||
+                    string.IsNullOrWhiteSpace(char.ToString(adm_min_excluye.Value)))
                     return false;
-                return Adm_Min_Excluye.Equals('S');
+                return adm_min_excluye.Equals('S');
             }
             set
             {
                 admMinExcluye = value;
             }
         }
-        public char? Adm_May_Excluye { get; set; }
+        public char? adm_may_excluye { get; set; }
         private bool admMayExcluye;
         public bool AdmMayExcluye
         {
             get
             {
-                if (!Adm_May_Excluye.HasValue ||
-                    string.IsNullOrWhiteSpace(char.ToString(Adm_May_Excluye.Value)))
+                if (!adm_may_excluye.HasValue ||
+                    string.IsNullOrWhiteSpace(char.ToString(adm_may_excluye.Value)))
                     return false;
-                return Adm_May_Excluye.Equals('S');
+                return adm_may_excluye.Equals('S');
             }
             set
             {
                 admMayExcluye = value;
             }
         }
-        public char? Pi_Auto_Excluye { get; set; }
+        public char? pi_auto_excluye { get; set; }
         private bool piAutoExluye;
         public bool PiAutoExluye
         {
             get
             {
-                if (!Pi_Auto_Excluye.HasValue ||
-                    string.IsNullOrWhiteSpace(char.ToString(Pi_Auto_Excluye.Value)))
+                if (!pi_auto_excluye.HasValue ||
+                    string.IsNullOrWhiteSpace(char.ToString(pi_auto_excluye.Value)))
                     return false;
-                return Pi_Auto_Excluye.Equals('S');
+                return pi_auto_excluye.Equals('S');
             }
             set
             {
                 piAutoExluye = value;
             }
         }
-        public char? Oc_Auto_Excluye { get; set; }
+        public char? oc_auto_excluye { get; set; }
         private bool ocAutoExluye;
         public bool OcAutoExluye
         {
             get
             {
-                if (!Oc_Auto_Excluye.HasValue ||
-                    string.IsNullOrWhiteSpace(char.ToString(Oc_Auto_Excluye.Value)))
+                if (!oc_auto_excluye.HasValue ||
+                    string.IsNullOrWhiteSpace(char.ToString(oc_auto_excluye.Value)))
                     return false;
-                return Oc_Auto_Excluye.Equals('S');
+                return oc_auto_excluye.Equals('S');
             }
             set
             {
@@ -236,32 +236,17 @@ namespace gc.infraestructura.Dtos.Almacen
             }
         }
 
-        public char? Lp_Id_Default { get; set; }
-        private bool lpIdDefault;
-        public bool LpIdDefault
-        {
-            get
-            {
-                if (!Lp_Id_Default.HasValue ||
-                    string.IsNullOrWhiteSpace(char.ToString(Lp_Id_Default.Value)))
-                    return false;
-                return Lp_Id_Default.Equals('S');
-            }
-            set
-            {
-                lpIdDefault = value;
-            }
-        }
-        public string P_Id_Barrado_Ean { get; set; }
-        public int P_Unidad_Pres_Ean { get; set; }
-        public int P_Unidad_X_Bulto_Ean { get; set; }
-        public int P_Bulto_X_Piso_Ean { get; set; }
-        public int P_Piso_X_Pallet_Ean { get; set; }
-        public string P_Id_Barrado_Dun { get; set; }
-        public int P_Unidad_Pres_Dun { get; set; }
-        public int P_Unidad_X_Bulto_Dun { get; set; }
-        public int P_Bulto_X_Piso_Dun { get; set; }
-        public int P_Piso_X_Pallet_Dun { get; set; }
+        public string lp_id_default { get; set; }        
+        public string p_id_barrado_ean { get; set; }
+        public int p_unidad_pres_ean { get; set; }
+        public int p_unidad_x_bulto_ean { get; set; }
+        public int p_bulto_x_piso_ean { get; set; }
+        public int p_piso_x_pallet_ean { get; set; }
+        public string p_id_barrado_dun { get; set; }
+        public int p_unidad_pres_dun { get; set; }
+        public int p_unidad_x_bulto_dun { get; set; }
+        public int p_bulto_x_piso_dun { get; set; }
+        public int p_piso_x_pallet_dun { get; set; }
 
     }
 }

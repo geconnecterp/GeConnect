@@ -4,7 +4,6 @@ using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Almacen;
-using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
 using gc.infraestructura.Dtos.Almacen.Info;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Box;
@@ -14,10 +13,8 @@ using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.Net;
 using System.Reflection;
-using System.Security.Policy;
 
 namespace gc.sitio.core.Servicios.Implementacion
 {

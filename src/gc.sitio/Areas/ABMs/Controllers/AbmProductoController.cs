@@ -2,7 +2,9 @@
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Box;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
@@ -11,6 +13,7 @@ using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.ABM;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System.Reflection;
 
 namespace gc.sitio.Areas.ABMs.Controllers
@@ -28,8 +31,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
         private readonly IAbmServicio _abmSv;
 
         public AbmProductoController(IOptions<AppSettings> options, IHttpContextAccessor accessor, IABMProductoServicio productoServicio,
-             ICuentaServicio cta, IRubroServicio rubro, ILogger<AbmProductoController> logger, 
-             IProducto2Servicio producto2Servicio, IListaDePrecioServicio listaDePrecio,IAbmServicio abmServicio) : base(options, accessor, logger)
+             ICuentaServicio cta, IRubroServicio rubro, ILogger<AbmProductoController> logger,
+             IProducto2Servicio producto2Servicio, IListaDePrecioServicio listaDePrecio, IAbmServicio abmServicio) : base(options, accessor, logger)
         {
             _settings = options.Value;
             _abmProdServ = productoServicio;
@@ -54,7 +57,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 return RedirectToAction("Login", "Token", new { area = "seguridad" });
             }
             CargarDatosIniciales(actualizar);
-           
+
 
 
             string volver = Url.Action("index", "home", new { area = "" });
@@ -79,7 +82,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 if (barr == null || !barr.Ok)
                 {
                     throw new NegocioException(barr.Mensaje);
-                }else if(barr.Ok && barr.ListaEntidad.Count() == 0)
+                }
+                else if (barr.Ok && barr.ListaEntidad.Count() == 0)
                 {
                     throw new NegocioException("No se encontraron barrados para el producto.");
                 }
@@ -174,7 +178,58 @@ namespace gc.sitio.Areas.ABMs.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<JsonResult> ConfirmarAbmProducto(ProductoDto prod, char accion)
+        {
+            try
+            {
+                //prod.P_Obs = prod.P_Obs.ToUpper();
+                var abm = new AbmGenDto()
+                {
+                    Objeto = "productos",
+                    Abm = accion,
+                    Administracion = AdministracionId,
+                    Usuario = UserName,
+                    Json = JsonConvert.SerializeObject(prod)
+                };
+                abm.Json = abm.Json.ToLower();
 
+                var res = await _abmSv.AbmConfirmar(abm, TokenCookie);
+                if (res.Ok)
+                {
+                    string msg;
+                    switch (accion)
+                    {
+                        case 'A':
+                            msg = $"EL PROCESAMIENTO DEL ALTA DEL PRODUCTO {prod.p_desc} SE REALIZO SATISFACTORIAMENTE";
+                            break;
+                        case 'M':
+                            msg = $"EL PROCESAMIENTO DE LA MODIFICIACION DEL PRODUCTO {prod.p_desc} SE REALIZO SATISFACTORIAMENTE";
+                            break;
+                        default:
+                            msg = $"EL PROCESAMIENTO DE LA BAJA/DISCONTINUAR DEL PRODUCTO {prod.p_desc} SE REALIZO SATISFACTORIAMENTE";
+                            break;
+                    }
+                    return Json(new { error = false, warn = false, msg });
+                }
+                else
+                {
+                    return Json(new { error = false, warn = true, msg = res.Entidad.resultado_msj, focus = res.Entidad.resultado_setfocus });
+                }
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+        }
 
         [HttpPost]
         public async Task<IActionResult> BuscarProd(string p_id)
@@ -191,7 +246,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
                 ProductoABMSeleccionado = prod;
                 //busca combo familia
-                ViewBag.Pg_Id = ComboProveedoresFamilia(prod.Cta_Id, _ctaSv, prod.Pg_Id);
+                ViewBag.Pg_Id = ComboProveedoresFamilia(prod.cta_id, _ctaSv, prod.pg_id);
                 ViewBag.Up_Id = await ComboMedidas(_prodSv);
                 ViewBag.Iva_Situacion = await ComboIVASituacion(_prodSv);
                 ViewBag.Iva_Alicuota = await ComboIVAAlicuota(_prodSv);
@@ -365,6 +420,6 @@ namespace gc.sitio.Areas.ABMs.Controllers
         }
 
 
-       
+
     }
 }

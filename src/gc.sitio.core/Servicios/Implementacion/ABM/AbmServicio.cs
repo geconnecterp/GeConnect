@@ -19,7 +19,7 @@ namespace gc.sitio.core.Servicios.Implementacion.ABM
 {
     public class AbmServicio : Servicio<Dto>, IAbmServicio
     {
-        private const string RutaAPI = "/api/abm";
+        private const string RutaAPI = "/api/abms";
 
 
         private readonly AppSettings _appSettings;
@@ -38,7 +38,7 @@ namespace gc.sitio.core.Servicios.Implementacion.ABM
                 HttpClient client = helper.InicializaCliente(abmGen, token, out StringContent contentData);
                 HttpResponseMessage response;
 
-                var link = $"{_appSettings.RutaBase}{RutaAPI}?user=";
+                var link = $"{_appSettings.RutaBase}{RutaAPI}";
 
                 response = await client.PostAsync(link, contentData);
 
@@ -51,7 +51,16 @@ namespace gc.sitio.core.Servicios.Implementacion.ABM
                     }
                     apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
 
-                    return new RespuestaGenerica<RespuestaDto> { Ok = true, Entidad = apiResponse.Data };
+                    var entidad = apiResponse.Data;
+
+                    if(entidad.resultado==0)
+                    {
+                        return new RespuestaGenerica<RespuestaDto> { Ok = true, Entidad = apiResponse.Data };
+                    }
+                    else
+                    {
+                        return new RespuestaGenerica<RespuestaDto> { Ok = false, Mensaje = entidad.resultado_msj, Entidad = entidad };
+                    }
                 }
                 else
                 {
