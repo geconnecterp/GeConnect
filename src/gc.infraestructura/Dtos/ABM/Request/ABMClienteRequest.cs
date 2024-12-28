@@ -4,7 +4,8 @@ namespace gc.infraestructura.Dtos.ABM.Request
 {
 	public class ABMClienteRequest : CuentaABMDto
 	{
-		public string AbmObject { get; set; } = string.Empty;
-		public string AbmAction { get; set; } = string.Empty;
+		public string destinoDeOperacion { get; set; } = string.Empty;
+		public string tipoDeOperacion { get; set; } = string.Empty;
+		public string jsonString { get; set; } = string.Empty;
     }
 }
