@@ -15,8 +15,8 @@
             <table class="table mb-0 table-bordered  table-hover">
                 <thead class="table-dark">
                     <tr class="header">
-                        <th scope="col">@nameof(dataMod.P_Id_Prov)</th>
-                        <th scope="col">@nameof(dataMod.P_Desc)</th>                       
+                        <th scope="col">@nameof(dataMod.p_id_prov)</th>
+                        <th scope="col">@nameof(dataMod.p_desc)</th>                       
 
                         <th scope="col">Seleccionar</th>
                     </tr>
@@ -29,10 +29,10 @@
                         <tr class="@clase">
 
 
-                            <td>@item.P_Id_Prov</td>
-                            <td>@item.P_Desc</td>                            
+                            <td>@item.p_id_prov</td>
+                            <td>@item.p_desc</td>                            
                             <td class="text - center">
-                                <a asp-area="codigos" asp-controller="producto" asp-action="details" asp-route-id="@item.P_Id"><i class="bx bxs-info-circle text-primary font-20"></i> Selec. </a>
+                                <a asp-area="codigos" asp-controller="producto" asp-action="details" asp-route-id="@item.p_id"><i class="bx bxs-info-circle text-primary font-20"></i> Selec. </a>
                             </td>
 
                         </tr>

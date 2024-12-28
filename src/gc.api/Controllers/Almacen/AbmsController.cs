@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace gc.api.Controllers.Almacen
 {
-   
+
     [Authorize]
     [Produces("application/json")]
     [Route("api/[controller]")]
@@ -17,8 +17,8 @@ namespace gc.api.Controllers.Almacen
     {
         private readonly IAbmServicio _abmSv;
         private readonly ILogger<AbmsController> _logger;
-        public AbmsController(IAbmServicio abmServicio, ILogger<AbmsController> logger )
-        {            
+        public AbmsController(IAbmServicio abmServicio, ILogger<AbmsController> logger)
+        {
             _abmSv = abmServicio;
             _logger = logger;
         }
@@ -48,7 +48,9 @@ namespace gc.api.Controllers.Almacen
             }
 
             var res = _abmSv.ConfirmarABM(abmGen);
-            return  Ok(new ApiResponse<RespuestaDto>(res));
+
+            return Ok(new ApiResponse<RespuestaDto>(res));
+
 
         }
     }

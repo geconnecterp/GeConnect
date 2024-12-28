@@ -25,7 +25,10 @@ namespace gc.api.core.Servicios.ABM
             var ps = new List<SqlParameter> {
                 new SqlParameter("@objeto",abmGen.Objeto),
                 new SqlParameter("@abm",abmGen.Abm),
-                new SqlParameter("@json",abmGen.Json)
+                new SqlParameter("@usu_id",abmGen.Usuario),
+                new SqlParameter("@adm_id",abmGen.Administracion),
+                new SqlParameter("@json",abmGen.Json),
+              
             };
 
             List<RespuestaDto> respuesta = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
