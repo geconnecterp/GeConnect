@@ -1,0 +1,5 @@
+﻿@model SelectList
+@{
+	var depto = Model;
+}
+@Html.DropDownListFor(m => m.First().Value, depto, "Seleccionar...", new { @id = "listaDepto", @class = "form-control" })

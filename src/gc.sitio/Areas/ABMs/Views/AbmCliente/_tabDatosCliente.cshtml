@@ -19,6 +19,7 @@
 	var financieros = Model.ComboFinancieros;
 }
 <div class="container">
+	@* @Html.HiddenFor(x => x.Cliente.Cta_Emp) *@
 	<div class="row">
 		<div class="col-md-4">
 			<div class="row mt-1">
@@ -26,7 +27,7 @@
 					<span class="input-group-text fixed-lbl-for-abm-70">ID</span>
 					<input type="text" asp-for="Cliente.Cta_Id" class="form-control" disabled/>
 					<div class="form-check form-check-inline form-switch mb-2">
-						<input class="form-check-input" type="checkbox" asp-for="Cliente.Cta_Activa" value="" id="chkCtaActiva">
+						<input class="form-check-input activable" type="checkbox" asp-for="Cliente.Cta_Activa" value="" id="chkCtaActiva">
 						<label class="form-check-label" for="chkCtaActiva"> ACTIVO</label>
 					</div>
 				</div>
@@ -34,75 +35,77 @@
 			<div class="row mt-1">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text fixed-lbl-for-abm-70">Deno</span>
-					<input type="text" asp-for="Cliente.Cta_Denominacion" class="form-control"  />
+					<input type="text" asp-for="Cliente.Cta_Denominacion" class="form-control activable" />
 				</div>
 			</div>
 			<div class="row mt-1">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text fixed-lbl-for-abm-70">AFIP: </span>
-					@Html.DropDownListFor(m => m.Cliente.Afip_Id, afip, "Seleccionar...", new { @id = "listaAfip", @class = "form-control" })
+					@Html.DropDownListFor(m => m.Cliente.Afip_Id, afip, "Seleccionar...", new { @id = "listaAfip", @class = "form-control activable" })
 				</div>
 			</div>
 			<div class="row mt-1">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text fixed-lbl-for-abm-70">NJ: </span>
-					@Html.DropDownListFor(m => m.Cliente.Nj_Id, nj, "Seleccionar...", new { @id = "listaNJ", @class = "form-control" })
+					@Html.DropDownListFor(m => m.Cliente.Nj_Id, nj, "Seleccionar...", new { @id = "listaNJ", @class = "form-control activable" })
 				</div>
 			</div>
 			<div class="row mt-1">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text fixed-lbl-for-abm-70">Doc.Tipo.: </span>
-					@Html.DropDownListFor(m => m.Cliente.Tdoc_Id, tipoDoc, "Seleccionar...", new { @id = "listaTipoDoc", @class = "form-control" })
+					@Html.DropDownListFor(m => m.Cliente.Tdoc_Id, tipoDoc, "Seleccionar...", new { @id = "listaTipoDoc", @class = "form-control activable" })
 					<span class="input-group-text fixed-lbl-for-abm-70">N°: </span>
-					<input type="text" asp-for="Cliente.Cta_Documento" class="form-control"  />
+					<input type="text" asp-for="Cliente.Cta_Documento" class="form-control activable" />
 				</div>
 			</div>
 			<div class="row mt-1">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text fixed-lbl-for-abm-70">IB: </span>
-					@Html.DropDownListFor(m => m.Cliente.Ib_Id, ib, "Seleccionar...", new { @id = "listaIB", @class = "form-control" })
+					@Html.DropDownListFor(m => m.Cliente.Ib_Id, ib, "Seleccionar...", new { @id = "listaIB", @class = "form-control activable" })
 					<span class="input-group-text fixed-lbl-for-abm-70">N°: </span>
-					<input type="text" asp-for="Cliente.Cta_Ib_Nro" class="form-control"  />
+					<input type="text" asp-for="Cliente.Cta_Ib_Nro" class="form-control activable" />
 				</div>
 			</div>
 			<div class="row mt-1">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text fixed-lbl-for-abm-70">Prov: </span>
-					@Html.DropDownListFor(m => m.Cliente.Prov_Id, provi, "Seleccionar...", new { @id = "listaProvi", @class = "form-control" })
+					@Html.DropDownListFor(m => m.Cliente.Prov_Id, provi, "Seleccionar...", new { @id = "listaProvi", @class = "form-control activable" })
 				</div>
 			</div>
 			<div class="row mt-1">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text fixed-lbl-for-abm-70">Dpto: </span>
-					@Html.DropDownListFor(m => m.Cliente.Dep_Id, depto, "Seleccionar...", new { @id = "listaDepto", @class = "form-control" })
+					<div id="divLocalidad" class="input-group-sm" style="width: 50%;">
+						@Html.DropDownListFor(m => m.Cliente.Dep_Id, depto, "Seleccionar...", new { @id = "listaDepto", @class = "form-control activable" })
+					</div>
 					<span class="input-group-text fixed-lbl-for-abm-70">CP: </span>
-					<input type="text" asp-for="Cliente.Cta_Cpostal" class="form-control"  />
+					<input type="text" asp-for="Cliente.Cta_Cpostal" class="form-control activable" />
 				</div>
 			</div>
 			<div class="row mt-1">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text fixed-lbl-for-abm-70">Domi</span>
-					<input type="text" asp-for="Cliente.Cta_Domicilio" class="form-control" />
+					<input type="text" asp-for="Cliente.Cta_Domicilio" class="form-control activable" />
 				</div>
 			</div>
 			<div class="row mt-1">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text fixed-lbl-for-abm-70">WWW</span>
-					<input type="text" asp-for="Cliente.Cta_Www" class="form-control"  />
+					<input type="text" asp-for="Cliente.Cta_Www" class="form-control activable" />
 				</div>
 			</div>
 			<div class="row mt-1">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text fixed-lbl-for-abm-70">Cta: </span>
-					@Html.DropDownListFor(m => m.Cliente.Tcb_Id, tipoCueBco, "Seleccionar...", new { @id = "listaTipoCueBco", @class = "form-control" })
+					@Html.DropDownListFor(m => m.Cliente.Tcb_Id, tipoCueBco, "Seleccionar...", new { @id = "listaTipoCueBco", @class = "form-control activable" })
 					<span class="input-group-text fixed-lbl-for-abm-70">N°: </span>
-					<input type="text" asp-for="Cliente.Cta_Bco_Cuenta_Nro" class="form-control"  />
+					<input type="text" asp-for="Cliente.Cta_Bco_Cuenta_Nro" class="form-control activable" />
 				</div>
 			</div>
 			<div class="row mt-1">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text fixed-lbl-for-abm-70">CBU</span>
-					<input type="text" asp-for="Cliente.Cta_Bco_Cuenta_Cbu" class="form-control"  />
+					<input type="text" asp-for="Cliente.Cta_Bco_Cuenta_Cbu" class="form-control activable" />
 				</div>
 			</div>
 		</div>
@@ -110,104 +113,104 @@
 			<div class="row mt-1">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text fixed-lbl-for-abm-70">Tipo:</span>
-					@Html.DropDownListFor(m => m.Cliente.Ctn_Id, tipoNeg, "Seleccionar...", new { @id = "listaTipoNeg", @class = "form-control" })
+					@Html.DropDownListFor(m => m.Cliente.Ctn_Id, tipoNeg, "Seleccionar...", new { @id = "listaTipoNeg", @class = "form-control activable" })
 					<span class="input-group-text fixed-lbl-for-abm-70">Inicio:</span>
 					@if (Model.Cliente.Ctac_Negocio_Inicio == null)
 					{
-						<input type="text" asp-for="Cliente.Ctac_Negocio_Inicio" class="form-control"  />
+						<input type="text" asp-for="Cliente.Ctac_Negocio_Inicio" class="form-control activable" />
 					}
 					else
 					{
-						<input type="date" asp-for="Cliente.Ctac_Negocio_Inicio" class="form-control"  />
+						<input type="date" asp-for="Cliente.Ctac_Negocio_Inicio" class="form-control activable" />
 					}
 					<span class="input-group-text" style="width:50px;">Cant PV:</span>
-					<input type="number" asp-for="Cliente.Ctac_Ptos_Vtas" class="form-control"  />
+					<input type="number" asp-for="Cliente.Ctac_Ptos_Vtas" class="form-control activable" />
 				</div>
 			</div>
 			<div class="row mt-1">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text fixed-lbl-for-abm-70">% dto</span>
-					<input type="number" asp-for="Cliente.Ctac_Dto_Operacion" class="form-control" />
+					<input type="number" asp-for="Cliente.Ctac_Dto_Operacion" class="form-control activable" />
 					<span class="input-group-text fixed-lbl-for-abm-70">del día</span>
-					<input type="number" asp-for="Cliente.Ctac_Dto_Operacion_Dia" class="form-control" />
+					<input type="number" asp-for="Cliente.Ctac_Dto_Operacion_Dia" class="form-control activable" />
 				</div>
 			</div>
 			<div class="row mt-1">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text fixed-lbl-for-abm-70">Tope Cred</span>
-					<input type="number" asp-for="Cliente.Ctac_Tope_Credito" class="form-control" />
+					<input type="number" asp-for="Cliente.Ctac_Tope_Credito" class="form-control activable" />
 					<span class="input-group-text fixed-lbl-for-abm-70">del Día</span>
-					<input type="number" asp-for="Cliente.Ctac_Tope_Credito_Dia" class="form-control" />
+					<input type="number" asp-for="Cliente.Ctac_Tope_Credito_Dia" class="form-control activable" />
 				</div>
 			</div>
 			<div class="row mt-1">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text fixed-lbl-for-abm-70">LPxD:</span>
-					@Html.DropDownListFor(m => m.Cliente.Lp_Id, listaPrec, "Seleccionar...", new { @id = "listaPrecio", @class = "form-control" })
+					@Html.DropDownListFor(m => m.Cliente.Lp_Id, listaPrec, "Seleccionar...", new { @id = "listaPrecio", @class = "form-control activable" })
 					<span class="input-group-text fixed-lbl-for-abm-70">Canal:</span>
-					@Html.DropDownListFor(m => m.Cliente.Ctc_Id, tipoCanal, "Seleccionar...", new { @id = "listaTipoCanal", @class = "form-control" })
+					@Html.DropDownListFor(m => m.Cliente.Ctc_Id, tipoCanal, "Seleccionar...", new { @id = "listaTipoCanal", @class = "form-control activable" })
 				</div>
 			</div>
 			<div class="row mt-1">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text fixed-lbl-for-abm-70">Vendedor:</span>
-					@Html.DropDownListFor(m => m.Cliente.Ve_Id, vendedor, "Seleccionar...", new { @id = "listaVendedor", @class = "form-control" })
+					@Html.DropDownListFor(m => m.Cliente.Ve_Id, vendedor, "Seleccionar...", new { @id = "listaVendedor", @class = "form-control activable" })
 					<span class="input-group-text fixed-lbl-for-abm-70">Visita:</span>
-					@Html.DropDownListFor(m => m.Cliente.Ve_Visita, dias, "Seleccionar...", new { @id = "listaDias", @class = "form-control" })
+					@Html.DropDownListFor(m => m.Cliente.Ve_Visita, dias, "Seleccionar...", new { @id = "listaDias", @class = "form-control activable" })
 				</div>
 			</div>
 			
 			<div class="row mt-1">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text fixed-lbl-for-abm-70">Zona:</span>
-					@Html.DropDownListFor(m => m.Cliente.Zn_Id, zonas, "Seleccionar...", new { @id = "listaZonas", @class = "form-control" })
+					@Html.DropDownListFor(m => m.Cliente.Zn_Id, zonas, "Seleccionar...", new { @id = "listaZonas", @class = "form-control activable" })
 					<span class="input-group-text fixed-lbl-for-abm-70">Repartidor:</span>
-					@Html.DropDownListFor(m => m.Cliente.Rp_Id, repartidor, "Seleccionar...", new { @id = "listaRepartidor", @class = "form-control" })
+					@Html.DropDownListFor(m => m.Cliente.Rp_Id, repartidor, "Seleccionar...", new { @id = "listaRepartidor", @class = "form-control activable" })
 				</div>
 			</div>
 			<div class="row mt-1">
 				<div class="input-group input-group-sm">
 					<div class="form-check form-check-inline form-switch mb-2">
-						<input class="form-check-input" type="checkbox" asp-for="Cliente.Piva_Cert_Activa" value="" id="chkPivaCertActiva">
+						<input class="form-check-input activable" type="checkbox" asp-for="Cliente.Piva_Cert_Activa" value="" id="chkPivaCertActiva">
 						<label class="form-check-label" for="chkPivaCertActiva"> Cert. No Percep. IVA</label>
 					</div>
 					<span class="input-group-text fixed-lbl-for-abm-70">Vto:</span>
 					@if (Model.Cliente.Piva_Cert_Vto == null)
 					{
-						<input type="text" asp-for="Cliente.Piva_Cert_Vto" class="form-control"  />
+						<input type="text" asp-for="Cliente.Piva_Cert_Vto" class="form-control activable" />
 					}
 					else
 					{
-						<input type="date" asp-for="Cliente.Piva_Cert_Vto" class="form-control"  />
+						<input type="date" asp-for="Cliente.Piva_Cert_Vto" class="form-control activable" />
 					}
 				</div>
 			</div>
 			<div class="row mt-1">
 				<div class="input-group input-group-sm">
 					<div class="form-check form-check-inline form-switch mb-2">
-						<input class="form-check-input" type="checkbox" asp-for="Cliente.Pib_Cert_Activa" value="" id="chkIbCertActiva">
+						<input class="form-check-input activable" type="checkbox" asp-for="Cliente.Pib_Cert_Activa" value="" id="chkIbCertActiva">
 						<label class="form-check-label" for="chkIbCertActiva"> Cert. No Percep IB</label>
 					</div>
 					<span class="input-group-text fixed-lbl-for-abm-70">Vto:</span>
 					@if (Model.Cliente.Pib_Cert_Vto == null)
 					{
-						<input type="text" asp-for="Cliente.Pib_Cert_Vto" class="form-control"  />
+						<input type="text" asp-for="Cliente.Pib_Cert_Vto" class="form-control activable" />
 					}
 					else
 					{
-						<input type="date" asp-for="Cliente.Pib_Cert_Vto" class="form-control"  />
+						<input type="date" asp-for="Cliente.Pib_Cert_Vto" class="form-control activable" />
 					}
 				</div>
 			</div>
 			<div class="row mt-1">
 				<div class="input-group input-group-sm">
 					<div class="form-check form-check-inline form-switch mb-2">
-						<input class="form-check-input" type="checkbox" asp-for="Cliente.Cta_Emp_Activa" value="" id="chkCtaEmpActiva">
+						<input class="form-check-input activable" type="checkbox" asp-for="Cliente.Cta_Emp_Activa" value="" id="chkCtaEmpActiva">
 						<label class="form-check-label" for="chkCtaEmpActiva"> Legajo Emp</label>
 					</div>
-					<input type="text" asp-for="Cliente.Cta_Emp_Legajo" class="form-control"  />
+					<input type="text" asp-for="Cliente.Cta_Emp_Legajo" class="form-control activable" />
 					<span class="input-group-text fixed-lbl-for-abm-70">Bco:</span>
-					@Html.DropDownListFor(m => m.Cliente.Cta_Emp_Ctaf, financieros, "Seleccionar...", new { @id = "listaFinancieros", @class = "form-control" })
+					@Html.DropDownListFor(m => m.Cliente.Cta_Emp_Ctaf, financieros, "Seleccionar...", new { @id = "listaFinancieros", @class = "form-control activable" })
 				</div>
 			</div>
 		</div>

@@ -13,10 +13,13 @@ using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.ABM;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Options;
+using Microsoft.VisualBasic;
 using System;
 using System.Drawing;
 using System.Security.Claims;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace gc.sitio.Areas.ABMs.Controllers
 {
@@ -79,6 +82,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			_tipoContactoServicio = tipoContactoServicio;
 			_tipoObsServicio = tipoObsServicio;
 			_abmServicio = abmServicio;
+			_logger = logger;
 		}
 
 		[HttpGet]
@@ -506,20 +510,59 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			return Json(zonas);
 		}
 
-		#region Guardado de datos
-		/// <summary>
-		/// Metodo que engloba las tres operaciones de ABM de cliente (Alta, baja y modificacion) invocadas al presionar ACEPTAR en la vista
-		/// </summary>
-		/// <param name="ctaId"></param>
-		/// <returns></returns>
 		[HttpPost]
-		public JsonResult DataOpsCliente(ABMClienteRequest request)
+		public IActionResult ObtenerDepartamentos(string provId)
 		{
 			RespuestaGenerica<EntidadBase> response = new();
 			try
 			{
+				if (string.IsNullOrWhiteSpace(provId))
+					return PartialView("_comboLocalidad", ComboDepto());
+				return PartialView("_comboLocalidad", ComboDepto(provId));
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda de Departamentos";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda de Departamentos");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+		#region Guardado de datos
+		/// <summary>
+		/// Metodo que engloba las tres operaciones de ABM de cliente (Alta, baja y modificacion) invocadas al presionar ACEPTAR en la vista
+		/// </summary>
+		/// <param requuest=ABMClienteRequest></param>
+		/// <returns></returns>
+		[HttpPost]
+		public JsonResult DataOpsCliente(ABMClienteRequest request)
+		{
+			try
+			{
+				var abmRequest = new AbmGenDto
+				{
+					Abm = request.tipoDeOperacion,
+					Objeto = request.destinoDeOperacion,
+					Json = request.jsonString,
+					Administracion = AdministracionId,
+					Usuario = UserName
+				};
+				var respuesta = _abmServicio.AbmConfirmar(abmRequest, TokenCookie).Result;
+				if (respuesta == null)
+					return Json(new { error = true, warn = false, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
+				if (respuesta.EsWarn || respuesta.EsError)
+				{
+					if (respuesta.Entidad != null)
+						return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = respuesta.Entidad.resultado_msj, codigo = respuesta.Entidad.resultado, setFocus = respuesta.Entidad.resultado_setfocus });
+					else if (respuesta.ListaEntidad != null && respuesta.ListaEntidad.Count > 0)
+						return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = respuesta.ListaEntidad?.First().resultado_msj, codigo = respuesta.ListaEntidad?.First().resultado, setFocus = respuesta.ListaEntidad?.First().resultado_setfocus });
+					return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
+				}
 
-				return Json(new { error = false, msg = "OK." });
+				return Json(new { error = false, warn = false, msg = "OK." });
 			}
 			catch (Exception ex)
 			{
