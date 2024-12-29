@@ -104,7 +104,7 @@ namespace gc.infraestructura.Dtos.Almacen
         }
         public string up_id { get; set; }//
         public string up_desc { get; set; }
-        public string up_list { get; set; }
+        public string up_lista { get; set; }
         public string rub_id { get; set; }
         public string rub_desc { get; set; }
         public string rub_lista { get; set; }
