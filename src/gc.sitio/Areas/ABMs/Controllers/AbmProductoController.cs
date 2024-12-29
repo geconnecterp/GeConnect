@@ -156,7 +156,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             try
             {
                 string id = "000000";
-                ProductoABMSeleccionado = new ProductoDto();
+                ProductoABMSeleccionado = new ProductoDto() { p_activo = 'S' };
                 //busca combo familia
                 ViewBag.Pg_Id = ComboProveedoresFamilia(id, _ctaSv);
                 ViewBag.Up_Id = ComboMedidas(_prodSv).GetAwaiter().GetResult();
