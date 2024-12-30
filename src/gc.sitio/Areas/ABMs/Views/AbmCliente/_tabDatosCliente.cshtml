@@ -20,6 +20,8 @@
 }
 <div class="container">
 	@* @Html.HiddenFor(x => x.Cliente.Cta_Emp) *@
+	@Html.HiddenFor(x => x.Cliente.Cta_Alta)
+	@Html.HiddenFor(x => x.Cliente.Cta_Actu_Fecha)
 	<div class="row">
 		<div class="col-md-4">
 			<div class="row mt-1">
@@ -90,11 +92,17 @@
 			</div>
 			<div class="row mt-1">
 				<div class="input-group input-group-sm">
+					<span class="input-group-text fixed-lbl-for-abm-70">Localidad</span>
+					<input type="text" asp-for="Cliente.Cta_Localidad" class="form-control activable" />
+				</div>
+			</div>
+			<div class="row mt-1">
+				<div class="input-group input-group-sm">
 					<span class="input-group-text fixed-lbl-for-abm-70">WWW</span>
 					<input type="text" asp-for="Cliente.Cta_Www" class="form-control activable" />
 				</div>
 			</div>
-			<div class="row mt-1">
+			@* <div class="row mt-1">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text fixed-lbl-for-abm-70">Cta: </span>
 					@Html.DropDownListFor(m => m.Cliente.Tcb_Id, tipoCueBco, "Seleccionar...", new { @id = "listaTipoCueBco", @class = "form-control activable" })
@@ -107,24 +115,25 @@
 					<span class="input-group-text fixed-lbl-for-abm-70">CBU</span>
 					<input type="text" asp-for="Cliente.Cta_Bco_Cuenta_Cbu" class="form-control activable" />
 				</div>
-			</div>
+			</div> *@
 		</div>
 		<div class="col-md-4">
 			<div class="row mt-1">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text fixed-lbl-for-abm-70">Tipo:</span>
 					@Html.DropDownListFor(m => m.Cliente.Ctn_Id, tipoNeg, "Seleccionar...", new { @id = "listaTipoNeg", @class = "form-control activable" })
-					<span class="input-group-text fixed-lbl-for-abm-70">Inicio:</span>
-					@if (Model.Cliente.Ctac_Negocio_Inicio == null)
+					<span class="input-group-text fixed-lbl-for-abm-50">Inicio:</span>
+					@Html.TextBoxFor(t => t.Cliente.Ctac_Negocio_Inicio, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable" })
+					@* @if (Model.Cliente.Ctac_Negocio_Inicio == null)
 					{
 						<input type="text" asp-for="Cliente.Ctac_Negocio_Inicio" class="form-control activable" />
 					}
 					else
 					{
 						<input type="date" asp-for="Cliente.Ctac_Negocio_Inicio" class="form-control activable" />
-					}
-					<span class="input-group-text" style="width:50px;">Cant PV:</span>
-					<input type="number" asp-for="Cliente.Ctac_Ptos_Vtas" class="form-control activable" />
+					} *@
+					<span class="input-group-text fixed-lbl-for-abm-50">Cant PV:</span>
+					<input type="number" asp-for="Cliente.Ctac_Ptos_Vtas" class="form-control activable" style="max-width: 40px;" title="Cantidad de Puntos de Venta"/>
 				</div>
 			</div>
 			<div class="row mt-1">
@@ -175,14 +184,15 @@
 						<label class="form-check-label" for="chkPivaCertActiva"> Cert. No Percep. IVA</label>
 					</div>
 					<span class="input-group-text fixed-lbl-for-abm-70">Vto:</span>
-					@if (Model.Cliente.Piva_Cert_Vto == null)
+					@Html.TextBoxFor(t => t.Cliente.Piva_Cert_Vto, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable" })
+					@* @if (Model.Cliente.Piva_Cert_Vto == null)
 					{
 						<input type="text" asp-for="Cliente.Piva_Cert_Vto" class="form-control activable" />
 					}
 					else
 					{
 						<input type="date" asp-for="Cliente.Piva_Cert_Vto" class="form-control activable" />
-					}
+					} *@
 				</div>
 			</div>
 			<div class="row mt-1">
@@ -192,14 +202,15 @@
 						<label class="form-check-label" for="chkIbCertActiva"> Cert. No Percep IB</label>
 					</div>
 					<span class="input-group-text fixed-lbl-for-abm-70">Vto:</span>
-					@if (Model.Cliente.Pib_Cert_Vto == null)
+					@Html.TextBoxFor(t => t.Cliente.Pib_Cert_Vto, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable" })
+					@* @if (Model.Cliente.Pib_Cert_Vto == null)
 					{
 						<input type="text" asp-for="Cliente.Pib_Cert_Vto" class="form-control activable" />
 					}
 					else
 					{
 						<input type="date" asp-for="Cliente.Pib_Cert_Vto" class="form-control activable" />
-					}
+					} *@
 				</div>
 			</div>
 			<div class="row mt-1">

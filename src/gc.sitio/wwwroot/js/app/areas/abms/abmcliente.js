@@ -445,6 +445,7 @@ function selectRegDbl(x) {
 		BuscarObservaciones();
 		HabilitarBotones(false, false, false, true, true);
 		controlaCertIb();
+		$(".activable").prop("disabled", true);
 	}
 }
 
@@ -532,7 +533,18 @@ function NuevaFormaDePago() {
 		}, false, ["Aceptar"], "error!", null);
 	}
 	else {
-		HabilitarBotonesPorAccion(AbmAction.ALTA);
+		var data = {};
+		PostGenHtml(data, nuevaFormaDePagoUrl, function (obj) {
+			$("#divDatosDeFPSelected").html(obj);
+			$(".nav-link").prop("disabled", true);
+			$(".activable").prop("disabled", false);
+			HabilitarBotonesPorAccion(AbmAction.ALTA);
+			$("#FormaDePago_Fp_Id").focus();
+			CerrarWaiting();
+		}, function (obj) {
+			ControlaMensajeError(obj.message);
+			CerrarWaiting();
+		});
 	}
 }
 
@@ -543,7 +555,7 @@ function btnModiClick() {
 			ModificaCliente(tabActiva);
 			break;
 		case Tabs.TabFormasDePago:
-			ModificaFormaDePago();
+			ModificaFormaDePago(tabActiva);
 			break;
 		case Tabs.TabNotas:
 			ModificaNota();
@@ -568,9 +580,8 @@ function ModificaCliente(tabAct) {
 	$("#Cliente_Cta_Denominacion").focus();
 }
 
-function ModificaFormaDePago() {
-	var tabActiva = $('.nav-tabs .active')[0].id;
-	var mensaje = PuedoModificar(tabActiva);
+function ModificaFormaDePago(tabAct) {
+	var mensaje = PuedoModificar(tabAct);
 	if (mensaje !== "") {
 		AbrirMensaje("ATENCIÓN", mensaje, function () {
 			$("#msjModal").modal("hide");
@@ -579,6 +590,11 @@ function ModificaFormaDePago() {
 	}
 	else {
 		HabilitarBotonesPorAccion(AbmAction.MODIFICACION);
+		tipoDeOperacion = AbmAction.MODIFICACION;
+		SetearDestinoDeOperacion(tabAct);
+		$(".nav-link").prop("disabled", true);
+		$(".activable").prop("disabled", false);
+		$("#listaFP").focus();
 	}
 }
 
@@ -661,6 +677,8 @@ function PuedoModificar(tabAct) {
 		case Tabs.TabFormasDePago:
 			if (!$("#chkCtaActiva").is(":checked"))
 				mensaje = "Solo se pueden modificar formas de pago para cuentas activas.";
+			if ($("#IdSelected").val() == "")
+				mensaje = "Debe seleccionar una forma de pago para modificar.";
 			break;
 		case Tabs.TabNotas:
 			break;
@@ -719,9 +737,28 @@ function validarCampos() {
 
 function Guardar() {
 	if (validarCampos()) {
+		var url = "";
+		switch (destinoDeOperacion) {
+			case AbmObject.CLIENTES:
+				url = dataOpsClienteUrl;
+				break;
+			case AbmObject.CLIENTES_CONDICIONES_VTA:
+				url = dataOpsFormaDePagoUrl;
+				break;
+			case AbmObject.CUENTAS_CONTACTOS:
+				url = dataOpsCuentaContactoUrl;
+				break;
+			case AbmObject.CUENTAS_NOTAS:
+				url = dataOpsCuentaNotaUrl;
+				break;
+			case AbmObject.CUENTAS_OBSERVACIONES:
+				url = dataOpsObservacionesUrl;
+				break;
+			default:
+		}
 		var jsonString = ObtenerDatosParaJson(destinoDeOperacion);
 		var data = { destinoDeOperacion, tipoDeOperacion, jsonString }
-		PostGen(data, dataOpsClienteUrl, function (obj) {
+		PostGen(data, url, function (obj) {
 			if (obj.error === true) {
 				AbrirMensaje("ATENCIÓN", obj.msg, function () {
 					$("#msjModal").modal("hide");
@@ -743,6 +780,7 @@ function ObtenerDatosParaJson(destinoDeOperacion) {
 			json = ObtenerDatosDeClienteParaJson();
 			break;
 		case AbmObject.CLIENTES_CONDICIONES_VTA:
+			json = ObtenerDatosDeFormaDePagoPParaJson();
 			break;
 		case AbmObject.CUENTAS_CONTACTOS:
 			break;
@@ -753,6 +791,28 @@ function ObtenerDatosParaJson(destinoDeOperacion) {
 		default:
 	}
 	return json;
+}
+
+function ObtenerDatosDeFormaDePagoPParaJson() {
+	//TODO
+	var cta_id = $("#Cliente_Cta_Id").val();
+	var fp_id = $("#listaFP").val();
+	var fp_desc = $("#listaFP option:selected").text();
+	var fp_lista = $("#listaFP option:selected").text() + "(" + $("#listaFP").val() + ")";
+	var fp_dias = $("#FormaDePago_Fp_Dias").val();
+	var tcb_id = $("#listaTipoCueBco").val();
+	var tcb_desc = $("#listaTipoCueBco option:selected").val();
+	var tcb_lista = $("#listaTipoCueBco option:selected").text() + "(" + $("#listaTipoCueBco").val() + ")";
+	var cta_bco_cuenta_nro = $("#FormaDePago_Cta_Bco_Cuenta_Nro").val();
+	var cta_bco_cuenta_cbu = $("#FormaDePago_Cta_Bco_Cuenta_Cbu").val();
+	var cta_valores_a_nombre = $("#FormaDePago_Cta_Valores_A_Nombre").val();
+	var cta_obs = $("#FormaDePago_Cta_Obs").val();
+	var fp_default = "N";
+	var data = `{ "cta_id": "` + cta_id + `","fp_id": "` + fp_id + `", "fp_desc": "` + fp_desc + `", "fp_lista": "` + fp_lista + `", "fp_dias": "` + fp_dias + `"
+				, "tcb_id": "`+ tcb_id + `", "tcb_desc": "` + tcb_desc + `", "tcb_lista": "` + tcb_lista + `", "cta_bco_cuenta_nro": "` + cta_bco_cuenta_nro + `"
+				, "cta_bco_cuenta_cbu": "`+ cta_bco_cuenta_cbu + `", "cta_valores_a_nombre": "` + cta_valores_a_nombre + `", "cta_obs": "` + cta_obs + `"
+				, "fp_default": "`+ fp_default + `"}`;
+	return data;
 }
 
 function ObtenerDatosDeClienteParaJson() {
@@ -773,11 +833,17 @@ function ObtenerDatosDeClienteParaJson() {
 	var cta_ib_nro = $("#Cliente_Cta_Ib_Nro").val();
 	var ib_id = $("#listaIB").val();
 	var ib_desc = $("#listaIB option:selected").text();
-	var cta_alta = $("#listaAfip option:selected").text(); //?
-	var cta_cuit_vto = $("#listaAfip option:selected").text(); //?
-	var cta_emp = $("#listaAfip option:selected").text();//?
-	var cta_actu_fecha = $("#listaAfip option:selected").text();//?
-	var cta_actu = $("#listaAfip option:selected").text();//?
+	var nj_id = $("#listaNJ").val();
+	var nj_desc = $("#listaNJ option:selected").text();
+	var cta_alta = null;
+	var cta_cuit_vto = null;
+	var cta_emp = "N";
+	if ($("#chkCtaEmpActiva")[0].checked)
+		cta_emp = "S";
+	var cta_emp_legajo = $("#Cliente_Cta_Emp_Legajo").val();
+	var cta_emp_ctaf = $("#listaFinancieros option:selected").text();
+	var cta_actu_fecha = null;
+	var cta_actu = null;
 	var ctac_tope_credito = $("#Cliente_Ctac_Tope_Credito").val();
 	var ctac_tope_credito_dia = $("#Cliente_Ctac_Tope_Credito_Dia").val();
 	var ctac_dto_operacion = $("#Cliente_Ctac_Dto_Operacion").val();
@@ -791,6 +857,8 @@ function ObtenerDatosDeClienteParaJson() {
 		if ($("#chkIbCertActiva")[0].checked)
 			pib_cert = "S";
 	}
+	var piva_cert_vto = $("#Cliente_Piva_Cert_Vto").val();
+	var pib_cert_vto = $("#Cliente_Pib_Cert_Vto").val();
 	var ctn_id = $("#listaTipoNeg").val();
 	var ctn_desc = $("#listaTipoNeg option:selected").text();
 	var ctc_id = $("#listaTipoCanal").val();
@@ -802,19 +870,28 @@ function ObtenerDatosDeClienteParaJson() {
 	var zn_desc = $("#listaZonas option:selected").text();
 	var rp_id = $("#listaRepartidor").val();
 	var rp_nombre = $("#listaRepartidor option:selected").text();
+	var ctac_tope_credito_dia_ult = null;
+	var ctac_dto_operacion_dia_ult = null;
 	var ctac_habilitada = "N";
 	if ($("#chkCtaActiva")[0].checked)
 		ctac_habilitada = "S";
+	var ctac_ptos_vtas = $("#Cliente_Ctac_Ptos_Vtas").val();
+	var ctac_negocio_inicio = null;
+	var lp_id = $("#Cliente_Lp_Id").val();
+	var lp_desc = $("#Cliente_Lp_Id option:selected").text();
 	var data = `{ "cta_id": "` + cta_id + `", "cta_denominacion": "` + cta_denominacion + `", "tdoc_id": "` + tdoc_id + `", "tdoc_desc": "` + tdoc_desc + `"
 				, "cta_documento": "`+ cta_documento + `", "cta_domicilio": "` + cta_domicilio + `", "cta_localidad": "` + cta_localidad + `"
 				, "cta_cpostal": "`+ cta_cpostal + `", "prov_id": "` + prov_id + `", "prov_nombre": "` + prov_nombre + `", "dep_id": "` + dep_id + `"
 				, "dep_nombre": "`+ dep_nombre + `", "afip_id": "` + afip_id + `", "afip_desc": "` + afip_desc + `", "cta_ib_nro": "` + cta_ib_nro + `"
-				, "ib_id": "`+ ib_id + `", "ib_desc": "` + ib_desc + `", "cta_alta": "` + cta_alta + `", "cta_cuit_vto": "` + cta_cuit_vto + `"
-				, "cta_emp": "`+ cta_emp + `", "cta_actu_fecha": "` + cta_actu_fecha + `", "cta_actu": "` + cta_actu + `", "ctac_tope_credito": "` + ctac_tope_credito + `"
+				, "ib_id": "`+ ib_id + `", "ib_desc": "` + ib_desc + `", "cta_alta": ` + cta_alta + `, "cta_cuit_vto": ` + cta_cuit_vto + `
+				, "cta_emp": "`+ cta_emp + `", "cta_emp_legajo": "` + cta_emp_legajo + `", "cta_emp_ctaf": "` + cta_emp_ctaf + `", "cta_actu_fecha": ` + cta_actu_fecha + `
+				, "cta_actu": ` + cta_actu + `, "ctac_tope_credito": "` + ctac_tope_credito + `", "ctac_ptos_vtas": "` + ctac_ptos_vtas + `", "ctac_negocio_inicio": ` + ctac_negocio_inicio + `
 				, "ctac_tope_credito_dia": "`+ ctac_tope_credito_dia + `", "ctac_dto_operacion": "` + ctac_dto_operacion + `", "ctac_dto_operacion_dia": "` + ctac_dto_operacion_dia + `"
-				, "piva_cert": "`+ piva_cert + `", "pib_cert": "` + pib_cert + `", "ctn_id": "` + ctn_id + `", "ctn_desc": "` + ctn_desc + `", "ctc_id": "` + ctc_id + `"
-				, "ctc_desc": "`+ ctc_desc + `", "ve_id": "` + ve_id + `", "ve_nombre": "` + ve_nombre + `", "ve_visita": "` + ve_visita + `", "zn_id": "` + zn_id + `",
-				, "zn_desc": "`+ zn_desc + `", "rp_id": "` + rp_id + `", "rp_nombre": "` + rp_nombre + `", "ctac_habilitada": "` + ctac_habilitada + `"}`;
+				, "piva_cert": "`+ piva_cert + `", "piva_cert_vto": "` + piva_cert_vto + `", "pib_cert": "` + pib_cert + `", "pib_cert_vto": "` + pib_cert_vto + `", "ctn_id": "` + ctn_id + `"
+				, "ctn_desc": "` + ctn_desc + `", "ctc_id": "` + ctc_id + `", "ctac_tope_credito_dia_ult": ` + ctac_tope_credito_dia_ult + `, "ctac_dto_operacion_dia_ult": ` + ctac_dto_operacion_dia_ult + `
+				, "ctc_desc": "`+ ctc_desc + `", "ve_id": "` + ve_id + `", "ve_nombre": "` + ve_nombre + `", "ve_visita": "` + ve_visita + `", "zn_id": "` + zn_id + `"
+				, "zn_desc": "`+ zn_desc + `", "rp_id": "` + rp_id + `", "rp_nombre": "` + rp_nombre + `", "ctac_habilitada": "` + ctac_habilitada + `"
+				, "nj_id": "`+ nj_id + `", "nj_desc": "` + nj_desc + `", "lp_id": "` + lp_id + `", "lp_desc": "` + lp_desc + `"}`;
 	return data;
 }
 

@@ -109,6 +109,15 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			cuentas_contactos = 3,
 			CUENTAS_NOTAS = 4
 		}
+
+		protected enum Abm
+		{
+			A = 1, //Alta
+			B = 2, //Baja
+			M = 3, //Modificacion
+			S = 4, //Submit
+			C = 5  //Cancel
+		}
 		#endregion
 	}
 }

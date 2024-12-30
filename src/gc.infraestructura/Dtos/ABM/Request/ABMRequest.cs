@@ -1,8 +1,6 @@
-﻿using gc.infraestructura.Dtos.Almacen;
-
-namespace gc.infraestructura.Dtos.ABM.Request
+﻿namespace gc.infraestructura.Dtos.ABM.Request
 {
-	public class ABMClienteRequest : CuentaABMDto
+	public class ABMRequest
 	{
 		public string destinoDeOperacion { get; set; } = string.Empty;
 		public char tipoDeOperacion { get; set; }

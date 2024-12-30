@@ -9,6 +9,7 @@ using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.ABMs.Models;
+using gc.sitio.Areas.ABMs.Models.Cliente;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.ABM;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +17,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualBasic;
+using Newtonsoft.Json;
 using System;
 using System.Drawing;
 using System.Security.Claims;
@@ -232,6 +234,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			}
 		}
 
+		#region Formas de Pago
 		/// <summary>
 		/// Método que llena el Tab "Formas de Pago" en el ABM
 		/// </summary>
@@ -307,7 +310,9 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				return PartialView("_gridMensaje", response);
 			}
 		}
+		#endregion
 
+		#region Otros Contactos
 		/// <summary>
 		/// Método que llena el Tab "Formas de Pago" en el ABM
 		/// </summary>
@@ -372,7 +377,9 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				return PartialView("_gridMensaje", response);
 			}
 		}
+		#endregion
 
+		#region Notas
 		[HttpPost]
 		public async Task<IActionResult> BuscarNotas(string ctaId)
 		{
@@ -430,7 +437,9 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				return PartialView("_gridMensaje", response);
 			}
 		}
+		#endregion
 
+		#region Observaciones
 		[HttpPost]
 		public async Task<IActionResult> BuscarObservaciones(string ctaId)
 		{
@@ -493,6 +502,9 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				return PartialView("_gridMensaje", response);
 			}
 		}
+		#endregion
+
+		#region Carga De Listas en sección filtros Base
 
 		[HttpPost]
 		public JsonResult BuscarR01(string prefix)
@@ -509,6 +521,9 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			var zonas = zona.Select(x => new ComboGenDto { Id = x.zn_id, Descripcion = x.zn_lista });
 			return Json(zonas);
 		}
+		#endregion
+
+		#region Metodo Para obtener los departamentos desde una seleccion de provincia
 
 		[HttpPost]
 		public IActionResult ObtenerDepartamentos(string provId)
@@ -531,14 +546,16 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				return PartialView("_gridMensaje", response);
 			}
 		}
+		#endregion
+
 		#region Guardado de datos
 		/// <summary>
 		/// Metodo que engloba las tres operaciones de ABM de cliente (Alta, baja y modificacion) invocadas al presionar ACEPTAR en la vista
 		/// </summary>
-		/// <param requuest=ABMClienteRequest></param>
+		/// <param name="request">Tipo ABMRequest</param>
 		/// <returns></returns>
 		[HttpPost]
-		public JsonResult DataOpsCliente(ABMClienteRequest request)
+		public JsonResult DataOpsCliente(ABMRequest request)
 		{
 			try
 			{
@@ -550,19 +567,28 @@ namespace gc.sitio.Areas.ABMs.Controllers
 					Administracion = AdministracionId,
 					Usuario = UserName
 				};
-				var respuesta = _abmServicio.AbmConfirmar(abmRequest, TokenCookie).Result;
-				if (respuesta == null)
-					return Json(new { error = true, warn = false, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
-				if (respuesta.EsWarn || respuesta.EsError)
+				var resObj = new CuentaAbmValidationModel();
+				resObj = JsonConvert.DeserializeObject<CuentaAbmValidationModel>(request.jsonString);
+				if (resObj == null) return Json(new { error = true, warn = false, msg = "Ha ocurrido un error al intentar parsear el objeto.", codigo = 1, setFocus = string.Empty });
+				var respuestaDeValidacion = ValidarJsonAntesDeGuardar(resObj, abmRequest.Abm);
+				if (respuestaDeValidacion == "")
 				{
-					if (respuesta.Entidad != null)
-						return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = respuesta.Entidad.resultado_msj, codigo = respuesta.Entidad.resultado, setFocus = respuesta.Entidad.resultado_setfocus });
-					else if (respuesta.ListaEntidad != null && respuesta.ListaEntidad.Count > 0)
-						return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = respuesta.ListaEntidad?.First().resultado_msj, codigo = respuesta.ListaEntidad?.First().resultado, setFocus = respuesta.ListaEntidad?.First().resultado_setfocus });
-					return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
-				}
+					var respuesta = _abmServicio.AbmConfirmar(abmRequest, TokenCookie).Result;
+					if (respuesta == null)
+						return Json(new { error = true, warn = false, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
+					if (respuesta.EsWarn || respuesta.EsError)
+					{
+						if (respuesta.Entidad != null)
+							return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = respuesta.Entidad.resultado_msj, codigo = respuesta.Entidad.resultado, setFocus = respuesta.Entidad.resultado_setfocus });
+						else if (respuesta.ListaEntidad != null && respuesta.ListaEntidad.Count > 0)
+							return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = respuesta.ListaEntidad?.First().resultado_msj, codigo = respuesta.ListaEntidad?.First().resultado, setFocus = respuesta.ListaEntidad?.First().resultado_setfocus });
+						return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
+					}
 
-				return Json(new { error = false, warn = false, msg = "OK." });
+					return Json(new { error = false, warn = false, msg = "OK." });
+				}
+				else
+					return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
 			}
 			catch (Exception ex)
 			{
@@ -617,9 +643,139 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				return PartialView("_gridMensaje", response);
 			}
 		}
+
+		/// <summary>
+		/// Metodo que engloba las tres operaciones de ABM de formas de pago (Alta, baja y modificacion) invocadas al presionar ACEPTAR en la vista
+		/// </summary>
+		/// <param name="request">Tipo ABMRequest</param>
+		/// <returns></returns>
+		[HttpPost]
+		public JsonResult DataOpsFormaDePago(ABMRequest request)
+		{
+			try
+			{
+				var abmRequest = new AbmGenDto
+				{
+					Abm = request.tipoDeOperacion,
+					Objeto = request.destinoDeOperacion,
+					Json = request.jsonString,
+					Administracion = AdministracionId,
+					Usuario = UserName
+				};
+				var resObj = new FormaDePagoAbmValidationModel();
+				resObj = JsonConvert.DeserializeObject<FormaDePagoAbmValidationModel>(request.jsonString);
+				if (resObj == null) return Json(new { error = true, warn = false, msg = "Ha ocurrido un error al intentar parsear el objeto.", codigo = 1, setFocus = string.Empty });
+				var respuestaDeValidacion = ValidarJsonAntesDeGuardar(resObj, abmRequest.Abm);
+				if (respuestaDeValidacion == "")
+				{
+					var respuesta = _abmServicio.AbmConfirmar(abmRequest, TokenCookie).Result;
+					if (respuesta == null)
+						return Json(new { error = true, warn = false, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
+					if (respuesta.EsWarn || respuesta.EsError)
+					{
+						if (respuesta.Entidad != null)
+							return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = respuesta.Entidad.resultado_msj, codigo = respuesta.Entidad.resultado, setFocus = respuesta.Entidad.resultado_setfocus });
+						else if (respuesta.ListaEntidad != null && respuesta.ListaEntidad.Count > 0)
+							return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = respuesta.ListaEntidad?.First().resultado_msj, codigo = respuesta.ListaEntidad?.First().resultado, setFocus = respuesta.ListaEntidad?.First().resultado_setfocus });
+						return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
+					}
+
+					return Json(new { error = false, warn = false, msg = "OK." });
+				}
+				else
+					return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, msg = "Ha ocurrido un error al intentar actualizar la información." });
+				throw;
+			}
+		}
+
+		[HttpPost]
+		public IActionResult NuevaFormaDePago()
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				var fpModel = new CuentaAbmFPSelectedModel
+				{
+					FormaDePago = new FormaDePagoModel(),
+					ComboFormasDePago = ComboFormaDePago(),
+					ComboTipoCuentaBco = ComboTipoCuentaBco()
+				};
+				return PartialView("_tabDatosFormaDePagoSelected", fpModel);
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Alta de Cliente - Nueva entidad";
+				_logger.LogError(ex, "Error en la invocación de la API - Alta de Cliente - Nueva entidad");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
 		#endregion
 
 		#region Métodos Privados
+		private string ValidarJsonAntesDeGuardar(FormaDePagoAbmValidationModel fp, char abm)
+		{
+			var abmString = abm.ToString();
+			if (abmString == Abm.A.ToString() || abmString == Abm.M.ToString())
+			{
+				if (fp.fp_id != "B" && fp.fp_id != "I")
+				{
+					fp.cta_id = null;
+					fp.cta_bco_cuenta_cbu = null;
+					fp.cta_bco_cuenta_nro = null;
+				}
+				if (fp.fp_id != "H")
+				{
+					fp.cta_valores_a_nombre = null;
+				}
+				if (fp.fp_dias < 0)
+				{
+					return "Debe indicar un valor de Plazo mayor o igual a 0";
+				}
+			}
+
+			return "";
+		}
+
+		private string ValidarJsonAntesDeGuardar(CuentaAbmValidationModel cuenta, char abm)
+		{
+			var abmString = abm.ToString();
+			if (abmString == Abm.A.ToString() || abmString == Abm.M.ToString())
+			{
+				//En alta y modificación, solo debe cargar un régimen de IB si la condición afip es distinto de 05 y 02, en caso contrario es  nulo
+				if ((cuenta.afip_id != "05" && cuenta.afip_id != "02") && cuenta.ib_id == "")
+				{
+					return "Se debe indicar un valor de IB.";
+				}
+				else if (cuenta.afip_id == "05" || cuenta.afip_id == "02")
+				{
+					cuenta.ib_id = null;
+				}
+				//Cantidad de PV debe ser mayor a cero si  la condición AFIP es distinto de 05 y 02
+				if ((cuenta.afip_id != "05" && cuenta.afip_id != "02") && cuenta.ctac_ptos_vtas == 0)
+				{
+					return "Se debe indicar un valor PV mayor a 0.";
+				}
+				//En las altas y modificaciones, Si el canal es “Distribuidora” (ctc_id = ‘DI’), debe ser editable el vendedor, días de visita y repartidos, en caso contrario deben ser nulos y no editables
+				if (cuenta.ctc_id != "DI")
+				{
+					cuenta.ve_id = null;
+					cuenta.rp_id = null;
+					cuenta.ve_visita = null;
+				}
+				if (cuenta.cta_emp_ctaf != null && cuenta.cta_emp_ctaf.Contains("Seleccionar"))
+					cuenta.cta_emp_ctaf = null;
+			}
+			return "";
+		}
+
 		private static ObservacionesModel ObtenerObservacionModel(CuentaObsDto obs)
 		{
 			var mod = new ObservacionesModel();
@@ -781,5 +937,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				ObtenerTipoObservaciones(_tipoObsServicio, "P");
 		}
 		#endregion
+
+
 	}
 }
