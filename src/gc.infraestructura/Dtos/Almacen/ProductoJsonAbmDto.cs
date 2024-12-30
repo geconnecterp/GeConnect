@@ -4,15 +4,16 @@ namespace gc.infraestructura.Dtos.Almacen
 {
     public class ProductoJsonAbmDto
     {
-        public string p_id { get; set; }//
-        public string p_m_marca { get; set; }//
-        public string p_m_desc { get; set; }//
-        public string p_m_capacidad { get; set; }//
-        public string p_desc { get; set; }//
-        public char? p_alta_rotacion { get; set; }//
-        public char? p_con_vto { get; set; }//
-        public short p_con_vto_min { get; set; }
-        public decimal? p_peso { get; set; }//
+        public string p_id { get; set; }//*
+        public string p_m_marca { get; set; }//*
+        public string p_m_desc { get; set; }//*
+        public string p_m_capacidad { get; set; }//*
+        public string p_desc { get; set; }//*
+        public char? p_alta_rotacion { get; set; }//*
+        public string p_id_prov {  get; set; }//*
+        public char? p_con_vto { get; set; }//*
+        public short p_con_vto_min { get; set; }//*
+        public decimal? p_peso { get; set; }//*
         public char p_elaboracion { get; set; }//
         public char p_materia_prima { get; set; }//
         public string up_id { get; set; }//
@@ -32,7 +33,8 @@ namespace gc.infraestructura.Dtos.Almacen
         public DateTime? p_modi { get; set; }
         public char? p_actu { get; set; }
         public char p_activo { get; set; }
-        public char? p_balanza { get; set; }
+        public char? p_balanza { get; set; }//*
+
         public char? adm_min_excluye { get; set; }
         public char? adm_may_excluye { get; set; }
         public char? pi_auto_excluye { get; set; }

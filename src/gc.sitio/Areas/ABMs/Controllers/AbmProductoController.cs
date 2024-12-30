@@ -2,6 +2,7 @@
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Box;
@@ -87,7 +88,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 {
                     throw new NegocioException("No se encontraron barrados para el producto.");
                 }
-                grillaDatos = GenerarGrilla<ProductoBarradoDto>(barr.ListaEntidad, "P_Id_barrado");
+                ProductoBarrados = barr.ListaEntidad;
+                grillaDatos = GenerarGrilla(barr.ListaEntidad, "P_Id_barrado");
                 return View("_gridBarrado", grillaDatos);
             }
             catch (NegocioException ex)
@@ -100,8 +102,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
             }
             catch (Exception ex)
             {
-                string msg = "Error en la invocación de la API - Busqueda Producto";
-                _logger.LogError(ex, "Error en la invocación de la API - Busqueda Producto");
+                string msg = "Error en la invocación de la API - Busqueda de Barrados";
+                _logger.LogError(ex, "Error en la invocación de la API - Busqueda de Barrados");
                 response.Mensaje = msg;
                 response.Ok = false;
                 response.EsWarn = false;
@@ -179,20 +181,26 @@ namespace gc.sitio.Areas.ABMs.Controllers
         }
 
         [HttpPost]
-        public async Task<JsonResult> ConfirmarAbmProducto(ProductoJsonAbmDto prod, char accion)
+        public async Task<JsonResult> ConfirmarAbmProducto(ProductoDto prod, char accion)
         {
             try
             {
-                //prod.P_Obs = prod.P_Obs.ToUpper();
-                var abm = new AbmGenDto()
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
                 {
+                    return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+                }
+
+                prod = HelperGen.PasarAMayusculas(prod);
+                //prod.P_Obs = prod.P_Obs.ToUpper();
+                AbmGenDto abm = new AbmGenDto()
+                {
+                    Json = JsonConvert.SerializeObject(prod),
                     Objeto = "productos",
-                    Abm = accion,
                     Administracion = AdministracionId,
                     Usuario = UserName,
-                    Json = JsonConvert.SerializeObject(prod)
+                    Abm=accion
                 };
-                abm.Json = abm.Json.ToLower();
 
                 var res = await _abmSv.AbmConfirmar(abm, TokenCookie);
                 if (res.Ok)
