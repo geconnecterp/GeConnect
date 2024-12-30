@@ -13,12 +13,12 @@
             <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridProd">
                 <thead class="table-dark">
                     <tr class="header">
-                        <th scope="col">@nameof(dataMod.P_Id_barrado)</th>
-                        <th scope="col">@nameof(dataMod.Tba_Desc)</th>
-                        <th scope="col">@nameof(dataMod.P_Unidad_Pres)</th>
-                        <th scope="col">@nameof(dataMod.P_Unidad_X_Bulto)</th>
-                        <th scope="col">@nameof(dataMod.P_Bulto_X_Piso)</th>
-                        <th scope="col">@nameof(dataMod.P_Piso_X_Pallet)</th>                        
+                        <th scope="col">@nameof(dataMod.p_id_barrado)</th>
+                        <th scope="col">@nameof(dataMod.tba_desc)</th>
+                        <th scope="col">@nameof(dataMod.p_unidad_pres)</th>
+                        <th scope="col">@nameof(dataMod.p_unidad_x_bulto)</th>
+                        <th scope="col">@nameof(dataMod.p_bulto_x_piso)</th>
+                        <th scope="col">@nameof(dataMod.p_piso_x_pallet)</th>                        
                     </tr>
                 </thead>
                 <tbody>
@@ -27,12 +27,12 @@
                         if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
                         <tr class="@clase" onclick="selectReg(this,'tbGridLim')">
-                            <td class="text-sm-center">@item.P_Id_barrado</td>
-                            <td class="text-sm-start">@item.Tba_Desc</td>
-                            <td class="text-sm-end">@item.P_Unidad_Pres</td>
-                            <td class="text-sm-start">@item.P_Unidad_X_Bulto</td>
-                            <td class="text-sm-start">@item.P_Bulto_X_Piso</td>
-                            <td class="text-sm-end">@item.P_Piso_X_Pallet</td>                           
+                            <td class="text-sm-center">@item.p_id_barrado</td>
+                            <td class="text-sm-start">@item.tba_desc</td>
+                            <td class="text-sm-end">@item.p_unidad_pres</td>
+                            <td class="text-sm-start">@item.p_unidad_x_bulto</td>
+                            <td class="text-sm-start">@item.p_bulto_x_piso</td>
+                            <td class="text-sm-end">@item.p_piso_x_pallet</td>                           
                         </tr>
                     }
                 </tbody>

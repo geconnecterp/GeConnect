@@ -8,6 +8,7 @@ using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
@@ -268,6 +269,8 @@ namespace gc.sitio.Controllers
                 _context.HttpContext.Session.SetString("ProductoABMSeleccionado", json);
             }
         }
+
+       
 
         /// <summary>
         /// Producto buscado con el control de busqueda de productos. Es utilizado para carga de datos en grid

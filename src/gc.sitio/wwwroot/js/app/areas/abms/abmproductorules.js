@@ -190,6 +190,18 @@ function activarControles(act) {
         $("#lp_id_default").prop("disabled", act);
         $("#in_alicuota").prop("disabled", act);
         //Linea 10
+        $("#p_id_barrado_ean").prop("disabled", act);
+        $("#p_unidad_pres_ean").prop("disabled", act);
+        $("#p_unidad_x_bulto_ean").prop("disabled", act);
+        $("#p_bulto_x_piso_ean").prop("disabled", act);
+        $("#p_piso_x_pallet_ean").prop("disabled", act);
+        //Linea 11
+        $("#p_id_barrado_dun").prop("disabled", act);
+        $("#p_unidad_pres_dun").prop("disabled", act);
+        $("#p_unidad_x_bulto_dun").prop("disabled", act);
+        $("#p_bulto_x_piso_dun").prop("disabled", act);
+        $("#p_piso_x_pallet_dun").prop("disabled", act);
+        //Linea 12
         $("#p_obs").prop("disabled", act);
     }
 }
@@ -258,11 +270,11 @@ function confirmarOperacionAbmProducto() {
     var p_obs = $("#p_obs").val();
     var p_actu = $("#p_actu").val();  //para que sirve este campo???
 
-    //contoles hidden
-    var p_alta = $("#p_alta").val();
-    var usu_id_alta = $("#usu_id_alta").val();
-    var p_modi = $("#p_modi").val();
-    var usu_id_modi = $("#usu_id_modi").val();
+    ////contoles hidden
+    //var p_alta = $("#p_alta").val();
+    //var usu_id_alta = $("#usu_id_alta").val();
+    //var p_modi = $("#p_modi").val();
+    //var usu_id_modi = $("#usu_id_modi").val();
     var p_balanza_id = $("#p_balanza_id").val();
     var p_id_barrado_ean = $("#p_id_barrado_ean").val();
     var p_unidad_pres_ean = $("#p_unidad_pres_ean").val();
@@ -276,50 +288,54 @@ function confirmarOperacionAbmProducto() {
     var p_piso_x_pallet_dun = $("#p_piso_x_pallet_dun").val();
 
     var data = {
-        p_id,
-        p_m_marca,
-        p_m_desc,
+        p_id,//
+        p_m_marca,//
+        p_m_desc,//
         p_m_capacidad,
         p_desc,
-        p_alta_rotacion,
-        p_con_vto,
-        p_con_vto_min,
-        p_peso,
-        p_elaboracion,
-        p_materia_prima,
-        up_id,
-        up_desc,
-        up_lista,
-        rub_id,
-        rub_desc,
-        rub_lista,
-        cta_id,
-        cta_denominacion,
-        cta_lista,
-        pg_id,
-        pg_lista,
-        in_alicuota,
-        iva_alicuota,
-        iva_situacion,
-        p_modi,
-        p_actu,
-        p_activo,
-        p_balanza,
-        adm_min_excluye,
-        adm_may_excluye,
-        pi_auto_exluye,
-        oc_auto_exluye,
-        p_id_barrado_ean,
-        p_unidad_pres_ean,
-        p_unidad_x_bulto_ean,
-        p_bulto_x_piso_ean,
-        p_piso_x_pallet_ean,
-        p_id_barrado_dun,
-        p_unidad_pres_dun,
-        p_unidad_x_bulto_dun,
-        p_bulto_x_piso_dun,
-        p_piso_x_pallet_dun,
-        lp_id_default,
+        p_m_capacidad,//
+        p_alta_rotacion,//
+        p_id_prov,
+        p_con_vto,//
+        p_con_vto_min,//
+        p_balanza_dvto,//
+        p_balanza_id,//
+        p_peso,//
+        p_elaboracion,//
+        p_materia_prima,//
+        up_id,//
+        up_desc,//
+        up_lista,//
+        rub_id,//
+        rub_desc,//
+        rub_lista,//
+        cta_id,//
+        cta_denominacion,//
+        cta_lista,//
+        pg_id,//
+        pg_lista,//
+        in_alicuota,//
+        iva_alicuota,//
+        iva_situacion,//
+        p_actu,//
+        p_activo,//
+        p_balanza,//
+        adm_min_excluye,//
+        adm_may_excluye,//
+        pi_auto_exluye,//
+        oc_auto_exluye,//
+        p_id_barrado_ean,//
+        p_unidad_pres_ean,//
+        p_unidad_x_bulto_ean,//
+        p_bulto_x_piso_ean,//
+        p_piso_x_pallet_ean,//
+        p_id_barrado_dun,//
+        p_unidad_pres_dun,//
+        p_unidad_x_bulto_dun,//
+        p_bulto_x_piso_dun,//
+        p_piso_x_pallet_dun,//
+        lp_id_default,//
+        p_obs,//
         accion
     };
     AbrirWaiting("Completando proceso...");
@@ -333,10 +349,16 @@ function confirmarOperacionAbmProducto() {
         }
         else if (obj.warn === true) {
             CerrarWaiting();
-            AbrirMensaje("ATENCIÓN", obj.msg, function () {
 
-                $("#msjModal").modal("hide");
+            AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                if (obj.auth === true) {
+                    window.location.href = login;
+                }
+                else {
+                    $("#msjModal").modal("hide");
+                }
             }, false, ["CONTINUAR"], "warn!", null);
+
         }
         else {
             CerrarWaiting();
