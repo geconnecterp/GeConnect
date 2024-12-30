@@ -582,6 +582,10 @@ namespace gc.sitio.Areas.ABMs.Controllers
 							return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = respuesta.ListaEntidad?.First().resultado_msj, codigo = respuesta.ListaEntidad?.First().resultado, setFocus = respuesta.ListaEntidad?.First().resultado_setfocus });
 						return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
 					}
+					else if (!respuesta.Ok)
+					{
+						return Json(new { error = true, warn = false, msg = respuesta.Mensaje, codigo = 1, setFocus = string.Empty });
+					}
 
 					return Json(new { error = false, warn = false, msg = "La entidad de ha actualizado con éxito." });
 				}
