@@ -1,10 +1,9 @@
-﻿using Azure;
-using gc.api.core.Entidades;
+﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.ABM;
-using gc.infraestructura.Dtos.ABM.Request;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Helpers;
@@ -14,14 +13,8 @@ using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.ABM;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Options;
-using Microsoft.VisualBasic;
 using Newtonsoft.Json;
-using System;
-using System.Drawing;
-using System.Security.Claims;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace gc.sitio.Areas.ABMs.Controllers
 {
@@ -555,24 +548,29 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		/// <param name="request">Tipo ABMRequest</param>
 		/// <returns></returns>
 		[HttpPost]
-		public JsonResult DataOpsCliente(ABMRequest request)
+		public JsonResult DataOpsCliente(CuentaAbmValidationModel cuenta, string destinoDeOperacion, char tipoDeOperacion)
 		{
 			try
 			{
-				var abmRequest = new AbmGenDto
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 				{
-					Abm = request.tipoDeOperacion,
-					Objeto = request.destinoDeOperacion,
-					Json = request.jsonString,
-					Administracion = AdministracionId,
-					Usuario = UserName
-				};
-				var resObj = new CuentaAbmValidationModel();
-				resObj = JsonConvert.DeserializeObject<CuentaAbmValidationModel>(request.jsonString);
-				if (resObj == null) return Json(new { error = true, warn = false, msg = "Ha ocurrido un error al intentar parsear el objeto.", codigo = 1, setFocus = string.Empty });
-				var respuestaDeValidacion = ValidarJsonAntesDeGuardar(resObj, abmRequest.Abm);
+					return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+				}
+
+				var respuestaDeValidacion = ValidarJsonAntesDeGuardar(cuenta, tipoDeOperacion);
 				if (respuestaDeValidacion == "")
 				{
+					cuenta = HelperGen.PasarAMayusculas(cuenta);
+					var jsonstring = JsonConvert.SerializeObject(cuenta, new JsonSerializerSettings());
+					var abmRequest = new AbmGenDto
+					{
+						Abm = tipoDeOperacion,
+						Objeto = destinoDeOperacion,
+						Json = jsonstring,
+						Administracion = AdministracionId,
+						Usuario = UserName
+					};
 					var respuesta = _abmServicio.AbmConfirmar(abmRequest, TokenCookie).Result;
 					if (respuesta == null)
 						return Json(new { error = true, warn = false, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
@@ -585,7 +583,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 						return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
 					}
 
-					return Json(new { error = false, warn = false, msg = "OK." });
+					return Json(new { error = false, warn = false, msg = "La entidad de ha actualizado con éxito." });
 				}
 				else
 					return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
@@ -650,24 +648,33 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		/// <param name="request">Tipo ABMRequest</param>
 		/// <returns></returns>
 		[HttpPost]
-		public JsonResult DataOpsFormaDePago(ABMRequest request)
+		public JsonResult DataOpsFormaDePago(FormaDePagoAbmValidationModel fp, string destinoDeOperacion, char tipoDeOperacion)
 		{
 			try
 			{
-				var abmRequest = new AbmGenDto
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 				{
-					Abm = request.tipoDeOperacion,
-					Objeto = request.destinoDeOperacion,
-					Json = request.jsonString,
-					Administracion = AdministracionId,
-					Usuario = UserName
-				};
-				var resObj = new FormaDePagoAbmValidationModel();
-				resObj = JsonConvert.DeserializeObject<FormaDePagoAbmValidationModel>(request.jsonString);
-				if (resObj == null) return Json(new { error = true, warn = false, msg = "Ha ocurrido un error al intentar parsear el objeto.", codigo = 1, setFocus = string.Empty });
-				var respuestaDeValidacion = ValidarJsonAntesDeGuardar(resObj, abmRequest.Abm);
+					return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+				}
+
+				//Paso textos a mayusculas
+				fp = HelperGen.PasarAMayusculas(fp);
+				//Valido reglas de negocio, algunas ya se han validado en el front, pero es necsearia una re-validación para evitar introducir valores erróneos
+				var respuestaDeValidacion = ValidarJsonAntesDeGuardar(fp, tipoDeOperacion);
 				if (respuestaDeValidacion == "")
 				{
+					//Serializo a un json string el objeto
+					var jsonstring = JsonConvert.SerializeObject(fp, new JsonSerializerSettings());
+					//Mando a guardar (cuack!)
+					var abmRequest = new AbmGenDto
+					{
+						Abm = tipoDeOperacion,
+						Objeto = destinoDeOperacion,
+						Json = jsonstring,
+						Administracion = AdministracionId,
+						Usuario = UserName
+					};
 					var respuesta = _abmServicio.AbmConfirmar(abmRequest, TokenCookie).Result;
 					if (respuesta == null)
 						return Json(new { error = true, warn = false, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
@@ -680,7 +687,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 						return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
 					}
 
-					return Json(new { error = false, warn = false, msg = "OK." });
+					return Json(new { error = false, warn = false, msg = "La entidad de ha actualizado con éxito." });
 				}
 				else
 					return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
@@ -738,6 +745,10 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				if (fp.fp_dias < 0)
 				{
 					return "Debe indicar un valor de Plazo mayor o igual a 0";
+				}
+				if (fp.tcb_lista != null && fp.tcb_lista.Contains("SELECCIONAR"))
+				{
+					fp.tcb_lista = null;
 				}
 			}
 
@@ -937,7 +948,5 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				ObtenerTipoObservaciones(_tipoObsServicio, "P");
 		}
 		#endregion
-
-
 	}
 }

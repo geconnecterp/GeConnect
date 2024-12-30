@@ -1,6 +1,8 @@
-﻿namespace gc.sitio.Areas.ABMs.Models
+﻿using gc.infraestructura.Dtos;
+
+namespace gc.sitio.Areas.ABMs.Models
 {
-	public class CuentaAbmValidationModel
+	public class CuentaAbmValidationModel : Dto
 	{
 		public string cta_id { get; set; } = string.Empty;
 		public string cta_denominacion { get; set; } = string.Empty;
