@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Net.Mail;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -406,5 +407,23 @@ namespace gc.infraestructura.Core.Helpers
             }
             return b64;
         }
+
+        public static T PasarAMayusculas<T>(T entidad)
+        {
+            var props = entidad.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
+            foreach (var p in props)
+            {
+                if (p.PropertyType == typeof(string) && p.CanWrite) {
+                    string valor = (string)p.GetValue(entidad);
+                    if (!string.IsNullOrEmpty(valor))
+                    {
+                        valor = valor.ToUpper();
+                    }
+                    p.SetValue(entidad, valor);
+                }
+            }
+
+            return entidad;
+        }        
     }
 }

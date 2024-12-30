@@ -3,6 +3,7 @@ using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
@@ -101,9 +102,45 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
         }
 
-		#endregion
+        protected ProductoBarradoDto BarradoSeleccionado
+        {
+            get
+            {
+                string json = _context.HttpContext.Session.GetString("BarradoSeleccionado");
+                if (string.IsNullOrEmpty(json))
+                {
+                    return new();
+                }
+                return JsonConvert.DeserializeObject<ProductoBarradoDto>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("BarradoSeleccionado", json);
+            }
+        }
 
-		protected async Task<IActionResult> BusquedaAvanzada(string ri01, string ri02, bool act, bool dis, bool ina,bool cstk, bool sstk, string search, bool buscaNew, IProductoServicio _productoServicio, string sort = "p_id", string sortDir = "asc", int pag = 1)
+        protected List<ProductoBarradoDto> ProductoBarrados
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("ProductoBarrados");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<ProductoBarradoDto>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("ProductoBarrados", json);
+            }
+        }
+
+        #endregion
+
+        protected async Task<IActionResult> BusquedaAvanzada(string ri01, string ri02, bool act, bool dis, bool ina,bool cstk, bool sstk, string search, bool buscaNew, IProductoServicio _productoServicio, string sort = "p_id", string sortDir = "asc", int pag = 1)
 		{
 			List<ProductoListaDto> lista;
 			MetadataGrid metadata;
