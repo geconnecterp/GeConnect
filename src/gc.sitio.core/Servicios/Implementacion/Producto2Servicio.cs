@@ -13,6 +13,7 @@ using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Net;
 using System.Reflection;
 
@@ -34,8 +35,10 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string UP_MEDIDAS = "/ObtenerMedidas";
         private const string IVA_SITUACION = "/ObtenerIVASituacion";
         private const string IVA_ALICUOTAS = "/ObtenerIVAAlicuotas";
-        private const string PROD_BARRADO = "/ObtenerBarradoDeProd";
+        private const string PROD_BARRADOS = "/ObtenerBarradoDeProd";
+        private const string PROD_BARRADO = "/BuscarBarrado";
         private const string LIMITE_STK = "/ObtenerLimiteStk";
+
 
         private readonly AppSettings _appSettings;
 
@@ -504,7 +507,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 HttpClient client = helper.InicializaCliente(token);
                 HttpResponseMessage response;
 
-                var link = $"{_appSettings.RutaBase}{RutaAPI}{PROD_BARRADO}?p_id={p_id}";
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{PROD_BARRADOS}?p_id={p_id}";
 
                 response = await client.GetAsync(link);
 
@@ -600,6 +603,60 @@ namespace gc.sitio.core.Servicios.Implementacion
                 _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
 
                 return new RespuestaGenerica<LimiteStkDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener los Limites de Stock." };
+            }
+        }
+
+        public async Task<RespuestaGenerica<ProductoBarradoDto>> ObtenerBarrado(string p_id, string barradoId, string token)
+        {
+            try
+            {
+                ApiResponse<ProductoBarradoDto> apiResponse;
+
+                HelperAPI helper = new();
+
+                HttpClient client = helper.InicializaCliente(token);
+                HttpResponseMessage response;
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{PROD_BARRADO}?p_id={p_id}&barradoId={barradoId}";
+
+                response = await client.GetAsync(link);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+
+                        return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
+                    }
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<ProductoBarradoDto>>(stringData);
+
+                    return new RespuestaGenerica<ProductoBarradoDto> { Ok = true, Mensaje = "OK", Entidad = apiResponse.Data };
+                }
+                else
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    {
+                        return new RespuestaGenerica<ProductoBarradoDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    {
+                        return new RespuestaGenerica<ProductoBarradoDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else
+                    {
+                        throw new Exception(error.Detail);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+
+                return new RespuestaGenerica<ProductoBarradoDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener el barrado de producto." };
             }
         }
     }

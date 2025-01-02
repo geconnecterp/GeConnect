@@ -323,3 +323,11 @@ function analizaEnterInput(e) {
     }
     return true;
 }
+
+
+function selectReg(x, gridId) {
+    $("#" + gridId + " tbody tr").each(function (index) {
+        $(this).removeClass("selected-row");
+    });
+    $(x).addClass("selected-row");
+}
