@@ -734,13 +734,65 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		/// </summary>
 		/// <param name="request">Tipo ABMRequest</param>
 		/// <returns></returns>
-		//[HttpPost]
-		//public JsonResult DataOpsOtrosContactos(FormaDePagoAbmValidationModel fp, string destinoDeOperacion, char tipoDeOperacion)
-		//{
-		//}
+		[HttpPost]
+		public JsonResult DataOpsOtrosContactos(OtroContactoAbmValidationModel oc, string destinoDeOperacion, char tipoDeOperacion)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+				{
+					return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+				}
+
+				//Paso textos a mayusculas
+				oc = HelperGen.PasarAMayusculas(oc);
+				//Valido reglas de negocio, algunas ya se han validado en el front, pero es necsearia una re-validación para evitar introducir valores erróneos
+				var respuestaDeValidacion = ValidarJsonAntesDeGuardar(oc, tipoDeOperacion);
+				if (respuestaDeValidacion == "")
+				{
+					//Serializo a un json string el objeto
+					var jsonstring = JsonConvert.SerializeObject(oc, new JsonSerializerSettings());
+					//Mando a guardar (cuack!)
+					var abmRequest = new AbmGenDto
+					{
+						Abm = tipoDeOperacion,
+						Objeto = destinoDeOperacion,
+						Json = jsonstring,
+						Administracion = AdministracionId,
+						Usuario = UserName
+					};
+					var respuesta = _abmServicio.AbmConfirmar(abmRequest, TokenCookie).Result;
+					if (respuesta == null)
+						return Json(new { error = true, warn = false, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
+					if (respuesta.EsWarn || respuesta.EsError)
+					{
+						if (respuesta.Entidad != null)
+							return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = respuesta.Entidad.resultado_msj, codigo = respuesta.Entidad.resultado, setFocus = respuesta.Entidad.resultado_setfocus });
+						else if (respuesta.ListaEntidad != null && respuesta.ListaEntidad.Count > 0)
+							return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = respuesta.ListaEntidad?.First().resultado_msj, codigo = respuesta.ListaEntidad?.First().resultado, setFocus = respuesta.ListaEntidad?.First().resultado_setfocus });
+						return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
+					}
+
+					return Json(new { error = false, warn = false, msg = "La entidad de ha actualizado con éxito." });
+				}
+				else
+					return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, msg = "Ha ocurrido un error al intentar actualizar la información." });
+				throw;
+			}
+		}
 		#endregion
 
 		#region Métodos Privados
+		private string ValidarJsonAntesDeGuardar(OtroContactoAbmValidationModel fp, char abm)
+		{
+			//Agregar validaciones en el caso que lo requiera
+			return "";
+		}
 		private string ValidarJsonAntesDeGuardar(FormaDePagoAbmValidationModel fp, char abm)
 		{
 			var abmString = abm.ToString();
