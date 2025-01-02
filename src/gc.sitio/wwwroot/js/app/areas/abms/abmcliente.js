@@ -408,12 +408,12 @@ function buscarClientes(pag) {
 
 }
 
-function selectReg(e) {
-	$("#tbGridCliente tbody tr").each(function (index) {
-		$(this).removeClass("selected-row");
-	});
-	$(e).addClass("selected-row");
-}
+//function selectReg(e) {
+//	$("#tbGridCliente tbody tr").each(function (index) {
+//		$(this).removeClass("selected-row");
+//	});
+//	$(e).addClass("selected-row");
+//}
 
 function BuscarCliente(ctaId) {
 	var data = { ctaId };

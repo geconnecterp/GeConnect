@@ -5,11 +5,6 @@ using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Gen;
 using Microsoft.Data.SqlClient;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace gc.api.core.Servicios.ABM
 {

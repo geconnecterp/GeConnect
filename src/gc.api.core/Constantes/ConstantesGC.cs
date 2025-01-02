@@ -26,6 +26,8 @@
 			public const string SP_PROVEEDOR_FAMILIA_LISTA = "dbo.SPGECO_Proveedores_Familia_lista";
             public const string SP_UP_LISTA = "SPGECO_UP_Lista";
             public const string SP_BARRADO_LISTA = "SPGECO_ABM_P_Barrados_Lista";
+            public const string SP_BARRADO_DATO = "SPGECO_ABM_P_Barrados_Datos";
+            
             public const string SP_LIMITESTK_LISTA = "SPGECO_ABM_P_LimiteStk_Lista";
             
 

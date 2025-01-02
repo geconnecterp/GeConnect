@@ -72,8 +72,45 @@ namespace gc.sitio.Areas.ABMs.Controllers
             return View();
         }
 
+        /// <summary>
+        /// Se buscan los datos del barrado
+        /// </summary>
+        /// <param name="barradoId"></param>
+        /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> BuscarBarrado(string p_id)
+        public async Task<IActionResult> BuscarBarrado(string barradoId)
+        {
+            try
+            {
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+                }
+                var barr = await _prodSv.ObtenerBarrado(ProductoABMSeleccionado.p_id, barradoId, TokenCookie);
+                if (barr == null || !barr.Ok)
+                {
+                    throw new NegocioException(barr.Mensaje);
+                }
+
+                return Json(new { error = false, warn = false, datos = barr.Entidad });
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+                return Json(new { error = false, warn = true, auth = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> BuscarBarrados(string p_id)
         {
             RespuestaGenerica<EntidadBase> response = new();
             GridCore<ProductoBarradoDto> grillaDatos;
@@ -103,6 +140,41 @@ namespace gc.sitio.Areas.ABMs.Controllers
             catch (Exception ex)
             {
                 string msg = "Error en la invocación de la API - Busqueda de Barrados";
+                _logger.LogError(ex, "Error en la invocación de la API - Busqueda de Barrados");
+                response.Mensaje = msg;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
+            }
+        }
+
+        [HttpPost]
+        public IActionResult PresentarBarrado() {
+            RespuestaGenerica<EntidadBase> response = new();
+            GridCore<ProductoBarradoDto> grillaDatos;
+            try
+            {
+                var barr = ProductoBarrados;
+                if(barr.Count == 0)
+                {
+                    throw new NegocioException("No se encontraron barrados para este producto");
+                }
+
+                grillaDatos = GenerarGrilla(ProductoBarrados, "P_Id_barrado");
+                return View("_gridBarrado", grillaDatos);
+            }
+            catch (NegocioException ex)
+            {
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = true;
+                response.EsError = false;
+                return PartialView("_gridMensaje", response);
+            }
+            catch (Exception ex)
+            {
+                string msg = "Error la Presentar  - Busqueda de Barrados";
                 _logger.LogError(ex, "Error en la invocación de la API - Busqueda de Barrados");
                 response.Mensaje = msg;
                 response.Ok = false;
@@ -240,6 +312,68 @@ namespace gc.sitio.Areas.ABMs.Controllers
         }
 
         [HttpPost]
+        public async Task<JsonResult> ConfirmarAbmBarrado(ProductoBarradoDto barr, char accion)
+        {
+            try
+            {
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+                }
+
+                //agrego el id del producto que actulmente esta seleccionado
+                barr.p_id = ProductoABMSeleccionado.p_id;
+
+                barr = HelperGen.PasarAMayusculas(barr);
+                //prod.P_Obs = prod.P_Obs.ToUpper();
+                AbmGenDto abm = new AbmGenDto()
+                {
+                    Json = JsonConvert.SerializeObject(barr),
+                    Objeto = "productos_barrados",
+                    Administracion = AdministracionId,
+                    Usuario = UserName,
+                    Abm = accion
+                };
+
+                var res = await _abmSv.AbmConfirmar(abm, TokenCookie);
+                if (res.Ok)
+                {
+                    string msg;
+                    switch (accion)
+                    {
+                        case 'A':
+                            msg = $"EL PROCESAMIENTO DEL ALTA DEL BARRADO {barr.p_id_barrado} SE REALIZO SATISFACTORIAMENTE";
+                            break;
+                        case 'M':
+                            msg = $"EL PROCESAMIENTO DE LA MODIFICIACION DEL BARRADO {barr.p_id_barrado} SE REALIZO SATISFACTORIAMENTE";
+                            break;
+                        default:
+                            msg = $"EL PROCESAMIENTO DE LA BAJA/DISCONTINUAR DEL PRODUCTO {barr.p_id_barrado} SE REALIZO SATISFACTORIAMENTE";
+                            break;
+                    }
+                    return Json(new { error = false, warn = false, msg });
+                }
+                else
+                {
+                    return Json(new { error = false, warn = true, msg = res.Entidad.resultado_msj, focus = res.Entidad.resultado_setfocus });
+                }
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+        }
+
+        [HttpPost]
         public async Task<IActionResult> BuscarProd(string p_id)
         {
             RespuestaGenerica<EntidadBase> response = new();
@@ -251,6 +385,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 {
                     throw new NegocioException("No se recepcionó el producto buscado.");
                 }
+                //inicializo barrados
+                BarradoSeleccionado = new ProductoBarradoDto();
 
                 ProductoABMSeleccionado = prod;
                 //busca combo familia

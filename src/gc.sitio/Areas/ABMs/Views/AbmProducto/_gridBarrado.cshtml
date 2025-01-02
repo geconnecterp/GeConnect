@@ -10,7 +10,7 @@
 <div class="card">
     <div class="card-body">
         <div class="table-responsive text-nowrap  table-wrapper-100">
-            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridProd">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridBarr">
                 <thead class="table-dark">
                     <tr class="header">
                         <th scope="col">@nameof(dataMod.p_id_barrado)</th>
@@ -26,7 +26,7 @@
                     {
                         if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
-                        <tr class="@clase" onclick="selectReg(this,'tbGridLim')">
+                        <tr class="@clase" onclick="selectReg(this,'tbGridBarr')" ondblclick="selectAbmRegDbl(this,'tbGridBarr')">
                             <td class="text-sm-center">@item.p_id_barrado</td>
                             <td class="text-sm-start">@item.tba_desc</td>
                             <td class="text-sm-end">@item.p_unidad_pres</td>

@@ -93,34 +93,61 @@
 
     $(".inputEditable").on("keypress", analizaEnterInput);
 
-    $(".tristate").on("mousedown", function (e) {        
-        var ctrl = $(this);
-        e.preventDefault()
-        setTimeout(function () {
-            if (ctrl.prop('indeterminate')) {
-                // Si está en estado indeterminado, lo marca
-                ctrl.prop('checked', true).prop('indeterminate', false);
-            } else if (ctrl.prop('checked')) {
-                // Si está marcado, lo desmarca
-                ctrl.prop('checked', false);
-            } else {
-                // Si está desmarcado, lo pone en estado indeterminado
-                ctrl.prop('indeterminate', true);
-            }
-        }, 0); // Asegura que la ejecución se realice después del clic
-    });
+    $("#BtnLiTab02").on("click", presentarBarrado);
 
+    //valida que los datos ingresados en barral 
+    $("input .barr").on("blur", function () {
+        var value = parseInt($(this).val(), 10);
+        if (value < 1 || value > 9999) {
+            AbrirMensaje("Atención!!", "El valor ingresado no es valido", function(){
+                $(this).val(1);
+                $(this).trigger("focus");
+                $("#msjModal").modal("hide");
+            }, ["Aceptar"], "warn!", null);
+        }
+    })
     
-
-    InicializaPantallaAbmProd();
+    InicializaPantallaAbmProd("tbGridProd");
     funcCallBack = buscarProductos;
 /*    AbrirWaiting();*/
     return true;
 });
 
-function InicializaPantallaAbmProd() {   
-    var tb = $("#tbGridProd tbody tr");
-    if (tb.length === 0) {
+function configuracionControlesAbmProd() {
+    //Imp Int
+    $("input#In_Alicuota").mask("000,000,000,000", { reverse: true });
+    $("input#P_Balanza_Dvto").mask("000,000,000,000", { reverse: true });
+    $("input#P_Con_Vto_Min").mask("000,000,000,000", { reverse: true });
+
+    $("input#P_Peso").mask("000,000,000,000.000", { reverse: true });
+    $("input#P_M_Capacidad").mask("000,000,000,000.000", { reverse: true });
+
+    $("input .barr").mask("0000", {
+        reverse: true,
+        placeholder: '',
+        translation: {
+            '0': { pattern: /[0-9]/, optional: true }
+        }
+    });
+}
+
+
+function InicializaPantallaAbmProd(grilla) {   
+    if (grilla !== tabGrid01 || grilla !== tabGrid02) {
+        switch (tabAbm) {
+            case 1:
+                grilla = tabGrid01;
+                break;
+            case 2:
+                grilla = tabGrid02;
+                break;
+            default:
+                return false;
+        }
+    }
+
+    var tb = $("#"+grilla+" tbody tr");
+    if (tb.length === 0 && grilla ==="tbGridProd") {
         $("#divFiltro").collapse("show")
     } 
 
@@ -134,11 +161,9 @@ function InicializaPantallaAbmProd() {
     $("#divDetalle").collapse("hide");
 
     //borra seleccion de registro si hubiera cargdo algun grid
-    $("#tbGridProd tbody tr").each(function (index) {
+    $("#" + grilla +" tbody tr").each(function (index) {
         $(this).removeClass("selectedEdit-row");
     });
-
-
 
     CerrarWaiting();
     return true;
@@ -230,32 +255,74 @@ function buscarProductos(pag) {
     });
 }
 
-function selectAbmRegDbl(x) {    
+function selectAbmRegDbl(x,gridId) {    
     AbrirWaiting("Espere mientras se busca el producto seleccionado...");
-    $("#tbGridProd tbody tr").each(function (index) {
+    $("#"+gridId+ " tbody tr").each(function (index) {
         $(this).removeClass("selectedEdit-row");
     });
     $(x).addClass("selectedEdit-row");
     var id = x.cells[0].innerText.trim();
 
-    var data = { p_id: id };
-    PostGenHtml(data, buscarProdUrl, function (obj) {
-        $("#divpanel01").html(obj);
-        //se procede a buscar la grilla de barrado
-        buscarBarrado(data);
-        //se procede a buscar la grilla de Sucursales
-        buscarLimite(data);
+    
+    switch (tabAbm) {
+        case 1:
+            //se agrega por inyection el tab con los datos del producto
+            var data = { p_id: id };
+            PostGenHtml(data, buscarProdUrl, function (obj) {
+                $("#divpanel01").html(obj);
+                //se procede a buscar la grilla de barrado
+                buscarBarrado(data);
+                //se procede a buscar la grilla de Sucursales
+                buscarLimite(data);
 
-        $("#btnDetalle").prop("disabled", false);
-        $("#divFiltro").collapse("hide");
-        $("#divDetalle").collapse("show");
+                $("#btnDetalle").prop("disabled", false);
+                $("#divFiltro").collapse("hide");
+                $("#divDetalle").collapse("show");
 
-        //activar botones de acción
-        activarBotones(true);
+                //activar botones de acción
+                activarBotones(true);
 
-        CerrarWaiting();
+                CerrarWaiting();
 
-    });
+            });
+            break;
+        case 2:
+            //se busca el dato del barral 
+            var data = { barradoId: id };
+            PostGen(data, buscarBarradoUrl, function (obj) {
+                CerrarWaiting();
+                if (obj.error === true) {
+                    AbrirMensaje("¡¡Algo no fué bien!!", obj.msg, function () {
+                        $("#msjModal").modal("hide");
+                        return true;
+                    }, false, ["Aceptar"], "error!", null);
+                } else if (obj.warn === true) {
+                    AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                        if (obj.auth === true) {
+                            window.location.href = login;
+                        } else {
+                            $("#msjModal").modal("hide");
+                        }
+                        return true;
+                    }, false, ["Aceptar"], "warn!", null);
+                }
+                else {
+                    //se presentan los datos en los controles
+                    
+                    $("#p_id").val(obj.datos.p_id);
+                    $("#p_id_barrado").val(obj.datos.p_id_barrado); 
+                    $("#p_unidad_pres").val(obj.datos.p_unidad_pres); 
+                    $("#p_unidad_x_bulto").val(obj.datos.p_unidad_x_bulto);
+                    $("#p_bulto_x_piso").val(obj.datos.p_bulto_x_piso);
+                    $("#p_piso_x_pallet").val(obj.datos.p_piso_x_pallet); 
+                    $("#tba_id").val(obj.datos.tba_id);                                                                   
+                }
+
+            });
+            break;
+
+    }
+   
 
     //agrego el id en el control de busqueda simple y acciono el buscar.
     //$("#busquedaModal").modal("toggle");
@@ -264,10 +331,32 @@ function selectAbmRegDbl(x) {
 }
 
 function buscarBarrado(data) {
-    PostGenHtml(data, buscarBarradoUrl, function (obj) {
+    PostGenHtml(data, buscarBarradosUrl, function (obj) {
         $("#divBarrado").html(obj);
     });
 }
+
+function presentarBarrado() {
+    tabAbm = 2;
+    AbrirWaiting("Buscando Barrados...");
+    PostGenHtml({}, presentarBarradoUrl, function (obj) {
+        $("#divBarrado2").html(obj);
+
+        var tb = $("#tbGridBarr tbody tr");
+        if (tb.length === 0) {
+            $("#tab2l1").hide();
+            $("#tab2l2").hide();
+        }
+        else {
+            $("#tab2l1").show();
+            $("#tab2l2").show();
+        }
+
+        CerrarWaiting();
+    });
+}
+
+
 
 function buscarLimite(data) {
     PostGenHtml(data, buscarLimiteUrl, function (obj) {
@@ -275,13 +364,3 @@ function buscarLimite(data) {
     });
 }
 
-function configuracionControlesAbmProd() {
-    //Imp Int
-    $("#In_Alicuota").mask("000,000,000,000", { reverse: true });
-    $("#P_Balanza_Dvto").mask("000,000,000,000", { reverse: true });
-    $("#P_Con_Vto_Min").mask("000,000,000,000", { reverse: true });
-
-    $("#P_Peso").mask("000,000,000,000.000", { reverse: true });
-    $("#P_M_Capacidad").mask("000,000,000,000.000", { reverse: true });
- 
-}

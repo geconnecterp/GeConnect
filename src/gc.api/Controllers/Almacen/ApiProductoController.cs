@@ -1136,6 +1136,18 @@ namespace gc.api.Controllers.Almacen
 
         [HttpGet]
         [Route("[action]")]
+        public IActionResult BuscarBarrado(string p_id,string barradoId)
+        {
+            if (string.IsNullOrEmpty(barradoId))
+            {
+                return BadRequest("No se recepcionó el identificador del barrado");
+            }
+            var res = _productosSv.BuscarBarrado(p_id,barradoId);
+            return Ok(new ApiResponse<ProductoBarradoDto>(res));
+        }
+
+        [HttpGet]
+        [Route("[action]")]
         public IActionResult ObtenerLimiteStk(string p_id)
         {
             if (string.IsNullOrEmpty(p_id))

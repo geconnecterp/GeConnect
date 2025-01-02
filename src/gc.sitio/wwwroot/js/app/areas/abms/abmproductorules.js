@@ -108,6 +108,10 @@ function accionBotones(btn) {
     if (btn === 'A' || btn === 'M' || btn === 'B') {
         accion = btn;
         $("#btnFiltro").prop("disabled", true);
+        $("#btnDetalle").prop("disabled", true);
+        $("#BtnLiTab01").prop("disabled", true);
+        $("#BtnLiTab02").prop("disabled", true);
+        $("#BtnLiTab03").prop("disabled", true);
 
         $("#btnAbmNuevo").prop("disabled", true);
         $("#btnAbmModif").prop("disabled", true);
@@ -119,12 +123,24 @@ function accionBotones(btn) {
         $("#btnAbmCancelar").show("slow");
     } else if (btn === 'S' || btn === 'C') {   // (S)uccess - (C)ancel
         $("#btnFiltro").prop("disabled", false);
+        $("#btnDetalle").prop("disabled", false);
+
+        $("#BtnLiTab01").prop("disabled", false);
+        $("#BtnLiTab02").prop("disabled", false);
+        $("#BtnLiTab03").prop("disabled", false);
+
         if (btn === 'S') {
 
         }
         else if (btn === 'C') {
-            $("#btnDetalle").prop("disabled", true);
+          
             activarBotones(false);
+            activarControles(false);
+           
+            if (tabAbm === 1) {
+                $("#btnDetalle").prop("disabled", true);
+                buscarProductos(1);
+            }
         }
         //$("#btnAbmNuevo").prop("disabled", false);
         //$("#btnAbmModif").prop("disabled", true);
@@ -142,67 +158,84 @@ function activarControles(act) {
     //que si se activa los controles sea SI = TRUE y cuando sea False es que se ponen todos los controles en disabled
     if (act === true || act === false) {
         act = !act; //se cambia el sentido del valor ya que con true, se activa el disabled.-
-        //Linea 1
-        //p_id NUNCA SE ACTIVA
-        if (accion === 'M') {
-            $("#p_activo").prop("disabled", act);
-        }
-        $("#up_id").prop("disabled", act);
-        //Linea 02
-        $("#p_m_marca").prop("disabled", act);
+        //se tiene en cuenta que tab es el que esta activo al momento de presionar el boton de acción
+        switch (tabAbm) {
+            case 1:
+                //Linea 1
+                //p_id NUNCA SE ACTIVA
+                if (accion === 'M') {
+                    $("#p_activo").prop("disabled", act);
+                }
+                $("#up_id").prop("disabled", act);
+                //Linea 02
+                $("#p_m_marca").prop("disabled", act);
 
-        //SI EL UP_ID ES DISTINTO DE 07 SE PUEDE ACTIVAR EL CHECK DE BALANZA
-        if ($("#up_Id option:selected").val() !== "07") {
-            $("#PBalanza").prop("disabled", act);
-            if (act === false && $("#PBalanza").is(":checked")) {
-                $("#p_balanza_dvto").prop("disabled", act);
-                $("#p_peso").prop("disabled", act);
-            }
+                //SI EL UP_ID ES DISTINTO DE 07 SE PUEDE ACTIVAR EL CHECK DE BALANZA
+                if ($("#up_Id option:selected").val() !== "07") {
+                    $("#PBalanza").prop("disabled", act);
+                    if (act === false && $("#PBalanza").is(":checked")) {
+                        $("#p_balanza_dvto").prop("disabled", act);
+                        $("#p_peso").prop("disabled", act);
+                    }
+                }
+                //Linea 03
+                $("#p_m_desc").prop("disabled", act);
+                $("#PConVto").prop("disabled", act);
+                if (act === false && $("#PConVto").is(":checked")) {
+                    $("#p_con_vto_min").prop("disabled", act);
+                }
+                //Linea 04
+                $("#p_m_capacidad").prop("disabled", act);
+                $("#PAltaRotacion").prop("disabled", act);
+                //Linea 05
+                $("#p_id_prov").prop("disabled", act);
+                $("#PMatPri").prop("disabled", act);
+                if (act === false && $("#PMatPri").is(":checked")) { //este campo se activa cuando el check PMatPri es TRUE
+                    $("#PElaboracion").prop("disabled", act);
+                }
+                //Linea 06
+                $("#cta_lista").prop("disabled", act);
+                $("#AdmMayExcluye").prop("disabled", act);
+                $("#AdmMinExcluye").prop("disabled", act);
+                //Linea 07
+                $("#pg_id").prop("disabled", act);
+                $("#PiAutoExluye").prop("disabled", act);
+                $("#OcAutoExluye").prop("disabled", act);
+                //Linea 08
+                $("#rub_lista").prop("disabled", act);
+                $("#iva_situacion").prop("disabled", act);
+                $("#iva_alicuota").prop("disabled", act);
+                //Linea 09
+                $("#lp_id_default").prop("disabled", act);
+                $("#in_alicuota").prop("disabled", act);
+                //Linea 10
+                $("#p_id_barrado_ean").prop("disabled", act);
+                $("#p_unidad_pres_ean").prop("disabled", act);
+                $("#p_unidad_x_bulto_ean").prop("disabled", act);
+                $("#p_bulto_x_piso_ean").prop("disabled", act);
+                $("#p_piso_x_pallet_ean").prop("disabled", act);
+                //Linea 11
+                $("#p_id_barrado_dun").prop("disabled", act);
+                $("#p_unidad_pres_dun").prop("disabled", act);
+                $("#p_unidad_x_bulto_dun").prop("disabled", act);
+                $("#p_bulto_x_piso_dun").prop("disabled", act);
+                $("#p_piso_x_pallet_dun").prop("disabled", act);
+                //Linea 12
+                $("#p_obs").prop("disabled", act);
+                break;
+            case 2:
+                //la clave del barrado no se habilita
+                /*$("#p_id_barrado").prop("disabled", act);*/
+                $("#tba_id").prop("disabled", act);
+                $("#p_unidad_pres").prop("disabled", act);
+                $("#p_unidad_x_bulto").prop("disabled", act);
+                $("#p_bulto_x_piso").prop("disabled", act);
+                $("#p_piso_x_pallet").prop("disabled", act);
+
+
+            default:
         }
-        //Linea 03
-        $("#p_m_desc").prop("disabled", act);
-        $("#PConVto").prop("disabled", act);
-        if (act === false && $("#PConVto").is(":checked")) {
-            $("#p_con_vto_min").prop("disabled", act);
-        }
-        //Linea 04
-        $("#p_m_capacidad").prop("disabled", act);
-        $("#PAltaRotacion").prop("disabled", act);
-        //Linea 05
-        $("#p_id_prov").prop("disabled", act);
-        $("#PMatPri").prop("disabled", act);
-        if (act === false && $("#PMatPri").is(":checked")) { //este campo se activa cuando el check PMatPri es TRUE
-            $("#PElaboracion").prop("disabled", act);
-        }
-        //Linea 06
-        $("#cta_lista").prop("disabled", act);
-        $("#AdmMayExcluye").prop("disabled", act);
-        $("#AdmMinExcluye").prop("disabled", act);
-        //Linea 07
-        $("#pg_id").prop("disabled", act);
-        $("#PiAutoExluye").prop("disabled", act);
-        $("#OcAutoExluye").prop("disabled", act);
-        //Linea 08
-        $("#rub_lista").prop("disabled", act);
-        $("#iva_situacion").prop("disabled", act);
-        $("#iva_alicuota").prop("disabled", act);
-        //Linea 09
-        $("#lp_id_default").prop("disabled", act);
-        $("#in_alicuota").prop("disabled", act);
-        //Linea 10
-        $("#p_id_barrado_ean").prop("disabled", act);
-        $("#p_unidad_pres_ean").prop("disabled", act);
-        $("#p_unidad_x_bulto_ean").prop("disabled", act);
-        $("#p_bulto_x_piso_ean").prop("disabled", act);
-        $("#p_piso_x_pallet_ean").prop("disabled", act);
-        //Linea 11
-        $("#p_id_barrado_dun").prop("disabled", act);
-        $("#p_unidad_pres_dun").prop("disabled", act);
-        $("#p_unidad_x_bulto_dun").prop("disabled", act);
-        $("#p_bulto_x_piso_dun").prop("disabled", act);
-        $("#p_piso_x_pallet_dun").prop("disabled", act);
-        //Linea 12
-        $("#p_obs").prop("disabled", act);
+     
     }
 }
 
@@ -210,6 +243,70 @@ function activarControles(act) {
 //enviando todos los campos de la entidad
 
 function confirmarOperacionAbmProducto() {
+    AbrirWaiting("Completando proceso...");
+    var data = {};
+    switch (tabAbm) {
+        case 1:
+            data = confirmarDatosTab01();
+            break;
+        case 2:
+            data = confirmarDatosTab02();
+            break;
+        default:
+    }
+    urlabm = ""
+    switch (tabAbm) {
+        case 1:
+            urlabm = confirmarAbmProductoUrl;
+            break;
+        case 2:
+            urlabm = confirmarAbmBarradoUrl;
+            break;
+        default:
+    }
+    PostGen(data, urlabm , function (obj) {
+        if (obj.error === true) {
+            CerrarWaiting();
+            AbrirMensaje("ALGO NO SALIO BIEN!", obj.msg, function () {
+
+                $("#msjModal").modal("hide");
+            }, false, ["CONTINUAR"], "error!", null);
+        }
+        else if (obj.warn === true) {
+            CerrarWaiting();
+
+            AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                if (obj.auth === true) {
+                    window.location.href = login;
+                }
+                else {
+                    $("#msjModal").modal("hide");
+                }
+            }, false, ["CONTINUAR"], "warn!", null);
+
+        }
+        else {
+            CerrarWaiting();
+            AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                //todo fue bien, por lo que se deberia reinicializar la pantalla.
+                var grilla = "tbGridProd";
+                switch (tabAbm) {
+                    case 1:
+                        grilla = tabGrid01;
+                        break;
+                    case 2:
+                        grilla = tabGrid02;
+                        break;
+                    default:
+                }
+                InicializaPantallaAbmProd(grilla);
+                $("#msjModal").modal("hide");
+            }, false, ["CONTINUAR"], "succ!", null);
+        }
+    });
+}
+
+function confirmarDatosTab01() {
     //linea 01
     var p_id = $("#p_id").val();
     var p_activo = $("#p_activo option:selected").val();
@@ -338,35 +435,24 @@ function confirmarOperacionAbmProducto() {
         p_obs,//
         accion
     };
-    AbrirWaiting("Completando proceso...");
-    PostGen(data, confirmarAbmProductoUrl, function (obj) {
-        if (obj.error === true) {
-            CerrarWaiting();
-            AbrirMensaje("ALGO NO SALIO BIEN!", obj.msg, function () {
 
-                $("#msjModal").modal("hide");
-            }, false, ["CONTINUAR"], "error!", null);
-        }
-        else if (obj.warn === true) {
-            CerrarWaiting();
+    return data;
+}
 
-            AbrirMensaje("ATENCIÓN", obj.msg, function () {
-                if (obj.auth === true) {
-                    window.location.href = login;
-                }
-                else {
-                    $("#msjModal").modal("hide");
-                }
-            }, false, ["CONTINUAR"], "warn!", null);
+function confirmarDatosTab02() {
+    var p_id_barrado = $("#p_id_barrado").val();
+    var p_unidad_pres = $("#p_unidad_pres").val();
+    var p_unidad_x_bulto = $("#p_unidad_x_bulto").val();
+    var p_bulto_x_piso = $("#p_bulto_x_piso").val();
+    var p_piso_x_pallet = $("#p_piso_x_pallet").val();
+    var tba_id = $("#tba_id").val();
+    var tba_lista = $("#tba_lista").text();
+    var tba_desc = tba_lista.replace("(" + tba_id + ")", "");
 
-        }
-        else {
-            CerrarWaiting();
-            AbrirMensaje("ATENCIÓN", obj.msg, function () {
-                //todo fue bien, por lo que se deberia reinicializar la pantalla.
-                InicializaPantallaAbmProd();
-                $("#msjModal").modal("hide");
-            }, false, ["CONTINUAR"], "succ!", null);
-        }
-    });
+    var data = {
+        p_id_barrado, p_unidad_pres, p_unidad_x_bulto, p_bulto_x_piso,
+        p_piso_x_pallet, tba_id, tba_lista, tba_desc, accion
+    };
+
+    return data;
 }
