@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Security.Claims;
 
 namespace gc.sitio.Areas.ABMs.Controllers
 {
@@ -542,6 +543,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		#endregion
 
 		#region Guardado de datos
+		#region Cliente
 		/// <summary>
 		/// Metodo que engloba las tres operaciones de ABM de cliente (Alta, baja y modificacion) invocadas al presionar ACEPTAR en la vista
 		/// </summary>
@@ -645,7 +647,9 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				return PartialView("_gridMensaje", response);
 			}
 		}
+		#endregion
 
+		#region Forma de pago
 		/// <summary>
 		/// Metodo que engloba las tres operaciones de ABM de formas de pago (Alta, baja y modificacion) invocadas al presionar ACEPTAR en la vista
 		/// </summary>
@@ -728,7 +732,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				return PartialView("_gridMensaje", response);
 			}
 		}
-
+		#endregion
 		/// <summary>
 		/// Metodo que engloba las tres operaciones de ABM de formas de pago (Alta, baja y modificacion) invocadas al presionar ACEPTAR en la vista
 		/// </summary>
@@ -783,6 +787,33 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			{
 				return Json(new { error = true, msg = "Ha ocurrido un error al intentar actualizar la información." });
 				throw;
+			}
+		}
+
+		[HttpPost]
+		public IActionResult NuevoContacto()
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				var otroContacto = new OtroContactoModel();
+				var model = new CuentaAbmOCSelectedModel()
+				{
+					ComboTipoContacto = ComboTipoContacto(),
+					OtroContacto = otroContacto
+				};
+				return PartialView("_tabDatosOtroContactoSelected", model);
+
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> OC Selected";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> OC Selected");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
 			}
 		}
 		#endregion

@@ -248,6 +248,7 @@ function selectOCenTab(x) {
 	AbrirWaiting();
 	PostGenHtml(data, buscarDatosOtrosContactosUrl, function (obj) {
 		$("#divDatosDeOCSelected").html(obj);
+		$("#IdSelected").val(tcId);
 		CerrarWaiting();
 	}, function (obj) {
 		ControlaMensajeError(obj.message);
@@ -548,6 +549,31 @@ function NuevaFormaDePago() {
 	}
 }
 
+function NuevoContacto() {
+	var tabActiva = $('.nav-tabs .active')[0].id;
+	var mensaje = PuedoAgregar(tabActiva);
+	if (mensaje !== "") {
+		AbrirMensaje("ATENCIÓN", mensaje, function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		var data = {};
+		PostGenHtml(data, nuevoContactoUrl, function (obj) {
+			$("#divDatosDeOCSelected").html(obj);
+			$(".nav-link").prop("disabled", true);
+			$(".activable").prop("disabled", false);
+			HabilitarBotonesPorAccion(AbmAction.ALTA);
+			$("#OtroContacto_cta_nombre").focus();
+			CerrarWaiting();
+		}, function (obj) {
+			ControlaMensajeError(obj.message);
+			CerrarWaiting();
+		});
+	}
+}
+
 function btnModiClick() {
 	var tabActiva = $('.nav-tabs .active')[0].id;
 	switch (tabActiva) {
@@ -564,7 +590,7 @@ function btnModiClick() {
 			ModificaObservacion();
 			break;
 		case Tabs.TabOtrosContactos:
-			ModificaContacto();
+			ModificaContacto(tabActiva);
 			break;
 		default:
 			break;
@@ -596,6 +622,27 @@ function ModificaFormaDePago(tabAct) {
 		$(".activable").prop("disabled", false);
 		$("#listaFP").prop("disabled", true);
 		$("#FormaDePago_fp_dias").focus();
+	}
+}
+
+function ModificaContacto(tabAct) {
+	var mensaje = PuedoModificar(tabAct);
+	if (mensaje !== "") {
+		AbrirMensaje("ATENCIÓN", mensaje, function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		HabilitarBotonesPorAccion(AbmAction.MODIFICACION);
+		tipoDeOperacion = AbmAction.MODIFICACION;
+		SetearDestinoDeOperacion(tabAct);
+		$(".nav-link").prop("disabled", true);
+		$(".activable").prop("disabled", false);
+		$("#tbClienteOtroContacto").prop("disabled", true);
+		$("#OtroContacto_cta_nombre").prop("disabled", true);
+		$("#listaTC").prop("disabled", true);
+		$("#OtroContacto_cta_celu").focus();
 	}
 }
 
@@ -663,6 +710,8 @@ function PuedoAgregar(tabAct) {
 		case Tabs.TabObservaciones:
 			break;
 		case Tabs.TabOtrosContactos:
+			if (!$("#chkCtaActiva").is(":checked"))
+				mensaje = "Solo se pueden agregar formas de pago para cuentas activas.";
 			break;
 		default:
 			break;
@@ -686,6 +735,10 @@ function PuedoModificar(tabAct) {
 		case Tabs.TabObservaciones:
 			break;
 		case Tabs.TabOtrosContactos:
+			if (!$("#chkCtaActiva").is(":checked"))
+				mensaje = "Solo se pueden modificar formas de pago para cuentas activas.";
+			if ($("#IdSelected").val() == "")
+				mensaje = "Debe seleccionar una forma de pago para modificar.";
 			break;
 		default:
 			break;
@@ -708,6 +761,11 @@ function PuedoBorrar(tabAct) {
 		case Tabs.TabObservaciones:
 			break;
 		case Tabs.TabOtrosContactos:
+			if ($("#chkCtaActiva").is(":checked"))
+				return true;
+			else
+				return false;
+			break;
 			break;
 		default:
 			break;
@@ -720,6 +778,24 @@ function btnCancelClick() {
 	tipoDeOperacion = AbmAction.CANCEL;
 	$(".nav-link").prop("disabled", false);
 	$(".activable").prop("disabled", false);
+	var tabActiva = $('.nav-tabs .active')[0].id;
+	switch (tabActiva) {
+		case Tabs.TabCliente:
+			break;
+		case Tabs.TabFormasDePago:
+			break;
+		case Tabs.TabNotas:
+			break;
+		case Tabs.TabObservaciones:
+			break;
+		case Tabs.TabOtrosContactos:
+			$("#tbClienteOtroContacto").prop("disabled", false);
+			$("#OtroContacto_cta_nombre").prop("disabled", false);
+			$("#listaTC").prop("disabled", false);
+			break;
+		default:
+			break;
+	}
 }
 
 function validarCampos() {
@@ -803,6 +879,7 @@ function ObtenerDatosParaJson(destinoDeOperacion, tipoDeOperacion) {
 			json = ObtenerDatosDeFormaDePagoPParaJson(destinoDeOperacion, tipoDeOperacion);
 			break;
 		case AbmObject.CUENTAS_CONTACTOS:
+			json = ObtenerDatosDeOtrosContactosParaJson(destinoDeOperacion, tipoDeOperacion);
 			break;
 		case AbmObject.CUENTAS_NOTAS:
 			break;
@@ -813,8 +890,20 @@ function ObtenerDatosParaJson(destinoDeOperacion, tipoDeOperacion) {
 	return json;
 }
 
+function ObtenerDatosDeOtrosContactosParaJson(destinoDeOperacion, tipoDeOperacion) {
+	var cta_id = $("#Cliente_Cta_Id").val();
+	var tc_id = $("#listaTC").val();
+	var tc_desc = $("#listaTC option:selected").text();
+	var tc_lista = $("#listaTC option:selected").text() + "(" + $("#listaTC").val() + ")";
+	var cta_celu = $("#OtroContacto_cta_celu").val();
+	var cta_te = $("#OtroContacto_cta_te").val();
+	var cta_email = $("#OtroContacto_cta_email").val();
+	var cta_nombre = $("#OtroContacto_cta_nombre").val();
+	var data = { cta_id, tc_id, tc_desc, tc_lista, cta_celu, cta_te, cta_email, cta_nombre, destinoDeOperacion, tipoDeOperacion };
+	return data;
+}
+
 function ObtenerDatosDeFormaDePagoPParaJson(destinoDeOperacion, tipoDeOperacion) {
-	//TODO
 	var cta_id = $("#Cliente_Cta_Id").val();
 	var fp_id = $("#listaFP").val();
 	var fp_desc = $("#listaFP option:selected").text();
