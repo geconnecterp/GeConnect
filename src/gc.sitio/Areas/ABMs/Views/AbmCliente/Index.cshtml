@@ -23,32 +23,32 @@
 			</div>
 		</div>
 		<div class="col-md-2">
-            <div class="d-flex justify-content-sm-center">
-                <button id="btnAbmAceptar" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Aceptar" disabled>
-                    <i class="bx bx-check-circle bx-xs"></i>
-                </button>
+			<div class="d-flex justify-content-sm-center">
+				<button id="btnAbmAceptar" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Aceptar" disabled>
+					<i class="bx bx-check-circle bx-xs"></i>
+				</button>
 
-                <button id="btnAbmCancelar" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar" disabled>
-                    <i class="bx bx-x-circle bx-xs"></i>
-                </button>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="d-flex justify-content-sm-center">
-                <button id="btnAbmNuevo" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Nuevo">
-                    <i class="bx bx-check-circle bx-xs"></i>
-                </button>
+				<button id="btnAbmCancelar" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar" disabled>
+					<i class="bx bx-x-circle bx-xs"></i>
+				</button>
+			</div>
+		</div>
+		<div class="col-md-4">
+			<div class="d-flex justify-content-sm-center">
+				<button id="btnAbmNuevo" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Nuevo">
+					<i class="bx bx-check-circle bx-xs"></i>
+				</button>
 
-                <button id="btnAbmModif" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Editar" disabled>
-                    <i class="bx bx-x-circle bx-xs"></i>
-                </button>
-                <button id="btnAbmElimi" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Eliminar/Discontinuar" disabled>
-                    <i class="bx bx-x-circle bx-xs"></i>
-                </button>
-            </div>
-        </div>
+				<button id="btnAbmModif" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Editar" disabled>
+					<i class="bx bx-x-circle bx-xs"></i>
+				</button>
+				<button id="btnAbmElimi" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Eliminar/Discontinuar" disabled>
+					<i class="bx bx-x-circle bx-xs"></i>
+				</button>
+			</div>
+		</div>
 	</div>
-	
+
 	<div class="collapse" id="divFiltro" style="">
 		<partial name="_filtroBase" model="filtro" />
 		@Html.Hidden("pagEstado", false);
@@ -157,6 +157,10 @@
 		var dataOpsFormaDePagoUrl = "@Url.Action("DataOpsFormaDePago", "abmcliente", new { area = "abms" })";
 		var nuevoContactoUrl = "@Url.Action("NuevoContacto", "abmcliente", new { area = "abms" })";
 		var dataOpsCuentaContactoUrl = "@Url.Action("DataOpsOtrosContactos", "abmcliente", new { area = "abms" })";
+		var nuevaNotaUrl = "@Url.Action("NuevaNota", "abmcliente", new { area = "abms" })";
+		var dataOpsCuentaNotaUrl = "@Url.Action("DataOpsNotas", "abmcliente", new { area = "abms" })";
+		var nuevaObservacionUrl = "@Url.Action("NuevaObservacion", "abmcliente", new { area = "abms" })";
+		var dataOpsObservacionesUrl = "@Url.Action("DataOpsObservaciones", "abmcliente", new { area = "abms" })";
 	</script>
 	<script src="~/js/plugins/jquery.simplePagination.js"></script>
 	<script src="~/js/app/busquedas.js"></script>

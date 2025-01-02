@@ -29,16 +29,17 @@
 		</div>
 		<div id="divDatosDeObsSelected">
 			<div class="row" style="padding-top: 10px;">
+				@Html.HiddenFor(x => x.Observacion.to_id)
 				<div class="row mt-1">
 					<div class="input-group input-group-sm">
 						<span class="input-group-text fixed-lbl-for-abm-70">Tipo: </span>
-						@Html.DropDownListFor(m => Model.Observacion.to_id, cmb, "Seleccionar...", new { @id = "listaTipoObs", @class = "form-control" })
+						@Html.DropDownListFor(m => Model.Observacion.to_id, cmb, "Seleccionar...", new { @id = "listaTipoObs", @class = "form-control activable" })
 					</div>
 				</div>
 				<div class="row mt-1">
 					<div class="input-group input-group-sm">
 						<span class="input-group-text fixed-lbl-for-abm-70">Observación: </span>
-						<input type="text" asp-for="Observacion.cta_obs" class="form-control" readonly />
+						<input type="text" asp-for="Observacion.cta_obs" class="form-control activable"/>
 					</div>
 				</div>
 			</div>

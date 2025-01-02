@@ -40,7 +40,7 @@ const AbmObject = {
 	CLIENTES_CONDICIONES_VTA: 'clientes_condiciones_vtas', //ABM relacionado clientes formas de pago
 	CUENTAS_CONTACTOS: 'cuentas_contactos', //ABM relacionado contactos
 	CUENTAS_NOTAS: 'cuentas_notas', //ABM relacionado notas de clientes
-	CUENTAS_OBSERVACIONES: 'cuentas_observaciones' //ABM relacionado observaciones de clientes
+	CUENTAS_OBSERVACIONES: 'cuentas_obs' //ABM relacionado observaciones de clientes
 }
 
 const AbmAction = {
@@ -276,6 +276,7 @@ function selectNotaenTab(x) {
 	AbrirWaiting();
 	PostGenHtml(data, buscarDatosNotaUrl, function (obj) {
 		$("#divDatosDeNotaSelected").html(obj);
+		$("#IdSelected").val(usuId);
 		CerrarWaiting();
 	}, function (obj) {
 		ControlaMensajeError(obj.message);
@@ -289,6 +290,7 @@ function selectObsEnTab(x) {
 	AbrirWaiting();
 	PostGenHtml(data, buscarDatosObservacionesUrl, function (obj) {
 		$("#divDatosDeObsSelected").html(obj);
+		$("#IdSelected").val(toId);
 		CerrarWaiting();
 	}, function (obj) {
 		ControlaMensajeError(obj.message);
@@ -409,12 +411,12 @@ function buscarClientes(pag) {
 
 }
 
-//function selectReg(e) {
-//	$("#tbGridCliente tbody tr").each(function (index) {
-//		$(this).removeClass("selected-row");
-//	});
-//	$(e).addClass("selected-row");
-//}
+function selectReg(e) {
+	$("#tbGridCliente tbody tr").each(function (index) {
+		$(this).removeClass("selected-row");
+	});
+	$(e).addClass("selected-row");
+}
 
 function BuscarCliente(ctaId) {
 	var data = { ctaId };
@@ -574,6 +576,56 @@ function NuevoContacto() {
 	}
 }
 
+function NuevaNota() {
+	var tabActiva = $('.nav-tabs .active')[0].id;
+	var mensaje = PuedoAgregar(tabActiva);
+	if (mensaje !== "") {
+		AbrirMensaje("ATENCIÓN", mensaje, function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		var data = {};
+		PostGenHtml(data, nuevaNotaUrl, function (obj) {
+			$("#divDatosDeNotaSelected").html(obj);
+			$(".nav-link").prop("disabled", true);
+			$(".activable").prop("disabled", false);
+			HabilitarBotonesPorAccion(AbmAction.ALTA);
+			$("#Nota_usu_apellidoynombre").focus();
+			CerrarWaiting();
+		}, function (obj) {
+			ControlaMensajeError(obj.message);
+			CerrarWaiting();
+		});
+	}
+}
+
+function NuevaObservacion() {
+	var tabActiva = $('.nav-tabs .active')[0].id;
+	var mensaje = PuedoAgregar(tabActiva);
+	if (mensaje !== "") {
+		AbrirMensaje("ATENCIÓN", mensaje, function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		var data = {};
+		PostGenHtml(data, nuevaObservacionUrl, function (obj) {
+			$("#divDatosDeObsSelected").html(obj);
+			$(".nav-link").prop("disabled", true);
+			$(".activable").prop("disabled", false);
+			HabilitarBotonesPorAccion(AbmAction.ALTA);
+			$("#Observacion_cta_obs").focus();
+			CerrarWaiting();
+		}, function (obj) {
+			ControlaMensajeError(obj.message);
+			CerrarWaiting();
+		});
+	}
+}
+
 function btnModiClick() {
 	var tabActiva = $('.nav-tabs .active')[0].id;
 	switch (tabActiva) {
@@ -584,10 +636,10 @@ function btnModiClick() {
 			ModificaFormaDePago(tabActiva);
 			break;
 		case Tabs.TabNotas:
-			ModificaNota();
+			ModificaNota(tabActiva);
 			break;
 		case Tabs.TabObservaciones:
-			ModificaObservacion();
+			ModificaObservacion(tabActiva);
 			break;
 		case Tabs.TabOtrosContactos:
 			ModificaContacto(tabActiva);
@@ -603,6 +655,7 @@ function ModificaCliente(tabAct) {
 	SetearDestinoDeOperacion(tabAct);
 	$(".nav-link").prop("disabled", true);
 	$(".activable").prop("disabled", false);
+	$("#tbGridCliente tbody tr td").addClass("disable-table-rows");
 	$("#Cliente_Cta_Denominacion").focus();
 }
 
@@ -621,6 +674,9 @@ function ModificaFormaDePago(tabAct) {
 		$(".nav-link").prop("disabled", true);
 		$(".activable").prop("disabled", false);
 		$("#listaFP").prop("disabled", true);
+		$("#tbClienteFormaPagoEnTab tbody tr td").prop("disabled", true);
+		//
+		$("#tbClienteFormaPagoEnTab tbody tr td").addClass("disable-table-rows");
 		$("#FormaDePago_fp_dias").focus();
 	}
 }
@@ -639,10 +695,50 @@ function ModificaContacto(tabAct) {
 		SetearDestinoDeOperacion(tabAct);
 		$(".nav-link").prop("disabled", true);
 		$(".activable").prop("disabled", false);
-		$("#tbClienteOtroContacto").prop("disabled", true);
+		$("#tbClienteOtroContacto tbody tr td").addClass("disable-table-rows");
 		$("#OtroContacto_cta_nombre").prop("disabled", true);
 		$("#listaTC").prop("disabled", true);
 		$("#OtroContacto_cta_celu").focus();
+	}
+}
+
+function ModificaNota(tabAct) {
+	var mensaje = PuedoModificar(tabAct);
+	if (mensaje !== "") {
+		AbrirMensaje("ATENCIÓN", mensaje, function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		HabilitarBotonesPorAccion(AbmAction.MODIFICACION);
+		tipoDeOperacion = AbmAction.MODIFICACION;
+		SetearDestinoDeOperacion(tabAct);
+		$(".nav-link").prop("disabled", true);
+		$(".activable").prop("disabled", false);
+		$("#Nota_usu_apellidoynombre").prop("disabled", true);
+		$("#tbClienteNotas tbody tr td").addClass("disable-table-rows");
+		$("#Nota_nota").focus();
+	}
+}
+
+function ModificaObservacion(tabAct) {
+	var mensaje = PuedoModificar(tabAct);
+	if (mensaje !== "") {
+		AbrirMensaje("ATENCIÓN", mensaje, function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		HabilitarBotonesPorAccion(AbmAction.MODIFICACION);
+		tipoDeOperacion = AbmAction.MODIFICACION;
+		SetearDestinoDeOperacion(tabAct);
+		$(".nav-link").prop("disabled", true);
+		$(".activable").prop("disabled", false);
+		$("#listaTipoObs").prop("disabled", true);
+		$("#tbClienteObservaciones tbody tr td").addClass("disable-table-rows");
+		$("#Observacion_cta_obs").focus();
 	}
 }
 
@@ -706,8 +802,12 @@ function PuedoAgregar(tabAct) {
 				mensaje = "Solo se pueden agregar formas de pago para cuentas activas.";
 			break;
 		case Tabs.TabNotas:
+			if (!$("#chkCtaActiva").is(":checked"))
+				mensaje = "Solo se pueden agregar formas de pago para cuentas activas.";
 			break;
 		case Tabs.TabObservaciones:
+			if (!$("#chkCtaActiva").is(":checked"))
+				mensaje = "Solo se pueden agregar formas de pago para cuentas activas.";
 			break;
 		case Tabs.TabOtrosContactos:
 			if (!$("#chkCtaActiva").is(":checked"))
@@ -731,8 +831,16 @@ function PuedoModificar(tabAct) {
 				mensaje = "Debe seleccionar una forma de pago para modificar.";
 			break;
 		case Tabs.TabNotas:
+			if (!$("#chkCtaActiva").is(":checked"))
+				mensaje = "Solo se pueden modificar formas de pago para cuentas activas.";
+			if ($("#IdSelected").val() == "")
+				mensaje = "Debe seleccionar una forma de pago para modificar.";
 			break;
 		case Tabs.TabObservaciones:
+			if (!$("#chkCtaActiva").is(":checked"))
+				mensaje = "Solo se pueden modificar formas de pago para cuentas activas.";
+			if ($("#IdSelected").val() == "")
+				mensaje = "Debe seleccionar una forma de pago para modificar.";
 			break;
 		case Tabs.TabOtrosContactos:
 			if (!$("#chkCtaActiva").is(":checked"))
@@ -781,15 +889,21 @@ function btnCancelClick() {
 	var tabActiva = $('.nav-tabs .active')[0].id;
 	switch (tabActiva) {
 		case Tabs.TabCliente:
+			$("#tbGridCliente tbody tr td").removeClass("disable-table-rows");
 			break;
 		case Tabs.TabFormasDePago:
+			$("#tbClienteFormaPagoEnTab").prop("disabled", false);
+			$("#tbClienteFormaPagoEnTab tbody tr td").removeClass("disable-table-rows");
 			break;
 		case Tabs.TabNotas:
+			$("#Nota_usu_apellidoynombre").prop("disabled", false);
+			$("#tbClienteNotas tbody tr td").removeClass("disable-table-rows");
 			break;
 		case Tabs.TabObservaciones:
+			$("#tbClienteObservaciones tbody tr td").removeClass("disable-table-rows");
 			break;
 		case Tabs.TabOtrosContactos:
-			$("#tbClienteOtroContacto").prop("disabled", false);
+			$("#tbClienteOtroContacto tbody tr td").removeClass("disable-table-rows");
 			$("#OtroContacto_cta_nombre").prop("disabled", false);
 			$("#listaTC").prop("disabled", false);
 			break;
@@ -854,6 +968,8 @@ function Guardar() {
 			if (obj.error === true) {
 				AbrirMensaje("ATENCIÓN", obj.msg, function () {
 					$("#msjModal").modal("hide");
+					$(".nav-link").prop("disabled", false);
+					$(".activable").prop("disabled", false);
 					return true;
 				}, false, ["Aceptar"], "error!", null);
 			}
@@ -861,6 +977,7 @@ function Guardar() {
 				AbrirMensaje("ATENCIÓN", obj.msg, function () {
 					$("#msjModal").modal("hide");
 					$(".nav-link").prop("disabled", false);
+					$(".activable").prop("disabled", false);
 					return true;
 				}, false, ["Aceptar"], "succ!", null);
 			}
@@ -882,12 +999,35 @@ function ObtenerDatosParaJson(destinoDeOperacion, tipoDeOperacion) {
 			json = ObtenerDatosDeOtrosContactosParaJson(destinoDeOperacion, tipoDeOperacion);
 			break;
 		case AbmObject.CUENTAS_NOTAS:
+			json = ObtenerDatosDeNotasParaJson(destinoDeOperacion, tipoDeOperacion);
 			break;
 		case AbmObject.CUENTAS_OBSERVACIONES:
+			json = ObtenerDatosDeObsParaJson(destinoDeOperacion, tipoDeOperacion);
 			break;
 		default:
 	}
 	return json;
+}
+
+function ObtenerDatosDeObsParaJson(destinoDeOperacion, tipoDeOperacion) {
+	var cta_id = $("#Cliente_Cta_Id").val();
+	var to_id = $("#listaTipoObs").val();
+	var to_desc = $("#listaTipoObs option:selected").text();
+	var to_lista = $("#listaTipoObs option:selected").text() + "(" + $("#listaTipoObs").val() + ")";
+	var cta_obs = $("#Observacion_cta_obs").val();
+	var data = { cta_id, to_id, to_desc, to_lista, cta_obs, destinoDeOperacion, tipoDeOperacion };
+	return data;
+}
+
+function ObtenerDatosDeNotasParaJson(destinoDeOperacion, tipoDeOperacion) {
+	var cta_id = $("#Cliente_Cta_Id").val();
+	var usu_id = $("#Nota_usu_id").val();
+	var usu_apellidoynombre = $("#Nota_usu_apellidoynombre").val();
+	var usu_lista = $("#Nota_usu_apellidoynombre").val();
+	var fecha = null;
+	var nota = $("#Nota_nota").val();
+	var data = { cta_id, usu_id, usu_apellidoynombre, usu_lista, fecha, nota, destinoDeOperacion, tipoDeOperacion };
+	return data;
 }
 
 function ObtenerDatosDeOtrosContactosParaJson(destinoDeOperacion, tipoDeOperacion) {

@@ -387,3 +387,8 @@ input[type=number] {
     float: right;
     text-align: right;
 }
+
+.disable-table-rows{
+    filter: blur(1px);
+    pointer-events: none;
+}

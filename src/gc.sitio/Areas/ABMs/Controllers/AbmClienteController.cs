@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System;
 using System.Security.Claims;
 
 namespace gc.sitio.Areas.ABMs.Controllers
@@ -547,7 +548,9 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		/// <summary>
 		/// Metodo que engloba las tres operaciones de ABM de cliente (Alta, baja y modificacion) invocadas al presionar ACEPTAR en la vista
 		/// </summary>
-		/// <param name="request">Tipo ABMRequest</param>
+		/// <param name="cuenta">Tipo CuentaAbmValidationModel</param>
+		/// <param name="destinoDeOperacion"></param>
+		/// <param name="tipoDeOperacion"></param>
 		/// <returns></returns>
 		[HttpPost]
 		public JsonResult DataOpsCliente(CuentaAbmValidationModel cuenta, string destinoDeOperacion, char tipoDeOperacion)
@@ -588,6 +591,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
 					{
 						return Json(new { error = true, warn = false, msg = respuesta.Mensaje, codigo = 1, setFocus = string.Empty });
 					}
+					if (respuesta.Entidad != null && respuesta.Entidad.resultado != 0)
+						return Json(new { error = true, warn = false, msg = respuesta.Entidad.resultado_msj, codigo = respuesta.Entidad.resultado, setFocus = respuesta.Entidad.resultado_setfocus });
 
 					return Json(new { error = false, warn = false, msg = "La entidad de ha actualizado con éxito." });
 				}
@@ -653,7 +658,9 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		/// <summary>
 		/// Metodo que engloba las tres operaciones de ABM de formas de pago (Alta, baja y modificacion) invocadas al presionar ACEPTAR en la vista
 		/// </summary>
-		/// <param name="request">Tipo ABMRequest</param>
+		/// <param name="fp">Tipo FormaDePagoAbmValidationModel</param>
+		/// <param name="destinoDeOperacion"></param>
+		/// <param name="tipoDeOperacion"></param>
 		/// <returns></returns>
 		[HttpPost]
 		public JsonResult DataOpsFormaDePago(FormaDePagoAbmValidationModel fp, string destinoDeOperacion, char tipoDeOperacion)
@@ -694,6 +701,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
 							return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = respuesta.ListaEntidad?.First().resultado_msj, codigo = respuesta.ListaEntidad?.First().resultado, setFocus = respuesta.ListaEntidad?.First().resultado_setfocus });
 						return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
 					}
+					if (respuesta.Entidad != null && respuesta.Entidad.resultado != 0)
+						return Json(new { error = true, warn = false, msg = respuesta.Entidad.resultado_msj, codigo = respuesta.Entidad.resultado, setFocus = respuesta.Entidad.resultado_setfocus });
 
 					return Json(new { error = false, warn = false, msg = "La entidad de ha actualizado con éxito." });
 				}
@@ -733,10 +742,14 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			}
 		}
 		#endregion
+
+		#region Otros Contactos
 		/// <summary>
-		/// Metodo que engloba las tres operaciones de ABM de formas de pago (Alta, baja y modificacion) invocadas al presionar ACEPTAR en la vista
+		/// Metodo que engloba las tres operaciones de ABM de Otros contactos (Alta, baja y modificacion) invocadas al presionar ACEPTAR en la vista
 		/// </summary>
-		/// <param name="request">Tipo ABMRequest</param>
+		/// <param name="oc">Tipo OtroContactoAbmValidationModel</param>
+		/// <param name="destinoDeOperacion"></param>
+		/// <param name="tipoDeOperacion"></param>
 		/// <returns></returns>
 		[HttpPost]
 		public JsonResult DataOpsOtrosContactos(OtroContactoAbmValidationModel oc, string destinoDeOperacion, char tipoDeOperacion)
@@ -777,6 +790,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
 							return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = respuesta.ListaEntidad?.First().resultado_msj, codigo = respuesta.ListaEntidad?.First().resultado, setFocus = respuesta.ListaEntidad?.First().resultado_setfocus });
 						return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
 					}
+					if (respuesta.Entidad != null && respuesta.Entidad.resultado != 0)
+						return Json(new { error = true, warn = false, msg = respuesta.Entidad.resultado_msj, codigo = respuesta.Entidad.resultado, setFocus = respuesta.Entidad.resultado_setfocus });
 
 					return Json(new { error = false, warn = false, msg = "La entidad de ha actualizado con éxito." });
 				}
@@ -818,8 +833,200 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		}
 		#endregion
 
+		#region Notas
+		/// <summary>
+		/// Metodo que engloba las tres operaciones de ABM de Notas (Alta, baja y modificacion) invocadas al presionar ACEPTAR en la vista
+		/// </summary>
+		/// <param name="oc">Tipo OtroContactoAbmValidationModel</param>
+		/// <param name="destinoDeOperacion"></param>
+		/// <param name="tipoDeOperacion"></param>
+		/// <returns></returns>
+		[HttpPost]
+		public JsonResult DataOpsNotas(NotaAbmValidationModel no, string destinoDeOperacion, char tipoDeOperacion)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+				{
+					return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+				}
+
+				no.fecha = DateTime.Now;
+				//Paso textos a mayusculas
+				no = HelperGen.PasarAMayusculas(no);
+				//Valido reglas de negocio, algunas ya se han validado en el front, pero es necsearia una re-validación para evitar introducir valores erróneos
+				var respuestaDeValidacion = ValidarJsonAntesDeGuardar(no, tipoDeOperacion);
+				if (respuestaDeValidacion == "")
+				{
+					//Serializo a un json string el objeto
+					var jsonstring = JsonConvert.SerializeObject(no, new JsonSerializerSettings());
+					//Mando a guardar (cuack!)
+					var abmRequest = new AbmGenDto
+					{
+						Abm = tipoDeOperacion,
+						Objeto = destinoDeOperacion,
+						Json = jsonstring,
+						Administracion = AdministracionId,
+						Usuario = UserName
+					};
+					var respuesta = _abmServicio.AbmConfirmar(abmRequest, TokenCookie).Result;
+					if (respuesta == null)
+						return Json(new { error = true, warn = false, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
+					if (respuesta.EsWarn || respuesta.EsError)
+					{
+						if (respuesta.Entidad != null)
+							return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = respuesta.Entidad.resultado_msj, codigo = respuesta.Entidad.resultado, setFocus = respuesta.Entidad.resultado_setfocus });
+						else if (respuesta.ListaEntidad != null && respuesta.ListaEntidad.Count > 0)
+							return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = respuesta.ListaEntidad?.First().resultado_msj, codigo = respuesta.ListaEntidad?.First().resultado, setFocus = respuesta.ListaEntidad?.First().resultado_setfocus });
+						return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
+					}
+					if (respuesta.Entidad != null && respuesta.Entidad.resultado != 0)
+						return Json(new { error = true, warn = false, msg = respuesta.Entidad.resultado_msj, codigo = respuesta.Entidad.resultado, setFocus = respuesta.Entidad.resultado_setfocus });
+
+					return Json(new { error = false, warn = false, msg = "La entidad de ha actualizado con éxito." });
+				}
+				else
+					return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, msg = "Ha ocurrido un error al intentar actualizar la información." });
+				throw;
+			}
+		}
+
+		[HttpPost]
+		public IActionResult NuevaNota()
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				var nota = new NotaModel();
+				var model = new CuentaABMNotaSelectedModel()
+				{
+					Nota = nota
+				};
+				return PartialView("_tabDatosNotaSelected", model);
+
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Notas Selected";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Notas Selected");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+		#endregion
+
+		#region Observaciones
+		/// <summary>
+		/// Metodo que engloba las tres operaciones de ABM de Observaciones (Alta, baja y modificacion) invocadas al presionar ACEPTAR en la vista
+		/// </summary>
+		/// <param name="obs">Tipo ObservacionAbmValidationModel</param>
+		/// <param name="destinoDeOperacion"></param>
+		/// <param name="tipoDeOperacion"></param>
+		/// <returns></returns>
+		[HttpPost]
+		public JsonResult DataOpsObservaciones(ObservacionAbmValidationModel obs, string destinoDeOperacion, char tipoDeOperacion)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+				{
+					return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+				}
+
+				//Paso textos a mayusculas
+				obs = HelperGen.PasarAMayusculas(obs);
+				//Valido reglas de negocio, algunas ya se han validado en el front, pero es necsearia una re-validación para evitar introducir valores erróneos
+				var respuestaDeValidacion = ValidarJsonAntesDeGuardar(obs, tipoDeOperacion);
+				if (respuestaDeValidacion == "")
+				{
+					//Serializo a un json string el objeto
+					var jsonstring = JsonConvert.SerializeObject(obs, new JsonSerializerSettings());
+					//Mando a guardar (cuack!)
+					var abmRequest = new AbmGenDto
+					{
+						Abm = tipoDeOperacion,
+						Objeto = destinoDeOperacion,
+						Json = jsonstring,
+						Administracion = AdministracionId,
+						Usuario = UserName
+					};
+					var respuesta = _abmServicio.AbmConfirmar(abmRequest, TokenCookie).Result;
+					if (respuesta == null)
+						return Json(new { error = true, warn = false, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
+					if (respuesta.EsWarn || respuesta.EsError)
+					{
+						if (respuesta.Entidad != null)
+							return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = respuesta.Entidad.resultado_msj, codigo = respuesta.Entidad.resultado, setFocus = respuesta.Entidad.resultado_setfocus });
+						else if (respuesta.ListaEntidad != null && respuesta.ListaEntidad.Count > 0)
+							return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = respuesta.ListaEntidad?.First().resultado_msj, codigo = respuesta.ListaEntidad?.First().resultado, setFocus = respuesta.ListaEntidad?.First().resultado_setfocus });
+						return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
+					}
+					if (respuesta.Entidad != null && respuesta.Entidad.resultado != 0)
+						return Json(new { error = true, warn = false, msg = respuesta.Entidad.resultado_msj, codigo = respuesta.Entidad.resultado, setFocus = respuesta.Entidad.resultado_setfocus });
+
+					return Json(new { error = false, warn = false, msg = "La entidad de ha actualizado con éxito." });
+				}
+				else
+					return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, msg = "Ha ocurrido un error al intentar actualizar la información." });
+				throw;
+			}
+		}
+
+		[HttpPost]
+		public IActionResult NuevaObservacion()
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				var obs = new ObservacionesModel();
+				var model = new CuentaABMObservacionesSelectedModel()
+				{
+					ComboTipoObs = ComboTipoObservaciones(),
+					Observacion = obs
+				};
+				return PartialView("_tabDatosObsSelected", model);
+
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Obs Selected";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Obs Selected");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+		#endregion
+
+		#endregion
+
 		#region Métodos Privados
-		private string ValidarJsonAntesDeGuardar(OtroContactoAbmValidationModel fp, char abm)
+		private string ValidarJsonAntesDeGuardar(ObservacionAbmValidationModel obs, char abm)
+		{
+			//Agregar validaciones en el caso que lo requiera
+			return "";
+		}
+		private string ValidarJsonAntesDeGuardar(NotaAbmValidationModel no, char abm)
+		{
+			//Agregar validaciones en el caso que lo requiera
+			return "";
+		}
+		private string ValidarJsonAntesDeGuardar(OtroContactoAbmValidationModel co, char abm)
 		{
 			//Agregar validaciones en el caso que lo requiera
 			return "";
