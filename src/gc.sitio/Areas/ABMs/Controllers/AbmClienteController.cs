@@ -728,6 +728,16 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				return PartialView("_gridMensaje", response);
 			}
 		}
+
+		/// <summary>
+		/// Metodo que engloba las tres operaciones de ABM de formas de pago (Alta, baja y modificacion) invocadas al presionar ACEPTAR en la vista
+		/// </summary>
+		/// <param name="request">Tipo ABMRequest</param>
+		/// <returns></returns>
+		//[HttpPost]
+		//public JsonResult DataOpsOtrosContactos(FormaDePagoAbmValidationModel fp, string destinoDeOperacion, char tipoDeOperacion)
+		//{
+		//}
 		#endregion
 
 		#region Métodos Privados
