@@ -144,15 +144,15 @@
             
             public const string SP_ABM_CLI_LISTA = "SPGECO_ABM_Cli_Lista";
 			public const string SP_ABM_CLI_Datos = "SPGECO_ABM_Cli_Datos";
-			public const string SP_ABM_CLI_FP_Lista = "SPGECO_ABM_Cli_FP_Lista";
-			public const string SP_ABM_CLI_FP_Datos = "SPGECO_ABM_Cli_FP_Datos";
+			public const string SP_ABM_CLI_FP_Lista = "SPGECO_ABM_Cuenta_FP_Lista";
+			public const string SP_ABM_CLI_FP_Datos = "SPGECO_ABM_Cuenta_FP_Datos";
             //
-            public const string SP_ABM_CLI_CONTACTOS_Lista = "SPGECO_ABM_Cli_CONTACTOS_Lista";
-            public const string SP_ABM_CLI_CONTACTOS_Datos = "SPGECO_ABM_Cli_CONTACTOS_Datos";
-            public const string SP_ABM_CLI_OBS_Lista = "SPGECO_ABM_Cli_Obs_Lista";
-			public const string SP_ABM_CLI_OBS_Datos = "SPGECO_ABM_Cli_Obs_Datos";
-			public const string SP_ABM_CLI_NOTA_Lista = "SPGECO_ABM_Cli_Nota_Lista";
-			public const string SP_ABM_CLI_NOTA_Datos = "SPGECO_ABM_Cli_Nota_Datos";
+            public const string SP_ABM_CLI_CONTACTOS_Lista = "SPGECO_ABM_Cuenta_CONTACTOS_Lista";
+            public const string SP_ABM_CLI_CONTACTOS_Datos = "SPGECO_ABM_Cuenta_CONTACTOS_Datos";
+            public const string SP_ABM_CLI_OBS_Lista = "SPGECO_ABM_Cuenta_Obs_Lista";
+			public const string SP_ABM_CLI_OBS_Datos = "SPGECO_ABM_Cuenta_Obs_Datos";
+			public const string SP_ABM_CLI_NOTA_Lista = "SPGECO_ABM_Cuenta_Nota_Lista";
+			public const string SP_ABM_CLI_NOTA_Datos = "SPGECO_ABM_Cuenta_Nota_Datos";
 
             public const string SP_ABM_CONFIRMAR = "SPGECO_ABM_Confirmar";
             #endregion

@@ -10,6 +10,7 @@ using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System;
 using System.Reflection;
 
 namespace gc.sitio.Areas.Compras.Controllers
@@ -767,10 +768,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			try
 			{
-				if (string.IsNullOrEmpty(nota))
-					return Json(new { error = false, warn = true, vacio = "Debe especificar un valor de nota válido.", msg = "" });
 				if (string.IsNullOrEmpty(admId))
-					return Json(new { error = false, warn = true, vacio = "Debe seleccionar una sucursal para anexar una nota.", msg = "" });
+					return Json(new { error = false, warn = true, msg = "Debe seleccionar una sucursal para anexar una nota." });
 				var listaSucursalTemp = TRNuevaAutSucursalLista;
 				var sucursalTemp = listaSucursalTemp.Where(x => x.adm_id == admId && x.aut_a_generar == autorizacion).First();
 				if (sucursalTemp != null)

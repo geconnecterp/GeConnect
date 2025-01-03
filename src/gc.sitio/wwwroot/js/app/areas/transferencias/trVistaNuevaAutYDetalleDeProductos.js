@@ -235,7 +235,7 @@ function guardarNotaDeSucursal() {
 	var admId = $("#adm_id_en_modal_sucursal").val();
 	var autorizacion = $("#autorizacion_en_modal_sucursal").val();
 	var datos = { nota, admId, autorizacion };
-	if (admId && nota) {
+	if (admId && autorizacion) {
 		PostGen(datos, TRAgregarNotaASucursalNuevaAutUrl, function (o) {
 			if (o.error === true) {
 				CerrarWaiting();
@@ -258,6 +258,19 @@ function guardarNotaDeSucursal() {
 			} else {
 				CerrarWaiting();
 				$("#modalNotaEnSucursal").modal("hide");
+				$("#tbNuevaAutListaSucursales tbody tr").each(function (index) {
+					var row = $(this);
+					if (row[0].cells[0]) {
+						if (row[0].cells[0].innerText == autorizacion && row[0].cells[4].innerText == admId && nota !== "") {
+							row[0].cells[3].childNodes[0].classList.remove("btn-outline-success")
+							row[0].cells[3].childNodes[0].classList.add("btn-outline-danger")
+						}
+						else if (row[0].cells[0].innerText == autorizacion && row[0].cells[4].innerText == admId && nota == "") {
+							row[0].cells[3].childNodes[0].classList.remove("btn-outline-danger")
+							row[0].cells[3].childNodes[0].classList.add("btn-outline-success")
+						}
+					}
+				});
 			}
 		});
 	}
