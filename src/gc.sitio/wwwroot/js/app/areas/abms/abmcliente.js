@@ -164,6 +164,7 @@ function BuscarObservaciones() {
 		PostGenHtml(data, buscarObservacionesUrl, function (obj) {
 			$("#divObservaciones").html(obj);
 			AgregarHandlerSelectedRow("tbClienteObservaciones");
+			$(".activable").prop("disabled", true);
 			$("#IdSelected").val("");
 			CerrarWaiting();
 		}, function (obj) {
@@ -183,6 +184,7 @@ function BuscarNotas() {
 		PostGenHtml(data, buscarNotasUrl, function (obj) {
 			$("#divNotas").html(obj);
 			AgregarHandlerSelectedRow("tbClienteNotas");
+			$(".activable").prop("disabled", true);
 			$("#IdSelected").val("");
 			CerrarWaiting();
 		}, function (obj) {
@@ -202,6 +204,7 @@ function BuscarOtrosContactos() {
 		PostGenHtml(data, buscarOtrosContactosUrl, function (obj) {
 			$("#divOtrosContactos").html(obj);
 			AgregarHandlerSelectedRow("tbClienteOtroContacto");
+			$(".activable").prop("disabled", true);
 			$("#IdSelected").val("");
 			CerrarWaiting();
 		}, function (obj) {
@@ -221,6 +224,7 @@ function BuscarFormaDePago() {
 		PostGenHtml(data, buscarFormaDePagoUrl, function (obj) {
 			$("#divFormasDePago").html(obj);
 			AgregarHandlerSelectedRow("tbClienteFormaPagoEnTab");
+			$(".activable").prop("disabled", true);
 			$("#IdSelected").val("");
 			CerrarWaiting();
 		}, function (obj) {
@@ -249,6 +253,7 @@ function selectOCenTab(x) {
 	PostGenHtml(data, buscarDatosOtrosContactosUrl, function (obj) {
 		$("#divDatosDeOCSelected").html(obj);
 		$("#IdSelected").val(tcId);
+		$(".activable").prop("disabled", true);
 		CerrarWaiting();
 	}, function (obj) {
 		ControlaMensajeError(obj.message);
@@ -263,6 +268,7 @@ function selectFPenTab(x) {
 	PostGenHtml(data, buscarDatosFormasDePagoUrl, function (obj) {
 		$("#divDatosDeFPSelected").html(obj);
 		$("#IdSelected").val($("#FormaDePago_fp_id").val());
+		$(".activable").prop("disabled", true);
 		CerrarWaiting();
 	}, function (obj) {
 		ControlaMensajeError(obj.message);
@@ -277,6 +283,7 @@ function selectNotaenTab(x) {
 	PostGenHtml(data, buscarDatosNotaUrl, function (obj) {
 		$("#divDatosDeNotaSelected").html(obj);
 		$("#IdSelected").val(usuId);
+		$(".activable").prop("disabled", true);
 		CerrarWaiting();
 	}, function (obj) {
 		ControlaMensajeError(obj.message);
@@ -291,6 +298,7 @@ function selectObsEnTab(x) {
 	PostGenHtml(data, buscarDatosObservacionesUrl, function (obj) {
 		$("#divDatosDeObsSelected").html(obj);
 		$("#IdSelected").val(toId);
+		$(".activable").prop("disabled", true);
 		CerrarWaiting();
 	}, function (obj) {
 		ControlaMensajeError(obj.message);
@@ -313,7 +321,7 @@ function InicializaPantallaAbmCliente() {
 	$("#lbChkDesdeHasta").text("ID Cuenta");
 
 	$("#IdSelected").val("");
-
+	$(".activable").prop("disabled", true);
 	CerrarWaiting();
 	return true;
 }
@@ -400,6 +408,7 @@ function buscarClientes(pag) {
 				pagRegs = obj.metadata.pageSize;
 
 				$("#pagEstado").val(true).trigger("change");
+				$(".activable").prop("disabled", true);
 			}
 
 		});
@@ -424,6 +433,7 @@ function BuscarCliente(ctaId) {
 	PostGenHtml(data, buscarClienteUrl, function (obj) {
 		$("#divDatosCliente").html(obj);
 		$("#IdSelected").val($("#Cliente_Cta_Id").val());
+		$(".activable").prop("disabled", true);
 		CerrarWaiting();
 	}, function (obj) {
 		ControlaMensajeError(obj.message);
@@ -885,7 +895,7 @@ function btnCancelClick() {
 	HabilitarBotonesPorAccion(AbmAction.CANCEL);
 	tipoDeOperacion = AbmAction.CANCEL;
 	$(".nav-link").prop("disabled", false);
-	$(".activable").prop("disabled", false);
+	$(".activable").prop("disabled", true);
 	var tabActiva = $('.nav-tabs .active')[0].id;
 	switch (tabActiva) {
 		case Tabs.TabCliente:
