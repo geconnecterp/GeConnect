@@ -37,7 +37,7 @@
 
 const AbmObject = {
 	CLIENTES: 'clientes', //ABM principal clientes
-	CLIENTES_CONDICIONES_VTA: 'clientes_condiciones_vtas', //ABM relacionado clientes formas de pago
+	CLIENTES_CONDICIONES_VTA: 'cuentas_fp', //ABM relacionado clientes formas de pago
 	CUENTAS_CONTACTOS: 'cuentas_contactos', //ABM relacionado contactos
 	CUENTAS_NOTAS: 'cuentas_notas', //ABM relacionado notas de clientes
 	CUENTAS_OBSERVACIONES: 'cuentas_obs' //ABM relacionado observaciones de clientes
@@ -947,18 +947,26 @@ function Guardar() {
 		var url = "";
 		switch (destinoDeOperacion) {
 			case AbmObject.CLIENTES:
+				$("#tbGridCliente tbody tr td").removeClass("disable-table-rows");
 				url = dataOpsClienteUrl;
 				break;
 			case AbmObject.CLIENTES_CONDICIONES_VTA:
+				$("#tbClienteFormaPagoEnTab tbody tr td").removeClass("disable-table-rows");
 				url = dataOpsFormaDePagoUrl;
 				break;
 			case AbmObject.CUENTAS_CONTACTOS:
+				$("#tbClienteOtroContacto tbody tr td").removeClass("disable-table-rows");
+				$("#OtroContacto_cta_nombre").prop("disabled", false);
+				$("#listaTC").prop("disabled", false);
 				url = dataOpsCuentaContactoUrl;
 				break;
 			case AbmObject.CUENTAS_NOTAS:
+				$("#Nota_usu_apellidoynombre").prop("disabled", false);
+				$("#tbClienteNotas tbody tr td").removeClass("disable-table-rows");
 				url = dataOpsCuentaNotaUrl;
 				break;
 			case AbmObject.CUENTAS_OBSERVACIONES:
+				$("#tbClienteObservaciones tbody tr td").removeClass("disable-table-rows");
 				url = dataOpsObservacionesUrl;
 				break;
 			default:
