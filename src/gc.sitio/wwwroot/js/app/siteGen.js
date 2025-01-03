@@ -328,6 +328,8 @@ function analizaEnterInput(e) {
 function selectReg(x, gridId) {
     $("#" + gridId + " tbody tr").each(function (index) {
         $(this).removeClass("selected-row");
+        $(this).removeClass("selectedEdit-row");
     });
     $(x).addClass("selected-row");
+    
 }

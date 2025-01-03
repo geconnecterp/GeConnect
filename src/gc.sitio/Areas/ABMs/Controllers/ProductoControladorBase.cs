@@ -138,6 +138,42 @@ namespace gc.sitio.Areas.ABMs.Controllers
             }
         }
 
+        protected List<LimiteStkDto> LimitesStk
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("LimitesStk");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<LimiteStkDto>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("LimitesStk", json);
+            }
+        }
+
+        protected LimiteStkDto LimiteStkSeleccionado
+        {
+            get
+            {
+                string json = _context.HttpContext.Session.GetString("LimiteStkSeleccionado");
+                if (string.IsNullOrEmpty(json))
+                {
+                    return new();
+                }
+                return JsonConvert.DeserializeObject<LimiteStkDto>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("LimiteStkSeleccionado", json);
+            }
+        }
+
         #endregion
 
         protected async Task<IActionResult> BusquedaAvanzada(string ri01, string ri02, bool act, bool dis, bool ina,bool cstk, bool sstk, string search, bool buscaNew, IProductoServicio _productoServicio, string sort = "p_id", string sortDir = "asc", int pag = 1)

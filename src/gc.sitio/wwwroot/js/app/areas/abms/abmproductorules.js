@@ -36,7 +36,7 @@
     $(document).on("click", "#PConVto", controlaVencimiento);
     $(document).on("click", "#PMatPri", controlaMateriaPrima);
     $(document).on("change", "#Up_Id", controlaValorUpId);
-
+    $(document).on("change", "#iva_situacion", controlaValorIva);
 
 });
 
@@ -76,6 +76,16 @@ function controlaValorUpId() {
     else {
         $("#PBalanza").prop("checked", false);
         $("#PBalanza").prop("disabled", true);
+    }
+}
+
+function controlaValorIva() {
+    if ($("#iva_situacion option:selected").val() === "N") {
+        $("#iva_alicuota").val("0.00");
+        $("#iva_alicuota").prop("disabled", true);
+    }
+    else {
+        $("#iva_alicuota").prop("disabled", false);
     }
 }
 
@@ -137,10 +147,10 @@ function accionBotones(btn) {
             activarBotones(false);
             activarControles(false);
            
-            if (tabAbm === 1) {
-                $("#btnDetalle").prop("disabled", true);
-                buscarProductos(1);
+            if (tabAbm === 1 ) {
+                $("#btnDetalle").prop("disabled", true);                
             }
+            
         }
         //$("#btnAbmNuevo").prop("disabled", false);
         //$("#btnAbmModif").prop("disabled", true);
@@ -205,6 +215,7 @@ function activarControles(act) {
                 $("#rub_lista").prop("disabled", act);
                 $("#iva_situacion").prop("disabled", act);
                 $("#iva_alicuota").prop("disabled", act);
+                controlaValorIva();
                 //Linea 09
                 $("#lp_id_default").prop("disabled", act);
                 $("#in_alicuota").prop("disabled", act);

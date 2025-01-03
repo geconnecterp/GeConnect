@@ -4,6 +4,7 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Dtos.ABM;
+using gc.infraestructura.Dtos.Administracion;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Box;
 using gc.infraestructura.Dtos.Gen;
@@ -68,6 +69,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
             var listR02 = new List<ComboGenDto>();
             ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR02);
+            ViewBag.adm_id = ComboAdministraciones();
 
             return View();
         }
@@ -200,6 +202,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 {
                     throw new NegocioException("No se recepcionaron los limites de stock.");
                 }
+                LimitesStk = lim.ListaEntidad;
                 grillaDatos = GenerarGrilla<LimiteStkDto>(lim.ListaEntidad, "Adm_Id");
                 return View("_gridLimStk", grillaDatos);
             }
@@ -222,6 +225,44 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 return PartialView("_gridMensaje", response);
             }
         }
+
+        //
+        [HttpPost]
+        public IActionResult PresentarLimiteStk()
+        {
+            RespuestaGenerica<EntidadBase> response = new();
+            GridCore<LimiteStkDto> grillaDatos;
+            try
+            {
+                var lim = LimitesStk;
+                if (lim.Count == 0)
+                {
+                    throw new NegocioException("No se encontraron los limites de stock para este producto");
+                }
+
+                grillaDatos = GenerarGrilla(lim, "Adm_Nombre");
+                return View("_gridLimStk", grillaDatos);
+            }
+            catch (NegocioException ex)
+            {
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = true;
+                response.EsError = false;
+                return PartialView("_gridMensaje", response);
+            }
+            catch (Exception ex)
+            {
+                string msg = "Error la Presentar  - Busqueda de Barrados";
+                _logger.LogError(ex, "Error en la invocación de la API - Busqueda de Barrados");
+                response.Mensaje = msg;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
+            }
+        }
+
 
         [HttpPost]
         public IActionResult NuevoProducto()
@@ -395,6 +436,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 ViewBag.Iva_Situacion = await ComboIVASituacion(_prodSv);
                 ViewBag.Iva_Alicuota = await ComboIVAAlicuota(_prodSv);
                 ViewBag.Lp_Id_Default = ComboListaDePrecios();
+               
 
                 return View("_n02panel01Producto", prod);
 

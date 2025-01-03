@@ -2,11 +2,11 @@
 {
     public class LimiteStkDto
     {
-        public string P_Id { get; set; }=string.Empty;
-        public string P_Stk_Min { get; set; }=string.Empty ;
-        public string P_Stk_Max { get; set; } = string.Empty;
-        public string Adm_Id { get; set; } = string.Empty;
-        public string Adm_Nombre { get; set; } = string.Empty;
-        public string Adm_Lista { get; set; } = string.Empty;
+        public string p_id { get; set; }=string.Empty;
+        public string p_stk_min { get; set; }=string.Empty ;
+        public string p_stk_max { get; set; } = string.Empty;
+        public string adm_id { get; set; } = string.Empty;
+        public string adm_nombre { get; set; } = string.Empty;
+        public string adm_lista { get; set; } = string.Empty;
     }
 }

@@ -24,13 +24,13 @@
     <div class="row mt-1" id="tab2l2">
         <div class="input-group input-group-sm">
             <span class="input-group-text">UxP</span>
-            <input type="text" asp-for="p_unidad_pres" class="form-control inputEditable" disabled />
+            <input type="number" id="p_unidad_pres" name="p_unidad_pres" class="form-control inputEditable barr" disabled min="0" max="9999" />
             <span class="input-group-text">UxB</span>
-            <input type="text" asp-for="p_unidad_x_bulto" class="form-control inputEditable" disabled />
+            <input type="number" id="p_unidad_x_bulto" name="p_unidad_x_bulto" class="form-control inputEditable barr" disabled min="0" max="9999" />
             <span class="input-group-text">BxP</span>
-            <input type="text" asp-for="p_bulto_x_piso" class="form-control inputEditable" disabled />
+            <input type="number" id="p_bulto_x_piso" name="p_bulto_x_piso" class="form-control inputEditable barr" disabled min="0" max="9999" />
             <span class="input-group-text">PxP</span>
-            <input type="text" asp-for="p_piso_x_pallet" class="form-control inputEditable" disabled />
+            <input type="number" id="p_piso_x_pallet" name="p_piso_x_pallet" class="form-control inputEditable barr" disabled min="0" max="9999" />
         </div>
     </div>
 </div>

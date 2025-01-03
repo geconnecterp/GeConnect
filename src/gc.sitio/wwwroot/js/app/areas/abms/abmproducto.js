@@ -1,4 +1,52 @@
 ﻿$(function () {
+
+    //mascaras
+    //$("input#in_alicuota").mask("0000.00", { reverse: true });
+    //$("input#p_balanza_dvto").mask("000,000,000,000", { reverse: true });
+    //$("input#p_con_vto_min").mask("000,000,000,000", { reverse: true });
+
+    //$("input#p_peso").mask("000,000,000,000.000", { reverse: true });
+    //$("input#p_m_capacidad").mask("000,000,000,000.000", { reverse: true });
+
+    //$(document).on("change", "input .barr", function () {
+    //    $("input .barr").mask("0000", {
+    //        reverse: true,
+    //        placeholder: '',
+    //        translation: {
+    //            '0': { pattern: /[0-9]/, optional: true }
+    //        }
+    //    });
+    //});
+
+    $(".barr").mask("00000", {
+        reverse: true,
+    });
+
+    //valida que los datos ingresados en barral sean válidos
+    $(document).on("blur", ".barr", function () {
+        var value = parseInt($(this).val(), 10);
+        if (value < 1 || value > 99999) {
+            AbrirMensaje("Atención!!", "El valor ingresado no es valido", function () {
+                $(this).val(1);
+                $(this).trigger("focus");
+                $("#msjModal").modal("hide");
+                return true;
+            }, false, ["Aceptar"], "warn!", null);
+        }
+    });
+    //valida que los datos ingresados en Lim sean válidos
+    $(document).on("blur", ".limStk", function () {
+        var value = parseInt($(this).val(), 10);
+        if (value < 0 || value > 99999) {
+            AbrirMensaje("Atención!!", "El valor ingresado no es valido", function () {
+                $(this).val(1);
+                $(this).trigger("focus");
+                $("#msjModal").modal("hide");
+                return true;
+            }, false, ["Aceptar"], "warn!", null);
+        }
+    });
+
     $("#btnFiltro").on("click", function () {
         if ($("#divFiltro").hasClass("show")) {
             $("#divDetalle").collapse("hide");
@@ -93,19 +141,14 @@
 
     $(".inputEditable").on("keypress", analizaEnterInput);
 
-    $("#BtnLiTab02").on("click", presentarBarrado);
+    $("#BtnLiTab01").on("click", function () {
+        tabAbm = 1;
+        $("#" + tabGrid01).prop("disabled", false);
+    });
 
-    //valida que los datos ingresados en barral 
-    $("input .barr").on("blur", function () {
-        var value = parseInt($(this).val(), 10);
-        if (value < 1 || value > 9999) {
-            AbrirMensaje("Atención!!", "El valor ingresado no es valido", function(){
-                $(this).val(1);
-                $(this).trigger("focus");
-                $("#msjModal").modal("hide");
-            }, ["Aceptar"], "warn!", null);
-        }
-    })
+    $("#BtnLiTab02").on("click", presentarBarrado);
+    $("#BtnLiTab03").on("click", presentarLimites);
+   
     
     InicializaPantallaAbmProd("tbGridProd");
     funcCallBack = buscarProductos;
@@ -115,20 +158,7 @@
 
 function configuracionControlesAbmProd() {
     //Imp Int
-    $("input#In_Alicuota").mask("000,000,000,000", { reverse: true });
-    $("input#P_Balanza_Dvto").mask("000,000,000,000", { reverse: true });
-    $("input#P_Con_Vto_Min").mask("000,000,000,000", { reverse: true });
-
-    $("input#P_Peso").mask("000,000,000,000.000", { reverse: true });
-    $("input#P_M_Capacidad").mask("000,000,000,000.000", { reverse: true });
-
-    $("input .barr").mask("0000", {
-        reverse: true,
-        placeholder: '',
-        translation: {
-            '0': { pattern: /[0-9]/, optional: true }
-        }
-    });
+   
 }
 
 
@@ -154,9 +184,7 @@ function InicializaPantallaAbmProd(grilla) {
     $("#lbRel01").text("PROVEEDOR");
     $("#lbRel02").text("RUBRO");
 
-    accionBotones("C");
-
-    configuracionControlesAbmProd();
+    accionBotones("C");   
 
     $("#divDetalle").collapse("hide");
 
@@ -262,7 +290,7 @@ function selectAbmRegDbl(x,gridId) {
     });
     $(x).addClass("selectedEdit-row");
     var id = x.cells[0].innerText.trim();
-
+    regSelected = x;
     
     switch (tabAbm) {
         case 1:
@@ -338,6 +366,8 @@ function buscarBarrado(data) {
 
 function presentarBarrado() {
     tabAbm = 2;
+    $("#" + tabGrid01).prop("disabled", true);
+
     AbrirWaiting("Buscando Barrados...");
     PostGenHtml({}, presentarBarradoUrl, function (obj) {
         $("#divBarrado2").html(obj);
@@ -356,6 +386,25 @@ function presentarBarrado() {
     });
 }
 
+function presentarLimites() {
+    tabAbm = 3;
+    //$("#" + tabGrid01).prop("disabled", true);
+
+    //AbrirWaiting("Buscando Limites...");
+    //PostGenHtml({}, presentarLimitesUrl, function (obj) {
+    //    $("#divLimite2").html(obj);
+
+    //    var tb = $("#tbGridLim tbody tr");
+    //    if (tb.length === 0) {
+    //        $("#tab3l1").hide();          
+    //    }
+    //    else {
+    //        $("#tab3l1").show();
+    //    }
+
+    //    CerrarWaiting();
+    //});
+}
 
 
 function buscarLimite(data) {
