@@ -59,8 +59,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 return RedirectToAction("Login", "Token", new { area = "seguridad" });
             }
             CargarDatosIniciales(actualizar);
-
-
+            ProductoBarrados = [];
+            LimitesStk = [];
 
             string volver = Url.Action("index", "home", new { area = "" });
             ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
@@ -72,6 +72,112 @@ namespace gc.sitio.Areas.ABMs.Controllers
             ViewBag.adm_id = ComboAdministraciones();
 
             return View();
+        }
+
+        
+
+        [HttpPost]
+        public async Task<IActionResult> BuscarBarrados(string p_id)
+        {
+            RespuestaGenerica<EntidadBase> response = new();
+            GridCore<ProductoBarradoDto> grillaDatos;
+            try
+            {
+                RespuestaGenerica<ProductoBarradoDto>? barr = await BuscarBarradosGen(p_id);
+                if (barr == null || !barr.Ok)
+                {
+                    throw new NegocioException(barr.Mensaje);
+                }
+                else if (barr.Ok && barr.ListaEntidad.Count() == 0)
+                {
+                    throw new NegocioException("No se encontraron barrados para el producto.");
+                }
+                ProductoBarrados = barr.ListaEntidad;
+                grillaDatos = GenerarGrilla(ProductoBarrados, "P_Id_barrado");
+                return View("_gridBarrado", grillaDatos);
+            }
+            catch (NegocioException ex)
+            {
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = true;
+                response.EsError = false;
+                return PartialView("_gridMensaje", response);
+            }
+            catch (Exception ex)
+            {
+                string msg = "Error en la invocación de la API - Busqueda de Barrados";
+                _logger.LogError(ex, "Error en la invocación de la API - Busqueda de Barrados");
+                response.Mensaje = msg;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
+            }
+        }
+
+        private async Task<RespuestaGenerica<ProductoBarradoDto>?> BuscarBarradosGen(string p_id)
+        {
+            return await _prodSv.ObtenerBarradoDeProd(p_id, TokenCookie);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> PresentarBarrado()
+        {
+            RespuestaGenerica<EntidadBase> response = new();
+            GridCore<ProductoBarradoDto> grillaDatos;
+            int cont = 0;
+            int tope = 2;
+            bool continuar = true;
+            bool encontrado = false;
+            try
+            {
+                var barr = ProductoBarrados;
+
+                if (barr.Count == 0)
+                {
+                    while (continuar)
+                    {
+                        var b = await BuscarBarradosGen(ProductoABMSeleccionado.p_id);
+                        if (b.Ok && b.ListaEntidad.Count > 0)
+                        {
+                            ProductoBarrados = b.ListaEntidad;
+                            continuar = false;
+                            encontrado = true;
+                        }
+                        cont++;
+                        if (cont > tope)
+                        {
+                            continuar = false;
+                        }
+                    }
+                    if (!encontrado)
+                    {
+                        throw new NegocioException("No se encontraron barrados para este producto");
+                    }
+                }
+
+                grillaDatos = GenerarGrilla(ProductoBarrados, "P_Id_barrado");
+                return View("_gridBarrado", grillaDatos);
+            }
+            catch (NegocioException ex)
+            {
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = true;
+                response.EsError = false;
+                return PartialView("_gridMensaje", response);
+            }
+            catch (Exception ex)
+            {
+                string msg = "Error la Presentar  - Busqueda de Barrados";
+                _logger.LogError(ex, "Error en la invocación de la API - Busqueda de Barrados");
+                response.Mensaje = msg;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
+            }
         }
 
         /// <summary>
@@ -112,88 +218,13 @@ namespace gc.sitio.Areas.ABMs.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> BuscarBarrados(string p_id)
-        {
-            RespuestaGenerica<EntidadBase> response = new();
-            GridCore<ProductoBarradoDto> grillaDatos;
-            try
-            {
-                var barr = await _prodSv.ObtenerBarradoDeProd(p_id, TokenCookie);
-                if (barr == null || !barr.Ok)
-                {
-                    throw new NegocioException(barr.Mensaje);
-                }
-                else if (barr.Ok && barr.ListaEntidad.Count() == 0)
-                {
-                    throw new NegocioException("No se encontraron barrados para el producto.");
-                }
-                ProductoBarrados = barr.ListaEntidad;
-                grillaDatos = GenerarGrilla(barr.ListaEntidad, "P_Id_barrado");
-                return View("_gridBarrado", grillaDatos);
-            }
-            catch (NegocioException ex)
-            {
-                response.Mensaje = ex.Message;
-                response.Ok = false;
-                response.EsWarn = true;
-                response.EsError = false;
-                return PartialView("_gridMensaje", response);
-            }
-            catch (Exception ex)
-            {
-                string msg = "Error en la invocación de la API - Busqueda de Barrados";
-                _logger.LogError(ex, "Error en la invocación de la API - Busqueda de Barrados");
-                response.Mensaje = msg;
-                response.Ok = false;
-                response.EsWarn = false;
-                response.EsError = true;
-                return PartialView("_gridMensaje", response);
-            }
-        }
-
-        [HttpPost]
-        public IActionResult PresentarBarrado() {
-            RespuestaGenerica<EntidadBase> response = new();
-            GridCore<ProductoBarradoDto> grillaDatos;
-            try
-            {
-                var barr = ProductoBarrados;
-                if(barr.Count == 0)
-                {
-                    throw new NegocioException("No se encontraron barrados para este producto");
-                }
-
-                grillaDatos = GenerarGrilla(ProductoBarrados, "P_Id_barrado");
-                return View("_gridBarrado", grillaDatos);
-            }
-            catch (NegocioException ex)
-            {
-                response.Mensaje = ex.Message;
-                response.Ok = false;
-                response.EsWarn = true;
-                response.EsError = false;
-                return PartialView("_gridMensaje", response);
-            }
-            catch (Exception ex)
-            {
-                string msg = "Error la Presentar  - Busqueda de Barrados";
-                _logger.LogError(ex, "Error en la invocación de la API - Busqueda de Barrados");
-                response.Mensaje = msg;
-                response.Ok = false;
-                response.EsWarn = false;
-                response.EsError = true;
-                return PartialView("_gridMensaje", response);
-            }
-        }
-
-        [HttpPost]
         public async Task<IActionResult> ObtenerLimiteStk(string p_id)
         {
             RespuestaGenerica<EntidadBase> response = new();
             GridCore<LimiteStkDto> grillaDatos;
             try
             {
-                var lim = await _prodSv.ObtenerLimiteStk(p_id, TokenCookie);
+                RespuestaGenerica<LimiteStkDto>? lim = await ObtenerLimiteStkGen(p_id);
                 if (lim == null || !lim.Ok)
                 {
                     throw new NegocioException(lim.Mensaje);
@@ -203,7 +234,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                     throw new NegocioException("No se recepcionaron los limites de stock.");
                 }
                 LimitesStk = lim.ListaEntidad;
-                grillaDatos = GenerarGrilla<LimiteStkDto>(lim.ListaEntidad, "Adm_Id");
+                grillaDatos = GenerarGrilla(lim.ListaEntidad, "Adm_Id");
                 return View("_gridLimStk", grillaDatos);
             }
             catch (NegocioException ex)
@@ -226,18 +257,44 @@ namespace gc.sitio.Areas.ABMs.Controllers
             }
         }
 
+        private async Task<RespuestaGenerica<LimiteStkDto>?> ObtenerLimiteStkGen(string p_id)
+        {
+            return await _prodSv.ObtenerLimiteStk(p_id, TokenCookie);
+        }
+
         //
         [HttpPost]
-        public IActionResult PresentarLimiteStk()
+        public async Task<IActionResult> PresentarLimiteStk()
         {
             RespuestaGenerica<EntidadBase> response = new();
             GridCore<LimiteStkDto> grillaDatos;
+            int cont = 0;
+            int tope = 2;
+            bool continuar = true;
+            bool encontrado = false;
             try
             {
                 var lim = LimitesStk;
                 if (lim.Count == 0)
                 {
-                    throw new NegocioException("No se encontraron los limites de stock para este producto");
+                    while (continuar)
+                    {
+                        var l = await ObtenerLimiteStkGen(ProductoABMSeleccionado.p_id);
+                        if (l.Ok && l.ListaEntidad.Count > 0) { 
+                            LimitesStk = l.ListaEntidad;
+                            continuar = false;
+                            encontrado = true;
+                        }
+                        cont++;
+                        if (cont > tope)
+                        {
+                            continuar=false; 
+                        }
+                    }
+                    if (!encontrado)
+                    {
+                        throw new NegocioException("No se encontraron los limites de stock para este producto");
+                    }
                 }
 
                 grillaDatos = GenerarGrilla(lim, "Adm_Nombre");
@@ -260,6 +317,43 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 response.EsWarn = false;
                 response.EsError = true;
                 return PartialView("_gridMensaje", response);
+            }
+        }
+
+        /// <summary>
+        /// Se buscan los datos del barrado
+        /// </summary>
+        /// <param name="admId"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<IActionResult> BuscarLimite(string admId)
+        {
+            try
+            {
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+                }
+                RespuestaGenerica<LimiteStkDto> lim = await _prodSv.BuscarLimite(ProductoABMSeleccionado.p_id, admId, TokenCookie);
+                if (lim == null || !lim.Ok)
+                {
+                    throw new NegocioException(lim.Mensaje);
+                }
+
+                return Json(new { error = false, warn = false, datos = lim.Entidad });
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+                return Json(new { error = false, warn = true, auth = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = true, warn = false, msg = ex.Message });
             }
         }
 
@@ -312,7 +406,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                     Objeto = "productos",
                     Administracion = AdministracionId,
                     Usuario = UserName,
-                    Abm=accion
+                    Abm = accion
                 };
 
                 var res = await _abmSv.AbmConfirmar(abm, TokenCookie);
@@ -414,6 +508,79 @@ namespace gc.sitio.Areas.ABMs.Controllers
             }
         }
 
+        [HttpPost] //
+        public async Task<JsonResult> confirmarAbmLimite(LimiteStkDto lim, char accion)
+        {
+            try
+            {
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+                }
+                if (string.IsNullOrEmpty(lim.adm_id))
+                {
+                    throw new NegocioException("No se recepcionaron datos importantes del Limite de Stock de la Sucursal. Verifique.");
+                }
+                if (lim.p_stk_min > lim.p_stk_max)
+                {
+                    throw new NegocioException("Es Stock Mínimo núnca puede ser mayor al Stock Máximo. Verifique.");
+                }
+                if(lim.p_stk_max<1 || lim.p_stk_min < 1|| lim.p_stk_max >99999 || lim.p_stk_min >99999  )
+                {
+                    throw new NegocioException("El Stock mínimo y el máximo siempre deben ser mayores a 1 y menores a 99999. Verifique.");
+                }
+                //agrego el id del producto que actulmente esta seleccionado
+                lim.p_id = ProductoABMSeleccionado.p_id;
+
+                lim = HelperGen.PasarAMayusculas(lim);
+                //prod.P_Obs = prod.P_Obs.ToUpper();
+                AbmGenDto abm = new AbmGenDto()
+                {
+                    Json = JsonConvert.SerializeObject(lim),
+                    Objeto = "productos_administraciones_stk",
+                    Administracion = AdministracionId,
+                    Usuario = UserName,
+                    Abm = accion
+                };
+
+                var res = await _abmSv.AbmConfirmar(abm, TokenCookie);
+                if (res.Ok)
+                {
+                    string msg;
+                    switch (accion)
+                    {
+                        case 'A':
+                            msg = $"EL PROCESAMIENTO DEL ALTA DEL Limite de Stock en {lim.adm_nombre} SE REALIZO SATISFACTORIAMENTE";
+                            break;
+                        case 'M':
+                            msg = $"EL PROCESAMIENTO DE LA MODIFICIACION DEL BARRADO {lim.adm_nombre} SE REALIZO SATISFACTORIAMENTE";
+                            break;
+                        default:
+                            msg = $"EL PROCESAMIENTO DE LA BAJA/DISCONTINUAR DEL PRODUCTO {lim.adm_nombre} SE REALIZO SATISFACTORIAMENTE";
+                            break;
+                    }
+                    return Json(new { error = false, warn = false, msg });
+                }
+                else
+                {
+                    return Json(new { error = false, warn = true, msg = res.Entidad.resultado_msj, focus = res.Entidad.resultado_setfocus });
+                }
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> BuscarProd(string p_id)
         {
@@ -436,7 +603,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 ViewBag.Iva_Situacion = await ComboIVASituacion(_prodSv);
                 ViewBag.Iva_Alicuota = await ComboIVAAlicuota(_prodSv);
                 ViewBag.Lp_Id_Default = ComboListaDePrecios();
-               
+
 
                 return View("_n02panel01Producto", prod);
 

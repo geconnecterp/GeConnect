@@ -391,4 +391,5 @@ input[type=number] {
 .disable-table-rows{
     filter: blur(1px);
     pointer-events: none;
+    opacity: 0.99;
 }

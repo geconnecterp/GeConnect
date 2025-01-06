@@ -93,7 +93,8 @@ namespace gc.api.core.Contratos.Servicios
         List<IVASituacionDto> ObtenerIVASituacion();
         List<IVAAlicuotaDto> ObtenerIVAAlicuotas();
 		List<ProductoBarradoDto> ObtenerBarradoDeProd(string p_id);
-		List<LimiteStkDto> ObtenerLimiteStk(string p_id);
+		List<LimiteStkDto> ObtenerLimitesStkLista(string p_id);
+		LimiteStkDto ObtenerLimiteStkDato(string p_id, string admId);
         ProductoBarradoDto BuscarBarrado(string p_id, string barradoId);
     }
 }

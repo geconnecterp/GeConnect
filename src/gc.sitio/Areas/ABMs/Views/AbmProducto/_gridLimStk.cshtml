@@ -24,7 +24,7 @@
                     {
                         if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
-                        <tr class="@clase" onclick="selectReg(this,'tbGridLim')">
+                        <tr class="@clase" onclick="selectReg(this,'tbGridLim')" ondblclick="selectAbmRegDbl(this,'tbGridLim')">
                             <td class="text-sm-center">@item.adm_id</td>
                             <td class="text-sm-start">@item.adm_lista</td>
                             <td class="text-sm-end">@item.p_stk_min</td>

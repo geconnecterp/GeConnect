@@ -120,7 +120,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             }
         }
 
-        protected List<ProductoBarradoDto> ProductoBarrados
+        public List<ProductoBarradoDto>? ProductoBarrados
         {
             get
             {

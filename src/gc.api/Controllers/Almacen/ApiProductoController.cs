@@ -1148,15 +1148,34 @@ namespace gc.api.Controllers.Almacen
 
         [HttpGet]
         [Route("[action]")]
-        public IActionResult ObtenerLimiteStk(string p_id)
+        public IActionResult ObtenerLimitesStkLista(string p_id)
         {
             if (string.IsNullOrEmpty(p_id))
             {
                 return BadRequest("No se recepcionó el identificador del producto");
             }
-            var res = _productosSv.ObtenerLimiteStk(p_id);
+            var res = _productosSv.ObtenerLimitesStkLista(p_id);
 
             return Ok(new ApiResponse<List<LimiteStkDto>>(res));
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult BuscaLimite(string p_id,string adm_id)
+        {
+            if (string.IsNullOrEmpty(p_id))
+            {
+                return BadRequest("No se recepcionó el identificador del producto");
+            }
+
+            if (string.IsNullOrEmpty(adm_id))
+            {
+                return BadRequest("No se recepcionó la sucursal");
+            }
+
+            var res = _productosSv.ObtenerLimiteStkDato(p_id,adm_id);
+
+            return Ok(new ApiResponse<LimiteStkDto>(res));
         }
 
         /// <summary>

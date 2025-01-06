@@ -43,14 +43,6 @@ const AbmObject = {
 	CUENTAS_OBSERVACIONES: 'cuentas_obs' //ABM relacionado observaciones de clientes
 }
 
-const AbmAction = {
-	ALTA: 'A',
-	BAJA: 'B',
-	MODIFICACION: 'M',
-	SUBMIT: 'S',
-	CANCEL: 'C'
-}
-
 const Tabs = {
 	TabCliente: 'btnTabCliente',
 	TabFormasDePago: 'btnTabFormasDePago',

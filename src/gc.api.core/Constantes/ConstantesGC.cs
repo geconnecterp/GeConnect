@@ -29,7 +29,9 @@
             public const string SP_BARRADO_DATO = "SPGECO_ABM_P_Barrados_Datos";
             
             public const string SP_LIMITESTK_LISTA = "SPGECO_ABM_P_LimiteStk_Lista";
-            
+            public const string SP_LIMITESTK_DATO = "SPGECO_ABM_P_LimiteStk_Datos";
+
+
 
             public const string SP_PRODUCTO_BUSQUEDA = "dbo.spgeco_p_busqueda";
 			public const string SP_PRODUCTO_BUSQUEDA_LISTA = "SPGECO_P_Busqueda_Lista";

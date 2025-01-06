@@ -48,6 +48,15 @@
         }
     });
 });
+
+const AbmAction = {
+    ALTA: 'A',
+    BAJA: 'B',
+    MODIFICACION: 'M',
+    SUBMIT: 'S',
+    CANCEL: 'C'
+}
+
 function PostGenHtml(data, path, retorno) {
     PostGen(data, path, retorno, fnError, "HTML");
 }
@@ -332,4 +341,12 @@ function selectReg(x, gridId) {
     });
     $(x).addClass("selected-row");
     
+}
+
+function desactivarGrilla(gridId) {
+    $("#" + gridId + "").addClass("disable-table-rows");
+}
+
+function activarGrilla(gridId) {
+    $("#" + gridId + "").removeClass("disable-table-rows");
 }
