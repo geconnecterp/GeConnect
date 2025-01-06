@@ -16,8 +16,8 @@ namespace gc.infraestructura.Dtos.Almacen
             rub_id = string.Empty;
             cta_id = string.Empty;
             pg_id = string.Empty;
-            usu_id_alta = string.Empty;
-            usu_id_modi = string.Empty;
+            //usu_id_alta = string.Empty;
+            //usu_id_modi = string.Empty;
             p_obs = string.Empty;
             p_balanza_id = string.Empty;
         }
@@ -130,10 +130,10 @@ namespace gc.infraestructura.Dtos.Almacen
         public char iva_situacion { get; set; }
         //public decimal P_Pcosto { get; set; }
         //public decimal P_Pcosto_Repo { get; set; }
-        public DateTime? p_alta { get; set; }
-        public string usu_id_alta { get; set; }
-        public DateTime? p_modi { get; set; }
-        public string usu_id_modi { get; set; }
+        //public DateTime? p_alta { get; set; }
+        //public string usu_id_alta { get; set; }
+        //public DateTime? p_modi { get; set; }
+        //public string usu_id_modi { get; set; }
         public char? p_actu { get; set; }
         public string p_obs { get; set; }
         public char p_activo { get; set; }

@@ -120,7 +120,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             }
         }
 
-        protected List<ProductoBarradoDto> ProductoBarrados
+        public List<ProductoBarradoDto>? ProductoBarrados
         {
             get
             {
@@ -135,6 +135,42 @@ namespace gc.sitio.Areas.ABMs.Controllers
             {
                 var json = JsonConvert.SerializeObject(value);
                 _context.HttpContext.Session.SetString("ProductoBarrados", json);
+            }
+        }
+
+        protected List<LimiteStkDto> LimitesStk
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("LimitesStk");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<LimiteStkDto>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("LimitesStk", json);
+            }
+        }
+
+        protected LimiteStkDto LimiteStkSeleccionado
+        {
+            get
+            {
+                string json = _context.HttpContext.Session.GetString("LimiteStkSeleccionado");
+                if (string.IsNullOrEmpty(json))
+                {
+                    return new();
+                }
+                return JsonConvert.DeserializeObject<LimiteStkDto>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("LimiteStkSeleccionado", json);
             }
         }
 

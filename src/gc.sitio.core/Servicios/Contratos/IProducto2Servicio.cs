@@ -24,5 +24,6 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RespuestaGenerica<ProductoBarradoDto>> ObtenerBarradoDeProd(string p_id,string token);
         Task<RespuestaGenerica<LimiteStkDto>> ObtenerLimiteStk(string p_id, string token);
         Task<RespuestaGenerica<ProductoBarradoDto>> ObtenerBarrado(string p_id, string barradoId, string tokenCookie);
+        Task<RespuestaGenerica<LimiteStkDto>> BuscarLimite(string p_id, string admId, string tokenCookie);
     }
 }

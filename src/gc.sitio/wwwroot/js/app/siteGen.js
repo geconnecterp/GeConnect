@@ -48,6 +48,15 @@
         }
     });
 });
+
+const AbmAction = {
+    ALTA: 'A',
+    BAJA: 'B',
+    MODIFICACION: 'M',
+    SUBMIT: 'S',
+    CANCEL: 'C'
+}
+
 function PostGenHtml(data, path, retorno) {
     PostGen(data, path, retorno, fnError, "HTML");
 }
@@ -328,6 +337,16 @@ function analizaEnterInput(e) {
 function selectReg(x, gridId) {
     $("#" + gridId + " tbody tr").each(function (index) {
         $(this).removeClass("selected-row");
+        $(this).removeClass("selectedEdit-row");
     });
     $(x).addClass("selected-row");
+    
+}
+
+function desactivarGrilla(gridId) {
+    $("#" + gridId + "").addClass("disable-table-rows");
+}
+
+function activarGrilla(gridId) {
+    $("#" + gridId + "").removeClass("disable-table-rows");
 }

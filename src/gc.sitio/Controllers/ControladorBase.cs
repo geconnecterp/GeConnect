@@ -1,6 +1,7 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Administracion;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
@@ -68,6 +69,25 @@ namespace gc.sitio.Controllers
             }
 
         }
+
+        protected List<AdministracionLoginDto> Administraciones
+        {
+            get
+            {
+                string json = _context.HttpContext.Session.GetString("Administraciones");
+                if (string.IsNullOrEmpty(json))
+                {
+                    return new();
+                }
+                return JsonConvert.DeserializeObject<List<AdministracionLoginDto>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("Administraciones", json);
+            }
+        }
+
         public string AdministracionId
         {
             get
@@ -1377,6 +1397,13 @@ namespace gc.sitio.Controllers
             var lista = ListaDePreciosLista.Select(x => new ComboGenDto { Id = x.lp_id, Descripcion = x.lp_desc });
             return HelperMvc<ComboGenDto>.ListaGenerica(lista);
         }
+
+        protected SelectList ComboAdministraciones()
+        {
+            var lista = Administraciones.Select(x => new ComboGenDto { Id = x.Id, Descripcion = x.Descripcion });
+            return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+        }
+
         protected SelectList ComboTipoCanal()
         {
             var lista = TipoCanalLista.Select(x => new ComboGenDto { Id = x.ctc_id, Descripcion = x.ctc_desc });

@@ -64,6 +64,7 @@ namespace gc.sitio.Areas.Seguridad.Controllers
         private void ComboAdministracion()
         {
             var adms = _admSv.GetAdministracionLogin();
+            Administraciones = adms;
             ViewBag.Admid = HelperMvc<AdministracionLoginDto>.ListaGenerica(adms);
         }
 

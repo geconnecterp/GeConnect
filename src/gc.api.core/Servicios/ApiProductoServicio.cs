@@ -1037,7 +1037,7 @@ namespace gc.api.core.Servicios
         public ProductoBarradoDto BuscarBarrado(string p_id, string barradoId)
         {
             var sp = ConstantesGC.StoredProcedures.SP_BARRADO_DATO;
-            var ps = new List<SqlParameter>() { 
+            var ps = new List<SqlParameter>() {
                 new SqlParameter("@p_id", p_id),
                 new SqlParameter("@p_id_barrado",barradoId)
             };
@@ -1050,13 +1050,28 @@ namespace gc.api.core.Servicios
             return resp.First();
         }
 
-        public List<LimiteStkDto> ObtenerLimiteStk(string p_id)
+        public List<LimiteStkDto> ObtenerLimitesStkLista(string p_id)
         {
             var sp = ConstantesGC.StoredProcedures.SP_LIMITESTK_LISTA;
             var ps = new List<SqlParameter>() { new SqlParameter("@p_id", p_id) };
 
             List<LimiteStkDto> resp = _repository.EjecutarLstSpExt<LimiteStkDto>(sp, ps, true);
             return resp;
+        }
+
+        public LimiteStkDto ObtenerLimiteStkDato(string p_id, string admId)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_LIMITESTK_DATO;
+            var ps = new List<SqlParameter>() { 
+                new SqlParameter("@p_id", p_id),
+                new SqlParameter("adm_id",admId)
+            };
+
+            List<LimiteStkDto> resp = _repository.EjecutarLstSpExt<LimiteStkDto>(sp, ps, true);
+            if (resp.Count == 0) {
+                throw new NegocioException("No se encontro el Limite de Stock para la Sucursal.");
+            }
+            return resp.First();
         }
     }
 }
