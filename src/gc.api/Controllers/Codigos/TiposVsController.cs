@@ -35,13 +35,14 @@ namespace gc.api.Controllers.Codigos
 		private readonly IFinancieroServicio _financieroServicio;
 		private readonly ITipoContactoServicio _tipoContactoServicio;
 		private readonly ITipoObsServicio _tipoObsServicio;
+		private readonly ITipoOpeIvaServicio _tipoOpeIvaServicio;
 
 		public TiposVsController( IMapper mapper, IUriService uriService, ILogger<TiposVsController> logger, ICondicionAfipServicio condicionAfipServicio,
 								ICondicionIBServicio condicionIBServicio, IDepartamentoServicio departamentoServicio, IFormaDePagoServicio formaDePagoServicio,
 								INaturalezaJuridicaServicio naturalezaJuridicaServicio, IProvinciaServicio provinciaServicio, ITipoCanalServicio tipoCanalServicio,
 								ITipoCuentaBcoServicio tipoCuentaBcoServicio, ITiposDocumentoServicio tiposDocumentoServicio, IListaPrecioServicio listaPrecioServicio,
 								IVendedorServicio vendedorServicio, IRepartidorServicio repartidorServicio, IFinancieroServicio financieroServicio,
-								ITipoContactoServicio tipoContactoServicio, ITipoObsServicio tipoObsServicio)
+								ITipoContactoServicio tipoContactoServicio, ITipoObsServicio tipoObsServicio, ITipoOpeIvaServicio tipoOpeIvaServicio)
         {
             _mapper = mapper;
             _uriService = uriService;
@@ -61,6 +62,7 @@ namespace gc.api.Controllers.Codigos
 			_financieroServicio = financieroServicio;
 			_tipoContactoServicio = tipoContactoServicio;
 			_tipoObsServicio = tipoObsServicio;
+			_tipoOpeIvaServicio = tipoOpeIvaServicio;
         }
 
 		[HttpGet]
@@ -242,6 +244,18 @@ namespace gc.api.Controllers.Codigos
             var response = new ApiResponse<List<TipoObsDto>>(lista);
             return Ok(response);
         }
-        //
-    }
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult GetTipoOpeIva()
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			List<TipoOpeIvaDto> tipoOpe = _tipoOpeIvaServicio.GetTipoOpeIva();
+			var lista = _mapper.Map<List<TipoOpeIvaDto>>(tipoOpe);
+
+			var response = new ApiResponse<List<TipoOpeIvaDto>>(lista);
+			return Ok(response);
+		}
+		//
+	}
 }

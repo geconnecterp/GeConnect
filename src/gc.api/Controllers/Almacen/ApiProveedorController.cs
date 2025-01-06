@@ -115,5 +115,20 @@ namespace gc.api.Controllers.Almacen
             var response = new ApiResponse<bool>(res);
             return Ok(response);
         }
-    }
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProveedorABMDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetProveedorParaABM(string cta_id)
+		{
+			ApiResponse<List<ProveedorABMDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _proveedoresSv.GetProveedorParaABM(cta_id);
+
+			response = new ApiResponse<List<ProveedorABMDto>>(res);
+
+			return Ok(response);
+		}
+	}
 }

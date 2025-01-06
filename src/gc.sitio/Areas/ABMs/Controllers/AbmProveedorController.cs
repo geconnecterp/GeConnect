@@ -1,0 +1,522 @@
+﻿
+using gc.api.core.Entidades;
+using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos.ABM;
+using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Helpers;
+using gc.sitio.Areas.ABMs.Models;
+using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Contratos.ABM;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+
+namespace gc.sitio.Areas.ABMs.Controllers
+{
+	[Area("ABMs")]
+	public class AbmProveedorController : ProveedorControladorBase
+	{
+		private readonly AppSettings _settings;
+		private readonly ILogger<AbmProveedorController> _logger;
+		private readonly IProveedorServicio _proveedorServicio;
+		private readonly IABMProveedorServicio _abmProvServ;
+		private readonly ITipoOpeIvaServicio _tipoOpeServicio;
+		private readonly ICuentaServicio _cuentaServicio;
+
+		public AbmProveedorController(IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger<AbmProveedorController> logger,
+									  IProveedorServicio proveedorServicio, IABMProveedorServicio abmProvServ, ITipoOpeIvaServicio tipoOpeIvaServicio,
+									  ICuentaServicio cuentaServicio) : base(options, accessor, logger)
+		{
+			_settings = options.Value;
+			_logger = logger;
+			_proveedorServicio = proveedorServicio;
+			_abmProvServ = abmProvServ;
+			_tipoOpeServicio = tipoOpeIvaServicio;
+			_cuentaServicio = cuentaServicio;
+		}
+
+		[HttpGet]
+		public async Task<IActionResult> Index(bool actualizar = false)
+		{
+			MetadataGrid metadata;
+
+			var auth = EstaAutenticado;
+			if (!auth.Item1 || auth.Item2 < DateTime.Now)
+			{
+				return RedirectToAction("Login", "Token", new { area = "seguridad" });
+			}
+
+			CargarDatosIniciales(actualizar);
+
+			var listR01 = new List<ComboGenDto>();
+			ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
+
+			var listR02 = new List<ComboGenDto>();
+			ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR02);
+
+			return View();
+		}
+
+		/// <summary>
+		/// Método que llena el Tab "Proveedor" en el ABM
+		/// </summary>
+		/// <param name="ctaId">Valor de proveedor seleccionado en la grilla principal</param>
+		/// <returns>ProveedorAbmModel</returns>
+		[HttpPost]
+		public async Task<IActionResult> BuscarProveedor(string ctaId)
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				if (string.IsNullOrEmpty(ctaId))
+					return PartialView("_tabDatosProveedor", new ProveedorABMDto());
+
+				var res = _proveedorServicio.GetProveedorParaABM(ctaId, TokenCookie);
+				if (res == null)
+					return PartialView("_tabDatosProveedor", new ProveedorABMDto());
+
+				var proveedorModel = new ProveedorAbmModel()
+				{
+					Proveedor = res.First()
+				};
+				return PartialView("_tabDatosProveedor", proveedorModel);
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Proveedor";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Proveedor");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> Buscar(QueryFilters query, bool buscaNew, string sort = "cta_id", string sortDir = "asc", int pag = 1, bool actualizar = false)
+		{
+			List<ABMProveedorSearchDto> lista;
+			MetadataGrid metadata;
+			GridCore<ABMProveedorSearchDto> grillaDatos;
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				if (PaginaProd == pag && !buscaNew)
+				{
+					//es la misma pagina y hay registros, se realiza el reordenamiento de los datos.
+					lista = ProveedoresBuscados.ToList();
+					lista = OrdenarEntidad(lista, sortDir, sort);
+					ProveedoresBuscados = lista;
+				}
+				//else if (PaginaProd != pag)  //&& PaginaProd >= 0 && !query.Todo
+				else
+				{
+					//traemos datos desde la base
+					query.Sort = sort;
+					query.SortDir = sortDir;
+					query.Registros = _settings.NroRegistrosPagina;
+					query.Pagina = pag;
+
+					var res = await _abmProvServ.BuscarProveedores(query, TokenCookie);
+					lista = res.Item1 ?? [];
+					MetadataProveedor = res.Item2 ?? null;
+					metadata = MetadataProveedor;
+					ProveedoresBuscados = lista;
+				}
+				//no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
+				grillaDatos = GenerarGrilla(ProveedoresBuscados, sort, _settings.NroRegistrosPagina, pag, MetadataProveedor.TotalCount, MetadataProveedor.TotalPages, sortDir);
+
+				//string volver = Url.Action("index", "home", new { area = "" });
+				//ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
+
+				return View("_gridAbmProveedor", grillaDatos);
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda Cliente";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda Cliente");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+
+
+		}
+
+		[HttpPost]
+		public JsonResult ObtenerDatosPaginacion()
+		{
+			try
+			{
+				return Json(new { error = false, Metadata = MetadataProveedor });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, msg = "No se pudo obtener la información de paginación. Verifica" });
+			}
+		}
+
+		#region Formas de Pago
+		/// <summary>
+		/// Método que llena el Tab "Formas de Pago" en el ABM
+		/// </summary>
+		/// <param name="ctaId"></param>
+		/// <returns></returns>
+		[HttpPost]
+		public async Task<IActionResult> BuscarFormasDePago(string ctaId)
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				if (string.IsNullOrEmpty(ctaId))
+					return PartialView("~/Areas/ABMs/Views/AbmCliente/_tabDatosFormaDePago", new CuentaAbmFPModel());
+
+				var cfp = _cuentaServicio.GetCuentaFormaDePago(ctaId, TokenCookie);
+				var FPModel = new CuentaAbmFPModel()
+				{
+					ComboTipoCuentaBco = ComboTipoCuentaBco(),
+					ComboFormasDePago = ComboFormaDePago(),
+					CuentaFormasDePago = ObtenerGridCore<CuentaFPDto>(cfp),
+				};
+				return PartialView("~/Areas/ABMs/Views/AbmCliente/_tabDatosFormaDePago", FPModel);
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Formas de Pago";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Formas de Pago");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+
+		/// <summary>
+		/// Método que trae los campos de la Forma de Pago seleccionada en la grilla del tab Formas de Pago
+		/// </summary>
+		/// <param name="ctaId">Cuenta seleccionad en grilla principal</param>
+		/// <param name="fpId">Forma de pago seleccionada en la grilla de FP del Tab Formas de Pago</param>
+		/// <returns></returns>
+		[HttpPost]
+		public async Task<IActionResult> BuscarDatosFormasDePago(string ctaId, string fpId)
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				if (string.IsNullOrWhiteSpace(ctaId) || string.IsNullOrWhiteSpace(fpId))
+					return PartialView("~/Areas/ABMs/Views/AbmCliente/_tabDatosFormaDePagoSelected", new CuentaAbmFPSelectedModel());
+
+				var cfp = _cuentaServicio.GetFormaDePagoPorCuentaYFP(ctaId, fpId, TokenCookie);
+				if (cfp == null)
+					return PartialView("~/Areas/ABMs/Views/AbmCliente/_tabDatosFormaDePagoSelected", new CuentaAbmFPSelectedModel());
+
+				var FPSelectedModel = new CuentaAbmFPSelectedModel()
+				{
+					ComboTipoCuentaBco = ComboTipoCuentaBco(),
+					ComboFormasDePago = ComboFormaDePago(),
+					FormaDePago = ObtenerFormaDePagoModel(cfp.First())
+				};
+
+				return PartialView("~/Areas/ABMs/Views/AbmCliente/_tabDatosFormaDePagoSelected", FPSelectedModel);
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Formas de Pago -> FP Selected";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Formas de Pago -> FP Selected");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+		#endregion
+
+		#region Otros Contactos
+		/// <summary>
+		/// Método que llena el Tab "Formas de Pago" en el ABM
+		/// </summary>
+		/// <param name="ctaId"></param>
+		/// <returns></returns>
+		[HttpPost]
+		public async Task<IActionResult> BuscarOtrosContactos(string ctaId)
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				if (string.IsNullOrEmpty(ctaId))
+					return PartialView("~/Areas/ABMs/Views/AbmCliente/_tabDatosOtroContacto", new CuentaAbmOCModel());
+
+				var coc = _cuentaServicio.GetCuentaContactos(ctaId, TokenCookie);
+				var FPModel = new CuentaAbmOCModel()
+				{
+					ComboTipoContacto = ComboTipoContacto(),
+					CuentaOtrosContactos = ObtenerGridCore<CuentaContactoDto>(coc),
+				};
+				return PartialView("~/Areas/ABMs/Views/AbmCliente/_tabDatosOtroContacto", FPModel);
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> BuscarDatosOtrosContactos(string ctaId, string tcId)
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				if (string.IsNullOrWhiteSpace(ctaId) || string.IsNullOrWhiteSpace(tcId))
+					return PartialView("~/Areas/ABMs/Views/AbmCliente/_tabDatosOtroContactoSelected", new CuentaAbmOCSelectedModel());
+				var coc = _cuentaServicio.GetCuentContactosporCuentaYTC(ctaId, tcId, TokenCookie);
+				if (coc == null)
+					return PartialView("~/Areas/ABMs/Views/AbmCliente/_tabDatosOtroContactoSelected", new CuentaAbmOCSelectedModel());
+				var model = new CuentaAbmOCSelectedModel()
+				{
+					ComboTipoContacto = ComboTipoContacto(),
+					OtroContacto = ObtenerOtroContactoModel(coc.First())
+				};
+				return PartialView("~/Areas/ABMs/Views/AbmCliente/_tabDatosOtroContactoSelected", model);
+
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> OC Selected";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> OC Selected");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+		#endregion
+
+		#region Notas
+		[HttpPost]
+		public async Task<IActionResult> BuscarNotas(string ctaId)
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				if (string.IsNullOrEmpty(ctaId))
+					return PartialView("~/Areas/ABMs/Views/AbmCliente/_tabDatosNota", new CuentaABMNotaModel());
+
+				var cno = _cuentaServicio.GetCuentaNota(ctaId, TokenCookie);
+				var FPModel = new CuentaABMNotaModel()
+				{
+					CuentaNotas = ObtenerGridCore<CuentaNotaDto>(cno),
+				};
+				return PartialView("~/Areas/ABMs/Views/AbmCliente/_tabDatosNota", FPModel);
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Notas";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Notas");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> BuscarDatosNotas(string ctaId, string usuId)
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				if (string.IsNullOrWhiteSpace(ctaId) || string.IsNullOrWhiteSpace(usuId))
+					return PartialView("~/Areas/ABMs/Views/AbmCliente/_tabDatosNotaSelected", new CuentaABMNotaSelectedModel());
+				var cno = _cuentaServicio.GetCuentaNotaDatos(ctaId, usuId, TokenCookie);
+				if (cno == null)
+					return PartialView("~/Areas/ABMs/Views/AbmCliente/_tabDatosNotaSelected", new CuentaABMNotaSelectedModel());
+				var model = new CuentaABMNotaSelectedModel()
+				{
+					Nota = ObtenerNotaModel(cno.First())
+				};
+				return PartialView("~/Areas/ABMs/Views/AbmCliente/_tabDatosNotaSelected", model);
+
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Notas Selected";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Notas Selected");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+		#endregion
+
+		#region Observaciones
+		[HttpPost]
+		public async Task<IActionResult> BuscarObservaciones(string ctaId)
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				if (string.IsNullOrEmpty(ctaId))
+					return PartialView("~/Areas/ABMs/Views/AbmCliente/_tabDatosObs", new CuentaABMObservacionesModel());
+
+				var cob = _cuentaServicio.GetCuentaObs(ctaId, TokenCookie);
+				if (cob == null)
+					return PartialView("~/Areas/ABMs/Views/AbmCliente/_tabDatosObs", new CuentaABMObservacionesModel());
+
+				var ObsModel = new CuentaABMObservacionesModel()
+				{
+					ComboTipoObs = ComboTipoObservaciones(),
+					CuentaObservaciones = ObtenerGridCore<CuentaObsDto>(cob),
+				};
+				return PartialView("~/Areas/ABMs/Views/AbmCliente/_tabDatosObs", ObsModel);
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Observaciones";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Observaciones");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> BuscarDatosObservaciones(string ctaId, string toId)
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				if (string.IsNullOrWhiteSpace(ctaId) || string.IsNullOrWhiteSpace(toId))
+					return PartialView("~/Areas/ABMs/Views/AbmCliente/_tabDatosObsSelected", new CuentaABMObservacionesSelectedModel());
+				var cob = _cuentaServicio.GetCuentaObsDatos(ctaId, toId, TokenCookie);
+				if (cob == null)
+					return PartialView("~/Areas/ABMs/Views/AbmCliente/_tabDatosObsSelected", new CuentaABMObservacionesSelectedModel());
+				var model = new CuentaABMObservacionesSelectedModel()
+				{
+					ComboTipoObs = ComboTipoObservaciones(),
+					Observacion = ObtenerObservacionModel(cob.First())
+				};
+				return PartialView("~/Areas/ABMs/Views/AbmCliente/_tabDatosObsSelected", model);
+
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Obs Selected";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Obs Selected");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+		#endregion
+
+		#region Carga De Listas en sección filtros Base
+		[HttpPost]
+		public JsonResult BuscarR01(string prefix)
+		{
+			var tipoNeg = TipoOpeIvaLista.Where(x => x.ope_iva_descripcion.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
+			var tipoNegs = tipoNeg.Select(x => new ComboGenDto { Id = x.ope_iva, Descripcion = x.ope_lista });
+			return Json(tipoNegs);
+		}
+		#endregion
+
+		#region Métodos privados
+		private void CargarDatosIniciales(bool actualizar)
+		{
+			if (TipoOpeIvaLista.Count == 0 || actualizar)
+				ObtenerTiposOpeIva(_tipoOpeServicio);
+		}
+		private static ObservacionesModel ObtenerObservacionModel(CuentaObsDto obs)
+		{
+			var mod = new ObservacionesModel();
+			if (obs == null)
+				return mod;
+
+			#region map
+			mod.to_lista = obs.to_lista;
+			mod.to_id = obs.to_id;
+			mod.to_desc = obs.to_desc;
+			mod.cta_obs = obs.cta_obs;
+			mod.cta_id = obs.cta_id;
+			#endregion
+			return mod;
+		}
+		private static NotaModel ObtenerNotaModel(CuentaNotaDto nota)
+		{
+			var nom = new NotaModel();
+			if (nota == null)
+				return nom;
+
+			#region map
+			nom.usu_lista = nota.usu_lista;
+			nom.usu_id = nota.usu_id;
+			nom.usu_apellidoynombre = nota.usu_apellidoynombre;
+			nom.nota = nota.nota;
+			nom.fecha = nota.fecha;
+			nom.cta_id = nota.cta_id;
+			#endregion
+			return nom;
+		}
+		private static OtroContactoModel ObtenerOtroContactoModel(CuentaContactoDto contacto)
+		{
+			var ocm = new OtroContactoModel();
+			if (contacto == null)
+				return ocm;
+			#region mapp
+			ocm.tc_lista = contacto.tc_lista;
+			ocm.tc_id = contacto.tc_id;
+			ocm.tc_desc = contacto.tc_desc;
+			ocm.cta_te = contacto.cta_te;
+			ocm.cta_nombre = contacto.cta_nombre;
+			ocm.cta_id = contacto.cta_id;
+			ocm.cta_email = contacto.cta_email;
+			ocm.cta_celu = contacto.cta_celu;
+			#endregion
+			return ocm;
+		}
+
+		private static FormaDePagoModel ObtenerFormaDePagoModel(CuentaFPDto fp)
+		{
+			var fpm = new FormaDePagoModel();
+			if (fp == null)
+				return fpm;
+			#region mapp
+			fpm.fp_deufault = fp.fp_deufault;
+			fpm.fp_lista = fp.fp_lista;
+			fpm.fp_desc = fp.fp_desc;
+			fpm.fp_id = fp.fp_id;
+			fpm.cta_valores_a_nombre = fp.cta_valores_a_nombre;
+			fpm.tcb_lista = fp.tcb_lista;
+			fpm.cta_bco_cuenta_cbu = fp.cta_bco_cuenta_cbu;
+			fpm.cta_bco_cuenta_nro = fp.cta_bco_cuenta_nro;
+			fpm.cta_obs = fp.cta_obs;
+			fpm.tcb_id = fp.tcb_id;
+			fpm.tcb_desc = fp.tcb_desc;
+			fpm.fp_dias = fp.fp_dias;
+			fpm.cta_id = fp.cta_id;
+			#endregion
+			return fpm;
+		}
+		#endregion
+	}
+}

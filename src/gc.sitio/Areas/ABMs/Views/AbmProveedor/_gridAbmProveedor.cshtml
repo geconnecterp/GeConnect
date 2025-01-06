@@ -1,0 +1,45 @@
+﻿@model GridCore<ABMProveedorSearchDto>
+@{
+	var dataMod = new ABMProveedorSearchDto();
+	var alt = true;
+	string clase = string.Empty;
+	string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+}
+<style>
+	thead th {
+		position: sticky;
+		top: 0px;
+	}
+</style>
+<div class="card">
+	<div class="card-body">
+		<div class="table-responsive text-nowrap  table-wrapper">
+			<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridProveedor">
+				<thead class="table-dark">
+					<tr class="header">
+						<th scope="col">@nameof(dataMod.cta_id)</th>
+						<th scope="col">@nameof(dataMod.cta_denominacion)</th>
+						<th scope="col">@nameof(dataMod.tdoc_desc)</th>
+						<th scope="col">@nameof(dataMod.cta_documento)</th>
+						<th scope="col">@nameof(dataMod.cta_domicilio)</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var item in Model.ListaDatos)
+					{
+						if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+						<tr class="@clase" onclick="selectReg(this)" ondblclick="selectRegDbl(this)">
+							<td class="text-sm-center">@item.cta_id</td>
+							<td class="text-sm-start">@item.cta_denominacion</td>
+							<td class="text-sm-end">@item.tdoc_desc</td>
+							<td class="text-sm-start">@item.cta_documento</td>
+							<td class="text-sm-start">@item.cta_domicilio</td>
+						</tr>
+					}
+
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>

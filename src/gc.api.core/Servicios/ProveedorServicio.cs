@@ -3,6 +3,8 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos.Almacen;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using System.Linq.Dynamic.Core;
 
@@ -101,6 +103,15 @@ namespace gc.api.core.Servicios
             return paginas;
         }
 
-        
-    }
+		public List<ProveedorABMDto> GetProveedorParaABM(string cta_id)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_ABM_PROV_DATOS;
+			var ps = new List<SqlParameter>()
+			{
+					new("@cta_id", cta_id)
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<ProveedorABMDto>(sp, ps, true);
+			return listaTemp;
+		}
+	}
 }

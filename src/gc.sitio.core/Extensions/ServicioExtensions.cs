@@ -29,6 +29,7 @@ namespace gc.sitio.core.Extensions
             services.AddScoped<IRemitoServicio, RemitoServicio>();
             services.AddScoped<IABMProductoServicio, ABMProductoServicio>();
 			services.AddScoped<IABMClienteServicio, ABMClienteServicio>();
+			services.AddScoped<IABMProveedorServicio, ABMProveedorServicio>();
 			services.AddScoped<ICondicionAfipServicio, CondicionAfipServicio>();
 			services.AddScoped<ICondicionIBServicio, CondicionIBServicio>();
 			services.AddScoped<IDepartamentoServicio, DepartamentoServicio>();
@@ -43,7 +44,8 @@ namespace gc.sitio.core.Extensions
 			services.AddScoped<IFinancieroServicio, FinancieroServicio>();
 			services.AddScoped<ITipoContactoServicio, TipoContactoServicio>();
             services.AddScoped<ITipoObsServicio, TipoObsServicio>();
-            services.AddScoped<IAbmServicio, AbmServicio>();
+			services.AddScoped<ITipoOpeIvaServicio, TipoOpeIvaServicio>();
+			services.AddScoped<IAbmServicio, AbmServicio>();
             return services;
         }
     }

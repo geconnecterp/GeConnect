@@ -68,4 +68,27 @@ namespace gc.infraestructura.Dtos.Almacen
         public string Id_Old { get; set; }
 
     }
+
+    public partial class ProveedorABMDto : ProveedorDto
+    {
+        public string Cta_Denominacion { get; set; } = string.Empty;
+        public string Tdoc_Id { get; set; } = string.Empty;
+		public string Tdoc_desc { get; set; } = string.Empty;
+		public string Cta_Documento { get; set; } = string.Empty;
+        public string Prov_Id { get; set; } = string.Empty;
+		public string Prov_Nombre { get; set; } = string.Empty;
+		public string Dep_Id { get; set; } = string.Empty;
+		public string Dep_Nombre { get; set; } = string.Empty;
+        public string Afip_Id { get; set; } = string.Empty;
+        public string Afip_Desc { get; set; } = string.Empty;
+        public string Nj_Id { get; set; } = string.Empty;
+        public string Nj_Desc { get; set; } = string.Empty;
+		public string Cta_Ib_Nro { get; set; } = string.Empty;
+		public string Ib_Id { get; set; } = string.Empty;
+		public string Ib_Desc { get; set; } = string.Empty;
+		public string Cta_Emp { get; set; } = string.Empty;
+		public DateTime? Cta_Actu_Fecha { get; set; }
+		public string Cta_Actu { get; set; } = string.Empty;
+		public string Ope_Iva_Descripcion { get; set; } = string.Empty;
+	}
 }

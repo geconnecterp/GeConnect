@@ -154,7 +154,10 @@
 			public const string SP_ABM_CLI_NOTA_Lista = "SPGECO_ABM_Cuenta_Nota_Lista";
 			public const string SP_ABM_CLI_NOTA_Datos = "SPGECO_ABM_Cuenta_Nota_Datos";
 
-            public const string SP_ABM_CONFIRMAR = "SPGECO_ABM_Confirmar";
+			public const string SP_ABM_PROV_LISTA = "SPGECO_ABM_Prov_Lista";
+			public const string SP_ABM_PROV_DATOS = "SPGECO_ABM_Prov_Datos";
+
+			public const string SP_ABM_CONFIRMAR = "SPGECO_ABM_Confirmar";
             #endregion
 
             #region Tipos
@@ -175,8 +178,9 @@
             public const string SP_FORMA_PAGO_LISTA = "SPGECO_Formas_Pagos_Lista";
 			public const string SP_TIPO_CONTACTO_LISTA = "SPGECO_Tipos_Contactos_Lista";
             public const string SP_TIPO_OBS_LISTA = "SPGECO_Tipos_Obs_Lista";
-            //
-            #endregion
-        }
+            public const string SP_TIPO_OPE_IVA = "SPGECO_Tipos_Ope_IVA";
+			//
+			#endregion
+		}
     }
 }

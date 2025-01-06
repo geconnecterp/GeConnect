@@ -859,7 +859,7 @@ namespace gc.sitio.Controllers
         }
         #endregion
 
-        #region CONDICIONES AFIP
+        #region CONDICIONES IB
         public List<CondicionIBDto> CondicionIBLista
         {
             get
@@ -1137,10 +1137,30 @@ namespace gc.sitio.Controllers
                 _context.HttpContext.Session.SetString("TipoObservacionesLista", json);
             }
         }
-        #endregion
+		#endregion
 
-        #region Metodos generales
-        public PartialViewResult ObtenerMensajeDeError(string mensaje)
+		#region TIPO OPE IVA
+		public List<TipoOpeIvaDto> TipoOpeIvaLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("TipoOpeIvaLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<TipoOpeIvaDto>();
+				}
+				return JsonConvert.DeserializeObject<List<TipoOpeIvaDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("TipoOpeIvaLista", json);
+			}
+		}
+		#endregion
+
+		#region Metodos generales
+		public PartialViewResult ObtenerMensajeDeError(string mensaje)
         {
             RespuestaGenerica<EntidadBase> response = new()
             {
@@ -1295,8 +1315,12 @@ namespace gc.sitio.Controllers
         {
             TipoObservacionesLista = _tipoObs.GetTiposDeObs(TokenCookie, tipo);
         }
-        #endregion
-        protected void ObtenerDiasDeLaSemana()
+		protected void ObtenerTiposOpeIva(ITipoOpeIvaServicio _tipoOpeIvaServicio)
+		{
+            TipoOpeIvaLista = _tipoOpeIvaServicio.ObtenerTipoOpeIva(TokenCookie);
+		}
+		#endregion
+		protected void ObtenerDiasDeLaSemana()
         {
             var listaTemp = new List<DiaDeLaSemanaDto>();
             var lista = Enum.GetValues(typeof(DiasDeLaSemana)).Cast<DiasDeLaSemana>().ToList();
