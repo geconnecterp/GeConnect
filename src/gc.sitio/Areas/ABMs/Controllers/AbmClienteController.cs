@@ -852,7 +852,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
 					return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
 				}
 
-				no.fecha = DateTime.Now;
+				var fecha = DateTime.UtcNow;
+				no.fecha = fecha.ToString("yyyy-MM-dd HH:mm:ss");
 				//Paso textos a mayusculas
 				no = HelperGen.PasarAMayusculas(no);
 				//Valido reglas de negocio, algunas ya se han validado en el front, pero es necsearia una re-validación para evitar introducir valores erróneos
@@ -1019,11 +1020,17 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		private string ValidarJsonAntesDeGuardar(ObservacionAbmValidationModel obs, char abm)
 		{
 			//Agregar validaciones en el caso que lo requiera
+			if (string.IsNullOrWhiteSpace(obs.cta_obs) && abm!='B')
+				return "Debe indicar una observación válida, no se permiten observaciones vacías.";
 			return "";
 		}
 		private string ValidarJsonAntesDeGuardar(NotaAbmValidationModel no, char abm)
 		{
 			//Agregar validaciones en el caso que lo requiera
+			if (string.IsNullOrWhiteSpace(no.nota) && abm != 'B')
+				return "Debe indicar un nota, no se permiten notas vacías.";
+			if (string.IsNullOrWhiteSpace(no.usu_id))
+				return "Debe indicar usuario válido.";
 			return "";
 		}
 		private string ValidarJsonAntesDeGuardar(OtroContactoAbmValidationModel co, char abm)

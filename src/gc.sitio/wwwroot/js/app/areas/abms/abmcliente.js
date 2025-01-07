@@ -1031,7 +1031,7 @@ function ObtenerDatosDeObsParaJson(destinoDeOperacion, tipoDeOperacion) {
 
 function ObtenerDatosDeNotasParaJson(destinoDeOperacion, tipoDeOperacion) {
 	var cta_id = $("#Cliente_Cta_Id").val();
-	var usu_id = $("#Nota_usu_id").val();
+	var usu_id = $("#Nota_usu_apellidoynombre").val();
 	var usu_apellidoynombre = $("#Nota_usu_apellidoynombre").val();
 	var usu_lista = $("#Nota_usu_apellidoynombre").val();
 	var fecha = null;
