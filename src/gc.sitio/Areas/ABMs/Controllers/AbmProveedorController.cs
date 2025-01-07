@@ -2,6 +2,7 @@
 using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
@@ -9,7 +10,9 @@ using gc.infraestructura.Helpers;
 using gc.sitio.Areas.ABMs.Models;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.ABM;
+using gc.sitio.core.Servicios.Implementacion;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 
 namespace gc.sitio.Areas.ABMs.Controllers
@@ -23,10 +26,18 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		private readonly IABMProveedorServicio _abmProvServ;
 		private readonly ITipoOpeIvaServicio _tipoOpeServicio;
 		private readonly ICuentaServicio _cuentaServicio;
-
+		private readonly ICondicionAfipServicio _condicionAfipServicio;
+		private readonly INaturalezaJuridicaServicio _naturalezaJuridicaServicio;
+		private readonly ICondicionIBServicio _condicionIBServicio;
+		private readonly ITipoDocumentoServicio _tipoDocumentoServicio;
+		private readonly IDepartamentoServicio _departamentoServicio;
+		private readonly ITipoProveedorServicio _tipoProveedorServicio;
+		private readonly ITipoGastoServicio _tipoGastoServicio;
 		public AbmProveedorController(IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger<AbmProveedorController> logger,
 									  IProveedorServicio proveedorServicio, IABMProveedorServicio abmProvServ, ITipoOpeIvaServicio tipoOpeIvaServicio,
-									  ICuentaServicio cuentaServicio) : base(options, accessor, logger)
+									  ICuentaServicio cuentaServicio, ICondicionAfipServicio condicionAfipServicio, INaturalezaJuridicaServicio naturalezaJuridicaServicio,
+									  ICondicionIBServicio condicionIBServicio, ITipoDocumentoServicio tipoDocumentoServicio, IDepartamentoServicio departamentoServicio,
+									  ITipoProveedorServicio tipoProveedorServicio, ITipoGastoServicio tipoGastoServicio) : base(options, accessor, logger)
 		{
 			_settings = options.Value;
 			_logger = logger;
@@ -34,6 +45,13 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			_abmProvServ = abmProvServ;
 			_tipoOpeServicio = tipoOpeIvaServicio;
 			_cuentaServicio = cuentaServicio;
+			_condicionAfipServicio = condicionAfipServicio;
+			_naturalezaJuridicaServicio = naturalezaJuridicaServicio;
+			_condicionIBServicio = condicionIBServicio;
+			_tipoDocumentoServicio = tipoDocumentoServicio;
+			_departamentoServicio = departamentoServicio;
+			_tipoProveedorServicio = tipoProveedorServicio;
+			_tipoGastoServicio = tipoGastoServicio;
 		}
 
 		[HttpGet]
@@ -78,7 +96,16 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
 				var proveedorModel = new ProveedorAbmModel()
 				{
-					Proveedor = res.First()
+					Proveedor = res.First(),
+					ComboAfip = ComboAfip(),
+					ComboNatJud = ComboNatJud(),
+					ComboTipoDoc = ComboTipoDoc(),
+					ComboIngBruto = ComboIB(),
+					ComboProvincia = ComboProv(),
+					ComboDepartamento = ComboDepto(res.First().Prov_Id.ToString()),
+					ComboTipoOpe = ComboTipoOpe(),
+					ComboTipoOc = ComboTipoProv(),
+					ComboTipoGasto = ComboTipoGasto(),
 				};
 				return PartialView("_tabDatosProveedor", proveedorModel);
 			}
@@ -440,11 +467,96 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		}
 		#endregion
 
+		#region Metodo Para obtener los departamentos desde una seleccion de provincia
+
+		[HttpPost]
+		public IActionResult ObtenerDepartamentos(string provId)
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				if (string.IsNullOrWhiteSpace(provId))
+					return PartialView("~/Areas/ABMs/Views/AbmCliente/_comboLocalidad", ComboDepto());
+				return PartialView("~/Areas/ABMs/Views/AbmCliente/_comboLocalidad", ComboDepto(provId));
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda de Departamentos";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda de Departamentos");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+		#endregion
+
 		#region Métodos privados
 		private void CargarDatosIniciales(bool actualizar)
 		{
 			if (TipoOpeIvaLista.Count == 0 || actualizar)
 				ObtenerTiposOpeIva(_tipoOpeServicio);
+
+			if (CondicionesAfipLista.Count == 0 || actualizar)
+				ObtenerCondicionesAfip(_condicionAfipServicio);
+
+			if (NaturalezaJuridicaLista.Count == 0 || actualizar)
+				ObtenerNaturalezaJuridica(_naturalezaJuridicaServicio);
+
+			if (CondicionIBLista.Count == 0 || actualizar)
+				ObtenerCondicionesIB(_condicionIBServicio);
+
+			if (TipoDocumentoLista.Count == 0 || actualizar)
+				ObtenerTiposDocumento(_tipoDocumentoServicio);
+
+			if (TipoProvLista.Count == 0 || actualizar)
+				ObtenerTiposProveedor(_tipoProveedorServicio);
+
+			if (TipoGastoLista.Count == 0 || actualizar)
+				ObtenerTipoGastos(_tipoGastoServicio);
+			/*
+			if (TipoNegocioLista.Count == 0 || actualizar)
+				ObtenerTiposNegocio(_tipoNegocioServicio);
+
+			if (ZonasLista.Count == 0 || actualizar)
+				ObtenerZonas(_zonaServicio);
+
+			
+
+			if (FormaDePagoLista.Count == 0 || actualizar)
+				ObtenerFormasDePago(_formaDePagoServicio);
+
+			if (ProvinciaLista.Count == 0 || actualizar)
+				ObtenerProvincias(_provinciaServicio);
+
+			if (TipoCanalLista.Count == 0 || actualizar)
+				ObtenerTiposDeCanal(_tipoCanalServicio);
+
+			if (TipoCuentaBcoLista.Count == 0 || actualizar)
+				ObtenerTiposDeCuentaBco(_tipoCuentaBcoServicio);
+
+			if (TipoDocumentoLista.Count == 0 || actualizar)
+				ObtenerTiposDocumento(_tipoDocumentoServicio);
+
+			if (ListaDePreciosLista.Count == 0 || actualizar)
+				ObtenerListaDePrecios(_listaDePrecioServicio);
+
+			if (VendedoresLista.Count == 0 || actualizar)
+				ObtenerListaDeVendedores(_vendedorServicio);
+
+			if (DiasDeLaSemanaLista.Count == 0 || actualizar)
+				ObtenerDiasDeLaSemana();
+
+			if (RepartidoresLista.Count == 0 || actualizar)
+				ObtenerListaDeRepartidores(_repartidorServicio);
+
+			if (TipoContactoLista.Count == 0 || actualizar)
+				ObtenerTipoContacto(_tipoContactoServicio, "P");
+
+			if (TipoObservacionesLista.Count == 0 || actualizar)
+				ObtenerTipoObservaciones(_tipoObsServicio, "P");
+			*/
 		}
 		private static ObservacionesModel ObtenerObservacionModel(CuentaObsDto obs)
 		{
@@ -516,6 +628,25 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			fpm.cta_id = fp.cta_id;
 			#endregion
 			return fpm;
+		}
+		protected SelectList ComboDepto(string prov_id)
+		{
+			CargarDepartametos(prov_id);
+			var lista = DepartamentoLista.Select(x => new ComboGenDto { Id = x.dep_id, Descripcion = x.dep_nombre });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		protected SelectList ComboDepto()
+		{
+			var nuevaListaDpto = new List<DepartamentoDto>();
+			var lista = nuevaListaDpto.Select(x => new ComboGenDto { Id = x.dep_id, Descripcion = x.dep_nombre });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		private void CargarDepartametos(string prov_id)
+		{
+			if (DepartamentoLista == null || DepartamentoLista.Count == 0)
+				ObtenerDepartamentos(_departamentoServicio, prov_id);
+			else if (DepartamentoLista.First().prov_id != prov_id)
+				ObtenerDepartamentos(_departamentoServicio, prov_id);
 		}
 		#endregion
 	}

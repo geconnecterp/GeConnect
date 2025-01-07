@@ -181,6 +181,8 @@
 			public const string SP_TIPO_CONTACTO_LISTA = "SPGECO_Tipos_Contactos_Lista";
             public const string SP_TIPO_OBS_LISTA = "SPGECO_Tipos_Obs_Lista";
             public const string SP_TIPO_OPE_IVA = "SPGECO_Tipos_Ope_IVA";
+            public const string SP_TIPO_PROV = "SPGECO_Tipos_Prov";
+			public const string SP_TIPO_GASTO = "SPGECO_G_Cuentas_Lista";
 			//
 			#endregion
 		}

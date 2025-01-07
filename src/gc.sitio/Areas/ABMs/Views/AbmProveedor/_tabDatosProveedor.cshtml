@@ -2,7 +2,145 @@
 @{
 	var aux = new ProveedorAbmModel();
 	aux = Model;
+	var afip = Model.ComboAfip;
+	var nj = Model.ComboNatJud;
+	var tipoDoc = Model.ComboTipoDoc;
+	var ib = Model.ComboIngBruto;
+	var provi = Model.ComboProvincia;
+	var depto = Model.ComboDepartamento;
+	var opeIva = Model.ComboTipoOpe;
+	var tipoOc = Model.ComboTipoOc;
+	var tipoGasto = Model.ComboTipoGasto;
 }
 <div class="container">
-
+	<div class="row">
+		<div class="col-md-4">
+			<div class="row mt-1">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text fixed-lbl-for-abm-70">ID</span>
+					<input type="text" asp-for="Proveedor.Cta_Id" class="form-control" disabled />
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Cta_Activa" value="" id="chkCtaActiva">
+						<label class="form-check-label" for="chkCtaActiva"> ACTIVO</label>
+					</div>
+				</div>
+			</div>
+			<div class="row mt-1">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text fixed-lbl-for-abm-70">Deno</span>
+					<input type="text" asp-for="Proveedor.Cta_Denominacion" class="form-control activable" />
+				</div>
+			</div>
+			<div class="row mt-1">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text fixed-lbl-for-abm-70">AFIP: </span>
+					@Html.DropDownListFor(m => m.Proveedor.Afip_Id, afip, "Seleccionar...", new { @id = "listaAfip", @class = "form-control activable" })
+				</div>
+			</div>
+			<div class="row mt-1">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text fixed-lbl-for-abm-70">NJ: </span>
+					@Html.DropDownListFor(m => m.Proveedor.Nj_Id, nj, "Seleccionar...", new { @id = "listaNJ", @class = "form-control activable" })
+				</div>
+			</div>
+			<div class="row mt-1">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text fixed-lbl-for-abm-70">Doc.Tipo.: </span>
+					@Html.DropDownListFor(m => m.Proveedor.Tdoc_Id, tipoDoc, "Seleccionar...", new { @id = "listaTipoDoc", @class = "form-control activable" })
+					<span class="input-group-text fixed-lbl-for-abm-70">N°: </span>
+					<input type="text" asp-for="Proveedor.Cta_Documento" class="form-control activable" />
+				</div>
+			</div>
+			<div class="row mt-1">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text fixed-lbl-for-abm-70">IB: </span>
+					@Html.DropDownListFor(m => m.Proveedor.Ib_Id, ib, "Seleccionar...", new { @id = "listaIB", @class = "form-control activable" })
+					<span class="input-group-text fixed-lbl-for-abm-70">N°: </span>
+					<input type="text" asp-for="Proveedor.Cta_Ib_Nro" class="form-control activable" />
+				</div>
+			</div>
+			<div class="row mt-1">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text fixed-lbl-for-abm-70">Prov: </span>
+					@Html.DropDownListFor(m => m.Proveedor.Prov_Id, provi, "Seleccionar...", new { @id = "listaProvi", @class = "form-control activable" })
+				</div>
+			</div>
+			<div class="row mt-1">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text fixed-lbl-for-abm-70">Dpto: </span>
+					<div id="divLocalidad" class="input-group-sm" style="width: 50%;">
+						@Html.DropDownListFor(m => m.Proveedor.Dep_Id, depto, "Seleccionar...", new { @id = "listaDepto", @class = "form-control activable" })
+					</div>
+					<span class="input-group-text fixed-lbl-for-abm-70">CP: </span>
+					<input type="text" asp-for="Proveedor.Cta_Cpostal" class="form-control activable" />
+				</div>
+			</div>
+			<div class="row mt-1">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text fixed-lbl-for-abm-70">Domi</span>
+					<input type="text" asp-for="Proveedor.Cta_Domicilio" class="form-control activable" />
+				</div>
+			</div>
+			<div class="row mt-1">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text fixed-lbl-for-abm-70">Localidad</span>
+					<input type="text" asp-for="Proveedor.Cta_Localidad" class="form-control activable" />
+				</div>
+			</div>
+			<div class="row mt-1">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text fixed-lbl-for-abm-70">WWW</span>
+					<input type="text" asp-for="Proveedor.Cta_Www" class="form-control activable" />
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4">
+			<div class="row mt-1">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text fixed-lbl-for-abm-70">Ope.: </span>
+					@Html.DropDownListFor(m => m.Proveedor.Ope_Iva, opeIva, "Seleccionar...", new { @id = "listaOpe", @class = "form-control activable" })
+					<span class="input-group-text fixed-lbl-for-abm-70">Tipo OC: </span>
+					@Html.DropDownListFor(m => m.Proveedor.Tp_Id, tipoOc, "Seleccionar...", new { @id = "listaTipoOc", @class = "form-control activable" })
+				</div>
+			</div>
+			<div class="row mt-1">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text fixed-lbl-for-abm-70">EAN</span>
+					<input type="text" asp-for="Proveedor.Ctap_Ean" class="form-control activable" />
+					<span class="input-group-text fixed-lbl-for-abm-70">Cod. en Prov.:</span>
+					<input type="text" asp-for="Proveedor.Ctap_Id_Externo" class="form-control activable" />
+				</div>
+			</div>
+			<div class="row mt-1">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text fixed-lbl-for-abm-70">Imputa: </span>
+					@Html.DropDownListFor(m => m.Proveedor.Ctag_Id, tipoGasto, "Seleccionar...", new { @id = "listaTipoGasto", @class = "form-control activable" })
+				</div>
+			</div>
+			<div class="row mt-1">
+				<div class="input-group input-group-sm">
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Devolucion_bool" value="" id="chkCtapDevolucionBool">
+						<label class="form-check-label" for="chkCtapDevolucionBool"> DV</label>
+					</div>
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Devolucion_Flete_bool" value="" id="chkCtapDevolucionFleteBool">
+						<label class="form-check-label" for="chkCtapDevolucionFleteBool"> DV Flete</label>
+					</div>
+				</div>
+			</div>
+			<div class="row mt-1">
+				<div class="input-group input-group-sm">
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Acuenta_Dev_bool" value="" id="chkCtapACuentaDevBool">
+						<label class="form-check-label" for="chkCtapACuentaDevBool"> DV no a Cuenta</label>
+					</div>
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Pago_Susp_bool" value="" id="chkCtapPagoSuspBool">
+						<label class="form-check-label" for="chkCtapPagoSuspBool"> Pago Susp.</label>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>

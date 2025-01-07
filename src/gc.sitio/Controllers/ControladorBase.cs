@@ -1179,6 +1179,46 @@ namespace gc.sitio.Controllers
 		}
 		#endregion
 
+		#region TIPO PROV
+		public List<TipoProveedorDto> TipoProvLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("TipoProvLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<TipoProveedorDto>();
+				}
+				return JsonConvert.DeserializeObject<List<TipoProveedorDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("TipoProvLista", json);
+			}
+		}
+		#endregion
+
+		#region TIPO GASTO
+		public List<TipoGastoDto> TipoGastoLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("TipoGastoLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<TipoGastoDto>();
+				}
+				return JsonConvert.DeserializeObject<List<TipoGastoDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("TipoGastoLista", json);
+			}
+		}
+		#endregion
+
 		#region Metodos generales
 		public PartialViewResult ObtenerMensajeDeError(string mensaje)
         {
@@ -1339,6 +1379,14 @@ namespace gc.sitio.Controllers
 		{
             TipoOpeIvaLista = _tipoOpeIvaServicio.ObtenerTipoOpeIva(TokenCookie);
 		}
+		protected void ObtenerTiposProveedor(ITipoProveedorServicio _tipoProvServicio)
+		{
+            TipoProvLista = _tipoProvServicio.ObtenerTiposProveedor(TokenCookie);
+		}
+		protected void ObtenerTipoGastos(ITipoGastoServicio _tipoGastoServicio)
+		{
+            TipoGastoLista = _tipoGastoServicio.ObtenerTipoGastos(TokenCookie);
+		}
 		#endregion
 		protected void ObtenerDiasDeLaSemana()
         {
@@ -1444,9 +1492,24 @@ namespace gc.sitio.Controllers
             var lista = TipoObservacionesLista.Select(x => new ComboGenDto { Id = x.to_id, Descripcion = x.to_desc });
             return HelperMvc<ComboGenDto>.ListaGenerica(lista);
         }
-        #endregion
+		protected SelectList ComboTipoOpe()
+		{
+			var lista = TipoOpeIvaLista.Select(x => new ComboGenDto { Id = x.ope_iva, Descripcion = x.ope_iva_descripcion });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		protected SelectList ComboTipoProv()
+		{
+			var lista = TipoProvLista.Select(x => new ComboGenDto { Id = x.tp_id, Descripcion = x.tp_desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		protected SelectList ComboTipoGasto()
+		{
+			var lista = TipoGastoLista.Select(x => new ComboGenDto { Id = x.ctag_id, Descripcion = x.ctag_denominacion });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		#endregion
 
-        [HttpPost]
+		[HttpPost]
         public JsonResult BuscarProvs(string prefix)
         {
             //var nombres = await _provSv.BuscarAsync(new QueryFilters { Search = prefix }, TokenCookie);

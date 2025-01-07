@@ -36,13 +36,16 @@ namespace gc.api.Controllers.Codigos
 		private readonly ITipoContactoServicio _tipoContactoServicio;
 		private readonly ITipoObsServicio _tipoObsServicio;
 		private readonly ITipoOpeIvaServicio _tipoOpeIvaServicio;
+		private readonly ITipoProveedorServicio _tipoProveedorServicio;
+		private readonly ITipoGastoServicio _tipoGastoServicio;
 
 		public TiposVsController( IMapper mapper, IUriService uriService, ILogger<TiposVsController> logger, ICondicionAfipServicio condicionAfipServicio,
 								ICondicionIBServicio condicionIBServicio, IDepartamentoServicio departamentoServicio, IFormaDePagoServicio formaDePagoServicio,
 								INaturalezaJuridicaServicio naturalezaJuridicaServicio, IProvinciaServicio provinciaServicio, ITipoCanalServicio tipoCanalServicio,
 								ITipoCuentaBcoServicio tipoCuentaBcoServicio, ITiposDocumentoServicio tiposDocumentoServicio, IListaPrecioServicio listaPrecioServicio,
 								IVendedorServicio vendedorServicio, IRepartidorServicio repartidorServicio, IFinancieroServicio financieroServicio,
-								ITipoContactoServicio tipoContactoServicio, ITipoObsServicio tipoObsServicio, ITipoOpeIvaServicio tipoOpeIvaServicio)
+								ITipoContactoServicio tipoContactoServicio, ITipoObsServicio tipoObsServicio, ITipoOpeIvaServicio tipoOpeIvaServicio,
+								ITipoProveedorServicio tipoProveedorServicio, ITipoGastoServicio tipoGastoServicio)
         {
             _mapper = mapper;
             _uriService = uriService;
@@ -63,6 +66,8 @@ namespace gc.api.Controllers.Codigos
 			_tipoContactoServicio = tipoContactoServicio;
 			_tipoObsServicio = tipoObsServicio;
 			_tipoOpeIvaServicio = tipoOpeIvaServicio;
+			_tipoProveedorServicio = tipoProveedorServicio;
+			_tipoGastoServicio = tipoGastoServicio;
         }
 
 		[HttpGet]
@@ -254,6 +259,30 @@ namespace gc.api.Controllers.Codigos
 			var lista = _mapper.Map<List<TipoOpeIvaDto>>(tipoOpe);
 
 			var response = new ApiResponse<List<TipoOpeIvaDto>>(lista);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult GetTiposProveedor()
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			List<TipoProveedorDto> tipoOpe = _tipoProveedorServicio.GetTiposProveedor();
+			var lista = _mapper.Map<List<TipoProveedorDto>>(tipoOpe);
+
+			var response = new ApiResponse<List<TipoProveedorDto>>(lista);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult GetTipoGastos()
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			List<TipoGastoDto> tipoOpe = _tipoGastoServicio.GetTipoGastos();
+			var lista = _mapper.Map<List<TipoGastoDto>>(tipoOpe);
+
+			var response = new ApiResponse<List<TipoGastoDto>>(lista);
 			return Ok(response);
 		}
 		//

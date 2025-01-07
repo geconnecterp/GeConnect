@@ -6,6 +6,9 @@
 		var div = $("#divPaginacion");
 		presentaPaginacion(div);
 	});
+
+	$(document).on("change", "#listaAfip", controlaValorAfip);
+	$(document).on("change", "#listaProvi", controlaValorProvi);
 	$("#btnBuscar").on("click", function () { buscarProveedores(pagina); });
 
 	//tabProveedor
@@ -71,6 +74,21 @@ function InicializaPantallaAbmProveedor() {
 	$("#IdSelected").val("");
 	$(".activable").prop("disabled", true);
 	CerrarWaiting();
+	return true;
+}
+
+function cargaPaginacion() {
+	$("#divPaginacion").pagination({
+		items: totalRegs,
+		itemsOnPage: pagRegs,
+		cssStyle: "dark-theme",
+		currentPage: pagina,
+		onPageClick: function (num) {
+			buscarProveedores(num);
+		}
+	});
+	$("#pagEstado").val(false);
+	$("#divFiltro").collapse("hide")
 	return true;
 }
 
