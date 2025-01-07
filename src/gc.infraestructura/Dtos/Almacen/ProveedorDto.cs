@@ -184,5 +184,66 @@ namespace gc.infraestructura.Dtos.Almacen
 		}
 		private bool ctap_Rgan_Cert_bool;
 
+		public bool Ctap_Rib_bool
+		{
+			get
+			{
+				if (char.IsWhiteSpace(Ctap_Rib) || string.IsNullOrWhiteSpace(char.ToString(Ctap_Rib)))
+					return false;
+				return Ctap_Rgan == 'S';
+			}
+			set { ctap_Rib_bool = value; }
+		}
+		private bool ctap_Rib_bool;
+
+		public bool Ctap_Rib_Cert_bool
+		{
+			get
+			{
+				if (char.IsWhiteSpace(Rib_Cert) || string.IsNullOrWhiteSpace(char.ToString(Rib_Cert)))
+					return false;
+				return Rgan_Cert == 'S';
+			}
+			set { ctap_Rib_Cert_bool = value; }
+		}
+		private bool ctap_Rib_Cert_bool;
+
+		public bool Ctap_Ret_Iva_bool
+		{
+			get
+			{
+				if (Ctap_Ret_Iva == null)
+					return false;
+				if (char.IsWhiteSpace(Ctap_Ret_Iva.Value) || string.IsNullOrWhiteSpace(char.ToString(Ctap_Ret_Iva.Value)))
+					return false;
+				return Ctap_Ret_Iva == 'S';
+			}
+			set { ctap_Ret_Iva_bool = value; }
+		}
+		private bool ctap_Ret_Iva_bool;
+
+		public bool Ctap_Per_Iva_bool
+		{
+			get
+			{
+				if (char.IsWhiteSpace(Ctap_Per_Iva) || string.IsNullOrWhiteSpace(char.ToString(Ctap_Per_Iva)))
+					return false;
+				return Ctap_Per_Iva == 'S';
+			}
+			set { ctap_Per_Iva_bool = value; }
+		}
+		private bool ctap_Per_Iva_bool;
+
+		public bool Ctap_Per_Ib_bool
+		{
+			get
+			{
+				if (char.IsWhiteSpace(Ctap_Per_Ib) || string.IsNullOrWhiteSpace(char.ToString(Ctap_Per_Ib)))
+					return false;
+				return Ctap_Per_Ib == 'S';
+			}
+			set { ctap_Per_Ib_bool = value; }
+		}
+		private bool ctap_Per_Ib_bool;
 	}
 }

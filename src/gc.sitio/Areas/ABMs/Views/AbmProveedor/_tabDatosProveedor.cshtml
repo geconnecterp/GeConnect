@@ -12,6 +12,7 @@
 	var tipoOc = Model.ComboTipoOc;
 	var tipoGasto = Model.ComboTipoGasto;
 	var tipoRetGan = Model.ComboTipoRetGan;
+	var tipoRetIB = Model.ComboTipoRetIB;
 }
 <div class="container">
 	<div class="row">
@@ -181,7 +182,60 @@
 					</div>
 					@Html.TextBoxFor(t => t.Proveedor.Rgan_Cert_Vto, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable" })
 					<span class="input-group-text fixed-lbl-for-abm-20">%</span>
-					<input type="text" asp-for="Proveedor.Rgan_Porc" class="form-control activable" />
+					<input type="number" asp-for="Proveedor.Rgan_Porc" class="form-control activable" />
+				</div>
+			</div>
+			<div class="row mt-1">
+				<div class="input-group input-group-sm">
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Rib_bool" value="" id="chkCtapRibBool">
+						<label class="form-check-label fixed-font-size-xmall" for="chkCtapRibBool"> IB</label>
+					</div>
+					@Html.DropDownListFor(m => m.Proveedor.Rib_Id, tipoRetIB, "Seleccionar...", new { @id = "listaTipoRetIB", @class = "form-control activable" })
+				</div>
+			</div>
+			<div class="row mt-1">
+				<div class="input-group input-group-sm">
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Rib_Cert_bool" value="" id="chkCtapRibCertBool">
+						<label class="form-check-label fixed-font-size-xmall" for="chkCtapRibCertBool"> CNR</label>
+					</div>
+					@Html.TextBoxFor(t => t.Proveedor.Rib_Cert_Vto, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable" })
+					<span class="input-group-text fixed-lbl-for-abm-20">%</span>
+					<input type="number" asp-for="Proveedor.Rib_Porc" class="form-control activable" />
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4">
+			<div class="row mt-1">
+				<div class="input-group input-group-sm">
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Ret_Iva_bool" value="" id="chkCtapRetIvaBool">
+						<label class="form-check-label fixed-font-size-xmall" for="chkCtapRetIvaBool"> IVA</label>
+					</div>
+					<span class="input-group-text fixed-lbl-for-abm-20">%</span>
+					<input type="number" asp-for="Proveedor.Ctap_Ret_Iva_Porc" class="form-control activable" />
+				</div>
+			</div>
+			<div class="row mt-1">
+				<div class="input-group input-group-sm">
+					<label class="form-check-label font-bold">Percepciones</label>
+				</div>
+			</div>
+			<div class="row mt-1">
+				<div class="input-group input-group-sm">
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Per_Ib_bool" value="" id="chkCtapPerIbBool">
+						<label class="form-check-label fixed-font-size-xmall" for="chkCtapPerIbBool"> IB</label>
+					</div>
+					<span class="input-group-text fixed-lbl-for-abm-20">%</span>
+					<input type="number" asp-for="Proveedor.Ctap_Per_Ib_Ali" class="form-control activable" />
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Per_Iva_bool" value="" id="chkCtapPerIvaBool">
+						<label class="form-check-label fixed-font-size-xmall" for="chkCtapPerIvaBool"> IVA</label>
+					</div>
+					<span class="input-group-text fixed-lbl-for-abm-20">%</span>
+					<input type="number" asp-for="Proveedor.Ctap_Per_Iva_Ali" class="form-control activable" />
 				</div>
 			</div>
 		</div>
