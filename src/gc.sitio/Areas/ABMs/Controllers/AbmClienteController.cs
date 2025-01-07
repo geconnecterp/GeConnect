@@ -1029,7 +1029,51 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		private string ValidarJsonAntesDeGuardar(OtroContactoAbmValidationModel co, char abm)
 		{
 			//Agregar validaciones en el caso que lo requiera
+			if (!string.IsNullOrWhiteSpace(co.cta_celu))
+			{
+				if (co.cta_celu.Trim().Length < 9)
+					return "El número de celular no es válido, debe tener al menos 9 digitos.";
+				if (co.cta_celu.Contains(' '))
+					return "El número de celular no es válido, no debe tener espacios en blanco.";
+			}
+			else
+				return "El número de celular no es válido, debe tener al menos 9 digitos.";
+			if (!string.IsNullOrWhiteSpace(co.cta_te))
+			{
+				if (co.cta_te.Trim().Length < 9)
+					return "El número de teléfono no es válido, debe tener al menos 9 digitos.";
+				if (co.cta_te.Contains(' '))
+					return "El número de teléfono no es válido, no debe tener espacios en blanco.";
+			}
+			else
+				return "El número de teléfono no es válido, debe tener al menos 9 digitos.";
+
+			if (string.IsNullOrWhiteSpace(co.cta_email))
+				return "El email no es válido, debe tener la forma Ej: 'ejemplo@dominio.com'";
+			if (!IsValidEmail(co.cta_email))
+				return "El email no es válido, debe tener la forma Ej: 'ejemplo@dominio.com'";
+			if (string.IsNullOrWhiteSpace(co.tc_id))
+				return "Debe especificar un tipo de contacto.";
 			return "";
+		}
+
+		private bool IsValidEmail(string email)
+		{
+			var trimmedEmail = email.Trim();
+
+			if (trimmedEmail.EndsWith("."))
+			{
+				return false; // suggested by @TK-421
+			}
+			try
+			{
+				var addr = new System.Net.Mail.MailAddress(email);
+				return addr.Address == trimmedEmail;
+			}
+			catch
+			{
+				return false;
+			}
 		}
 		private string ValidarJsonAntesDeGuardar(FormaDePagoAbmValidationModel fp, char abm)
 		{
