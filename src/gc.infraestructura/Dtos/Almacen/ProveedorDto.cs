@@ -159,6 +159,30 @@ namespace gc.infraestructura.Dtos.Almacen
 			set { ctap_Pago_Susp_bool = value; }
 		}
 		private bool ctap_Pago_Susp_bool;
-		
+
+		public bool Ctap_Rgan_bool
+		{
+			get
+			{
+				if (char.IsWhiteSpace(Ctap_Rgan) || string.IsNullOrWhiteSpace(char.ToString(Ctap_Rgan)))
+					return false;
+				return Ctap_Rgan == 'S';
+			}
+			set { ctap_Rgan_bool = value; }
+		}
+		private bool ctap_Rgan_bool;
+
+		public bool Ctap_Rgan_Cert_bool
+		{
+			get
+			{
+				if (char.IsWhiteSpace(Rgan_Cert) || string.IsNullOrWhiteSpace(char.ToString(Rgan_Cert)))
+					return false;
+				return Rgan_Cert == 'S';
+			}
+			set { ctap_Rgan_Cert_bool = value; }
+		}
+		private bool ctap_Rgan_Cert_bool;
+
 	}
 }

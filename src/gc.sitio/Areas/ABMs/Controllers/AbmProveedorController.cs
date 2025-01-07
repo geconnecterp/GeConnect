@@ -33,11 +33,14 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		private readonly IDepartamentoServicio _departamentoServicio;
 		private readonly ITipoProveedorServicio _tipoProveedorServicio;
 		private readonly ITipoGastoServicio _tipoGastoServicio;
+		private readonly ITipoRetGanServicio _tipoRetGanServicio;
+		private readonly ITipoRetIbServicio _tipoRetIbServicio;
 		public AbmProveedorController(IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger<AbmProveedorController> logger,
 									  IProveedorServicio proveedorServicio, IABMProveedorServicio abmProvServ, ITipoOpeIvaServicio tipoOpeIvaServicio,
 									  ICuentaServicio cuentaServicio, ICondicionAfipServicio condicionAfipServicio, INaturalezaJuridicaServicio naturalezaJuridicaServicio,
 									  ICondicionIBServicio condicionIBServicio, ITipoDocumentoServicio tipoDocumentoServicio, IDepartamentoServicio departamentoServicio,
-									  ITipoProveedorServicio tipoProveedorServicio, ITipoGastoServicio tipoGastoServicio) : base(options, accessor, logger)
+									  ITipoProveedorServicio tipoProveedorServicio, ITipoGastoServicio tipoGastoServicio, ITipoRetGanServicio tipoRetGanServicio,
+									  ITipoRetIbServicio tipoRetIbServicio) : base(options, accessor, logger)
 		{
 			_settings = options.Value;
 			_logger = logger;
@@ -52,6 +55,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			_departamentoServicio = departamentoServicio;
 			_tipoProveedorServicio = tipoProveedorServicio;
 			_tipoGastoServicio = tipoGastoServicio;
+			_tipoRetGanServicio = tipoRetGanServicio;
+			_tipoRetIbServicio = tipoRetIbServicio;
 		}
 
 		[HttpGet]
@@ -106,6 +111,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
 					ComboTipoOpe = ComboTipoOpe(),
 					ComboTipoOc = ComboTipoProv(),
 					ComboTipoGasto = ComboTipoGasto(),
+					ComboTipoRetGan = ComboTipoRetGan(),
+					ComboTipoRetIB = ComboTipoRetIb(),
 				};
 				return PartialView("_tabDatosProveedor", proveedorModel);
 			}
@@ -515,6 +522,12 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
 			if (TipoGastoLista.Count == 0 || actualizar)
 				ObtenerTipoGastos(_tipoGastoServicio);
+
+			if (TipoRetGanLista.Count == 0 || actualizar)
+				ObtenerTipoRetGan(_tipoRetGanServicio);
+
+			if (TipoRetIBLista.Count == 0 || actualizar)
+				ObtenerTipoRetIB(_tipoRetIbServicio);
 			/*
 			if (TipoNegocioLista.Count == 0 || actualizar)
 				ObtenerTiposNegocio(_tipoNegocioServicio);

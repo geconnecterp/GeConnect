@@ -11,6 +11,7 @@
 	var opeIva = Model.ComboTipoOpe;
 	var tipoOc = Model.ComboTipoOc;
 	var tipoGasto = Model.ComboTipoGasto;
+	var tipoRetGan = Model.ComboTipoRetGan;
 }
 <div class="container">
 	<div class="row">
@@ -121,24 +122,66 @@
 				<div class="input-group input-group-sm">
 					<div class="form-check form-check-inline form-switch mb-2">
 						<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Devolucion_bool" value="" id="chkCtapDevolucionBool">
-						<label class="form-check-label" for="chkCtapDevolucionBool"> DV</label>
+						<label class="form-check-label fixed-font-size-xmall" for="chkCtapDevolucionBool"> DV</label>
 					</div>
 					<div class="form-check form-check-inline form-switch mb-2">
 						<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Devolucion_Flete_bool" value="" id="chkCtapDevolucionFleteBool">
-						<label class="form-check-label" for="chkCtapDevolucionFleteBool"> DV Flete</label>
+						<label class="form-check-label fixed-font-size-xmall fixed-lbl-for-abm-50-nodisp" for="chkCtapDevolucionFleteBool"> DV Flete</label>
+					</div>
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Acuenta_Dev_bool" value="" id="chkCtapACuentaDevBool">
+						<label class="form-check-label fixed-font-size-xmall fixed-lbl-for-abm-70-nodisp" for="chkCtapACuentaDevBool"> DV no a Cuenta</label>
+					</div>
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Pago_Susp_bool" value="" id="chkCtapPagoSuspBool">
+						<label class="form-check-label fixed-font-size-xmall fixed-lbl-for-abm-50-nodisp" for="chkCtapPagoSuspBool"> Pago Susp.</label>
 					</div>
 				</div>
 			</div>
 			<div class="row mt-1">
 				<div class="input-group input-group-sm">
+					<label class="form-check-label font-bold">Descuento Financieros</label>
+				</div>
+			</div>
+			<div class="row mt-1">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text fixed-font-size-xmall fixed-lbl-for-abm-20">1°</span>
+					<input type="number" asp-for="Proveedor.Ctap_D1" class="form-control activable" />
+					<span class="input-group-text fixed-font-size-xmall fixed-lbl-for-abm-20">2°</span>
+					<input type="number" asp-for="Proveedor.Ctap_D2" class="form-control activable" />
+					<span class="input-group-text fixed-font-size-xmall fixed-lbl-for-abm-20">3°</span>
+					<input type="number" asp-for="Proveedor.Ctap_D3" class="form-control activable" />
+					<span class="input-group-text fixed-font-size-xmall fixed-lbl-for-abm-20">4°</span>
+					<input type="number" asp-for="Proveedor.Ctap_D4" class="form-control activable" />
+					<span class="input-group-text fixed-font-size-xmall fixed-lbl-for-abm-20">5°</span>
+					<input type="number" asp-for="Proveedor.Ctap_D5" class="form-control activable" />
+					<span class="input-group-text fixed-font-size-xmall fixed-lbl-for-abm-20">6°</span>
+					<input type="number" asp-for="Proveedor.Ctap_D6" class="form-control activable" />
+				</div>
+			</div>
+			<div class="row mt-1">
+				<div class="input-group input-group-sm">
+					<label class="form-check-label font-bold">Retenciones</label>
+				</div>
+			</div>
+			<div class="row mt-1">
+				<div class="input-group input-group-sm">
 					<div class="form-check form-check-inline form-switch mb-2">
-						<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Acuenta_Dev_bool" value="" id="chkCtapACuentaDevBool">
-						<label class="form-check-label" for="chkCtapACuentaDevBool"> DV no a Cuenta</label>
+						<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Rgan_bool" value="" id="chkCtapRganBool">
+						<label class="form-check-label fixed-font-size-xmall" for="chkCtapRganBool"> GAN</label>
 					</div>
+					@Html.DropDownListFor(m => m.Proveedor.Rgan_Id, tipoRetGan, "Seleccionar...", new { @id = "listaTipoRetGan", @class = "form-control activable" })
+				</div>
+			</div>
+			<div class="row mt-1">
+				<div class="input-group input-group-sm">
 					<div class="form-check form-check-inline form-switch mb-2">
-						<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Pago_Susp_bool" value="" id="chkCtapPagoSuspBool">
-						<label class="form-check-label" for="chkCtapPagoSuspBool"> Pago Susp.</label>
+						<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Rgan_Cert_bool" value="" id="chkCtapRganCertBool">
+						<label class="form-check-label fixed-font-size-xmall" for="chkCtapRganCertBool"> CNR</label>
 					</div>
+					@Html.TextBoxFor(t => t.Proveedor.Rgan_Cert_Vto, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable" })
+					<span class="input-group-text fixed-lbl-for-abm-20">%</span>
+					<input type="text" asp-for="Proveedor.Rgan_Porc" class="form-control activable" />
 				</div>
 			</div>
 		</div>

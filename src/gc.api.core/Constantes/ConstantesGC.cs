@@ -183,6 +183,8 @@
             public const string SP_TIPO_OPE_IVA = "SPGECO_Tipos_Ope_IVA";
             public const string SP_TIPO_PROV = "SPGECO_Tipos_Prov";
 			public const string SP_TIPO_GASTO = "SPGECO_G_Cuentas_Lista";
+			public const string SP_TIPO_RET_GAN = "SPGECO_Reten_GA";
+			public const string SP_TIPO_RET_IB = "SPGECO_Reten_IB";
 			//
 			#endregion
 		}

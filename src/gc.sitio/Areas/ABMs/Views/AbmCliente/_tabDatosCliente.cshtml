@@ -102,20 +102,6 @@
 					<input type="text" asp-for="Cliente.Cta_Www" class="form-control activable" />
 				</div>
 			</div>
-			@* <div class="row mt-1">
-				<div class="input-group input-group-sm">
-					<span class="input-group-text fixed-lbl-for-abm-70">Cta: </span>
-					@Html.DropDownListFor(m => m.Cliente.Tcb_Id, tipoCueBco, "Seleccionar...", new { @id = "listaTipoCueBco", @class = "form-control activable" })
-					<span class="input-group-text fixed-lbl-for-abm-70">N°: </span>
-					<input type="text" asp-for="Cliente.Cta_Bco_Cuenta_Nro" class="form-control activable" />
-				</div>
-			</div>
-			<div class="row mt-1">
-				<div class="input-group input-group-sm">
-					<span class="input-group-text fixed-lbl-for-abm-70">CBU</span>
-					<input type="text" asp-for="Cliente.Cta_Bco_Cuenta_Cbu" class="form-control activable" />
-				</div>
-			</div> *@
 		</div>
 		<div class="col-md-4">
 			<div class="row mt-1">
@@ -124,14 +110,6 @@
 					@Html.DropDownListFor(m => m.Cliente.Ctn_Id, tipoNeg, "Seleccionar...", new { @id = "listaTipoNeg", @class = "form-control activable" })
 					<span class="input-group-text fixed-lbl-for-abm-50">Inicio:</span>
 					@Html.TextBoxFor(t => t.Cliente.Ctac_Negocio_Inicio, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable" })
-					@* @if (Model.Cliente.Ctac_Negocio_Inicio == null)
-					{
-						<input type="text" asp-for="Cliente.Ctac_Negocio_Inicio" class="form-control activable" />
-					}
-					else
-					{
-						<input type="date" asp-for="Cliente.Ctac_Negocio_Inicio" class="form-control activable" />
-					} *@
 					<span class="input-group-text fixed-lbl-for-abm-50">Cant PV:</span>
 					<input type="number" asp-for="Cliente.Ctac_Ptos_Vtas" class="form-control activable" style="max-width: 40px;" title="Cantidad de Puntos de Venta"/>
 				</div>

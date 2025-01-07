@@ -38,6 +38,8 @@ namespace gc.api.Controllers.Codigos
 		private readonly ITipoOpeIvaServicio _tipoOpeIvaServicio;
 		private readonly ITipoProveedorServicio _tipoProveedorServicio;
 		private readonly ITipoGastoServicio _tipoGastoServicio;
+		private readonly ITipoRetGanServicio _tipoRetGanServicio;
+		private readonly ITipoRetIbServicio _tipoRetIbServicio;
 
 		public TiposVsController( IMapper mapper, IUriService uriService, ILogger<TiposVsController> logger, ICondicionAfipServicio condicionAfipServicio,
 								ICondicionIBServicio condicionIBServicio, IDepartamentoServicio departamentoServicio, IFormaDePagoServicio formaDePagoServicio,
@@ -45,7 +47,8 @@ namespace gc.api.Controllers.Codigos
 								ITipoCuentaBcoServicio tipoCuentaBcoServicio, ITiposDocumentoServicio tiposDocumentoServicio, IListaPrecioServicio listaPrecioServicio,
 								IVendedorServicio vendedorServicio, IRepartidorServicio repartidorServicio, IFinancieroServicio financieroServicio,
 								ITipoContactoServicio tipoContactoServicio, ITipoObsServicio tipoObsServicio, ITipoOpeIvaServicio tipoOpeIvaServicio,
-								ITipoProveedorServicio tipoProveedorServicio, ITipoGastoServicio tipoGastoServicio)
+								ITipoProveedorServicio tipoProveedorServicio, ITipoGastoServicio tipoGastoServicio, ITipoRetGanServicio tipoRetGanServicio,
+								ITipoRetIbServicio tipoRetIbServicio)
         {
             _mapper = mapper;
             _uriService = uriService;
@@ -68,6 +71,8 @@ namespace gc.api.Controllers.Codigos
 			_tipoOpeIvaServicio = tipoOpeIvaServicio;
 			_tipoProveedorServicio = tipoProveedorServicio;
 			_tipoGastoServicio = tipoGastoServicio;
+			_tipoRetGanServicio = tipoRetGanServicio;
+			_tipoRetIbServicio = tipoRetIbServicio;
         }
 
 		[HttpGet]
@@ -283,6 +288,30 @@ namespace gc.api.Controllers.Codigos
 			var lista = _mapper.Map<List<TipoGastoDto>>(tipoOpe);
 
 			var response = new ApiResponse<List<TipoGastoDto>>(lista);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult GetTipoRetGan()
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			List<TipoRetGananciaDto> tipoOpe = _tipoRetGanServicio.GetTiposRetGanancia();
+			var lista = _mapper.Map<List<TipoRetGananciaDto>>(tipoOpe);
+
+			var response = new ApiResponse<List<TipoRetGananciaDto>>(lista);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult GetTipoRetIb()
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			List<TipoRetIngBrDto> tipoOpe = _tipoRetIbServicio.GetTiposRetIngBr();
+			var lista = _mapper.Map<List<TipoRetIngBrDto>>(tipoOpe);
+
+			var response = new ApiResponse<List<TipoRetIngBrDto>>(lista);
 			return Ok(response);
 		}
 		//

@@ -1219,6 +1219,46 @@ namespace gc.sitio.Controllers
 		}
 		#endregion
 
+		#region TIPO RET GAN
+		public List<TipoRetGananciaDto> TipoRetGanLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("TipoRetGanLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<TipoRetGananciaDto>();
+				}
+				return JsonConvert.DeserializeObject<List<TipoRetGananciaDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("TipoRetGanLista", json);
+			}
+		}
+		#endregion
+
+		#region TIPO RET IB
+		public List<TipoRetIngBrDto> TipoRetIBLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("TipoRetIBLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<TipoRetIngBrDto>();
+				}
+				return JsonConvert.DeserializeObject<List<TipoRetIngBrDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("TipoRetIBLista", json);
+			}
+		}
+		#endregion
+
 		#region Metodos generales
 		public PartialViewResult ObtenerMensajeDeError(string mensaje)
         {
@@ -1387,6 +1427,14 @@ namespace gc.sitio.Controllers
 		{
             TipoGastoLista = _tipoGastoServicio.ObtenerTipoGastos(TokenCookie);
 		}
+		protected void ObtenerTipoRetGan(ITipoRetGanServicio _tipoRetGanServicio)
+		{
+            TipoRetGanLista = _tipoRetGanServicio.ObtenerTipoRetGan(TokenCookie);
+		}
+		protected void ObtenerTipoRetIB(ITipoRetIbServicio _tipoRetIbServicio)
+		{
+			TipoRetIBLista = _tipoRetIbServicio.ObtenerTipoRetIb(TokenCookie);
+		}
 		#endregion
 		protected void ObtenerDiasDeLaSemana()
         {
@@ -1505,6 +1553,16 @@ namespace gc.sitio.Controllers
 		protected SelectList ComboTipoGasto()
 		{
 			var lista = TipoGastoLista.Select(x => new ComboGenDto { Id = x.ctag_id, Descripcion = x.ctag_denominacion });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		protected SelectList ComboTipoRetGan()
+		{
+			var lista = TipoRetGanLista.Select(x => new ComboGenDto { Id = x.rgan_id, Descripcion = x.rgan_desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		protected SelectList ComboTipoRetIb()
+		{
+			var lista = TipoRetIBLista.Select(x => new ComboGenDto { Id = x.rib_id, Descripcion = x.rib_desc });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
 		#endregion

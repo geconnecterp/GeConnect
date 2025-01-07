@@ -14,6 +14,8 @@ namespace gc.sitio.Areas.ABMs.Models
 		public SelectList ComboTipoOpe { get; set; }
 		public SelectList ComboTipoOc { get; set; }
 		public SelectList ComboTipoGasto { get; set; }
+		public SelectList ComboTipoRetGan { get; set; }
+		public SelectList ComboTipoRetIB { get; set; }
 		public ProveedorABMDto Proveedor { get; set; }
 
 		public ProveedorAbmModel()

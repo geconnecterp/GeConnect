@@ -367,6 +367,35 @@ input[type=number] {
     z-index: 9999999 !important;
 }
 
+.fixed-lbl-for-abm-50-nodisp {
+    width: 50px;
+    text-align: right;
+}
+
+.fixed-lbl-for-abm-60-nodisp {
+    width: 60px;
+    text-align: right;
+}
+
+.fixed-lbl-for-abm-70-nodisp {
+    width: 70px;
+    text-align: right;
+}
+
+.fixed-lbl-for-abm-20 {
+    width: 20px;
+    display: block;
+    float: right;
+    text-align: right;
+}
+
+.fixed-lbl-for-abm-30 {
+    width: 30px;
+    display: block;
+    float: right;
+    text-align: right;
+}
+
 .fixed-lbl-for-abm-50 {
     width: 50px;
     display: block;
