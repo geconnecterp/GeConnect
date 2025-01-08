@@ -24,6 +24,7 @@ body {
 activable {
 }
 
+
 input.form-control, select.form-control{
     font-weight:700 !important;
     text-transform:uppercase !important;
@@ -393,3 +394,17 @@ input[type=number] {
     pointer-events: none;
     opacity: 0.99;
 }
+
+/* Estilo general para los controles */
+input, select, textarea, button, checkbox, radio {
+    border: 1px solid #ccc; /* Borde normal */
+    outline: none; /* Eliminar el contorno predeterminado de algunos navegadores */
+    transition: all 0.3s ease; /* Transición suave */
+}
+
+    /* Estilo cuando el control recibe el foco */
+    input:focus, select:focus, textarea:focus, button:focus,
+    input[type="radio"]:focus, input[type="checkbox"]:focus {
+        border-color: #3a87ad; /* Color de borde sutil pero visible (un azul suave) */
+        box-shadow: 0 0 8px rgba(58, 135, 173, 0.5); /* Sombra suave para dar la iluminación */
+    }

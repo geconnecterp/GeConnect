@@ -12,5 +12,6 @@ var tabAbm = 1;
 var tabGrid01 = "tbGridProd";
 var tabGrid02 = "tbGridBarr";
 var tabGrid03 = "tbGridLim";
+var prodSelec = "";
 var prodEstado = "";
 var regSelected = "";

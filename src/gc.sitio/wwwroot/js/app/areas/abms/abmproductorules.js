@@ -21,7 +21,7 @@
 
 function ejecutarBaja() {
     switch (tabAbm) {
-        case 1:           
+        case 1:
         case 2:
             $("#divFiltro").collapse("hide");
             accionBotones(AbmAction.BAJA);
@@ -190,8 +190,8 @@ function accionBotones(btn) {
 
         $("#btnAbmAceptar").prop("disabled", false);
         $("#btnAbmCancelar").prop("disabled", false);
-        $("#btnAbmAceptar").show("slow");
-        $("#btnAbmCancelar").show("slow");
+        $("#btnAbmAceptar").show();
+        $("#btnAbmCancelar").show();
     } else if (btn === AbmAction.SUBMIT || btn === AbmAction.CANCEL) {   // (S)uccess - (C)ancel
         $("#btnFiltro").prop("disabled", false);
         $("#btnDetalle").prop("disabled", false);
@@ -290,6 +290,12 @@ function activarControles(act) {
                 $("#p_piso_x_pallet_dun").prop("disabled", act);
                 //Linea 12
                 $("#p_obs").prop("disabled", act);
+
+                //hacemos el foco
+                if (accion === AbmAction.ALTA) {
+                    $("#up_id").trigger("focus");
+                }
+
                 break;
             case 2:
                 //la clave del barrado no se habilita
@@ -388,9 +394,42 @@ function confirmarOperacionAbmProducto() {
                         break;
                     default:
                 }
+                dataBak = "";
                 InicializaPantallaAbmProd(grilla);
+                //if (tabAbm === 2 || tabAbm === 3) {
+                //    activarGrilla(tabGrid01);
+                //}
+                if (accion !== AbmAction.BAJA) {
+                    switch (tabAbm) {
+                        case 1:
+                            //se dió de alta o se modificó, se realiza la presentación del producto
+                            if (accion === AbmAction.ALTA) {
+                                prodSelec = obj.id;
+                            }
+                            data = { p_id: prodSelec };
+                            buscarProductoServer(data);
+
+                            break;
+                        case 2:
+                            presentarBarrado();
+                            break;
+                        case 3:
+                            presentarLimites();
+                        default:
+                    }
+                   
+                    //inicializamos la acción.
+                    accion = "";
+                }
+
+                //borramos el id del producto si se eliminó
+                prodSelec = "";
+                //VAMOS A EJECUTAR NUEVAMENTE EL BUSCAR
+                buscarProductos(pagina);
+
                 $("#msjModal").modal("hide");
-                activarGrilla(tabGrid01);
+                return true;
+
             }, false, ["CONTINUAR"], "succ!", null);
         }
     });

@@ -350,7 +350,7 @@ function buscarClientes(pag) {
 	}
 	if ($("#chkRel01").is(":checked")) {
 		$("#Rel01List").children().each(function (i, item) { r01.push($(item).val()) });
-	}
+	}	
 	if ($("#chkRel02").is(":checked")) {
 		$("#Rel02List").children().each(function (i, item) { r02.push($(item).val()) });
 	}

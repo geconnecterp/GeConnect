@@ -119,7 +119,13 @@
         var div = $("#divPaginacion");
         presentaPaginacion(div);
     });
-    $("#btnBuscar").on("click", function () { buscarProductos(pagina); });
+    $("#btnBuscar").on("click", function () {
+        //es nueva la busqueda no resguardamos la busqueda anterior. es util para paginado
+        dataBak = "";
+        //es una busqueda por filtro. siempre sera pagina 1
+        pagina = 1;
+        buscarProductos(pagina);
+    });
 
     $(".inputEditable").on("keypress", analizaEnterInput);
 
@@ -270,6 +276,63 @@ function buscarProductos(pag) {
     });
 }
 
+function buscarProductoServer(data) {
+    PostGenHtml(data, buscarProdUrl, function (obj) {
+        $("#divpanel01").html(obj);
+        //se procede a buscar la grilla de barrado
+        buscarBarrado(data);
+        //se procede a buscar la grilla de Sucursales
+        buscarLimite(data);
+
+        $("#btnDetalle").prop("disabled", false);
+        $("#divFiltro").collapse("hide");
+        $("#divDetalle").collapse("show");
+
+        //activar botones de acción
+        activarBotones(true);
+
+        if (prodEstado !== "S" && accion!=="") {
+            $("#BtnLiTab02").prop("disabled", true);
+            $("#BtnLiTab02").addClass("text-danger");
+            $("#BtnLiTab03").prop("disabled", true);
+            $("#BtnLiTab03").addClass("text-danger");
+
+        }
+        else {
+            $("#BtnLiTab02").prop("disabled", false);
+            $("#BtnLiTab02").removeClass("text-danger");
+            $("#BtnLiTab03").prop("disabled", false);
+            $("#BtnLiTab03").removeClass("text-danger");
+        }
+
+        CerrarWaiting();
+
+    });
+}
+
+function selectRegProd(x, gridId) {
+    //reinvoco para que me marque el registro 
+    selectReg(x, gridId);
+    //limpio el tab01 para que se seleccione el registro.
+    //y desactivo el tab
+    switch (tabAbm) {
+        case 1:
+            $("#divpanel01").empty();
+            if ($("#divDetalle").is(":visible")) {
+                $("#divDetalle").collapse("hide");
+            }
+            $("#btnDetalle").prop("disabled", true);
+            activarBotones(false);
+            break;
+        case 2:
+        case 3:
+            break;
+        default:
+            return false;
+    }
+   
+}
+
 function selectAbmRegDbl(x, gridId) {
     AbrirWaiting("Espere mientras se busca el producto seleccionado...");
     $("#" + gridId + " tbody tr").each(function (index) {
@@ -285,37 +348,8 @@ function selectAbmRegDbl(x, gridId) {
             //se agrega por inyection el tab con los datos del producto
             prodEstado = x.cells[8].innerText.trim();
             var data = { p_id: id };
-            PostGenHtml(data, buscarProdUrl, function (obj) {
-                $("#divpanel01").html(obj);
-                //se procede a buscar la grilla de barrado
-                buscarBarrado(data);
-                //se procede a buscar la grilla de Sucursales
-                buscarLimite(data);
-
-                $("#btnDetalle").prop("disabled", false);
-                $("#divFiltro").collapse("hide");
-                $("#divDetalle").collapse("show");
-
-                //activar botones de acción
-                activarBotones(true);
-
-                if (prodEstado !== "S") {
-                    $("#BtnLiTab02").prop("disabled", true);
-                    $("#BtnLiTab02").addClass("text-danger");
-                    $("#BtnLiTab03").prop("disabled", true);
-                    $("#BtnLiTab03").addClass("text-danger");
-
-                }
-                else {
-                    $("#BtnLiTab02").prop("disabled", false);
-                    $("#BtnLiTab02").removeClass("text-danger");
-                    $("#BtnLiTab03").prop("disabled", false);
-                    $("#BtnLiTab03").removeClass("text-danger");
-                }
-
-                CerrarWaiting();
-
-            });
+            prodSelec = id;
+            buscarProductoServer(data);
             break;
         case 2:
             //se busca el dato del barral 
@@ -414,7 +448,7 @@ function presentarBarrado() {
     tabAbm = 2;
     desactivarGrilla(tabGrid01);
     InicializaPantallaAbmProd(tabGrid02);
-
+    $("#divBarrado2").empty();
     PostGenHtml({}, presentarBarradoUrl, function (obj) {
         $("#divBarrado2").html(obj);
 

@@ -26,7 +26,7 @@
                     {
                         if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
-                        <tr class="@clase" onclick="selectReg(this,'tbGridBarr')" ondblclick="selectAbmRegDbl(this,'tbGridBarr')">
+                        <tr class="@clase" onclick="selectRegProd(this,'tbGridBarr')" ondblclick="selectAbmRegDbl(this,'tbGridBarr')">
                             <td class="text-sm-center">@item.p_id_barrado</td>
                             <td class="text-sm-start">@item.tba_desc</td>
                             <td class="text-sm-end">@item.p_unidad_pres</td>

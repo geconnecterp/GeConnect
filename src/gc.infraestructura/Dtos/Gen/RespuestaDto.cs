@@ -4,8 +4,10 @@ namespace gc.infraestructura.Dtos.Gen
 	public class RespuestaDto
 	{
 		public short resultado { get; set; } 
-		public string resultado_msj { get; set; } = string.Empty;
+		public string resultado_id { get; set; } = string.Empty;
+        public string resultado_msj { get; set; } = string.Empty;
 		public string resultado_setfocus { get; set; } = string.Empty;
+
     }
 
 	public class TIRespuestaDto : RespuestaDto {

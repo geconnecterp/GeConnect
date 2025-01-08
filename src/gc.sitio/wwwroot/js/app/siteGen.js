@@ -6,8 +6,9 @@
             $("#Rel01List").prop("disabled", false);
         }
         else {
-            $("#Rel01").prop("disabled", true);
-            $("#Rel01List").prop("disabled", true);
+            $("#Rel01").prop("disabled", true).val("");
+            $("#Rel01List").prop("disabled", true).empty();
+
         }
     });
 
@@ -18,8 +19,8 @@
             $("#Rel02List").prop("disabled", false);
         }
         else {
-            $("#Rel02").prop("disabled", true);
-            $("#Rel02List").prop("disabled", true);
+            $("#Rel02").prop("disabled", true).val("");
+            $("#Rel02List").prop("disabled", true).empty();
         }
     });
 
@@ -49,13 +50,13 @@
     });
 });
 
-const AbmAction = {
-    ALTA: 'A',
-    BAJA: 'B',
-    MODIFICACION: 'M',
-    SUBMIT: 'S',
-    CANCEL: 'C'
-}
+//const AbmAction = {
+//    ALTA: 'A',
+//    BAJA: 'B',
+//    MODIFICACION: 'M',
+//    SUBMIT: 'S',
+//    CANCEL: 'C'
+//}
 
 function PostGenHtml(data, path, retorno) {
     PostGen(data, path, retorno, fnError, "HTML");
