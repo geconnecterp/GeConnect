@@ -83,16 +83,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             GridCore<ProductoBarradoDto> grillaDatos;
             try
             {
-                RespuestaGenerica<ProductoBarradoDto>? barr = await BuscarBarradosGen(p_id);
-                if (barr == null || !barr.Ok)
-                {
-                    throw new NegocioException(barr.Mensaje);
-                }
-                else if (barr.Ok && barr.ListaEntidad.Count() == 0)
-                {
-                    throw new NegocioException("No se encontraron barrados para el producto.");
-                }
-                ProductoBarrados = barr.ListaEntidad;
+                await ActualizaBarrados(p_id);
                 grillaDatos = GenerarGrilla(ProductoBarrados, "P_Id_barrado");
                 return View("_gridBarrado", grillaDatos);
             }
@@ -114,6 +105,20 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 response.EsError = true;
                 return PartialView("_gridMensaje", response);
             }
+        }
+
+        private async Task ActualizaBarrados(string p_id)
+        {
+            RespuestaGenerica<ProductoBarradoDto>? barr = await BuscarBarradosGen(p_id);
+            if (barr == null || !barr.Ok)
+            {
+                throw new NegocioException(barr.Mensaje);
+            }
+            else if (barr.Ok && barr.ListaEntidad.Count() == 0)
+            {
+                throw new NegocioException("No se encontraron barrados para el producto.");
+            }
+            ProductoBarrados = barr.ListaEntidad;
         }
 
         private async Task<RespuestaGenerica<ProductoBarradoDto>?> BuscarBarradosGen(string p_id)
@@ -425,6 +430,11 @@ namespace gc.sitio.Areas.ABMs.Controllers
                             msg = $"EL PROCESAMIENTO DE LA BAJA/DISCONTINUAR DEL PRODUCTO {prod.p_desc} SE REALIZO SATISFACTORIAMENTE";
                             break;
                     }
+                    ProductosBuscados = [];
+                    if (abm.Abm.Equals('A'))
+                    {
+                        return Json(new { error = false, warn = false, msg , id=res.Entidad.resultado_id});
+                    }
                     return Json(new { error = false, warn = false, msg });
                 }
                 else
@@ -482,11 +492,13 @@ namespace gc.sitio.Areas.ABMs.Controllers
                             break;
                         case 'M':
                             msg = $"EL PROCESAMIENTO DE LA MODIFICIACION DEL BARRADO {barr.p_id_barrado} SE REALIZO SATISFACTORIAMENTE";
+                            
                             break;
                         default:
                             msg = $"EL PROCESAMIENTO DE LA BAJA/DISCONTINUAR DEL PRODUCTO {barr.p_id_barrado} SE REALIZO SATISFACTORIAMENTE";
                             break;
                     }
+                    await ActualizaBarrados(barr.p_id);
                     return Json(new { error = false, warn = false, msg });
                 }
                 else
@@ -556,7 +568,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                         case 'M':
                             msg = $"EL PROCESAMIENTO DE LA MODIFICIACION DEL BARRADO {lim.adm_nombre} SE REALIZO SATISFACTORIAMENTE";
                             break;
-                        default:
+                        default:                            
                             msg = $"EL PROCESAMIENTO DE LA BAJA/DISCONTINUAR DEL PRODUCTO {lim.adm_nombre} SE REALIZO SATISFACTORIAMENTE";
                             break;
                     }
@@ -637,7 +649,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             RespuestaGenerica<EntidadBase> response = new();
             try
             {
-                if (PaginaProd == pag && !buscaNew)
+                if (PaginaProd == pag && !buscaNew && ProductosBuscados.Count()>0)
                 {
                     //es la misma pagina y hay registros, se realiza el reordenamiento de los datos.
                     lista = ProductosBuscados.ToList();
