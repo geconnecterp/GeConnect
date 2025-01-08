@@ -677,7 +677,7 @@ function ModificaFormaDePago(tabAct) {
 		$(".activable").prop("disabled", false);
 		$("#listaFP").prop("disabled", true);
 		$("#tbClienteFormaPagoEnTab tbody tr td").prop("disabled", true);
-		//
+		$("#tbGridCliente tbody tr td").addClass("disable-table-rows");
 		$("#tbClienteFormaPagoEnTab tbody tr td").addClass("disable-table-rows");
 		$("#FormaDePago_fp_dias").focus();
 	}
@@ -698,6 +698,7 @@ function ModificaContacto(tabAct) {
 		$(".nav-link").prop("disabled", true);
 		$(".activable").prop("disabled", false);
 		$("#tbClienteOtroContacto tbody tr td").addClass("disable-table-rows");
+		$("#tbGridCliente tbody tr td").addClass("disable-table-rows");
 		$("#OtroContacto_cta_nombre").prop("disabled", true);
 		$("#listaTC").prop("disabled", true);
 		$("#OtroContacto_cta_celu").focus();
@@ -720,6 +721,7 @@ function ModificaNota(tabAct) {
 		$(".activable").prop("disabled", false);
 		$("#Nota_usu_apellidoynombre").prop("disabled", true);
 		$("#tbClienteNotas tbody tr td").addClass("disable-table-rows");
+		$("#tbGridCliente tbody tr td").addClass("disable-table-rows");
 		$("#Nota_nota").focus();
 	}
 }
@@ -740,14 +742,36 @@ function ModificaObservacion(tabAct) {
 		$(".activable").prop("disabled", false);
 		$("#listaTipoObs").prop("disabled", true);
 		$("#tbClienteObservaciones tbody tr td").addClass("disable-table-rows");
+		$("#tbGridCliente tbody tr td").addClass("disable-table-rows");
 		$("#Observacion_cta_obs").focus();
 	}
 }
 
 function btnBajaClick() {
+	var mensaje = "";
+	var tabActiva = $('.nav-tabs .active')[0].id;
+	switch (tabActiva) {
+		case Tabs.TabCliente:
+			mensaje = "Para eliminar primero debe seleccionar un Cliente."
+			break;
+		case Tabs.TabFormasDePago:
+			mensaje = "Para eliminar primero debe seleccionar una Forma de Pago."
+			break;
+		case Tabs.TabNotas:
+			mensaje = "Para eliminar primero debe seleccionar una Nota."
+			break;
+		case Tabs.TabObservaciones:
+			mensaje = "Para eliminar primero debe seleccionar una Observación."
+			break;
+		case Tabs.TabOtrosContactos:
+			mensaje = "Para eliminar primero debe seleccionar un Contacto."
+			break;
+		default:
+			break;
+	}
 	var idSelected = $("#IdSelected").val();
 	if (idSelected === "") {
-		AbrirMensaje("ATENCIÓN", "Debe seleccionar un elemento.", function () {
+		AbrirMensaje("ATENCIÓN", mensaje, function () {
 			$("#msjModal").modal("hide");
 			return false;
 		}, false, ["Aceptar"], "error!", null);
@@ -805,15 +829,15 @@ function PuedoAgregar(tabAct) {
 			break;
 		case Tabs.TabNotas:
 			if (!$("#chkCtaActiva").is(":checked"))
-				mensaje = "Solo se pueden agregar formas de pago para cuentas activas.";
+				mensaje = "Solo se pueden agregar notas para cuentas activas.";
 			break;
 		case Tabs.TabObservaciones:
 			if (!$("#chkCtaActiva").is(":checked"))
-				mensaje = "Solo se pueden agregar formas de pago para cuentas activas.";
+				mensaje = "Solo se pueden agregar observaciones para cuentas activas.";
 			break;
 		case Tabs.TabOtrosContactos:
 			if (!$("#chkCtaActiva").is(":checked"))
-				mensaje = "Solo se pueden agregar formas de pago para cuentas activas.";
+				mensaje = "Solo se pueden agregar contactos para cuentas activas.";
 			break;
 		default:
 			break;
@@ -834,21 +858,21 @@ function PuedoModificar(tabAct) {
 			break;
 		case Tabs.TabNotas:
 			if (!$("#chkCtaActiva").is(":checked"))
-				mensaje = "Solo se pueden modificar formas de pago para cuentas activas.";
+				mensaje = "Solo se pueden modificar notas para cuentas activas.";
 			if ($("#IdSelected").val() == "")
-				mensaje = "Debe seleccionar una forma de pago para modificar.";
+				mensaje = "Debe seleccionar una nota para modificar.";
 			break;
 		case Tabs.TabObservaciones:
 			if (!$("#chkCtaActiva").is(":checked"))
-				mensaje = "Solo se pueden modificar formas de pago para cuentas activas.";
+				mensaje = "Solo se pueden modificar observaciones para cuentas activas.";
 			if ($("#IdSelected").val() == "")
-				mensaje = "Debe seleccionar una forma de pago para modificar.";
+				mensaje = "Debe seleccionar una observación para modificar.";
 			break;
 		case Tabs.TabOtrosContactos:
 			if (!$("#chkCtaActiva").is(":checked"))
-				mensaje = "Solo se pueden modificar formas de pago para cuentas activas.";
+				mensaje = "Solo se pueden modificar contactos para cuentas activas.";
 			if ($("#IdSelected").val() == "")
-				mensaje = "Debe seleccionar una forma de pago para modificar.";
+				mensaje = "Debe seleccionar un contacto para modificar.";
 			break;
 		default:
 			break;
@@ -896,16 +920,20 @@ function btnCancelClick() {
 		case Tabs.TabFormasDePago:
 			$("#tbClienteFormaPagoEnTab").prop("disabled", false);
 			$("#tbClienteFormaPagoEnTab tbody tr td").removeClass("disable-table-rows");
+			$("#tbGridCliente tbody tr td").removeClass("disable-table-rows");
 			break;
 		case Tabs.TabNotas:
 			$("#Nota_usu_apellidoynombre").prop("disabled", false);
 			$("#tbClienteNotas tbody tr td").removeClass("disable-table-rows");
+			$("#tbGridCliente tbody tr td").removeClass("disable-table-rows");
 			break;
 		case Tabs.TabObservaciones:
 			$("#tbClienteObservaciones tbody tr td").removeClass("disable-table-rows");
+			$("#tbGridCliente tbody tr td").removeClass("disable-table-rows");
 			break;
 		case Tabs.TabOtrosContactos:
 			$("#tbClienteOtroContacto tbody tr td").removeClass("disable-table-rows");
+			$("#tbGridCliente tbody tr td").removeClass("disable-table-rows");
 			$("#OtroContacto_cta_nombre").prop("disabled", false);
 			$("#listaTC").prop("disabled", false);
 			break;
