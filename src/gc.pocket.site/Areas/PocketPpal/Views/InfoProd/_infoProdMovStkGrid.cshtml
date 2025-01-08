@@ -13,6 +13,7 @@
     <table class="table mb-0 table-bordered  table-hover">
         <thead class="table-dark">
             <tr class="header">
+                <th class="text-sm-center" scope="col">BOX</th>
                 <th class="text-sm-center" scope="col">Fecha</th>
                 <th class="text-sm-start" scope="col">Mov</th>
                 <th class="text-sm-center" scope="col">E/S</th>
@@ -25,7 +26,8 @@
                 if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
                 <tr class="@clase">
-                    <td class="text-sm-center">@item.Sm_fecha</td>
+                    <td class="text-sm-center">@item.Box_id</td>
+                    <td class="text-sm-center">@item.Sm_fecha.ToShortDateString()</td>
                     <td class="text-sm-start corta-linea">@item.Sm_concepto</td>
                     <td class="text-sm-end">@item.Sm_es</td>
                     <td class="text-sm-end">

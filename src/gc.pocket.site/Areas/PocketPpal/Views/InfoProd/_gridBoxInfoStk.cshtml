@@ -24,9 +24,9 @@
 
                 <tr class="@clase">
                     <td class="text-sm-center">@item.P_id</td>
-                    <td class="text-sm-center corta-linea">@item.P_desc</td>
+                    <td class="text-sm-start corta-linea">@item.P_desc</td>
                     <td class="text-sm-end">@item.Ps_stk</td>
-                    <td class="text-sm-center">@item.Vto</td>                   
+                    <td class="text-sm-center">@item.Vto.ToShortDateString()</td>                   
                 </tr>
             }
         </tbody>

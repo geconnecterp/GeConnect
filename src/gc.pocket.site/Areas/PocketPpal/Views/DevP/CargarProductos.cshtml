@@ -35,7 +35,9 @@
         var productoBase = null; //se hidrata en busquedas.
         var funcionBusquedaAvanzada = false;
         var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "gestion" })";
-        var validarEstado = true;
+
+        var validarEstado = false; //pedido que no se valide estados segun tarea de correción del 16/12/2024 CR
+
         var tajValor = "B";
         //de funcionalidad RPR2
         var reguardarProductoEnListaUrl = "@Url.Action("ReguardarProductoEnLista", "devp", new { area = "PocketPpal" })";
