@@ -2,7 +2,7 @@
 @{
 	var cmb = Model.ComboTipoObs;
 }
-<div class="container">
+<div class="row">
 	<div class="col-md-8">
 		<div class="row">
 			<div class="table-responsive text-nowrap table-wrapper-200-full">
@@ -17,7 +17,7 @@
 					<tbody>
 						@foreach (var item in Model.CuentaObservaciones.ListaDatos)
 						{
-							<tr onclick="selectObsEnTab(this)">
+							<tr onclick="selectReg(this, 'tbClienteObservaciones')" ondblclick="selectRegDbl(this, 'tbClienteObservaciones')">
 								<td class="align-left">@item.cta_obs</td>
 								<td class="align-left">@item.to_desc</td>
 								<td style="display:none;">@item.to_id</td>

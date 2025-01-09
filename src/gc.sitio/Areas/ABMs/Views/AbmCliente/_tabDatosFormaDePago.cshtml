@@ -3,7 +3,7 @@
 	var tipoCueBco = Model.ComboTipoCuentaBco;
 	var fp = Model.ComboFormasDePago;
 }
-<div class="container">
+<div class="row">
 	<div class="col-md-6">
 		<div class="row mt-1">
 			<div class="table-responsive text-nowrap table-wrapper-200-full">
@@ -18,7 +18,7 @@
 					<tbody>
 						@foreach (var item in Model.CuentaFormasDePago.ListaDatos)
 						{
-							<tr onclick="selectFPenTab(this)">
+							<tr onclick="selectReg(this, 'tbClienteFormaPagoEnTab')" ondblclick="selectRegDbl(this, 'tbClienteFormaPagoEnTab')">
 								<td class="align-left">@item.fp_desc</td>
 								<td class="align-center">@item.fp_dias</td>
 								<td style="display:none;">@item.fp_id</td>

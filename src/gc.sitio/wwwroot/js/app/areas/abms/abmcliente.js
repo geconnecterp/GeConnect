@@ -1,7 +1,4 @@
 ﻿$(function () {
-	$("#btnCancel").on("click", function () {
-		$("#btnFiltro").trigger("click");
-	});
 	$("#pagEstado").on("change", function () {
 		var div = $("#divPaginacion");
 		presentaPaginacion(div);
@@ -28,7 +25,23 @@
 	$("#btnAbmElimi").on("click", function () { btnBajaClick(); });
 	$("#btnAbmAceptar").on("click", function () { btnSubmitClick(); });
 	$("#btnAbmCancelar").on("click", function () { btnCancelClick(); });
+	$("#btnDetalle").on("click", function () { btnDetalleClick(); });
 
+	$("#btnDetalle").prop("disabled", true);
+	$("#btnCancel").on("click", function () {
+		$("#btnFiltro").trigger("click");
+	});
+	$("#btnBuscar").on("click", function () {
+		//es nueva la busqueda no resguardamos la busqueda anterior. es util para paginado
+		dataBak = "";
+		//es una busqueda por filtro. siempre sera pagina 1
+		pagina = 1;
+		buscarClientes(pagina);
+	});
+
+	$(".inputEditable").on("keypress", analizaEnterInput);
+	$("#btnAbmAceptar").hide();
+	$("#btnAbmCancelar").hide();
 
 	InicializaPantallaAbmCliente();
 	funcCallBack = buscarClientes;
@@ -49,6 +62,14 @@ const Tabs = {
 	TabOtrosContactos: 'btnTabOtrosContactos',
 	TabNotas: 'btnTabNotas',
 	TabObservaciones: 'btnTabObservaciones'
+}
+
+const Grids = {
+	GridCliente: 'tbGridCliente',
+	GridFP: 'tbClienteFormaPagoEnTab',
+	GridOC: 'tbClienteOtroContacto',
+	GridNota: 'tbClienteNotas',
+	GridObs: 'tbClienteObservaciones'
 }
 
 function SeteaIDClienteSelected() {
@@ -116,187 +137,65 @@ function controlaValorCanal() {
 	}
 }
 
-//function controlaValorAfip() {
-//	if ($("#listaAfip option:selected").val() !== "05" && $("#listaAfip option:selected").val() !== "02") {
-//		$("#listaIB").prop("disabled", false);
-//		$("#Cliente_Cta_Ib_Nro").prop("disabled", false);
-//		$("#chkPivaCertActiva").prop("disabled", false);
-//		$("#chkIbCertActiva").prop("disabled", false);
-//	}
-//	else {
-//		$("#listaIB").prop("disabled", true);
-//		$("#Cliente_Cta_Ib_Nro").prop("disabled", true);
-//		$("#chkPivaCertActiva").prop("disabled", true);
-//		$("#chkIbCertActiva").prop("disabled", true);
-//	}
-//}
-
-//function controlaValorProvi() {
-//	var provId = $("#listaProvi option:selected").val()
-//	if (provId !== "") {
-//		var data = { provId }
-//		AbrirWaiting();
-//		PostGenHtml(data, obtenerDepartamentosUrl, function (obj) {
-//			$("#divLocalidad").html(obj);
-//			CerrarWaiting();
-//		}, function (obj) {
-//			ControlaMensajeError(obj.message);
-//			CerrarWaiting();
-//		});
-//	}
-//}
-
-//function BuscarObservaciones() {
-//	if ($(".nav-link").prop("disabled")) {
-//		return false;
-//	}
-//	if (ctaId != "") {
-//		var data = { ctaId };
-//		AbrirWaiting();
-//		PostGenHtml(data, buscarObservacionesUrl, function (obj) {
-//			$("#divObservaciones").html(obj);
-//			AgregarHandlerSelectedRow("tbClienteObservaciones");
-//			$(".activable").prop("disabled", true);
-//			$("#IdSelected").val("");
-//			CerrarWaiting();
-//		}, function (obj) {
-//			ControlaMensajeError(obj.message);
-//			CerrarWaiting();
-//		});
-//	}
-//}
-
-//function BuscarNotas() {
-//	if ($(".nav-link").prop("disabled")) {
-//		return false;
-//	}
-//	if (ctaId != "") {
-//		var data = { ctaId };
-//		AbrirWaiting();
-//		PostGenHtml(data, buscarNotasUrl, function (obj) {
-//			$("#divNotas").html(obj);
-//			AgregarHandlerSelectedRow("tbClienteNotas");
-//			$(".activable").prop("disabled", true);
-//			$("#IdSelected").val("");
-//			CerrarWaiting();
-//		}, function (obj) {
-//			ControlaMensajeError(obj.message);
-//			CerrarWaiting();
-//		});
-//	}
-//}
-
-//function BuscarOtrosContactos() {
-//	if ($(".nav-link").prop("disabled")) {
-//		return false;
-//	}
-//	if (ctaId != "") {
-//		var data = { ctaId };
-//		AbrirWaiting();
-//		PostGenHtml(data, buscarOtrosContactosUrl, function (obj) {
-//			$("#divOtrosContactos").html(obj);
-//			AgregarHandlerSelectedRow("tbClienteOtroContacto");
-//			$(".activable").prop("disabled", true);
-//			$("#IdSelected").val("");
-//			CerrarWaiting();
-//		}, function (obj) {
-//			ControlaMensajeError(obj.message);
-//			CerrarWaiting();
-//		});
-//	}
-//}
-
-//function BuscarFormaDePago() {
-//	if ($(".nav-link").prop("disabled")) {
-//		return false;
-//	}
-//	if (ctaId != "") {
-//		var data = { ctaId };
-//		AbrirWaiting();
-//		PostGenHtml(data, buscarFormaDePagoUrl, function (obj) {
-//			$("#divFormasDePago").html(obj);
-//			AgregarHandlerSelectedRow("tbClienteFormaPagoEnTab");
-//			$(".activable").prop("disabled", true);
-//			$("#IdSelected").val("");
-//			CerrarWaiting();
-//		}, function (obj) {
-//			ControlaMensajeError(obj.message);
-//			CerrarWaiting();
-//		});
-//	}
-//}
-
-//function AgregarHandlerSelectedRow(grilla) {
-//	document.getElementById(grilla).addEventListener('click', function (e) {
-//		if (e.target.nodeName === 'TD') {
-//			var selectedRow = this.querySelector('.selected-row');
-//			if (selectedRow) {
-//				selectedRow.classList.remove('selected-row');
-//			}
-//			e.target.closest('tr').classList.add('selected-row');
-//		}
+//function selectOCenTab(x) {
+//	var tcId = x.cells[5].innerText.trim();
+//	var data = { ctaId, tcId };
+//	AbrirWaiting();
+//	PostGenHtml(data, buscarDatosOtrosContactosUrl, function (obj) {
+//		$("#divDatosDeOCSelected").html(obj);
+//		$("#IdSelected").val(tcId);
+//		$(".activable").prop("disabled", true);
+//		CerrarWaiting();
+//	}, function (obj) {
+//		ControlaMensajeError(obj.message);
+//		CerrarWaiting();
 //	});
 //}
 
-function selectOCenTab(x) {
-	var tcId = x.cells[5].innerText.trim();
-	var data = { ctaId, tcId };
-	AbrirWaiting();
-	PostGenHtml(data, buscarDatosOtrosContactosUrl, function (obj) {
-		$("#divDatosDeOCSelected").html(obj);
-		$("#IdSelected").val(tcId);
-		$(".activable").prop("disabled", true);
-		CerrarWaiting();
-	}, function (obj) {
-		ControlaMensajeError(obj.message);
-		CerrarWaiting();
-	});
-}
+//function selectFPenTab(x) {
+//	var fpId = x.cells[2].innerText.trim();
+//	var data = { ctaId, fpId };
+//	AbrirWaiting();
+//	PostGenHtml(data, buscarDatosFormasDePagoUrl, function (obj) {
+//		$("#divDatosDeFPSelected").html(obj);
+//		$("#IdSelected").val($("#FormaDePago_fp_id").val());
+//		$(".activable").prop("disabled", true);
+//		CerrarWaiting();
+//	}, function (obj) {
+//		ControlaMensajeError(obj.message);
+//		CerrarWaiting();
+//	});
+//}
 
-function selectFPenTab(x) {
-	var fpId = x.cells[2].innerText.trim();
-	var data = { ctaId, fpId };
-	AbrirWaiting();
-	PostGenHtml(data, buscarDatosFormasDePagoUrl, function (obj) {
-		$("#divDatosDeFPSelected").html(obj);
-		$("#IdSelected").val($("#FormaDePago_fp_id").val());
-		$(".activable").prop("disabled", true);
-		CerrarWaiting();
-	}, function (obj) {
-		ControlaMensajeError(obj.message);
-		CerrarWaiting();
-	});
-}
+//function selectNotaenTab(x) {
+//	var usuId = x.cells[3].innerText.trim();
+//	var data = { ctaId, usuId };
+//	AbrirWaiting();
+//	PostGenHtml(data, buscarDatosNotaUrl, function (obj) {
+//		$("#divDatosDeNotaSelected").html(obj);
+//		$("#IdSelected").val(usuId);
+//		$(".activable").prop("disabled", true);
+//		CerrarWaiting();
+//	}, function (obj) {
+//		ControlaMensajeError(obj.message);
+//		CerrarWaiting();
+//	});
+//}
 
-function selectNotaenTab(x) {
-	var usuId = x.cells[3].innerText.trim();
-	var data = { ctaId, usuId };
-	AbrirWaiting();
-	PostGenHtml(data, buscarDatosNotaUrl, function (obj) {
-		$("#divDatosDeNotaSelected").html(obj);
-		$("#IdSelected").val(usuId);
-		$(".activable").prop("disabled", true);
-		CerrarWaiting();
-	}, function (obj) {
-		ControlaMensajeError(obj.message);
-		CerrarWaiting();
-	});
-}
-
-function selectObsEnTab(x) {
-	var toId = x.cells[2].innerText.trim();
-	var data = { ctaId, toId };
-	AbrirWaiting();
-	PostGenHtml(data, buscarDatosObservacionesUrl, function (obj) {
-		$("#divDatosDeObsSelected").html(obj);
-		$("#IdSelected").val(toId);
-		$(".activable").prop("disabled", true);
-		CerrarWaiting();
-	}, function (obj) {
-		ControlaMensajeError(obj.message);
-		CerrarWaiting();
-	});
-}
+//function selectObsEnTab(x) {
+//	var toId = x.cells[2].innerText.trim();
+//	var data = { ctaId, toId };
+//	AbrirWaiting();
+//	PostGenHtml(data, buscarDatosObservacionesUrl, function (obj) {
+//		$("#divDatosDeObsSelected").html(obj);
+//		$("#IdSelected").val(toId);
+//		$(".activable").prop("disabled", true);
+//		CerrarWaiting();
+//	}, function (obj) {
+//		ControlaMensajeError(obj.message);
+//		CerrarWaiting();
+//	});
+//}
 
 function InicializaPantallaAbmCliente() {
 	var tb = $("#tbGridCliente tbody tr");
@@ -350,7 +249,7 @@ function buscarClientes(pag) {
 	}
 	if ($("#chkRel01").is(":checked")) {
 		$("#Rel01List").children().each(function (i, item) { r01.push($(item).val()) });
-	}	
+	}
 	if ($("#chkRel02").is(":checked")) {
 		$("#Rel02List").children().each(function (i, item) { r02.push($(item).val()) });
 	}
@@ -387,6 +286,7 @@ function buscarClientes(pag) {
 	PostGenHtml(data, buscarUrl, function (obj) {
 		$("#divGrilla").html(obj);
 		$("#divFiltro").collapse("hide")
+		HabilitarBotones(false, true, true, true, true);
 		PostGen({}, buscarMetadataURL, function (obj) {
 			if (obj.error === true) {
 				AbrirMensaje("ATENCIÓN", obj.msg, function () {
@@ -412,13 +312,6 @@ function buscarClientes(pag) {
 
 }
 
-function selectReg(e) {
-	$("#tbGridCliente tbody tr").each(function (index) {
-		$(this).removeClass("selected-row");
-	});
-	$(e).addClass("selected-row");
-}
-
 function BuscarCliente(ctaId) {
 	var data = { ctaId };
 	AbrirWaiting();
@@ -433,63 +326,172 @@ function BuscarCliente(ctaId) {
 	});
 }
 
-function selectRegDbl(x) {
+function selectReg(e, gridId) {
+	$("#" + gridId + " tbody tr").each(function (index) {
+		$(this).removeClass("selected-row");
+		$(this).removeClass("selectedEdit-row");
+	});
+	$(e).addClass("selected-row");
+
+	switch (gridId) {
+		case Grids.GridCliente:
+			if ($("#divDetalle").is(":visible")) {
+				$("#divDetalle").collapse("hide");
+			}
+			$("#btnDetalle").prop("disabled", true);
+			break;
+		case Grids.GridFP:
+			break;
+		case Grids.GridOC:
+			break;
+		case Grids.GridNota:
+			break;
+		case Grids.GridObs:
+			break;
+		default:
+	}
+}
+
+function selectRegDbl(x, gridId) {
 	AbrirWaiting("Espere mientras se busca el cliente seleccionado...");
-	$("#tbGridCliente tbody tr").each(function (index) {
+	$("#" + gridId + " tbody tr").each(function (index) {
 		$(this).removeClass("selectedEdit-row");
 	});
 	$(x).addClass("selectedEdit-row");
 
-	var cta_id = x.cells[0].innerText.trim();
-	if (cta_id !== "") {
-		ctaId = cta_id;
-		BuscarCliente(cta_id);
-		BuscarFormaDePago();
-		BuscarOtrosContactos();
-		BuscarNotas();
-		BuscarObservaciones();
-		HabilitarBotones(false, false, false, true, true);
-		controlaCertIb();
-		$(".activable").prop("disabled", true);
+	switch (gridId) {
+		case Grids.GridCliente:
+			var cta_id = x.cells[0].innerText.trim();
+			if (cta_id !== "") {
+				ctaId = cta_id;
+				BuscarCliente(cta_id);
+				BuscarFormaDePago();
+				BuscarOtrosContactos();
+				BuscarNotas();
+				BuscarObservaciones();
+				HabilitarBotones(false, false, false, true, true);
+				controlaCertIb();
+				//$("#tbGridCliente tbody tr td").addClass("disable-table-rows");
+				$(".activable").prop("disabled", true);
+				$("#btnDetalle").prop("disabled", false);
+				$("#divFiltro").collapse("hide");
+				$("#divDetalle").collapse("show");
+			}
+			break;
+		case Grids.GridFP:
+			var fpId = x.cells[2].innerText.trim();
+			var data = { ctaId, fpId };
+			AbrirWaiting();
+			PostGenHtml(data, buscarDatosFormasDePagoUrl, function (obj) {
+				$("#divDatosDeFPSelected").html(obj);
+				$("#IdSelected").val($("#FormaDePago_fp_id").val());
+				$(".activable").prop("disabled", true);
+				CerrarWaiting();
+			}, function (obj) {
+				ControlaMensajeError(obj.message);
+				CerrarWaiting();
+			});
+			break;
+		case Grids.GridOC:
+			var tcId = x.cells[5].innerText.trim();
+			var data = { ctaId, tcId };
+			AbrirWaiting();
+			PostGenHtml(data, buscarDatosOtrosContactosUrl, function (obj) {
+				$("#divDatosDeOCSelected").html(obj);
+				$("#IdSelected").val(tcId);
+				$(".activable").prop("disabled", true);
+				CerrarWaiting();
+			}, function (obj) {
+				ControlaMensajeError(obj.message);
+				CerrarWaiting();
+			});
+			break;
+		case Grids.GridNota:
+			var usuId = x.cells[3].innerText.trim();
+			var data = { ctaId, usuId };
+			AbrirWaiting();
+			PostGenHtml(data, buscarDatosNotaUrl, function (obj) {
+				$("#divDatosDeNotaSelected").html(obj);
+				$("#IdSelected").val(usuId);
+				$(".activable").prop("disabled", true);
+				CerrarWaiting();
+			}, function (obj) {
+				ControlaMensajeError(obj.message);
+				CerrarWaiting();
+			});
+			break;
+		case Grids.GridObs:
+			var toId = x.cells[2].innerText.trim();
+			var data = { ctaId, toId };
+			AbrirWaiting();
+			PostGenHtml(data, buscarDatosObservacionesUrl, function (obj) {
+				$("#divDatosDeObsSelected").html(obj);
+				$("#IdSelected").val(toId);
+				$(".activable").prop("disabled", true);
+				CerrarWaiting();
+			}, function (obj) {
+				ControlaMensajeError(obj.message);
+				CerrarWaiting();
+			});
+			break;
+		default:
 	}
 }
 
-//function HabilitarBotonesPorAccion(accion) {
-//	switch (accion) {
-//		case AbmAction.ALTA:
-//			HabilitarBotones(true, true, true, false, false);
-//			break;
-//		case AbmAction.BAJA:
-//			HabilitarBotones(true, true, true, false, false);
-//			break;
-//		case AbmAction.MODIFICACION:
-//			HabilitarBotones(true, true, true, false, false);
-//			break;
-//		case AbmAction.SUBMIT:
-//			HabilitarBotones(false, false, false, true, true);
-//			break;
-//		case AbmAction.CANCEL:
-//			HabilitarBotones(false, false, false, true, true);
-//			break;
-//		default:
-//			HabilitarBotones(false, false, false, true, true);
-//			break;
-//	}
+//function selectFPenTabDbl(x) {
+//	AbrirWaiting("Espere mientras se busca el producto seleccionado...");
+//	$("#" + gridId + " tbody tr").each(function (index) {
+//		$(this).removeClass("selectedEdit-row");
+//	});
+//	$(x).addClass("selectedEdit-row");
 //}
 
-//function HabilitarBotones(btnAlta, btnBaja, btnModi, btnSubmit, btnCancel) {
-//	$("#btnAbmNuevo").prop("disabled", btnAlta);
-//	$("#btnAbmModif").prop("disabled", btnModi);
-//	$("#btnAbmElimi").prop("disabled", btnBaja);
-//	$("#btnAbmAceptar").prop("disabled", btnSubmit);
-//	$("#btnAbmCancelar").prop("disabled", btnCancel);
+//function selectNotaenTabDbl() {
+//	AbrirWaiting("Espere mientras se busca el producto seleccionado...");
+//	$("#" + gridId + " tbody tr").each(function (index) {
+//		$(this).removeClass("selectedEdit-row");
+//	});
+//	$(x).addClass("selectedEdit-row");
 //}
+
+//function selectObsenTabDbl() {
+//	AbrirWaiting("Espere mientras se busca el producto seleccionado...");
+//	$("#" + gridId + " tbody tr").each(function (index) {
+//		$(this).removeClass("selectedEdit-row");
+//	});
+//	$(x).addClass("selectedEdit-row");
+//}
+
+//function selectOCenTabDbl() {
+//	AbrirWaiting("Espere mientras se busca el producto seleccionado...");
+//	$("#" + gridId + " tbody tr").each(function (index) {
+//		$(this).removeClass("selectedEdit-row");
+//	});
+//	$(x).addClass("selectedEdit-row");
+//}
+
+function btnDetalleClick() {
+	//if ($("#divDetalle").is(":visible")) {
+	//	$("#tbGridCliente tbody tr td").removeClass("disable-table-rows");
+	//}
+	//else {
+		
+	//}
+	//HabilitarBotones(true, true, true, true, true);
+	//$("#divFiltro").collapse("show");
+	//$("#divDetalle").collapse("hide");
+	//$("#btnAbmAceptar").hide();
+	//$("#btnAbmCancelar").hide();
+	
+}
 
 function btnNuevoClick() {
 
 	tipoDeOperacion = AbmAction.ALTA;
 	var tabActiva = $('.nav-tabs .active')[0].id;
 	SetearDestinoDeOperacion(tabActiva);
+	$("#btnAbmAceptar").show();
+	$("#btnAbmCancelar").show();
 	switch (tabActiva) {
 		case Tabs.TabCliente:
 			NuevoCliente();
@@ -630,6 +632,8 @@ function NuevaObservacion() {
 
 function btnModiClick() {
 	var tabActiva = $('.nav-tabs .active')[0].id;
+	$("#btnAbmAceptar").show();
+	$("#btnAbmCancelar").show();
 	switch (tabActiva) {
 		case Tabs.TabCliente:
 			ModificaCliente(tabActiva);
@@ -750,6 +754,8 @@ function ModificaObservacion(tabAct) {
 function btnBajaClick() {
 	var mensaje = "";
 	var tabActiva = $('.nav-tabs .active')[0].id;
+	$("#btnAbmAceptar").show();
+	$("#btnAbmCancelar").show();
 	switch (tabActiva) {
 		case Tabs.TabCliente:
 			mensaje = "Para eliminar primero debe seleccionar un Cliente."
@@ -792,6 +798,8 @@ function btnSubmitClick() {
 	var mensaje = PuedoGuardar(tabActiva);
 	if (mensaje === "") {
 		HabilitarBotonesPorAccion(AbmAction.SUBMIT);
+		$("#btnAbmAceptar").hide();
+		$("#btnAbmCancelar").hide();
 		Guardar();
 	}
 }
@@ -912,6 +920,8 @@ function btnCancelClick() {
 	tipoDeOperacion = AbmAction.CANCEL;
 	$(".nav-link").prop("disabled", false);
 	$(".activable").prop("disabled", true);
+	$("#btnAbmAceptar").hide();
+	$("#btnAbmCancelar").hide();
 	var tabActiva = $('.nav-tabs .active')[0].id;
 	switch (tabActiva) {
 		case Tabs.TabCliente:

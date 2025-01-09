@@ -1,7 +1,7 @@
 ﻿@model CuentaABMNotaModel
 @{
 }
-<div class="container">
+<div class="row">
 	<div class="col-md-8">
 		<div class="row">
 			<div class="table-responsive text-nowrap table-wrapper-200-full">
@@ -17,7 +17,7 @@
 					<tbody>
 						@foreach (var item in Model.CuentaNotas.ListaDatos)
 						{
-							<tr onclick="selectNotaenTab(this)">
+							<tr onclick="selectReg(this, 'tbClienteNotas')" ondblclick="selectRegDbl(this, 'tbClienteNotas')">
 								<td class="align-left">@item.nota</td>
 								<td class="align-left">@item.usu_apellidoynombre</td>
 								<td class="align-left">@item.fecha.ToString("dd/MM/yyyy")</td>
