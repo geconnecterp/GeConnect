@@ -5,35 +5,39 @@
 <div class="row">
 	<div class="col-md-8">
 		<div class="row">
-			<div class="table-responsive text-nowrap table-wrapper-200-full">
-				<table class="table table-sm mb-0 table-hover" id="tbClienteOtroContacto">
-					<thead class="table-dark">
-						<tr class="header">
-							<th class="col-header-small align-center">Contacto</th>
-							<th class="col-header-small align-center">Tipo</th>
-							<th class="col-header-small align-center">Email</th>
-							<th class="col-header-small align-center">Celular</th>
-							<th class="col-header-small align-center">TE</th>
-							<th style="width:0%; display:none;">tc_id</th>
-						</tr>
-					</thead>
-					<tbody>
-						@if (Model.CuentaOtrosContactos != null && Model.CuentaOtrosContactos.ListaDatos != null && Model.CuentaOtrosContactos.ListaDatos.Count > 0)
-						{
-							@foreach (var item in Model.CuentaOtrosContactos.ListaDatos)
-							{
-								<tr onclick="selectReg(this, 'tbClienteOtroContacto')" ondblclick="selectRegDbl(this, 'tbClienteOtroContacto')">
-									<td class="align-left">@item.cta_nombre</td>
-									<td class="align-left">@item.tc_desc</td>
-									<td class="align-left">@item.cta_email</td>
-									<td class="align-left">@item.cta_celu</td>
-									<td class="align-left">@item.cta_te</td>
-									<td style="display:none;">@item.tc_id</td>
+			<div class="card">
+				<div class="card-body mt-1">
+					<div class="table-responsive text-nowrap table-wrapper-200-full">
+						<table class="table table-sm mb-0 table-hover" id="tbClienteOtroContacto">
+							<thead class="table-dark">
+								<tr class="header">
+									<th class="col-header-small align-center">Contacto</th>
+									<th class="col-header-small align-center">Tipo</th>
+									<th class="col-header-small align-center">Email</th>
+									<th class="col-header-small align-center">Celular</th>
+									<th class="col-header-small align-center">TE</th>
+									<th style="width:0%; display:none;">tc_id</th>
 								</tr>
-							}
-						}
-					</tbody>
-				</table>
+							</thead>
+							<tbody>
+								@if (Model.CuentaOtrosContactos != null && Model.CuentaOtrosContactos.ListaDatos != null && Model.CuentaOtrosContactos.ListaDatos.Count > 0)
+								{
+									@foreach (var item in Model.CuentaOtrosContactos.ListaDatos)
+									{
+										<tr onclick="selectReg(this, 'tbClienteOtroContacto')" ondblclick="selectRegDbl(this, 'tbClienteOtroContacto')">
+											<td class="align-left">@item.cta_nombre</td>
+											<td class="align-left">@item.tc_desc</td>
+											<td class="align-left">@item.cta_email</td>
+											<td class="align-left">@item.cta_celu</td>
+											<td class="align-left">@item.cta_te</td>
+											<td style="display:none;">@item.tc_id</td>
+										</tr>
+									}
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
 			</div>
 		</div>
 		<div id="divDatosDeOCSelected">

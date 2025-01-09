@@ -5,26 +5,30 @@
 <div class="row">
 	<div class="col-md-8">
 		<div class="row">
-			<div class="table-responsive text-nowrap table-wrapper-200-full">
-				<table class="table table-sm mb-0 table-hover" id="tbClienteObservaciones">
-					<thead class="table-dark">
-						<tr class="header">
-							<th class="col-header-small align-center">Observacion</th>
-							<th class="col-header-small align-center">Tipo</th>
-							<th style="width:0%; display:none;">to_id</th>
-						</tr>
-					</thead>
-					<tbody>
-						@foreach (var item in Model.CuentaObservaciones.ListaDatos)
-						{
-							<tr onclick="selectReg(this, 'tbClienteObservaciones')" ondblclick="selectRegDbl(this, 'tbClienteObservaciones')">
-								<td class="align-left">@item.cta_obs</td>
-								<td class="align-left">@item.to_desc</td>
-								<td style="display:none;">@item.to_id</td>
-							</tr>
-						}
-					</tbody>
-				</table>
+			<div class="card">
+				<div class="card-body mt-1">
+					<div class="table-responsive text-nowrap table-wrapper-200-full">
+						<table class="table table-sm mb-0 table-hover" id="tbClienteObservaciones">
+							<thead class="table-dark">
+								<tr class="header">
+									<th class="col-header-small align-center">Observacion</th>
+									<th class="col-header-small align-center">Tipo</th>
+									<th style="width:0%; display:none;">to_id</th>
+								</tr>
+							</thead>
+							<tbody>
+								@foreach (var item in Model.CuentaObservaciones.ListaDatos)
+								{
+									<tr onclick="selectReg(this, 'tbClienteObservaciones')" ondblclick="selectRegDbl(this, 'tbClienteObservaciones')">
+										<td class="align-left">@item.cta_obs</td>
+										<td class="align-left">@item.to_desc</td>
+										<td style="display:none;">@item.to_id</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
 			</div>
 		</div>
 		<div id="divDatosDeObsSelected">
@@ -39,7 +43,7 @@
 				<div class="row mt-1">
 					<div class="input-group input-group-sm">
 						<span class="input-group-text fixed-lbl-for-abm-70">Observación: </span>
-						<input type="text" asp-for="Observacion.cta_obs" class="form-control activable"/>
+						<input type="text" asp-for="Observacion.cta_obs" class="form-control activable" />
 					</div>
 				</div>
 			</div>

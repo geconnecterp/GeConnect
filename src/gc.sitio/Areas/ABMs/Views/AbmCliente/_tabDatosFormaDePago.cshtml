@@ -6,26 +6,30 @@
 <div class="row">
 	<div class="col-md-6">
 		<div class="row mt-1">
-			<div class="table-responsive text-nowrap table-wrapper-200-full">
-				<table class="table table-sm mb-0 table-hover" id="tbClienteFormaPagoEnTab">
-					<thead class="table-dark">
-						<tr class="header">
-							<th class="col-header-small align-center">Forma de Pago</th>
-							<th class="col-header-small align-center">Plazo</th>
-							<th style="width:0%; display:none;">fp_id</th>
-						</tr>
-					</thead>
-					<tbody>
-						@foreach (var item in Model.CuentaFormasDePago.ListaDatos)
-						{
-							<tr onclick="selectReg(this, 'tbClienteFormaPagoEnTab')" ondblclick="selectRegDbl(this, 'tbClienteFormaPagoEnTab')">
-								<td class="align-left">@item.fp_desc</td>
-								<td class="align-center">@item.fp_dias</td>
-								<td style="display:none;">@item.fp_id</td>
-							</tr>
-						}
-					</tbody>
-				</table>
+			<div class="card">
+				<div class="card-body mt-1">
+					<div class="table-responsive text-nowrap table-wrapper-200-full">
+						<table class="table table-sm mb-0 table-hover" id="tbClienteFormaPagoEnTab">
+							<thead class="table-dark">
+								<tr class="header">
+									<th class="col-header-small align-center">Forma de Pago</th>
+									<th class="col-header-small align-center">Plazo</th>
+									<th style="width:0%; display:none;">fp_id</th>
+								</tr>
+							</thead>
+							<tbody>
+								@foreach (var item in Model.CuentaFormasDePago.ListaDatos)
+								{
+									<tr onclick="selectReg(this, 'tbClienteFormaPagoEnTab')" ondblclick="selectRegDbl(this, 'tbClienteFormaPagoEnTab')">
+										<td class="align-left">@item.fp_desc</td>
+										<td class="align-center">@item.fp_dias</td>
+										<td style="display:none;">@item.fp_id</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
 			</div>
 		</div>
 		<div id="divDatosDeFPSelected">
