@@ -20,7 +20,7 @@
 							<tbody>
 								@foreach (var item in Model.CuentaFormasDePago.ListaDatos)
 								{
-									<tr onclick="selectReg(this, 'tbClienteFormaPagoEnTab')" ondblclick="selectRegDbl(this, 'tbClienteFormaPagoEnTab')">
+									<tr onclick="selectRegCli(this, 'tbClienteFormaPagoEnTab')" ondblclick="selectRegDbl(this, 'tbClienteFormaPagoEnTab')">
 										<td class="align-left">@item.fp_desc</td>
 										<td class="align-center">@item.fp_dias</td>
 										<td style="display:none;">@item.fp_id</td>

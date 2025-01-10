@@ -18,7 +18,7 @@
 							<tbody>
 								@foreach (var item in Model.ListaProveedorGrupo.ListaDatos)
 								{
-									<tr onclick="selectReg(this, 'tbProveedorFliaProv')" ondblclick="selectRegDbl(this, 'tbProveedorFliaProv')">
+									<tr onclick="selectRegCli(this, 'tbProveedorFliaProv')" ondblclick="selectRegDbl(this, 'tbProveedorFliaProv')">
 										<td class="align-left">@item.pg_id</td>
 										<td class="align-left">@item.pg_desc</td>
 										<td style="display:none;">@item.cta_id</td>

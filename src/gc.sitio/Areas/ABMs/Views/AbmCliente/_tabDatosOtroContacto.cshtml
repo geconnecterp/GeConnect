@@ -24,7 +24,7 @@
 								{
 									@foreach (var item in Model.CuentaOtrosContactos.ListaDatos)
 									{
-										<tr onclick="selectReg(this, 'tbClienteOtroContacto')" ondblclick="selectRegDbl(this, 'tbClienteOtroContacto')">
+										<tr onclick="selectRegCli(this, 'tbClienteOtroContacto')" ondblclick="selectRegDbl(this, 'tbClienteOtroContacto')">
 											<td class="align-left">@item.cta_nombre</td>
 											<td class="align-left">@item.tc_desc</td>
 											<td class="align-left">@item.cta_email</td>

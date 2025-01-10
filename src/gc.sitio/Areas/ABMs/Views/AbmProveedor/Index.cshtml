@@ -39,7 +39,7 @@
 					<i class="bx bx-check-circle bx-xs"></i>
 				</button>
 				<button id="btnAbmModif" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Editar" disabled>
-					<i class="bx bx-x-circle bx-xs"></i>
+					<i class="bx bx-edit-alt bx-xs"></i>
 				</button>
 				<button id="btnAbmElimi" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Eliminar/Discontinuar" disabled>
 					<i class="bx bx-x-circle bx-xs"></i>
@@ -156,6 +156,15 @@
 		var buscarFamiliasUrl = "@Url.Action("BuscarFamilias", "abmproveedor", new { area = "abms" })";
 		var buscarDatosFamiliasUrl = "@Url.Action("BuscarDatosFamilia", "abmproveedor", new { area = "abms" })";
 		var obtenerDepartamentosUrl = "@Url.Action("ObtenerDepartamentos", "abmcliente", new { area = "abms" })";
+		var nuevoProveedorUrl = "@Url.Action("NuevoProveedor", "abmproveedor", new { area = "abms" })";
+		var nuevaFamiliaUrl = "@Url.Action("NuevaFamilia", "abmproveedor", new { area = "abms" })";
+		var nuevaFormaDePagoUrl = "@Url.Action("NuevaFormaDePago", "abmcliente", new { area = "abms" })";
+		var dataOpsFormaDePagoUrl = "@Url.Action("DataOpsFormaDePago", "abmcliente", new { area = "abms" })";
+		var nuevoContactoUrl = "@Url.Action("NuevoContacto", "abmcliente", new { area = "abms" })";
+		var dataOpsCuentaContactoUrl = "@Url.Action("DataOpsOtrosContactos", "abmcliente", new { area = "abms" })";
+		var nuevaNotaUrl = "@Url.Action("NuevaNota", "abmcliente", new { area = "abms" })";
+		var dataOpsCuentaNotaUrl = "@Url.Action("DataOpsNotas", "abmcliente", new { area = "abms" })";
+		var nuevaObservacionUrl = "@Url.Action("NuevaObservacion", "abmcliente", new { area = "abms" })";
 	</script>
 	<script src="~/js/plugins/jquery.simplePagination.js"></script>
 	<script src="~/js/app/busquedas.js"></script>

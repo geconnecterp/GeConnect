@@ -19,7 +19,7 @@
 							<tbody>
 								@foreach (var item in Model.CuentaNotas.ListaDatos)
 								{
-									<tr onclick="selectReg(this, 'tbClienteNotas')" ondblclick="selectRegDbl(this, 'tbClienteNotas')">
+									<tr onclick="selectRegCli(this, 'tbClienteNotas')" ondblclick="selectRegDbl(this, 'tbClienteNotas')">
 										<td class="align-left">@item.nota</td>
 										<td class="align-left">@item.usu_apellidoynombre</td>
 										<td class="align-left">@item.fecha.ToString("dd/MM/yyyy")</td>

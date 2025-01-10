@@ -19,7 +19,7 @@
 							<tbody>
 								@foreach (var item in Model.CuentaObservaciones.ListaDatos)
 								{
-									<tr onclick="selectReg(this, 'tbClienteObservaciones')" ondblclick="selectRegDbl(this, 'tbClienteObservaciones')">
+									<tr onclick="selectRegCli(this, 'tbClienteObservaciones')" ondblclick="selectRegDbl(this, 'tbClienteObservaciones')">
 										<td class="align-left">@item.cta_obs</td>
 										<td class="align-left">@item.to_desc</td>
 										<td style="display:none;">@item.to_id</td>

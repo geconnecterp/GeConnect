@@ -536,6 +536,32 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				return PartialView("_gridMensaje", response);
 			}
 		}
+
+		[HttpPost]
+		public IActionResult NuevaFamilia()
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				var proveedorGrupo = new ProveedorGrupoModel();
+				var model = new ProveedorABMFliaGrupoSelectedModel()
+				{
+					ProveedorGrupo = proveedorGrupo
+				};
+				return PartialView("_tabDatosFliaProvSelected", model);
+
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Familia -> Nueva";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Familia -> Nueva");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
 		#endregion
 
 		#region Carga De Listas en sección filtros Base
