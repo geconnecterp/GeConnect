@@ -25,7 +25,8 @@
 	$("#btnAbmElimi").on("click", function () { btnBajaClick(); });
 	$("#btnAbmAceptar").on("click", function () { btnSubmitClick(); });
 	$("#btnAbmCancelar").on("click", function () { btnCancelClick(); });
-	$("#btnDetalle").on("click", function () { btnDetalleClick(); });
+	//$("#btnDetalle").on("click", function () { btnDetalleClick(); });
+	$("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle); 
 
 	$("#btnDetalle").prop("disabled", true);
 	$("#btnCancel").on("click", function () {
@@ -74,6 +75,15 @@ const Grids = {
 
 function SeteaIDClienteSelected() {
 	$("#IdSelected").val($("#Cliente_Cta_Id").val());
+}
+
+function analizaEstadoBtnDetalle() {
+	var res = $("#divDetalle").hasClass("show");
+	if (res === true) {
+		selectRegCli(regSelected, Grids.GridCliente);
+	}
+	return true;
+
 }
 
 function controlaValorFP() {
@@ -266,12 +276,8 @@ function BuscarCliente(ctaId) {
 	});
 }
 
-function selectReg(e, gridId) {
-	$("#" + gridId + " tbody tr").each(function (index) {
-		$(this).removeClass("selected-row");
-		$(this).removeClass("selectedEdit-row");
-	});
-	$(e).addClass("selected-row");
+function selectRegCli(e, gridId) {
+	selectReg(e, gridId);
 
 	switch (gridId) {
 		case Grids.GridCliente:
@@ -279,6 +285,8 @@ function selectReg(e, gridId) {
 				$("#divDetalle").collapse("hide");
 			}
 			$("#btnDetalle").prop("disabled", true);
+			activarGrilla(Grids.GridCliente);
+			activarBotones(false);
 			break;
 		case Grids.GridFP:
 			break;
@@ -298,6 +306,7 @@ function selectRegDbl(x, gridId) {
 		$(this).removeClass("selectedEdit-row");
 	});
 	$(x).addClass("selectedEdit-row");
+	regSelected = x;
 
 	switch (gridId) {
 		case Grids.GridCliente:
@@ -311,7 +320,6 @@ function selectRegDbl(x, gridId) {
 				BuscarObservaciones();
 				HabilitarBotones(false, false, false, true, true);
 				controlaCertIb();
-				//$("#tbGridCliente tbody tr td").addClass("disable-table-rows");
 				$(".activable").prop("disabled", true);
 				$("#btnDetalle").prop("disabled", false);
 				$("#divFiltro").collapse("hide");
@@ -378,9 +386,6 @@ function selectRegDbl(x, gridId) {
 	}
 }
 
-function btnDetalleClick() {
-}
-
 function btnNuevoClick() {
 
 	tipoDeOperacion = AbmAction.ALTA;
@@ -418,6 +423,7 @@ function NuevoCliente() {
 		$("#chkCtaActiva")[0].checked = true;
 		$("#Cliente_Cta_Id").prop("disabled", true);
 		HabilitarBotonesPorAccion(AbmAction.ALTA);
+		desactivarGrilla(Grids.GridCliente);
 		$("#Cliente_Cta_Denominacion").focus();
 		CerrarWaiting();
 	}, function (obj) {
@@ -441,6 +447,7 @@ function NuevaFormaDePago() {
 			$("#divDatosDeFPSelected").html(obj);
 			$(".nav-link").prop("disabled", true);
 			$(".activable").prop("disabled", false);
+			desactivarGrilla(Grids.GridFP);
 			HabilitarBotonesPorAccion(AbmAction.ALTA);
 			$("#FormaDePago_Fp_Id").focus();
 			CerrarWaiting();
@@ -466,6 +473,7 @@ function NuevoContacto() {
 			$("#divDatosDeOCSelected").html(obj);
 			$(".nav-link").prop("disabled", true);
 			$(".activable").prop("disabled", false);
+			desactivarGrilla(Grids.GridOC);
 			HabilitarBotonesPorAccion(AbmAction.ALTA);
 			$("#OtroContacto_cta_nombre").focus();
 			CerrarWaiting();
@@ -491,6 +499,7 @@ function NuevaNota() {
 			$("#divDatosDeNotaSelected").html(obj);
 			$(".nav-link").prop("disabled", true);
 			$(".activable").prop("disabled", false);
+			desactivarGrilla(Grids.GridNota);
 			HabilitarBotonesPorAccion(AbmAction.ALTA);
 			$("#Nota_usu_apellidoynombre").focus();
 			CerrarWaiting();
@@ -516,6 +525,7 @@ function NuevaObservacion() {
 			$("#divDatosDeObsSelected").html(obj);
 			$(".nav-link").prop("disabled", true);
 			$(".activable").prop("disabled", false);
+			desactivarGrilla(Grids.GridObs);
 			HabilitarBotonesPorAccion(AbmAction.ALTA);
 			$("#Observacion_cta_obs").focus();
 			CerrarWaiting();
@@ -557,7 +567,8 @@ function ModificaCliente(tabAct) {
 	SetearDestinoDeOperacion(tabAct);
 	$(".nav-link").prop("disabled", true);
 	$(".activable").prop("disabled", false);
-	$("#tbGridCliente tbody tr td").addClass("disable-table-rows");
+	desactivarGrilla(Grids.GridCliente);
+	//$("#tbGridCliente tbody tr td").addClass("disable-table-rows");
 	$("#Cliente_Cta_Denominacion").focus();
 }
 
@@ -576,9 +587,11 @@ function ModificaFormaDePago(tabAct) {
 		$(".nav-link").prop("disabled", true);
 		$(".activable").prop("disabled", false);
 		$("#listaFP").prop("disabled", true);
-		$("#tbClienteFormaPagoEnTab tbody tr td").prop("disabled", true);
-		$("#tbGridCliente tbody tr td").addClass("disable-table-rows");
-		$("#tbClienteFormaPagoEnTab tbody tr td").addClass("disable-table-rows");
+		//$("#tbClienteFormaPagoEnTab tbody tr td").prop("disabled", true);
+		desactivarGrilla(Grids.GridCliente);
+		//$("#tbGridCliente tbody tr td").addClass("disable-table-rows");
+		desactivarGrilla(Grids.GridFP);
+		//$("#tbClienteFormaPagoEnTab tbody tr td").addClass("disable-table-rows");
 		$("#FormaDePago_fp_dias").focus();
 	}
 }
@@ -597,8 +610,10 @@ function ModificaContacto(tabAct) {
 		SetearDestinoDeOperacion(tabAct);
 		$(".nav-link").prop("disabled", true);
 		$(".activable").prop("disabled", false);
-		$("#tbClienteOtroContacto tbody tr td").addClass("disable-table-rows");
-		$("#tbGridCliente tbody tr td").addClass("disable-table-rows");
+		desactivarGrilla(Grids.GridOC);
+		//$("#tbClienteOtroContacto tbody tr td").addClass("disable-table-rows");
+		desactivarGrilla(Grids.GridCliente);
+		//$("#tbGridCliente tbody tr td").addClass("disable-table-rows");
 		$("#OtroContacto_cta_nombre").prop("disabled", true);
 		$("#listaTC").prop("disabled", true);
 		$("#OtroContacto_cta_celu").focus();
@@ -620,8 +635,10 @@ function ModificaNota(tabAct) {
 		$(".nav-link").prop("disabled", true);
 		$(".activable").prop("disabled", false);
 		$("#Nota_usu_apellidoynombre").prop("disabled", true);
-		$("#tbClienteNotas tbody tr td").addClass("disable-table-rows");
-		$("#tbGridCliente tbody tr td").addClass("disable-table-rows");
+		desactivarGrilla(Grids.GridNota);
+		//$("#tbClienteNotas tbody tr td").addClass("disable-table-rows");
+		desactivarGrilla(Grids.GridCliente);
+		//$("#tbGridCliente tbody tr td").addClass("disable-table-rows");
 		$("#Nota_nota").focus();
 	}
 }
@@ -641,39 +658,21 @@ function ModificaObservacion(tabAct) {
 		$(".nav-link").prop("disabled", true);
 		$(".activable").prop("disabled", false);
 		$("#listaTipoObs").prop("disabled", true);
-		$("#tbClienteObservaciones tbody tr td").addClass("disable-table-rows");
-		$("#tbGridCliente tbody tr td").addClass("disable-table-rows");
+		desactivarGrilla(Grids.GridObs);
+		//$("#tbClienteObservaciones tbody tr td").addClass("disable-table-rows");
+		desactivarGrilla(Grids.GridCliente);
+		//$("#tbGridCliente tbody tr td").addClass("disable-table-rows");
 		$("#Observacion_cta_obs").focus();
 	}
 }
 
 function btnBajaClick() {
-	var mensaje = "";
 	var tabActiva = $('.nav-tabs .active')[0].id;
 	$("#btnAbmAceptar").show();
 	$("#btnAbmCancelar").show();
-	switch (tabActiva) {
-		case Tabs.TabCliente:
-			mensaje = "Para eliminar primero debe seleccionar un Cliente."
-			break;
-		case Tabs.TabFormasDePago:
-			mensaje = "Para eliminar primero debe seleccionar una Forma de Pago."
-			break;
-		case Tabs.TabNotas:
-			mensaje = "Para eliminar primero debe seleccionar una Nota."
-			break;
-		case Tabs.TabObservaciones:
-			mensaje = "Para eliminar primero debe seleccionar una Observación."
-			break;
-		case Tabs.TabOtrosContactos:
-			mensaje = "Para eliminar primero debe seleccionar un Contacto."
-			break;
-		default:
-			break;
-	}
 	var idSelected = $("#IdSelected").val();
 	if (idSelected === "") {
-		AbrirMensaje("ATENCIÓN", mensaje, function () {
+		AbrirMensaje("ATENCIÓN", GetMensajeParaBaja(tabActiva), function () {
 			$("#msjModal").modal("hide");
 			return false;
 		}, false, ["Aceptar"], "error!", null);
@@ -686,6 +685,25 @@ function btnBajaClick() {
 		var tabActiva = $('.nav-tabs .active')[0].id;
 		SetearDestinoDeOperacion(tabActiva);
 		$(".nav-link").prop("disabled", true);
+		switch (tabActiva) {
+			case Tabs.TabCliente:
+				desactivarGrilla(Grids.GridCliente);
+				break;
+			case Tabs.TabFormasDePago:
+				desactivarGrilla(Grids.GridFP);
+				break;
+			case Tabs.TabNotas:
+				desactivarGrilla(Grids.GridNota);
+				break;
+			case Tabs.TabObservaciones:
+				desactivarGrilla(Grids.GridObs);
+				break;
+			case Tabs.TabOtrosContactos:
+				desactivarGrilla(Grids.GridOC);
+				break;
+			default:
+				break;
+		}
 	}
 }
 
@@ -811,6 +829,31 @@ function PuedoBorrar(tabAct) {
 	return true;
 }
 
+function GetMensajeParaBaja(tabActiva) {
+	var mensaje = "";
+	switch (tabActiva) {
+		case Tabs.TabCliente:
+			mensaje = "Para eliminar primero debe seleccionar un Cliente."
+			break;
+		case Tabs.TabFormasDePago:
+			mensaje = "Para eliminar primero debe seleccionar una Forma de Pago."
+			break;
+		case Tabs.TabNotas:
+			mensaje = "Para eliminar primero debe seleccionar una Nota."
+			break;
+		case Tabs.TabObservaciones:
+			mensaje = "Para eliminar primero debe seleccionar una Observación."
+			break;
+		case Tabs.TabOtrosContactos:
+			mensaje = "Para eliminar primero debe seleccionar un Contacto."
+			break;
+		default:
+			mensaje = "";
+			break;
+	}
+	return mensaje;
+}
+
 function btnCancelClick() {
 	HabilitarBotonesPorAccion(AbmAction.CANCEL);
 	tipoDeOperacion = AbmAction.CANCEL;
@@ -821,25 +864,34 @@ function btnCancelClick() {
 	var tabActiva = $('.nav-tabs .active')[0].id;
 	switch (tabActiva) {
 		case Tabs.TabCliente:
-			$("#tbGridCliente tbody tr td").removeClass("disable-table-rows");
+			activarGrilla(Grids.GridCliente);
+			//$("#tbGridCliente tbody tr td").removeClass("disable-table-rows");
 			break;
 		case Tabs.TabFormasDePago:
 			$("#tbClienteFormaPagoEnTab").prop("disabled", false);
-			$("#tbClienteFormaPagoEnTab tbody tr td").removeClass("disable-table-rows");
-			$("#tbGridCliente tbody tr td").removeClass("disable-table-rows");
+			activarGrilla(Grids.GridFP);
+			//$("#tbClienteFormaPagoEnTab tbody tr td").removeClass("disable-table-rows");
+			activarGrilla(Grids.GridCliente);
+			//$("#tbGridCliente tbody tr td").removeClass("disable-table-rows");
 			break;
 		case Tabs.TabNotas:
 			$("#Nota_usu_apellidoynombre").prop("disabled", false);
-			$("#tbClienteNotas tbody tr td").removeClass("disable-table-rows");
-			$("#tbGridCliente tbody tr td").removeClass("disable-table-rows");
+			activarGrilla(Grids.GridNota);
+			//$("#tbClienteNotas tbody tr td").removeClass("disable-table-rows");
+			activarGrilla(Grids.GridCliente);
+			//$("#tbGridCliente tbody tr td").removeClass("disable-table-rows");
 			break;
 		case Tabs.TabObservaciones:
-			$("#tbClienteObservaciones tbody tr td").removeClass("disable-table-rows");
-			$("#tbGridCliente tbody tr td").removeClass("disable-table-rows");
+			activarGrilla(Grids.GridObs);
+			//$("#tbClienteObservaciones tbody tr td").removeClass("disable-table-rows");
+			activarGrilla(Grids.GridCliente);
+			//$("#tbGridCliente tbody tr td").removeClass("disable-table-rows");
 			break;
 		case Tabs.TabOtrosContactos:
-			$("#tbClienteOtroContacto tbody tr td").removeClass("disable-table-rows");
-			$("#tbGridCliente tbody tr td").removeClass("disable-table-rows");
+			activarGrilla(Grids.GridOC);
+			//$("#tbClienteOtroContacto tbody tr td").removeClass("disable-table-rows");
+			activarGrilla(Grids.GridCliente);
+			//$("#tbGridCliente tbody tr td").removeClass("disable-table-rows");
 			$("#OtroContacto_cta_nombre").prop("disabled", false);
 			$("#listaTC").prop("disabled", false);
 			break;
@@ -883,26 +935,31 @@ function Guardar() {
 		var url = "";
 		switch (destinoDeOperacion) {
 			case AbmObject.CLIENTES:
-				$("#tbGridCliente tbody tr td").removeClass("disable-table-rows");
+				activarGrilla(Grids.GridCliente);
+				//$("#tbGridCliente tbody tr td").removeClass("disable-table-rows");
 				url = dataOpsClienteUrl;
 				break;
 			case AbmObject.CLIENTES_CONDICIONES_VTA:
-				$("#tbClienteFormaPagoEnTab tbody tr td").removeClass("disable-table-rows");
+				activarGrilla(Grids.GridFP);
+				//$("#tbClienteFormaPagoEnTab tbody tr td").removeClass("disable-table-rows");
 				url = dataOpsFormaDePagoUrl;
 				break;
 			case AbmObject.CUENTAS_CONTACTOS:
-				$("#tbClienteOtroContacto tbody tr td").removeClass("disable-table-rows");
+				activarGrilla(Grids.GridOC);
+				//$("#tbClienteOtroContacto tbody tr td").removeClass("disable-table-rows");
 				$("#OtroContacto_cta_nombre").prop("disabled", false);
 				$("#listaTC").prop("disabled", false);
 				url = dataOpsCuentaContactoUrl;
 				break;
 			case AbmObject.CUENTAS_NOTAS:
 				$("#Nota_usu_apellidoynombre").prop("disabled", false);
-				$("#tbClienteNotas tbody tr td").removeClass("disable-table-rows");
+				activarGrilla(Grids.GridNota);
+				//$("#tbClienteNotas tbody tr td").removeClass("disable-table-rows");
 				url = dataOpsCuentaNotaUrl;
 				break;
 			case AbmObject.CUENTAS_OBSERVACIONES:
-				$("#tbClienteObservaciones tbody tr td").removeClass("disable-table-rows");
+				activarGrilla(Grids.GridObs);
+				//$("#tbClienteObservaciones tbody tr td").removeClass("disable-table-rows");
 				url = dataOpsObservacionesUrl;
 				break;
 			default:

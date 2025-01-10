@@ -1,4 +1,29 @@
-﻿function BuscarFormaDePago() {
+﻿function activarBotones(activar) {
+	if (activar === true) {
+		//el activarlos es activar BM
+		$("#btnAbmNuevo").prop("disabled", false);
+		$("#btnAbmModif").prop("disabled", false);
+		$("#btnAbmElimi").prop("disabled", false);
+
+
+		$("#btnAbmAceptar").prop("disabled", true);
+		$("#btnAbmCancelar").prop("disabled", true);
+		$("#btnAbmAceptar").hide();
+		$("#btnAbmCancelar").hide();
+	}
+	else {
+		$("#btnAbmNuevo").prop("disabled", false);
+		$("#btnAbmModif").prop("disabled", true);
+		$("#btnAbmElimi").prop("disabled", true);
+
+		$("#btnAbmAceptar").prop("disabled", true);
+		$("#btnAbmCancelar").prop("disabled", true);
+		$("#btnAbmAceptar").hide();
+		$("#btnAbmCancelar").hide();
+	}
+}
+
+function BuscarFormaDePago() {
 	if ($(".nav-link").prop("disabled")) {
 		return false;
 	}

@@ -14,3 +14,4 @@ const EstadoColor = {
 
 //variables globales
 var regSelected = "";
+
