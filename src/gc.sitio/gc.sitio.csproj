@@ -40,6 +40,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="Areas\ABMs\Views\AbmProveedor\_tabDatosFliaProv.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="Areas\ABMs\Views\AbmProveedor\_tabDatosFliaProvSelected.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
     <Content Update="Areas\ControlComun\Views\CuentaComercial\Index.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>

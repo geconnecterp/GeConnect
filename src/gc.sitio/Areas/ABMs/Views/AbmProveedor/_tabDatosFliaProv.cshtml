@@ -1,0 +1,52 @@
+﻿@model ProveedorABMFliaGrupoModel
+@{
+}
+<div class="row">
+	<div class="col-md-8">
+		<div class="row">
+			<div class="card">
+				<div class="card-body mt-1">
+					<div class="table-responsive text-nowrap table-wrapper-200-full">
+						<table class="table table-sm mb-0 table-hover" id="tbProveedorFliaProv">
+							<thead class="table-dark">
+								<tr class="header">
+									<th class="col-header-small align-center">ID</th>
+									<th class="col-header-small align-center">Familia</th>
+									<th style="width:0%; display:none;">usu_id</th>
+								</tr>
+							</thead>
+							<tbody>
+								@foreach (var item in Model.ListaProveedorGrupo.ListaDatos)
+								{
+									<tr onclick="selectReg(this, 'tbProveedorFliaProv')" ondblclick="selectRegDbl(this, 'tbProveedorFliaProv')">
+										<td class="align-left">@item.pg_id</td>
+										<td class="align-left">@item.pg_desc</td>
+										<td style="display:none;">@item.cta_id</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="divDatosDeFamiliaSelected">
+			<div class="row" style="padding-top: 10px;">
+				@Html.HiddenFor(x => x.ProveedorGrupo.cta_id)
+				<div class="row mt-1">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text fixed-lbl-for-abm-70">ID: </span>
+						<input type="text" asp-for="ProveedorGrupo.pg_id" class="form-control activable" />
+					</div>
+				</div>
+				<div class="row mt-1">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text fixed-lbl-for-abm-70">Familia: </span>
+						<input type="text" asp-for="ProveedorGrupo.pg_desc" class="form-control activable" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+

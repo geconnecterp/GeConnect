@@ -1,7 +1,4 @@
 ﻿$(function () {
-	$("#btnCancel").on("click", function () {
-		$("#btnFiltro").trigger("click");
-	});
 	$("#pagEstado").on("change", function () {
 		var div = $("#divPaginacion");
 		presentaPaginacion(div);
@@ -17,6 +14,7 @@
 	$("#tabOtrosContactos").on("click", function () { BuscarOtrosContactos(); });
 	$("#tabNotas").on("click", function () { BuscarNotas(); });
 	$("#tabObservaciones").on("click", function () { BuscarObservaciones(); });
+	$("#tabFliaProv").on("click", function () { BuscarFamilias(); });
 
 	/*ABM Botones*/
 	$("#btnAbmNuevo").on("click", function () { btnNuevoClick(); });
@@ -24,6 +22,23 @@
 	$("#btnAbmElimi").on("click", function () { btnBajaClick(); });
 	$("#btnAbmAceptar").on("click", function () { btnSubmitClick(); });
 	$("#btnAbmCancelar").on("click", function () { btnCancelClick(); });
+	$("#btnDetalle").on("click", function () { btnDetalleClick(); });
+
+	$("#btnDetalle").prop("disabled", true);
+	$("#btnCancel").on("click", function () {
+		$("#btnFiltro").trigger("click");
+	});
+	$("#btnBuscar").on("click", function () {
+		//es nueva la busqueda no resguardamos la busqueda anterior. es util para paginado
+		dataBak = "";
+		//es una busqueda por filtro. siempre sera pagina 1
+		pagina = 1;
+		buscarProveedores(pagina);
+	});
+
+	$(".inputEditable").on("keypress", analizaEnterInput);
+	$("#btnAbmAceptar").hide();
+	$("#btnAbmCancelar").hide();
 
 	InicializaPantallaAbmProveedor();
 	funcCallBack = buscarProveedores;
@@ -35,7 +50,17 @@ const Tabs = {
 	TabFormasDePago: 'btnTabFormasDePago',
 	TabOtrosContactos: 'btnTabOtrosContactos',
 	TabNotas: 'btnTabNotas',
-	TabObservaciones: 'btnTabObservaciones'
+	TabObservaciones: 'btnTabObservaciones',
+	TabFamilias: 'btnTabFliaProv'
+}
+
+const GridsProv = {
+	GridProveedor: 'tbGridProveedor',
+	GridFP: 'tbClienteFormaPagoEnTab',
+	GridOC: 'tbClienteOtroContacto',
+	GridNota: 'tbClienteNotas',
+	GridObs: 'tbClienteObservaciones',
+	GridFlias: 'tbProveedorFliaProv'
 }
 
 function btnNuevoClick() { }
@@ -47,6 +72,8 @@ function btnBajaClick() { }
 function btnSubmitClick() { }
 
 function btnCancelClick() { }
+function btnDetalleClick() {
+}
 
 function SeteaIDProvSelected() {
 	$("#IdSelected").val($("#Proveedor_Cta_Id").val());
@@ -167,30 +194,149 @@ function buscarProveedores(pag) {
 
 }
 
-function selectReg(e) {
-	$("#tbGridProveedor tbody tr").each(function (index) {
-		$(this).removeClass("selected-row");
-	});
-	$(e).addClass("selected-row");
+function BuscarFamilias() {
+	if ($(".nav-link").prop("disabled")) {
+		return false;
+	}
+	if (ctaId != "") {
+		var data = { ctaId };
+		AbrirWaiting();
+		PostGenHtml(data, buscarFamiliasUrl, function (obj) {
+			$("#divFliaProv").html(obj);
+			AgregarHandlerSelectedRow("tbProveedorFliaProv");
+			$(".activable").prop("disabled", true);
+			$("#IdSelected").val("");
+			CerrarWaiting();
+		}, function (obj) {
+			ControlaMensajeError(obj.message);
+			CerrarWaiting();
+		});
+	}
 }
 
-function selectRegDbl(x) {
+function selectReg(e, gridId) {
+	$("#" + gridId + " tbody tr").each(function (index) {
+		$(this).removeClass("selected-row");
+		$(this).removeClass("selectedEdit-row");
+	});
+	$(e).addClass("selected-row");
+
+	switch (gridId) {
+		case GridsProv.GridProveedor:
+			if ($("#divDetalle").is(":visible")) {
+				$("#divDetalle").collapse("hide");
+			}
+			$("#btnDetalle").prop("disabled", true);
+			break;
+		case GridsProv.GridFP:
+			break;
+		case GridsProv.GridOC:
+			break;
+		case GridsProv.GridNota:
+			break;
+		case GridsProv.GridObs:
+			break;
+		case GridsProv.GridFlias:
+			break;
+		default:
+	}
+}
+
+function selectRegDbl(x, gridId) {
 	AbrirWaiting("Espere mientras se busca el proveedor seleccionado...");
 	$("#tbGridProveedor tbody tr").each(function (index) {
 		$(this).removeClass("selectedEdit-row");
 	});
 	$(x).addClass("selectedEdit-row");
 
-	var cta_id = x.cells[0].innerText.trim();
-	if (cta_id !== "") {
-		ctaId = cta_id;
-		BuscarProveedor(cta_id);
-		BuscarFormaDePago();
-		BuscarOtrosContactos();
-		BuscarNotas();
-		BuscarObservaciones();
-		HabilitarBotones(false, false, false, true, true);
-		$(".activable").prop("disabled", true);
+	switch (gridId) {
+		case GridsProv.GridProveedor:
+			var cta_id = x.cells[0].innerText.trim();
+			if (cta_id !== "") {
+				ctaId = cta_id;
+				BuscarProveedor(cta_id);
+				BuscarFormaDePago();
+				BuscarOtrosContactos();
+				BuscarNotas();
+				BuscarObservaciones();
+				HabilitarBotones(false, false, false, true, true);
+				$(".activable").prop("disabled", true);
+				$("#btnDetalle").prop("disabled", false);
+				$("#divFiltro").collapse("hide");
+				$("#divDetalle").collapse("show");
+			}
+			break;
+		case GridsProv.GridFP:
+			var fpId = x.cells[2].innerText.trim();
+			var data = { ctaId, fpId };
+			AbrirWaiting();
+			PostGenHtml(data, buscarDatosFormasDePagoUrl, function (obj) {
+				$("#divDatosDeFPSelected").html(obj);
+				$("#IdSelected").val($("#FormaDePago_fp_id").val());
+				$(".activable").prop("disabled", true);
+				CerrarWaiting();
+			}, function (obj) {
+				ControlaMensajeError(obj.message);
+				CerrarWaiting();
+			});
+			break;
+		case GridsProv.GridOC:
+			var tcId = x.cells[5].innerText.trim();
+			var data = { ctaId, tcId };
+			AbrirWaiting();
+			PostGenHtml(data, buscarDatosOtrosContactosUrl, function (obj) {
+				$("#divDatosDeOCSelected").html(obj);
+				$("#IdSelected").val(tcId);
+				$(".activable").prop("disabled", true);
+				CerrarWaiting();
+			}, function (obj) {
+				ControlaMensajeError(obj.message);
+				CerrarWaiting();
+			});
+			break;
+		case GridsProv.GridNota:
+			var usuId = x.cells[3].innerText.trim();
+			var data = { ctaId, usuId };
+			AbrirWaiting();
+			PostGenHtml(data, buscarDatosNotaUrl, function (obj) {
+				$("#divDatosDeNotaSelected").html(obj);
+				$("#IdSelected").val(usuId);
+				$(".activable").prop("disabled", true);
+				CerrarWaiting();
+			}, function (obj) {
+				ControlaMensajeError(obj.message);
+				CerrarWaiting();
+			});
+			break;
+		case GridsProv.GridObs:
+			var toId = x.cells[2].innerText.trim();
+			var data = { ctaId, toId };
+			AbrirWaiting();
+			PostGenHtml(data, buscarDatosObservacionesUrl, function (obj) {
+				$("#divDatosDeObsSelected").html(obj);
+				$("#IdSelected").val(toId);
+				$(".activable").prop("disabled", true);
+				CerrarWaiting();
+			}, function (obj) {
+				ControlaMensajeError(obj.message);
+				CerrarWaiting();
+			});
+			break;
+		case GridsProv.GridFlias:
+			var pgId = x.cells[2].innerText.trim();
+			var data = { ctaId, pgId };
+			AbrirWaiting();
+			PostGenHtml(data, buscarDatosFamiliasUrl, function (obj) {
+				$("#divDatosDeFamiliaSelected").html(obj);
+				$("#IdSelected").val(pgId);
+				$(".activable").prop("disabled", true);
+				CerrarWaiting();
+			}, function (obj) {
+				ControlaMensajeError(obj.message);
+				CerrarWaiting();
+			});
+			break;
+		default:
 	}
 }
 
@@ -199,7 +345,7 @@ function BuscarProveedor(ctaId) {
 	AbrirWaiting();
 	PostGenHtml(data, buscarProveedorUrl, function (obj) {
 		$("#divDatosProveedor").html(obj);
-		$("#IdSelected").val($("#Proveedor_Cta_Id").val());
+		$("#IdSelected").val($("#ProveedorGrupo_Pg_Id").val());
 		$(".activable").prop("disabled", true);
 		CerrarWaiting();
 	}, function (obj) {

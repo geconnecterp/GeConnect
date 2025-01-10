@@ -473,6 +473,71 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		}
 		#endregion
 
+		#region Familias
+		[HttpPost]
+		public async Task<IActionResult> BuscarFamilias(string ctaId)
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				if (string.IsNullOrEmpty(ctaId))
+					return PartialView("_tabDatosFliaProv", new ProveedorABMFliaGrupoModel());
+
+				//TODO: Reemplazar por la funcion de busqueda
+				var pg = new List<ProveedorGrupoDto>();
+				if (pg == null)
+					return PartialView("_tabDatosFliaProv", new ProveedorABMFliaGrupoModel());
+
+				var ObsModel = new ProveedorABMFliaGrupoModel()
+				{
+					ListaProveedorGrupo = ObtenerGridCore<ProveedorGrupoDto>(pg),
+				};
+				return PartialView("_tabDatosFliaProv", ObsModel);
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Familias";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Familias");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> BuscarDatosFamilia(string ctaId, string pgId)
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				if (string.IsNullOrWhiteSpace(ctaId) || string.IsNullOrWhiteSpace(pgId))
+					return PartialView("_tabDatosFliaProvSelected", new ProveedorABMFliaGrupoSelectedModel());
+				//TODO: Reemplazar por la funcion de busqueda
+				var pg = new ProveedorGrupoDto();
+				if (pg == null)
+					return PartialView("_tabDatosFliaProvSelected", new ProveedorABMFliaGrupoSelectedModel());
+				var model = new ProveedorABMFliaGrupoSelectedModel()
+				{
+					ProveedorGrupo = ObtenerGrupoModel(pg),
+				};
+				return PartialView("_tabDatosFliaProvSelected", model);
+
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Obs Selected";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Obs Selected");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+		#endregion
+
 		#region Carga De Listas en sección filtros Base
 		[HttpPost]
 		public JsonResult BuscarR01(string prefix)
@@ -611,6 +676,27 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			#endregion
 			return nom;
 		}
+
+		private static ProveedorGrupoModel ObtenerGrupoModel(ProveedorGrupoDto pg)
+		{ 
+			var pgr= new ProveedorGrupoModel();
+			if (pg == null)
+				return pgr;
+			#region map
+			pgr.pg_desc = pg.pg_desc;
+			pgr.pg_lista = pg.pg_lista;
+			pgr.pg_actu = pg.pg_actu;
+			pgr.pg_fecha_carga_precios = pg.pg_fecha_carga_precios;
+			pgr.pg_fecha_consulta_precios = pg.pg_fecha_consulta_precios;
+			pgr.cta_id = pg.cta_id;
+			pgr.pg_actu_fecha = pg.pg_actu_fecha;
+			pgr.pg_observaciones = pg.pg_observaciones;
+			pgr.pg_id = pg.pg_id;
+			pgr.pg_fecha_cambio_precios = pg.pg_fecha_cambio_precios;
+			#endregion
+			return pgr;
+		}
+
 		private static OtroContactoModel ObtenerOtroContactoModel(CuentaContactoDto contacto)
 		{
 			var ocm = new OtroContactoModel();

@@ -137,66 +137,6 @@ function controlaValorCanal() {
 	}
 }
 
-//function selectOCenTab(x) {
-//	var tcId = x.cells[5].innerText.trim();
-//	var data = { ctaId, tcId };
-//	AbrirWaiting();
-//	PostGenHtml(data, buscarDatosOtrosContactosUrl, function (obj) {
-//		$("#divDatosDeOCSelected").html(obj);
-//		$("#IdSelected").val(tcId);
-//		$(".activable").prop("disabled", true);
-//		CerrarWaiting();
-//	}, function (obj) {
-//		ControlaMensajeError(obj.message);
-//		CerrarWaiting();
-//	});
-//}
-
-//function selectFPenTab(x) {
-//	var fpId = x.cells[2].innerText.trim();
-//	var data = { ctaId, fpId };
-//	AbrirWaiting();
-//	PostGenHtml(data, buscarDatosFormasDePagoUrl, function (obj) {
-//		$("#divDatosDeFPSelected").html(obj);
-//		$("#IdSelected").val($("#FormaDePago_fp_id").val());
-//		$(".activable").prop("disabled", true);
-//		CerrarWaiting();
-//	}, function (obj) {
-//		ControlaMensajeError(obj.message);
-//		CerrarWaiting();
-//	});
-//}
-
-//function selectNotaenTab(x) {
-//	var usuId = x.cells[3].innerText.trim();
-//	var data = { ctaId, usuId };
-//	AbrirWaiting();
-//	PostGenHtml(data, buscarDatosNotaUrl, function (obj) {
-//		$("#divDatosDeNotaSelected").html(obj);
-//		$("#IdSelected").val(usuId);
-//		$(".activable").prop("disabled", true);
-//		CerrarWaiting();
-//	}, function (obj) {
-//		ControlaMensajeError(obj.message);
-//		CerrarWaiting();
-//	});
-//}
-
-//function selectObsEnTab(x) {
-//	var toId = x.cells[2].innerText.trim();
-//	var data = { ctaId, toId };
-//	AbrirWaiting();
-//	PostGenHtml(data, buscarDatosObservacionesUrl, function (obj) {
-//		$("#divDatosDeObsSelected").html(obj);
-//		$("#IdSelected").val(toId);
-//		$(".activable").prop("disabled", true);
-//		CerrarWaiting();
-//	}, function (obj) {
-//		ControlaMensajeError(obj.message);
-//		CerrarWaiting();
-//	});
-//}
-
 function InicializaPantallaAbmCliente() {
 	var tb = $("#tbGridCliente tbody tr");
 	if (tb.length === 0) {
@@ -438,51 +378,7 @@ function selectRegDbl(x, gridId) {
 	}
 }
 
-//function selectFPenTabDbl(x) {
-//	AbrirWaiting("Espere mientras se busca el producto seleccionado...");
-//	$("#" + gridId + " tbody tr").each(function (index) {
-//		$(this).removeClass("selectedEdit-row");
-//	});
-//	$(x).addClass("selectedEdit-row");
-//}
-
-//function selectNotaenTabDbl() {
-//	AbrirWaiting("Espere mientras se busca el producto seleccionado...");
-//	$("#" + gridId + " tbody tr").each(function (index) {
-//		$(this).removeClass("selectedEdit-row");
-//	});
-//	$(x).addClass("selectedEdit-row");
-//}
-
-//function selectObsenTabDbl() {
-//	AbrirWaiting("Espere mientras se busca el producto seleccionado...");
-//	$("#" + gridId + " tbody tr").each(function (index) {
-//		$(this).removeClass("selectedEdit-row");
-//	});
-//	$(x).addClass("selectedEdit-row");
-//}
-
-//function selectOCenTabDbl() {
-//	AbrirWaiting("Espere mientras se busca el producto seleccionado...");
-//	$("#" + gridId + " tbody tr").each(function (index) {
-//		$(this).removeClass("selectedEdit-row");
-//	});
-//	$(x).addClass("selectedEdit-row");
-//}
-
 function btnDetalleClick() {
-	//if ($("#divDetalle").is(":visible")) {
-	//	$("#tbGridCliente tbody tr td").removeClass("disable-table-rows");
-	//}
-	//else {
-		
-	//}
-	//HabilitarBotones(true, true, true, true, true);
-	//$("#divFiltro").collapse("show");
-	//$("#divDetalle").collapse("hide");
-	//$("#btnAbmAceptar").hide();
-	//$("#btnAbmCancelar").hide();
-	
 }
 
 function btnNuevoClick() {
