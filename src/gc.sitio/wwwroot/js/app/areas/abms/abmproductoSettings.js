@@ -14,4 +14,3 @@ var tabGrid02 = "tbGridBarr";
 var tabGrid03 = "tbGridLim";
 var prodSelec = "";
 var prodEstado = "";
-var regSelected = "";

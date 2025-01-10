@@ -1,4 +1,6 @@
-﻿namespace gc.infraestructura.Constantes
+﻿using System;
+
+namespace gc.infraestructura.Constantes
 {
     public class Constantes
     {
@@ -36,6 +38,13 @@
             public const string TI_SIN_AU = "Se Generará Automáticamente";
             public const string TI_Dep_SAU = "E";
             public const string TI_Box_SAU = "O";
+        }
+
+        public static class EstadoColor
+        {
+            public const string Activo = "#34dc22"; //≈ Lima
+            public const string NoActivo = "#f74146"; //≈ Sunset Orange
+            public const string Discontinuo = "#4180f7"; //≈ Dodger Blue
         }
     }
 }
