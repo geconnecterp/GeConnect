@@ -34,6 +34,9 @@
             $("#divDetalle").collapse("hide");
         }
     });
+
+  
+    
     //busqueda no gen de proveedores
     $(document).on("keydown.autocomplete", "input#cta_lista", function () {
         $(this).autocomplete({
@@ -139,10 +142,22 @@
 
 
     InicializaPantallaAbmProd("tbGridProd");
+
+    $("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle); 
+
     funcCallBack = buscarProductos;
     /*    AbrirWaiting();*/
     return true;
 });
+
+function analizaEstadoBtnDetalle() {
+    var res = $("#divDetalle").hasClass("show");
+    if (res === true) {
+        selectRegProd(regSelected, tabGrid01);
+    }
+    return true;
+
+}
 
 function InicializaPantallaAbmProd(grilla) {
     if (grilla !== tabGrid01 || grilla !== tabGrid02 || grilla !== tabGrid03) {
@@ -322,6 +337,7 @@ function selectRegProd(x, gridId) {
                 $("#divDetalle").collapse("hide");
             }
             $("#btnDetalle").prop("disabled", true);
+            activarGrilla(tabGrid01);
             activarBotones(false);
             break;
         case 2:
@@ -349,6 +365,7 @@ function selectAbmRegDbl(x, gridId) {
             prodEstado = x.cells[8].innerText.trim();
             var data = { p_id: id };
             prodSelec = id;
+            desactivarGrilla(tabGrid01);
             buscarProductoServer(data);
             break;
         case 2:

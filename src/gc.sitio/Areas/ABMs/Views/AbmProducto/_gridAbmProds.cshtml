@@ -1,4 +1,5 @@
 ﻿@using System.Text
+@using static gc.infraestructura.Constantes.Constantes
 @model GridCore<ProductoListaDto>
 
 @{
@@ -35,13 +36,13 @@
                         switch (item.P_activo)
                         {
                             case "N":
-                                color = "#0000ff";
+                                color = EstadoColor.NoActivo;
                                 break;
                             case "D":
-                                color = "#ff0000";
+                                color = EstadoColor.Discontinuo;
                                 break;
                             default:
-                                color = "#00ff00";
+                                color = EstadoColor.Activo;
                                 break;
                         }
                         <tr class="@clase" onclick="selectRegProd(this,'tbGridProd')" ondblclick="selectAbmRegDbl(this,'tbGridProd')">
@@ -62,10 +63,11 @@
         </div>
         <div class="row m-3">
             <table style="width:100px;text-align:center">
+                <tr><td colspan="3" class="text-md-center"><strong>PRODUCTOS</strong></td></tr>
                 <tr>
-                    <td style="background-color: #00ff00;color:#FFFFFF;font-weight:600;">S</td>
-                    <td style="background-color: #0000ff;color:#FFFFFF;font-weight:600;">N</td>
-                    <td style="background-color: #ff0000;color:#FFFFFF;font-weight:600;">D</td>
+                    <td style="background-color: @EstadoColor.Activo;color:#FFFFFF;font-weight:600;display:block;">ACTIVO</td>
+                    <td style="background-color: @EstadoColor.NoActivo;color:#FFFFFF;font-weight:600;display:block;">NO ACTIVO</td>
+                    <td style="background-color: @EstadoColor.Discontinuo;color:#FFFFFF;font-weight:600;display:block;">DISCONTINUO</td>
                 </tr>
             </table>
         </div>
