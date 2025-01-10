@@ -25,14 +25,14 @@ activable {
 }
 
 
-input.form-control, select.form-control{
-    font-weight:700 !important;
-    text-transform:uppercase !important;
+input.form-control, select.form-control {
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
 }
 
 span.input-group {
-    width:50px;
-    font-size:0.7em;
+    width: 50px;
+    font-size: 0.7em;
 }
 
 table > tbody > tr > td {
@@ -80,13 +80,18 @@ td.corta-linea {
 
 /* VER COMO HACER PARA QUE APLIQUEN ESTOS ESTILOS EN TABLA */
 .estados {
-    border-left: 5px solid #00ff00;text-align: left;
+    border-left: 5px solid #00ff00;
+    text-align: left;
 }
+
 .estadon {
-    border-left: 5px solid #0000ff;text-align: left;
+    border-left: 5px solid #0000ff;
+    text-align: left;
 }
+
 .estadod {
-    border-left: 5px solid #ff0000;text-align: left;
+    border-left: 5px solid #ff0000;
+    text-align: left;
 }
 /*---------------------------------------------------------*/
 .selected-row > td {
@@ -167,8 +172,7 @@ fieldset {
     width: 96%;
 }
 
-.table-wrapper-fixed-head thead th 
-{
+.table-wrapper-fixed-head thead th {
     position: sticky;
     top: 0px;
 }
@@ -219,6 +223,12 @@ fieldset {
 .table-wrapper-200 {
     max-height: 200px;
     max-width: 98%;
+    overflow: auto;
+}
+
+.table-wrapper-100-full {
+    max-height: 100px;
+    max-width: 100%;
     overflow: auto;
 }
 
@@ -307,12 +317,9 @@ input[type=number] {
         background-color: #f1f1f1
     }
 
-    .dropdown-menu > li:hover > .submenu {
+        .dropdown-menu > li:hover > .submenu {
             display: block;
-    }
-
-  
-
+        }
 }
 /* ============ desktop view .end// ============ */
 
@@ -418,7 +425,7 @@ input[type=number] {
     text-align: right;
 }
 
-.disable-table-rows{
+.disable-table-rows {
     filter: blur(1px);
     pointer-events: none;    
 }
@@ -436,3 +443,8 @@ input, select, textarea, button, checkbox, radio {
         border-color: #3a87ad; /* Color de borde sutil pero visible (un azul suave) */
         box-shadow: 0 0 8px rgba(58, 135, 173, 0.5); /* Sombra suave para dar la iluminación */
     }
+
+.mt-1-ctm {
+    --bs-card-spacer-y: 0.5rem !important;
+    --bs-card-spacer-x: 0.5rem !important;
+}
