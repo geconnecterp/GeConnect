@@ -1,4 +1,4 @@
-﻿$(function () {   
+﻿$(function () {
 
     $(".barr").mask("00000", {
         reverse: true,
@@ -16,18 +16,21 @@
             }, false, ["Aceptar"], "warn!", null);
         }
     });
-    //valida que los datos ingresados en Lim sean válidos
-    //$(document).on("blur", ".limStk", function () {
-    //    var value = parseInt($(this).val(), 10);
-    //    if (value < 0 || value > 99999) {
-    //        AbrirMensaje("Atención!!", "El valor ingresado no es valido", function () {
-    //            $(this).val(1);
-    //            $(this).trigger("focus");
-    //            $("#msjModal").modal("hide");
-    //            return true;
-    //        }, false, ["Aceptar"], "warn!", null);
-    //    }
-    //});
+
+    //eventos para controlar el doble click de las tablas.
+    $(document).on("dblclick", "#" + tabGrid01 + " tbody tr", function () {
+        x = $(this);
+        ejecutaDblClickGrid1(x);
+    });
+    $(document).on("dblclick", "#" + tabGrid02 + " tbody tr", function () {
+        x = $(this);
+        ejecutaDblClickGrid2(x);
+    });
+    $(document).on("dblclick", "#" + tabGrid03 + " tbody tr", function () {
+        x = $(this);
+        ejecutaDblClickGrid3(x);
+    });
+
 
     $("#btnFiltro").on("click", function () {
         if ($("#divFiltro").hasClass("show")) {
@@ -349,24 +352,57 @@ function selectRegProd(x, gridId) {
    
 }
 
-function selectAbmRegDbl(x, gridId) {
+//mueve registro al top de la grilla
+function posicionarRegOnTop(x) {
+    rowOffset = 0;
+    posActScrollTop = 0;
+    newPosScrollTop = 0
+
+    posTabla = $(".table-wrapper");
+    //calculamos la posicion del offset del registro seleccionado
+    rowOffset = x.position().top;
+    //posición actual del scroll
+    posActScrollTop = posTabla.scrollTop();
+    //calculamos la nueva posición del scroll
+    newPosScrollTop = rowOffset + posActScrollTop - posTabla.position().top;
+    posTabla.animate({
+        scrollTop: newPosScrollTop
+    }, 500);    
+}
+
+function ejecutaDblClickGrid1(x) {
     AbrirWaiting("Espere mientras se busca el producto seleccionado...");
+    selectAbmRegDbl(x, tabGrid01);
+}
+function ejecutaDblClickGrid2(x) {
+    AbrirWaiting("Espere mientras se busca el Barrado seleccionado...");
+    selectAbmRegDbl(x, tabGrid02);
+
+}
+function ejecutaDblClickGrid3(x) {
+    AbrirWaiting("Espere mientras se busca el Limite de Stock seleccionado...");
+    selectAbmRegDbl(x, tabGrid03);
+
+}
+
+function selectAbmRegDbl(x, gridId) {
     $("#" + gridId + " tbody tr").each(function (index) {
         $(this).removeClass("selectedEdit-row");
     });
     $(x).addClass("selectedEdit-row");
-    var id = x.cells[0].innerText.trim();
+    var id = x.find("td:nth-child(1)").text();
    
     regSelected = x;
 
     switch (tabAbm) {
         case 1:
             //se agrega por inyection el tab con los datos del producto
-            prodEstado = x.cells[8].innerText.trim();
+            prodEstado = x.find("td:nth-child(9)").text();
             var data = { p_id: id };
             prodSelec = id;
             desactivarGrilla(tabGrid01);
             buscarProductoServer(data);
+            posicionarRegOnTop(x);
             break;
         case 2:
             //se busca el dato del barral 
