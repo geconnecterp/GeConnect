@@ -74,7 +74,7 @@ td.corta-linea {
 
 .inputEditable {
     border-color: rgb(70, 196, 104);
-    text-align: center;
+    text-align: left;
     font-weight: 700;
 }
 
@@ -170,6 +170,12 @@ fieldset {
 .fixed-font-size-xmall {
     font-size: x-small;
     width: 96%;
+}
+
+/*para desactivar la grilla*/
+.disable-table-rows {
+    /*filter: blur(1px);*/
+    pointer-events: none;
 }
 
 .table-wrapper-fixed-head thead th {
@@ -425,10 +431,7 @@ input[type=number] {
     text-align: right;
 }
 
-.disable-table-rows {
-    filter: blur(1px);
-    pointer-events: none;    
-}
+
 
 /* Estilo general para los controles */
 input, select, textarea, button, checkbox, radio {

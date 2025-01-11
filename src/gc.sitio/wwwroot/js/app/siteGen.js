@@ -4,6 +4,7 @@
         if ($("#chkRel01").is(":checked")) {
             $("#Rel01").prop("disabled", false);
             $("#Rel01List").prop("disabled", false);
+            $("#Rel01").trigger("focus");
         }
         else {
             $("#Rel01").prop("disabled", true).val("");
@@ -17,6 +18,8 @@
         if ($("#chkRel02").is(":checked")) {
             $("#Rel02").prop("disabled", false);
             $("#Rel02List").prop("disabled", false);
+            $("#Rel02").trigger("focus");
+
         }
         else {
             $("#Rel02").prop("disabled", true).val("");
@@ -346,8 +349,11 @@ function selectReg(x, gridId) {
 
 function desactivarGrilla(gridId) {
     $("#" + gridId + "").addClass("disable-table-rows");
+    $(".table-wrapper").css("overflow", "hidden");
 }
 
 function activarGrilla(gridId) {
     $("#" + gridId + "").removeClass("disable-table-rows");
+    $(".table-wrapper").css("overflow", "auto");
+
 }
