@@ -2,6 +2,7 @@
 using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Almacen;
@@ -14,6 +15,7 @@ using gc.sitio.core.Servicios.Implementacion;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 namespace gc.sitio.Areas.ABMs.Controllers
 {
@@ -40,13 +42,15 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		private readonly ITipoCuentaBcoServicio _tipoCuentaBcoServicio;
 		private readonly ITipoObsServicio _tipoObsServicio;
 		private readonly ITipoContactoServicio _tipoContactoServicio;
+		private readonly IAbmServicio _abmServicio;
 		public AbmProveedorController(IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger<AbmProveedorController> logger,
 									  IProveedorServicio proveedorServicio, IABMProveedorServicio abmProvServ, ITipoOpeIvaServicio tipoOpeIvaServicio,
 									  ICuentaServicio cuentaServicio, ICondicionAfipServicio condicionAfipServicio, INaturalezaJuridicaServicio naturalezaJuridicaServicio,
 									  ICondicionIBServicio condicionIBServicio, ITipoDocumentoServicio tipoDocumentoServicio, IDepartamentoServicio departamentoServicio,
 									  ITipoProveedorServicio tipoProveedorServicio, ITipoGastoServicio tipoGastoServicio, ITipoRetGanServicio tipoRetGanServicio,
 									  ITipoRetIbServicio tipoRetIbServicio, IFormaDePagoServicio formaDePagoServicio, IProvinciaServicio provinciaServicio,
-									  ITipoCuentaBcoServicio tipoCuentaBcoServicio, ITipoObsServicio tipoObsServicio, ITipoContactoServicio tipoContactoServicio) : base(options, accessor, logger)
+									  ITipoCuentaBcoServicio tipoCuentaBcoServicio, ITipoObsServicio tipoObsServicio, ITipoContactoServicio tipoContactoServicio,
+									  IAbmServicio abmServicio) : base(options, accessor, logger)
 		{
 			_settings = options.Value;
 			_logger = logger;
@@ -68,6 +72,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			_tipoCuentaBcoServicio = tipoCuentaBcoServicio;
 			_tipoObsServicio = tipoObsServicio;
 			_tipoContactoServicio = tipoContactoServicio;
+			_abmServicio = abmServicio;
 		}
 
 		[HttpGet]
@@ -524,11 +529,11 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			{
 				if (string.IsNullOrWhiteSpace(ctaId) || string.IsNullOrWhiteSpace(pgId))
 					return PartialView("_tabDatosFliaProvSelected", new ProveedorABMFliaGrupoSelectedModel());
-				
+
 				var pg = _cuentaServicio.ObtenerProveedoresABMFamiliaDatos(ctaId, pgId, TokenCookie);
 				if (pg == null)
 					return PartialView("_tabDatosFliaProvSelected", new ProveedorABMFliaGrupoSelectedModel());
-				if (pg.Count==0)
+				if (pg.Count == 0)
 					return PartialView("_tabDatosFliaProvSelected", new ProveedorABMFliaGrupoSelectedModel());
 				var model = new ProveedorABMFliaGrupoSelectedModel()
 				{
@@ -541,32 +546,6 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Obs Selected";
 				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Obs Selected");
-				response.Mensaje = msg;
-				response.Ok = false;
-				response.EsWarn = false;
-				response.EsError = true;
-				return PartialView("_gridMensaje", response);
-			}
-		}
-
-		[HttpPost]
-		public IActionResult NuevaFamilia()
-		{
-			RespuestaGenerica<EntidadBase> response = new();
-			try
-			{
-				var proveedorGrupo = new ProveedorGrupoModel();
-				var model = new ProveedorABMFliaGrupoSelectedModel()
-				{
-					ProveedorGrupo = proveedorGrupo
-				};
-				return PartialView("_tabDatosFliaProvSelected", model);
-
-			}
-			catch (Exception ex)
-			{
-				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Familia -> Nueva";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Familia -> Nueva");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -612,6 +591,67 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		#endregion
 
 		#region Guardado de datos
+		#region Proveedor
+		/// <summary>
+		/// Metodo que engloba las tres operaciones de ABM de Proveedor (Alta, baja y modificacion) invocadas al presionar ACEPTAR en la vista
+		/// </summary>
+		/// <param name="proveedor">Tipo ProveedorAbmValidationModel</param>
+		/// <param name="destinoDeOperacion"></param>
+		/// <param name="tipoDeOperacion"></param>
+		/// <returns></returns>
+		[HttpPost]
+		public JsonResult DataOpsProveedor(ProveedorAbmValidationModel proveedor, string destinoDeOperacion, char tipoDeOperacion)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+				{
+					return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+				}
+
+				var respuestaDeValidacion = ValidarJsonAntesDeGuardar(proveedor, tipoDeOperacion);
+				if (respuestaDeValidacion == "")
+				{
+					proveedor = HelperGen.PasarAMayusculas(proveedor);
+					var jsonstring = JsonConvert.SerializeObject(proveedor, new JsonSerializerSettings());
+					var abmRequest = new AbmGenDto
+					{
+						Abm = tipoDeOperacion,
+						Objeto = destinoDeOperacion,
+						Json = jsonstring,
+						Administracion = AdministracionId,
+						Usuario = UserName
+					};
+					var respuesta = _abmServicio.AbmConfirmar(abmRequest, TokenCookie).Result;
+					if (respuesta == null)
+						return Json(new { error = true, warn = false, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
+					if (respuesta.EsWarn || respuesta.EsError)
+					{
+						if (respuesta.Entidad != null)
+							return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = respuesta.Entidad.resultado_msj, codigo = respuesta.Entidad.resultado, setFocus = respuesta.Entidad.resultado_setfocus });
+						else if (respuesta.ListaEntidad != null && respuesta.ListaEntidad.Count > 0)
+							return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = respuesta.ListaEntidad?.First().resultado_msj, codigo = respuesta.ListaEntidad?.First().resultado, setFocus = respuesta.ListaEntidad?.First().resultado_setfocus });
+						return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
+					}
+					else if (!respuesta.Ok)
+					{
+						return Json(new { error = true, warn = false, msg = respuesta.Mensaje, codigo = 1, setFocus = string.Empty });
+					}
+					if (respuesta.Entidad != null && respuesta.Entidad.resultado != 0)
+						return Json(new { error = true, warn = false, msg = respuesta.Entidad.resultado_msj, codigo = respuesta.Entidad.resultado, setFocus = respuesta.Entidad.resultado_setfocus });
+
+					return Json(new { error = false, warn = false, msg = "La entidad de ha actualizado con éxito." });
+				}
+				else
+					return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, msg = "Ha ocurrido un error al intentar actualizar la información." });
+			}
+		}
+
 		[HttpPost]
 		public IActionResult NuevoProveedor()
 		{
@@ -657,7 +697,104 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		}
 		#endregion
 
+		#region Familia
+		/// <summary>
+		/// Metodo que engloba las tres operaciones de ABM de Familia de Prod de Proveedor (Alta, baja y modificacion) invocadas al presionar ACEPTAR en la vista
+		/// </summary>
+		/// <param name="familia">Tipo ProveedorFamiliaAbmValidationModel</param>
+		/// <param name="destinoDeOperacion"></param>
+		/// <param name="tipoDeOperacion"></param>
+		/// <returns></returns>
+		[HttpPost]
+		public JsonResult DataOpsProveedorFamilia(ProveedorFamiliaAbmValidationModel familia, string destinoDeOperacion, char tipoDeOperacion)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+				{
+					return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+				}
+
+				var respuestaDeValidacion = ValidarJsonAntesDeGuardar(familia, tipoDeOperacion);
+				if (respuestaDeValidacion == "")
+				{
+					familia = HelperGen.PasarAMayusculas(familia);
+					var jsonstring = JsonConvert.SerializeObject(familia, new JsonSerializerSettings());
+					var abmRequest = new AbmGenDto
+					{
+						Abm = tipoDeOperacion,
+						Objeto = destinoDeOperacion,
+						Json = jsonstring,
+						Administracion = AdministracionId,
+						Usuario = UserName
+					};
+					var respuesta = _abmServicio.AbmConfirmar(abmRequest, TokenCookie).Result;
+					if (respuesta == null)
+						return Json(new { error = true, warn = false, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
+					if (respuesta.EsWarn || respuesta.EsError)
+					{
+						if (respuesta.Entidad != null)
+							return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = respuesta.Entidad.resultado_msj, codigo = respuesta.Entidad.resultado, setFocus = respuesta.Entidad.resultado_setfocus });
+						else if (respuesta.ListaEntidad != null && respuesta.ListaEntidad.Count > 0)
+							return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = respuesta.ListaEntidad?.First().resultado_msj, codigo = respuesta.ListaEntidad?.First().resultado, setFocus = respuesta.ListaEntidad?.First().resultado_setfocus });
+						return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
+					}
+					else if (!respuesta.Ok)
+					{
+						return Json(new { error = true, warn = false, msg = respuesta.Mensaje, codigo = 1, setFocus = string.Empty });
+					}
+					if (respuesta.Entidad != null && respuesta.Entidad.resultado != 0)
+						return Json(new { error = true, warn = false, msg = respuesta.Entidad.resultado_msj, codigo = respuesta.Entidad.resultado, setFocus = respuesta.Entidad.resultado_setfocus });
+
+					return Json(new { error = false, warn = false, msg = "La entidad de ha actualizado con éxito." });
+				}
+				else
+					return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, msg = "Ha ocurrido un error al intentar actualizar la información." });
+			}
+		}
+
+		[HttpPost]
+		public IActionResult NuevaFamilia()
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				var proveedorGrupo = new ProveedorGrupoModel();
+				var model = new ProveedorABMFliaGrupoSelectedModel()
+				{
+					ProveedorGrupo = proveedorGrupo
+				};
+				return PartialView("_tabDatosFliaProvSelected", model);
+
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Familia -> Nueva";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Familia -> Nueva");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+		#endregion
+
+		#endregion
 		#region Métodos privados
+		private string ValidarJsonAntesDeGuardar(ProveedorAbmValidationModel cuenta, char abm)
+		{
+			return "";
+		}
+		private string ValidarJsonAntesDeGuardar(ProveedorFamiliaAbmValidationModel cuenta, char abm)
+		{
+			return "";
+		}
 		private void CargarDatosIniciales(bool actualizar)
 		{
 			if (TipoOpeIvaLista.Count == 0 || actualizar)
@@ -763,8 +900,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		}
 
 		private static ProveedorGrupoModel ObtenerGrupoModel(ProveedorGrupoDto pg)
-		{ 
-			var pgr= new ProveedorGrupoModel();
+		{
+			var pgr = new ProveedorGrupoModel();
 			if (pg == null)
 				return pgr;
 			#region map
