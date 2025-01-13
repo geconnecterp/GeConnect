@@ -466,34 +466,12 @@ function btnSubmitClick() {
 	var tabActiva = $('.nav-tabs .active')[0].id;
 	var mensaje = PuedoGuardar(tabActiva);
 	if (mensaje === "") {
-		HabilitarBotonesPorAccion(AbmAction.SUBMIT);
-		$("#btnAbmAceptar").hide();
-		$("#btnAbmCancelar").hide();
+		//HabilitarBotonesPorAccion(AbmAction.SUBMIT);
+		//$("#btnAbmAceptar").hide();
+		//$("#btnAbmCancelar").hide();
 		Guardar();
 	}
 }
-
-//function PuedoGuardar(tabAct) {
-//	var mensaje = "";
-//	switch (tabAct) {
-//		case Tabs.TabCliente:
-//			break;
-//		case Tabs.TabFormasDePago:
-//			if ($("#FormaDePago_fp_dias").val() < 0)
-//				mensaje = "El valor de Plazo debe ser igual o mayor a 0.";
-//			break;
-//		case Tabs.TabNotas:
-//			break;
-//		case Tabs.TabObservaciones:
-//			break;
-//		case Tabs.TabOtrosContactos:
-//			break;
-//		default:
-//			break;
-//	}
-//	return mensaje;
-//	return true;
-//}
 
 function PuedoAgregar(tabAct) {
 	var mensaje = "";
@@ -587,163 +565,6 @@ function btnCancelClick() {
 	}
 }
 
-//function validarCampos() {
-//	var tabActiva = $('.nav-tabs .active')[0].id;
-//	switch (tabActiva) {
-//		case Tabs.TabCliente:
-//			if ($("#listaAfip option:selected").val() !== "05" && $("#listaAfip option:selected").val() !== "02") {
-//				if ($("#Cliente_Ctac_Ptos_Vtas").val() <= 0) {
-//					var textoSelected = $("#listaAfip option:selected").text();
-//					AbrirMensaje("ATENCIÓN", "La Cantidad de PV debe ser mayor a 0 cuando ha seleccionado " + textoSelected + " como Condición AFIP.", function () {
-//						$("#msjModal").modal("hide");
-//						return false;
-//					}, false, ["Aceptar"], "error!", null);
-//					return false;
-//				}
-//			}
-//			break;
-//		case Tabs.TabFormasDePago:
-//			break;
-//		case Tabs.TabNotas:
-//			break;
-//		case Tabs.TabObservaciones:
-//			break;
-//		case Tabs.TabOtrosContactos:
-//			break;
-//		default:
-//			break;
-//	}
-
-//	return true;
-//}
-
-//function Guardar() {
-//	if (validarCampos()) {
-//		var url = "";
-//		switch (destinoDeOperacion) {
-//			case AbmObject.CLIENTES:
-//				activarGrilla(Grids.GridCliente);
-//				url = dataOpsClienteUrl;
-//				break;
-//			case AbmObject.CLIENTES_CONDICIONES_VTA:
-//				activarGrilla(Grids.GridFP);
-//				url = dataOpsFormaDePagoUrl;
-//				break;
-//			case AbmObject.CUENTAS_CONTACTOS:
-//				activarGrilla(Grids.GridOC);
-//				$("#OtroContacto_cta_nombre").prop("disabled", false);
-//				$("#listaTC").prop("disabled", false);
-//				url = dataOpsCuentaContactoUrl;
-//				break;
-//			case AbmObject.CUENTAS_NOTAS:
-//				$("#Nota_usu_apellidoynombre").prop("disabled", false);
-//				activarGrilla(Grids.GridNota);
-//				url = dataOpsCuentaNotaUrl;
-//				break;
-//			case AbmObject.CUENTAS_OBSERVACIONES:
-//				activarGrilla(Grids.GridObs);
-//				url = dataOpsObservacionesUrl;
-//				break;
-//			default:
-//		}
-//		var data = ObtenerDatosParaJson(destinoDeOperacion, tipoDeOperacion);
-//		PostGen(data, url, function (obj) {
-//			if (obj.error === true) {
-//				AbrirMensaje("ATENCIÓN", obj.msg, function () {
-//					$("#msjModal").modal("hide");
-//					$(".nav-link").prop("disabled", false);
-//					$(".activable").prop("disabled", false);
-//					return true;
-//				}, false, ["Aceptar"], "error!", null);
-//			}
-//			else {
-//				AbrirMensaje("ATENCIÓN", obj.msg, function () {
-//					$("#msjModal").modal("hide");
-//					$(".nav-link").prop("disabled", false);
-//					$(".activable").prop("disabled", false);
-//					return true;
-//				}, false, ["Aceptar"], "succ!", null);
-//			}
-
-//		});
-//	}
-//}
-
-//function ObtenerDatosParaJson(destinoDeOperacion, tipoDeOperacion) {
-//	var json = "";
-//	switch (destinoDeOperacion) {
-//		case AbmObject.CLIENTES:
-//			json = ObtenerDatosDeClienteParaJson();
-//			break;
-//		case AbmObject.CLIENTES_CONDICIONES_VTA:
-//			json = ObtenerDatosDeFormaDePagoPParaJson(destinoDeOperacion, tipoDeOperacion);
-//			break;
-//		case AbmObject.CUENTAS_CONTACTOS:
-//			json = ObtenerDatosDeOtrosContactosParaJson(destinoDeOperacion, tipoDeOperacion);
-//			break;
-//		case AbmObject.CUENTAS_NOTAS:
-//			json = ObtenerDatosDeNotasParaJson(destinoDeOperacion, tipoDeOperacion);
-//			break;
-//		case AbmObject.CUENTAS_OBSERVACIONES:
-//			json = ObtenerDatosDeObsParaJson(destinoDeOperacion, tipoDeOperacion);
-//			break;
-//		default:
-//	}
-//	return json;
-//}
-
-//function ObtenerDatosDeObsParaJson(destinoDeOperacion, tipoDeOperacion) {
-//	var cta_id = $("#Cliente_Cta_Id").val();
-//	var to_id = $("#listaTipoObs").val();
-//	var to_desc = $("#listaTipoObs option:selected").text();
-//	var to_lista = $("#listaTipoObs option:selected").text() + "(" + $("#listaTipoObs").val() + ")";
-//	var cta_obs = $("#Observacion_cta_obs").val();
-//	var data = { cta_id, to_id, to_desc, to_lista, cta_obs, destinoDeOperacion, tipoDeOperacion };
-//	return data;
-//}
-
-//function ObtenerDatosDeNotasParaJson(destinoDeOperacion, tipoDeOperacion) {
-//	var cta_id = $("#Cliente_Cta_Id").val();
-//	var usu_id = $("#Nota_usu_apellidoynombre").val();
-//	var usu_apellidoynombre = $("#Nota_usu_apellidoynombre").val();
-//	var usu_lista = $("#Nota_usu_apellidoynombre").val();
-//	var fecha = null;
-//	var nota = $("#Nota_nota").val();
-//	var data = { cta_id, usu_id, usu_apellidoynombre, usu_lista, fecha, nota, destinoDeOperacion, tipoDeOperacion };
-//	return data;
-//}
-
-//function ObtenerDatosDeOtrosContactosParaJson(destinoDeOperacion, tipoDeOperacion) {
-//	var cta_id = $("#Cliente_Cta_Id").val();
-//	var tc_id = $("#listaTC").val();
-//	var tc_desc = $("#listaTC option:selected").text();
-//	var tc_lista = $("#listaTC option:selected").text() + "(" + $("#listaTC").val() + ")";
-//	var cta_celu = $("#OtroContacto_cta_celu").val();
-//	var cta_te = $("#OtroContacto_cta_te").val();
-//	var cta_email = $("#OtroContacto_cta_email").val();
-//	var cta_nombre = $("#OtroContacto_cta_nombre").val();
-//	var data = { cta_id, tc_id, tc_desc, tc_lista, cta_celu, cta_te, cta_email, cta_nombre, destinoDeOperacion, tipoDeOperacion };
-//	return data;
-//}
-
-//function ObtenerDatosDeFormaDePagoPParaJson(destinoDeOperacion, tipoDeOperacion) {
-//	var cta_id = $("#Cliente_Cta_Id").val();
-//	var fp_id = $("#listaFP").val();
-//	var fp_desc = $("#listaFP option:selected").text();
-//	var fp_lista = $("#listaFP option:selected").text() + "(" + $("#listaFP").val() + ")";
-//	var fp_dias = $("#FormaDePago_fp_dias").val();
-//	var tcb_id = $("#listaTipoCueBco").val();
-//	var tcb_desc = $("#listaTipoCueBco option:selected").val();
-//	var tcb_lista = $("#listaTipoCueBco option:selected").text() + "(" + $("#listaTipoCueBco").val() + ")";
-//	var cta_bco_cuenta_nro = $("#FormaDePago_cta_bco_cuenta_nro").val();
-//	var cta_bco_cuenta_cbu = $("#FormaDePago_cta_bco_cuenta_cbu").val();
-//	var cta_valores_a_nombre = $("#FormaDePago_cta_valores_a_nombre").val();
-//	var cta_obs = $("#FormaDePago_cta_obs").val();
-//	var fp_default = "N";
-//	var data = { cta_id, fp_id, fp_desc, fp_lista, fp_dias, tcb_id, tcb_desc, tcb_lista, cta_bco_cuenta_nro, cta_bco_cuenta_cbu, cta_valores_a_nombre, cta_obs, fp_default, destinoDeOperacion, tipoDeOperacion };
-//	return data;
-//}
-
 function ObtenerDatosDeClienteParaJson(destinoDeOperacion, tipoDeOperacion) {
 	var cta_id = $("#Cliente_Cta_Id").val();
 	var cta_denominacion = $("#Cliente_Cta_Denominacion").val();
@@ -757,6 +578,7 @@ function ObtenerDatosDeClienteParaJson(destinoDeOperacion, tipoDeOperacion) {
 	var prov_nombre = $("#listaProvi option:selected").text();
 	var dep_id = $("#listaDepto").val();
 	var dep_nombre = $("#listaDepto option:selected").text();
+	var cta_www = $("#Cliente_Cta_Www").val();
 	var afip_id = $("#listaAfip").val();
 	var afip_desc = $("#listaAfip option:selected").text();
 	var cta_ib_nro = $("#Cliente_Cta_Ib_Nro").val();
@@ -809,7 +631,7 @@ function ObtenerDatosDeClienteParaJson(destinoDeOperacion, tipoDeOperacion) {
 	var lp_id = $("#Cliente_Lp_Id").val();
 	var lp_desc = $("#Cliente_Lp_Id option:selected").text();
 	var data = {
-		cta_id, cta_denominacion, tdoc_id, tdoc_desc, cta_documento, cta_domicilio, cta_localidad, cta_cpostal, prov_id, prov_nombre, dep_id, dep_nombre, afip_id, afip_desc, cta_ib_nro,
+		cta_id, cta_denominacion, tdoc_id, tdoc_desc, cta_documento, cta_domicilio, cta_localidad, cta_cpostal, prov_id, prov_nombre, dep_id, dep_nombre, cta_www, afip_id, afip_desc, cta_ib_nro,
 		ib_id, ib_desc, cta_alta, cta_cuit_vto, cta_emp, cta_emp_legajo, cta_emp_ctaf, cta_actu_fecha, cta_actu, ctac_tope_credito, ctac_ptos_vtas, ctac_negocio_inicio, ctac_tope_credito_dia,
 		ctac_dto_operacion, ctac_dto_operacion_dia, piva_cert, piva_cert_vto, pib_cert, pib_cert_vto, ctn_id, ctn_desc, ctc_id, ctac_tope_credito_dia_ult, ctac_dto_operacion_dia_ult, ctc_desc,
 		ve_id, ve_nombre, ve_visita, zn_id, zn_desc, rp_id, rp_nombre, ctac_habilitada, nj_id, nj_desc, lp_id, lp_desc, destinoDeOperacion, tipoDeOperacion

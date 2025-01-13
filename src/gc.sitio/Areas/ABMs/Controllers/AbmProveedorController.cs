@@ -787,8 +787,9 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
 		#endregion
 		#region Métodos privados
-		private string ValidarJsonAntesDeGuardar(ProveedorAbmValidationModel cuenta, char abm)
+		private string ValidarJsonAntesDeGuardar(ProveedorAbmValidationModel prov, char abm)
 		{
+			
 			return "";
 		}
 		private string ValidarJsonAntesDeGuardar(ProveedorFamiliaAbmValidationModel cuenta, char abm)

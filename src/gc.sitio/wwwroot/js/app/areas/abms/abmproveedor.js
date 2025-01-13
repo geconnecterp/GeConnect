@@ -223,9 +223,9 @@ function btnSubmitClick() {
 	var tabActiva = $('.nav-tabs .active')[0].id;
 	var mensaje = PuedoGuardar(tabActiva);
 	if (mensaje === "") {
-		HabilitarBotonesPorAccion(AbmAction.SUBMIT);
-		$("#btnAbmAceptar").hide();
-		$("#btnAbmCancelar").hide();
+		//HabilitarBotonesPorAccion(AbmAction.SUBMIT);
+		//$("#btnAbmAceptar").hide();
+		//$("#btnAbmCancelar").hide();
 		Guardar();
 	}
 }
@@ -597,9 +597,9 @@ function PuedoAgregar(tabAct) {
 
 function ObtenerDatosDeProveedorFamiliaParaJson(destinoDeOperacion, tipoDeOperacion) {
 	var cta_id = $("#Proveedor_Cta_Id").val();
-	var pg_id = $("#Proveedor_Pg_Id").val();
-	var pg_desc = $("#Proveedor_Pg_Desc").val();
-	var pg_lista = $("#Proveedor_Pg_Desc").val() + "(" + $("#Proveedor_Pg_Id").val() + ")";
+	var pg_id = $("#ProveedorGrupo_pg_id").val();
+	var pg_desc = $("#ProveedorGrupo_pg_desc").val();
+	var pg_lista = $("#ProveedorGrupo_pg_desc").val() + "(" + $("#ProveedorGrupo_pg_id").val() + ")";
 	var data = { cta_id, pg_id, pg_desc, pg_lista, destinoDeOperacion, tipoDeOperacion };
 	return data;
 }

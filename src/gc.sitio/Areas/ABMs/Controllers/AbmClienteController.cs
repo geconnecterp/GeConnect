@@ -1089,7 +1089,6 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			{
 				if (fp.fp_id != "B" && fp.fp_id != "I")
 				{
-					fp.cta_id = null;
 					fp.cta_bco_cuenta_cbu = null;
 					fp.cta_bco_cuenta_nro = null;
 				}

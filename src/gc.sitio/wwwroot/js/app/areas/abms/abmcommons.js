@@ -614,9 +614,38 @@ function Guardar() {
 					$(".activable").prop("disabled", false);
 					return true;
 				}, false, ["Aceptar"], "succ!", null);
+				activarBotones(false);
+				ActualizarDatosEnGrilla(destinoDeOperacion);
 			}
 
 		});
+	}
+}
+
+function ActualizarDatosEnGrilla(destinoDeOperacion) {
+	switch (destinoDeOperacion) {
+		case AbmObject.CLIENTES:
+
+			break;
+		case AbmObject.PROVEEDORES:
+			
+			break;
+		case AbmObject.CLIENTES_CONDICIONES_VTA:
+			BuscarFormaDePago();
+			break;
+		case AbmObject.CUENTAS_CONTACTOS:
+			BuscarOtrosContactos();
+			break;
+		case AbmObject.CUENTAS_NOTAS:
+			BuscarNotas();
+			break;
+		case AbmObject.CUENTAS_OBSERVACIONES:
+			BuscarObservaciones();
+			break;
+		case AbmObject.PROVEEDORES_FAMILIA:
+			BuscarFamilias();
+			break;
+		default:
 	}
 }
 
@@ -651,6 +680,8 @@ function ObtenerDatosParaJson(destinoDeOperacion, tipoDeOperacion) {
 
 function ObtenerDatosDeObsParaJson(destinoDeOperacion, tipoDeOperacion) {
 	var cta_id = $("#Cliente_Cta_Id").val();
+	if (cta_id == undefined || cta_id == null)
+		cta_id = $("#Proveedor_Cta_Id").val();
 	var to_id = $("#listaTipoObs").val();
 	var to_desc = $("#listaTipoObs option:selected").text();
 	var to_lista = $("#listaTipoObs option:selected").text() + "(" + $("#listaTipoObs").val() + ")";
@@ -661,6 +692,8 @@ function ObtenerDatosDeObsParaJson(destinoDeOperacion, tipoDeOperacion) {
 
 function ObtenerDatosDeNotasParaJson(destinoDeOperacion, tipoDeOperacion) {
 	var cta_id = $("#Cliente_Cta_Id").val();
+	if (cta_id == undefined || cta_id == null)
+		cta_id = $("#Proveedor_Cta_Id").val();
 	var usu_id = $("#Nota_usu_apellidoynombre").val();
 	var usu_apellidoynombre = $("#Nota_usu_apellidoynombre").val();
 	var usu_lista = $("#Nota_usu_apellidoynombre").val();
@@ -672,6 +705,8 @@ function ObtenerDatosDeNotasParaJson(destinoDeOperacion, tipoDeOperacion) {
 
 function ObtenerDatosDeOtrosContactosParaJson(destinoDeOperacion, tipoDeOperacion) {
 	var cta_id = $("#Cliente_Cta_Id").val();
+	if (cta_id == undefined || cta_id == null)
+		cta_id = $("#Proveedor_Cta_Id").val();
 	var tc_id = $("#listaTC").val();
 	var tc_desc = $("#listaTC option:selected").text();
 	var tc_lista = $("#listaTC option:selected").text() + "(" + $("#listaTC").val() + ")";
@@ -685,6 +720,8 @@ function ObtenerDatosDeOtrosContactosParaJson(destinoDeOperacion, tipoDeOperacio
 
 function ObtenerDatosDeFormaDePagoPParaJson(destinoDeOperacion, tipoDeOperacion) {
 	var cta_id = $("#Cliente_Cta_Id").val();
+	if (cta_id == undefined || cta_id == null)
+		cta_id = $("#Proveedor_Cta_Id").val();
 	var fp_id = $("#listaFP").val();
 	var fp_desc = $("#listaFP option:selected").text();
 	var fp_lista = $("#listaFP option:selected").text() + "(" + $("#listaFP").val() + ")";
