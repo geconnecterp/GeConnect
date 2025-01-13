@@ -30,6 +30,8 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string ObtenerCuentaContactosPorCuentaYTC = "/GetCuentaContactosPorCuentaYTC";
         private const string ObtenerCuentaNotaDatos = "/GetCuentaNotaDatos";
 		private const string ObtenerCuentaObsDatos = "/GetCuentaObsDatos";
+		private const string ProveedorABMFamiliaLista = "/GetABMProveedorFamiliaLista";
+		private const string ProveedorABMFamiliaDatos = "/GetABMProveedorFamiliaDatos";
 		//
 		private readonly AppSettings _appSettings;
 		public CuentaServicio(IOptions<AppSettings> options, ILogger<CuentaServicio> logger) : base(options, logger)
@@ -232,6 +234,92 @@ namespace gc.sitio.core.Servicios.Implementacion
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Error al intentar obtener las Familia de Proveedores.");
+				throw;
+			}
+		}
+
+		public List<ProveedorGrupoDto> ObtenerProveedoresABMFamiliaLista(string ctaId, string token)
+		{
+			ApiResponse<List<ProveedorGrupoDto>> respuesta;
+			string stringData;
+			try
+			{
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{ProveedorABMFamiliaLista}?ctaId={ctaId}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (!string.IsNullOrEmpty(stringData))
+					{
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<ProveedorGrupoDto>>>(stringData);
+					}
+					else
+					{
+						throw new Exception("No se logro obtener la respuesta de la API con los datos de la lista de familia de productos del proveedor. Verifique.");
+					}
+					return respuesta.Data;
+				}
+				else
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogError($"Error al intentar obtener la lista de familia de productos del proveedor: {stringData}");
+					throw new NegocioException("Hubo un error al intentar obtener la lista de familia de productos del proveedor");
+				}
+
+			}
+			catch (NegocioException)
+			{
+				throw;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar obtener la lista de familia de productos del proveedor.");
+				throw;
+			}
+		}
+
+		public List<ProveedorGrupoDto> ObtenerProveedoresABMFamiliaDatos(string ctaId, string pgId, string token)
+		{
+			ApiResponse<List<ProveedorGrupoDto>> respuesta;
+			string stringData;
+			try
+			{
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{ProveedorABMFamiliaDatos}?ctaId={ctaId}&pgId={pgId}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (!string.IsNullOrEmpty(stringData))
+					{
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<ProveedorGrupoDto>>>(stringData);
+					}
+					else
+					{
+						throw new Exception("No se logro obtener la respuesta de la API con los datos de la familia de producto del proveedor. Verifique.");
+					}
+					return respuesta.Data;
+				}
+				else
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogError($"Error al intentar obtener la familia de producto del proveedor: {stringData}");
+					throw new NegocioException("Hubo un error al intentar obtener la familia de producto del proveedor");
+				}
+
+			}
+			catch (NegocioException)
+			{
+				throw;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar obtener la familia de producto del proveedor.");
 				throw;
 			}
 		}

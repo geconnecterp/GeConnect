@@ -35,12 +35,18 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		private readonly ITipoGastoServicio _tipoGastoServicio;
 		private readonly ITipoRetGanServicio _tipoRetGanServicio;
 		private readonly ITipoRetIbServicio _tipoRetIbServicio;
+		private readonly IFormaDePagoServicio _formaDePagoServicio;
+		private readonly IProvinciaServicio _provinciaServicio;
+		private readonly ITipoCuentaBcoServicio _tipoCuentaBcoServicio;
+		private readonly ITipoObsServicio _tipoObsServicio;
+		private readonly ITipoContactoServicio _tipoContactoServicio;
 		public AbmProveedorController(IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger<AbmProveedorController> logger,
 									  IProveedorServicio proveedorServicio, IABMProveedorServicio abmProvServ, ITipoOpeIvaServicio tipoOpeIvaServicio,
 									  ICuentaServicio cuentaServicio, ICondicionAfipServicio condicionAfipServicio, INaturalezaJuridicaServicio naturalezaJuridicaServicio,
 									  ICondicionIBServicio condicionIBServicio, ITipoDocumentoServicio tipoDocumentoServicio, IDepartamentoServicio departamentoServicio,
 									  ITipoProveedorServicio tipoProveedorServicio, ITipoGastoServicio tipoGastoServicio, ITipoRetGanServicio tipoRetGanServicio,
-									  ITipoRetIbServicio tipoRetIbServicio) : base(options, accessor, logger)
+									  ITipoRetIbServicio tipoRetIbServicio, IFormaDePagoServicio formaDePagoServicio, IProvinciaServicio provinciaServicio,
+									  ITipoCuentaBcoServicio tipoCuentaBcoServicio, ITipoObsServicio tipoObsServicio, ITipoContactoServicio tipoContactoServicio) : base(options, accessor, logger)
 		{
 			_settings = options.Value;
 			_logger = logger;
@@ -57,6 +63,11 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			_tipoGastoServicio = tipoGastoServicio;
 			_tipoRetGanServicio = tipoRetGanServicio;
 			_tipoRetIbServicio = tipoRetIbServicio;
+			_formaDePagoServicio = formaDePagoServicio;
+			_provinciaServicio = provinciaServicio;
+			_tipoCuentaBcoServicio = tipoCuentaBcoServicio;
+			_tipoObsServicio = tipoObsServicio;
+			_tipoContactoServicio = tipoContactoServicio;
 		}
 
 		[HttpGet]
@@ -483,8 +494,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				if (string.IsNullOrEmpty(ctaId))
 					return PartialView("_tabDatosFliaProv", new ProveedorABMFliaGrupoModel());
 
-				//TODO: Reemplazar por la funcion de busqueda
-				var pg = new List<ProveedorGrupoDto>();
+				var pg = _cuentaServicio.ObtenerProveedoresABMFamiliaLista(ctaId, TokenCookie);
 				if (pg == null)
 					return PartialView("_tabDatosFliaProv", new ProveedorABMFliaGrupoModel());
 
@@ -514,13 +524,15 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			{
 				if (string.IsNullOrWhiteSpace(ctaId) || string.IsNullOrWhiteSpace(pgId))
 					return PartialView("_tabDatosFliaProvSelected", new ProveedorABMFliaGrupoSelectedModel());
-				//TODO: Reemplazar por la funcion de busqueda
-				var pg = new ProveedorGrupoDto();
+				
+				var pg = _cuentaServicio.ObtenerProveedoresABMFamiliaDatos(ctaId, pgId, TokenCookie);
 				if (pg == null)
+					return PartialView("_tabDatosFliaProvSelected", new ProveedorABMFliaGrupoSelectedModel());
+				if (pg.Count==0)
 					return PartialView("_tabDatosFliaProvSelected", new ProveedorABMFliaGrupoSelectedModel());
 				var model = new ProveedorABMFliaGrupoSelectedModel()
 				{
-					ProveedorGrupo = ObtenerGrupoModel(pg),
+					ProveedorGrupo = ObtenerGrupoModel(pg.First()),
 				};
 				return PartialView("_tabDatosFliaProvSelected", model);
 
@@ -599,6 +611,52 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		}
 		#endregion
 
+		#region Guardado de datos
+		[HttpPost]
+		public IActionResult NuevoProveedor()
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				var newObj = new ProveedorABMDto();
+				var cfp = new List<CuentaFPDto>();
+				var ccon = new List<CuentaContactoDto>();
+				var cobs = new List<CuentaObsDto>();
+				var cnota = new List<CuentaNotaDto>();
+				var ProveedorModel = new ProveedorAbmModel()
+				{
+					Proveedor = newObj,
+					ComboAfip = ComboAfip(),
+					ComboNatJud = ComboNatJud(),
+					ComboTipoDoc = ComboTipoDoc(),
+					ComboIngBruto = ComboIB(),
+					ComboProvincia = ComboProv(),
+					ComboDepartamento = ComboDepto(),
+					ComboTipoOpe = ComboTipoOpe(),
+					ComboTipoOc = ComboTipoProv(),
+					ComboTipoGasto = ComboTipoGasto(),
+					ComboTipoRetGan = ComboTipoRetGan(),
+					ComboTipoRetIB = ComboTipoRetIb(),
+					CuentaFormasDePago = ObtenerGridCore<CuentaFPDto>(cfp),
+					CuentaContactos = ObtenerGridCore<CuentaContactoDto>(ccon),
+					CuentaObs = ObtenerGridCore<CuentaObsDto>(cobs),
+					CuentaNota = ObtenerGridCore<CuentaNotaDto>(cnota)
+				};
+				return PartialView("_tabDatosProveedor", ProveedorModel);
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Alta de Cliente - Nueva entidad";
+				_logger.LogError(ex, "Error en la invocación de la API - Alta de Cliente - Nueva entidad");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+		#endregion
+
 		#region Métodos privados
 		private void CargarDatosIniciales(bool actualizar)
 		{
@@ -628,14 +686,6 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
 			if (TipoRetIBLista.Count == 0 || actualizar)
 				ObtenerTipoRetIB(_tipoRetIbServicio);
-			/*
-			if (TipoNegocioLista.Count == 0 || actualizar)
-				ObtenerTiposNegocio(_tipoNegocioServicio);
-
-			if (ZonasLista.Count == 0 || actualizar)
-				ObtenerZonas(_zonaServicio);
-
-			
 
 			if (FormaDePagoLista.Count == 0 || actualizar)
 				ObtenerFormasDePago(_formaDePagoServicio);
@@ -643,14 +693,25 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			if (ProvinciaLista.Count == 0 || actualizar)
 				ObtenerProvincias(_provinciaServicio);
 
-			if (TipoCanalLista.Count == 0 || actualizar)
-				ObtenerTiposDeCanal(_tipoCanalServicio);
-
 			if (TipoCuentaBcoLista.Count == 0 || actualizar)
 				ObtenerTiposDeCuentaBco(_tipoCuentaBcoServicio);
 
-			if (TipoDocumentoLista.Count == 0 || actualizar)
-				ObtenerTiposDocumento(_tipoDocumentoServicio);
+			if (TipoObservacionesLista.Count == 0 || actualizar)
+				ObtenerTipoObservaciones(_tipoObsServicio, "P");
+
+			if (TipoContactoLista.Count == 0 || actualizar)
+				ObtenerTipoContacto(_tipoContactoServicio, "P");
+			/*
+			if (TipoNegocioLista.Count == 0 || actualizar)
+				ObtenerTiposNegocio(_tipoNegocioServicio);
+
+			if (ZonasLista.Count == 0 || actualizar)
+				ObtenerZonas(_zonaServicio);
+
+			if (TipoCanalLista.Count == 0 || actualizar)
+				ObtenerTiposDeCanal(_tipoCanalServicio);
+
+			
 
 			if (ListaDePreciosLista.Count == 0 || actualizar)
 				ObtenerListaDePrecios(_listaDePrecioServicio);
@@ -664,11 +725,9 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			if (RepartidoresLista.Count == 0 || actualizar)
 				ObtenerListaDeRepartidores(_repartidorServicio);
 
-			if (TipoContactoLista.Count == 0 || actualizar)
-				ObtenerTipoContacto(_tipoContactoServicio, "P");
+			
 
-			if (TipoObservacionesLista.Count == 0 || actualizar)
-				ObtenerTipoObservaciones(_tipoObsServicio, "P");
+
 			*/
 		}
 		private static ObservacionesModel ObtenerObservacionModel(CuentaObsDto obs)

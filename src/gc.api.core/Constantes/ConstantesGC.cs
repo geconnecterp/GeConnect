@@ -158,6 +158,8 @@
 
 			public const string SP_ABM_PROV_LISTA = "SPGECO_ABM_Prov_Lista";
 			public const string SP_ABM_PROV_DATOS = "SPGECO_ABM_Prov_Datos";
+			public const string SP_ABM_PROV_FAMILIA_LISTA = "SPGECO_ABM_Prov_Familia_Lista";
+			public const string SP_ABM_PROV_FAMILIA_DATOS = "SPGECO_ABM_Prov_Familia_Datos";
 
 			public const string SP_ABM_CONFIRMAR = "SPGECO_ABM_Confirmar";
             #endregion

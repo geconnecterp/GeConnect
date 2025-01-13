@@ -181,9 +181,10 @@ function ModificaFamilia(tabAct, mainGrid) {
 		SetearDestinoDeOperacion(tabAct);
 		$(".nav-link").prop("disabled", true);
 		$(".activable").prop("disabled", false);
+		$("#ProveedorGrupo_pg_id").prop("disabled", true);
 		desactivarGrilla(Grids.GridFlias);
 		desactivarGrilla(mainGrid);
-		$("#FormaDePago_fp_dias").focus();
+		$("#ProveedorGrupo_pg_desc").focus();
 	}
 }
 
@@ -542,7 +543,7 @@ function selectRegDbl(x, gridId) {
 			});
 			break;
 		case Grids.GridFlias:
-			var pgId = x.cells[2].innerText.trim();
+			var pgId = x.cells[0].innerText.trim();
 			var data = { ctaId, pgId };
 			AbrirWaiting();
 			PostGenHtml(data, buscarDatosFamiliasUrl, function (obj) {
