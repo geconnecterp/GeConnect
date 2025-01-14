@@ -458,8 +458,6 @@ function selectRegProv(e, gridId) {
 	}
 }
 
-
-
 function selectRegDbl(x, gridId) {
 	AbrirWaiting("Espere mientras se busca el proveedor seleccionado...");
 	$("#tbGridProveedor tbody tr").each(function (index) {
@@ -471,6 +469,8 @@ function selectRegDbl(x, gridId) {
 		case Grids.GridProveedor:
 			var cta_id = x[0].cells[0].innerText.trim();
 			if (cta_id !== "") {
+				ctaIdRow = x[0];
+				console.log(ctaIdRow);
 				ctaId = cta_id;
 				BuscarProveedor(cta_id);
 				BuscarFormaDePago();
@@ -700,15 +700,15 @@ function ObtenerDatosDeProveedorParaJson() {
 	var ope_iva_descripcion = $("#listaOpe option:selected").text();
 	var ctag_id = $("#listaTipoGasto").val();
 	var ctag_denominacion = $("#listaTipoGasto option:selected").text();
-	var ctac_habilitada = "N";
+	var ctap_habilitada = "N";
 	if ($("#chkCtaActiva")[0].checked)
-		ctac_habilitada = "S";
+		ctap_habilitada = "S";
 	
 	var data = {
 		cta_id, cta_denominacion, tdoc_id, tdoc_desc, cta_documento, cta_domicilio, cta_localidad, cta_cpostal, prov_id, prov_nombre, dep_id, dep_nombre, cta_www, afip_id, afip_desc, nj_id, nj_desc, cta_ib_nro,
 		ib_id, ib_desc, cta_alta, cta_cuit_vto, cta_emp, cta_emp_legajo, cta_emp_ctaf, cta_actu_fecha, cta_actu, tp_id, ctap_ean, ctap_id_externo, ctap_rgan, rgan_id, rgan_cert, rgan_cert_vto, rgan_porc, 
 		ctap_rib, rib_id, rib_cert, rib_cert_vto, rib_porc, ctap_ret_iva, ctap_ret_iva_porc, ctap_per_iva, ctap_per_iva_ali, ctap_per_ib, ctap_per_ib_ali, ctap_pago_susp, ctap_devolucion, ctap_devolucion_flete, 
-		ctap_acuenta_dev, ctap_d1, ctap_d2, ctap_d3, ctap_d4, ctap_d5, ctap_d6, ope_iva, ope_iva_descripcion, ctag_id, ctag_denominacion, ctac_habilitada, destinoDeOperacion, tipoDeOperacion
+		ctap_acuenta_dev, ctap_d1, ctap_d2, ctap_d3, ctap_d4, ctap_d5, ctap_d6, ope_iva, ope_iva_descripcion, ctag_id, ctag_denominacion, ctap_habilitada, destinoDeOperacion, tipoDeOperacion
 	};
 	return data;
 }

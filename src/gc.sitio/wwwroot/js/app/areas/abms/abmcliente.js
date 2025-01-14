@@ -256,6 +256,9 @@ function BuscarCliente(ctaId) {
 		CerrarWaiting();
 	});
 }
+
+
+
 function selectRegDbl(x, gridId) {
 	AbrirWaiting("Espere mientras se busca el cliente seleccionado...");
 	$("#" + gridId + " tbody tr").each(function (index) {

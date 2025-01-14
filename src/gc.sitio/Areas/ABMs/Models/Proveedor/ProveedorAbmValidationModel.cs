@@ -63,6 +63,6 @@ namespace gc.sitio.Areas.ABMs.Models
 		public string ope_iva_descripcion { get; set; } = string.Empty;
 		public string ctag_id { get; set; } = string.Empty;
 		public string ctag_denominacion { get; set; } = string.Empty;
-		public string ctac_habilitada { get; set; } = string.Empty;
+		public string ctap_habilitada { get; set; } = string.Empty;
 	}
 }

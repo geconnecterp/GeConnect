@@ -598,16 +598,31 @@ function validarCampos() {
 	return true;
 }
 
+function ActualizarRegistroEnGrilla(datos, grid) {
+	$("#" + grid + " tbody tr").each(function (index) {
+		let aux = $(this)[0].cells[0].innerText;
+		if (aux == datos.cta_id) {
+			$(this)[0].cells[1].innerText = datos.cta_denominacion;
+			$(this)[0].cells[2].innerText = datos.tdoc_desc;
+			$(this)[0].cells[3].innerText = datos.cta_documento;
+			$(this)[0].cells[4].innerText = datos.cta_domicilio;
+		}
+	});
+}
+
 function Guardar() {
 	if (validarCampos()) {
 		var url = "";
+		var gridParaActualizar = "";
 		switch (destinoDeOperacion) {
 			case AbmObject.CLIENTES:
 				activarGrilla(Grids.GridCliente);
+				gridParaActualizar = Grids.GridCliente;
 				url = dataOpsClienteUrl;
 				break;
 			case AbmObject.PROVEEDORES:
 				activarGrilla(Grids.GridProveedor);
+				gridParaActualizar = Grids.GridProveedor;
 				url = dataOpsProveedorUrl;
 				break;
 			case AbmObject.CLIENTES_CONDICIONES_VTA:
@@ -654,6 +669,10 @@ function Guardar() {
 				}, false, ["Aceptar"], "succ!", null);
 				activarBotones(false);
 				ActualizarDatosEnGrilla(destinoDeOperacion);
+				if (gridParaActualizar != "") {
+					ActualizarRegistroEnGrilla(data, gridParaActualizar);
+				}
+				
 			}
 
 		});
