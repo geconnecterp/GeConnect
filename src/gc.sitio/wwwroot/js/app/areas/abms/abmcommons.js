@@ -23,10 +23,36 @@
 	}
 }
 
-function BuscarFormaDePago() {
+function ejecutaDblClickGrid(x, grid) {
+	AbrirWaiting("Espere mientras se busca el producto seleccionado...");
+	selectRegDbl(x, grid);
+}
+
+function BuscarFormaDePagoTabClick() {
 	if ($(".nav-link").prop("disabled")) {
 		return false;
 	}
+	BuscarFormaDePago();
+}
+
+function posicionarRegOnTop(x) {
+	rowOffset = 0;
+	posActScrollTop = 0;
+	newPosScrollTop = 0
+
+	posTabla = $(".table-wrapper");
+	//calculamos la posicion del offset del registro seleccionado
+	rowOffset = x.position().top;
+	//posición actual del scroll
+	posActScrollTop = posTabla.scrollTop();
+	//calculamos la nueva posición del scroll
+	newPosScrollTop = rowOffset + posActScrollTop - posTabla.position().top;
+	posTabla.animate({
+		scrollTop: newPosScrollTop
+	}, 500);
+}
+
+function BuscarFormaDePago() {
 	if (ctaId != "") {
 		var data = { ctaId };
 		AbrirWaiting();
@@ -43,10 +69,14 @@ function BuscarFormaDePago() {
 	}
 }
 
-function BuscarObservaciones() {
+function BuscarObservacionesTabClick() {
 	if ($(".nav-link").prop("disabled")) {
 		return false;
 	}
+	BuscarObservaciones();
+}
+
+function BuscarObservaciones() {
 	if (ctaId != "") {
 		var data = { ctaId };
 		AbrirWaiting();
@@ -63,10 +93,14 @@ function BuscarObservaciones() {
 	}
 }
 
-function BuscarNotas() {
+function BuscarNotasTabClick() {
 	if ($(".nav-link").prop("disabled")) {
 		return false;
 	}
+	BuscarNotas();
+}
+
+function BuscarNotas() {
 	if (ctaId != "") {
 		var data = { ctaId };
 		AbrirWaiting();
@@ -83,10 +117,14 @@ function BuscarNotas() {
 	}
 }
 
-function BuscarOtrosContactos() {
+function BuscarOtrosContactosTabClick() {
 	if ($(".nav-link").prop("disabled")) {
 		return false;
 	}
+	BuscarOtrosContactos();
+}
+
+function BuscarOtrosContactos() {
 	if (ctaId != "") {
 		var data = { ctaId };
 		AbrirWaiting();
@@ -694,9 +732,9 @@ function ObtenerDatosDeNotasParaJson(destinoDeOperacion, tipoDeOperacion) {
 	var cta_id = $("#Cliente_Cta_Id").val();
 	if (cta_id == undefined || cta_id == null)
 		cta_id = $("#Proveedor_Cta_Id").val();
-	var usu_id = $("#Nota_usu_apellidoynombre").val();
-	var usu_apellidoynombre = $("#Nota_usu_apellidoynombre").val();
-	var usu_lista = $("#Nota_usu_apellidoynombre").val();
+	var usu_id = $("#Nota_usu_id").val();
+	var usu_apellidoynombre = $("#Nota_usu_id").val();
+	var usu_lista = $("#Nota_usu_id").val();
 	var fecha = null;
 	var nota = $("#Nota_nota").val();
 	var data = { cta_id, usu_id, usu_apellidoynombre, usu_lista, fecha, nota, destinoDeOperacion, tipoDeOperacion };

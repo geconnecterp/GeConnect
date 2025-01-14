@@ -10,14 +10,19 @@
 	$(document).on("click", "#chkIbCertActiva", controlaCertIb);
 	$(document).on("click", "#chkCtaEmpActiva", controlaCtaEmp);
 	$(document).on("change", "#listaFP", controlaValorFP);
+
+	$(document).on("dblclick", "#" + Grids.GridCliente + " tbody tr", function () {
+		x = $(this);
+		ejecutaDblClickGrid(x, Grids.GridCliente);
+	});
 	$("#btnBuscar").on("click", function () { buscarClientes(pagina); });
 
 	//tabCliente
 	$("#tabCliente").on("click", function () { SeteaIDClienteSelected(); });
-	$("#tabFormaDePago").on("click", function () { BuscarFormaDePago(); });
-	$("#tabOtrosContactos").on("click", function () { BuscarOtrosContactos(); });
-	$("#tabNotas").on("click", function () { BuscarNotas(); });
-	$("#tabObservaciones").on("click", function () { BuscarObservaciones(); });
+	$("#tabFormaDePago").on("click", function () { BuscarFormaDePagoTabClick(); });
+	$("#tabOtrosContactos").on("click", function () { BuscarOtrosContactosTabClick(); });
+	$("#tabNotas").on("click", function () { BuscarNotasTabClick(); });
+	$("#tabObservaciones").on("click", function () { BuscarObservacionesTabClick(); });
 
 	/*ABM Botones*/
 	$("#btnAbmNuevo").on("click", function () { btnNuevoClick(); });
@@ -261,7 +266,7 @@ function selectRegDbl(x, gridId) {
 
 	switch (gridId) {
 		case Grids.GridCliente:
-			var cta_id = x.cells[0].innerText.trim();
+			var cta_id = x[0].cells[0].innerText.trim();
 			if (cta_id !== "") {
 				ctaId = cta_id;
 				BuscarCliente(cta_id);
@@ -275,6 +280,7 @@ function selectRegDbl(x, gridId) {
 				$("#btnDetalle").prop("disabled", false);
 				$("#divFiltro").collapse("hide");
 				$("#divDetalle").collapse("show");
+				posicionarRegOnTop(x);
 			}
 			break;
 		case Grids.GridFP:

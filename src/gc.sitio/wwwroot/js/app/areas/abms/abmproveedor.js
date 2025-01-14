@@ -6,15 +6,21 @@
 
 	$(document).on("change", "#listaAfip", controlaValorAfip);
 	$(document).on("change", "#listaProvi", controlaValorProvi);
+
+	$(document).on("dblclick", "#" + Grids.GridProveedor + " tbody tr", function () {
+		x = $(this);
+		ejecutaDblClickGrid(x, Grids.GridProveedor);
+	});
+
 	$("#btnBuscar").on("click", function () { buscarProveedores(pagina); });
 
 	//tabProveedor
 	$("#tabProveedor").on("click", function () { SeteaIDProvSelected(); });
-	$("#tabFormaDePago").on("click", function () { BuscarFormaDePago(); });
-	$("#tabOtrosContactos").on("click", function () { BuscarOtrosContactos(); });
-	$("#tabNotas").on("click", function () { BuscarNotas(); });
-	$("#tabObservaciones").on("click", function () { BuscarObservaciones(); });
-	$("#tabFliaProv").on("click", function () { BuscarFamilias(); });
+	$("#tabFormaDePago").on("click", function () { BuscarFormaDePagoTabClick(); });
+	$("#tabOtrosContactos").on("click", function () { BuscarOtrosContactosTabClick(); });
+	$("#tabNotas").on("click", function () { BuscarNotasTabClick(); });
+	$("#tabObservaciones").on("click", function () { BuscarObservacionesTabClick(); });
+	$("#tabFliaProv").on("click", function () { BuscarFamiliasTabClick(); });
 
 	/*ABM Botones*/
 	$("#btnAbmNuevo").on("click", function () { btnNuevoClick(); });
@@ -401,10 +407,14 @@ function buscarProveedores(pag) {
 
 }
 
-function BuscarFamilias() {
+function BuscarFamiliasTabClick() {
 	if ($(".nav-link").prop("disabled")) {
 		return false;
 	}
+	BuscarFamilias();
+}
+
+function BuscarFamilias() {
 	if (ctaId != "") {
 		var data = { ctaId };
 		AbrirWaiting();
@@ -448,6 +458,8 @@ function selectRegProv(e, gridId) {
 	}
 }
 
+
+
 function selectRegDbl(x, gridId) {
 	AbrirWaiting("Espere mientras se busca el proveedor seleccionado...");
 	$("#tbGridProveedor tbody tr").each(function (index) {
@@ -457,7 +469,7 @@ function selectRegDbl(x, gridId) {
 
 	switch (gridId) {
 		case Grids.GridProveedor:
-			var cta_id = x.cells[0].innerText.trim();
+			var cta_id = x[0].cells[0].innerText.trim();
 			if (cta_id !== "") {
 				ctaId = cta_id;
 				BuscarProveedor(cta_id);
@@ -471,6 +483,7 @@ function selectRegDbl(x, gridId) {
 				$("#btnDetalle").prop("disabled", false);
 				$("#divFiltro").collapse("hide");
 				$("#divDetalle").collapse("show");
+				posicionarRegOnTop(x);
 			}
 			break;
 		case Grids.GridFP:
