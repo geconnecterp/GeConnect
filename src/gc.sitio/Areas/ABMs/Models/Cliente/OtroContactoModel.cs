@@ -2,13 +2,13 @@
 {
 	public class OtroContactoModel
 	{
-		public string cta_id { get; set; } = string.Empty;
-		public string tc_id { get; set; } = string.Empty;
-		public string tc_desc { get; set; } = string.Empty;
-		public string tc_lista { get; set; } = string.Empty;
-		public string cta_celu { get; set; } = string.Empty;
-		public string cta_te { get; set; } = string.Empty;
-		public string cta_email { get; set; } = string.Empty;
-		public string cta_nombre { get; set; } = string.Empty;
+		public string Cta_Id { get; set; } = string.Empty;
+		public string Tc_Id { get; set; } = string.Empty;
+		public string Tc_Desc { get; set; } = string.Empty;
+		public string Tc_Lista { get; set; } = string.Empty;
+		public string Cta_Celu { get; set; } = string.Empty;
+		public string Cta_Te { get; set; } = string.Empty;
+		public string Cta_Email { get; set; } = string.Empty;
+		public string Cta_Nombre { get; set; } = string.Empty;
 	}
 }

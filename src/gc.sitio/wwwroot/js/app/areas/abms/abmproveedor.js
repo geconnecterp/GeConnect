@@ -53,35 +53,35 @@
 	return true;
 });
 
-function btnNuevoClick() {
-	tipoDeOperacion = AbmAction.ALTA;
-	var tabActiva = $('.nav-tabs .active')[0].id;
-	SetearDestinoDeOperacion(tabActiva);
-	$("#btnAbmAceptar").show();
-	$("#btnAbmCancelar").show();
-	switch (tabActiva) {
-		case Tabs.TabProveedor:
-			NuevoProveedor();
-			break;
-		case Tabs.TabFormasDePago:
-			NuevaFormaDePago();
-			break;
-		case Tabs.TabNotas:
-			NuevaNota();
-			break;
-		case Tabs.TabObservaciones:
-			NuevaObservacion();
-			break;
-		case Tabs.TabOtrosContactos:
-			NuevoContacto();
-			break;
-		case Tabs.TabFamilias:
-			NuevaFamilia();
-			break;
-		default:
-			break;
-	}
-}
+//function btnNuevoClick() {
+//	tipoDeOperacion = AbmAction.ALTA;
+//	var tabActiva = $('.nav-tabs .active')[0].id;
+//	SetearDestinoDeOperacion(tabActiva);
+//	$("#btnAbmAceptar").show();
+//	$("#btnAbmCancelar").show();
+//	switch (tabActiva) {
+//		case Tabs.TabProveedor:
+//			NuevoProveedor();
+//			break;
+//		case Tabs.TabFormasDePago:
+//			NuevaFormaDePago();
+//			break;
+//		case Tabs.TabNotas:
+//			NuevaNota();
+//			break;
+//		case Tabs.TabObservaciones:
+//			NuevaObservacion();
+//			break;
+//		case Tabs.TabOtrosContactos:
+//			NuevoContacto();
+//			break;
+//		case Tabs.TabFamilias:
+//			NuevaFamilia();
+//			break;
+//		default:
+//			break;
+//	}
+//}
 
 function NuevoProveedor() {
 	var data = {};
@@ -93,6 +93,8 @@ function NuevoProveedor() {
 		$("#Proveedor_Cta_Id").prop("disabled", true);
 		HabilitarBotonesPorAccion(AbmAction.ALTA);
 		desactivarGrilla(Grids.GridProveedor);
+		$("#divFiltro").collapse("hide");
+		$("#divDetalle").collapse("show");
 		$("#Proveedor_Cta_Denominacion").focus();
 		CerrarWaiting();
 	}, function (obj) {
@@ -109,7 +111,8 @@ function NuevaFamilia() {
 		$(".activable").prop("disabled", false);
 		HabilitarBotonesPorAccion(AbmAction.ALTA);
 		desactivarGrilla(Grids.GridFlias);
-		$("#ProveedorGrupo_pg_id").focus();
+		$("#ProveedorGrupo_Pg_Id").prop("disabled", true);
+		$("#ProveedorGrupo_Pg_Desc").focus();
 		CerrarWaiting();
 	}, function (obj) {
 		ControlaMensajeError(obj.message);
@@ -169,113 +172,13 @@ function ModificaFamilia(tabAct, mainGrid) {
 		SetearDestinoDeOperacion(tabAct);
 		$(".nav-link").prop("disabled", true);
 		$(".activable").prop("disabled", false);
-		$("#ProveedorGrupo_pg_id").prop("disabled", true);
+		$("#ProveedorGrupo_Pg_Id").prop("disabled", true);
 		desactivarGrilla(Grids.GridFlias);
 		desactivarGrilla(mainGrid);
-		$("#ProveedorGrupo_pg_desc").focus();
+		$("#ProveedorGrupo_Pg_Desc").focus();
 	}
 }
 
-function btnBajaClick() {
-	var tabActiva = $('.nav-tabs .active')[0].id;
-	$("#btnAbmAceptar").show();
-	$("#btnAbmCancelar").show();
-	var idSelected = $("#IdSelected").val();
-	if (idSelected === "") {
-		AbrirMensaje("ATENCIÓN", GetMensajeParaBaja(tabActiva), function () {
-			$("#msjModal").modal("hide");
-			return false;
-		}, false, ["Aceptar"], "error!", null);
-
-	}
-	else {
-		HabilitarBotonesPorAccion(AbmAction.BAJA);
-		tipoDeOperacion = AbmAction.BAJA;
-		$(".activable").prop("disabled", true);
-		var tabActiva = $('.nav-tabs .active')[0].id;
-		SetearDestinoDeOperacion(tabActiva);
-		$(".nav-link").prop("disabled", true);
-		switch (tabActiva) {
-			case Tabs.TabProveedor:
-				desactivarGrilla(Grids.GridProveedor);
-				break;
-			case Tabs.TabFormasDePago:
-				desactivarGrilla(Grids.GridProveedor);
-				desactivarGrilla(Grids.GridFP);
-				break;
-			case Tabs.TabNotas:
-				desactivarGrilla(Grids.GridProveedor);
-				desactivarGrilla(Grids.GridNota);
-				break;
-			case Tabs.TabObservaciones:
-				desactivarGrilla(Grids.GridProveedor);
-				desactivarGrilla(Grids.GridObs);
-				break;
-			case Tabs.TabOtrosContactos:
-				desactivarGrilla(Grids.GridProveedor);
-				desactivarGrilla(Grids.GridOC);
-				break;
-			case Tabs.TabFamilias:
-				desactivarGrilla(Grids.GridProveedor);
-				desactivarGrilla(Grids.GridFlias);
-				break;
-			default:
-				break;
-		}
-	}
-}
-
-function btnSubmitClick() {
-	var tabActiva = $('.nav-tabs .active')[0].id;
-	var mensaje = PuedoGuardar(tabActiva);
-	if (mensaje === "") {
-		//HabilitarBotonesPorAccion(AbmAction.SUBMIT);
-		//$("#btnAbmAceptar").hide();
-		//$("#btnAbmCancelar").hide();
-		Guardar();
-	}
-}
-
-function btnCancelClick() {
-	HabilitarBotonesPorAccion(AbmAction.CANCEL);
-	tipoDeOperacion = AbmAction.CANCEL;
-	$(".nav-link").prop("disabled", false);
-	$(".activable").prop("disabled", true);
-	$("#btnAbmAceptar").hide();
-	$("#btnAbmCancelar").hide();
-	var tabActiva = $('.nav-tabs .active')[0].id;
-	switch (tabActiva) {
-		case Tabs.TabProveedor:
-			activarGrilla(Grids.GridProveedor);
-			break;
-		case Tabs.TabFormasDePago:
-			$("#tbClienteFormaPagoEnTab").prop("disabled", false);
-			activarGrilla(Grids.GridFP);
-			activarGrilla(Grids.GridProveedor);
-			break;
-		case Tabs.TabNotas:
-			$("#Nota_usu_apellidoynombre").prop("disabled", false);
-			activarGrilla(Grids.GridNota);
-			activarGrilla(Grids.GridProveedor);
-			break;
-		case Tabs.TabObservaciones:
-			activarGrilla(Grids.GridObs);
-			activarGrilla(Grids.GridProveedor);
-			break;
-		case Tabs.TabOtrosContactos:
-			activarGrilla(Grids.GridOC);
-			activarGrilla(Grids.GridProveedor);
-			$("#OtroContacto_cta_nombre").prop("disabled", false);
-			$("#listaTC").prop("disabled", false);
-			break;
-		case Tabs.TabFamilias:
-			activarGrilla(Grids.GridFlias);
-			activarGrilla(Grids.GridProveedor);
-			break;
-		default:
-			break;
-	}
-}
 function btnDetalleClick() {
 }
 
@@ -313,6 +216,7 @@ function InicializaPantallaAbmProveedor() {
 
 	$("#IdSelected").val("");
 	$(".activable").prop("disabled", true);
+	activarBotones(false);
 	CerrarWaiting();
 	return true;
 }
@@ -460,10 +364,11 @@ function selectRegProv(e, gridId) {
 
 function selectRegDbl(x, gridId) {
 	AbrirWaiting("Espere mientras se busca el proveedor seleccionado...");
-	$("#tbGridProveedor tbody tr").each(function (index) {
+	$("#" + gridId + " tbody tr").each(function (index) {
 		$(this).removeClass("selectedEdit-row");
 	});
 	$(x).addClass("selectedEdit-row");
+	regSelected = x;
 
 	switch (gridId) {
 		case Grids.GridProveedor:
@@ -492,7 +397,7 @@ function selectRegDbl(x, gridId) {
 			AbrirWaiting();
 			PostGenHtml(data, buscarDatosFormasDePagoUrl, function (obj) {
 				$("#divDatosDeFPSelected").html(obj);
-				$("#IdSelected").val($("#FormaDePago_fp_id").val());
+				$("#IdSelected").val(fpId);
 				$(".activable").prop("disabled", true);
 				activarBotones(true);
 				CerrarWaiting();
@@ -610,9 +515,9 @@ function PuedoAgregar(tabAct) {
 
 function ObtenerDatosDeProveedorFamiliaParaJson(destinoDeOperacion, tipoDeOperacion) {
 	var cta_id = $("#Proveedor_Cta_Id").val();
-	var pg_id = $("#ProveedorGrupo_pg_id").val();
-	var pg_desc = $("#ProveedorGrupo_pg_desc").val();
-	var pg_lista = $("#ProveedorGrupo_pg_desc").val() + "(" + $("#ProveedorGrupo_pg_id").val() + ")";
+	var pg_id = $("#ProveedorGrupo_Pg_Id").val();
+	var pg_desc = $("#ProveedorGrupo_Pg_Desc").val();
+	var pg_lista = $("#ProveedorGrupo_Pg_Desc").val() + "(" + $("#ProveedorGrupo_Pg_Id").val() + ")";
 	var data = { cta_id, pg_id, pg_desc, pg_lista, destinoDeOperacion, tipoDeOperacion };
 	return data;
 }

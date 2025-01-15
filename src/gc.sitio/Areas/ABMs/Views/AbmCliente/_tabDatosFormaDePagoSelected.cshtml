@@ -5,39 +5,39 @@
 }
 
 <div class="row" style="padding-top: 10px;">
-	@Html.HiddenFor(x => x.FormaDePago.fp_id)
+	@Html.HiddenFor(x => x.FormaDePago.Fp_Id)
 	<div class="row mt-1">
 		<div class="input-group input-group-sm">
 			<span class="input-group-text fixed-lbl-for-abm-70">FP: </span>
-			@Html.DropDownListFor(m => Model.FormaDePago.fp_id, fp, "Seleccionar...", new { @id = "listaFP", @class = "form-control activable" })
+			@Html.DropDownListFor(m => Model.FormaDePago.Fp_Id, fp, "Seleccionar...", new { @id = "listaFP", @class = "form-control activable" })
 			<span class="input-group-text fixed-lbl-for-abm-70">Plazo: </span>
-			<input type="number" asp-for="FormaDePago.fp_dias" class="form-control activable" />
+			<input type="number" asp-for="FormaDePago.Fp_Dias" class="form-control activable" />
 		</div>
 	</div>
 	<div class="row mt-1">
 		<div class="input-group input-group-sm">
 			<span class="input-group-text fixed-lbl-for-abm-70">Obs: </span>
-			<input type="text" asp-for="FormaDePago.cta_obs" class="form-control activable" />
+			<input type="text" asp-for="FormaDePago.Cta_Obs" class="form-control activable" />
 		</div>
 	</div>
 	<div class="row mt-1">
 		<div class="input-group input-group-sm">
 			<span class="input-group-text fixed-lbl-for-abm-70">Cta: </span>
-			@Html.DropDownListFor(m => Model.FormaDePago.tcb_id, tipoCueBco, "Seleccionar...", new { @id = "listaTipoCueBco", @class = "form-control activable" })
+			@Html.DropDownListFor(m => Model.FormaDePago.Tcb_Id, tipoCueBco, "Seleccionar...", new { @id = "listaTipoCueBco", @class = "form-control activable" })
 			<span class="input-group-text fixed-lbl-for-abm-70">N°: </span>
-			<input type="text" asp-for="FormaDePago.cta_bco_cuenta_nro" class="form-control activable" />
+			<input type="text" asp-for="FormaDePago.Cta_Bco_Cuenta_Nro" class="form-control activable" />
 		</div>
 	</div>
 	<div class="row mt-1">
 		<div class="input-group input-group-sm">
 			<span class="input-group-text fixed-lbl-for-abm-70">CBU: </span>
-			<input type="text" asp-for="FormaDePago.cta_bco_cuenta_cbu" class="form-control activable" />
+			<input type="text" asp-for="FormaDePago.Cta_Bco_Cuenta_Cbu" class="form-control activable" />
 		</div>
 	</div>
 	<div class="row mt-1">
 		<div class="input-group input-group-sm">
 			<span class="input-group-text fixed-lbl-for-abm-70">Valores a: </span>
-			<input type="text" asp-for="FormaDePago.cta_valores_a_nombre" class="form-control activable" />
+			<input type="text" asp-for="FormaDePago.Cta_Valores_A_Nombre" class="form-control activable" />
 		</div>
 	</div>
 </div>

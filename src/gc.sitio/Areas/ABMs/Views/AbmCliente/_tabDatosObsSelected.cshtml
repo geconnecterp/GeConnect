@@ -3,17 +3,17 @@
 	var cmb = Model.ComboTipoObs;
 }
 <div class="row" style="padding-top: 10px;">
-	@Html.HiddenFor(x => x.Observacion.to_id)
+	@Html.HiddenFor(x => x.Observacion.To_Id)
 	<div class="row mt-1">
 		<div class="input-group input-group-sm">
 			<span class="input-group-text fixed-lbl-for-abm-70">Tipo: </span>
-			@Html.DropDownListFor(m => Model.Observacion.to_id, cmb, "Seleccionar...", new { @id = "listaTipoObs", @class = "form-control activable" })
+			@Html.DropDownListFor(m => Model.Observacion.To_Id, cmb, "Seleccionar...", new { @id = "listaTipoObs", @class = "form-control activable" })
 		</div>
 	</div>
 	<div class="row mt-1">
 		<div class="input-group input-group-sm">
 			<span class="input-group-text fixed-lbl-for-abm-70">Observación: </span>
-			<input type="text" asp-for="Observacion.cta_obs" class="form-control activable" />
+			<input type="text" asp-for="Observacion.Cta_Obs" class="form-control activable" />
 		</div>
 	</div>
 </div>

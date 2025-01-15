@@ -2,11 +2,11 @@
 {
     public class NotaModel
     {
-        public string cta_id { get; set; } = string.Empty;
-        public string usu_id { get; set; } = string.Empty;
-        public string usu_apellidoynombre { get; set; } = string.Empty;
-        public string usu_lista { get; set; } = string.Empty;
-        public DateTime fecha { get; set; }
-        public string nota { get; set; } = string.Empty;
+        public string Cta_Id { get; set; } = string.Empty;
+        public string Usu_Id { get; set; } = string.Empty;
+        public string Usu_Apellidoynombre { get; set; } = string.Empty;
+        public string Usu_Lista { get; set; } = string.Empty;
+        public DateTime Fecha { get; set; }
+        public string Nota { get; set; } = string.Empty;
     }
 }

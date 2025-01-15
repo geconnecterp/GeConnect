@@ -2,15 +2,15 @@
 {
     public class ProveedorGrupoModel
     {
-        public string cta_id { get; set; } = string.Empty;
-        public string pg_id { get; set; } = string.Empty;
-        public string pg_desc { get; set; } = string.Empty;
-        public string pg_lista { get; set; } = string.Empty;
-        public DateTime? pg_fecha_carga_precios { get; set; }
-        public DateTime? pg_fecha_consulta_precios { get; set; }
-        public DateTime? pg_fecha_cambio_precios { get; set; }
-        public string pg_observaciones { get; set; } = string.Empty;
-        public DateTime? pg_actu_fecha { get; set; }
-        public char? pg_actu { get; set; }
+        public string Cta_Id { get; set; } = string.Empty;
+        public string Pg_Id { get; set; } = string.Empty;
+        public string Pg_Desc { get; set; } = string.Empty;
+        public string Pg_Lista { get; set; } = string.Empty;
+        public DateTime? Pg_Fecha_Carga_Precios { get; set; }
+        public DateTime? Pg_Fecha_Consulta_Precios { get; set; }
+        public DateTime? Pg_Fecha_Cambio_Precios { get; set; }
+        public string Pg_Observaciones { get; set; } = string.Empty;
+        public DateTime? Pg_Actu_Fecha { get; set; }
+        public char? Pg_Actu { get; set; }
     }
 }

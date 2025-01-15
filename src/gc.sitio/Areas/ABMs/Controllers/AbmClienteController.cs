@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
+using System.Globalization;
 using System.Security.Claims;
 
 namespace gc.sitio.Areas.ABMs.Controllers
@@ -587,12 +588,15 @@ namespace gc.sitio.Areas.ABMs.Controllers
 							return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = respuesta.ListaEntidad?.First().resultado_msj, codigo = respuesta.ListaEntidad?.First().resultado, setFocus = respuesta.ListaEntidad?.First().resultado_setfocus });
 						return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
 					}
-					else if (!respuesta.Ok)
-					{
-						return Json(new { error = true, warn = false, msg = respuesta.Mensaje, codigo = 1, setFocus = string.Empty });
+					else if (respuesta.Entidad != null && respuesta.Entidad.resultado != 0)
+					{ 
+						var set_Focus= respuesta.Entidad.resultado_setfocus.ToLower().Replace("_", " ");
+						TextInfo info = CultureInfo.CurrentCulture.TextInfo;
+						set_Focus = info.ToTitleCase(set_Focus).Replace(" ", "_");
+						return Json(new { error = true, warn = false, msg = respuesta.Entidad.resultado_msj, codigo = respuesta.Entidad.resultado, setFocus = set_Focus }); 
 					}
-					if (respuesta.Entidad != null && respuesta.Entidad.resultado != 0)
-						return Json(new { error = true, warn = false, msg = respuesta.Entidad.resultado_msj, codigo = respuesta.Entidad.resultado, setFocus = respuesta.Entidad.resultado_setfocus });
+					else if (!respuesta.Ok)
+						return Json(new { error = true, warn = false, msg = respuesta.Mensaje, codigo = 1, setFocus = string.Empty });
 
 					return Json(new { error = false, warn = false, msg = "La entidad de ha actualizado con éxito." });
 				}
@@ -701,8 +705,15 @@ namespace gc.sitio.Areas.ABMs.Controllers
 							return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = respuesta.ListaEntidad?.First().resultado_msj, codigo = respuesta.ListaEntidad?.First().resultado, setFocus = respuesta.ListaEntidad?.First().resultado_setfocus });
 						return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
 					}
-					if (respuesta.Entidad != null && respuesta.Entidad.resultado != 0)
-						return Json(new { error = true, warn = false, msg = respuesta.Entidad.resultado_msj, codigo = respuesta.Entidad.resultado, setFocus = respuesta.Entidad.resultado_setfocus });
+					else if (respuesta.Entidad != null && respuesta.Entidad.resultado != 0)
+					{
+						var set_Focus = respuesta.Entidad.resultado_setfocus.ToLower().Replace("_", " ");
+						TextInfo info = CultureInfo.CurrentCulture.TextInfo;
+						set_Focus = info.ToTitleCase(set_Focus).Replace(" ", "_");
+						return Json(new { error = true, warn = false, msg = respuesta.Entidad.resultado_msj, codigo = respuesta.Entidad.resultado, setFocus = set_Focus });
+					}
+					else if (!respuesta.Ok)
+						return Json(new { error = true, warn = false, msg = respuesta.Mensaje, codigo = 1, setFocus = string.Empty });
 
 					return Json(new { error = false, warn = false, msg = "La entidad de ha actualizado con éxito." });
 				}
@@ -790,8 +801,15 @@ namespace gc.sitio.Areas.ABMs.Controllers
 							return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = respuesta.ListaEntidad?.First().resultado_msj, codigo = respuesta.ListaEntidad?.First().resultado, setFocus = respuesta.ListaEntidad?.First().resultado_setfocus });
 						return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
 					}
-					if (respuesta.Entidad != null && respuesta.Entidad.resultado != 0)
-						return Json(new { error = true, warn = false, msg = respuesta.Entidad.resultado_msj, codigo = respuesta.Entidad.resultado, setFocus = respuesta.Entidad.resultado_setfocus });
+					else if (respuesta.Entidad != null && respuesta.Entidad.resultado != 0)
+					{
+						var set_Focus = respuesta.Entidad.resultado_setfocus.ToLower().Replace("_", " ");
+						TextInfo info = CultureInfo.CurrentCulture.TextInfo;
+						set_Focus = info.ToTitleCase(set_Focus).Replace(" ", "_");
+						return Json(new { error = true, warn = false, msg = respuesta.Entidad.resultado_msj, codigo = respuesta.Entidad.resultado, setFocus = set_Focus });
+					}
+					else if (!respuesta.Ok)
+						return Json(new { error = true, warn = false, msg = respuesta.Mensaje, codigo = 1, setFocus = string.Empty });
 
 					return Json(new { error = false, warn = false, msg = "La entidad de ha actualizado con éxito." });
 				}
@@ -882,8 +900,15 @@ namespace gc.sitio.Areas.ABMs.Controllers
 							return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = respuesta.ListaEntidad?.First().resultado_msj, codigo = respuesta.ListaEntidad?.First().resultado, setFocus = respuesta.ListaEntidad?.First().resultado_setfocus });
 						return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
 					}
-					if (respuesta.Entidad != null && respuesta.Entidad.resultado != 0)
-						return Json(new { error = true, warn = false, msg = respuesta.Entidad.resultado_msj, codigo = respuesta.Entidad.resultado, setFocus = respuesta.Entidad.resultado_setfocus });
+					else if (respuesta.Entidad != null && respuesta.Entidad.resultado != 0)
+					{
+						var set_Focus = respuesta.Entidad.resultado_setfocus.ToLower().Replace("_", " ");
+						TextInfo info = CultureInfo.CurrentCulture.TextInfo;
+						set_Focus = info.ToTitleCase(set_Focus).Replace(" ", "_");
+						return Json(new { error = true, warn = false, msg = respuesta.Entidad.resultado_msj, codigo = respuesta.Entidad.resultado, setFocus = set_Focus });
+					}
+					else if (!respuesta.Ok)
+						return Json(new { error = true, warn = false, msg = respuesta.Mensaje, codigo = 1, setFocus = string.Empty });
 
 					return Json(new { error = false, warn = false, msg = "La entidad de ha actualizado con éxito." });
 				}
@@ -947,7 +972,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				obs = HelperGen.PasarAMayusculas(obs);
 				//Valido reglas de negocio, algunas ya se han validado en el front, pero es necsearia una re-validación para evitar introducir valores erróneos
 				var respuestaDeValidacion = ValidarJsonAntesDeGuardar(obs, tipoDeOperacion);
-				if (respuestaDeValidacion == "")
+				if (respuestaDeValidacion.mensaje == "")
 				{
 					//Serializo a un json string el objeto
 					var jsonstring = JsonConvert.SerializeObject(obs, new JsonSerializerSettings());
@@ -971,13 +996,20 @@ namespace gc.sitio.Areas.ABMs.Controllers
 							return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = respuesta.ListaEntidad?.First().resultado_msj, codigo = respuesta.ListaEntidad?.First().resultado, setFocus = respuesta.ListaEntidad?.First().resultado_setfocus });
 						return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
 					}
-					if (respuesta.Entidad != null && respuesta.Entidad.resultado != 0)
-						return Json(new { error = true, warn = false, msg = respuesta.Entidad.resultado_msj, codigo = respuesta.Entidad.resultado, setFocus = respuesta.Entidad.resultado_setfocus });
+					else if (respuesta.Entidad != null && respuesta.Entidad.resultado != 0)
+					{
+						var set_Focus = respuesta.Entidad.resultado_setfocus.ToLower().Replace("_", " ");
+						TextInfo info = CultureInfo.CurrentCulture.TextInfo;
+						set_Focus = info.ToTitleCase(set_Focus).Replace(" ", "_");
+						return Json(new { error = true, warn = false, msg = respuesta.Entidad.resultado_msj, codigo = respuesta.Entidad.resultado, setFocus = set_Focus });
+					}
+					else if (!respuesta.Ok)
+						return Json(new { error = true, warn = false, msg = respuesta.Mensaje, codigo = 1, setFocus = string.Empty });
 
 					return Json(new { error = false, warn = false, msg = "La entidad de ha actualizado con éxito." });
 				}
 				else
-					return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
+					return Json(new { error = true, warn = false, msg = respuestaDeValidacion.mensaje, codigo = 1, setFocus = respuestaDeValidacion.setFecus });
 			}
 			catch (Exception ex)
 			{
@@ -1017,12 +1049,14 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		#endregion
 
 		#region Métodos Privados
-		private string ValidarJsonAntesDeGuardar(ObservacionAbmValidationModel obs, char abm)
+		
+		private RespuestaDeValidacionAntesDeGuardar ValidarJsonAntesDeGuardar(ObservacionAbmValidationModel obs, char abm)
 		{
+
 			//Agregar validaciones en el caso que lo requiera
 			if (string.IsNullOrWhiteSpace(obs.cta_obs) && abm!='B')
-				return "Debe indicar una observación válida, no se permiten observaciones vacías.";
-			return "";
+				return new RespuestaDeValidacionAntesDeGuardar() { mensaje= "Debe indicar una observación válida, no se permiten observaciones vacías.", setFecus= "Cta_Obs" } ;
+			return new RespuestaDeValidacionAntesDeGuardar() { mensaje = "", setFecus = "" };
 		}
 		private string ValidarJsonAntesDeGuardar(NotaAbmValidationModel no, char abm)
 		{
@@ -1119,10 +1153,10 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				{
 					return "Se debe indicar un valor de IB.";
 				}
-				else if (cuenta.afip_id == "05" || cuenta.afip_id == "02")
-				{
-					cuenta.ib_id = null;
-				}
+				//else if (cuenta.afip_id == "05" || cuenta.afip_id == "02")
+				//{
+				//	cuenta.ib_id = null;
+				//}
 				//Cantidad de PV debe ser mayor a cero si  la condición AFIP es distinto de 05 y 02
 				if ((cuenta.afip_id != "05" && cuenta.afip_id != "02") && cuenta.ctac_ptos_vtas == 0)
 				{
@@ -1148,11 +1182,11 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				return mod;
 
 			#region map
-			mod.to_lista = obs.to_lista;
-			mod.to_id = obs.to_id;
-			mod.to_desc = obs.to_desc;
-			mod.cta_obs = obs.cta_obs;
-			mod.cta_id = obs.cta_id;
+			mod.To_Lista = obs.to_lista;
+			mod.To_Id = obs.to_id;
+			mod.To_Desc = obs.to_desc;
+			mod.Cta_Obs = obs.cta_obs;
+			mod.Cta_Id = obs.cta_id;
 			#endregion
 			return mod;
 		}
@@ -1163,12 +1197,12 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				return nom;
 
 			#region map
-			nom.usu_lista = nota.usu_lista;
-			nom.usu_id = nota.usu_id;
-			nom.usu_apellidoynombre = nota.usu_apellidoynombre;
-			nom.nota = nota.nota;
-			nom.fecha = nota.fecha;
-			nom.cta_id = nota.cta_id;
+			nom.Usu_Lista = nota.usu_lista;
+			nom.Usu_Id = nota.usu_id;
+			nom.Usu_Apellidoynombre = nota.usu_apellidoynombre;
+			nom.Nota = nota.nota;
+			nom.Fecha = nota.fecha;
+			nom.Cta_Id = nota.cta_id;
 			#endregion
 			return nom;
 		}
@@ -1178,14 +1212,14 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			if (contacto == null)
 				return ocm;
 			#region mapp
-			ocm.tc_lista = contacto.tc_lista;
-			ocm.tc_id = contacto.tc_id;
-			ocm.tc_desc = contacto.tc_desc;
-			ocm.cta_te = contacto.cta_te;
-			ocm.cta_nombre = contacto.cta_nombre;
-			ocm.cta_id = contacto.cta_id;
-			ocm.cta_email = contacto.cta_email;
-			ocm.cta_celu = contacto.cta_celu;
+			ocm.Tc_Lista = contacto.tc_lista;
+			ocm.Tc_Id = contacto.tc_id;
+			ocm.Tc_Desc = contacto.tc_desc;
+			ocm.Cta_Te = contacto.cta_te;
+			ocm.Cta_Nombre = contacto.cta_nombre;
+			ocm.Cta_Id = contacto.cta_id;
+			ocm.Cta_Email = contacto.cta_email;
+			ocm.Cta_Celu = contacto.cta_celu;
 			#endregion
 			return ocm;
 		}
@@ -1196,19 +1230,19 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			if (fp == null)
 				return fpm;
 			#region mapp
-			fpm.fp_deufault = fp.fp_deufault;
-			fpm.fp_lista = fp.fp_lista;
-			fpm.fp_desc = fp.fp_desc;
-			fpm.fp_id = fp.fp_id;
-			fpm.cta_valores_a_nombre = fp.cta_valores_a_nombre;
-			fpm.tcb_lista = fp.tcb_lista;
-			fpm.cta_bco_cuenta_cbu = fp.cta_bco_cuenta_cbu;
-			fpm.cta_bco_cuenta_nro = fp.cta_bco_cuenta_nro;
-			fpm.cta_obs = fp.cta_obs;
-			fpm.tcb_id = fp.tcb_id;
-			fpm.tcb_desc = fp.tcb_desc;
-			fpm.fp_dias = fp.fp_dias;
-			fpm.cta_id = fp.cta_id;
+			fpm.Fp_Deufault = fp.fp_deufault;
+			fpm.Fp_Lista = fp.fp_lista;
+			fpm.Fp_Desc = fp.fp_desc;
+			fpm.Fp_Id = fp.fp_id;
+			fpm.Cta_Valores_A_Nombre = fp.cta_valores_a_nombre;
+			fpm.Tcb_Lista = fp.tcb_lista;
+			fpm.Cta_Bco_Cuenta_Cbu = fp.cta_bco_cuenta_cbu;
+			fpm.Cta_Bco_Cuenta_Nro = fp.cta_bco_cuenta_nro;
+			fpm.Cta_Obs = fp.cta_obs;
+			fpm.Tcb_Id = fp.tcb_id;
+			fpm.Tcb_Desc = fp.tcb_desc;
+			fpm.Fp_Dias = fp.fp_dias;
+			fpm.Cta_Id = fp.cta_id;
 			#endregion
 			return fpm;
 		}
