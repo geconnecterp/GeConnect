@@ -60,8 +60,9 @@ function NuevoProveedor() {
 		$(".activable").prop("disabled", false);
 		$("#chkCtaActiva")[0].checked = true;
 		$("#Proveedor_Cta_Id").prop("disabled", true);
-		HabilitarBotonesPorAccion(AbmAction.ALTA);
 		desactivarGrilla(Grids.GridProveedor);
+		accionBotones(AbmAction.ALTA, Tabs.TabProveedor);
+		/*$("#btnDetalle").prop("disabled", false);*/
 		$("#divFiltro").collapse("hide");
 		$("#divDetalle").collapse("show");
 		$("#Proveedor_Cta_Denominacion").focus();
@@ -79,7 +80,8 @@ function NuevaFamilia() {
 		$("#divDatosDeFamiliaSelected").html(obj);
 		$(".nav-link").prop("disabled", true);
 		$(".activable").prop("disabled", false);
-		HabilitarBotonesPorAccion(AbmAction.ALTA);
+		//HabilitarBotonesPorAccion(AbmAction.ALTA);
+		accionBotones(AbmAction.MODIFICACION, Tabs.TabProveedor);
 		desactivarGrilla(Grids.GridFlias);
 		$("#ProveedorGrupo_Pg_Id").prop("disabled", true);
 		$("#ProveedorGrupo_Pg_Desc").focus();
@@ -92,8 +94,9 @@ function NuevaFamilia() {
 
 function btnModiClick() {
 	var tabActiva = $('.nav-tabs .active')[0].id;
-	$("#btnAbmAceptar").show();
-	$("#btnAbmCancelar").show();
+	accionBotones(AbmAction.MODIFICACION, tabActiva);
+	//$("#btnAbmAceptar").show();
+	//$("#btnAbmCancelar").show();
 	switch (tabActiva) {
 		case Tabs.TabProveedor:
 			ModificaProveedor(tabActiva);
@@ -119,7 +122,8 @@ function btnModiClick() {
 }
 
 function ModificaProveedor(tabAct) {
-	HabilitarBotonesPorAccion(AbmAction.MODIFICACION);
+	//HabilitarBotonesPorAccion(AbmAction.MODIFICACION);
+	accionBotones(AbmAction.MODIFICACION, tabAct);
 	tipoDeOperacion = AbmAction.MODIFICACION;
 	SetearDestinoDeOperacion(tabAct);
 	$(".nav-link").prop("disabled", true);
@@ -137,7 +141,8 @@ function ModificaFamilia(tabAct, mainGrid) {
 		}, false, ["Aceptar"], "error!", null);
 	}
 	else {
-		HabilitarBotonesPorAccion(AbmAction.MODIFICACION);
+		//HabilitarBotonesPorAccion(AbmAction.MODIFICACION);
+		accionBotones(AbmAction.MODIFICACION, Tabs.TabFamilias);
 		tipoDeOperacion = AbmAction.MODIFICACION;
 		SetearDestinoDeOperacion(tabAct);
 		$(".nav-link").prop("disabled", true);

@@ -218,7 +218,6 @@ function buscarClientes(pag) {
 	PostGenHtml(data, buscarUrl, function (obj) {
 		$("#divGrilla").html(obj);
 		$("#divFiltro").collapse("hide")
-		HabilitarBotones(false, true, true, true, true);
 		PostGen({}, buscarMetadataURL, function (obj) {
 			if (obj.error === true) {
 				AbrirMensaje("ATENCIÓN", obj.msg, function () {
@@ -258,8 +257,6 @@ function BuscarCliente(ctaId) {
 	});
 }
 
-
-
 function selectRegDbl(x, gridId) {
 	AbrirWaiting("Espere mientras se busca el cliente seleccionado...");
 	$("#" + gridId + " tbody tr").each(function (index) {
@@ -293,7 +290,7 @@ function selectRegDbl(x, gridId) {
 			AbrirWaiting();
 			PostGenHtml(data, buscarDatosFormasDePagoUrl, function (obj) {
 				$("#divDatosDeFPSelected").html(obj);
-				$("#IdSelected").val($(fpId).val());
+				$("#IdSelected").val(fpId);
 				$(".activable").prop("disabled", true);
 				activarBotones(true);
 				CerrarWaiting();
@@ -359,8 +356,8 @@ function NuevoCliente() {
 		$(".activable").prop("disabled", false);
 		$("#chkCtaActiva")[0].checked = true;
 		$("#Cliente_Cta_Id").prop("disabled", true);
-		HabilitarBotonesPorAccion(AbmAction.ALTA);
 		desactivarGrilla(Grids.GridCliente);
+		accionBotones(AbmAction.ALTA, Tabs.TabCliente);
 		$("#divFiltro").collapse("hide");
 		$("#divDetalle").collapse("show");
 		$("#Cliente_Cta_Denominacion").focus();
@@ -374,8 +371,7 @@ function NuevoCliente() {
 
 function btnModiClick() {
 	var tabActiva = $('.nav-tabs .active')[0].id;
-	$("#btnAbmAceptar").show();
-	$("#btnAbmCancelar").show();
+	accionBotones(AbmAction.MODIFICACION, tabActiva);
 	switch (tabActiva) {
 		case Tabs.TabCliente:
 			ModificaCliente(tabActiva);
@@ -398,7 +394,7 @@ function btnModiClick() {
 }
 
 function ModificaCliente(tabAct) {
-	HabilitarBotonesPorAccion(AbmAction.MODIFICACION);
+	accionBotones(AbmAction.MODIFICACION, tabAct);
 	tipoDeOperacion = AbmAction.MODIFICACION;
 	SetearDestinoDeOperacion(tabAct);
 	$(".nav-link").prop("disabled", true);

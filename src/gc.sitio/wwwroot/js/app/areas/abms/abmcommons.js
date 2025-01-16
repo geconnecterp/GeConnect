@@ -210,7 +210,7 @@ function NuevaFormaDePago() {
 			$(".nav-link").prop("disabled", true);
 			$(".activable").prop("disabled", false);
 			desactivarGrilla(Grids.GridFP);
-			HabilitarBotonesPorAccion(AbmAction.ALTA);
+			accionBotones(AbmAction.ALTA, tabActiva);
 			$("#FormaDePago_Fp_Id").focus();
 			CerrarWaiting();
 		}, function (obj) {
@@ -236,7 +236,7 @@ function NuevoContacto() {
 			$(".nav-link").prop("disabled", true);
 			$(".activable").prop("disabled", false);
 			desactivarGrilla(Grids.GridOC);
-			HabilitarBotonesPorAccion(AbmAction.ALTA);
+			accionBotones(AbmAction.ALTA, tabActiva);
 			$("#OtroContacto_cta_nombre").focus();
 			CerrarWaiting();
 		}, function (obj) {
@@ -262,7 +262,7 @@ function NuevaNota() {
 			$(".nav-link").prop("disabled", true);
 			$(".activable").prop("disabled", false);
 			desactivarGrilla(Grids.GridNota);
-			HabilitarBotonesPorAccion(AbmAction.ALTA);
+			accionBotones(AbmAction.ALTA, tabActiva);
 			$("#Nota_usu_apellidoynombre").focus();
 			CerrarWaiting();
 		}, function (obj) {
@@ -288,7 +288,7 @@ function NuevaObservacion() {
 			$(".nav-link").prop("disabled", true);
 			$(".activable").prop("disabled", false);
 			desactivarGrilla(Grids.GridObs);
-			HabilitarBotonesPorAccion(AbmAction.ALTA);
+			accionBotones(AbmAction.ALTA, tabActiva);
 			$("#Observacion_cta_obs").focus();
 			CerrarWaiting();
 		}, function (obj) {
@@ -298,34 +298,37 @@ function NuevaObservacion() {
 	}
 }
 
-function HabilitarBotones(btnAlta, btnBaja, btnModi, btnSubmit, btnCancel) {
-	$("#btnAbmNuevo").prop("disabled", btnAlta);
-	$("#btnAbmModif").prop("disabled", btnModi);
-	$("#btnAbmElimi").prop("disabled", btnBaja);
-	$("#btnAbmAceptar").prop("disabled", btnSubmit);
-	$("#btnAbmCancelar").prop("disabled", btnCancel);
-}
+function accionBotones(btn, tabActiva) {
+	if (btn === AbmAction.ALTA || btn === AbmAction.MODIFICACION || btn === AbmAction.BAJA) {
+		$("#btnFiltro").prop("disabled", true);
+		$("#btnDetalle").prop("disabled", true);
+		
+		$("#btnAbmNuevo").prop("disabled", true);
+		$("#btnAbmModif").prop("disabled", true);
+		$("#btnAbmElimi").prop("disabled", true);
 
-function HabilitarBotonesPorAccion(accion) {
-	switch (accion) {
-		case AbmAction.ALTA:
-			HabilitarBotones(true, true, true, false, false);
-			break;
-		case AbmAction.BAJA:
-			HabilitarBotones(true, true, true, false, false);
-			break;
-		case AbmAction.MODIFICACION:
-			HabilitarBotones(true, true, true, false, false);
-			break;
-		case AbmAction.SUBMIT:
-			HabilitarBotones(false, false, false, true, true);
-			break;
-		case AbmAction.CANCEL:
-			HabilitarBotones(false, false, false, true, true);
-			break;
-		default:
-			HabilitarBotones(false, false, false, true, true);
-			break;
+		$("#btnAbmAceptar").prop("disabled", false);
+		$("#btnAbmCancelar").prop("disabled", false);
+		$("#btnAbmAceptar").show();
+		$("#btnAbmCancelar").show();
+	} else if (btn === AbmAction.SUBMIT || btn === AbmAction.CANCEL) {   // (S)uccess - (C)ancel
+		$("#btnFiltro").prop("disabled", false);
+		$("#btnDetalle").prop("disabled", false);
+
+		if (btn === AbmAction.ALTA) {
+
+		}
+		else if (btn === AbmAction.CANCEL) {
+			activarBotones(false);
+			if (tabActiva === Tabs.TabCliente) {
+				$("#btnDetalle").prop("disabled", true);
+				activarGrilla(Tabs.TabCliente);
+			}
+			if (tabActiva === Tabs.TabProveedor) {
+				$("#btnDetalle").prop("disabled", true);
+				activarGrilla(Tabs.TabProveedor);
+			}
+		}
 	}
 }
 
@@ -380,7 +383,7 @@ function ModificaFormaDePago(tabAct, mainGrid) {
 		}, false, ["Aceptar"], "error!", null);
 	}
 	else {
-		HabilitarBotonesPorAccion(AbmAction.MODIFICACION);
+		accionBotones(AbmAction.MODIFICACION, tabAct);
 		tipoDeOperacion = AbmAction.MODIFICACION;
 		SetearDestinoDeOperacion(tabAct);
 		$(".nav-link").prop("disabled", true);
@@ -402,7 +405,7 @@ function ModificaContacto(tabAct, mainGrid) {
 		}, false, ["Aceptar"], "error!", null);
 	}
 	else {
-		HabilitarBotonesPorAccion(AbmAction.MODIFICACION);
+		accionBotones(AbmAction.MODIFICACION, tabAct);
 		tipoDeOperacion = AbmAction.MODIFICACION;
 		SetearDestinoDeOperacion(tabAct);
 		$(".nav-link").prop("disabled", true);
@@ -423,7 +426,7 @@ function ModificaNota(tabAct, mainGrid) {
 		}, false, ["Aceptar"], "error!", null);
 	}
 	else {
-		HabilitarBotonesPorAccion(AbmAction.MODIFICACION);
+		accionBotones(AbmAction.MODIFICACION, tabAct);
 		tipoDeOperacion = AbmAction.MODIFICACION;
 		SetearDestinoDeOperacion(tabAct);
 		$(".nav-link").prop("disabled", true);
@@ -444,7 +447,7 @@ function ModificaObservacion(tabAct, mainGrid) {
 		}, false, ["Aceptar"], "error!", null);
 	}
 	else {
-		HabilitarBotonesPorAccion(AbmAction.MODIFICACION);
+		accionBotones(AbmAction.MODIFICACION, tabAct);
 		tipoDeOperacion = AbmAction.MODIFICACION;
 		SetearDestinoDeOperacion(tabAct);
 		$(".nav-link").prop("disabled", true);
@@ -563,8 +566,7 @@ function btnNuevoClick() {
 	tipoDeOperacion = AbmAction.ALTA;
 	var tabActiva = $('.nav-tabs .active')[0].id;
 	SetearDestinoDeOperacion(tabActiva);
-	$("#btnAbmAceptar").show();
-	$("#btnAbmCancelar").show();
+	accionBotones(AbmAction.ALTA, tabActiva);
 	
 	switch (tabActiva) {
 		case Tabs.TabCliente:
@@ -595,8 +597,7 @@ function btnNuevoClick() {
 
 function btnBajaClick() {
 	var tabActiva = $('.nav-tabs .active')[0].id;
-	$("#btnAbmAceptar").show();
-	$("#btnAbmCancelar").show();
+	accionBotones(AbmAction.BAJA, tabActiva);
 	var idSelected = $("#IdSelected").val();
 	if (idSelected === "") {
 		AbrirMensaje("ATENCIÓN", GetMensajeParaBaja(tabActiva), function () {
@@ -606,7 +607,6 @@ function btnBajaClick() {
 
 	}
 	else {
-		HabilitarBotonesPorAccion(AbmAction.BAJA);
 		tipoDeOperacion = AbmAction.BAJA;
 		$(".activable").prop("disabled", true);
 		var tabActiva = $('.nav-tabs .active')[0].id;
@@ -646,13 +646,11 @@ function btnBajaClick() {
 }
 
 function btnCancelClick() {
-	activarBotones(false);
 	tipoDeOperacion = AbmAction.CANCEL;
 	$(".nav-link").prop("disabled", false);
 	$(".activable").prop("disabled", true);
-	$("#btnAbmAceptar").hide();
-	$("#btnAbmCancelar").hide();
 	var tabActiva = $('.nav-tabs .active')[0].id;
+	accionBotones(AbmAction.CANCEL, tabActiva);
 	switch (tabActiva) {
 		case Tabs.TabCliente:
 			if ($("#divDetalle").is(":visible")) {
@@ -663,6 +661,7 @@ function btnCancelClick() {
 				$("#divFiltro").collapse("show");
 			}
 			activarGrilla(Grids.GridCliente);
+			QuitarElementoSeleccionado(Grids.GridCliente);
 			break;
 		case Tabs.TabProveedor:
 			if ($("#divDetalle").is(":visible")) {
@@ -673,6 +672,7 @@ function btnCancelClick() {
 				$("#divFiltro").collapse("show");
 			}
 			activarGrilla(Grids.GridProveedor);
+			QuitarElementoSeleccionado(Grids.GridProveedor);
 			break;
 		case Tabs.TabFormasDePago:
 			LimpiarCampos(tabActiva);
@@ -711,6 +711,13 @@ function btnCancelClick() {
 		default:
 			break;
 	}
+}
+
+function QuitarElementoSeleccionado(grilla) {
+	$("#" + grilla + " tbody tr").each(function (index) {
+		$(this).removeClass("selectedEdit-row");
+	});
+	regSelected = null;
 }
 
 function selectRegCli(e, gridId) {
