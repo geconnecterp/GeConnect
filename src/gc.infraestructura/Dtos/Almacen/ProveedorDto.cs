@@ -91,9 +91,15 @@ namespace gc.infraestructura.Dtos.Almacen
 		public string Ib_Id { get; set; } = string.Empty;
 		public string Ib_Desc { get; set; } = string.Empty;
 		public string Cta_Emp { get; set; } = string.Empty;
-		public DateTime? Cta_Actu_Fecha { get; set; }
+		public string Cta_Emp_Legajo { get; set; } = string.Empty;
+        public string? Cta_Emp_Ctaf { get; set; } = string.Empty;
+		public DateTime? Cta_Alta { get; set; }
+        public DateTime? Cta_Actu_Fecha { get; set; }
+		public DateTime? Cta_Cuit_Vto { get; set; }
 		public string Cta_Actu { get; set; } = string.Empty;
 		public string Ope_Iva_Descripcion { get; set; } = string.Empty;
+		public string Ctag_Denominacion { get; set; } = string.Empty;
+		public char Ctac_Habilitada { get; set; }
 		public bool Cta_Activa
 		{
 			get

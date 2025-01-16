@@ -315,6 +315,30 @@ namespace gc.api.Controllers.Almacen
 			return Ok(response);
 		}
 
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult GetABMProveedorFamiliaLista(string ctaId)
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			List<ProveedorGrupoDto> proveedores = _cuentasSv.GetABMProveedorFamiliaLista(ctaId);
+			var lista = _mapper.Map<List<ProveedorGrupoDto>>(proveedores);
+
+			var response = new ApiResponse<List<ProveedorGrupoDto>>(lista);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult GetABMProveedorFamiliaDatos(string ctaId, string pgId)
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			List<ProveedorGrupoDto> proveedores = _cuentasSv.GetABMProveedorFamiliaDatos(ctaId, pgId);
+			var lista = _mapper.Map<List<ProveedorGrupoDto>>(proveedores);
+
+			var response = new ApiResponse<List<ProveedorGrupoDto>>(lista);
+			return Ok(response);
+		}
+
 		// POST api/<cuentasController>
 		[HttpPost]
         public async Task<IActionResult> Post(CuentaDto datoDto)

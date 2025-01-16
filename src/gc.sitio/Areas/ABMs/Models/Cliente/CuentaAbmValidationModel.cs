@@ -16,6 +16,7 @@ namespace gc.sitio.Areas.ABMs.Models
 		public string prov_nombre { get; set; } = string.Empty;
 		public string dep_id { get; set; } = string.Empty;
 		public string dep_nombre { get; set; } = string.Empty;
+		public string cta_www { get; set; } = string.Empty;
 		public string afip_id { get; set; } = string.Empty;
 		public string afip_desc { get; set; } = string.Empty;
 		public string cta_ib_nro { get; set; } = string.Empty;

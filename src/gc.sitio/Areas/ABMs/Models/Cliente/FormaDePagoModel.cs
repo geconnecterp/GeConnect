@@ -2,18 +2,18 @@
 {
 	public class FormaDePagoModel
 	{
-		public string cta_id { get; set; } = string.Empty;
-		public string fp_id { get; set; } = string.Empty;
-		public string fp_desc { get; set; } = string.Empty;
-		public string fp_lista { get; set; } = string.Empty;
-		public int fp_dias { get; set; }
-		public string tcb_id { get; set; } = string.Empty;
-		public string tcb_desc { get; set; } = string.Empty;
-		public string tcb_lista { get; set; } = string.Empty;
-		public string cta_bco_cuenta_nro { get; set; } = string.Empty;
-		public string cta_bco_cuenta_cbu { get; set; } = string.Empty;
-		public string cta_valores_a_nombre { get; set; } = string.Empty;
-		public string cta_obs { get; set; } = string.Empty;
-		public string fp_deufault { get; set; } = string.Empty;
+		public string Cta_Id { get; set; } = string.Empty;
+		public string Fp_Id { get; set; } = string.Empty;
+		public string Fp_Desc { get; set; } = string.Empty;
+		public string Fp_Lista { get; set; } = string.Empty;
+		public int Fp_Dias { get; set; }
+		public string Tcb_Id { get; set; } = string.Empty;
+		public string Tcb_Desc { get; set; } = string.Empty;
+		public string Tcb_Lista { get; set; } = string.Empty;
+		public string Cta_Bco_Cuenta_Nro { get; set; } = string.Empty;
+		public string Cta_Bco_Cuenta_Cbu { get; set; } = string.Empty;
+		public string Cta_Valores_A_Nombre { get; set; } = string.Empty;
+		public string Cta_Obs { get; set; } = string.Empty;
+		public string Fp_Deufault { get; set; } = string.Empty;
 	}
 }

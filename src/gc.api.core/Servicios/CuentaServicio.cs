@@ -151,6 +151,29 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
+		public List<ProveedorGrupoDto> GetABMProveedorFamiliaLista(string ctaId)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_ABM_PROV_FAMILIA_LISTA;
+			var ps = new List<SqlParameter>()
+			{
+				new("@cta_id",ctaId)
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<ProveedorGrupoDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<ProveedorGrupoDto> GetABMProveedorFamiliaDatos(string ctaId, string pgId)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_ABM_PROV_FAMILIA_DATOS;
+			var ps = new List<SqlParameter>()
+			{
+				new("@cta_id",ctaId),
+				new("@pg_id",pgId)
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<ProveedorGrupoDto>(sp, ps, true);
+			return listaTemp;
+		}
+
 		/// <summary>
 		/// Se obtienen los proveedores. Tener en cuenta que se invocan con parametro ope_iva = 'BI'
 		/// </summary>

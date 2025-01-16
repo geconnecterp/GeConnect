@@ -96,6 +96,11 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
 		}
 
+		protected class RespuestaDeValidacionAntesDeGuardar()
+		{
+            public string setFecus { get; set; } = string.Empty;
+            public string mensaje { get; set; } = string.Empty;
+		}
 		#endregion
 
 		#region Enum's

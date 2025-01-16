@@ -10,14 +10,19 @@
 	$(document).on("click", "#chkIbCertActiva", controlaCertIb);
 	$(document).on("click", "#chkCtaEmpActiva", controlaCtaEmp);
 	$(document).on("change", "#listaFP", controlaValorFP);
+
+	$(document).on("dblclick", "#" + Grids.GridCliente + " tbody tr", function () {
+		x = $(this);
+		ejecutaDblClickGrid(x, Grids.GridCliente);
+	});
 	$("#btnBuscar").on("click", function () { buscarClientes(pagina); });
 
 	//tabCliente
 	$("#tabCliente").on("click", function () { SeteaIDClienteSelected(); });
-	$("#tabFormaDePago").on("click", function () { BuscarFormaDePago(); });
-	$("#tabOtrosContactos").on("click", function () { BuscarOtrosContactos(); });
-	$("#tabNotas").on("click", function () { BuscarNotas(); });
-	$("#tabObservaciones").on("click", function () { BuscarObservaciones(); });
+	$("#tabFormaDePago").on("click", function () { BuscarFormaDePagoTabClick(); });
+	$("#tabOtrosContactos").on("click", function () { BuscarOtrosContactosTabClick(); });
+	$("#tabNotas").on("click", function () { BuscarNotasTabClick(); });
+	$("#tabObservaciones").on("click", function () { BuscarObservacionesTabClick(); });
 
 	/*ABM Botones*/
 	$("#btnAbmNuevo").on("click", function () { btnNuevoClick(); });
@@ -25,7 +30,7 @@
 	$("#btnAbmElimi").on("click", function () { btnBajaClick(); });
 	$("#btnAbmAceptar").on("click", function () { btnSubmitClick(); });
 	$("#btnAbmCancelar").on("click", function () { btnCancelClick(); });
-	//$("#btnDetalle").on("click", function () { btnDetalleClick(); });
+
 	$("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle); 
 
 	$("#btnDetalle").prop("disabled", true);
@@ -139,6 +144,7 @@ function InicializaPantallaAbmCliente() {
 
 	$("#IdSelected").val("");
 	$(".activable").prop("disabled", true);
+	activarBotones(false);
 	CerrarWaiting();
 	return true;
 }
@@ -212,7 +218,6 @@ function buscarClientes(pag) {
 	PostGenHtml(data, buscarUrl, function (obj) {
 		$("#divGrilla").html(obj);
 		$("#divFiltro").collapse("hide")
-		HabilitarBotones(false, true, true, true, true);
 		PostGen({}, buscarMetadataURL, function (obj) {
 			if (obj.error === true) {
 				AbrirMensaje("ATENCIÓN", obj.msg, function () {
@@ -251,6 +256,7 @@ function BuscarCliente(ctaId) {
 		CerrarWaiting();
 	});
 }
+
 function selectRegDbl(x, gridId) {
 	AbrirWaiting("Espere mientras se busca el cliente seleccionado...");
 	$("#" + gridId + " tbody tr").each(function (index) {
@@ -261,7 +267,7 @@ function selectRegDbl(x, gridId) {
 
 	switch (gridId) {
 		case Grids.GridCliente:
-			var cta_id = x.cells[0].innerText.trim();
+			var cta_id = x[0].cells[0].innerText.trim();
 			if (cta_id !== "") {
 				ctaId = cta_id;
 				BuscarCliente(cta_id);
@@ -275,6 +281,7 @@ function selectRegDbl(x, gridId) {
 				$("#btnDetalle").prop("disabled", false);
 				$("#divFiltro").collapse("hide");
 				$("#divDetalle").collapse("show");
+				posicionarRegOnTop(x);
 			}
 			break;
 		case Grids.GridFP:
@@ -283,7 +290,7 @@ function selectRegDbl(x, gridId) {
 			AbrirWaiting();
 			PostGenHtml(data, buscarDatosFormasDePagoUrl, function (obj) {
 				$("#divDatosDeFPSelected").html(obj);
-				$("#IdSelected").val($("#FormaDePago_fp_id").val());
+				$("#IdSelected").val(fpId);
 				$(".activable").prop("disabled", true);
 				activarBotones(true);
 				CerrarWaiting();
@@ -341,34 +348,6 @@ function selectRegDbl(x, gridId) {
 	}
 }
 
-function btnNuevoClick() {
-
-	tipoDeOperacion = AbmAction.ALTA;
-	var tabActiva = $('.nav-tabs .active')[0].id;
-	SetearDestinoDeOperacion(tabActiva);
-	$("#btnAbmAceptar").show();
-	$("#btnAbmCancelar").show();
-	switch (tabActiva) {
-		case Tabs.TabCliente:
-			NuevoCliente();
-			break;
-		case Tabs.TabFormasDePago:
-			NuevaFormaDePago();
-			break;
-		case Tabs.TabNotas:
-			NuevaNota();
-			break;
-		case Tabs.TabObservaciones:
-			NuevaObservacion();
-			break;
-		case Tabs.TabOtrosContactos:
-			NuevoContacto();
-			break;
-		default:
-			break;
-	}
-}
-
 function NuevoCliente() {
 	var data = {};
 	PostGenHtml(data, nuevoClienteUrl, function (obj) {
@@ -377,9 +356,12 @@ function NuevoCliente() {
 		$(".activable").prop("disabled", false);
 		$("#chkCtaActiva")[0].checked = true;
 		$("#Cliente_Cta_Id").prop("disabled", true);
-		HabilitarBotonesPorAccion(AbmAction.ALTA);
 		desactivarGrilla(Grids.GridCliente);
+		accionBotones(AbmAction.ALTA, Tabs.TabCliente);
+		$("#divFiltro").collapse("hide");
+		$("#divDetalle").collapse("show");
 		$("#Cliente_Cta_Denominacion").focus();
+		$("#GridsEnTabPrincipal").hide();
 		CerrarWaiting();
 	}, function (obj) {
 		ControlaMensajeError(obj.message);
@@ -389,8 +371,7 @@ function NuevoCliente() {
 
 function btnModiClick() {
 	var tabActiva = $('.nav-tabs .active')[0].id;
-	$("#btnAbmAceptar").show();
-	$("#btnAbmCancelar").show();
+	accionBotones(AbmAction.MODIFICACION, tabActiva);
 	switch (tabActiva) {
 		case Tabs.TabCliente:
 			ModificaCliente(tabActiva);
@@ -413,86 +394,13 @@ function btnModiClick() {
 }
 
 function ModificaCliente(tabAct) {
-	HabilitarBotonesPorAccion(AbmAction.MODIFICACION);
+	accionBotones(AbmAction.MODIFICACION, tabAct);
 	tipoDeOperacion = AbmAction.MODIFICACION;
 	SetearDestinoDeOperacion(tabAct);
 	$(".nav-link").prop("disabled", true);
 	$(".activable").prop("disabled", false);
 	desactivarGrilla(Grids.GridCliente);
 	$("#Cliente_Cta_Denominacion").focus();
-}
-function btnBajaClick() {
-	var tabActiva = $('.nav-tabs .active')[0].id;
-	$("#btnAbmAceptar").show();
-	$("#btnAbmCancelar").show();
-	var idSelected = $("#IdSelected").val();
-	if (idSelected === "") {
-		AbrirMensaje("ATENCIÓN", GetMensajeParaBaja(tabActiva), function () {
-			$("#msjModal").modal("hide");
-			return false;
-		}, false, ["Aceptar"], "error!", null);
-
-	}
-	else {
-		HabilitarBotonesPorAccion(AbmAction.BAJA);
-		tipoDeOperacion = AbmAction.BAJA;
-		$(".activable").prop("disabled", true);
-		var tabActiva = $('.nav-tabs .active')[0].id;
-		SetearDestinoDeOperacion(tabActiva);
-		$(".nav-link").prop("disabled", true);
-		switch (tabActiva) {
-			case Tabs.TabCliente:
-				desactivarGrilla(Grids.GridCliente);
-				break;
-			case Tabs.TabFormasDePago:
-				desactivarGrilla(Grids.GridFP);
-				break;
-			case Tabs.TabNotas:
-				desactivarGrilla(Grids.GridNota);
-				break;
-			case Tabs.TabObservaciones:
-				desactivarGrilla(Grids.GridObs);
-				break;
-			case Tabs.TabOtrosContactos:
-				desactivarGrilla(Grids.GridOC);
-				break;
-			default:
-				break;
-		}
-	}
-}
-
-function btnSubmitClick() {
-	var tabActiva = $('.nav-tabs .active')[0].id;
-	var mensaje = PuedoGuardar(tabActiva);
-	if (mensaje === "") {
-		HabilitarBotonesPorAccion(AbmAction.SUBMIT);
-		$("#btnAbmAceptar").hide();
-		$("#btnAbmCancelar").hide();
-		Guardar();
-	}
-}
-
-function PuedoGuardar(tabAct) {
-	var mensaje = "";
-	switch (tabAct) {
-		case Tabs.TabCliente:
-			break;
-		case Tabs.TabFormasDePago:
-			if ($("#FormaDePago_fp_dias").val() < 0)
-				mensaje = "El valor de Plazo debe ser igual o mayor a 0.";
-			break;
-		case Tabs.TabNotas:
-			break;
-		case Tabs.TabObservaciones:
-			break;
-		case Tabs.TabOtrosContactos:
-			break;
-		default:
-			break;
-	}
-	return mensaje;
-	return true;
 }
 
 function PuedoAgregar(tabAct) {
@@ -522,7 +430,6 @@ function PuedoAgregar(tabAct) {
 	return mensaje;
 }
 
-
 function PuedoBorrar(tabAct) {
 	switch (tabAct) {
 		case Tabs.TabCliente:
@@ -550,213 +457,20 @@ function PuedoBorrar(tabAct) {
 	return true;
 }
 
-function btnCancelClick() {
-	HabilitarBotonesPorAccion(AbmAction.CANCEL);
-	tipoDeOperacion = AbmAction.CANCEL;
-	$(".nav-link").prop("disabled", false);
-	$(".activable").prop("disabled", true);
-	$("#btnAbmAceptar").hide();
-	$("#btnAbmCancelar").hide();
-	var tabActiva = $('.nav-tabs .active')[0].id;
-	switch (tabActiva) {
-		case Tabs.TabCliente:
-			activarGrilla(Grids.GridCliente);
-			break;
-		case Tabs.TabFormasDePago:
-			$("#tbClienteFormaPagoEnTab").prop("disabled", false);
-			activarGrilla(Grids.GridFP);
-			activarGrilla(Grids.GridCliente);
-			break;
-		case Tabs.TabNotas:
-			$("#Nota_usu_apellidoynombre").prop("disabled", false);
-			activarGrilla(Grids.GridNota);
-			activarGrilla(Grids.GridCliente);
-			break;
-		case Tabs.TabObservaciones:
-			activarGrilla(Grids.GridObs);
-			activarGrilla(Grids.GridCliente);
-			break;
-		case Tabs.TabOtrosContactos:
-			activarGrilla(Grids.GridOC);
-			activarGrilla(Grids.GridCliente);
-			$("#OtroContacto_cta_nombre").prop("disabled", false);
-			$("#listaTC").prop("disabled", false);
-			break;
-		default:
-			break;
-	}
-}
-
-function validarCampos() {
-	var tabActiva = $('.nav-tabs .active')[0].id;
-	switch (tabActiva) {
-		case Tabs.TabCliente:
-			if ($("#listaAfip option:selected").val() !== "05" && $("#listaAfip option:selected").val() !== "02") {
-				if ($("#Cliente_Ctac_Ptos_Vtas").val() <= 0) {
-					var textoSelected = $("#listaAfip option:selected").text();
-					AbrirMensaje("ATENCIÓN", "La Cantidad de PV debe ser mayor a 0 cuando ha seleccionado " + textoSelected + " como Condición AFIP.", function () {
-						$("#msjModal").modal("hide");
-						return false;
-					}, false, ["Aceptar"], "error!", null);
-					return false;
-				}
-			}
-			break;
-		case Tabs.TabFormasDePago:
-			break;
-		case Tabs.TabNotas:
-			break;
-		case Tabs.TabObservaciones:
-			break;
-		case Tabs.TabOtrosContactos:
-			break;
-		default:
-			break;
-	}
-
-	return true;
-}
-
-function Guardar() {
-	if (validarCampos()) {
-		var url = "";
-		switch (destinoDeOperacion) {
-			case AbmObject.CLIENTES:
-				activarGrilla(Grids.GridCliente);
-				url = dataOpsClienteUrl;
-				break;
-			case AbmObject.CLIENTES_CONDICIONES_VTA:
-				activarGrilla(Grids.GridFP);
-				url = dataOpsFormaDePagoUrl;
-				break;
-			case AbmObject.CUENTAS_CONTACTOS:
-				activarGrilla(Grids.GridOC);
-				$("#OtroContacto_cta_nombre").prop("disabled", false);
-				$("#listaTC").prop("disabled", false);
-				url = dataOpsCuentaContactoUrl;
-				break;
-			case AbmObject.CUENTAS_NOTAS:
-				$("#Nota_usu_apellidoynombre").prop("disabled", false);
-				activarGrilla(Grids.GridNota);
-				url = dataOpsCuentaNotaUrl;
-				break;
-			case AbmObject.CUENTAS_OBSERVACIONES:
-				activarGrilla(Grids.GridObs);
-				url = dataOpsObservacionesUrl;
-				break;
-			default:
-		}
-		var data = ObtenerDatosParaJson(destinoDeOperacion, tipoDeOperacion);
-		PostGen(data, url, function (obj) {
-			if (obj.error === true) {
-				AbrirMensaje("ATENCIÓN", obj.msg, function () {
-					$("#msjModal").modal("hide");
-					$(".nav-link").prop("disabled", false);
-					$(".activable").prop("disabled", false);
-					return true;
-				}, false, ["Aceptar"], "error!", null);
-			}
-			else {
-				AbrirMensaje("ATENCIÓN", obj.msg, function () {
-					$("#msjModal").modal("hide");
-					$(".nav-link").prop("disabled", false);
-					$(".activable").prop("disabled", false);
-					return true;
-				}, false, ["Aceptar"], "succ!", null);
-			}
-
-		});
-	}
-}
-
-function ObtenerDatosParaJson(destinoDeOperacion, tipoDeOperacion) {
-	var json = "";
-	switch (destinoDeOperacion) {
-		case AbmObject.CLIENTES:
-			json = ObtenerDatosDeClienteParaJson();
-			break;
-		case AbmObject.CLIENTES_CONDICIONES_VTA:
-			json = ObtenerDatosDeFormaDePagoPParaJson(destinoDeOperacion, tipoDeOperacion);
-			break;
-		case AbmObject.CUENTAS_CONTACTOS:
-			json = ObtenerDatosDeOtrosContactosParaJson(destinoDeOperacion, tipoDeOperacion);
-			break;
-		case AbmObject.CUENTAS_NOTAS:
-			json = ObtenerDatosDeNotasParaJson(destinoDeOperacion, tipoDeOperacion);
-			break;
-		case AbmObject.CUENTAS_OBSERVACIONES:
-			json = ObtenerDatosDeObsParaJson(destinoDeOperacion, tipoDeOperacion);
-			break;
-		default:
-	}
-	return json;
-}
-
-function ObtenerDatosDeObsParaJson(destinoDeOperacion, tipoDeOperacion) {
-	var cta_id = $("#Cliente_Cta_Id").val();
-	var to_id = $("#listaTipoObs").val();
-	var to_desc = $("#listaTipoObs option:selected").text();
-	var to_lista = $("#listaTipoObs option:selected").text() + "(" + $("#listaTipoObs").val() + ")";
-	var cta_obs = $("#Observacion_cta_obs").val();
-	var data = { cta_id, to_id, to_desc, to_lista, cta_obs, destinoDeOperacion, tipoDeOperacion };
-	return data;
-}
-
-function ObtenerDatosDeNotasParaJson(destinoDeOperacion, tipoDeOperacion) {
-	var cta_id = $("#Cliente_Cta_Id").val();
-	var usu_id = $("#Nota_usu_apellidoynombre").val();
-	var usu_apellidoynombre = $("#Nota_usu_apellidoynombre").val();
-	var usu_lista = $("#Nota_usu_apellidoynombre").val();
-	var fecha = null;
-	var nota = $("#Nota_nota").val();
-	var data = { cta_id, usu_id, usu_apellidoynombre, usu_lista, fecha, nota, destinoDeOperacion, tipoDeOperacion };
-	return data;
-}
-
-function ObtenerDatosDeOtrosContactosParaJson(destinoDeOperacion, tipoDeOperacion) {
-	var cta_id = $("#Cliente_Cta_Id").val();
-	var tc_id = $("#listaTC").val();
-	var tc_desc = $("#listaTC option:selected").text();
-	var tc_lista = $("#listaTC option:selected").text() + "(" + $("#listaTC").val() + ")";
-	var cta_celu = $("#OtroContacto_cta_celu").val();
-	var cta_te = $("#OtroContacto_cta_te").val();
-	var cta_email = $("#OtroContacto_cta_email").val();
-	var cta_nombre = $("#OtroContacto_cta_nombre").val();
-	var data = { cta_id, tc_id, tc_desc, tc_lista, cta_celu, cta_te, cta_email, cta_nombre, destinoDeOperacion, tipoDeOperacion };
-	return data;
-}
-
-function ObtenerDatosDeFormaDePagoPParaJson(destinoDeOperacion, tipoDeOperacion) {
-	var cta_id = $("#Cliente_Cta_Id").val();
-	var fp_id = $("#listaFP").val();
-	var fp_desc = $("#listaFP option:selected").text();
-	var fp_lista = $("#listaFP option:selected").text() + "(" + $("#listaFP").val() + ")";
-	var fp_dias = $("#FormaDePago_fp_dias").val();
-	var tcb_id = $("#listaTipoCueBco").val();
-	var tcb_desc = $("#listaTipoCueBco option:selected").val();
-	var tcb_lista = $("#listaTipoCueBco option:selected").text() + "(" + $("#listaTipoCueBco").val() + ")";
-	var cta_bco_cuenta_nro = $("#FormaDePago_cta_bco_cuenta_nro").val();
-	var cta_bco_cuenta_cbu = $("#FormaDePago_cta_bco_cuenta_cbu").val();
-	var cta_valores_a_nombre = $("#FormaDePago_cta_valores_a_nombre").val();
-	var cta_obs = $("#FormaDePago_cta_obs").val();
-	var fp_default = "N";
-	var data = { cta_id, fp_id, fp_desc, fp_lista, fp_dias, tcb_id, tcb_desc, tcb_lista, cta_bco_cuenta_nro, cta_bco_cuenta_cbu, cta_valores_a_nombre, cta_obs, fp_default, destinoDeOperacion, tipoDeOperacion };
-	return data;
-}
-
-function ObtenerDatosDeClienteParaJson() {
+function ObtenerDatosDeClienteParaJson(destinoDeOperacion, tipoDeOperacion) {
 	var cta_id = $("#Cliente_Cta_Id").val();
 	var cta_denominacion = $("#Cliente_Cta_Denominacion").val();
 	var tdoc_id = $("#listaTipoDoc").val();
 	var tdoc_desc = $("#listaTipoDoc option:selected").text();
 	var cta_documento = $("#Cliente_Cta_Documento").val();
 	var cta_domicilio = $("#Cliente_Cta_Domicilio").val();
-	var cta_localidad = $("#listaDepto option:selected").text();
+	var cta_localidad = $("#Cliente_Cta_Localidad").text();
 	var cta_cpostal = $("#Cliente_Cta_Cpostal").val();
 	var prov_id = $("#listaProvi").val();
 	var prov_nombre = $("#listaProvi option:selected").text();
 	var dep_id = $("#listaDepto").val();
 	var dep_nombre = $("#listaDepto option:selected").text();
+	var cta_www = $("#Cliente_Cta_Www").val();
 	var afip_id = $("#listaAfip").val();
 	var afip_desc = $("#listaAfip option:selected").text();
 	var cta_ib_nro = $("#Cliente_Cta_Ib_Nro").val();
@@ -809,7 +523,7 @@ function ObtenerDatosDeClienteParaJson() {
 	var lp_id = $("#Cliente_Lp_Id").val();
 	var lp_desc = $("#Cliente_Lp_Id option:selected").text();
 	var data = {
-		cta_id, cta_denominacion, tdoc_id, tdoc_desc, cta_documento, cta_domicilio, cta_localidad, cta_cpostal, prov_id, prov_nombre, dep_id, dep_nombre, afip_id, afip_desc, cta_ib_nro,
+		cta_id, cta_denominacion, tdoc_id, tdoc_desc, cta_documento, cta_domicilio, cta_localidad, cta_cpostal, prov_id, prov_nombre, dep_id, dep_nombre, cta_www, afip_id, afip_desc, cta_ib_nro,
 		ib_id, ib_desc, cta_alta, cta_cuit_vto, cta_emp, cta_emp_legajo, cta_emp_ctaf, cta_actu_fecha, cta_actu, ctac_tope_credito, ctac_ptos_vtas, ctac_negocio_inicio, ctac_tope_credito_dia,
 		ctac_dto_operacion, ctac_dto_operacion_dia, piva_cert, piva_cert_vto, pib_cert, pib_cert_vto, ctn_id, ctn_desc, ctc_id, ctac_tope_credito_dia_ult, ctac_dto_operacion_dia_ult, ctc_desc,
 		ve_id, ve_nombre, ve_visita, zn_id, zn_desc, rp_id, rp_nombre, ctac_habilitada, nj_id, nj_desc, lp_id, lp_desc, destinoDeOperacion, tipoDeOperacion
