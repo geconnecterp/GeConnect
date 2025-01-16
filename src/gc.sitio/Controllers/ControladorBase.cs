@@ -1,6 +1,7 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Administracion;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
@@ -16,6 +17,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq.Dynamic.Core;
 using X.PagedList;
@@ -1293,9 +1295,46 @@ namespace gc.sitio.Controllers
             var listaDetalle = new StaticPagedList<T>(lista, 1, 999, lista.Count);
             return new GridCore<T>() { ListaDatos = listaDetalle, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
         }
-        #endregion
+		#endregion
 
-        public IQueryable<T> OrdenarEntidad<T>(IQueryable<T> lista, string sortdir, string sort) where T : Dto
+		public JsonResult AnalizarRespuesta(RespuestaGenerica<RespuestaDto> res)
+		{
+			if (res == null)
+				return Json(new { error = true, warn = false, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
+			if (res.EsWarn || res.EsError)
+			{
+				if (res.Entidad != null)
+					return Json(new { error = res.EsError, warn = res.EsWarn, msg = res.Entidad.resultado_msj, codigo = res.Entidad.resultado, setFocus = res.Entidad.resultado_setfocus });
+				else if (res.ListaEntidad != null && res.ListaEntidad.Count > 0)
+					return Json(new { error = res.EsError, warn = res.EsWarn, msg = res.ListaEntidad?.First().resultado_msj, codigo = res.ListaEntidad?.First().resultado, setFocus = res.ListaEntidad?.First().resultado_setfocus });
+				return Json(new { error = res.EsError, warn = res.EsWarn, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
+			}
+			else if (res.Entidad != null && res.Entidad.resultado != 0)
+			{
+				var set_Focus = res.Entidad.resultado_setfocus.ToLower().Replace("_", " ");
+				TextInfo info = CultureInfo.CurrentCulture.TextInfo;
+				set_Focus = info.ToTitleCase(set_Focus).Replace(" ", "_");
+				return Json(new { error = true, warn = false, msg = res.Entidad.resultado_msj, codigo = res.Entidad.resultado, setFocus = set_Focus });
+			}
+			else if (!res.Ok)
+				return Json(new { error = true, warn = false, msg = res.Mensaje, codigo = 1, setFocus = string.Empty });
+
+			return Json(new { error = false, warn = false, msg = "La entidad de ha actualizado con éxito." });
+		}
+
+		public AbmGenDto ObtenerRequestParaABM(char abm, string obj, string json, string adm, string usu)
+		{
+			return new AbmGenDto
+			{
+				Abm = abm,
+				Objeto = obj,
+				Json = json,
+				Administracion = adm,
+				Usuario = usu
+			};
+		}
+
+		public IQueryable<T> OrdenarEntidad<T>(IQueryable<T> lista, string sortdir, string sort) where T : Dto
         {
             IQueryable<T> query = null;
             query = lista.AsQueryable().OrderBy($"{sort} {sortdir}");

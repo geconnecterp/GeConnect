@@ -616,38 +616,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				{
 					proveedor = HelperGen.PasarAMayusculas(proveedor);
 					var jsonstring = JsonConvert.SerializeObject(proveedor, new JsonSerializerSettings());
-					var abmRequest = new AbmGenDto
-					{
-						Abm = tipoDeOperacion,
-						Objeto = destinoDeOperacion,
-						Json = jsonstring,
-						Administracion = AdministracionId,
-						Usuario = UserName
-					};
-					var respuesta = _abmServicio.AbmConfirmar(abmRequest, TokenCookie).Result;
-					if (respuesta == null)
-						return Json(new { error = true, warn = false, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
-					if (respuesta.EsWarn || respuesta.EsError)
-					{
-						if (respuesta.Entidad != null)
-							return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = respuesta.Entidad.resultado_msj, codigo = respuesta.Entidad.resultado, setFocus = respuesta.Entidad.resultado_setfocus });
-						else if (respuesta.ListaEntidad != null && respuesta.ListaEntidad.Count > 0)
-							return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = respuesta.ListaEntidad?.First().resultado_msj, codigo = respuesta.ListaEntidad?.First().resultado, setFocus = respuesta.ListaEntidad?.First().resultado_setfocus });
-						return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
-					}
-					else if (respuesta.Entidad != null && respuesta.Entidad.resultado != 0)
-					{
-						var set_Focus = respuesta.Entidad.resultado_setfocus.ToLower().Replace("_", " ");
-						TextInfo info = CultureInfo.CurrentCulture.TextInfo;
-						set_Focus = info.ToTitleCase(set_Focus).Replace(" ", "_");
-						return Json(new { error = true, warn = false, msg = respuesta.Entidad.resultado_msj, codigo = respuesta.Entidad.resultado, setFocus = set_Focus });
-					}
-					else if (!respuesta.Ok)
-					{
-						return Json(new { error = true, warn = false, msg = respuesta.Mensaje, codigo = 1, setFocus = string.Empty });
-					}
-
-					return Json(new { error = false, warn = false, msg = "La entidad de ha actualizado con éxito." });
+					var respuesta = _abmServicio.AbmConfirmar(ObtenerRequestParaABM(tipoDeOperacion, destinoDeOperacion, jsonstring, AdministracionId, UserName), TokenCookie).Result;
+					return AnalizarRespuesta(respuesta);
 				}
 				else
 					return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
@@ -727,36 +697,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				{
 					familia = HelperGen.PasarAMayusculas(familia);
 					var jsonstring = JsonConvert.SerializeObject(familia, new JsonSerializerSettings());
-					var abmRequest = new AbmGenDto
-					{
-						Abm = tipoDeOperacion,
-						Objeto = destinoDeOperacion,
-						Json = jsonstring,
-						Administracion = AdministracionId,
-						Usuario = UserName
-					};
-					var respuesta = _abmServicio.AbmConfirmar(abmRequest, TokenCookie).Result;
-					if (respuesta == null)
-						return Json(new { error = true, warn = false, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
-					if (respuesta.EsWarn || respuesta.EsError)
-					{
-						if (respuesta.Entidad != null)
-							return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = respuesta.Entidad.resultado_msj, codigo = respuesta.Entidad.resultado, setFocus = respuesta.Entidad.resultado_setfocus });
-						else if (respuesta.ListaEntidad != null && respuesta.ListaEntidad.Count > 0)
-							return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = respuesta.ListaEntidad?.First().resultado_msj, codigo = respuesta.ListaEntidad?.First().resultado, setFocus = respuesta.ListaEntidad?.First().resultado_setfocus });
-						return Json(new { error = respuesta.EsError, warn = respuesta.EsWarn, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
-					}
-					else if (respuesta.Entidad != null && respuesta.Entidad.resultado != 0)
-					{
-						var set_Focus = respuesta.Entidad.resultado_setfocus.ToLower().Replace("_", " ");
-						TextInfo info = CultureInfo.CurrentCulture.TextInfo;
-						set_Focus = info.ToTitleCase(set_Focus).Replace(" ", "_");
-						return Json(new { error = true, warn = false, msg = respuesta.Entidad.resultado_msj, codigo = respuesta.Entidad.resultado, setFocus = set_Focus });
-					}
-					else if (!respuesta.Ok)
-						return Json(new { error = true, warn = false, msg = respuesta.Mensaje, codigo = 1, setFocus = string.Empty });
-
-					return Json(new { error = false, warn = false, msg = "La entidad de ha actualizado con éxito." });
+					var respuesta = _abmServicio.AbmConfirmar(ObtenerRequestParaABM(tipoDeOperacion, destinoDeOperacion, jsonstring, AdministracionId, UserName), TokenCookie).Result;
+					return AnalizarRespuesta(respuesta);
 				}
 				else
 					return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
@@ -795,6 +737,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		#endregion
 
 		#endregion
+
 		#region Métodos privados
 		private string ValidarJsonAntesDeGuardar(ProveedorAbmValidationModel prov, char abm)
 		{

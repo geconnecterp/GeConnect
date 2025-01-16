@@ -28,7 +28,6 @@
 	$("#btnAbmElimi").on("click", function () { btnBajaClick(); });
 	$("#btnAbmAceptar").on("click", function () { btnSubmitClick(); });
 	$("#btnAbmCancelar").on("click", function () { btnCancelClick(); });
-	//$("#btnDetalle").on("click", function () { btnDetalleClick(); });
 
 	$("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle); 
 
@@ -346,14 +345,12 @@ function selectRegDbl(x, gridId) {
 			var cta_id = x[0].cells[0].innerText.trim();
 			if (cta_id !== "") {
 				ctaIdRow = x[0];
-				console.log(ctaIdRow);
 				ctaId = cta_id;
 				BuscarProveedor(cta_id);
 				BuscarFormaDePago();
 				BuscarOtrosContactos();
 				BuscarNotas();
 				BuscarObservaciones();
-				//HabilitarBotones(false, false, false, true, true);
 				activarBotones(true);
 				$(".activable").prop("disabled", true);
 				$("#btnDetalle").prop("disabled", false);

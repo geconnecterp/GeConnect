@@ -30,7 +30,7 @@
 	$("#btnAbmElimi").on("click", function () { btnBajaClick(); });
 	$("#btnAbmAceptar").on("click", function () { btnSubmitClick(); });
 	$("#btnAbmCancelar").on("click", function () { btnCancelClick(); });
-	//$("#btnDetalle").on("click", function () { btnDetalleClick(); });
+
 	$("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle); 
 
 	$("#btnDetalle").prop("disabled", true);
@@ -350,33 +350,6 @@ function selectRegDbl(x, gridId) {
 		default:
 	}
 }
-
-//function btnNuevoClick() {
-//	tipoDeOperacion = AbmAction.ALTA;
-//	var tabActiva = $('.nav-tabs .active')[0].id;
-//	SetearDestinoDeOperacion(tabActiva);
-//	$("#btnAbmAceptar").show();
-//	$("#btnAbmCancelar").show();
-//	switch (tabActiva) {
-//		case Tabs.TabCliente:
-//			NuevoCliente();
-//			break;
-//		case Tabs.TabFormasDePago:
-//			NuevaFormaDePago();
-//			break;
-//		case Tabs.TabNotas:
-//			NuevaNota();
-//			break;
-//		case Tabs.TabObservaciones:
-//			NuevaObservacion();
-//			break;
-//		case Tabs.TabOtrosContactos:
-//			NuevoContacto();
-//			break;
-//		default:
-//			break;
-//	}
-//}
 
 function NuevoCliente() {
 	var data = {};
