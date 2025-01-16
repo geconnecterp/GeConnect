@@ -17,7 +17,7 @@
     <PackageReference Include="log4net" Version="2.0.17" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.8" />
     <PackageReference Include="Microsoft.Extensions.Logging.Log4Net.AspNetCore" Version="8.0.0" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.4" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
     <PackageReference Include="Moment.js" Version="2.30.1" />
     <PackageReference Include="System.Linq.Dynamic.Core" Version="1.4.5" />
     <PackageReference Include="X.PagedList.Mvc.Core" Version="8.4.7" />
@@ -28,6 +28,8 @@
     <Folder Include="Areas\ControlComun\Models\" />
     <Folder Include="Areas\Seguridad\Data\" />
     <Folder Include="Areas\Seguridad\Models\" />
+    <Folder Include="Areas\Usuarios\Data\" />
+    <Folder Include="Areas\Usuarios\Models\" />
     <Folder Include="Models\ViewModels\" />
     <Folder Include="Views\Shared\EditorTemplates\" />
     <Folder Include="wwwroot\images\logo\" />

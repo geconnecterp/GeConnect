@@ -1,20 +1,18 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using gc.api.core.Contratos.Servicios;
+using gc.api.core.Contratos.Servicios.ABM;
 using gc.api.core.Interfaces.Datos;
-using gc.api.core.Contratos.Servicios;
+using gc.api.core.Interfaces.Servicios;
 using gc.api.core.Servicios;
+using gc.api.core.Servicios.ABM;
+using gc.api.infra.Datos.Contratos;
+using gc.api.infra.Datos.Contratos.Security;
+using gc.api.infra.Datos.Implementacion;
+using gc.api.infra.Datos.Implementacion.Security;
+using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Services;
-using gc.infraestructura.Core.Helpers;
-using gc.api.infra.Datos.Implementacion;
-using gc.api.core.Interfaces.Servicios;
-using gc.api.infra.Datos.Contratos.Security;
-using gc.api.infra.Datos.Implementacion.Security;
-using gc.api.Core.Servicios;
-using gc.api.Core.Interfaces.Servicios;
-using gc.api.infra.Datos.Contratos;
 using Microsoft.AspNetCore.Http;
-using gc.api.core.Servicios.ABM;
-using gc.api.core.Contratos.Servicios.ABM;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace gc.api.infra.Extensions
 {
@@ -28,7 +26,7 @@ namespace gc.api.infra.Extensions
             services.AddScoped<ISecurityServicio, SecurityServicio>();
             services.AddScoped<IPasswordService, PasswordService>();
             services.AddScoped<IMenuService, MenuService>();
-            services.AddScoped<IUsuarioServicio, UsuarioServicio>();
+            services.AddScoped<IApiUsuarioServicio, ApiUsuarioServicio>();
             services.AddScoped<IDataConnectionContext, DataConnectionContext>();
             services.AddScoped<IAdministracionServicio, AdministracionServicio>();
             services.AddScoped<IBilleteraOrdenServicio, BilleteraOrdenServicio>();
@@ -72,7 +70,10 @@ namespace gc.api.infra.Extensions
 			services.AddScoped<ITipoRetGanServicio, TipoRetGanServicio>();
 			services.AddScoped<ITipoRetIbServicio, TipoRetIbServicio>();
 
-			services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            //services.AddScoped<IApiUsuarioServicio, ApiUsuarioServicio>();
+
+
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));
             services.AddScoped(typeof(IServicio<>), typeof(Servicio<>));
             services.AddScoped(typeof(IExceptionManager), typeof(ExceptionManager));

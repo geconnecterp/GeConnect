@@ -29,7 +29,8 @@ const Grids = {
 	GridOC: 'tbClienteOtroContacto',
 	GridNota: 'tbClienteNotas',
 	GridObs: 'tbClienteObservaciones',
-	GridFlias: 'tbProveedorFliaProv'
+	GridFlias: 'tbProveedorFliaProv',
+	GridPerfil: 'tbGridPerfil'
 }
 
 const Tabs = {
@@ -44,4 +45,9 @@ const Tabs = {
 
 //variables globales
 var regSelected = "";
-
+var funcCallBack = "";
+var dataBak = {};
+var totalRegs = 0;
+var pagRegs = 0;
+var pags = 0;
+var pagina = 1;

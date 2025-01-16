@@ -46,5 +46,14 @@ namespace gc.infraestructura.Constantes
             public const string NoActivo = "#f74146"; //≈ Sunset Orange
             public const string Discontinuo = "#4180f7"; //≈ Dodger Blue
         }
+
+        public static class ModeloFilter
+        {
+            public const string MENU = "MENU";
+            public const string ABM_PRODUCTO = "APRODUCTO";
+            public const string ABM_CLIENTES = "ACLIENTES";
+            public const string ABM_PROVEEDORES = "APROVEEDORES";
+            
+        }
     }
 }

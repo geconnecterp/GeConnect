@@ -2,8 +2,10 @@
 using gc.infraestructura.Core.Interfaces;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.ABM;
+using gc.sitio.core.Servicios.Contratos.Users;
 using gc.sitio.core.Servicios.Implementacion;
 using gc.sitio.core.Servicios.Implementacion.ABM;
+using gc.sitio.core.Servicios.Implementacion.Users;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -50,6 +52,7 @@ namespace gc.sitio.core.Extensions
 			services.AddScoped<ITipoRetGanServicio, TipoRetGanServicio>();
 			services.AddScoped<ITipoRetIbServicio, TipoRetIbServicio>();
 			services.AddScoped<IAbmServicio, AbmServicio>();
+			services.AddScoped<IMenuesServicio, MenuesServicio>();
             return services;
         }
     }

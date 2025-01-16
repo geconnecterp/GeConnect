@@ -23,6 +23,8 @@
 	}
 }
 
+
+
 function BuscarFormaDePago() {
 	if ($(".nav-link").prop("disabled")) {
 		return false;

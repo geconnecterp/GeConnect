@@ -60,5 +60,8 @@ namespace gc.infraestructura.Core.EntidadesComunes
 
         public int Paginas { get; set; }
         public int TotalRegistros { get; set; }
+
+        //orientado para poder seleccionar en el filtro los campos que son deseables.
+        public string Modelo { get; set; } = string.Empty;
     }
 }

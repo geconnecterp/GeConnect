@@ -138,6 +138,10 @@
 
             #region Usuarios
             public const string SP_USU_X_IDYADM = "SPGECO_USU_X_IDYADM";
+            public const string SP_USU_PERFILES_LISTA = "SPGECO_ABM_Usu_perfiles_Lista";
+            public const string SP_USU_PERFIL_DATOS = "SPGECO_ABM_Usu_perfiles_Datos";
+            public const string SP_USU_PERFxUSU_LISTA = "SPGECO_ABM_Usu_Perfiles_Usu_Lista";
+
             #endregion
 
             #region ABM

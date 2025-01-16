@@ -1,0 +1,65 @@
+﻿@using System.Text
+@using gc.infraestructura.Dtos.Users
+@using static gc.infraestructura.Constantes.Constantes
+@model GridCore<PerfilDto>
+
+@{
+   
+    var alt = true;
+    string clase = string.Empty;
+    string color = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive text-nowrap  table-wrapper">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridPerfil">
+                <thead class="table-dark">
+                    <tr class="header">
+
+                        <th scope="col">CÓDIGO</th>
+                        <th scope="col">PERFIL</th>
+                        <th scope="col">ESTADO</th>
+                        <th scope="col">DESCRIPCION</th>                       
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ListaDatos)
+                    {
+                        if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
+                        switch (item.Perfil_activo)
+                        {
+                            case 'N':
+                                color = EstadoColor.NoActivo;
+                                break;
+                            @* case 'D':
+                                color = EstadoColor.Discontinuo;
+                                break; *@
+                            default:
+                                color = EstadoColor.Activo;
+                                break;
+                        }
+                        <tr class="@clase" onclick="selectRegPerfil(this,'tbGridPerfil')">
+                            <!--ondblclick="selectAbmRegDbl(this,'tbGridProd')"-->
+                            <td class="text-sm-center" style="border-left: 5px solid @color;text-align: left;">@item.Perfil_id</td>
+                            <td class="text-sm-start">@item.Perfil_descripcion</td>
+                            <td class="text-sm-end">@item.Perfil_activo</td>
+                            <td class="text-sm-start">@item.Perfil_activo_descripcion</td>                            
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="row m-3">
+            <table style="width:100px;text-align:center">
+                <tr><td colspan="3" class="text-md-center"><strong>PERFILES</strong></td></tr>
+                <tr>
+                    <td style="background-color: @EstadoColor.Activo;color:#FFFFFF;font-weight:600;display:block;">ACTIVO</td>
+                    <td style="background-color: @EstadoColor.NoActivo;color:#FFFFFF;font-weight:600;display:block;">NO ACTIVO</td>
+                    @* <td style="background-color: @EstadoColor.Discontinuo;color:#FFFFFF;font-weight:600;display:block;">DISCONTINUO</td> *@
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>

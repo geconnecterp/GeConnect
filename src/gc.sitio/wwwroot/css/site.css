@@ -30,6 +30,12 @@ input.form-control, select.form-control {
     text-transform: uppercase !important;
 }
 
+.form-control:focus {
+    outline: none;
+    border-color: #e96691;
+    box-shadow: 0 0 10px #e96691;
+}
+
 span.input-group {
     width: 50px;
     font-size: 0.7em;
