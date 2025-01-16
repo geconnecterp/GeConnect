@@ -302,7 +302,7 @@ function accionBotones(btn, tabActiva) {
 	if (btn === AbmAction.ALTA || btn === AbmAction.MODIFICACION || btn === AbmAction.BAJA) {
 		$("#btnFiltro").prop("disabled", true);
 		$("#btnDetalle").prop("disabled", true);
-		
+
 		$("#btnAbmNuevo").prop("disabled", true);
 		$("#btnAbmModif").prop("disabled", true);
 		$("#btnAbmElimi").prop("disabled", true);
@@ -567,7 +567,7 @@ function btnNuevoClick() {
 	var tabActiva = $('.nav-tabs .active')[0].id;
 	SetearDestinoDeOperacion(tabActiva);
 	accionBotones(AbmAction.ALTA, tabActiva);
-	
+
 	switch (tabActiva) {
 		case Tabs.TabCliente:
 			NuevoCliente();
@@ -899,13 +899,34 @@ function Guardar() {
 				}, false, ["Aceptar"], "succ!", null);
 				activarBotones(false);
 				ActualizarDatosEnGrilla(destinoDeOperacion);
-				if (gridParaActualizar != "") {
+				if (gridParaActualizar != "" && tipoDeOperacion == AbmAction.MODIFICACION) { //Si estoy modificando, actualizo el registro en la grilla.
 					ActualizarRegistroEnGrilla(data, gridParaActualizar);
 				}
-
+				if (tipoDeOperacion == AbmAction.ALTA) { //Si estoy agregando, busco el registro que acabo de agregar con el id que me devuelve el response (obj.id)
+					var controlCtaId = ObtenerModuloEjecutado(destinoDeOperacion) + 'Cta_Id';
+					var control = $("[name='" + controlCtaId + "']");
+					control.val(obj.id);
+					if (AbmObject.CLIENTES) {
+						BuscarElementoInsertado(obj.id, AbmObject.CLIENTES);
+					}
+					else if (AbmObject.PROVEEDORES) {
+						BuscarElementoInsertado(obj.id, AbmObject.PROVEEDORES);
+					}
+				}
 			}
-
 		});
+	}
+}
+
+function BuscarElementoInsertado(id, origen) {
+	switch (origen) {
+		case AbmObject.CLIENTES:
+			//TODO: Generar método de BE que devuelva el registro recien insertado, con esos datos limpiar los filtros y setear la descripcion con la descripcion del elemento insertado para forzar
+			//		la busqueda de un solo elemento y posicionarlo en la grilla (incluso seleccionado con rojo). Hacer esto tanto para Cuentas como para Proveedores
+			break;
+		case AbmObject.PROVEEDORES:
+			break;
+		default:
 	}
 }
 

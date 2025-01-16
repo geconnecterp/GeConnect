@@ -1319,7 +1319,7 @@ namespace gc.sitio.Controllers
 			else if (!res.Ok)
 				return Json(new { error = true, warn = false, msg = res.Mensaje, codigo = 1, setFocus = string.Empty });
 
-			return Json(new { error = false, warn = false, msg = "La entidad de ha actualizado con éxito." });
+			return Json(new { error = false, warn = false, msg = "La entidad de ha actualizado con éxito.", id = res.Entidad.resultado_id });
 		}
 
 		public AbmGenDto ObtenerRequestParaABM(char abm, string obj, string json, string adm, string usu)
