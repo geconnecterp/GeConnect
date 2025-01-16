@@ -53,36 +53,6 @@
 	return true;
 });
 
-//function btnNuevoClick() {
-//	tipoDeOperacion = AbmAction.ALTA;
-//	var tabActiva = $('.nav-tabs .active')[0].id;
-//	SetearDestinoDeOperacion(tabActiva);
-//	$("#btnAbmAceptar").show();
-//	$("#btnAbmCancelar").show();
-//	switch (tabActiva) {
-//		case Tabs.TabProveedor:
-//			NuevoProveedor();
-//			break;
-//		case Tabs.TabFormasDePago:
-//			NuevaFormaDePago();
-//			break;
-//		case Tabs.TabNotas:
-//			NuevaNota();
-//			break;
-//		case Tabs.TabObservaciones:
-//			NuevaObservacion();
-//			break;
-//		case Tabs.TabOtrosContactos:
-//			NuevoContacto();
-//			break;
-//		case Tabs.TabFamilias:
-//			NuevaFamilia();
-//			break;
-//		default:
-//			break;
-//	}
-//}
-
 function NuevoProveedor() {
 	var data = {};
 	PostGenHtml(data, nuevoProveedorUrl, function (obj) {
@@ -96,6 +66,7 @@ function NuevoProveedor() {
 		$("#divFiltro").collapse("hide");
 		$("#divDetalle").collapse("show");
 		$("#Proveedor_Cta_Denominacion").focus();
+		$("#GridsEnTabPrincipal").hide();
 		CerrarWaiting();
 	}, function (obj) {
 		ControlaMensajeError(obj.message);

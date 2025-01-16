@@ -391,6 +391,7 @@ function NuevoCliente() {
 		$("#divFiltro").collapse("hide");
 		$("#divDetalle").collapse("show");
 		$("#Cliente_Cta_Denominacion").focus();
+		$("#GridsEnTabPrincipal").hide();
 		CerrarWaiting();
 	}, function (obj) {
 		ControlaMensajeError(obj.message);

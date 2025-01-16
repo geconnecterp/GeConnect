@@ -239,96 +239,114 @@
 					<input type="number" asp-for="Proveedor.Ctap_Per_Iva_Ali" class="form-control activable" />
 				</div>
 			</div>
-			<div class="row">
-				<div class="table-responsive text-nowrap table-wrapper-200-full">
-					<table class="table table-sm mb-0 table-hover" id="tbFormaPagoEnTabDeProv">
-						<thead class="table-dark">
-							<tr class="header">
-								<th class="col-header-small align-center">Forma de Pago</th>
-								<th class="col-header-small align-center">Plazo</th>
-							</tr>
-						</thead>
-						<tbody>
-							@foreach (var item in Model.CuentaFormasDePago.ListaDatos)
-							{
-								<tr>
-									<td class="align-left">@item.fp_desc</td>
-									<td class="align-center">@item.fp_dias</td>
-								</tr>
-							}
-						</tbody>
-					</table>
+			<div id="GridsEnTabPrincipal">
+				<div class="row mt-1">
+					<div class="card">
+						<div class="card-body mt-1-ctm">
+							<div class="table-responsive text-nowrap table-wrapper-200-full">
+								<table class="table table-sm mb-0 table-hover" id="tbFormaPagoEnTabDeProv">
+									<thead class="table-dark">
+										<tr class="header">
+											<th class="col-header-small align-center">Forma de Pago</th>
+											<th class="col-header-small align-center">Plazo</th>
+										</tr>
+									</thead>
+									<tbody>
+										@foreach (var item in Model.CuentaFormasDePago.ListaDatos)
+										{
+											<tr>
+												<td class="align-left">@item.fp_desc</td>
+												<td class="align-center">@item.fp_dias</td>
+											</tr>
+										}
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
 				</div>
-			</div>
-			<div class="row" style="padding-top: 10px;">
-				<div class="table-responsive text-nowrap table-wrapper-200-full">
-					<table class="table table-sm mb-0 table-hover" id="tbOtroContactoEnTabDeProv">
-						<thead class="table-dark">
-							<tr class="header">
-								<th class="col-header-small align-center">Contacto</th>
-								<th class="col-header-small align-center">Tipo</th>
-								<th class="col-header-small align-center">Email</th>
-								<th class="col-header-small align-center">Celular</th>
-								<th class="col-header-small align-center">TE</th>
-							</tr>
-						</thead>
-						<tbody>
-							@foreach (var item in Model.CuentaContactos.ListaDatos)
-							{
-								<tr>
-									<td class="align-left">@item.cta_nombre</td>
-									<td class="align-left">@item.tc_desc</td>
-									<td class="align-left">@item.cta_email</td>
-									<td class="align-left">@item.cta_celu</td>
-									<td class="align-left">@item.cta_te</td>
-								</tr>
-							}
-						</tbody>
-					</table>
+				<div class="row mt-1">
+					<div class="card">
+						<div class="card-body mt-1-ctm">
+							<div class="table-responsive text-nowrap table-wrapper-200-full">
+								<table class="table table-sm mb-0 table-hover" id="tbOtroContactoEnTabDeProv">
+									<thead class="table-dark">
+										<tr class="header">
+											<th class="col-header-small align-center">Contacto</th>
+											<th class="col-header-small align-center">Tipo</th>
+											<th class="col-header-small align-center">Email</th>
+											<th class="col-header-small align-center">Celular</th>
+											<th class="col-header-small align-center">TE</th>
+										</tr>
+									</thead>
+									<tbody>
+										@foreach (var item in Model.CuentaContactos.ListaDatos)
+										{
+											<tr>
+												<td class="align-left">@item.cta_nombre</td>
+												<td class="align-left">@item.tc_desc</td>
+												<td class="align-left">@item.cta_email</td>
+												<td class="align-left">@item.cta_celu</td>
+												<td class="align-left">@item.cta_te</td>
+											</tr>
+										}
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
 				</div>
-			</div>
-			<div class="row" style="padding-top: 10px;">
-				<div class="table-responsive text-nowrap table-wrapper-200-full">
-					<table class="table table-sm mb-0 table-hover" id="tbObservacionesEnTabDeProv">
-						<thead class="table-dark">
-							<tr class="header">
-								<th class="col-header-small align-center">Observacion</th>
-								<th class="col-header-small align-center">Tipo</th>
-							</tr>
-						</thead>
-						<tbody>
-							@foreach (var item in Model.CuentaObs.ListaDatos)
-							{
-								<tr>
-									<td class="align-left">@item.cta_obs</td>
-									<td class="align-left">@item.to_desc</td>
-								</tr>
-							}
-						</tbody>
-					</table>
+				<div class="row mt-1">
+					<div class="card">
+						<div class="card-body mt-1-ctm">
+							<div class="table-responsive text-nowrap table-wrapper-200-full">
+								<table class="table table-sm mb-0 table-hover" id="tbObservacionesEnTabDeProv">
+									<thead class="table-dark">
+										<tr class="header">
+											<th class="col-header-small align-center">Observacion</th>
+											<th class="col-header-small align-center">Tipo</th>
+										</tr>
+									</thead>
+									<tbody>
+										@foreach (var item in Model.CuentaObs.ListaDatos)
+										{
+											<tr>
+												<td class="align-left">@item.cta_obs</td>
+												<td class="align-left">@item.to_desc</td>
+											</tr>
+										}
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
 				</div>
-			</div>
-			<div class="row" style="padding-top: 10px;">
-				<div class="table-responsive text-nowrap table-wrapper-200-full">
-					<table class="table table-sm mb-0 table-hover" id="tbNotasEnTabDeProv">
-						<thead class="table-dark">
-							<tr class="header">
-								<th class="col-header-small align-center">Nota</th>
-								<th class="col-header-small align-center">Usuario</th>
-								<th class="col-header-small align-center">Fecha</th>
-							</tr>
-						</thead>
-						<tbody>
-							@foreach (var item in Model.CuentaNota.ListaDatos)
-							{
-								<tr>
-									<td class="align-left">@item.nota</td>
-									<td class="align-left">@item.usu_apellidoynombre</td>
-									<td class="align-left">@item.fecha.ToString("dd/MM/yyyy")</td>
-								</tr>
-							}
-						</tbody>
-					</table>
+				<div class="row mt-1">
+					<div class="card">
+						<div class="card-body mt-1-ctm">
+							<div class="table-responsive text-nowrap table-wrapper-200-full">
+								<table class="table table-sm mb-0 table-hover" id="tbNotasEnTabDeProv">
+									<thead class="table-dark">
+										<tr class="header">
+											<th class="col-header-small align-center">Nota</th>
+											<th class="col-header-small align-center">Usuario</th>
+											<th class="col-header-small align-center">Fecha</th>
+										</tr>
+									</thead>
+									<tbody>
+										@foreach (var item in Model.CuentaNota.ListaDatos)
+										{
+											<tr>
+												<td class="align-left">@item.nota</td>
+												<td class="align-left">@item.usu_apellidoynombre</td>
+												<td class="align-left">@item.fecha.ToString("dd/MM/yyyy")</td>
+											</tr>
+										}
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>

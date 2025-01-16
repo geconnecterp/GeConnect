@@ -565,6 +565,7 @@ function btnNuevoClick() {
 	SetearDestinoDeOperacion(tabActiva);
 	$("#btnAbmAceptar").show();
 	$("#btnAbmCancelar").show();
+	
 	switch (tabActiva) {
 		case Tabs.TabCliente:
 			NuevoCliente();
