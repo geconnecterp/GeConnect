@@ -31,7 +31,7 @@
 	$("#btnAbmAceptar").on("click", function () { btnSubmitClick(); });
 	$("#btnAbmCancelar").on("click", function () { btnCancelClick(); });
 
-	$("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle); 
+	$("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle);
 
 	$("#btnDetalle").prop("disabled", true);
 	$("#btnCancel").on("click", function () {
@@ -164,7 +164,7 @@ function cargaPaginacion() {
 	return true;
 }
 
-function buscarClientes(pag) {
+function buscarClientes(pag, esBaja = false) {
 	AbrirWaiting();
 	var buscar = "";
 	var id = "";
@@ -197,6 +197,8 @@ function buscarClientes(pag) {
 	};
 
 	var buscaNew = JSON.stringify(dataBak) != JSON.stringify(data1)
+	if (esBaja)
+		buscaNew = true;
 
 	if (buscaNew === false) {
 		//son iguales las condiciones cambia de pagina
@@ -281,6 +283,7 @@ function selectRegDbl(x, gridId) {
 				$("#btnDetalle").prop("disabled", false);
 				$("#divFiltro").collapse("hide");
 				$("#divDetalle").collapse("show");
+				$("#IdSelected").val(ctaId);
 				posicionarRegOnTop(x);
 			}
 			break;

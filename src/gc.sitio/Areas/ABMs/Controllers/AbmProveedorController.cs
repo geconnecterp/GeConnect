@@ -220,6 +220,20 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			}
 		}
 
+		[HttpPost]
+		public JsonResult BuscarProveedorCargado(string ctaId)
+		{
+			if (string.IsNullOrWhiteSpace(ctaId))
+				return Json(new { error = true, warn = false, msg = "", data = "" });
+
+			var res = _proveedorServicio.GetProveedorParaABM(ctaId, TokenCookie);
+			if (res == null)
+				return Json(new { error = true, warn = false, msg = "", data = "" });
+			if (res.Count == 0)
+				return Json(new { error = true, warn = false, msg = "", data = "" });
+			return Json(new { error = false, warn = false, msg = "", data = res.First().Cta_Denominacion });
+		}
+
 		#region Formas de Pago
 		/// <summary>
 		/// Método que llena el Tab "Formas de Pago" en el ABM

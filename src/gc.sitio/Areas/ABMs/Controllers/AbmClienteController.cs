@@ -11,6 +11,7 @@ using gc.sitio.Areas.ABMs.Models;
 using gc.sitio.Areas.ABMs.Models.Cliente;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.ABM;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
@@ -18,6 +19,7 @@ using Newtonsoft.Json;
 using System;
 using System.Globalization;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace gc.sitio.Areas.ABMs.Controllers
 {
@@ -168,6 +170,20 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			{
 				return Json(new { error = true, msg = "No se pudo obtener la información de paginación. Verifica" });
 			}
+		}
+
+		[HttpPost]
+		public JsonResult BuscarClienteCargado(string ctaId)
+		{
+			if (string.IsNullOrWhiteSpace(ctaId))
+				return Json(new { error = true, warn = false, msg = "", data = "" });
+
+			var res = _cuentaServicio.GetCuentaParaABM(ctaId, TokenCookie);
+			if (res == null)
+				return Json(new { error = true, warn = false, msg = "", data = "" });
+			if (res.Count == 0)
+				return Json(new { error = true, warn = false, msg = "", data = "" });
+			return Json(new { error = false, warn = false, msg = "", data = res.First().Cta_Denominacion });
 		}
 
 		/// <summary>
@@ -905,13 +921,13 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		#endregion
 
 		#region Métodos Privados
-		
+
 		private RespuestaDeValidacionAntesDeGuardar ValidarJsonAntesDeGuardar(ObservacionAbmValidationModel obs, char abm)
 		{
 
 			//Agregar validaciones en el caso que lo requiera
-			if (string.IsNullOrWhiteSpace(obs.cta_obs) && abm!='B')
-				return new RespuestaDeValidacionAntesDeGuardar() { mensaje= "Debe indicar una observación válida, no se permiten observaciones vacías.", setFecus= "Cta_Obs" } ;
+			if (string.IsNullOrWhiteSpace(obs.cta_obs) && abm != 'B')
+				return new RespuestaDeValidacionAntesDeGuardar() { mensaje = "Debe indicar una observación válida, no se permiten observaciones vacías.", setFecus = "Cta_Obs" };
 			return new RespuestaDeValidacionAntesDeGuardar() { mensaje = "", setFecus = "" };
 		}
 		private string ValidarJsonAntesDeGuardar(NotaAbmValidationModel no, char abm)

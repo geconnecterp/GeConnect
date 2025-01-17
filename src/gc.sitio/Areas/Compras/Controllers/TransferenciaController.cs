@@ -738,7 +738,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> EditarNotaEnSucursal(string admId, int autorizacion)
 		{
-			//TODO: Charlar con carlos para ver si modificamos lo que se muestra en esta vista
 			var model = new TRNotaEnSucursalDto();
 			try
 			{
@@ -794,7 +793,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> EditarNotaEnProducto(string pId)
 		{
-			//TODO: Charlar con carlos para ver si modificamos lo que se muestra en esta vista
 			var model = new TRNotaEnProductoDto();
 			try
 			{

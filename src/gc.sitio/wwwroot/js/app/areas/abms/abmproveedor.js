@@ -211,7 +211,7 @@ function cargaPaginacion() {
 	return true;
 }
 
-function buscarProveedores(pag) {
+function buscarProveedores(pag, esBaja = false) {
 	AbrirWaiting();
 	var buscar = "";
 	var id = "";
@@ -240,6 +240,8 @@ function buscarProveedores(pag) {
 	};
 
 	var buscaNew = JSON.stringify(dataBak) != JSON.stringify(data1)
+	if (esBaja)
+		buscaNew = true;
 
 	if (buscaNew === false) {
 		//son iguales las condiciones cambia de pagina
@@ -361,6 +363,7 @@ function selectRegDbl(x, gridId) {
 				$("#btnDetalle").prop("disabled", false);
 				$("#divFiltro").collapse("hide");
 				$("#divDetalle").collapse("show");
+				$("#IdSelected").val(ctaId);
 				posicionarRegOnTop(x);
 			}
 			break;

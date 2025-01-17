@@ -597,8 +597,16 @@ function btnNuevoClick() {
 
 function btnBajaClick() {
 	var tabActiva = $('.nav-tabs .active')[0].id;
-	accionBotones(AbmAction.BAJA, tabActiva);
-	var idSelected = $("#IdSelected").val();
+	var idSelected = "";
+	if (tabActiva == Tabs.TabCliente) {
+		idSelected = $("#Cliente_Cta_id").val();
+	}
+	else if (tabActiva == Tabs.TabProveedor) {
+		idSelected = $("#Proveedor_Cta_Id").val();
+	}
+	else {
+		idSelected = $("#IdSelected").val();
+	}
 	if (idSelected === "") {
 		AbrirMensaje("ATENCIÓN", GetMensajeParaBaja(tabActiva), function () {
 			$("#msjModal").modal("hide");
@@ -607,6 +615,8 @@ function btnBajaClick() {
 
 	}
 	else {
+		var tabActiva = $('.nav-tabs .active')[0].id;
+		accionBotones(AbmAction.BAJA, tabActiva);
 		tipoDeOperacion = AbmAction.BAJA;
 		$(".activable").prop("disabled", true);
 		var tabActiva = $('.nav-tabs .active')[0].id;
@@ -906,11 +916,26 @@ function Guardar() {
 					var controlCtaId = ObtenerModuloEjecutado(destinoDeOperacion) + 'Cta_Id';
 					var control = $("[name='" + controlCtaId + "']");
 					control.val(obj.id);
-					if (AbmObject.CLIENTES) {
+					if (destinoDeOperacion === AbmObject.CLIENTES) {
 						BuscarElementoInsertado(obj.id, AbmObject.CLIENTES);
 					}
-					else if (AbmObject.PROVEEDORES) {
+					else if (destinoDeOperacion === AbmObject.PROVEEDORES) {
 						BuscarElementoInsertado(obj.id, AbmObject.PROVEEDORES);
+					}
+				}
+				if (tipoDeOperacion == AbmAction.MODIFICACION) {
+					btnCancelClick();
+				}
+				if (tipoDeOperacion == AbmAction.BAJA) {
+					btnCancelClick();
+					switch (destinoDeOperacion) {
+						case AbmObject.CLIENTES:
+							buscarClientes(1, true);
+							break;
+						case AbmObject.PROVEEDORES:
+							buscarProveedores(1, true);
+							break;
+						default:
 					}
 				}
 			}
@@ -918,16 +943,48 @@ function Guardar() {
 	}
 }
 
-function BuscarElementoInsertado(id, origen) {
+function BuscarElementoInsertado(ctaId, origen) {
+	var data = { ctaId };
+	var url = "";
 	switch (origen) {
 		case AbmObject.CLIENTES:
-			//TODO: Generar método de BE que devuelva el registro recien insertado, con esos datos limpiar los filtros y setear la descripcion con la descripcion del elemento insertado para forzar
-			//		la busqueda de un solo elemento y posicionarlo en la grilla (incluso seleccionado con rojo). Hacer esto tanto para Cuentas como para Proveedores
+			url = buscarClienteCargadoUrl;
 			break;
 		case AbmObject.PROVEEDORES:
+			url = buscarProveedorCargadoUrl;
 			break;
 		default:
 	}
+	PostGen(data, url, function (obj) {
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", "Se produjo un error al intentar obtener la entidad recientemente cargada.", function () {
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			if (obj.data) {
+				$("#chkDescr").prop('checked', true);
+				$("#chkDescr").trigger("change");
+				$("#Buscar").val(obj.data);
+				$("#chkDesdeHasta").prop('checked', false);
+				$("#chkDesdeHasta").trigger("change");
+				$("#chkRel01").prop('checked', false);
+				$("#chkRel01").trigger("change");
+				$("#chkRel02").prop('checked', false);
+				$("#chkRel02").trigger("change");
+				switch (origen) {
+					case AbmObject.CLIENTES:
+						buscarClientes(1);
+						break;
+					case AbmObject.PROVEEDORES:
+						buscarProveedores(1);
+						break;
+					default:
+				}
+				
+			}
+		}
+	});
 }
 
 function ObtenerModuloEjecutado(destinoDeOperacion) {
