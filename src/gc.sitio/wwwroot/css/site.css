@@ -273,6 +273,10 @@ fieldset {
     overflow: auto;
 }
 
+.jstree-checkbox {
+    margin-right: 5px;
+}
+
 /*.table-thead, .table-tbody {
     display: block;
 }

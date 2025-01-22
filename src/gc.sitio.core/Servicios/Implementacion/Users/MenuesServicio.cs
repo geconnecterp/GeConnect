@@ -21,7 +21,9 @@ namespace gc.sitio.core.Servicios.Implementacion.Users
         private const string RutaAPI = "/api/menues";
         private const string BUSCAR_PERFILES = "/GetPerfiles";
         private const string BUSCAR_PERFIL = "/GetPerfil";
-        private const string BUSCAR_PERFILES_USERS = "/GetPerfilUsers";
+        private const string BUSCAR_PERFILES_USERS = "/GetUsuariosxPerfiles";
+        private const string GET_MENU = "/GetMenu";
+        private const string GET_MENU_ITEMS = "/GetMenuItems";
 
 
         private readonly AppSettings _appSettings;
@@ -94,7 +96,7 @@ namespace gc.sitio.core.Servicios.Implementacion.Users
                 HttpClient client = helper.InicializaCliente(token);
                 HttpResponseMessage response;
 
-                var link = $"{_appSettings.RutaBase}{RutaAPI}{BUSCAR_PERFIL}";
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{BUSCAR_PERFIL}?id={id}";
 
                 response = await client.GetAsync(link);
 
@@ -150,7 +152,7 @@ namespace gc.sitio.core.Servicios.Implementacion.Users
                 HttpClient client = helper.InicializaCliente(token);
                 HttpResponseMessage response;
 
-                var link = $"{_appSettings.RutaBase}{RutaAPI}{BUSCAR_PERFIL}";
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{BUSCAR_PERFILES_USERS}?id={perfilId}";
 
                 response = await client.GetAsync(link);
 
@@ -191,6 +193,116 @@ namespace gc.sitio.core.Servicios.Implementacion.Users
                 _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
 
                 return new RespuestaGenerica<PerfilUserDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener el Perfil de Usuarios." };
+            }
+        }
+
+        public async Task<RespuestaGenerica<MenuDto>> GetMenu(string token)
+        {
+            try
+            {
+                ApiResponse<List<MenuDto>> apiResponse;
+
+                HelperAPI helper = new();
+
+                HttpClient client = helper.InicializaCliente(token);
+                HttpResponseMessage response;
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_MENU}";
+
+                response = await client.GetAsync(link);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+
+                        return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
+                    }
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<MenuDto>>>(stringData);
+
+                    return new RespuestaGenerica<MenuDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
+
+                }
+                else
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    {
+                        return new RespuestaGenerica<MenuDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    {
+                        return new RespuestaGenerica<MenuDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else
+                    {
+                        throw new Exception(error.Detail);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+
+                return new RespuestaGenerica<MenuDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener el Menú." };
+            }
+        }
+
+        public async Task<RespuestaGenerica<MenuItemsDto>> GetMenuItems(string menuId, string perfil, string token)
+        {
+            try
+            {
+                ApiResponse<List<MenuItemsDto>> apiResponse;
+
+                HelperAPI helper = new();
+
+                HttpClient client = helper.InicializaCliente(token);
+                HttpResponseMessage response;
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_MENU_ITEMS}?menuId={menuId}&perfil={perfil}";
+
+                response = await client.GetAsync(link);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+
+                        return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
+                    }
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<MenuItemsDto>>>(stringData);
+
+                    return new RespuestaGenerica<MenuItemsDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
+
+                }
+                else
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    {
+                        return new RespuestaGenerica<MenuItemsDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    {
+                        return new RespuestaGenerica<MenuItemsDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else
+                    {
+                        throw new Exception(error.Detail);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+
+                return new RespuestaGenerica<MenuItemsDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener los items del menú." };
             }
         }
     }

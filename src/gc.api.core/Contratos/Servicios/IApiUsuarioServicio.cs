@@ -9,5 +9,7 @@ namespace gc.api.core.Contratos.Servicios
         List<PerfilDto> GetPerfiles(QueryFilters filters);
         PerfilDto GetPerfil(string id);
         List<PerfilUserDto> GetPerfilUsers(string perfilId);
+        List<MenuDto> GetMenu();
+        List<MenuItemsDto> GetMenuItems(string menuId, string perfil);
     }
 }

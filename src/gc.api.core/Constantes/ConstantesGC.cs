@@ -141,7 +141,8 @@
             public const string SP_USU_PERFILES_LISTA = "SPGECO_ABM_Usu_perfiles_Lista";
             public const string SP_USU_PERFIL_DATOS = "SPGECO_ABM_Usu_perfiles_Datos";
             public const string SP_USU_PERFxUSU_LISTA = "SPGECO_ABM_Usu_Perfiles_Usu_Lista";
-
+            public const string SP_MENU_ID = "SPGECO_ABM_Usu_Menues";
+            public const string SP_MENU_ITEMS = "SPGECO_ABM_Usu_Menu_x_Perfiles";
             #endregion
 
             #region ABM

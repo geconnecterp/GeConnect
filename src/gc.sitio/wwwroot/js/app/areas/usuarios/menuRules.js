@@ -1,4 +1,89 @@
-﻿
+﻿$(function () {
+    $("#btnAbmNuevo").on("click", ejecutarAlta);
+    $("#btnAbmModif").on("click", ejecutarModificacion);
+    $("#btnAbmElimi").on("click", ejecutarBaja);
+
+    $("#btnAbmCancelar").on("click", inicializaPantallaCtrlMenu);
+    $("#btnAbmAceptar").on("click", confirmarOperacionAbmProducto);
+
+    $("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle);
+
+    $("#MenuId").on("change", buscarMenu);
+
+    $('#menu').on('changed.jstree', function (e, data) {
+
+        if (data.selected && data.selected.length > 0) {
+            data.selected.forEach(function (id) {
+                updateAssignedState(id, true); // Marcar como asignado
+            });
+        }
+
+        if (data.deselected && data.deselected.length > 0 ) {
+            data.deselected.forEach(function (id) {
+                updateAssignedState(id, false); // Marcar como no asignado
+            });
+        }
+    });
+});
+
+// Función para actualizar el estado de 'asignado'
+function updateAssignedState(id, state) {
+    // Buscar el nodo en el menú y actualizar su estado
+    jsonMenuActual.forEach(function (item) {
+        if (item.id === id) {
+            item.asignado = state;
+        }
+        if (item.children) {
+            item.children.forEach(function (child) {
+                if (child.id === id) {
+                    child.asignado = state;
+                }
+            });
+        }
+    });
+}
+
+function buscarMenu() {
+    AbrirWaiting();
+    var mnId = $("#MenuId option:selected").val();
+    data = { menuId: mnId };
+    //activamos los botones de confirmación o cancelacion.
+    $("#btnAbmAceptar").prop("disabled", false);
+    $("#btnAbmCancelar").prop("disabled", false);
+
+    PostGen(data, obtenerMenuPerfilUrl, function (obj) {
+        if (obj.error === true) {
+            CerrarWaiting();
+            AbrirMensaje("ALGO NO SALIO BIEN!", obj.msg, function () {
+                $("#msjModal").modal("hide");
+            }, false, ["CONTINUAR"], "error!", null);
+        }
+        else if (obj.warn === true) {
+            CerrarWaiting();
+
+            AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                $("#msjModal").modal("hide");
+            }, false, ["CONTINUAR"], "warn!", null);
+        }
+        else {
+
+            jsonMenuActual = obj.arbol;
+            $("#menu").jstree("destroy").empty();
+            $("#menu").jstree({
+                "core": { "data": obj.arbol },
+                "checkbox": {
+                    "keep_selected_style": false
+                },
+                "plugins": ['checkbox']
+            });
+
+            CerrarWaiting();
+        }
+    });
+
+}
+
+
 function accionBotones(btn) {
     if (btn === AbmAction.ALTA ||
         btn === AbmAction.MODIFICACION ||
@@ -25,8 +110,10 @@ function accionBotones(btn) {
         $("#btnAbmModif").prop("disabled", true);
         $("#btnAbmElimi").prop("disabled", true);
 
-        $("#btnAbmAceptar").prop("disabled", false);
-        $("#btnAbmCancelar").prop("disabled", false);
+        if (tabMn === 1) {
+            $("#btnAbmAceptar").prop("disabled", false);
+            $("#btnAbmCancelar").prop("disabled", false);
+        }
         $("#btnAbmAceptar").show();
         $("#btnAbmCancelar").show();
     } else if (btn === AbmAction.SUBMIT || btn === AbmAction.CANCEL) {   // (S)uccess - (C)ancel
@@ -50,7 +137,7 @@ function accionBotones(btn) {
 
             if (tabMn === 1) {
                 $("#btnDetalle").prop("disabled", true);
-                activarGrilla(tabGrid01);
+                activarGrilla(Grids.GridPerfil);
             }
 
         }
@@ -66,73 +153,14 @@ function activarControles(act) {
         //se tiene en cuenta que tab es el que esta activo al momento de presionar el boton de acción
         switch (tabMn) {
             case 1:
+
                 //Linea 1
-                ////p_id NUNCA SE ACTIVA
-                //if (accion === AbmAction.MODIFICACION) {
-                //    $("#p_activo").prop("disabled", act);
-                //}
-                //$("#up_id").prop("disabled", act);
-                ////Linea 02
-                //$("#p_m_marca").prop("disabled", act);
+                if (accion === AbmAction.MODIFICACION) {
+                    $("#Perfilactivo").prop("disabled", act);
+                }
+                //Linea 02
+                $("#perfil_descripcion").prop("disabled", act);
 
-                ////SI EL UP_ID ES DISTINTO DE 07 SE PUEDE ACTIVAR EL CHECK DE BALANZA
-                //if ($("#up_Id option:selected").val() !== "07") {
-                //    $("#PBalanza").prop("disabled", act);
-                //    if (act === false && $("#PBalanza").is(":checked")) {
-                //        $("#p_balanza_dvto").prop("disabled", act);
-                //        $("#p_peso").prop("disabled", act);
-                //    }
-                //}
-                ////Linea 03
-                //$("#p_m_desc").prop("disabled", act);
-                //$("#PConVto").prop("disabled", act);
-                //if (act === false && $("#PConVto").is(":checked")) {
-                //    $("#p_con_vto_min").prop("disabled", act);
-                //}
-                ////Linea 04
-                //$("#p_m_capacidad").prop("disabled", act);
-                //$("#PAltaRotacion").prop("disabled", act);
-                ////Linea 05
-                //$("#p_id_prov").prop("disabled", act);
-                //$("#PMatPri").prop("disabled", act);
-                //if (act === false && $("#PMatPri").is(":checked")) { //este campo se activa cuando el check PMatPri es TRUE
-                //    $("#PElaboracion").prop("disabled", act);
-                //}
-                ////Linea 06
-                //$("#cta_lista").prop("disabled", act);
-                //$("#AdmMayExcluye").prop("disabled", act);
-                //$("#AdmMinExcluye").prop("disabled", act);
-                ////Linea 07
-                //$("#pg_id").prop("disabled", act);
-                //$("#PiAutoExluye").prop("disabled", act);
-                //$("#OcAutoExluye").prop("disabled", act);
-                ////Linea 08
-                //$("#rub_lista").prop("disabled", act);
-                //$("#iva_situacion").prop("disabled", act);
-                //$("#iva_alicuota").prop("disabled", act);
-                //controlaValorIva();
-                ////Linea 09
-                //$("#lp_id_default").prop("disabled", act);
-                //$("#in_alicuota").prop("disabled", act);
-                ////Linea 10
-                //$("#p_id_barrado_ean").prop("disabled", act);
-                //$("#p_unidad_pres_ean").prop("disabled", act);
-                //$("#p_unidad_x_bulto_ean").prop("disabled", act);
-                //$("#p_bulto_x_piso_ean").prop("disabled", act);
-                //$("#p_piso_x_pallet_ean").prop("disabled", act);
-                ////Linea 11
-                //$("#p_id_barrado_dun").prop("disabled", act);
-                //$("#p_unidad_pres_dun").prop("disabled", act);
-                //$("#p_unidad_x_bulto_dun").prop("disabled", act);
-                //$("#p_bulto_x_piso_dun").prop("disabled", act);
-                //$("#p_piso_x_pallet_dun").prop("disabled", act);
-                ////Linea 12
-                //$("#p_obs").prop("disabled", act);
-
-                ////hacemos el foco
-                //if (accion === AbmAction.ALTA) {
-                //    $("#up_id").trigger("focus");
-                //}
 
                 break;
             case 2:
@@ -150,15 +178,200 @@ function activarControles(act) {
                 //$("#p_piso_x_pallet").prop("disabled", act);
 
                 break;
-            case 3:
-                ////solo se puede modificar.
-                //$("#adm_id").prop("disabled", true);
-                //$("#p_stk_min").prop("disabled", act);
-                //$("#p_stk_max").prop("disabled", act);
-                break;
+
             default:
                 return false;
         }
 
     }
+}
+
+function ejecutarAlta() {
+    AbrirWaiting("Espere, se blanquea el formulario...");
+
+    var data = {};
+    switch (tabMn) {
+        case 1:
+            PostGenHtml(data, nuevoPerfilUrl, function (obj) {
+                $("#divpanel01").html(obj);
+                ////se procede a buscar la grilla de barrado
+                //buscarBarrado(data);
+                ////se procede a buscar la grilla de Sucursales
+                //buscarLimite(data);
+
+                $("#btnDetalle").prop("disabled", false);
+                $("#divFiltro").collapse("hide");
+                $("#divDetalle").collapse("show");
+
+                accionBotones(AbmAction.ALTA);
+                activarControles(true);
+
+                CerrarWaiting();
+            });
+
+            break;
+        case 2:
+
+            $("#btnDetalle").prop("disabled", false);
+            $("#divFiltro").collapse("hide");
+            $("#divDetalle").collapse("show");
+
+            accionBotones(AbmAction.ALTA);
+            //activarControles(true);
+
+            CerrarWaiting();
+            break;
+
+        default:
+            return false;
+    }
+}
+
+function ejecutarModificacion() {
+    $("#divFiltro").collapse("hide");
+    accionBotones(AbmAction.MODIFICACION);
+    activarControles(true);
+}
+
+function ejecutarBaja() {
+    switch (tabMn) {
+        case 1:
+            $("#divFiltro").collapse("hide");
+            accionBotones(AbmAction.BAJA);
+            break;
+        case 2:
+
+            break;
+        default:
+            return false;
+    }
+}
+
+function confirmarOperacionAbmProducto() {
+    AbrirWaiting("Completando proceso...");
+    var data = {};
+    switch (tabMn) {
+        case 1:
+            data = confirmarDatosTab01();
+            break;
+        case 2:
+            data = confirmarDatosTab02();
+            break;
+
+        default:
+            return false;
+    }
+    urlabm = ""
+    switch (tabMn) {
+        case 1:
+            urlabm = confirmarAbmPerfilUrl;
+            break;
+        case 2:
+            urlabm = confirmarMenuPerfilUrl;
+            break;
+
+        default:
+    }
+    PostGen(data, urlabm, function (obj) {
+        if (obj.error === true) {
+            CerrarWaiting();
+            AbrirMensaje("ALGO NO SALIO BIEN!", obj.msg, function () {
+                $("#msjModal").modal("hide");
+            }, false, ["CONTINUAR"], "error!", null);
+        }
+        else if (obj.warn === true) {
+            CerrarWaiting();
+
+            AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                if (obj.auth === true) {
+                    window.location.href = login;
+                }
+                else {
+                    $("#msjModal").modal("hide");
+                }
+            }, false, ["CONTINUAR"], "warn!", null);
+
+        }
+        else {
+            CerrarWaiting();
+            AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                //todo fue bien, por lo que se deberia reinicializar la pantalla.
+                var grilla = "";
+                switch (tabAbm) {
+                    case 1:
+                        grilla = tabGrid01;
+                        break;
+                    case 2:
+                        grilla = tabGrid02;
+                        break;
+                    case 3:
+                        grilla = tabGrid03;
+                        break;
+                    default:
+                        return false;
+                }
+                dataBak = "";
+                InicializaPantallaAbmProd(grilla);
+                //if (tabAbm === 2 || tabAbm === 3) {
+                //    activarGrilla(tabGrid01);
+                //}
+                if (accion !== AbmAction.BAJA) {
+                    switch (tabAbm) {
+                        case 1:
+                            //se dió de alta o se modificó, se realiza la presentación del producto
+                            if (accion === AbmAction.ALTA) {
+                                EntidadSelect = obj.id;
+                            }
+                            data = { p_id: EntidadSelect };
+                            buscarProductoServer(data);
+
+
+
+                            break;
+                        case 2:
+                            presentarBarrado();
+                            break;
+                        case 3:
+                            presentarLimites();
+                        default:
+                    }
+
+                    //inicializamos la acción.
+                    accion = "";
+                }
+
+                //borramos el id del producto si se eliminó
+                EntidadSelect = "";
+                //VAMOS A EJECUTAR NUEVAMENTE EL BUSCAR
+                buscarProductos(pagina);
+
+                $("#msjModal").modal("hide");
+                return true;
+
+            }, false, ["CONTINUAR"], "succ!", null);
+        }
+    });
+}
+
+function analizaEstadoBtnDetalle() {
+    var res = $("#divDetalle").hasClass("show");
+    if (res === true) {
+        selectRegPerfil(regSelected, Grids.GridPerfil);
+    }
+    return true;
+}
+
+function confirmarDatosTab01() {
+    var perfil_id = $("#Perfil_id").val();
+    var perfil_activo = "N"
+    if ($("#Perfilactivo").is(":checked")) { perfil_activo = "S" }
+    var perfil_descripcion = $("#perfil_descripcion").val();
+
+    var data = { perfil_id, perfil_activo, perfil_descripcion, accion };
+    return data;
+}
+
+function confirmarDatosTab02() {
+    var data = { json: JSON.stringify(jsonMenuActual) };
+    return data;
 }

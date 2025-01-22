@@ -20,6 +20,7 @@
     //eventos para controlar el doble click de las tablas.
     $(document).on("dblclick", "#" + tabGrid01 + " tbody tr", function () {
         x = $(this);
+        regSelected = x;
         ejecutaDblClickGrid1(x);
     });
     $(document).on("dblclick", "#" + tabGrid02 + " tbody tr", function () {
@@ -200,6 +201,8 @@ function InicializaPantallaAbmProd(grilla) {
     accionBotones(AbmAction.CANCEL);
 
     //borra seleccion de registro si hubiera cargdo algun grid
+    //TODO: ESTO SOLO LO HACE SI ES LA GRILLA PPAL (TABAMB = 1)
+
     $("#" + grilla + " tbody tr").each(function (index) {
         $(this).removeClass("selectedEdit-row");
     });
@@ -309,7 +312,7 @@ function buscarProductoServer(data) {
         //activar botones de acción
         activarBotones(true);
 
-        if (prodEstado !== "S" && accion!=="") {
+        if (EntidadEstado !== "S" && accion!=="") {
             $("#BtnLiTab02").prop("disabled", true);
             $("#BtnLiTab02").addClass("text-danger");
             $("#BtnLiTab03").prop("disabled", true);
@@ -352,26 +355,8 @@ function selectRegProd(x, gridId) {
    
 }
 
-//mueve registro al top de la grilla
-function posicionarRegOnTop(x) {
-    rowOffset = 0;
-    posActScrollTop = 0;
-    newPosScrollTop = 0
-
-    posTabla = $(".table-wrapper");
-    //calculamos la posicion del offset del registro seleccionado
-    rowOffset = x.position().top;
-    //posición actual del scroll
-    posActScrollTop = posTabla.scrollTop();
-    //calculamos la nueva posición del scroll
-    newPosScrollTop = rowOffset + posActScrollTop - posTabla.position().top;
-    posTabla.animate({
-        scrollTop: newPosScrollTop
-    }, 500);    
-}
-
 function ejecutaDblClickGrid1(x) {
-    AbrirWaiting("Espere mientras se busca el producto seleccionado...");
+    AbrirWaiting("Espere mientras se busca el producto seleccionado...");   
     selectAbmRegDbl(x, tabGrid01);
 }
 function ejecutaDblClickGrid2(x) {
@@ -392,14 +377,13 @@ function selectAbmRegDbl(x, gridId) {
     $(x).addClass("selectedEdit-row");
     var id = x.find("td:nth-child(1)").text();
    
-    regSelected = x;
 
     switch (tabAbm) {
         case 1:
             //se agrega por inyection el tab con los datos del producto
-            prodEstado = x.find("td:nth-child(9)").text();
+            EntidadEstado = x.find("td:nth-child(9)").text();
             var data = { p_id: id };
-            prodSelec = id;
+            EntidadSelect = id;
             desactivarGrilla(tabGrid01);
             buscarProductoServer(data);
             posicionarRegOnTop(x);

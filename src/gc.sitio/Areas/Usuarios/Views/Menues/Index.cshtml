@@ -3,11 +3,15 @@
 
 @{
     Layout = "~/views/shared/_Layout.cshtml";
-    var filtro = new QueryFilters() { Rel01 = null, Rel02 = null,Modelo = ModeloFilter.MENU };
+    var filtro = new QueryFilters() { Rel01 = null, Rel02 = null, Modelo = ModeloFilter.MENU };
 }
 
 @section styles {
     <link rel="stylesheet" href="~/css/simplePagination.css" />
+    <link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+    <style>
+        
+    </style>
 }
 
 <div class="container">
@@ -54,7 +58,7 @@
         @Html.Hidden("pagEstado", false)
     </div>
     <div class="collapse" id="divDetalle" style="">
-        @* <partial name="_n01tabsAbmProds" /> *@
+        <partial name="_n01tabsMenu" />
     </div>
     <div class="row">
         @* <partial name="_gridAbmProds"  /> *@
@@ -72,12 +76,21 @@
     </div>
 </div>
 
-@section scripts{
+@section scripts {
     <script type="text/javascript">
-        var buscarPerfiles = "@Url.Action("buscarPerfiles","menues",new{area="usuarios"})";
-        var buscarPerfilesMetadataURL = "@Url.Action("buscarPerfiles", "menues", new { area = "usuarios" })";
+        var buscarPerfilUsersUrl = "@Url.Action("buscarPerfilUsers", "menues", new { area = "usuarios" })";
+        var buscarPerfilesUrl = "@Url.Action("buscarPerfiles", "menues", new { area = "usuarios" })";
+        var buscarPerfilUrl = "@Url.Action("buscarPerfil", "menues", new { area = "usuarios" })";
+        var buscarPerfilesMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "menues", new { area = "usuarios" })";
+
+        var nuevoPerfilUrl = "@Url.Action("NuevoPerfil", "menues", new { area = "usuarios" })";
+        var confirmarAbmPerfilUrl = "@Url.Action("confirmaperfil", "menues", new { area = "usuarios" })";
+        var confirmarMenuPerfilUrl = "@Url.Action("ConfirmarMenuPerfil", "menues", new { area = "usuarios" })";
+        
+        var obtenerMenuPerfilUrl = "@Url.Action("obtenerMenuPerfil", "menues", new { area = "usuarios" })";
     </script>
 
+    <script src="~/lib/jstree/jstree.min.js"></script>
     <script src="~/js/plugins/jquery.simplePagination.js"></script>
 
     <script src="~/js/app/areas/abms/abmsettings.js"></script>

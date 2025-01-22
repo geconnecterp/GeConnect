@@ -381,7 +381,7 @@ function confirmarOperacionAbmProducto() {
             CerrarWaiting();
             AbrirMensaje("ATENCIÓN", obj.msg, function () {
                 //todo fue bien, por lo que se deberia reinicializar la pantalla.
-                var grilla = "tbGridProd";
+                var grilla = "";
                 switch (tabAbm) {
                     case 1:
                         grilla = tabGrid01;
@@ -393,6 +393,7 @@ function confirmarOperacionAbmProducto() {
                         grilla = tabGrid03;
                         break;
                     default:
+                        return false;
                 }
                 dataBak = "";
                 InicializaPantallaAbmProd(grilla);
@@ -404,10 +405,12 @@ function confirmarOperacionAbmProducto() {
                         case 1:
                             //se dió de alta o se modificó, se realiza la presentación del producto
                             if (accion === AbmAction.ALTA) {
-                                prodSelec = obj.id;
+                                EntidadSelect = obj.id;
                             }
-                            data = { p_id: prodSelec };
-                            buscarProductoServer(data);
+                        data = { p_id: EntidadSelect };
+                        buscarProductoServer(data);
+
+                        
 
                             break;
                         case 2:
@@ -423,7 +426,7 @@ function confirmarOperacionAbmProducto() {
                 }
 
                 //borramos el id del producto si se eliminó
-                prodSelec = "";
+                EntidadSelect = "";
                 //VAMOS A EJECUTAR NUEVAMENTE EL BUSCAR
                 buscarProductos(pagina);
 

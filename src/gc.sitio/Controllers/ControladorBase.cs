@@ -1,4 +1,5 @@
 ﻿using gc.api.core.Entidades;
+using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.ABM;
@@ -13,6 +14,7 @@ using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes;
 using gc.infraestructura.Helpers;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Contratos.Users;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
@@ -1683,6 +1685,53 @@ namespace gc.sitio.Controllers
                 lista = new List<ComboGenDto>() { new ComboGenDto { Id = "", Descripcion = "SIN ALICUOTA" } };
             }
             return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+        }
+
+        protected async Task<SelectList> ComboMenues(IMenuesServicio _mnSv)
+        {
+            IEnumerable<ComboGenDto> lista;
+            var menu = await _mnSv.GetMenu(TokenCookie);
+            if (menu.Ok)
+            {
+                lista = menu.ListaEntidad.Select(x => new ComboGenDto { Id = x.mnu_id, Descripcion = x.mnu_descripcion.ToString() });
+            }
+            else
+            {
+                lista = new List<ComboGenDto>() { new ComboGenDto { Id = "", Descripcion = "SIN MENÚ" } };
+            }
+            return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+        }
+
+        public MetadataGrid MetadataGeneral
+        {
+            get
+            {
+                var txt = _context.HttpContext.Session.GetString("MetadataGeneral");
+                if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
+                {
+                    return new MetadataGrid();
+                }
+                return JsonConvert.DeserializeObject<MetadataGrid>(txt); ;
+            }
+            set
+            {
+                var valor = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("MetadataGeneral", valor);
+            }
+
+        }
+
+        [HttpPost]
+        public JsonResult ObtenerDatosPaginacion()
+        {
+            try
+            {
+                return Json(new { error = false, Metadata = MetadataGeneral });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = true, msg = "No se pudo obtener la información de paginación. Verifica" });
+            }
         }
 
         protected enum DiasDeLaSemana

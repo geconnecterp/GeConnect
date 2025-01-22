@@ -357,3 +357,22 @@ function activarGrilla(gridId) {
     $(".table-wrapper").css("overflow", "auto");
 
 }
+
+
+//mueve registro al top de la grilla
+function posicionarRegOnTop(x) {
+    rowOffset = 0;
+    posActScrollTop = 0;
+    newPosScrollTop = 0
+
+    posTabla = $(".table-wrapper");
+    //calculamos la posicion del offset del registro seleccionado
+    rowOffset = x.position().top;
+    //posición actual del scroll
+    posActScrollTop = posTabla.scrollTop();
+    //calculamos la nueva posición del scroll
+    newPosScrollTop = rowOffset + posActScrollTop - posTabla.position().top;
+    posTabla.animate({
+        scrollTop: newPosScrollTop
+    }, 500);
+}

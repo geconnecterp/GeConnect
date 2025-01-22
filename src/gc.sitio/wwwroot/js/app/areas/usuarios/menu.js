@@ -29,13 +29,25 @@
     $(".inputEditable").on("keypress", analizaEnterInput);
 
     $("#BtnLiTab01").on("click", function () {
-        tabAbm = 1;
-        activarGrilla(tabGrid01);
+        tabMn = 1;
+        activarGrilla(Grids.GridPerfil);
     });
-    $("#BtnLiTab02").on("click", function () { });
-    $("#BtnLiTab03").on("click", function () { });
+    $("#BtnLiTab02").on("click", function () {
+        tabMn = 2;
 
-    InicializaPantallaCtrlMenu(Grids.GridPerfil);
+        desactivarGrilla(Grids.GridPerfil);
+        ejecutarAlta();
+    });
+    //$("#BtnLiTab03").on("click", function () { });
+
+    $(document).on("dblclick", "#" + Grids.GridPerfil + " tbody tr", function () {
+        x = $(this);
+        //se resguarda el registro de la tabla
+        regSelected = x;
+        ejecutaDblClickGrid1(x);
+    });
+
+    inicializaPantallaCtrlMenu(Grids.GridPerfil);
 
     return true;
 });
@@ -69,10 +81,10 @@ function buscarPerfiles(pagina) {
 
     var data = $.extend({}, data1, data2);
 
-    PostGenHtml(data, buscarUrl, function (obj) {
+    PostGenHtml(data, buscarPerfilesUrl, function (obj) {
         $("#divGrilla").html(obj);
         $("#divFiltro").collapse("hide")
-        PostGen({}, buscarMetadataURL, function (obj) {
+        PostGen({}, buscarPerfilesMetadataURL, function (obj) {
             if (obj.error === true) {
                 AbrirMensaje("ATENCIÓN", obj.msg, function () {
                     $("#msjModal").modal("hide");
@@ -100,14 +112,14 @@ function selectRegPerfil(x, gridId) {
     selectReg(x, gridId);
     //limpio el tab01 para que se seleccione el registro.
     //y desactivo el tab
-    switch (tabAbm) {
+    switch (tabMn) {
         case 1:
             $("#divpanel01").empty();
             if ($("#divDetalle").is(":visible")) {
                 $("#divDetalle").collapse("hide");
             }
             $("#btnDetalle").prop("disabled", true);
-            activarGrilla(tabGrid01);
+            activarGrilla(gridId);
             activarBotones(false);
             break;
         case 2:
@@ -119,10 +131,161 @@ function selectRegPerfil(x, gridId) {
 
 }
 
-function InicializaPantallaCtrlMenu(grilla) {
+function ejecutaDblClickGrid1(x) {
+    AbrirWaiting("Espere mientras se busca el producto seleccionado...");
+    selectMnRegDbl(x, Grids.GridPerfil);
+}
+
+function selectMnRegDbl(x, gridId) {
+    $("#" + gridId + " tbody tr").each(function (index) {
+        $(this).removeClass("selectedEdit-row");
+    });
+    $(x).addClass("selectedEdit-row");
+    var id = x.find("td:nth-child(1)").text();
+
+    switch (tabMn) {
+        case 1:
+            //se agrega por inyection el tab con los datos del producto
+            EntidadEstado = x.find("td:nth-child(3)").text();
+            var data = { id: id };
+            EntidadSelect = id;
+            desactivarGrilla(gridId);
+            //se busca el perfil
+            buscarPerfilServer(data);
+            //se busca los usuarios del perfil
+            buscarUsuariosXPerfil(data);
+            //se posiciona el registro seleccionado
+            posicionarRegOnTop(x);
+            break;
+        case 2:
+            //se busca el dato del barral 
+            var data = { barradoId: id };
+            PostGen(data, buscarBarradoUrl, function (obj) {
+                CerrarWaiting();
+                if (obj.error === true) {
+                    AbrirMensaje("¡¡Algo no fué bien!!", obj.msg, function () {
+                        $("#msjModal").modal("hide");
+                        return true;
+                    }, false, ["Aceptar"], "error!", null);
+                } else if (obj.warn === true) {
+                    AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                        if (obj.auth === true) {
+                            window.location.href = login;
+                        } else {
+                            $("#msjModal").modal("hide");
+                        }
+                        return true;
+                    }, false, ["Aceptar"], "warn!", null);
+                }
+                else {
+                    //se presentan los datos en los controles
+
+                    $("#p_id").val(obj.datos.p_id);
+                    $("#p_id_barrado").val(obj.datos.p_id_barrado);
+                    $("#p_unidad_pres").val(obj.datos.p_unidad_pres);
+                    $("#p_unidad_x_bulto").val(obj.datos.p_unidad_x_bulto);
+                    $("#p_bulto_x_piso").val(obj.datos.p_bulto_x_piso);
+                    $("#p_piso_x_pallet").val(obj.datos.p_piso_x_pallet);
+                    $("#tba_id").val(obj.datos.tba_id);
+                    //activar botones de acción
+                    activarBotones(true);
+
+                    $("#BtnLiTab01").prop("disabled", true);
+                    $("#BtnLiTab01").addClass("text-danger");
+                    $("#BtnLiTab03").prop("disabled", true);
+                    $("#BtnLiTab03").addClass("text-danger");
+                }
+
+            });
+            break;
+        case 3:
+            //se busca  
+            var data = { barradoId: id };
+            PostGen(data, buscarBarradoUrl, function (obj) {
+                CerrarWaiting();
+                if (obj.error === true) {
+                    AbrirMensaje("¡¡Algo no fué bien!!", obj.msg, function () {
+                        $("#msjModal").modal("hide");
+                        return true;
+                    }, false, ["Aceptar"], "error!", null);
+                } else if (obj.warn === true) {
+                    AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                        if (obj.auth === true) {
+                            window.location.href = login;
+                        } else {
+                            $("#msjModal").modal("hide");
+                        }
+                        return true;
+                    }, false, ["Aceptar"], "warn!", null);
+                }
+                else {
+                    //se presentan los datos en los controles
+
+                    $("#p_id").val(obj.datos.p_id);
+                    $("#p_id_barrado").val(obj.datos.p_id_barrado);
+                    $("#p_unidad_pres").val(obj.datos.p_unidad_pres);
+                    $("#p_unidad_x_bulto").val(obj.datos.p_unidad_x_bulto);
+                    $("#p_bulto_x_piso").val(obj.datos.p_bulto_x_piso);
+                    $("#p_piso_x_pallet").val(obj.datos.p_piso_x_pallet);
+                    $("#tba_id").val(obj.datos.tba_id);
+                }
+
+            });
+            break;
+        default:
+            return false;
+    }
+
+
+    //agrego el id en el control de busqueda simple y acciono el buscar.
+    //$("#busquedaModal").modal("toggle");
+    //$("input#Busqueda").val(id);
+    //$("#btnBusquedaBase").trigger("click");
+}
+
+function buscarUsuariosXPerfil(data) {
+    PostGenHtml(data, buscarPerfilUsersUrl, function (obj) {
+        $("#divPerfilUsers").html(obj);
+    });
+}
+
+function buscarPerfilServer(data) {
+    PostGenHtml(data, buscarPerfilUrl, function (obj) {
+        $("#divpanel01").html(obj);
+        //se procede a buscar la grilla de barrado
+
+        $("#btnDetalle").prop("disabled", false);
+        $("#divFiltro").collapse("hide");
+        $("#divDetalle").collapse("show");
+
+        //activar botones de acción
+        activarBotones(true);
+
+        if (EntidadEstado !== "S" && accion !== "") {
+            $("#BtnLiTab02").prop("disabled", true);
+            $("#BtnLiTab02").addClass("text-danger");
+            $("#BtnLiTab03").prop("disabled", true);
+            $("#BtnLiTab03").addClass("text-danger");
+
+        }
+        else {
+            $("#BtnLiTab02").prop("disabled", false);
+            $("#BtnLiTab02").removeClass("text-danger");
+            $("#BtnLiTab03").prop("disabled", false);
+            $("#BtnLiTab03").removeClass("text-danger");
+        }
+
+        CerrarWaiting();
+    });
+    return true;
+}
+
+
+function inicializaPantallaCtrlMenu(grilla) {
     if (grilla !== Grids.GridPerfil) {
         switch (tabMn) {
             case 1:
+            case 2:
                 grilla = Grids.GridPerfil;
                 if ($("#divDetalle").is(":visible")) {
                     $("#divDetalle").collapse("hide");
