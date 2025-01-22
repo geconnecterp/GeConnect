@@ -372,7 +372,7 @@ function confirmarDatosTab01() {
 }
 
 function confirmarDatosTab02() {
-    var data1 = { perfil_id: $("#perfil_id").val() }
+    var data1 = { menu_id: $("#MenuId option:selected").val(),   perfil_id: $("#perfil_id").val() }
     var data2 = $.extend({}, jsonMenuActual,data1);
     var data = { json: JSON.stringify(data2) };
 
