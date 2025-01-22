@@ -362,7 +362,7 @@ function analizaEstadoBtnDetalle() {
 }
 
 function confirmarDatosTab01() {
-    var perfil_id = $("#Perfil_id").val();
+    var perfil_id = $("#perfil_id").val();
     var perfil_activo = "N"
     if ($("#Perfilactivo").is(":checked")) { perfil_activo = "S" }
     var perfil_descripcion = $("#perfil_descripcion").val();
@@ -372,6 +372,9 @@ function confirmarDatosTab01() {
 }
 
 function confirmarDatosTab02() {
-    var data = { json: JSON.stringify(jsonMenuActual) };
+    var data1 = { perfil_id: $("#perfil_id").val() }
+    var data2 = $.extend({}, jsonMenuActual,data1);
+    var data = { json: JSON.stringify(data2) };
+
     return data;
 }
