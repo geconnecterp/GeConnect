@@ -1,0 +1,21 @@
+{
+  "version": "1.0",
+  "defaultProvider": "cdnjs",
+  "libraries": [
+    {
+      "library": "jstree@3.3.17",
+      "destination": "wwwroot/lib/jstree/",
+      "files": [
+        "themes/default/32px.png",
+        "themes/default/40px.png",
+        "themes/default/style.min.css",
+        "themes/default/throbber.gif",
+        "themes/default-dark/32px.png",
+        "themes/default-dark/40px.png",
+        "themes/default-dark/style.min.css",
+        "themes/default-dark/throbber.gif",
+        "jstree.min.js"
+      ]
+    }
+  ]
+}

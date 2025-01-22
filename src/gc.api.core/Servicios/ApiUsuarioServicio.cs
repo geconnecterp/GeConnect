@@ -16,6 +16,27 @@ namespace gc.api.core.Servicios
 
         }
 
+        public List<MenuDto> GetMenu()
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_MENU_ID;
+            var ps = new List<SqlParameter>(); 
+
+            List<MenuDto> menu = _repository.EjecutarLstSpExt<MenuDto>(sp, ps,true);
+            return menu;
+        }
+
+        public List<MenuItemsDto> GetMenuItems(string menuId,string perfil)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_MENU_ITEMS;
+            var ps = new List<SqlParameter>() { 
+                new SqlParameter("@mnu_id",menuId) ,
+                new SqlParameter("@perfil_id",perfil)
+            };
+
+            List<MenuItemsDto> menu = _repository.EjecutarLstSpExt<MenuItemsDto>(sp, ps, true);
+            return menu;
+        }
+
         public PerfilDto GetPerfil(string id)
         {
             var sp = ConstantesGC.StoredProcedures.SP_USU_PERFIL_DATOS;
@@ -69,10 +90,7 @@ namespace gc.api.core.Servicios
             var ps = new List<SqlParameter>() { new SqlParameter("@id", perfilId) };
 
             List<PerfilUserDto> resp = _repository.EjecutarLstSpExt<PerfilUserDto>(sp, ps, true);
-            if (resp.Count == 0)
-            {
-                throw new NegocioException("No se encontro el Perfíl solicitado.");
-            }
+            
             return resp;
         }
 

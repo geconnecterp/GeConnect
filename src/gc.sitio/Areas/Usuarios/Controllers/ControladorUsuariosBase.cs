@@ -1,6 +1,7 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Dtos.Users;
 using gc.sitio.Controllers;
 using Microsoft.Extensions.Options;
@@ -54,23 +55,40 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             }
         }
 
-        public MetadataGrid MetadataPerfil
+        protected PerfilDto? PerfilSeleccionado
         {
             get
             {
-                var txt = _context.HttpContext.Session.GetString("MetadataPerfil");
-                if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
+                string json = _context.HttpContext.Session.GetString("PerfilSeleccionado");
+                if (string.IsNullOrEmpty(json))
                 {
-                    return new MetadataGrid();
+                    return new();
                 }
-                return JsonConvert.DeserializeObject<MetadataGrid>(txt); ;
+                return JsonConvert.DeserializeObject<PerfilDto>(json);
             }
             set
             {
-                var valor = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("MetadataPerfil", valor);
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("PerfilSeleccionado", json);
             }
+        }
 
+        protected List<PerfilUserDto> UsuariosXPerfil
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("UsuariosXPerfil");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<PerfilUserDto>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("UsuariosXPerfil", json);
+            }
         }
     }
 }

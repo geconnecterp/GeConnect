@@ -28,7 +28,7 @@
                     @foreach (var item in Model.ListaDatos)
                     {
                         if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
-                        switch (item.Perfil_activo)
+                        switch (item.perfil_activo)
                         {
                             case 'N':
                                 color = EstadoColor.NoActivo;
@@ -42,10 +42,10 @@
                         }
                         <tr class="@clase" onclick="selectRegPerfil(this,'tbGridPerfil')">
                             <!--ondblclick="selectAbmRegDbl(this,'tbGridProd')"-->
-                            <td class="text-sm-center" style="border-left: 5px solid @color;text-align: left;">@item.Perfil_id</td>
-                            <td class="text-sm-start">@item.Perfil_descripcion</td>
-                            <td class="text-sm-end">@item.Perfil_activo</td>
-                            <td class="text-sm-start">@item.Perfil_activo_descripcion</td>                            
+                            <td class="text-sm-center" style="border-left: 5px solid @color;text-align: left;">@item.perfil_id</td>
+                            <td class="text-sm-start">@item.perfil_descripcion</td>
+                            <td class="text-sm-end">@item.perfil_activo</td>
+                            <td class="text-sm-start">@item.perfil_activo_desc</td>                            
                         </tr>
                     }
                 </tbody>

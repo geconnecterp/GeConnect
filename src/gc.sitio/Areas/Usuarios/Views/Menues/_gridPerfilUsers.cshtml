@@ -1,0 +1,39 @@
+﻿@using System.Text
+@using gc.infraestructura.Dtos.Users
+@using static gc.infraestructura.Constantes.Constantes
+@model GridCore<PerfilUserDto>
+
+@{
+   
+    var alt = true;
+    string clase = string.Empty;
+    string color = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive text-nowrap  table-wrapper-200">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridPerfilUsers">
+                <thead class="table-dark">
+                    <tr class="header">
+
+                        <th scope="col">ID</th>
+                        <th scope="col">NOMBRE</th>                      
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ListaDatos)
+                    {
+                        if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
+
+                        <tr class="@clase" onclick="selectRegPerfil(this,'tbGridPerfilUsers')">
+                            <td class="text-sm-end">@item.usu_id</td>
+                            <td class="text-sm-start">@item.usu_apellidoynombre</td>                            
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>        
+    </div>
+</div>
