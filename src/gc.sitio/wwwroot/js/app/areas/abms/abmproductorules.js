@@ -407,10 +407,10 @@ function confirmarOperacionAbmProducto() {
                             if (accion === AbmAction.ALTA) {
                                 EntidadSelect = obj.id;
                             }
-                        data = { p_id: EntidadSelect };
-                        buscarProductoServer(data);
-
-                        
+                            //data = { p_id: EntidadSelect };
+                            //buscarProductoServer(data);
+                            InicializaFiltroAbmProducto(EntidadSelect);
+                            $("#btnBuscar").trigger("click");
 
                             break;
                         case 2:
@@ -420,7 +420,7 @@ function confirmarOperacionAbmProducto() {
                             presentarLimites();
                         default:
                     }
-                   
+
                     //inicializamos la acción.
                     accion = "";
                 }
@@ -436,6 +436,34 @@ function confirmarOperacionAbmProducto() {
             }, false, ["CONTINUAR"], "succ!", null);
         }
     });
+}
+
+function InicializaFiltroAbmProducto(id) {
+    if ($("#chkDescr").is(":checked")) {
+        $("#chkDescr").prop("checked", false);
+        $("#Buscar").val("");
+    }
+    
+
+    if (!$("#chkDesdeHasta").is(":checked")) {
+        $("#chkDesdeHasta").prop("checked", true);
+    }
+    $("#Id").val(id);
+    $("#Id2").val(id);
+
+    if ($("#chkRel01").is(":checked")) {
+        $("#chkRel01").prop("checked", false);
+        $("#Rel01").val("");
+        $("#Rel01Item").val("");
+        $("#Rel01List").empty();        
+    }
+
+    if ($("#chkRel02").is(":checked")) {
+        $("#chkRel02").prop("checked", false);
+        $("#Rel02").val("");
+        $("#Rel02Item").val("");
+        $("#Rel02List").empty();
+    }
 }
 
 function confirmarDatosTab01() {

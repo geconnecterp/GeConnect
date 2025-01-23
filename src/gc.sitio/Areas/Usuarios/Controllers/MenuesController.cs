@@ -316,7 +316,6 @@ namespace gc.sitio.Areas.Usuarios.Controllers
         {
             try
             {
-
                 var auth = EstaAutenticado;
                 if (!auth.Item1 || auth.Item2 < DateTime.Now)
                 {
