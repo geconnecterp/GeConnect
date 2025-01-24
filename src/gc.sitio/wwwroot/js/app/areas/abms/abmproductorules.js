@@ -407,6 +407,7 @@ function confirmarOperacionAbmProducto() {
                             if (accion === AbmAction.ALTA) {
                                 EntidadSelect = obj.id;
                             }
+
                             //data = { p_id: EntidadSelect };
                             //buscarProductoServer(data);
                             InicializaFiltroAbmProducto(EntidadSelect);
@@ -424,11 +425,13 @@ function confirmarOperacionAbmProducto() {
                     //inicializamos la acción.
                     accion = "";
                 }
-
-                //borramos el id del producto si se eliminó
-                EntidadSelect = "";
-                //VAMOS A EJECUTAR NUEVAMENTE EL BUSCAR
-                buscarProductos(pagina);
+                else {
+                    //borramos el id del producto si se eliminó
+                    EntidadSelect = "";
+                    //VAMOS A EJECUTAR NUEVAMENTE EL BUSCAR
+                    buscarProductos(pagina);
+                }
+                
 
                 $("#msjModal").modal("hide");
                 return true;

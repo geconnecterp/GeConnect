@@ -322,9 +322,10 @@ function confirmarOperacionAbmProducto() {
                             if (accion === AbmAction.ALTA) {
                                 EntidadSelect = obj.id;
                             }
-                            data = { p_id: EntidadSelect };
-                            buscarProductoServer(data);
-
+                            //data = { p_id: EntidadSelect };
+                            //buscarProductoServer(data);
+                            InicializaFiltroAbmPerfil(EntidadSelect);
+                            $("#btnBuscar").trigger("click");
 
 
                             break;
@@ -339,12 +340,14 @@ function confirmarOperacionAbmProducto() {
                     //inicializamos la acción.
                     accion = "";
                 }
+                else {
+                    //borramos el id del producto si se eliminó
+                    EntidadSelect = "";
+                    //VAMOS A EJECUTAR NUEVAMENTE EL BUSCAR
+                    buscarProductos(pagina);
 
-                //borramos el id del producto si se eliminó
-                EntidadSelect = "";
-                //VAMOS A EJECUTAR NUEVAMENTE EL BUSCAR
-                buscarProductos(pagina);
-
+                }
+                
                 $("#msjModal").modal("hide");
                 return true;
 
