@@ -1,0 +1,27 @@
+﻿@model SectorAbmModel
+@{
+}
+<div class="row">
+	<div class="col-md-4">
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-70">ID</span>
+				<input type="text" asp-for="Sector.Sec_Id" class="form-control" disabled />
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-70">Sector</span>
+				<input type="text" asp-for="Sector.Sec_Desc" class="form-control activable inputEditable" />
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<div class="form-check form-check-inline form-switch mb-2">
+					<input class="form-check-input activable" type="checkbox" asp-for="Sector.Sec_Prefa" value="" id="chkPrefaActiva">
+					<label class="form-check-label" for="chkPrefaActiva"> Habilitado en Prefactura</label>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

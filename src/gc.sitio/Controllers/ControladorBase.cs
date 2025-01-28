@@ -251,8 +251,14 @@ namespace gc.sitio.Controllers
             }
         }
 
-        #region Variables globales
-        protected bool ElementoEditado
+		protected class RespuestaDeValidacionAntesDeGuardar()
+		{
+			public string setFecus { get; set; } = string.Empty;
+			public string mensaje { get; set; } = string.Empty;
+		}
+
+		#region Variables globales
+		protected bool ElementoEditado
         {
             get
             {

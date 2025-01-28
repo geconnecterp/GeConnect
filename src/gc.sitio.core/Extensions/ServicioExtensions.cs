@@ -53,7 +53,9 @@ namespace gc.sitio.core.Extensions
 			services.AddScoped<ITipoRetIbServicio, TipoRetIbServicio>();
 			services.AddScoped<IAbmServicio, AbmServicio>();
 			services.AddScoped<IMenuesServicio, MenuesServicio>();
-            return services;
+            services.AddScoped<IABMSectorServicio, ABMSectorServicio>();
+			services.AddScoped<ISectorServicio, SectorServicio>();
+			return services;
         }
     }
 }

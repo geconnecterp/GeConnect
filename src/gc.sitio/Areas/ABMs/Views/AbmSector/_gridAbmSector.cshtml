@@ -1,0 +1,38 @@
+﻿@model GridCore<ABMSectorSearchDto>
+@{
+    var dataMod = new ABMSectorSearchDto();
+    var alt = true;
+    string clase = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+}
+<style>
+    thead th {
+        position: sticky;
+        top: 0px;
+    }
+</style>
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive text-nowrap  table-wrapper">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridSector">
+                <thead class="table-dark">
+                    <tr class="header">
+                        <th scope="col">@nameof(dataMod.sec_id)</th>
+                        <th scope="col">@nameof(dataMod.sec_desc)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ListaDatos)
+                    {
+                        if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+                        <tr class="@clase" onclick="selectReg(this, 'tbGridSector')">
+                            <td class="text-sm-center">@item.sec_id</td>
+                            <td class="text-sm-start">@item.sec_desc</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

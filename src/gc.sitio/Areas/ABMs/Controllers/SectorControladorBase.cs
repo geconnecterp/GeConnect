@@ -9,11 +9,11 @@ using Newtonsoft.Json;
 namespace gc.sitio.Areas.ABMs.Controllers
 {
 	[Area("ABMs")]
-	public class ClienteControladorBase : ControladorBase
+	public class SectorControladorBase : ControladorBase
 	{
 		private readonly AppSettings _setting;
 		private readonly ILogger _logger;
-		public ClienteControladorBase(IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger logger) : base(options, accessor, logger)
+		public SectorControladorBase(IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger logger) : base(options, accessor, logger)
 		{
 			_setting = options.Value;
 			_logger = logger;
@@ -23,11 +23,11 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		/// <summary>
 		/// Permite verificar que pagina se esta observando.
 		/// </summary>
-		public int PaginaProd
+		public int PaginaSector
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("PaginaProd");
+				var txt = _context.HttpContext.Session.GetString("PaginaSector");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return 0;
@@ -37,15 +37,15 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			set
 			{
 				var valor = value.ToString();
-				_context.HttpContext.Session.SetString("PaginaProd", valor);
+				_context.HttpContext.Session.SetString("PaginaSector", valor);
 			}
 		}
 
-		public string DirSortProd
+		public string DirSortSector
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("DirSortProd");
+				var txt = _context.HttpContext.Session.GetString("DirSortSector");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return "asc";
@@ -55,33 +55,33 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			set
 			{
 				var valor = value.ToString();
-				_context.HttpContext.Session.SetString("DirSortProd", valor);
+				_context.HttpContext.Session.SetString("DirSortSector", valor);
 			}
 		}
-
-		public List<ABMClienteSearchDto> ClientesBuscados
+		public List<ABMSectorSearchDto> SectoresBuscados
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("ClientesBuscados");
+				var json = _context.HttpContext.Session.GetString("SectoresBuscados");
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return [];
 				}
-				return JsonConvert.DeserializeObject<List<ABMClienteSearchDto>>(json);
+				return JsonConvert.DeserializeObject<List<ABMSectorSearchDto>>(json);
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("ClientesBuscados", json);
+				_context.HttpContext.Session.SetString("SectoresBuscados", json);
 			}
 		}
 
-		public MetadataGrid MetadataCliente
+
+		public MetadataGrid MetadataSector
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("MetadataCliente");
+				var txt = _context.HttpContext.Session.GetString("MetadataSector");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return new MetadataGrid();
@@ -91,31 +91,9 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			set
 			{
 				var valor = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("MetadataCliente", valor);
+				_context.HttpContext.Session.SetString("MetadataSector", valor);
 			}
 
-		}
-		#endregion
-
-		#region Enum's
-		/// <summary>
-		/// Objetco involucrado en la operación de ABM
-		/// </summary>
-		protected enum AbmObject
-		{
-			clientes = 1,
-			clientes_condiciones_vtas = 2,
-			cuentas_contactos = 3,
-			CUENTAS_NOTAS = 4
-		}
-
-		protected enum Abm
-		{
-			A = 1, //Alta
-			B = 2, //Baja
-			M = 3, //Modificacion
-			S = 4, //Submit
-			C = 5  //Cancel
 		}
 		#endregion
 	}

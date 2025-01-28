@@ -11,15 +11,10 @@ using gc.sitio.Areas.ABMs.Models;
 using gc.sitio.Areas.ABMs.Models.Cliente;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.ABM;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using System;
-using System.Globalization;
-using System.Security.Claims;
-using System.Text.Json;
 
 namespace gc.sitio.Areas.ABMs.Controllers
 {
@@ -198,11 +193,11 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			try
 			{
 				if (string.IsNullOrEmpty(ctaId))
-					return PartialView("_tabDatosCliente", new CuentaABMDto());
+					return PartialView("_tabDatosCliente", new CuentaAbmModel());
 
 				var res = _cuentaServicio.GetCuentaParaABM(ctaId, TokenCookie);
 				if (res == null)
-					return PartialView("_tabDatosCliente", new CuentaABMDto());
+					return PartialView("_tabDatosCliente", new CuentaAbmModel());
 
 				var cfp = _cuentaServicio.GetCuentaFormaDePago(ctaId, TokenCookie);
 				var ccon = _cuentaServicio.GetCuentaContactos(ctaId, TokenCookie);

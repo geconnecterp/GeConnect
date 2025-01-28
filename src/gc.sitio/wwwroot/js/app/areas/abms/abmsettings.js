@@ -31,7 +31,10 @@ const Grids = {
 	GridObs: 'tbClienteObservaciones',
 	GridFlias: 'tbProveedorFliaProv',
 	GridPerfil: 'tbGridPerfil',
-	GridPrUsers: 'tbGridPerfilUsers'
+	GridPrUsers: 'tbGridPerfilUsers',
+	GridSector: 'tbGridSector',
+	GridSubSector: 'tbGridSubSector',
+	GridRubro: 'tbGridRubro'
 }
 
 const Tabs = {

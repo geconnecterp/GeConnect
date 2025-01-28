@@ -15,7 +15,7 @@
 		x = $(this);
 		ejecutaDblClickGrid(x, Grids.GridCliente);
 	});
-	$("#btnBuscar").on("click", function () { buscarClientes(pagina); });
+	//$("#btnBuscar").on("click", function () { buscarClientes(pagina); });
 
 	//tabCliente
 	$("#tabCliente").on("click", function () { SeteaIDClienteSelected(); });

@@ -167,6 +167,9 @@
 			public const string SP_ABM_PROV_FAMILIA_DATOS = "SPGECO_ABM_Prov_Familia_Datos";
 
 			public const string SP_ABM_CONFIRMAR = "SPGECO_ABM_Confirmar";
+
+            public const string SP_ABM_SECTOR_LISTA = "SPGECO_ABM_Sectores_Lista";
+            public const string SP_ABM_SECTOR_DATOS = "SPGECO_ABM_Sectores_Datos";
             #endregion
 
             #region Tipos
