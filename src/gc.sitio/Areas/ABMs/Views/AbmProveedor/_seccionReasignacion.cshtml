@@ -1,0 +1,82 @@
+﻿@model ReasignacionModel
+@{
+	var combo = Model.FamiliaProductos;
+}
+<div class="row">
+	<div class="col-md-5">
+		<fieldset>
+			<legend>
+				Productos Por Familia
+			</legend>
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-70">Familia: </span>
+				@Html.DropDownListFor(m => Model.Pg_Id, combo, "Seleccionar...", new { @id = "listaFamilia", @class = "form-control activable" })
+			</div>
+			<div id="divGridProductosPorFamilia">
+				<div class="table-responsive text-nowrap table-wrapper-200-full">
+					<table class="table table-sm mb-0 table-hover" id="tbFormaPagoEnTabDeProv">
+						<thead class="table-dark">
+							<tr class="header">
+								<th class="col-header-small align-center">ID</th>
+								<th class="col-header-small align-center">Descripción</th>
+								<th class="col-header-small align-center">Reasignado</th>
+							</tr>
+						</thead>
+						<tbody>
+							@foreach (var item in Model.ProductosPorFamilia.ListaDatos)
+							{
+								<tr>
+									<td class="align-left">@item.P_Id</td>
+									<td class="align-center">@item.P_Desc</td>
+									<td class="align-center"></td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</fieldset>
+	</div>
+	<div class="col-md-2">
+		<div class="input-group input-group-sm">
+			@* <span class="input-group-text fixed-lbl-for-abm-70">Familia a Reasignar: </span> *@
+			<label class="btn btn btn-outline-primary fixed-font-size-xmall" for="listaFamiliaAReasignar">Familia a Reasignar: </label>
+		</div>
+		<div class="input-group input-group-sm">
+			@Html.DropDownListFor(m => Model.Pg_Id, combo, "Seleccionar...", new { @id = "listaFamiliaAReasignar", @class = "form-control activable" })
+		</div>
+	</div>
+	<div class="col-md-5">
+		<fieldset>
+			<legend>
+				Productos con Familia Reasignados
+			</legend>
+			<div id="divGridProductosConFamiliaReasignados">
+				<div class="table-responsive text-nowrap table-wrapper-200-full">
+					<table class="table table-sm mb-0 table-hover" id="tbFormaPagoEnTabDeProv">
+						<thead class="table-dark">
+							<tr class="header">
+								<th class="col-header-small align-center">ID</th>
+								<th class="col-header-small align-center">Descripción</th>
+								<th class="col-header-small align-center">Familia</th>
+								<th style="width:0%; display:none;"></th>
+
+							</tr>
+						</thead>
+						<tbody>
+							@foreach (var item in Model.ProductosPorFamiliaReasignados.ListaDatos)
+							{
+								<tr>
+									<td class="align-center">@item.P_Id</td>
+									<td class="align-left">@item.P_Desc</td>
+									<td class="align-left">@item.Pg_Desc</td>
+									<td style="display:none;">@item.Pg_Id</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</fieldset>
+	</div>
+</div>

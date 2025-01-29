@@ -79,12 +79,13 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
 					var res = await _abmsectorServicio.BuscarSectores(query, TokenCookie);
 					lista = res.Item1 ?? [];
-					MetadataSector = res.Item2 ?? null;
-					metadata = MetadataSector;
+					MetadataGeneral = res.Item2 ?? new MetadataGrid();
 					SectoresBuscados = lista;
 				}
+				metadata = MetadataSector;
+
 				//no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
-				grillaDatos = GenerarGrilla(SectoresBuscados, sort, _settings.NroRegistrosPagina, pag, MetadataSector.TotalCount, MetadataSector.TotalPages, sortDir);
+				grillaDatos = GenerarGrilla(SectoresBuscados, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 
 				return View("_gridAbmSector", grillaDatos);
 			}

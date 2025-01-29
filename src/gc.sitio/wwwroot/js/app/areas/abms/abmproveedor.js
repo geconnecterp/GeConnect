@@ -62,7 +62,6 @@ function NuevoProveedor() {
 		$("#Proveedor_Cta_Id").prop("disabled", true);
 		desactivarGrilla(Grids.GridProveedor);
 		accionBotones(AbmAction.ALTA, Tabs.TabProveedor);
-		/*$("#btnDetalle").prop("disabled", false);*/
 		$("#divFiltro").collapse("hide");
 		$("#divDetalle").collapse("show");
 		$("#Proveedor_Cta_Denominacion").focus();
@@ -101,35 +100,7 @@ function NuevaFamilia() {
 	}
 }
 
-//function btnModiClick() {
-//	var tabActiva = $('.nav-tabs .active')[0].id;
-//	accionBotones(AbmAction.MODIFICACION, tabActiva);
-//	switch (tabActiva) {
-//		case Tabs.TabProveedor:
-//			ModificaProveedor(tabActiva);
-//			break;
-//		case Tabs.TabFormasDePago:
-//			ModificaFormaDePago(tabActiva, Grids.GridProveedor);
-//			break;
-//		case Tabs.TabNotas:
-//			ModificaNota(tabActiva, Grids.GridProveedor);
-//			break;
-//		case Tabs.TabObservaciones:
-//			ModificaObservacion(tabActiva, Grids.GridProveedor);
-//			break;
-//		case Tabs.TabOtrosContactos:
-//			ModificaContacto(tabActiva, Grids.GridProveedor);
-//			break;
-//		case Tabs.TabFamilias:
-//			ModificaFamilia(tabActiva, Grids.GridProveedor);
-//			break;
-//		default:
-//			break;
-//	}
-//}
-
 function ModificaProveedor(tabAct) {
-	//HabilitarBotonesPorAccion(AbmAction.MODIFICACION);
 	accionBotones(AbmAction.MODIFICACION, tabAct);
 	tipoDeOperacion = AbmAction.MODIFICACION;
 	SetearDestinoDeOperacion(tabAct);
@@ -148,7 +119,6 @@ function ModificaFamilia(tabAct, mainGrid) {
 		}, false, ["Aceptar"], "error!", null);
 	}
 	else {
-		//HabilitarBotonesPorAccion(AbmAction.MODIFICACION);
 		accionBotones(AbmAction.MODIFICACION, Tabs.TabFamilias);
 		tipoDeOperacion = AbmAction.MODIFICACION;
 		SetearDestinoDeOperacion(tabAct);

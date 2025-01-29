@@ -7,6 +7,7 @@ using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.ABMs.Models;
 using gc.sitio.core.Servicios.Contratos;
@@ -16,6 +17,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.Globalization;
 
 namespace gc.sitio.Areas.ABMs.Controllers
@@ -181,12 +183,12 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
 					var res = await _abmProvServ.BuscarProveedores(query, TokenCookie);
 					lista = res.Item1 ?? [];
-					MetadataProveedor = res.Item2 ?? null;
-					metadata = MetadataProveedor;
+					MetadataGeneral = res.Item2 ?? new MetadataGrid();
 					ProveedoresBuscados = lista;
 				}
+				metadata = MetadataGeneral;
 				//no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
-				grillaDatos = GenerarGrilla(ProveedoresBuscados, sort, _settings.NroRegistrosPagina, pag, MetadataProveedor.TotalCount, MetadataProveedor.TotalPages, sortDir);
+				grillaDatos = GenerarGrilla(ProveedoresBuscados, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 
 				//string volver = Url.Action("index", "home", new { area = "" });
 				//ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
@@ -205,19 +207,6 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			}
 
 
-		}
-
-		[HttpPost]
-		public JsonResult ObtenerDatosPaginacion()
-		{
-			try
-			{
-				return Json(new { error = false, Metadata = MetadataProveedor });
-			}
-			catch (Exception ex)
-			{
-				return Json(new { error = true, msg = "No se pudo obtener la información de paginación. Verifica" });
-			}
 		}
 
 		[HttpPost]
@@ -752,6 +741,44 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
 		#endregion
 
+		#region Reasignación de familia
+		public async Task<IActionResult> ReasignacionDeFamilia()
+		{
+			MetadataGrid metadata;
+
+			var auth = EstaAutenticado;
+			if (!auth.Item1 || auth.Item2 < DateTime.Now)
+			{
+				return RedirectToAction("Login", "Token", new { area = "seguridad" });
+			}
+
+			var listR01 = new List<ComboGenDto>();
+			ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
+
+			var listR02 = new List<ComboGenDto>();
+			ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR02);
+
+			return View();
+		}
+
+		public async Task<IActionResult> BuscarProductosPorFamilia(string ctaId)
+		{
+			var model = new ReasignacionModel();
+
+			if (string.IsNullOrEmpty(ctaId))
+				return PartialView("_seccionReasignacion", model);
+
+			var familia = _cuentaServicio.ObtenerProveedoresABMFamiliaLista(ctaId, TokenCookie);
+			if (familia == null)
+				return PartialView("_seccionReasignacion", model);
+
+			model.FamiliaProductos= ComboFamiliaDeProductos(familia);
+			model.ProductosPorFamilia = ObtenerGridCore<InfoProductoFamiliaDto>([]);
+			model.ProductosPorFamiliaReasignados = ObtenerGridCore<InfoProductoFamiliaDto>([]);
+			return PartialView("_seccionReasignacion", model);
+		}
+		#endregion
+
 		#region Métodos privados
 		private string ValidarJsonAntesDeGuardar(ProveedorAbmValidationModel prov, char abm)
 		{
@@ -909,6 +936,11 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			var nuevaListaDpto = new List<DepartamentoDto>();
 			var lista = nuevaListaDpto.Select(x => new ComboGenDto { Id = x.dep_id, Descripcion = x.dep_nombre });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		protected SelectList ComboFamiliaDeProductos(List<ProveedorGrupoDto> listaPF)
+		{
+			var nuevaLista = listaPF.Select(x => new ComboGenDto { Id = x.pg_id, Descripcion = x.pg_lista });
+			return HelperMvc<ComboGenDto>.ListaGenerica(nuevaLista);
 		}
 		private void CargarDepartametos(string prov_id)
 		{

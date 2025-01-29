@@ -128,12 +128,13 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
 					var res = await _abmCliServ.BuscarClientes(query, TokenCookie);
 					lista = res.Item1 ?? [];
-					MetadataCliente = res.Item2 ?? null;
-					metadata = MetadataCliente;
+					MetadataGeneral = res.Item2 ?? new MetadataGrid();
 					ClientesBuscados = lista;
 				}
+				metadata = MetadataCliente;
+
 				//no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
-				grillaDatos = GenerarGrilla(ClientesBuscados, sort, _settings.NroRegistrosPagina, pag, MetadataCliente.TotalCount, MetadataCliente.TotalPages, sortDir);
+				grillaDatos = GenerarGrilla(ClientesBuscados, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 
 				//string volver = Url.Action("index", "home", new { area = "" });
 				//ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
@@ -154,18 +155,18 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
 		}
 
-		[HttpPost]
-		public JsonResult ObtenerDatosPaginacion()
-		{
-			try
-			{
-				return Json(new { error = false, Metadata = MetadataCliente });
-			}
-			catch (Exception ex)
-			{
-				return Json(new { error = true, msg = "No se pudo obtener la información de paginación. Verifica" });
-			}
-		}
+		//[HttpPost]
+		//public JsonResult ObtenerDatosPaginacion()
+		//{
+		//	try
+		//	{
+		//		return Json(new { error = false, Metadata = MetadataCliente });
+		//	}
+		//	catch (Exception ex)
+		//	{
+		//		return Json(new { error = true, msg = "No se pudo obtener la información de paginación. Verifica" });
+		//	}
+		//}
 
 		[HttpPost]
 		public JsonResult BuscarClienteCargado(string ctaId)
