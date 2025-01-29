@@ -1,6 +1,7 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.ABM;
+using gc.infraestructura.Dtos.Almacen;
 using gc.sitio.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -76,6 +77,26 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			}
 		}
 
+		/// <summary>
+		/// Lista de subsectores, pertenecientes al sector seleccionado
+		/// </summary>
+		public List<SubSectorDto> SubSectorLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("SubSectores");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<SubSectorDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("SubSectores", json);
+			}
+		}
 
 		public MetadataGrid MetadataSector
 		{

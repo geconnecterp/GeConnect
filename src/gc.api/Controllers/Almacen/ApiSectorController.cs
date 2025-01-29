@@ -32,6 +32,36 @@ namespace gc.api.Controllers.Almacen
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<SectorDto>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]
+		public IActionResult GetRubro(string rub_id)
+		{
+			ApiResponse<List<RubroListaABMDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _sectorServicio.GetRubro(rub_id);
+
+			response = new ApiResponse<List<RubroListaABMDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<SectorDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetRubroParaABM(string sec_id)
+		{
+			ApiResponse<List<RubroListaABMDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _sectorServicio.GetRubroParaABM(sec_id);
+
+			response = new ApiResponse<List<RubroListaABMDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<SectorDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
 		public IActionResult GetSectorParaABM(string sec_id)
 		{
 			ApiResponse<List<SectorDto>> response;
@@ -39,6 +69,36 @@ namespace gc.api.Controllers.Almacen
 			var res = _sectorServicio.GetSectorParaABM(sec_id);
 
 			response = new ApiResponse<List<SectorDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<SubSectorDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetSubSectorParaABM(string sec_id)
+		{
+			ApiResponse<List<SubSectorDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _sectorServicio.GetSubSectorParaABM(sec_id);
+
+			response = new ApiResponse<List<SubSectorDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<SubSectorDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetSubSector(string rubg_id)
+		{
+			ApiResponse<List<SubSectorDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _sectorServicio.GetSubSector(rubg_id);
+
+			response = new ApiResponse<List<SubSectorDto>>(res);
 
 			return Ok(response);
 		}

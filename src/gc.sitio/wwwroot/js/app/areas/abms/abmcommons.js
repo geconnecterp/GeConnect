@@ -149,6 +149,8 @@ function LimpiarCampos(tabAct) {
 			break;
 		case Tabs.TabProveedor:
 			break;
+		case Tabs.TabSector:
+			break;
 		case Tabs.TabFormasDePago:
 			PostGenHtml(data, nuevaFormaDePagoUrl, function (obj) {
 				$("#divDatosDeFPSelected").html(obj);
@@ -189,6 +191,22 @@ function LimpiarCampos(tabAct) {
 				ControlaMensajeError(obj.message);
 			});
 			break;
+		case Tabs.TabSubSector:
+			PostGenHtml(data, nuevoSubSectorUrl, function (obj) {
+				$("#divDatosDeFamiliaSelected").html(obj);
+				$(".activable").prop("disabled", true);
+			}, function (obj) {
+				ControlaMensajeError(obj.message);
+			});
+			break;
+		case Tabs.TabRubro:
+			PostGenHtml(data, nuevoRubroUrl, function (obj) {
+				$("#divDatosDeFamiliaSelected").html(obj);
+				$(".activable").prop("disabled", true);
+			}, function (obj) {
+				ControlaMensajeError(obj.message);
+			});
+			break;
 		default:
 			break;
 	}
@@ -211,7 +229,7 @@ function NuevaFormaDePago() {
 			$(".activable").prop("disabled", false);
 			desactivarGrilla(Grids.GridFP);
 			accionBotones(AbmAction.ALTA, tabActiva);
-			$("#FormaDePago_Fp_Id").focus();
+			$("#listaFP").focus();
 			CerrarWaiting();
 		}, function (obj) {
 			ControlaMensajeError(obj.message);
@@ -237,7 +255,7 @@ function NuevoContacto() {
 			$(".activable").prop("disabled", false);
 			desactivarGrilla(Grids.GridOC);
 			accionBotones(AbmAction.ALTA, tabActiva);
-			$("#OtroContacto_cta_nombre").focus();
+			$("#OtroContacto_Cta_Nombre").focus();
 			CerrarWaiting();
 		}, function (obj) {
 			ControlaMensajeError(obj.message);
@@ -263,7 +281,7 @@ function NuevaNota() {
 			$(".activable").prop("disabled", false);
 			desactivarGrilla(Grids.GridNota);
 			accionBotones(AbmAction.ALTA, tabActiva);
-			$("#Nota_usu_apellidoynombre").focus();
+			$("#Nota_Usu_Id").focus();
 			CerrarWaiting();
 		}, function (obj) {
 			ControlaMensajeError(obj.message);
@@ -289,13 +307,50 @@ function NuevaObservacion() {
 			$(".activable").prop("disabled", false);
 			desactivarGrilla(Grids.GridObs);
 			accionBotones(AbmAction.ALTA, tabActiva);
-			$("#Observacion_cta_obs").focus();
+			$("#listaTipoObs").focus();
 			CerrarWaiting();
 		}, function (obj) {
 			ControlaMensajeError(obj.message);
 			CerrarWaiting();
 		});
 	}
+}
+
+function PuedoAgregar(tabAct) {
+	var mensaje = "";
+	switch (tabAct) {
+		case Tabs.TabCliente:
+			break;
+		case Tabs.TabProveedor:
+			break;
+		case Tabs.TabSector:
+			break;
+		case Tabs.TabFormasDePago:
+			if (!$("#chkCtaActiva").is(":checked"))
+				mensaje = "Solo se pueden agregar formas de pago para cuentas activas.";
+			break;
+		case Tabs.TabNotas:
+			if (!$("#chkCtaActiva").is(":checked"))
+				mensaje = "Solo se pueden agregar notas para cuentas activas.";
+			break;
+		case Tabs.TabObservaciones:
+			if (!$("#chkCtaActiva").is(":checked"))
+				mensaje = "Solo se pueden agregar observaciones para cuentas activas.";
+			break;
+		case Tabs.TabOtrosContactos:
+			if (!$("#chkCtaActiva").is(":checked"))
+				mensaje = "Solo se pueden agregar contactos para cuentas activas.";
+			break;
+		case Tabs.TabFamilias:
+			break;
+		case Tabs.TabSubSector:
+			break;
+		case Tabs.TabRubro:
+			break;
+		default:
+			break;
+	}
+	return mensaje;
 }
 
 function accionBotones(btn, tabActiva) {
@@ -327,6 +382,10 @@ function accionBotones(btn, tabActiva) {
 			if (tabActiva === Tabs.TabProveedor) {
 				$("#btnDetalle").prop("disabled", true);
 				activarGrilla(Tabs.TabProveedor);
+			}
+			if (tabActiva === Tabs.TabSector) {
+				$("#btnDetalle").prop("disabled", true);
+				activarGrilla(Tabs.TabSector);
 			}
 		}
 	}
@@ -391,7 +450,7 @@ function ModificaFormaDePago(tabAct, mainGrid) {
 		$("#listaFP").prop("disabled", true);
 		desactivarGrilla(Grids.GridFP);
 		desactivarGrilla(mainGrid);
-		$("#FormaDePago_fp_dias").focus();
+		$("#FormaDePago_Fp_Dias").focus();
 	}
 }
 
@@ -412,8 +471,8 @@ function ModificaContacto(tabAct, mainGrid) {
 		$(".activable").prop("disabled", false);
 		desactivarGrilla(Grids.GridOC);
 		desactivarGrilla(mainGrid);
-		$("#OtroContacto_cta_nombre").prop("disabled", true);
-		$("#OtroContacto_cta_celu").focus();
+		$("#OtroContacto_Cta_Nombre").prop("disabled", true);
+		$("#OtroContacto_Cta_Celu").focus();
 	}
 }
 
@@ -431,10 +490,10 @@ function ModificaNota(tabAct, mainGrid) {
 		SetearDestinoDeOperacion(tabAct);
 		$(".nav-link").prop("disabled", true);
 		$(".activable").prop("disabled", false);
-		$("#Nota_usu_apellidoynombre").prop("disabled", true);
+		$("#Nota_Usu_Id").prop("disabled", true);
 		desactivarGrilla(Grids.GridNota);
 		desactivarGrilla(mainGrid);
-		$("#Nota_nota").focus();
+		$("#Nota_Nota").focus();
 	}
 }
 
@@ -455,7 +514,7 @@ function ModificaObservacion(tabAct, mainGrid) {
 		$("#listaTipoObs").prop("disabled", true);
 		desactivarGrilla(Grids.GridObs);
 		desactivarGrilla(mainGrid);
-		$("#Observacion_cta_obs").focus();
+		$("#Observacion_Cta_Obs").focus();
 	}
 }
 
@@ -465,6 +524,8 @@ function PuedoModificar(tabAct) {
 		case Tabs.TabCliente:
 			break;
 		case Tabs.TabProveedor:
+			break;
+		case Tabs.TabSector:
 			break;
 		case Tabs.TabFormasDePago:
 			if (!$("#chkCtaActiva").is(":checked"))
@@ -496,6 +557,14 @@ function PuedoModificar(tabAct) {
 			if ($("#IdSelected").val() == "")
 				mensaje = "Debe seleccionar una familia para modificar.";
 			break;
+		case Tabs.TabSubSector:
+			if ($("#IdSelected").val() == "")
+				mensaje = "Debe seleccionar un Sub Sector para modificar.";
+			break;
+		case Tabs.TabRubro:
+			if ($("#IdSelected").val() == "")
+				mensaje = "Debe seleccionar un Rubro para modificar.";
+			break;
 		default:
 			break;
 	}
@@ -510,6 +579,9 @@ function GetMensajeParaBaja(tabActiva) {
 			break;
 		case Tabs.TabProveedor:
 			mensaje = "Para eliminar primero debe seleccionar un Proveedor."
+			break;
+		case Tabs.TabSector:
+			mensaje = "Para eliminar primero debe seleccionar un Sector."
 			break;
 		case Tabs.TabFormasDePago:
 			mensaje = "Para eliminar primero debe seleccionar una Forma de Pago."
@@ -526,6 +598,12 @@ function GetMensajeParaBaja(tabActiva) {
 		case Tabs.TabFamilias:
 			mensaje = "Para eliminar primero debe seleccionar una Familia."
 			break;
+		case Tabs.TabSubSector:
+			mensaje = "Para eliminar primero debe seleccionar un Sub Sector."
+			break;
+		case Tabs.TabRubro:
+			mensaje = "Para eliminar primero debe seleccionar un Rubro."
+			break;
 		default:
 			mensaje = "";
 			break;
@@ -541,6 +619,9 @@ function SetearDestinoDeOperacion(tabActiva) {
 		case Tabs.TabProveedor:
 			destinoDeOperacion = AbmObject.PROVEEDORES;
 			break;
+		case Tabs.TabSector:
+			destinoDeOperacion = AbmObject.SECTORES;
+			break;
 		case Tabs.TabFormasDePago:
 			destinoDeOperacion = AbmObject.CLIENTES_CONDICIONES_VTA;
 			break;
@@ -555,6 +636,12 @@ function SetearDestinoDeOperacion(tabActiva) {
 			break;
 		case Tabs.TabFamilias:
 			destinoDeOperacion = AbmObject.PROVEEDORES_FAMILIA;
+			break;
+		case Tabs.TabSubSector:
+			destinoDeOperacion = AbmObject.SUB_SECTORES;
+			break;
+		case Tabs.TabRubro:
+			destinoDeOperacion = AbmObject.RUBROS;
 			break;
 		default:
 			destinoDeOperacion = "";
@@ -575,6 +662,9 @@ function btnNuevoClick() {
 		case Tabs.TabProveedor:
 			NuevoProveedor();
 			break;
+		case Tabs.TabSector:
+			NuevoSector();
+			break;
 		case Tabs.TabFormasDePago:
 			NuevaFormaDePago();
 			break;
@@ -590,6 +680,51 @@ function btnNuevoClick() {
 		case Tabs.TabFamilias:
 			NuevaFamilia();
 			break;
+		case Tabs.TabSubSector:
+			NuevoSubSector();
+			break;
+		case Tabs.TabRubro:
+			NuevoRubro();
+			break;
+		default:
+			break;
+	}
+}
+
+function btnModiClick() {
+	var tabActiva = $('.nav-tabs .active')[0].id;
+	accionBotones(AbmAction.MODIFICACION, tabActiva);
+	switch (tabActiva) {
+		case Tabs.TabCliente:
+			ModificaCliente(tabActiva);
+			break;
+		case Tabs.TabProveedor:
+			ModificaProveedor(tabActiva);
+			break;
+		case Tabs.TabSector:
+			ModificaSector(tabActiva);
+			break;
+		case Tabs.TabFormasDePago:
+			ModificaFormaDePago(tabActiva, Grids.GridProveedor);
+			break;
+		case Tabs.TabNotas:
+			ModificaNota(tabActiva, Grids.GridProveedor);
+			break;
+		case Tabs.TabObservaciones:
+			ModificaObservacion(tabActiva, Grids.GridProveedor);
+			break;
+		case Tabs.TabOtrosContactos:
+			ModificaContacto(tabActiva, Grids.GridProveedor);
+			break;
+		case Tabs.TabFamilias:
+			ModificaFamilia(tabActiva, Grids.GridProveedor);
+			break;
+		case Tabs.TabSubSector:
+			ModificaSubSector(tabActiva, Grids.GridSector);
+			break;
+		case Tabs.TabRubro:
+			ModificaRubro(tabActiva, Grids.GridSector);
+			break;
 		default:
 			break;
 	}
@@ -603,6 +738,9 @@ function btnBajaClick() {
 	}
 	else if (tabActiva == Tabs.TabProveedor) {
 		idSelected = $("#Proveedor_Cta_Id").val();
+	}
+	else if (tabActiva == Tabs.TabSector) {
+		idSelected = $("#Sector_Sec_Id").val();
 	}
 	else {
 		idSelected = $("#IdSelected").val();
@@ -629,6 +767,9 @@ function btnBajaClick() {
 			case Tabs.TabProveedor:
 				desactivarGrilla(Grids.GridProveedor);
 				break;
+			case Tabs.TabSector:
+				desactivarGrilla(Grids.GridSector);
+				break;
 			case Tabs.TabFormasDePago:
 				desactivarGrilla(Grids.GridProveedor);
 				desactivarGrilla(Grids.GridFP);
@@ -648,6 +789,14 @@ function btnBajaClick() {
 			case Tabs.TabFamilias:
 				desactivarGrilla(Grids.GridProveedor);
 				desactivarGrilla(Grids.GridFlias);
+				break;
+			case Tabs.TabSubSector:
+				desactivarGrilla(Grids.GridSector);
+				desactivarGrilla(Grids.GridSubSector);
+				break;
+			case Tabs.TabRubro:
+				desactivarGrilla(Grids.GridSector);
+				desactivarGrilla(Grids.GridRubro);
 				break;
 			default:
 				break;
@@ -684,6 +833,17 @@ function btnCancelClick() {
 			activarGrilla(Grids.GridProveedor);
 			QuitarElementoSeleccionado(Grids.GridProveedor);
 			break;
+		case Tabs.TabSector:
+			if ($("#divDetalle").is(":visible")) {
+				$("#divDetalle").collapse("hide");
+			}
+			tb = $("#" + Grids.GridSector + " tbody tr");
+			if (tb.length === 0) {
+				$("#divFiltro").collapse("show");
+			}
+			activarGrilla(Grids.GridSector);
+			QuitarElementoSeleccionado(Grids.GridSector);
+			break;
 		case Tabs.TabFormasDePago:
 			LimpiarCampos(tabActiva);
 			$("#tbClienteFormaPagoEnTab").prop("disabled", false);
@@ -718,6 +878,16 @@ function btnCancelClick() {
 			activarGrilla(Grids.GridProveedor);
 			selectReg(regSelected, Grids.GridFlias);
 			break;
+		case Tabs.TabSubSector:
+			LimpiarCampos(tabActiva);
+			activarGrilla(Grids.GridSubSector);
+			selectReg(regSelected, Grids.GridSubSector);
+			break;
+		case Tabs.TabRubro:
+			LimpiarCampos(tabActiva);
+			activarGrilla(Grids.GridRubro);
+			selectReg(regSelected, Grids.GridRubro);
+			break;
 		default:
 			break;
 	}
@@ -750,6 +920,14 @@ function selectRegCli(e, gridId) {
 			activarGrilla(Grids.GridCliente);
 			activarBotones(false);
 			break;
+		case Grids.GridSector:
+			if ($("#divDetalle").is(":visible")) {
+				$("#divDetalle").collapse("hide");
+			}
+			$("#btnDetalle").prop("disabled", true);
+			activarGrilla(Grids.GridSector);
+			activarBotones(false);
+			break;
 		case Grids.GridFP:
 			break;
 		case Grids.GridOC:
@@ -759,6 +937,10 @@ function selectRegCli(e, gridId) {
 		case Grids.GridObs:
 			break;
 		case Grids.GridFlias:
+			break;
+		case Grids.GridSubSector:
+			break;
+		case Grids.GridRubro:
 			break;
 		default:
 	}
@@ -771,6 +953,8 @@ function PuedoGuardar(tabAct) {
 			break;
 		case Tabs.TabProveedor:
 			break;
+		case Tabs.TabSector:
+			break;
 		case Tabs.TabFormasDePago:
 			if ($("#FormaDePago_Fp_Dias").val() < 0)
 				mensaje = "El valor de Plazo debe ser igual o mayor a 0.";
@@ -782,6 +966,10 @@ function PuedoGuardar(tabAct) {
 		case Tabs.TabOtrosContactos:
 			break;
 		case Tabs.TabFamilias:
+			break;
+		case Tabs.TabSubSector:
+			break;
+		case Tabs.TabRubro:
 			break;
 		default:
 			break;
@@ -807,6 +995,8 @@ function validarCampos() {
 			break;
 		case Tabs.TabProveedor:
 			break;
+		case Tabs.TabSector:
+			break;
 		case Tabs.TabFormasDePago:
 			break;
 		case Tabs.TabNotas:
@@ -817,6 +1007,10 @@ function validarCampos() {
 			break;
 		case Tabs.TabFamilias:
 			break;
+		case Tabs.TabSubSector:
+			break;
+		case Tabs.TabRubro:
+			break;
 		default:
 			break;
 	}
@@ -825,15 +1019,25 @@ function validarCampos() {
 }
 
 function ActualizarRegistroEnGrilla(datos, grid) {
-	$("#" + grid + " tbody tr").each(function (index) {
-		let aux = $(this)[0].cells[0].innerText;
-		if (aux == datos.cta_id) {
-			$(this)[0].cells[1].innerText = datos.cta_denominacion;
-			$(this)[0].cells[2].innerText = datos.tdoc_desc;
-			$(this)[0].cells[3].innerText = datos.cta_documento;
-			$(this)[0].cells[4].innerText = datos.cta_domicilio;
-		}
-	});
+	if (grid === Grids.GridCliente || grid === Grids.GridProveedor) {
+		$("#" + grid + " tbody tr").each(function (index) {
+			let aux = $(this)[0].cells[0].innerText;
+			if (aux == datos.cta_id) {
+				$(this)[0].cells[1].innerText = datos.cta_denominacion;
+				$(this)[0].cells[2].innerText = datos.tdoc_desc;
+				$(this)[0].cells[3].innerText = datos.cta_documento;
+				$(this)[0].cells[4].innerText = datos.cta_domicilio;
+			}
+		});
+	}
+	if (grid === Grids.GridSector) {
+		$("#" + grid + " tbody tr").each(function (index) {
+			let aux = $(this)[0].cells[0].innerText;
+			if (aux == datos.sec_id) {
+				$(this)[0].cells[1].innerText = datos.sec_desc;
+			}
+		});
+	}
 }
 
 function btnSubmitClick() {
@@ -859,6 +1063,11 @@ function Guardar() {
 				gridParaActualizar = Grids.GridProveedor;
 				url = dataOpsProveedorUrl;
 				break;
+			case AbmObject.SECTORES:
+				activarGrilla(Grids.GridSector);
+				gridParaActualizar = Grids.GridSector;
+				url = dataOpsSectorUrl;
+				break;
 			case AbmObject.CLIENTES_CONDICIONES_VTA:
 				activarGrilla(Grids.GridFP);
 				url = dataOpsFormaDePagoUrl;
@@ -881,6 +1090,14 @@ function Guardar() {
 			case AbmObject.PROVEEDORES_FAMILIA:
 				activarGrilla(Grids.GridFlias);
 				url = dataOpsFamiliaUrl;
+				break;
+			case AbmObject.SUB_SECTORES:
+				activarGrilla(Grids.GridSubSector);
+				url = dataOpsSubSectorUrl;
+				break;
+			case AbmObject.RUBROS:
+				activarGrilla(Grids.GridRubro);
+				url = dataOpsRubroUrl;
 				break;
 			default:
 		}
@@ -912,7 +1129,7 @@ function Guardar() {
 				if (gridParaActualizar != "" && tipoDeOperacion == AbmAction.MODIFICACION) { //Si estoy modificando, actualizo el registro en la grilla.
 					ActualizarRegistroEnGrilla(data, gridParaActualizar);
 				}
-				if (tipoDeOperacion == AbmAction.ALTA) { //Si estoy agregando, busco el registro que acabo de agregar con el id que me devuelve el response (obj.id)
+				if (tipoDeOperacion == AbmAction.ALTA && (destinoDeOperacion === AbmObject.CLIENTES || destinoDeOperacion === AbmObject.PROVEEDORES)) { //Si estoy agregando, busco el registro que acabo de agregar con el id que me devuelve el response (obj.id)
 					var controlCtaId = ObtenerModuloEjecutado(destinoDeOperacion) + 'Cta_Id';
 					var control = $("[name='" + controlCtaId + "']");
 					control.val(obj.id);
@@ -922,6 +1139,12 @@ function Guardar() {
 					else if (destinoDeOperacion === AbmObject.PROVEEDORES) {
 						BuscarElementoInsertado(obj.id, AbmObject.PROVEEDORES);
 					}
+				}
+				if (tipoDeOperacion == AbmAction.ALTA && (destinoDeOperacion === AbmObject.SECTORES)) { //Si estoy agregando, busco el registro que acabo de agregar con el id que me devuelve el response (obj.id)
+					var controlId = ObtenerModuloEjecutado(destinoDeOperacion) + 'Sec_Id';
+					var control = $("[name='" + controlId + "']");
+					control.val(obj.id);
+					BuscarElementoInsertadoSector(obj.id);
 				}
 				if (tipoDeOperacion == AbmAction.MODIFICACION) {
 					btnCancelClick();
@@ -941,6 +1164,32 @@ function Guardar() {
 			}
 		});
 	}
+}
+
+function BuscarElementoInsertadoSector(secId) {
+	var data = { secId };
+	var url = buscarSectorCargadoUrl;
+	PostGen(data, url, function (obj) {
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", "Se produjo un error al intentar obtener la entidad recientemente cargada.", function () {
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			if (obj.data) {
+				$("#chkDescr").prop('checked', true);
+				$("#chkDescr").trigger("change");
+				$("#Buscar").val(obj.data);
+				$("#chkDesdeHasta").prop('checked', false);
+				$("#chkDesdeHasta").trigger("change");
+				$("#chkRel01").prop('checked', false);
+				$("#chkRel01").trigger("change");
+				$("#chkRel02").prop('checked', false);
+				$("#chkRel02").trigger("change");
+				buscarSectores(1);
+			}
+		}
+	});
 }
 
 function BuscarElementoInsertado(ctaId, origen) {
@@ -995,6 +1244,9 @@ function ObtenerModuloEjecutado(destinoDeOperacion) {
 		case AbmObject.PROVEEDORES:
 			return "Proveedor."
 			break;
+		case AbmObject.SECTORES:
+			return "Sector."
+			break;
 		case AbmObject.CLIENTES_CONDICIONES_VTA:
 			return "FormaDePago."
 			break;
@@ -1010,6 +1262,12 @@ function ObtenerModuloEjecutado(destinoDeOperacion) {
 		case AbmObject.PROVEEDORES_FAMILIA:
 			return "ProveedorGrupo."
 			break;
+		case AbmObject.SUB_SECTORES:
+			return "SubSector."
+			break;
+		case AbmObject.RUBROS:
+			return "Rubro."
+			break;
 		default:
 	}
 }
@@ -1020,6 +1278,9 @@ function ActualizarDatosEnGrilla(destinoDeOperacion) {
 
 			break;
 		case AbmObject.PROVEEDORES:
+
+			break;
+		case AbmObject.SECTORES:
 
 			break;
 		case AbmObject.CLIENTES_CONDICIONES_VTA:
@@ -1037,6 +1298,12 @@ function ActualizarDatosEnGrilla(destinoDeOperacion) {
 		case AbmObject.PROVEEDORES_FAMILIA:
 			BuscarFamilias();
 			break;
+		case AbmObject.SUB_SECTORES:
+			BuscarSubSector();
+			break;
+		case AbmObject.RUBROS:
+			BuscarRubro();
+			break;
 		default:
 	}
 }
@@ -1049,6 +1316,9 @@ function ObtenerDatosParaJson(destinoDeOperacion, tipoDeOperacion) {
 			break;
 		case AbmObject.PROVEEDORES:
 			json = ObtenerDatosDeProveedorParaJson(destinoDeOperacion, tipoDeOperacion);
+			break;
+		case AbmObject.SECTORES:
+			json = ObtenerDatosDeSectorParaJson(destinoDeOperacion, tipoDeOperacion);
 			break;
 		case AbmObject.CLIENTES_CONDICIONES_VTA:
 			json = ObtenerDatosDeFormaDePagoPParaJson(destinoDeOperacion, tipoDeOperacion);
@@ -1064,6 +1334,12 @@ function ObtenerDatosParaJson(destinoDeOperacion, tipoDeOperacion) {
 			break;
 		case AbmObject.PROVEEDORES_FAMILIA:
 			json = ObtenerDatosDeProveedorFamiliaParaJson(destinoDeOperacion, tipoDeOperacion);
+			break;
+		case AbmObject.SUB_SECTORES:
+			json = ObtenerDatosDeSubSectorParaJson(destinoDeOperacion, tipoDeOperacion);
+			break;
+		case AbmObject.RUBROS:
+			json = ObtenerDatosDeRubroParaJson(destinoDeOperacion, tipoDeOperacion);
 			break;
 		default:
 	}

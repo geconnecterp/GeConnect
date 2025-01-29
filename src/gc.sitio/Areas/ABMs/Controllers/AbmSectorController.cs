@@ -1,15 +1,21 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Helpers;
 using gc.sitio.Areas.ABMs.Models;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.ABM;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System.Security.Claims;
+using System.Security.Policy;
 
 namespace gc.sitio.Areas.ABMs.Controllers
 {
@@ -19,14 +25,16 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		private readonly AppSettings _settings;
 		private readonly ILogger<AbmSectorController> _logger;
 		private readonly IABMSectorServicio _abmsectorServicio;
+		private readonly IAbmServicio _abmServicio;
 		private readonly ISectorServicio _sectorServicio;
 		public AbmSectorController(IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger<AbmSectorController> logger,
-								   IABMSectorServicio abmsectorServicio, ISectorServicio sectorServicio) : base(options, accessor, logger)
+								   IABMSectorServicio abmsectorServicio, ISectorServicio sectorServicio, IAbmServicio abmServicio) : base(options, accessor, logger)
 		{
 			_settings = options.Value;
 			_logger = logger;
 			_abmsectorServicio = abmsectorServicio;
 			_sectorServicio = sectorServicio;
+			_abmServicio = abmServicio;
 		}
 
 		[HttpGet]
@@ -94,19 +102,6 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
 		}
 
-		//[HttpPost]
-		//public new JsonResult ObtenerDatosPaginacion()
-		//{
-		//	try
-		//	{
-		//		return Json(new { error = false, Metadata = MetadataSector });
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		return Json(new { error = true, msg = "No se pudo obtener la información de paginación. Verifica" });
-		//	}
-		//}
-
 		[HttpPost]
 		public async Task<IActionResult> BuscarSector(string secId)
 		{
@@ -118,11 +113,11 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
 				var res = _sectorServicio.GetSectorParaABM(secId, TokenCookie);
 				if (res == null)
-					return PartialView("_tabDatosCliente", new CuentaAbmModel());
+					return PartialView("_tabDatosCliente", new SectorAbmModel());
 
-				var SectorModel= new SectorAbmModel() 
-				{ 
-					Sector= res.First()
+				var SectorModel = new SectorAbmModel()
+				{
+					Sector = res.First()
 				};
 				return PartialView("_tabDatosSector", SectorModel);
 			}
@@ -138,7 +133,352 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			}
 		}
 
+		[HttpPost]
+		public async Task<IActionResult> NuevoSector()
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				var SectorModel = new SectorAbmModel()
+				{
+					Sector = new SectorDto()
+				};
+				return PartialView("_tabDatosSector", SectorModel);
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Alta de Sector - Nueva entidad";
+				_logger.LogError(ex, "Error en la invocación de la API - Alta de Sector - Nueva entidad");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public JsonResult DataOpsSector(SectorAbmValidationModel sector, string destinoDeOperacion, char tipoDeOperacion)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+				{
+					return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+				}
+
+				var respuestaDeValidacion = ValidarJsonAntesDeGuardar(sector, tipoDeOperacion);
+				if (respuestaDeValidacion == "")
+				{
+					sector = HelperGen.PasarAMayusculas(sector);
+					var jsonstring = JsonConvert.SerializeObject(sector, new JsonSerializerSettings());
+					var respuesta = _abmServicio.AbmConfirmar(ObtenerRequestParaABM(tipoDeOperacion, destinoDeOperacion, jsonstring, AdministracionId, UserName), TokenCookie).Result;
+					return AnalizarRespuesta(respuesta);
+				}
+				else
+					return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, msg = "Ha ocurrido un error al intentar actualizar la información." });
+			}
+		}
+
+		[HttpPost]
+		public JsonResult BuscarSectorCargado(string secId)
+		{
+			if (string.IsNullOrWhiteSpace(secId))
+				return Json(new { error = true, warn = false, msg = "", data = "" });
+
+			var res = _sectorServicio.GetSectorParaABM(secId, TokenCookie);
+			if (res == null)
+				return Json(new { error = true, warn = false, msg = "", data = "" });
+			if (res.Count == 0)
+				return Json(new { error = true, warn = false, msg = "", data = "" });
+			return Json(new { error = false, warn = false, msg = "", data = res.First().Sec_Desc });
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> BuscarSubSector(string secId)
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				if (string.IsNullOrEmpty(secId))
+					return PartialView("_tabDatosSubSector", new SectorABMSubSectorModel());
+
+				var res = _sectorServicio.GetSubSectorParaABM(secId, TokenCookie);
+
+				if (res == null)
+					return PartialView("_tabDatosSubSector", new SectorABMSubSectorModel());
+
+				var SubSectorModel = new SectorABMSubSectorModel()
+				{
+					SectorSubSector = ObtenerGridCore<SubSectorDto>(res),
+					SubSector = new SubSectorModel()
+				};
+				return PartialView("_tabDatosSubSector", SubSectorModel);
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Sub Sector";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Sub Sector");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> BuscarDatosSubSector(string ssId)
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				if (string.IsNullOrEmpty(ssId))
+					return PartialView("_tabDatosSubSectorSelected", new SectorABMSubSectorSelectedModel());
+
+				var res = _sectorServicio.GetSubSector(ssId, TokenCookie);
+				if (res == null)
+					return PartialView("_tabDatosSubSectorSelected", new SectorABMSubSectorSelectedModel());
+
+				var SubSectorModel = new SectorABMSubSectorSelectedModel()
+				{
+					SubSector = ObtenerSubSectorModel(res.First())
+				};
+				return PartialView("_tabDatosSubSectorSelected", SubSectorModel);
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Sub Sector -> Datos";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Sub Sector -> Datos");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> NuevoSubSector()
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				var ssm = new SubSectorModel();
+				var model = new SectorABMSubSectorSelectedModel()
+				{
+					SubSector = ssm
+				};
+				return PartialView("_tabDatosSubSectorSelected", model);
+
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Sub Sector -> Sub Sector Selected";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Sub Sector -> Sub Sector Selected");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public JsonResult DataOpsSubSector(SubSectorAbmValidationModel subSector, string destinoDeOperacion, char tipoDeOperacion)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+				{
+					return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+				}
+
+				var respuestaDeValidacion = ValidarJsonAntesDeGuardar(subSector, tipoDeOperacion);
+				if (respuestaDeValidacion == "")
+				{
+					subSector = HelperGen.PasarAMayusculas(subSector);
+					var jsonstring = JsonConvert.SerializeObject(subSector, new JsonSerializerSettings());
+					var respuesta = _abmServicio.AbmConfirmar(ObtenerRequestParaABM(tipoDeOperacion, destinoDeOperacion, jsonstring, AdministracionId, UserName), TokenCookie).Result;
+					return AnalizarRespuesta(respuesta);
+				}
+				else
+					return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, msg = "Ha ocurrido un error al intentar actualizar la información." });
+			}
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> BuscarRubro(string secId)
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				if (string.IsNullOrEmpty(secId))
+					return PartialView("_tabDatosRubro", new SectorABMRubroModel());
+
+				var res = _sectorServicio.GetRubroParaABM(secId, TokenCookie);
+
+				if (res == null)
+					return PartialView("_tabDatosRubro", new SectorABMRubroModel());
+
+				SubSectorLista = res.GroupBy(c => new { c.Rubg_Id, c.Rubg_Desc, c.Rubg_Lista })
+									.Select(gc => new SubSectorDto() { Rubg_Id = gc.Key.Rubg_Id, Rubg_Desc = gc.Key.Rubg_Desc, Rubg_Lista = gc.Key.Rubg_Lista })
+									.ToList();
+
+				var SubSectorModel = new SectorABMRubroModel()
+				{
+					SectorRubro = ObtenerGridCore<RubroListaABMDto>(res),
+					ComboSubSector = ComboSubSector(),
+					Rubro = new RubroListaABMDto()
+				};
+				return PartialView("_tabDatosRubro", SubSectorModel);
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Rubro";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Rubro");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> BuscarDatosRubro(string rubId)
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				if (string.IsNullOrEmpty(rubId))
+					return PartialView("_tabDatosRubroSelected", new SectorABMRubroSelectedModel());
+
+				var res = _sectorServicio.GetRubro(rubId, TokenCookie);
+				if (res == null)
+					return PartialView("_tabDatosRubroSelected", new SectorABMRubroSelectedModel());
+
+				var RubroModel = new SectorABMRubroSelectedModel()
+				{
+					ComboSubSector = ComboSubSector(),
+					Rubro = res.First()
+				};
+
+				return PartialView("_tabDatosRubroSelected", RubroModel);
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Rubro -> Datos";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Rubro -> Datos");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+				throw;
+			}
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> NuevoRubro()
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				var r = new RubroListaABMDto();
+				var model = new SectorABMRubroSelectedModel()
+				{
+					ComboSubSector = ComboSubSector(),
+					Rubro = r
+				};
+				return PartialView("_tabDatosRubroSelected", model);
+
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Rubro -> Rubro Selected";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Rubro -> Rubro Selected");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public JsonResult DataOpsRubro(RubroAbmValidationModel rubro, string destinoDeOperacion, char tipoDeOperacion)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+				{
+					return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+				}
+
+				var respuestaDeValidacion = ValidarJsonAntesDeGuardar(rubro, tipoDeOperacion);
+				if (respuestaDeValidacion == "")
+				{
+					rubro = HelperGen.PasarAMayusculas(rubro);
+					var jsonstring = JsonConvert.SerializeObject(rubro, new JsonSerializerSettings());
+					var respuesta = _abmServicio.AbmConfirmar(ObtenerRequestParaABM(tipoDeOperacion, destinoDeOperacion, jsonstring, AdministracionId, UserName), TokenCookie).Result;
+					return AnalizarRespuesta(respuesta);
+				}
+				else
+					return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, msg = "Ha ocurrido un error al intentar actualizar la información." });
+			}
+		}
+
 		#region Métodos privados
+		private string ValidarJsonAntesDeGuardar(SectorAbmValidationModel sector, char abm)
+		{
+			return string.Empty;
+		}
+		private string ValidarJsonAntesDeGuardar(SubSectorAbmValidationModel subSector, char abm)
+		{
+			return string.Empty;
+		}
+		private string ValidarJsonAntesDeGuardar(RubroAbmValidationModel rubro, char abm)
+		{
+			return string.Empty;
+		}
+		private static SubSectorModel ObtenerSubSectorModel(SubSectorDto ss)
+		{
+			var mod = new SubSectorModel();
+			if (ss == null)
+				return mod;
+			#region map
+			mod.Rubg_Actu = ss.Rubg_Actu;
+			mod.Rubg_Desc = ss.Rubg_Desc;
+			mod.Rubg_Id = ss.Rubg_Id;
+			mod.Rubg_Lista = ss.Rubg_Lista;
+			mod.Sec_Desc = ss.Sec_Desc;
+			mod.Sec_Id = ss.Sec_Id;
+			#endregion
+			return mod;
+		}
+
+		protected SelectList ComboSubSector()
+		{
+			var lista = SubSectorLista.Select(x => new ComboGenDto { Id = x.Rubg_Id, Descripcion = x.Rubg_Desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+
 		private void CargarDatosIniciales(bool actualizar)
 		{
 		}

@@ -9,6 +9,18 @@
 		ejecutaDblClickGrid(x, Grids.GridSector);
 	});
 
+	$("#tabSector").on("click", function () { SeteaIDSectorSelected(); });
+	$("#tabSubSector").on("click", function () { BuscarSubSectorTabClick(); });
+	$("#tabRubro").on("click", function () { BuscarRubroTabClick(); });
+
+	$("#btnAbmNuevo").on("click", function () { btnNuevoClick(); });
+	$("#btnAbmModif").on("click", function () { btnModiClick(); });
+	$("#btnAbmElimi").on("click", function () { btnBajaClick(); });
+	$("#btnAbmAceptar").on("click", function () { btnSubmitClick(); });
+	$("#btnAbmCancelar").on("click", function () { btnCancelClick(); });
+
+	$("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle);
+
 	$("#btnDetalle").prop("disabled", true);
 	$("#btnAbmAceptar").hide();
 	$("#btnAbmCancelar").hide();
@@ -27,6 +39,194 @@
 	return true;
 
 });
+
+function NuevoSector() {
+	var data = {};
+	PostGenHtml(data, nuevoSectorUrl, function (obj) {
+		$("#divDatosSector").html(obj);
+		$(".nav-link").prop("disabled", true);
+		$(".activable").prop("disabled", false);
+		$("#Sector_Sec_Id").prop("disabled", false);
+		desactivarGrilla(Grids.GridSector);
+		accionBotones(AbmAction.ALTA, Tabs.TabSector);
+		$("#divFiltro").collapse("hide");
+		$("#divDetalle").collapse("show");
+		$("#Sector_Sec_Id").focus();
+		/*$("#GridsEnTabPrincipal").hide();*/
+		CerrarWaiting();
+	}, function (obj) {
+		ControlaMensajeError(obj.message);
+		CerrarWaiting();
+	});
+}
+
+function NuevoSubSector() {
+	var tabActiva = $('.nav-tabs .active')[0].id;
+	var mensaje = PuedoAgregar(tabActiva);
+	if (mensaje !== "") {
+		AbrirMensaje("ATENCIÓN", mensaje, function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		var data = {};
+		PostGenHtml(data, nuevoSubSectorUrl, function (obj) {
+			$("#divDatosDeSubSectorSelected").html(obj);
+			$(".nav-link").prop("disabled", true);
+			$(".activable").prop("disabled", false);
+			accionBotones(AbmAction.ALTA, Tabs.TabSubSector);
+			desactivarGrilla(Grids.GridSubSector);
+			$("#SubSector_Rubg_Id").prop("disabled", false);
+			$("#SubSector_Rubg_Id").focus();
+			CerrarWaiting();
+		}, function (obj) {
+			ControlaMensajeError(obj.message);
+			CerrarWaiting();
+		});
+	}
+}
+
+function NuevoRubro() {
+	var tabActiva = $('.nav-tabs .active')[0].id;
+	var mensaje = PuedoAgregar(tabActiva);
+	if (mensaje !== "") {
+		AbrirMensaje("ATENCIÓN", mensaje, function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		var data = {};
+		PostGenHtml(data, nuevoRubroUrl, function (obj) {
+			$("#divDatosDeRubroSelected").html(obj);
+			$(".nav-link").prop("disabled", true);
+			$(".activable").prop("disabled", false);
+			accionBotones(AbmAction.ALTA, Tabs.TabRubro);
+			desactivarGrilla(Grids.GridRubro);
+			$("#Rubro_Rub_Id").prop("disabled", false);
+			$("#Rubro_Rub_Id").focus();
+			CerrarWaiting();
+		}, function (obj) {
+			ControlaMensajeError(obj.message);
+			CerrarWaiting();
+		});
+	}
+}
+
+function ModificaSector(tabAct) {
+	accionBotones(AbmAction.MODIFICACION, tabAct);
+	tipoDeOperacion = AbmAction.MODIFICACION;
+	SetearDestinoDeOperacion(tabAct);
+	$(".nav-link").prop("disabled", true);
+	$(".activable").prop("disabled", false);
+	desactivarGrilla(Grids.GridSector);
+	$("#Sector_Sec_Id").prop("disabled", true);
+	$("#Sector_Sec_Desc").focus();
+}
+
+function ModificaSubSector(tabAct, mainGrid) {
+	var mensaje = PuedoModificar(tabAct);
+	if (mensaje !== "") {
+		AbrirMensaje("ATENCIÓN", mensaje, function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		accionBotones(AbmAction.MODIFICACION, Tabs.TabFamilias);
+		tipoDeOperacion = AbmAction.MODIFICACION;
+		SetearDestinoDeOperacion(tabAct);
+		$(".nav-link").prop("disabled", true);
+		$(".activable").prop("disabled", false);
+		$("#SubSector_Rubg_Id").prop("disabled", true);
+		desactivarGrilla(Grids.GridSubSector);
+		desactivarGrilla(mainGrid);
+		$("#SubSector_Rubg_Desc").focus();
+	}
+}
+
+function ModificaRubro(tabAct, mainGrid) {
+	var mensaje = PuedoModificar(tabAct);
+	if (mensaje !== "") {
+		AbrirMensaje("ATENCIÓN", mensaje, function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		accionBotones(AbmAction.MODIFICACION, Tabs.TabFamilias);
+		tipoDeOperacion = AbmAction.MODIFICACION;
+		SetearDestinoDeOperacion(tabAct);
+		$(".nav-link").prop("disabled", true);
+		$(".activable").prop("disabled", false);
+		$("#Rubro_Rub_Id").prop("disabled", true);
+		desactivarGrilla(Grids.GridRubro);
+		desactivarGrilla(mainGrid);
+		$("#Rubro_Rub_Desc").focus();
+	}
+}
+
+function analizaEstadoBtnDetalle() {
+	var res = $("#divDetalle").hasClass("show");
+	if (res === true) {
+		selectRegCli(regSelected, Grids.GridProveedor);
+	}
+	return true;
+
+}
+
+function SeteaIDSectorSelected() {
+	$("#IdSelected").val($("#Sector_Sec_Id").val());
+}
+
+function BuscarSubSectorTabClick() {
+	if ($(".nav-link").prop("disabled")) {
+		return false;
+	}
+	BuscarSubSector();
+}
+
+function BuscarSubSector() {
+	if (secId != "") {
+		var data = { secId };
+		AbrirWaiting();
+		PostGenHtml(data, buscarSubSectorUrl, function (obj) {
+			$("#divSubSector").html(obj);
+			AgregarHandlerSelectedRow("tbSubSectorEnTab");
+			$(".activable").prop("disabled", true);
+			$("#IdSelected").val("");
+			CerrarWaiting();
+		}, function (obj) {
+			ControlaMensajeError(obj.message);
+			CerrarWaiting();
+		});
+	}
+}
+
+function BuscarRubroTabClick() {
+	if ($(".nav-link").prop("disabled")) {
+		return false;
+	}
+	BuscarRubro();
+}
+
+function BuscarRubro() {
+	if (secId != "") {
+		var data = { secId };
+		AbrirWaiting();
+		PostGenHtml(data, buscarRubroUrl, function (obj) {
+			$("#divRubro").html(obj);
+			AgregarHandlerSelectedRow("tbRubroEnTab");
+			$(".activable").prop("disabled", true);
+			$("#IdSelected").val("");
+			CerrarWaiting();
+		}, function (obj) {
+			ControlaMensajeError(obj.message);
+			CerrarWaiting();
+		});
+	}
+}
 
 function InicializaPantallaAbmSector() {
 	var tb = $("#tbGridSector tbody tr");
@@ -167,10 +367,34 @@ function selectRegDbl(x, gridId) {
 			}
 			break;
 		case Grids.GridSubSector:
-
+			var ssId = x.cells[0].innerText.trim();
+			var data = { ssId };
+			AbrirWaiting();
+			PostGenHtml(data, buscarDatosSubSectorUrl, function (obj) {
+				$("#divDatosDeSubSectorSelected").html(obj);
+				$("#IdSelected").val(ssId);
+				$(".activable").prop("disabled", true);
+				activarBotones(true);
+				CerrarWaiting();
+			}, function (obj) {
+				ControlaMensajeError(obj.message);
+				CerrarWaiting();
+			});
 			break;
 		case Grids.GridRubro:
-			
+			var rubId = x.cells[0].innerText.trim();
+			var data = { rubId };
+			AbrirWaiting();
+			PostGenHtml(data, buscarDatosRubroUrl, function (obj) {
+				$("#divDatosDeRubroSelected").html(obj);
+				$("#IdSelected").val(rubId);
+				$(".activable").prop("disabled", true);
+				activarBotones(true);
+				CerrarWaiting();
+			}, function (obj) {
+				ControlaMensajeError(obj.message);
+				CerrarWaiting();
+			});
 			break;
 		default:
 	}
@@ -188,4 +412,44 @@ function BuscarSector(secId) {
 		ControlaMensajeError(obj.message);
 		CerrarWaiting();
 	});
+}
+
+function ObtenerDatosDeSectorParaJson(destinoDeOperacion, tipoDeOperacion) {
+	var sec_id = $("#Sector_Sec_Id").val();
+	var sec_desc = $("#Sector_Sec_Desc").val();
+	var sec_lista = $("#Sector_Sec_Desc").val() + "(" + $("#Sector_Sec_Id").val() + ")";
+	var sec_prefactura = 'N';
+	if ($("#chkPrefaActiva")[0].checked)
+		sec_prefactura = "S";
+	var data = { sec_id, sec_desc, sec_lista, sec_prefactura, destinoDeOperacion, tipoDeOperacion };
+	return data;
+}
+
+function ObtenerDatosDeSubSectorParaJson(destinoDeOperacion, tipoDeOperacion) {
+	var rubg_id = $("#SubSector_Rubg_Id").val();
+	var rubg_desc = $("#SubSector_Rubg_Desc").val();
+	var rubg_lista = $("#SubSector_Rubg_Desc").val() + "(" + $("#SubSector_Rubg_Id").val() + ")";
+	var sec_id = $("#Sector_Sec_Id").val();
+	var sec_desc = $("#Sector_Sec_Desc").val();
+	var data = { rubg_id, rubg_desc, rubg_lista, sec_id, sec_desc, destinoDeOperacion, tipoDeOperacion };
+	return data;
+}
+
+function ObtenerDatosDeRubroParaJson(destinoDeOperacion, tipoDeOperacion) {
+	var rub_id = $("#Rubro_Rub_Id").val();
+	var rub_desc = $("#Rubro_Rub_Desc").val();
+	var rub_lista = $("#Rubro_Rub_Desc").val() + "(" + $("#Rubro_Rub_Id").val() + ")";
+	var rub_feteado = 'N';
+	if ($("#chkFeteados")[0].checked)
+		rub_feteado = "S";
+	var rub_ctlstk = 'N';
+	if ($("#chkCtrlStkEnVtas")[0].checked)
+		rub_ctlstk = "S";
+	var rubg_id = $("#listaSubSector").val();
+	var rubg_desc = $("#listaSubSector option:selected").text();
+	var rubg_lista = $("#listaSubSector option:selected").text() + "(" + $("#listaSubSector").val() + ")";
+	var sec_id = $("#Sector_Sec_Id").val();
+	var sec_desc = $("#Sector_Sec_Desc").val();
+	var data = { rub_id, rub_desc, rub_lista, rub_feteado, rub_ctlstk, rubg_id, rubg_desc, rubg_lista, sec_id, sec_desc, destinoDeOperacion, tipoDeOperacion };
+	return data;
 }

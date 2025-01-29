@@ -1,0 +1,40 @@
+﻿@model SectorABMRubroSelectedModel
+@{
+	var ss = Model.ComboSubSector;
+}
+<div class="row" style="padding-top: 10px;">
+	<div class="row mt-1">
+		<div class="input-group input-group-sm">
+			<span class="input-group-text fixed-lbl-for-abm-70">ID: </span>
+			<input type="text" asp-for="Rubro.Rub_Id" class="form-control activable" />
+		</div>
+	</div>
+	<div class="row mt-1">
+		<div class="input-group input-group-sm">
+			<span class="input-group-text fixed-lbl-for-abm-70">Rubro: </span>
+			<input type="text" asp-for="Rubro.Rub_Desc" class="form-control activable" />
+		</div>
+	</div>
+	<div class="row mt-1">
+		<div class="input-group input-group-sm">
+			<span class="input-group-text fixed-lbl-for-abm-70">Sub Sector: </span>
+			@Html.DropDownListFor(m => Model.Rubro.Rubg_Id, ss, "Seleccionar...", new { @id = "listaSubSector", @class = "form-control activable" })
+		</div>
+	</div>
+	<div class="row mt-1">
+		<div class="input-group input-group-sm">
+			<div class="form-check form-check-inline form-switch mb-2">
+				<input class="form-check-input activable" type="checkbox" asp-for="Rubro.Rub_Feteado_Activa" value="" id="chkFeteados">
+				<label class="form-check-label" for="chkFeteados"> Feteados</label>
+			</div>
+		</div>
+	</div>
+	<div class="row mt-1">
+		<div class="input-group input-group-sm">
+			<div class="form-check form-check-inline form-switch mb-2">
+				<input class="form-check-input activable" type="checkbox" asp-for="Rubro.Rub_Ctlstk_Activa" value="" id="chkCtrlStkEnVtas">
+				<label class="form-check-label" for="chkCtrlStkEnVtas"> Control de Stock en Ventas</label>
+			</div>
+		</div>
+	</div>
+</div>

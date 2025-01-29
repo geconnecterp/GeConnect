@@ -1,0 +1,73 @@
+﻿@model SectorABMRubroModel
+@{
+	var ss = Model.ComboSubSector;
+}
+<div class="row">
+	<div class="col-md-8">
+		<div class="row">
+			<div class="card">
+				<div class="card-body mt-1">
+					<div class="table-responsive text-nowrap table-wrapper-200-full">
+						<table class="table table-sm mb-0 table-hover" id="tbRubroEnTab">
+							<thead class="table-dark">
+								<tr class="header">
+									<th class="col-header-small align-center">ID</th>
+									<th class="col-header-small align-center">Descripción</th>
+									<th style="width:0%; display:none;">rubg_id</th>
+								</tr>
+							</thead>
+							<tbody>
+								@foreach (var item in Model.SectorRubro.ListaDatos)
+								{
+									<tr onclick="selectRegCli(this, 'tbRubroEnTab')" ondblclick="selectRegDbl(this, 'tbRubroEnTab')">
+										<td class="align-left">@item.Rub_Id</td>
+										<td class="align-left">@item.Rub_Desc</td>
+										<td style="display:none;">@item.Rubg_Id</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="divDatosDeRubroSelected">
+			<div class="row" style="padding-top: 10px;">
+				<div class="row mt-1">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text fixed-lbl-for-abm-70">ID: </span>
+						<input type="text" asp-for="Rubro.Rub_Id" class="form-control activable" />
+					</div>
+				</div>
+				<div class="row mt-1">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text fixed-lbl-for-abm-70">Rubro: </span>
+						<input type="text" asp-for="Rubro.Rub_Desc" class="form-control activable" />
+					</div>
+				</div>
+				<div class="row mt-1">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text fixed-lbl-for-abm-70">Sub Sector: </span>
+						@Html.DropDownListFor(m => Model.Rubro.Rubg_Id, ss, "Seleccionar...", new { @id = "listaSubSector", @class = "form-control activable" })
+					</div>
+				</div>
+				<div class="row mt-1">
+					<div class="input-group input-group-sm">
+						<div class="form-check form-check-inline form-switch mb-2">
+							<input class="form-check-input activable" type="checkbox" asp-for="Rubro.Rub_Feteado_Activa" value="" id="chkFeteados">
+							<label class="form-check-label" for="chkFeteados"> Feteados</label>
+						</div>
+					</div>
+				</div>
+				<div class="row mt-1">
+					<div class="input-group input-group-sm">
+						<div class="form-check form-check-inline form-switch mb-2">
+							<input class="form-check-input activable" type="checkbox" asp-for="Rubro.Rub_Ctlstk_Activa" value="" id="chkCtrlStkEnVtas">
+							<label class="form-check-label" for="chkCtrlStkEnVtas"> Control de Stock en Ventas</label>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

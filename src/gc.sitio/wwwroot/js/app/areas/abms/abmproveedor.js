@@ -75,51 +75,58 @@ function NuevoProveedor() {
 }
 
 function NuevaFamilia() {
-	var data = {};
-	PostGenHtml(data, nuevaFamiliaUrl, function (obj) {
-		$("#divDatosDeFamiliaSelected").html(obj);
-		$(".nav-link").prop("disabled", true);
-		$(".activable").prop("disabled", false);
-		//HabilitarBotonesPorAccion(AbmAction.ALTA);
-		accionBotones(AbmAction.MODIFICACION, Tabs.TabProveedor);
-		desactivarGrilla(Grids.GridFlias);
-		$("#ProveedorGrupo_Pg_Id").prop("disabled", true);
-		$("#ProveedorGrupo_Pg_Desc").focus();
-		CerrarWaiting();
-	}, function (obj) {
-		ControlaMensajeError(obj.message);
-		CerrarWaiting();
-	});
-}
-
-function btnModiClick() {
 	var tabActiva = $('.nav-tabs .active')[0].id;
-	accionBotones(AbmAction.MODIFICACION, tabActiva);
-	//$("#btnAbmAceptar").show();
-	//$("#btnAbmCancelar").show();
-	switch (tabActiva) {
-		case Tabs.TabProveedor:
-			ModificaProveedor(tabActiva);
-			break;
-		case Tabs.TabFormasDePago:
-			ModificaFormaDePago(tabActiva, Grids.GridProveedor);
-			break;
-		case Tabs.TabNotas:
-			ModificaNota(tabActiva, Grids.GridProveedor);
-			break;
-		case Tabs.TabObservaciones:
-			ModificaObservacion(tabActiva, Grids.GridProveedor);
-			break;
-		case Tabs.TabOtrosContactos:
-			ModificaContacto(tabActiva, Grids.GridProveedor);
-			break;
-		case Tabs.TabFamilias:
-			ModificaFamilia(tabActiva, Grids.GridProveedor);
-			break;
-		default:
-			break;
+	var mensaje = PuedoAgregar(tabActiva);
+	if (mensaje !== "") {
+		AbrirMensaje("ATENCIÓN", mensaje, function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		var data = {};
+		PostGenHtml(data, nuevaFamiliaUrl, function (obj) {
+			$("#divDatosDeFamiliaSelected").html(obj);
+			$(".nav-link").prop("disabled", true);
+			$(".activable").prop("disabled", false);
+			accionBotones(AbmAction.ALTA, tabActiva);
+			desactivarGrilla(Grids.GridFlias);
+			$("#ProveedorGrupo_Pg_Id").prop("disabled", true);
+			$("#ProveedorGrupo_Pg_Desc").focus();
+			CerrarWaiting();
+		}, function (obj) {
+			ControlaMensajeError(obj.message);
+			CerrarWaiting();
+		});
 	}
 }
+
+//function btnModiClick() {
+//	var tabActiva = $('.nav-tabs .active')[0].id;
+//	accionBotones(AbmAction.MODIFICACION, tabActiva);
+//	switch (tabActiva) {
+//		case Tabs.TabProveedor:
+//			ModificaProveedor(tabActiva);
+//			break;
+//		case Tabs.TabFormasDePago:
+//			ModificaFormaDePago(tabActiva, Grids.GridProveedor);
+//			break;
+//		case Tabs.TabNotas:
+//			ModificaNota(tabActiva, Grids.GridProveedor);
+//			break;
+//		case Tabs.TabObservaciones:
+//			ModificaObservacion(tabActiva, Grids.GridProveedor);
+//			break;
+//		case Tabs.TabOtrosContactos:
+//			ModificaContacto(tabActiva, Grids.GridProveedor);
+//			break;
+//		case Tabs.TabFamilias:
+//			ModificaFamilia(tabActiva, Grids.GridProveedor);
+//			break;
+//		default:
+//			break;
+//	}
+//}
 
 function ModificaProveedor(tabAct) {
 	//HabilitarBotonesPorAccion(AbmAction.MODIFICACION);
@@ -460,34 +467,42 @@ function BuscarProveedor(ctaId) {
 	});
 }
 
-function PuedoAgregar(tabAct) {
-	var mensaje = "";
-	switch (tabAct) {
-		case Tabs.TabProveedor:
-			break;
-		case Tabs.TabFormasDePago:
-			if (!$("#chkCtaActiva").is(":checked"))
-				mensaje = "Solo se pueden agregar formas de pago para cuentas activas.";
-			break;
-		case Tabs.TabNotas:
-			if (!$("#chkCtaActiva").is(":checked"))
-				mensaje = "Solo se pueden agregar notas para cuentas activas.";
-			break;
-		case Tabs.TabObservaciones:
-			if (!$("#chkCtaActiva").is(":checked"))
-				mensaje = "Solo se pueden agregar observaciones para cuentas activas.";
-			break;
-		case Tabs.TabOtrosContactos:
-			if (!$("#chkCtaActiva").is(":checked"))
-				mensaje = "Solo se pueden agregar contactos para cuentas activas.";
-			break;
-		case Tabs.TabFamilias:
-			break;
-		default:
-			break;
-	}
-	return mensaje;
-}
+//function PuedoAgregar(tabAct) {
+//	var mensaje = "";
+//	switch (tabAct) {
+//		case Tabs.TabCliente:
+//			break;
+//		case Tabs.TabProveedor:
+//			break;
+//		case Tabs.TabSector:
+//			break;
+//		case Tabs.TabFormasDePago:
+//			if (!$("#chkCtaActiva").is(":checked"))
+//				mensaje = "Solo se pueden agregar formas de pago para cuentas activas.";
+//			break;
+//		case Tabs.TabNotas:
+//			if (!$("#chkCtaActiva").is(":checked"))
+//				mensaje = "Solo se pueden agregar notas para cuentas activas.";
+//			break;
+//		case Tabs.TabObservaciones:
+//			if (!$("#chkCtaActiva").is(":checked"))
+//				mensaje = "Solo se pueden agregar observaciones para cuentas activas.";
+//			break;
+//		case Tabs.TabOtrosContactos:
+//			if (!$("#chkCtaActiva").is(":checked"))
+//				mensaje = "Solo se pueden agregar contactos para cuentas activas.";
+//			break;
+//		case Tabs.TabFamilias:
+//			break;
+//		case Tabs.TabSubSector:
+//			break;
+//		case Tabs.TabRubro:
+//			break;
+//		default:
+//			break;
+//	}
+//	return mensaje;
+//}
 
 function ObtenerDatosDeProveedorFamiliaParaJson(destinoDeOperacion, tipoDeOperacion) {
 	var cta_id = $("#Proveedor_Cta_Id").val();
@@ -498,7 +513,7 @@ function ObtenerDatosDeProveedorFamiliaParaJson(destinoDeOperacion, tipoDeOperac
 	return data;
 }
 
-function ObtenerDatosDeProveedorParaJson() {
+function ObtenerDatosDeProveedorParaJson(destinoDeOperacion, tipoDeOperacion) {
 	var cta_id = $("#Proveedor_Cta_Id").val();
 	var cta_denominacion = $("#Proveedor_Cta_Denominacion").val();
 	var tdoc_id = $("#listaTipoDoc").val();

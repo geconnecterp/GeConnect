@@ -170,10 +170,14 @@
 
             public const string SP_ABM_SECTOR_LISTA = "SPGECO_ABM_Sectores_Lista";
             public const string SP_ABM_SECTOR_DATOS = "SPGECO_ABM_Sectores_Datos";
-            #endregion
+			public const string SP_ABM_SUB_SECTOR_LISTA = "SPGECO_ABM_Sub_Sectores_Lista";
+			public const string SP_ABM_SUB_SECTOR_DATOS = "SPGECO_ABM_Sub_Sectores_Datos";
+			public const string SP_ABM_RUBRO_LISTA = "SPGECO_ABM_Rubros_Lista";
+			public const string SP_ABM_RUBRO_DATOS = "SPGECO_ABM_Rubros_Datos";
+			#endregion
 
-            #region Tipos
-            public const string SP_TIPOS_NEGOCIO_LISTA = "SPGECO_Tipos_Negocios_Lista";
+			#region Tipos
+			public const string SP_TIPOS_NEGOCIO_LISTA = "SPGECO_Tipos_Negocios_Lista";
             public const string SP_ZONAS_LISTA = "SPGECO_Zonas_Lista";
             public const string SP_CONDICION_AFIP_LISTA = "SPGECO_Condiciones_AFIP_Lista";
             public const string SP_NATURALEZA_JURIDICA_LISTA = "SPGECO_Naturaleza_Juridicas_Lista";

@@ -19,7 +19,10 @@ const AbmObject = {
 	CUENTAS_CONTACTOS: 'cuentas_contactos', //ABM relacionado contactos
 	CUENTAS_NOTAS: 'cuentas_notas', //ABM relacionado notas de clientes
 	CUENTAS_OBSERVACIONES: 'cuentas_obs', //ABM relacionado observaciones de clientes
-	PROVEEDORES_FAMILIA: 'proveedores_familia' //TODO: revisar con Carlos si esta bien el nombre
+	PROVEEDORES_FAMILIA: 'proveedores_familia', //TODO: revisar con Carlos si esta bien el nombre
+	SECTORES: 'sectores',
+	SUB_SECTORES: 'sub_sectores',
+	RUBROS: 'rubros'
 }
 
 const Grids = {
@@ -33,8 +36,8 @@ const Grids = {
 	GridPerfil: 'tbGridPerfil',
 	GridPrUsers: 'tbGridPerfilUsers',
 	GridSector: 'tbGridSector',
-	GridSubSector: 'tbGridSubSector',
-	GridRubro: 'tbGridRubro'
+	GridSubSector: 'tbSubSectorEnTab',
+	GridRubro: 'tbRubroEnTab'
 }
 
 const Tabs = {
@@ -44,7 +47,10 @@ const Tabs = {
 	TabOtrosContactos: 'btnTabOtrosContactos',
 	TabNotas: 'btnTabNotas',
 	TabObservaciones: 'btnTabObservaciones',
-	TabFamilias: 'btnTabFliaProv'
+	TabFamilias: 'btnTabFliaProv',
+	TabSector: 'btnTabSector',
+	TabSubSector: 'btnTabSubSector',
+	TabRubro: 'btnTabRubro'
 }
 
 //variables globales
