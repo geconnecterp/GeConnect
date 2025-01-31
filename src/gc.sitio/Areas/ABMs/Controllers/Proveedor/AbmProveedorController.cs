@@ -19,6 +19,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Globalization;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace gc.sitio.Areas.ABMs.Controllers
 {
@@ -29,6 +30,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		private readonly ILogger<AbmProveedorController> _logger;
 		private readonly IProveedorServicio _proveedorServicio;
 		private readonly IABMProveedorServicio _abmProvServ;
+		private readonly IABMProductoServicio _abmProdServ;
 		private readonly ITipoOpeIvaServicio _tipoOpeServicio;
 		private readonly ICuentaServicio _cuentaServicio;
 		private readonly ICondicionAfipServicio _condicionAfipServicio;
@@ -46,6 +48,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		private readonly ITipoObsServicio _tipoObsServicio;
 		private readonly ITipoContactoServicio _tipoContactoServicio;
 		private readonly IAbmServicio _abmServicio;
+		private readonly IProductoServicio _productoServicio;
 		public AbmProveedorController(IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger<AbmProveedorController> logger,
 									  IProveedorServicio proveedorServicio, IABMProveedorServicio abmProvServ, ITipoOpeIvaServicio tipoOpeIvaServicio,
 									  ICuentaServicio cuentaServicio, ICondicionAfipServicio condicionAfipServicio, INaturalezaJuridicaServicio naturalezaJuridicaServicio,
@@ -53,7 +56,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 									  ITipoProveedorServicio tipoProveedorServicio, ITipoGastoServicio tipoGastoServicio, ITipoRetGanServicio tipoRetGanServicio,
 									  ITipoRetIbServicio tipoRetIbServicio, IFormaDePagoServicio formaDePagoServicio, IProvinciaServicio provinciaServicio,
 									  ITipoCuentaBcoServicio tipoCuentaBcoServicio, ITipoObsServicio tipoObsServicio, ITipoContactoServicio tipoContactoServicio,
-									  IAbmServicio abmServicio) : base(options, accessor, logger)
+									  IAbmServicio abmServicio, IProductoServicio productoServicio, IABMProductoServicio abmProdServ) : base(options, accessor, logger)
 		{
 			_settings = options.Value;
 			_logger = logger;
@@ -76,6 +79,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			_tipoObsServicio = tipoObsServicio;
 			_tipoContactoServicio = tipoContactoServicio;
 			_abmServicio = abmServicio;
+			_productoServicio = productoServicio;
+			_abmProdServ = abmProdServ;
 		}
 
 		[HttpGet]
@@ -761,7 +766,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			return View();
 		}
 
-		public async Task<IActionResult> BuscarProductosPorFamilia(string ctaId)
+		public async Task<IActionResult> BuscarFamilia(string ctaId)
 		{
 			var model = new ReasignacionModel();
 
@@ -772,17 +777,66 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			if (familia == null)
 				return PartialView("_seccionReasignacion", model);
 
-			model.FamiliaProductos= ComboFamiliaDeProductos(familia);
+			model.FamiliaProductos = ComboFamiliaDeProductos(familia, true);
 			model.ProductosPorFamilia = ObtenerGridCore<InfoProductoFamiliaDto>([]);
-			model.ProductosPorFamiliaReasignados = ObtenerGridCore<InfoProductoFamiliaDto>([]);
 			return PartialView("_seccionReasignacion", model);
+		}
+
+		public async Task<IActionResult> BuscarProductosPorFamilia(string ctaId, string fliaSelected)
+		{
+			var model = new ProdPorFliaModel();
+
+			if (string.IsNullOrEmpty(ctaId) || string.IsNullOrEmpty(fliaSelected))
+				return PartialView("_gridProdPorFlia", model);
+
+			var flia = new ComboGenDto() { Id = fliaSelected, Descripcion = fliaSelected };
+			var query = new QueryFilters()
+			{
+				Id = "",
+				Buscar = "",
+				Rel01 = [ctaId],
+				Rel02 = [],
+				Rel03 = [flia],
+				Registros = 999999,
+				Pagina = 1,
+				Sort = "p_desc"
+			};
+			var res = await _abmProdServ.BuscarProducto(query, TokenCookie);
+			//var familia = _productoServicio.ObtenerProductosPorFamilia(ctaId, fliaSelected, TokenCookie).Result;
+			if (res.Item1 == null)
+				return PartialView("_gridProdPorFlia", model);
+
+			model.ProductosPorFamilia = ObtenerGridCore<ProductoListaDto>(res.Item1);
+			return PartialView("_gridProdPorFlia", model);
+		}
+
+		public JsonResult ReasignarProductos(string ctaId, string familiaDest, string[] ids)
+		{
+			if (string.IsNullOrWhiteSpace(ctaId) || string.IsNullOrWhiteSpace(familiaDest) || ids.Length <= 0)
+				return Json(new { error = true, warn = false, msg = "Alguno de los parámetros es erróneo", data = "" });
+
+			var lista = new List<ProdNuevaFlia>();
+			for (int i = 0; i < ids.Length; i++)
+			{
+				lista.Add(new ProdNuevaFlia() { cta_id = ctaId, pg_id = familiaDest, p_id = ids[i] });
+			}
+			var jsonstring = JsonConvert.SerializeObject(lista, new JsonSerializerSettings());
+			var respuesta = _abmServicio.AbmConfirmar(ObtenerRequestParaABM('A', "familia_reasigna", jsonstring, AdministracionId, UserName), TokenCookie).Result;
+			return AnalizarRespuesta(respuesta);
+		}
+
+		public class ProdNuevaFlia()
+		{
+			public string p_id { get; set; } = string.Empty;
+            public string cta_id { get; set; } = string.Empty;
+			public string pg_id { get; set; } = string.Empty;
 		}
 		#endregion
 
 		#region Métodos privados
 		private string ValidarJsonAntesDeGuardar(ProveedorAbmValidationModel prov, char abm)
 		{
-			
+
 			return "";
 		}
 		private string ValidarJsonAntesDeGuardar(ProveedorFamiliaAbmValidationModel cuenta, char abm)
@@ -937,10 +991,19 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			var lista = nuevaListaDpto.Select(x => new ComboGenDto { Id = x.dep_id, Descripcion = x.dep_nombre });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
-		protected SelectList ComboFamiliaDeProductos(List<ProveedorGrupoDto> listaPF)
+		protected SelectList ComboFamiliaDeProductos(List<ProveedorGrupoDto> listaPF, bool selectFirst = false)
 		{
 			var nuevaLista = listaPF.Select(x => new ComboGenDto { Id = x.pg_id, Descripcion = x.pg_lista });
-			return HelperMvc<ComboGenDto>.ListaGenerica(nuevaLista);
+			var combo = HelperMvc<ComboGenDto>.ListaGenerica(nuevaLista);
+			if (combo != null && combo.Any() && selectFirst)
+			{
+				foreach (var item in combo)
+				{
+					item.Selected = true;
+					break;
+				}
+			}
+			return combo;
 		}
 		private void CargarDepartametos(string prov_id)
 		{

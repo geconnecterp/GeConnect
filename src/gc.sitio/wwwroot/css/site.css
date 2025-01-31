@@ -441,7 +441,19 @@ input[type=number] {
     text-align: right;
 }
 
+.fixed-lbl-for-abm-100 {
+    width: 100px;
+    display: block;
+    float: right;
+    text-align: right;
+}
 
+.fixed-lbl-for-abm-130 {
+    width: 130px;
+    display: block;
+    float: right;
+    text-align: right;
+}
 
 /* Estilo general para los controles */
 input, select, textarea, button, checkbox, radio {

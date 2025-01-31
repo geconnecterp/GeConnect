@@ -18,5 +18,6 @@ namespace gc.infraestructura.Dtos.Productos
 		public string Pg_Id { get; set; } = string.Empty;
 		public string Pg_Desc { get; set; } = string.Empty;
 		public string Pg_Lista { get; set; } = string.Empty;
-	}
+		public string Reasignado { get; set; } = string.Empty;
+    }
 }

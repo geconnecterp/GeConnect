@@ -21,5 +21,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		List<CuentaObsDto> GetCuentaObsDatos(string cta_id, string to_id, string token);
         List<ProveedorGrupoDto> ObtenerProveedoresABMFamiliaLista(string ctaId, string token);
         List<ProveedorGrupoDto> ObtenerProveedoresABMFamiliaDatos(string ctaId, string pgId, string token);
+        
 	}
 }

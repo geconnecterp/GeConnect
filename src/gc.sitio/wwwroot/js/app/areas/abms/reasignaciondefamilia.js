@@ -3,16 +3,15 @@
 		var div = $("#divPaginacion");
 		presentaPaginacion(div);
 	});
-
+	$(document).on("change", "#listaFamilia", actualizarListaDeProductos);
 	$(document).on("dblclick", "#" + Grids.GridProveedor + " tbody tr", function () {
 		x = $(this);
 		ejecutaDblClickGrid(x, Grids.GridProveedor);
 	});
 
-	//$("#btnBuscar").on("click", function () { buscarProveedores(pagina); });
 	$("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle);
 	$("#btnDetalle").prop("disabled", true);
-
+	//$("#btnAbmAceptar").on("click", function () { btnSubmitClick(); });
 	$("#btnBuscar").on("click", function () {
 		//es nueva la busqueda no resguardamos la busqueda anterior. es util para paginado
 		dataBak = "";
@@ -25,6 +24,58 @@
 	funcCallBack = buscarProveedores;
 	return true;
 });
+
+function btnSubmitClick() {
+	var familiaOri = $("#listaFamilia").val();
+	var familiaDest = $("#listaFamiliaAReasignar").val();
+	if (familiaDest === "") {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar una familia de producto destino válida.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+		return;
+	}
+	if (familiaOri === familiaDest) {
+		AbrirMensaje("ATENCIÓN", "La familia de producto destino debe ser diferente a la original.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+		return
+	}
+	var ids = [];
+	$("#tbProductosPorFamilia").find('tr').each(function (i, el) {
+		var td = $(this).find('td');
+		if (td.eq(0)[0]) {
+			if (td.eq(0)[0].children[0].checked)
+				ids.push(td.eq(1).text());
+		}
+	});
+	if (ids.length <= 0) {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar al menos un producto a reasignar.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+		return
+	}
+	var data = { ctaId, familiaDest, ids }
+	PostGen(data, reasignarProductosURL, function (obj) {
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			AbrirMensaje("ATENCIÓN", "La reasignación se ha realizado correctamente.", function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "succ!", null);
+			CargarProductosPorFamiliaSeleccionada(ctaId, familiaOri);
+			return
+		}
+
+	});
+}
 
 function ejecutaDblClickGrid(x, grid) {
 	AbrirWaiting("Espere mientras se busca el producto seleccionado...");
@@ -66,13 +117,54 @@ function selectRegDbl(x, gridId) {
 
 function BuscarProductosPorFamilia(ctaId) {
 	data = { ctaId };
-	PostGenHtml(data, buscarProductosPorFamiliaUrl, function (obj) {
+	PostGenHtml(data, buscarFamiliaUrl, function (obj) {
 		$("#divDatosReasignacion").html(obj);
+		var fliaSelected = $("#listaFamilia").val();
+		if (fliaSelected && fliaSelected !== "") {
+			CargarProductosPorFamiliaSeleccionada(ctaId, fliaSelected);
+		}
 	}, function (obj) {
 		ControlaMensajeError(obj.message);
 		CerrarWaiting();
 		return true;
 	});
+}
+
+function CargarProductosPorFamiliaSeleccionada(ctaId, fliaSelected) {
+	AbrirWaiting("Aguarde unos instantes mientras buscamos los productos de la familia seleccionada...");
+	var data = { ctaId, fliaSelected };
+	PostGenHtml(data, buscarProductosPorFamiliaUrl, function (obj) {
+		$("#divGridProductosPorFamilia").html(obj);
+		AgregarHandlerAGrillaProdPorFlia();
+		CerrarWaiting();
+	}, function (obj) {
+		CerrarWaiting();
+		ControlaMensajeError(obj.message);
+		return true;
+	});
+}
+
+function AgregarHandlerAGrillaProdPorFlia() {
+	var dataTable = document.getElementById('tbProductosPorFamilia');
+	var checkItAll = dataTable.querySelector('input[name="select_all"]');
+	var inputs = dataTable.querySelectorAll('tbody>tr>td>input');
+	checkItAll.addEventListener('change', function () {
+		if (checkItAll.checked) {
+			inputs.forEach(function (input) {
+				input.checked = true;
+			});
+		}
+		else {
+			inputs.forEach(function (input) {
+				input.checked = false;
+			});
+		}
+	});
+}
+
+function actualizarListaDeProductos() {
+	var fliaSelected = $("#listaFamilia").val();
+	CargarProductosPorFamiliaSeleccionada(ctaId, fliaSelected);
 }
 
 function analizaEstadoBtnDetalle() {

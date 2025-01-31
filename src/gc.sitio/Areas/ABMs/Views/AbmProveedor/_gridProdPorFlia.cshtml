@@ -1,0 +1,35 @@
+﻿@model ProdPorFliaModel
+@{
+}
+<style>
+	thead th {
+		position: sticky;
+		top: 0px;
+	}
+</style>
+<div class="card">
+	<div class="card-body">
+		<div class="table-responsive text-nowrap table-wrapper-200-full">
+			<table class="table table-sm mb-0 table-hover" id="tbProductosPorFamilia">
+				<thead class="table-dark">
+					<tr class="header">
+						<th><input name="select_all" value="1" type="checkbox"></th>
+						<th class="col-header-small align-center">ID</th>
+						<th class="col-header-small align-center">Descripción</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var item in Model.ProductosPorFamilia.ListaDatos)
+					{
+						var nombre = "chk" + item.P_id;
+						<tr>
+							<td><input type="checkbox" name=@nombre /></td>
+							<td class="align-center">@item.P_id</td>
+							<td class="align-left">@item.P_desc</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>

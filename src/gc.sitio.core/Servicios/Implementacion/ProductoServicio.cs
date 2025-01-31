@@ -69,6 +69,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string RPROBTENERDATOSVERCONTEOS = "/RPRObtenerVerConteos";
 		private const string RPRxULOBTENER = "/RPRxUL";
 		private const string RPRxULDETALLEOBTENER = "/RPRxULDetalle";
+		private const string PRODUCTOS_POR_FAMILIA = "/GetProductosPorFamilia";
 
 		//almacena Box 
 		private const string RutaApiAlmacen = "/api/apialmacen";
@@ -2136,6 +2137,42 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 		}
 
+		public async Task<List<InfoProductoFamiliaDto>> ObtenerProductosPorFamilia(string ctaId, string fliaSelected, string token)
+		{
+			ApiResponse<List<InfoProductoFamiliaDto>> apiResponse;
 
+			HelperAPI helper = new();
+
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{PRODUCTOS_POR_FAMILIA}?provList={ctaId}&pgList={fliaSelected}";
+
+			response = await client.GetAsync(link);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API no devolvió dato alguno. Parametro de busqueda");
+					return [];
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<InfoProductoFamiliaDto>>>(stringData);
+
+				//return new RespuestaGenerica<ProductoGenDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
+				return apiResponse.Data;
+				/*
+				 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<ProductoBusquedaDto>>(stringData);
+				return apiResponse.Data;
+				 */
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new List<InfoProductoFamiliaDto>();
+			}
+		}
 	}
 }
