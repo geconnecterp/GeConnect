@@ -12,14 +12,10 @@ using gc.infraestructura.Helpers;
 using gc.sitio.Areas.ABMs.Models;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.ABM;
-using gc.sitio.core.Servicios.Implementacion;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using System.Collections.Generic;
-using System.Globalization;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace gc.sitio.Areas.ABMs.Controllers
 {

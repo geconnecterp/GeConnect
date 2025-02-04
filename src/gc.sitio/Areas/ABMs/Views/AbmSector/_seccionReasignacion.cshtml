@@ -1,0 +1,52 @@
+﻿@model ReasignacionRubroModel
+@{
+	var combo = Model.RubroProductos;
+	var comboReasignar = Model.RubroProductosAReasignar;
+}
+<div class="row">
+	<div class="col-md-8">
+		<fieldset>
+			<legend>
+				Productos Por Rubro
+			</legend>
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-70">Rubro: </span>
+				@Html.DropDownListFor(m => Model.Rub_Id, combo, new { @id = "listaRubro", @class = "form-control activable" })
+				<span class="input-group-text fixed-lbl-for-abm-130">Rubro a Reasignar: </span>
+				@Html.DropDownListFor(m => Model.Rub_Id, comboReasignar, "Seleccionar...", new { @id = "listaRubroAReasignar", @class = "form-control activable" })
+				<button id="btnAbmAceptar" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Aceptar" onclick="btnSubmitClick();">
+					<i class="bx bx-check-circle bx-xs"></i>
+				</button>
+			</div>
+			<div id="divGridProductosPorRubro">
+				<div class="table-responsive text-nowrap table-wrapper-200-full">
+					<table class="table table-sm mb-0 table-hover" id="tbProductosPorRubro">
+						<thead class="table-dark">
+							<tr class="header">
+								<th><input name="select_all" value="1" type="checkbox"></th>
+								<th class="col-header-small align-center">ID</th>
+								<th class="col-header-small align-center">Descripción</th>
+							</tr>
+						</thead>
+						<tbody>
+							@foreach (var item in Model.ProductosPorRubro.ListaDatos)
+							{
+								var nombre = "chk" + item.P_Id;
+								<tr>
+									<td><input type="checkbox" name=@nombre /></td>
+									<td class="align-left">@item.P_Id</td>
+									<td class="align-center">@item.P_Desc</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</fieldset>
+	</div>
+</div>
+@section scripts {
+	<script type="text/javascript">
+	</script>
+	<script src="~/js/app/areas/abms/reasignacionderubro.js" type="text/javascript"></script>
+}

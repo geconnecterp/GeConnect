@@ -5,6 +5,7 @@ using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.ABMs.Models;
 using gc.sitio.core.Servicios.Contratos;
@@ -16,6 +17,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Security.Claims;
 using System.Security.Policy;
+using static gc.sitio.Areas.ABMs.Controllers.AbmProveedorController;
 
 namespace gc.sitio.Areas.ABMs.Controllers
 {
@@ -27,14 +29,17 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		private readonly IABMSectorServicio _abmsectorServicio;
 		private readonly IAbmServicio _abmServicio;
 		private readonly ISectorServicio _sectorServicio;
+		private readonly IABMProductoServicio _abmProdServ;
 		public AbmSectorController(IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger<AbmSectorController> logger,
-								   IABMSectorServicio abmsectorServicio, ISectorServicio sectorServicio, IAbmServicio abmServicio) : base(options, accessor, logger)
+								   IABMSectorServicio abmsectorServicio, ISectorServicio sectorServicio, IAbmServicio abmServicio,
+								   IABMProductoServicio abmProdServ) : base(options, accessor, logger)
 		{
 			_settings = options.Value;
 			_logger = logger;
 			_abmsectorServicio = abmsectorServicio;
 			_sectorServicio = sectorServicio;
 			_abmServicio = abmServicio;
+			_abmProdServ = abmProdServ;
 		}
 
 		[HttpGet]
@@ -445,7 +450,110 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			}
 		}
 
+		#region Reasignación de familia
+		public async Task<IActionResult> ReasignacionDeRubro()
+		{
+			MetadataGrid metadata;
+
+			var auth = EstaAutenticado;
+			if (!auth.Item1 || auth.Item2 < DateTime.Now)
+			{
+				return RedirectToAction("Login", "Token", new { area = "seguridad" });
+			}
+
+			var listR01 = new List<ComboGenDto>();
+			ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
+
+			var listR02 = new List<ComboGenDto>();
+			ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR02);
+
+			return View();
+		}
+
+		public async Task<IActionResult> BuscarRubrosPorSector(string secId)
+		{
+			var model = new ReasignacionRubroModel();
+
+			if (string.IsNullOrEmpty(secId))
+				return PartialView("_seccionReasignacion", model);
+
+			var familia = _sectorServicio.GetRubroParaABM(secId, TokenCookie);
+			if (familia == null)
+				return PartialView("_seccionReasignacion", model);
+
+			model.RubroProductos = ComboFamiliaDeProductos(familia, true);
+			familia = _sectorServicio.GetRubroParaABM("%", TokenCookie);
+			if (familia == null)
+				model.RubroProductosAReasignar = ComboFamiliaDeProductos([], true);
+			else
+				model.RubroProductosAReasignar = ComboFamiliaDeProductos(familia, true);
+			model.ProductosPorRubro = ObtenerGridCore<InfoProductoRubroDto>([]);
+			return PartialView("_seccionReasignacion", model);
+		}
+
+		public async Task<IActionResult> BuscarProductosPorRubro(string secId, string rubroSelected)
+		{
+			var model = new ProdPorRubroModel();
+
+			if (string.IsNullOrEmpty(secId) || string.IsNullOrEmpty(rubroSelected))
+				return PartialView("_gridProdPorRubro", model);
+
+			var flia = new ComboGenDto() { Id = secId, Descripcion = rubroSelected };
+			var query = new QueryFilters()
+			{
+				Id = "",
+				Buscar = "",
+				Rel01 = [],
+				Rel02 = [rubroSelected],
+				Rel03 = [],
+				Registros = 999999,
+				Pagina = 1,
+				Sort = "p_desc"
+			};
+			var res = await _abmProdServ.BuscarProducto(query, TokenCookie);
+			if (res.Item1 == null)
+				return PartialView("_gridProdPorRubro", model);
+
+			model.ProductosPorRubro = ObtenerGridCore<ProductoListaDto>(res.Item1);
+			return PartialView("_gridProdPorRubro", model);
+		}
+
+		public JsonResult ReasignarProductos(string secId, string rubroDest, string[] ids)
+		{
+			if (string.IsNullOrWhiteSpace(secId) || string.IsNullOrWhiteSpace(rubroDest) || ids.Length <= 0)
+				return Json(new { error = true, warn = false, msg = "Alguno de los parámetros es erróneo", data = "" });
+
+			var lista = new List<ProdNuevoRubro>();
+			for (int i = 0; i < ids.Length; i++)
+			{
+				lista.Add(new ProdNuevoRubro() { rub_id = rubroDest, p_id = ids[i] });
+			}
+			var jsonstring = JsonConvert.SerializeObject(lista, new JsonSerializerSettings());
+			var respuesta = _abmServicio.AbmConfirmar(ObtenerRequestParaABM('A', "rubro_reasigna", jsonstring, AdministracionId, UserName), TokenCookie).Result;
+			return AnalizarRespuesta(respuesta);
+		}
+		#endregion
+
 		#region Métodos privados
+		public class ProdNuevoRubro()
+		{
+			public string p_id { get; set; } = string.Empty;
+			public string rub_id { get; set; } = string.Empty;
+		}
+		protected SelectList ComboFamiliaDeProductos(List<RubroListaABMDto> listaR, bool selectFirst = false)
+		{
+			var nuevaLista = listaR.Select(x => new ComboGenDto { Id = x.Rub_Id, Descripcion = x.Rub_Desc });
+			var combo = HelperMvc<ComboGenDto>.ListaGenerica(nuevaLista);
+			if (combo != null && combo.Any() && selectFirst)
+			{
+				foreach (var item in combo)
+				{
+					item.Selected = true;
+					break;
+				}
+			}
+			return combo;
+		}
 		private string ValidarJsonAntesDeGuardar(SectorAbmValidationModel sector, char abm)
 		{
 			return string.Empty;
