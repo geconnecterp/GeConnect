@@ -12,5 +12,6 @@ namespace gc.sitio.core.Servicios.Contratos
     {
         List<AdministracionLoginDto> GetAdministracionLogin();
         Task<ResponseBaseDto> ValidarUsuario(string userId, string tipo, string tiId, string token);
-    }
+		List<AdministracionDto> ObtenerAdministraciones(string adm_activa, string token);
+	}
 }

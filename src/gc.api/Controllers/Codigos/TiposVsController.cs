@@ -40,6 +40,8 @@ namespace gc.api.Controllers.Codigos
 		private readonly ITipoGastoServicio _tipoGastoServicio;
 		private readonly ITipoRetGanServicio _tipoRetGanServicio;
 		private readonly ITipoRetIbServicio _tipoRetIbServicio;
+		private readonly ITipoCuentaFinServicio _tipoCuentaFinServicio;
+		private readonly ITipoMonedaServicio _tipoMonedaServicio;
 
 		public TiposVsController( IMapper mapper, IUriService uriService, ILogger<TiposVsController> logger, ICondicionAfipServicio condicionAfipServicio,
 								ICondicionIBServicio condicionIBServicio, IDepartamentoServicio departamentoServicio, IFormaDePagoServicio formaDePagoServicio,
@@ -48,7 +50,7 @@ namespace gc.api.Controllers.Codigos
 								IVendedorServicio vendedorServicio, IRepartidorServicio repartidorServicio, IFinancieroServicio financieroServicio,
 								ITipoContactoServicio tipoContactoServicio, ITipoObsServicio tipoObsServicio, ITipoOpeIvaServicio tipoOpeIvaServicio,
 								ITipoProveedorServicio tipoProveedorServicio, ITipoGastoServicio tipoGastoServicio, ITipoRetGanServicio tipoRetGanServicio,
-								ITipoRetIbServicio tipoRetIbServicio)
+								ITipoRetIbServicio tipoRetIbServicio, ITipoCuentaFinServicio tipoCuentaFinServicio, ITipoMonedaServicio tipoMonedaServicio)
         {
             _mapper = mapper;
             _uriService = uriService;
@@ -73,7 +75,21 @@ namespace gc.api.Controllers.Codigos
 			_tipoGastoServicio = tipoGastoServicio;
 			_tipoRetGanServicio = tipoRetGanServicio;
 			_tipoRetIbServicio = tipoRetIbServicio;
+			_tipoCuentaFinServicio = tipoCuentaFinServicio;
+			_tipoMonedaServicio = tipoMonedaServicio;
         }
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult GetTiposCuentaFinLista()
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			List<TipoCuentaFinDto> condAfip = _tipoCuentaFinServicio.GetTiposCuentaFin();
+			var lista = _mapper.Map<List<TipoCuentaFinDto>>(condAfip);
+
+			var response = new ApiResponse<List<TipoCuentaFinDto>>(lista);
+			return Ok(response);
+		}
 
 		[HttpGet]
 		[Route("[action]")]
@@ -233,6 +249,18 @@ namespace gc.api.Controllers.Codigos
 
 		[HttpGet]
 		[Route("[action]")]
+		public IActionResult GetFinancierosRelaPorTipoCfLista(string tcf_id)
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			List<FinancieroDto> financiero = _financieroServicio.GetFinancierosRelaPorTipoCfLista(tcf_id);
+			var lista = _mapper.Map<List<FinancieroDto>>(financiero);
+
+			var response = new ApiResponse<List<FinancieroDto>>(lista);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
 		public IActionResult GetTipoContactoLista(string tipo = "P")
 		{
 			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
@@ -312,6 +340,42 @@ namespace gc.api.Controllers.Codigos
 			var lista = _mapper.Map<List<TipoRetIngBrDto>>(tipoOpe);
 
 			var response = new ApiResponse<List<TipoRetIngBrDto>>(lista);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult GetTipoMonedaLista()
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			List<TipoMonedaDto> tipoOpe = _tipoMonedaServicio.GetTiposMoneda();
+			var lista = _mapper.Map<List<TipoMonedaDto>>(tipoOpe);
+
+			var response = new ApiResponse<List<TipoMonedaDto>>(lista);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult GetFinancierosEstados()
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			List<FinancieroEstadoDto> financiero = _financieroServicio.GetFinancieroEstados();
+			var lista = _mapper.Map<List<FinancieroEstadoDto>>(financiero);
+
+			var response = new ApiResponse<List<FinancieroEstadoDto>>(lista);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult GetPlanContableCuentaLista()
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			List<PlanContableDto> financiero = _financieroServicio.GetPlanContableCuentaLista();
+			var lista = _mapper.Map<List<PlanContableDto>>(financiero);
+
+			var response = new ApiResponse<List<PlanContableDto>>(lista);
 			return Ok(response);
 		}
 		//

@@ -1,0 +1,160 @@
+﻿@model QueryFilters
+@{
+	Layout = "~/views/shared/_Layout.cshtml";
+	var filtro = new QueryFilters() { Rel01 = new List<string>() };
+}
+
+@section styles {
+	<link rel="stylesheet" href="~/css/simplePagination.css" />
+}
+
+<div class="container">
+	<input type="text" id="IdSelected" style="display:none;" />
+	<div class="row">
+		<div class="col-md-6">
+			<div class="d-flex justify-content-sm-around">
+				<button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
+					<i class="bx bx-filter bx-xs"></i>
+				</button>
+
+				<button class="btn btn-primary btn-sm mt-1 me-1" type="button" id="btnDetalle" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle">
+					<i class="bx bx-arrow-to-bottom bx-xs"></i>
+				</button>
+			</div>
+		</div>
+		<div class="col-md-2">
+			<div class="d-flex justify-content-sm-center">
+				<button id="btnAbmAceptar" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Aceptar" disabled>
+					<i class="bx bx-check-circle bx-xs"></i>
+				</button>
+
+				<button id="btnAbmCancelar" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar" disabled>
+					<i class="bx bx-x-circle bx-xs"></i>
+				</button>
+			</div>
+		</div>
+		<div class="col-md-4">
+			<div class="d-flex justify-content-sm-center">
+				<button id="btnAbmNuevo" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Nuevo" disabled>
+					<i class="bx bx-check-circle bx-xs"></i>
+				</button>
+				<button id="btnAbmModif" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Editar" disabled>
+					<i class="bx bx-edit-alt bx-xs"></i>
+				</button>
+				<button id="btnAbmElimi" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Eliminar/Discontinuar" disabled>
+					<i class="bx bx-x-circle bx-xs"></i>
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<div class="collapse" id="divFiltro" style="">
+		<partial name="_filtroBase" model="filtro" />
+		@Html.Hidden("pagEstado", false);
+	</div>
+
+	<div class="collapse" id="divDetalle" style="">
+		<ul class="nav nav-tabs" role="tablist" id="tabsAbmMedioDePago">
+			<li class="nav-item" role="presentation" id="tabMedioDePago">
+				<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-home" aria-controls="navs-top-home" aria-selected="true" id="btnTabMedioDePago">
+					Medio de Pago
+				</button>
+			</li>
+			<li class="nav-item" role="presentation" id="tabOpcionesCuotas">
+				<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-profile" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1" id="btnTabOpcionesCuotas">
+					Opciones Cuotas
+				</button>
+			</li>
+			<li class="nav-item" role="presentation" id="tabCuentaFinContable">
+				<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-messages" aria-controls="navs-top-messages" aria-selected="false" tabindex="-1" id="btnTabCuentaFinContable">
+					Cuenta Financiera y Contable
+				</button>
+			</li>
+			<li class="nav-item" role="presentation" id="tabPos">
+				<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-notes" aria-controls="navs-top-notes" aria-selected="false" tabindex="-1" id="btnTabPos">
+					Notas
+				</button>
+			</li>
+		</ul>
+		<div class="tab-content">
+			<div class="tab-pane fade show active" id="navs-top-home" role="tabpanel">
+				<div id="divDatosMedioDePago">
+				</div>
+			</div>
+			<div class="tab-pane fade" id="navs-top-profile" role="tabpanel">
+				<div id="divOpcionesCuotas">
+				</div>
+			</div>
+			<div class="tab-pane fade" id="navs-top-messages" role="tabpanel">
+				<div id="divCuentaFinContable">
+				</div>
+			</div>
+			<div class="tab-pane fade" id="navs-top-notes" role="tabpanel">
+				<div id="divPos">
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div id="divGrilla">
+			<p style="background-color:gray">
+				<h5>No se han especificado datos aún.</h5>
+			</p>
+		</div>
+	</div>
+	<div class="row d-flex p-2 flex-fill">
+		<div class="col-2"></div>
+		<div id="divPaginacion" class="">
+		</div>
+		<div class="col-2"></div>
+	</div>
+</div>
+
+@section scripts {
+	<script type="text/javascript">
+		var totalRegs = 0;
+		var pagRegs = 0;
+		var pags = 0;
+		var pagina = 1;
+		var search = "";
+		var funcCallBack = "buscarMediosDePago";
+		var dataBak = {};
+		var insId = "";
+		var insIdRow = null;
+		var destinoDeOperacion = "";
+		var tipoDeOperacion = "";
+		var buscarUrl = "@Url.Action("buscar", "abmmediodepago", new { area = "abms" })";
+		var autoComRel01Url = "@Url.Action("BuscarR01", "abmmediodepago", new { area = "abms" })";
+		var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "abmmediodepago", new { area = "abms" })";
+		var buscarMedioDePagoUrl = "@Url.Action("BuscarMedioDePago", "abmmediodepago", new { area = "abms" })";
+		var buscarOpcionesCuotasUrl = "@Url.Action("BuscarOpcionesCuotas", "abmmediodepago", new { area = "abms" })";
+		var buscarOpcionCuotaUrl = "@Url.Action("BuscarOpcionCuota", "abmmediodepago", new { area = "abms" })";
+		var buscarCuentasFinYContableUrl = "@Url.Action("BuscarCuentasFinYContable", "abmmediodepago", new { area = "abms" })";
+		var buscarCuentaFinYContableUrl = "@Url.Action("BuscarCuentaFinYContable", "abmmediodepago", new { area = "abms" })";
+		// var buscarDatosOtrosContactosUrl = "@Url.Action("BuscarDatosOtrosContactos", "abmcliente", new { area = "abms" })";
+		// var buscarNotasUrl = "@Url.Action("BuscarNotas", "abmcliente", new { area = "abms" })";
+		// var buscarDatosNotaUrl = "@Url.Action("BuscarDatosNotas", "abmcliente", new { area = "abms" })";
+		// var buscarObservacionesUrl = "@Url.Action("BuscarObservaciones", "abmcliente", new { area = "abms" })";
+		// var buscarDatosObservacionesUrl = "@Url.Action("BuscarDatosObservaciones", "abmcliente", new { area = "abms" })";
+		// var buscarFamiliasUrl = "@Url.Action("BuscarFamilias", "abmproveedor", new { area = "abms" })";
+		// var buscarDatosFamiliasUrl = "@Url.Action("BuscarDatosFamilia", "abmproveedor", new { area = "abms" })";
+		// var obtenerDepartamentosUrl = "@Url.Action("ObtenerDepartamentos", "abmcliente", new { area = "abms" })";
+		// var nuevoProveedorUrl = "@Url.Action("NuevoProveedor", "abmproveedor", new { area = "abms" })";
+		// var nuevaFormaDePagoUrl = "@Url.Action("NuevaFormaDePago", "abmcliente", new { area = "abms" })";
+		// var dataOpsFormaDePagoUrl = "@Url.Action("DataOpsFormaDePago", "abmcliente", new { area = "abms" })";
+		// var nuevoContactoUrl = "@Url.Action("NuevoContacto", "abmcliente", new { area = "abms" })";
+		// var dataOpsCuentaContactoUrl = "@Url.Action("DataOpsOtrosContactos", "abmcliente", new { area = "abms" })";
+		// var nuevaNotaUrl = "@Url.Action("NuevaNota", "abmcliente", new { area = "abms" })";
+		// var dataOpsCuentaNotaUrl = "@Url.Action("DataOpsNotas", "abmcliente", new { area = "abms" })";
+		// var nuevaObservacionUrl = "@Url.Action("NuevaObservacion", "abmcliente", new { area = "abms" })";
+		// var dataOpsObservacionesUrl = "@Url.Action("DataOpsObservaciones", "abmcliente", new { area = "abms" })";
+		// var nuevaFamiliaUrl = "@Url.Action("NuevaFamilia", "abmproveedor", new { area = "abms" })";
+		// var dataOpsFamiliaUrl = "@Url.Action("DataOpsProveedorFamilia", "abmproveedor", new { area = "abms" })";
+		// var dataOpsProveedorUrl = "@Url.Action("DataOpsProveedor", "abmproveedor", new { area = "abms" })";
+	</script>
+	<script src="~/js/plugins/jquery.simplePagination.js"></script>
+	<script src="~/js/app/busquedas.js"></script>
+	<script src="~/js/app/areas/abms/abmsettings.js" type="text/javascript"></script>
+	<script src="~/js/app/areas/abms/abmcommons.js" type="text/javascript"></script>
+	<script src="~/js/app/areas/abms/abmmediodepago.js" type="text/javascript"></script>
+}

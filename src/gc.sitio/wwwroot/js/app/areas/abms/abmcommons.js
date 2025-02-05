@@ -24,7 +24,7 @@
 }
 
 function ejecutaDblClickGrid(x, grid) {
-	AbrirWaiting("Espere mientras se busca el producto seleccionado...");
+	AbrirWaiting("Espere mientras se busca el elementos seleccionado...");
 	selectRegDbl(x, grid);
 }
 
@@ -151,6 +151,8 @@ function LimpiarCampos(tabAct) {
 			break;
 		case Tabs.TabSector:
 			break;
+		case Tabs.TabMedioDePago:
+			break;
 		case Tabs.TabFormasDePago:
 			PostGenHtml(data, nuevaFormaDePagoUrl, function (obj) {
 				$("#divDatosDeFPSelected").html(obj);
@@ -202,6 +204,30 @@ function LimpiarCampos(tabAct) {
 		case Tabs.TabRubro:
 			PostGenHtml(data, nuevoRubroUrl, function (obj) {
 				$("#divDatosDeFamiliaSelected").html(obj);
+				$(".activable").prop("disabled", true);
+			}, function (obj) {
+				ControlaMensajeError(obj.message);
+			});
+			break;
+		case Tabs.TabOpcionesCuota:
+			PostGenHtml(data, nuevaOpcionCuotaUrl, function (obj) {
+				$("#divOpcionesCuotasSelected").html(obj);
+				$(".activable").prop("disabled", true);
+			}, function (obj) {
+				ControlaMensajeError(obj.message);
+			});
+			break;
+		case Tabs.TabCuentaFinYContable:
+			PostGenHtml(data, nuevaCuentaFinYContableUrl, function (obj) {
+				$("#divCuentaFinContableSelected").html(obj);
+				$(".activable").prop("disabled", true);
+			}, function (obj) {
+				ControlaMensajeError(obj.message);
+			});
+			break;
+		case Tabs.TabPos:
+			PostGenHtml(data, nuevoPosUrl, function (obj) {
+				$("#divPosSelected").html(obj);
 				$(".activable").prop("disabled", true);
 			}, function (obj) {
 				ControlaMensajeError(obj.message);
@@ -386,6 +412,10 @@ function accionBotones(btn, tabActiva) {
 			if (tabActiva === Tabs.TabSector) {
 				$("#btnDetalle").prop("disabled", true);
 				activarGrilla(Tabs.TabSector);
+			}
+			if (tabActiva === Tabs.TabMedioDePago) {
+				$("#btnDetalle").prop("disabled", true);
+				activarGrilla(Tabs.TabMedioDePago);
 			}
 		}
 	}
@@ -583,6 +613,9 @@ function GetMensajeParaBaja(tabActiva) {
 		case Tabs.TabSector:
 			mensaje = "Para eliminar primero debe seleccionar un Sector."
 			break;
+		case Tabs.TabMedioDePago:
+			mensaje = "Para eliminar primero debe seleccionar un Medio de Pago."
+			break;
 		case Tabs.TabFormasDePago:
 			mensaje = "Para eliminar primero debe seleccionar una Forma de Pago."
 			break;
@@ -604,6 +637,15 @@ function GetMensajeParaBaja(tabActiva) {
 		case Tabs.TabRubro:
 			mensaje = "Para eliminar primero debe seleccionar un Rubro."
 			break;
+		case Tabs.TabOpcionesCuota:
+			mensaje = "Para eliminar primero debe seleccionar una Opcion de Cuota."
+			break;
+		case Tabs.TabCuentaFinYContable:
+			mensaje = "Para eliminar primero debe seleccionar una Cuenta Financiera y Contable."
+			break;
+		case Tabs.TabPos:
+			mensaje = "Para eliminar primero debe seleccionar un Pos."
+			break;
 		default:
 			mensaje = "";
 			break;
@@ -621,6 +663,9 @@ function SetearDestinoDeOperacion(tabActiva) {
 			break;
 		case Tabs.TabSector:
 			destinoDeOperacion = AbmObject.SECTORES;
+			break;
+		case Tabs.TabMedioDePago:
+			destinoDeOperacion = AbmObject.MEDIO_DE_PAGO;
 			break;
 		case Tabs.TabFormasDePago:
 			destinoDeOperacion = AbmObject.CLIENTES_CONDICIONES_VTA;
@@ -642,6 +687,15 @@ function SetearDestinoDeOperacion(tabActiva) {
 			break;
 		case Tabs.TabRubro:
 			destinoDeOperacion = AbmObject.RUBROS;
+			break;
+		case Tabs.TabOpcionesCuota:
+			destinoDeOperacion = AbmObject.OPCIONES_CUOTA;
+			break;
+		case Tabs.TabCuentaFinYContable:
+			destinoDeOperacion = AbmObject.CUENTA_FIN_CONTABLE;
+			break;
+		case Tabs.TabPos:
+			destinoDeOperacion = AbmObject.POS;
 			break;
 		default:
 			destinoDeOperacion = "";
@@ -665,6 +719,9 @@ function btnNuevoClick() {
 		case Tabs.TabSector:
 			NuevoSector();
 			break;
+		case Tabs.TabMedioDePago:
+			NuevoMedioDePago();
+			break;
 		case Tabs.TabFormasDePago:
 			NuevaFormaDePago();
 			break;
@@ -686,6 +743,15 @@ function btnNuevoClick() {
 		case Tabs.TabRubro:
 			NuevoRubro();
 			break;
+		case Tabs.TabOpcionesCuota:
+			NuevaOpcionCuota();
+			break;
+		case Tabs.TabCuentaFinYContable:
+			NuevaCuentaFinYContable();
+			break;
+		case Tabs.TabPos:
+			NuevaPos();
+			break;
 		default:
 			break;
 	}
@@ -703,6 +769,9 @@ function btnModiClick() {
 			break;
 		case Tabs.TabSector:
 			ModificaSector(tabActiva);
+			break;
+		case Tabs.TabMedioDePago:
+			ModificaMedioDePago(tabActiva);
 			break;
 		case Tabs.TabFormasDePago:
 			ModificaFormaDePago(tabActiva, Grids.GridProveedor);
@@ -725,6 +794,15 @@ function btnModiClick() {
 		case Tabs.TabRubro:
 			ModificaRubro(tabActiva, Grids.GridSector);
 			break;
+		case Tabs.TabOpcionesCuota:
+			ModificaOpcionesCuota(tabActiva, Grids.GridMedioDePago);
+			break;
+		case Tabs.TabCuentaFinYContable:
+			ModificaCuentaFinYContable(tabActiva, Grids.GridMedioDePago);
+			break;
+		case Tabs.TabPos:
+			ModificaPos(tabActiva, Grids.GridMedioDePago);
+			break;
 		default:
 			break;
 	}
@@ -742,6 +820,9 @@ function btnBajaClick() {
 	else if (tabActiva == Tabs.TabSector) {
 		idSelected = $("#Sector_Sec_Id").val();
 	}
+	else if (tabActiva == Tabs.TabMedioDePago) {
+		idSelected = $("#MedioDePago_Ins_Id").val();
+	}
 	else {
 		idSelected = $("#IdSelected").val();
 	}
@@ -757,7 +838,7 @@ function btnBajaClick() {
 		accionBotones(AbmAction.BAJA, tabActiva);
 		tipoDeOperacion = AbmAction.BAJA;
 		$(".activable").prop("disabled", true);
-		var tabActiva = $('.nav-tabs .active')[0].id;
+		//var tabActiva = $('.nav-tabs .active')[0].id;
 		SetearDestinoDeOperacion(tabActiva);
 		$(".nav-link").prop("disabled", true);
 		switch (tabActiva) {
@@ -769,6 +850,9 @@ function btnBajaClick() {
 				break;
 			case Tabs.TabSector:
 				desactivarGrilla(Grids.GridSector);
+				break;
+			case Tabs.TabMedioDePago:
+				desactivarGrilla(Grids.GridMedioDePago);
 				break;
 			case Tabs.TabFormasDePago:
 				desactivarGrilla(Grids.GridProveedor);
@@ -797,6 +881,18 @@ function btnBajaClick() {
 			case Tabs.TabRubro:
 				desactivarGrilla(Grids.GridSector);
 				desactivarGrilla(Grids.GridRubro);
+				break;
+			case Tabs.TabOpcionesCuota:
+				desactivarGrilla(Grids.GridMedioDePago);
+				desactivarGrilla(Grids.GridOpcionesCuotas);
+				break;
+			case Tabs.TabCuentaFinYContable:
+				desactivarGrilla(Grids.GridMedioDePago);
+				desactivarGrilla(Grids.GridCuentaFinYConta);
+				break;
+			case Tabs.TabPos:
+				desactivarGrilla(Grids.GridMedioDePago);
+				desactivarGrilla(Grids.GridPos);
 				break;
 			default:
 				break;
@@ -844,6 +940,17 @@ function btnCancelClick() {
 			activarGrilla(Grids.GridSector);
 			QuitarElementoSeleccionado(Grids.GridSector);
 			break;
+		case Tabs.TabMedioDePago:
+			if ($("#divDetalle").is(":visible")) {
+				$("#divDetalle").collapse("hide");
+			}
+			tb = $("#" + Grids.GridMedioDePago + " tbody tr");
+			if (tb.length === 0) {
+				$("#divFiltro").collapse("show");
+			}
+			activarGrilla(Grids.GridMedioDePago);
+			QuitarElementoSeleccionado(Grids.GridMedioDePago);
+			break;
 		case Tabs.TabFormasDePago:
 			LimpiarCampos(tabActiva);
 			$("#tbClienteFormaPagoEnTab").prop("disabled", false);
@@ -881,12 +988,32 @@ function btnCancelClick() {
 		case Tabs.TabSubSector:
 			LimpiarCampos(tabActiva);
 			activarGrilla(Grids.GridSubSector);
+			activarGrilla(Grids.GridSector);
 			selectReg(regSelected, Grids.GridSubSector);
 			break;
 		case Tabs.TabRubro:
 			LimpiarCampos(tabActiva);
 			activarGrilla(Grids.GridRubro);
+			activarGrilla(Grids.GridSector);
 			selectReg(regSelected, Grids.GridRubro);
+			break;
+		case Tabs.TabOpcionesCuota:
+			LimpiarCampos(tabActiva);
+			activarGrilla(Grids.GridOpcionesCuotas);
+			activarGrilla(Grids.GridMedioDePago);
+			selectReg(regSelected, Grids.GridOpcionesCuotas);
+			break;
+		case Tabs.TabCuentaFinYContable:
+			LimpiarCampos(tabActiva);
+			activarGrilla(Grids.GridCuentaFinYConta);
+			activarGrilla(Grids.GridMedioDePago);
+			selectReg(regSelected, Grids.GridCuentaFinYConta);
+			break;
+		case Tabs.TabOpcionesCuota:
+			LimpiarCampos(tabActiva);
+			//activarGrilla(Grids.GridRubro);
+			activarGrilla(Grids.GridMedioDePago);
+			//selectReg(regSelected, Grids.GridRubro);
 			break;
 		default:
 			break;
@@ -955,6 +1082,8 @@ function PuedoGuardar(tabAct) {
 			break;
 		case Tabs.TabSector:
 			break;
+		case Tabs.TabMedioDePago:
+			break;
 		case Tabs.TabFormasDePago:
 			if ($("#FormaDePago_Fp_Dias").val() < 0)
 				mensaje = "El valor de Plazo debe ser igual o mayor a 0.";
@@ -970,6 +1099,12 @@ function PuedoGuardar(tabAct) {
 		case Tabs.TabSubSector:
 			break;
 		case Tabs.TabRubro:
+			break;
+		case Tabs.TabOpcionesCuota:
+			break;
+		case Tabs.TabCuentaFinYContable:
+			break;
+		case Tabs.TabPos:
 			break;
 		default:
 			break;
@@ -997,6 +1132,8 @@ function validarCampos() {
 			break;
 		case Tabs.TabSector:
 			break;
+		case Tabs.TabMedioDePago:
+			break;
 		case Tabs.TabFormasDePago:
 			break;
 		case Tabs.TabNotas:
@@ -1010,6 +1147,12 @@ function validarCampos() {
 		case Tabs.TabSubSector:
 			break;
 		case Tabs.TabRubro:
+			break;
+		case Tabs.TabOpcionesCuota:
+			break;
+		case Tabs.TabCuentaFinYContable:
+			break;
+		case Tabs.TabPos:
 			break;
 		default:
 			break;
@@ -1068,6 +1211,11 @@ function Guardar() {
 				gridParaActualizar = Grids.GridSector;
 				url = dataOpsSectorUrl;
 				break;
+			case AbmObject.MEDIO_DE_PAGO:
+				activarGrilla(Grids.GridMedioDePago);
+				gridParaActualizar = Grids.GridMedioDePago;
+				url = dataOpsMedioDePagoUrl;
+				break;
 			case AbmObject.CLIENTES_CONDICIONES_VTA:
 				activarGrilla(Grids.GridFP);
 				url = dataOpsFormaDePagoUrl;
@@ -1098,6 +1246,18 @@ function Guardar() {
 			case AbmObject.RUBROS:
 				activarGrilla(Grids.GridRubro);
 				url = dataOpsRubroUrl;
+				break;
+			case AbmObject.OPCIONES_CUOTA:
+				activarGrilla(Grids.GridOpcionesCuotas);
+				url = dataOpsOpcionesCuotaUrl;
+				break;
+			case AbmObject.CUENTA_FIN_CONTABLE:
+				activarGrilla(Grids.GridCuentaFinYConta);
+				url = dataOpsCuentaFinYContaUrl;
+				break;
+			case AbmObject.POS:
+				//activarGrilla(Grids.GridCuentaFinYConta);
+				url = dataOpsPosUrl;
 				break;
 			default:
 		}

@@ -5,7 +5,7 @@ namespace gc.api.Controllers.Codigos
     using gc.infraestructura.Core.EntidadesComunes;
     using gc.infraestructura.Core.Interfaces;
     using gc.infraestructura.Core.Responses;
-    using gc.infraestructura.Dtos.Administracion;
+	using gc.infraestructura.Dtos.Administracion;
     using gc.infraestructura.Dtos.Almacen.Rpr;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json;
@@ -121,40 +121,51 @@ namespace gc.api.Controllers.Codigos
             return Ok(new ApiResponse<ResponseBaseDto>(resp));
         }
 
-        //// POST api/<administracionesController>
-        //[HttpPost]
-        //public async Task<IActionResult> Post(AdministracionDto datoDto)
-        //{
-        //    _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-        //    var Admin = _mapper.Map<Administracion>(datoDto);
-        //    var res = await _adminSv.AddAsync(Admin);
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult ObtenerAdministraciones(string adm_activa)
+		{
+			ApiResponse<List<AdministracionDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _adminSv.ObtenerAdministraciones(adm_activa);
+			response = new ApiResponse<List<AdministracionDto>>(res);
+			return Ok(response);
+		}
 
-        //    var response = new ApiResponse<bool>(res);
+		//// POST api/<administracionesController>
+		//[HttpPost]
+		//public async Task<IActionResult> Post(AdministracionDto datoDto)
+		//{
+		//    _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+		//    var Admin = _mapper.Map<Administracion>(datoDto);
+		//    var res = await _adminSv.AddAsync(Admin);
 
-        //    return Ok(response);
-        //}
+		//    var response = new ApiResponse<bool>(res);
 
-        //// PUT api/<administracionesController>/5
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> Put(string id, [FromBody] AdministracionDto datoDto)
-        //{
-        //    _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-        //    var Administracion = _mapper.Map<Administracion>(datoDto);
-        //    Administracion.Adm_id = id; //garantizo que el id buscado es el que se envia al negocio
-        //    var result = await _adminSv.Update(Administracion);
-        //    var response = new ApiResponse<bool>(result);
-        //    return Ok(response);
+		//    return Ok(response);
+		//}
 
-        //}
+		//// PUT api/<administracionesController>/5
+		//[HttpPut("{id}")]
+		//public async Task<IActionResult> Put(string id, [FromBody] AdministracionDto datoDto)
+		//{
+		//    _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+		//    var Administracion = _mapper.Map<Administracion>(datoDto);
+		//    Administracion.Adm_id = id; //garantizo que el id buscado es el que se envia al negocio
+		//    var result = await _adminSv.Update(Administracion);
+		//    var response = new ApiResponse<bool>(result);
+		//    return Ok(response);
 
-        //// DELETE api/<administracionesController>/5
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> Delete(string id)
-        //{
-        //    _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-        //    var res = await _adminSv.Delete(id);
-        //    var response = new ApiResponse<bool>(res);
-        //    return Ok(response);
-        //}
-    }
+		//}
+
+		//// DELETE api/<administracionesController>/5
+		//[HttpDelete("{id}")]
+		//public async Task<IActionResult> Delete(string id)
+		//{
+		//    _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+		//    var res = await _adminSv.Delete(id);
+		//    var response = new ApiResponse<bool>(res);
+		//    return Ok(response);
+		//}
+	}
 }

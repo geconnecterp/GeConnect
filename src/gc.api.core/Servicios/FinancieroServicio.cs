@@ -15,7 +15,23 @@ namespace gc.api.core.Servicios
 
         }
 
-        public List<FinancieroDto> GetFinancierosPorTipoCfLista(string tcf_id)
+		public List<PlanContableDto> GetPlanContableCuentaLista()
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_CCB_CUENTA_LISTA;
+			var ps = new List<SqlParameter>();
+			var listaTemp = _repository.EjecutarLstSpExt<PlanContableDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<FinancieroEstadoDto> GetFinancieroEstados()
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_FINANCIERO_ESTADOS;
+			var ps = new List<SqlParameter>();
+			var listaTemp = _repository.EjecutarLstSpExt<FinancieroEstadoDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<FinancieroDto> GetFinancierosPorTipoCfLista(string tcf_id)
         {
             var sp = Constantes.ConstantesGC.StoredProcedures.SP_FINANCIEROS_LISTA;
             var ps = new List<SqlParameter>()
@@ -36,5 +52,27 @@ namespace gc.api.core.Servicios
                     #endregion
                 }).ToList();
         }
-    }
+
+		public List<FinancieroDto> GetFinancierosRelaPorTipoCfLista(string tcf_id)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_FINANCIEROS_RELA_LISTA;
+			var ps = new List<SqlParameter>()
+			{
+				new("@tcf_id",tcf_id)
+			};
+			var res = _repository.InvokarSp2Lst(sp, ps, true);
+			if (res.Count == 0)
+				return [];
+			else
+				return res.Select(x => new FinancieroDto()
+				{
+					#region Campos
+					ctaf_id = x.Ctaf_id,
+					ctaf_denominacion = x.Ctaf_denominacion,
+					ctaf_activo = x.Ctaf_activo,
+					ctaf_lista = x.Ctaf_lista,
+					#endregion
+				}).ToList();
+		}
+	}
 }

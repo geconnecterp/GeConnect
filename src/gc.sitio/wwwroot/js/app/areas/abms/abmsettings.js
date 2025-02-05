@@ -22,7 +22,11 @@ const AbmObject = {
 	PROVEEDORES_FAMILIA: 'proveedores_familia', //TODO: revisar con Carlos si esta bien el nombre
 	SECTORES: 'sectores',
 	SUB_SECTORES: 'sub_sectores',
-	RUBROS: 'rubros'
+	RUBROS: 'rubros',
+	MEDIO_DE_PAGO: '',
+	OPCIONES_CUOTA: '',
+	CUENTA_FIN_CONTABLE: '',
+	POS: ''
 }
 
 const Grids = {
@@ -37,7 +41,11 @@ const Grids = {
 	GridPrUsers: 'tbGridPerfilUsers',
 	GridSector: 'tbGridSector',
 	GridSubSector: 'tbSubSectorEnTab',
-	GridRubro: 'tbRubroEnTab'
+	GridRubro: 'tbRubroEnTab',
+	GridMedioDePago: 'tbGridMedioDePago',
+	GridOpcionesCuotas: 'tbOpcionesCuotas',
+	GridCuentaFinYConta: 'tbCuentaFinYConta',
+	GridPos: 'tbPos'
 }
 
 const Tabs = {
@@ -50,7 +58,11 @@ const Tabs = {
 	TabFamilias: 'btnTabFliaProv',
 	TabSector: 'btnTabSector',
 	TabSubSector: 'btnTabSubSector',
-	TabRubro: 'btnTabRubro'
+	TabRubro: 'btnTabRubro',
+	TabMedioDePago: 'btnTabMedioDePago',
+	TabOpcionesCuota: 'btnTabOpcionesCuotas',
+	TabCuentaFinYContable: 'btnTabCuentaFinContable',
+	TabPos: 'btnTabPos'
 }
 
 //variables globales

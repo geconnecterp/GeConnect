@@ -1,0 +1,18 @@
+﻿@model MedioDePagoAbmOpcCuotaSelectedModel
+@{
+}
+<div class="row" style="padding-top: 10px;">
+	@Html.HiddenFor(x => x.OpcionCuota.Ins_Id)
+	<div class="row mt-1">
+		<div class="input-group input-group-sm">
+			<span class="input-group-text fixed-lbl-for-abm-70">Cuota: </span>
+			<input type="number" asp-for="OpcionCuota.Cuota" class="form-control activable" />
+		</div>
+	</div>
+	<div class="row mt-1">
+		<div class="input-group input-group-sm">
+			<span class="input-group-text fixed-lbl-for-abm-70">Recargo: </span>
+			<input type="number" asp-for="OpcionCuota.Recargo" class="form-control activable" />
+		</div>
+	</div>
+</div>

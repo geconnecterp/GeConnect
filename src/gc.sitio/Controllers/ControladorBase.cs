@@ -1147,10 +1147,50 @@ namespace gc.sitio.Controllers
                 _context.HttpContext.Session.SetString("FinancierosLista", json);
             }
         }
-        #endregion
+		#endregion
 
-        #region TIPO OBSERVACIONES
-        public List<TipoObsDto> TipoObservacionesLista
+		#region FINANCIEROS RELA
+		public List<FinancieroDto> FinancierosRelaLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("FinancierosRelaLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<FinancieroDto>();
+				}
+				return JsonConvert.DeserializeObject<List<FinancieroDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("FinancierosRelaLista", json);
+			}
+		}
+		#endregion
+
+		#region FINANCIEROS ESTADOS
+		public List<FinancieroEstadoDto> FinancierosEstadosLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("FinancierosEstadosLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<FinancieroEstadoDto>();
+				}
+				return JsonConvert.DeserializeObject<List<FinancieroEstadoDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("FinancierosEstadosLista", json);
+			}
+		}
+		#endregion
+
+		#region TIPO OBSERVACIONES
+		public List<TipoObsDto> TipoObservacionesLista
         {
             get
             {
@@ -1167,6 +1207,26 @@ namespace gc.sitio.Controllers
                 _context.HttpContext.Session.SetString("TipoObservacionesLista", json);
             }
         }
+		#endregion
+
+		#region MONEDA
+		public List<TipoMonedaDto> TipoMonedaLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("TipoMonedaLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<TipoMonedaDto>();
+				}
+				return JsonConvert.DeserializeObject<List<TipoMonedaDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("TipoMonedaLista", json);
+			}
+		}
 		#endregion
 
 		#region TIPO OPE IVA
@@ -1269,6 +1329,65 @@ namespace gc.sitio.Controllers
 		}
 		#endregion
 
+		#region TIPO CUENTA FIN
+		public List<TipoCuentaFinDto> TipoCuentaFinLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("TipoCuentaFinLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<TipoCuentaFinDto>();
+				}
+				return JsonConvert.DeserializeObject<List<TipoCuentaFinDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("TipoCuentaFinLista", json);
+			}
+		}
+		#endregion
+
+		#region ADMINISTRACIONES LISTA
+		public List<AdministracionDto> AdministracionesLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("AdministracionesLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<AdministracionDto>();
+				}
+				return JsonConvert.DeserializeObject<List<AdministracionDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("AdministracionesLista", json);
+			}
+		}
+		#endregion
+
+		#region PLAN CONTABLE LISTA
+		public List<PlanContableDto> CuentaPlanContableLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("CuentaPlanContableLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<PlanContableDto>();
+				}
+				return JsonConvert.DeserializeObject<List<PlanContableDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("CuentaPlanContableLista", json);
+			}
+		}
+		#endregion
 		#region Metodos generales
 		public PartialViewResult ObtenerMensajeDeError(string mensaje)
         {
@@ -1454,7 +1573,11 @@ namespace gc.sitio.Controllers
         {
             FinancierosLista = _finan.GetFinancierosPorTipoCfLista(ctf_id, TokenCookie);
         }
-        protected void ObtenerTipoContacto(ITipoContactoServicio _tipoCon, string tipo)
+		protected void ObteneFinancierosRela(IFinancieroServicio _finan, string ctf_id)
+		{
+			FinancierosRelaLista = _finan.GetFinancierosRelaPorTipoCfLista(ctf_id, TokenCookie);
+		}
+		protected void ObtenerTipoContacto(ITipoContactoServicio _tipoCon, string tipo)
         {
             TipoContactoLista = _tipoCon.GetTipoContactoLista(TokenCookie, tipo);
         }
@@ -1481,6 +1604,26 @@ namespace gc.sitio.Controllers
 		protected void ObtenerTipoRetIB(ITipoRetIbServicio _tipoRetIbServicio)
 		{
 			TipoRetIBLista = _tipoRetIbServicio.ObtenerTipoRetIb(TokenCookie);
+		}
+		protected void ObtenerTipoCuentaFin(ITipoCuentaFinServicio tipoCuentaFinServicio)
+		{
+            TipoCuentaFinLista = tipoCuentaFinServicio.ObtenerTipoCuentaFin(TokenCookie);
+		}
+		protected void ObtenerTipoMoneda(ITipoMonedaServicio tipoMonedaServicio)
+		{
+			TipoMonedaLista = tipoMonedaServicio.ObtenerTipoMoneda(TokenCookie);
+		}
+		protected void ObtenerFinancierosEstados(IFinancieroServicio financieroServicio)
+		{
+            FinancierosEstadosLista = financieroServicio.GetFinancierosEstados(TokenCookie);
+		}
+		protected void ObtenerAdministracionesLista(IAdministracionServicio admServicio)
+		{
+            AdministracionesLista = admServicio.ObtenerAdministraciones("%", TokenCookie);
+		}
+		protected void ObtenerCuentaPlanContableLista(IFinancieroServicio _financieroServicio)
+		{
+			CuentaPlanContableLista = _financieroServicio.GetPlanContableCuentaLista(TokenCookie);
 		}
 		#endregion
 		protected void ObtenerDiasDeLaSemana()
@@ -1610,6 +1753,26 @@ namespace gc.sitio.Controllers
 		protected SelectList ComboTipoRetIb()
 		{
 			var lista = TipoRetIBLista.Select(x => new ComboGenDto { Id = x.rib_id, Descripcion = x.rib_desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		protected SelectList ComboMoneda()
+		{
+			var lista = TipoMonedaLista.Select(x => new ComboGenDto { Id = x.Mon_Codigo, Descripcion = x.Mon_Desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		protected SelectList ComboFinancierosEstados()
+		{
+			var lista = FinancierosEstadosLista.Select(x => new ComboGenDto { Id = x.Ctaf_Estado, Descripcion = x.Ctaf_Estado_Desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		protected SelectList ComboAdministracionesLista()
+		{
+			var lista = AdministracionesLista.Select(x => new ComboGenDto { Id = x.Adm_id, Descripcion = x.Adm_nombre });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		protected SelectList ComboCuentaPlanContableLista()
+		{
+			var lista = CuentaPlanContableLista.Select(x => new ComboGenDto { Id = x.Ccb_Id, Descripcion = x.Ccb_Desc });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
 		#endregion

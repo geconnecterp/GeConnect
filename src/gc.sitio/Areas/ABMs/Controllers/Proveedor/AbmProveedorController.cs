@@ -113,11 +113,11 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			try
 			{
 				if (string.IsNullOrEmpty(ctaId))
-					return PartialView("_tabDatosProveedor", new ProveedorABMDto());
+					return PartialView("_tabDatosProveedor", new ProveedorAbmModel());
 
 				var res = _proveedorServicio.GetProveedorParaABM(ctaId, TokenCookie);
 				if (res == null)
-					return PartialView("_tabDatosProveedor", new ProveedorABMDto());
+					return PartialView("_tabDatosProveedor", new ProveedorAbmModel());
 
 				var cfp = _cuentaServicio.GetCuentaFormaDePago(ctaId, TokenCookie);
 				var ccon = _cuentaServicio.GetCuentaContactos(ctaId, TokenCookie);

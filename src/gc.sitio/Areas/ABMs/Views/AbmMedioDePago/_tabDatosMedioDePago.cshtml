@@ -1,0 +1,78 @@
+﻿@model MedioDePagoAbmModel
+@{
+	var aux = new MedioDePagoAbmModel();
+	var mon = Model.ComboMoneda;
+	var fin = Model.ComboFinanciero;
+}
+
+<div class="row">
+	<div class="col-md-6">
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-100">ID</span>
+				<input type="text" asp-for="MedioDePago.Ins_Id" class="form-control" disabled />
+				<div class="form-check form-check-inline form-switch mb-2">
+					<input class="form-check-input activable" type="checkbox" asp-for="MedioDePago.Ins_Activa" value="" id="chkInsActivo">
+					<label class="form-check-label" for="chkInsActivo"> ACTIVO</label>
+				</div>
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-100">Descripción</span>
+				<input type="text" asp-for="MedioDePago.Ins_Desc" class="form-control activable" />
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-100">Moneda: </span>
+				@Html.DropDownListFor(m => m.MedioDePago.Mon_Codigo, mon, "Seleccionar...", new { @id = "listaMoneda", @class = "form-control activable" })
+			</div>
+		</div>
+		<div class="row mt-1" id="divDatosDeLiquidacion">
+			<fieldset>
+				<legend>
+					Datos de Liquidación
+				</legend>
+				<div class="input-group input-group-sm">
+					<span class="input-group-text fixed-lbl-for-abm-100">Razón Social:</span>
+					<input type="text" asp-for="MedioDePago.Ins_Razon_Social" class="form-control activable" />
+				</div>
+				<div class="input-group input-group-sm">
+					<span class="input-group-text fixed-lbl-for-abm-100">CUIT:</span>
+					<input type="text" asp-for="MedioDePago.Ins_Cuit" class="form-control activable" />
+				</div>
+				<div class="input-group input-group-sm">
+					<span class="input-group-text fixed-lbl-for-abm-100">Comisión:</span>
+					<input type="number" asp-for="MedioDePago.Ins_Comision" class="form-control activable" />
+				</div>
+				<div class="input-group input-group-sm">
+					<span class="input-group-text fixed-lbl-for-abm-100">Cargo Fijo:</span>
+					<input type="number" asp-for="MedioDePago.Ins_Comision_Fija" class="form-control activable" />
+				</div>
+				<div class="input-group input-group-sm">
+					<span class="input-group-text fixed-lbl-for-abm-100">% Ret. Gan.:</span>
+					<input type="number" asp-for="MedioDePago.Ins_Ret_Gan" class="form-control activable" />
+					<span class="input-group-text fixed-lbl-for-abm-100">% Ret. IVA.:</span>
+					<input type="number" asp-for="MedioDePago.Ins_Ret_Iva" class="form-control activable" />
+					<span class="input-group-text fixed-lbl-for-abm-100">% Ret. IB.:</span>
+					<input type="number" asp-for="MedioDePago.Ins_Ret_Ib" class="form-control activable" />
+				</div>
+			</fieldset>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<div class="form-check form-check-inline form-switch mb-2">
+					<input class="form-check-input activable" type="checkbox" asp-for="MedioDePago.Ins_Activa" value="" id="chkInsActivo">
+					<label class="form-check-label" for="chkInsActivo"> Relacionado a Cuenta Financiera ya Existente de Valores al Cobro</label>
+				</div>
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-130">Cuenta Financiera: </span>
+				@Html.DropDownListFor(m => m.MedioDePago.Ctaf_Id_Link, fin, "Seleccionar...", new { @id = "listaFinanciero", @class = "form-control activable" })
+			</div>
+		</div>
+	</div>
+</div>

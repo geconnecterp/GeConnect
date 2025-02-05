@@ -174,6 +174,13 @@
 			public const string SP_ABM_SUB_SECTOR_DATOS = "SPGECO_ABM_Sub_Sectores_Datos";
 			public const string SP_ABM_RUBRO_LISTA = "SPGECO_ABM_Rubros_Lista";
 			public const string SP_ABM_RUBRO_DATOS = "SPGECO_ABM_Rubros_Datos";
+
+            public const string SP_ABM_MEDIOS_PAGOS_LISTA = "SPGECO_ABM_MediosPagos_Lista";
+			public const string SP_ABM_MEDIOS_PAGOS_DATOS = "SPGECO_ABM_MediosPagos_Datos";
+			public const string SP_ABM_OPCION_CUOTA_LISTA = "SPGECO_ABM_MediosPagos_Cuotas_Lista";
+			public const string SP_ABM_OPCION_CUOTA_DATOS = "SPGECO_ABM_MediosPagos_Cuotas_Datos";
+			public const string SP_ABM_CUENTA_FIN_LISTA = "SPGECO_ABM_MediosPagos_Ctaf_Lista";
+			public const string SP_ABM_CUENTA_FIN_DATOS = "SPGECO_ABM_MediosPagos_Ctaf_Datos";
 			#endregion
 
 			#region Tipos
@@ -191,7 +198,8 @@
             public const string SP_VENDEDOR_LISTA = "SPGECO_Vendedores_Lista";
             public const string SP_REPARTIDOR_LISTA = "SPGECO_Repartidores_Lista";
             public const string SP_FINANCIEROS_LISTA = "SPGECO_Financieros_Lista";
-            public const string SP_FORMA_PAGO_LISTA = "SPGECO_Formas_Pagos_Lista";
+			public const string SP_FINANCIEROS_RELA_LISTA = "SPGECO_Financieros_Rela_Lista";
+			public const string SP_FORMA_PAGO_LISTA = "SPGECO_Formas_Pagos_Lista";
 			public const string SP_TIPO_CONTACTO_LISTA = "SPGECO_Tipos_Contactos_Lista";
             public const string SP_TIPO_OBS_LISTA = "SPGECO_Tipos_Obs_Lista";
             public const string SP_TIPO_OPE_IVA = "SPGECO_Tipos_Ope_IVA";
@@ -199,8 +207,15 @@
 			public const string SP_TIPO_GASTO = "SPGECO_G_Cuentas_Lista";
 			public const string SP_TIPO_RET_GAN = "SPGECO_Reten_GA";
 			public const string SP_TIPO_RET_IB = "SPGECO_Reten_IB";
+			public const string SP_TIPO_CUENTA_FIN_LISTA = "SPGECO_Tipos_Cuentas_Fin_Lista";
+			public const string SP_TIPOS_MONEDA_LISTA = "SPGECO_Monedas";
+			public const string SP_FINANCIERO_ESTADOS = "SPGECO_Financieros_Estados";
+			public const string SP_CCB_CUENTA_LISTA = "SPGECO_CCB_Cuentas_Lista";
 			//
 			#endregion
+
+			public const string SP_ADMINISTRACIONES = "SPGECO_Administraciones";
+			//
 		}
-    }
+	}
 }

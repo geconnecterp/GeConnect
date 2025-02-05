@@ -3,6 +3,7 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Administracion;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
@@ -20,15 +21,60 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string RutaAPI = "/api/administracion";
         private const string AccionLogin = "/GetAdministraciones4Login";
         private const string TI_VALIDA_USU = "/TIValidarUsuario";
+        private const string ObtenerAdministracionesUrl = "/ObtenerAdministraciones";
 
-        private readonly AppSettings _appSettings;
+
+		private readonly AppSettings _appSettings;
 
         public AdministracionServicio(IOptions<AppSettings> options, ILogger<AdministracionServicio> logger) : base(options, logger)
         {
             _appSettings = options.Value;
         }
 
-        public List<AdministracionLoginDto> GetAdministracionLogin()
+		public List<AdministracionDto> ObtenerAdministraciones(string adm_activa, string token)
+		{
+			ApiResponse<List<AdministracionDto>> respuesta;
+			string stringData;
+			try
+			{
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerAdministracionesUrl}?adm_activa={adm_activa}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (!string.IsNullOrEmpty(stringData))
+					{
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<AdministracionDto>>>(stringData);
+					}
+					else
+					{
+						throw new Exception("No se logro obtener la respuesta de la API con los datos de la cuenta administrativa. Verifique.");
+					}
+					return respuesta.Data;
+				}
+				else
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogError($"Error al intentar obtener los datos de la cuenta administrativa: {stringData}");
+					throw new NegocioException("Hubo un error al intentar obtener los datos de la cuenta administrativa");
+				}
+
+			}
+			catch (NegocioException)
+			{
+				throw;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar obtener los datos de la cuenta administrativa.");
+				throw;
+			}
+		}
+
+		public List<AdministracionLoginDto> GetAdministracionLogin()
         {
             ApiResponse<List<AdministracionLoginDto>> respuesta;
             string stringData;
@@ -65,7 +111,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-        public async Task<ResponseBaseDto> ValidarUsuario(string userId, string tipo,string tiId, string token)
+		public async Task<ResponseBaseDto> ValidarUsuario(string userId, string tipo,string tiId, string token)
         {
             ApiResponse<ResponseBaseDto> apiResponse;
 

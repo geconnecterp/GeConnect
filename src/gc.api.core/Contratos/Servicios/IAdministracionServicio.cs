@@ -9,6 +9,6 @@ namespace gc.api.core.Contratos.Servicios
         bool ActualizaMePaId(AdmUpdateMePaDto datos);
 
         ResponseBaseDto ValidaUsuario(string tipo, string id, string usuId);
-
+        List<AdministracionDto> ObtenerAdministraciones(string adm_activa = "%");
     }
 }

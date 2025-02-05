@@ -5,9 +5,11 @@ using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Administracion;
 using gc.infraestructura.Dtos.Almacen.Rpr;
+using gc.infraestructura.Dtos.Almacen.Tr;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using System;
 using System.Linq.Dynamic.Core;
 
 namespace gc.api.core.Servicios
@@ -103,7 +105,7 @@ namespace gc.api.core.Servicios
             return paginas;
         }
 
-        public ResponseBaseDto ValidaUsuario(string tipo, string id, string usuId)
+		public ResponseBaseDto ValidaUsuario(string tipo, string id, string usuId)
         {
 
 
@@ -120,5 +122,18 @@ namespace gc.api.core.Servicios
 
             return response[0];
         }
-    }
+
+		public List<AdministracionDto> ObtenerAdministraciones(string adm_activa = "%")
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_ADMINISTRACIONES;
+
+			var ps = new List<SqlParameter>()
+			{
+				new("@adm_activa",adm_activa)
+			};
+			List<AdministracionDto> response = _repository.EjecutarLstSpExt<AdministracionDto>(sp, ps, true);
+
+			return response;
+		}
+	}
 }

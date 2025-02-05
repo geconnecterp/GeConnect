@@ -1,0 +1,44 @@
+﻿@model GridCore<ABMMedioDePagoSearchDto>
+@{
+	var dataMod = new ABMMedioDePagoSearchDto();
+	var alt = true;
+	string clase = string.Empty;
+	string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+}
+<style>
+	thead th {
+		position: sticky;
+		top: 0px;
+	}
+</style>
+<div class="card">
+	<div class="card-body">
+		<div class="table-responsive text-nowrap  table-wrapper">
+			<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridMedioDePago">
+				<thead class="table-dark">
+					<tr class="header">
+						<th scope="col">@nameof(dataMod.Ins_Id)</th>
+						<th scope="col">@nameof(dataMod.Ins_Desc)</th>
+						<th scope="col">@nameof(dataMod.Tcf_Id)</th>
+						<th scope="col">@nameof(dataMod.Ins_Vigente)</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var item in Model.ListaDatos)
+					{
+						if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+						<tr class="@clase" onclick="selectReg(this, 'tbGridMedioDePago')"
+						@* ondblclick="selectRegDbl(this, 'tbGridProveedor')" *@>
+							<td class="text-sm-center">@item.Ins_Id</td>
+							<td class="text-sm-start">@item.Ins_Desc</td>
+							<td class="text-sm-center">@item.Tcf_Id</td>
+							<td class="text-sm-center">@item.Ins_Vigente</td>
+						</tr>
+					}
+
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>

@@ -55,6 +55,10 @@ namespace gc.sitio.core.Extensions
 			services.AddScoped<IMenuesServicio, MenuesServicio>();
             services.AddScoped<IABMSectorServicio, ABMSectorServicio>();
 			services.AddScoped<ISectorServicio, SectorServicio>();
+			services.AddScoped<IABMMedioDePagoServicio, ABMMedioDePagoServicio>();
+			services.AddScoped<ITipoCuentaFinServicio, TipoCuentaFinServicio>();
+			services.AddScoped<IMedioDePagoServicio, MedioDePagoServicio>();
+			services.AddScoped<ITipoMonedaServicio, TipoMonedaServicio>();
 			return services;
         }
     }

@@ -1,0 +1,53 @@
+﻿@model MedioDePagoAbmOpcCuotaModel
+@{
+}
+<div class="row">
+	<div class="col-md-8">
+		<div class="row">
+			<div class="card">
+				<div class="card-body mt-1">
+					<div class="table-responsive text-nowrap table-wrapper-200-full">
+						<table class="table table-sm mb-0 table-hover" id="tbOpcionesCuotas">
+							<thead class="table-dark">
+								<tr class="header">
+									<th class="col-header-small align-center">Cuota</th>
+									<th class="col-header-small align-center">Recargo</th>
+									<th style="width:0%; display:none;">Ins_Id</th>
+								</tr>
+							</thead>
+							<tbody>
+								@foreach (var item in Model.ListaOpcionesCuota.ListaDatos)
+								{
+									<tr onclick="selectRegCli(this, 'tbOpcionesCuotas')" ondblclick="selectRegDbl(this, 'tbOpcionesCuotas')">
+										<td class="align-left">@item.Cuota</td>
+										<td class="align-left">@item.Recargo</td>
+										<td style="display:none;">@item.Ins_Id</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="divOpcionesCuotasSelected">
+			<div class="row" style="padding-top: 10px;">
+				@Html.HiddenFor(x => x.OpcionCuota.Ins_Id)
+				<div class="row mt-1">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text fixed-lbl-for-abm-70">Cuota: </span>
+						<input type="number" asp-for="OpcionCuota.Cuota" class="form-control activable" />
+					</div>
+				</div>
+				<div class="row mt-1">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text fixed-lbl-for-abm-70">Recargo: </span>
+						<input type="number" asp-for="OpcionCuota.Recargo" class="form-control activable" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+

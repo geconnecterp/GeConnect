@@ -11,13 +11,9 @@ using gc.sitio.Areas.ABMs.Models;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.ABM;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using System.Security.Claims;
-using System.Security.Policy;
-using static gc.sitio.Areas.ABMs.Controllers.AbmProveedorController;
 
 namespace gc.sitio.Areas.ABMs.Controllers
 {
