@@ -7,6 +7,14 @@
 
 <div class="row">
 	<div class="col-md-6">
+		@Html.HiddenFor(x => x.MedioDePago.Ins_Dato1_Desc)
+		@Html.HiddenFor(x => x.MedioDePago.Ins_Dato2_Desc)
+		@Html.HiddenFor(x => x.MedioDePago.Ins_Dato3_Desc)
+		@Html.HiddenFor(x => x.MedioDePago.Ins_Detalle)
+		@Html.HiddenFor(x => x.MedioDePago.Ins_Arqueo)
+		@Html.HiddenFor(x => x.MedioDePago.Ins_Tiene_Vto)
+		@Html.HiddenFor(x => x.MedioDePago.Tcf_Id)
+		@Html.HiddenFor(x => x.MedioDePago.Tcf_Desc)
 		<div class="row mt-1">
 			<div class="input-group input-group-sm">
 				<span class="input-group-text fixed-lbl-for-abm-100">ID</span>
@@ -63,8 +71,8 @@
 		<div class="row mt-1">
 			<div class="input-group input-group-sm">
 				<div class="form-check form-check-inline form-switch mb-2">
-					<input class="form-check-input activable" type="checkbox" asp-for="MedioDePago.Ins_Activa" value="" id="chkInsActivo">
-					<label class="form-check-label" for="chkInsActivo"> Relacionado a Cuenta Financiera ya Existente de Valores al Cobro</label>
+					<input class="form-check-input activable" type="checkbox" asp-for="MedioDePago.Ctaf_Id_Link_Check" value="" id="chkLinkActivo">
+					<label class="form-check-label" for="chkLinkActivo"> Relacionado a Cuenta Financiera ya Existente de Valores al Cobro</label>
 				</div>
 			</div>
 		</div>

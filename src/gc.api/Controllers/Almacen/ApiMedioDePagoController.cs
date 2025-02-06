@@ -80,7 +80,7 @@ namespace gc.api.Controllers.Almacen
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<FinancieroListaDto>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]
-		public IActionResult GetCuentaFinYContableListaParaABM(string ins_id)
+		public IActionResult GetCuentaFinYContableLista(string ins_id)
 		{
 			ApiResponse<List<FinancieroListaDto>> response;
 			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
@@ -95,7 +95,7 @@ namespace gc.api.Controllers.Almacen
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<FinancieroListaDto>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]
-		public IActionResult GetCuentaFinYContableParaABM(string ctaf_id)
+		public IActionResult GetCuentaFinYContable(string ctaf_id)
 		{
 			ApiResponse<List<FinancieroListaDto>> response;
 			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");

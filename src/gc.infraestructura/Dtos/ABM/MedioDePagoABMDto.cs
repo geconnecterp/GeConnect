@@ -21,7 +21,8 @@ namespace gc.infraestructura.Dtos.ABM
 		public char Ins_Arqueo { get; set; }
 		public char Ins_Tiene_Vto { get; set; }
 		public char Ins_Vigente { get; set; }
-		public string? Ctaf_Id_Link { get; set; }
+        public bool Ctaf_Id_Link_Check { get; set; }
+        public string? Ctaf_Id_Link { get; set; }
 		public string Tcf_Id { get; set; } = string.Empty;
 		public string Tcf_Desc { get; set; } = string.Empty;
 		public string? Ins_Id_Pos { get; set; }

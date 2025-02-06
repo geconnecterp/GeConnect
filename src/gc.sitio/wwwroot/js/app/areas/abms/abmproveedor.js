@@ -437,43 +437,6 @@ function BuscarProveedor(ctaId) {
 	});
 }
 
-//function PuedoAgregar(tabAct) {
-//	var mensaje = "";
-//	switch (tabAct) {
-//		case Tabs.TabCliente:
-//			break;
-//		case Tabs.TabProveedor:
-//			break;
-//		case Tabs.TabSector:
-//			break;
-//		case Tabs.TabFormasDePago:
-//			if (!$("#chkCtaActiva").is(":checked"))
-//				mensaje = "Solo se pueden agregar formas de pago para cuentas activas.";
-//			break;
-//		case Tabs.TabNotas:
-//			if (!$("#chkCtaActiva").is(":checked"))
-//				mensaje = "Solo se pueden agregar notas para cuentas activas.";
-//			break;
-//		case Tabs.TabObservaciones:
-//			if (!$("#chkCtaActiva").is(":checked"))
-//				mensaje = "Solo se pueden agregar observaciones para cuentas activas.";
-//			break;
-//		case Tabs.TabOtrosContactos:
-//			if (!$("#chkCtaActiva").is(":checked"))
-//				mensaje = "Solo se pueden agregar contactos para cuentas activas.";
-//			break;
-//		case Tabs.TabFamilias:
-//			break;
-//		case Tabs.TabSubSector:
-//			break;
-//		case Tabs.TabRubro:
-//			break;
-//		default:
-//			break;
-//	}
-//	return mensaje;
-//}
-
 function ObtenerDatosDeProveedorFamiliaParaJson(destinoDeOperacion, tipoDeOperacion) {
 	var cta_id = $("#Proveedor_Cta_Id").val();
 	var pg_id = $("#ProveedorGrupo_Pg_Id").val();

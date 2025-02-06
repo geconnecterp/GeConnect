@@ -23,10 +23,10 @@ const AbmObject = {
 	SECTORES: 'sectores',
 	SUB_SECTORES: 'sub_sectores',
 	RUBROS: 'rubros',
-	MEDIO_DE_PAGO: '',
-	OPCIONES_CUOTA: '',
-	CUENTA_FIN_CONTABLE: '',
-	POS: ''
+	MEDIO_DE_PAGO: 'mediospagos',
+	OPCIONES_CUOTA: 'mediospagos_cuotas',
+	CUENTA_FIN_CONTABLE: 'mediospagos_ctaf',
+	POS: 'mediospagos_pos'
 }
 
 const Grids = {
@@ -44,7 +44,7 @@ const Grids = {
 	GridRubro: 'tbRubroEnTab',
 	GridMedioDePago: 'tbGridMedioDePago',
 	GridOpcionesCuotas: 'tbOpcionesCuotas',
-	GridCuentaFinYConta: 'tbCuentaFinYConta',
+	GridCuentaFinYConta: 'tbCuentaFinYContable',
 	GridPos: 'tbPos'
 }
 

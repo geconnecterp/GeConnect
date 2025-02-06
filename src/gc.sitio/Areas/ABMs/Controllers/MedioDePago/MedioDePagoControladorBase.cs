@@ -95,6 +95,44 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 			}
 
 		}
+
+		public Pos PosSeleccionado
+		{
+			get
+			{
+				var txt = _context.HttpContext.Session.GetString("PosSeleccionado");
+				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
+				{
+					return new Pos();
+				}
+				return JsonConvert.DeserializeObject<Pos>(txt); ;
+			}
+			set
+			{
+				var valor = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("PosSeleccionado", valor);
+			}
+
+		}
+
+		public MedioDePagoABMDto MedioDePagoSelected
+		{
+			get
+			{
+				var txt = _context.HttpContext.Session.GetString("MedioDePagoSelected");
+				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
+				{
+					return new MedioDePagoABMDto();
+				}
+				return JsonConvert.DeserializeObject<MedioDePagoABMDto>(txt); ;
+			}
+			set
+			{
+				var valor = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("MedioDePagoSelected", valor);
+			}
+
+		}
 		#endregion
 
 		#region Enum's
@@ -116,6 +154,13 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 			M = 3, //Modificacion
 			S = 4, //Submit
 			C = 5  //Cancel
+		}
+
+		public class Pos()
+		{
+			public string Ins_Id { get; set; } = string.Empty;
+			public string? Ins_Id_Pos { get; set; }
+			public string? Ins_Id_Pos_Ctls { get; set; }
 		}
 		#endregion
 	}

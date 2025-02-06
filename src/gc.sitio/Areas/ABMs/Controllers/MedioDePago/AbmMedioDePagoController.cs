@@ -1,9 +1,11 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.Tr.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.ABMs.Models;
@@ -12,6 +14,7 @@ using gc.sitio.core.Servicios.Contratos.ABM;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System.Security.Claims;
 
 namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
@@ -28,12 +31,13 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		private readonly IFinancieroServicio _financieroServicio;
 		private readonly IAdministracionServicio _administracionServicio;
 		private readonly ITipoGastoServicio _tipoGastoServicio;
+		private readonly IAbmServicio _abmServicio;
 
 		public AbmMedioDePagoController(IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger<AbmMedioDePagoController> logger,
 										IABMMedioDePagoServicio abmMedioDePago, ITipoCuentaFinServicio tipoCuentaFinServicio,
 										IMedioDePagoServicio medioDePagoServicio, ITipoMonedaServicio tipoMonedaServicio,
 										IFinancieroServicio financieroServicio, IAdministracionServicio administracionServicio,
-										ITipoGastoServicio tipoGastoServicio) : base(options, accessor, logger)
+										ITipoGastoServicio tipoGastoServicio, IAbmServicio abmServicio) : base(options, accessor, logger)
 		{
 			_settings = options.Value;
 			_logger = logger;
@@ -44,6 +48,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 			_financieroServicio = financieroServicio;
 			_administracionServicio = administracionServicio;
 			_tipoGastoServicio = tipoGastoServicio;
+			_abmServicio = abmServicio;
 		}
 
 		[HttpGet]
@@ -139,14 +144,15 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 					MedioDePago = res.First(),
 					ComboMoneda = ComboMoneda(),
 					ComboFinanciero = ComboFinancieroRela(res.First().Tcf_Id),
-					//TODO: Armar html con los datos
 				};
+				SetearPosDeMedioDePagoSeleccionado(res.First());
+				MedioDePagoSelected = res.First();
 				return PartialView("_tabDatosMedioDePago", medioDePagoModel);
 			}
 			catch (Exception ex)
 			{
-				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Proveedor";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Proveedor");
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Obtener Medio de Pago";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Obtener Medio de Pago");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -277,7 +283,308 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 			}
 		}
 
+		[HttpPost]
+		public async Task<IActionResult> BuscarPos(string insId)
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				if (string.IsNullOrEmpty(insId))
+					return PartialView("_tabDatosPos", new MedioDePagoAbmPosModel());
+
+				if (insId != PosSeleccionado.Ins_Id)
+					return PartialView("_tabDatosPos", new MedioDePagoAbmPosModel());
+
+				var model = new MedioDePagoAbmPosModel()
+				{
+					Ins_Id = PosSeleccionado.Ins_Id,
+					Ins_Id_Pos = PosSeleccionado.Ins_Id_Pos,
+					Ins_Id_Pos_Ctls = PosSeleccionado.Ins_Id_Pos_Ctls
+				};
+				return PartialView("_tabDatosPos", model);
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Pos";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Pos");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> NuevoMedioDePago()
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				var medioDePagoModel = new MedioDePagoAbmModel()
+				{
+					MedioDePago = new MedioDePagoABMDto(),
+					ComboMoneda = ComboMoneda(),
+					ComboFinanciero = ComboFinancieroRela(string.Empty),
+				};
+				SetearPosDeMedioDePagoSeleccionado(medioDePagoModel.MedioDePago);
+				return PartialView("_tabDatosMedioDePago", medioDePagoModel);
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Nuevo Medio de Pago";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Nuevo Medio de Pago");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> NuevaOpcionCuota(string insId)
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				var model = new MedioDePagoAbmOpcCuotaSelectedModel()
+				{
+					OpcionCuota = new OpcionCuotaModel() { Cuota = 1, Ins_Id = insId, Recargo = 0, Pos_Plan = null }
+				};
+				return PartialView("_tabDatosOpcionesCuotasSelected", model);
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Nueva Opciones Cuotas";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Nueva Opciones Cuotas");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> NuevaCuentaFinYContable()
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				var model = new MedioDePagoAbmCuentaFinSelectedModel()
+				{
+					CuentaFin = ObtenerCuentaFinModel(new FinancieroListaDto()),
+					ComboTipo = ComboFinancierosEstados(),
+					ComboCuentaGasto = ComboTipoGasto(),
+					ComboAdministracion = ComboAdministracionesLista(),
+					ComboCuentaContable = ComboCuentaPlanContableLista()
+				};
+				return PartialView("_tabDatosCuentaFinYContableSelected", model);
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Nueva Cuenta Financiera y Contable Selected";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Nueva Cuenta Financiera y Contable Selected");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> NuevaPos()
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				var model = new MedioDePagoAbmPosModel()
+				{
+					Ins_Id = PosSeleccionado.Ins_Id,
+					Ins_Id_Pos = PosSeleccionado.Ins_Id_Pos,
+					Ins_Id_Pos_Ctls = PosSeleccionado.Ins_Id_Pos_Ctls
+				};
+				return PartialView("_tabDatosPos", model);
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Nueva Pos";
+				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Nueva Pos");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> ActualizarTitulo()
+		{
+			var tituloModel = new TituloModel
+			{
+				Titulo = $"ABM Medios de Pago - {MedioDePagoSelected.Tcf_Desc}"
+			};
+			return PartialView("_titulo", tituloModel);
+		}
+
+		[HttpPost]
+		public JsonResult BuscarMedioDePagoCargado(string insId)
+		{
+			if (string.IsNullOrWhiteSpace(insId))
+				return Json(new { error = true, warn = false, msg = "", data = "" });
+
+			var res = _medioDePagoServicio.GetMedioDePagoParaABM(insId, TokenCookie);
+			if (res == null)
+				return Json(new { error = true, warn = false, msg = "", data = "" });
+			if (res.Count == 0)
+				return Json(new { error = true, warn = false, msg = "", data = "" });
+			return Json(new { error = false, warn = false, msg = "", data = res.First().Ins_Desc });
+		}
+
+		[HttpPost]
+		public JsonResult DataOpsMedioDePago(MPAbmValidationModel mp, string destinoDeOperacion, char tipoDeOperacion)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+				{
+					return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+				}
+
+				var respuestaDeValidacion = ValidarJsonAntesDeGuardar(mp, tipoDeOperacion);
+				if (respuestaDeValidacion == "")
+				{
+					mp = HelperGen.PasarAMayusculas(mp);
+					var jsonstring = JsonConvert.SerializeObject(mp, new JsonSerializerSettings());
+					var respuesta = _abmServicio.AbmConfirmar(ObtenerRequestParaABM(tipoDeOperacion, destinoDeOperacion, jsonstring, AdministracionId, UserName), TokenCookie).Result;
+					return AnalizarRespuesta(respuesta);
+				}
+				else
+					return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, msg = "Ha ocurrido un error al intentar actualizar la información." });
+			}
+		}
+
+		[HttpPost]
+		public JsonResult DataOpsOpcionesCuota(MPOpcionCuotaAbmValidationModel oc, string destinoDeOperacion, char tipoDeOperacion)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+				{
+					return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+				}
+
+				var respuestaDeValidacion = ValidarJsonAntesDeGuardar(oc, tipoDeOperacion);
+				if (respuestaDeValidacion == "")
+				{
+					oc = HelperGen.PasarAMayusculas(oc);
+					var jsonstring = JsonConvert.SerializeObject(oc, new JsonSerializerSettings());
+					var respuesta = _abmServicio.AbmConfirmar(ObtenerRequestParaABM(tipoDeOperacion, destinoDeOperacion, jsonstring, AdministracionId, UserName), TokenCookie).Result;
+					return AnalizarRespuesta(respuesta);
+				}
+				else
+					return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, msg = "Ha ocurrido un error al intentar actualizar la información." });
+			}
+		}
+
+		[HttpPost]
+		public JsonResult DataOpsCuentaFinYContable(MPCuentaFinYContableAbmValidationModel cc, string destinoDeOperacion, char tipoDeOperacion)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+				{
+					return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+				}
+
+				var respuestaDeValidacion = ValidarJsonAntesDeGuardar(cc, tipoDeOperacion);
+				if (respuestaDeValidacion == "")
+				{
+					cc = HelperGen.PasarAMayusculas(cc);
+					var jsonstring = JsonConvert.SerializeObject(cc, new JsonSerializerSettings());
+					var respuesta = _abmServicio.AbmConfirmar(ObtenerRequestParaABM(tipoDeOperacion, destinoDeOperacion, jsonstring, AdministracionId, UserName), TokenCookie).Result;
+					return AnalizarRespuesta(respuesta);
+				}
+				else
+					return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, msg = "Ha ocurrido un error al intentar actualizar la información." });
+			}
+		}
+
+		[HttpPost]
+		public JsonResult DataOpsPos(MPPosAbmValidationModel pos, string destinoDeOperacion, char tipoDeOperacion)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+				{
+					return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+				}
+
+				var respuestaDeValidacion = ValidarJsonAntesDeGuardar(pos, tipoDeOperacion);
+				if (respuestaDeValidacion == "")
+				{
+					pos = HelperGen.PasarAMayusculas(pos);
+					var jsonstring = JsonConvert.SerializeObject(pos, new JsonSerializerSettings());
+					var respuesta = _abmServicio.AbmConfirmar(ObtenerRequestParaABM(tipoDeOperacion, destinoDeOperacion, jsonstring, AdministracionId, UserName), TokenCookie).Result;
+					return AnalizarRespuesta(respuesta);
+				}
+				else
+					return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, msg = "Ha ocurrido un error al intentar actualizar la información." });
+			}
+		}
+
 		#region Métodos Privados
+		private string ValidarJsonAntesDeGuardar(MPAbmValidationModel mp, char abm)
+		{
+			return "";
+		}
+		private string ValidarJsonAntesDeGuardar(MPOpcionCuotaAbmValidationModel mp, char abm)
+		{
+			return "";
+		}
+		private string ValidarJsonAntesDeGuardar(MPCuentaFinYContableAbmValidationModel mp, char abm)
+		{
+			return "";
+		}
+		private string ValidarJsonAntesDeGuardar(MPPosAbmValidationModel mp, char abm)
+		{
+			return "";
+		}
+		private void SetearPosDeMedioDePagoSeleccionado(MedioDePagoABMDto mp)
+		{
+			if (mp == null)
+				return;
+			var posSelected = new Pos
+			{
+				Ins_Id = mp.Ins_Id,
+				Ins_Id_Pos = mp.Ins_Id_Pos,
+				Ins_Id_Pos_Ctls = mp.Ins_Id_Pos_Ctls
+			};
+			PosSeleccionado = posSelected;
+		}
 		private void CargarDatosIniciales(bool actualizar)
 		{
 			if (TipoCuentaFinLista.Count == 0 || actualizar)
@@ -300,9 +607,16 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		}
 		private SelectList ComboFinancieroRela(string tcf_id)
 		{
-			CargarFinancierosRela(tcf_id);
-			var lista = FinancierosRelaLista.Select(x => new ComboGenDto { Id = x.ctaf_id, Descripcion = x.ctaf_denominacion });
-			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+			if (tcf_id != string.Empty)
+			{
+				CargarFinancierosRela(tcf_id);
+				var lista = FinancierosRelaLista.Select(x => new ComboGenDto { Id = x.ctaf_id, Descripcion = x.ctaf_denominacion });
+				return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+			}
+			else
+			{
+				return HelperMvc<ComboGenDto>.ListaGenerica(new List<FinancieroDto>().Select(x => new ComboGenDto { Id = x.ctaf_id, Descripcion = x.ctaf_denominacion }));
+			}
 		}
 		private CuentaFinModel ObtenerCuentaFinModel(FinancieroListaDto fin)
 		{

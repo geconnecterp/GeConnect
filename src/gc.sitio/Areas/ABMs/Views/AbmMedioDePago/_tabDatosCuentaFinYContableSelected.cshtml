@@ -1,5 +1,54 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model MedioDePagoAbmCuentaFinSelectedModel
 @{
+	var tipo = Model.ComboTipo;
+	var admin = Model.ComboAdministracion;
+	var gasto = Model.ComboCuentaGasto;
+	var conta = Model.ComboCuentaContable;
 }
+<div class="row" style="padding-top: 10px;">
+	@Html.HiddenFor(x => x.CuentaFin.Ins_Id)
+	@Html.HiddenFor(x => x.CuentaFin.Ctaf_Activo)
+	@Html.HiddenFor(x => x.CuentaFin.Ctaf_Saldo)
+	@Html.HiddenFor(x => x.CuentaFin.Adm_Id)
+	@Html.HiddenFor(x => x.CuentaFin.Tcf_Id)
+	@Html.HiddenFor(x => x.CuentaFin.Tcf_Desc)
+	@Html.HiddenFor(x => x.CuentaFin.Ins_Desc)
+	@Html.HiddenFor(x => x.CuentaFin.Mon_Codigo)
+	@Html.HiddenFor(x => x.CuentaFin.Cta_Id)
+	<div class="row mt-1">
+		<div class="input-group input-group-sm">
+			<span class="input-group-text fixed-lbl-for-abm-130">ID: </span>
+			<input type="text" asp-for="CuentaFin.Ctaf_Id" class="form-control activable" />
+		</div>
+	</div>
+	<div class="row mt-1">
+		<div class="input-group input-group-sm">
+			<span class="input-group-text fixed-lbl-for-abm-130">Denominación: </span>
+			<input type="text" asp-for="CuentaFin.Ctaf_Denominacion" class="form-control activable" />
+		</div>
+	</div>
+	<div class="row mt-1">
+		<div class="input-group input-group-sm">
+			<span class="input-group-text fixed-lbl-for-abm-130">Tipo: </span>
+			@Html.DropDownListFor(m => m.CuentaFin.Ctaf_Estado, tipo, "Seleccionar...", new { @id = "listaTipo", @class = "form-control activable" })
+		</div>
+	</div>
+	<div class="row mt-1">
+		<div class="input-group input-group-sm">
+			<span class="input-group-text fixed-lbl-for-abm-130">Administración: </span>
+			@Html.DropDownListFor(m => m.CuentaFin.Adm_Id, admin, "Seleccionar...", new { @id = "listaAdmin", @class = "form-control activable" })
+		</div>
+	</div>
+	<div class="row mt-1">
+		<div class="input-group input-group-sm">
+			<span class="input-group-text fixed-lbl-for-abm-130">CuentaGasto: </span>
+			@Html.DropDownListFor(m => m.CuentaFin.Ctag_Id, gasto, "Seleccionar...", new { @id = "listaGasto", @class = "form-control activable" })
+		</div>
+	</div>
+	<div class="row mt-1">
+		<div class="input-group input-group-sm">
+			<span class="input-group-text fixed-lbl-for-abm-130">Cuenta Contable: </span>
+			@Html.DropDownListFor(m => m.CuentaFin.Ccb_Id, conta, "Seleccionar...", new { @id = "listaConta", @class = "form-control activable" })
+		</div>
+	</div>
+</div>

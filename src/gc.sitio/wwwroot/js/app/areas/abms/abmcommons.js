@@ -210,6 +210,11 @@ function LimpiarCampos(tabAct) {
 			});
 			break;
 		case Tabs.TabOpcionesCuota:
+			insId = $("#MedioDePago_Ins_Id").val();
+			if (insId === "") {
+				insId = $("#IdSelected").val();
+			}
+			var data = { insId };
 			PostGenHtml(data, nuevaOpcionCuotaUrl, function (obj) {
 				$("#divOpcionesCuotasSelected").html(obj);
 				$(".activable").prop("disabled", true);
@@ -219,15 +224,15 @@ function LimpiarCampos(tabAct) {
 			break;
 		case Tabs.TabCuentaFinYContable:
 			PostGenHtml(data, nuevaCuentaFinYContableUrl, function (obj) {
-				$("#divCuentaFinContableSelected").html(obj);
+				$("#divCuentaFinYContableSelected").html(obj);
 				$(".activable").prop("disabled", true);
 			}, function (obj) {
 				ControlaMensajeError(obj.message);
 			});
 			break;
 		case Tabs.TabPos:
-			PostGenHtml(data, nuevoPosUrl, function (obj) {
-				$("#divPosSelected").html(obj);
+			PostGenHtml(data, nuevaPosUrl, function (obj) {
+				$("#divPos").html(obj);
 				$(".activable").prop("disabled", true);
 			}, function (obj) {
 				ControlaMensajeError(obj.message);
@@ -351,6 +356,8 @@ function PuedoAgregar(tabAct) {
 			break;
 		case Tabs.TabSector:
 			break;
+		case Tabs.TabMedioDePago:
+			break;
 		case Tabs.TabFormasDePago:
 			if (!$("#chkCtaActiva").is(":checked"))
 				mensaje = "Solo se pueden agregar formas de pago para cuentas activas.";
@@ -372,6 +379,18 @@ function PuedoAgregar(tabAct) {
 		case Tabs.TabSubSector:
 			break;
 		case Tabs.TabRubro:
+			break;
+		case Tabs.TabOpcionesCuota:
+			if (!$("#chkInsActivo").is(":checked"))
+				mensaje = "Solo se pueden agregar opciones de cuotas para medios de pago activos.";
+			break;
+		case Tabs.TabCuentaFinYContable:
+			if (!$("#chkInsActivo").is(":checked"))
+				mensaje = "Solo se pueden agregar cuentas financieras para medios de pago activos.";
+			break;
+		case Tabs.TabPos:
+			if (!$("#chkInsActivo").is(":checked"))
+				mensaje = "Solo se pueden agregar pos para medios de pago activos.";
 			break;
 		default:
 			break;
@@ -557,6 +576,8 @@ function PuedoModificar(tabAct) {
 			break;
 		case Tabs.TabSector:
 			break;
+		case Tabs.TabMedioDePago:
+			break;
 		case Tabs.TabFormasDePago:
 			if (!$("#chkCtaActiva").is(":checked"))
 				mensaje = "Solo se pueden modificar formas de pago para cuentas activas.";
@@ -594,6 +615,18 @@ function PuedoModificar(tabAct) {
 		case Tabs.TabRubro:
 			if ($("#IdSelected").val() == "")
 				mensaje = "Debe seleccionar un Rubro para modificar.";
+			break;
+		case Tabs.TabOpcionesCuota:
+			if ($("#IdSelected").val() == "")
+				mensaje = "Debe seleccionar una Opción de Cuota para modificar.";
+			break;
+		case Tabs.TabCuentaFinYContable:
+			if ($("#IdSelected").val() == "")
+				mensaje = "Debe seleccionar una Cuenta Fin. para modificar.";
+			break;
+		case Tabs.TabPos:
+			if ($("#MedioDePago_Ins_Id").val() == "")
+				mensaje = "Debe seleccionar un Medio de Pago antes de modificar Pos.";
 			break;
 		default:
 			break;
@@ -707,7 +740,7 @@ function btnNuevoClick() {
 	tipoDeOperacion = AbmAction.ALTA;
 	var tabActiva = $('.nav-tabs .active')[0].id;
 	SetearDestinoDeOperacion(tabActiva);
-	accionBotones(AbmAction.ALTA, tabActiva);
+	//accionBotones(AbmAction.ALTA, tabActiva);
 
 	switch (tabActiva) {
 		case Tabs.TabCliente:
@@ -759,7 +792,7 @@ function btnNuevoClick() {
 
 function btnModiClick() {
 	var tabActiva = $('.nav-tabs .active')[0].id;
-	accionBotones(AbmAction.MODIFICACION, tabActiva);
+	//accionBotones(AbmAction.MODIFICACION, tabActiva);
 	switch (tabActiva) {
 		case Tabs.TabCliente:
 			ModificaCliente(tabActiva);
@@ -1181,6 +1214,15 @@ function ActualizarRegistroEnGrilla(datos, grid) {
 			}
 		});
 	}
+	if (grid === Grids.GridMedioDePago) {
+		$("#" + grid + " tbody tr").each(function (index) {
+			let aux = $(this)[0].cells[0].innerText;
+			if (aux == datos.ins_id) {
+				$(this)[0].cells[1].innerText = datos.ins_desc;
+				$(this)[0].cells[3].innerText = datos.ins_vigente;
+			}
+		});
+	}
 }
 
 function btnSubmitClick() {
@@ -1253,7 +1295,7 @@ function Guardar() {
 				break;
 			case AbmObject.CUENTA_FIN_CONTABLE:
 				activarGrilla(Grids.GridCuentaFinYConta);
-				url = dataOpsCuentaFinYContaUrl;
+				url = dataOpsCuentaFinYContableUrl;
 				break;
 			case AbmObject.POS:
 				//activarGrilla(Grids.GridCuentaFinYConta);
@@ -1306,6 +1348,12 @@ function Guardar() {
 					control.val(obj.id);
 					BuscarElementoInsertadoSector(obj.id);
 				}
+				if (tipoDeOperacion == AbmAction.ALTA && (destinoDeOperacion === AbmObject.MEDIO_DE_PAGO)) { //Si estoy agregando, busco el registro que acabo de agregar con el id que me devuelve el response (obj.id)
+					var controlId = ObtenerModuloEjecutado(destinoDeOperacion) + 'Ins_Id';
+					var control = $("[name='" + controlId + "']");
+					control.val(obj.id);
+					BuscarElementoInsertadoMedioDePago(obj.id);
+				}
 				if (tipoDeOperacion == AbmAction.MODIFICACION) {
 					btnCancelClick();
 				}
@@ -1318,12 +1366,41 @@ function Guardar() {
 						case AbmObject.PROVEEDORES:
 							buscarProveedores(1, true);
 							break;
+						case AbmObject.MEDIO_DE_PAGO:
+							buscarMediosDePago(1, true);
+							break;
 						default:
 					}
 				}
 			}
 		});
 	}
+}
+
+function BuscarElementoInsertadoMedioDePago(insId) {
+	var data = { insId };
+	var url = buscarMedioDePagoCargadoUrl;
+	PostGen(data, url, function (obj) {
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", "Se produjo un error al intentar obtener la entidad recientemente cargada.", function () {
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			if (obj.data) {
+				$("#chkDescr").prop('checked', true);
+				$("#chkDescr").trigger("change");
+				$("#Buscar").val(obj.data);
+				$("#chkDesdeHasta").prop('checked', false);
+				$("#chkDesdeHasta").trigger("change");
+				$("#chkRel01").prop('checked', false);
+				$("#chkRel01").trigger("change");
+				$("#chkRel02").prop('checked', false);
+				$("#chkRel02").trigger("change");
+				buscarMediosDePago(1);
+			}
+		}
+	});
 }
 
 function BuscarElementoInsertadoSector(secId) {
@@ -1480,6 +1557,9 @@ function ObtenerDatosParaJson(destinoDeOperacion, tipoDeOperacion) {
 		case AbmObject.SECTORES:
 			json = ObtenerDatosDeSectorParaJson(destinoDeOperacion, tipoDeOperacion);
 			break;
+		case AbmObject.MEDIO_DE_PAGO:
+			json = ObtenerDatosDeMedioDePagoParaJson(destinoDeOperacion, tipoDeOperacion);
+			break;
 		case AbmObject.CLIENTES_CONDICIONES_VTA:
 			json = ObtenerDatosDeFormaDePagoPParaJson(destinoDeOperacion, tipoDeOperacion);
 			break;
@@ -1500,6 +1580,15 @@ function ObtenerDatosParaJson(destinoDeOperacion, tipoDeOperacion) {
 			break;
 		case AbmObject.RUBROS:
 			json = ObtenerDatosDeRubroParaJson(destinoDeOperacion, tipoDeOperacion);
+			break;
+		case AbmObject.OPCIONES_CUOTA:
+			json = ObtenerDatosDeOpcCuotaParaJson(destinoDeOperacion, tipoDeOperacion);
+			break;
+		case AbmObject.CUENTA_FIN_CONTABLE:
+			json = ObtenerDatosDeCuentaFinContaParaJson(destinoDeOperacion, tipoDeOperacion);
+			break;
+		case AbmObject.POS:
+			json = ObtenerDatosDePosParaJson(destinoDeOperacion, tipoDeOperacion);
 			break;
 		default:
 	}
