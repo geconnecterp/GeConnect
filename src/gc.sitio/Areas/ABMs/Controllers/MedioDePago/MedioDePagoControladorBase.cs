@@ -133,6 +133,25 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 			}
 
 		}
+
+		public string TCSelected
+		{
+			get
+			{
+				var txt = _context.HttpContext.Session.GetString("TCSelected");
+				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
+				{
+					return string.Empty;
+				}
+				return JsonConvert.DeserializeObject<string>(txt); ;
+			}
+			set
+			{
+				var valor = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("TCSelected", valor);
+			}
+
+		}
 		#endregion
 
 		#region Enum's

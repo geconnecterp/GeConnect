@@ -1484,6 +1484,9 @@ function ObtenerModuloEjecutado(destinoDeOperacion) {
 		case AbmObject.SECTORES:
 			return "Sector."
 			break;
+		case AbmObject.MEDIO_DE_PAGO:
+			return "MedioDePago."
+			break;
 		case AbmObject.CLIENTES_CONDICIONES_VTA:
 			return "FormaDePago."
 			break;
@@ -1505,6 +1508,15 @@ function ObtenerModuloEjecutado(destinoDeOperacion) {
 		case AbmObject.RUBROS:
 			return "Rubro."
 			break;
+		case AbmObject.OPCIONES_CUOTA:
+			return "OpcionCuota."
+			break;
+		case AbmObject.CUENTA_FIN_CONTABLE:
+			return "CuentaFin."
+			break;
+		case AbmObject.POS:
+			return ""
+			break;
 		default:
 	}
 }
@@ -1518,6 +1530,9 @@ function ActualizarDatosEnGrilla(destinoDeOperacion) {
 
 			break;
 		case AbmObject.SECTORES:
+
+			break;
+		case AbmObject.MEDIO_DE_PAGO:
 
 			break;
 		case AbmObject.CLIENTES_CONDICIONES_VTA:
@@ -1540,6 +1555,12 @@ function ActualizarDatosEnGrilla(destinoDeOperacion) {
 			break;
 		case AbmObject.RUBROS:
 			BuscarRubro();
+			break;
+		case AbmObject.OPCIONES_CUOTA:
+			BuscarOpcionesCuotas();
+			break;
+		case AbmObject.CUENTA_FIN_CONTABLE:
+			BuscarCuentaFinContable();
 			break;
 		default:
 	}

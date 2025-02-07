@@ -160,13 +160,13 @@ function NuevoMedioDePago() {
 		$("#divDatosMedioDePago").html(obj);
 		$(".nav-link").prop("disabled", true);
 		$(".activable").prop("disabled", false);
-		$("#chkCtaActiva")[0].checked = true;
-		$("#MedioDePago_Ins_Id").prop("disabled", true);
+		$("#chkInsActivo")[0].checked = true;
+		//$("#MedioDePago_Ins_Id").prop("disabled", true);
 		desactivarGrilla(Grids.GridMedioDePago);
 		accionBotones(AbmAction.ALTA, Tabs.TabMedioDePago);
 		$("#divFiltro").collapse("hide");
 		$("#divDetalle").collapse("show");
-		$("#MedioDePago_Ins_Desc").focus();
+		$("#MedioDePago_Ins_Id").focus();
 		CerrarWaiting();
 	}, function (obj) {
 		ControlaMensajeError(obj.message);
@@ -264,6 +264,7 @@ function ModificaMedioDePago(tabAct) {
 	$(".nav-link").prop("disabled", true);
 	$(".activable").prop("disabled", false);
 	desactivarGrilla(Grids.GridMedioDePago);
+	$("#MedioDePago_Ins_Id").prop("disabled", true);
 	$("#MedioDePago_Ins_Desc").focus();
 }
 
@@ -586,19 +587,19 @@ function ObtenerDatosDeCuentaFinContaParaJson(destinoDeOperacion, tipoDeOperacio
 	var ctaf_id = $("#CuentaFin_Ctaf_Id").val();
 	var ctaf_denominacion = $("#CuentaFin_Ctaf_Denominacion").val();
 	var ctaf_lista = $("#CuentaFin_Ctaf_Denominacion").val() + "(" + $("#CuentaFin_Ctaf_Id").val() + ")";
-	var ctaf_activo = $("#CuentaFin_Ctaf_Activo").val();
+	var ctaf_activo = "S";
 	var ctaf_estado = $("#listaTipo").val();
 	var ctaf_estado_des = $("#listaTipo option:selected").text();
 	var ctaf_saldo = $("#CuentaFin_Ctaf_Saldo").val();
 	var adm_id = $("#listaAdmin").val();
-	var tcf_id = $("#CuentaFin_Tcf_Id").val();
-	var tcf_desc = $("#CuentaFin_Tcf_Desc").val();
-	var ins_id = $("#CuentaFin_Ins_Id").val();
-	var ins_desc = $("#CuentaFin_Ins_Desc").val();
+	var tcf_id = $("#MedioDePago_Tcf_Id").val();
+	var tcf_desc = $("#MedioDePago_Tcf_Desc").val();
+	var ins_id = $("#MedioDePago_Ins_Id").val();
+	var ins_desc = $("#MedioDePago_Ins_Desc").val();
 	var ccb_id = $("#listaConta").val();
 	var ccb_id_diferido = "";
 	var ctag_id = $("#listaGasto").val();
-	var mon_codigo = $("#CuentaFin_Mon_Codigo").val();
+	var mon_codigo = $("#listaMoneda").val();
 	var cta_id = $("#CuentaFin_Cta_Id").val();
 
 	var data = {

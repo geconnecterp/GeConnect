@@ -4,8 +4,6 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.ABM;
-using gc.infraestructura.Dtos.Almacen;
-using gc.infraestructura.Dtos.Almacen.Tr.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.ABMs.Models;
@@ -15,7 +13,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using System.Security.Claims;
 
 namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 {
@@ -82,6 +79,16 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 			RespuestaGenerica<EntidadBase> response = new();
 			try
 			{
+				if (TCSelected == string.Empty)
+				{
+					if (query != null && query.Rel01 != null && query.Rel01.Count > 0)
+					{ TCSelected = query.Rel01.First(); }
+					else
+					{ TCSelected = string.Empty; }
+				}
+				else if(query != null && query.Rel01 != null && query.Rel01.Count > 0 && TCSelected!= query.Rel01.First())
+				{ TCSelected = query.Rel01.First(); }
+
 				if (PaginaProd == pag && !buscaNew)
 				{
 					//es la misma pagina y hay registros, se realiza el reordenamiento de los datos.
@@ -106,9 +113,6 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 				metadata = MetadataGeneral;
 				//no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
 				grillaDatos = GenerarGrilla(MediosDePagoBuscados, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
-
-				//string volver = Url.Action("index", "home", new { area = "" });
-				//ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
 
 				return View("_gridAbmMedioDePago", grillaDatos);
 			}
@@ -327,6 +331,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 					ComboMoneda = ComboMoneda(),
 					ComboFinanciero = ComboFinancieroRela(string.Empty),
 				};
+				medioDePagoModel.MedioDePago.Tcf_Id = TCSelected;
 				SetearPosDeMedioDePagoSeleccionado(medioDePagoModel.MedioDePago);
 				return PartialView("_tabDatosMedioDePago", medioDePagoModel);
 			}

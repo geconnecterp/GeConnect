@@ -52,7 +52,7 @@ namespace gc.api.core.Servicios.ABM
 			if (!string.IsNullOrEmpty(filtros.Buscar))
 			{
 				ps.Add(new SqlParameter("@deno", true));
-				ps.Add(new SqlParameter("@deno_valor", filtros.Buscar));
+				ps.Add(new SqlParameter("@deno_like", filtros.Buscar));
 			}
 
 			if (filtros.Rel01 != null && filtros.Rel01.Count > 0)
