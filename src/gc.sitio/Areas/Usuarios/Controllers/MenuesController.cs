@@ -4,12 +4,8 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Dtos.ABM;
-using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Dtos.Users;
-using gc.infraestructura.EntidadesComunes.Options;
-using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos.ABM;
 using gc.sitio.core.Servicios.Contratos.Users;
 using Microsoft.AspNetCore.Mvc;
@@ -44,6 +40,9 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             {
                 return RedirectToAction("Login", "Token", new { area = "seguridad" });
             }
+            PerfilesBuscados = [];
+            PerfilIDSeleccionado = string.Empty;
+            PerfilSeleccionado = new PerfilDto();
             //se carga el combo de tipos de menues
             ViewBag.MenuId = await ComboMenues(_mnSrv);
 
@@ -110,17 +109,25 @@ namespace gc.sitio.Areas.Usuarios.Controllers
 
             try
             {
-                var per = await _mnSrv.GetPerfil(id, TokenCookie);
+                RespuestaGenerica<PerfilDto> per = await GetPerfil(id);
                 if (!per.Ok)
                 {
                     throw new NegocioException(per.Mensaje);
                 }
                 //inicializo barrados
                 UsuariosXPerfil = [];
+                PerfilIDSeleccionado = per.Entidad.perfil_id;
+                PerfilSeleccionado = new PerfilDto
+                {
+                    perfil_activo = per.Entidad.perfil_activo,
+                    perfil_activo_desc = per.Entidad.perfil_activo_desc,
+                    Perfilactivo = per.Entidad.Perfilactivo,
+                    perfil_descripcion = per.Entidad.perfil_descripcion,
+                    perfil_id = per.Entidad.perfil_id
+                };
 
-                PerfilSeleccionado = per.Entidad;
 
-                return View("_n02panel01Perfil", per.Entidad);
+                return View("_n02panel01Perfil", PerfilSeleccionado);
 
             }
             catch (NegocioException ex)
@@ -141,6 +148,11 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 response.EsError = true;
                 return PartialView("_gridMensaje", response);
             }
+        }
+
+        private async Task<RespuestaGenerica<PerfilDto>> GetPerfil(string id)
+        {
+            return await _mnSrv.GetPerfil(id, TokenCookie);
         }
 
         [HttpPost]
@@ -272,21 +284,46 @@ namespace gc.sitio.Areas.Usuarios.Controllers
         }
 
         [HttpPost]
-        public async Task<JsonResult> ObtenerMenuPerfil(string menuId)
+        public async Task<JsonResult> ObtenerMenuPerfil(string menuId, string perfil)
         {
             RespuestaGenerica<EntidadBase> response = new();
             List<MenuRoot> arbol;
+            string _perfil = "";
             try
             {
-
                 var auth = EstaAutenticado;
                 if (!auth.Item1 || auth.Item2 < DateTime.Now)
                 {
                     return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
                 }
+                var p = PerfilSeleccionado;
+                if (p == null || string.IsNullOrEmpty(p.perfil_id))
+                {
+                    var per = PerfilIDSeleccionado;
+                    if (string.IsNullOrEmpty(per))
+                    {
+                        if (string.IsNullOrEmpty(perfil))
+                        {
 
+
+                            throw new NegocioException("No se ha localizado el identificador del perfil. Verifique. De ser necesario reinicie el módulo.");
+                        }
+                        else
+                        {
+                            _perfil = perfil;
+                        }
+                    }
+                    else
+                    {
+                        _perfil = per;
+                    }
+                }
+                else
+                {
+                    _perfil = p.perfil_id;
+                }
                 //Procesamos la lista que nos devuelve y la convertimos en la estructura del menu
-                var menu = await _mnSrv.GetMenuItems(menuId, PerfilSeleccionado.perfil_id, TokenCookie);
+                var menu = await _mnSrv.GetMenuItems(menuId, _perfil, TokenCookie);
 
                 if (!menu.Ok)
                 {
@@ -294,25 +331,26 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 }
 
                 arbol = GenerarArbolMenu(menu.ListaEntidad);
+                var jarbol = JsonConvert.SerializeObject(arbol);
 
-                return Json(new { error = false, warn = false, arbol });
+                return Json(new { error = false, warn = false, arbol = jarbol });
 
             }
             catch (NegocioException ex)
             {
                 return Json(new { error = false, warn = true, msg = ex.Message });
-              
+
             }
             catch (Exception ex)
             {
                 string msg = "Error en la invocación de la API - Busqueda Menu x Perfil";
                 _logger.LogError(ex, "Error en la invocación de la API - Busqueda  Menu x Perfil");
-                return Json(new { error = true, warn = false, msg  });
+                return Json(new { error = true, warn = false, msg });
             }
         }
 
         [HttpPost]
-        public async Task<IActionResult> ConfirmarMenuPerfil(string json)
+        public async Task<IActionResult> ConfirmarMenuPerfil(string json, string menu_id, string perfil_id)
         {
             try
             {
@@ -325,24 +363,30 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 if (string.IsNullOrEmpty(json))
                 {
                     string msg = "No se recepcionó el menú del perfil a confirmar. Verifique.";
-                    return Json(new { error = false,warn=true,msg});
+                    return Json(new { error = false, warn = true, msg });
                 }
+                //Se procede a generar estructura esperada en Base de Datos a partir del menu 
+                List<MenuItemsDto> menuPlano = GeneraMenuPlano(json, menu_id, perfil_id);
 
+                var jsonp = JsonConvert.SerializeObject(menuPlano);
+
+                //armando request del confirmar
                 AbmGenDto abm = new AbmGenDto()
                 {
-                    Json = json,
+                    Json = jsonp,
                     Objeto = "Perfil",
                     Administracion = AdministracionId,
                     Usuario = UserName,
                     Abm = 'A'
                 };
+
                 var perfil = PerfilSeleccionado;
                 var res = await _abmSv.AbmConfirmar(abm, TokenCookie);
                 if (res.Ok)
                 {
                     string msg = $"EL PROCESAMIENTO DE LOS PERMISO DE ACCESO AL PERFIL {perfil.perfil_descripcion} SE REALIZO SATISFACTORIAMENTE";
-                    
-                    return Json(new { error = false, warn = false, msg });                    
+
+                    return Json(new { error = false, warn = false, msg });
                 }
                 else
                 {
@@ -361,39 +405,95 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             }
         }
 
+        /// <summary>
+        /// se asume que el menu tiene 2 niveles (Root - hijo) y por lo tanto se parseará 
+        /// no recursivamente, sino detectando hijos y definiendo para cada nivel un foreach.
+        /// </summary>
+        /// <param name="djson"></param>
+        /// <returns></returns>
+        private List<MenuItemsDto> GeneraMenuPlano(string json, string menu_id, string perfil_id)
+        {
+            var menuP = new List<MenuItemsDto>();
+
+            var menu = JsonConvert.DeserializeObject<List<MenuRoot>>(json);
+
+
+            if (menu == null)
+            {
+                throw new NegocioException("No se recepcionó ningún menú");
+            }
+
+            foreach (var item in menu)
+            {
+                MenuItemsDto i = ParseaItem(item, menu_id, perfil_id);
+                menuP.Add(i);
+                if (item.children.Count > 0)
+                {
+                    foreach (var child in item.children)
+                    {
+                        var c = ParseaItem(child, menu_id, perfil_id);
+                        menuP.Add(c);
+                    }
+                }
+            }
+            return menuP;
+        }
+
+        private static MenuItemsDto ParseaItem(MenuRoot item, string mnId, string perfil)
+        {
+            return new MenuItemsDto
+            {
+                asignado = item.asignado,
+                mnu_id = mnId,
+                mnu_item = item.id,
+                mnu_item_id = item.ruta,
+                mnu_item_name = item.text,
+                mnu_item_padre = item.padre,
+                perfil_id = perfil,
+            };
+        }
+
         private List<MenuRoot> GenerarArbolMenu(List<MenuItemsDto>? listaEntidad)
         {
-            List<MenuRoot> arbol= new List<MenuRoot>();
+            List<MenuRoot> arbol = new List<MenuRoot>();
             foreach (var item in listaEntidad)
             {
                 //busco si es opcion root
                 if (item.mnu_item_padre.Equals("00"))
                 {
-                    arbol.Add(CargaItem(item));
+                    arbol.Add(CargaItem(item, true));
                 }
                 else
                 {
                     //busco cual es el padre
-                    var rama = arbol.Single(x=>x.id.Equals(item.mnu_item_padre));
+                    var rama = arbol.Single(x => x.id.Equals(item.mnu_item_padre));
                     if (rama.children == null)
                     {
                         rama.children = new List<MenuRoot>();
                     }
-                    rama.children.Add(CargaItem(item));
+                    rama.children.Add(CargaItem(item, false));
                 }
             }
 
             return arbol;
         }
 
-        private static MenuRoot CargaItem(MenuItemsDto item)
+        private static MenuRoot CargaItem(MenuItemsDto item, bool root)
         {
             return new MenuRoot
             {
                 id = item.mnu_item,
                 text = item.mnu_item_name,
                 ruta = item.mnu_item_id,
-                asignado = item.asignado                
+                asignado = item.asignado,
+                state = new Estado
+                {
+                    opened = true,
+                    selected = root ? false : item.asignado,
+                    disabled = false,
+                },
+                padre = item.mnu_item_padre,
+
             };
         }
     }

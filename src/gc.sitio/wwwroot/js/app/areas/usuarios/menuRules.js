@@ -46,7 +46,7 @@ function updateAssignedState(id, state) {
 function buscarMenu() {
     AbrirWaiting();
     var mnId = $("#MenuId option:selected").val();
-    data = { menuId: mnId };
+    data = { menuId: mnId, perfil: $("#perfil_id").val() };
     //activamos los botones de confirmación o cancelacion.
     $("#btnAbmAceptar").prop("disabled", false);
     $("#btnAbmCancelar").prop("disabled", false);
@@ -67,10 +67,10 @@ function buscarMenu() {
         }
         else {
 
-            jsonMenuActual = obj.arbol;
+            jsonMenuActual = $.parseJSON(obj.arbol);
             $("#menu").jstree("destroy").empty();
             $("#menu").jstree({
-                "core": { "data": obj.arbol },
+                "core": { "data": jsonMenuActual },
                 "checkbox": {
                     "keep_selected_style": false
                 },
@@ -375,9 +375,9 @@ function confirmarDatosTab01() {
 }
 
 function confirmarDatosTab02() {
-    var data1 = { menu_id: $("#MenuId option:selected").val(),   perfil_id: $("#perfil_id").val() }
-    var data2 = $.extend({}, jsonMenuActual,data1);
-    var data = { json: JSON.stringify(data2) };
+    //var data1 = { menu_id: $("#MenuId option:selected").val(),   perfil_id: $("#perfil_id").val() }
+    var json = JSON.stringify(jsonMenuActual);
+    var data = { json, menu_id: $("#MenuId option:selected").val(), perfil_id: $("#perfil_id").val() };
 
     return data;
 }

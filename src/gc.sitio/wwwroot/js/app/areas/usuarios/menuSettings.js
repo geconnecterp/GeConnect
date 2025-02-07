@@ -10,3 +10,4 @@ var EntidadSelect = "";
 var EntidadEstado = "";
 var sizeMinGrid1 = "150px";
 var jsonMenuActual = {};
+var perfilActual = "";
