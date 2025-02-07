@@ -15,7 +15,6 @@
 		x = $(this);
 		ejecutaDblClickGrid(x, Grids.GridCliente);
 	});
-	//$("#btnBuscar").on("click", function () { buscarClientes(pagina); });
 
 	//tabCliente
 	$("#tabCliente").on("click", function () { SeteaIDClienteSelected(); });
@@ -372,30 +371,6 @@ function NuevoCliente() {
 	});
 }
 
-//function btnModiClick() {
-//	var tabActiva = $('.nav-tabs .active')[0].id;
-//	accionBotones(AbmAction.MODIFICACION, tabActiva);
-//	switch (tabActiva) {
-//		case Tabs.TabCliente:
-//			ModificaCliente(tabActiva);
-//			break;
-//		case Tabs.TabFormasDePago:
-//			ModificaFormaDePago(tabActiva, Grids.GridCliente);
-//			break;
-//		case Tabs.TabNotas:
-//			ModificaNota(tabActiva, Grids.GridCliente);
-//			break;
-//		case Tabs.TabObservaciones:
-//			ModificaObservacion(tabActiva, Grids.GridCliente);
-//			break;
-//		case Tabs.TabOtrosContactos:
-//			ModificaContacto(tabActiva, Grids.GridCliente);
-//			break;
-//		default:
-//			break;
-//	}
-//}
-
 function ModificaCliente(tabAct) {
 	accionBotones(AbmAction.MODIFICACION, tabAct);
 	tipoDeOperacion = AbmAction.MODIFICACION;
@@ -405,33 +380,6 @@ function ModificaCliente(tabAct) {
 	desactivarGrilla(Grids.GridCliente);
 	$("#Cliente_Cta_Denominacion").focus();
 }
-
-//function PuedoAgregar(tabAct) {
-//	var mensaje = "";
-//	switch (tabAct) {
-//		case Tabs.TabCliente:
-//			break;
-//		case Tabs.TabFormasDePago:
-//			if (!$("#chkCtaActiva").is(":checked"))
-//				mensaje = "Solo se pueden agregar formas de pago para cuentas activas.";
-//			break;
-//		case Tabs.TabNotas:
-//			if (!$("#chkCtaActiva").is(":checked"))
-//				mensaje = "Solo se pueden agregar notas para cuentas activas.";
-//			break;
-//		case Tabs.TabObservaciones:
-//			if (!$("#chkCtaActiva").is(":checked"))
-//				mensaje = "Solo se pueden agregar observaciones para cuentas activas.";
-//			break;
-//		case Tabs.TabOtrosContactos:
-//			if (!$("#chkCtaActiva").is(":checked"))
-//				mensaje = "Solo se pueden agregar contactos para cuentas activas.";
-//			break;
-//		default:
-//			break;
-//	}
-//	return mensaje;
-//}
 
 function PuedoBorrar(tabAct) {
 	switch (tabAct) {

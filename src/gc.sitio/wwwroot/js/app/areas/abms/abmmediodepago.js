@@ -637,7 +637,7 @@ function ObtenerDatosDePosParaJson(destinoDeOperacion, tipoDeOperacion) {
 	var tcf_id = $("#MedioDePago_Tcf_Id").val();
 	var tcf_desc = $("#MedioDePago_Tcf_Desc").val();
 	var ins_id_pos = $("#Ins_Id_Pos").val();
-	var ins_id_pos_ctls = $("#ins_id_pos_ctls").val();
+	var ins_id_pos_ctls = $("#Ins_Id_Pos_Ctls").val();
 
 	var data = {
 		ins_id, ins_desc, ins_lista, mon_codigo, ins_dato1_desc, ins_dato2_desc, ins_dato3_desc, ins_detalle, ins_comision, ins_comision_fija, ins_razon_social, ins_cuit, ins_ret_gan, ins_ret_ib, ins_ret_iva,

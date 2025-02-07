@@ -740,8 +740,6 @@ function btnNuevoClick() {
 	tipoDeOperacion = AbmAction.ALTA;
 	var tabActiva = $('.nav-tabs .active')[0].id;
 	SetearDestinoDeOperacion(tabActiva);
-	//accionBotones(AbmAction.ALTA, tabActiva);
-
 	switch (tabActiva) {
 		case Tabs.TabCliente:
 			NuevoCliente();
@@ -792,7 +790,6 @@ function btnNuevoClick() {
 
 function btnModiClick() {
 	var tabActiva = $('.nav-tabs .active')[0].id;
-	//accionBotones(AbmAction.MODIFICACION, tabActiva);
 	switch (tabActiva) {
 		case Tabs.TabCliente:
 			ModificaCliente(tabActiva);
@@ -871,7 +868,6 @@ function btnBajaClick() {
 		accionBotones(AbmAction.BAJA, tabActiva);
 		tipoDeOperacion = AbmAction.BAJA;
 		$(".activable").prop("disabled", true);
-		//var tabActiva = $('.nav-tabs .active')[0].id;
 		SetearDestinoDeOperacion(tabActiva);
 		$(".nav-link").prop("disabled", true);
 		switch (tabActiva) {
@@ -1042,11 +1038,9 @@ function btnCancelClick() {
 			activarGrilla(Grids.GridMedioDePago);
 			selectReg(regSelected, Grids.GridCuentaFinYConta);
 			break;
-		case Tabs.TabOpcionesCuota:
+		case Tabs.TabPos:
 			LimpiarCampos(tabActiva);
-			//activarGrilla(Grids.GridRubro);
 			activarGrilla(Grids.GridMedioDePago);
-			//selectReg(regSelected, Grids.GridRubro);
 			break;
 		default:
 			break;
@@ -1298,7 +1292,6 @@ function Guardar() {
 				url = dataOpsCuentaFinYContableUrl;
 				break;
 			case AbmObject.POS:
-				//activarGrilla(Grids.GridCuentaFinYConta);
 				url = dataOpsPosUrl;
 				break;
 			default:

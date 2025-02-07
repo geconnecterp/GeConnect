@@ -52,7 +52,6 @@ function NuevoSector() {
 		$("#divFiltro").collapse("hide");
 		$("#divDetalle").collapse("show");
 		$("#Sector_Sec_Id").focus();
-		/*$("#GridsEnTabPrincipal").hide();*/
 		CerrarWaiting();
 	}, function (obj) {
 		ControlaMensajeError(obj.message);

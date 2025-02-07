@@ -11,7 +11,6 @@
 
 	$("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle);
 	$("#btnDetalle").prop("disabled", true);
-	//$("#btnAbmAceptar").on("click", function () { btnSubmitClick(); });
 	$("#btnBuscar").on("click", function () {
 		//es nueva la busqueda no resguardamos la busqueda anterior. es util para paginado
 		dataBak = "";
