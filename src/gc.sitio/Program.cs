@@ -38,8 +38,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 builder.Services.AddServicios();
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
+
 
 builder.Services.AddRazorPages();
 builder.Services.AddHttpClient();
@@ -59,6 +58,8 @@ builder.Services.AddSession(opt =>
     opt.Cookie.HttpOnly = true;
     opt.Cookie.IsEssential = true;
 });
+// Add services to the container.
+builder.Services.AddControllersWithViews();
 
 builder.Services.AddMvc();
 var app = builder.Build();
@@ -77,11 +78,11 @@ else
     app.UseHsts();
 }
 
-app.UseSession();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseSession();
 
 //estas dos llamadas permite establecer la prioridad de HttpContext.User  y ejecutar la autorización para las solicitudes
 //quien sos??

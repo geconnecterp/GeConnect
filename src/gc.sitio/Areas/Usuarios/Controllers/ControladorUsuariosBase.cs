@@ -55,6 +55,24 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             }
         }
 
+        protected string PerfilIDSeleccionado
+        {
+            get
+            {
+                string json = _context.HttpContext.Session.GetString("PerfilIDSeleccionado");
+                if (string.IsNullOrEmpty(json))
+                {
+                    return string.Empty;
+                }
+                return JsonConvert.DeserializeObject<string>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("PerfilIDSeleccionado", json);
+            }
+        }
+
         protected PerfilDto? PerfilSeleccionado
         {
             get
