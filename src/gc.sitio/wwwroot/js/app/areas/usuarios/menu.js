@@ -241,7 +241,9 @@ function inicializaPantallaCtrlMenu(grilla) {
                 return false;
         }
     }
-
+    tabMn = 1;
+    $("#menu").jstree("destroy").empty();
+    $("#MenuId").val("");
 
     accionBotones(AbmAction.CANCEL);
 

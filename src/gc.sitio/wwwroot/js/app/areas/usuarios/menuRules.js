@@ -4,7 +4,7 @@
     $("#btnAbmElimi").on("click", ejecutarBaja);
 
     $("#btnAbmCancelar").on("click", inicializaPantallaCtrlMenu);
-    $("#btnAbmAceptar").on("click", confirmarOperacionAbmProducto);
+    $("#btnAbmAceptar").on("click", confirmarOperacionCtrlMenu);
 
     $("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle);
 
@@ -104,7 +104,7 @@ function accionBotones(btn) {
         $("#btnDetalle").prop("disabled", true);
         $("#BtnLiTab01").prop("disabled", true);
         $("#BtnLiTab02").prop("disabled", true);
-        $("#BtnLiTab03").prop("disabled", true);
+        
 
         $("#btnAbmNuevo").prop("disabled", true);
         $("#btnAbmModif").prop("disabled", true);
@@ -122,10 +122,10 @@ function accionBotones(btn) {
 
         $("#BtnLiTab01").prop("disabled", false);
         $("#BtnLiTab02").prop("disabled", false);
-        $("#BtnLiTab03").prop("disabled", false);
+        
         $("#BtnLiTab01").removeClass("text-danger");
         $("#BtnLiTab02").removeClass("text-danger");
-        $("#BtnLiTab03").removeClass("text-danger");
+        
 
         if (btn === AbmAction.ALTA) {
 
@@ -247,7 +247,7 @@ function ejecutarBaja() {
     }
 }
 
-function confirmarOperacionAbmProducto() {
+function confirmarOperacionCtrlMenu() {
     AbrirWaiting("Completando proceso...");
     var data = {};
     switch (tabMn) {
@@ -296,57 +296,15 @@ function confirmarOperacionAbmProducto() {
             CerrarWaiting();
             AbrirMensaje("ATENCIÓN", obj.msg, function () {
                 //todo fue bien, por lo que se deberia reinicializar la pantalla.
-                var grilla = "";
-                switch (tabAbm) {
-                    case 1:
-                        grilla = tabGrid01;
-                        break;
-                    case 2:
-                        grilla = tabGrid02;
-                        break;
-                    case 3:
-                        grilla = tabGrid03;
-                        break;
-                    default:
-                        return false;
-                }
+                var grilla = Grids.GridPerfil;
+                
                 dataBak = "";
-                InicializaPantallaAbmProd(grilla);
-                //if (tabAbm === 2 || tabAbm === 3) {
-                //    activarGrilla(tabGrid01);
-                //}
-                if (accion !== AbmAction.BAJA) {
-                    switch (tabAbm) {
-                        case 1:
-                            //se dió de alta o se modificó, se realiza la presentación del producto
-                            if (accion === AbmAction.ALTA) {
-                                EntidadSelect = obj.id;
-                            }
-                            //data = { p_id: EntidadSelect };
-                            //buscarProductoServer(data);
-                            InicializaFiltroAbmPerfil(EntidadSelect);
-                            $("#btnBuscar").trigger("click");
+                inicializaPantallaCtrlMenu(grilla);
 
-
-                            break;
-                        case 2:
-                            presentarBarrado();
-                            break;
-                        case 3:
-                            presentarLimites();
-                        default:
-                    }
-
-                    //inicializamos la acción.
-                    accion = "";
-                }
-                else {
-                    //borramos el id del producto si se eliminó
-                    EntidadSelect = "";
-                    //VAMOS A EJECUTAR NUEVAMENTE EL BUSCAR
-                    buscarProductos(pagina);
-
-                }
+                //siempre sera ALTA
+                EntidadSelect = $("#perfil_id").val();
+                InicializaFiltroAbmPerfil(EntidadSelect);
+                $("#btnBuscar").trigger("click");                
                 
                 $("#msjModal").modal("hide");
                 return true;
@@ -380,4 +338,18 @@ function confirmarDatosTab02() {
     var data = { json, menu_id: $("#MenuId option:selected").val(), perfil_id: $("#perfil_id").val() };
 
     return data;
+}
+
+function InicializaFiltroAbmPerfil(id) {
+    if ($("#chkDescr").is(":checked")) {
+        $("#chkDescr").prop("checked", false);
+        $("#Buscar").val("");
+    }
+
+
+    if (!$("#chkDesdeHasta").is(":checked")) {
+        $("#chkDesdeHasta").prop("checked", true);
+    }
+    $("#Id").val(id);
+    $("#Id2").val(id);   
 }

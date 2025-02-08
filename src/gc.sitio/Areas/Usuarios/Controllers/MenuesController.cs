@@ -374,7 +374,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 AbmGenDto abm = new AbmGenDto()
                 {
                     Json = jsonp,
-                    Objeto = "Perfil",
+                    Objeto = "perfiles_items",
                     Administracion = AdministracionId,
                     Usuario = UserName,
                     Abm = 'A'
