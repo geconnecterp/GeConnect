@@ -10,19 +10,22 @@
 
     $("#MenuId").on("change", buscarMenu);
 
-    $('#menu').on('changed.jstree', function (e, data) {
+    $('#menu').on('changed.jstree', function (e, mndata) {
 
-        if (data.selected && data.selected.length > 0) {
-            data.selected.forEach(function (id) {
-                updateAssignedState(id, true); // Marcar como asignado
-            });
+        switch (mndata.action) {
+            case "deselect_node":
+                updateAssignedState(mndata.node.id, false);
+                break;
+            case "select_node":
+                updateAssignedState(mndata.node.id, true);
+                break;
+            case "model":
+                break;
+            case "ready":
+                break;
+            default:
         }
 
-        if (data.deselected && data.deselected.length > 0 ) {
-            data.deselected.forEach(function (id) {
-                updateAssignedState(id, false); // Marcar como no asignado
-            });
-        }
     });
 });
 
@@ -32,14 +35,17 @@ function updateAssignedState(id, state) {
     jsonMenuActual.forEach(function (item) {
         if (item.id === id) {
             item.asignado = state;
-        }
-        if (item.children) {
-            item.children.forEach(function (child) {
-                if (child.id === id) {
-                    child.asignado = state;
-                }
-            });
-        }
+            item.state.selected = state;
+
+            if (item.children.length>0) {
+                item.children.forEach(function (child) {
+                    if (child.padre === id) {
+                        child.asignado = state;
+                        child.state.selected = state;
+                    }
+                });
+            }
+        }        
     });
 }
 
@@ -104,7 +110,7 @@ function accionBotones(btn) {
         $("#btnDetalle").prop("disabled", true);
         $("#BtnLiTab01").prop("disabled", true);
         $("#BtnLiTab02").prop("disabled", true);
-        
+
 
         $("#btnAbmNuevo").prop("disabled", true);
         $("#btnAbmModif").prop("disabled", true);
@@ -114,6 +120,10 @@ function accionBotones(btn) {
             $("#btnAbmAceptar").prop("disabled", false);
             $("#btnAbmCancelar").prop("disabled", false);
         }
+        if (tabMn === 2 && btn === AbmAction.MODIFICACION) {
+            //desactivo el ddl
+            $("#MenuId").prop("disabled", true);
+        }
         $("#btnAbmAceptar").show();
         $("#btnAbmCancelar").show();
     } else if (btn === AbmAction.SUBMIT || btn === AbmAction.CANCEL) {   // (S)uccess - (C)ancel
@@ -122,10 +132,10 @@ function accionBotones(btn) {
 
         $("#BtnLiTab01").prop("disabled", false);
         $("#BtnLiTab02").prop("disabled", false);
-        
+
         $("#BtnLiTab01").removeClass("text-danger");
         $("#BtnLiTab02").removeClass("text-danger");
-        
+
 
         if (btn === AbmAction.ALTA) {
 
@@ -228,9 +238,16 @@ function ejecutarAlta() {
 }
 
 function ejecutarModificacion() {
+    if ($("#MenuId option:selected").val() === "") {
+        AbrirMensaje("AVISO!!", "ANTES DE REALIZAR LA MODIFICACIÓN DEL MENÚ, SELECCIONE UNO. GRACIAS.", function () {
+            $("#msjModal").modal("hide");
+        }, false, ["Continuar"], "warn!", null);
+        return false;
+    }
     $("#divFiltro").collapse("hide");
     accionBotones(AbmAction.MODIFICACION);
     activarControles(true);
+    activarArbol("#", true);
 }
 
 function ejecutarBaja() {
@@ -297,17 +314,20 @@ function confirmarOperacionCtrlMenu() {
             AbrirMensaje("ATENCIÓN", obj.msg, function () {
                 //todo fue bien, por lo que se deberia reinicializar la pantalla.
                 var grilla = Grids.GridPerfil;
-                
+
                 dataBak = "";
                 inicializaPantallaCtrlMenu(grilla);
 
                 //siempre sera ALTA
                 EntidadSelect = $("#perfil_id").val();
+
                 InicializaFiltroAbmPerfil(EntidadSelect);
-                $("#btnBuscar").trigger("click");                
-                
+                $("#MenuId").prop("disabled", false);
+                /* $("#BtnLiTab01").trigger("click");*/
+                $("#btnBuscar").trigger("click");
+
                 $("#msjModal").modal("hide");
-                return true;
+                //return true;
 
             }, false, ["CONTINUAR"], "succ!", null);
         }
@@ -315,10 +335,8 @@ function confirmarOperacionCtrlMenu() {
 }
 
 function analizaEstadoBtnDetalle() {
-    var res = $("#divDetalle").hasClass("show");
-    if (res === true) {
-        selectRegPerfil(regSelected, Grids.GridPerfil);
-    }
+    tabMn = 1;
+    inicializaPantallaCtrlMenu(Grids.GridPerfil);
     return true;
 }
 
@@ -351,5 +369,21 @@ function InicializaFiltroAbmPerfil(id) {
         $("#chkDesdeHasta").prop("checked", true);
     }
     $("#Id").val(id);
-    $("#Id2").val(id);   
+    $("#Id2").val(id);
+}
+
+function activarArbol(node, activar) {
+    var nodo = $("#menu").jstree().get_node(node);
+    if (activar === true) {
+        $("#menu").jstree(true).enable_node(nodo);
+        nodo.children.forEach(function (child_id) {
+            activarArbol(child_id, activar);
+        });
+    }
+    else {
+        $("#menu").jstree(true).disable_node(nodo);
+        nodo.children.forEach(function (child_id) {
+            activarArbol(child_id, activar);
+        });
+    }
 }

@@ -4,12 +4,14 @@
         if ($("#divFiltro").hasClass("show")) {
             $("#divDetalle").collapse("hide");
         }
+        activarGrilla(Grids.GridPerfil);
     });
 
     //inicialmente desactivamos el boton de detalle
     $("#btnDetalle").prop("disabled", true);
     $("#btnCancel").on("click", function () {
         $("#btnFiltro").trigger("click");
+        $("#MenuId").prop("disabled", false);
     });
     $("#pagEstado").on("change", function () {
         var div = $("#divPaginacion");
@@ -31,12 +33,17 @@
     $("#BtnLiTab01").on("click", function () {
         tabMn = 1;
         activarGrilla(Grids.GridPerfil);
+        $("#btnAbmNuevo").prop("disabled", false);
+        $("#btnAbmElimi").prop("disabled", false);
     });
     $("#BtnLiTab02").on("click", function () {
         tabMn = 2;
 
         desactivarGrilla(Grids.GridPerfil);
-        ejecutarAlta();
+        //ejecutarModificacion();
+        ////los desactivo sea como sea, ya que solo se puede editar la asignacion del menú
+        $("#btnAbmNuevo").prop("disabled", true);
+        $("#btnAbmElimi").prop("disabled", true);
     });
     //$("#BtnLiTab03").on("click", function () { });
 
@@ -123,7 +130,8 @@ function selectRegPerfil(x, gridId) {
             activarBotones(false);
             break;
         case 2:
-        case 3:
+            inicializaPantallaCtrlMenu(Grids.GridPerfil);
+
             break;
         default:
             return false;
@@ -156,7 +164,7 @@ function selectMnRegDbl(x, gridId) {
             buscarUsuariosXPerfil(data);
             //se posiciona el registro seleccionado
             posicionarRegOnTop(x);
-            break;        
+            break;
         default:
             return false;
     }
@@ -207,24 +215,33 @@ function buscarPerfilServer(data) {
 
 
 function inicializaPantallaCtrlMenu(grilla) {
-    if (grilla !== Grids.GridPerfil) {
-        switch (tabMn) {
-            case 1:
-            case 2:
-                grilla = Grids.GridPerfil;
-                if ($("#divDetalle").is(":visible")) {
-                    $("#divDetalle").collapse("hide");
-                }
-                break;
-            //case 2:
-            //    break;
-            //case 3:
-            //    break;
-            default:
-                return false;
 
-        }
+    switch (tabMn) {
+        case 1:
+        case 2:
+            grilla = Grids.GridPerfil;
+            if ($("#divDetalle").is(":visible")) {
+                $("#divDetalle").collapse("hide");
+
+            }
+            $("#divFilter").collapse("show");
+
+            //$("#MenuId").prop("disabled", false);
+            jsonMenuActual = {}
+            $("#menu").jstree("destroy").empty();
+
+           // $("#btnBuscar").trigger("click");
+            $("#BtnLiTab01").trigger("click");
+            break;
+        //case 2:
+        //    break;
+        //case 3:
+        //    break;
+        default:
+            return false;
+
     }
+
 
     nng = "#" + grilla;
     tb = $(nng + " tbody tr");
@@ -242,6 +259,7 @@ function inicializaPantallaCtrlMenu(grilla) {
         }
     }
     tabMn = 1;
+    jsonMenuActual = {};
     $("#menu").jstree("destroy").empty();
     $("#MenuId").val("");
 
@@ -255,3 +273,4 @@ function inicializaPantallaCtrlMenu(grilla) {
     CerrarWaiting();
     return true;
 }
+

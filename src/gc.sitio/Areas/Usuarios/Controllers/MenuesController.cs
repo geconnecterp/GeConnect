@@ -11,6 +11,7 @@ using gc.sitio.core.Servicios.Contratos.Users;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Diagnostics;
 
 namespace gc.sitio.Areas.Usuarios.Controllers
 {
@@ -461,7 +462,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 //busco si es opcion root
                 if (item.mnu_item_padre.Equals("00"))
                 {
-                    arbol.Add(CargaItem(item, true));
+                    arbol.Add(CargaItem(item));
                 }
                 else
                 {
@@ -471,14 +472,27 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                     {
                         rama.children = new List<MenuRoot>();
                     }
-                    rama.children.Add(CargaItem(item, false));
+                    rama.children.Add(CargaItem(item));
+                }
+            }
+
+            //debo recorrer el arbol armado para deterctar marcas e hijos
+            //1-si tiene marca asignado y no tiene hijos queda asignado..
+            //2-si tiene marca asignado y tiene hijos, se pone en false el asignado del root. 
+            //el jstree asignara valor al root dependiendo del valor asignado de los hijos.
+            foreach (var item in arbol)
+            {
+                if (item.children.Count() > 0)
+                {
+                    item.asignado = false; 
+                    item.state.selected = false;
                 }
             }
 
             return arbol;
         }
 
-        private static MenuRoot CargaItem(MenuItemsDto item, bool root)
+        private static MenuRoot CargaItem(MenuItemsDto item)
         {
             return new MenuRoot
             {
@@ -489,8 +503,8 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 state = new Estado
                 {
                     opened = true,
-                    selected = root ? false : item.asignado,
-                    disabled = false,
+                    selected = item.asignado,
+                    disabled = true,
                 },
                 padre = item.mnu_item_padre,
 
