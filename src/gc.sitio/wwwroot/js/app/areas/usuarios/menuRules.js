@@ -10,44 +10,45 @@
 
     $("#MenuId").on("change", buscarMenu);
 
-    $('#menu').on('changed.jstree', function (e, mndata) {
+    //$(document).on('changed.jstree', '#menu', function (e, mndata) {
 
-        switch (mndata.action) {
-            case "deselect_node":
-                updateAssignedState(mndata.node.id, false);
-                break;
-            case "select_node":
-                updateAssignedState(mndata.node.id, true);
-                break;
-            case "model":
-                break;
-            case "ready":
-                break;
-            default:
-        }
+    //    switch (mndata.action) {
+    //        case "deselect_node":
+    //            updateAssignedState(mndata.node, false);
+    //            break;
+    //        case "select_node":
+    //            updateAssignedState(mndata.node, true);
+    //            break;
+    //        case "model":
+    //            break;
+    //        case "ready":
+    //            break;
+    //        default:
+    //    }
 
-    });
+    //});
 });
 
 // Función para actualizar el estado de 'asignado'
-function updateAssignedState(id, state) {
-    // Buscar el nodo en el menú y actualizar su estado
-    jsonMenuActual.forEach(function (item) {
-        if (item.id === id) {
-            item.asignado = state;
-            item.state.selected = state;
+//function updateAssignedState(nodo, state) {
+//    // Buscar el nodo en el menú y actualizar su estado
+//    var nodoId = nodo.id;
+//    jsonMenuActual.forEach(function (item) {
+//        if (item.id === nodoId) {
+//            item.asignado = state;
+//            item.state.selected = state;
 
-            if (item.children.length>0) {
-                item.children.forEach(function (child) {
-                    if (child.padre === id) {
-                        child.asignado = state;
-                        child.state.selected = state;
-                    }
-                });
-            }
-        }        
-    });
-}
+//            if (item.children.length > 0) {
+//                item.children.forEach(function (child) {
+//                    if (child.padre === nodoId) {
+//                        child.asignado = state;
+//                        child.state.selected = state;
+//                    }
+//                });
+//            }
+//        }
+//    });
+//}
 
 function buscarMenu() {
     AbrirWaiting();
@@ -323,8 +324,9 @@ function confirmarOperacionCtrlMenu() {
 
                 InicializaFiltroAbmPerfil(EntidadSelect);
                 $("#MenuId").prop("disabled", false);
-                /* $("#BtnLiTab01").trigger("click");*/
+                $("#BtnLiTab01").trigger("click");
                 $("#btnBuscar").trigger("click");
+
 
                 $("#msjModal").modal("hide");
                 //return true;
@@ -352,7 +354,7 @@ function confirmarDatosTab01() {
 
 function confirmarDatosTab02() {
     //var data1 = { menu_id: $("#MenuId option:selected").val(),   perfil_id: $("#perfil_id").val() }
-    var json = JSON.stringify(jsonMenuActual);
+    var json = JSON.stringify($("#menu").jstree(true).get_json());
     var data = { json, menu_id: $("#MenuId option:selected").val(), perfil_id: $("#perfil_id").val() };
 
     return data;

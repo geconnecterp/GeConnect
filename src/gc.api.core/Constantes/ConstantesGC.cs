@@ -141,8 +141,29 @@
             public const string SP_USU_PERFILES_LISTA = "SPGECO_ABM_Usu_perfiles_Lista";
             public const string SP_USU_PERFIL_DATOS = "SPGECO_ABM_Usu_perfiles_Datos";
             public const string SP_USU_PERFxUSU_LISTA = "SPGECO_ABM_Usu_Perfiles_Usu_Lista";
+            /// <summary>
+            /// SE OBTIENEN TODOS LOS MENUES QUE EXISTEN EN LA BASE
+            /// </summary>
             public const string SP_MENU_ID = "SPGECO_ABM_Usu_Menues";
+            /// <summary>
+            /// SE OBTIENE TODO EL MENU CON LAS MARCAS QUE CORRESPONDEN A UN PERFIL ESPECIFICO
+            /// </summary>
             public const string SP_MENU_ITEMS = "SPGECO_ABM_Usu_Menu_x_Perfiles";
+            /// <summary>
+            /// SE OBTIENEN TODOS LOS PERFILES DE UN USUARIO
+            /// </summary>
+            public const string SP_USU_PERFILES = "SPGECO_Usu_Perfiles_x_Usu";            
+            /// <summary>
+            /// Este SP hace predeterminado un perfil de usuario, para un usuario especifico.
+            /// </summary>
+            public const string SP_USU_PERFIL_DEFAULT = "SPGECO_Usu_Perfil_Usu_Default_update";
+            /// <summary>
+            /// SE OBTIENE EL MENU ESPECIFICO DEL USUARIO, SEGUN SU PERFIL         
+            /// </summary>
+            public const string SP_USU_MENU_PERSONAL = "SPGECO_Usu_Menu_x_Perfiles";
+
+
+
             #endregion
 
             #region ABM

@@ -1,0 +1,82 @@
+﻿@using Microsoft.AspNetCore.Http
+@using Newtonsoft.Json
+@using gc.infraestructura.Dtos.Users
+@using gc.infraestructura.Helpers
+@inject IHttpContextAccessor _accesor
+@{
+    var user = User.Claims.First(c => c.Type.Contains("name")).Value;
+    var email = User.Claims.First(c => c.Type.Contains("email")).Value;
+    var nombre = User.Claims.First(c => c.Type.Contains("nya")).Value;
+    var pers = _accesor.HttpContext.Session.GetString("UserPerfiles");
+    List<PerfilUserDto> perfiles;
+    SelectList listItems = new SelectList(new List<PerfilUserDto>());
+    if (!string.IsNullOrEmpty(pers))
+    {
+        perfiles = JsonConvert.DeserializeObject<List<PerfilUserDto>>(pers);
+        var hayDefault = perfiles.Any(x => x.perfil_default.Equals("S"));
+        var lista = perfiles.Select(x => new ComboGenDto { Id = x.perfil_id, Descripcion = x.perfil_descripcion });
+        if (hayDefault)
+        {
+            var p = perfiles.First(x => x.perfil_default.Equals("S")).perfil_id;
+            listItems = HelperMvc<ComboGenDto>.ListaGenerica(lista, p);
+        }
+        else
+        {
+            listItems = HelperMvc<ComboGenDto>.ListaGenerica(lista);
+        }
+    }
+}
+<!-- User -->
+<li class="nav-item navbar-dropdown dropdown-user dropdown">
+    <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
+        <div class="avatar avatar-online">
+            <img src="~/img/avatars/avatar.png" alt="avatar" class="w-px-40 h-auto rounded-circle" />
+        </div>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end">
+        <li>
+            <a class="dropdown-item" href="#">
+                <div class="d-flex">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="avatar avatar-online">
+                            <img src="~/img/avatars/avatar.png" alt="avatar" class="w-px-40 h-auto rounded-circle" />
+                        </div>
+                    </div>
+                    <div class="flex-grow-1">
+                        <span class="fw-medium d-block">@nombre</span>
+                        <small class="text-muted">[rol]</small>
+                    </div>
+                </div>
+            </a>
+        </li>
+        <li>
+            <div class="dropdown-divider"></div>
+        </li>
+        <li>
+            <a class="dropdown-item" href="#">
+                <i class="bx bx-user me-2"></i>
+                <span class="align-middle">Perfiles</span>
+                @if (!string.IsNullOrEmpty(pers))
+                {
+                    @Html.DropDownList("PerfilId", listItems, null, new { @class = "form-control" })
+                }
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item" href="#">
+                <i class="bx bx-cog me-2"></i>
+                <span class="align-middle">Configuraciones</span>
+            </a>
+        </li>
+        <li>
+            <div class="dropdown-divider"></div>
+        </li>
+        <li>
+            <a class="dropdown-item" asp-action="logout" asp-controller="token" asp-area="seguridad">
+                <i class="bx bx-log-out-circle me-2"></i>
+                <span class="align-middle">Salir</span>
+            </a>
+        </li>
+    </ul>
+</li>
+<!--/ User -->

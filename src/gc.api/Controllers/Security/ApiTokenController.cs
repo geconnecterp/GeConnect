@@ -4,9 +4,11 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Servicios;
 using gc.api.infra.Datos.Contratos.Security;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using System.Security.Claims;
@@ -24,11 +26,12 @@ namespace gc.api.Controllers.Security
         private readonly ISecurityServicio _securityServicio;
         private readonly IPasswordService _passwordService;
         private readonly IAdministracionServicio _adminServicio;
+        private readonly IApiUsuarioServicio _usuSv;
         private readonly ILogger<ApiTokenController> _logger;
 
         public ApiTokenController(IOptions<ConfigNegocioOption> options, IConfiguration configuration,
             ISecurityServicio securityServicio, IAdministracionServicio adminServicio,
-            IPasswordService passwordService, ILogger<ApiTokenController> logger)
+            IPasswordService passwordService, ILogger<ApiTokenController> logger, IApiUsuarioServicio usuSv)
         {
             _options = options;
             _configuration = configuration;
@@ -36,6 +39,7 @@ namespace gc.api.Controllers.Security
             _passwordService = passwordService;
             _adminServicio = adminServicio;
             _logger = logger;
+            _usuSv = usuSv;
         }
 
         [HttpPost]
@@ -49,7 +53,10 @@ namespace gc.api.Controllers.Security
             if (validation.Item1)
             {   //el usuario es valido. Verificamos si esta logueado o no.
                 var adm = _adminServicio.Find(login.Admid);
-                var token = GenerateToken(validation.Item2,login.Admid,adm.Adm_nombre);
+
+                //Obtener los perfiles de acceso del usuario.
+                List<PerfilUserDto> perfiles = _usuSv.GetUserPerfiles(login.UserName);
+                var token = GenerateToken(validation.Item2,login.Admid,adm.Adm_nombre,perfiles);
                 return Ok(new { token });
             }
             return NotFound();
@@ -173,7 +180,7 @@ namespace gc.api.Controllers.Security
             return (isValid, user);
         }
 
-        private string GenerateToken(Usuario usuario, string admId,string admName)/**/
+        private string GenerateToken(Usuario usuario, string admId,string admName, List<PerfilUserDto> perfiles)/**/
         {
             _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
             //bool first = true;
@@ -205,6 +212,8 @@ namespace gc.api.Controllers.Security
 
             var header = new JwtHeader(signingCredentials);
 
+            //serializando los perfiles del usuario
+            var jsonp = JsonConvert.SerializeObject(perfiles);
 
             //Claims (informacion que queresmos validar y las caracteristicas del usuario
             var claims = new[]
@@ -215,6 +224,8 @@ namespace gc.api.Controllers.Security
                 new Claim("AdmId", $"{admId}#{admName}"),
                 new Claim("expires",DateTime.Now.AddHours(1).Ticks.ToString()),
                 new Claim("user",usuario.Usu_id),
+                new Claim("perfiles",jsonp),
+
                 //new Claim("etiqueta",DateTime.Now.Ticks.ToString())
 
                 //new Claim("Id",usuario.Id.ToString()),

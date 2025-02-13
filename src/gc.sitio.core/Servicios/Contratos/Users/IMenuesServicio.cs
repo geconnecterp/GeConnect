@@ -11,5 +11,7 @@ namespace gc.sitio.core.Servicios.Contratos.Users
         Task<RespuestaGenerica<PerfilUserDto>> GetPerfilUsers(string perfilId, string token);
         Task<RespuestaGenerica<MenuDto>> GetMenu(string token);
         Task<RespuestaGenerica<MenuItemsDto>> GetMenuItems(string menuId, string perfil, string token);
+        Task<RespuestaGenerica<RespuestaDto>> DefinePerfilDefault(PerfilUserDto perfilUser, string token);
+        Task<RespuestaGenerica<MenuPpalDto>> ObtenerMenu(string perfilId, string user, string menuId, string adm, string token);
     }
 }

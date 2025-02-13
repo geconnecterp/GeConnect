@@ -20,7 +20,9 @@ namespace gc.sitio.Controllers
         public IActionResult Index()
         {
             ViewBag.Title = NombreSitio;
-            ViewBag.PermisosMenuPorUsuario = PermisosMenuPorUsuario;
+            if (UserPerfiles.Count() == 0) {
+                return RedirectToAction("login", "token", new { area = "seguridad" });
+            }
 			return View();
         }
 

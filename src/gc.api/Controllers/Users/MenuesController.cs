@@ -2,10 +2,12 @@
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace gc.api.Controllers.Users
 {
@@ -128,6 +130,52 @@ namespace gc.api.Controllers.Users
 
             var res = _usuSv.GetMenuItems(menuId,perfil);
             return Ok(new ApiResponse<List<MenuItemsDto>>(res));
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public IActionResult DefinePerfilDefault(PerfilUserDto perfil)
+        {
+            if (string.IsNullOrEmpty(perfil.perfil_id))
+            {
+                return BadRequest("No se recepcionó el perfil.");
+            }
+
+            if (string.IsNullOrEmpty(perfil.usu_id))
+            {
+                return BadRequest("No se recepcionó el usuario.");
+            }
+
+            var res = _usuSv.DefinePerfilDefault(perfil);
+            return Ok(new ApiResponse<RespuestaDto>(res));
+        }
+
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult ObtenerMenu(string perfilId, string user, string menuId, string adm)
+        {
+            if (string.IsNullOrEmpty(perfilId))
+            {
+                return BadRequest("No se recepcionó el perfil.");
+            }
+
+            if (string.IsNullOrEmpty(user))
+            {
+                return BadRequest("No se recepcionó el usuario.");
+            }
+
+            if (string.IsNullOrEmpty(menuId))
+            {
+                return BadRequest("No se recepcionó que menú presentar.");
+            }
+
+            if (string.IsNullOrEmpty(adm))
+            {
+                return BadRequest("No se recepcionó la Administración.");
+            }
+            var res = _usuSv.ObtenerMenu(perfilId,user,menuId,adm);
+            return Ok(new ApiResponse<List<MenuPpalDto>>(res));
         }
     }
 }

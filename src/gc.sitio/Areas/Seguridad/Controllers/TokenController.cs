@@ -1,14 +1,18 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Administracion;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Seguridad;
+using gc.infraestructura.Dtos.Users;
 using gc.infraestructura.Helpers;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Contratos.Users;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
@@ -29,16 +33,19 @@ namespace gc.sitio.Areas.Seguridad.Controllers
         //private readonly ILoggerHelper _logger;
         private readonly ILogger<TokenController> _logger;
         private readonly IAdministracionServicio _admSv;
+        private readonly IMenuesServicio _mnSv;
         private readonly AppSettings _appSettings;
         private new readonly IHttpContextAccessor _context;
 
-        public TokenController(IConfiguration configuration, IAdministracionServicio servicio, ILogger<TokenController> logger, IOptions<AppSettings> options, IHttpContextAccessor context) : base(options, context)
+        public TokenController(IConfiguration configuration, IAdministracionServicio servicio, ILogger<TokenController> logger,
+            IOptions<AppSettings> options, IHttpContextAccessor context, IMenuesServicio menuesServicio) : base(options, context)
         {
             _configuration = configuration;
             _logger = logger;
             _appSettings = options.Value;
             _admSv = servicio;
             _context = context;
+            _mnSv = menuesServicio;
         }
 
         [HttpGet]
@@ -71,121 +78,121 @@ namespace gc.sitio.Areas.Seguridad.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginDto autenticar)
         {
-            //obtengo IP del cliente
-            var ip = ObtenerIpCliente(Request);
-
-            // Acá debo invocar la api
-            HelperAPI api = new HelperAPI();
-            var cliente = api.InicializaCliente();
-
-            //inyectamos la ip en el header del request
-            cliente.DefaultRequestHeaders.Add("X-ClientUsr", ip.ToString());
-
-            //cliente.BaseAddress = new Uri(_configuration["AppSettings:RutaBase"]);
-            var admid = autenticar.Admid ?? "0000";
-            var userModel = new { autenticar.UserName, autenticar.Password, admid };
-            var userJson = JsonConvert.SerializeObject(userModel);
-            var contentData = new StringContent(userJson, Encoding.UTF8, "application/json");
-            var link = $"{_appSettings.RutaBase}/api/apitoken";
-            var response = await cliente.PostAsync(link, contentData);
-
-            if (response.StatusCode == HttpStatusCode.OK)
+            try
             {
-                //se debe leer el cuerpo del response
-                string strJWT = await response.Content.ReadAsStringAsync();
-                //obtenermos el TOKEN   
-                AutenticacionDto auth = JsonConvert.DeserializeObject<AutenticacionDto>(strJWT);
-                if (!string.IsNullOrEmpty(auth.Token))
+                //obtengo IP del cliente
+                var ip = ObtenerIpCliente(Request);
+
+                // Acá debo invocar la api
+                HelperAPI api = new HelperAPI();
+                var cliente = api.InicializaCliente();
+
+                //inyectamos la ip en el header del request
+                cliente.DefaultRequestHeaders.Add("X-ClientUsr", ip.ToString());
+
+                //cliente.BaseAddress = new Uri(_configuration["AppSettings:RutaBase"]);
+                var userModel = new { autenticar.UserName, autenticar.Password, autenticar.Admid };
+                var userJson = JsonConvert.SerializeObject(userModel);
+                var contentData = new StringContent(userJson, Encoding.UTF8, "application/json");
+                var link = $"{_appSettings.RutaBase}/api/apitoken";
+                var response = await cliente.PostAsync(link, contentData);
+
+                if (response.StatusCode == HttpStatusCode.OK)
                 {
-                    var token = auth.Token;
-                    var handler = new JwtSecurityTokenHandler(); //Libreria System.IdentityModel.Token.Jwt (6.7.1)
-
-                    var tokenS = handler.ReadToken(token) as JwtSecurityToken;
-
-                    //var roleUser = tokenS.Claims.First(c => c.Type.Contains("role")).Value.Split(',');
-                    //var email = tokenS.Claims.First(c => c.Type.Contains("email")).Value;
-                    //var user = tokenS.Claims.First(c => c.Type.Contains("User")).Value;
-                    var user = tokenS.Claims.First(c => c.Type.Contains("name")).Value;
-                    var email = tokenS.Claims.First(c => c.Type.Contains("email")).Value;
-                    var nombre = tokenS.Claims.First(c => c.Type.Contains("nya")).Value;
-                    //29/10/2024 Ñoquis - se resguarda etiqueta, que sera la que almacene los datos en la cookie
-                    Etiqueta = $"{user}GCSitio";
-
-                    if (!string.IsNullOrEmpty(user))
+                    //se debe leer el cuerpo del response
+                    string strJWT = await response.Content.ReadAsStringAsync();
+                    //obtenermos el TOKEN   
+                    AutenticacionDto auth = JsonConvert.DeserializeObject<AutenticacionDto>(strJWT);
+                    if (!string.IsNullOrEmpty(auth.Token))
                     {
-                        PermisosMenuPorUsuario = ObtenerPermisosAMenuPorUsuario(user, cliente).Result;
-                        //ViewData["PermisosMenuPorUsuario"] = ObtenerPermisosAMenuPorUsuario(user, cliente).Result;
-                        ViewBag.PermisosMenuPorUsuario = PermisosMenuPorUsuario;
+                        var token = auth.Token;
+                        var handler = new JwtSecurityTokenHandler(); //Libreria System.IdentityModel.Token.Jwt (6.7.1)
+
+                        var tokenS = handler.ReadToken(token) as JwtSecurityToken;
+                        var user = tokenS.Claims.First(c => c.Type.Contains("name")).Value;
+                        var email = tokenS.Claims.First(c => c.Type.Contains("email")).Value;
+                        var nombre = tokenS.Claims.First(c => c.Type.Contains("nya")).Value;
+                        var jsonp = tokenS.Claims.First(c => c.Type.Contains("perfiles")).Value.ToString();
+                        ADMID = tokenS.Claims.First(c => c.Type.Contains("AdmId")).Value;
+
+
+
+                        //29/10/2024 Ñoquis - se resguarda etiqueta, que sera la que almacene los datos en la cookie
+                        Etiqueta = $"{user}GCSitio";
+
+                        //se comienza a armar  el usuario autenticado. Se resguardara en una cookie
+                        var userClaims = new List<Claim>();
+                        userClaims.AddRange(tokenS.Claims);
+
+                        var identity = new ClaimsIdentity(userClaims, "User Identity");
+                        var authProperties = new AuthenticationProperties
+                        {
+                            ExpiresUtc = tokenS.ValidTo,
+                        };
+
+                        var cookieOptions = new CookieOptions
+                        {
+                            Expires = tokenS.ValidTo,
+                            SameSite = SameSiteMode.Unspecified,
+
+                        };
+
+                        var principal = new ClaimsPrincipal(new[] { identity });
+                        await _context.HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
+                        _context.HttpContext.Response.Cookies.Append(Etiqueta, token, cookieOptions); //se resguarda el token con el nombre del usuario
+
+                        #region resguardamos los perfiles del usuario. 11/02/2025
+
+                        UserPerfiles = JsonConvert.DeserializeObject<List<PerfilUserDto>>(jsonp);
+
+                        if (UserPerfiles == null || UserPerfiles.Count() == 0)
+                        {
+                            throw new NegocioException("El usuario no tiene perfiles para operar en el sistema. PERMISO DENEGADO PARA ACCEDER. ");
+                        }
+                        //verifico si tiene un valor predeterminado.
+                        if (UserPerfiles.Any(x => x.perfil_default.Equals("S")))
+                        {
+                            UserPerfilSeleccionado = UserPerfiles.First(x => x.perfil_default.Equals("S"));
+                        }
+                        else
+                        {
+                            //no tiene perfil predeterminado. tomare el primero de la lista.
+                            //luego se le asigna ese perfil como SU determinado.
+                            PerfilUserDto up = UserPerfiles.First();
+                            UserPerfilSeleccionado = up;
+
+                            RespuestaGenerica<RespuestaDto> res = await _mnSv.DefinePerfilDefault(up, token);
+                        }
+
+                        //se procede a buscar el menu inicial del sistema
+
+
+                        #endregion
+
+                        return RedirectToAction("Index", new RouteValueDictionary(new { area = "", controller = "Home", action = "Index" }));
                     }
-
-                    //se comienza a armar  el usuario autenticado. Se resguardara en una cookie
-
-                    var userClaims = new List<Claim>();
-                    userClaims.AddRange(tokenS.Claims);
-
-                    var identity = new ClaimsIdentity(userClaims, "User Identity");
-
-                    var authProperties = new AuthenticationProperties
+                    else
                     {
-                        //AllowRefresh = <bool>,
-                        // Refreshing the authentication session should be allowed.
-
-                        //ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(10),
-                        ExpiresUtc = tokenS.ValidTo,
-                        // The time at which the authentication ticket expires. A 
-                        // value set here overrides the ExpireTimeSpan option of 
-                        // CookieAuthenticationOptions set with AddCookie.
-
-                        //IsPersistent = true,
-                        // Whether the authentication session is persisted across 
-                        // multiple requests. When used with cookies, controls
-                        // whether the cookie's lifetime is absolute (matching the
-                        // lifetime of the authentication ticket) or session-based.
-
-                        //IssuedUtc = <DateTimeOffset>,
-                        // The time at which the authentication ticket was issued.
-
-                        //RedirectUri = <string>
-                        // The full path or absolute URI to be used as an http 
-                        // redirect response value.
-
-                    };
-
-                    var cookieOptions = new CookieOptions
-                    {
-                        Expires = tokenS.ValidTo,
-                        SameSite = SameSiteMode.Unspecified,
-
-                    };
-
-                   // var etiqueta = $"{user}";
-
-                    var principal = new ClaimsPrincipal([identity]);
-                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
-                    HttpContext.Response.Cookies.Append(Etiqueta, token, cookieOptions);
-                    //if (roleUser[0].Equals(RolesUsuario.VENDEDOR.ToString()))
-                    //{
-                    //    return RedirectToAction("Venta", new RouteValueDictionary(new { area = "Salon", controller = "Bandeja", action = "Venta" }));
-                    //}
-                    return RedirectToAction("Index", new RouteValueDictionary(new { area = "", controller = "Home", action = "Index" }));
+                        TempData["error"] = "No se ha podido autenticar. Si el problema persiste avisé al administrador";
+                    }
                 }
                 else
                 {
-                    TempData["error"] = "No se ha podido autenticar. Si el problema persiste avisé al administrador";
+                    var respuesta = await response.Content.ReadAsStringAsync();
+
+                    _logger.LogError($"Error al autenticar: {respuesta}");
+                    throw new NegocioException("No se ha podido autenticar. El usuario o contraseña no son correctos.");
                 }
+
+                return View(autenticar);
             }
-            else
+            catch (Exception ex)
             {
+                TempData["error"] = ex.Message;
                 ComboAdministracion();
-
-                TempData["error"] = "No se ha podido autenticar. El usuario o contraseña no son correctos.";
-                var respuesta = await response.Content.ReadAsStringAsync();
-                ExceptionValidation valid = JsonConvert.DeserializeObject<ExceptionValidation>(respuesta);
-                _logger.LogError($"{valid.Title} - {valid.Status} - {valid.Detail}");
+                var login = new LoginDto { Fecha = DateTime.Now };
+                return View(login);
             }
-
-            return View(autenticar);
-
         }
 
         [HttpGet]

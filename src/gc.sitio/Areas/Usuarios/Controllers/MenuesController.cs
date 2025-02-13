@@ -368,9 +368,11 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 }
                 //Se procede a generar estructura esperada en Base de Datos a partir del menu 
                 List<MenuItemsDto> menuPlano = GeneraMenuPlano(json, menu_id, perfil_id);
-
                 var jsonp = JsonConvert.SerializeObject(menuPlano);
-
+                _logger.LogInformation("#***************************************#");
+                _logger.LogInformation(json);
+                _logger.LogInformation(jsonp);
+                _logger.LogInformation("#***************************************#");
                 //armando request del confirmar
                 AbmGenDto abm = new AbmGenDto()
                 {
@@ -444,12 +446,12 @@ namespace gc.sitio.Areas.Usuarios.Controllers
         {
             return new MenuItemsDto
             {
-                asignado = item.asignado,
+                asignado = item.state.selected,
                 mnu_id = mnId,
                 mnu_item = item.id,
-                mnu_item_id = item.ruta,
+                mnu_item_id = item.data.mnu_item_id,
                 mnu_item_name = item.text,
-                mnu_item_padre = item.padre,
+                mnu_item_padre = item.data.mnu_item_padre,
                 perfil_id = perfil,
             };
         }
@@ -484,7 +486,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             {
                 if (item.children.Count() > 0)
                 {
-                    item.asignado = false; 
+                    item.data.asignado = false;
                     item.state.selected = false;
                 }
             }
@@ -498,15 +500,19 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             {
                 id = item.mnu_item,
                 text = item.mnu_item_name,
-                ruta = item.mnu_item_id,
-                asignado = item.asignado,
+
                 state = new Estado
                 {
                     opened = true,
                     selected = item.asignado,
                     disabled = true,
                 },
-                padre = item.mnu_item_padre,
+                data = new MenuRootData
+                {
+                    mnu_item_id = item.mnu_item_id,
+                    asignado = item.asignado,
+                    mnu_item_padre = item.mnu_item_padre,
+                }
 
             };
         }

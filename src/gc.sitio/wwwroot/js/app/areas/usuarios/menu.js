@@ -35,6 +35,8 @@
         activarGrilla(Grids.GridPerfil);
         $("#btnAbmNuevo").prop("disabled", false);
         $("#btnAbmElimi").prop("disabled", false);
+        $("#divFiltro").collapse("show");
+        
     });
     $("#BtnLiTab02").on("click", function () {
         tabMn = 2;

@@ -29,5 +29,6 @@ namespace gc.infraestructura.Core.EntidadesComunes.Options
         public bool LogExtension { get; set; }
         public string? RutaRepositorioPDF { get; set; }
         public int FechaVtoCota{ get; set; }
+        public string MenuId{ get; set; }
     }
 }

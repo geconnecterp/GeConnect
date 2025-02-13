@@ -17,6 +17,14 @@
         public string perfil_id { get; set; } = string.Empty;
     }
 
+    public class MenuPpalDto : MenuItemsDto
+    {
+        public string mnu_app_url { get; set; } = string.Empty;
+        public string mnu_app_imagen { get; set; } = string.Empty;
+        public string mnu_app_central { get; set; } = string.Empty;
+    }
+
+
     public class MenuJsTree
     {
         public List<MenuRoot> menu { get; set; }
@@ -30,15 +38,21 @@
         public string text { get; set; } = string.Empty;
         public List<MenuRoot> children { get; set; } = [];
         public Estado state { get; set; }= new Estado();
-        public bool asignado { get; set; } = false;
-        public string padre { get; set; }= string.Empty;
-        public string ruta { get; set; } = string.Empty;
-    }   
+        public MenuRootData data { get; set; } = new MenuRootData();
+
+    }
 
     public class Estado
     {
         public bool opened { get; set; } = true;
         public bool disabled { get; set; } = false;
         public bool selected { get; set; } = false;
+    }
+
+    public class MenuRootData
+    {
+        public bool asignado { get; set; } = false;
+        public string mnu_item_id { get; set; } = string.Empty;
+        public string mnu_item_padre { get; set; } = string.Empty;
     }
 }

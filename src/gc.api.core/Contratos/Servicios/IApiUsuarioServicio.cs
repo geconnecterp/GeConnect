@@ -1,5 +1,6 @@
 using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Users;
 namespace gc.api.core.Contratos.Servicios
 {
@@ -11,5 +12,9 @@ namespace gc.api.core.Contratos.Servicios
         List<PerfilUserDto> GetPerfilUsers(string perfilId);
         List<MenuDto> GetMenu();
         List<MenuItemsDto> GetMenuItems(string menuId, string perfil);
+        List<PerfilUserDto> GetUserPerfiles(string? userName);
+        RespuestaDto DefinePerfilDefault(PerfilUserDto perfil);
+        List<MenuPpalDto> ObtenerMenu(string perfilId, string user, string menuId, string adm);
+
     }
 }

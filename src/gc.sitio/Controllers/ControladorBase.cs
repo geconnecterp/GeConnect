@@ -11,6 +11,7 @@ using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Users;
 using gc.infraestructura.EntidadesComunes;
 using gc.infraestructura.Helpers;
 using gc.sitio.core.Servicios.Contratos;
@@ -71,7 +72,6 @@ namespace gc.sitio.Controllers
                 //var nombre = User.Claims.First(c => c.Type.Contains("name")).Value;
                 return _context.HttpContext.Request.Cookies[Etiqueta];
             }
-
         }
 
         protected List<AdministracionLoginDto> Administraciones
@@ -92,17 +92,70 @@ namespace gc.sitio.Controllers
             }
         }
 
+        protected List<PerfilUserDto> UserPerfiles
+        {
+            get
+            {
+                string json = _context.HttpContext.Session.GetString("UserPerfiles");
+                if (string.IsNullOrEmpty(json))
+                {
+                    return new();
+                }
+                return JsonConvert.DeserializeObject<List<PerfilUserDto>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("UserPerfiles", json);
+            }
+        }
+
+        public PerfilUserDto UserPerfilSeleccionado
+        {
+            get
+            {
+                string json = _context.HttpContext.Session.GetString("UserPerfilSeleccionado");
+                if (string.IsNullOrEmpty(json))
+                {
+                    return new();
+                }
+                return JsonConvert.DeserializeObject<PerfilUserDto>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("UserPerfilSeleccionado", json);
+            }
+        }
+        public string ADMID
+        {
+            get
+            {
+                string json = _context.HttpContext.Session.GetString("ADMID");
+                if (string.IsNullOrEmpty(json))
+                {
+                    return string.Empty;
+                }
+                return JsonConvert.DeserializeObject<string>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("ADMID", json);
+            }
+        }
         public string AdministracionId
         {
             get
             {
                 var adm = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
+               
                 if (string.IsNullOrEmpty(adm))
                 {
                     return string.Empty;
                 }
                 var parts = adm.Split('#');
-
+                _context.HttpContext.Session.SetString("ADMID", parts[0]);
                 return parts[0];
             }
         }

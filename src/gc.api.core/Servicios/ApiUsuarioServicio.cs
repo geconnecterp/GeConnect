@@ -4,6 +4,7 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Users;
 using Microsoft.Data.SqlClient;
 
@@ -14,6 +15,18 @@ namespace gc.api.core.Servicios
         public ApiUsuarioServicio(IUnitOfWork uow) : base(uow)
         {
 
+        }
+
+        public RespuestaDto DefinePerfilDefault(PerfilUserDto perfil)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_USU_PERFIL_DEFAULT;
+            var ps = new List<SqlParameter>() { 
+                    new SqlParameter("@usu_id",perfil.usu_id),
+                    new SqlParameter("@perfil_id",perfil.perfil_id),
+            };
+
+            List<RespuestaDto> menu = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+            return menu.First();
         }
 
         public List<MenuDto> GetMenu()
@@ -94,6 +107,16 @@ namespace gc.api.core.Servicios
             return resp;
         }
 
+        public List<PerfilUserDto> GetUserPerfiles(string? userName)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_USU_PERFILES;
+            var ps = new List<SqlParameter>() { new SqlParameter("@usu_id", userName) };
+
+            List<PerfilUserDto> resp = _repository.EjecutarLstSpExt<PerfilUserDto>(sp, ps, true);
+
+            return resp;
+        }
+
         public Usuario GetUsuarioByUserName(string userName)
         {
             //#pragma warning disable CS1061 // "Usuario" no contiene una definición para "User" ni un método de extensión accesible "User" que acepte un primer argumento del tipo "Usuario" (¿falta alguna directiva using o una referencia de ensamblado?)
@@ -104,6 +127,22 @@ namespace gc.api.core.Servicios
             //    return usuario;
             //}
             throw new NotImplementedException("El metodo aun está TODO."); //new SecurityException("Usuario no encontrado");
+        }
+
+        public List<MenuPpalDto> ObtenerMenu(string perfilId,string user,string menuId, string adm)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_USU_MENU_PERSONAL;
+            var ps = new List<SqlParameter>() { 
+                new SqlParameter("@usu_id", user),
+                new SqlParameter("@perfil_id",perfilId),
+                new SqlParameter("@mnu_id",menuId),
+                new SqlParameter("@adm_id",adm)
+            };
+
+            List<MenuPpalDto> resp = _repository.EjecutarLstSpExt<MenuPpalDto>(sp, ps, true);
+
+            return resp;
+            
         }
     }
 }
