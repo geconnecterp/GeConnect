@@ -6,10 +6,11 @@ using gc.sitio.core.Servicios.Contratos.Users;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Text;
 
 namespace gc.sitio.ViewComponents
 {
-    public class MenuPpalViewComponent:ViewComponent
+    public class MenuPpalViewComponent : ViewComponent
     {
         private readonly IHttpContextAccessor _context;
         private readonly ILogger<MenuPpalViewComponent> _logger;
@@ -30,18 +31,21 @@ namespace gc.sitio.ViewComponents
             try
             {
                 var p = _context.HttpContext.Session.GetString("UserPerfilSeleccionado");
-                if (p == null) {
+                if (p == null)
+                {
                     throw new Exception("No se localizó el perfil");
                 }
-                var perfil= JsonConvert.DeserializeObject<PerfilUserDto>(p);
+                var perfil = JsonConvert.DeserializeObject<PerfilUserDto>(p);
                 var adm = _context.HttpContext.Session.GetString("ADMID");
                 var etiqueta = _context.HttpContext.Session.GetString("Etiqueta");
                 var token = _context.HttpContext.Request.Cookies[etiqueta];
 
 
-                menu = _mnSv.ObtenerMenu(perfil.perfil_id, perfil.usu_id, _appSettings.MenuId, adm,token).GetAwaiter().GetResult();
-                ///"DEBO CREAR EL COMPONENTE PARA PRESENTAR LOS BOTONES DEL MENU EN PANTALLA EN LA VISTA DEFAULT DE ESTE VIEWCOMPONENT";
-                return View("Default", menu);
+                menu = _mnSv.ObtenerMenu(perfil.perfil_id, perfil.usu_id, _appSettings.MenuId, adm, token).GetAwaiter().GetResult();
+              
+
+                    return View("Default", menu);
+                
             }
             catch (Exception)
             {

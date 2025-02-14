@@ -1,28 +1,26 @@
-﻿<nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
-     id="layout-navbar">
-    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
-        <a class="nav-item nav-link px-0 me-xl-4">
-            <i class="bx bx-menu bx-sm"></i>
-        </a>
-    </div>
-
-    @* <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse"> *@
-    <div class="container-fluid" id="navbar-collapse">
-        <ul class="navbar-nav collapse navbar-collapse">
-       
+﻿<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">GecoNet</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" 
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="navbar-collapse collapse" id="navbarSupportedContent">
             @if (User.Identity.IsAuthenticated)
-            {             
+            {
                 <!-- Módulos -->
-               @* @await Component.InvokeAsync("MenuPpal") *@
+                @await Component.InvokeAsync("MenuPpal")
 
-                <partial name="_loginAuth" />
+                @* <partial name="_loginAuth" /> *@
                 <!-- User -->
-                @* <partial name="_loginAuthUser" /> *@
+                <partial name="_loginAuthUser" />
             }
             else
             {
                 <partial name="_loginBlank" />
             }
-        </ul>
+        </div>
     </div>
 </nav>
+
+

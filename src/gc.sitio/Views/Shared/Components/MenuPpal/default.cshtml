@@ -3,8 +3,7 @@
 @model RespuestaGenerica<MenuPpalDto>
 
 @{
-    var lista = Model.ListaEntidad;
-    var listaOrd = Model.ListaEntidad.OrderBy(X => X.mnu_item).ToList();
+    
 }
 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
     @if (!Model.Ok)
@@ -15,54 +14,44 @@
     }
     else
     {
+        var lista = Model.ListaEntidad;
+        var listaOrd = Model.ListaEntidad.OrderBy(X => X.mnu_item).ToList();
         foreach (var mn in listaOrd.Where(x => x.mnu_item_padre.Equals("00")))
         {
-            //verifico que si no esta asignado el root pero tiene hijos que si estan asignados. Debo genarar la cabecera del menu y sus hijos debajo.
-            if (!mn.asignado && lista.Any(x => x.mnu_item_padre.Equals(mn.mnu_item) && x.asignado))
+            @* verifico que si no esta asignado el root pero tiene hijos que si estan asignados.Debo genarar la cabecera del menu y sus hijos debajo. *@
+            if (lista.Any(x => x.mnu_item_padre.Equals(mn.mnu_item)))
             {
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="javascript:void(0)" id="navbar@mn.mnu_item_id" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        @mn.mnu_item_name
+                    @{
+                        string id = $"btn{mn.mnu_item_id}";
+                    }
+                    <a class="nav-link dropdown-toggle" href="javascript:void(0)" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span>@mn.mnu_item_name</span>
                     </a>
-                    <ul class="dropdown-menu" aria-labelledby="navbar@mn.mnu_item_id">
-                        @foreach (var item in lista.Where(x=>x.mnu_item_padre.Equals(mn.mnu_item) && x.asignado).OrderBy(o=>o.mnu_item))
+                    <ul class="dropdown-menu">
+                        @* aria-labelledby="@id" *@
+                        @foreach (var item in lista.Where(x => x.mnu_item_padre.Equals(mn.mnu_item)).OrderBy(x => x.mnu_item))
                         {
-                            <li><a asp-action="@item.mnu_app_action" asp-controller="@item.mnu_app_controller" asp-area="@item.mnu_app_area" id="btn@item.mnu_item_id" class="dropdown-item">
-                                    <span>@item.mnu_item_name</span>
+                            <li>
+                                <a asp-action="@item.mnu_app_action" asp-controller="@item.mnu_app_controller" asp-area="@item.mnu_app_area" class="dropdown-item">
+                                    @item.mnu_item_name
                                 </a>
                             </li>
                         }
                     </ul>
                 </li>
-            }else if(mn.asignado){
-                //esta asignado y tiene hijos asignados
-                if (lista.Any(x => x.mnu_item_padre.Equals(mn.mnu_item) && x.asignado)){
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="javascript:void(0)" id="navbar@mn.mnu_item_id" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            @mn.mnu_item_name
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="navbar@mn.mnu_item_id">
-                            @foreach (var item in lista.Where(x => x.mnu_item_padre.Equals(mn.mnu_item) && x.asignado).OrderBy(o => o.mnu_item))
-                            {
-                                <li>
-                                    <a asp-action="@item.mnu_app_action" asp-controller="@item.mnu_app_controller" asp-area="@item.mnu_app_area" id="btn@item.mnu_item_id" class="dropdown-item">
-                                        <span>@item.mnu_item_name</span>
-                                    </a>
-                                </li>
-                            }
-                        </ul>
-                    </li>
-                }
-                else{
-                    <li class="nav-item">
-                        <a asp-action="@mn.mnu_app_action" asp-controller="@mn.mnu_app_controller" asp-area="@mn.mnu_app_area" id="btn@item.mnu_item_id" class="dropdown-item">
-                            <span>@mn.mnu_item_name</span>
-                        </a>
-                    </li>
-                }
             }
-
-           
+            else 
+            {
+                <li class="nav-item">
+                    @{
+                        string id = $"btn{mn.mnu_item_id}";
+                    }
+                    <a asp-action="@mn.mnu_app_action" asp-controller="@mn.mnu_app_controller" asp-area="@mn.mnu_app_area" id="@id" class="nav-link">
+                        <span>@mn.mnu_item_name</span>
+                    </a>
+                </li>
+            }
         }
     }
 </ul>
