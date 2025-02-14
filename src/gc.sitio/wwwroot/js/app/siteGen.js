@@ -47,8 +47,8 @@
 
         }
         else {
-            $("#Id").prop("disabled", true);
-            $("#Id2").prop("disabled", true);
+            $("#Id").val("").prop("disabled", true);
+            $("#Id2").val("").prop("disabled", true);
         }
     });
 });

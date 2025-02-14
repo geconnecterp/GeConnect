@@ -1,0 +1,10 @@
+﻿@{
+	var user = User.Claims.First(c => c.Type.Contains("name")).Value;
+	var email = User.Claims.First(c => c.Type.Contains("email")).Value;
+	var nombre = User.Claims.First(c => c.Type.Contains("nya")).Value;
+	// var menuList = ViewData["PermisosMenuPorUsuario"] as List<UsuarioMenu>;
+	// var menuList2 = ViewBag.PermisosMenuPorUsuario as List<UsuarioMenu>;
+}
+
+
+	<!--/ User -->

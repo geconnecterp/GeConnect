@@ -9,10 +9,15 @@
     @* <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse"> *@
     <div class="container-fluid" id="navbar-collapse">
         <ul class="navbar-nav collapse navbar-collapse">
-        @* <ul class="navbar-nav flex-row align-items-center ms-auto"> *@
+       
             @if (User.Identity.IsAuthenticated)
-            {
+            {             
+                <!-- Módulos -->
+               @* @await Component.InvokeAsync("MenuPpal") *@
+
                 <partial name="_loginAuth" />
+                <!-- User -->
+                @* <partial name="_loginAuthUser" /> *@
             }
             else
             {

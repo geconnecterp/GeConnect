@@ -19,7 +19,9 @@
 
     public class MenuPpalDto : MenuItemsDto
     {
-        public string mnu_app_url { get; set; } = string.Empty;
+        public string mnu_app_action { get; set; } = string.Empty;
+        public string mnu_app_controller { get; set; } = string.Empty;
+        public string mnu_app_area { get; set; } = string.Empty;
         public string mnu_app_imagen { get; set; } = string.Empty;
         public string mnu_app_central { get; set; } = string.Empty;
     }
