@@ -169,7 +169,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 {
                     throw new NegocioException(per.Mensaje);
                 }
-                //inicializo barrados
+               
                 UsuariosXPerfil = per.ListaEntidad;
                 grillaDatos = GenerarGrilla(UsuariosXPerfil, "usu_apellidoynombre");
 

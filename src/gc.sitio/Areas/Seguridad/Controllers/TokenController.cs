@@ -5,6 +5,7 @@ using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Administracion;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Seguridad;
@@ -194,6 +195,45 @@ namespace gc.sitio.Areas.Seguridad.Controllers
                 return View(login);
             }
         }
+
+
+        [HttpPost]
+        public JsonResult CambiarPerfilUsuario(string perId)
+        {
+
+            try
+            {
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+                }
+
+                var userPerfSelec = UserPerfiles.Single(x => x.perfil_id.Equals(perId));
+                UserPerfilSeleccionado = userPerfSelec;
+
+
+                string msg;
+
+                msg = $"Se modifica presentación de menú para el Perfil {userPerfSelec.perfil_descripcion}.";
+
+                return Json(new { error = false, warn = false, msg });
+
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+        }
+
 
         [HttpGet]
         public async Task<IActionResult> Logout()

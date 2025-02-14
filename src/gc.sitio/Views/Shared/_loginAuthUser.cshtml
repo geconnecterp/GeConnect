@@ -8,16 +8,26 @@
     var email = User.Claims.First(c => c.Type.Contains("email")).Value;
     var nombre = User.Claims.First(c => c.Type.Contains("nya")).Value;
     var pers = _accesor.HttpContext.Session.GetString("UserPerfiles");
+    var perfActual = _accesor.HttpContext.Session.GetString("UserPerfilSeleccionado");
     List<PerfilUserDto> perfiles;
     SelectList listItems = new SelectList(new List<PerfilUserDto>());
     if (!string.IsNullOrEmpty(pers))
     {
         perfiles = JsonConvert.DeserializeObject<List<PerfilUserDto>>(pers);
+
         var hayDefault = perfiles.Any(x => x.perfil_default.Equals("S"));
         var lista = perfiles.Select(x => new ComboGenDto { Id = x.perfil_id, Descripcion = x.perfil_descripcion });
         if (hayDefault)
         {
-            var p = perfiles.First(x => x.perfil_default.Equals("S")).perfil_id;
+            string p;
+            if (string.IsNullOrEmpty(perfActual))
+            {
+                p = perfiles.First(x => x.perfil_default.Equals("S")).perfil_id;
+            }
+            else{
+                var pa = JsonConvert.DeserializeObject<PerfilUserDto>(perfActual);
+                p = pa.perfil_id;
+            }
             listItems = HelperMvc<ComboGenDto>.ListaGenerica(lista, p);
         }
         else
@@ -58,7 +68,7 @@
                 <span class="align-middle">Perfiles</span>
                 @if (!string.IsNullOrEmpty(pers))
                 {
-                    @Html.DropDownList("PerfilId", listItems, null, new { @class = "form-control" })
+                    @Html.DropDownList("UserPerfilId", listItems, null, new { @class = "form-control" })
                 }
             </a>
         </li>

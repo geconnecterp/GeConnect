@@ -51,6 +51,9 @@
             $("#Id2").val("").prop("disabled", true);
         }
     });
+
+
+    $("#UserPerfilId").on("change", cambiaMenuApp);
 });
 
 //const AbmAction = {
@@ -375,4 +378,39 @@ function posicionarRegOnTop(x) {
     posTabla.animate({
         scrollTop: newPosScrollTop
     }, 500);
+}
+
+function cambiaMenuApp() {
+    var perf = $("#UserPerfilId option:selected").val();
+    var data = { perId: perf };
+
+    PostGen(data, cambiaMenu, function (obj) {
+        if (obj.error === true) {
+            CerrarWaiting();
+            AbrirMensaje("ALGO NO SALIO BIEN!", obj.msg, function () {
+                $("#msjModal").modal("hide");
+            }, false, ["CONTINUAR"], "error!", null);
+        }
+        else if (obj.warn === true) {
+            CerrarWaiting();
+
+            AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                if (obj.auth === true) {
+                    window.location.href = login;
+                }
+                else {
+                    $("#msjModal").modal("hide");
+                }
+            }, false, ["CONTINUAR"], "warn!", null);
+
+        }
+        else {
+            CerrarWaiting();
+            AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                window.location.href = home;
+
+            }, false, ["CONTINUAR"], "succ!", null);
+        }
+    });
+
 }
