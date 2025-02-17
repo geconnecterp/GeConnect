@@ -6,7 +6,9 @@ using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Users;
+using log4net.Filter;
 using Microsoft.Data.SqlClient;
+using System.Runtime.Intrinsics.Arm;
 
 namespace gc.api.core.Servicios
 {
@@ -143,6 +145,78 @@ namespace gc.api.core.Servicios
 
             return resp;
             
+        }
+
+        public List<UsuarioDto> BuscarUsuarios(QueryFilters filtro)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_USU_FILTRO;
+            var ps = new List<SqlParameter>();
+
+            if (string.IsNullOrEmpty(filtro.Buscar))
+            {
+                ps.Add(new SqlParameter("@deno", false));
+                ps.Add(new SqlParameter("@deno_like", ""));
+            }
+            else
+            {
+                ps.Add(new SqlParameter("@deno", true));
+                ps.Add(new SqlParameter("@deno_like", filtro.Buscar.Trim()));
+            }
+
+            if (!string.IsNullOrEmpty(filtro.Id))
+            {
+                ps.Add(new SqlParameter("@id", true));
+                ps.Add(new SqlParameter("@id_d", filtro.Id));
+                if (!string.IsNullOrEmpty(filtro.Id2))
+                {
+                    ps.Add(new SqlParameter("@id_h", filtro.Id2));
+                }
+                else
+                {
+                    ps.Add(new SqlParameter("@id_h", filtro.Id));
+                }
+            }
+            else
+            {
+                ps.Add(new SqlParameter("@id", false));
+                ps.Add(new SqlParameter("@id_d", ""));
+                ps.Add(new SqlParameter("@id_h", ""));
+            }
+
+            ps.Add(new SqlParameter("@registros", filtro.Registros));
+            ps.Add(new SqlParameter("@pagina", filtro.Pagina));
+            ps.Add(new SqlParameter("@ordenar",string.IsNullOrEmpty(filtro.Sort)? "usu_apellidoynombre":filtro.Sort));
+
+            List<UsuarioDto> resp = _repository.EjecutarLstSpExt<UsuarioDto>(sp, ps, true);
+
+            return resp;
+        }
+
+        public List<PerfilUserDto> ObtenerPerfilesDelUsuario(string usuId)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_USU_PERFIL;
+            var ps = new List<SqlParameter>() { new SqlParameter("@usu_id", usuId) };
+            List<PerfilUserDto> resp = _repository.EjecutarLstSpExt<PerfilUserDto>(sp, ps, true);
+
+            return resp;
+        }
+
+        public List<AdmUserDto> ObtenerAdministracionesDelUsuario(string usuId)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_USU_ADM;
+            var ps = new List<SqlParameter>() { new SqlParameter("@usu_id", usuId) };
+            List<AdmUserDto> resp = _repository.EjecutarLstSpExt<AdmUserDto>(sp, ps, true);
+
+            return resp;
+        }
+
+        public List<DerUserDto> ObtenerDerechosDelUsuario(string usuId)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_USU_DER;
+            var ps = new List<SqlParameter>() { new SqlParameter("@usu_id", usuId) };
+            List<DerUserDto> resp = _repository.EjecutarLstSpExt<DerUserDto>(sp, ps, true);
+
+            return resp;
         }
     }
 }

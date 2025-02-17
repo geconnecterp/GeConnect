@@ -161,8 +161,26 @@
             /// SE OBTIENE EL MENU ESPECIFICO DEL USUARIO, SEGUN SU PERFIL         
             /// </summary>
             public const string SP_USU_MENU_PERSONAL = "SPGECO_Usu_Menu_x_Perfiles";
-
-
+            /// <summary>
+            /// SE DEVUELVE UNA LISTA DE USUARIOS EN FUNCION DEL FILTRO DE DATOS
+            /// </summary>
+            public const string SP_USU_FILTRO = "SPGECO_ABM_Usu_Usu_Lista";
+            /// <summary>
+            /// SE DEVUELVE LOS DATOS DEL USUARIO
+            /// </summary>
+            public const string SP_USU_DATO = "SPGECO_ABM_Usu_Usu_Datos";
+            /// <summary>
+            /// DEVUELVE TODOS LOS PERFILES EXISTENTES PERO SE DETALLA CUALES ESTAN ASIGNADOS Y CUAL ES EL DEFAULT.
+            /// </summary>
+            public const string SP_USU_PERFIL = "SPGECO_ABM_Usu_USU_PERFIL";
+            /// <summary>
+            /// DEVUELVE TODAS LAS ADMINISTRACIONES CON LA MARCA EN CUALES ESTA ASIGNADO.
+            /// </summary>
+            public const string SP_USU_ADM = "SPGECO_ABM_USU_USU_ADM";
+            /// <summary>
+            /// DEVUELVE TODOS LOS DERECHOS CON EL DETALLE DE LOS DERECHOS ASIGNADOS.
+            /// </summary>
+            public const string SP_USU_DER = "SPGECO_ABM_USU_USU_DER";
 
             #endregion
 

@@ -53,6 +53,7 @@ namespace gc.infraestructura.Constantes
             public const string ABM_PRODUCTO = "APRODUCTO";
             public const string ABM_CLIENTES = "ACLIENTES";
             public const string ABM_PROVEEDORES = "APROVEEDORES";
+            public const string USUARIOS = "USUARIOS";
             
         }
     }
