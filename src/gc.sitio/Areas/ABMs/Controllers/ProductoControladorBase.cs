@@ -26,26 +26,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
 
         #region ABM
-        /// <summary>
-        /// Permite verificar que pagina se esta observando.
-        /// </summary>
-        public int PaginaProd
-        {
-            get
-            {
-                var txt = _context.HttpContext.Session.GetString("PaginaProd");
-                if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
-                {
-                    return 0;
-                }
-                return txt.ToInt();
-            }
-            set
-            {
-                var valor = value.ToString();
-                _context.HttpContext.Session.SetString("PaginaProd", valor);
-            }
-        }
+       
 
         public string DirSortProd
         {
@@ -184,7 +165,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			RespuestaGenerica<EntidadBase> response = new();
 			try
 			{
-				if (!buscaNew && PaginaProd == pag)
+				if (!buscaNew && PaginaGrid == pag)
 				{
 					//es la misma pagina y hay registros, se realiza el reordenamiento de los datos.
 					lista = ProductosBuscados.ToList();
@@ -193,7 +174,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				}
 				else
 				{
-					PaginaProd = pag;
+					PaginaGrid = pag;
 					//traemos datos desde la base
 					var busc = new BusquedaProducto
 					{

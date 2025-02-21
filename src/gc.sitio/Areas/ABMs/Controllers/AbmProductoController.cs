@@ -4,9 +4,7 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Dtos.ABM;
-using gc.infraestructura.Dtos.Administracion;
 using gc.infraestructura.Dtos.Almacen;
-using gc.infraestructura.Dtos.Box;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
@@ -649,7 +647,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             RespuestaGenerica<EntidadBase> response = new();
             try
             {
-                if (PaginaProd == pag && !buscaNew && ProductosBuscados.Count()>0)
+                if (PaginaGrid == pag && !buscaNew && ProductosBuscados.Count()>0)
                 {
                     //es la misma pagina y hay registros, se realiza el reordenamiento de los datos.
                     lista = ProductosBuscados.ToList();
@@ -658,7 +656,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 }
                 else
                 {
-                    PaginaProd = pag;
+                    PaginaGrid = pag;
                     //traemos datos desde la base
                     query.Sort = sort;
                     query.SortDir = sortDir;

@@ -304,7 +304,28 @@ namespace gc.sitio.Controllers
             }
         }
 
-		protected class RespuestaDeValidacionAntesDeGuardar()
+        /// <summary>
+        /// Permite verificar que pagina se esta observando.
+        /// </summary>
+        public int PaginaGrid
+        {
+            get
+            {
+                var txt = _context.HttpContext.Session.GetString("PaginaGrid");
+                if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
+                {
+                    return 0;
+                }
+                return txt.ToInt();
+            }
+            set
+            {
+                var valor = value.ToString();
+                _context.HttpContext.Session.SetString("PaginaGrid", valor);
+            }
+        }
+
+        protected class RespuestaDeValidacionAntesDeGuardar()
 		{
 			public string setFecus { get; set; } = string.Empty;
 			public string mensaje { get; set; } = string.Empty;

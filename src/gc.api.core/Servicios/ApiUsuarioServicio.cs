@@ -147,7 +147,7 @@ namespace gc.api.core.Servicios
             
         }
 
-        public List<UsuarioDto> BuscarUsuarios(QueryFilters filtro)
+        public List<UserDto> BuscarUsuarios(QueryFilters filtro)
         {
             var sp = ConstantesGC.StoredProcedures.SP_USU_FILTRO;
             var ps = new List<SqlParameter>();
@@ -187,11 +187,18 @@ namespace gc.api.core.Servicios
             ps.Add(new SqlParameter("@pagina", filtro.Pagina));
             ps.Add(new SqlParameter("@ordenar",string.IsNullOrEmpty(filtro.Sort)? "usu_apellidoynombre":filtro.Sort));
 
-            List<UsuarioDto> resp = _repository.EjecutarLstSpExt<UsuarioDto>(sp, ps, true);
+            List<UserDto> resp = _repository.EjecutarLstSpExt<UserDto>(sp, ps, true);
 
             return resp;
         }
 
+        public UserDto BuscarUsuarioDatos(string usuId)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_USU_DATO;
+            var ps = new List<SqlParameter>() { new SqlParameter("@usu_id", usuId) };
+            List<UserDto> resp = _repository.EjecutarLstSpExt<UserDto>(sp, ps, true);
+            return resp.First();
+        }
         public List<PerfilUserDto> ObtenerPerfilesDelUsuario(string usuId)
         {
             var sp = ConstantesGC.StoredProcedures.SP_USU_PERFIL;

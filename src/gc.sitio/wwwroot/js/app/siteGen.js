@@ -28,13 +28,13 @@
     });
 
     //check generico chkDescr activando componentes disables
-    $(document).on("click", "#chkDescr", function () {
+    $(document).on("click", "input#chkDescr", function () {
         if ($(this).is(":checked")) {
             $("#Buscar").prop("disabled", false);
             $("#Buscar").trigger("focus");
         }
         else {
-            $("#Buscar").prop("disabled", true);
+            $("#Buscar").val("").prop("disabled", true);
         }
     });
 

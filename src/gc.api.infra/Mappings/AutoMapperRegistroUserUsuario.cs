@@ -18,7 +18,7 @@ namespace gc.api.infra.Mappings
                 .ForMember(dest => dest.Usu_email, org => org.MapFrom(src => src.Correo))
                 .ForMember(dest => dest.Usu_password, org => org.MapFrom(src => src.Password))
                 .ForMember(dest => dest.Tdo_codigo, org => org.MapFrom(src => src.TipoDocumento))
-                .ForMember(dest => dest.Usu_ducumento, org => org.MapFrom(src => src.Documento))
+                .ForMember(dest => dest.Usu_documento, org => org.MapFrom(src => src.Documento))
                 .ForMember(dest => dest.Usu_apellidoynombre, org => org.MapFrom(src => src.ApellidoYNombre));
 
         }

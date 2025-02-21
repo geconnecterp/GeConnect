@@ -45,7 +45,11 @@ const Grids = {
 	GridMedioDePago: 'tbGridMedioDePago',
 	GridOpcionesCuotas: 'tbOpcionesCuotas',
 	GridCuentaFinYConta: 'tbCuentaFinYContable',
-	GridPos: 'tbPos'
+	GridPos: 'tbPos',
+	GridUser: 'tbGridUsers',
+	GridProductos: 'tbGridProd',
+	GridBarrado: 'tbGridBarr',
+	GridLimite: 'tbGridLim'
 }
 
 const Tabs = {
@@ -73,3 +77,11 @@ var totalRegs = 0;
 var pagRegs = 0;
 var pags = 0;
 var pagina = 1;
+var tabAbm = 1;
+var accion = "";//para tab01
+var accion02 = ""; //para tab02
+var accion03 = ""; //para tab03
+var init = true;
+var EntidadSelect = "";
+var EntidadEstado = "";
+var sizeMinGrid1 = "150px";

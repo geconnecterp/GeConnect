@@ -56,5 +56,6 @@
         public bool asignado { get; set; } = false;
         public string mnu_item_id { get; set; } = string.Empty;
         public string mnu_item_padre { get; set; } = string.Empty;
+        public string perfil_default { get; set; } = string.Empty;
     }
 }

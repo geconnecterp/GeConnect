@@ -1,0 +1,60 @@
+﻿@using System.Text
+@using static gc.infraestructura.Constantes.Constantes
+@model GridCore<UserDto>
+
+@{
+    var dataMod = new UserDto();
+    var alt = true;
+    string clase = string.Empty;
+    string color = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive text-nowrap  table-wrapper">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridUsers">
+                <thead class="table-dark">
+                    <tr class="header">
+
+                        <th scope="col">Logon</th>
+                        <th scope="col">Apellido y Nombre</th>
+                        <th scope="col">Bloqueado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ListaDatos)
+                    {
+                        string block;
+                        if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
+                        if (item.usu_bloqueado)
+                        {
+                            block = "SI";
+                            color = EstadoColor.NoActivo;
+                        }
+                        else
+                        {
+                            block = "NO";
+                            color = EstadoColor.Activo;
+                        }
+                        <tr class="@clase" onclick="selectRegUser(this,'tbGridUsers')">
+                            <!--ondblclick="selectAbmRegDbl(this,'tbGridProd')"-->
+                            <td class="text-sm-start" style="border-left: 5px solid @color;text-align: left;">@item.usu_id</td>
+                            <td class="text-sm-start">@item.usu_apellidoynombre</td>
+                            <td class="text-sm-center">@block</td>                            
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="row m-3">
+            <table style="width:100px;text-align:center">
+                <tr><td colspan="3" class="text-md-center"><strong>ESTADOS</strong></td></tr>
+                <tr>
+                    <td style="background-color: @EstadoColor.Activo;color:#FFFFFF;font-weight:600;display:block;">NO BLOQUEADO</td>
+                    <td style="background-color: @EstadoColor.NoActivo;color:#FFFFFF;font-weight:600;display:block;">BLOQUEADO</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>

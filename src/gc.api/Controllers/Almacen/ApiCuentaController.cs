@@ -281,6 +281,19 @@ namespace gc.api.Controllers.Almacen
 
         [HttpGet]
         [Route("[action]")]
+        public IActionResult GetClienteLista(string search)
+        {
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            List<ClienteListaDto> clientes = _cuentasSv.GetClienteLista(search);
+            
+            var response = new ApiResponse<List<ClienteListaDto>>(clientes);
+            return Ok(response);
+        }
+
+
+
+        [HttpGet]
+        [Route("[action]")]
         public IActionResult GetTiposDeNegocio()
         {
             _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");

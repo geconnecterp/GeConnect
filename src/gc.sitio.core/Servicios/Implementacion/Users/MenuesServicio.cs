@@ -3,16 +3,12 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
-using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Dtos.Users;
 using gc.sitio.core.Servicios.Contratos.Users;
-using log4net.Filter;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.Net;
 using System.Reflection;
 
@@ -81,6 +77,10 @@ namespace gc.sitio.core.Servicios.Implementacion.Users
                         throw new Exception(error.Detail);
                     }
                 }
+            }
+            catch (NegocioException)
+            {
+                throw;
             }
             catch (Exception ex)
             {

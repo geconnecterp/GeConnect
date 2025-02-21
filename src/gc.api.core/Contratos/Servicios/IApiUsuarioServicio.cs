@@ -15,7 +15,8 @@ namespace gc.api.core.Contratos.Servicios
         List<PerfilUserDto> GetUserPerfiles(string? userName);
         RespuestaDto DefinePerfilDefault(PerfilUserDto perfil);
         List<MenuPpalDto> ObtenerMenu(string perfilId, string user, string menuId, string adm);
-        List<UsuarioDto> BuscarUsuarios(QueryFilters filtro);
+        List<UserDto> BuscarUsuarios(QueryFilters filtro);
+        UserDto BuscarUsuarioDatos(string usuId);
         List<PerfilUserDto> ObtenerPerfilesDelUsuario(string usuId);
         List<AdmUserDto> ObtenerAdministracionesDelUsuario(string usuId);
         List<DerUserDto> ObtenerDerechosDelUsuario(string usuId);

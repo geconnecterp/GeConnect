@@ -134,7 +134,11 @@
 
             public const string SP_BOX_INFO = "SPGECO_BOX_Info";
             public const string SP_BOX_INFO_STK = "SPGECO_BOX_Info_Stk";
-            public const string SP_BOX_INFO_MOV_STK = "SPGECO_BOX_Info_Mov_Stk";          
+            public const string SP_BOX_INFO_MOV_STK = "SPGECO_BOX_Info_Mov_Stk";
+
+            #region Cliente
+            public const string SP_CLIENTE_LISTA = "spgeco_clientes_lista";
+            #endregion
 
             #region Usuarios
             public const string SP_USU_X_IDYADM = "SPGECO_USU_X_IDYADM";

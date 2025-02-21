@@ -1,14 +1,19 @@
-﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.CuentaComercial;
+using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Users;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System;
 using System.Net;
+using System.Reflection;
 using System.Security.Claims;
 
 namespace gc.sitio.core.Servicios.Implementacion
@@ -32,8 +37,9 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string ObtenerCuentaObsDatos = "/GetCuentaObsDatos";
 		private const string ProveedorABMFamiliaLista = "/GetABMProveedorFamiliaLista";
 		private const string ProveedorABMFamiliaDatos = "/GetABMProveedorFamiliaDatos";
-		//
-		private readonly AppSettings _appSettings;
+		private const string OBTENER_LISTA_CLIENTES = "/GetClienteLista";
+        //
+        private readonly AppSettings _appSettings;
 		public CuentaServicio(IOptions<AppSettings> options, ILogger<CuentaServicio> logger) : base(options, logger)
 		{
 			_appSettings = options.Value;
@@ -710,5 +716,59 @@ namespace gc.sitio.core.Servicios.Implementacion
 				throw;
 			}
 		}
-	}
+
+        public async Task<RespuestaGenerica<ClienteListaDto>> ObtenerListaClientes(string search, string token)
+        {
+            try
+            {
+                ApiResponse<List<ClienteListaDto>> apiResponse;
+                HelperAPI helper = new();
+
+                HttpClient client = helper.InicializaCliente(token);
+                HttpResponseMessage response;
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{OBTENER_LISTA_CLIENTES}?search={search}";
+
+                response = await client.GetAsync(link);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+
+                        return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
+                    }
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ClienteListaDto>>>(stringData);
+
+                    return new RespuestaGenerica<ClienteListaDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
+
+                }
+                else
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    {
+                        return new RespuestaGenerica<ClienteListaDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    {
+                        return new RespuestaGenerica<ClienteListaDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else
+                    {
+                        throw new Exception(error.Detail);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+
+                return new RespuestaGenerica<ClienteListaDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener la lista de clientes." };
+            }
+        }
+    }
 }

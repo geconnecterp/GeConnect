@@ -80,12 +80,22 @@
 
 @section scripts {
     <script type="text/javascript">
-        // var buscarPerfilUsersUrl = "@Url.Action("buscarPerfilUsers", "menues", new { area = "usuarios" })";
+
+        var buscarUrl = "@Url.Action("buscar", "cgusuarios", new { area = "usuarios" })";
+        var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "cgusuarios", new { area = "usuarios" })";
+        var buscarUserUrl = "@Url.Action("BuscarUsuarioDatos", "cgusuarios", new { area = "usuarios" })";
+        var nuevoUsuarioUrl = "@Url.Action("NuevoUsuario", "cgusuarios", new { area = "usuarios" })";
+
+        var autoComRel01Url = "@Url.Action("ComboListaClientes", "cgusuarios", new { area = "usuarios" })";
+        var confirmarAbmUsuarioUrl = "@Url.Action("ConfirmarAbmUsuario", "cgusuarios", new { area = "usuarios" })";
+
+        var presentarPerfilUrl "@Url.Action("PresentarPerfil", "cgusuarios", new { area = "usuarios" })";
+        var presentarAdminsUrl "@Url.Action("presentarAdmins", "cgusuarios", new { area = "usuarios" })";
+        var presentarDerecsUrl "@Url.Action("presentarDerecs", "cgusuarios", new { area = "usuarios" })";
         // var buscarPerfilesUrl = "@Url.Action("buscarPerfiles", "menues", new { area = "usuarios" })";
         // var buscarPerfilUrl = "@Url.Action("buscarPerfil", "menues", new { area = "usuarios" })";
         // var buscarPerfilesMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "menues", new { area = "usuarios" })";
 
-        // var nuevoPerfilUrl = "@Url.Action("NuevoPerfil", "menues", new { area = "usuarios" })";
         // var confirmarAbmPerfilUrl = "@Url.Action("confirmaperfil", "menues", new { area = "usuarios" })";
         // var confirmarMenuPerfilUrl = "@Url.Action("ConfirmarMenuPerfil", "menues", new { area = "usuarios" })";
 
@@ -94,11 +104,16 @@
 
     </script>
 
-    @* <script src="~/lib/jstree/jstree.min.js"></script> *@
+    <script src="~/lib/jstree/jstree.min.js"></script>
     <script src="~/js/plugins/jquery.simplePagination.js"></script>
+    <script src="~/js/app/areas/abms/abmsettings.js"></script>
 
-@*     <script src="~/js/app/areas/abms/abmsettings.js"></script>
-    <script type="text/javascript" src="~/js/app/areas/usuarios/menuSettings.js"></script>
+    <script src="~/js/app/areas/usuarios/userSettings.js"></script>
+    <script src="~/js/app/areas/usuarios/userMod.js"></script>
+    <script src="~/js/app/areas/usuarios/userRules.js"></script>
+
+
+    @*  <script type="text/javascript" src="~/js/app/areas/usuarios/menuSettings.js"></script>
     <script type="text/javascript" src="~/js/app/areas/abms/abmcommons.js"></script>
 
     <script type="text/javascript" src="~/js/app/areas/usuarios/menuRules.js"></script>

@@ -1,0 +1,80 @@
+﻿@model UserDto
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+
+}
+
+<div class="row">
+    <div class="col-md-12">
+
+        <!--Linea 01-->
+        <div class="row mt-1">
+            <div class="col-sm-6">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text" style="width:100px;">LOGON </span>
+                    <input type="text" asp-for="usu_id" class="form-control" disabled style="width:50px;margin-right:20px;" />
+                    <div class="form-check form-check-inline form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" asp-for="usu_bloqueado" disabled />
+                        <label class="form-check-label" for="pBalanza">BLOQUEADO</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--Linea 02-->
+        <div class="row mt-1">
+            <div class="col-sm-6">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text" style="width:100px;">Apellido y Nombre </span>
+                    <input type="text" asp-for="usu_apellidoynombre" class="form-control inputEditable" disabled />
+                </div>
+            </div>
+        </div>
+        <!--Linea 03-->
+        <div class="row mt-1">
+            <div class="col-sm-6">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text" style="width:100px;">Doc Tipo</span>
+                    @Html.DropDownListFor(x => x.tdoc_id, null, "Seleccionar...", new { @class = "form-control", disabled = "disabled" })
+                    <span class="input-group-text" style="width:100px;">DOC</span>
+                    <input type="text" asp-for="usu_documento" class="form-control inputEditable" disabled />
+                </div>
+            </div>
+        </div>
+        <!--Linea 04-->
+        <div class="row mt-1">
+            <div class="col-sm-6">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text" style="width:100px;">EMAIL </span>
+                    <input type="text" asp-for="usu_email" class="form-control inputEditable" disabled />
+                </div>
+            </div>
+        </div>
+        <!--Linea 05-->
+        <div class="row mt-1">
+            <div class="col-sm-6">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text" style="width:100px;">CELULAR </span>
+                    <input type="text" asp-for="usu_celu" class="form-control inputEditable" disabled />
+                </div>
+            </div>
+        </div>
+        <!--Linea 06-->
+        <div class="row mt-1">
+            <div class="col-sm-6">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text" style="width:100px;">ID CLIENTE.</span>
+                    <input type="text" asp-for="cta_denominacion" class="form-control inputEditable" disabled />
+                    @Html.HiddenFor(x => x.cta_id)
+                </div>
+            </div>
+        </div>
+        <!--Linea 07-->
+        <div class="row mt-1">
+            <div class="col-sm-6">
+                <button type="button" id="btnImpCard" class="btn btn-success"><i class="bx bx-printer"></i><span> Imprimir CARD</span></button>
+            </div>
+        </div>
+    </div>
+</div>

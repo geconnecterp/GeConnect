@@ -7,5 +7,6 @@
         public string perfil_id { get; set; } = string.Empty;
         public string perfil_descripcion { get; set; } = string.Empty;
         public string perfil_default { get; set; }=string.Empty;
+        public bool asignado { get; set; }
     }
 }

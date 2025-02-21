@@ -42,7 +42,7 @@ namespace gc.api.infra.Datos.Configuraciones
                  .IsUnicode(false);
 
 
-            builder.Property(e => e.Usu_ducumento)
+            builder.Property(e => e.Usu_documento)
                  .HasMaxLength(11)
                  .IsUnicode(false);
 
