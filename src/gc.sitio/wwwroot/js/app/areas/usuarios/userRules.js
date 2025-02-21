@@ -301,9 +301,7 @@ function confirmarOperacionAbmUsuario() {
     AbrirWaiting("Completando proceso...");
     var data = {};
     switch (tabAbm) {
-        case 1:
-            accion = AbmAction.SUBMIT;
-
+        case 1:            
             data = confirmarDatosTab01();
             break;
         case 2:
