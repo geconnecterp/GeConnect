@@ -1,19 +1,14 @@
-﻿using AspNetCoreGeneratedDocument;
-using gc.api.core.Entidades;
+﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Dtos.ABM;
-using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Dtos.Users;
-using gc.infraestructura.EntidadesComunes.Options;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.ABM;
 using gc.sitio.core.Servicios.Contratos.Users;
-using gc.sitio.core.Servicios.Implementacion;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -35,7 +30,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
         public CGUsuariosController(IOptions<AppSettings> options, IHttpContextAccessor accessor,
             ILogger<CGUsuariosController> logger, ITipoNegocioServicio tipoNegocioServicio,
             ITipoDocumentoServicio tipoDocumento, IUserServicio userServicio,
-            ICuentaServicio ctaSv,IAbmServicio abmServicio) : base(options, accessor, logger)
+            ICuentaServicio ctaSv, IAbmServicio abmServicio) : base(options, accessor, logger)
         {
             _settings = options.Value;
             _logger = logger;
@@ -164,7 +159,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 }
                 UsuarioSeleccionado = usu.Entidad;
 
-               
+
                 //busca combo familia
                 //aca debo armar el combo de tipoDocumento
                 ViewBag.Tdoc_Id = ComboTipoDoc();
@@ -306,7 +301,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
         }
 
         [HttpPost]
-        public async Task< JsonResult> PresentarPerfil()
+        public async Task<JsonResult> PresentarPerfil()
         {
             List<MenuRoot> arbol;
             try
@@ -332,7 +327,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 var jarbol = JsonConvert.SerializeObject(arbol);
                 return Json(new { error = false, warn = false, arbol = jarbol });
             }
-            catch(NegocioException ex)
+            catch (NegocioException ex)
             {
                 return Json(new { error = false, warn = true, msg = ex.Message });
             }
@@ -343,7 +338,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 return Json(new { error = true, warn = false, msg });
             }
         }
-  
+
 
         [HttpPost]
         public async Task<JsonResult> PresentarAdmins()
@@ -430,10 +425,18 @@ namespace gc.sitio.Areas.Usuarios.Controllers
         private List<MenuRoot> GenerarArbolPerfil(List<PerfilUserDto>? lista)
         {
             List<MenuRoot> arbol = new List<MenuRoot>();
+            MenuRoot root = new MenuRoot
+            {
+                id = "00",
+                text = "PERFILES",
+                state = new Estado { disabled = true, opened = true, selected = false },
+                children = new List<MenuRoot>()
+            };
             foreach (PerfilUserDto item in lista)
             {
-                arbol.Add(CargarItemPerfil(item));
+                root.children.Add(CargarItemPerfil(item));
             }
+            arbol.Add(root);
             return arbol;
         }
 
@@ -441,7 +444,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
         {
             var mr = new MenuRoot()
             {
-                id = item.usu_id,
+                id = $"{item.perfil_id}-{item.usu_id}",
                 text = $"{item.perfil_id}-{item.perfil_descripcion}",
 
                 state = new Estado
@@ -465,10 +468,18 @@ namespace gc.sitio.Areas.Usuarios.Controllers
         private List<MenuRoot> GenerarArbolAdm(List<AdmUserDto>? lista)
         {
             List<MenuRoot> arbol = new List<MenuRoot>();
+            MenuRoot root = new MenuRoot
+            {
+                id = "00",
+                text = "Administraciones",
+                state = new Estado { disabled = true, opened = true, selected = false },
+                children = new List<MenuRoot>()
+            };
             foreach (AdmUserDto item in lista)
             {
-                arbol.Add(CargarItemAdm(item));
+                root.children.Add(CargarItemAdm(item));
             }
+            arbol.Add(root);
             return arbol;
         }
 
@@ -476,7 +487,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
         {
             var mr = new MenuRoot()
             {
-                id = item.usu_id,
+                id = $"{item.adm_id}-{item.usu_id}",
                 text = $"{item.adm_id}-{item.adm_nombre}",
 
                 state = new Estado
@@ -499,10 +510,19 @@ namespace gc.sitio.Areas.Usuarios.Controllers
         private List<MenuRoot> GenerarArbolDer(List<DerUserDto>? lista)
         {
             List<MenuRoot> arbol = new List<MenuRoot>();
+            MenuRoot root = new MenuRoot
+            {
+                id = "00",
+                text = "Derechos",
+                state = new Estado { disabled = true, opened = true, selected = false },
+                children = new List<MenuRoot>()
+
+            };
             foreach (DerUserDto item in lista)
             {
-                arbol.Add(CargarItemDer(item));
+                root.children.Add(CargarItemDer(item));
             }
+            arbol.Add(root);
             return arbol;
         }
 
@@ -510,7 +530,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
         {
             var mr = new MenuRoot()
             {
-                id = item.usu_id,
+                id = $"{item.der_codigo}-{item.usu_id}",
                 text = $"{item.der_codigo.PadLeft(3, '0')}-{item.der_descripcion}",
 
                 state = new Estado
@@ -531,452 +551,273 @@ namespace gc.sitio.Areas.Usuarios.Controllers
         #endregion
         #endregion
 
-        //[HttpPost]
-        //public async Task<IActionResult> BuscarBarrados(string p_id)
-        //{
-        //    RespuestaGenerica<EntidadBase> response = new();
-        //    GridCore<ProductoBarradoDto> grillaDatos;
-        //    try
-        //    {
-        //        await ActualizaBarrados(p_id);
-        //        grillaDatos = GenerarGrilla(ProductoBarrados, "P_Id_barrado");
-        //        return View("_gridBarrado", grillaDatos);
-        //    }
-        //    catch (NegocioException ex)
-        //    {
-        //        response.Mensaje = ex.Message;
-        //        response.Ok = false;
-        //        response.EsWarn = true;
-        //        response.EsError = false;
-        //        return PartialView("_gridMensaje", response);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        string msg = "Error en la invocación de la API - Busqueda de Barrados";
-        //        _logger.LogError(ex, "Error en la invocación de la API - Busqueda de Barrados");
-        //        response.Mensaje = msg;
-        //        response.Ok = false;
-        //        response.EsWarn = false;
-        //        response.EsError = true;
-        //        return PartialView("_gridMensaje", response);
-        //    }
-        //}
+        #region Confirmaciones
+        #region Perfil
+        [HttpPost]
+        public async Task<IActionResult> ConfirmarPerfsUser(string json)
+        {
+            try
+            {
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+                }
 
-        //private async Task ActualizaBarrados(string p_id)
-        //{
-        //    RespuestaGenerica<ProductoBarradoDto>? barr = await BuscarBarradosGen(p_id);
-        //    if (barr == null || !barr.Ok)
-        //    {
-        //        throw new NegocioException(barr.Mensaje);
-        //    }
-        //    else if (barr.Ok && barr.ListaEntidad.Count() == 0)
-        //    {
-        //        throw new NegocioException("No se encontraron barrados para el producto.");
-        //    }
-        //    ProductoBarrados = barr.ListaEntidad;
-        //}
+                if (string.IsNullOrEmpty(json))
+                {
+                    string msg = "No se recepcionaron los perfiles del Usuario. Verifique.";
+                    return Json(new { error = false, warn = true, msg });
+                }
+                string usuId = UsuarioSeleccionado.usu_id;
+                //Se procede a generar estructura esperada en Base de Datos a partir del menu 
+                List<PerfilUserDto> perfiles = ConvierteDatosPerfilUsuario(json, usuId);
+                var jsonp = JsonConvert.SerializeObject(perfiles);
+                _logger.LogInformation("#***************************************#");
+                _logger.LogInformation(json);
+                _logger.LogInformation(jsonp);
+                _logger.LogInformation("#***************************************#");
+                //armando request del confirmar
+                AbmGenDto abm = new AbmGenDto()
+                {
+                    Json = jsonp,
+                    Objeto = "usuarios_perfil",
+                    Administracion = AdministracionId,
+                    Usuario = UserName,
+                    Abm = 'A'
+                };
 
-        //private async Task<RespuestaGenerica<ProductoBarradoDto>?> BuscarBarradosGen(string p_id)
-        //{
-        //    return await _prodSv.ObtenerBarradoDeProd(p_id, TokenCookie);
-        //}
+                var res = await _abmSv.AbmConfirmar(abm, TokenCookie);
+                if (res.Ok)
+                {
+                    string msg = $"EL PROCESAMIENTO DE LOS PERFILES DEL USUARIO {usuId} SE REALIZO SATISFACTORIAMENTE.";
 
-        //[HttpPost]
-        //public async Task<IActionResult> PresentarBarrado()
-        //{
-        //    RespuestaGenerica<EntidadBase> response = new();
-        //    GridCore<ProductoBarradoDto> grillaDatos;
-        //    int cont = 0;
-        //    int tope = 2;
-        //    bool continuar = true;
-        //    bool encontrado = false;
-        //    try
-        //    {
-        //        var barr = ProductoBarrados;
+                    return Json(new { error = false, warn = false, msg });
+                }
+                else
+                {
+                    return Json(new { error = false, warn = true, msg = res.Entidad.resultado_msj });
+                }
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                string msg = "Error en la invocación de la API - Carga de Perfiles de Usuario.";
+                _logger.LogError(ex, "Error en la invocación de la API - Carga de Perfiles de Usuario.");
+                return Json(new { error = true, warn = false, msg });
+            }
+        }
 
-        //        if (barr.Count == 0)
-        //        {
-        //            while (continuar)
-        //            {
-        //                var b = await BuscarBarradosGen(ProductoABMSeleccionado.p_id);
-        //                if (b.Ok && b.ListaEntidad.Count > 0)
-        //                {
-        //                    ProductoBarrados = b.ListaEntidad;
-        //                    continuar = false;
-        //                    encontrado = true;
-        //                }
-        //                cont++;
-        //                if (cont > tope)
-        //                {
-        //                    continuar = false;
-        //                }
-        //            }
-        //            if (!encontrado)
-        //            {
-        //                throw new NegocioException("No se encontraron barrados para este producto");
-        //            }
-        //        }
+        #endregion
+        #region Administracion
+        [HttpPost]
+        public async Task<IActionResult> ConfirmarAdmsUser(string json)
+        {
+            try
+            {
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+                }
 
-        //        grillaDatos = GenerarGrilla(ProductoBarrados, "P_Id_barrado");
-        //        return View("_gridBarrado", grillaDatos);
-        //    }
-        //    catch (NegocioException ex)
-        //    {
-        //        response.Mensaje = ex.Message;
-        //        response.Ok = false;
-        //        response.EsWarn = true;
-        //        response.EsError = false;
-        //        return PartialView("_gridMensaje", response);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        string msg = "Error la Presentar  - Busqueda de Barrados";
-        //        _logger.LogError(ex, "Error en la invocación de la API - Busqueda de Barrados");
-        //        response.Mensaje = msg;
-        //        response.Ok = false;
-        //        response.EsWarn = false;
-        //        response.EsError = true;
-        //        return PartialView("_gridMensaje", response);
-        //    }
-        //}
+                if (string.IsNullOrEmpty(json))
+                {
+                    string msg = "No se recepcionaron las Administraciones del Usuario. Verifique.";
+                    return Json(new { error = false, warn = true, msg });
+                }
+                string usuId = UsuarioSeleccionado.usu_id;
+                //Se procede a generar estructura esperada en Base de Datos a partir del menu 
+                List<AdmUserDto> perfiles = ConvierteDatosAdmsUsuario(json, usuId);
+                var jsonp = JsonConvert.SerializeObject(perfiles);
+              
+                //armando request del confirmar
+                AbmGenDto abm = new AbmGenDto()
+                {
+                    Json = jsonp,
+                    Objeto = "usuarios_adm",
+                    Administracion = AdministracionId,
+                    Usuario = UserName,
+                    Abm = 'A'
+                };
 
-        ///// <summary>
-        ///// Se buscan los datos del barrado
-        ///// </summary>
-        ///// <param name="barradoId"></param>
-        ///// <returns></returns>
-        //[HttpPost]
-        //public async Task<IActionResult> BuscarBarrado(string barradoId)
-        //{
-        //    try
-        //    {
-        //        var auth = EstaAutenticado;
-        //        if (!auth.Item1 || auth.Item2 < DateTime.Now)
-        //        {
-        //            return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
-        //        }
-        //        var barr = await _prodSv.ObtenerBarrado(ProductoABMSeleccionado.p_id, barradoId, TokenCookie);
-        //        if (barr == null || !barr.Ok)
-        //        {
-        //            throw new NegocioException(barr.Mensaje);
-        //        }
+                var res = await _abmSv.AbmConfirmar(abm, TokenCookie);
+                if (res.Ok)
+                {
+                    string msg = $"EL PROCESAMIENTO DE LAS ADMINISRACIONES DEL USUARIO {usuId} SE REALIZO SATISFACTORIAMENTE.";
 
-        //        return Json(new { error = false, warn = false, datos = barr.Entidad });
-        //    }
-        //    catch (NegocioException ex)
-        //    {
-        //        return Json(new { error = false, warn = true, msg = ex.Message });
-        //    }
-        //    catch (UnauthorizedException ex)
-        //    {
-        //        return Json(new { error = false, warn = true, auth = true, msg = ex.Message });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return Json(new { error = true, warn = false, msg = ex.Message });
-        //    }
-        //}
+                    return Json(new { error = false, warn = false, msg });
+                }
+                else
+                {
+                    return Json(new { error = false, warn = true, msg = res.Entidad.resultado_msj });
+                }
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                string msg = "Error en la invocación de la API - Carga de Administraciones de Usuario.";
+                _logger.LogError(ex, "Error en la invocación de la API - Carga de Administraciones de Usuario.");
+                return Json(new { error = true, warn = false, msg });
+            }
+        }
 
-        //[HttpPost]
-        //public async Task<IActionResult> ObtenerLimiteStk(string p_id)
-        //{
-        //    RespuestaGenerica<EntidadBase> response = new();
-        //    GridCore<LimiteStkDto> grillaDatos;
-        //    try
-        //    {
-        //        RespuestaGenerica<LimiteStkDto>? lim = await ObtenerLimiteStkGen(p_id);
-        //        if (lim == null || !lim.Ok)
-        //        {
-        //            throw new NegocioException(lim.Mensaje);
-        //        }
-        //        else if (lim.Ok && lim.ListaEntidad.Count() == 0)
-        //        {
-        //            throw new NegocioException("No se recepcionaron los limites de stock.");
-        //        }
-        //        LimitesStk = lim.ListaEntidad;
-        //        grillaDatos = GenerarGrilla(lim.ListaEntidad, "Adm_Id");
-        //        return View("_gridLimStk", grillaDatos);
-        //    }
-        //    catch (NegocioException ex)
-        //    {
-        //        response.Mensaje = ex.Message;
-        //        response.Ok = false;
-        //        response.EsWarn = true;
-        //        response.EsError = false;
-        //        return PartialView("_gridMensaje", response);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        string msg = "Error en la invocación de la API - Busqueda Producto";
-        //        _logger.LogError(ex, "Error en la invocación de la API - Busqueda Producto");
-        //        response.Mensaje = msg;
-        //        response.Ok = false;
-        //        response.EsWarn = false;
-        //        response.EsError = true;
-        //        return PartialView("_gridMensaje", response);
-        //    }
-        //}
+        #endregion
+        #region Derechos
+        [HttpPost]
+        public async Task<IActionResult> ConfirmarDersUser(string json)
+        {
+            try
+            {
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+                }
 
-        //private async Task<RespuestaGenerica<LimiteStkDto>?> ObtenerLimiteStkGen(string p_id)
-        //{
-        //    return await _prodSv.ObtenerLimiteStk(p_id, TokenCookie);
-        //}
+                if (string.IsNullOrEmpty(json))
+                {
+                    string msg = "No se recepcionaron las Administraciones del Usuario. Verifique.";
+                    return Json(new { error = false, warn = true, msg });
+                }
+                string usuId = UsuarioSeleccionado.usu_id;
+                //Se procede a generar estructura esperada en Base de Datos a partir del menu 
+                List<DerUserDto> perfiles = ConvierteDatosDersUsuario(json, usuId);
+                var jsonp = JsonConvert.SerializeObject(perfiles);
 
-        ////
-        //[HttpPost]
-        //public async Task<IActionResult> PresentarLimiteStk()
-        //{
-        //    RespuestaGenerica<EntidadBase> response = new();
-        //    GridCore<LimiteStkDto> grillaDatos;
-        //    int cont = 0;
-        //    int tope = 2;
-        //    bool continuar = true;
-        //    bool encontrado = false;
-        //    try
-        //    {
-        //        var lim = LimitesStk;
-        //        if (lim.Count == 0)
-        //        {
-        //            while (continuar)
-        //            {
-        //                var l = await ObtenerLimiteStkGen(ProductoABMSeleccionado.p_id);
-        //                if (l.Ok && l.ListaEntidad.Count > 0)
-        //                {
-        //                    LimitesStk = l.ListaEntidad;
-        //                    continuar = false;
-        //                    encontrado = true;
-        //                }
-        //                cont++;
-        //                if (cont > tope)
-        //                {
-        //                    continuar = false;
-        //                }
-        //            }
-        //            if (!encontrado)
-        //            {
-        //                throw new NegocioException("No se encontraron los limites de stock para este producto");
-        //            }
-        //        }
+                //armando request del confirmar
+                AbmGenDto abm = new AbmGenDto()
+                {
+                    Json = jsonp,
+                    Objeto = "usuarios_Der",
+                    Administracion = AdministracionId,
+                    Usuario = UserName,
+                    Abm = 'A'
+                };
 
-        //        grillaDatos = GenerarGrilla(lim, "Adm_Nombre");
-        //        return View("_gridLimStk", grillaDatos);
-        //    }
-        //    catch (NegocioException ex)
-        //    {
-        //        response.Mensaje = ex.Message;
-        //        response.Ok = false;
-        //        response.EsWarn = true;
-        //        response.EsError = false;
-        //        return PartialView("_gridMensaje", response);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        string msg = "Error la Presentar  - Busqueda de Barrados";
-        //        _logger.LogError(ex, "Error en la invocación de la API - Busqueda de Barrados");
-        //        response.Mensaje = msg;
-        //        response.Ok = false;
-        //        response.EsWarn = false;
-        //        response.EsError = true;
-        //        return PartialView("_gridMensaje", response);
-        //    }
-        //}
+                var res = await _abmSv.AbmConfirmar(abm, TokenCookie);
+                if (res.Ok)
+                {
+                    string msg = $"EL PROCESAMIENTO DE LOS DERECHOS DEL USUARIO {usuId} SE REALIZO SATISFACTORIAMENTE.";
 
-        ///// <summary>
-        ///// Se buscan los datos del barrado
-        ///// </summary>
-        ///// <param name="admId"></param>
-        ///// <returns></returns>
-        //[HttpPost]
-        //public async Task<IActionResult> BuscarLimite(string admId)
-        //{
-        //    try
-        //    {
-        //        var auth = EstaAutenticado;
-        //        if (!auth.Item1 || auth.Item2 < DateTime.Now)
-        //        {
-        //            return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
-        //        }
-        //        RespuestaGenerica<LimiteStkDto> lim = await _prodSv.BuscarLimite(ProductoABMSeleccionado.p_id, admId, TokenCookie);
-        //        if (lim == null || !lim.Ok)
-        //        {
-        //            throw new NegocioException(lim.Mensaje);
-        //        }
-
-        //        return Json(new { error = false, warn = false, datos = lim.Entidad });
-        //    }
-        //    catch (NegocioException ex)
-        //    {
-        //        return Json(new { error = false, warn = true, msg = ex.Message });
-        //    }
-        //    catch (UnauthorizedException ex)
-        //    {
-        //        return Json(new { error = false, warn = true, auth = true, msg = ex.Message });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return Json(new { error = true, warn = false, msg = ex.Message });
-        //    }
-        //}
+                    return Json(new { error = false, warn = false, msg });
+                }
+                else
+                {
+                    return Json(new { error = false, warn = true, msg = res.Entidad.resultado_msj });
+                }
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                string msg = "Error en la invocación de la API - Carga de Derechos de Usuario.";
+                _logger.LogError(ex, "Error en la invocación de la API - Carga de Derechos de Usuario.");
+                return Json(new { error = true, warn = false, msg });
+            }
+        }
+        #endregion
 
 
 
+        #region Mapeos
+        #region Perfil
+        private List<PerfilUserDto> ConvierteDatosPerfilUsuario(string json, string usu_id)
+        {
+            List<PerfilUserDto> perfiles = new List<PerfilUserDto>();
 
+            List<MenuRoot> pfs = JsonConvert.DeserializeObject<List<MenuRoot>>(json);
 
+            foreach (var item in pfs.First().children)
+            {
+                perfiles.Add(ObtenerPerfil(item));
+            }
 
-        //[HttpPost]
-        //public async Task<JsonResult> ConfirmarAbmBarrado(ProductoBarradoDto barr, char accion)
-        //{
-        //    try
-        //    {
-        //        var auth = EstaAutenticado;
-        //        if (!auth.Item1 || auth.Item2 < DateTime.Now)
-        //        {
-        //            return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
-        //        }
+            return perfiles;
+        }
 
-        //        //agrego el id del producto que actulmente esta seleccionado
-        //        barr.p_id = ProductoABMSeleccionado.p_id;
+        private PerfilUserDto ObtenerPerfil(MenuRoot item)
+        {
+            var datapf = item.text.Split('-');
+            PerfilUserDto pf = new PerfilUserDto()
+            {
+                asignado = item.state.selected,
+                perfil_default = item.data.perfil_default,
+                perfil_descripcion = datapf[1],
+                perfil_id = datapf[0],
+                usu_id = item.id.Split('-')[1]
+            };
+            return pf;
+        }
+        #endregion
+        #region Administracion
+        private List<AdmUserDto> ConvierteDatosAdmsUsuario(string json, string usu_id)
+        {
+            List<AdmUserDto> administraciones = new List<AdmUserDto>();
 
-        //        barr = HelperGen.PasarAMayusculas(barr);
-        //        //prod.P_Obs = prod.P_Obs.ToUpper();
-        //        AbmGenDto abm = new AbmGenDto()
-        //        {
-        //            Json = JsonConvert.SerializeObject(barr),
-        //            Objeto = "productos_barrados",
-        //            Administracion = AdministracionId,
-        //            Usuario = UserName,
-        //            Abm = accion
-        //        };
+            List<MenuRoot> adms = JsonConvert.DeserializeObject<List<MenuRoot>>(json);
 
-        //        var res = await _abmSv.AbmConfirmar(abm, TokenCookie);
-        //        if (res.Ok)
-        //        {
-        //            string msg;
-        //            switch (accion)
-        //            {
-        //                case 'A':
-        //                    msg = $"EL PROCESAMIENTO DEL ALTA DEL BARRADO {barr.p_id_barrado} SE REALIZO SATISFACTORIAMENTE";
-        //                    break;
-        //                case 'M':
-        //                    msg = $"EL PROCESAMIENTO DE LA MODIFICIACION DEL BARRADO {barr.p_id_barrado} SE REALIZO SATISFACTORIAMENTE";
+            foreach (var item in adms.First().children)
+            {
+                administraciones.Add(ObtenerAdm(item));
+            }
 
-        //                    break;
-        //                default:
-        //                    msg = $"EL PROCESAMIENTO DE LA BAJA/DISCONTINUAR DEL PRODUCTO {barr.p_id_barrado} SE REALIZO SATISFACTORIAMENTE";
-        //                    break;
-        //            }
-        //            await ActualizaBarrados(barr.p_id);
-        //            return Json(new { error = false, warn = false, msg });
-        //        }
-        //        else
-        //        {
-        //            return Json(new { error = false, warn = true, msg = res.Entidad.resultado_msj, focus = res.Entidad.resultado_setfocus });
-        //        }
-        //    }
-        //    catch (NegocioException ex)
-        //    {
-        //        return Json(new { error = false, warn = true, msg = ex.Message });
-        //    }
-        //    catch (UnauthorizedException ex)
-        //    {
-        //        return Json(new { error = false, warn = true, msg = ex.Message });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return Json(new { error = true, warn = false, msg = ex.Message });
-        //    }
-        //}
+            return administraciones;
+        }
 
-        //[HttpPost] //
-        //public async Task<JsonResult> confirmarAbmLimite(LimiteStkDto lim, char accion)
-        //{
-        //    try
-        //    {
-        //        var auth = EstaAutenticado;
-        //        if (!auth.Item1 || auth.Item2 < DateTime.Now)
-        //        {
-        //            return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
-        //        }
-        //        if (string.IsNullOrEmpty(lim.adm_id))
-        //        {
-        //            throw new NegocioException("No se recepcionaron datos importantes del Limite de Stock de la Sucursal. Verifique.");
-        //        }
-        //        if (lim.p_stk_min > lim.p_stk_max)
-        //        {
-        //            throw new NegocioException("Es Stock Mínimo núnca puede ser mayor al Stock Máximo. Verifique.");
-        //        }
-        //        if (lim.p_stk_max < 1 || lim.p_stk_min < 1 || lim.p_stk_max > 99999 || lim.p_stk_min > 99999)
-        //        {
-        //            throw new NegocioException("El Stock mínimo y el máximo siempre deben ser mayores a 1 y menores a 99999. Verifique.");
-        //        }
-        //        //agrego el id del producto que actulmente esta seleccionado
-        //        lim.p_id = ProductoABMSeleccionado.p_id;
+        private AdmUserDto ObtenerAdm(MenuRoot item)
+        {
+            var dataA = item.text.Split('-');
+            AdmUserDto pf = new AdmUserDto()
+            {
+                asignado = item.state.selected,
+                adm_id =  dataA[0], 
+                adm_nombre = dataA[1],
+                usu_id = item.id.Split('-')[1],
+            };
+            return pf;
+        }
+        #endregion
+        #region Derechos
+        private List<DerUserDto> ConvierteDatosDersUsuario(string json, string usu_id)
+        {
+            List<DerUserDto> derechos = new List<DerUserDto>();
 
-        //        lim = HelperGen.PasarAMayusculas(lim);
-        //        //prod.P_Obs = prod.P_Obs.ToUpper();
-        //        AbmGenDto abm = new AbmGenDto()
-        //        {
-        //            Json = JsonConvert.SerializeObject(lim),
-        //            Objeto = "productos_administraciones_stk",
-        //            Administracion = AdministracionId,
-        //            Usuario = UserName,
-        //            Abm = accion
-        //        };
+            List<MenuRoot> drs = JsonConvert.DeserializeObject<List<MenuRoot>>(json);
 
-        //        var res = await _abmSv.AbmConfirmar(abm, TokenCookie);
-        //        if (res.Ok)
-        //        {
-        //            string msg;
-        //            switch (accion)
-        //            {
-        //                case 'A':
-        //                    msg = $"EL PROCESAMIENTO DEL ALTA DEL Limite de Stock en {lim.adm_nombre} SE REALIZO SATISFACTORIAMENTE";
-        //                    break;
-        //                case 'M':
-        //                    msg = $"EL PROCESAMIENTO DE LA MODIFICIACION DEL BARRADO {lim.adm_nombre} SE REALIZO SATISFACTORIAMENTE";
-        //                    break;
-        //                default:
-        //                    msg = $"EL PROCESAMIENTO DE LA BAJA/DISCONTINUAR DEL PRODUCTO {lim.adm_nombre} SE REALIZO SATISFACTORIAMENTE";
-        //                    break;
-        //            }
-        //            return Json(new { error = false, warn = false, msg });
-        //        }
-        //        else
-        //        {
-        //            return Json(new { error = false, warn = true, msg = res.Entidad.resultado_msj, focus = res.Entidad.resultado_setfocus });
-        //        }
-        //    }
-        //    catch (NegocioException ex)
-        //    {
-        //        return Json(new { error = false, warn = true, msg = ex.Message });
-        //    }
-        //    catch (UnauthorizedException ex)
-        //    {
-        //        return Json(new { error = false, warn = true, msg = ex.Message });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return Json(new { error = true, warn = false, msg = ex.Message });
-        //    }
-        //}
+            foreach (var item in drs.First().children)
+            {
+                derechos.Add(ObtenerDer(item));
+            }
 
+            return derechos;
+        }
 
+        private DerUserDto ObtenerDer(MenuRoot item)
+        {
+            var dataDer = item.text.Split('-');
+            DerUserDto dr = new DerUserDto()
+            {
+                asignado = item.state.selected,
+                usu_id = item.id.Split('-')[1],
+                der_codigo= dataDer[0],
+                der_descripcion = dataDer[1],
+                
+            };
+            return dr;
+        }
+        #endregion
+        #endregion
 
-
-        //[HttpPost]
-        //public JsonResult ComboProveedorFamilia(string cta_id)
-        //{
-        //    try
-        //    {
-        //        var lista = ComboProveedoresFamilia(cta_id, _ctaSv);
-        //        return Json(new { error = false, lista });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, $"Error en {this.GetType().Name}-{MethodBase.GetCurrentMethod().Name}");
-        //        return Json(new { error = true, msg = ex.Message });
-        //    }
-        //}
-
+        #endregion
+       
     }
 }

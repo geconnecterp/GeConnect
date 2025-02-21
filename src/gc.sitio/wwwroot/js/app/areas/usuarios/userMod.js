@@ -16,7 +16,9 @@
         presentaPaginacion(div);
     });
     $("#btnBuscar").on("click", function () {
+
         //es nueva la busqueda no resguardamos la busqueda anterior. es util para paginado
+        $("#divpanel01").empty();
         dataBak = "";
         //es una busqueda por filtro. siempre sera pagina 1
         pagina = 1;
@@ -38,13 +40,13 @@
                     success: function (obj) {
                         response($.map(obj, function (item) {
                             var texto = item.cta_Denominacion;
-                            return { label: texto, value: item.cta_Denominacion, id: item.cta_Id,habilitada: item.ctac_habilitada };
+                            return { label: texto, value: item.cta_Denominacion, id: item.cta_Id, habilitada: item.ctac_habilitada };
                         }));
                     }
                 })
             },
             minLength: 3,
-            select: function (event, ui) {               
+            select: function (event, ui) {
                 $("input#cta_id").val(ui.item.id);
                 if (ui.item.habilitada === 'S') {
                     $("input#cta_denominacion").removeClass("text-danger").addClass("text-success");
@@ -53,7 +55,7 @@
                     $("input#cta_denominacion").removeClass("text-success").addClass("text-danger");
 
                 }
-     
+
                 return true;
             }
         });
@@ -63,18 +65,31 @@
     $(".inputEditable").on("keypress", analizaEnterInput);
 
     $("#BtnLiTab01").on("click", function () {
-        tabMn = 1;
+        tabAbm = 1;
         activarGrilla(Grids.GridUser);
         //$("#btnAbmNuevo").prop("disabled", false);
         //$("#btnAbmElimi").prop("disabled", false);       
 
     });
     $("#BtnLiTab02").on("click", function () {
-        tabMn = 2;
-
+        tabAbm = 2;
         desactivarGrilla(Grids.GridUser);
-
+        activarBotones(true);
         presentaPerfilesUsuario();
+    });
+    $("#BtnLiTab03").on("click", function () {
+        tabAbm = 3;
+        desactivarGrilla(Grids.GridUser);
+        activarBotones(true);
+
+        presentaAdministracionesUsuario();
+    });
+    $("#BtnLiTab04").on("click", function () {
+        tabAbm = 4;
+        desactivarGrilla(Grids.GridUser);
+        activarBotones(true);
+
+        presentaDerechosUsuario();
     });
 
     $(document).on("dblclick", "#" + Grids.GridUser + " tbody tr", function () {
@@ -125,7 +140,122 @@ function selectUserRegDbl(x, gridId) {
 
 function presentaPerfilesUsuario() {
 
-    PostGen({},)
+    PostGen({}, presentarPerfilUrl, function (obj) {
+        if (obj.error === true) {
+            CerrarWaiting();
+            AbrirMensaje("ALGO NO SALIO BIEN!", obj.msg, function () {
+                $("#msjModal").modal("hide");
+            }, false, ["CONTINUAR"], "error!", null);
+        }
+        else if (obj.warn === true) {
+            CerrarWaiting();
+
+            AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                if (obj.auth === true) {
+                    windows.location.href = login;
+                }
+                else {
+                    $("#msjModal").modal("hide");
+                }
+            }, false, ["CONTINUAR"], "warn!", null);
+        }
+        else {
+
+            jsonP = $.parseJSON(obj.arbol);
+            $("#divPerfiles").jstree("destroy").empty();
+
+            $("#divPerfiles").jstree({
+                "core": { "data": jsonP },
+                "checkbox": {
+                    "keep_selected_style": false
+                },
+                "plugins": ['checkbox']
+            });
+
+            CerrarWaiting();
+        }
+
+    });
+}
+
+function presentaAdministracionesUsuario() {
+
+    PostGen({}, presentarAdminsUrl, function (obj) {
+        if (obj.error === true) {
+            CerrarWaiting();
+            AbrirMensaje("ALGO NO SALIO BIEN!", obj.msg, function () {
+                $("#msjModal").modal("hide");
+            }, false, ["CONTINUAR"], "error!", null);
+        }
+        else if (obj.warn === true) {
+            CerrarWaiting();
+
+            AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                if (obj.auth === true) {
+                    windows.location.href = login;
+                }
+                else {
+                    $("#msjModal").modal("hide");
+                }
+            }, false, ["CONTINUAR"], "warn!", null);
+        }
+        else {
+
+            jsonA = $.parseJSON(obj.arbol);
+            $("#divAdmins").jstree("destroy").empty();
+
+            $("#divAdmins").jstree({
+                "core": { "data": jsonA },
+                "checkbox": {
+                    "keep_selected_style": false
+                },
+                "plugins": ['checkbox']
+            });
+
+            CerrarWaiting();
+        }
+
+    });
+}
+
+function presentaDerechosUsuario() {
+
+    PostGen({}, presentarDerecsUrl, function (obj) {
+        if (obj.error === true) {
+            CerrarWaiting();
+            AbrirMensaje("ALGO NO SALIO BIEN!", obj.msg, function () {
+                $("#msjModal").modal("hide");
+            }, false, ["CONTINUAR"], "error!", null);
+        }
+        else if (obj.warn === true) {
+            CerrarWaiting();
+
+            AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                if (obj.auth === true) {
+                    windows.location.href = login;
+                }
+                else {
+                    $("#msjModal").modal("hide");
+                }
+            }, false, ["CONTINUAR"], "warn!", null);
+        }
+        else {
+
+            jsonD = $.parseJSON(obj.arbol);
+            $("#divDers").jstree("destroy").empty();
+
+            $("#divDers").jstree({
+                "core": { "data": jsonD },
+                "checkbox": {
+                    "keep_selected_style": false
+                },
+                "plugins": ['checkbox']
+            });
+
+            CerrarWaiting();
+        }
+
+    });
 }
 
 function InicializaPantallaUser(grilla) {
@@ -138,34 +268,22 @@ function InicializaPantallaUser(grilla) {
                     $("#divDetalle").collapse("hide");
                 }
                 break;
+            case 2:
+                activarArbol("#divPerfiles", "#", false, true);
+                activarBotones(true);
+                break;
+            case 3:
+                activarArbol("#divAdmins", "#", false, true);
+                activarBotones(true);
+                break;
+            case 4:
+                activarArbol("#divDers", "#", false, true);
+                activarBotones(true);
+                break;
             default:
                 return false;
         }
     }
-
-    if (init === false) {
-        nng = "#" + grilla;
-        tb = $(nng + " tbody tr");
-        if (tb.length === 0) {
-            switch (tabAbm) {
-                case 1:
-                    $("#divFiltro").collapse("show");
-                    break;
-                case 2:
-                    presentaPerfilesUsuario();
-                    break;
-                case 3:
-                    break;
-                default:
-                    return false;
-            }
-        }
-    }
-    else {
-        //no es inicialización 
-        init = false;
-    }
-
 
     accionBotones(AbmAction.CANCEL);
 
@@ -283,13 +401,16 @@ function buscarUserServer(data) {
             $("#BtnLiTab02").addClass("text-danger");
             $("#BtnLiTab03").prop("disabled", true);
             $("#BtnLiTab03").addClass("text-danger");
-
+            $("#BtnLiTab04").prop("disabled", true);
+            $("#BtnLiTab04").addClass("text-danger");
         }
         else {
             $("#BtnLiTab02").prop("disabled", false);
             $("#BtnLiTab02").removeClass("text-danger");
             $("#BtnLiTab03").prop("disabled", false);
             $("#BtnLiTab03").removeClass("text-danger");
+            $("#BtnLiTab04").prop("disabled", false);
+            $("#BtnLiTab04").removeClass("text-danger");
         }
 
         CerrarWaiting();

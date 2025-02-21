@@ -81,6 +81,7 @@ var tabAbm = 1;
 var accion = "";//para tab01
 var accion02 = ""; //para tab02
 var accion03 = ""; //para tab03
+var accion04 = ""; //para tab04
 var init = true;
 var EntidadSelect = "";
 var EntidadEstado = "";

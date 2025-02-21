@@ -147,14 +147,14 @@ namespace gc.sitio.core.Servicios.Implementacion.Users
         {
             try
             {
-                ApiResponse<AdmUserDto> apiResponse;
+                ApiResponse<List<AdmUserDto>> apiResponse;
 
                 HelperAPI helper = new();
 
                 HttpClient client = helper.InicializaCliente(token);
                 HttpResponseMessage response;
 
-                var link = $"{_appSettings.RutaBase}{RutaAPI}{BUSCAR_USUARIOS_DATOS}?userId={usuId}";
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{OBTENER_ADM_USUARIO}?userId={usuId}";
 
                 response = await client.GetAsync(link);
 
@@ -166,9 +166,9 @@ namespace gc.sitio.core.Servicios.Implementacion.Users
 
                         return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
                     }
-                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<AdmUserDto>>(stringData);
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AdmUserDto>>>(stringData);
 
-                    return new RespuestaGenerica<AdmUserDto> { Ok = true, Mensaje = "OK", Entidad = apiResponse.Data };
+                    return new RespuestaGenerica<AdmUserDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
 
                 }
                 else
@@ -202,14 +202,14 @@ namespace gc.sitio.core.Servicios.Implementacion.Users
         {
             try
             {
-                ApiResponse<DerUserDto> apiResponse;
+                ApiResponse<List<DerUserDto>> apiResponse;
 
                 HelperAPI helper = new();
 
                 HttpClient client = helper.InicializaCliente(token);
                 HttpResponseMessage response;
 
-                var link = $"{_appSettings.RutaBase}{RutaAPI}{BUSCAR_USUARIOS_DATOS}?userId={usuId}";
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{OBTENER_DER_USUARIO}?userId={usuId}";
 
                 response = await client.GetAsync(link);
 
@@ -221,9 +221,9 @@ namespace gc.sitio.core.Servicios.Implementacion.Users
 
                         return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
                     }
-                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<DerUserDto>>(stringData);
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<DerUserDto>>>(stringData);
 
-                    return new RespuestaGenerica<DerUserDto> { Ok = true, Mensaje = "OK", Entidad = apiResponse.Data };
+                    return new RespuestaGenerica<DerUserDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
 
                 }
                 else
@@ -257,14 +257,14 @@ namespace gc.sitio.core.Servicios.Implementacion.Users
         {
             try
             {
-                ApiResponse<PerfilUserDto> apiResponse;
+                ApiResponse<List<PerfilUserDto>> apiResponse;
 
                 HelperAPI helper = new();
 
                 HttpClient client = helper.InicializaCliente(token);
                 HttpResponseMessage response;
 
-                var link = $"{_appSettings.RutaBase}{RutaAPI}{BUSCAR_USUARIOS_DATOS}?userId={usuId}";
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{OBTENER_PERFILES_USUARIO}?userId={usuId}";
 
                 response = await client.GetAsync(link);
 
@@ -276,9 +276,9 @@ namespace gc.sitio.core.Servicios.Implementacion.Users
 
                         return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
                     }
-                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<PerfilUserDto>>(stringData);
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<PerfilUserDto>>>(stringData);
 
-                    return new RespuestaGenerica<PerfilUserDto> { Ok = true, Mensaje = "OK", Entidad = apiResponse.Data };
+                    return new RespuestaGenerica<PerfilUserDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
 
                 }
                 else
