@@ -144,6 +144,29 @@ function cargaPaginacion() {
 }
 
 function ObtenerDatosDeBancoParaJson(destinoDeOperacion, tipoDeOperacion) {
+	var ctaf_id = $("#Banco_Ctaf_Id").val();
+	var ban_razon_social = $("#Banco_Ban_Razon_Social").val();
+	var ban_cuit = $("#Banco_Ban_Cuit").val();
+	var tcb_id = $("#listaTcb").val();
+	var tcb_desc = $("#listaTcb option:selected").text();
+	var ban_cuenta_nro = $("#Banco_Ban_Cuenta_Nro").val();
+	var ban_cuenta_cbu = $("#Banco_Ban_Cuenta_Cbu").val();
+	var mon_codigo = $("#listaMoneda").val();
+	var mon_desc = $("#listaMoneda option:selected").text();
+	var ban_che_nro = $("#Banco_Ban_Che_Nro").val();  
+	var ban_che_desde = $("#Banco_Ban_Che_Desde").val();
+	var ban_che_hasta = $("#Banco_Ban_Che_Hasta").val();
+	var ccb_id = $("#listaCcb").val();
+	var ccb_desc = $("#listaCcb option:selected").text();
+	var ccb_id_diferido = $("#listaCcbDif").val();
+	var ccb_desc_diferido = $("#listaCcbDif option:selected").text();
+	var ctag_id = $("#listaCtaGas").val();
+	var ctag_denominacion = $("#listaCtaGas option:selected").text();
+	var data = {
+		ctaf_id, ban_razon_social, ban_cuit, tcb_id, tcb_desc, ban_cuenta_nro, ban_cuenta_cbu, mon_codigo, mon_desc, ban_che_nro, ban_che_desde,
+		ban_che_hasta, ccb_id, ccb_desc, ccb_id_diferido, ccb_desc_diferido, ctag_id, ctag_denominacion, destinoDeOperacion, tipoDeOperacion
+	}
+	return data;
 }
 
 function buscarBancos(pag, esBaja = false) {

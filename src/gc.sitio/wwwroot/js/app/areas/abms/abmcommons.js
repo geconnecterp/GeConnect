@@ -1260,6 +1260,16 @@ function ActualizarRegistroEnGrilla(datos, grid) {
 			}
 		});
 	}
+	if (grid === Grids.GridBanco) {
+		$("#" + grid + " tbody tr").each(function (index) {
+			let aux = $(this)[0].cells[0].innerText;
+			if (aux == datos.ctaf_id) {
+				$(this)[0].cells[1].innerText = datos.ban_razon_social.toUpperCase();
+				$(this)[0].cells[2].innerText = datos.tcb_desc.toUpperCase();
+				$(this)[0].cells[3].innerText = datos.ban_cuenta_nro;
+			}
+		});
+	}
 }
 
 function btnSubmitClick() {
