@@ -224,6 +224,8 @@
 			public const string SP_ABM_OPCION_CUOTA_DATOS = "SPGECO_ABM_MediosPagos_Cuotas_Datos";
 			public const string SP_ABM_CUENTA_FIN_LISTA = "SPGECO_ABM_MediosPagos_Ctaf_Lista";
 			public const string SP_ABM_CUENTA_FIN_DATOS = "SPGECO_ABM_MediosPagos_Ctaf_Datos";
+			public const string SP_ABM_BANCO_LISTA = "SPGECO_ABM_Bancos_Lista";
+			public const string SP_ABM_BANCO_DATOS = "SPGECO_ABM_Bancos_Datos";
 			#endregion
 
 			#region Tipos

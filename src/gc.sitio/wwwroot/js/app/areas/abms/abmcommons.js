@@ -628,6 +628,8 @@ function PuedoModificar(tabAct) {
 			if ($("#MedioDePago_Ins_Id").val() == "")
 				mensaje = "Debe seleccionar un Medio de Pago antes de modificar Pos.";
 			break;
+		case Tabs.TabBanco:
+			break;
 		default:
 			break;
 	}
@@ -679,6 +681,9 @@ function GetMensajeParaBaja(tabActiva) {
 		case Tabs.TabPos:
 			mensaje = "Para eliminar primero debe seleccionar un Pos."
 			break;
+		case Tabs.TabBanco:
+			mensaje = "Para eliminar primero debe seleccionar un Banco."
+			break;
 		default:
 			mensaje = "";
 			break;
@@ -729,6 +734,9 @@ function SetearDestinoDeOperacion(tabActiva) {
 			break;
 		case Tabs.TabPos:
 			destinoDeOperacion = AbmObject.POS;
+			break;
+		case Tabs.TabBanco:
+			destinoDeOperacion = AbmObject.BANCOS;
 			break;
 		default:
 			destinoDeOperacion = "";
@@ -783,6 +791,9 @@ function btnNuevoClick() {
 		case Tabs.TabPos:
 			NuevaPos();
 			break;
+		case Tabs.TabBanco:
+			NuevoBanco();
+			break;
 		default:
 			break;
 	}
@@ -833,6 +844,9 @@ function btnModiClick() {
 		case Tabs.TabPos:
 			ModificaPos(tabActiva, Grids.GridMedioDePago);
 			break;
+		case Tabs.TabBanco:
+			ModificaBanco(tabActiva, Grids.GridBanco);
+			break;
 		default:
 			break;
 	}
@@ -852,6 +866,9 @@ function btnBajaClick() {
 	}
 	else if (tabActiva == Tabs.TabMedioDePago) {
 		idSelected = $("#MedioDePago_Ins_Id").val();
+	}
+	else if (tabActiva == Tabs.TabBanco) {
+		idSelected = $("#Banco_Ctaf_Id").val();
 	}
 	else {
 		idSelected = $("#IdSelected").val();
@@ -922,6 +939,9 @@ function btnBajaClick() {
 			case Tabs.TabPos:
 				desactivarGrilla(Grids.GridMedioDePago);
 				desactivarGrilla(Grids.GridPos);
+				break;
+			case Tabs.TabBanco:
+				desactivarGrilla(Grids.GridBanco);
 				break;
 			default:
 				break;
@@ -1042,6 +1062,17 @@ function btnCancelClick() {
 			LimpiarCampos(tabActiva);
 			activarGrilla(Grids.GridMedioDePago);
 			break;
+		case Tabs.TabBanco:
+			if ($("#divDetalle").is(":visible")) {
+				$("#divDetalle").collapse("hide");
+			}
+			tb = $("#" + Grids.GridBanco + " tbody tr");
+			if (tb.length === 0) {
+				$("#divFiltro").collapse("show");
+			}
+			activarGrilla(Grids.GridBanco);
+			QuitarElementoSeleccionado(Grids.GridBanco);
+			break;
 		default:
 			break;
 	}
@@ -1096,6 +1127,14 @@ function selectRegCli(e, gridId) {
 			break;
 		case Grids.GridRubro:
 			break;
+		case Grids.GridBanco:
+			if ($("#divDetalle").is(":visible")) {
+				$("#divDetalle").collapse("hide");
+			}
+			$("#btnDetalle").prop("disabled", true);
+			activarGrilla(Grids.GridBanco);
+			activarBotones(false);
+			break;
 		default:
 	}
 }
@@ -1132,6 +1171,8 @@ function PuedoGuardar(tabAct) {
 		case Tabs.TabCuentaFinYContable:
 			break;
 		case Tabs.TabPos:
+			break;
+		case Tabs.TabBanco:
 			break;
 		default:
 			break;
@@ -1180,6 +1221,8 @@ function validarCampos() {
 		case Tabs.TabCuentaFinYContable:
 			break;
 		case Tabs.TabPos:
+			break;
+		case Tabs.TabBanco:
 			break;
 		default:
 			break;
@@ -1294,6 +1337,11 @@ function Guardar() {
 			case AbmObject.POS:
 				url = dataOpsPosUrl;
 				break;
+			case AbmObject.BANCOS:
+				activarGrilla(Grids.GridBanco);
+				gridParaActualizar = Grids.GridBanco;
+				url = dataOpsBancoUrl;
+				break;
 			default:
 		}
 		var data = ObtenerDatosParaJson(destinoDeOperacion, tipoDeOperacion);
@@ -1347,6 +1395,12 @@ function Guardar() {
 					control.val(obj.id);
 					BuscarElementoInsertadoMedioDePago(obj.id);
 				}
+				if (tipoDeOperacion == AbmAction.ALTA && (destinoDeOperacion === AbmObject.BANCOS)) { //Si estoy agregando, busco el registro que acabo de agregar con el id que me devuelve el response (obj.id)
+					var controlId = ObtenerModuloEjecutado(destinoDeOperacion) + 'Ctaf_Id';
+					var control = $("[name='" + controlId + "']");
+					control.val(obj.id);
+					BuscarElementoInsertadoBanco(obj.id);
+				}
 				if (tipoDeOperacion == AbmAction.MODIFICACION) {
 					btnCancelClick();
 				}
@@ -1362,12 +1416,41 @@ function Guardar() {
 						case AbmObject.MEDIO_DE_PAGO:
 							buscarMediosDePago(1, true);
 							break;
+						case AbmObject.BANCOS:
+							buscarBancos(1, true);
+							break;
 						default:
 					}
 				}
 			}
 		});
 	}
+}
+
+function BuscarElementoInsertadoBanco(ctafId) {
+	var data = { ctafId };
+	var url = buscarBancoCargadoUrl;
+	PostGen(data, url, function (obj) {
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", "Se produjo un error al intentar obtener la entidad recientemente cargada.", function () {
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			if (obj.data) {
+				$("#chkDescr").prop('checked', true);
+				$("#chkDescr").trigger("change");
+				$("#Buscar").val(obj.data);
+				$("#chkDesdeHasta").prop('checked', false);
+				$("#chkDesdeHasta").trigger("change");
+				$("#chkRel01").prop('checked', false);
+				$("#chkRel01").trigger("change");
+				$("#chkRel02").prop('checked', false);
+				$("#chkRel02").trigger("change");
+				buscarBancos(1);
+			}
+		}
+	});
 }
 
 function BuscarElementoInsertadoMedioDePago(insId) {
@@ -1510,6 +1593,9 @@ function ObtenerModuloEjecutado(destinoDeOperacion) {
 		case AbmObject.POS:
 			return ""
 			break;
+		case AbmObject.BANCOS:
+			return "Banco."
+			break;
 		default:
 	}
 }
@@ -1554,6 +1640,9 @@ function ActualizarDatosEnGrilla(destinoDeOperacion) {
 			break;
 		case AbmObject.CUENTA_FIN_CONTABLE:
 			BuscarCuentaFinContable();
+			break;
+		case AbmObject.BANCOS:
+
 			break;
 		default:
 	}
@@ -1603,6 +1692,9 @@ function ObtenerDatosParaJson(destinoDeOperacion, tipoDeOperacion) {
 			break;
 		case AbmObject.POS:
 			json = ObtenerDatosDePosParaJson(destinoDeOperacion, tipoDeOperacion);
+			break;
+		case AbmObject.BANCOS:
+			json = ObtenerDatosDeBancoParaJson(destinoDeOperacion, tipoDeOperacion);
 			break;
 		default:
 	}

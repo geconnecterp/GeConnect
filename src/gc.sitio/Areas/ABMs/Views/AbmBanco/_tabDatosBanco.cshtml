@@ -1,0 +1,86 @@
+﻿@model BancoAbmModel
+@{
+	var mon = Model.Moneda;
+	var tcb = Model.TipoCuenta;
+	var gas = Model.CuentaGasto;
+	var con = Model.CuentaContable;
+}
+<div class="row">
+	<div class="col-md-6">
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-130">ID:</span>
+				<input type="text" asp-for="Banco.Ctaf_Id" class="form-control" disabled />
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-130">Banco:</span>
+				<input type="text" asp-for="Banco.Ban_Razon_Social" class="form-control activable inputEditable" />
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-130">Tipo de Cuenta: </span>
+				@Html.DropDownListFor(m => m.Banco.Tcb_Id, tcb, "Seleccionar...", new { @id = "listaTcb", @class = "form-control activable" })
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-130">N° Cuenta:</span>
+				<input type="text" asp-for="Banco.Ban_Cuenta_Nro" class="form-control activable inputEditable" />
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-130">CBU:</span>
+				<input type="text" asp-for="Banco.Ban_Cuenta_Cbu" class="form-control activable inputEditable" />
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-130">Moneda: </span>
+				@Html.DropDownListFor(m => m.Banco.Mon_Codigo, mon, "Seleccionar...", new { @id = "listaMoneda", @class = "form-control activable" })
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-130">CUIT:</span>
+				<input type="text" asp-for="Banco.Ban_Cuit" class="form-control activable inputEditable" />
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-130">Cuenta Gasto: </span>
+				@Html.DropDownListFor(m => m.Banco.Ctag_Id, gas, "Seleccionar...", new { @id = "listaCtaGas", @class = "form-control activable" })
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-130">Cuenta Contable: </span>
+				@Html.DropDownListFor(m => m.Banco.Ccb_Id, con, "Seleccionar...", new { @id = "listaCcb", @class = "form-control activable" })
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-130">Cuenta Contable Dif.: </span>
+				@Html.DropDownListFor(m => m.Banco.Ccb_Id_Diferido, con, "Seleccionar...", new { @id = "listaCcbDif", @class = "form-control activable" })
+			</div>
+		</div>
+		<div class="row mt-1" id="divDatosChequeraActual">
+			<fieldset>
+				<legend>
+					Chequera Actual
+				</legend>
+				<div class="input-group input-group-sm">
+					<span class="input-group-text fixed-lbl-for-abm-100">N° Che. Desde:</span>
+					<input type="number" asp-for="Banco.Ban_Che_Desde" class="form-control activable" />
+					<span class="input-group-text fixed-lbl-for-abm-100">N° Che. Hasta:</span>
+					<input type="number" asp-for="Banco.Ban_Che_Hasta" class="form-control activable" />
+					<span class="input-group-text fixed-lbl-for-abm-100">N° Che. a Emitir:</span>
+					<input type="number" asp-for="Banco.Ban_Che_Nro" class="form-control activable" />
+				</div>
+			</fieldset>
+		</div>
+	</div>
+</div>

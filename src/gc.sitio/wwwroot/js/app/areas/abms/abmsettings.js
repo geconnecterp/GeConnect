@@ -26,7 +26,8 @@ const AbmObject = {
 	MEDIO_DE_PAGO: 'mediospagos',
 	OPCIONES_CUOTA: 'mediospagos_cuotas',
 	CUENTA_FIN_CONTABLE: 'mediospagos_ctaf',
-	POS: 'mediospagos_pos'
+	POS: 'mediospagos_pos',
+	BANCOS: 'bancos'
 }
 
 const Grids = {
@@ -49,7 +50,8 @@ const Grids = {
 	GridUser: 'tbGridUsers',
 	GridProductos: 'tbGridProd',
 	GridBarrado: 'tbGridBarr',
-	GridLimite: 'tbGridLim'
+	GridLimite: 'tbGridLim',
+	GridBanco: 'tbGridBanco',
 }
 
 const Tabs = {
@@ -66,7 +68,8 @@ const Tabs = {
 	TabMedioDePago: 'btnTabMedioDePago',
 	TabOpcionesCuota: 'btnTabOpcionesCuotas',
 	TabCuentaFinYContable: 'btnTabCuentaFinContable',
-	TabPos: 'btnTabPos'
+	TabPos: 'btnTabPos',
+	TabBanco: 'btnTabBanco'
 }
 
 //variables globales
