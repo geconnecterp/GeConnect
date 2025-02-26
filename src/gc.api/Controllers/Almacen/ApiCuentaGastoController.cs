@@ -3,6 +3,7 @@ using gc.api.core.Contratos.Servicios;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.CuentaComercial;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -14,31 +15,31 @@ namespace gc.api.Controllers.Almacen
 	[Produces("application/json")]
 	[Route("api/[controller]")]
 	[ApiController]
-	public class ApiBancoController : ControllerBase
+	public class ApiCuentaGastoController : ControllerBase
 	{
 		private readonly IMapper _mapper;
 		private readonly IUriService _uriService;
-		private readonly IBancoServicio _bancoServicio;
+		private readonly ICuentaGastoServicio _cuentaGastoServicio;
 		private readonly ILogger<ApiSectorController> _logger;
-		public ApiBancoController(IMapper mapper, IUriService uriService, ILogger<ApiSectorController> logger, IBancoServicio bancoServicio)
+		public ApiCuentaGastoController(IMapper mapper, IUriService uriService, ILogger<ApiSectorController> logger, ICuentaGastoServicio cuentaGastoServicio)
 		{
 			_mapper = mapper;
 			_uriService = uriService;
 			_logger = logger;
-			_bancoServicio = bancoServicio;
+			_cuentaGastoServicio = cuentaGastoServicio;
 		}
 
 		[HttpGet]
-		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<BancoDto>))]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaGastoDto>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]
-		public IActionResult GetBancoParaABM(string ctaf_id)
+		public IActionResult GetCuentaGastoParaABM(string ctag_id)
 		{
-			ApiResponse<List<BancoDto>> response;
+			ApiResponse<List<CuentaGastoDto>> response;
 			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			var res = _bancoServicio.GetBancoParaABM(ctaf_id);
+			var res = _cuentaGastoServicio.GetCuentaGastoParaABM(ctag_id);
 
-			response = new ApiResponse<List<BancoDto>>(res);
+			response = new ApiResponse<List<CuentaGastoDto>>(res);
 
 			return Ok(response);
 		}

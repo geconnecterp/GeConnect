@@ -4,6 +4,7 @@ using gc.api.core.Interfaces.Datos;
 using gc.api.core.Interfaces.Servicios;
 using gc.api.core.Servicios;
 using gc.api.core.Servicios.ABM;
+using gc.api.core.Servicios.Tipos;
 using gc.api.infra.Datos.Contratos;
 using gc.api.infra.Datos.Contratos.Security;
 using gc.api.infra.Datos.Implementacion;
@@ -77,6 +78,9 @@ namespace gc.api.infra.Extensions
 			services.AddScoped<ITipoMonedaServicio, TipoMonedaServicio>();
 			services.AddScoped<IABMBancoServicio, ABMBancoServicio>();
 			services.AddScoped<IBancoServicio, BancoServicio>();
+			services.AddScoped<ITipoCuentaGastoServicio, TipoCuentaGastoServicio>();
+            services.AddScoped<IABMCuentaDirectaServicio, ABMCuentaDirectaServicio>();
+			services.AddScoped<ICuentaGastoServicio, CuentaGastoServicio>();
 			//services.AddScoped<IApiUsuarioServicio, ApiUsuarioServicio>();
 
 

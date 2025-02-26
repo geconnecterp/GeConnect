@@ -226,6 +226,9 @@
 			public const string SP_ABM_CUENTA_FIN_DATOS = "SPGECO_ABM_MediosPagos_Ctaf_Datos";
 			public const string SP_ABM_BANCO_LISTA = "SPGECO_ABM_Bancos_Lista";
 			public const string SP_ABM_BANCO_DATOS = "SPGECO_ABM_Bancos_Datos";
+			public const string SP_ABM_GASTOS_LISTA = "SPGECO_ABM_Gastos_Lista";
+			public const string SP_ABM_GASTOS_DATOS = "SPGECO_ABM_Gastos_Datos";
+
 			#endregion
 
 			#region Tipos
@@ -256,6 +259,7 @@
 			public const string SP_TIPOS_MONEDA_LISTA = "SPGECO_Monedas";
 			public const string SP_FINANCIERO_ESTADOS = "SPGECO_Financieros_Estados";
 			public const string SP_CCB_CUENTA_LISTA = "SPGECO_CCB_Cuentas_Lista";
+			public const string SP_TIPO_CUENTA_GASTO_LISTA = "SPGECO_Tipos_Cuentas_Gastos_Lista";
 			//
 			#endregion
 

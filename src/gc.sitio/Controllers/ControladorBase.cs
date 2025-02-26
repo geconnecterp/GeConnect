@@ -1423,6 +1423,26 @@ namespace gc.sitio.Controllers
 		}
 		#endregion
 
+		#region TIPO CUENTA GASTO
+		public List<TipoCuentaGastoDto> TipoCuentaGastoLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("TipoCuentaGastoLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<TipoCuentaGastoDto>();
+				}
+				return JsonConvert.DeserializeObject<List<TipoCuentaGastoDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("TipoCuentaGastoLista", json);
+			}
+		}
+		#endregion
+
 		#region ADMINISTRACIONES LISTA
 		public List<AdministracionDto> AdministracionesLista
 		{
@@ -1683,6 +1703,10 @@ namespace gc.sitio.Controllers
 		{
             TipoCuentaFinLista = tipoCuentaFinServicio.ObtenerTipoCuentaFin(TokenCookie);
 		}
+		protected void ObtenerTipoCuentaGasto(ITipoCuentaGastoServicio tipoCuentaGastoServicio)
+		{
+			TipoCuentaGastoLista = tipoCuentaGastoServicio.ObtenerTipoCuentaGasto(TokenCookie);
+		}
 		protected void ObtenerTipoMoneda(ITipoMonedaServicio tipoMonedaServicio)
 		{
 			TipoMonedaLista = tipoMonedaServicio.ObtenerTipoMoneda(TokenCookie);
@@ -1847,6 +1871,11 @@ namespace gc.sitio.Controllers
 		protected SelectList ComboCuentaPlanContableLista()
 		{
 			var lista = CuentaPlanContableLista.Select(x => new ComboGenDto { Id = x.Ccb_Id, Descripcion = x.Ccb_Desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		protected SelectList ComboTipoCuentaGastoLista()
+		{
+			var lista = TipoCuentaGastoLista.Select(x => new ComboGenDto { Id = x.tcg_id, Descripcion = x.tcg_desc });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
 		#endregion

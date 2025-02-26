@@ -1,0 +1,42 @@
+﻿@model GridCore<ABMCuentaDirectaSearchDto>
+@{
+    var dataMod = new ABMCuentaDirectaSearchDto();
+    var alt = true;
+    string clase = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+}
+<style>
+    thead th {
+        position: sticky;
+        top: 0px;
+    }
+</style>
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive text-nowrap  table-wrapper">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridCuentaDirecta">
+                <thead class="table-dark">
+                    <tr class="header">
+                        <th scope="col">ID</th>
+                        <th scope="col">Denominación</th>
+                        <th scope="col">Tipo</th>
+                        <th style="width:0%; display:none;">tcg_id</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ListaDatos)
+                    {
+                        if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+                        <tr class="@clase" onclick="selectReg(this, 'tbGridCuentaDirecta')">
+                            <td class="text-sm-center">@item.Ctag_Id</td>
+                            <td class="text-sm-start">@item.Ctag_Denominacion.ToUpper()</td>
+                            <td class="text-sm-start">@item.Tcg_Desc.ToUpper()</td>
+                            <td style="display:none;">@item.Tcg_Id</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

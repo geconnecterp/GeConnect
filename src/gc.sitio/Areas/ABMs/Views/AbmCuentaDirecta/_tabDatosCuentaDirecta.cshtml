@@ -1,0 +1,52 @@
+﻿@model CuentaDirectaAbmModel
+@{
+	var tcg = Model.TipoCuenta;
+	var con = Model.CuentaContable;
+}
+<div class="row">
+	<div class="col-md-6">
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-130">ID:</span>
+				<input type="text" asp-for="CuentaDirecta.Ctag_Id" class="form-control" disabled />
+				<div class="form-check form-check-inline form-switch mb-2">
+					<input class="form-check-input activable" type="checkbox" asp-for="CuentaDirecta.Ctag_Activa" value="" id="chkCtagActiva">
+					<label class="form-check-label" for="chkCtagActiva"> ACTIVA</label>
+				</div>
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-130">Denominación:</span>
+				<input type="text" asp-for="CuentaDirecta.Ctag_Denominacion" class="form-control activable inputEditable" />
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-130">Tipo: </span>
+				@Html.DropDownListFor(m => m.CuentaDirecta.Tcg_Id, tcg, "Seleccionar...", new { @id = "listaTcg", @class = "form-control activable" })
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-130">Ingreso:</span>
+				<div class="form-check form-check-inline form-switch mb-2">
+					<input class="form-check-input activable" type="checkbox" asp-for="CuentaDirecta.Ctag_Ingreso" value="" id="chkCtagIngreso">
+					<label class="form-check-label" for="chkCtagIngreso"></label>
+				</div>
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-130">Valores a Nombre:</span>
+				<input type="text" asp-for="CuentaDirecta.Ctag_Valores_Anombre" class="form-control activable inputEditable" />
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-130">Cuenta Contable: </span>
+				@Html.DropDownListFor(m => m.CuentaDirecta.Ccb_Id, con, "Seleccionar...", new { @id = "listaCcb", @class = "form-control activable" })
+			</div>
+		</div>
+	</div>
+</div>

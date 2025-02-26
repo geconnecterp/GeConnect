@@ -738,6 +738,9 @@ function SetearDestinoDeOperacion(tabActiva) {
 		case Tabs.TabBanco:
 			destinoDeOperacion = AbmObject.BANCOS;
 			break;
+		case Tabs.TabCuentaDirecta:
+			destinoDeOperacion = AbmObject.CUENTAS_DIRECTAS;
+			break;
 		default:
 			destinoDeOperacion = "";
 			break;
@@ -793,6 +796,9 @@ function btnNuevoClick() {
 			break;
 		case Tabs.TabBanco:
 			NuevoBanco();
+			break;
+		case Tabs.TabCuentaDirecta:
+			NuevaCuentaDirecta();
 			break;
 		default:
 			break;
@@ -1133,6 +1139,14 @@ function selectRegCli(e, gridId) {
 			}
 			$("#btnDetalle").prop("disabled", true);
 			activarGrilla(Grids.GridBanco);
+			activarBotones(false);
+			break;
+		case Grids.GridCuentaDirecta:
+			if ($("#divDetalle").is(":visible")) {
+				$("#divDetalle").collapse("hide");
+			}
+			$("#btnDetalle").prop("disabled", true);
+			activarGrilla(Grids.GridCuentaDirecta);
 			activarBotones(false);
 			break;
 		default:

@@ -41,6 +41,7 @@ namespace gc.api.Controllers.Codigos
 		private readonly ITipoRetGanServicio _tipoRetGanServicio;
 		private readonly ITipoRetIbServicio _tipoRetIbServicio;
 		private readonly ITipoCuentaFinServicio _tipoCuentaFinServicio;
+		private readonly ITipoCuentaGastoServicio _tipoCuentaGastoServicio;
 		private readonly ITipoMonedaServicio _tipoMonedaServicio;
 
 		public TiposVsController( IMapper mapper, IUriService uriService, ILogger<TiposVsController> logger, ICondicionAfipServicio condicionAfipServicio,
@@ -50,7 +51,8 @@ namespace gc.api.Controllers.Codigos
 								IVendedorServicio vendedorServicio, IRepartidorServicio repartidorServicio, IFinancieroServicio financieroServicio,
 								ITipoContactoServicio tipoContactoServicio, ITipoObsServicio tipoObsServicio, ITipoOpeIvaServicio tipoOpeIvaServicio,
 								ITipoProveedorServicio tipoProveedorServicio, ITipoGastoServicio tipoGastoServicio, ITipoRetGanServicio tipoRetGanServicio,
-								ITipoRetIbServicio tipoRetIbServicio, ITipoCuentaFinServicio tipoCuentaFinServicio, ITipoMonedaServicio tipoMonedaServicio)
+								ITipoRetIbServicio tipoRetIbServicio, ITipoCuentaFinServicio tipoCuentaFinServicio, ITipoMonedaServicio tipoMonedaServicio,
+								ITipoCuentaGastoServicio tipoCuentaGastoServicio)
         {
             _mapper = mapper;
             _uriService = uriService;
@@ -77,7 +79,20 @@ namespace gc.api.Controllers.Codigos
 			_tipoRetIbServicio = tipoRetIbServicio;
 			_tipoCuentaFinServicio = tipoCuentaFinServicio;
 			_tipoMonedaServicio = tipoMonedaServicio;
-        }
+			_tipoCuentaGastoServicio = tipoCuentaGastoServicio;
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult GetTiposCuentaGastoLista()
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			List<TipoCuentaGastoDto> condAfip = _tipoCuentaGastoServicio.GetTiposCuentaGasto();
+			var lista = _mapper.Map<List<TipoCuentaGastoDto>>(condAfip);
+
+			var response = new ApiResponse<List<TipoCuentaGastoDto>>(lista);
+			return Ok(response);
+		}
 
 		[HttpGet]
 		[Route("[action]")]
