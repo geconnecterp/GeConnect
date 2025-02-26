@@ -1,5 +1,6 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.EntidadesComunes.ControlComun.CuentaComercial;
 using gc.sitio.Controllers;
@@ -26,6 +27,17 @@ namespace gc.pocket.site.Areas.ControlComun.Controllers
             return View();
         }
 
+        public IActionResult TestCC()
+        {
+
+            var auth = EstaAutenticado;
+            if (!auth.Item1 || auth.Item2 < DateTime.Now)
+            {
+                return RedirectToAction("Login", "Token", new { area = "seguridad" });
+            }
+            return View();
+        }
+
         [HttpPost]
         public async Task<JsonResult> BusquedaCuentaComercial(BusquedaCuentaComercial search)
         {
@@ -38,6 +50,41 @@ namespace gc.pocket.site.Areas.ControlComun.Controllers
             {
                 string msg = "Error en la invocación de la API - Búsqueda Cuenta Comercial";
                 _logger.LogError(ex, "Error en la invocación de la API - Búsqueda Cuenta Comercial");
+
+                return Json(new { error = true, msg });
+            }
+        }
+
+
+        [HttpPost]
+        public async Task<JsonResult> BusquedaCuenta(string cuenta, char tipo)
+        {
+            try
+            {
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+                }
+
+                List<CuentaDto> cuentas = await _cuentaServicio.ObtenerListaCuentaComercial(cuenta, tipo, TokenCookie);
+                if (cuentas.Count == 1)
+                {
+                    return Json(new { error = false,warn=false,unico=true, lista = cuentas });
+                }
+                else
+                {
+                    return Json(new { error = false, warn = false, lista = cuentas });
+                }
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                string msg = "Error en la invocación de la API - Búsqueda Cuenta Comercial";
+                _logger.LogError(ex, msg);
 
                 return Json(new { error = true, msg });
             }

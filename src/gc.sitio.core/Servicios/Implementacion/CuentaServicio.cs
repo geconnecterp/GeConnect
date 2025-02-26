@@ -22,7 +22,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 	{
 		private const string RutaAPI = "/api/apicuenta";
 		private const string ProveedorLista = "/GetProveedorLista";
-		private const string CuentaComercialBuscar = "/GetCuentaComercialLista";
+		private const string CuentaComercialBuscar = "/GetCuentaComercialLista";  //llamada de la consulta para el control de CUENTAS COMERCIALES
 		private const string OCxCuentaBuscar = "/GetOCxCuenta";
 		private const string DetalleOCBuscar = "/GetOCDetalle";
 		private const string ProveedorFamiliaLista = "/GetProveedorFamiliaLista";

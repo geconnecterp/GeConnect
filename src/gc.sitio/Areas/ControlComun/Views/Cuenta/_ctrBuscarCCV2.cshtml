@@ -1,0 +1,385 @@
+﻿@model string
+
+@{
+    string nombreControl = Model;
+    string cuentaAuxId = $"cuentaAuxId{nombreControl}";
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="input-group">
+            <span class="input-group-text">Cuenta: </span>
+            <input type="text" id="cuentaId@(nombreControl)" class="form-control" style="width:10%;" />@*aca*@
+            @*el campo oculot cuentaAuxId funciona como interface para valores externos que se quieran inferir dentro del control.*@
+            @Html.Hidden(cuentaAuxId)
+            <button type="button" class="btn btn-icon btn-outline-primary" id="btnBuscarCCv2@(nombreControl)" title="Buscar cuenta comercial">@*aca*@
+                <span class="tf-icons bx bx-search"></span>
+            </button>
+            <input type="text" class="form-control" style="width: 50%;" id="rrss@(nombreControl)" readonly />@*aca*@
+            <i class="bx bx-user bx-md" id="iconTipoCCv2@(nombreControl)"></i> @*aca*@
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalCCv2@(nombreControl)" tabindex="-1" style="display: none;" aria-hidden="true">@*aca*@
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCenterTitle">Búsqueda de Cuentas Comerciales</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="input-group">
+                            <button type="button" class="btn btn-icon btn-outline-primary" id="btnBuscarCCv2@(nombreControl)" title="Buscar cuenta comercial">
+                                @*buscar se distingue del id superior verificar funcionalidad.*@
+                                <span class="tf-icons bx bx-search"></span>
+                            </button>
+                            <div class="autocomplete" style="width:300px;">
+                                <input type="text" class="form-control" style="max-width: 500px;" id="rrssEnModalDeBusquedav2@(nombreControl)" /> @*aca*@
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive table-wrapper fixed-padding-top">
+                    <table class="table table-bordered table-hover" id="tbCuentas@(nombreControl)">
+                        @*antes la tabla se llamaba tbCuentasComerciales*@
+                        <thead class="table-dark">
+                            <tr class="header">
+                                <th scope="col" class="table-fontsize align-center" style="width:20%;">ID</th>
+                                <th scope="col" class="table-fontsize align-center" style="width:50%">Razón Social</th>
+                                <th scope="col" class="table-fontsize align-center" style="width:20%">N° Doc</th>
+                                <th scope="col" class="table-fontsize align-center" style="width:10%">TC</th>
+                                <th style="width:0%; display:none;">prov_id</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    Cerrar
+                </button>
+                <button type="button" class="btn btn-primary" onclick="seleccionarCuentaComercialv2@(nombreControl)();">Seleccionar</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+    var cuentaCCv2@(nombreControl) = "";
+    var tipoCtav2@(nombreControl) = "";
+    var callBackAnalizaInput@(nombreControl) = "";
+    var rrssSeleccionada@(nombreControl) = "";
+    var provIdSeleccionado@(nombreControl) = "";
+
+
+    $(function () {
+        //variables globales del control
+
+        $("#cuentaId@(nombreControl)").on("keyup", analizaInput@(nombreControl));
+        $("#cuentaId@(nombreControl)").on("focus", inicializaCtrl@(nombreControl));
+        $("#btnBuscarCCv2@(nombreControl)").on("click", buscarCuentas@(nombreControl));
+
+        $(document).on("")
+
+    });
+
+    function seleccionarCuentaComercialv2@(nombreControl)() {
+        if (cuentaCCv2@(nombreControl) !== "" && cuentaCCv2@(nombreControl)!== null && cuentaCCv2@(nombreControl)!==undefined) 
+        {
+            $("#rrss@(nombreControl)").val(rrssSeleccionada@(nombreControl));
+            $("#cuentaId@(nombreControl)").val(cuentaCCv2@(nombreControl));
+            $("#iconTipoCCv2@(nombreControl)").removeClass("text-success").removeClass("text-danger").removeClass("text-info").removeClass("text-secondary");
+            if(provIdSeleccionado@(nombreControl)==="C")
+                $("#iconTipoCCv2@(nombreControl)").addClass("text-success");
+            else if(provIdSeleccionado@(nombreControl)==="B")
+                $("#iconTipoCCv2@(nombreControl)").addClass("text-info");
+            else if(provIdSeleccionado@(nombreControl)==="P")
+                $("#iconTipoCCv2@(nombreControl)").addClass("text-danger");
+            else
+                $("#iconTipoCCv2@(nombreControl)").addClass("text-secondary");
+
+            // ActualizarCuentaComercialSeleccionada(idCuentaSeleccionada);
+        }
+        $('#modalCC@(nombreControl)').modal('hide')
+    }
+
+    function analizaInput@(nombreControl)() {
+        //se pretende dejar la posibilidad de cargar en el metodo
+        //toda aquella funcionalidad que se necesite ejecutar.
+        if (callBackAnalizaInput@(nombreControl) != null &&
+            callBackAnalizaInput@(nombreControl) != "" &&
+            callBackAnalizaInput@(nombreControl) != undefined) {
+            callBackAnalizaInput@(nombreControl)();
+        }
+        return true;
+    }
+
+    function inicializaCtrl@(nombreControl)(){
+        $("#cuentaId@(nombreControl)").val("");
+        $("#rrss@(nombreControl)").val("");
+    }
+
+    function obtenerCuentaActual@(nombreControl)(){
+        return cuentaCCv2@(nombreControl)
+    }
+
+    function cargarTipoCuentaId@(nombreControl)(tc) {
+        if (tc !== "" && tc !== undefined) {
+            tipoCtav2@(nombreControl) = tc;
+        }
+        else {
+            AbrirMensaje("Atención", "No se especificó el Tipo de Cuenta a ser utilizada en la Busqueda de cuenta. Verifique", function () {
+                $("#msjModal").modal("hide");
+                return false;
+            }, false, ["Aceptar"], "error!", null);
+        }
+    }
+
+    function buscarCuentas@(nombreControl)() {
+        cuentaCCv2@(nombreControl) = $("#cuentaId@(nombreControl)").val();
+        if (cuentaCCv2@(nombreControl) === "") {
+            return false;
+        }
+        var tipo = tipoCtav2@(nombreControl);
+        if(tipo===""||tipo===null||tipo===undefined){
+           AbrirMensaje("Atención!!","No se ha especificado el tipo de la busqueda.",function(){
+                $("#msjModal").modal("hide");
+                cerrarMensaje();
+           },false,["Acptar"],"warn!",null);
+        }else{
+            var datos = { cuenta:cuentaCCv2@(nombreControl), tipo };
+            PostGen(datos, busquedacuentaUrl, function (obj) {
+                if (obj.error === true) {
+                    AbrirMensaje("Atención", obj.msg, function () {
+                        $("#msjModal").modal("hide");
+                        return true;
+                    }, false, ["Aceptar"], "error!", null);
+                } else if (obj.warn === true) {
+                    AbrirMensaje("Atención", obj.msg, function () {
+                        if(obj.auth===true){
+                            window.location.href=login;
+                        }
+                        $("#msjModal").modal("hide");
+                        return true;
+                    }, false, ["Aceptar"], "warn!", null);
+                } else if (obj.unico === true) {
+                    var cta= obj.lista[0]
+                    $("#rrss@(nombreControl)").val(cta.cta_Denominacion);
+                    $("#iconTipoCCv2@(nombreControl)").removeClass("text-success").removeClass("text-danger").removeClass("text-info").removeClass("text-secondary");
+                    if(cta.prov_Id==="C")
+                        $("#iconTipoCCv2@(nombreControl)").addClass("text-success");
+                    else if(cta.prov_Id==="B")
+                        $("#iconTipoCCv2@(nombreControl)").addClass("text-info");
+                    else if(cta.prov_Id==="P")
+                        $("#iconTipoCCv2@(nombreControl)").addClass("text-danger");
+                    else
+                        $("#iconTipoCCv2@(nombreControl)").addClass("text-secondary");
+                   /* $("#Cuenta").val(obj.cuenta.cta_Id)         */
+                    return true;
+                } else {
+                    MostrarCuentasModal@(nombreControl)(obj.lista);
+                }
+            });
+        }
+
+    }
+
+    function MostrarCuentasModal@(nombreControl)(lista) {
+        if (lista.length > 0) {
+            AbrirWaiting();
+            $("#tbCuentas@(nombreControl) tbody tr").remove();
+            var tableBody = document.getElementById("tbCuentas@(nombreControl)").getElementsByTagName('tbody')[0];
+            ctas = [];
+            for (var i = 0; i < lista.length; i++) {
+                var row = tableBody.insertRow();
+                var celda0 = row.insertCell(0);
+                var celda1 = row.insertCell(1);
+                var celda2 = row.insertCell(2);
+                var celda3 = row.insertCell(3);
+                var celda4 = row.insertCell(4);
+                celda0.innerText = lista[i].cta_Id;
+                celda1.innerText = lista[i].cta_Denominacion;
+                celda2.innerText = lista[i].tdoc_Desc + " " + lista[i].cta_Documento;
+                if (lista[i].prov_Id === "C")
+                    celda3.innerHTML = '<i class="bx bx-user bx-md text-success" id="iconTipoCC"></i>';
+                else if (lista[i].prov_Id === "B")
+                    celda3.innerHTML = '<i class="bx bx-user bx-md text-info" id="iconTipoCC"></i>';
+                else if (lista[i].prov_Id === "P")
+                    celda3.innerHTML = '<i class="bx bx-user bx-md text-danger" id="iconTipoCC"></i>';
+                else
+                    celda3.innerHTML = '<i class="bx bx-user bx-md text-secondary" id="iconTipoCC"></i>';
+                celda4.innerText = lista[i].prov_Id;
+                celda0.className = "align-center";
+                celda1.className = "align-left";
+                celda2.className = "align-center";
+                celda3.className = "align-center";
+                celda4.className = "align-center";
+                celda4.hidden = true;
+                ctas.push(lista[i].cta_Denominacion);
+            }
+            AddEventListenerToGrid@(nombreControl)("tbCuentas@(nombreControl)");
+            addRowHandlers@(nombreControl)("tbCuentas@(nombreControl)");
+            autocomplete@(nombreControl)(document.getElementById("rrssEnModalDeBusquedav2@(nombreControl)"), ctas);
+            $('#modalCCv2@(nombreControl)').modal('show');
+            CerrarWaiting();
+        }
+    }
+
+    function AddEventListenerToGrid@(nombreControl)(tabla) {
+        var grilla = document.getElementById(tabla);
+        if (grilla) {
+            document.getElementById(tabla).addEventListener('click', function (e) {
+                if (e.target.nodeName === 'TD') {
+                    var selectedRow = this.querySelector('.selected-row');
+                    if (selectedRow) {
+                        selectedRow.classList.remove('selected-row');
+                    }
+                    e.target.closest('tr').classList.add('selected-row');
+                }
+            });
+        }
+    }
+
+    function addRowHandlers@(nombreControl)(table) {
+        var table = document.getElementById(table);
+        var rows = table.getElementsByTagName("tr");
+        for (i = 0; i < rows.length; i++) {
+            var currentRow = table.rows[i];
+            var createClickHandler = function (row) {
+                return function () {
+                    var cell = row.getElementsByTagName("td")[0];
+                    cuentaCCv2@(nombreControl) = cell.innerHTML;
+                    cell = row.getElementsByTagName("td")[1];
+                    rrssSeleccionada@(nombreControl) = cell.innerHTML;
+                    cell = row.getElementsByTagName("td")[4];
+                    provIdSeleccionado@(nombreControl) = cell.innerHTML;
+                };
+            };
+            currentRow.onclick = createClickHandler(currentRow);
+        }
+    }
+
+
+
+     function autocomplete@(nombreControl)(inp, arr) {
+        /*the autocomplete function takes two arguments,
+        the text field element and an array of possible autocompleted values:*/
+        var currentFocus;
+        /*execute a function when someone writes in the text field:*/
+        inp.addEventListener("input", function (e) {
+            var a, b, i, val = this.value;
+            /*close any already open lists of autocompleted values*/
+            closeAllLists();
+            if (!val) {
+                MostrarOcultarRowsEnModalDeBusquedaDeCC@(nombreControl)(val);
+                return false;
+            }
+            currentFocus = -1;
+            /*create a DIV element that will contain the items (values):*/
+            a = document.createElement("DIV");
+            a.setAttribute("id", this.id + "autocomplete-list");
+            a.setAttribute("class", "autocomplete-items");
+            /*append the DIV element as a child of the autocomplete container:*/
+            this.parentNode.appendChild(a);
+            /*for each item in the array...*/
+            for (i = 0; i < arr.length; i++) {
+                /*check if the item starts with the same letters as the text field value:*/
+                if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+                    /*create a DIV element for each matching element:*/
+                    b = document.createElement("DIV");
+                    /*make the matching letters bold:*/
+                    b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
+                    b.innerHTML += arr[i].substr(val.length);
+                    /*insert a input field that will hold the current array item's value:*/
+                    b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
+                    /*execute a function when someone clicks on the item value (DIV element):*/
+                    b.addEventListener("click", function (e) {
+                        /*insert the value for the autocomplete text field:*/
+                        inp.value = this.getElementsByTagName("input")[0].value;
+                        /*close the list of autocompleted values,
+                        (or any other open lists of autocompleted values:*/
+                        closeAllLists();
+                        MostrarOcultarRowsEnModalDeBusquedaDeCC@(nombreControl)(inp.value);
+                    });
+                    a.appendChild(b);
+                }
+            }
+            MostrarOcultarRowsEnModalDeBusquedaDeCC@(nombreControl)(val);
+        });
+        /*execute a function presses a key on the keyboard:*/
+        inp.addEventListener("keydown", function (e) {
+            var x = document.getElementById(this.id + "autocomplete-list");
+            if (x) x = x.getElementsByTagName("div");
+            if (e.keyCode == 40) {
+                /*If the arrow DOWN key is pressed,
+                increase the currentFocus variable:*/
+                currentFocus++;
+                /*and and make the current item more visible:*/
+                addActive(x);
+            } else if (e.keyCode == 38) { //up
+                /*If the arrow UP key is pressed,
+                decrease the currentFocus variable:*/
+                currentFocus--;
+                /*and and make the current item more visible:*/
+                addActive(x);
+            } else if (e.keyCode == 13) {
+                /*If the ENTER key is pressed, prevent the form from being submitted,*/
+                e.preventDefault();
+                if (currentFocus > -1) {
+                    /*and simulate a click on the "active" item:*/
+                    if (x) x[currentFocus].click();
+                }
+            }
+        });
+        function addActive(x) {
+            /*a function to classify an item as "active":*/
+            if (!x) return false;
+            /*start by removing the "active" class on all items:*/
+            removeActive(x);
+            if (currentFocus >= x.length) currentFocus = 0;
+            if (currentFocus < 0) currentFocus = (x.length - 1);
+            /*add class "autocomplete-active":*/
+            x[currentFocus].classList.add("autocomplete-active");
+        }
+        function removeActive(x) {
+            /*a function to remove the "active" class from all autocomplete items:*/
+            for (var i = 0; i < x.length; i++) {
+                x[i].classList.remove("autocomplete-active");
+            }
+        }
+        function closeAllLists(elmnt) {
+            /*close all autocomplete lists in the document,
+            except the one passed as an argument:*/
+            var x = document.getElementsByClassName("autocomplete-items");
+            for (var i = 0; i < x.length; i++) {
+                if (elmnt != x[i] && elmnt != inp) {
+                    x[i].parentNode.removeChild(x[i]);
+                }
+            }
+        }
+        /*execute a function when someone clicks in the document:*/
+        document.addEventListener("click", function (e) {
+            closeAllLists(e.target);
+        });
+    }
+
+    function MostrarOcultarRowsEnModalDeBusquedaDeCC@(nombreControl)(texto) {
+        var tableBody = document.getElementById("tbCuentas@(nombreControl)").getElementsByTagName('tbody')[0];
+        for (var i = 0; i < tableBody.rows.length; i++) {
+            if (texto.toUpperCase() == tableBody.rows[i].cells[1].innerText.toUpperCase()) {
+                tableBody.rows[i].style.display = '';
+            }
+            else if (tableBody.rows[i].cells[1].innerText.includes(texto.toUpperCase())) {
+                tableBody.rows[i].style.display = '';
+            }
+            else {
+                tableBody.rows[i].style.display = 'none';
+            }
+        }
+    }
+</script>

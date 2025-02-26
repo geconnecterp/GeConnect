@@ -1,0 +1,31 @@
+﻿@{
+    Layout = "~/views/shared/_Layout.cshtml";
+
+    string nn = "Cli";
+}
+
+<h1>TEST CONTROL BUSQUEDA DE CUENTAS, SEGUN TIPO</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <span>Tipo de Cuente</span>
+        <select class="form-control">
+            <option value="">Seleccionar...</option>
+            <option value="C">Clientes</option>
+            <option value="B">Proveedores de Bienes de Cambio</option>
+            <option value="S">Proveedores de Servicio</option>
+            <option value="P">Proveedores (Todos)</option>
+            <option value="T">Clientes y Proveedores</option>
+        </select>
+    </div>
+</div>
+<partial name="_ctrBuscarCCV2" model="@nn" />
+
+@section scripts {
+    <script type="text/javascript">
+        var busquedacuentaUrl = "@Url.Action("BusquedaCuenta", "cuenta", new { area = "ControlComun" })";
+        cargarTipoCuentaIdCli("T");
+    </script>
+
+    @* <script src="~/js/app/controlcomun/busquedaCCv2.js"></script> *@
+}

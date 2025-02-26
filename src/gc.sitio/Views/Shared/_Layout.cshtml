@@ -14,7 +14,10 @@
     <link rel="stylesheet" href="~/lib/jqueryui/themes/sunny/theme.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/gc.sitio.styles.css" asp-append-version="true" />
+
     @await RenderSectionAsync("styles", required: false)
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
 </head>
 <body>
     <partial name="_header" />
@@ -31,7 +34,6 @@
     </footer>
     <partial name="_espera" />
     <partial name="_mensaje" />
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/jqueryui/jquery-ui.min.js"></script>
     <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="~/lib/lobibox/js/lobibox.min.js"></script>
