@@ -35,6 +35,59 @@
 	return true;
 });
 
+function ModificaCuentaDirecta(tabAct) {
+	accionBotones(AbmAction.MODIFICACION, tabAct);
+	tipoDeOperacion = AbmAction.MODIFICACION;
+	SetearDestinoDeOperacion(tabAct);
+	$(".nav-link").prop("disabled", true);
+	$(".activable").prop("disabled", false);
+	desactivarGrilla(Grids.GridCuentaDirecta);
+	$("#CuentaDirecta_Ctag_Id").prop("disabled", true);
+	$("#CuentaDirecta_Ctag_Denominacion").focus();
+}
+
+function ObtenerDatosDeCuentaDirectaParaJson(destinoDeOperacion, tipoDeOperacion) {
+	var ctag_id = $("#CuentaDirecta_Ctag_Id").val();
+	var ctag_denominacion = $("#CuentaDirecta_Ctag_Denominacion").val();
+	var tcg_id = $("#listaTcg").val();
+	var tcg_desc = $("#listaTcg option:selected").text();
+	var ctag_ingreso = $("#chkCtagIngreso")[0].checked;
+	var ctag_valores_anombre = $("#CuentaDirecta_Ctag_Valores_Anombre").val();
+	var ctag_activo = 'N';
+	if ($("#chkCtagActiva")[0].checked)
+		ctag_activo = "S";
+	var ccb_id = $("#listaCcb").val();
+	var ccb_desc = $("#listaCcb option:selected").text();
+	var data = { ctag_id, ctag_denominacion, tcg_id, tcg_desc, ctag_ingreso, ctag_valores_anombre, ctag_activo, ccb_id, ccb_desc, destinoDeOperacion, tipoDeOperacion };
+	return data;
+}
+
+function BuscarElementoInsertadoCuentaDirecta(ctagId) {
+	var data = { ctagId };
+	var url = buscarCuentaDirectaCargadaUrl;
+	PostGen(data, url, function (obj) {
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", "Se produjo un error al intentar obtener la entidad recientemente cargada.", function () {
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			if (obj.data) {
+				$("#chkDescr").prop('checked', true);
+				$("#chkDescr").trigger("change");
+				$("#Buscar").val(obj.data);
+				$("#chkDesdeHasta").prop('checked', false);
+				$("#chkDesdeHasta").trigger("change");
+				$("#chkRel01").prop('checked', false);
+				$("#chkRel01").trigger("change");
+				$("#chkRel02").prop('checked', false);
+				$("#chkRel02").trigger("change");
+				buscarCuentasDirectas(1);
+			}
+		}
+	});
+}
+
 function InicializaPantallaAbmCuentaDirecta() {
 	var tb = $("#tbGridCuentaDirecta tbody tr");
 	if (tb.length === 0) {

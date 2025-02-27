@@ -684,6 +684,9 @@ function GetMensajeParaBaja(tabActiva) {
 		case Tabs.TabBanco:
 			mensaje = "Para eliminar primero debe seleccionar un Banco."
 			break;
+		case Tabs.TabCuentaDirecta:
+			mensaje = "Para eliminar primero debe seleccionar una Cuenta."
+			break;
 		default:
 			mensaje = "";
 			break;
@@ -853,6 +856,9 @@ function btnModiClick() {
 		case Tabs.TabBanco:
 			ModificaBanco(tabActiva, Grids.GridBanco);
 			break;
+		case Tabs.TabCuentaDirecta:
+			ModificaCuentaDirecta(tabActiva);
+			break;
 		default:
 			break;
 	}
@@ -875,6 +881,9 @@ function btnBajaClick() {
 	}
 	else if (tabActiva == Tabs.TabBanco) {
 		idSelected = $("#Banco_Ctaf_Id").val();
+	}
+	else if (tabActiva == Tabs.TabCuentaDirecta) {
+		idSelected = $("#CuentaDirecta_Ctag_Id").val();
 	}
 	else {
 		idSelected = $("#IdSelected").val();
@@ -948,6 +957,9 @@ function btnBajaClick() {
 				break;
 			case Tabs.TabBanco:
 				desactivarGrilla(Grids.GridBanco);
+				break;
+			case Tabs.TabCuentaDirecta:
+				desactivarGrilla(Grids.GridCuentaDirecta);
 				break;
 			default:
 				break;
@@ -1079,6 +1091,17 @@ function btnCancelClick() {
 			activarGrilla(Grids.GridBanco);
 			QuitarElementoSeleccionado(Grids.GridBanco);
 			break;
+		case Tabs.TabCuentaDirecta:
+			if ($("#divDetalle").is(":visible")) {
+				$("#divDetalle").collapse("hide");
+			}
+			tb = $("#" + Grids.GridCuentaDirecta + " tbody tr");
+			if (tb.length === 0) {
+				$("#divFiltro").collapse("show");
+			}
+			activarGrilla(Grids.GridCuentaDirecta);
+			QuitarElementoSeleccionado(Grids.GridCuentaDirecta);
+			break;
 		default:
 			break;
 	}
@@ -1188,6 +1211,8 @@ function PuedoGuardar(tabAct) {
 			break;
 		case Tabs.TabBanco:
 			break;
+		case Tabs.TabCuentaDirecta:
+			break;
 		default:
 			break;
 	}
@@ -1238,6 +1263,8 @@ function validarCampos() {
 			break;
 		case Tabs.TabBanco:
 			break;
+		case Tabs.TabCuentaDirecta:
+			break;
 		default:
 			break;
 	}
@@ -1281,6 +1308,15 @@ function ActualizarRegistroEnGrilla(datos, grid) {
 				$(this)[0].cells[1].innerText = datos.ban_razon_social.toUpperCase();
 				$(this)[0].cells[2].innerText = datos.tcb_desc.toUpperCase();
 				$(this)[0].cells[3].innerText = datos.ban_cuenta_nro;
+			}
+		});
+	}
+	if (grid === Grids.GridCuentaDirecta) {
+		$("#" + grid + " tbody tr").each(function (index) {
+			let aux = $(this)[0].cells[0].innerText;
+			if (aux == datos.ctaf_id) {
+				$(this)[0].cells[1].innerText = datos.ctag_denominacion.toUpperCase();
+				$(this)[0].cells[2].innerText = datos.tcg_desc.toUpperCase();
 			}
 		});
 	}
@@ -1366,6 +1402,11 @@ function Guardar() {
 				gridParaActualizar = Grids.GridBanco;
 				url = dataOpsBancoUrl;
 				break;
+			case AbmObject.CUENTAS_DIRECTAS:
+				activarGrilla(Grids.GridCuentaDirecta);
+				gridParaActualizar = Grids.GridCuentaDirecta;
+				url = dataOpsCuentaDirectaUrl;
+				break;
 			default:
 		}
 		var data = ObtenerDatosParaJson(destinoDeOperacion, tipoDeOperacion);
@@ -1425,6 +1466,12 @@ function Guardar() {
 					control.val(obj.id);
 					BuscarElementoInsertadoBanco(obj.id);
 				}
+				if (tipoDeOperacion == AbmAction.ALTA && (destinoDeOperacion === AbmObject.CUENTAS_DIRECTAS)) { //Si estoy agregando, busco el registro que acabo de agregar con el id que me devuelve el response (obj.id)
+					var controlId = ObtenerModuloEjecutado(destinoDeOperacion) + 'Ctag_Id';
+					var control = $("[name='" + controlId + "']");
+					control.val(obj.id);
+					BuscarElementoInsertadoCuentaDirecta(obj.id);
+				}
 				if (tipoDeOperacion == AbmAction.MODIFICACION) {
 					btnCancelClick();
 				}
@@ -1442,6 +1489,9 @@ function Guardar() {
 							break;
 						case AbmObject.BANCOS:
 							buscarBancos(1, true);
+							break;
+						case AbmObject.CUENTAS_DIRECTAS:
+							buscarCuentasDirectas(1, true);
 							break;
 						default:
 					}
@@ -1620,6 +1670,9 @@ function ObtenerModuloEjecutado(destinoDeOperacion) {
 		case AbmObject.BANCOS:
 			return "Banco."
 			break;
+		case AbmObject.CUENTAS_DIRECTAS:
+			return "CuentaDirecta."
+			break;
 		default:
 	}
 }
@@ -1666,6 +1719,9 @@ function ActualizarDatosEnGrilla(destinoDeOperacion) {
 			BuscarCuentaFinContable();
 			break;
 		case AbmObject.BANCOS:
+
+			break;
+		case AbmObject.CUENTAS_DIRECTAS:
 
 			break;
 		default:
@@ -1719,6 +1775,9 @@ function ObtenerDatosParaJson(destinoDeOperacion, tipoDeOperacion) {
 			break;
 		case AbmObject.BANCOS:
 			json = ObtenerDatosDeBancoParaJson(destinoDeOperacion, tipoDeOperacion);
+			break;
+		case AbmObject.CUENTAS_DIRECTAS:
+			json = ObtenerDatosDeCuentaDirectaParaJson(destinoDeOperacion, tipoDeOperacion);
 			break;
 		default:
 	}
