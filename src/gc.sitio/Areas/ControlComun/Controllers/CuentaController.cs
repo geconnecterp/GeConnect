@@ -44,6 +44,7 @@ namespace gc.pocket.site.Areas.ControlComun.Controllers
             try
             {
                 List<CuentaDto> cuentasComerciales = await _cuentaServicio.ObtenerListaCuentaComercial(search.Texto, search.TipoBusqueda, TokenCookie);
+          
                 return Json(new { error = false, lista = cuentasComerciales });
             }
             catch (Exception ex)
@@ -74,6 +75,11 @@ namespace gc.pocket.site.Areas.ControlComun.Controllers
                 }
                 else
                 {
+                    foreach (var cta in cuentas)
+                    {
+                        cta.Cta_Denominacion= cta.Cta_Denominacion.QuitarEspaciosBlancosExtra();
+                    }
+
                     return Json(new { error = false, warn = false, lista = cuentas });
                 }
             }

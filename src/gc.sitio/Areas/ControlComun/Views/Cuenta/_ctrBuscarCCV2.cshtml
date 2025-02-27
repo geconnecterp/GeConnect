@@ -68,11 +68,15 @@
         </div>
     </div>
 </div>
+
 <script>
 
     var cuentaCCv2@(nombreControl) = "";
     var tipoCtav2@(nombreControl) = "";
+
     var callBackAnalizaInput@(nombreControl) = "";
+    var callbackSeleccionaCuenta@(nombreControl) = "";
+
     var rrssSeleccionada@(nombreControl) = "";
     var provIdSeleccionado@(nombreControl) = "";
 
@@ -103,15 +107,26 @@
 
             // ActualizarCuentaComercialSeleccionada(idCuentaSeleccionada);
         }
-        $('#modalCC@(nombreControl)').modal('hide')
+        $('#modalCCv2@(nombreControl)').modal('hide')
+        EjecutarCallBackSeleccionarCuenta@(nombreControl)();
+    }
+
+    function EjecutarCallBackSeleccionarCuenta@(nombreControl)(){
+        if(callbackSeleccionaCuenta@(nombreControl)!==null &&
+            callbackSeleccionaCuenta@(nombreControl)!=="" &&
+            callbackSeleccionaCuenta@(nombreControl) !== undefined
+        ){
+            callbackSeleccionaCuenta@(nombreControl)();
+        }
     }
 
     function analizaInput@(nombreControl)() {
         //se pretende dejar la posibilidad de cargar en el metodo
         //toda aquella funcionalidad que se necesite ejecutar.
-        if (callBackAnalizaInput@(nombreControl) != null &&
-            callBackAnalizaInput@(nombreControl) != "" &&
-            callBackAnalizaInput@(nombreControl) != undefined) {
+        if (callBackAnalizaInput@(nombreControl) !== null &&
+            callBackAnalizaInput@(nombreControl) !== "" &&
+            callBackAnalizaInput@(nombreControl) !== undefined) {
+
             callBackAnalizaInput@(nombreControl)();
         }
         return true;
