@@ -109,6 +109,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 
 		//NCYPI
 		private const string OC_Productos = "/NCPICargarListaDeProductos";
+		private const string OC_Productos_Pag = "/NCPICargarListaDeProductosPag";
 		private const string OC_Cargar_Pedido = "/NCPICargaPedido";
 
 		private readonly AppSettings _appSettings;
@@ -2172,6 +2173,38 @@ namespace gc.sitio.core.Servicios.Implementacion
 				string stringData = await response.Content.ReadAsStringAsync();
 				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
 				return new List<InfoProductoFamiliaDto>();
+			}
+		}
+
+		public async Task<(List<ProductoNCPIDto>, MetadataGrid)> NCPICargarListaDeProductosPag(string tipo, string admId, string filtro, string id, string token, string Sort, string SortDir, int Registros, int Pagina)
+		{
+			ApiResponse<List<ProductoNCPIDto>> apiResponse;
+
+			HelperAPI helper = new();
+			NCPICargarListaDeProductosRequest request = new() { Tipo = tipo, AdmId = admId, Filtro = filtro, Id = id, Sort = Sort, Registros = Registros, SortDir = SortDir , Pagina = Pagina };
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{OC_Productos_Pag}";
+
+			response = await client.PostAsync(link, contentData);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros tipo:{tipo} admId:{admId} filtro:{filtro} id:{id}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProductoNCPIDto>>>(stringData);
+				return (apiResponse.Data, apiResponse.Meta);
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
 			}
 		}
 	}

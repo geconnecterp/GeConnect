@@ -3,6 +3,8 @@ namespace gc.infraestructura.Dtos.Almacen
 {
 	public class ProductoNCPIDto : Dto
 	{
+		public int total_registros { get; set; }
+		public int total_paginas { get; set; }
 		public string p_id { get; set; } = string.Empty;
 		public string p_id_barrado { get; set; } = string.Empty;
 		public string p_id_prov { get; set; } = string.Empty;

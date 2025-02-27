@@ -149,7 +149,7 @@ function BuscarProveedoresFamilia() {
 	});
 }
 
-function BuscarProductos(tipoBusqueda) {
+function BuscarProductos(tipoBusqueda, pag=1) {
 	viendeDesdeBusquedaDeProducto = true;
 	AbrirWaiting();
 	var filtro = "";
@@ -191,13 +191,36 @@ function BuscarProductos(tipoBusqueda) {
 			break;
 		default:
 	}
-	var datos = { filtro, id, tipo };
-	PostGenHtml(datos, BuscarProductosOCPIURL, function (obj) {
+
+	var buscaNew = true;
+	pagina = pag;
+	var sort = null;
+	var sortDir = null
+	var data2 = { sort, sortDir, pag, buscaNew }
+	var data1 = { filtro, id, tipo };
+	var data = $.extend({}, data1, data2);
+	PostGenHtml(data, BuscarProductosOCPIURL, function (obj) {
 		$("#divListaProducto").html(obj);
 		addInCellEditHandler();
 		addInCellKeyDownHandler();
 		AddEventListenerToGrid("tbListaProducto");
 		tableUpDownArrow();
+		PostGen({}, buscarMetadataURL, function (obj) {
+			if (obj.error === true) {
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				totalRegs = obj.metadata.totalCount;
+				pags = obj.metadata.totalPages;
+				pagRegs = obj.metadata.pageSize;
+
+				$("#pagEstado").val(true).trigger("change");
+			}
+
+		});
 		CerrarWaiting();
 		viendeDesdeBusquedaDeProducto = false;
 		return true

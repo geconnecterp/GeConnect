@@ -792,7 +792,10 @@ namespace gc.api.core.Servicios
                 new("@filtro",request.Filtro),
                 new("@id",request.Id),
             };
-            List<ProductoNCPIDto> respuesta = _repository.EjecutarLstSpExt<ProductoNCPIDto>(sp, ps, true);
+			ps.Add(new SqlParameter("@registros", request.Registros));
+			ps.Add(new SqlParameter("@pagina", request.Pagina));
+			ps.Add(new SqlParameter("@ordenar", string.IsNullOrEmpty(request.Sort) ? "usu_apellidoynombre" : request.Sort));
+			List<ProductoNCPIDto> respuesta = _repository.EjecutarLstSpExt<ProductoNCPIDto>(sp, ps, true);
             return respuesta;
         }
         public List<NCPICargaPedidoResponse> NCPICargaPedido(NCPICargaPedidoRequest request)

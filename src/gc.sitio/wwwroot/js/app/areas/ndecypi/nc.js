@@ -2,7 +2,27 @@
 	$("#listaSucursales").on("change", listaSucursalesChange);
 	$("#txtMeses").on("change", BuscarInfoAdicional);
 	$("#txtSemanas").on("change", BuscarInfoAdicional);
+	$("#pagEstado").on("change", function () {
+		var div = $("#divPaginacion");
+		presentaPaginacionNC(div);
+	});
 });
+
+function presentaPaginacionNC(div) {
+	div.pagination({
+		items: totalRegs,
+		itemsOnPage: pagRegs,
+		cssStyle: "dark-theme",
+		currentPage: pagina,
+		onPageClick: function (num) {
+			BuscarProductos(tipoBusqueda, num);
+			//buscarSectores(num);
+		}
+	});
+	$("#pagEstado").val(false);
+	$("#divFiltro").collapse("hide")
+	return true;
+}
 
 function listaSucursalesChange() {
 	if (pIdSeleccionado == undefined) {

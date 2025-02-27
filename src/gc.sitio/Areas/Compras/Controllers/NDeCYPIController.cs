@@ -15,10 +15,12 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Dtos.Users;
 
 namespace gc.sitio.Areas.Compras.Controllers
 {
-    [Area("Compras")]
+	[Area("Compras")]
 	public class NDeCYPIController : ControladorBase
 	{
 		private readonly AppSettings _appSettings;
@@ -27,7 +29,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private readonly IRubroServicio _rubroServicio;
 		private readonly IProductoServicio _productoServicio;
 		private readonly IAdministracionServicio _administracionServicio;
-		public NDeCYPIController(ICuentaServicio cuentaServicio, IRubroServicio rubroServicio, IProductoServicio productoServicio, 
+		public NDeCYPIController(ICuentaServicio cuentaServicio, IRubroServicio rubroServicio, IProductoServicio productoServicio,
 								 IAdministracionServicio administracionServicio, ILogger<CompraController> logger, IOptions<AppSettings> options, IHttpContextAccessor context) : base(options, context)
 		{
 			_logger = logger;
@@ -84,15 +86,26 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return View(model);
 		}
 
-		public async Task<IActionResult> BuscarProductosOCPI(string filtro, string id, string tipo)
+		public async Task<IActionResult> BuscarProductosOCPI(string filtro, string id, string tipo, string sort = "p_m_desc", string sortDir = "asc", int pag = 1, bool actualizar = false)
 		{
 			var model = new GridCore<ProductoNCPIDto>();
+			MetadataGrid metadata;
+			GridCore<ProductoNCPIDto> grillaDatos;
 			try
 			{
-				var productos = _productoServicio.NCPICargarListaDeProductos(tipo, AdministracionId, filtro, id, TokenCookie).Result;
-				ObtenerColor(ref productos);
-				model = ObtenerGridCore<ProductoNCPIDto>(productos);
-				return PartialView("_grillaProductos", model);
+				var Sort = sort;
+				var SortDir = sortDir;
+				var Registros = _appSettings.NroRegistrosPagina;
+				var Pagina = pag;
+				var productos = _productoServicio.NCPICargarListaDeProductosPag(tipo, AdministracionId, filtro, id, TokenCookie, Sort, SortDir, Registros, Pagina).Result;
+				ObtenerColor(ref productos.Item1);
+				MetadataGeneral = productos.Item2 ?? new MetadataGrid();
+				metadata = MetadataGeneral;
+
+				//grillaDatos = GenerarGrilla(ListaDeUsuarios, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
+				grillaDatos = GenerarGrilla(productos.Item1, sort, _appSettings.NroRegistrosPagina, pag, metadata.TotalCount, metadata.TotalPages, sortDir);
+				//model = ObtenerGridCore<ProductoNCPIDto>(productos);
+				return PartialView("_grillaProductos", grillaDatos);
 			}
 			catch (Exception ex)
 			{
@@ -299,7 +312,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		#region Métodos privados
 		private SelectList ComboProveedores()
 		{
-			var adms = _cuentaServicio.ObtenerListaProveedores("BI",TokenCookie);
+			var adms = _cuentaServicio.ObtenerListaProveedores("BI", TokenCookie);
 			var lista = adms.Select(x => new ComboGenDto { Id = x.Cta_Id, Descripcion = x.Cta_Denominacion });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}

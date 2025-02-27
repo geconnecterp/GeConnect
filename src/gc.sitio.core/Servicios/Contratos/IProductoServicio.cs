@@ -14,6 +14,7 @@ using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
 using gc.infraestructura.Core.EntidadesComunes;
+using Microsoft.Win32;
 
 namespace gc.sitio.core.Servicios.Contratos
 {
@@ -91,7 +92,8 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<List<RespuestaDto>> TRValidarTransferencia(string ti, string admId, string usuId, string token);
 
         Task<List<ProductoNCPIDto>> NCPICargarListaDeProductos(string tipo, string admId, string filtro, string id, string token);
-        Task<List<NCPICargaPedidoResponse>> NCPICargaPedido(NCPICargaPedidoRequest req, string token);
+		Task<(List<ProductoNCPIDto>, MetadataGrid)> NCPICargarListaDeProductosPag(string tipo, string admId, string filtro, string id, string token, string Sort, string SortDir, int Registros, int Pagina);
+		Task<List<NCPICargaPedidoResponse>> NCPICargaPedido(NCPICargaPedidoRequest req, string token);
 		Task<List<InfoProductoFamiliaDto>> ObtenerProductosPorFamilia(string ctaId, string fliaSelected, string token);
     }
 }
