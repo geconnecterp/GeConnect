@@ -4,6 +4,7 @@
 @{
     Layout = "~/views/shared/_Layout.cshtml";
     var filtro = new QueryFilters() { Rel01 = null, Rel02 = null, Modelo = ModeloFilter.USUARIOS };
+    string titulo = "Gestión de Usuarios";
 }
 
 @section styles {
@@ -15,7 +16,8 @@
 }
 
 
-<h4></h4>
+<partial name="_tituloVista" model="@titulo"></partial>
+
 <div class="container">
     <input type="text" id="IdSelected" style="display:none;" />
     <div class="row">

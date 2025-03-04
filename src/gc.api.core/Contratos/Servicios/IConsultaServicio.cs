@@ -1,0 +1,21 @@
+﻿using gc.api.core.Entidades;
+using gc.infraestructura.Dtos.Consultas;
+
+namespace gc.api.core.Contratos.Servicios
+{
+    public interface IConsultaServicio : IServicio<Cuenta>
+    {
+        List<ConsCtaCteDto> ConsultarCuentaCorriente(string ctaId, DateTime fechaD, string userId);
+        List<ConsVtoDto> ConsultaVencimientoComprobantesNoImputados(string ctaId, DateTime fechaD, DateTime fechaH, string userId);
+        List<ConsCompTotDto> ConsultaComprobantesMeses(string ctaId, int meses, bool relCuit, string userId);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="ctaId"></param>
+        /// <param name="mes">el formato de este parametro es aaaamm</param>
+        /// <param name="relCuit"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        List<ConsCompDetDto> ConsultaComprobantesMesDetalle(string ctaId,string mes,bool relCuit, string userId);   
+    }
+}

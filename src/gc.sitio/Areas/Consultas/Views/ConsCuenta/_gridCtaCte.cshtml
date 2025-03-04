@@ -1,0 +1,50 @@
+﻿
+@model GridCore<ConsCtaCteDto>
+
+@{
+    var dataMod = new ConsCtaCteDto();
+    var alt = true;
+    string clase = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive text-nowrap  table-wrapper-500">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridCtaCte">
+                <thead class="table-dark">
+                    <tr class="header">
+                        <th scope="col">FECHA</th>
+                        <th scope="col">N° MOV.</th>
+                        <th scope="col">TIPO COMPTE</th>
+                        <th scope="col">N° COMPTE</th>
+                        <th scope="col">CONCEPTO</th>
+                        <th scope="col">DEBE</th>                        
+                        <th scope="col">HABER</th>
+                        <th scope="col">SALDO</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ListaDatos)
+                    {
+                        if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+                        <tr class="@clase" >
+                            @* 
+                                onclick="selectRegProd(this,'tbGridCtaCte')"
+                                ondblclick="selectAbmRegDbl(this,'tbGridBarr')" *@
+                            <td class="text-sm-center">@item.Cc_fecha.ToDateTime().ToShortDateString()</td>
+                            <td class="text-sm-start">@item.Dia_movi</td>
+                            <td class="text-sm-end">@item.Tco_desc</td>
+                            <td class="text-sm-start">@item.Cm_compte</td>
+                            <td class="text-sm-start">@item.Cc_concepto</td>
+                            <td class="text-sm-start">@item.Cc_debe</td>
+                            <td class="text-sm-end">@item.Cc_haber</td>
+                            <td class="text-sm-end">@item.Cc_saldo</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

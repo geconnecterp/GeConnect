@@ -1,0 +1,84 @@
+﻿
+@model GridCore<ConsCompDetDto>
+
+@{
+    var dataMod = new ConsCompDetDto();
+    var alt = true;
+    string clase = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+    string provId = ViewBag.ProvId; //hay que poner una ViewBag
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive text-nowrap  table-wrapper-500">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridCtaCte">
+                <thead class="table-dark">
+                    <tr class="header">
+                        <th scope="col">FECHA</th>
+                        <th scope="col">TIPO Cmpte</th>
+                        <th scope="col">N° Cmpte</th>
+                        <th scope="col">Neto</th>
+                        <th scope="col">IVA</th>
+                        <th scope="col">TOTAL</th>
+                        @if(provId.Equals(provId)){
+                            <th scope="col">N° DOC</th>
+                            <th scope="col">Cmpte ORI</th>
+                        }
+                        else{
+                            <th scope="col">N° Or.Pago</th>
+                            <th scope="col">Cmpte ORI</th>
+                        }
+
+                        <th scope="col">CARGADO</th>
+                        <th scope="col">USUARIO</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ListaDatos)
+                    {
+                        if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+                        <tr class="@clase" >
+                            <td class="text-sm-center">@item.Cm_fecha</td>
+                            <td class="text-sm-end">@item.Tco_id</td>
+                            <td class="text-sm-end">@item.Cm_compte</td>
+                            <td class="text-sm-end">@item.Cm_neto</td>
+                            <td class="text-sm-end">@item.Cm_iva</td>
+                            <td class="text-sm-end">@item.Cm_total</td>
+                            @if(provId.Equals(provId)){
+                                <td class="text-sm-end">@item.Op_compte</td>
+                                string cmptOrig = $"{item.Tco_id_ori} {item.Cm_compte_ori}";
+                                <td class="text-sm-end">@cmptOrig</td>
+                            }
+                            else{
+                                <td class="text-sm-end">@item.Doc_compte</td>
+                                <td class="text-sm-end">@item.Cm_compte_ori</td>
+                            }
+                            <td class="text-sm-end">????</td>
+                            <td class="text-sm-end">@item.Usu_id</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <div class="row">
+                <div class="offset-md-4 col-md-4">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text">TOTAL FT + ND</span>
+                        <input type="text" class="form-control" id="inFT" />
+                        <input type="text" class="form-control" id="inND" />
+                        <input type="text" class="form-control" id="inTotal" />
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="offset-md-4 col-md-4">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text">TOTAL NC</span>                        
+                        <input type="text" class="form-control" id="inNCTotal" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

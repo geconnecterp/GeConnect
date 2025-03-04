@@ -188,6 +188,15 @@
 
             #endregion
 
+            #region Consultas de Cuenta Corriente
+
+            public const string SP_CONS_CTACTE= "SPGECO_C_CtaCte";
+            public const string SP_CONS_VENCIMIENTOS_CMP_SINPUTAR = "SPGECO_C_Vto";
+            public const string SP_CONS_COMPROBANTES_TOT = "SPGECO_C_Comptes_Tot";
+            public const string SP_CONS_COMPROBANTES_DET = "SPGECO_C_Comptes_Det";
+
+            #endregion
+
             #region ABM
             public const string SP_ABM_P_LISTA = "SPGECO_ABM_P_Lista";
             public const string SP_ABM_P_DATOS = "SPGECO_ABM_P_Datos";

@@ -1,4 +1,11 @@
-﻿$(function () {
+﻿//variables globales que son declaradas al inicio para que tengan alcance a la 
+//mayor cantidad de codigo.
+var nnControlCta01 = "";
+var nnControlCta02 = "";
+var nnControlCta03 = "";
+var nnControlCta04 = "";
+
+$(function () {
     //check generico REL01 activando componentes disables
     $("#chkRel01").on("click", function () {
         if ($("#chkRel01").is(":checked")) {
@@ -213,7 +220,9 @@ function AbrirMensaje(Titulo, Mensaje, CallBack, EsConfirmacion, Botones, Tipo, 
 //codigo generico para autocomplete 01
 $("#Rel01").autocomplete({
     source: function (request, response) {
-        data = { prefix: request.term }
+
+        data = { prefix: request.term }; Rel01
+
         $.ajax({
             url: autoComRel01Url,
             type: "POST",
@@ -222,17 +231,21 @@ $("#Rel01").autocomplete({
             success: function (obj) {
                 response($.map(obj, function (item) {
                     var texto = item.descripcion;
-                    return { label: texto, value: item.descripcion, id: item.id };
+                    return { label: texto, value: item.descripcion, id: item.id, prov: item.provId };
                 }));
             }
         })
     },
     minLength: 3,
     select: function (event, ui) {
-        if ($("#Rel01List").has('option:contains("' + ui.item.id +'")').length === 0) {
+        if ($("#Rel01List").has('option:contains("' + ui.item.id + '")').length === 0) {
             $("#Rel01Item").val(ui.item.id);
             var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
             $("#Rel01List").append(opc);
+
+            $("#Rel01").prop("disabled", true);
+            $("#Rel01List").prop("disabled", true);
+
         }
         return true;
     }
@@ -347,7 +360,7 @@ function selectReg(x, gridId) {
         $(this).removeClass("selectedEdit-row");
     });
     $(x).addClass("selected-row");
-    
+
 }
 
 function desactivarGrilla(gridId) {
@@ -413,4 +426,31 @@ function cambiaMenuApp() {
         }
     });
 
+}
+
+function formatoFechaYMD(pFecha) {
+    var f = new Date(pFecha);
+    var month = ('0' + (f.getMonth() + 1)).slice(-2); // Asegura que el mes siempre tenga dos dígitos
+    var day = ('0' + f.getDate()).slice(-2); // Asegura que el día siempre tenga dos dígitos
+    return f.getFullYear() + '-' + month + '-' + day;
+}
+
+function restarFecha(pFecha, diasRestar) {
+    var fecha = new Date(pFecha);
+    fecha.setDate(fecha.getDate() - diasRestar);
+    return fecha;
+}
+
+function hayRegistrosEnTabla(grid) {
+    if ($(grid).length) {
+        var tb = $(grid + " tbody tr");
+        if (tb.length === 0) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+    else {
+        return false;
+    }
 }

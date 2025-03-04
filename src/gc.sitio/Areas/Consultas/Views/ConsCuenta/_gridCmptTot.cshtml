@@ -1,0 +1,45 @@
+﻿@model GridCore<ConsCompTotDto>
+
+@{
+    var dataMod = new ConsCompTotDto();
+    var alt = true;
+    string clase = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+    decimal ft = 0; //FACTURA + NOTA DE DEBITO ()
+    decimal nc = 0; //NOTA DE CREDITO
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive text-nowrap  table-wrapper-500">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridCmpteTot">
+                <thead class="table-dark">
+                    <tr class="header">
+                        <th scope="col">MES</th>
+                        <th scope="col">NETO</th>
+                        <th scope="col">TOTAL</th>
+                        <th scope="col">Dif.Mes Ant</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ListaDatos)
+                    {
+                        if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+                        <tr class="@clase" onclick="SeleccionarPeriodo(this,'tbGridCmpteTot')">
+                            <td class="text-sm-center">@item.Periodo</td>
+                            <td class="text-sm-end">@item.Cm_neto</td>
+                            <td class="text-sm-end">@item.Cm_total</td>
+                            <td class="text-sm-end">@item.Dif_m_ant</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <div class="row">
+                <div class="col-md-12">
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

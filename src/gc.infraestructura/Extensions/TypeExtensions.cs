@@ -31,6 +31,17 @@
             return s.Replace("\0", "").Replace("\r\n", " ");
         }
 
+        public static string QuitarEspaciosBlancosExtra(this string texto)
+        {
+            if (string.IsNullOrWhiteSpace(texto))
+            {
+                return texto; // Retorna la cadena original si es nula o vacía
+            }
+
+            // Utiliza una expresión regular para reemplazar múltiples espacios en blanco por uno solo
+            return Regex.Replace(texto, @"\s{2,}", " ");
+        }
+
         public static short ToShort(this String s)
         {
             short.TryParse(s, out short value);

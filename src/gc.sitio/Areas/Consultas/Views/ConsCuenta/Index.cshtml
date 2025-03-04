@@ -1,0 +1,72 @@
+﻿@{
+    Layout = "~/views/shared/_Layout.cshtml";
+
+    string sub = "Cons";
+    string titulo = "Consulta de Cuentas Comerciales";
+    var filtro = new QueryFilters() { Rel01 = new List<string>(), Rel02 = null, Modelo = ModeloFilter.CONSULTAS };
+
+}
+
+
+
+
+<div class="container">
+    <input type="text" id="IdSelected" style="display:none;" />
+    <div class="row">
+        <div class="col-md-6">
+            <div class="d-flex justify-content-start">
+                <button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
+                    <i class="bx bx-filter bx-xs"></i>
+                </button>
+
+                @* <button class="btn btn-primary btn-sm mt-1 me-1" type="button" id="btnDetalle" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle">
+                    <i class="bx bx-arrow-to-bottom bx-xs"></i>
+                </button> *@
+            </div>
+        </div>
+
+    </div>
+    <div class="collapse" id="divFiltro" style="">
+        <partial name="_filtroBase" model="filtro" />
+        @Html.Hidden("pagEstado", false)
+    </div>
+    @*  <div class="collapse" id="divDetalle" style="">
+        <partial name="_n01tabsConsulta" />
+    </div> *@
+
+    <partial name="~/areas/controlcomun/views/cuenta/_ctrbuscarccv3.cshtml" model="@sub" />
+
+    <div class="row mt-2" id="consPaneles" style="display:none;">
+        <partial name="_n01tabsConsulta"></partial>
+    </div>
+</div>
+
+@section scripts {
+    <script type="text/javascript">
+        //esta variable global tendra por funcion afectar la logica de algunos controles
+        //del filtro
+        var modeloDato= "@filtro.Modelo";
+       
+
+        
+        //esta variable es para usarla en Js. El (sub) es para usarlo aca nomas
+        nnControlCta01 = "@(sub)";
+
+        $(function(){
+            //Inicializa el control.
+            inicializaCtrl@(sub)();
+        });
+
+        //se buscaran los registros para el autocompletar
+        var autoComRel01Url = "@Url.Action("BusquedaCuenta", "Cuenta", new { area = "ControlComun" })";
+        var consultaCtaCteUrl = "@Url.Action("ConsultarCuentaCorriente", "ConsCuenta", new { area = "Consultas" })";
+        var consultaVencimientoUrl = "@Url.Action("ConsultarVencimiento", "ConsCuenta", new { area = "Consultas" })";
+        var consultarCmpteTotalUrl = "@Url.Action("consultarCmpteTotal", "ConsCuenta", new { area = "Consultas" })";
+        var consultarCmpteDetalleUrl = "@Url.Action("ConsultarCmpteDetalle", "ConsCuenta", new { area = "Consultas" })";
+
+    </script>
+
+    <script src="~/js/app/areas/abms/abmsettings.js"></script>
+    <script src="~/js/app/areas/consultas/ConsultaCuentas.js"></script>
+    <script src="~/js/app/areas/consultas/ConsultaCuentaRules.js"></script>
+}
