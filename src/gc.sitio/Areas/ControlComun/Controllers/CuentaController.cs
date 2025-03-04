@@ -17,7 +17,7 @@ namespace gc.pocket.site.Areas.ControlComun.Controllers
         private readonly ICuentaServicio _cuentaServicio;
 
         public CuentaController(ILogger<CuentaController> logger, ICuentaServicio cuentaServicio, IOptions<AppSettings> options1, IHttpContextAccessor context) : base(options1, context)
-        { 
+        {
             _logger = logger;
             _cuentaServicio = cuentaServicio;
         }
@@ -44,7 +44,7 @@ namespace gc.pocket.site.Areas.ControlComun.Controllers
             try
             {
                 List<CuentaDto> cuentasComerciales = await _cuentaServicio.ObtenerListaCuentaComercial(search.Texto, search.TipoBusqueda, TokenCookie);
-          
+
                 return Json(new { error = false, lista = cuentasComerciales });
             }
             catch (Exception ex)
@@ -58,7 +58,7 @@ namespace gc.pocket.site.Areas.ControlComun.Controllers
 
 
         [HttpPost]
-        public async Task<JsonResult> BusquedaCuenta(string cuenta, char tipo)
+        public async Task<JsonResult> BusquedaCuenta(string cuenta, char tipo, bool esAutoComp)
         {
             try
             {
@@ -69,19 +69,32 @@ namespace gc.pocket.site.Areas.ControlComun.Controllers
                 }
 
                 List<CuentaDto> cuentas = await _cuentaServicio.ObtenerListaCuentaComercial(cuenta, tipo, TokenCookie);
-                if (cuentas.Count == 1)
-                {
-                    return Json(new { error = false,warn=false,unico=true, lista = cuentas });
-                }
-                else
+                if (esAutoComp)
                 {
                     foreach (var cta in cuentas)
                     {
-                        cta.Cta_Denominacion= cta.Cta_Denominacion.QuitarEspaciosBlancosExtra();
+                        cta.Cta_Denominacion = cta.Cta_Denominacion.QuitarEspaciosBlancosExtra();
                     }
-
-                    return Json(new { error = false, warn = false, lista = cuentas });
+                    var lista = cuentas.Select(x => new { Id = x.Cta_Id, Descripcion = x.Cta_Denominacion, ProvId = x.Prov_Id });
+                    return Json(lista );
                 }
+                else
+                {
+                    if (cuentas.Count == 1)
+                    {
+                        return Json(new { error = false, warn = false, unico = true, lista = cuentas });
+                    }
+                    else
+                    {
+                        foreach (var cta in cuentas)
+                        {
+                            cta.Cta_Denominacion = cta.Cta_Denominacion.QuitarEspaciosBlancosExtra();
+                        }
+
+                        return Json(new { error = false, warn = false, lista = cuentas });
+                    }
+                }
+
             }
             catch (NegocioException ex)
             {

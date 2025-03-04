@@ -8,6 +8,57 @@ $(function () {
     $("#cuentaId").on("keyup", analizaInput);
     $("#btnBuscarCCv2").on("click", buscarCuentas);
 
+
+    //busqueda no gen de proveedores
+    $(document).on("keydown.autocomplete", "input#cta_lista", function () {
+        $(this).autocomplete({
+            source: function (request, response) {
+                data = { prefix: request.term }
+                $.ajax({
+                    url: autoComRel01Url,
+                    type: "POST",
+                    dataType: "json",
+                    data: data,
+                    success: function (obj) {
+                        response($.map(obj, function (item) {
+                            var texto = item.descripcion;
+                            return { label: texto, value: item.descripcion, id: item.id };
+                        }));
+                    }
+                })
+            },
+            minLength: 3,
+            select: function (event, ui) {
+                AbrirWaiting("Armando combo Familia. Espere...");
+                $("input#cta_id").val(ui.item.id);
+                var data = { cta_id: ui.item.id };
+                PostGen(data, comboFamiliaUrl, function (obj) {
+                    if (obj.error === true) {
+                        CerrarWaiting();
+                        AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                            $("#msjModal").modal("hide");
+                        }, false, ["Entendido"], "error!", null);
+                    }
+                    else {
+                        //armado del ddl de Familia
+                        var combo = $("#pg_id");
+                        combo.empty();
+                        var opc = "<option value=''>Seleccionar...</option>";
+                        combo.append(opc);
+                        $.each(obj.lista, function (i, item) {
+                            opc = "<option value='" + item.value + "'>" + item.text + "</option>";
+                            combo.append(opc);
+                        });
+                        CerrarWaiting();
+                    }
+                });
+
+                //var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
+                //$("#Rel01List").append(opc);
+                return true;
+            }
+        });
+    });
 });
 
 function analizaInputBC() {

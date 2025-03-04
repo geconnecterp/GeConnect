@@ -20,7 +20,9 @@
 
 </head>
 <body>
+    <partial name="_tituloVista" model="@ViewData["Titulo"]"></partial>
     <partial name="_header" />
+
     <div class="container" id="formulario" style="display:none">
         <main role="main" class="pb-0">
             @RenderBody()

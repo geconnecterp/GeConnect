@@ -49,7 +49,13 @@ const Grids = {
 	GridUser: 'tbGridUsers',
 	GridProductos: 'tbGridProd',
 	GridBarrado: 'tbGridBarr',
-	GridLimite: 'tbGridLim'
+	GridLimite: 'tbGridLim',
+	GridConsCtaCte: 'tbGridCtaCte',
+	GridConsVto: 'tbGridVto',
+	GridConsCmpteTot: 'tbGridCmpteTot',
+	GridConsCmpteDet: 'tbGridCmpteDet',
+
+
 }
 
 const Tabs = {
