@@ -68,7 +68,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             var listR02 = new List<ComboGenDto>();
             ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR02);
             ViewBag.adm_id = ComboAdministraciones();
-
+            ViewData["Titulo"] = "Gestión de Productos";
             return View();
         }
 
