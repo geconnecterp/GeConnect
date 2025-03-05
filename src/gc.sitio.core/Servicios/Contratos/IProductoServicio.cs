@@ -93,6 +93,7 @@ namespace gc.sitio.core.Servicios.Contratos
 
         Task<List<ProductoNCPIDto>> NCPICargarListaDeProductos(string tipo, string admId, string filtro, string id, string token);
 		Task<(List<ProductoNCPIDto>, MetadataGrid)> NCPICargarListaDeProductosPag(string tipo, string admId, string filtro, string id, string token, string Sort, string SortDir, int Registros, int Pagina);
+		Task<(List<ProductoNCPIDto>, MetadataGrid)> NCPICargarListaDeProductosPag2(NCPICargarListaDeProductos2Request request, string token);
 		Task<List<NCPICargaPedidoResponse>> NCPICargaPedido(NCPICargaPedidoRequest req, string token);
 		Task<List<InfoProductoFamiliaDto>> ObtenerProductosPorFamilia(string ctaId, string fliaSelected, string token);
     }

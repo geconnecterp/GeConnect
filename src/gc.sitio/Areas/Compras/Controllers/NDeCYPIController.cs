@@ -120,6 +120,38 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
+		public async Task<IActionResult> BuscarProductosOCPI2(NCPICargarListaDeProductos2Request request)
+		{
+			var model = new GridCore<ProductoNCPIDto>();
+			MetadataGrid metadata;
+			GridCore<ProductoNCPIDto> grillaDatos;
+			try
+			{
+				request.Registros = _appSettings.NroRegistrosPagina;
+				var productos = _productoServicio.NCPICargarListaDeProductosPag2(request, TokenCookie).Result;
+				ObtenerColor(ref productos.Item1);
+				MetadataGeneral = productos.Item2 ?? new MetadataGrid();
+				metadata = MetadataGeneral;
+
+				//grillaDatos = GenerarGrilla(ListaDeUsuarios, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
+				var pag = request.Pagina == null ? 1 : request.Pagina.Value;
+				grillaDatos = GenerarGrilla(productos.Item1, request.Sort, _appSettings.NroRegistrosPagina, pag, metadata.TotalCount, metadata.TotalPages, request.SortDir);
+				//model = ObtenerGridCore<ProductoNCPIDto>(productos);
+				return PartialView("_grillaProductos", grillaDatos);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
 		private static void ObtenerColor(ref List<ProductoNCPIDto> listaProd)
 		{
 			foreach (var item in listaProd)

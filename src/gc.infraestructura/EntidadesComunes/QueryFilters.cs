@@ -43,10 +43,17 @@ namespace gc.infraestructura.Core.EntidadesComunes
         /// <summary>
         /// Indica la pagina dentro del paginado que se desea devolver. Esta permitira, en conjunto con registros determinar la cantidad de registros que se dejaran pasar para recien tomar la cantidad de instancias de datos especificados en el campo "registros".
         /// </summary>
-        public int? Pagina { get; set; }        
+        public int? Pagina { get; set; }
 
-
-    }
+		/*
+        
+         */
+		public bool Opt1 { get; set; }
+		public bool Opt2 { get; set; }
+		public bool Opt3 { get; set; }
+		public bool Opt4 { get; set; }
+		public bool Opt5 { get; set; }
+	}
     public class BaseFilters
     {
         /// <summary>

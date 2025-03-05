@@ -25,6 +25,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using System.Data;
 using System.Linq.Dynamic.Core;
+using System.Text;
 using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 
 
@@ -798,7 +799,125 @@ namespace gc.api.core.Servicios
 			List<ProductoNCPIDto> respuesta = _repository.EjecutarLstSpExt<ProductoNCPIDto>(sp, ps, true);
             return respuesta;
         }
-        public List<NCPICargaPedidoResponse> NCPICargaPedido(NCPICargaPedidoRequest request)
+		public List<ProductoNCPIDto> NCPICargarListaDeProductos2(NCPICargarListaDeProductos2Request request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OC_Productos;
+			var ps = new List<SqlParameter>()
+			{
+				new("@tipo",request.Tipo),
+			};
+			if (!string.IsNullOrEmpty(request.Id))
+			{
+				ps.Add(new SqlParameter("@id", true));
+				//hay un id de producto. se habilita la seccion de productos
+				ps.Add(new SqlParameter("@id_d", request.Id));
+
+				if (!string.IsNullOrEmpty(request.Id2))
+				{
+					ps.Add(new SqlParameter("@id_h", request.Id2));
+				}
+				else
+				{
+					ps.Add(new SqlParameter("@id_h", request.Id));
+				}
+			}
+			else
+			{
+				ps.Add(new SqlParameter("@id", false));
+			}
+			if (!string.IsNullOrEmpty(request.Buscar))
+			{
+				ps.Add(new SqlParameter("@des", true));
+				ps.Add(new SqlParameter("@desc_like", request.Buscar));
+			}
+			if (request.Rel01 != null && request.Rel01.Count > 0)
+			{
+				ps.Add(new SqlParameter("@prov", true));
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in request.Rel01)
+				{
+					if (first)
+					{
+						first = false;
+					}
+					else
+					{
+						sb.Append(',');
+					}
+					sb.Append(item);
+				}
+
+				ps.Add(new SqlParameter("@prov_list", sb.ToString() + ','));
+			}
+			else
+			{
+				ps.Add(new SqlParameter("@prov", false));
+			}
+
+			if (request.Rel02 != null && request.Rel02.Count > 0)
+			{
+				ps.Add(new SqlParameter("@rub", true));
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in request.Rel02)
+				{
+					if (first)
+					{
+						first = false;
+					}
+					else
+					{
+						sb.Append(',');
+					}
+					sb.Append(item);
+				}
+
+				ps.Add(new SqlParameter("@rub_list", sb.ToString()));
+			}
+			else
+			{
+				ps.Add(new SqlParameter("@rub", false));
+			}
+
+			if (request.Rel03 != null && request.Rel03.Count > 0)
+			{
+				ps.Add(new SqlParameter("@pg", true));
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in request.Rel03)
+				{
+					if (first)
+					{
+						first = false;
+					}
+					else
+					{
+						sb.Append(',');
+					}
+					sb.Append(item.Id);
+				}
+
+				ps.Add(new SqlParameter("@pg_list", sb.ToString() + ','));
+			}
+			else
+			{
+				ps.Add(new SqlParameter("@pg", false));
+			}
+			ps.Add(new SqlParameter("@alta_rotacion", request.opt1));
+			ps.Add(new SqlParameter("@stk_sin", request.opt1));
+			ps.Add(new SqlParameter("@stk_avencer", request.opt1));
+			ps.Add(new SqlParameter("@pi", request.opt1));
+			ps.Add(new SqlParameter("@oc", request.opt1));
+			ps.Add(new SqlParameter("@adm_id", request.AdmId));
+			ps.Add(new SqlParameter("@usu_id", request.Usu_Id));
+			ps.Add(new SqlParameter("@registros", request.Registros));
+			ps.Add(new SqlParameter("@pagina", request.Pagina));
+			ps.Add(new SqlParameter("@ordenar", string.IsNullOrEmpty(request.Sort) ? "usu_apellidoynombre" : request.Sort));
+			List<ProductoNCPIDto> respuesta = _repository.EjecutarLstSpExt<ProductoNCPIDto>(sp, ps, true);
+			return respuesta;
+		}
+		public List<NCPICargaPedidoResponse> NCPICargaPedido(NCPICargaPedidoRequest request)
         {
             var sp = Constantes.ConstantesGC.StoredProcedures.SP_OC_Carga_Pedido;
             var ps = new List<SqlParameter>()
