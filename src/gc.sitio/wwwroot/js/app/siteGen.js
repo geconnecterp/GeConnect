@@ -34,6 +34,20 @@ $(function () {
         }
     });
 
+    //check generico REL03 activando componentes disables
+    $("#chkRel03").on("click", function () {
+        if ($("#chkRel03").is(":checked")) {
+            $("#Rel03").prop("disabled", false);
+            $("#Rel03List").prop("disabled", false);
+            $("#Rel03").trigger("focus");
+
+        }
+        else {
+            $("#Rel03").prop("disabled", true).val("");
+            $("#Rel03List").prop("disabled", true).empty();
+        }
+    });
+
     //check generico chkDescr activando componentes disables
     $(document).on("click", "input#chkDescr", function () {
         if ($(this).is(":checked")) {

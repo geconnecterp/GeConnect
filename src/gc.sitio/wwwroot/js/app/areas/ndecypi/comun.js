@@ -1,26 +1,55 @@
 ﻿/*const { event } = require("jquery");*/
 
 $(function () {
-	$("#btnradioPorProveedor").on("click", buscarPorProveedor);
-	$("#btnradioSinStk").on("click", buscarSinStk);
-	$("#btnradioConPI").on("click", buscarConPI);
-	$("#btnradioPorProveedorFamilia").on("click", buscarPorProveedorFamilia);
-	$("#btnradioConStkAVencer").on("click", buscarConStkAVencer);
-	$("#btnradioConOC").on("click", buscarConOC);
-	$("#btnradioPorRubro").on("click", buscarPorRubro);
-	$("#btnradioAltaRotacion").on("click", buscarAltaRotacion);
-	$("#btnCollapseSection").on("click", btnCollapseSectionClicked);
-	$("#listaProveedor").on("change", listaProveedorChange);
-	$("#listaFamiliaProveedor").on("change", listaFamiliaProveedorChange);
-	$("#listaRubro").on("change", listaRubroChange);
-	DisableComboProveedoresFamilia(true);
-	DisableComboRubros(true);
-	buscarPorProveedor();
-	SelecccionarSucursal();
-	AddEventListenerToGrid("tbListaProducto");
-	$("#tbListaProducto").on('input', 'td[contenteditable]', function () {
+	//$("#btnradioPorProveedor").on("click", buscarPorProveedor);
+	//$("#btnradioSinStk").on("click", buscarSinStk);
+	//$("#btnradioConPI").on("click", buscarConPI);
+	//$("#btnradioPorProveedorFamilia").on("click", buscarPorProveedorFamilia);
+	//$("#btnradioConStkAVencer").on("click", buscarConStkAVencer);
+	//$("#btnradioConOC").on("click", buscarConOC);
+	//$("#btnradioPorRubro").on("click", buscarPorRubro);
+	//$("#btnradioAltaRotacion").on("click", buscarAltaRotacion);
+	//$("#btnCollapseSection").on("click", btnCollapseSectionClicked);
+	//$("#listaProveedor").on("change", listaProveedorChange);
+	//$("#listaFamiliaProveedor").on("change", listaFamiliaProveedorChange);
+	//$("#listaRubro").on("change", listaRubroChange);
+	//DisableComboProveedoresFamilia(true);
+	//DisableComboRubros(true);
+	//buscarPorProveedor();
+	//SelecccionarSucursal();
+	//AddEventListenerToGrid("tbListaProducto");
+	//$("#tbListaProducto").on('input', 'td[contenteditable]', function () {
+	//});
+	$("#btnBuscar").on("click", function () {
+		dataBak = "";
+		pagina = 1;
+		BuscarProductos2(pagina);
 	});
+	InicializaPantallaNC();
+	funcCallBack = BuscarProductos;
+	return true;
 });
+
+function InicializaPantallaNC() {
+	var tb = $("#tbListaProducto tbody tr");
+	if (tb.length === 0) {
+		$("#divFiltro").collapse("show")
+	}
+
+	$("#lbRel01").text("Proveedor");
+	$("#lbRel02").text("Rubro");
+	$("#lbRel03").text("Familia");
+	$("#lbChkDescr").text("Denominación");
+	$("#lbDescr").html("Desc");
+
+	$("#lbChkDesdeHasta").text("ID");
+
+	//$("#IdSelected").val("");
+	$(".activable").prop("disabled", true);
+	//activarBotones(false);
+	CerrarWaiting();
+	return true;
+}
 
 var tipoBusqueda = "";
 var viendeDesdeBusquedaDeProducto = false;
@@ -237,9 +266,9 @@ function BuscarProductos2(pag = 1) {
 	var Rel01 = [];
 	var Rel02 = [];
 	var Rel03 = [];
-	$("#Rel01List").children().each(function (i, item) { r01.push($(item).val()) });
-	$("#Rel02List").children().each(function (i, item) { r02.push($(item).val()) });
-	$("#Rel03List").children().each(function (i, item) { r03.push($(item).val()) });
+	$("#Rel01List").children().each(function (i, item) { Rel01.push($(item).val()) });
+	$("#Rel02List").children().each(function (i, item) { Rel02.push($(item).val()) });
+	$("#Rel03List").children().each(function (i, item) { Rel03.push($(item).val()) });
 
 	var opt1 = $("#chk1")[0].checked
 	var opt2 = $("#chk2")[0].checked

@@ -881,10 +881,30 @@ namespace gc.sitio.Controllers
                 _context.HttpContext.Session.SetString("RubroLista", json);
             }
         }
-        #endregion
+		#endregion
 
-        #region TIPO DE NEGOCIO
-        public List<TipoNegocioDto> TipoNegocioLista
+		#region PROVEEDOR FAMILIA LISTA
+		public List<ProveedorFamiliaListaDto> ProveedorFamiliaLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("ProveedorFamiliaLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<ProveedorFamiliaListaDto>();
+				}
+				return JsonConvert.DeserializeObject<List<ProveedorFamiliaListaDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("ProveedorFamiliaLista", json);
+			}
+		}
+		#endregion
+
+		#region TIPO DE NEGOCIO
+		public List<TipoNegocioDto> TipoNegocioLista
         {
             get
             {
@@ -1900,7 +1920,9 @@ namespace gc.sitio.Controllers
             return Json(rubros);
         }
 
-        protected SelectList ComboProveedoresFamilia(string ctaId, ICuentaServicio _cuentaServicio, string? fam = null)
+
+
+		protected SelectList ComboProveedoresFamilia(string ctaId, ICuentaServicio _cuentaServicio, string? fam = null)
         {
             var adms = _cuentaServicio.ObtenerListaProveedoresFamilia(ctaId, TokenCookie);
             var lista = adms.Select(x => new ComboGenDto { Id = x.pg_id, Descripcion = x.pg_lista });

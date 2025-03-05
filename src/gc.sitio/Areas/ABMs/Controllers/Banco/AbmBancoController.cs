@@ -54,7 +54,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Banco
 			{
 				return RedirectToAction("Login", "Token", new { area = "seguridad" });
 			}
-
+			ViewData["Titulo"] = "CUENTAS BANCOS";
 			CargarDatosIniciales(actualizar);
 
 			return View();

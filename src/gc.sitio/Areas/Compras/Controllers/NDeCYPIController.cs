@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Dtos.Users;
+using gc.sitio.core.Servicios.Implementacion;
 
 namespace gc.sitio.Areas.Compras.Controllers
 {
@@ -66,6 +67,43 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return View(model);
 		}
 
+		public async Task<IActionResult> NecesidadesDeCompra2()
+		{
+			MetadataGrid metadata;
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+				{
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+				}
+
+				var listR01 = new List<ComboGenDto>();
+				ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
+
+				var listR02 = new List<ComboGenDto>();
+				ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR02);
+
+				var listR03 = new List<ComboGenDto>();
+				ViewBag.Rel03List = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
+
+				ViewData["Titulo"] = "NECESIDADES DE STOCK DE COMPRA";
+				CargarDatosIniciales(true);
+				return View();
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
 		public async Task<IActionResult> PedidosInternos()
 		{
 			NDeCYPI.PedidosInternosDto model = new();
@@ -76,6 +114,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				model.ComboProveedoresFamilia = HelperMvc<ComboGenDto>.ListaGenerica(proveedoresFamilias.Select(x => new ComboGenDto { Id = x.pg_id, Descripcion = x.pg_desc }));
 				model.ComboRubros = ComboRubros();
 				model.Productos = ObtenerGridCore<ProductoNCPIDto>([]);
+				ViewData["Titulo"] = "NECESIDADES DE PEDIDOS INTERNOS";
 			}
 			catch (Exception ex)
 			{
@@ -341,13 +380,46 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
+		//Invocar cuando se haya seleccionado solo un proveedor desde el filtro base.
+		[HttpPost]
+		public JsonResult BuscarFamiliaDesdeProveedorSeleccionado(string ctaId)
+		{
+			try
+			{
+				CargarProveedoresFamiliaLista(ctaId, _cuentaServicio);
+				return Json(new { error = false, warn = false, msg = string.Empty });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.Message });
+			}
+			
+		}
+
+		[HttpPost]
+		public JsonResult BuscarFlias(string prefix)
+		{
+			//var nombres = await _provSv.BuscarAsync(new QueryFilters { Search = prefix }, TokenCookie);
+			//var lista = nombres.Item1.Select(c => new EmpleadoVM { Nombre = c.NombreCompleto, Id = c.Id, Cuil = c.CUIT });
+			var rub = ProveedorFamiliaLista.Where(x => x.pg_desc.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
+			var rubros = rub.Select(x => new ComboGenDto { Id = x.pg_id, Descripcion = x.pg_lista });
+			return Json(rubros);
+		}
+
 		#region Métodos privados
+		protected void CargarProveedoresFamiliaLista(string ctaId, ICuentaServicio _cuentaServicio, string? fam = null)
+		{
+			var adms = _cuentaServicio.ObtenerListaProveedoresFamilia(ctaId, TokenCookie);
+			ProveedorFamiliaLista = adms;
+		}
+
 		private SelectList ComboProveedores()
 		{
 			var adms = _cuentaServicio.ObtenerListaProveedores("BI", TokenCookie);
 			var lista = adms.Select(x => new ComboGenDto { Id = x.Cta_Id, Descripcion = x.Cta_Denominacion });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
+
 		private SelectList ComboRubros()
 		{
 			var adms = _rubroServicio.ObtenerListaRubros("", TokenCookie);
@@ -365,6 +437,18 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var adms = _administracionServicio.GetAdministracionLogin();
 			var lista = adms.Select(x => new ComboGenDto { Id = x.Id, Descripcion = x.Descripcion });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		private void CargarDatosIniciales(bool actualizar)
+		{
+			if (ProveedoresLista.Count == 0 || actualizar)
+			{
+				ObtenerProveedores(_cuentaServicio);
+			}
+
+			if (RubroLista.Count == 0 || actualizar)
+			{
+				ObtenerRubros(_rubroServicio);
+			}
 		}
 		#endregion
 	}

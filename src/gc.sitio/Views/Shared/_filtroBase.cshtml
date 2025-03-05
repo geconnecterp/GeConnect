@@ -74,6 +74,33 @@
     }
     <!---------------------------FIN BUSQUEDA DE PROVEEDORES------------------------------------>
     <!---------------------------BUSQUEDA DE RUBROS------------------------------------>
+    @if (Model.Rel03 != null)
+    {
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="input-group input-group-sm">
+                    <div class="form-check form-check-inline form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkRel03" />
+                        <label class="form-check-label" for="chkRel03" id="lbRel03"></label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text" id="lbNombreRel03">Nombre</span>
+                    <input type="text" class="form-control inputEditable" name="Rel03" id="Rel03" disabled />
+                    @Html.Hidden("Rel03Item")
+                </div>
+            </div>
+            <div class="col-sm-6">
+                @Html.ListBox("Rel03List", null, new { @class = "form-control", @disabled = "disabled" })
+            </div>
+        </div>
+    }
+    <!---------------------------FIN BUSQUEDA DE RUBROS------------------------------------>
+    <!---------------------------BUSQUEDA DE RUBROS------------------------------------>
     @if (Model.Rel02 != null)
     {
         <div class="row">

@@ -58,6 +58,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.CuentaDirecta
 			var listR02 = new List<ComboGenDto>();
 			ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR02);
 
+			ViewData["Titulo"] = "CUENTAS DIRECTAS";
 			return View();
         }
 

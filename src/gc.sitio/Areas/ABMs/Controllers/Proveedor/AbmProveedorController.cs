@@ -98,6 +98,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			var listR02 = new List<ComboGenDto>();
 			ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR02);
 
+			ViewData["Titulo"] = "ABM PROVEEDORES";
 			return View();
 		}
 
@@ -759,6 +760,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			var listR02 = new List<ComboGenDto>();
 			ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR02);
 
+			ViewData["Titulo"] = "REASIGNACIÓN DE FAMILIA";
 			return View();
 		}
 

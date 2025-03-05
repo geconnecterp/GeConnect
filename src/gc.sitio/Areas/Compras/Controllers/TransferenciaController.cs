@@ -54,6 +54,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				TempData["error"] = "Hubo algun problema al intentar obtener las Autorizaciones de transferencias pendientes. Si el problema persiste informe al Administrador";
 				grid = new();
 			}
+			ViewData["Titulo"] = "AUTORIZACIONES TR";
 			return View(grid);
 		}
 

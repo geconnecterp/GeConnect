@@ -67,6 +67,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 			var listR02 = new List<ComboGenDto>();
 			ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR02);
 
+			ViewData["Titulo"] = "CUENTAS MEDIOS DE PAGO";
 			return View();
 		}
 

@@ -77,7 +77,8 @@ namespace gc.sitio.Areas.Compras.Controllers
                 TempData["error"] = "Hubo algun problema al intentar obtener las Autorizaciones Pendientes. Si el problema persiste informe al Administrador";
                 grid = new();
             }
-            return View(grid);
+			ViewData["Titulo"] = "RPR AUTORIZACIONES";
+			return View(grid);
         }
 
         public async Task<JsonResult> ObtenerRPRAutorizacionPendienteSeleccionadoEnLista()

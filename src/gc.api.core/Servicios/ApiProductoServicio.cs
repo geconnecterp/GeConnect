@@ -904,12 +904,12 @@ namespace gc.api.core.Servicios
 			{
 				ps.Add(new SqlParameter("@pg", false));
 			}
-			ps.Add(new SqlParameter("@alta_rotacion", request.opt1));
-			ps.Add(new SqlParameter("@stk_sin", request.opt1));
-			ps.Add(new SqlParameter("@stk_avencer", request.opt1));
-			ps.Add(new SqlParameter("@pi", request.opt1));
-			ps.Add(new SqlParameter("@oc", request.opt1));
-			ps.Add(new SqlParameter("@adm_id", request.AdmId));
+			ps.Add(new SqlParameter("@alta_rotacion", request.Opt1));
+			ps.Add(new SqlParameter("@stk_sin", request.Opt2));
+			ps.Add(new SqlParameter("@stk_avencer", request.Opt3));
+			ps.Add(new SqlParameter("@pi", request.Opt4));
+			ps.Add(new SqlParameter("@oc", request.Opt5));
+			ps.Add(new SqlParameter("@adm_id", request.Adm_Id));
 			ps.Add(new SqlParameter("@usu_id", request.Usu_Id));
 			ps.Add(new SqlParameter("@registros", request.Registros));
 			ps.Add(new SqlParameter("@pagina", request.Pagina));

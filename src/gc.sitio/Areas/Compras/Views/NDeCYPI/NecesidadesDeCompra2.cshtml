@@ -1,0 +1,238 @@
+﻿@model QueryFilters
+@{
+	Layout = "~/views/shared/_Layout.cshtml";
+	var sucursales = new SelectList(new List<SelectListItem>());
+	var filtro = new QueryFilters() { Rel01 = new List<string>(), Rel02 = new List<string>(), Rel03 = new List<ComboGenDto>() };
+}
+@section styles {
+	<link rel="stylesheet" href="~/css/simplePagination.css" />
+}
+
+<div class="container">
+	<div class="row">
+		<div class="col-md-6">
+			<div class="d-flex justify-content-sm-around">
+				<button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
+					<i class="bx bx-filter bx-xs"></i>
+				</button>
+			</div>
+		</div>
+
+	@* 	<div class="col-md-6">
+			<fieldset style="padding-top: 0px;">
+				<legend>
+					<a href="#" id="btnOCAuto" class="btn btn-sm btn-primary fixed-font-size"><span>OC Auto</span></a>
+					<a href="#" id="btnPasarAOC" class="btn btn-sm btn-primary fixed-font-size"><span>Pasar a OC</span></a>
+					<a href="#" id="btnImprimirCtlStk" class="btn btn-sm btn-primary fixed-font-size"><span>Imprimir Ctl Stk</span></a>
+				</legend>
+			</fieldset>
+		</div> *@
+	</div>
+	<div class="collapse" id="divFiltro" style="">
+		<partial name="_filtroBase" model="filtro" />
+		@Html.Hidden("pagEstado", false);
+	</div>
+	<div class="collapse" id="divDetalle" style="">
+		<div class="row">
+			<div class="col-6" style="text-align: right;align-content: center;">
+				<button type="button" class="btn btn-primary" style="margin-left:5px;" id="btnPasarAOC">
+					<span class="tf-icons bx bx-check-circle">Pasar a OC</span>
+				</button>
+				<button type="button" class="btn btn-primary" style="margin-left:5px;" id="btnOCAuto">
+					<span class="tf-icons bx bx-check-circle">OC Auto</span>
+				</button>
+				<button type="button" class="btn btn-primary" style="margin-left:5px;" id="btnImprimirCtlStk">
+					<span class="tf-icons bx bx-check-circle">Imprimir Ctl Stk</span>
+				</button>
+			</div>
+			<div class="col-12">
+				<div id="divListaProducto">
+					<div class="table-responsive table-wrapper-full-width" id="containerListaProducto">
+						<table class="table table-bordered table-hover" id="tbListaProducto">
+							<thead class="table-dark">
+								<tr>
+									<th style="width:5%;" class="col-header-small align-center">Código</th>
+									<th style="width:20%;" class="col-header-small align-center">Descripción</th>
+									<th style="width:5%;" class="col-header-small align-center">Cod. Prov</th>
+									<th style="width:5%;" class="col-header-small align-center">PI Pend</th>
+									<th style="width:5%;" class="col-header-small align-center">OC Pend</th>
+									<th style="width:5%;" class="col-header-small align-center">Stock</th>
+									<th style="width:5%;" class="col-header-small align-center">Stock en Tránsito</th>
+									<th style="width:5%;" class="col-header-small align-center">Stock a Facturar</th>
+									<th style="width:5%;" class="col-header-small align-center">Unidad Pres.</th>
+									<th style="width:5%;" class="col-header-small align-center">UM</th>
+									<th style="width:5%;" class="col-header-small align-center">Pedido Bultos</th>
+									<th style="width:5%;" class="col-header-small align-center">Cantidad</th>
+									<th style="width:5%;" class="col-header-small align-center">Costo</th>
+									<th style="width:5%;" class="col-header-small align-center">Costo Total</th>
+									<th style="width:5%;" class="col-header-small align-center">Pallet</th>
+									<th style="width:0%; display:none;">pg_id</th>
+									<th style="width:0%; display:none;">rub_id</th>
+								</tr>
+							</thead>
+						</table>
+					</div>
+				</div>
+				<div>
+				</div>
+			</div>
+		</div>
+		<div class="row d-flex p-2 flex-fill">
+			<div class="col-2"></div>
+			<div id="divPaginacion" class="">
+			</div>
+			<div class="col-2"></div>
+		</div>
+		<div class="collapse" id="divFiltro" style="">
+			@Html.Hidden("pagEstado", false);
+		</div>
+		<div class="row" style="padding-top:10px;">
+			<div class="row">
+				<div class="col-2">
+					<a class="btn btn-sm btn-primary me-1 collapsed" id="btnCollapseSection" data-bs-toggle="collapse" href="#collapseSection" role="button" aria-expanded="false" aria-controls="collapseSection">
+						Info. Adicional
+					</a>
+				</div>
+				<div class="col-5"></div>
+				@* <div class="col-5">
+					<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
+				</div> *@
+			</div>
+			<div class="collapse" id="collapseSection" style="">
+				<div class="d-grid p-3 border">
+					<div class="row" style="padding-top:10px;">
+						<div class="nav-align-top mb-4">
+							<ul class="nav nav-tabs" role="tablist">
+								<li class="nav-item" role="presentation">
+									<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-home" aria-controls="navs-top-home" aria-selected="true">
+										<span id="tabOne" class="custom-lbl">Info. Producto</span>
+									</button>
+								</li>
+								<li class="nav-item" role="presentation">
+									<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-profile" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1">
+										<span id="tabTwo" class="custom-lbl">Datos de Entrada/Salida</span>
+									</button>
+								</li>
+								<li class="nav-item" role="presentation">
+									<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-panda" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1">
+										<span id="tabThree" class="custom-lbl">Datos de Stock</span>
+									</button>
+								</li>
+								<li class="nav-item" role="presentation">
+									<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-dog" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1">
+										<span id="tabFour" class="custom-lbl">Prod. Sustituto</span>
+									</button>
+								</li>
+							</ul>
+							<div class="tab-content">
+								<div class="tab-pane fade active show" id="navs-top-home" role="tabpanel">
+									<div class="row">
+										<div class="col-12" id="divInfoProducto"></div>
+									</div>
+								</div>
+								<div class="tab-pane fade" id="navs-top-profile" role="tabpanel">
+									<div id="divInfoES" class="row">
+										<div class="col-6">
+											<div class="row">
+												<div class="input-group">
+													<span class="input-group-text custom-lbl">Datos Entradas y Salidas del Mes</span>
+													<span class="input-group-text fixed-width">Sucursal: </span>
+													@Html.DropDownList("id", sucursales, "Seleccionar...", new { @id = "listaSucursales", @class = "form-control fixed-width" })
+													<span class="input-group-text fixed-width-75">Meses: </span>
+													<input type="number" id="txtMeses" class="fixed-width-50 align-right" value="12" />
+												</div>
+											</div>
+											<div class="row">
+												<div id="divInfoProdIExMeses"></div>
+											</div>
+										</div>
+										<div class="col-6">
+											<div class="row">
+												<div class="input-group">
+													<span class="input-group-text custom-lbl">Datos de Entrada y Salidas últimas semanas</span>
+													<span class="input-group-text fixed-width-75">Semanas: </span>
+													<input type="number" id="txtSemanas" class="fixed-width-50 align-right" value="4" />
+												</div>
+											</div>
+											<div class="row">
+												<div id="divInfoProdIExSemanas"></div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="tab-pane fade" id="navs-top-panda" role="tabpanel">
+									<div id="divInfoStk" class="row">
+										<div class="col-6">
+											<div class="row">
+												<div id="divInfoProductoStkD">
+												</div>
+											</div>
+										</div>
+										<div class="col-6">
+											<div class="row">
+												<div id="divInfoProductoStkA">
+												</div>
+											</div>
+										</div>
+									</div>
+
+								</div>
+								<div class="tab-pane fade" id="navs-top-dog" role="tabpanel">
+									@* @if (Model.ProductosDelMismoProveedor == false)
+									{
+										<input class="form-check-input" type="checkbox" id="chkProductosDelMismoProveedor" onchange="changeProductosDelMismoProveedor(this);" asp-for="@Model.ProductosDelMismoProveedor">
+									}
+									else
+									{
+										<input class="form-check-input" type="checkbox" id="chkProductosDelMismoProveedor" onchange="changeProductosDelMismoProveedor(this);" checked asp-for="@Model.ProductosDelMismoProveedor">
+									} *@
+									<label class="form-check-label" for="chkProductosDelMismoProveedor"> Productos del mismo Proveedor</label>
+									<div class="row">
+										<div id="divInfoProdSustituto"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section scripts {
+	<script type="text/javascript">
+		var totalRegs = 0;/**/
+		var pagRegs = 0;/**/
+		var pags = 0;/**/
+		var pagina = 1;/**/
+		var search = "";/**/
+		var funcCallBack = "BuscarProductos";/**/
+		var pedido = "";
+		var pIdSeleccionado = "";
+		var idProvSeleccionado = "";
+		var idFamiliaProvSeleccionado = "";
+		var idRubroSeleccionado = "";
+		var autoComRel01Url = "@Url.Action("BuscarProvs", "ndecypi", new { area = "Compras" })";/**/
+		var autoComRel02Url = "@Url.Action("BuscarRubros", "ndecypi", new { area = "Compras" })";/**/
+		var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "ndecypi", new { area = "Compras" })"; /**/
+		var BuscarProductosOCPIURL = "@Url.Action("BuscarProductosOCPI", "ndecypi", new { area = "Compras" })";
+		var BuscarProductosOCPI2URL = "@Url.Action("BuscarProductosOCPI2", "ndecypi", new { area = "Compras" })"; /**/
+		var CargaPedidoOCPIURL = "@Url.Action("CargaPedidoOCPI", "ndecypi", new { area = "Compras" })";
+		var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun" })";
+		var BuscarProveedoresFamiliaURL = "@Url.Action("ObtenerProveedoresFamilia", "ndecypi", new { area = "Compras" })";
+		var BuscarInfoProdIExMesesURL = "@Url.Action("BuscarInfoProdIExMeses", "ndecypi", new { area = "Compras" })";
+		var BuscarInfoProdIExSemanasURL = "@Url.Action("BuscarInfoProdIExSemanas", "ndecypi", new { area = "Compras" })";
+		var BuscarInfoProdStkDepositoURL = "@Url.Action("BuscarInfoProdStkDeposito", "ndecypi", new { area = "Compras" })";
+		var BuscarInfoProdStkSucursalURL = "@Url.Action("BuscarInfoProdStkSucursal", "ndecypi", new { area = "Compras" })";
+		var BuscarInfoProdSustitutoURL = "@Url.Action("BuscarInfoProdSustituto", "ndecypi", new { area = "Compras" })";
+		var BuscarInfoProdURL = "@Url.Action("BuscarInfoProd", "ndecypi", new { area = "Compras" })";
+	</script>
+	<script src="~/js/plugins/jquery.simplePagination.js"></script>
+	<script src="~/js/app/areas/ndecypi/comun.js"></script>
+	<script src="~/js/app/areas/ndecypi/nc.js"></script>
+	<script src="~/js/app/siteGen.js"></script>@**@
+	<script src="~/js/app/busquedas.js" type="text/javascript"></script>
+	<script src="~/js/app/controlcomun/rpr.js" type="text/javascript"></script>
+	<script src="~/js/app/controlcomun/infoRpr.js" type="text/javascript"></script>
+}

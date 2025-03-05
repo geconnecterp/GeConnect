@@ -1,12 +1,13 @@
 ﻿$(function () {
-	$("#listaSucursales").on("change", listaSucursalesChange);
-	$("#txtMeses").on("change", BuscarInfoAdicional);
-	$("#txtSemanas").on("change", BuscarInfoAdicional);
+	//$("#listaSucursales").on("change", listaSucursalesChange);
+	//$("#txtMeses").on("change", BuscarInfoAdicional);
+	//$("#txtSemanas").on("change", BuscarInfoAdicional);
 	$("#pagEstado").on("change", function () {
 		var div = $("#divPaginacion");
 		presentaPaginacionNC(div);
 	});
 });
+
 
 function presentaPaginacionNC(div) {
 	div.pagination({

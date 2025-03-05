@@ -98,6 +98,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
 			var listR01 = new List<ComboGenDto>();
 			ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
+
+			ViewData["Titulo"] = "ABM CLIENTES";
 			return View();
 		}
 

@@ -49,6 +49,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				return RedirectToAction("Login", "Token", new { area = "seguridad" });
 			}
 
+			ViewData["Titulo"] = "ABM SECTORES";
 			CargarDatosIniciales(actualizar);
 			return View();
 		}
@@ -463,6 +464,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			var listR02 = new List<ComboGenDto>();
 			ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR02);
 
+			ViewData["Titulo"] = "REASIGNACIÓN DE RUBROS";
 			return View();
 		}
 
