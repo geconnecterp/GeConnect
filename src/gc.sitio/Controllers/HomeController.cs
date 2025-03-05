@@ -23,7 +23,9 @@ namespace gc.sitio.Controllers
             if (UserPerfiles.Count() == 0) {
                 return RedirectToAction("login", "token", new { area = "seguridad" });
             }
-			return View();
+            ViewData["Titulo"] = "Bienvenidos al GECONet";
+
+            return View();
         }
 
         public IActionResult Privacy()

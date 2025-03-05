@@ -52,6 +52,13 @@ const Grids = {
 	GridProductos: 'tbGridProd',
 	GridBarrado: 'tbGridBarr',
 	GridLimite: 'tbGridLim',
+	GridConsCtaCte: 'tbGridCtaCte',
+	GridConsVto: 'tbGridVto',
+	GridConsCmpteTot: 'tbGridCmpteTot',
+	GridConsCmpteDet: 'tbGridCmpteDet',
+
+
+	//GridLimite: 'tbGridLim',
 	GridBanco: 'tbGridBanco',
 	GridCuentaDirecta: 'tbGridCuentaDirecta',
 }

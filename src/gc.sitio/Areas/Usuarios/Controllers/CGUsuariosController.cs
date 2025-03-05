@@ -69,8 +69,6 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 TempData["error"] = ex.Message;
                 return RedirectToAction("Index", "home", new { area = "" });
             }
-
-
         }
 
         public void CargarDatosIniciales(bool actualizar)

@@ -28,6 +28,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Areas\Consultas\Data\" />
+    <Folder Include="Areas\Consultas\Models\" />
     <Folder Include="Areas\ControlComun\Data\" />
     <Folder Include="Areas\ControlComun\Models\" />
     <Folder Include="Areas\Seguridad\Data\" />
@@ -57,6 +59,10 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
     <Content Update="Areas\ABMs\Views\AbmProveedor\_tabDatosFliaProvSelected.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="Areas\Consultas\Views\ConsCuenta\_gridCtaCte.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
