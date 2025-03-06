@@ -48,11 +48,11 @@ namespace gc.infraestructura.Core.EntidadesComunes
 		/*
         
          */
-		public bool Opt1 { get; set; }
-		public bool Opt2 { get; set; }
-		public bool Opt3 { get; set; }
-		public bool Opt4 { get; set; }
-		public bool Opt5 { get; set; }
+		public bool? Opt1 { get; set; }
+		public bool? Opt2 { get; set; }
+		public bool? Opt3 { get; set; }
+		public bool? Opt4 { get; set; }
+		public bool? Opt5 { get; set; }
 	}
     public class BaseFilters
     {

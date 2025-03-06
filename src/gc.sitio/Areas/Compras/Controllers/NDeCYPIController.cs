@@ -391,9 +391,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				return Json(new { error = true, warn = false, msg = ex.Message });
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar obtener los datos de la familia de productos del proveedor: {ctaId}" });
 			}
-			
+
 		}
 
 		[HttpPost]

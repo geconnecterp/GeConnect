@@ -292,10 +292,15 @@ fieldset {
     padding: 0.325rem 0.30rem !important;
 }
 
+.table:not(.table-dark) th {
+    color: #efefef;
+}
+
 .col-header-small {
     text-wrap: pretty;
     font-size: 8px !important;
     font-weight: 900;
+    color: #e1e4e8;
 }
 /*Hide Arrows/Spinners from input type number*/
 /* Chrome, Safari, Edge, Opera */
