@@ -1,6 +1,7 @@
 ﻿using AspNetCoreGeneratedDocument;
 using AutoMapper.Execution;
 using gc.api.core.Entidades;
+using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Almacen;
@@ -10,8 +11,10 @@ using gc.infraestructura.Helpers;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Options;
 using System.Text.RegularExpressions;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace gc.sitio.Areas.Consultas.Controllers
 {
@@ -19,7 +22,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
     /// Corresponde el controlador a las CUENTAS COMERCIALES
     /// </summary>
     [Area("Consultas")]
-    public class ConsCuentaController : ControladorBase
+    public class ConsCuentaController : ConsultaControladorBase
     {
         private readonly IOptions<AppSettings> options1;
         private readonly AppSettings _settings;
@@ -28,7 +31,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
         private readonly ICuentaServicio _cuentaServicio;
         public ConsCuentaController(IOptions<AppSettings> options, IHttpContextAccessor contexto,
             ILogger<ConsCuentaController> logger, IConsultasServicio consulta,
-            ICuentaServicio cuentaServicio) :base(options,contexto)
+            ICuentaServicio cuentaServicio) :base(options,contexto,logger)
         {
             _consSv = consulta;
             options1 = options;
@@ -61,31 +64,37 @@ namespace gc.sitio.Areas.Consultas.Controllers
             }
         }
 
-        public async Task<IActionResult> ConsultarCuentaCorriente(string ctaId, DateTime fechaD)
+        public async Task<IActionResult> ConsultarCuentaCorriente(string ctaId, DateTime fechaD, bool buscaNew, string sort = "p_desc", string sortDir = "asc",  int pag = 1)
         {
             List<ConsCtaCteDto> lista;          
             GridCore<ConsCtaCteDto> grillaDatos;
             RespuestaGenerica<EntidadBase> response = new();
+            MetadataGrid metadata;
+
             try
             {
+                
 
-                /**************************************************
-                 * DEBO CONSULTAR Y RESGUARDAR LOS DATOS DE LA CUENTA SELECCIONADA.
-                 * 
-                 * ************************************************/
-
-
-                //voy a invocar el servicio que me traiga los datos de la cuenta corriente 
-                //para la cuenta seleccionada
-                var res = await _consSv.ConsultarCuentaCorriente(ctaId, fechaD.Ticks, UserName,TokenCookie);
-                string sort =string.Empty;
-                string sortDir = string.Empty;
-                int pag = 1;
-
-                if (!res.Ok)
+                if (PaginaGrid == pag && !buscaNew && CuentaCorrienteBuscada.Count() > 0)
                 {
-                    throw new NegocioException(res.Mensaje);
+                    //es la misma pagina y hay registros, se realiza el reordenamiento de los datos.
+                    lista = CuentaCorrienteBuscada.ToList();
+                    lista = OrdenarEntidad(lista, sortDir, sort);
+                    CuentaCorrienteBuscada = lista;
                 }
+                else
+                {
+                    PaginaGrid = pag;
+                    int registros = _settings.NroRegistrosPagina;
+
+                    var res = await _consSv.ConsultarCuentaCorriente(ctaId, fechaD.Ticks, UserName, pag,registros, TokenCookie);
+                    lista = res.Item1 ?? [];
+                    MetadataGeneral = res.Item2 ?? new MetadataGrid();
+                    CuentaCorrienteBuscada = lista;
+                }
+
+                metadata = MetadataGeneral;
+                
 
                 var cuenta =  await _cuentaServicio.ObtenerListaCuentaComercial(ctaId, 'T',TokenCookie);
                 if(cuenta == null || cuenta.Count == 0)
@@ -96,10 +105,8 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 CuentaComercialSeleccionada = cuenta.First();
 
                 //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
-                grillaDatos = GenerarGrilla(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
-
-                //string volver = Url.Action("index", "home", new { area = "" });
-                //ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
+                grillaDatos = GenerarGrilla(CuentaCorrienteBuscada, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
+              
                 return View("_gridCtaCte", grillaDatos);
             }
             catch (NegocioException ex)
@@ -256,7 +263,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
                 grillaDatos = GenerarGrilla(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 
-                return View("_gridCmptTot", grillaDatos);
+                return View("_gridCmptDet", grillaDatos);
             }
             catch (NegocioException ex)
             {

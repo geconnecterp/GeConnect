@@ -3,6 +3,8 @@
     public class ConsultasDto : Dto { }
     public class ConsCtaCteDto: ConsultasDto
     {
+        public int Total_registros { get; set; }
+        public int Total_paginas { get; set; }
         public string Cta_id { get; set; } = string.Empty;
         public string Dia_movi { get; set; } = string.Empty;
         public string Tco_id { get; set; } = string.Empty;

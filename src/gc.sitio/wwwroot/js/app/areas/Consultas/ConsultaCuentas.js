@@ -142,13 +142,51 @@ function presentarTabsConsulta() {
 function ocultarTabsConsulta() {
     $("#consPaneles").hide("fast");
 }
-function consultaCtaCte() {
+function consultaCtaCte(pag) {
+    AbrirWaiting();
+
     ctaId = consCta;
     fechaD = $("#fechaD").val();
-    var data = { ctaId: consCta, fechaD };
-    AbrirWaiting();
+    var data1 = { ctaId: consCta, fechaD };
+
+    var buscaNew = JSON.stringify(dataBak) != JSON.stringify(data)
+
+    if (buscaNew === false) {
+        //son iguales las condiciones cambia de pagina
+        pagina = pag;
+    }
+    else {
+        dataBak = data1;
+        pagina = 1;
+        pag = 1;
+    }
+    var sort = null;
+    var sortDir = null
+
+    var data2 = { sort, sortDir, pag, buscaNew }
+
+    var data = $.extend({}, data1, data2);
+
     PostGenHtml(data, consultaCtaCteUrl, function (obj) {
         $("#divpanel01").html(obj);
+
+        PostGen({}, buscarMetadataURL, function (obj) {
+            if (obj.error === true) {
+                AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                    $("#msjModal").modal("hide");
+                    return true;
+                }, false, ["Aceptar"], "error!", null);
+            }
+            else {
+                totalRegs = obj.metadata.totalCount;
+                pags = obj.metadata.totalPages;
+                pagRegs = obj.metadata.pageSize;
+
+                $("#pagEstado").val(true).trigger("change");
+            }
+
+        });
+
         CerrarWaiting();
     });
 }

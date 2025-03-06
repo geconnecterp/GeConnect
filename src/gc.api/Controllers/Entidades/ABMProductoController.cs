@@ -10,6 +10,7 @@ using System.Net;
 
 namespace gc.api.Controllers.Entidades
 {
+
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
