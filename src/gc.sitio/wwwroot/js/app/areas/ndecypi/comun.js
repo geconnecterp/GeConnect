@@ -9,7 +9,7 @@ $(function () {
 	//$("#btnradioConOC").on("click", buscarConOC);
 	//$("#btnradioPorRubro").on("click", buscarPorRubro);
 	//$("#btnradioAltaRotacion").on("click", buscarAltaRotacion);
-	//$("#btnCollapseSection").on("click", btnCollapseSectionClicked);
+	$("#btnCollapseSection").on("click", btnCollapseSectionClicked);
 	//$("#listaProveedor").on("change", listaProveedorChange);
 	//$("#listaFamiliaProveedor").on("change", listaFamiliaProveedorChange);
 	//$("#listaRubro").on("change", listaRubroChange);
@@ -17,13 +17,17 @@ $(function () {
 	//DisableComboRubros(true);
 	//buscarPorProveedor();
 	//SelecccionarSucursal();
-	//AddEventListenerToGrid("tbListaProducto");
-	//$("#tbListaProducto").on('input', 'td[contenteditable]', function () {
-	//});
+	$("input#Rel03").on("click", function () {
+		$("input#Rel03").val("");
+		$("#Rel03Item").val("");
+	});
+	AddEventListenerToGrid("tbListaProducto");
+	$("#tbListaProducto").on('input', 'td[contenteditable]', function () {
+	});
 	$("#btnBuscar").on("click", function () {
 		dataBak = "";
 		pagina = 1;
-		BuscarProductos2(pagina);
+		BuscarProductos(pagina);
 	});
 	InicializaPantallaNC();
 	funcCallBack = BuscarProductos;
@@ -140,7 +144,6 @@ $("#Rel03").autocomplete({
 });
 
 function CargarFamiliaLista(id) {
-	console.log(id);
 	var ctaId = id;
 	data = { ctaId };
 	PostGen(data, buscarFamiliaDesdeProveedorSeleccionadoUrl, function (obj) {
@@ -175,193 +178,194 @@ const colCosto = 12;
 const colCostoTotal = 13;
 const colPallet = 14;
 
-function tdChange(x) {
-}
+//function tdChange(x) {
+//}
 
-function listaProveedorChange() {
-	tipoBusqueda = FuncionSobreBusquedaDeProductos.PROVEEDORES;
-	BuscarProductos(tipoBusqueda);
-	BuscarProveedoresFamilia();
-}
+//function listaProveedorChange() {
+//	tipoBusqueda = FuncionSobreBusquedaDeProductos.PROVEEDORES;
+//	BuscarProductos(tipoBusqueda);
+//	BuscarProveedoresFamilia();
+//}
 
-function listaFamiliaProveedorChange() {
-	tipoBusqueda = FuncionSobreBusquedaDeProductos.PROVEEDORESYFAMILIA;
-	BuscarProductos(tipoBusqueda);
-}
+//function listaFamiliaProveedorChange() {
+//	tipoBusqueda = FuncionSobreBusquedaDeProductos.PROVEEDORESYFAMILIA;
+//	BuscarProductos(tipoBusqueda);
+//}
 
-function listaRubroChange() {
-	tipoBusqueda = FuncionSobreBusquedaDeProductos.RUBROS;
-	BuscarProductos(tipoBusqueda);
-}
+//function listaRubroChange() {
+//	tipoBusqueda = FuncionSobreBusquedaDeProductos.RUBROS;
+//	BuscarProductos(tipoBusqueda);
+//}
 
-function buscarPorProveedor() {
-	if ($("#listaProveedor").val() == "") {
-		$("#listaProveedor").prop("selectedIndex", 1).change();
-	}
-	DisableComboProveedoresFamilia(true);
-	DisableComboRubros(true);
-	DisableComboProveedores(false);
-	tipoBusqueda = FuncionSobreBusquedaDeProductos.PROVEEDORES;
-	BuscarProductos(tipoBusqueda);
-}
+//function buscarPorProveedor() {
+//	if ($("#listaProveedor").val() == "") {
+//		$("#listaProveedor").prop("selectedIndex", 1).change();
+//	}
+//	DisableComboProveedoresFamilia(true);
+//	DisableComboRubros(true);
+//	DisableComboProveedores(false);
+//	tipoBusqueda = FuncionSobreBusquedaDeProductos.PROVEEDORES;
+//	BuscarProductos(tipoBusqueda);
+//}
 
-function buscarSinStk() {
-	DisableComboProveedoresFamilia(true);
-	DisableComboRubros(true);
-	DisableComboProveedores(true);
-	tipoBusqueda = FuncionSobreBusquedaDeProductos.SINSTOCK;
-	BuscarProductos(tipoBusqueda);
-}
+//function buscarSinStk() {
+//	DisableComboProveedoresFamilia(true);
+//	DisableComboRubros(true);
+//	DisableComboProveedores(true);
+//	tipoBusqueda = FuncionSobreBusquedaDeProductos.SINSTOCK;
+//	BuscarProductos(tipoBusqueda);
+//}
 
-function buscarConPI() {
-	DisableComboProveedoresFamilia(true);
-	DisableComboRubros(true);
-	DisableComboProveedores(true);
-	tipoBusqueda = FuncionSobreBusquedaDeProductos.CONPI;
-	BuscarProductos(tipoBusqueda);
-}
+//function buscarConPI() {
+//	DisableComboProveedoresFamilia(true);
+//	DisableComboRubros(true);
+//	DisableComboProveedores(true);
+//	tipoBusqueda = FuncionSobreBusquedaDeProductos.CONPI;
+//	BuscarProductos(tipoBusqueda);
+//}
 
-function buscarPorProveedorFamilia() {
-	if ($("#listaProveedor").val() == "") {
-		$("#listaProveedor").prop("selectedIndex", 1).change();
-	}
-	if ($("#listaFamiliaProveedor").val() == "") {
-		$("#listaFamiliaProveedor").prop("selectedIndex", 1).change();
-	}
-	DisableComboProveedoresFamilia(false);
-	DisableComboProveedores(false);
-	DisableComboRubros(true);
-	tipoBusqueda = FuncionSobreBusquedaDeProductos.PROVEEDORESYFAMILIA;
-	BuscarProductos(tipoBusqueda);
-}
+//function buscarPorProveedorFamilia() {
+//	if ($("#listaProveedor").val() == "") {
+//		$("#listaProveedor").prop("selectedIndex", 1).change();
+//	}
+//	if ($("#listaFamiliaProveedor").val() == "") {
+//		$("#listaFamiliaProveedor").prop("selectedIndex", 1).change();
+//	}
+//	DisableComboProveedoresFamilia(false);
+//	DisableComboProveedores(false);
+//	DisableComboRubros(true);
+//	tipoBusqueda = FuncionSobreBusquedaDeProductos.PROVEEDORESYFAMILIA;
+//	BuscarProductos(tipoBusqueda);
+//}
 
-function buscarConStkAVencer() {
-	DisableComboProveedoresFamilia(true);
-	DisableComboRubros(true);
-	DisableComboProveedores(true);
-	tipoBusqueda = FuncionSobreBusquedaDeProductos.CONSTOCKAVENCER;
-	BuscarProductos(tipoBusqueda);
-}
+//function buscarConStkAVencer() {
+//	DisableComboProveedoresFamilia(true);
+//	DisableComboRubros(true);
+//	DisableComboProveedores(true);
+//	tipoBusqueda = FuncionSobreBusquedaDeProductos.CONSTOCKAVENCER;
+//	BuscarProductos(tipoBusqueda);
+//}
 
-function buscarConOC() {
-	DisableComboProveedoresFamilia(true);
-	DisableComboRubros(true);
-	DisableComboProveedores(true);
-	tipoBusqueda = FuncionSobreBusquedaDeProductos.CONOC;
-	BuscarProductos(tipoBusqueda);
-}
+//function buscarConOC() {
+//	DisableComboProveedoresFamilia(true);
+//	DisableComboRubros(true);
+//	DisableComboProveedores(true);
+//	tipoBusqueda = FuncionSobreBusquedaDeProductos.CONOC;
+//	BuscarProductos(tipoBusqueda);
+//}
 
-function buscarPorRubro() {
-	if ($("#listaRubro").val() == "") {
-		$("#listaRubro").prop("selectedIndex", 1).change();
-	}
-	DisableComboRubros(false);
-	DisableComboProveedores(true);
-	DisableComboProveedoresFamilia(true);
-	tipoBusqueda = FuncionSobreBusquedaDeProductos.RUBROS;
-	BuscarProductos(tipoBusqueda);
-}
+//function buscarPorRubro() {
+//	if ($("#listaRubro").val() == "") {
+//		$("#listaRubro").prop("selectedIndex", 1).change();
+//	}
+//	DisableComboRubros(false);
+//	DisableComboProveedores(true);
+//	DisableComboProveedoresFamilia(true);
+//	tipoBusqueda = FuncionSobreBusquedaDeProductos.RUBROS;
+//	BuscarProductos(tipoBusqueda);
+//}
 
-function buscarAltaRotacion() {
-	DisableComboProveedoresFamilia(true);
-	DisableComboRubros(true);
-	DisableComboProveedores(true);
-	tipoBusqueda = FuncionSobreBusquedaDeProductos.ALTAROTACION
-	BuscarProductos(tipoBusqueda);
-}
+//function buscarAltaRotacion() {
+//	DisableComboProveedoresFamilia(true);
+//	DisableComboRubros(true);
+//	DisableComboProveedores(true);
+//	tipoBusqueda = FuncionSobreBusquedaDeProductos.ALTAROTACION
+//	BuscarProductos(tipoBusqueda);
+//}
 
-function BuscarProveedoresFamilia() {
-	AbrirWaiting();
-	var ctaId = $("#listaProveedor").val();
-	var datos = { ctaId };
-	PostGenHtml(datos, BuscarProveedoresFamiliaURL, function (obj) {
-		$("#divComboProveedoresFamilia").html(obj);
-		$("#listaFamiliaProveedor").on("change", listaFamiliaProveedorChange);
-		if (!viendeDesdeBusquedaDeProducto)
-			CerrarWaiting();
-		return true
-	});
-}
+//function BuscarProveedoresFamilia() {
+//	AbrirWaiting();
+//	var ctaId = $("#listaProveedor").val();
+//	var datos = { ctaId };
+//	PostGenHtml(datos, BuscarProveedoresFamiliaURL, function (obj) {
+//		$("#divComboProveedoresFamilia").html(obj);
+//		$("#listaFamiliaProveedor").on("change", listaFamiliaProveedorChange);
+//		if (!viendeDesdeBusquedaDeProducto)
+//			CerrarWaiting();
+//		return true
+//	});
+//}
 
-function BuscarProductos(tipoBusqueda, pag=1) {
-	viendeDesdeBusquedaDeProducto = true;
-	AbrirWaiting();
-	var filtro = "";
-	var id = "";
-	var tipo = "OC";
+//function BuscarProductos(tipoBusqueda, pag=1) {
+//	viendeDesdeBusquedaDeProducto = true;
+//	AbrirWaiting();
+//	var filtro = "";
+//	var id = "";
+//	var tipo = "OC";
 
-	switch (tipoBusqueda) {
-		case FuncionSobreBusquedaDeProductos.PROVEEDORES:
-			filtro = "C";
-			id = $("#listaProveedor").val();
-			break;
-		case FuncionSobreBusquedaDeProductos.PROVEEDORESYFAMILIA:
-			filtro = "F";
-			id = $("#listaProveedor").val() + $("#listaFamiliaProveedor").val();
-			break;
-		case FuncionSobreBusquedaDeProductos.RUBROS:
-			id = $("#listaRubro").val();
-			filtro = "R";
-			break;
-		case FuncionSobreBusquedaDeProductos.SINSTOCK:
-			id = "null";
-			filtro = "S";
-			break;
-		case FuncionSobreBusquedaDeProductos.CONSTOCKAVENCER:
-			id = "null";
-			filtro = "V";
-			break;
-		case FuncionSobreBusquedaDeProductos.ALTAROTACION:
-			id = "null";
-			filtro = "A";
-			break;
-		case FuncionSobreBusquedaDeProductos.CONPI:
-			id = "null";
-			filtro = "I";
-			break;
-		case FuncionSobreBusquedaDeProductos.CONOC:
-			id = "null";
-			filtro = "O";
-			break;
-		default:
-	}
+//	switch (tipoBusqueda) {
+//		case FuncionSobreBusquedaDeProductos.PROVEEDORES:
+//			filtro = "C";
+//			id = $("#listaProveedor").val();
+//			break;
+//		case FuncionSobreBusquedaDeProductos.PROVEEDORESYFAMILIA:
+//			filtro = "F";
+//			id = $("#listaProveedor").val() + $("#listaFamiliaProveedor").val();
+//			break;
+//		case FuncionSobreBusquedaDeProductos.RUBROS:
+//			id = $("#listaRubro").val();
+//			filtro = "R";
+//			break;
+//		case FuncionSobreBusquedaDeProductos.SINSTOCK:
+//			id = "null";
+//			filtro = "S";
+//			break;
+//		case FuncionSobreBusquedaDeProductos.CONSTOCKAVENCER:
+//			id = "null";
+//			filtro = "V";
+//			break;
+//		case FuncionSobreBusquedaDeProductos.ALTAROTACION:
+//			id = "null";
+//			filtro = "A";
+//			break;
+//		case FuncionSobreBusquedaDeProductos.CONPI:
+//			id = "null";
+//			filtro = "I";
+//			break;
+//		case FuncionSobreBusquedaDeProductos.CONOC:
+//			id = "null";
+//			filtro = "O";
+//			break;
+//		default:
+//	}
 
-	var buscaNew = true;
-	pagina = pag;
-	var sort = null;
-	var sortDir = null
-	var data2 = { sort, sortDir, pag, buscaNew }
-	var data1 = { filtro, id, tipo };
-	var data = $.extend({}, data1, data2);
-	PostGenHtml(data, BuscarProductosOCPIURL, function (obj) {
-		$("#divListaProducto").html(obj);
-		addInCellEditHandler();
-		addInCellKeyDownHandler();
-		AddEventListenerToGrid("tbListaProducto");
-		tableUpDownArrow();
-		PostGen({}, buscarMetadataURL, function (obj) {
-			if (obj.error === true) {
-				AbrirMensaje("ATENCIÓN", obj.msg, function () {
-					$("#msjModal").modal("hide");
-					return true;
-				}, false, ["Aceptar"], "error!", null);
-			}
-			else {
-				totalRegs = obj.metadata.totalCount;
-				pags = obj.metadata.totalPages;
-				pagRegs = obj.metadata.pageSize;
+//	var buscaNew = true;
+//	pagina = pag;
+//	var sort = null;
+//	var sortDir = null
+//	var data2 = { sort, sortDir, pag, buscaNew }
+//	var data1 = { filtro, id, tipo };
+//	var data = $.extend({}, data1, data2);
+//	PostGenHtml(data, BuscarProductosOCPIURL, function (obj) {
+//		$("#divListaProducto").html(obj);
+//		addInCellEditHandler();
+//		addInCellLostFocusHandler();
+//		addInCellKeyDownHandler();
+//		AddEventListenerToGrid("tbListaProducto");
+//		tableUpDownArrow();
+//		PostGen({}, buscarMetadataURL, function (obj) {
+//			if (obj.error === true) {
+//				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+//					$("#msjModal").modal("hide");
+//					return true;
+//				}, false, ["Aceptar"], "error!", null);
+//			}
+//			else {
+//				totalRegs = obj.metadata.totalCount;
+//				pags = obj.metadata.totalPages;
+//				pagRegs = obj.metadata.pageSize;
 
-				$("#pagEstado").val(true).trigger("change");
-			}
+//				$("#pagEstado").val(true).trigger("change");
+//			}
 
-		});
-		CerrarWaiting();
-		viendeDesdeBusquedaDeProducto = false;
-		return true
-	});
-}
+//		});
+//		CerrarWaiting();
+//		viendeDesdeBusquedaDeProducto = false;
+//		return true
+//	});
+//}
 
-function BuscarProductos2(pag = 1) {
+function BuscarProductos(pag = 1) {
 	viendeDesdeBusquedaDeProducto = true;
 	AbrirWaiting();
 	var Tipo = "OC";
@@ -396,6 +400,7 @@ function BuscarProductos2(pag = 1) {
 		$("#divListaProducto").html(obj);
 		$("#divDetalle").collapse("show");
 		addInCellEditHandler();
+		addInCellLostFocusHandler();
 		addInCellKeyDownHandler();
 		AddEventListenerToGrid("tbListaProducto");
 		tableUpDownArrow();
@@ -421,32 +426,32 @@ function BuscarProductos2(pag = 1) {
 	});
 }
 
-function DisableComboProveedores(value) {
-	if (value === true) {
-		$('#listaProveedor').prop('disabled', 'disabled');
-	}
-	else {
-		$('#listaProveedor').prop('disabled', false);
-	}
-}
+//function DisableComboProveedores(value) {
+//	if (value === true) {
+//		$('#listaProveedor').prop('disabled', 'disabled');
+//	}
+//	else {
+//		$('#listaProveedor').prop('disabled', false);
+//	}
+//}
 
-function DisableComboProveedoresFamilia(value) {
-	if (value === true) {
-		$('#listaFamiliaProveedor').prop('disabled', 'disabled');
-	}
-	else {
-		$('#listaFamiliaProveedor').prop('disabled', false);
-	}
-}
+//function DisableComboProveedoresFamilia(value) {
+//	if (value === true) {
+//		$('#listaFamiliaProveedor').prop('disabled', 'disabled');
+//	}
+//	else {
+//		$('#listaFamiliaProveedor').prop('disabled', false);
+//	}
+//}
 
-function DisableComboRubros(value) {
-	if (value === true) {
-		$('#listaRubro').prop('disabled', 'disabled');
-	}
-	else {
-		$('#listaRubro').prop('disabled', false);
-	}
-}
+//function DisableComboRubros(value) {
+//	if (value === true) {
+//		$('#listaRubro').prop('disabled', 'disabled');
+//	}
+//	else {
+//		$('#listaRubro').prop('disabled', false);
+//	}
+//}
 
 function AddEventListenerToGrid(tabla) {
 	var grilla = document.getElementById(tabla);
@@ -466,19 +471,19 @@ function AddEventListenerToGrid(tabla) {
 function selectListaProductoRow(x) {
 	if (x) {
 		pIdSeleccionado = x.cells[0].innerText.trim();
-		idProvSeleccionado = x.cells[2].innerText.trim();
-		idFamiliaProvSeleccionado = x.cells[15].innerText.trim();
-		idRubroSeleccionado = x.cells[16].innerText.trim();
-		SeleccionarDesdeFila(idProvSeleccionado, $("#listaProveedor")[0]);
-		SeleccionarDesdeFila(idFamiliaProvSeleccionado, $("#listaFamiliaProveedor")[0]);
-		SeleccionarDesdeFila(idRubroSeleccionado, $("#listaRubro")[0]);
+		//idProvSeleccionado = x.cells[2].innerText.trim();
+		//idFamiliaProvSeleccionado = x.cells[15].innerText.trim();
+		//idRubroSeleccionado = x.cells[16].innerText.trim();
+		//SeleccionarDesdeFila(idProvSeleccionado, $("#listaProveedor")[0]);
+		//SeleccionarDesdeFila(idFamiliaProvSeleccionado, $("#listaFamiliaProveedor")[0]);
+		//SeleccionarDesdeFila(idRubroSeleccionado, $("#listaRubro")[0]);
 		BuscarInfoAdicional();
 	}
 	else {
 		pIdSeleccionado = "";
-		idProvSeleccionado = "";
-		idFamiliaProvSeleccionado = "";
-		idRubroSeleccionado = "";
+		//idProvSeleccionado = "";
+		//idFamiliaProvSeleccionado = "";
+		//idRubroSeleccionado = "";
 	}
 }
 
@@ -500,6 +505,16 @@ function addInCellEditHandler() {
 		pedido = e.currentTarget.innerText;
 		pIdEditado = e.currentTarget.parentNode.cells[0].innerText;
 		rowIndex = e.currentTarget.parentNode.rowIndex;
+	});
+}
+
+function addInCellLostFocusHandler() {
+	$("#tbListaProducto").on('focusout', 'td[contenteditable]', function (e) {
+		pedido = e.currentTarget.innerText;
+		pIdEditado = e.currentTarget.parentNode.cells[0].innerText;
+		rowIndex = e.currentTarget.parentNode.rowIndex;
+		if (pedido !== "0")
+			actualizarPedidoBulto();
 	});
 }
 
@@ -601,6 +616,12 @@ function tableUpDownArrow() {
 				event.preventDefault();
 			}
 		}
+		else if (evt.code === 'Enter')
+			event.preventDefault();
+		else if (evt.code === 'NumpadEnter')
+			event.preventDefault();
+		else
+			console.log(evt.code);
 	}
 }
 
@@ -656,9 +677,9 @@ function actualizarPedidoBulto() {
 				tabla.rows[rowIndex - 1].cells[colCantidad].style.backgroundColor = "lightgreen";
 				tabla.rows[rowIndex - 1].cells[colCosto].innerText = (Math.round(o.pCosto * 100) / 100).toFixed(3);
 				tabla.rows[rowIndex - 1].cells[colCosto].style.backgroundColor = "lightgreen";
-				tabla.rows[rowIndex - 1].cells[colCostoTotal].innerText = o.cantidad;
+				tabla.rows[rowIndex - 1].cells[colCostoTotal].innerText = (Math.round(o.pCostoTotal * 100) / 100).toFixed(3);
 				tabla.rows[rowIndex - 1].cells[colCostoTotal].style.backgroundColor = "lightgreen";
-				tabla.rows[rowIndex - 1].cells[colPallet].innerText = o.pallet;
+				tabla.rows[rowIndex - 1].cells[colPallet].innerText = (Math.round(o.pallet * 100) / 100).toFixed(2) ;
 				tabla.rows[rowIndex - 1].cells[colBulto].style.backgroundColor = "lightgreen";
 			}
 			else {
@@ -666,9 +687,9 @@ function actualizarPedidoBulto() {
 				tabla.rows[rowIndex - 1].cells[colCantidad].style.backgroundColor = "";
 				tabla.rows[rowIndex - 1].cells[colCosto].innerText = (Math.round(o.pCosto * 100) / 100).toFixed(3);
 				tabla.rows[rowIndex - 1].cells[colCosto].style.backgroundColor = "";
-				tabla.rows[rowIndex - 1].cells[colCostoTotal].innerText = o.cantidad;
+				tabla.rows[rowIndex - 1].cells[colCostoTotal].innerText = (Math.round(o.pCostoTotal * 100) / 100).toFixed(3);
 				tabla.rows[rowIndex - 1].cells[colCostoTotal].style.backgroundColor = "";
-				tabla.rows[rowIndex - 1].cells[colPallet].innerText = o.pallet;
+				tabla.rows[rowIndex - 1].cells[colPallet].innerText = (Math.round(o.pallet * 100) / 100).toFixed(2);
 				tabla.rows[rowIndex - 1].cells[colBulto].style.backgroundColor = "";
 			}
 			return false;

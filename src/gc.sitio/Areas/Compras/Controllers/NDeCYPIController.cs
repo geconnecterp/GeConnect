@@ -46,7 +46,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return View();
 		}
 
-		public async Task<IActionResult> NecesidadesDeCompra()
+		public async Task<IActionResult> NecesidadesDeCompraBack()
 		{
 			NDeCYPI.NecesidadesDeCompraDto model = new();
 			List<ProveedorFamiliaListaDto> proveedoresFamilias = [];
@@ -67,8 +67,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return View(model);
 		}
 
-		public async Task<IActionResult> NecesidadesDeCompra2()
+		public async Task<IActionResult> NecesidadesDeCompra()
 		{
+			NDeCYPI.NecesidadesDeCompraDto model = new();
 			MetadataGrid metadata;
 			try
 			{
@@ -88,8 +89,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 				ViewBag.Rel03List = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
 
 				ViewData["Titulo"] = "NECESIDADES DE STOCK DE COMPRA";
+				model.ComboSucursales = ComboSucursales();
 				CargarDatosIniciales(true);
-				return View();
+				return View(model);
 			}
 			catch (Exception ex)
 			{
@@ -349,7 +351,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (response.First().resultado != 0)
 					return Json(new { error = false, warn = true, msg = response.First().resultado_msj });
 				var item = response.First();
-				return Json(new { error = false, warn = false, msg = string.Empty, unidadPres = item.unidad_pres, pCosto = item.p_pcosto, bulto = item.bultos, cantidad = item.cantidad, pallet = item.pallet });
+				return Json(new { error = false, warn = false, msg = string.Empty, unidadPres = item.unidad_pres, pCosto = item.p_pcosto, bulto = item.bultos, cantidad = item.cantidad, pallet = item.pallet, pCostoTotal = item.p_pcosto * item.cantidad });
 			}
 			catch (Exception ex)
 			{

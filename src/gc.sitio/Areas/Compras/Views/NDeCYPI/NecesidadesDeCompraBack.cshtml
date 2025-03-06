@@ -1,62 +1,87 @@
-﻿@using static gc.infraestructura.Constantes.Constantes
-@model QueryFilters
+﻿@model NecesidadesDeCompraDto
 @{
 	Layout = "~/views/shared/_Layout.cshtml";
-	var sucursales = new SelectList(new List<SelectListItem>());
-	var filtro = new QueryFilters()
-			{
-				Rel01 = new List<string>(),
-				Rel02 = new List<string>(),
-				Rel03 = new List<ComboGenDto>(),
-				Modelo = ModeloFilter.NECESIDADES_COMPRA,
-				Opt1 = false,
-				Opt2 = false,
-				Opt3 = false,
-				Opt4 = false,
-				Opt5 = false,
-			};
+	var proveedores = Model.ComboProveedores;
+	var familiaProveedores = Model.ComboProveedoresFamilia;
+	var rubros = Model.ComboRubros;
+	var sucursales = Model.ComboSucursales;
+	BusquedaProducto busquedaProducto = new();
 }
 @section styles {
 	<link rel="stylesheet" href="~/css/simplePagination.css" />
 }
-
-<div class="container">
-	<div class="row">
-		<div class="col-md-6">
-			<div class="d-flex justify-content-sm-around">
-				<button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
-					<i class="bx bx-filter bx-xs"></i>
-				</button>
+<div class="card">
+	<div class="container">
+		<div class="row">
+			<div class="col-5">
+				@* Combos *@
+				<div class="col-sm" style="padding-top: 4px;" id="divComboProveedores">
+					<div class="input-group fixed-padding-top">
+						<span class="input-group-text fixed-width">Proveedor: </span>
+						@Html.DropDownList("id", proveedores, "Seleccionar...", new { @id = "listaProveedor", @class = "form-control" })
+					</div>
+				</div>
+				<div id="divComboProveedoresFamilia">
+					<div class="col-sm" id="divComboProveedoresFamilia" aria-disabled="true">
+						<div class="input-group fixed-padding-top">
+							<span class="input-group-text fixed-width">Familia: </span>
+							@Html.DropDownList("id", familiaProveedores, "Seleccionar...", new { @id = "listaFamiliaProveedor", @class = "form-control" })
+						</div>
+					</div>
+				</div>
+				<div class="col-sm" id="divComboRubros" aria-disabled="true">
+					<div class="input-group fixed-padding-top">
+						<span class="input-group-text fixed-width">Rubro: </span>
+						@Html.DropDownList("id", rubros, "Seleccionar...", new { @id = "listaRubro", @class = "form-control" })
+					</div>
+				</div>
+			</div>
+			<div class="col-5" style="padding-top: 8px;">
+				<div class="row">
+					@* OptionButtons y Buscador de Productos *@
+					<fieldset style="margin: 2px;padding: 2px;">
+						<legend>
+							@* empty title *@
+							<div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+								<row style="margin-left:4px;">
+									<input type="radio" class="btn-check" name="btnradio" id="btnradioPorProveedor" checked="">
+									<label class="btn btn-sm btn-outline-primary fixed-font-size-xmall" for="btnradioPorProveedor">Por Proveedor</label>
+									<input type="radio" class="btn-check" name="btnradio" id="btnradioSinStk">
+									<label class="btn btn-sm btn-outline-primary fixed-font-size-xmall" for="btnradioSinStk">Sin Stk</label>
+									<input type="radio" class="btn-check" name="btnradio" id="btnradioConPI">
+									<label class="btn btn-sm btn-outline-primary fixed-font-size-xmall" for="btnradioConPI">Con PI</label>
+								</row>
+								<row>
+									<input type="radio" class="btn-check" name="btnradio" id="btnradioPorProveedorFamilia">
+									<label class="btn btn-sm btn-outline-primary fixed-font-size-xmall" for="btnradioPorProveedorFamilia">Por Proveedor y Familia</label>
+									<input type="radio" class="btn-check" name="btnradio" id="btnradioConStkAVencer">
+									<label class="btn btn-sm btn-outline-primary fixed-font-size-xmall" for="btnradioConStkAVencer">Con Stk a Vencer</label>
+									<input type="radio" class="btn-check" name="btnradio" id="btnradioConOC">
+									<label class="btn btn-sm btn-outline-primary fixed-font-size-xmall" for="btnradioConOC">Con OC</label>
+								</row>
+								<row>
+									<input type="radio" class="btn-check" name="btnradio" id="btnradioPorRubro">
+									<label class="btn btn-sm btn-outline-primary fixed-font-size-xmall" for="btnradioPorRubro">Por Rubros</label>
+									<input type="radio" class="btn-check" name="btnradio" id="btnradioAltaRotacion">
+									<label class="btn btn-sm btn-outline-primary fixed-font-size-xmall" for="btnradioAltaRotacion">Alta Rotación</label>
+								</row>
+							</div>
+						</legend>
+					</fieldset>
+				</div>
+			</div>
+			<div class="col-2">
+				@* Botones *@
+				<fieldset style="padding-top: 0px;">
+					<legend>
+						<a href="#" id="btnOCAuto" class="btn btn-sm btn-primary fixed-font-size"><span>OC Auto</span></a>
+						<a href="#" id="btnPasarAOC" class="btn btn-sm btn-primary fixed-font-size"><span>Pasar a OC</span></a>
+						<a href="#" id="btnImprimirCtlStk" class="btn btn-sm btn-primary fixed-font-size"><span>Imprimir Ctl Stk</span></a>
+					</legend>
+				</fieldset>
 			</div>
 		</div>
-
-		@* 	<div class="col-md-6">
-			<fieldset style="padding-top: 0px;">
-				<legend>
-					<a href="#" id="btnOCAuto" class="btn btn-sm btn-primary fixed-font-size"><span>OC Auto</span></a>
-					<a href="#" id="btnPasarAOC" class="btn btn-sm btn-primary fixed-font-size"><span>Pasar a OC</span></a>
-					<a href="#" id="btnImprimirCtlStk" class="btn btn-sm btn-primary fixed-font-size"><span>Imprimir Ctl Stk</span></a>
-				</legend>
-			</fieldset>
-		</div> *@
-	</div>
-	<div class="collapse" id="divFiltro" style="">
-		<partial name="_filtroBase" model="filtro" />
-		@Html.Hidden("pagEstado", false);
-	</div>
-	<div class="collapse" id="divDetalle" style="">
 		<div class="row">
-			<div class="col-sm-12" style="text-align: right;align-content: center;padding-bottom:5px;">
-				<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px;" id="btnPasarAOC">
-					<span class="tf-icons bx bx-check-circle">Pasar a OC</span>
-				</button>
-				<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px;" id="btnOCAuto">
-					<span class="tf-icons bx bx-check-circle">OC Auto</span>
-				</button>
-				<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px;" id="btnImprimirCtlStk">
-					<span class="tf-icons bx bx-check-circle">Imprimir Ctl Stk</span>
-				</button>
-			</div>
 			<div class="col-12">
 				<div id="divListaProducto">
 					<div class="table-responsive table-wrapper-full-width" id="containerListaProducto">
@@ -82,6 +107,30 @@
 									<th style="width:0%; display:none;">rub_id</th>
 								</tr>
 							</thead>
+							<tbody>
+								@foreach (var item in Model.Productos.ListaDatos)
+								{
+									<tr onclick="selectListaProductoRow(this)">
+										<td class="align-center">@item.p_id</td>
+										<td class="align-left">@item.p_desc</td>
+										<td class="align-center">@item.p_id_prov</td>
+										<td class="align-right">@item.pi_pendiente</td>
+										<td class="align-right">@item.oc_pendiente</td>
+										<td class="align-right">@item.stk</td>
+										<td class="align-right">@item.stk_suc_transito</td>
+										<td class="align-right">@item.stk_suc_comprometido</td>
+										<td class="align-right">@item.p_unidad_pres</td>
+										<td class="align-left">@item.up_desc</td>
+										<td class="align-right">@item.pedido</td>
+										<td class="align-right">@item.cantidad</td>
+										<td class="align-right">@item.costo</td>
+										<td class="align-right">@item.costo_total</td>
+										<td class="align-right">@item.paletizado</td>
+										<td style="display:none;">@item.pg_id</td>
+										<td style="display:none;">@item.rub_id</td>
+									</tr>
+								}
+							</tbody>
 						</table>
 					</div>
 				</div>
@@ -106,9 +155,9 @@
 					</a>
 				</div>
 				<div class="col-5"></div>
-				@* <div class="col-5">
+				<div class="col-5">
 					<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
-				</div> *@
+				</div>
 			</div>
 			<div class="collapse" id="collapseSection" style="">
 				<div class="d-grid p-3 border">
@@ -135,6 +184,13 @@
 										<span id="tabFour" class="custom-lbl">Prod. Sustituto</span>
 									</button>
 								</li>
+								@* <li role="presentation" style="margin-left: 200px;">
+									<div class="row">
+										<div class="col-12">
+											<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
+										</div>
+									</div>
+								</li> *@
 							</ul>
 							<div class="tab-content">
 								<div class="tab-pane fade active show" id="navs-top-home" role="tabpanel">
@@ -187,17 +243,17 @@
 											</div>
 										</div>
 									</div>
-
+									
 								</div>
 								<div class="tab-pane fade" id="navs-top-dog" role="tabpanel">
-									@* @if (Model.ProductosDelMismoProveedor == false)
+									@if (Model.ProductosDelMismoProveedor == false)
 									{
 										<input class="form-check-input" type="checkbox" id="chkProductosDelMismoProveedor" onchange="changeProductosDelMismoProveedor(this);" asp-for="@Model.ProductosDelMismoProveedor">
 									}
 									else
 									{
 										<input class="form-check-input" type="checkbox" id="chkProductosDelMismoProveedor" onchange="changeProductosDelMismoProveedor(this);" checked asp-for="@Model.ProductosDelMismoProveedor">
-									} *@
+									}
 									<label class="form-check-label" for="chkProductosDelMismoProveedor"> Productos del mismo Proveedor</label>
 									<div class="row">
 										<div id="divInfoProdSustituto"></div>
@@ -225,11 +281,7 @@
 		var idProvSeleccionado = "";
 		var idFamiliaProvSeleccionado = "";
 		var idRubroSeleccionado = "";
-		var buscarFamiliaDesdeProveedorSeleccionadoUrl = "@Url.Action("BuscarFamiliaDesdeProveedorSeleccionado", "ndecypi", new { area = "Compras" })";/**/
-		var autoComRel01Url = "@Url.Action("BuscarProvs", "ndecypi", new { area = "Compras" })";/**/
-		var autoComRel02Url = "@Url.Action("BuscarRubros", "ndecypi", new { area = "Compras" })";/**/
-		var autoComRel03Url = "@Url.Action("BuscarFlias", "ndecypi", new { area = "Compras" })";/**/
-		var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "ndecypi", new { area = "Compras" })"; /**/
+		var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "abmbanco", new { area = "abms" })"; /**/
 		var BuscarProductosOCPIURL = "@Url.Action("BuscarProductosOCPI", "ndecypi", new { area = "Compras" })";
 		var BuscarProductosOCPI2URL = "@Url.Action("BuscarProductosOCPI2", "ndecypi", new { area = "Compras" })"; /**/
 		var CargaPedidoOCPIURL = "@Url.Action("CargaPedidoOCPI", "ndecypi", new { area = "Compras" })";
@@ -241,13 +293,11 @@
 		var BuscarInfoProdStkSucursalURL = "@Url.Action("BuscarInfoProdStkSucursal", "ndecypi", new { area = "Compras" })";
 		var BuscarInfoProdSustitutoURL = "@Url.Action("BuscarInfoProdSustituto", "ndecypi", new { area = "Compras" })";
 		var BuscarInfoProdURL = "@Url.Action("BuscarInfoProd", "ndecypi", new { area = "Compras" })";
-
-		//BuscarFamiliaDesdeProveedorSeleccionado
 	</script>
 	<script src="~/js/plugins/jquery.simplePagination.js"></script>
-	<script src="~/js/app/siteGen.js"></script>@**@
 	<script src="~/js/app/areas/ndecypi/comun.js"></script>
 	<script src="~/js/app/areas/ndecypi/nc.js"></script>
+	<script src="~/js/app/siteGen.js"></script>@**@
 	<script src="~/js/app/busquedas.js" type="text/javascript"></script>
 	<script src="~/js/app/controlcomun/rpr.js" type="text/javascript"></script>
 	<script src="~/js/app/controlcomun/infoRpr.js" type="text/javascript"></script>

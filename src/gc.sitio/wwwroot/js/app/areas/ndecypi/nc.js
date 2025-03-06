@@ -2,12 +2,29 @@
 	//$("#listaSucursales").on("change", listaSucursalesChange);
 	//$("#txtMeses").on("change", BuscarInfoAdicional);
 	//$("#txtSemanas").on("change", BuscarInfoAdicional);
+	addTxtMesesKeyUpHandler();
+	addTxtSemanasKeyUpHandler();
 	$("#pagEstado").on("change", function () {
 		var div = $("#divPaginacion");
 		presentaPaginacionNC(div);
 	});
 });
 
+function addTxtSemanasKeyUpHandler() {
+	$("#txtSemanas").on('keyup', function (e) {
+		if (e.keyCode == 13) {
+			BuscarInfoAdicional();
+		}
+	});
+}
+
+function addTxtMesesKeyUpHandler() {
+	$("#txtMeses").on('keyup', function (e) {
+		if (e.keyCode == 13) {
+			BuscarInfoAdicional();
+		}
+	});
+}
 
 function presentaPaginacionNC(div) {
 	div.pagination({
@@ -16,8 +33,7 @@ function presentaPaginacionNC(div) {
 		cssStyle: "dark-theme",
 		currentPage: pagina,
 		onPageClick: function (num) {
-			BuscarProductos(tipoBusqueda, num);
-			//buscarSectores(num);
+			BuscarProductos(num);
 		}
 	});
 	$("#pagEstado").val(false);
@@ -25,21 +41,21 @@ function presentaPaginacionNC(div) {
 	return true;
 }
 
-function listaSucursalesChange() {
-	if (pIdSeleccionado == undefined) {
-		AbrirMensaje("Atención", "Debe seleccionar un producto.", function () {
-			$("#msjModal").modal("hide");
-			return true;
-		}, false, ["Aceptar"], "error!", null);
-	}
-	if (pIdSeleccionado == "") {
-		AbrirMensaje("Atención", "Debe seleccionar un producto.", function () {
-			$("#msjModal").modal("hide");
-			return true;
-		}, false, ["Aceptar"], "error!", null);
-	}
-	BuscarInfoAdicional();
-}
+//function listaSucursalesChange() {
+//	if (pIdSeleccionado == undefined) {
+//		AbrirMensaje("Atención", "Debe seleccionar un producto.", function () {
+//			$("#msjModal").modal("hide");
+//			return true;
+//		}, false, ["Aceptar"], "error!", null);
+//	}
+//	if (pIdSeleccionado == "") {
+//		AbrirMensaje("Atención", "Debe seleccionar un producto.", function () {
+//			$("#msjModal").modal("hide");
+//			return true;
+//		}, false, ["Aceptar"], "error!", null);
+//	}
+//	BuscarInfoAdicional();
+//}
 
 function NoHayProdSeleccionado() {
 	if (pIdSeleccionado == undefined || pIdSeleccionado == "") {

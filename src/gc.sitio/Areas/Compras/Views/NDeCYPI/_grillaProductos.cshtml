@@ -16,16 +16,16 @@
 				<th style="width:5%;" class="col-header-small align-center tiny-row">Cod. Prov</th>
 				<th style="width:5%;" class="col-header-small align-center tiny-row">PI Pend</th>
 				<th style="width:5%;" class="col-header-small align-center tiny-row">OC Pend</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Stock</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Stock en Tránsito</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Stock a Facturar</th>
+				<th style="width:5%;" class="col-header-small align-center tiny-row">Stock Suc</th>
+				<th style="width:5%;" class="col-header-small align-center tiny-row">Stock Tot</th>
+				<th style="width:0%; display:none;" class="col-header-small align-center tiny-row">Stock a Facturar</th>
 				<th style="width:5%;" class="col-header-small align-center tiny-row">Unidad Pres.</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">UM</th>
+				<th style="width:5%;" class="col-header-small align-center tiny-row">Unidad Pallet</th>
 				<th style="width:5%;" class="col-header-small align-center tiny-row">Pedido Bultos</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Cantidad</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Costo</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Costo Total</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Pallet</th>
+				<th style="width:5%;" class="col-header-small align-center tiny-row">Pedido Cantidad</th>
+				<th style="width:5%;" class="col-header-small align-center tiny-row">Precio Costo</th>
+				<th style="width:5%;" class="col-header-small align-center tiny-row">Total Costo</th>
+				<th style="width:5%;" class="col-header-small align-center tiny-row">Total Pallet</th>
 				<th style="width:0%; display:none;">pg_id</th>
 				<th style="width:0%; display:none;">rub_id</th>
 			</tr>
@@ -60,11 +60,11 @@
 					{
 						<td class="align-right tiny-row" style="font-weight:bold;" >@item.oc_pendiente</td>
 					}
+					<td class="align-right tiny-row">@item.stk_suc</td>
 					<td class="align-right tiny-row">@item.stk</td>
-					<td class="align-right tiny-row">@item.stk_suc_transito</td>
-					<td class="align-right tiny-row">@item.stk_suc_comprometido</td>
+					<td style="display:none;">@item.stk_suc_comprometido</td>
 					<td class="align-right tiny-row">@item.p_unidad_pres</td>
-					<td class="align-center tiny-row">@item.up_desc</td>
+					<td class="align-right tiny-row">@item.p_unidad_palet</td>
 					@if (item.pedido == 0)
 					{
 						<td id="tdPedido" contenteditable='true' style="text-align: right;padding: 0.325rem 0.30rem;" onfocusin="focusOnTdPedido(this);">@item.pedido</td>
