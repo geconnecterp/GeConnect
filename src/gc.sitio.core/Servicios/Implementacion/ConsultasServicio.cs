@@ -24,7 +24,7 @@ namespace gc.sitio.core.Servicios.Implementacion
     {
         private const string RutaAPI = "/api/ConsultaCC";
         private const string CONS_CTACTE = "/ConsultarCuentaCorriente";
-        private const string CONS_VTO = "/ConsultarCuentaCorriente";
+        private const string CONS_VTO = "/ConsultaVencimientoComprobantesNoImputados";
         private const string CONS_CMTE_TOT = "/ConsultaComprobantesMeses";
         private const string CONS_CMTE_DET = "/ConsultaComprobantesMesDetalle";
 
@@ -144,7 +144,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-        public async Task<RespuestaGenerica<ConsCtaCteDto>> ConsultarCuentaCorriente(string ctaId, long fechaD, string userId, string token)
+        public async Task<(List<ConsCtaCteDto>,MetadataGrid)> ConsultarCuentaCorriente(string ctaId, long fechaD, string userId,int pagina, int registros, string token)
         {
             try
             {
@@ -154,7 +154,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 HttpClient client = helper.InicializaCliente(token);
                 HttpResponseMessage response;
 
-                var link = $"{_appSettings.RutaBase}{RutaAPI}?ctaId={ctaId}&fechaD={fechaD}&userId={userId}";
+                var link = $"{_appSettings.RutaBase}{RutaAPI}?ctaId={ctaId}&fechaD={fechaD}&userId={userId}&pagina={pagina}&registros={registros}";
 
                 response = await client.GetAsync(link);
 
@@ -163,12 +163,11 @@ namespace gc.sitio.core.Servicios.Implementacion
                     string stringData = await response.Content.ReadAsStringAsync();
                     if (string.IsNullOrEmpty(stringData))
                     {
-
-                        return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
+                        throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde.");
                     }
                     apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ConsCtaCteDto>>>(stringData);
 
-                    return new RespuestaGenerica<ConsCtaCteDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
+                    return (apiResponse.Data, apiResponse.Meta);
 
                 }
                 else
@@ -178,11 +177,11 @@ namespace gc.sitio.core.Servicios.Implementacion
                     var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
                     if (error.TypeException.Equals(nameof(NegocioException)))
                     {
-                        return new RespuestaGenerica<ConsCtaCteDto> { Ok = false, Mensaje = error.Detail };
+                        throw new NegocioException(error.Detail);
                     }
                     else if (error.TypeException.Equals(nameof(NotFoundException)))
                     {
-                        return new RespuestaGenerica<ConsCtaCteDto> { Ok = false, Mensaje = error.Detail };
+                        throw new NegocioException(error.Detail);
                     }
                     else
                     {
@@ -194,7 +193,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             {
                 _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
 
-                return new RespuestaGenerica<ConsCtaCteDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener la cuenta corriente de la cuenta." };
+                throw new Exception($"Algo no fue bien al intentar obtener los registros de la Cuenta Corriente de la cuenta {ctaId}");
             }
         }
 

@@ -1,11 +1,12 @@
-﻿using gc.infraestructura.Dtos.Consultas;
+﻿using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.Gen;
 
 namespace gc.sitio.core.Servicios.Contratos
 {
     public interface IConsultasServicio:IServicio<ConsultasDto>
     {
-        Task<RespuestaGenerica<ConsCtaCteDto>> ConsultarCuentaCorriente(string ctaId, long fechaD, string userId,string token);
+        Task<(List<ConsCtaCteDto>, MetadataGrid)> ConsultarCuentaCorriente(string ctaId, long fechaD, string userId, int pagina, int registros, string token);
         Task<RespuestaGenerica<ConsVtoDto>> ConsultaVencimientoComprobantesNoImputados(string ctaId, long fechaD, long fechaH, string userId, string token);
         Task<RespuestaGenerica<ConsCompTotDto>> ConsultaComprobantesMeses(string ctaId, int meses, bool relCuit, string userId, string token);
         /// <summary>

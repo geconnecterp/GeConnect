@@ -5,7 +5,7 @@ namespace gc.api.core.Contratos.Servicios
 {
     public interface IConsultaServicio : IServicio<Cuenta>
     {
-        List<ConsCtaCteDto> ConsultarCuentaCorriente(string ctaId, DateTime fechaD, string userId);
+        List<ConsCtaCteDto> ConsultarCuentaCorriente(string ctaId, DateTime fechaD, string userId,int pag,int reg);
         List<ConsVtoDto> ConsultaVencimientoComprobantesNoImputados(string ctaId, DateTime fechaD, DateTime fechaH, string userId);
         List<ConsCompTotDto> ConsultaComprobantesMeses(string ctaId, int meses, bool relCuit, string userId);
         /// <summary>

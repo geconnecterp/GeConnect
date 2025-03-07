@@ -14,6 +14,8 @@ $(function () {
             $("#Rel01").trigger("focus");
         }
         else {
+
+
             $("#Rel01").prop("disabled", true).val("");
             $("#Rel01List").prop("disabled", true).empty();
 

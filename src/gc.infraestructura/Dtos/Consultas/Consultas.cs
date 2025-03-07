@@ -3,6 +3,8 @@
     public class ConsultasDto : Dto { }
     public class ConsCtaCteDto: ConsultasDto
     {
+        public int Total_registros { get; set; }
+        public int Total_paginas { get; set; }
         public string Cta_id { get; set; } = string.Empty;
         public string Dia_movi { get; set; } = string.Empty;
         public string Tco_id { get; set; } = string.Empty;
@@ -43,6 +45,9 @@
         public decimal Cm_neto { get; set; }
         public decimal Cm_iva { get; set; }
         public decimal Cm_total { get; set; }
+        public decimal Nc_cm_neto { get; set; }
+        public decimal Nc_cm_iva { get; set; }
+        public decimal Nc_cm_total { get; set; }
         public decimal Dif_m_ant { get; set; }
 
     }
