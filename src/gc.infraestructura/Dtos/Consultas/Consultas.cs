@@ -1,6 +1,6 @@
 ﻿namespace gc.infraestructura.Dtos.Consultas
 {
-    public class ConsultasDto : Dto { }
+    public abstract class ConsultasDto : Dto { }
     public class ConsCtaCteDto: ConsultasDto
     {
         public int Total_registros { get; set; }
@@ -82,4 +82,24 @@
         public string Rp_compte { get; set; } = string.Empty;
 
     }
+
+    public class ConsPagosDto : ConsultasDto
+    {
+        public string Op_compte { get; set; } = string.Empty;
+        public string Opt_id { get; set; }
+        public string Opt_desc { get; set; }
+        public string Usu_id { get; set; } = string.Empty;
+        public string Usu_apellidoynombre { get; set; } = string.Empty;
+        public string Dia_movi { get; set; } = string.Empty;
+        public decimal Op_importe { get; set; }
+        public DateTime Op_concepto { get; set; }
+        public string Cta_id { get; set; } = string.Empty;
+        public string Cta_denominacion { get; set; } = string.Empty;
+        public char Op_anulada { get; set; }
+        public char Op_impreso { get; set; }
+        public string Ctaf_id { get; set; } = string.Empty;
+        public string Ctaf_denominacion { get; set; } = string.Empty;
+
+    }
+
 }

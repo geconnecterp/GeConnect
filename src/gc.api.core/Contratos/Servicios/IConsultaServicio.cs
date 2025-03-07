@@ -16,6 +16,7 @@ namespace gc.api.core.Contratos.Servicios
         /// <param name="relCuit"></param>
         /// <param name="userId"></param>
         /// <returns></returns>
-        List<ConsCompDetDto> ConsultaComprobantesMesDetalle(string ctaId,string mes,bool relCuit, string userId);   
+        List<ConsCompDetDto> ConsultaComprobantesMesDetalle(string ctaId,string mes,bool relCuit, string userId);
+        List<ConsPagosDto> ConsultaOrdenesDePagoProveedor(string ctaId, DateTime fd, DateTime fh, string tipoOP, string userId);
     }
 }

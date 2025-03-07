@@ -167,10 +167,11 @@ namespace gc.api.Controllers.Consultas
                 return BadRequest("No se recepcionó el usuario.");
             }
 
+            var fd = new DateTime(fecD);
+            var fh = new DateTime(fecH);
 
-
-            var regs = _consSv.ConsultaComprobantesMesDetalle(ctaId, mes, relCuit, userId);
-            return Ok(new ApiResponse<List<ConsCompDetDto>>(regs));
+            var regs = _consSv.ConsultaOrdenesDePagoProveedor(ctaId, fd, fh, tipoOP, userId);
+            return Ok(new ApiResponse<List<ConsPagosDto>>(regs));
         }
     }
 }
