@@ -149,5 +149,28 @@ namespace gc.api.Controllers.Consultas
             var regs = _consSv.ConsultaComprobantesMesDetalle(ctaId, mes,relCuit, userId);
             return Ok(new ApiResponse<List<ConsCompDetDto>>(regs));
         }
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult ConsultaOrdenesDePagoProveedor(string ctaId, long fecD,long fecH, string tipoOP, string userId)
+        {
+            if (string.IsNullOrEmpty(ctaId))
+            {
+                return BadRequest("No se recepcionó ninguna cuenta");
+            }
+            if (fecH<fecD)
+            {
+                return BadRequest("No se ha especificado correctamente el intervalo de tiempo desde hasta");
+            }
+            if (string.IsNullOrEmpty(userId))
+            {
+                return BadRequest("No se recepcionó el usuario.");
+            }
+
+
+
+            var regs = _consSv.ConsultaComprobantesMesDetalle(ctaId, mes, relCuit, userId);
+            return Ok(new ApiResponse<List<ConsCompDetDto>>(regs));
+        }
     }
 }

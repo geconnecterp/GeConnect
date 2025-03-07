@@ -45,6 +45,9 @@
         public decimal Cm_neto { get; set; }
         public decimal Cm_iva { get; set; }
         public decimal Cm_total { get; set; }
+        public decimal Nc_cm_neto { get; set; }
+        public decimal Nc_cm_iva { get; set; }
+        public decimal Nc_cm_total { get; set; }
         public decimal Dif_m_ant { get; set; }
 
     }

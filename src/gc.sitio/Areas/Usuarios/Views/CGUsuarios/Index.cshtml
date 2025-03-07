@@ -4,19 +4,13 @@
 @{
     Layout = "~/views/shared/_Layout.cshtml";
     var filtro = new QueryFilters() { Rel01 = null, Rel02 = null, Modelo = ModeloFilter.USUARIOS };
-    string titulo = "Gestión de Usuarios";
+    
 }
 
 @section styles {
     <link rel="stylesheet" href="~/css/simplePagination.css" />
     <link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
-    <style>
-
-    </style>
 }
-
-
-<partial name="_tituloVista" model="@titulo"></partial>
 
 <div class="container">
     <input type="text" id="IdSelected" style="display:none;" />
@@ -114,6 +108,7 @@
 
     <script src="~/lib/jstree/jstree.min.js"></script>
     <script src="~/js/plugins/jquery.simplePagination.js"></script>
+
     <script src="~/js/app/areas/abms/abmsettings.js"></script>
 
     <script src="~/js/app/areas/usuarios/userSettings.js"></script>

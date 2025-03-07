@@ -259,9 +259,10 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 {
                     throw new NegocioException(res.Mensaje);
                 }
-
+                string provId = CuentaComercialSeleccionada.Prov_Id.ToString();
                 //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
                 grillaDatos = GenerarGrilla(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
+                grillaDatos.DatoAux01 = provId;
 
                 return View("_gridCmptDet", grillaDatos);
             }

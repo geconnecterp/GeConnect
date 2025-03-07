@@ -61,7 +61,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 AdministracionesDelUsuario = [];
                 DerechosDelUsuario = [];
 
-
+                ViewData["Titulo"] = "Gestión de Usuarios";
                 return View();
             }
             catch (Exception ex)

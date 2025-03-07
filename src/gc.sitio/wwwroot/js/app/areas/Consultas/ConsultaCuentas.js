@@ -8,8 +8,6 @@ var consProv = "";
 
 $(function () {
     $("#lbRel01").text("CUENTA");
-
-
     //check generico REL01 activando componentes disables
     //este evento esta en sitegen de manera estandar pero neceistaba ahora que afecte a otros componenes
     //de la vista 
@@ -26,6 +24,15 @@ $(function () {
             window["inicializaCtrl" + nnControlCta01]();
         }
     });
+
+    //control para manipular la paginacion
+    $("#pagEstado").on("change", function () {
+        var div = $("#divPaginacion");
+        presentaPaginacion(div);
+    });
+    //variable destinada a manejar la paginacion
+    funcCallBack = consultaCtaCte;
+
 
     $("#btnFiltro").on("click", function () {
         if ($("#divFiltro").hasClass("show")) {

@@ -25,7 +25,8 @@
                     @foreach (var item in Model.ListaDatos)
                     {
                         if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-
+                        ft += item.Cm_total;
+                        nc += item.Nc_cm_total;
                         <tr class="@clase" onclick="SeleccionarPeriodo(this,'tbGridCmpteTot')">
                             <td class="text-sm-center">@item.Periodo</td>
                             <td class="text-sm-end">@item.Cm_neto</td>
@@ -33,11 +34,22 @@
                             <td class="text-sm-end">@item.Dif_m_ant</td>
                         </tr>
                     }
+                    @{
+                        nc = nc * -1;
+                    }
                 </tbody>
             </table>
-            <div class="row">
-                <div class="col-md-12">
-
+           
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="input-group input-group-sm ">
+                    <span class="input-group-text" style="width:100px;">Total FT + ND</span>
+                    <input class="form-control text-right" style="text-align:end;" readonly value="$ @ft" />
+                </div>
+                <div class="input-group input-group-sm text-right">
+                    <span class="input-group-text" style="width:100px;">Total NC</span>
+                    <input class="form-control" style="text-align:end;" readonly value="$ @nc" />
                 </div>
             </div>
         </div>

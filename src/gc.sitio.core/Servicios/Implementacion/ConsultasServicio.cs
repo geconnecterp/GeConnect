@@ -24,7 +24,7 @@ namespace gc.sitio.core.Servicios.Implementacion
     {
         private const string RutaAPI = "/api/ConsultaCC";
         private const string CONS_CTACTE = "/ConsultarCuentaCorriente";
-        private const string CONS_VTO = "/ConsultarCuentaCorriente";
+        private const string CONS_VTO = "/ConsultaVencimientoComprobantesNoImputados";
         private const string CONS_CMTE_TOT = "/ConsultaComprobantesMeses";
         private const string CONS_CMTE_DET = "/ConsultaComprobantesMesDetalle";
 

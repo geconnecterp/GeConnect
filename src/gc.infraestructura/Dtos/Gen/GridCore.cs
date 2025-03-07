@@ -13,6 +13,7 @@ namespace gc.infraestructura.Dtos.Gen
         public int PaginaActual { get; set; }
         public string Sort { get; set; } = "Id";
         public string SortDir { get; set; } = "ASC";
+        public string DatoAux01 { get; set; }=string.Empty;
     }
 
     public class GrillaCore<T, S>

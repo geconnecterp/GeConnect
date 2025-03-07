@@ -2,13 +2,12 @@
     Layout = "~/views/shared/_Layout.cshtml";
 
     string sub = "Cons";
-    string titulo = "Consulta de Cuentas Comerciales";
     var filtro = new QueryFilters() { Rel01 = new List<string>(), Rel02 = null, Modelo = ModeloFilter.CONSULTAS };
 
 }
-
-
-
+@section styles {
+    <link rel="stylesheet" href="~/css/simplePagination.css" />
+}
 
 <div class="container">
     <input type="text" id="IdSelected" style="display:none;" />
@@ -67,6 +66,7 @@
         var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "abmproducto", new { area = "abms" })";
 
     </script>
+    <script src="~/js/plugins/jquery.simplePagination.js"></script>
 
     <script src="~/js/app/areas/abms/abmsettings.js"></script>
     <script src="~/js/app/areas/consultas/ConsultaCuentas.js"></script>
