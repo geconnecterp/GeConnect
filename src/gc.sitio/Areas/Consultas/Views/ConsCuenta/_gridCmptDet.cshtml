@@ -6,13 +6,19 @@
     var alt = true;
     string clase = string.Empty;
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
-    string provId = ViewBag.ProvId; //hay que poner una ViewBag
+    string provId = Model.DatoAux01; //hay que poner una ViewBag
+    decimal ft_neto = 0;
+    decimal ft_iva = 0;
+    decimal ft_tot = 0;
+    decimal nc_neto = 0;
+    decimal nc_iva = 0;
+    decimal nc_tot = 0;
 }
 
 <div class="card">
     <div class="card-body">
         <div class="table-responsive text-nowrap  table-wrapper-500">
-            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridCtaCte">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridCmpteDet">
                 <thead class="table-dark">
                     <tr class="header">
                         <th scope="col">FECHA</th>
@@ -38,15 +44,25 @@
                     @foreach (var item in Model.ListaDatos)
                     {
                         if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-
+                        if(item.Cm_total<0){
+                            //sumatorias de nc
+                            nc_neto += item.Cm_neto;
+                            nc_iva += item.Cm_iva;
+                            nc_tot += item.Cm_total;
+                        }else{
+                            // ft+nd
+                            ft_neto += item.Cm_neto;
+                            ft_iva += item.Cm_iva;
+                            ft_tot += item.Cm_total;
+                        }
                         <tr class="@clase" >
                             <td class="text-sm-center">@item.Cm_fecha</td>
-                            <td class="text-sm-end">@item.Tco_id</td>
+                            <td class="text-sm-center">@item.Tco_id</td>
                             <td class="text-sm-end">@item.Cm_compte</td>
                             <td class="text-sm-end">@item.Cm_neto</td>
                             <td class="text-sm-end">@item.Cm_iva</td>
                             <td class="text-sm-end">@item.Cm_total</td>
-                            @if(provId.Equals(provId)){
+                            @if(provId.Equals('P')){
                                 <td class="text-sm-end">@item.Op_compte</td>
                                 string cmptOrig = $"{item.Tco_id_ori} {item.Cm_compte_ori}";
                                 <td class="text-sm-end">@cmptOrig</td>
@@ -59,24 +75,31 @@
                             <td class="text-sm-end">@item.Usu_id</td>
                         </tr>
                     }
+                    @{
+                        nc_neto *= -1;
+                        nc_iva *= -1;
+                        nc_tot *= -1;
+                    }
                 </tbody>
-            </table>
-            <div class="row">
-                <div class="offset-md-4 col-md-4">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text">TOTAL FT + ND</span>
-                        <input type="text" class="form-control" id="inFT" />
-                        <input type="text" class="form-control" id="inND" />
-                        <input type="text" class="form-control" id="inTotal" />
-                    </div>
+            </table>           
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text" style="width:100px;">TOTAL FT + ND</span>
+                    <input type="text" class="form-control" style="text-align:end;" readonly value="$ @ft_neto" />
+                    <input type="text" class="form-control" style="text-align:end;" readonly value="$ @ft_iva" />
+                    <input type="text" class="form-control" style="text-align:end;" readonly value="$ @ft_tot" />
                 </div>
             </div>
-            <div class="row">
-                <div class="offset-md-4 col-md-4">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text">TOTAL NC</span>                        
-                        <input type="text" class="form-control" id="inNCTotal" />
-                    </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text" style="width:100px;">TOTAL NC</span>
+                    <input type="text" class="form-control" style="text-align:end;" readonly value="$ @nc_neto" />
+                    <input type="text" class="form-control" style="text-align:end;" readonly value="$ @nc_iva" />
+                    <input type="text" class="form-control" style="text-align:end;" readonly value="$ @nc_tot" />
                 </div>
             </div>
         </div>

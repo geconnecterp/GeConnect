@@ -43,13 +43,20 @@ namespace gc.api.core.Servicios
             return res;
         }
 
-        public List<ConsCtaCteDto> ConsultarCuentaCorriente(string ctaId, DateTime fechaD, string userId)
+        public List<ConsPagosDto> ConsultaOrdenesDePagoProveedor(string ctaId, DateTime fd, DateTime fh, string tipoOP, string userId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<ConsCtaCteDto> ConsultarCuentaCorriente(string ctaId, DateTime fechaD, string userId, int pag, int regs)
         {
             var sp = ConstantesGC.StoredProcedures.SP_CONS_CTACTE;
             var ps = new List<SqlParameter>() {
                 new SqlParameter("@cta_id",ctaId) ,
                 new SqlParameter("@desde",fechaD),
                 new SqlParameter("@usu_id",userId),
+                new SqlParameter("@registros",regs),
+                new SqlParameter("@pagina",pag),
             };
 
             List<ConsCtaCteDto> res = _repository.EjecutarLstSpExt<ConsCtaCteDto>(sp, ps, true);

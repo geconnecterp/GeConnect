@@ -5,7 +5,7 @@ namespace gc.api.core.Contratos.Servicios
 {
     public interface IConsultaServicio : IServicio<Cuenta>
     {
-        List<ConsCtaCteDto> ConsultarCuentaCorriente(string ctaId, DateTime fechaD, string userId);
+        List<ConsCtaCteDto> ConsultarCuentaCorriente(string ctaId, DateTime fechaD, string userId,int pag,int reg);
         List<ConsVtoDto> ConsultaVencimientoComprobantesNoImputados(string ctaId, DateTime fechaD, DateTime fechaH, string userId);
         List<ConsCompTotDto> ConsultaComprobantesMeses(string ctaId, int meses, bool relCuit, string userId);
         /// <summary>
@@ -16,6 +16,7 @@ namespace gc.api.core.Contratos.Servicios
         /// <param name="relCuit"></param>
         /// <param name="userId"></param>
         /// <returns></returns>
-        List<ConsCompDetDto> ConsultaComprobantesMesDetalle(string ctaId,string mes,bool relCuit, string userId);   
+        List<ConsCompDetDto> ConsultaComprobantesMesDetalle(string ctaId,string mes,bool relCuit, string userId);
+        List<ConsPagosDto> ConsultaOrdenesDePagoProveedor(string ctaId, DateTime fd, DateTime fh, string tipoOP, string userId);
     }
 }
