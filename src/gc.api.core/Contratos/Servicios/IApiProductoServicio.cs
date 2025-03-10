@@ -81,8 +81,10 @@ namespace gc.api.core.Contratos.Servicios
         List<ProductoNCPIDto> NCPICargarListaDeProductos(NCPICargarListaDeProductosRequest request);
 		List<ProductoNCPIDto> NCPICargarListaDeProductos2(NCPICargarListaDeProductos2Request request);
 		List<NCPICargaPedidoResponse> NCPICargaPedido(NCPICargaPedidoRequest request);
+		List<OrdenDeCompraListDto> CargarOrdenesDeCompraList(string ctaId, string admId, string usuId);
 
-        BoxInfoDto ObtenerBoxInfo(string box_id);
+
+		BoxInfoDto ObtenerBoxInfo(string box_id);
         List<BoxInfoStkDto> ObtenerBoxInfoStk(string box_id);
         List<BoxInfoMovStkDto> ObtenerBoxInfoMovStk(string box_id,string sm_tipo,DateTime desde,DateTime hasta);
 

@@ -30,6 +30,7 @@ using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor.Request;
 using System.Diagnostics;
+using gc.infraestructura.Core.Exceptions;
 
 namespace gc.sitio.core.Servicios.Implementacion
 {
@@ -113,6 +114,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string OC_Productos_Pag2 = "/NCPICargarListaDeProductosPag2";
 		private const string OC_Cargar_Pedido = "/NCPICargaPedido";
 
+		private const string OC_Cargar_Lista = "/CargarOrdenesDeCompraList";
+
 		private readonly AppSettings _appSettings;
 
 		public ProductoServicio(IOptions<AppSettings> options, ILogger<ProductoServicio> logger) : base(options, logger)
@@ -186,18 +189,18 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 		}
 
-		public async Task<(List<ProductoListaDto>,MetadataGrid?)> BusquedaListaProductos(BusquedaProducto busqueda, string token)
+		public async Task<(List<ProductoListaDto>, MetadataGrid?)> BusquedaListaProductos(BusquedaProducto busqueda, string token)
 		{
 			ApiResponse<List<ProductoListaDto>> apiResponse;
 
 			HelperAPI helper = new HelperAPI();
 
-			HttpClient client = helper.InicializaCliente(busqueda,token,out StringContent content);
+			HttpClient client = helper.InicializaCliente(busqueda, token, out StringContent content);
 			HttpResponseMessage response;
-			
+
 			var link = $"{_appSettings.RutaBase}{RutaAPI}{BUSCAR_LISTA}";
 
-			response = await client.PostAsync(link,content);
+			response = await client.PostAsync(link, content);
 
 			if (response.StatusCode == HttpStatusCode.OK)
 			{
@@ -207,13 +210,13 @@ namespace gc.sitio.core.Servicios.Implementacion
 					return new();
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProductoListaDto>>>(stringData);
-				return (apiResponse.Data,apiResponse.Meta);
+				return (apiResponse.Data, apiResponse.Meta);
 			}
 			else
 			{
 				string stringData = await response.Content.ReadAsStringAsync();
 				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
-				return (new(),null);
+				return (new(), null);
 			}
 		}
 
@@ -2182,7 +2185,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			ApiResponse<List<ProductoNCPIDto>> apiResponse;
 
 			HelperAPI helper = new();
-			NCPICargarListaDeProductosRequest request = new() { Tipo = tipo, AdmId = admId, Filtro = filtro, Id = id, Sort = Sort, Registros = Registros, SortDir = SortDir , Pagina = Pagina };
+			NCPICargarListaDeProductosRequest request = new() { Tipo = tipo, AdmId = admId, Filtro = filtro, Id = id, Sort = Sort, Registros = Registros, SortDir = SortDir, Pagina = Pagina };
 			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
 			HttpResponseMessage response;
 
@@ -2239,6 +2242,54 @@ namespace gc.sitio.core.Servicios.Implementacion
 				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
 				return new();
 			}
+		}
+
+		public List<OrdenDeCompraListDto> CargarOrdenesDeCompraList(string ctaId, string admId, string usuId, string token)
+		{
+			ApiResponse<List<OrdenDeCompraListDto>> apiResponse;
+
+			try
+			{
+				HelperAPI helper = new();
+
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{OC_Cargar_Lista}?ctaId={ctaId}&admId={admId}&usuId={usuId}";
+
+				//response = await client.GetAsync(link);
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (!string.IsNullOrEmpty(stringData))
+					{
+						apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<OrdenDeCompraListDto>>>(stringData);
+					}
+					else
+					{
+						throw new Exception("No se logro obtener la respuesta de la API con los datos de las cuentas de familia de proveedores. Verifique.");
+					}
+					return apiResponse.Data;
+				}
+				else
+				{
+					string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+					return new List<OrdenDeCompraListDto>();
+				}
+			}
+			catch (NegocioException ex)
+			{
+				throw;
+			}
+			catch (Exception e)
+			{
+				_logger.LogError(e, "Error al intentar obtener las Familia de Proveedores.");
+				throw;
+			}
+			
 		}
 	}
 }

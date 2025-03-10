@@ -96,5 +96,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<(List<ProductoNCPIDto>, MetadataGrid)> NCPICargarListaDeProductosPag2(NCPICargarListaDeProductos2Request request, string token);
 		Task<List<NCPICargaPedidoResponse>> NCPICargaPedido(NCPICargaPedidoRequest req, string token);
 		Task<List<InfoProductoFamiliaDto>> ObtenerProductosPorFamilia(string ctaId, string fliaSelected, string token);
-    }
+		List<OrdenDeCompraListDto> CargarOrdenesDeCompraList(string ctaId, string admId, string usuId, string token);
+	}
 }

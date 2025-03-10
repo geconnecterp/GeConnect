@@ -130,6 +130,7 @@
 			public const string SP_RTR_Cargar_Conteos_x_ul = "SPGECO_UL_x_RTR";
 
 			public const string SP_OC_Productos = "SPGECO_OC_Productos";
+			public const string SP_OC_Pendientes = "SPGECO_OC_Pendientes";
 			public const string SP_OC_Carga_Pedido = "SPGECO_OC_Carga_Pedido";//PENDIENTE (No existe en la DB)
 
             public const string SP_BOX_INFO = "SPGECO_BOX_Info";

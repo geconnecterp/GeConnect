@@ -1502,6 +1502,27 @@ namespace gc.sitio.Controllers
 			}
 		}
 		#endregion
+
+		#region ORDEN DE COMPRA LISTA
+		public List<OrdenDeCompraListDto> OrdenDeCompraLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("OrdenDeCompraLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<OrdenDeCompraListDto>();
+				}
+				return JsonConvert.DeserializeObject<List<OrdenDeCompraListDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("OrdenDeCompraLista", json);
+			}
+		}
+		#endregion
+
 		#region Metodos generales
 		public PartialViewResult ObtenerMensajeDeError(string mensaje)
         {

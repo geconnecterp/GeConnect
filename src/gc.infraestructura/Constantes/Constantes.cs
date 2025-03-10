@@ -56,6 +56,7 @@ namespace gc.infraestructura.Constantes
             public const string USUARIOS = "USUARIOS";
             public const string CONSULTAS = "CONSULTAS";
 			public const string NECESIDADES_COMPRA = "NECESIDADES_COMPRA";
+            public const string ORDEN_DE_COMPRA = "ORDEN_DE_COMPRA";
 		}
     }
 }

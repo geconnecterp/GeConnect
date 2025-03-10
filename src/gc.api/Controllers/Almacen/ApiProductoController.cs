@@ -31,7 +31,7 @@ namespace gc.api.Controllers.Almacen
     using System.Collections.Generic;
     using System.Net;
     using System.Reflection;
-    using System.Threading.Tasks;
+	using System.Threading.Tasks;
     using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 
     [Authorize]
@@ -912,6 +912,20 @@ namespace gc.api.Controllers.Almacen
 			};
 			//response = new ApiResponse<List<ProductoNCPIDto>>(res);
 			Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
+			return Ok(response);
+		}
+
+		[HttpGet]
+		//[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<OrdenDeCompraListDto>))]
+		//[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult CargarOrdenesDeCompraList(string ctaId, string admId, string usuId)
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			List<OrdenDeCompraListDto> oc = _productosSv.CargarOrdenesDeCompraList(ctaId, admId, usuId);
+			var lista = _mapper.Map<List<OrdenDeCompraListDto>>(oc);
+
+			var response = new ApiResponse<List<OrdenDeCompraListDto>>(lista);
 			return Ok(response);
 		}
 

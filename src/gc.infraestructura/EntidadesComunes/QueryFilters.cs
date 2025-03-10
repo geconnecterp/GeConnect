@@ -53,6 +53,8 @@ namespace gc.infraestructura.Core.EntidadesComunes
 		public bool? Opt3 { get; set; }
 		public bool? Opt4 { get; set; }
 		public bool? Opt5 { get; set; }
+
+		public string? TituloLeyend { get; set; }
 	}
     public class BaseFilters
     {

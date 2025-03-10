@@ -50,6 +50,19 @@ $(function () {
         }
     });
 
+    $("#chkRel04").on("click", function () {
+        if ($("#chkRel04").is(":checked")) {
+            $("#Rel04").prop("disabled", false);
+            $("#Rel04List").prop("disabled", false);
+            $("#Rel04").trigger("focus");
+
+        }
+        else {
+            $("#Rel04").prop("disabled", true).val("");
+            $("#Rel04List").prop("disabled", true).empty();
+        }
+    });
+
     //check generico chkDescr activando componentes disables
     $(document).on("click", "input#chkDescr", function () {
         if ($(this).is(":checked")) {
