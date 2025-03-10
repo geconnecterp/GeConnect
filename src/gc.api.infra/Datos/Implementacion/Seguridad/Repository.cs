@@ -141,7 +141,8 @@ namespace gc.api.infra.Datos.Implementacion
             {
                 var cmd = _dbContext.ObtenerCommandSql(cnn, CommandType.StoredProcedure);
                 cmd.CommandText = sp;
-                foreach (var p in parametros)
+				cmd.CommandTimeout = 600;
+				foreach (var p in parametros)
                 {
                     cmd.Parameters.Add(p);
                 }
@@ -169,7 +170,8 @@ namespace gc.api.infra.Datos.Implementacion
             {
                 var cmd = _dbContext.ObtenerCommandSql(cnn, CommandType.StoredProcedure);
                 cmd.CommandText = sp;
-                foreach (var p in parametros)
+				cmd.CommandTimeout = 600;
+				foreach (var p in parametros)
                 {
                     cmd.Parameters.Add(p);
                 }

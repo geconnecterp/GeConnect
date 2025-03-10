@@ -109,6 +109,45 @@ namespace gc.sitio.Areas.Compras.Controllers
 		public async Task<IActionResult> PedidosInternos()
 		{
 			NDeCYPI.PedidosInternosDto model = new();
+			MetadataGrid metadata;
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+				{
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+				}
+
+				var listR01 = new List<ComboGenDto>();
+				ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
+
+				var listR02 = new List<ComboGenDto>();
+				ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR02);
+
+				var listR03 = new List<ComboGenDto>();
+				ViewBag.Rel03List = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
+
+				ViewData["Titulo"] = "NECESIDADES DE PEDIDOS INTERNOS";
+				model.ComboSucursales = ComboSucursales();
+				CargarDatosIniciales(true);
+				return View(model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public async Task<IActionResult> PedidosInternosBack()
+		{
+			NDeCYPI.PedidosInternosDto model = new();
 			List<ProveedorFamiliaListaDto> proveedoresFamilias = [];
 			try
 			{
@@ -169,6 +208,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 			try
 			{
 				request.Registros = _appSettings.NroRegistrosPagina;
+				request.Adm_Id = AdministracionId;
+				request.Usu_Id = UserName;
 				var productos = _productoServicio.NCPICargarListaDeProductosPag2(request, TokenCookie).Result;
 				ObtenerColor(ref productos.Item1);
 				MetadataGeneral = productos.Item2 ?? new MetadataGrid();

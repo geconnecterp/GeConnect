@@ -67,14 +67,14 @@
 					<td class="align-right tiny-row">@item.p_unidad_palet</td>
 					@if (item.pedido == 0)
 					{
-						<td id="tdPedido" contenteditable='true' style="text-align: right;padding: 0.325rem 0.30rem;" onfocusin="focusOnTdPedido(this);">@item.pedido</td>
+						<td id="tdPedido" contenteditable='true' style="text-align: right;padding: 0.325rem 0.30rem;border-style: inset;border-width: medium;" onfocusin="focusOnTdPedido(this);">@item.pedido</td>
 						<td class="align-right tiny-row">@item.cantidad</td>
 						<td class="align-right tiny-row">@item.costo</td>
 						<td class="align-right tiny-row">@item.costo_total</td>
 					}
 					else
 					{
-						<td id="tdPedido" contenteditable='true' style="text-align: right;padding: 0.325rem 0.30rem;background-color: lightgreen;" onfocusin="focusOnTdPedido(this);">@item.pedido</td>
+						<td id="tdPedido" contenteditable='true' style="text-align: right;padding: 0.325rem 0.30rem;border-style: inset;border-width: medium;background-color: lightgreen;" onfocusin="focusOnTdPedido(this);">@item.pedido</td>
 						<td class="align-right tiny-row" style="background-color: lightgreen;">@item.cantidad</td>
 						<td class="align-right tiny-row" style="background-color: lightgreen;">@item.costo</td>
 						<td class="align-right tiny-row" style="background-color: lightgreen;">@item.costo_total</td>

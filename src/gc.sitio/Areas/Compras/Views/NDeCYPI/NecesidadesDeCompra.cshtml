@@ -96,9 +96,6 @@
 					</a>
 				</div>
 				<div class="col-5"></div>
-				@* <div class="col-5">
-					<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
-				</div> *@
 			</div>
 			<div class="collapse" id="collapseSection" style="">
 				<div class="d-grid p-3 border">
@@ -204,6 +201,7 @@
 
 @section scripts {
 	<script type="text/javascript">
+		var tipoDeOperacion = "OC";
 		var totalRegs = 0;/**/
 		var pagRegs = 0;/**/
 		var pags = 0;/**/
