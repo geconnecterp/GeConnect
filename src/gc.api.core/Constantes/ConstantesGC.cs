@@ -195,6 +195,10 @@
             public const string SP_CONS_VENCIMIENTOS_CMP_SINPUTAR = "SPGECO_C_Vto";
             public const string SP_CONS_COMPROBANTES_TOT = "SPGECO_C_Comptes_Tot";
             public const string SP_CONS_COMPROBANTES_DET = "SPGECO_C_Comptes_Det";
+            public const string SP_CONS_OPAGO_PROVEEDORES = "SPGECO_C_OP";
+            public const string SP_CONS_OPAGO_PROVEEDORES_DET = "SPGECO_C_OP_d";
+            public const string SP_CONS_RECEPCIONES_PROV = "SPGECO_C_RP";
+            public const string SP_CONS_RECEPCIONES_PROV_DET = "SPGECO_C_RP_d";
 
             #endregion
 

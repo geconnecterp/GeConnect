@@ -1,0 +1,65 @@
+﻿@model GridCore<ConsRecepcionProveedorDetalleDto>
+
+@{
+    var alt = true;
+    string clase = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+    string grupo = string.Empty;
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive text-nowrap  table-wrapper-300">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridRpProvDet">
+                <thead class="table-dark">
+                    <tr class="header">
+                        <th scope="col">Código</th>
+                        <th scope="col">Producto</th>
+                        <th scope="col">Orden de</th>
+                        <th scope="col">Cajas x</th>
+                        <th scope="col">Unid. x</th>
+                        <th scope="col" colspan="3">Factura/Remito</th>
+                        <th scope="col" colspan="3">Recepción</th>
+                        <th scope="col">Diferencia</th>
+
+                    </tr>
+                    <tr class="header">
+                        <th scope="col" colspan="2"></th>
+                        <th scope="col">Compra</th>
+                        <th scope="col">Bulto</th>
+                        <th scope="col">Caja</th>
+                        <th scope="col">Bultos</th>
+                        <th scope="col">Cant.Sltas</th>
+                        <th scope="col">Cantidad</th>
+                        <th scope="col">Bultos</th>
+                        <th scope="col">Cant.Sltas</th>
+                        <th scope="col">Total</th>
+                        <th scope="col">Remito</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ListaDatos)
+                    {
+                        if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+                        
+                        <tr class="@clase">
+                            <td class="text-sm-start">@item.P_id</td>
+                            <td class="text-sm-end">@item.P_desc</td>
+                            <td class="text-sm-end">@item.Cm_compte_rp</td>
+                            <td class="text-sm-center">@item.Rpd_unidad_x_bulto</td>
+                            <td class="text-sm-center">@item.Rpd_unidad_pres</td>
+                            <td class="text-sm-center">??</td>
+                            <td class="text-sm-center">@item.Rpd_unidad_suelta</td>
+                            <td class="text-sm-center">@item.Rpd_Cantidad</td>
+                            <td class="text-sm-center">@item.Rpd_bulto_recibidos</td>
+                            <td class="text-sm-center">????</td>
+                            <td class="text-sm-center">@item.Rpd_total</td>
+                            <td class="text-sm-center">¿diferencia?</td>
+                        </tr>
+                    }
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

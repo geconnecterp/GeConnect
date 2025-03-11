@@ -69,6 +69,9 @@ $(function () {
     $("#btnTraerCtaCte").on("click", consultaCtaCte);
     $("#btnTraerVenc").on("click", consultaVencimiento);
     $("#btnTraerCmpts").on("click", consultaCmpteTotal);
+    $("#btnTraerOP").on("click", consultaOP);
+    $("#btnTraerRP").on("click", consultaRP);
+    
     
 
     $("#controlConsultaCambio" + nnControlCta01).on("change", function () {
@@ -138,8 +141,13 @@ function inicializaPantallaConsulta() {
     $("#fechaD").val(formatoFechaYMD(restarFecha(f, 365)));
     f = new Date("01/01/1900");
     $("#cvfechaD").val(formatoFechaYMD(f));
+    $("#opfechaD").val(formatoFechaYMD(f));
+    $("#rpfechaD").val(formatoFechaYMD(f));
+
     f = new Date("01/01/3500");
     $("#cvfechaH").val(formatoFechaYMD(f));
+    $("#opfechaH").val(formatoFechaYMD(f));
+    $("#rpfechaH").val(formatoFechaYMD(f));
 
 }
 
@@ -151,7 +159,7 @@ function ocultarTabsConsulta() {
 }
 function consultaCtaCte(pag) {
     AbrirWaiting();
-
+    tabAbm = 1;
     ctaId = consCta;
     fechaD = $("#fechaD").val();
     var data1 = { ctaId: consCta, fechaD };
@@ -200,11 +208,12 @@ function consultaCtaCte(pag) {
 
 
 function consultaVencimiento() {
+    tabAbm = 2;
     ctaId = consCta;
     fechaD = $("#cvfechaD").val();
     fechaH = $("#cvfechaH").val();
     var data = { ctaId: consCta, fechaD, fechaH };
-    AbrirWaiting();
+    AbrirWaiting("Espere un momento mientras se presenta los comprobantes con vencimiento...");
     PostGenHtml(data, consultaVencimientoUrl, function (obj) {
         $("#divpanel02").html(obj);
         CerrarWaiting();
@@ -212,14 +221,14 @@ function consultaVencimiento() {
 }
 
 function consultaCmpteTotal() {
-    ctaId = consCta;
+    ctaId = consCta; tabAbm = 3;
     relCuil = false;
     if ($("#relCuil").is(":checked")) {
         relCuil = true;
     }
     meses = $("#inMeses").val();
     var data = { ctaId: consCta, meses, relCuil };
-    AbrirWaiting();
+    AbrirWaiting("Espere un momento mientras se presentan los Comprobantes del periodo seleccionado...");
     PostGenHtml(data, consultarCmpteTotalUrl, function (obj) {
         $("#divCmpteTot").html(obj);
         CerrarWaiting();
@@ -234,9 +243,29 @@ function consultaCmpteDetalle(periodo) {
     }
  
     var data = { ctaId: consCta, mes:periodo, relCuil };
-    AbrirWaiting();
+    AbrirWaiting("Espere un momento mientras se presenta el detalle del comprobante seleccionada...");
     PostGenHtml(data, consultarCmpteDetalleUrl, function (obj) {
         $("#divCmpteDet").html(obj);
+        CerrarWaiting();
+    });
+}
+
+function consultaOPPDetalle(cmptId) {
+   
+    var data = { cmptId };
+    AbrirWaiting("Espere un momento mientras se presenta el detalle de la OP seleccionada...");
+    PostGenHtml(data, consultarOPProvDetUrl, function (obj) {
+        $("#divOpProvDet").html(obj);
+        CerrarWaiting();
+    });
+}
+
+function consultarRPPDetalle(cmptId) {
+
+    var data = { cmptId };
+    AbrirWaiting("Espere un momento mientras se presenta el detalle de la Recepción seleccionada...");
+    PostGenHtml(data, consultarRPProvDetUrl, function (obj) {
+        $("#divRpProvDet").html(obj);
         CerrarWaiting();
     });
 }
@@ -244,9 +273,50 @@ function consultaCmpteDetalle(periodo) {
 function SeleccionarPeriodo(x, grid) {
     var xx = $(x);
     selectReg(x, grid);
-    periodo = xx.find("td:nth-child(1)").text();
+    valor = xx.find("td:nth-child(1)").text();
 
+    switch (tabAbm) {
+        //case 1:
+        //    break;
+        //case 2:
+        //    break;
+        case 3:
+            consultaCmpteDetalle(valor);
+            break;
+        case 4:
+            consultaOPPDetalle(valor);
+            break;
+        case 5:
+            consultarRPPDetalle(valor);
+            break;
+        default:
+            return false;
+    }
     //se llama el detalle de comprobantes de un mes especifico
-    consultaCmpteDetalle(periodo);
 }
 
+function consultaOP() {
+    tabAbm = 4;
+    fechaD = $("#opfechaD").val();
+    fechaH = $("#opfechaH").val();
+   
+    var data = { ctaId: consCta, fechaD, fechaH};
+    AbrirWaiting("Espere un momento mientras se presenta las OP del periodo seleccionado...");
+    PostGenHtml(data, consultarOPProvUrl, function (obj) {
+        $("#divOpProv").html(obj);
+        CerrarWaiting();
+    });
+}
+
+function consultaRP() {
+    tabAbm = 5;
+    fechaD = $("#opfechaD").val();
+    fechaH = $("#opfechaH").val();
+
+    var data = { ctaId: consCta, fechaD, fechaH };
+    AbrirWaiting("Espere un momento mientras se presenta las recepciones del proveedor en el periodo seleccionado...");
+    PostGenHtml(data, consultarRPProvUrl, function (obj) {
+        $("#divRpProv").html(obj);
+        CerrarWaiting();
+    });
+}
