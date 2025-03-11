@@ -286,5 +286,205 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 return PartialView("_gridMensaje", response);
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> ConsultaOPagoProveedor(string ctaId, DateTime fechaD, DateTime fechaH)
+        {
+            List<ConsOrdPagosDto> lista;
+            GridCore<ConsOrdPagosDto> grillaDatos;
+            RespuestaGenerica<EntidadBase> response = new();
+            try
+            {
+                //voy a invocar el servicio que me traiga los datos de la cuenta corriente 
+                //para la cuenta seleccionada
+                var res = await _consSv.ConsultaOrdenesDePagoProveedor(ctaId, fechaD, fechaH, "%", "%", TokenCookie);
+                string sort = string.Empty;
+                string sortDir = string.Empty;
+                int pag = 1;
+
+
+                if (!res.Ok)
+                {
+                    throw new NegocioException(res.Mensaje);
+                }
+
+                //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
+                grillaDatos = GenerarGrilla(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
+
+                //string volver = Url.Action("index", "home", new { area = "" });
+                //ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
+
+                return View("_gridOPagoProv", grillaDatos);
+            }
+            catch (NegocioException ex)
+            {
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = true;
+                response.EsError = false;
+                return PartialView("_gridMensaje", response);
+            }
+            catch (Exception ex)
+            {
+
+                string msg = "Error en la invocación de la API - Consulta de Ordenes de Pago.";
+                _logger.LogError(ex, msg);
+                response.Mensaje = msg;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ConsultaOPagoProveedorDetalle(string cmptId)
+        {
+            List<ConsOrdPagosDetDto> lista;
+            GridCore<ConsOrdPagosDetDto> grillaDatos;
+            RespuestaGenerica<EntidadBase> response = new();
+            try
+            {
+                //voy a invocar el servicio que me traiga los datos de la cuenta corriente 
+                //para la cuenta seleccionada
+                var res = await _consSv.ConsultaOrdenesDePagoProveedorDetalle(cmptId, TokenCookie);
+                string sort = string.Empty;
+                string sortDir = string.Empty;
+                int pag = 1;
+
+
+                if (!res.Ok)
+                {
+                    throw new NegocioException(res.Mensaje);
+                }
+
+                //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
+                grillaDatos = GenerarGrilla(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
+
+                //string volver = Url.Action("index", "home", new { area = "" });
+                //ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
+
+                return View("_gridOPagoProvDet", grillaDatos);
+            }
+            catch (NegocioException ex)
+            {
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = true;
+                response.EsError = false;
+                return PartialView("_gridMensaje", response);
+            }
+            catch (Exception ex)
+            {
+
+                string msg = "Error en la invocación de la API - Consulta del Detalle de Ordenes de Pago.";
+                _logger.LogError(ex, msg);
+                response.Mensaje = msg;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ConsultaRecepcionProveedor(string ctaId, DateTime fechaD, DateTime fechaH)
+        {
+            List<ConsRecepcionProveedorDto> lista;
+            GridCore<ConsRecepcionProveedorDto> grillaDatos;
+            RespuestaGenerica<EntidadBase> response = new();
+            try
+            {
+                //voy a invocar el servicio que me traiga los datos de la cuenta corriente 
+                //para la cuenta seleccionada
+                var res = await _consSv.ConsultaRecepcionProveedor(ctaId, fechaD, fechaH, AdministracionId, TokenCookie);
+                string sort = string.Empty;
+                string sortDir = string.Empty;
+                int pag = 1;
+
+
+                if (!res.Ok)
+                {
+                    throw new NegocioException(res.Mensaje);
+                }
+
+                //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
+                grillaDatos = GenerarGrilla(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
+
+                //string volver = Url.Action("index", "home", new { area = "" });
+                //ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
+
+                return View("_gridRecProv", grillaDatos);
+            }
+            catch (NegocioException ex)
+            {
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = true;
+                response.EsError = false;
+                return PartialView("_gridMensaje", response);
+            }
+            catch (Exception ex)
+            {
+
+                string msg = "Error en la invocación de la API - Consulta de Recepciones del Proveedor.";
+                _logger.LogError(ex, msg);
+                response.Mensaje = msg;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ConsultaRecepcionProveedorDetalle(string cmptId)
+        {
+            List<ConsRecepcionProveedorDetalleDto> lista;
+            GridCore<ConsRecepcionProveedorDetalleDto> grillaDatos;
+            RespuestaGenerica<EntidadBase> response = new();
+            try
+            {
+                //voy a invocar el servicio que me traiga los datos de la cuenta corriente 
+                //para la cuenta seleccionada
+                var res = await _consSv.ConsultaRecepcionProveedorDetalle(cmptId, TokenCookie);
+                string sort = string.Empty;
+                string sortDir = string.Empty;
+                int pag = 1;
+
+
+                if (!res.Ok)
+                {
+                    throw new NegocioException(res.Mensaje);
+                }
+
+                //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
+                grillaDatos = GenerarGrilla(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
+
+                //string volver = Url.Action("index", "home", new { area = "" });
+                //ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
+
+                return View("_gridRecProvDet", grillaDatos);
+            }
+            catch (NegocioException ex)
+            {
+                response.Mensaje = ex.Message;
+                response.Ok = false;
+                response.EsWarn = true;
+                response.EsError = false;
+                return PartialView("_gridMensaje", response);
+            }
+            catch (Exception ex)
+            {
+
+                string msg = "Error en la invocación de la API - Consulta del Detalle de Recepciones.";
+                _logger.LogError(ex, msg);
+                response.Mensaje = msg;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
+            }
+        }
     }
 }

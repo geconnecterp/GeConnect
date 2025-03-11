@@ -1,8 +1,6 @@
-﻿
-@model GridCore<ConsCtaCteDto>
+﻿@model GridCore<ConsVtoDto>
 
 @{
-    var dataMod = new ConsCtaCteDto();
     var alt = true;
     string clase = string.Empty;
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
@@ -19,9 +17,11 @@
                         <th scope="col">TIPO COMPTE</th>
                         <th scope="col">N° COMPTE</th>
                         <th scope="col">CONCEPTO</th>
-                        <th scope="col">DEBE</th>                        
-                        <th scope="col">HABER</th>
-                        <th scope="col">SALDO</th>
+                        <th scope="col">CUOTA</th>                        
+                        <th scope="col">ESTADO</th>
+                        <th scope="col">VENCIMIENTO</th>
+                        <th scope="col">Importe Ori</th>
+                        <th scope="col">Importe</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -30,14 +30,16 @@
                         if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
                         <tr class="@clase" >
-                            <td class="text-sm-center">@item.Cc_fecha.ToDateTime().ToShortDateString()</td>
+                            <td class="text-sm-center">@item.Cv_fecha_carga.ToShortDateString()</td>
                             <td class="text-sm-start">@item.Dia_movi</td>
                             <td class="text-sm-end">@item.Tco_desc</td>
                             <td class="text-sm-start">@item.Cm_compte</td>
-                            <td class="text-sm-start">@item.Cc_concepto</td>
-                            <td class="text-sm-start">@item.Cc_debe</td>
-                            <td class="text-sm-end">@item.Cc_haber</td>
-                            <td class="text-sm-end">@item.Cc_saldo</td>
+                            <td class="text-sm-start">@item.Cv_concepto</td>
+                            <td class="text-sm-start">@item.Cm_compte_cuota</td>
+                            <td class="text-sm-end">@item.Cv_estado</td>
+                            <td class="text-sm-end">@item.Cv_fecha_vto</td>
+                            <td class="text-sm-end">@item.Cv_importe_ori</td>
+                            <td class="text-sm-end">@item.Cv_importe</td>
                         </tr>
                     }
                 </tbody>

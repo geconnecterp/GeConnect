@@ -1,0 +1,37 @@
+﻿@model GridCore<ConsOrdPagosDto>
+
+@{
+    var alt = true;
+    string clase = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive text-nowrap  table-wrapper-500">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridOpProv">
+                <thead class="table-dark">
+                    <tr class="header">
+                        <th scope="col">OP N°</th>
+                        <th scope="col">TIPO</th>
+                        <th scope="col">FECHA</th>
+                        <th scope="col">IMPORTE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ListaDatos)
+                    {
+                        if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+                        <tr class="@clase" onclick="SeleccionarPeriodo(this,'tbGridOpProv')">
+                            <td class="text-sm-center">@item.Op_compte</td>
+                            <td class="text-sm-start">@item.Opt_desc</td>
+                            <td class="text-sm-center">@item.Op_fecha.ToShortDateString()</td>
+                            <td class="text-sm-end">@item.Op_importe</td>
+                        </tr>
+                    }
+
+                </tbody>
+            </table>
+        </div>       
+    </div>
+</div>
