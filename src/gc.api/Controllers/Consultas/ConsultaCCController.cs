@@ -171,7 +171,55 @@ namespace gc.api.Controllers.Consultas
             var fh = new DateTime(fecH);
 
             var regs = _consSv.ConsultaOrdenesDePagoProveedor(ctaId, fd, fh, tipoOP, userId);
-            return Ok(new ApiResponse<List<ConsPagosDto>>(regs));
+            return Ok(new ApiResponse<List<ConsOrdPagosDto>>(regs));
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult ConsultaOrdenesDePagoProveedorDetalle(string cmptId)
+        {
+            if (string.IsNullOrEmpty(cmptId))
+            {
+                return BadRequest("No se recepcionó ninguna comprobante");
+            }
+          
+
+            var regs = _consSv.ConsultaOrdenesDePagoProveedorDetalle(cmptId);
+            return Ok(new ApiResponse<List<ConsOrdPagosDetDto>>(regs));
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult ConsultaRecepcionProveedor(string ctaId, long fecD, long fecH, string admId)
+        {
+            if (string.IsNullOrEmpty(ctaId))
+            {
+                return BadRequest("No se recepcionó ninguna cuenta");
+            }
+            if (fecH < fecD)
+            {
+                return BadRequest("No se ha especificado correctamente el intervalo de tiempo desde hasta");
+            }
+    
+            var fd = new DateTime(fecD);
+            var fh = new DateTime(fecH);
+
+            var regs = _consSv.ConsultaRecepcionProveedor(ctaId, fd, fh, admId);
+            return Ok(new ApiResponse<List<ConsRecepcionProveedorDto>>(regs));
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult ConsultaRecepcionProveedorDetalle(string cmptId)
+        {
+            if (string.IsNullOrEmpty(cmptId))
+            {
+                return BadRequest("No se recepcionó ninguna comprobante");
+            }
+
+
+            var regs = _consSv.ConsultaRecepcionProveedorDetalle(cmptId);
+            return Ok(new ApiResponse<List<ConsRecepcionProveedorDetalleDto>>(regs));
         }
     }
 }

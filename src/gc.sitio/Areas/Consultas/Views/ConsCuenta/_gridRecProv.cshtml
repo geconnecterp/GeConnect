@@ -1,0 +1,56 @@
+﻿@model GridCore<ConsRecepcionProveedorDto>
+
+@{
+    var alt = true;
+    string clase = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive text-nowrap  table-wrapper-200">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridRpProv">
+                <thead class="table-dark">
+                    <tr class="header">
+                        <th scope="col">RP N°</th>
+                        <th scope="col">Fecha</th>
+                        <th scope="col">Cmpte RP</th>
+                        <th scope="col">Cmpte CtaCte</th>
+                        <th scope="col">Sucursal</th>
+                        <th scope="col">OC</th>
+                        <th scope="col">Ctl</th>
+                        <th scope="col">Fac</th>
+                        <th scope="col">Val</th>
+                        <th scope="col">Mod</th>
+                        <th scope="col">Col</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ListaDatos)
+                    {
+                        if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+                        <tr class="@clase" onclick="SeleccionarPeriodo(this,'tbGridRpProv')">
+                            <td class="text-sm-center">@item.Rp_compte</td>
+                            <td class="text-sm-start">@item.Rp_fecha.ToShortDateString()</td>
+                            @{
+                                string cmpte = $"({item.Tco_id_rp}){item.Cm_compte_rp}";
+                                string cctacte = $"({item.Tco_id}){item.Cm_compte}";
+                            }
+                            <td class="text-sm-center">@cmpte</td>
+                            <td class="text-sm-end">@cctacte</td>
+                            <td class="text-sm-end">@item.Adm_nombre</td>
+                            <td class="text-sm-end">@item.Orden_de_compra</td>
+                            <td class="text-sm-center">@item.Controlada</td>
+                            <td class="text-sm-center">@item.Factura</td>
+                            <td class="text-sm-center">@item.Valorizada</td>
+                            <td class="text-sm-center">@item.Modificada</td>
+                            <td class="text-sm-center">@item.Colector</td>
+
+                        </tr>
+                    }
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

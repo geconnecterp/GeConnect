@@ -6,6 +6,7 @@ using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.Users;
 using Microsoft.Data.SqlClient;
 using System.Diagnostics.Metrics;
+using System.Security.Claims;
 
 namespace gc.api.core.Servicios
 {
@@ -42,12 +43,7 @@ namespace gc.api.core.Servicios
             List<ConsCompTotDto> res = _repository.EjecutarLstSpExt<ConsCompTotDto>(sp, ps, true);
             return res;
         }
-
-        public List<ConsPagosDto> ConsultaOrdenesDePagoProveedor(string ctaId, DateTime fd, DateTime fh, string tipoOP, string userId)
-        {
-            throw new NotImplementedException();
-        }
-
+      
         public List<ConsCtaCteDto> ConsultarCuentaCorriente(string ctaId, DateTime fechaD, string userId, int pag, int regs)
         {
             var sp = ConstantesGC.StoredProcedures.SP_CONS_CTACTE;
@@ -74,6 +70,58 @@ namespace gc.api.core.Servicios
             };
 
             List<ConsVtoDto> res = _repository.EjecutarLstSpExt<ConsVtoDto>(sp, ps, true);
+            return res;
+        }
+
+        public List<ConsOrdPagosDto> ConsultaOrdenesDePagoProveedor(string ctaId, DateTime fd, DateTime fh, string tipoOP, string userId)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_CONS_OPAGO_PROVEEDORES;
+            var ps = new List<SqlParameter>() {
+                new SqlParameter("@cta_id",ctaId) ,
+                new SqlParameter("@fecha_d",fd),
+                new SqlParameter("@fecha_h",fh),
+                new SqlParameter("@opt_id",tipoOP),
+                new SqlParameter("@usu_id",userId),
+            };
+
+            List<ConsOrdPagosDto> res = _repository.EjecutarLstSpExt<ConsOrdPagosDto>(sp, ps, true);
+            return res;
+        }
+
+        public List<ConsOrdPagosDetDto> ConsultaOrdenesDePagoProveedorDetalle(string cmptId)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_CONS_OPAGO_PROVEEDORES_DET;
+            var ps = new List<SqlParameter>() {
+                new SqlParameter("@op_compte",cmptId) ,
+               
+            };
+
+            List<ConsOrdPagosDetDto> res = _repository.EjecutarLstSpExt<ConsOrdPagosDetDto>(sp, ps, true);
+            return res;
+        }
+
+        public List<ConsRecepcionProveedorDto> ConsultaRecepcionProveedor(string ctaId, DateTime fd, DateTime fh, string admId)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_CONS_RECEPCIONES_PROV;
+            var ps = new List<SqlParameter>() {
+                new SqlParameter("@cta_id",ctaId) ,
+                new SqlParameter("@fecha_d",fd),
+                new SqlParameter("@fecha_h",fh),
+                new SqlParameter("@adm_id",admId),
+            };
+
+            List<ConsRecepcionProveedorDto> res = _repository.EjecutarLstSpExt<ConsRecepcionProveedorDto>(sp, ps, true);
+            return res;
+        }
+
+        public List<ConsRecepcionProveedorDetalleDto> ConsultaRecepcionProveedorDetalle(string cmptId)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_CONS_RECEPCIONES_PROV_DET;
+            var ps = new List<SqlParameter>() {
+                new SqlParameter("@op_compte",cmptId) ,
+            };
+
+            List<ConsRecepcionProveedorDetalleDto> res = _repository.EjecutarLstSpExt<ConsRecepcionProveedorDetalleDto>(sp, ps, true);
             return res;
         }
     }

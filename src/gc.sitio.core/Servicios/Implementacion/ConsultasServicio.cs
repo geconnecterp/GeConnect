@@ -12,9 +12,11 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -27,6 +29,11 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string CONS_VTO = "/ConsultaVencimientoComprobantesNoImputados";
         private const string CONS_CMTE_TOT = "/ConsultaComprobantesMeses";
         private const string CONS_CMTE_DET = "/ConsultaComprobantesMesDetalle";
+        private const string CONS_OP_PROV = "/ConsultaOrdenesDePagoProveedor";
+        private const string CONS_OP_PROV_DET = "/ConsultaOrdenesDePagoProveedorDetalle";
+        private const string CONS_REC_PROV = "/ConsultaRecepcionProveedor";
+        private const string CONS_REC_PROV_DET = "/ConsultaRecepcionProveedorDetalle";
+
 
 
 
@@ -144,6 +151,8 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
+        
+
         public async Task<(List<ConsCtaCteDto>,MetadataGrid)> ConsultarCuentaCorriente(string ctaId, long fechaD, string userId,int pagina, int registros, string token)
         {
             try
@@ -197,6 +206,8 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
+       
+
         public async Task<RespuestaGenerica<ConsVtoDto>> ConsultaVencimientoComprobantesNoImputados(string ctaId, long fechaD, long fechaH, string userId, string token)
         {
             try
@@ -248,6 +259,227 @@ namespace gc.sitio.core.Servicios.Implementacion
                 _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
 
                 return new RespuestaGenerica<ConsVtoDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener los comprobantes vencidos de la cuenta." };
+            }
+        }
+
+        public async Task<RespuestaGenerica<ConsOrdPagosDto>> ConsultaOrdenesDePagoProveedor(string ctaId, DateTime fd, DateTime fh, string tipoOP, string userId, string token)
+        {
+            try
+            {
+                ApiResponse<List<ConsOrdPagosDto>> apiResponse;
+                HelperAPI helper = new();
+
+                HttpClient client = helper.InicializaCliente(token);
+                HttpResponseMessage response;
+
+                var fechaD = fd.Ticks;
+                var fechaH = fh.Ticks;
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{CONS_OP_PROV}?ctaId={ctaId}&fecD={fechaD}&fecH={fechaH}&tipoOP={tipoOP}&userId={userId}";
+
+                response = await client.GetAsync(link);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+
+                        return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
+                    }
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ConsOrdPagosDto>>>(stringData);
+
+                    return new RespuestaGenerica<ConsOrdPagosDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
+
+                }
+                else
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    {
+                        return new RespuestaGenerica<ConsOrdPagosDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    {
+                        return new RespuestaGenerica<ConsOrdPagosDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else
+                    {
+                        throw new Exception(error.Detail);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+
+                return new RespuestaGenerica<ConsOrdPagosDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener las ordenes de pago del proveedor." };
+            }
+        }
+
+        public async Task<RespuestaGenerica<ConsOrdPagosDetDto>> ConsultaOrdenesDePagoProveedorDetalle(string cmptId, string token)
+        {
+            try
+            {
+                ApiResponse<List<ConsOrdPagosDetDto>> apiResponse;
+                HelperAPI helper = new();
+
+                HttpClient client = helper.InicializaCliente(token);
+                HttpResponseMessage response;
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{CONS_OP_PROV_DET}?cmptId={cmptId}";
+
+                response = await client.GetAsync(link);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+
+                        return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
+                    }
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ConsOrdPagosDetDto>>>(stringData);
+
+                    return new RespuestaGenerica<ConsOrdPagosDetDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
+
+                }
+                else
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    {
+                        return new RespuestaGenerica<ConsOrdPagosDetDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    {
+                        return new RespuestaGenerica<ConsOrdPagosDetDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else
+                    {
+                        throw new Exception(error.Detail);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+
+                return new RespuestaGenerica<ConsOrdPagosDetDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener el detalle de las ordenes de pago del proveedor." };
+            }
+        }
+        public async Task<RespuestaGenerica<ConsRecepcionProveedorDto>> ConsultaRecepcionProveedor(string ctaId, DateTime fd, DateTime fh, string admId, string token)
+        {
+            try
+            {
+                ApiResponse<List<ConsRecepcionProveedorDto>> apiResponse;
+                HelperAPI helper = new();
+
+                HttpClient client = helper.InicializaCliente(token);
+                HttpResponseMessage response;
+
+                var fechaD = fd.Ticks;
+                var fechaH = fh.Ticks;
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{CONS_REC_PROV}?ctaId={ctaId}&fecD={fechaD}&fecH={fechaH}&admId={admId}";
+
+                response = await client.GetAsync(link);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+
+                        return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
+                    }
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ConsRecepcionProveedorDto>>>(stringData);
+
+                    return new RespuestaGenerica<ConsRecepcionProveedorDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
+
+                }
+                else
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    {
+                        return new RespuestaGenerica<ConsRecepcionProveedorDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    {
+                        return new RespuestaGenerica<ConsRecepcionProveedorDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else
+                    {
+                        throw new Exception(error.Detail);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+
+                return new RespuestaGenerica<ConsRecepcionProveedorDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener las recepciones del proveedor." };
+            }
+        }
+
+        public async Task<RespuestaGenerica<ConsRecepcionProveedorDetalleDto>> ConsultaRecepcionProveedorDetalle(string cmptId, string token)
+        {
+            try
+            {
+                ApiResponse<List<ConsRecepcionProveedorDetalleDto>> apiResponse;
+                HelperAPI helper = new();
+
+                HttpClient client = helper.InicializaCliente(token);
+                HttpResponseMessage response;
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{CONS_REC_PROV_DET}?cmptId={cmptId}";
+
+                response = await client.GetAsync(link);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+
+                        return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
+                    }
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ConsRecepcionProveedorDetalleDto>>>(stringData);
+
+                    return new RespuestaGenerica<ConsRecepcionProveedorDetalleDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
+
+                }
+                else
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    {
+                        return new RespuestaGenerica<ConsRecepcionProveedorDetalleDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    {
+                        return new RespuestaGenerica<ConsRecepcionProveedorDetalleDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else
+                    {
+                        throw new Exception(error.Detail);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+
+                return new RespuestaGenerica<ConsRecepcionProveedorDetalleDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener el detalle de las recepciones del proveedor." };
             }
         }
     }
