@@ -3,6 +3,7 @@
 	$("#chkRel01").prop('checked', true);
 	$("#chkRel01").trigger("change");
 	$("#chkRel01").prop("disabled", true);
+	$("#Rel01").prop("disabled", false);
 	$("input#Rel01").on("click", function () {
 		$("input#Rel01").val("");
 		$("#Rel01Item").val("");
@@ -31,8 +32,30 @@
 	});
 	funcCallBack = BuscarProductos;
 	InicializaPantalla();
+	$("#Rel01").focus();
+	$("#pagEstado").on("change", function () {
+		var div = $("#divPaginacion");
+		presentaPaginacionOC(div);
+	});
 	return true;
 });
+
+function presentaPaginacionOC(div) {
+	div.pagination({
+		items: totalRegs,
+		itemsOnPage: pagRegs,
+		cssStyle: "dark-theme",
+		currentPage: pagina,
+		onPageClick: function (num) {
+			BuscarProductos(num);
+		}
+	});
+	$("#pagEstado").val(false);
+	$("#divFiltro").collapse("hide")
+	return true;
+}
+
+function actualizarProductoEnOC(e) { }
 
 function InicializaPantalla() {
 	var tb = $("#tbListaProducto tbody tr");
@@ -59,8 +82,43 @@ function InicializaPantalla() {
 	$(".activable").prop("disabled", true);
 	$("#chkRel03").prop("disabled", true);
 	//activarBotones(false);
+	ocIdSelected = "";
+	ctaIdSelected = "";
 	CerrarWaiting();
 	return true;
+}
+
+function selectListaProductoRow(x) {
+	if (x) {
+		pIdSeleccionado = x.cells[0].innerText.trim();
+		//BuscarInfoAdicional();
+	}
+	else {
+		pIdSeleccionado = "";
+	}
+}
+
+function ActualizarIconoDeProductos() {
+	if (ocIdSelected !== "") {
+		var ocId = ocIdSelected;
+		data = { ocId }
+		PostGen(data, BuscarDatosDeOCURL, function (obj) {
+			if (obj.error === true) {
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				totalRegs = obj.metadata.totalCount;
+				pags = obj.metadata.totalPages;
+				pagRegs = obj.metadata.pageSize;
+
+				$("#pagEstado").val(true).trigger("change");
+			}
+
+		});
+	}
 }
 
 function BuscarProductos(pag = 1) {
@@ -73,7 +131,7 @@ function BuscarProductos(pag = 1) {
 	var Rel01 = [];
 	var Rel02 = [];
 	var Rel03 = [];
-	$("#Rel01List").children().each(function (i, item) { Rel01.push($(item).val()) });
+	Rel01.push(ctaIdSelected);
 	$("#Rel02List").children().each(function (i, item) { Rel02.push($(item).val()) });
 	$("#Rel03List").children().each(function (i, item) {
 		var aux = { Id: $(item).val(), Descripcion: $(item).text() };
@@ -94,7 +152,7 @@ function BuscarProductos(pag = 1) {
 	var data2 = { sort, sortDir, Pagina, buscaNew }
 	var data1 = { Tipo, Buscar, Id, Id2, Rel01, Rel02, Rel03, Opt1, Opt2, Opt3, Opt4, Opt5 };
 	var data = $.extend({}, data1, data2);
-	PostGenHtml(data, BuscarProductos, function (obj) {
+	PostGenHtml(data, BuscarProductosURL, function (obj) {
 		$("#divListaProducto").html(obj);
 		$("#divDetalle").collapse("show");
 		//addInCellEditHandler();
@@ -118,6 +176,9 @@ function BuscarProductos(pag = 1) {
 			}
 
 		});
+		if (ocIdSelected !== "") {
+			ActualizarIconoDeProductos();
+		}
 		CerrarWaiting();
 		viendeDesdeBusquedaDeProducto = false;
 		return true
@@ -144,6 +205,7 @@ $("#Rel01").autocomplete({
 	},
 	minLength: 3,
 	select: function (event, ui) {
+		ctaIdSelected = ui.item.id;
 		$("#Rel01List").empty();
 		$("#Rel01Item").val(ui.item.id);
 		var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
@@ -223,6 +285,7 @@ $("#Rel04").autocomplete({
 			var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
 			$("#Rel04List").append(opc);
 		}
+		ocIdSelected = ui.item.id;
 		return true;
 	}
 });

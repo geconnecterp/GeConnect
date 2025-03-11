@@ -80,13 +80,13 @@
 			</div>
 		</div>
 	</div>
-	<div class="row">
+@* 	<div class="row">
 		<div id="divGrilla">
 			<p style="background-color:gray">
 				<h5>No se han especificado datos aún.</h5>
 			</p>
 		</div>
-	</div>
+	</div> *@
 	<div class="row">
 		<div class="offset-md-3 col-md-6">
 			<div id="divPaginacion" class="">
@@ -104,6 +104,9 @@
 		var pagina = 1;
 		var search = "";
 		var funcCallBack = "BuscarProductos";
+		var pIdSeleccionado = "";
+		var ctaIdSelected = "";
+		var ocIdSelected = "";
 		var buscarFamiliaDesdeProveedorSeleccionadoUrl = "@Url.Action("BuscarFamiliaDesdeProveedorSeleccionado", "ordendecompra", new { area = "Compras" })";
 		var buscarOCDesdeProveedorSeleccionadoUrl = "@Url.Action("CargarOCDesdeProveedorSeleccionado", "ordendecompra", new { area = "Compras" })";
 		var autoComRel01Url = "@Url.Action("BuscarProvs", "ordendecompra", new { area = "Compras" })";
@@ -111,6 +114,8 @@
 		var autoComRel03Url = "@Url.Action("BuscarFlias", "ordendecompra", new { area = "Compras" })";
 		var autoComRel04Url = "@Url.Action("BuscarOCPendientes", "ordendecompra", new { area = "Compras" })";
 		var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "ordendecompra", new { area = "Compras" })";
+		var BuscarProductosURL = "@Url.Action("BuscarProductos", "ordendecompra", new { area = "Compras" })";
+		var BuscarDatosDeOCURL = "@Url.Action("BuscarDatosDeOC", "ordendecompra", new { area = "Compras" })";
 	</script>
 	<script src="~/js/plugins/jquery.simplePagination.js"></script>
 	<script src="~/js/app/areas/ordendecompra/ordendecompra.js"></script>

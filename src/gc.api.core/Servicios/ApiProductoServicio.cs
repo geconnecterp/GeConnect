@@ -795,6 +795,23 @@ namespace gc.api.core.Servicios
 			List<OrdenDeCompraListDto> respuesta = _repository.EjecutarLstSpExt<OrdenDeCompraListDto>(sp, ps, true);
 			return respuesta;
 		}
+		public List<ProductoParaOcDto> CargarProductosDeOC(CargarProductoParaOcRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OC_Carga_Detalle;
+			var ps = new List<SqlParameter>()
+			{
+				new("@cta_id",request.Cta_Id),
+				new("@adm_id",request.Adm_Id),
+				new("@usu_id",request.Usu_Id),
+				new("@nueva",request.Nueva),
+				new("@oc_compte",request.Oc_Compte),
+			};
+			ps.Add(new SqlParameter("@registros", request.Registros));
+			ps.Add(new SqlParameter("@pagina", request.Pagina));
+			ps.Add(new SqlParameter("@ordenar", string.IsNullOrEmpty(request.Sort) ? "p_id" : request.Sort));
+			List<ProductoParaOcDto> respuesta = _repository.EjecutarLstSpExt<ProductoParaOcDto>(sp, ps, true);
+			return respuesta;
+		}
 		public List<ProductoNCPIDto> NCPICargarListaDeProductos(NCPICargarListaDeProductosRequest request)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OC_Productos;

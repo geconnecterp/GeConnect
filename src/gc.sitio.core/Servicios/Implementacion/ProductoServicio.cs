@@ -113,6 +113,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string OC_Productos_Pag = "/NCPICargarListaDeProductosPag";
 		private const string OC_Productos_Pag2 = "/NCPICargarListaDeProductosPag2";
 		private const string OC_Cargar_Pedido = "/NCPICargaPedido";
+		private const string OC_Cargar_Detalle = "/CargarProductosDeOC";
 
 		private const string OC_Cargar_Lista = "/CargarOrdenesDeCompraList";
 
@@ -2290,6 +2291,39 @@ namespace gc.sitio.core.Servicios.Implementacion
 				throw;
 			}
 			
+		}
+
+		//TODO : llamar este servicioo desde el controller para cargar los items de la OC (detalle, de la segunda solapa)
+		public async Task<List<ProductoParaOcDto>> CargarProductosDeOC(CargarProductoParaOcRequest req, string token)
+		{
+			ApiResponse<List<ProductoParaOcDto>> apiResponse;
+
+			HelperAPI helper = new();
+			CargarProductoParaOcRequest request = req;
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{OC_Cargar_Detalle}";
+
+			response = await client.PostAsync(link, contentData);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros Oc_Compte:{req.Oc_Compte} admId:{req.Adm_Id} usu_id:{req.Usu_Id}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProductoParaOcDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
 		}
 	}
 }

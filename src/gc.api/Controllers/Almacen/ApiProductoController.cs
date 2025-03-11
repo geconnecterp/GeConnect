@@ -879,6 +879,19 @@ namespace gc.api.Controllers.Almacen
         }
 
 		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoParaOcDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult CargarProductosDeOC(CargarProductoParaOcRequest request)
+		{
+			ApiResponse<List<ProductoParaOcDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.CargarProductosDeOC(request);
+			response = new ApiResponse<List<ProductoParaOcDto>>(res);
+			return Ok(response);
+		}
+
+		[HttpPost]
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoNCPIDto>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]

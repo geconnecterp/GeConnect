@@ -18,16 +18,10 @@
 				<th style="width:5%;" class="col-header-small align-center tiny-row">OC Pend</th>
 				<th style="width:5%;" class="col-header-small align-center tiny-row">Stock Suc</th>
 				<th style="width:5%;" class="col-header-small align-center tiny-row">Stock Tot</th>
-				<th style="width:0%; display:none;" class="col-header-small align-center tiny-row">Stock a Facturar</th>
 				<th style="width:5%;" class="col-header-small align-center tiny-row">Unidad Pres.</th>
 				<th style="width:5%;" class="col-header-small align-center tiny-row">Unidad Pallet</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Pedido Bultos</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Pedido Cantidad</th>
 				<th style="width:5%;" class="col-header-small align-center tiny-row">Precio Costo</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Total Costo</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Total Pallet</th>
-				<th style="width:0%; display:none;">pg_id</th>
-				<th style="width:0%; display:none;">rub_id</th>
+				<th style="width:0.1%;" class="col-header-small align-center tiny-row">Carro</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -62,26 +56,10 @@
 					}
 					<td class="align-right tiny-row">@item.stk_suc</td>
 					<td class="align-right tiny-row">@item.stk</td>
-					<td style="display:none;">@item.stk_suc_comprometido</td>
 					<td class="align-right tiny-row">@item.p_unidad_pres</td>
 					<td class="align-right tiny-row">@item.p_unidad_palet</td>
-					@if (item.pedido == 0)
-					{
-						<td id="tdPedido" contenteditable='true' style="text-align: right;padding: 0.325rem 0.30rem;border-style: inset;border-width: medium;" onfocusin="focusOnTdPedido(this);">@item.pedido</td>
-						<td class="align-right tiny-row">@item.cantidad</td>
-						<td class="align-right tiny-row">@item.costo</td>
-						<td class="align-right tiny-row">@item.costo_total</td>
-					}
-					else
-					{
-						<td id="tdPedido" contenteditable='true' style="text-align: right;padding: 0.325rem 0.30rem;border-style: inset;border-width: medium;background-color: lightgreen;" onfocusin="focusOnTdPedido(this);">@item.pedido</td>
-						<td class="align-right tiny-row" style="background-color: lightgreen;">@item.cantidad</td>
-						<td class="align-right tiny-row" style="background-color: lightgreen;">@item.costo</td>
-						<td class="align-right tiny-row" style="background-color: lightgreen;">@item.costo_total</td>
-					}
-					<td class="align-right tiny-row">@item.paletizado</td>
-					<td style="display:none;">@item.pg_id</td>
-					<td style="display:none;">@item.rub_id</td>
+					<td class="align-right tiny-row">@item.costo</td>
+					<td><a class="btn btn-xs btn-outline-success" data-interaction="@item.p_id" onclick="actualizarProductoEnOC(this);"> <i class="bx bx-cart-alt"></i></a></td>
 				</tr>
 			}
 		</tbody>
@@ -93,7 +71,5 @@
 		var pedido = "";
 		var pIdEditado = "";
 		var rowIndex = 0;
-		var CargaPedidoOCPIURL = "@Url.Action("CargaPedidoOCPI", "ndecypi", new { area = "Compras" })";
 	</script>
-	<script src="~/js/app/areas/ndecypi/nc.js"></script>
 }
