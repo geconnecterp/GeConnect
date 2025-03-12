@@ -74,7 +74,8 @@ namespace gc.api.infra.Datos.Implementacion
             SqlCommand cmd = new SqlCommand()
             {
                 Connection = cnn,
-                CommandType = commandType
+                CommandType = commandType,
+                CommandTimeout = 180
             };
             if (manejador.sqlTransaction != null)
                 cmd.Transaction = manejador.sqlTransaction;

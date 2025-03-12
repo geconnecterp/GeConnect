@@ -22,7 +22,6 @@
                 <thead class="table-dark">
                     <tr class="header">
                         <th scope="col">FECHA</th>
-                        <th scope="col">TIPO Cmpte</th>
                         <th scope="col">N° Cmpte</th>
                         <th scope="col">Neto</th>
                         <th scope="col">IVA</th>
@@ -56,22 +55,24 @@
                             ft_tot += item.Cm_total;
                         }
                         <tr class="@clase" >
-                            <td class="text-sm-center">@item.Cm_fecha</td>
-                            <td class="text-sm-center">@item.Tco_id</td>
-                            <td class="text-sm-end">@item.Cm_compte</td>
+                            <td class="text-sm-center">@item.Cm_fecha.ToShortDateString()</td>
+                            @{
+                                string cmpt = $"({item.Tco_id}){item.Cm_compte}";
+                            }
+                            <td class="text-sm-end">@cmpt</td>
                             <td class="text-sm-end">@item.Cm_neto</td>
                             <td class="text-sm-end">@item.Cm_iva</td>
                             <td class="text-sm-end">@item.Cm_total</td>
                             @if(provId.Equals('P')){
                                 <td class="text-sm-end">@item.Op_compte</td>
-                                string cmptOrig = $"{item.Tco_id_ori} {item.Cm_compte_ori}";
-                                <td class="text-sm-end">@cmptOrig</td>
+                                <td class="text-sm-end">@cmpt</td>
                             }
                             else{
                                 <td class="text-sm-end">@item.Doc_compte</td>
-                                <td class="text-sm-end">@item.Cm_compte_ori</td>
+                                cmpt = $"({item.Tco_id_ori}){item.Cm_compte_ori}";
+                                <td class="text-sm-end">@cmpt</td>
                             }
-                            <td class="text-sm-end">????</td>
+                            <td class="text-sm-center">@item.Cm_fecha_carga.ToShortDateString()</td>
                             <td class="text-sm-end">@item.Usu_id</td>
                         </tr>
                     }

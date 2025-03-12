@@ -22,6 +22,7 @@ $(function () {
             $("#Rel01List").prop("disabled", true).empty();
             ocultarTabsConsulta();
             window["inicializaCtrl" + nnControlCta01]();
+            inicializaPantallaConsulta();
         }
     });
 
@@ -130,7 +131,7 @@ $(function () {
     });
 
 
-    $("#btnCancel").on("click",)
+    /*$("#btnCancel").on("click",)*/
 
     inicializaPantallaConsulta();
     $("#divFiltro").collapse("show");
@@ -149,10 +150,21 @@ function inicializaPantallaConsulta() {
     $("#opfechaH").val(formatoFechaYMD(f));
     $("#rpfechaH").val(formatoFechaYMD(f));
 
+    $("#divpanel01").empty();
+    $("#divPaginacion").empty();
+    $("#divpanel02").empty();
+    $("#divCmpteTot").empty().html("<span class='text - danger'>SIN REGISTROS</span>");
+    $("#divCmpteDet").empty().html("<span class='text - danger'>SIN REGISTROS</span>");
+    $("#divOpProv").empty().html("<span class='text - danger'>SIN REGISTROS</span>");
+    $("#divOpProvDet").empty().html("<span class='text - danger'>SIN REGISTROS</span>");
+    $("#divRpProv").empty().html("<span class='text - danger'>SIN REGISTROS</span>");
+    $("#divRpProvDet").empty().html("<span class='text - danger'>SIN REGISTROS</span>");
+    $("#BtnLiTab01").trigger("click");
 }
 
 function presentarTabsConsulta() {
     $("#consPaneles").show("fast");
+    inicializaPantallaConsulta();
 }
 function ocultarTabsConsulta() {
     $("#consPaneles").hide("fast");

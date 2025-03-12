@@ -118,7 +118,7 @@ namespace gc.api.core.Servicios
         {
             var sp = ConstantesGC.StoredProcedures.SP_CONS_RECEPCIONES_PROV_DET;
             var ps = new List<SqlParameter>() {
-                new SqlParameter("@op_compte",cmptId) ,
+                new SqlParameter("@rp_compte",cmptId) ,
             };
 
             List<ConsRecepcionProveedorDetalleDto> res = _repository.EjecutarLstSpExt<ConsRecepcionProveedorDetalleDto>(sp, ps, true);

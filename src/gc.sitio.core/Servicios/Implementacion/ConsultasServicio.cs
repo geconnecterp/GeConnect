@@ -311,6 +311,12 @@ namespace gc.sitio.core.Servicios.Implementacion
                     }
                 }
             }
+            catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+
+                return new RespuestaGenerica<ConsOrdPagosDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener las recepciones del proveedor. La Solicitud ha excedido el tiempo de espera." };
+            }
             catch (Exception ex)
             {
                 _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
@@ -365,6 +371,12 @@ namespace gc.sitio.core.Servicios.Implementacion
                     }
                 }
             }
+            catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+
+                return new RespuestaGenerica<ConsOrdPagosDetDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener las recepciones del proveedor. La Solicitud ha excedido el tiempo de espera." };
+            }
             catch (Exception ex)
             {
                 _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
@@ -380,6 +392,10 @@ namespace gc.sitio.core.Servicios.Implementacion
                 HelperAPI helper = new();
 
                 HttpClient client = helper.InicializaCliente(token);
+                #region Configuración especifica para del timeout en la llamada
+                client.Timeout = TimeSpan.FromMinutes(3);
+                #endregion
+
                 HttpResponseMessage response;
 
                 var fechaD = fd.Ticks;
@@ -421,6 +437,12 @@ namespace gc.sitio.core.Servicios.Implementacion
                     }
                 }
             }
+            catch(TaskCanceledException ex) when(ex.InnerException is TimeoutException)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+
+                return new RespuestaGenerica<ConsRecepcionProveedorDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener las recepciones del proveedor. La Solicitud ha excedido el tiempo de espera." };
+            }
             catch (Exception ex)
             {
                 _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
@@ -437,6 +459,8 @@ namespace gc.sitio.core.Servicios.Implementacion
                 HelperAPI helper = new();
 
                 HttpClient client = helper.InicializaCliente(token);
+                client.Timeout = TimeSpan.FromMinutes(3);
+
                 HttpResponseMessage response;
 
                 var link = $"{_appSettings.RutaBase}{RutaAPI}{CONS_REC_PROV_DET}?cmptId={cmptId}";
@@ -474,6 +498,12 @@ namespace gc.sitio.core.Servicios.Implementacion
                         throw new Exception(error.Detail);
                     }
                 }
+            }
+            catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+
+                return new RespuestaGenerica<ConsRecepcionProveedorDetalleDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener las recepciones del proveedor. La Solicitud ha excedido el tiempo de espera." };
             }
             catch (Exception ex)
             {
