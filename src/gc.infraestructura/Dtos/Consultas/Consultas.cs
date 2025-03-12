@@ -64,7 +64,7 @@ namespace gc.infraestructura.Dtos.Consultas
         public string Cm_nombre { get; set; } = string.Empty;
         public string Cm_domicilio { get; set; } = string.Empty;
         public string Cm_cuit { get; set; } = string.Empty;
-        public string Cm_fecha { get; set; } = string.Empty;
+        public DateTime Cm_fecha { get; set; } 
         public string Cm_libro_iva { get; set; } = string.Empty;
         public decimal Cm_gravado { get; set; }
         public decimal Cm_no_gravado { get; set; }
@@ -82,6 +82,7 @@ namespace gc.infraestructura.Dtos.Consultas
         public string Cm_compte_ori { get; set; } = string.Empty;
         public string Op_compte { get; set; } = string.Empty;
         public string Rp_compte { get; set; } = string.Empty;
+        public DateTime Cm_fecha_carga { get; set; } 
 
     }
 
@@ -143,7 +144,7 @@ namespace gc.infraestructura.Dtos.Consultas
         public string Tco_id { get; set; } = string.Empty;
         public string Cm_compte { get; set; } = string.Empty;
         public string Dia_movi { get; set; } = string.Empty;
-        public string Orden_de_compra { get; set; } = string.Empty;
+        public string Oc_compte { get; set; } = string.Empty;
         public bool Controlada{ get; set; }
         public bool Factura{ get; set; }
         public bool Valorizada{ get; set; }
@@ -169,14 +170,14 @@ namespace gc.infraestructura.Dtos.Consultas
         public string Cm_compte_rp { get; set; } = string.Empty;
         public DateTime Cm_fecha_rp { get; set; }
         public decimal Cm_importe_rp { get; set; }
-        public string Op_compte { get; set; } = string.Empty;
+        public string Oc_compte { get; set; } = string.Empty;
         public string Cm_compte { get; set; }=string.Empty;
         public string Dia_movi { get; set; } = string.Empty;
         public int Rpd_item { get; set; }
         public string P_id { get; set; }= string.Empty;
         public string P_desc { get; set; } = string.Empty;
         public int Rpd_unidad_pres { get; set; }
-        public int Rpd_unidad_x_bulto { get; set; }
+        //public int Rpd_unidad_x_bulto { get; set; }
         public int Rpd_bulto_compte { get; set; }
         public decimal Rpd_unidad_suelta_compte { get; set; }
         public decimal Rpd_cantidad_compte { get; set; }

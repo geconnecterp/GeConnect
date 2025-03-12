@@ -39,12 +39,28 @@
                             <td class="text-sm-center">@cmpte</td>
                             <td class="text-sm-end">@cctacte</td>
                             <td class="text-sm-end">@item.Adm_nombre</td>
-                            <td class="text-sm-end">@item.Orden_de_compra</td>
-                            <td class="text-sm-center">@item.Controlada</td>
-                            <td class="text-sm-center">@item.Factura</td>
-                            <td class="text-sm-center">@item.Valorizada</td>
-                            <td class="text-sm-center">@item.Modificada</td>
-                            <td class="text-sm-center">@item.Colector</td>
+                            <td class="text-sm-end">@item.Oc_compte</td>
+                            <td class="text-sm-center">@if (item.Controlada) { <i class="bx bx-check text-success"></i> }</td>
+                            <td class="text-sm-center">
+                                @if (item.Factura)
+                                {
+                                    <i class="bx bx-check text-danger"></i>
+                                }</td>
+                            <td class="text-sm-center">
+                                @if (item.Valorizada)
+                                {
+                                    <i class="bx bx-check text-primary"></i>
+                                }</td>
+                            <td class="text-sm-center">
+                                @if (item.Modificada)
+                                {
+                                    <i class="bx bx-check text-info"></i>
+                                }</td>
+                            <td class="text-sm-center">
+                                @if (item.Colector)
+                                {
+                                    <i class="bx bx-check text-secondary"></i>
+                                }</td>
 
                         </tr>
                     }
