@@ -31,11 +31,11 @@
 					<td class="align-center tiny-row">@item.p_id</td>
 					@if (item.p_activo == "D")
 					{
-						<td class="align-left tiny-row">@item.p_desc<span style="float:right;" title="Producto discontínuo"><i class="bx bx-dislike"></i></span></td>
+						<td class="align-left tiny-row" style="text-overflow:ellipsis;">@item.p_desc<span style="float:right;" title="Producto discontínuo"><i class="bx bx-dislike"></i></span></td>
 					}
 					else
 					{
-						<td class="align-left tiny-row">@item.p_desc</td>
+						<td class="align-left tiny-row" style="text-overflow:ellipsis;">@item.p_desc</td>
 					}
 					<td class="align-center tiny-row">@item.p_id_prov</td>
 					@if (item.pi_pendiente == 0)
@@ -59,11 +59,17 @@
 					<td class="align-right tiny-row">@item.p_unidad_pres</td>
 					<td class="align-right tiny-row">@item.p_unidad_palet</td>
 					<td class="align-right tiny-row">@item.costo</td>
-					<td><a class="btn btn-xs btn-outline-success" data-interaction="@item.p_id" onclick="actualizarProductoEnOC(this);"> <i class="bx bx-cart-alt"></i></a></td>
+					<td><a class="btn btn-xs btn-outline-success" data-interaction="@item.p_id" onclick="actualizarProducto(this);"> <i class="bx bx-cart-alt"></i></a></td>
 				</tr>
 			}
 		</tbody>
 	</table>
+	<div class="row">
+		<div class="offset-md-3 col-md-6">
+			<div id="divPaginacion" class="">
+			</div>
+		</div>
+	</div>
 </div>
 
 @section scripts {

@@ -16,6 +16,8 @@
 		$("#chkRel03").trigger("change");
 		$("#chkRel04").prop('checked', false);
 		$("#chkRel04").trigger("change");
+		$("input#Rel03").prop("disabled", true);
+		$("input#Rel04").prop("disabled", true);
 	});
 	$("input#Rel03").on("click", function () {
 		$("input#Rel03").val("");
@@ -26,10 +28,20 @@
 		$("#Rel04Item").val("");
 	});
 	$("#btnBuscar").on("click", function () {
-		dataBak = "";
-		pagina = 1;
-		BuscarProductos(pagina);
+		if (ctaIdSelected == "") {
+			AbrirMensaje("ATENCIÓN", "Debe seleccionar una cuenta.", function () {
+				$("#msjModal").modal("hide");
+				$("input#Rel01").focus();
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			dataBak = "";
+			pagina = 1;
+			BuscarProductos(pagina);
+		}
 	});
+
 	funcCallBack = BuscarProductos;
 	InicializaPantalla();
 	$("#Rel01").focus();
@@ -39,6 +51,22 @@
 	});
 	return true;
 });
+
+function focusOnTd(x) {
+	var cell = x;
+	var range, selection;
+	if (document.body.createTextRange) {
+		range = document.body.createTextRange();
+		range.moveToElementText(cell);
+		range.select();
+	} else if (window.getSelection) {
+		selection = window.getSelection();
+		range = document.createRange();
+		range.selectNodeContents(cell);
+		selection.removeAllRanges();
+		selection.addRange(range);
+	}
+}
 
 function presentaPaginacionOC(div) {
 	div.pagination({
@@ -54,6 +82,9 @@ function presentaPaginacionOC(div) {
 	$("#divFiltro").collapse("hide")
 	return true;
 }
+
+
+function actualizarProducto(e) { }
 
 function actualizarProductoEnOC(e) { }
 
@@ -81,9 +112,13 @@ function InicializaPantalla() {
 	//$("#IdSelected").val("");
 	$(".activable").prop("disabled", true);
 	$("#chkRel03").prop("disabled", true);
+	$("#btnAbmAceptar").hide();
+	$("#btnAbmCancelar").hide();
+	$("#btnDetalle").prop("disabled", true);
 	//activarBotones(false);
 	ocIdSelected = "";
 	ctaIdSelected = "";
+	MostrarDatosDeCuenta(false);
 	CerrarWaiting();
 	return true;
 }
@@ -98,27 +133,30 @@ function selectListaProductoRow(x) {
 	}
 }
 
-function ActualizarIconoDeProductos() {
-	if (ocIdSelected !== "") {
-		var ocId = ocIdSelected;
-		data = { ocId }
-		PostGen(data, BuscarDatosDeOCURL, function (obj) {
-			if (obj.error === true) {
-				AbrirMensaje("ATENCIÓN", obj.msg, function () {
-					$("#msjModal").modal("hide");
-					return true;
-				}, false, ["Aceptar"], "error!", null);
-			}
-			else {
-				totalRegs = obj.metadata.totalCount;
-				pags = obj.metadata.totalPages;
-				pagRegs = obj.metadata.pageSize;
+function selectListaProductoRowOC(x) { }
 
-				$("#pagEstado").val(true).trigger("change");
-			}
-
-		});
+function BuscarProductosTabOC() {
+	
+	if (ocIdSelected && ocIdSelected != "") {
+		$("#btnTabNuevaOC").text(ocIdSelected);
 	}
+	else {
+		$("#btnTabNuevaOC").text("Nueva OC");
+	}
+	var ocCompte = ocIdSelected;
+	var ctaId = ctaIdSelected;
+	data = { ctaId, ocCompte }
+	PostGenHtml(data, BuscarProductosTabOCURL, function (obj) {
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			$("#divListaProductoNuevaOC").html(obj);
+		}
+	});
 }
 
 function BuscarProductos(pag = 1) {
@@ -176,13 +214,28 @@ function BuscarProductos(pag = 1) {
 			}
 
 		});
-		if (ocIdSelected !== "") {
-			ActualizarIconoDeProductos();
-		}
+		BuscarProductosTabOC();
+		$("#btnAbmAceptar").show();
+		$("#btnAbmCancelar").show();
+		$("#btnDetalle").prop("disabled", false);
+		MostrarDatosDeCuenta(true);
 		CerrarWaiting();
 		viendeDesdeBusquedaDeProducto = false;
 		return true
 	});
+}
+
+function MostrarDatosDeCuenta(mostrar) {
+	if (mostrar) {
+		$("#CtaID").val(ctaIdSelected);
+		$("#CtaDesc").val(ctaDescSelected);
+		$("#divProveedorSeleccionado").collapse("show");
+	}
+	else {
+		$("#CtaID").val("");
+		$("#CtaDesc").val("");
+		$("#divProveedorSeleccionado").collapse("hide");
+	}
 }
 
 $("#Rel01").autocomplete({
@@ -206,6 +259,7 @@ $("#Rel01").autocomplete({
 	minLength: 3,
 	select: function (event, ui) {
 		ctaIdSelected = ui.item.id;
+		ctaDescSelected = ui.item.value;
 		$("#Rel01List").empty();
 		$("#Rel01Item").val(ui.item.id);
 		var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"

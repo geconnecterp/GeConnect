@@ -10,7 +10,7 @@ namespace gc.infraestructura.Dtos.Almacen
 		public string Cta_Denominacion { get; set; } = string.Empty;
 		public string Pg_Id { get; set; } = string.Empty;
 		public string Pg_Desc { get; set; } = string.Empty;
-		public int P_Orden_Pg { get; set; }
+		public int? P_Orden_Pg { get; set; }
 		public string Rub_Id { get; set; } = string.Empty;
 		public string Rub_Desc { get; set; } = string.Empty;
 		public string Up_Id { get; set; } = string.Empty;
@@ -31,8 +31,11 @@ namespace gc.infraestructura.Dtos.Almacen
 		public decimal In_Alicuota { get; set; } = 0.00M;
 		public decimal P_Pcosto { get; set; } = 0.0000M;
 		public int Bonificados { get; set; }
+		public decimal Pedido_Mas_Boni { get; set; } = 0.0000M;
 		public decimal Cantidad_Total { get; set; } = 0.000M;
 		public decimal P_Pcosto_Total { get; set; } = 0.0000M;
 		public decimal Paletizado { get; set; } = 0.00M;
+		public decimal Stk { get; set; } = 0.000M;
+		public decimal Stk_Suc { get; set; } = 0.000M;
 	}
 }

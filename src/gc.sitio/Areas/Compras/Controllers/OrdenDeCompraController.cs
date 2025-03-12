@@ -9,22 +9,21 @@ using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using gc.sitio.Areas.Compras.Models;
 
 namespace gc.sitio.Areas.Compras.Controllers
 {
 	[Area("Compras")]
-	public class OrdenDeCompraController : ControladorBase
+	public class OrdenDeCompraController : OrdenDeCompraControladorBase
 	{
-		private readonly AppSettings _appSettings;
-		private readonly ILogger<OrdenDeCompraController> _logger;
+		private readonly AppSettings _settings;
 		private readonly ICuentaServicio _cuentaServicio;
 		private readonly IRubroServicio _rubroServicio;
 		private readonly IProductoServicio _productoServicio;
 		public OrdenDeCompraController(ICuentaServicio cuentaServicio, IRubroServicio rubroServicio, IProductoServicio productoServicio, ILogger<OrdenDeCompraController> logger,
-									   IOptions<AppSettings> options, IHttpContextAccessor context) : base(options, context)
+									   IOptions<AppSettings> options, IHttpContextAccessor context) : base(options, context, logger)
 		{
-			_logger = logger;
-			_appSettings = options.Value;
+			_settings = options.Value;
 			_cuentaServicio = cuentaServicio;
 			_rubroServicio = rubroServicio;
 			_productoServicio = productoServicio;
@@ -68,12 +67,23 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> BuscarProductos(NCPICargarListaDeProductos2Request request)
 		{
-			var model = new GridCore<ProductoNCPIDto>();
 			MetadataGrid metadata;
 			GridCore<ProductoNCPIDto> grillaDatos;
 			try
 			{
-				request.Registros = _appSettings.NroRegistrosPagina;
+				if (request.Rel01 == null || request.Rel01.Count <= 0)
+				{
+					RespuestaGenerica<EntidadBase> response = new()
+					{
+						Ok = false,
+						EsError = true,
+						EsWarn = false,
+						Mensaje = "Se debe proporcionar una cuenta."
+					};
+					return PartialView("_gridMensaje", response);
+				}
+				
+				request.Registros = _settings.NroRegistrosPagina;
 				request.Adm_Id = AdministracionId;
 				request.Usu_Id = UserName;
 				var productos = _productoServicio.NCPICargarListaDeProductosPag2(request, TokenCookie).Result;
@@ -81,11 +91,43 @@ namespace gc.sitio.Areas.Compras.Controllers
 				MetadataGeneral = productos.Item2 ?? new MetadataGrid();
 				metadata = MetadataGeneral;
 
-				//grillaDatos = GenerarGrilla(ListaDeUsuarios, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 				var pag = request.Pagina == null ? 1 : request.Pagina.Value;
-				grillaDatos = GenerarGrilla(productos.Item1, request.Sort, _appSettings.NroRegistrosPagina, pag, metadata.TotalCount, metadata.TotalPages, request.SortDir);
-				//model = ObtenerGridCore<ProductoNCPIDto>(productos);
+				grillaDatos = GenerarGrilla(productos.Item1, request.Sort, _settings.NroRegistrosPagina, pag, metadata.TotalCount, metadata.TotalPages, request.SortDir);
 				return PartialView("_grillaProductos", grillaDatos);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public async Task<IActionResult> BuscarProductosTabOC(string ctaId, string ocCompte)
+		{
+			ProductoParaOcModel model = new();
+			GridCore<ProductoParaOcDto> grillaDatos;
+			try
+			{
+				CtaIdSelected = ctaId;
+				CargarProductoParaOcRequest request = new() 
+				{
+					Adm_Id = AdministracionId,
+					Usu_Id = UserName,
+					Cta_Id = ctaId,
+					Nueva = string.IsNullOrEmpty(ocCompte),
+					Oc_Compte = ocCompte
+				};
+				var productos = _productoServicio.CargarProductosDeOC(request, TokenCookie).Result;
+				grillaDatos = ObtenerGridCore<ProductoParaOcDto>(productos);
+				model.ListaOC = grillaDatos;
+				CalcularTotalesParaOC(model, productos);
+				return PartialView("_grillaProductosOC", model);
 			}
 			catch (Exception ex)
 			{
@@ -106,6 +148,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			try
 			{
+				CtaIdSelected = ctaId;
 				CargarProveedoresFamiliaLista(ctaId, _cuentaServicio);
 				return Json(new { error = false, warn = false, msg = string.Empty });
 			}
@@ -121,6 +164,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			try
 			{
+				CtaIdSelected = ctaId;
 				CargarOrdenesDeCompraLista(ctaId, _productoServicio);
 				return Json(new { error = false, warn = false, msg = string.Empty });
 			}
@@ -134,8 +178,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 		[HttpPost]
 		public JsonResult BuscarFlias(string prefix)
 		{
-			//var nombres = await _provSv.BuscarAsync(new QueryFilters { Search = prefix }, TokenCookie);
-			//var lista = nombres.Item1.Select(c => new EmpleadoVM { Nombre = c.NombreCompleto, Id = c.Id, Cuil = c.CUIT });
+			if ((ProveedorFamiliaLista == null || ProveedorFamiliaLista.Count <= 0) && (!string.IsNullOrEmpty(CtaIdSelected)))
+			{
+				BuscarFamiliaDesdeProveedorSeleccionado(CtaIdSelected);
+			}
 			var rub = ProveedorFamiliaLista.Where(x => x.pg_desc.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
 			var rubros = rub.Select(x => new ComboGenDto { Id = x.pg_id, Descripcion = x.pg_lista });
 			return Json(rubros);
@@ -150,6 +196,19 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		#region Métodos privados
+		private void CalcularTotalesParaOC(ProductoParaOcModel model, List<ProductoParaOcDto> productos)
+		{
+			if (productos == null || productos.Count == 0)
+			{
+				model.Total_Costo = "0.00";
+				model.Total_Pallet = "0.00";
+			}
+			else
+			{
+				model.Total_Costo = productos.Sum(x => x.P_Pcosto_Total).ToString("0.##");
+				model.Total_Pallet = productos.Sum(x => x.Paletizado).ToString("0.##");
+			}
+		}
 		private static void ObtenerColor(ref List<ProductoNCPIDto> listaProd)
 		{
 			foreach (var item in listaProd)

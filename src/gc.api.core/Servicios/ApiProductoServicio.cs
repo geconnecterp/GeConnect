@@ -806,9 +806,6 @@ namespace gc.api.core.Servicios
 				new("@nueva",request.Nueva),
 				new("@oc_compte",request.Oc_Compte),
 			};
-			ps.Add(new SqlParameter("@registros", request.Registros));
-			ps.Add(new SqlParameter("@pagina", request.Pagina));
-			ps.Add(new SqlParameter("@ordenar", string.IsNullOrEmpty(request.Sort) ? "p_id" : request.Sort));
 			List<ProductoParaOcDto> respuesta = _repository.EjecutarLstSpExt<ProductoParaOcDto>(sp, ps, true);
 			return respuesta;
 		}

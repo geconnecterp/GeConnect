@@ -24,6 +24,12 @@ body {
 activable {
 }
 
+.content-editable-td {
+    text-align: right !important;
+    padding: 0.325rem 0.30rem !important;
+    border-style: inset !important;
+    border-width: medium !important;
+}
 
 input.form-control, select.form-control {
     font-weight: 700 !important;

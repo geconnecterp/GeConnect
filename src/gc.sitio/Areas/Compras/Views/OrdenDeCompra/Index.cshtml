@@ -21,17 +21,19 @@
 
 <div class="container">
 	<div class="row">
-		<div class="col-md-5">
-			@*Datos del proveedor, visualizar cuando sea seleccionado uno desde la pantalla de filtros*@
-			<div id="divProveedorSeleccionado">
-
-			</div>
-		</div>
-		<div class="col-md-2">
+		<div class="col-md-6">
 			<div class="d-flex justify-content-sm-around">
 				<button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
 					<i class="bx bx-filter bx-xs"></i>
 				</button>
+
+				<button class="btn btn-primary btn-sm mt-1 me-1" type="button" id="btnDetalle" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle">
+					<i class="bx bx-arrow-to-bottom bx-xs"></i>
+				</button>
+			</div>
+		</div>
+		<div class="col-md-2">
+			<div class="d-flex justify-content-sm-center">
 				<button id="btnAbmAceptar" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Aceptar" disabled>
 					<i class="bx bx-check-circle bx-xs"></i>
 				</button>
@@ -41,23 +43,33 @@
 				</button>
 			</div>
 		</div>
-		<div class="col-md-5">
-			<div class="input-group input-group-sm mt-1"@*  style="margin-top: 0.2rem !important;" *@>
-				<span class="input-group-text fixed-lbl-for-abm-100">Lim. Mensual: </span>
-				<input type="text" asp-for="Lim_Mensual" class="form-control activable inputEditable" />
-				<span class="input-group-text fixed-lbl-for-abm-100">OC Emitidas: </span>
-				<input type="text" asp-for="OC_Emitidas" class="form-control activable inputEditable" />
-				<span class="input-group-text fixed-lbl-for-abm-100">Tope de Emisión: </span>
-				<input type="text" asp-for="Tope_Emision" class="form-control activable inputEditable" />
-			</div>
-		</div>
 	</div>
 	<div class="collapse" id="divFiltro" style="">
 		<partial name="_filtroBase" model="filtro" />
 		@Html.Hidden("pagEstado", false);
 	</div>
 	<div class="collapse" id="divDetalle" style="">
-		<ul class="nav nav-tabs" role="tablist" id="tabsOrdenDeCompra">
+		<div class="row">
+			<div class="col-md-6">
+				@*Datos del proveedor, visualizar cuando sea seleccionado uno desde la pantalla de filtros*@
+				<div class="input-group input-group-sm mt-1" id="divProveedorSeleccionado">
+					<span class="input-group-text fixed-lbl-for-abm-70">Cuenta: </span>
+					<input type="text" id="CtaID" class="form-control" style="max-width: 100px;text-align: right;" disabled />
+					<input type="text" id="CtaDesc" class="form-control" disabled />
+				</div>
+			</div>
+			<div class="col-md-6">
+				<div class="input-group input-group-sm mt-1">
+					<span class="input-group-text fixed-lbl-for-abm-100">Lim. Semanal: </span>
+					<input type="text" asp-for="Lim_Mensual" class="form-control" style="background-color: darkturquoise; color: black;"/>
+					<span class="input-group-text fixed-lbl-for-abm-100">OC Emitidas: </span>
+					<input type="text" asp-for="OC_Emitidas" class="form-control" style="background-color: darkseagreen; color: black;" />
+					<span class="input-group-text fixed-lbl-for-abm-100">Tope de Emisión: </span>
+					<input type="text" asp-for="Tope_Emision" class="form-control" style="background-color: chocolate; color: black;" />
+				</div>
+			</div>
+		</div>
+		<ul class="nav nav-tabs mt-2" role="tablist" id="tabsOrdenDeCompra">
 			<li class="nav-item" role="presentation" id="tabProductos">
 				<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-home" aria-controls="navs-top-home" aria-selected="true" id="btnTabProductos">
 					Productos
@@ -87,12 +99,12 @@
 			</p>
 		</div>
 	</div> *@
-	<div class="row">
+@* 	<div class="row">
 		<div class="offset-md-3 col-md-6">
 			<div id="divPaginacion" class="">
 			</div>
 		</div>
-	</div>
+	</div> *@
 </div>
 
 @section scripts {
@@ -106,6 +118,7 @@
 		var funcCallBack = "BuscarProductos";
 		var pIdSeleccionado = "";
 		var ctaIdSelected = "";
+		var ctaDescSelected = "";
 		var ocIdSelected = "";
 		var buscarFamiliaDesdeProveedorSeleccionadoUrl = "@Url.Action("BuscarFamiliaDesdeProveedorSeleccionado", "ordendecompra", new { area = "Compras" })";
 		var buscarOCDesdeProveedorSeleccionadoUrl = "@Url.Action("CargarOCDesdeProveedorSeleccionado", "ordendecompra", new { area = "Compras" })";
@@ -115,7 +128,7 @@
 		var autoComRel04Url = "@Url.Action("BuscarOCPendientes", "ordendecompra", new { area = "Compras" })";
 		var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "ordendecompra", new { area = "Compras" })";
 		var BuscarProductosURL = "@Url.Action("BuscarProductos", "ordendecompra", new { area = "Compras" })";
-		var BuscarDatosDeOCURL = "@Url.Action("BuscarDatosDeOC", "ordendecompra", new { area = "Compras" })";
+		var BuscarProductosTabOCURL = "@Url.Action("BuscarProductosTabOC", "ordendecompra", new { area = "Compras" })";
 	</script>
 	<script src="~/js/plugins/jquery.simplePagination.js"></script>
 	<script src="~/js/app/areas/ordendecompra/ordendecompra.js"></script>
