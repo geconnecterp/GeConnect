@@ -31,6 +31,8 @@ using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor.Request;
 using System.Diagnostics;
 using gc.infraestructura.Core.Exceptions;
+using System.Security.Claims;
+using System;
 
 namespace gc.sitio.core.Servicios.Implementacion
 {
@@ -114,6 +116,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string OC_Productos_Pag2 = "/NCPICargarListaDeProductosPag2";
 		private const string OC_Cargar_Pedido = "/NCPICargaPedido";
 		private const string OC_Cargar_Detalle = "/CargarProductosDeOC";
+		private const string OC_Tope = "/CargarTopesDeOC";
 
 		private const string OC_Cargar_Lista = "/CargarOrdenesDeCompraList";
 
@@ -2316,6 +2319,47 @@ namespace gc.sitio.core.Servicios.Implementacion
 					return new();
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProductoParaOcDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<OrdenDeCompraTopeDto>> CargarTopesDeOC(string admId, string token)
+		{
+			ApiResponse<List<OrdenDeCompraTopeDto>> apiResponse;
+
+			//HelperAPI helper = new();
+
+			//HttpClient client = helper.InicializaCliente(token);
+			//HttpResponseMessage response;
+			//var link = $"{_appSettings.RutaBase}{RutaAPI}{OC_Cargar_Lista}?ctaId={ctaId}&admId={admId}&usuId={usuId}";
+
+			//response = await client.GetAsync(link);
+			//response = client.GetAsync(link).GetAwaiter().GetResult();
+
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{OC_Tope}?admId={admId}";
+
+			response = client.GetAsync(link).GetAwaiter().GetResult();
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros admId:{admId}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<OrdenDeCompraTopeDto>>>(stringData);
 				return apiResponse.Data;
 			}
 			else

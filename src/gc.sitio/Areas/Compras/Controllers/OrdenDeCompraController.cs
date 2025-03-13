@@ -10,6 +10,8 @@ using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using gc.sitio.Areas.Compras.Models;
+using System.Security.Claims;
+using Azure.Core;
 
 namespace gc.sitio.Areas.Compras.Controllers
 {
@@ -82,7 +84,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					};
 					return PartialView("_gridMensaje", response);
 				}
-				
+
 				request.Registros = _settings.NroRegistrosPagina;
 				request.Adm_Id = AdministracionId;
 				request.Usu_Id = UserName;
@@ -92,6 +94,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				metadata = MetadataGeneral;
 
 				var pag = request.Pagina == null ? 1 : request.Pagina.Value;
+				ListaProductos = productos.Item1;
 				grillaDatos = GenerarGrilla(productos.Item1, request.Sort, _settings.NroRegistrosPagina, pag, metadata.TotalCount, metadata.TotalPages, request.SortDir);
 				return PartialView("_grillaProductos", grillaDatos);
 			}
@@ -115,7 +118,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			try
 			{
 				CtaIdSelected = ctaId;
-				CargarProductoParaOcRequest request = new() 
+				CargarProductoParaOcRequest request = new()
 				{
 					Adm_Id = AdministracionId,
 					Usu_Id = UserName,
@@ -125,6 +128,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				};
 				var productos = _productoServicio.CargarProductosDeOC(request, TokenCookie).Result;
 				grillaDatos = ObtenerGridCore<ProductoParaOcDto>(productos);
+				ListaProductosOC = productos;
 				model.ListaOC = grillaDatos;
 				CalcularTotalesParaOC(model, productos);
 				return PartialView("_grillaProductosOC", model);
@@ -140,6 +144,120 @@ namespace gc.sitio.Areas.Compras.Controllers
 				};
 				return PartialView("_gridMensaje", response);
 			}
+		}
+
+		[HttpPost]
+		public IActionResult AgregarProductoEnOC(string pId)
+		{
+			try
+			{
+				ProductoParaOcModel model = new();
+				GridCore<ProductoParaOcDto> grillaDatos;
+
+				if (ListaProductos != null && ListaProductos.Count > 0)
+				{
+					var producto = ListaProductos.FirstOrDefault(x => x.p_id == pId);
+					if (producto != null)
+					{
+						var productos = ListaProductosOC;
+						if (productos == null)
+						{
+							productos = [];
+						}
+						productos.Add(new ProductoParaOcDto(producto));
+						grillaDatos = ObtenerGridCore<ProductoParaOcDto>(productos);
+						ListaProductosOC = productos;
+						model.ListaOC = grillaDatos;
+						CalcularTotalesParaOC(model, productos);
+						return PartialView("_grillaProductosOC", model);
+					}
+				}
+
+				return PartialView("_grillaProductosOC", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public IActionResult QuitarProductoEnOc(string pId)
+		{
+			try
+			{
+				ProductoParaOcModel model = new();
+				GridCore<ProductoParaOcDto> grillaDatos;
+				if (ListaProductosOC != null && ListaProductosOC.Count > 0)
+				{
+					var producto = ListaProductosOC.FirstOrDefault(x => x.P_Id == pId);
+					if (producto != null)
+					{
+						var productos = ListaProductosOC.Where(x => x.P_Id != pId).ToList();
+						grillaDatos = ObtenerGridCore<ProductoParaOcDto>(productos);
+						ListaProductosOC = productos;
+						model.ListaOC = grillaDatos;
+						CalcularTotalesParaOC(model, productos);
+						return PartialView("_grillaProductosOC", model);
+					}
+				}
+
+				return PartialView("_grillaProductosOC", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public JsonResult ObtenerTopesDeOc()
+		{
+			try
+			{
+				var listaTopes = _productoServicio.CargarTopesDeOC(AdministracionId, TokenCookie).Result;
+				if (listaTopes == null)
+					return Json(new msgRes() { error = false, warn = true, msg = "Sin datos de tope de OC.", data = new TopeOC() });
+				if (listaTopes.Count == 0)
+					return Json(new msgRes() { error = false, warn = true, msg = "Sin datos de tope de OC.", data = new TopeOC() });
+
+				var tope = listaTopes.First();
+				//return Json(new msgRes() { error = false, warn = false, msg = string.Empty, data = new TopeOC() { oc_limite_semanal = tope.oc_limite_semanal + Convert.ToDecimal(0.01), oc_emitidas = tope.oc_emitidas, oc_tope = tope.oc_tope } });
+				return Json(new msgRes() { error = false, warn = false, msg = string.Empty, data = new TopeOC() { oc_limite_semanal = tope.oc_limite_semanal, oc_emitidas = tope.oc_emitidas, oc_tope = tope.oc_tope } });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar obtener los topes de OC. AdmId: {AdministracionId}" });
+			}
+		}
+
+		private class msgRes()
+		{
+			public bool error { get; set; }
+			public bool warn { get; set; }
+			public string msg { get; set; } = string.Empty;
+			public TopeOC data { get; set; } = new TopeOC();
+		}
+
+		private class TopeOC()
+		{
+			public decimal oc_limite_semanal { get; set; } = 0.00M;
+			public decimal oc_emitidas { get; set; } = 0.00M;
+			public decimal oc_tope { get; set; } = 0.00M;
 		}
 
 		//Invocar cuando se haya seleccionado solo un proveedor desde el filtro base.

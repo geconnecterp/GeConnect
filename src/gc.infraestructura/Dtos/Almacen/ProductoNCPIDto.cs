@@ -46,6 +46,13 @@ namespace gc.infraestructura.Dtos.Almacen
 		public decimal costo_total { get; set; } = 0.000M;
 		public decimal paletizado { get; set; } = 0.000M;
 		public string Row_color { get; set; } = "#ffffff";
+		public int  Bultos { get; set; }
+		public decimal P_Plista { get; set; } = 0.0000M;
+		public decimal P_Porc_Flete { get; set; } = 0.00M;
+		public char Iva_Situacion { get; set; }
+		public decimal Iva_Alicuota { get; set; } = 0.00M;
+		public decimal In_Alicuota { get; set; } = 0.00M;
+		public int p_orden_pg { get; set; }
 	}
 
 	public class ProductoNCPISustitutoDto : ProductoNCPIDto

@@ -809,6 +809,16 @@ namespace gc.api.core.Servicios
 			List<ProductoParaOcDto> respuesta = _repository.EjecutarLstSpExt<ProductoParaOcDto>(sp, ps, true);
 			return respuesta;
 		}
+		public List<OrdenDeCompraTopeDto> CargarTopesDeOC(string admId)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OC_Tope;
+			var ps = new List<SqlParameter>()
+			{
+				new("@adm_id",admId),
+			};
+			List<OrdenDeCompraTopeDto> respuesta = _repository.EjecutarLstSpExt<OrdenDeCompraTopeDto>(sp, ps, true);
+			return respuesta;
+		}
 		public List<ProductoNCPIDto> NCPICargarListaDeProductos(NCPICargarListaDeProductosRequest request)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OC_Productos;
