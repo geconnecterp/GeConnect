@@ -286,7 +286,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 						}
 						producto.P_Pcosto = ProductoParaOcDto.CalcularPCosto(producto.P_Plista, producto.P_Dto1, producto.P_Dto2, producto.P_Dto3, producto.P_Dto4, producto.P_Dto_Pa, producto.P_Boni, producto.P_Porc_Flete);
 						producto.P_Pcosto_Total = producto.P_Pcosto * producto.Pedido_Mas_Boni;
-						//TODO: Consultar con CR como era el tema del calculo de Total Pallet (me olvide)
+						//MARCE TODO: Consultar con CR como era el tema del calculo de Total Pallet (me olvide)
 					}
 					ListaProductosOC = productos; //Actualizo la lista en memoria
 					return Json(new msgRes()
@@ -315,7 +315,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		//TODO: Seguir con este metodo
+		//MARCE TODO: Seguir con este metodo
 		[HttpPost]
 		public IActionResult UpdateMasivoEnOc(ActualizacionMasivaRequest request)
 		{

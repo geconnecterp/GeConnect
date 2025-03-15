@@ -10,6 +10,5 @@ namespace gc.sitio.core.Servicios.Contratos
 		List<OpcionCuotaDto> GetOpcionCuota(string insId, int cuota, string token);
 		List<FinancieroListaDto> GetCuentaFinYContableLista(string insId, string token);
 		List<FinancieroListaDto> GetCuentaFinYContable(string ctafId, string token);
-		//TODO: Agregar las de Ctaf
 	}
 }

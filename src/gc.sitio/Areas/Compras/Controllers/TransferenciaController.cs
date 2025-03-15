@@ -148,7 +148,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> VerDetallePedidoDeSucursal(string piCompte)
 		{
-			//TODO: Charlar con carlos para ver si modificamos lo que se muestra en el detalle de PI
 			var model = new TRDetallePedidoDto();
 			try
 			{
