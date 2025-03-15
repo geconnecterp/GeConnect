@@ -41,6 +41,9 @@
 			BuscarProductos(pagina);
 		}
 	});
+	//$("#btnAplicar").on("click", function () {
+	//	AplicarSeteoMasivo();
+	//});
 
 	funcCallBack = BuscarProductos;
 	InicializaPantalla();
@@ -69,6 +72,136 @@ const formatter = new Intl.NumberFormat('en-US', {
 	// print 2500.10 as $2,500.1
 	//maximumFractionDigits: 0, // Causes 2500.99 to be printed as $2,501
 });
+
+function AplicarSeteoMasivo() {
+	var alMenosUno = false;
+	var dataTable = document.getElementById('tbListaProductoOC');
+	var inputs = dataTable.querySelectorAll('tbody>tr>td>input');
+	inputs.forEach(function (input) {
+		if (input.checked) {
+			alMenosUno = true;
+		}
+	});
+	if (alMenosUno) {
+		//Recorrer los items seleccionados y enviarlos al backend, junto con los valores de los campos de seteo masivo.
+		var pIds = [];
+		$("#tbListaProductoOC").find('tr').each(function (i, el) {
+			var td = $(this).find('td');
+			if (td.length > 0 && td[1].innerText !== undefined) {
+				pIds.push(td[1].innerText);
+			}
+		});
+		var dto1 = $("#Dto1").val();
+		var dto2 = $("#Dto2").val();
+		var dto3 = $("#Dto3").val();
+		var dto4 = $("#Dto4").val();
+		var dpa = $("#Dpa").val();
+		var boolFlete = $("#chkFleteAPagar")[0].checked
+		var flete = $("#Flete").val();
+		var data = { pIds, dto1, dto2, dto3, dto4, dpa, boolFlete, flete };
+		PostGenHtml(data, UpdateMasivoEnOcURL, function (obj) {
+			if (obj.error === true) {
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				$("#divListaProductoNuevaOC").html(obj);
+				AgregarHandlerAGrillaProdOC();
+				ActualizarInfoDeProductoEnGrilla(pId);
+			}
+		});
+	}
+	else {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar al menos un producto para la edición masiva.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+}
+
+function addInCellEditHandler() {
+	$("#tbListaProductoOC").on('input', 'td[contenteditable]', function (e) {
+		//Do something
+		var val = $("#" + this.id).text();
+		if (this.id === "P_Dto1" || this.id === "P_Dto2" || this.id === "P_Dto3" || this.id === "P_Dto4" || this.id === "P_Dto_Pa") {
+			var num = Number(val);
+			if (num > 50) val = "50";
+			$("#" + this.id).mask("00,0", { reverse: true });
+			$("#" + this.id).val(val);
+			$("#" + this.id).text(val);
+		}
+		else if (this.id === "P_Plista") {
+			$("#" + this.id).mask("000.000.000.000,00", { reverse: false });
+			$("#" + this.id).val(val);
+		}
+		else if (this.id === "P_Boni") {
+			$("#" + this.id).mask("000/000", { reverse: false });
+			$("#" + this.id).val(val);
+		}
+		else if (this.id === "Bultos") {
+			$("#" + this.id).mask("000.000.000.000", { reverse: false });
+			$("#" + this.id).val(val);
+		}
+	});
+}
+
+var keysAceptadas = [8, 37, 39, 46, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 110, 190];
+function addInCellKeyDownHandler() {
+	$("#tbListaProductoOC").on('keydown', 'td[contenteditable]', function (e) {
+		if (isNaN(String.fromCharCode(e.which)) && !(keysAceptadas.indexOf(e.which) != -1) && !(e.shiftKey && (e.which == 37 || e.which == 39))) e.preventDefault();
+		//if (isNaN(String.fromCharCode(e.which)) && !(e.which == 8) && !(e.which == 110) && !(e.which == 37) && !(e.which == 39) && !(e.which == 46) && !(e.which == 190) && !(e.which >= 96 && e.which <= 105) && !(e.shiftKey && (e.which == 37 || e.which == 39))) e.preventDefault();
+	});
+}
+
+function addInCellLostFocusHandler() {
+	$("#tbListaProductoOC").on('focusout', 'td[contenteditable]', function (e) {
+		var actualiza = true;
+		if (this.id === "P_Dto1" || this.id === "P_Dto2" || this.id === "P_Dto3" || this.id === "P_Dto4" || this.id === "P_Dto_Pa") {
+
+		}
+		else if (this.id === "P_Plista") {
+
+		}
+		else if (this.id === "P_Boni") {
+			var spl = $("#" + this.id).val().split("/");
+			if (spl.length === 2) {
+				var num1 = Number(spl[0]);
+				var num2 = Number(spl[1]);
+				if (num1 > num2) {
+					actualiza = false;
+					$("#" + this.id).val("");
+					$("#" + this.id).text("");
+				}
+			}
+			else
+				actualiza = false;
+		}
+
+		if (actualiza) {
+			//Actualizar datos
+			ActualizarProductoEnOc(this.id, $("#" + this.id).val());
+		}
+	});
+}
+
+function ActualizarProductoEnOc(field, val) {
+	var pId = pIdEnOcSeleccionado;
+	var data = { pId, field, val };
+	PostGen(data, ActualizarProductoEnOcURL, function (obj) {
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			//Actualizar valores en la grilla
+		}
+
+	});
+}
 
 function focusOnTd(x) {
 	var cell = x;
@@ -101,7 +234,7 @@ function presentaPaginacionOC(div) {
 	return true;
 }
 
-/// Funcion que restaura el estado del producto luego de quitarlo de la lista de OC
+/// Funcion que restaura el estado del producto en la grilla del primer Tab, luego de quitarlo de la lista de OC (segundo Tab)
 function ActualizarInfoDeProductoEnGrilla(pId) {
 	$("#tbListaProducto").find('tr').each(function (i, el) {
 		var td = $(this).find('td');
@@ -116,7 +249,7 @@ function ActualizarInfoDeProductoEnGrilla(pId) {
 	});
 }
 
-/// Funcion que evalúa si el producto que existe en la grilla del primer Tab ya esta cargado en la grilla de OC, si es así cambiar el estilo del icono.
+/// Funcion que evalúa si el producto de la grilla del primer Tab ya esta cargado en la grilla de OC (segundo Tab), si es así cambiar el estilo del icono.
 function ActualizarInfoDeProductosEnGrilla() {
 	if ($("#tbListaProductoOC").length != 0) {
 		var idArrayOC = [];
@@ -126,7 +259,7 @@ function ActualizarInfoDeProductosEnGrilla() {
 				idArrayOC.push(td[1].innerText);
 			}
 		});
-		
+
 		if (idArrayOC.length > 0 && $("#tbListaProducto").length != 0) {
 			$("#tbListaProducto").find('tr').each(function (i, el) {
 				var td = $(this).find('td');
@@ -161,6 +294,21 @@ function AgregarHandlerAGrillaProdOC() {
 	});
 }
 
+function AddEventListenerToGrid(tabla) {
+	var grilla = document.getElementById(tabla);
+	if (grilla) {
+		document.getElementById(tabla).addEventListener('click', function (e) {
+			if (e.target.nodeName === 'TD') {
+				var selectedRow = this.querySelector('.selected-row');
+				if (selectedRow) {
+					selectedRow.classList.remove('selected-row');
+				}
+				e.target.closest('tr').classList.add('selected-row');
+			}
+		});
+	}
+}
+
 function quitarProductoEnOC(e) {
 	var pId = $(e).attr("data-interaction");
 	var data = { pId };
@@ -174,11 +322,16 @@ function quitarProductoEnOC(e) {
 		else {
 			$("#divListaProductoNuevaOC").html(obj);
 			AgregarHandlerAGrillaProdOC();
+			AddEventListenerToGrid("tbListaProductoOC");
 			ActualizarInfoDeProductoEnGrilla(pId);
+			addInCellLostFocusHandler();
+			addInCellKeyDownHandler();
+			addInCellEditHandler();
 		}
 	});
 }
 
+//Funcion que agrega el producto seleccionado en la grilla del primer, en la grilla de OC (Segundo Tab)
 function actualizarProducto(e) {
 	if ($(e).hasClass("btn-outline-success")) {
 		AbrirWaiting("Actualizando información de Orden de Compra.");
@@ -195,7 +348,11 @@ function actualizarProducto(e) {
 			else {
 				$("#divListaProductoNuevaOC").html(obj);
 				AgregarHandlerAGrillaProdOC();
+				AddEventListenerToGrid("tbListaProductoOC");
 				ActualizarInfoDeProductosEnGrilla();
+				addInCellLostFocusHandler();
+				addInCellKeyDownHandler();
+				addInCellEditHandler();
 				CerrarWaiting();
 			}
 		});
@@ -217,7 +374,28 @@ function actualizarProducto(e) {
 	}
 }
 
-function actualizarProductoEnOC(e) { }
+//Funcion que actualiza los valores del elemento seleccionado y editado de la grilla de OC (segundo TAB)
+function actualizarProductoEnOC(e) {
+	var pId = $(e).attr("data-interaction");
+	var data = { pId };
+	PostGenHtml(data, ActualizarProductoEnOcURL, function (obj) {
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			$("#divListaProductoNuevaOC").html(obj);
+			AgregarHandlerAGrillaProdOC();
+			AddEventListenerToGrid("tbListaProductoOC");
+			ActualizarInfoDeProductoEnGrilla(pId);
+			addInCellLostFocusHandler();
+			addInCellKeyDownHandler();
+			addInCellEditHandler();
+		}
+	});
+}
 
 function InicializaPantalla() {
 	var tb = $("#tbListaProducto tbody tr");
@@ -264,7 +442,14 @@ function selectListaProductoRow(x) {
 	}
 }
 
-function selectListaProductoRowOC(x) { }
+function selectListaProductoRowOC(x) {
+	if (x) {
+		pIdEnOcSeleccionado = x.cells[1].innerText.trim();
+	}
+	else {
+		pIdSeleccionado = "";
+	}
+}
 
 function BuscarProductosTabOC() {
 
@@ -286,8 +471,14 @@ function BuscarProductosTabOC() {
 		}
 		else {
 			$("#divListaProductoNuevaOC").html(obj);
+			$("#Total_Costo").val(formatter.format($("#Total_Costo").val()));
+			$("#Total_Pallet").val(formatter.format($("#Total_Pallet").val()));
 			AgregarHandlerAGrillaProdOC();
 			ActualizarInfoDeProductosEnGrilla();
+			addInCellLostFocusHandler();
+			addInCellKeyDownHandler();
+			addInCellEditHandler();
+			AddEventListenerToGrid("tbListaProductoOC");
 		}
 	});
 }
@@ -347,6 +538,7 @@ function BuscarProductos(pag = 1) {
 			}
 
 		});
+
 		BuscarProductosTabOC();
 		$("#btnAbmAceptar").show();
 		$("#btnAbmCancelar").show();
@@ -375,7 +567,6 @@ function CargarTopesDeOC() {
 			}, false, ["Aceptar"], "error!", null);
 		}
 		else {
-			console.log(obj);
 			//formatter.format(e.target.value);
 			$("#Lim_Mensual").val(formatter.format(obj.data.oc_limite_semanal));
 			$("#OC_Emitidas").val(formatter.format(obj.data.oc_emitidas));
