@@ -1,22 +1,6 @@
-﻿/*const { event } = require("jquery");*/
-
-$(function () {
-	//$("#btnradioPorProveedor").on("click", buscarPorProveedor);
-	//$("#btnradioSinStk").on("click", buscarSinStk);
-	//$("#btnradioConPI").on("click", buscarConPI);
-	//$("#btnradioPorProveedorFamilia").on("click", buscarPorProveedorFamilia);
-	//$("#btnradioConStkAVencer").on("click", buscarConStkAVencer);
-	//$("#btnradioConOC").on("click", buscarConOC);
-	//$("#btnradioPorRubro").on("click", buscarPorRubro);
-	//$("#btnradioAltaRotacion").on("click", buscarAltaRotacion);
+﻿$(function () {
 	$("#btnCollapseSection").on("click", btnCollapseSectionClicked);
-	//$("#listaProveedor").on("change", listaProveedorChange);
-	//$("#listaFamiliaProveedor").on("change", listaFamiliaProveedorChange);
-	//$("#listaRubro").on("change", listaRubroChange);
-	//DisableComboProveedoresFamilia(true);
-	//DisableComboRubros(true);
-	//buscarPorProveedor();
-	//SelecccionarSucursal();
+	
 	$("input#Rel03").on("click", function () {
 		$("input#Rel03").val("");
 		$("#Rel03Item").val("");
@@ -154,10 +138,9 @@ function InicializaPantallaNC() {
 
 	$("#lbChkDesdeHasta").text("ID");
 
-	//$("#IdSelected").val("");
 	$(".activable").prop("disabled", true);
 	$("#chkRel03").prop("disabled", true);
-	//activarBotones(false);
+	
 	CerrarWaiting();
 	return true;
 }
@@ -277,194 +260,6 @@ const colCantidad = 11;
 const colCosto = 12;
 const colCostoTotal = 13;
 const colPallet = 14;
-
-//function tdChange(x) {
-//}
-
-//function listaProveedorChange() {
-//	tipoBusqueda = FuncionSobreBusquedaDeProductos.PROVEEDORES;
-//	BuscarProductos(tipoBusqueda);
-//	BuscarProveedoresFamilia();
-//}
-
-//function listaFamiliaProveedorChange() {
-//	tipoBusqueda = FuncionSobreBusquedaDeProductos.PROVEEDORESYFAMILIA;
-//	BuscarProductos(tipoBusqueda);
-//}
-
-//function listaRubroChange() {
-//	tipoBusqueda = FuncionSobreBusquedaDeProductos.RUBROS;
-//	BuscarProductos(tipoBusqueda);
-//}
-
-//function buscarPorProveedor() {
-//	if ($("#listaProveedor").val() == "") {
-//		$("#listaProveedor").prop("selectedIndex", 1).change();
-//	}
-//	DisableComboProveedoresFamilia(true);
-//	DisableComboRubros(true);
-//	DisableComboProveedores(false);
-//	tipoBusqueda = FuncionSobreBusquedaDeProductos.PROVEEDORES;
-//	BuscarProductos(tipoBusqueda);
-//}
-
-//function buscarSinStk() {
-//	DisableComboProveedoresFamilia(true);
-//	DisableComboRubros(true);
-//	DisableComboProveedores(true);
-//	tipoBusqueda = FuncionSobreBusquedaDeProductos.SINSTOCK;
-//	BuscarProductos(tipoBusqueda);
-//}
-
-//function buscarConPI() {
-//	DisableComboProveedoresFamilia(true);
-//	DisableComboRubros(true);
-//	DisableComboProveedores(true);
-//	tipoBusqueda = FuncionSobreBusquedaDeProductos.CONPI;
-//	BuscarProductos(tipoBusqueda);
-//}
-
-//function buscarPorProveedorFamilia() {
-//	if ($("#listaProveedor").val() == "") {
-//		$("#listaProveedor").prop("selectedIndex", 1).change();
-//	}
-//	if ($("#listaFamiliaProveedor").val() == "") {
-//		$("#listaFamiliaProveedor").prop("selectedIndex", 1).change();
-//	}
-//	DisableComboProveedoresFamilia(false);
-//	DisableComboProveedores(false);
-//	DisableComboRubros(true);
-//	tipoBusqueda = FuncionSobreBusquedaDeProductos.PROVEEDORESYFAMILIA;
-//	BuscarProductos(tipoBusqueda);
-//}
-
-//function buscarConStkAVencer() {
-//	DisableComboProveedoresFamilia(true);
-//	DisableComboRubros(true);
-//	DisableComboProveedores(true);
-//	tipoBusqueda = FuncionSobreBusquedaDeProductos.CONSTOCKAVENCER;
-//	BuscarProductos(tipoBusqueda);
-//}
-
-//function buscarConOC() {
-//	DisableComboProveedoresFamilia(true);
-//	DisableComboRubros(true);
-//	DisableComboProveedores(true);
-//	tipoBusqueda = FuncionSobreBusquedaDeProductos.CONOC;
-//	BuscarProductos(tipoBusqueda);
-//}
-
-//function buscarPorRubro() {
-//	if ($("#listaRubro").val() == "") {
-//		$("#listaRubro").prop("selectedIndex", 1).change();
-//	}
-//	DisableComboRubros(false);
-//	DisableComboProveedores(true);
-//	DisableComboProveedoresFamilia(true);
-//	tipoBusqueda = FuncionSobreBusquedaDeProductos.RUBROS;
-//	BuscarProductos(tipoBusqueda);
-//}
-
-//function buscarAltaRotacion() {
-//	DisableComboProveedoresFamilia(true);
-//	DisableComboRubros(true);
-//	DisableComboProveedores(true);
-//	tipoBusqueda = FuncionSobreBusquedaDeProductos.ALTAROTACION
-//	BuscarProductos(tipoBusqueda);
-//}
-
-//function BuscarProveedoresFamilia() {
-//	AbrirWaiting();
-//	var ctaId = $("#listaProveedor").val();
-//	var datos = { ctaId };
-//	PostGenHtml(datos, BuscarProveedoresFamiliaURL, function (obj) {
-//		$("#divComboProveedoresFamilia").html(obj);
-//		$("#listaFamiliaProveedor").on("change", listaFamiliaProveedorChange);
-//		if (!viendeDesdeBusquedaDeProducto)
-//			CerrarWaiting();
-//		return true
-//	});
-//}
-
-//function BuscarProductos(tipoBusqueda, pag=1) {
-//	viendeDesdeBusquedaDeProducto = true;
-//	AbrirWaiting();
-//	var filtro = "";
-//	var id = "";
-//	var tipo = "OC";
-
-//	switch (tipoBusqueda) {
-//		case FuncionSobreBusquedaDeProductos.PROVEEDORES:
-//			filtro = "C";
-//			id = $("#listaProveedor").val();
-//			break;
-//		case FuncionSobreBusquedaDeProductos.PROVEEDORESYFAMILIA:
-//			filtro = "F";
-//			id = $("#listaProveedor").val() + $("#listaFamiliaProveedor").val();
-//			break;
-//		case FuncionSobreBusquedaDeProductos.RUBROS:
-//			id = $("#listaRubro").val();
-//			filtro = "R";
-//			break;
-//		case FuncionSobreBusquedaDeProductos.SINSTOCK:
-//			id = "null";
-//			filtro = "S";
-//			break;
-//		case FuncionSobreBusquedaDeProductos.CONSTOCKAVENCER:
-//			id = "null";
-//			filtro = "V";
-//			break;
-//		case FuncionSobreBusquedaDeProductos.ALTAROTACION:
-//			id = "null";
-//			filtro = "A";
-//			break;
-//		case FuncionSobreBusquedaDeProductos.CONPI:
-//			id = "null";
-//			filtro = "I";
-//			break;
-//		case FuncionSobreBusquedaDeProductos.CONOC:
-//			id = "null";
-//			filtro = "O";
-//			break;
-//		default:
-//	}
-
-//	var buscaNew = true;
-//	pagina = pag;
-//	var sort = null;
-//	var sortDir = null
-//	var data2 = { sort, sortDir, pag, buscaNew }
-//	var data1 = { filtro, id, tipo };
-//	var data = $.extend({}, data1, data2);
-//	PostGenHtml(data, BuscarProductosOCPIURL, function (obj) {
-//		$("#divListaProducto").html(obj);
-//		addInCellEditHandler();
-//		addInCellLostFocusHandler();
-//		addInCellKeyDownHandler();
-//		AddEventListenerToGrid("tbListaProducto");
-//		tableUpDownArrow();
-//		PostGen({}, buscarMetadataURL, function (obj) {
-//			if (obj.error === true) {
-//				AbrirMensaje("ATENCIÓN", obj.msg, function () {
-//					$("#msjModal").modal("hide");
-//					return true;
-//				}, false, ["Aceptar"], "error!", null);
-//			}
-//			else {
-//				totalRegs = obj.metadata.totalCount;
-//				pags = obj.metadata.totalPages;
-//				pagRegs = obj.metadata.pageSize;
-
-//				$("#pagEstado").val(true).trigger("change");
-//			}
-
-//		});
-//		CerrarWaiting();
-//		viendeDesdeBusquedaDeProducto = false;
-//		return true
-//	});
-//}
-
 function BuscarProductos(pag = 1) {
 	viendeDesdeBusquedaDeProducto = true;
 	AbrirWaiting();
@@ -526,33 +321,6 @@ function BuscarProductos(pag = 1) {
 	});
 }
 
-//function DisableComboProveedores(value) {
-//	if (value === true) {
-//		$('#listaProveedor').prop('disabled', 'disabled');
-//	}
-//	else {
-//		$('#listaProveedor').prop('disabled', false);
-//	}
-//}
-
-//function DisableComboProveedoresFamilia(value) {
-//	if (value === true) {
-//		$('#listaFamiliaProveedor').prop('disabled', 'disabled');
-//	}
-//	else {
-//		$('#listaFamiliaProveedor').prop('disabled', false);
-//	}
-//}
-
-//function DisableComboRubros(value) {
-//	if (value === true) {
-//		$('#listaRubro').prop('disabled', 'disabled');
-//	}
-//	else {
-//		$('#listaRubro').prop('disabled', false);
-//	}
-//}
-
 function AddEventListenerToGrid(tabla) {
 	var grilla = document.getElementById(tabla);
 	if (grilla) {
@@ -571,19 +339,10 @@ function AddEventListenerToGrid(tabla) {
 function selectListaProductoRow(x) {
 	if (x) {
 		pIdSeleccionado = x.cells[0].innerText.trim();
-		//idProvSeleccionado = x.cells[2].innerText.trim();
-		//idFamiliaProvSeleccionado = x.cells[15].innerText.trim();
-		//idRubroSeleccionado = x.cells[16].innerText.trim();
-		//SeleccionarDesdeFila(idProvSeleccionado, $("#listaProveedor")[0]);
-		//SeleccionarDesdeFila(idFamiliaProvSeleccionado, $("#listaFamiliaProveedor")[0]);
-		//SeleccionarDesdeFila(idRubroSeleccionado, $("#listaRubro")[0]);
 		BuscarInfoAdicional();
 	}
 	else {
 		pIdSeleccionado = "";
-		//idProvSeleccionado = "";
-		//idFamiliaProvSeleccionado = "";
-		//idRubroSeleccionado = "";
 	}
 }
 
@@ -632,6 +391,7 @@ function addInCellKeyDownHandler() {
 	});
 }
 
+//MARCE TODO: Llevar este metodo a OC
 function tableUpDownArrow() {
 	var table = document.querySelector('#tbListaProducto tbody');
 	if (table == undefined)
