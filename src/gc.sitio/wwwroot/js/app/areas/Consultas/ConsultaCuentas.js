@@ -8,6 +8,8 @@ var consProv = "";
 
 $(function () {
     $("#lbRel01").text("CUENTA");
+
+    $("#Rel01").on("keyup", function () { });
     //check generico REL01 activando componentes disables
     //este evento esta en sitegen de manera estandar pero neceistaba ahora que afecte a otros componenes
     //de la vista 
@@ -160,6 +162,7 @@ function inicializaPantallaConsulta() {
     $("#divRpProv").empty().html("<span class='text - danger'>SIN REGISTROS</span>");
     $("#divRpProvDet").empty().html("<span class='text - danger'>SIN REGISTROS</span>");
     $("#BtnLiTab01").trigger("click");
+    
 }
 
 function presentarTabsConsulta() {
@@ -248,6 +251,7 @@ function consultaCmpteTotal() {
 }
 
 function consultaCmpteDetalle(periodo) {
+    fkey = periodo;
     ctaId = consCta;
     relCuil = false;
     if ($("#relCuil").is(":checked")) {
@@ -263,7 +267,7 @@ function consultaCmpteDetalle(periodo) {
 }
 
 function consultaOPPDetalle(cmptId) {
-   
+    fkey = cmptId;
     var data = { cmptId };
     AbrirWaiting("Espere un momento mientras se presenta el detalle de la OP seleccionada...");
     PostGenHtml(data, consultarOPProvDetUrl, function (obj) {

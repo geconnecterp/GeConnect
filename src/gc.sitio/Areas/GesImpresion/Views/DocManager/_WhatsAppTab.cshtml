@@ -1,0 +1,75 @@
+﻿@using gc.sitio.Areas.GesImpresion.Models
+@model WhatsAppDocumentViewModel
+
+<div class="container-fluid mt-3">
+    <div class="row">
+        <div class="col-12">
+            <div class="form-group">
+                <label for="whatsAppNumber">Número de teléfono:</label>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">+</span>
+                    </div>
+                    <input type="text" class="form-control" id="whatsAppNumber" placeholder="549XXXXXXXXXX" value="@Model.PhoneNumber">
+                </div>
+                <small class="form-text text-muted">Ingrese el número completo, incluyendo código de país sin el '+' (Ej: 5491123456789)</small>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-12">
+            <div class="form-group">
+                <label for="whatsAppTemplate">Plantilla:</label>
+                <select class="form-control" id="whatsAppTemplate">
+                    <option value="">Seleccionar plantilla...</option>
+                    <option value="default" @(Model.DefaultTemplate == "default" ? "selected" : "")>Plantilla predeterminada</option>
+                    <option value="invoice" @(Model.DefaultTemplate == "invoice" ? "selected" : "")>Plantilla de facturas</option>
+                    <option value="receipt" @(Model.DefaultTemplate == "receipt" ? "selected" : "")>Plantilla de recibos</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-12">
+            <div class="form-group">
+                <label for="whatsAppMessage">Mensaje:</label>
+                <textarea class="form-control" id="whatsAppMessage" rows="5">@Model.Message</textarea>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-12">
+            <h5>Documentos adjuntos</h5>
+            <div id="whatsAppAttachments" class="attachment-list">
+                @if (Model.Attachments != null && Model.Attachments.Any())
+                {
+                    @foreach (var attachment in Model.Attachments)
+                    {
+                        <div class="attachment-item" data-filename="@attachment.FileName">
+                            <i class="fas fa-paperclip"></i> @attachment.FileName
+                            <button type="button" class="btn btn-sm btn-danger remove-attachment">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        No hay documentos adjuntos seleccionados.
+                    </div>
+                }
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="btnAddWhatsAppAttachment">
+                <i class="fas fa-plus"></i> Agregar adjunto
+            </button>
+        </div>
+    </div>
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i> Nota: El envío de archivos vía WhatsApp puede estar limitado por el tamaño y tipo de archivo. Se recomienda utilizar archivos PDF de tamaño reducido.
+            </div>
+        </div>
+    </div>
+</div>
