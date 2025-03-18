@@ -129,11 +129,14 @@
 			public const string SP_RTR_Cargar_Conteos = "SPGECO_RTR_Cargar_Conteos";
 			public const string SP_RTR_Cargar_Conteos_x_ul = "SPGECO_UL_x_RTR";
 
+			#region Orden de Compra
 			public const string SP_OC_Productos = "SPGECO_OC_Productos";
 			public const string SP_OC_Pendientes = "SPGECO_OC_Pendientes";
 			public const string SP_OC_Carga_Pedido = "SPGECO_OC_Carga_Pedido";
 			public const string SP_OC_Carga_Detalle = "SPGECO_OC_Carga_Detalle";
 			public const string SP_OC_Tope = "SPGECO_OC_Tope";
+			public const string SP_OC_Carga_Resumen = "SPGECO_OC_Carga_Resumen";
+			#endregion
 
 			public const string SP_BOX_INFO = "SPGECO_BOX_Info";
             public const string SP_BOX_INFO_STK = "SPGECO_BOX_Info_Stk";

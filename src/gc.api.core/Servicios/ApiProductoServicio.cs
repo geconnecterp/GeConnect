@@ -819,6 +819,28 @@ namespace gc.api.core.Servicios
 			List<OrdenDeCompraTopeDto> respuesta = _repository.EjecutarLstSpExt<OrdenDeCompraTopeDto>(sp, ps, true);
 			return respuesta;
 		}
+		public List<OrdenDeCompraConceptoDto> CargarResumenDeOC(CargarResumenDeOCRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_OC_Carga_Resumen;
+			var ps = new List<SqlParameter>()
+			{
+				new("@cta_id",request.Cta_Id),
+				new("@adm_id",request.Adm_Id),
+				new("@usu_id",request.Usu_Id),
+				new("@nueva",request.Nueva),
+				new("@oc_compte",request.Oc_Compte),
+				new("@entrega_fecha",request.Entrega_Fecha),
+				new("@entrega_adm",request.Entrega_Adm),
+				new("@pago_anticipado",request.Pago_Anticipado),
+				new("@pago_fecha",request.Pago_Fecha),
+				new("@observaciones",request.Observaciones),
+				new("@oce_id",request.Oce_Id),
+				new("@json",request.Json),
+			};
+			List<OrdenDeCompraConceptoDto> respuesta = _repository.EjecutarLstSpExt<OrdenDeCompraConceptoDto>(sp, ps, true);
+			return respuesta;
+		}
+
 		public List<ProductoNCPIDto> NCPICargarListaDeProductos(NCPICargarListaDeProductosRequest request)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OC_Productos;

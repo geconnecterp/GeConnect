@@ -15,6 +15,10 @@ using Azure.Core;
 using System.Security.Cryptography;
 using System;
 using System.Drawing;
+using gc.infraestructura.Dtos;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using gc.infraestructura.Dtos.Administracion;
+using Newtonsoft.Json;
 
 namespace gc.sitio.Areas.Compras.Controllers
 {
@@ -25,13 +29,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private readonly ICuentaServicio _cuentaServicio;
 		private readonly IRubroServicio _rubroServicio;
 		private readonly IProductoServicio _productoServicio;
+		private readonly IAdministracionServicio _adminServicio;
 		public OrdenDeCompraController(ICuentaServicio cuentaServicio, IRubroServicio rubroServicio, IProductoServicio productoServicio, ILogger<OrdenDeCompraController> logger,
-									   IOptions<AppSettings> options, IHttpContextAccessor context) : base(options, context, logger)
+									   IAdministracionServicio adminServicio, IOptions<AppSettings> options, IHttpContextAccessor context) : base(options, context, logger)
 		{
 			_settings = options.Value;
 			_cuentaServicio = cuentaServicio;
 			_rubroServicio = rubroServicio;
 			_productoServicio = productoServicio;
+			_adminServicio = adminServicio;
 		}
 		public IActionResult Index()
 		{
@@ -274,8 +280,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 							case "P_Boni":
 								producto.P_Boni = val;
 								var arr = val.Split('/');
-								var res = Convert.ToInt32(arr[1]) - Convert.ToInt32(arr[0]); //En la bonificacion viene NNN/MMM donde sería "cada NNN, lleva MMM", siendo MMM mayor a NNN. La diferencia es el valor adicional que se suma al pedido.
-								producto.Pedido_Mas_Boni = res + producto.Cantidad;
+								if (!int.TryParse(arr[0], out int num)) { producto.Pedido_Mas_Boni = producto.Cantidad; break; }
+								if (!int.TryParse(arr[1], out int den)) { producto.Pedido_Mas_Boni = producto.Cantidad; break; }
+								if (num > den) { producto.Pedido_Mas_Boni = producto.Cantidad; break; }
+								var res = den - num; //En la bonificacion viene NNN/MMM donde sería "cada NNN, lleva MMM", siendo MMM mayor a NNN. La diferencia es el valor adicional que se suma al pedido.
+								var multiplo = producto.Cantidad / num;
+								if (multiplo > 0)
+									producto.Pedido_Mas_Boni = (res * (int)multiplo) + producto.Cantidad;
+								else
+									producto.Pedido_Mas_Boni = producto.Cantidad;
 								break;
 							case "Bultos":
 								producto.Bultos = Convert.ToInt32(val);
@@ -284,9 +297,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 							default:
 								break;
 						}
-						producto.P_Pcosto = ProductoParaOcDto.CalcularPCosto(producto.P_Plista, producto.P_Dto1, producto.P_Dto2, producto.P_Dto3, producto.P_Dto4, producto.P_Dto_Pa, producto.P_Boni, producto.P_Porc_Flete);
-						producto.P_Pcosto_Total = producto.P_Pcosto * producto.Pedido_Mas_Boni;
-						//MARCE TODO: Consultar con CR como era el tema del calculo de Total Pallet (me olvide)
+						producto.P_Pcosto = Math.Round(ProductoParaOcDto.CalcularPCosto(producto.P_Plista, producto.P_Dto1, producto.P_Dto2, producto.P_Dto3, producto.P_Dto4, producto.P_Dto_Pa, producto.P_Boni, producto.P_Porc_Flete), 2);
+						producto.P_Pcosto_Total = Math.Round(producto.P_Pcosto * (producto.Pedido_Mas_Boni == 0.0M ? 1.0M : producto.Pedido_Mas_Boni), 2);
+						producto.Paletizado = Math.Round((producto.Pedido_Mas_Boni == 0.0M ? 1.0M : producto.Pedido_Mas_Boni) / producto.P_Unidad_Palet, 1);
 					}
 					ListaProductosOC = productos; //Actualizo la lista en memoria
 					return Json(new msgRes()
@@ -315,7 +328,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		//MARCE TODO: Seguir con este metodo
 		[HttpPost]
 		public IActionResult UpdateMasivoEnOc(ActualizacionMasivaRequest request)
 		{
@@ -342,6 +354,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 							producto.P_Dto4 = request.dto4;
 							producto.P_Dto_Pa = request.dpa;
 							if (request.boolFlete) producto.P_Porc_Flete = request.flete;
+							producto.P_Pcosto = Math.Round(ProductoParaOcDto.CalcularPCosto(producto.P_Plista, producto.P_Dto1, producto.P_Dto2, producto.P_Dto3, producto.P_Dto4, producto.P_Dto_Pa, producto.P_Boni, producto.P_Porc_Flete), 2);
+							producto.P_Pcosto_Total = Math.Round(producto.P_Pcosto * ((producto.Pedido_Mas_Boni == 0.0M ? 1.0M : producto.Pedido_Mas_Boni) + producto.Cantidad), 2);
+							producto.Paletizado = Math.Round((producto.Cantidad + (producto.Pedido_Mas_Boni == 0.0M ? 1.0M : producto.Pedido_Mas_Boni)) / producto.P_Unidad_Palet, 1);
 						}
 					}
 					ListaProductosOC = productos;
@@ -349,6 +364,57 @@ namespace gc.sitio.Areas.Compras.Controllers
 					CalcularTotalesParaOC(model, productos);
 				}
 				return PartialView("_grillaProductosOC", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public IActionResult CargarResumenDeOc(string oc_compte)
+		{
+			try
+			{
+				//CtaIdSelected
+				//AdministracionId
+				//UserName
+				var jsonstring = JsonConvert.SerializeObject(ListaProductosOC, new JsonSerializerSettings());
+				var resumen = _productoServicio.CargarResumenDeOC(new CargarResumenDeOCRequest
+				{
+					Cta_Id = CtaIdSelected,
+					Adm_Id = AdministracionId,
+					Usu_Id = UserName,
+					Nueva = string.IsNullOrEmpty(oc_compte),
+					Oc_Compte = oc_compte,
+					Entrega_Fecha = DateTime.Now,
+					Entrega_Adm = AdministracionId,
+					Pago_Anticipado = 'N',
+					Pago_Fecha = DateTime.Now.AddDays(1),
+					Observaciones = string.Empty,
+					Oce_Id = 'P',
+					Json = jsonstring
+				}, TokenCookie).Result;
+
+				var model = new ResumenOCModel
+				{
+					SucursalEntrega = ObtenerComboAdministraciones(_adminServicio.ObtenerAdministraciones("S", TokenCookie)),
+					AdmId = AdministracionId,
+					FechaEntrega = DateTime.Now,
+					PagoAnticipado = false,
+					PagoPlazo = DateTime.Now.AddDays(1),
+					Obs = string.Empty,
+					DejarOCActiva = false,
+					ResumenGrilla = ObtenerGridCore<OrdenDeCompraConceptoDto>(resumen)
+				};
+				return PartialView("_resumen", model);
 			}
 			catch (Exception ex)
 			{
@@ -440,7 +506,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		#region Métodos privados
-
+		private static SelectList ObtenerComboAdministraciones(List<AdministracionDto> lista)
+		{
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista.Select(x => new ComboGenDto { Id = x.Adm_id, Descripcion = x.Adm_nombre }));
+		}
 
 		private void CalcularTotalesParaOC(ProductoParaOcModel model, List<ProductoParaOcDto> productos)
 		{
@@ -490,6 +559,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		#region Clases locales
 		private class DatosDeProductoActualizado()
 		{
+			public string P_Id { get; set; } = string.Empty;
 			public decimal PedidoCantidad { get; set; }
 			public decimal Pedido_Mas_Boni { get; set; }
 			public decimal P_Pcosto { get; set; }

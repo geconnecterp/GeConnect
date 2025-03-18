@@ -108,8 +108,15 @@ function AplicarSeteoMasivo() {
 			}
 			else {
 				$("#divListaProductoNuevaOC").html(obj);
+				$("#Total_Costo").val(formatter.format($("#Total_Costo").val()));
+				$("#Total_Pallet").val(formatter.format($("#Total_Pallet").val()));
 				AgregarHandlerAGrillaProdOC();
-				ActualizarInfoDeProductoEnGrilla(pId);
+				//ActualizarInfoDeProductosEnGrilla();
+				addInCellLostFocusHandler();
+				addInCellGotFocusHandler();
+				addInCellKeyDownHandler();
+				addInCellEditHandler();
+				AddEventListenerToGrid("tbListaProductoOC");
 			}
 		});
 	}
@@ -144,6 +151,7 @@ function addInCellEditHandler() {
 			$("#" + this.id).mask("000.000.000.000", { reverse: false });
 			$("#" + this.id).val(val);
 		}
+		console.log($("#" + this.id).text());
 	});
 }
 
@@ -152,40 +160,51 @@ function addInCellKeyDownHandler() {
 	$("#tbListaProductoOC").on('keydown', 'td[contenteditable]', function (e) {
 		if (isNaN(String.fromCharCode(e.which)) && !(keysAceptadas.indexOf(e.which) != -1) && !(e.shiftKey && (e.which == 37 || e.which == 39))) e.preventDefault();
 		//if (isNaN(String.fromCharCode(e.which)) && !(e.which == 8) && !(e.which == 110) && !(e.which == 37) && !(e.which == 39) && !(e.which == 46) && !(e.which == 190) && !(e.which >= 96 && e.which <= 105) && !(e.shiftKey && (e.which == 37 || e.which == 39))) e.preventDefault();
+		cellValueTemp = $("#" + this.id).text();
+	});
+}
+
+function addInCellGotFocusHandler() {
+	$("#tbListaProductoOC").on('focusin', 'td[contenteditable]', function (e) {
+		cellValueTemp = $("#" + this.id).text();
+		console.log(cellValueTemp);
 	});
 }
 
 function addInCellLostFocusHandler() {
 	$("#tbListaProductoOC").on('focusout', 'td[contenteditable]', function (e) {
 		var actualiza = true;
-		if (this.id === "P_Dto1" || this.id === "P_Dto2" || this.id === "P_Dto3" || this.id === "P_Dto4" || this.id === "P_Dto_Pa") {
+		if (cellValueTemp !== $("#" + this.id).text())
+			actualiza = false;
+		else {
+			if (this.id === "P_Dto1" || this.id === "P_Dto2" || this.id === "P_Dto3" || this.id === "P_Dto4" || this.id === "P_Dto_Pa") {
 
-		}
-		else if (this.id === "P_Plista") {
-
-		}
-		else if (this.id === "P_Boni") {
-			var spl = $("#" + this.id).val().split("/");
-			if (spl.length === 2) {
-				var num1 = Number(spl[0]);
-				var num2 = Number(spl[1]);
-				if (num1 > num2) {
-					actualiza = false;
-					$("#" + this.id).val("");
-					$("#" + this.id).text("");
-				}
 			}
-			else
-				actualiza = false;
-		}
+			else if (this.id === "P_Plista") {
 
+			}
+			else if (this.id === "P_Boni") {
+				var spl = $("#" + this.id).val().split("/");
+				if (spl.length === 2) {
+					var num1 = Number(spl[0]);
+					var num2 = Number(spl[1]);
+					if (num1 > num2) {
+						actualiza = false;
+						$("#" + this.id).val("");
+						$("#" + this.id).text("");
+					}
+				}
+				else
+					actualiza = false;
+			}
+		}
 		if (actualiza) {
-			//Actualizar datos
 			ActualizarProductoEnOc(this.id, $("#" + this.id).val());
 		}
 	});
 }
 
+///Actualizar datos de producto, luego de la edicion de algunos de sus parámetros editables
 function ActualizarProductoEnOc(field, val) {
 	var pId = pIdEnOcSeleccionado;
 	var data = { pId, field, val };
@@ -198,9 +217,42 @@ function ActualizarProductoEnOc(field, val) {
 		}
 		else {
 			//Actualizar valores en la grilla
+			$("#tbListaProductoOC").find('tr').each(function (i, el) {
+				var td = $(this).find('td');
+				if (td.length > 0 && td[1].innerText !== undefined && td[1].innerText === pId) {
+					console.log("innerText: " + td[1].innerText);
+					console.log("obj: " + obj);
+					//GRILLA
+					td[16].innerText = obj.data.pedido_Mas_Boni;//PEDIDO +BONI -> obj.data.pedido_Mas_Boni
+					td[17].innerText = obj.data.p_Pcosto;//PRECIO COSTO -> obj.data.p_Pcosto
+					td[18].innerText = obj.data.p_Pcosto_Total;//TOTAL COSTO -> obj.data.p_Pcosto_Total
+					td[19].innerText = obj.data.paletizado;//TOTAL PALLET -> obj.data.paletizado
+					
+					//TOTALES
+					$("#Total_Costo").val(formatter.format(obj.data.total_Costo));//TOTAL_COSTO -> obj.data.total_Costo
+					$("#Total_Pallet").val(formatter.format(obj.data.total_Pallet));//TOTAL_PALLET -> obj.data.total_Pallet
+				}
+			});
 		}
 
 	});
+}
+
+function CargarResumenDeOc() {
+	if (ExitensItemsEnOC()) {
+		var data = { ocIdSelected };
+		PostGenHtml(data, CargarResumenDeOcURL, function (obj) {
+			if (obj.error === true) {
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				$("#divResumenOC").html(obj);
+			}
+		});
+	}
 }
 
 function focusOnTd(x) {
@@ -325,6 +377,7 @@ function quitarProductoEnOC(e) {
 			AddEventListenerToGrid("tbListaProductoOC");
 			ActualizarInfoDeProductoEnGrilla(pId);
 			addInCellLostFocusHandler();
+			addInCellGotFocusHandler();
 			addInCellKeyDownHandler();
 			addInCellEditHandler();
 		}
@@ -351,6 +404,7 @@ function actualizarProducto(e) {
 				AddEventListenerToGrid("tbListaProductoOC");
 				ActualizarInfoDeProductosEnGrilla();
 				addInCellLostFocusHandler();
+				addInCellGotFocusHandler();
 				addInCellKeyDownHandler();
 				addInCellEditHandler();
 				CerrarWaiting();
@@ -375,27 +429,28 @@ function actualizarProducto(e) {
 }
 
 //Funcion que actualiza los valores del elemento seleccionado y editado de la grilla de OC (segundo TAB)
-function actualizarProductoEnOC(e) {
-	var pId = $(e).attr("data-interaction");
-	var data = { pId };
-	PostGenHtml(data, ActualizarProductoEnOcURL, function (obj) {
-		if (obj.error === true) {
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
-		}
-		else {
-			$("#divListaProductoNuevaOC").html(obj);
-			AgregarHandlerAGrillaProdOC();
-			AddEventListenerToGrid("tbListaProductoOC");
-			ActualizarInfoDeProductoEnGrilla(pId);
-			addInCellLostFocusHandler();
-			addInCellKeyDownHandler();
-			addInCellEditHandler();
-		}
-	});
-}
+//function actualizarProductoEnOC(e) {
+//	var pId = $(e).attr("data-interaction");
+//	var data = { pId };
+//	PostGenHtml(data, ActualizarProductoEnOcURL, function (obj) {
+//		if (obj.error === true) {
+//			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+//				$("#msjModal").modal("hide");
+//				return true;
+//			}, false, ["Aceptar"], "error!", null);
+//		}
+//		else {
+//			$("#divListaProductoNuevaOC").html(obj);
+//			AgregarHandlerAGrillaProdOC();
+//			AddEventListenerToGrid("tbListaProductoOC");
+//			ActualizarInfoDeProductoEnGrilla(pId);
+//			addInCellLostFocusHandler();
+//			addInCellGotFocusHandler();
+//			addInCellKeyDownHandler();
+//			addInCellEditHandler();
+//		}
+//	});
+//}
 
 function InicializaPantalla() {
 	var tb = $("#tbListaProducto tbody tr");
@@ -424,12 +479,36 @@ function InicializaPantalla() {
 	$("#btnAbmAceptar").hide();
 	$("#btnAbmCancelar").hide();
 	$("#btnDetalle").prop("disabled", true);
-	//activarBotones(false);
+	activarBotones(false);
 	ocIdSelected = "";
 	ctaIdSelected = "";
 	MostrarDatosDeCuenta(false);
 	CerrarWaiting();
 	return true;
+}
+
+function ExitensItemsEnOC() {
+	if ($("#tbListaProductoOC").length != 0) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+function activarBotones(activar) {
+	if (activar === true && ExitensItemsEnOC()) {
+		$("#btnAbmAceptar").prop("disabled", false);
+		$("#btnAbmCancelar").prop("disabled", false);
+		$("#btnAbmAceptar").show();
+		$("#btnAbmCancelar").show();
+	}
+	else {
+		$("#btnAbmAceptar").prop("disabled", true);
+		$("#btnAbmCancelar").prop("disabled", true);
+		$("#btnAbmAceptar").hide();
+		$("#btnAbmCancelar").hide();
+	}
 }
 
 function selectListaProductoRow(x) {
@@ -476,9 +555,12 @@ function BuscarProductosTabOC() {
 			AgregarHandlerAGrillaProdOC();
 			ActualizarInfoDeProductosEnGrilla();
 			addInCellLostFocusHandler();
+			addInCellGotFocusHandler();
 			addInCellKeyDownHandler();
 			addInCellEditHandler();
 			AddEventListenerToGrid("tbListaProductoOC");
+			activarBotones(true);
+			//CargarResumenDeOc(); ///TODO MARCE: Descomentar y ver porque poronga no funciona el SP
 		}
 	});
 }
@@ -540,8 +622,7 @@ function BuscarProductos(pag = 1) {
 		});
 
 		BuscarProductosTabOC();
-		$("#btnAbmAceptar").show();
-		$("#btnAbmCancelar").show();
+		
 		$("#btnDetalle").prop("disabled", false);
 		MostrarDatosDeCuenta(true);
 		CargarTopesDeOC();

@@ -86,7 +86,8 @@ namespace gc.infraestructura.Dtos.Almacen
 			var boni = 1.0M;
 			if (arr.Length == 2)
 			{
-				boni = decimal.Parse(arr[1]) / decimal.Parse(arr[0]);
+				if (decimal.TryParse(arr[1], out decimal val1) && decimal.TryParse(arr[0], out decimal val0))
+					boni = val1 / val0;
 			}
 			return p_plista * ((100 - p_d1) / 100) * ((100 - p_d2) / 100) * ((100 - p_d3) / 100) * ((100 - p_d4) / 100) * ((100 - p_dpa) / 100) * boni * ((100 + flete) / 100);
 		}

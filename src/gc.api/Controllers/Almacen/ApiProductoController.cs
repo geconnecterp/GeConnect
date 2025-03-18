@@ -903,6 +903,19 @@ namespace gc.api.Controllers.Almacen
 		}
 
 		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<OrdenDeCompraConceptoDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult CargarResumenDeOC(CargarResumenDeOCRequest request)
+		{
+			ApiResponse<List<OrdenDeCompraConceptoDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.CargarResumenDeOC(request);
+			response = new ApiResponse<List<OrdenDeCompraConceptoDto>>(res);
+			return Ok(response);
+		}
+
+		[HttpPost]
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoNCPIDto>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]

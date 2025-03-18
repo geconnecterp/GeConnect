@@ -117,6 +117,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string OC_Cargar_Pedido = "/NCPICargaPedido";
 		private const string OC_Cargar_Detalle = "/CargarProductosDeOC";
 		private const string OC_Tope = "/CargarTopesDeOC";
+		private const string OC_Resumen = "/CargarResumenDeOC";
 
 		private const string OC_Cargar_Lista = "/CargarOrdenesDeCompraList";
 
@@ -2296,7 +2297,6 @@ namespace gc.sitio.core.Servicios.Implementacion
 			
 		}
 
-		//TODO : llamar este servicioo desde el controller para cargar los items de la OC (detalle, de la segunda solapa)
 		public async Task<List<ProductoParaOcDto>> CargarProductosDeOC(CargarProductoParaOcRequest req, string token)
 		{
 			ApiResponse<List<ProductoParaOcDto>> apiResponse;
@@ -2333,16 +2333,6 @@ namespace gc.sitio.core.Servicios.Implementacion
 		{
 			ApiResponse<List<OrdenDeCompraTopeDto>> apiResponse;
 
-			//HelperAPI helper = new();
-
-			//HttpClient client = helper.InicializaCliente(token);
-			//HttpResponseMessage response;
-			//var link = $"{_appSettings.RutaBase}{RutaAPI}{OC_Cargar_Lista}?ctaId={ctaId}&admId={admId}&usuId={usuId}";
-
-			//response = await client.GetAsync(link);
-			//response = client.GetAsync(link).GetAwaiter().GetResult();
-
-
 			HelperAPI helper = new();
 			HttpClient client = helper.InicializaCliente(token);
 			HttpResponseMessage response;
@@ -2360,6 +2350,38 @@ namespace gc.sitio.core.Servicios.Implementacion
 					return new();
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<OrdenDeCompraTopeDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<OrdenDeCompraConceptoDto>> CargarResumenDeOC(CargarResumenDeOCRequest req, string token)
+		{
+			ApiResponse<List<OrdenDeCompraConceptoDto>> apiResponse;
+
+			HelperAPI helper = new();
+			CargarResumenDeOCRequest request = req;
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{OC_Resumen}";
+
+			response = await client.PostAsync(link, contentData);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros Oc_Compte:{req.Oc_Compte} admId:{req.Adm_Id} usu_id:{req.Usu_Id}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<OrdenDeCompraConceptoDto>>>(stringData);
 				return apiResponse.Data;
 			}
 			else

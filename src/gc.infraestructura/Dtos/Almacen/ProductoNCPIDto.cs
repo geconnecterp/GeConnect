@@ -52,7 +52,7 @@ namespace gc.infraestructura.Dtos.Almacen
 		public char Iva_Situacion { get; set; }
 		public decimal Iva_Alicuota { get; set; } = 0.00M;
 		public decimal In_Alicuota { get; set; } = 0.00M;
-		public int p_orden_pg { get; set; }
+		public int? p_orden_pg { get; set; }
 		public decimal P_Dto1 { get; set; } = 0.00M;
 		public decimal P_Dto2 { get; set; } = 0.00M;
 		public decimal P_Dto3 { get; set; } = 0.00M;
