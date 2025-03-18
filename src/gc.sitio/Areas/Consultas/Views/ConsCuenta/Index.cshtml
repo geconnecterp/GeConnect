@@ -40,6 +40,9 @@
     </div>
 </div>
 
+<div id="modalGestorDocumental" style="display:none;"></div>
+
+
 @section scripts {
     <script type="text/javascript">
         //esta variable global tendra por funcion afectar la logica de algunos controles
@@ -69,10 +72,17 @@
 
         var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "abmproducto", new { area = "abms" })";
 
+        var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "DocManager", new { area = "GesImpresion" })";
+        var 
+
     </script>
     <script src="~/js/plugins/jquery.simplePagination.js"></script>
 
+    <!--variables Globales y Enums Globales-->
     <script src="~/js/app/areas/abms/abmsettings.js"></script>
+
+    <script src="~/js/app/areas/docmngr/docmanager.js"></script>
+
     <script src="~/js/app/areas/consultas/ConsultaCuentas.js"></script>
     <script src="~/js/app/areas/consultas/ConsultaCuentaRules.js"></script>
 }

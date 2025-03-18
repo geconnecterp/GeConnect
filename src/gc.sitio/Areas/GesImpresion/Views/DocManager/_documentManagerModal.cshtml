@@ -1,0 +1,112 @@
+﻿@using gc.sitio.Areas.GesImpresion.Models
+@model DocumentManagerViewModel
+
+<div class="modal" id="documentManagerModal" tabindex="-1" role="dialog" aria-labelledby="documentManagerModalLabel" data-backdrop="static"
+     style="z-index:9999;">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="documentManagerModalLabel">@Model.Titulo</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs" id="documentManagerTabs" role="tablist">
+                    <li class="nav-item bg-secondary">
+                        <button type="button" id="genera-tab" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#genera" aria-controls="genera" aria-selected="true">
+                            <i class="bx bx-git-repo-forked"></i> Generar
+                        </button>
+                    </li>
+                    @if (Model.ShowPrintOption)
+                    {
+                        <li class="nav-item">
+                            <button type="button" class="nav-link" id="print-tab" data-bs-toggle="tab" data-bs-target="#print" role="tab" aria-controls="print" aria-selected="false">
+                                <i class="bx bx-printer text-warning"></i> Imprimir
+                            </button>
+                        </li>
+                    }
+                    @if (Model.ShowExportOption)
+                    {
+                        <li class="nav-item">
+                            <button type="button" class="nav-link" id="export-tab" data-bs-toggle="tab" data-bs-target="#export" role="tab" aria-controls="export" aria-selected="false">
+                                <i class="bx bxs-file-export text-primary"></i> Exportar
+                            </button>
+                        </li>
+                    }
+                    @if (Model.ShowEmailOption)
+                    {
+                        <li class="nav-item">
+                            <button type="button" class="nav-link" id="email-tab" data-bs-toggle="tab" data-bs-target="#email" role="tab" aria-controls="email" aria-selected="false">
+                                <i class="bx bx-envelope text-danger"></i> Email
+                            </button>
+                        </li>
+                    }
+                    @if (Model.ShowWhatsAppOption)
+                    {
+                        <li class="nav-item">
+                            <button type="button" class="nav-link" id="whatsapp-tab" data-bs-toggle="tab" data-bs-target="#whatsapp" role="tab" aria-controls="whatsapp" aria-selected="false">
+                                <i class="bx bxl-whatsapp text-success"></i> WhatsApp
+                            </button>
+                        </li>
+                    }
+                </ul>
+                <div class="tab-content" id="documentManagerTabContent">
+                    <div class="tab-pane fade show active" id="genera" role="tabpanel" aria-labelledby="print-tab">
+                        <div class="input-group input-group-sm">
+                            <div class="form-check form-check-inline form-switch mb2">
+                                <input type="radio" id="rdpdf" name="rdgenera" class="form-check-input" value="P"/>
+                                <label class="form-check-label" for="rdpdf">PDF</label>
+                            </div>
+                            <div class="form-check form-check-inline form-switch mb2">
+                                <input type="radio" id="rdtxt" name="rdgenera" class="form-check-input" value="T"/>
+                                <label class="form-check-label" for="rdtxt">TXT</label>
+                            </div>
+                            <div class="form-check form-check-inline form-switch mb2">
+                                <input type="radio" id="rdxls" name="rdgenera" class="form-check-input" value="X"/>
+                                <label class="form-check-label" for="rdxls">XLS</label>
+                            </div>
+                        </div>
+                        <div class="input-group input-group-sm">
+                            <button type="button" class="btn btn-success" id="btnGenerarFile"><i class="bx bx-play"></i> Generar</button>
+                        </div>
+
+                    </div>
+                    @if (Model.ShowPrintOption)
+                    {
+                        <div class="tab-pane fade" id="print" role="tabpanel" aria-labelledby="print-tab">
+                            <partial name="_PrintTab" model="Model.PrintModel" />
+                        </div>
+                    }
+                    @if (Model.ShowExportOption)
+                    {
+                        <div class="tab-pane fade" id="export" role="tabpanel" aria-labelledby="export-tab">
+                            <partial name="_ExportTab" model="Model.ExportModel" />
+                        </div>
+                    }
+                    @if (Model.ShowEmailOption)
+                    {
+                        <div class="tab-pane fade" id="email" role="tabpanel" aria-labelledby="email-tab">
+                            <partial name="_EmailTab" model="Model.EmailModel" />
+                        </div>
+                    }
+                    @if (Model.ShowWhatsAppOption)
+                    {
+                        <div class="tab-pane fade" id="whatsapp" role="tabpanel" aria-labelledby="whatsapp-tab">
+                            <partial name="_WhatsAppTab" model="Model.WhatsAppModel" />
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btnCancelarGD" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="documentManagerActionButton">Ejecutar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="documentManagerSourceApp" value="@Model.SourceApp" />
+<input type="hidden" id="documentManagerEntityId" value="@Model.EntityId" />
+<input type="hidden" id="documentManagerEntityType" value="@Model.EntityType" />
+

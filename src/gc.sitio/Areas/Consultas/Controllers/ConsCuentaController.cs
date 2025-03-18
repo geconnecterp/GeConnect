@@ -486,5 +486,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 return PartialView("_gridMensaje", response);
             }
         }
+
+      
     }
 }

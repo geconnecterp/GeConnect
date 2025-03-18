@@ -2,6 +2,7 @@
 using gc.infraestructura.Core.Interfaces;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.ABM;
+using gc.sitio.core.Servicios.Contratos.DocManager;
 using gc.sitio.core.Servicios.Contratos.Users;
 using gc.sitio.core.Servicios.Implementacion;
 using gc.sitio.core.Servicios.Implementacion.ABM;
@@ -66,6 +67,7 @@ namespace gc.sitio.core.Extensions
 			services.AddScoped<ITipoCuentaGastoServicio, TipoCuentaGastoServicio>();
 			services.AddScoped<IABMCuentaDirectaServicio, ABMCuentaDirectaServicio>();
 			services.AddScoped<ICuentaGastoServicio, CuentaGastoServicio>();
+			services.AddScoped<IDocManagerServicio, IDocManagerServicio>();
 
 			return services;
         }

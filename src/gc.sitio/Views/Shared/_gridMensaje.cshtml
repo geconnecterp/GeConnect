@@ -15,14 +15,18 @@
                             @if (Model.EsError)
                             {
                                 <i class="bx bx-error-circle text-danger"></i>
+                                <input type="hidden" id="msgError" value="true" />
                             }
                             else if (Model.EsWarn)
                             {
                                 <i class="bx bx-shape-triangle text-warning"></i>
+                                <input type="hidden" id="msgWarn" value="true" />
+
                             }
                             else
                             {
                                 <i class="bx bx-check-circle text-success"></i>
+                                <input type="hidden" id="msgSucc" value="true" />
                             }
 
                         </div>
