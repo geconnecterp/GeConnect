@@ -9,6 +9,7 @@ using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
+using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Users;
@@ -1521,10 +1522,50 @@ namespace gc.sitio.Controllers
 				_context.HttpContext.Session.SetString("OrdenDeCompraLista", json);
 			}
 		}
-		#endregion
+        #endregion
 
-		#region Metodos generales
-		public PartialViewResult ObtenerMensajeDeError(string mensaje)
+        #region Consultas
+        public List<ConsCtaCteDto> CuentaCorrienteBuscada
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("CuentaCorrienteBuscada");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<ConsCtaCteDto>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("CuentaCorrienteBuscada", json);
+            }
+        }
+        #endregion
+
+        #region Documento Manager
+        public string ModuloDM
+        {
+            get
+            {
+                var txt = _context.HttpContext.Session.GetString("ModuloDM");
+                if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
+                {
+                    return string.Empty;
+                }
+                return txt;
+            }
+            set
+            {
+                var valor = value.ToString();
+                _context.HttpContext.Session.SetString("ModuloDM", valor);
+            }
+        }
+        #endregion
+
+        #region Metodos generales
+        public PartialViewResult ObtenerMensajeDeError(string mensaje)
         {
             RespuestaGenerica<EntidadBase> response = new()
             {

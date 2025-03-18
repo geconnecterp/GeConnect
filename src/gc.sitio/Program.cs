@@ -2,10 +2,14 @@ using gc.sitio.core.Extensions;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Globalization;
+using gc.infraestructura.EntidadesComunes.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.AddLog4Net("log4net.config", watch: true);
 builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
+//extraigo del appsettings.js las configuraciones de cada modulo para el Gestor Documental
+builder.Services.Configure<DocsManager>(builder.Configuration.GetSection("DocsManager"));
+builder.Services.Configure<EmpresaGeco>(builder.Configuration.GetSection("EmpresaGeco"));
 
 var cultureInfo = (CultureInfo)CultureInfo.CurrentCulture.Clone();
 cultureInfo.NumberFormat.NumberDecimalSeparator = ".";

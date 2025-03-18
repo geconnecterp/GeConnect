@@ -82,6 +82,15 @@ const Tabs = {
 	TabCuentaDirecta: 'btnTabCuentaDirecta',
 }
 
+const ModImpresion = {
+    ModCtaCte: "CCtaCte", //Consulta de Cuenta Corriente
+	ModVenc: "CVencimiento", //Consulta de Vencimientos
+	ModCmpte: "CComprobante", //Consulta de Comprobantes"
+	ModOrdPagos: "COrdenesPagos", //Consulta de Ordenes de Pagos
+    ModRecProv: "CRecepcionProv" //Consulta de Recepcion de Proveedores"
+
+}
+
 //variables globales
 var regSelected = "";
 var funcCallBack = "";
@@ -99,3 +108,4 @@ var init = true;
 var EntidadSelect = "";
 var EntidadEstado = "";
 var sizeMinGrid1 = "150px";
+var fkey = ""; //para resguardar la clave de la entidad seleccionada. Ej: Se seleccionar registro de Orden de Pago, y se devuelve el nro de orden de pago.

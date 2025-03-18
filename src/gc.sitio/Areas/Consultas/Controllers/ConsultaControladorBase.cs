@@ -17,22 +17,6 @@ namespace gc.sitio.Areas.Consultas.Controllers
             _logger = logger;
         }
 
-        public List<ConsCtaCteDto> CuentaCorrienteBuscada
-        {
-            get
-            {
-                var json = _context.HttpContext.Session.GetString("CuentaCorrienteBuscada");
-                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
-                {
-                    return [];
-                }
-                return JsonConvert.DeserializeObject<List<ConsCtaCteDto>>(json);
-            }
-            set
-            {
-                var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("CuentaCorrienteBuscada", json);
-            }
-        }
+       
     }
 }
