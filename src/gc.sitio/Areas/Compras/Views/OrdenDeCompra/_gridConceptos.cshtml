@@ -1,0 +1,28 @@
+﻿@model ConceptoModel
+@{
+}
+<div class="row mt-1">
+	<div class="card">
+		<div class="card-body mt-1-ctm">
+			<div class="table-responsive text-nowrap table-wrapper-300-full-width">
+				<table class="table table-sm mb-0 table-hover" id="tbGridConcepto">
+					<thead class="table-dark">
+						<tr class="header">
+							<th class="col-header-small align-left">Concepto</th>
+							<th class="col-header-small align-right">Importe</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var item in Model.ResumenGrilla.ListaDatos)
+						{
+							<tr>
+								<td class="align-left">@item.Concepto</td>
+								<td class="align-right">@item.Importe</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>

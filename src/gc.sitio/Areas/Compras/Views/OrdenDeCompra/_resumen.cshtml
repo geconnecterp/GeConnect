@@ -7,11 +7,11 @@
 		<div class="row mt-1">
 			<div class="input-group input-group-sm">
 				<span class="input-group-text fixed-lbl-for-abm-70">Entrega:</span>
-				@Html.TextBoxFor(t => t.FechaEntrega, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable" })
-				@Html.DropDownListFor(m => m.AdmId, suc_entrega, "Seleccionar...", new { @id = "listaSucEntrega", @class = "form-control activable" })
+				@Html.TextBoxFor(t => t.FechaEntrega, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeFechaEntrega(this);" })
+				@Html.DropDownListFor(m => m.AdmId, suc_entrega, "Seleccionar...", new { @id = "listaSucEntrega", @class = "form-control activable", @onchange = "onChangeListaSucEntrega(this);" })
 			</div>
 		</div>
-		<div class="row mt-1">
+		<div class="row mt-1" style="margin-left: 0px;">
 			<div class="form-check form-check-inline form-switch mb-2">
 				<input class="form-check-input activable" type="checkbox" asp-for="PagoAnticipado" value="" id="chkPagoAnticipado">
 				<label class="form-check-label" for="chkPagoAnticipado"> Pago Anticipado</label>
@@ -20,7 +20,7 @@
 		<div class="row mt-1">
 			<div class="input-group input-group-sm">
 				<span class="input-group-text fixed-lbl-for-abm-70">Pago a plazo:</span>
-				@Html.TextBoxFor(t => t.PagoPlazo, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable" })
+				@Html.TextBoxFor(t => t.PagoPlazo, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangePagoPlazo(this);" })
 			</div>
 		</div>
 		<div class="row mt-1">
@@ -29,10 +29,10 @@
 				<input type="text" asp-for="Obs" class="form-control activable inputEditable" />
 			</div>
 		</div>
-		<div class="row mt-1">
+		<div class="row mt-1" style="margin-left: 0px;">
 			<div class="form-check form-check-inline form-switch mb-2">
 				<input class="form-check-input activable" type="checkbox" asp-for="DejarOCActiva" value="" id="chkDejarOCActiva">
-				<label class="form-check-label" for="chkDejarOCActiva"> DEJAR OC ACTIVA (NO podrá modificarla)</label>
+				<label class="form-check-label" for="chkDejarOCActiva" style="color: red;"> DEJAR OC ACTIVA (NO podrá modificarla)</label>
 			</div>
 		</div>
 	</div>
@@ -40,7 +40,7 @@
 		<div class="row mt-1">
 			<div class="card">
 				<div class="card-body mt-1-ctm">
-					<div class="table-responsive text-nowrap table-wrapper-100-full">
+					<div class="table-responsive text-nowrap table-wrapper-300-full-width">
 						<table class="table table-sm mb-0 table-hover" id="tbGridConcepto">
 							<thead class="table-dark">
 								<tr class="header">
@@ -53,7 +53,7 @@
 								{
 									<tr>
 										<td class="align-left">@item.Concepto</td>
-										<td class="align-center">@item.Importe</td>
+										<td class="align-right">@item.Importe</td>
 									</tr>
 								}
 							</tbody>

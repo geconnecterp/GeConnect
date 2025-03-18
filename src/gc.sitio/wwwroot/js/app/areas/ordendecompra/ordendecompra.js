@@ -41,9 +41,10 @@
 			BuscarProductos(pagina);
 		}
 	});
-	//$("#btnAplicar").on("click", function () {
-	//	AplicarSeteoMasivo();
-	//});
+	$("#btnAbmAceptar").on("click", function () {
+		console.log(this);
+		ConfirmarOrdenDeCompra();
+	});
 
 	funcCallBack = BuscarProductos;
 	InicializaPantalla();
@@ -72,6 +73,67 @@ const formatter = new Intl.NumberFormat('en-US', {
 	// print 2500.10 as $2,500.1
 	//maximumFractionDigits: 0, // Causes 2500.99 to be printed as $2,501
 });
+
+function ConfirmarOrdenDeCompra() {
+	AbrirMensaje("ATENCIÓN", "¿Confirma la generación de la Orden de Compra?", function () {
+		var data = { ocIdSelected };
+		PostGen(data, ConfirmarOrdenDeCompraURL, function (obj) {
+			if (obj.error === true) {
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					InicializaPantalla();
+					return true;
+				}, false, ["Aceptar"], "info!", null);
+			}
+		});
+	}, false, ["Aceptar", "Cancelar"], "question!", null);
+}
+
+function ActualizarGrillaConceptos() {
+	var Oc_Compte = ocIdSelected;
+	var Entrega_Fecha = $("#FechaEntrega").val();
+	var Entrega_Adm = $("#listaSucEntrega").val()
+	var Pago_Anticipado = 'N';
+	if ($("#chkPagoAnticipado")[0].checked)
+		Pago_Anticipado = 'S';
+	var Pago_Fecha = $("#PagoPlazo").val();
+	var Observaciones = $("#Obs").val();
+	var Oce_Id = 'P';
+	if ($("#chkDejarOCActiva")[0].checked)
+		Oce_Id = 'C';
+	var data = { Oc_Compte, Entrega_Fecha, Entrega_Adm, Pago_Anticipado, Pago_Fecha, Observaciones, Oce_Id };
+	console.log(data);
+	PostGenHtml(data, ObtenerConceptoURL, function (obj) {
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			$("#divGridConcepto").html(obj);
+			FormatearValores("#tbGridConcepto", 1);
+		}
+	});
+}
+
+function onChangeFechaEntrega(e) {
+	ActualizarGrillaConceptos();
+}
+
+function onChangePagoPlazo(e) {
+	ActualizarGrillaConceptos();
+}
+
+function onChangeListaSucEntrega(e) {
+	ActualizarGrillaConceptos();
+}
 
 function AplicarSeteoMasivo() {
 	var alMenosUno = false;
@@ -249,10 +311,31 @@ function CargarResumenDeOc() {
 				}, false, ["Aceptar"], "error!", null);
 			}
 			else {
-				$("#divResumenOC").html(obj);
+				$("#divResumen").html(obj);
+				FormatearValores("#tbGridConcepto", 1);
+				$("#Obs").on('focusout', function (e) {
+					ActualizarGrillaConceptos();
+				});
+				$("#chkPagoAnticipado").on("click", function () {
+					ActualizarGrillaConceptos();
+				});
+				$("#chkDejarOCActiva").on("click", function () {
+					ActualizarGrillaConceptos();
+				});
 			}
 		});
 	}
+}
+
+///Da formato monetario a los campos de tipo "money"
+function FormatearValores(grilla, idx) {
+	//grilla = "#tbListaProductoOC"
+	$(grilla).find('tr').each(function (i, el) {
+		var td = $(this).find('td');
+		if (td.length > 0 && td[idx].innerText !== undefined) {
+			td[idx].innerText = formatter.format(td[idx].innerText);
+		}
+	});
 }
 
 function focusOnTd(x) {
@@ -560,7 +643,7 @@ function BuscarProductosTabOC() {
 			addInCellEditHandler();
 			AddEventListenerToGrid("tbListaProductoOC");
 			activarBotones(true);
-			//CargarResumenDeOc(); ///TODO MARCE: Descomentar y ver porque poronga no funciona el SP
+			CargarResumenDeOc(); ///TODO MARCE: Descomentar y ver porque poronga no funciona el SP
 		}
 	});
 }

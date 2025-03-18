@@ -841,6 +841,22 @@ namespace gc.api.core.Servicios
 			return respuesta;
 		}
 
+		public List<RespuestaDto> ConfirmarOC(ConfirmarOCRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_OC_Confirmar;
+			var ps = new List<SqlParameter>()
+			{
+				new("@cta_id",request.Cta_Id),
+				new("@adm_id",request.Adm_Id),
+				new("@usu_id",request.Usu_Id),
+				new("@nueva",request.Nueva),
+				new("@oc_compte",request.Oc_Compte),
+				new("@json",request.Json),
+			};
+			List<RespuestaDto> respuesta = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return respuesta;
+		}
+
 		public List<ProductoNCPIDto> NCPICargarListaDeProductos(NCPICargarListaDeProductosRequest request)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OC_Productos;

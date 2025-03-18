@@ -430,6 +430,69 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		[HttpPost]
+		public IActionResult ObtenerConcepto(ActualizarConceptosRequest request)
+		{
+			try
+			{
+				var model = new ConceptoModel();
+				var jsonstring = JsonConvert.SerializeObject(ListaProductosOC, new JsonSerializerSettings());
+				var resumen = _productoServicio.CargarResumenDeOC(new CargarResumenDeOCRequest
+				{
+					Cta_Id = CtaIdSelected,
+					Adm_Id = AdministracionId,
+					Usu_Id = UserName,
+					Nueva = string.IsNullOrEmpty(request.Oc_Compte),
+					Oc_Compte = request.Oc_Compte,
+					Entrega_Fecha = DateTime.Now,
+					Entrega_Adm = AdministracionId,
+					Pago_Anticipado = 'N',
+					Pago_Fecha = DateTime.Now.AddDays(1),
+					Observaciones = string.Empty,
+					Oce_Id = 'P',
+					Json = jsonstring
+				}, TokenCookie).Result;
+				model.ResumenGrilla = ObtenerGridCore<OrdenDeCompraConceptoDto>(resumen);
+				return PartialView("_gridConceptos", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public JsonResult ConfirmarOrdenDeCompra(string oc_compte)
+		{
+			try
+			{
+				if (ListaProductosOC != null && ListaProductosOC.Count > 0) return Json(new { error = true, warn = false, msg = $"No existen productos cargados en la OC" });
+				if (string.IsNullOrEmpty(CtaIdSelected)) return Json(new { error = true, warn = false, msg = $"Se ha producido un error al selecciona la cuenta." });
+				var request = new ConfirmarOCRequest()
+				{
+					Cta_Id = CtaIdSelected,
+					Adm_Id = AdministracionId,
+					Usu_Id = UserName,
+					Oc_Compte = oc_compte,
+					Nueva = string.IsNullOrEmpty(oc_compte),
+					Json = JsonConvert.SerializeObject(ListaProductosOC, new JsonSerializerSettings())
+				};
+				var respuesta = _productoServicio.ConfirmarOrdenDeCompra(request, TokenCookie).Result;
+				return AnalizarRespuesta(respuesta);
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar confirmar los datos de la orden de compra" });
+			}
+		}
+
+		[HttpPost]
 		public JsonResult ObtenerTopesDeOc()
 		{
 			try
