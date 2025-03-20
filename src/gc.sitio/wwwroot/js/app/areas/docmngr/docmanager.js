@@ -14,7 +14,16 @@ $(function () {
         $("#modalGestorDocumental").hide();
     });
 
-    $("#btnGenerarFile").on("click", invocaGenerarArchivo);
+    $(document).on("click", "input[name='rdgenera']", function () {
+        if ($(this).is(":checked")) {
+            $("#btnGenerarFile").prop("disabled", false);
+        }
+        else {
+            $("#btnGenerarFile").prop("disabled", true);
+        }
+    });
+
+    $(document).on("click", "#btnGenerarFile", invocaGenerarArchivo);
 });
 
 function invocacionGestorDoc(data) {
@@ -39,5 +48,33 @@ function inicializaGestorDocumental() {
 
 function invocaGenerarArchivo() {
     var formato = $("input[name='rdgenera']:checked").val();
-
+    var modulo = fkey; //resgardo el modulo que llamo la funcionalidad
+    var data = {
+        modulo: modulo,
+        formato: formato
+    };
+    PostGen(data, generadorArchivoUrl, function (obj) {
+        if (obj.error === true) {
+            AbrirMensaje("Atención!", obj.msg, function () {
+                $("#msjModal").modal("hide");
+                return true;
+            }, false, ["Aceptar"], "error!", null);
+        }
+        else if (obj.warn === true) {
+            AbrirMensaje("Atención!", obj.msg, function () {
+                if (obj.auth === true) {
+                    window.location.href = login;
+                } else {
+                    $("#msjModal").modal("hide");
+                    return true;
+                }
+            }, false, ["Aceptar"], "error!", null);
+        }
+        else {
+            var pdfWindow = window.open("");
+            pdfWindow.document.write(
+                "<iframe width='100%' height='100%' src='data:application/pdf;base64, " + encodeURI(obj.pdfBase64) + "'></iframe>"
+            );
+        }
+    });
 }
