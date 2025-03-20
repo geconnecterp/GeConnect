@@ -29,24 +29,29 @@ function GridCtaCte() {
 
 
 function imprimirCtaCte() {
-    var data = GeneradorParametros(ModImpresion.ModCtaCte);
+
+    fkey = ModImpresion.ModCtaCte
+    var data = GeneradorParametros(fkey);
     invocacionGestorDoc(data);
 }
 
 function imprimirVenc() {
-    var data = GeneradorParametros(ModImpresion.ModVenc);
+    fkey = ModImpresion.ModVenc;
+    var data = GeneradorParametros(fkey);
     invocacionGestorDoc(data);
 
 }
 
 function imprimirComp() {
-    var data = GeneradorParametros(ModImpresion.ModCmpte);
+    fkey = ModImpresion.ModCmpte;
+    var data = GeneradorParametros(fkey);
     invocacionGestorDoc(data);
 
 }
 
 function imprimirOP() {
-    var data = GeneradorParametros(ModImpresion.ModOrdPagos);
+    fkey = ModImpresion.ModOrdPagos;
+    var data = GeneradorParametros(fkey);
     invocacionGestorDoc(data);
 
 }

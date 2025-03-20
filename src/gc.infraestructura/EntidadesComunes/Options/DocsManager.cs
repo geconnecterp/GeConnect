@@ -27,5 +27,10 @@ namespace gc.infraestructura.EntidadesComunes.Options
         public bool Whatsapp { get; set; }
         public bool ImprimeDuplicado { get; set; }
         public bool ImprimeSoloDuplicado { get; set; }
+        public List<float> Anchos { get; set; } = new List<float>();
+        public List<string> Titulos { get; set; } = new List<string>();
+        public List<string> Columnas { get; set; } = new List<string>();
+        public List<string> Titulos2 { get; set; } = new List<string>();
+        public List<string> Columnas2 { get; set; } = new List<string>();
     }
 }

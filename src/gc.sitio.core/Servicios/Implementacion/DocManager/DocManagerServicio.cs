@@ -1,5 +1,8 @@
 ﻿using gc.infraestructura.Dtos.DocManager;
+using gc.infraestructura.Helpers;
 using gc.sitio.core.Servicios.Contratos.DocManager;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,14 +13,106 @@ namespace gc.sitio.core.Servicios.Implementacion.DocManager
 {
     public class DocManagerServicio : IDocManagerServicio
     {
-        public string GenerarArchivoPDF<T>(PrintRequestDto<T> request)
+
+        /// <summary>
+        /// Se devuelve la ruta del archivo generado
+        /// </summary>
+        /// <typeparam name="T">tipo de dato a utilizar</typeparam>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public void GenerarArchivoPDF<T>(PrintRequestDto<T> request, out MemoryStream ms)
         {
-            throw new NotImplementedException();
+            PdfWriter writer = null;
+            Document pdf = null;
+            ms = new MemoryStream();
+            try
+            {
+                var rCab = request.Cabecera;
+                var rPie = request.Pie;
+
+                string nnFile = rCab.TituloDocumento;
+
+                #region Instancia del PDF y Generación de Cabecera
+                pdf = HelperPdf.GenerarInstanciaAndInit(ref writer, out ms, nnFile, HojaSize.A4, true);
+
+                // Agregar el evento de pie de página
+                writer.PageEvent = new CustomPdfPageEventHelper(rPie.Observaciones);
+
+                var logo = HelperPdf.CargaLogo(rCab.Logo, 20, pdf.PageSize.Height - 10, 20);
+                #region Se definen las fuentes a utilizar
+                var titulo = HelperPdf.DefineFontWithStyle("Arial", 12, Font.BOLD, 0, 0, 0);
+                var subtitulo = HelperPdf.DefineFontWithStyle("Arial", 10, Font.NORMAL, 0, 0, 0);
+                var normal = HelperPdf.DefineFontWithStyle("Arial", 8, Font.NORMAL, 0, 0, 0);
+                var chico = HelperPdf.DefineFontWithStyle("Arial", 6, Font.NORMAL, 0, 0, 0);
+                #endregion
+                #endregion
+
+                #region Definición de la cabecera
+                HeaderFooter cabecera = HelperPdf.GeneraCabeceraListadoTipo01(rCab, titulo, subtitulo, normal, chico, logo);
+                pdf.Header = cabecera;
+                #endregion
+                #region Definición de Pie de página
+               
+                #endregion
+
+                pdf.Open();
+
+                #region Carga del listado
+                //la primera hoja tiene los datos del cliente. Luego el listado de datos
+                //cargamos los datos del cliente
+                if(request.ModuloImpresion== Modulo.CUENTA_CORRIENTE || request.ModuloImpresion == Modulo.VENCIMIENTO_COMPROBANTES)
+                {
+                    var tablaEnc = HelperPdf.GeneraTabla(4, [20f, 40f, 20f, 20f], 100, 10, 20);
+                    HelperPdf.CargarDatosCliente(pdf, request.Cuerpo, subtitulo, tablaEnc);
+                }
+                switch (request.ModuloImpresion)
+                {
+                    case Modulo.CUENTA_CORRIENTE:
+                        List<string> titulos = new List<string> { "Descripcion", "Cuota", "Est.", "Fecha Comp.", "Fecha Vto", "Importe" };
+                        float[] anchos = [50f, 10f, 10f, 10f, 10f, 10f];
+                        HelperPdf.GeneraCabeceraLista(pdf, titulos,anchos, normal);
+                        
+                        HelperPdf.GenerarListadoDatos(pdf, request.Cuerpo, anchos, normal);
+                        break;
+                    case Modulo.ORDEN_DE_PAGO:
+                        break;
+                    case Modulo.CERTIFICADO_DE_RETENCION_GANANCIA:
+                        break;
+                    case Modulo.CERTIFICADO_DE_RETENCION_IIBB:
+                        break;
+                    case Modulo.ORDEN_DE_PAGO_DUPLICADO:
+                        break;
+                    case Modulo.VENCIMIENTO_COMPROBANTES:
+                        List<string> titulosV = new List<string> { "Descripcion", "Cuota", "Est.", "Fecha Comp.", "Fecha Vto", "Importe" };
+                        float[] anchosV = [50f, 10f, 10f, 10f, 10f, 10f];
+                        HelperPdf.GeneraCabeceraLista(pdf, titulosV, anchosV, normal);
+
+                        HelperPdf.GenerarListadoDatos(pdf, request.Cuerpo, anchosV, normal);
+                        break;
+                    case Modulo.COMPROBANTES:
+                        break;
+                    case Modulo.RECEPCION_PROVEEDORES:
+                        break;
+                    default:
+                        break;
+                }
+
+                //HelperPdf.GeneraCabeceraListado(pdf, request.Cuerpo.Titulos,  request.Cuerpo.ColumnasAncho, titulo, subtitulo, normal, chico);
+               // HelperPdf.GenerarListadoDatos(ref pdf, request.Cuerpo, subtitulo, normal, chico);
+
+                #endregion
+                //var parrafo = HelperPdf.GeneraParrafo("Texto Prueba", normal, Element.ALIGN_JUSTIFIED, 10, 10);
+                //pdf.Add(parrafo);
+                pdf.Close();
+
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }           
         }
 
-        public string GenerarDocumento<T>(PrintRequestDto<T> request)
-        {
-            throw new NotImplementedException();
-        }
+      
     }
 }

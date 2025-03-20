@@ -9,8 +9,11 @@ using gc.infraestructura.EntidadesComunes.Options;
 using gc.sitio.Areas.GesImpresion.Models;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos.DocManager;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Options;
+using System.IO.Pipelines;
 
 namespace gc.sitio.Areas.GesImpresion.Controllers
 {
@@ -24,10 +27,12 @@ namespace gc.sitio.Areas.GesImpresion.Controllers
         private readonly IDocManagerServicio _docManagerServicio;
         private readonly AppSettings _setting;
         private readonly EmpresaGeco _empresaGeco;
+        private readonly IWebHostEnvironment _env;
 
         public DocManagerController(IOptions<AppSettings> options, IHttpContextAccessor accessor,
             ILogger<DocManagerController> logger, IHttpClientFactory clientFactory,
-            IOptions<DocsManager> docsManager, IOptions<EmpresaGeco> empresa, IDocManagerServicio docManager) : base(options, accessor, logger)
+            IOptions<DocsManager> docsManager, IOptions<EmpresaGeco> empresa,
+            IDocManagerServicio docManager, IWebHostEnvironment env) : base(options, accessor, logger)
         {
             _clientFactory = clientFactory;
             _logger = logger;
@@ -36,6 +41,7 @@ namespace gc.sitio.Areas.GesImpresion.Controllers
             _docsManager = docsManager.Value;
             _docManagerServicio = docManager;
             _empresaGeco = empresa.Value;
+            _env = env;
         }
 
         public IActionResult Index()
@@ -111,51 +117,24 @@ namespace gc.sitio.Areas.GesImpresion.Controllers
         }
 
         [HttpPost]
-        public JsonResult GeneradorArchivo(string formato)
+        public JsonResult GeneradorArchivo(string formato, string modulo)
         {
             string rutaArchivo = string.Empty;
+
             try
-            {                
+            {
                 var auth = EstaAutenticado;
                 if (!auth.Item1 || auth.Item2 < DateTime.Now)
                 {
                     return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
                 }
-
+                var mc = _docsManager.Modulos.Find(x => x.Modulo == modulo);
+                MemoryStream ms = new MemoryStream();
                 switch (formato)
                 {
                     case "P":
-                        var cuenta = CuentaComercialSeleccionada;
-                        PrintRequestDto<ConsCtaCteDto> ctaCteFile = new PrintRequestDto<ConsCtaCteDto>
-                        {
-                            ModuloImpresion = Modulo.CUENTA_CORRIENTE,
-                            Cabecera = new DatosCabeceraDto
-                            {
-                               NombreEmpresa = _empresaGeco.Nombre,
-                                Direccion = _empresaGeco.Direccion,
-                                CUIT = _empresaGeco.CUIT,
-                                IIBB = _empresaGeco.IngresosBrutos,
-                                Sucursal =AdministracionId,
-                                TituloDocumento = $"{ModuloDM}_{cuenta.Cta_Id}_{DateTime.Now.Ticks}"
+                        SeleccionaTipoInformePDF(mc, out ms);
 
-                            },
-                            Pie=new DatosPieDto
-                            {
-                                Fecha = DateTime.Now.ToString("dd/MM/yyyy"),
-                                Usuario = UserName,
-                                Observaciones = "CUENTA CORRIENTE - Documento generado por el sistema de Gestión Comercial"
-                            },
-                            Cuerpo = new DatosCuerpoDto<ConsCtaCteDto>
-                            {
-                                CtaId = cuenta.Cta_Id,
-                                RazonSocial = cuenta.Cta_Denominacion,
-                                Domicilio = cuenta.Cta_Domicilio,
-                                CUIT = cuenta.Cta_Documento,
-                                Contacto = "-",
-                                Datos = CuentaCorrienteBuscada
-                            },
-                        };
-                        string res = _docManagerServicio.GenerarArchivoPDF(ctaCteFile);
                         break;
                     case "T":
                         break;
@@ -164,7 +143,10 @@ namespace gc.sitio.Areas.GesImpresion.Controllers
                     default:
                         break;
                 }
-                return Json(new { error = false, warn = false, rutafile = rutaArchivo });
+                string base64Pdf = Convert.ToBase64String(ms.ToArray());
+                return Json(new { error = false, warn = false, pdfBase64 = base64Pdf });
+
+                //return Json(new { error = false, warn = false, rutafile = rutaArchivo });
             }
             catch (NegocioException ex)
             {
@@ -178,6 +160,102 @@ namespace gc.sitio.Areas.GesImpresion.Controllers
             {
                 return Json(new { error = true, warn = false, msg = ex.Message });
             }
+        }
+
+        private void SeleccionaTipoInformePDF(ModuloDocMngr modulo, out MemoryStream ms)
+        {
+            ms = new MemoryStream();
+            string observacion;
+            //se distingue el modulo y con ello el conjunto de datos resguardados en memoria.
+            switch (modulo.Modulo)
+            {
+                case "CCtaCte":
+                    observacion = "CUENTA CORRIENTE - Documento generado por el sistema de Gestión Comercial";
+
+                    GeneraReporteSegunDatos(modulo, CuentaCorrienteBuscada, observacion, out ms);
+                    break;
+                case "CVencimiento":
+                    observacion = "VENCIMIENTOS DE COMPROBANTES - Documento generado por el sistema de Gestión Comercial";
+                    var lsVto = VencimientosBuscados;
+                    var vDatos = lsVto.Select(x => new
+                    {
+                        Descripcion = $"{x.Tco_desc}-{x.Cm_compte}",
+                        Cuota = x.Cm_compte_cuota,
+                        Est = x.Cv_estado,
+                        FechaCmpte = x.Cv_fecha_carga.ToShortDateString(),
+                        FechaVto = x.Cv_fecha_vto.ToShortDateString(),
+                        Importe = x.Cv_importe
+                    }).ToList();
+                    GeneraReporteSegunDatos(modulo, vDatos, observacion, out ms);
+                    break;
+                case "CComprobante":
+                    break;
+                case "COrdenesPagos":
+                    break;
+                case "CRecepcionProv":
+                    break;
+                default:
+                    break;
+            }
+
+
+        }
+
+        private void GeneraReporteSegunDatos<T>(ModuloDocMngr modulo, List<T> listado, string observacion, out MemoryStream ms)
+        {
+            var cuenta = CuentaComercialSeleccionada;
+
+            PrintRequestDto<T> request = new PrintRequestDto<T>();
+            switch (modulo.Modulo)
+            {
+                case "CCtaCte":
+                    request.ModuloImpresion = Modulo.CUENTA_CORRIENTE;
+                    break;
+                case "CVencimiento":
+                    request.ModuloImpresion = Modulo.VENCIMIENTO_COMPROBANTES;
+                    break;
+                case "CComprobante":
+                    request.ModuloImpresion = Modulo.COMPROBANTES;
+                    break;
+                case "COrdenesPagos":
+                    request.ModuloImpresion = Modulo.ORDEN_DE_PAGO;
+                    break;
+                case "CRecepcionProv":
+                    request.ModuloImpresion = Modulo.RECEPCION_PROVEEDORES;
+                    break;
+                default:
+                    break;
+            }
+            string logoPath = Path.Combine(_env.WebRootPath, "img", "gc.png");
+            request.Cabecera = new DatosCabeceraDto
+            {
+                NombreEmpresa = _empresaGeco.Nombre,
+                Direccion = _empresaGeco.Direccion,
+                CUIT = _empresaGeco.CUIT,
+                IIBB = _empresaGeco.IngresosBrutos,
+                Sucursal = AdministracionId,
+                TituloDocumento = $"{ModuloDM}_{cuenta.Cta_Id}_{DateTime.Now.Ticks}",
+                Logo = logoPath,
+            };
+            request.Pie = new DatosPieDto
+            {
+                Fecha = DateTime.Now.ToString("dd/MM/yyyy"),
+                Usuario = UserName,
+                Observaciones = observacion
+            };
+            request.Cuerpo = new DatosCuerpoDto<T>
+            {
+                CtaId = cuenta.Cta_Id,
+                RazonSocial = cuenta.Cta_Denominacion,
+                Domicilio = cuenta.Cta_Domicilio,
+                CUIT = cuenta.Cta_Documento,
+                Contacto = "-",
+                Datos = listado,
+
+            };
+
+            _docManagerServicio.GenerarArchivoPDF(request, out ms);
+
         }
     }
 }
