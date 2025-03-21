@@ -82,6 +82,7 @@ namespace gc.api.infra.Extensions
 			services.AddScoped<ITipoCuentaGastoServicio, TipoCuentaGastoServicio>();
             services.AddScoped<IABMCuentaDirectaServicio, ABMCuentaDirectaServicio>();
 			services.AddScoped<ICuentaGastoServicio, CuentaGastoServicio>();
+            services.AddScoped<IOrdenDeCompraEstadoServicio, OrdenDeCompraEstadoServicio>();
 			//services.AddScoped<IApiUsuarioServicio, ApiUsuarioServicio>();
 
 

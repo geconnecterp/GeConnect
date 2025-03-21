@@ -863,6 +863,95 @@ namespace gc.api.core.Servicios
 			return respuesta;
 		}
 
+		public List<OrdenDeCompraConsultaDto> CargarOrdenDeCompraConsultaLista(BuscarOrdenesDeCompraRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OC_Lista;
+			var ps = new List<SqlParameter>
+			{
+				new("@fecha_d", request.Date1),
+				new("@fecha_h", request.Date2)
+			};
+			if (request.Rel01 != null && request.Rel01.Count > 0)
+			{
+				ps.Add(new SqlParameter("@prov", true));
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in request.Rel01)
+				{
+					if (first)
+					{
+						first = false;
+					}
+					else
+					{
+						sb.Append(',');
+					}
+					sb.Append(item);
+				}
+
+				ps.Add(new SqlParameter("@prov_list", sb.ToString() + ','));
+			}
+			else
+			{
+				ps.Add(new SqlParameter("@prov", false));
+			}
+
+			if (request.Rel02 != null && request.Rel02.Count > 0)
+			{
+				ps.Add(new SqlParameter("@adm", true));
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in request.Rel02)
+				{
+					if (first)
+					{
+						first = false;
+					}
+					else
+					{
+						sb.Append(',');
+					}
+					sb.Append(item);
+				}
+
+				ps.Add(new SqlParameter("@adm_list", sb.ToString()));
+			}
+			else
+			{
+				ps.Add(new SqlParameter("@adm", false));
+			}
+
+			if (request.Rel03 != null && request.Rel03.Count > 0)
+			{
+				ps.Add(new SqlParameter("@estado", true));
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in request.Rel03)
+				{
+					if (first)
+					{
+						first = false;
+					}
+					else
+					{
+						sb.Append(',');
+					}
+					sb.Append(item.Id);
+				}
+
+				ps.Add(new SqlParameter("@estado_list", sb.ToString() + ','));
+			}
+			else
+			{
+				ps.Add(new SqlParameter("@estado", false));
+			}
+			ps.Add(new SqlParameter("@registros", request.Registros));
+			ps.Add(new SqlParameter("@pagina", request.Pagina));
+			ps.Add(new SqlParameter("@ordenar", string.IsNullOrEmpty(request.Sort) ? "oc_desc" : request.Sort));
+			List<OrdenDeCompraConsultaDto> respuesta = _repository.EjecutarLstSpExt<OrdenDeCompraConsultaDto>(sp, ps, true);
+			return respuesta;
+		}
+
 		public List<ProductoNCPIDto> NCPICargarListaDeProductos(NCPICargarListaDeProductosRequest request)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OC_Productos;
@@ -1276,5 +1365,7 @@ namespace gc.api.core.Servicios
 			}
 			return resp.First();
 		}
+
+		
 	}
 }

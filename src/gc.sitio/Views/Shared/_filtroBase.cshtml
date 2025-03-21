@@ -42,7 +42,33 @@
 		<legend>
 			<span id="tituloLegend"></span>
 		</legend>
-		@if (!Model.Modelo.Equals(ModeloFilter.CONSULTAS))
+		@*AGREGAR SECCION FECHA*@
+		@if (Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA))
+		{
+			<div class=" col-sm-8">
+				<div class="row">
+					<div class="input-group input-group-sm">
+						<div class="form-check form-check-inline form-switch mb-2">
+							<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkDesdeHasta" />
+							<label class="form-check-label" for="chkDesdeHasta" id="lbChkDesdeHasta"></label>
+						</div>
+					</div>
+					<div class=" col-sm-6">
+						<div class="input-group input-group-sm">
+							<span class="input-group-text" id="lbIdDesde">Desde:</span>
+							<input type="date" class="form-control inputEditable" asp-for="Date1" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />
+						</div>
+					</div>
+					<div class=" col-sm-6">
+						<div class="input-group input-group-sm">
+							<span class="input-group-text" id="lbIdHasta">Hasta:</span>
+							<input type="date" class="form-control inputEditable" asp-for="Date2" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />
+						</div>
+					</div>
+				</div>
+			</div>
+		}
+		@if (!Model.Modelo.Equals(ModeloFilter.CONSULTAS) && !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA))
 		{
 			<div class="row  mb-1 mt-1">
 				<div class=" col-md-4 col-sm-12">

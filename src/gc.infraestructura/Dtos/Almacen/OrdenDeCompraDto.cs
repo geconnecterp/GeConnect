@@ -1,6 +1,15 @@
 ﻿
 namespace gc.infraestructura.Dtos.Almacen
 {
+	public class OrdenDeCompraConsultaDto : OrdenDeCompraListDto
+	{
+		public int total_registros { get; set; }
+		public int total_paginas { get; set; }
+		public string cta_id { get; set; } = string.Empty;
+		public string cta_denominacion { get; set; } = string.Empty;
+		public string usu_id { get; set; } = string.Empty;
+	}
+
 	public class OrdenDeCompraListDto : Dto
 	{
 		public string oc_compte { get; set; } = string.Empty;

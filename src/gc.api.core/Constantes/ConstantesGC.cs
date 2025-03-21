@@ -137,6 +137,7 @@
 			public const string SP_OC_Tope = "SPGECO_OC_Tope";
 			public const string SP_OC_Carga_Resumen = "SPGECO_OC_Carga_Resumen";
 			public const string SP_OC_Confirmar = "SPGECO_OC_Confirma";
+			public const string SP_OC_Lista = "SPGECO_OC_Lista";
 			#endregion
 
 			public const string SP_BOX_INFO = "SPGECO_BOX_Info";
@@ -280,7 +281,8 @@
 			public const string SP_FINANCIERO_ESTADOS = "SPGECO_Financieros_Estados";
 			public const string SP_CCB_CUENTA_LISTA = "SPGECO_CCB_Cuentas_Lista";
 			public const string SP_TIPO_CUENTA_GASTO_LISTA = "SPGECO_Tipos_Cuentas_Gastos_Lista";
-			//
+			public const string SP_OC_ESTADO_LISTA = "SPGECO_Estados_OC_Lista";
+			//SPGECO_Estados_OC_Lista
 			#endregion
 
 			public const string SP_ADMINISTRACIONES = "SPGECO_Administraciones";

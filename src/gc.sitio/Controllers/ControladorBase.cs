@@ -1690,6 +1690,26 @@ namespace gc.sitio.Controllers
 		}
 		#endregion
 
+		#region	ORDEN DE COMPRA ESTADO LISTA
+		public List<OrdenDeCompraEstadoDto> OrdenDeCompraEstadoLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("OrdenDeCompraEstadoLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<OrdenDeCompraEstadoDto>();
+				}
+				return JsonConvert.DeserializeObject<List<OrdenDeCompraEstadoDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("OrdenDeCompraEstadoLista", json);
+			}
+		}
+		#endregion
+
 		#region Metodos generales
 		public PartialViewResult ObtenerMensajeDeError(string mensaje)
 		{
@@ -1933,6 +1953,10 @@ namespace gc.sitio.Controllers
 		protected void ObtenerCuentaPlanContableLista(IFinancieroServicio _financieroServicio)
 		{
 			CuentaPlanContableLista = _financieroServicio.GetPlanContableCuentaLista(TokenCookie);
+		}
+		protected void ObtenerOrdenDeCompraEstadoLista(IOrdenDeCompraEstadoServicio _ordenDeCompraEstadoServicio)
+		{
+			OrdenDeCompraEstadoLista = _ordenDeCompraEstadoServicio.GetOrdenDeCompraEstadoLista(TokenCookie);
 		}
 		#endregion
 		protected void ObtenerDiasDeLaSemana()

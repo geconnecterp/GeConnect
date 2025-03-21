@@ -931,6 +931,41 @@ namespace gc.api.Controllers.Almacen
 		}
 
 		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<OrdenDeCompraConsultaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult CargarOrdenDeCompraConsultaLista(BuscarOrdenesDeCompraRequest request)
+		{
+			OrdenDeCompraConsultaDto reg = new();
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.CargarOrdenDeCompraConsultaLista(request);
+			if (res.Count > 0)
+			{
+				reg = res.First();
+			}
+			// presentando en el header información basica sobre la paginación
+			var metadata = new MetadataGrid
+			{
+				TotalCount = reg.total_registros,
+				PageSize = request.Registros.Value,
+				CurrentPage = request.Pagina.Value,
+				TotalPages = reg.total_paginas,
+				HasNextPage = request.Pagina.Value < reg.total_paginas,
+				HasPreviousPage = request.Pagina.Value > 1,
+				NextPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(CargarOrdenDeCompraConsultaLista)) ?? "").ToString(),
+				PreviousPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(CargarOrdenDeCompraConsultaLista)) ?? "").ToString(),
+
+			};
+
+			var response = new ApiResponse<IEnumerable<OrdenDeCompraConsultaDto>>(res)
+			{
+				Meta = metadata
+			};
+			Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
+			return Ok(response);
+		}
+
+		[HttpPost]
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoNCPIDto>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]

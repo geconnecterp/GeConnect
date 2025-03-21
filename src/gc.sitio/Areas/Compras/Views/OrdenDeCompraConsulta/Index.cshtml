@@ -1,0 +1,97 @@
+﻿@using static gc.infraestructura.Constantes.Constantes
+@{
+	Layout = "~/views/shared/_Layout.cshtml";
+	var filtro = new QueryFilters()
+			{
+				Rel01 = new List<string>(),
+				Rel02 = new List<string>(),
+				Rel03 = new List<ComboGenDto>(),
+				Modelo = ModeloFilter.ORDEN_DE_COMPRA_CONSULTA,
+				Opt1 = false,
+				Opt2 = false,
+				Opt3 = false,
+				Opt4 = false,
+				Opt5 = false,
+			};
+}
+@section styles {
+	<link rel="stylesheet" href="~/css/simplePagination.css" />
+}
+<div class="container">
+	<div class="row">
+		<div class="col-md-6">
+			<div class="d-flex justify-content-sm-around">
+				<button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
+					<i class="bx bx-filter bx-xs"></i>
+				</button>
+
+				<button class="btn btn-primary btn-sm mt-1 me-1" type="button" id="btnDetalle" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle">
+					<i class="bx bx-arrow-to-bottom bx-xs"></i>
+				</button>
+			</div>
+		</div>
+	</div>
+	<div class="collapse" id="divFiltro" style="">
+		<partial name="_filtroBase" model="filtro" />
+		@Html.Hidden("pagEstado", false);
+	</div>
+	<div class="collapse" id="divDetalle" style="">
+		<ul class="nav nav-tabs mt-2" role="tablist" id="tabsConsultaDeOC">
+			<li class="nav-item" role="presentation" id="tabOrdenesDeCompra">
+				<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-home" aria-controls="navs-top-home" aria-selected="true" id="btnTabOrdenesDeCompra">
+					Ordenes de Compra
+				</button>
+			</li>
+			<li class="nav-item" role="presentation" id="tabDetalleDeOC">
+				<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-profile" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1" id="btnTabDetalleDeOC">
+					Detalle
+				</button>
+			</li>
+			<li class="nav-item" role="presentation" id="tabRprAsociadas">
+				<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-resume" aria-controls="navs-top-resume" aria-selected="false" tabindex="-1" id="btnTabRprAsociadas">
+					RPR Asociadas
+				</button>
+			</li>
+			<li class="nav-item" role="presentation" id="tabRprAsociadaDetalle">
+				<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-resume" aria-controls="navs-top-detail" aria-selected="false" tabindex="-1" id="btnTabRprAsociadaDetalle">
+					RPR Asociadas Detalle
+				</button>
+			</li>
+		</ul>
+		<div class="tab-content">
+			<div class="tab-pane fade show active" id="navs-top-home" role="tabpanel">
+				<div id="divOrdenesDeCompra">
+				</div>
+			</div>
+			<div class="tab-pane fade" id="navs-top-profile" role="tabpanel">
+				<div id="divDetalleDeOC">
+				</div>
+			</div>
+			<div class="tab-pane fade" id="navs-top-resume" role="tabpanel">
+				<div id="divRprAsociadas">
+				</div>
+			</div>
+			<div class="tab-pane fade" id="navs-top-detail" role="tabpanel">
+				<div id="divRprAsociadaDetalle">
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section scripts {
+	<script type="text/javascript">
+		var totalRegs = 0;
+		var pagRegs = 0;
+		var pags = 0;
+		var pagina = 1;
+		var search = "";
+		var funcCallBack = "BuscarOrdenesDeCompra";
+		var autoComRel01Url = "@Url.Action("BuscarProvs", "ordendecompraconsulta", new { area = "Compras" })";
+		var autoComRel03Url = "@Url.Action("BuscarSucursales", "ordendecompraconsulta", new { area = "Compras" })";
+		var autoComRel02Url = "@Url.Action("BuscarEstadosDeOC", "ordendecompraconsulta", new { area = "Compras" })";
+		var buscarOrdenesDeCompraURL = "@Url.Action("BuscarOrdenesDeCompra", "ordendecompraconsulta", new { area = "Compras" })";
+	</script>
+	<script src="~/js/plugins/jquery.simplePagination.js"></script>
+	<script src="~/js/app/areas/ordendecompra/consultaoc.js"></script>
+}

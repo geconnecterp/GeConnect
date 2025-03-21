@@ -43,6 +43,7 @@ namespace gc.api.Controllers.Codigos
 		private readonly ITipoCuentaFinServicio _tipoCuentaFinServicio;
 		private readonly ITipoCuentaGastoServicio _tipoCuentaGastoServicio;
 		private readonly ITipoMonedaServicio _tipoMonedaServicio;
+		private readonly IOrdenDeCompraEstadoServicio _ordenDeCompraEstadoServicio;
 
 		public TiposVsController( IMapper mapper, IUriService uriService, ILogger<TiposVsController> logger, ICondicionAfipServicio condicionAfipServicio,
 								ICondicionIBServicio condicionIBServicio, IDepartamentoServicio departamentoServicio, IFormaDePagoServicio formaDePagoServicio,
@@ -52,7 +53,7 @@ namespace gc.api.Controllers.Codigos
 								ITipoContactoServicio tipoContactoServicio, ITipoObsServicio tipoObsServicio, ITipoOpeIvaServicio tipoOpeIvaServicio,
 								ITipoProveedorServicio tipoProveedorServicio, ITipoGastoServicio tipoGastoServicio, ITipoRetGanServicio tipoRetGanServicio,
 								ITipoRetIbServicio tipoRetIbServicio, ITipoCuentaFinServicio tipoCuentaFinServicio, ITipoMonedaServicio tipoMonedaServicio,
-								ITipoCuentaGastoServicio tipoCuentaGastoServicio)
+								ITipoCuentaGastoServicio tipoCuentaGastoServicio, IOrdenDeCompraEstadoServicio ordenDeCompraEstadoServicio)
         {
             _mapper = mapper;
             _uriService = uriService;
@@ -80,6 +81,7 @@ namespace gc.api.Controllers.Codigos
 			_tipoCuentaFinServicio = tipoCuentaFinServicio;
 			_tipoMonedaServicio = tipoMonedaServicio;
 			_tipoCuentaGastoServicio = tipoCuentaGastoServicio;
+			_ordenDeCompraEstadoServicio = ordenDeCompraEstadoServicio;
 		}
 
 		[HttpGet]
@@ -391,6 +393,18 @@ namespace gc.api.Controllers.Codigos
 			var lista = _mapper.Map<List<PlanContableDto>>(financiero);
 
 			var response = new ApiResponse<List<PlanContableDto>>(lista);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult GetOrdenDeCompraEstadoLista()
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			List<OrdenDeCompraEstadoDto> financiero = _ordenDeCompraEstadoServicio.GetOrdenDeCompraEstadoLista();
+			var lista = _mapper.Map<List<OrdenDeCompraEstadoDto>>(financiero);
+
+			var response = new ApiResponse<List<OrdenDeCompraEstadoDto>>(lista);
 			return Ok(response);
 		}
 		//
