@@ -1,37 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace gc.infraestructura.Dtos.DocManager
+﻿namespace gc.infraestructura.Dtos.DocManager
 {
     public class DatosCabeceraDto
     {
-        public string NombreEmpresa { get; set; }
-        public string CUIT { get; set; }
-        public string IIBB { get; set; }
-        public string Direccion { get; set; }
-        public string TituloDocumento { get; set; }
-        public byte[] Logo { get; set; } = null;
-        public string Sucursal { get; set; }
+        public string NombreEmpresa { get; set; }= string.Empty;
+        public string CUIT { get; set; } = string.Empty;
+        public string IIBB { get; set; } = string.Empty;
+        public string Direccion { get; set; } = string.Empty;
+        public string TituloDocumento { get; set; } = string.Empty;
+        public string Logo { get; set; } = string.Empty;
+        public string Sucursal { get; set; } = string.Empty;
     }
 
     public class DatosCuerpoDto<T>
     {
-        public string CtaId { get; set; }
-        public string RazonSocial { get; set; }
-        public string Domicilio { get; set; }
-        public string CUIT { get; set; }
-        public string Contacto { get; set; }
-        public List<T> Datos { get; set; }
+        public string CtaId { get; set; }   = string.Empty;
+        public string RazonSocial { get; set; } = string.Empty;
+        public string Domicilio { get; set; } = string.Empty;
+        public string CUIT { get; set; } = string.Empty;
+        public string Contacto { get; set; } = string.Empty;
+        public List<T> Datos { get; set; }= new List<T>();
+        //public List<string> Titulos { get; set; } = new List<string>();
+        //public List<string> Columnas { get; set; } = new List<string>();
+        //public List<float> ColumnasAncho { get; set; } = new List<float>();
     }
 
     public class DatosPieDto
     {
-        public string Observaciones { get; set; }
-        public string Fecha { get; set; }
-        public string Usuario { get; set; }
+        public string Observaciones { get; set; } = string.Empty;
+        public string Fecha { get; set; } = string.Empty;
+        public string Usuario { get; set; } = string.Empty;     
     }
 
     public class PrintRequestDto<T>
@@ -82,6 +79,9 @@ namespace gc.infraestructura.Dtos.DocManager
         CERTIFICADO_DE_RETENCION_GANANCIA = 3,
         CERTIFICADO_DE_RETENCION_IIBB = 4,
         ORDEN_DE_PAGO_DUPLICADO = 5,
+        VENCIMIENTO_COMPROBANTES = 6,
+        COMPROBANTES = 7,
+        RECEPCION_PROVEEDORES = 8,
     }
 
 

@@ -1524,25 +1524,151 @@ namespace gc.sitio.Controllers
 		}
 		#endregion
 
-		#region Consultas
-		public List<ConsCtaCteDto> CuentaCorrienteBuscada
-		{
-			get
-			{
-				var json = _context.HttpContext.Session.GetString("CuentaCorrienteBuscada");
-				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
-				{
-					return [];
-				}
-				return JsonConvert.DeserializeObject<List<ConsCtaCteDto>>(json);
-			}
-			set
-			{
-				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("CuentaCorrienteBuscada", json);
-			}
-		}
-		#endregion
+        #region Consultas
+        public List<ConsCtaCteDto> CuentaCorrienteBuscada
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("CuentaCorrienteBuscada");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<ConsCtaCteDto>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("CuentaCorrienteBuscada", json);
+            }
+        }
+
+        public List<ConsVtoDto> VencimientosBuscados
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("VencimientosBuscados");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<ConsVtoDto>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("VencimientosBuscados", json);
+            }
+        }
+
+        public List<ConsCompTotDto> CmptesTotalBuscados
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("CmptesTotalBuscados");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<ConsCompTotDto>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("CmptesTotalBuscados", json);
+            }
+        }
+
+        public List<ConsCompDetDto> CmptesDetalleBuscados
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("CmptesDetalleBuscados");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<ConsCompDetDto>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("CmptesDetalleBuscados", json);
+            }
+        }
+
+        public List<ConsOrdPagosDto> OrdenPagosBuscados
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("OrdenPagosBuscados");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<ConsOrdPagosDto>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("OrdenPagosBuscados", json);
+            }
+        }
+
+        public List<ConsOrdPagosDetDto> OrdenPagosDetBuscados
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("OrdenPagosDetBuscados");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<ConsOrdPagosDetDto>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("OrdenPagosDetBuscados", json);
+            }
+        }
+
+        public List<ConsRecepcionProveedorDto> RecepProvBuscados
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("RecepProvBuscados");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<ConsRecepcionProveedorDto>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("RecepProvBuscados", json);
+            }
+        }
+
+        public List<ConsRecepcionProveedorDetalleDto> RecepProvDetBuscados
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("RecepProvDetBuscados");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return [];
+                }
+                return JsonConvert.DeserializeObject<List<ConsRecepcionProveedorDetalleDto>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("RecepProvDetBuscados", json);
+            }
+        }
+        #endregion
 
 		#region Documento Manager
 		public string ModuloDM

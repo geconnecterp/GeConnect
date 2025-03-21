@@ -165,8 +165,8 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 if (!res.Ok)
                 {
                     throw new NegocioException(res.Mensaje);
-                }                
-
+                }
+                VencimientosBuscados = res.ListaEntidad;
                 //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
                 grillaDatos = GenerarGrilla(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 
@@ -214,7 +214,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 {
                     throw new NegocioException(res.Mensaje);
                 }
-
+                CmptesTotalBuscados = res.ListaEntidad;
                 //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
                 grillaDatos = GenerarGrilla(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 
@@ -259,6 +259,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 {
                     throw new NegocioException(res.Mensaje);
                 }
+                CmptesDetalleBuscados = res.ListaEntidad;
                 string provId = CuentaComercialSeleccionada.Prov_Id.ToString();
                 //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
                 grillaDatos = GenerarGrilla(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
@@ -307,7 +308,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 {
                     throw new NegocioException(res.Mensaje);
                 }
-
+                OrdenPagosBuscados = res.ListaEntidad;
                 //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
                 grillaDatos = GenerarGrilla(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 
@@ -357,7 +358,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 {
                     throw new NegocioException(res.Mensaje);
                 }
-
+                OrdenPagosDetBuscados = res.ListaEntidad;
                 //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
                 grillaDatos = GenerarGrilla(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 
@@ -407,7 +408,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 {
                     throw new NegocioException(res.Mensaje);
                 }
-
+                RecepProvBuscados = res.ListaEntidad;
                 //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
                 grillaDatos = GenerarGrilla(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 
@@ -457,6 +458,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 {
                     throw new NegocioException(res.Mensaje);
                 }
+                RecepProvDetBuscados = res.ListaEntidad;
 
                 //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
                 grillaDatos = GenerarGrilla(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
