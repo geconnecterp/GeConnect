@@ -279,16 +279,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 								break;
 							case "P_Boni":
 								producto.P_Boni = val;
-								var arr = val.Split('/');
-								if (!int.TryParse(arr[0], out int num)) { producto.Pedido_Mas_Boni = producto.Cantidad; break; }
-								if (!int.TryParse(arr[1], out int den)) { producto.Pedido_Mas_Boni = producto.Cantidad; break; }
-								if (num > den) { producto.Pedido_Mas_Boni = producto.Cantidad; break; }
-								var res = den - num; //En la bonificacion viene NNN/MMM donde sería "cada NNN, lleva MMM", siendo MMM mayor a NNN. La diferencia es el valor adicional que se suma al pedido.
-								var multiplo = producto.Cantidad / num;
-								if (multiplo > 0)
-									producto.Pedido_Mas_Boni = (res * (int)multiplo) + producto.Cantidad;
-								else
-									producto.Pedido_Mas_Boni = producto.Cantidad;
 								break;
 							case "Bultos":
 								producto.Bultos = Convert.ToInt32(val);
@@ -297,6 +287,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 							default:
 								break;
 						}
+						producto.Pedido_Mas_Boni = Math.Round(CalcularPedidoMasBoni(producto.P_Boni, producto), 1);
 						producto.P_Pcosto = Math.Round(ProductoParaOcDto.CalcularPCosto(producto.P_Plista, producto.P_Dto1, producto.P_Dto2, producto.P_Dto3, producto.P_Dto4, producto.P_Dto_Pa, producto.P_Boni, producto.P_Porc_Flete), 2);
 						producto.P_Pcosto_Total = Math.Round(producto.P_Pcosto * (producto.Pedido_Mas_Boni == 0.0M ? 1.0M : producto.Pedido_Mas_Boni), 2);
 						producto.Paletizado = Math.Round((producto.Pedido_Mas_Boni == 0.0M ? 1.0M : producto.Pedido_Mas_Boni) / producto.P_Unidad_Palet, 1);
@@ -378,6 +369,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
+
+
 		[HttpPost]
 		public IActionResult CargarResumenDeOc(string oc_compte)
 		{
@@ -443,12 +436,12 @@ namespace gc.sitio.Areas.Compras.Controllers
 					Usu_Id = UserName,
 					Nueva = string.IsNullOrEmpty(request.Oc_Compte),
 					Oc_Compte = request.Oc_Compte,
-					Entrega_Fecha = DateTime.Now,
-					Entrega_Adm = AdministracionId,
-					Pago_Anticipado = 'N',
-					Pago_Fecha = DateTime.Now.AddDays(1),
-					Observaciones = string.Empty,
-					Oce_Id = 'P',
+					Entrega_Fecha = request.Entrega_Fecha,
+					Entrega_Adm = request.Entrega_Adm,
+					Pago_Anticipado = request.Pago_Anticipado,
+					Pago_Fecha = request.Pago_Fecha,
+					Observaciones = request.Observaciones,
+					Oce_Id = request.Oce_Id,
 					Json = jsonstring
 				}, TokenCookie).Result;
 				model.ResumenGrilla = ObtenerGridCore<OrdenDeCompraConceptoDto>(resumen);
@@ -468,21 +461,17 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		[HttpPost]
-		public JsonResult ConfirmarOrdenDeCompra(string oc_compte)
+		public JsonResult ConfirmarOrdenDeCompra(ConfirmarOCRequest request)
 		{
 			try
 			{
-				if (ListaProductosOC != null && ListaProductosOC.Count > 0) return Json(new { error = true, warn = false, msg = $"No existen productos cargados en la OC" });
+				if (ListaProductosOC == null || ListaProductosOC.Count <= 0) return Json(new { error = true, warn = false, msg = $"No existen productos cargados en la OC" });
 				if (string.IsNullOrEmpty(CtaIdSelected)) return Json(new { error = true, warn = false, msg = $"Se ha producido un error al selecciona la cuenta." });
-				var request = new ConfirmarOCRequest()
-				{
-					Cta_Id = CtaIdSelected,
-					Adm_Id = AdministracionId,
-					Usu_Id = UserName,
-					Oc_Compte = oc_compte,
-					Nueva = string.IsNullOrEmpty(oc_compte),
-					Json = JsonConvert.SerializeObject(ListaProductosOC, new JsonSerializerSettings())
-				};
+				request.Adm_Id = AdministracionId;
+				request.Usu_Id = UserName;
+				request.Cta_Id = CtaIdSelected;
+				request.Nueva = string.IsNullOrEmpty(request.Oc_Compte);
+				request.Json = JsonConvert.SerializeObject(ListaProductosOC, new JsonSerializerSettings());
 				var respuesta = _productoServicio.ConfirmarOrdenDeCompra(request, TokenCookie).Result;
 				return AnalizarRespuesta(respuesta);
 			}
@@ -569,6 +558,37 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		#region Métodos privados
+		private decimal CalcularPedidoMasBoni(string val, ProductoParaOcDto producto)
+		{
+			if (string.IsNullOrWhiteSpace(val))
+			{
+				producto.Pedido_Mas_Boni = producto.Cantidad;
+				return producto.Pedido_Mas_Boni;
+			}
+			var arr = val.Split('/');
+			if (!int.TryParse(arr[0], out int num))
+			{
+				producto.Pedido_Mas_Boni = producto.Cantidad;
+				return producto.Pedido_Mas_Boni;
+			}
+			if (!int.TryParse(arr[1], out int den))
+			{
+				producto.Pedido_Mas_Boni = producto.Cantidad;
+				return producto.Pedido_Mas_Boni;
+			}
+			if (num > den)
+			{
+				producto.Pedido_Mas_Boni = producto.Cantidad;
+				return producto.Pedido_Mas_Boni;
+			}
+			var res = den - num; //En la bonificacion viene NNN/MMM donde sería "cada NNN, lleva MMM", siendo MMM mayor a NNN. La diferencia es el valor adicional que se suma al pedido.
+			var multiplo = producto.Cantidad / num;
+			if (multiplo > 0)
+				producto.Pedido_Mas_Boni = (res * (int)multiplo) + producto.Cantidad;
+			else
+				producto.Pedido_Mas_Boni = producto.Cantidad;
+			return producto.Pedido_Mas_Boni;
+		}
 		private static SelectList ObtenerComboAdministraciones(List<AdministracionDto> lista)
 		{
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista.Select(x => new ComboGenDto { Id = x.Adm_id, Descripcion = x.Adm_nombre }));

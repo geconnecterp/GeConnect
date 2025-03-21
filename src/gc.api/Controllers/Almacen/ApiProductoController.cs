@@ -921,11 +921,11 @@ namespace gc.api.Controllers.Almacen
 		[Route("[action]")]
 		public IActionResult ConfirmarOC(ConfirmarOCRequest request)
 		{
-			ApiResponse<List<RespuestaDto>> response;
+			ApiResponse<RespuestaDto> response;
 			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
 			var res = _productosSv.ConfirmarOC(request);
 
-			response = new ApiResponse<List<RespuestaDto>>(res);
+            response = new ApiResponse<RespuestaDto>(res.First());
 
 			return Ok(response);
 		}

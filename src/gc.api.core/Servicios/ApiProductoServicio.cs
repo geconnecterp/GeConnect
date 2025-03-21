@@ -851,6 +851,12 @@ namespace gc.api.core.Servicios
 				new("@usu_id",request.Usu_Id),
 				new("@nueva",request.Nueva),
 				new("@oc_compte",request.Oc_Compte),
+				new("@entrega_fecha",request.Entrega_Fecha),
+				new("@entrega_adm",request.Entrega_Adm),
+				new("@pago_aticipado",request.Pago_Anticipado),
+				new("@pago_fecha",request.Pago_Fecha),
+				new("@observaciones",request.Observaciones),
+				new("@oce_id",request.Oce_Id),
 				new("@json",request.Json),
 			};
 			List<RespuestaDto> respuesta = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);

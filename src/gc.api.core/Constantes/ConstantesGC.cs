@@ -136,7 +136,7 @@
 			public const string SP_OC_Carga_Detalle = "SPGECO_OC_Carga_Detalle";
 			public const string SP_OC_Tope = "SPGECO_OC_Tope";
 			public const string SP_OC_Carga_Resumen = "SPGECO_OC_Carga_Resumen";
-			public const string SP_OC_Confirmar = "SPGECO_OC_Confirmar";
+			public const string SP_OC_Confirmar = "SPGECO_OC_Confirma";
 			#endregion
 
 			public const string SP_BOX_INFO = "SPGECO_BOX_Info";

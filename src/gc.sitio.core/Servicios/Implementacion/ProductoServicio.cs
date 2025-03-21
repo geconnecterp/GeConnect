@@ -2395,7 +2395,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 
 		public async Task<RespuestaGenerica<RespuestaDto>> ConfirmarOrdenDeCompra(ConfirmarOCRequest request, string token)
 		{
-			ApiResponse<RespuestaGenerica<RespuestaDto>> apiResponse;
+			ApiResponse<RespuestaDto> apiResponse;
 
 			HelperAPI helper = new();
 			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
@@ -2413,8 +2413,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 					_logger.LogWarning($"La API devolvió error.");
 					return new();
 				}
-				apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaGenerica<RespuestaDto>>>(stringData);
-				return apiResponse.Data;
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+				return new RespuestaGenerica<RespuestaDto>() { Entidad = apiResponse.Data };
 			}
 			else
 			{

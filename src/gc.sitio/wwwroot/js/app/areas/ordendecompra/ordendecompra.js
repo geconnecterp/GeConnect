@@ -19,6 +19,9 @@
 		$("input#Rel03").prop("disabled", true);
 		$("input#Rel04").prop("disabled", true);
 	});
+	//elimina item de la lista
+	$("#Rel02List").on("dblclick", 'option', function () { $(this).remove(); })
+	$("#Rel03List").on("dblclick", 'option', function () { $(this).remove(); })
 	$("input#Rel03").on("click", function () {
 		$("input#Rel03").val("");
 		$("#Rel03Item").val("");
@@ -76,8 +79,19 @@ const formatter = new Intl.NumberFormat('en-US', {
 
 function ConfirmarOrdenDeCompra() {
 	AbrirMensaje("ATENCIÓN", "¿Confirma la generación de la Orden de Compra?", function () {
-		var data = { ocIdSelected };
-		PostGen(data, ConfirmarOrdenDeCompraURL, function (obj) {
+		var Oc_Compte = ocIdSelected;
+		var Entrega_Fecha = $("#FechaEntrega").val();
+		var Entrega_Adm = $("#listaSucEntrega").val()
+		var Pago_Anticipado = 'N';
+		if ($("#chkPagoAnticipado")[0].checked)
+			Pago_Anticipado = 'S';
+		var Pago_Fecha = $("#PagoPlazo").val();
+		var Observaciones = $("#Obs").val();
+		var Oce_Id = 'P';
+		if ($("#chkDejarOCActiva")[0].checked)
+			Oce_Id = 'C';
+		var data = { Oc_Compte, Entrega_Fecha, Entrega_Adm, Pago_Anticipado, Pago_Fecha, Observaciones, Oce_Id };
+		PostGen(data, "/Compras/ordendecompra/ConfirmarOrdenDeCompra", function (obj) {
 			if (obj.error === true) {
 				AbrirMensaje("ATENCIÓN", obj.msg, function () {
 					$("#msjModal").modal("hide");
@@ -124,10 +138,31 @@ function ActualizarGrillaConceptos() {
 }
 
 function onChangeFechaEntrega(e) {
+	var validDate = moment($("#FechaEntrega").val()).isValid();
+	if (!validDate) {
+		var fecha = moment().format('yyyy-MM-DD');
+		$("#FechaEntrega").val(fecha)
+		fecha = moment($("#FechaEntrega").val()).add(1, 'day').format('yyyy-MM-DD');
+		$("#PagoPlazo").val(fecha);
+	}
+	if ($("#FechaEntrega").val() > $("#PagoPlazo").val()) {
+		var fecha = moment($("#FechaEntrega").val()).add(1, 'day').format('yyyy-MM-DD');
+		$("#PagoPlazo").val(fecha);
+	}
 	ActualizarGrillaConceptos();
 }
 
 function onChangePagoPlazo(e) {
+	var validDate = moment($("#PagoPlazo").val()).isValid();
+	if (!validDate) {
+		fecha = moment($("#FechaEntrega").val()).add(1, 'day').format('yyyy-MM-DD');
+		$("#PagoPlazo").val(fecha);
+	}
+	if ($("#FechaEntrega").val() > $("#PagoPlazo").val()) {
+		var fecha = moment($("#FechaEntrega").val()).add(1, 'day').format('yyyy-MM-DD');
+		$("#PagoPlazo").val(fecha);
+
+	}
 	ActualizarGrillaConceptos();
 }
 
@@ -209,11 +244,10 @@ function addInCellEditHandler() {
 			$("#" + this.id).mask("000/000", { reverse: false });
 			$("#" + this.id).val(val);
 		}
-		else if (this.id === "Bultos") {
-			$("#" + this.id).mask("000.000.000.000", { reverse: false });
-			$("#" + this.id).val(val);
-		}
-		console.log($("#" + this.id).text());
+		//else if (this.id === "Bultos") {
+		//	$("#" + this.id).mask("000.000.000.000", { reverse: false });
+		//	$("#" + this.id).val(val);
+		//}
 	});
 }
 
@@ -221,22 +255,22 @@ var keysAceptadas = [8, 37, 39, 46, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105
 function addInCellKeyDownHandler() {
 	$("#tbListaProductoOC").on('keydown', 'td[contenteditable]', function (e) {
 		if (isNaN(String.fromCharCode(e.which)) && !(keysAceptadas.indexOf(e.which) != -1) && !(e.shiftKey && (e.which == 37 || e.which == 39))) e.preventDefault();
-		//if (isNaN(String.fromCharCode(e.which)) && !(e.which == 8) && !(e.which == 110) && !(e.which == 37) && !(e.which == 39) && !(e.which == 46) && !(e.which == 190) && !(e.which >= 96 && e.which <= 105) && !(e.shiftKey && (e.which == 37 || e.which == 39))) e.preventDefault();
-		cellValueTemp = $("#" + this.id).text();
 	});
 }
 
 function addInCellGotFocusHandler() {
 	$("#tbListaProductoOC").on('focusin', 'td[contenteditable]', function (e) {
 		cellValueTemp = $("#" + this.id).text();
-		console.log(cellValueTemp);
+		if (e.target) {
+			cellIndexTemp = e.target.cellIndex;
+		}
 	});
 }
 
 function addInCellLostFocusHandler() {
 	$("#tbListaProductoOC").on('focusout', 'td[contenteditable]', function (e) {
 		var actualiza = true;
-		if (cellValueTemp !== $("#" + this.id).text())
+		if (cellValueTemp == $("#" + this.id).text())
 			actualiza = false;
 		else {
 			if (this.id === "P_Dto1" || this.id === "P_Dto2" || this.id === "P_Dto3" || this.id === "P_Dto4" || this.id === "P_Dto_Pa") {
@@ -261,9 +295,120 @@ function addInCellLostFocusHandler() {
 			}
 		}
 		if (actualiza) {
-			ActualizarProductoEnOc(this.id, $("#" + this.id).val());
+			if ($("#" + this.id).val() == "")
+				ActualizarProductoEnOc(this.id, $("#" + this.id).text());
+			else
+				ActualizarProductoEnOc(this.id, $("#" + this.id).val());
 		}
 	});
+}
+
+function tableUpDownArrow() {
+	var table = document.querySelector('#tbListaProductoOC tbody');
+	if (table == undefined)
+		return;
+	if (table.rows[0] == undefined)
+		return;
+	const myTable = table
+		, nbRows = myTable.rows.length
+		, nbCells = myTable.rows[0].cells.length
+		, movKey = {
+			ArrowUp: p => { p.r = (--p.r + nbRows) % nbRows }
+			, ArrowLeft: p => { p.c = (--p.c + nbCells) % nbCells }
+			, ArrowDown: p => {
+				p.r = ++p.r % nbRows
+			}
+			, ArrowRight: p => { p.c = ++p.c % nbCells }
+			, Tab: p => {
+				p.r = ++p.r % nbRows
+			}
+		}
+
+	myTable
+		.querySelectorAll('input, [contenteditable=true]')
+		.forEach(elm => {
+			elm.onfocus = e => {
+				let sPos = myTable.querySelector('.selected-row')
+					, tdPos = elm.parentNode
+
+				if (sPos) sPos.classList.remove('selected-row')
+
+				tdPos.classList.add('selected-row')
+			}
+		})
+
+
+	document.onkeydown = e => {
+		let sPos = myTable.querySelector('.selected-row')
+			, evt = (e == null ? event : e)
+			, pos = {
+				r: sPos ? sPos.rowIndex : -1
+				, c: sPos ? (sPos.cellIndex ? sPos.cellIndex : cellIndexTemp) : -1
+			}
+		
+		if (sPos &&
+			(evt.altKey && evt.shiftKey && movKey[evt.code])
+			||
+			(evt.ctrlKey && movKey[evt.code])
+			//||
+			//evt.code === 'Tab'
+			) {
+			let loop = true
+				, nxFocus = null
+				, cell = null
+			
+			do {
+				if (evt.code === 'ArrowDown' && pos.r == nbRows)
+					pos.r = 0;
+				if (evt.code === 'Tab' && evt.shiftKey && pos.r == 0)
+					pos.r = nbRows - 1;
+				if (evt.code === 'Tab' && evt.shiftKey) {
+					movKey['ArrowUp'](pos)
+				}
+				else
+					movKey[evt.code](pos);
+				
+				if (pos.r == nbRows)
+					cell = myTable.rows[pos.r - 1].cells[pos.c];
+				else
+					cell = myTable.rows[pos.r].cells[pos.c];
+				if (pos.r == 0)
+					pos.r = nbRows;
+				else if (pos.r == nbRows)
+					pos.r = nbRows;
+
+				if (pos.c == 8 && cellIndexTemp < pos.c) //moviendome desde la columna 'pedido bultos' hacia la derecha, la cual no es editable, debo saltar a la siguiente
+					pos.c = 9;
+				if (pos.c == 6 && cellIndexTemp > pos.c) //moviendome desde la columna 'pedido bultos' hacia la izquierda, la cual no es editable, debo saltar a la siguiente
+					pos.c = 15;
+				if (pos.c == 8 && cellIndexTemp > pos.c) //moviendome desde la columna 'precio lista' hacia la izquierda, la cual no es editable, debo saltar a la siguiente
+					pos.c = 7;
+				if (pos.c == 16 && cellIndexTemp < pos.c) //moviendome desde la columna 'boni' hacia la derecha, la cual no es editable, debo saltar a la siguiente
+					pos.c = 7;
+				nxFocus = myTable.rows[pos.r - 1].cells[pos.c]
+				
+				if (nxFocus
+					&& cell.style.display !== 'none'
+					&& cell.parentNode.style.display !== 'none') {
+					nxFocus.focus();
+					nxFocus.closest('tr').classList.add('selected-row');
+					nxFocus.focus();
+					loop = false
+				}
+			}
+			while (loop)
+			//ActualizarProductoEnOc(nxFocus.id, sPos.val());
+			if (evt.code === 'Tab') {
+				event.preventDefault();
+			}
+		}
+		else if (evt.code === 'Enter')
+			event.preventDefault();
+		else if (evt.code === 'NumpadEnter')
+			event.preventDefault();
+		//else
+		//	console.log(evt.code);
+	}
 }
 
 ///Actualizar datos de producto, luego de la edicion de algunos de sus parámetros editables
@@ -282,14 +427,12 @@ function ActualizarProductoEnOc(field, val) {
 			$("#tbListaProductoOC").find('tr').each(function (i, el) {
 				var td = $(this).find('td');
 				if (td.length > 0 && td[1].innerText !== undefined && td[1].innerText === pId) {
-					console.log("innerText: " + td[1].innerText);
-					console.log("obj: " + obj);
 					//GRILLA
 					td[16].innerText = obj.data.pedido_Mas_Boni;//PEDIDO +BONI -> obj.data.pedido_Mas_Boni
 					td[17].innerText = obj.data.p_Pcosto;//PRECIO COSTO -> obj.data.p_Pcosto
 					td[18].innerText = obj.data.p_Pcosto_Total;//TOTAL COSTO -> obj.data.p_Pcosto_Total
 					td[19].innerText = obj.data.paletizado;//TOTAL PALLET -> obj.data.paletizado
-					
+
 					//TOTALES
 					$("#Total_Costo").val(formatter.format(obj.data.total_Costo));//TOTAL_COSTO -> obj.data.total_Costo
 					$("#Total_Pallet").val(formatter.format(obj.data.total_Pallet));//TOTAL_PALLET -> obj.data.total_Pallet
@@ -322,6 +465,21 @@ function CargarResumenDeOc() {
 				$("#chkDejarOCActiva").on("click", function () {
 					ActualizarGrillaConceptos();
 				});
+				const dateControl2 = $('input[type="date"]');
+				var now = moment().format('yyyy-MM-DD');
+				var min = now;
+				var max = moment().add(4, 'months');
+				for (var i = 0; i < dateControl2.length; i++) {
+					if (dateControl2[i].id == "FechaEntrega") {
+						dateControl2[i].setAttribute('min', min);
+						dateControl2[i].setAttribute('max', max.format('yyyy-MM-DD'));
+					}
+					//if (dateControl2[i].id == "dtpFechaTurno") {
+					//	dateControl2[i].setAttribute('min', local);
+					//}
+				}
+				//$("#FechaEntrega").setAttribute('min', min);
+				//$("#FechaEntrega").setAttribute('max', max);
 			}
 		});
 	}
@@ -643,7 +801,8 @@ function BuscarProductosTabOC() {
 			addInCellEditHandler();
 			AddEventListenerToGrid("tbListaProductoOC");
 			activarBotones(true);
-			CargarResumenDeOc(); ///TODO MARCE: Descomentar y ver porque poronga no funciona el SP
+			tableUpDownArrow();
+			CargarResumenDeOc();
 		}
 	});
 }
@@ -705,7 +864,7 @@ function BuscarProductos(pag = 1) {
 		});
 
 		BuscarProductosTabOC();
-		
+
 		$("#btnDetalle").prop("disabled", false);
 		MostrarDatosDeCuenta(true);
 		CargarTopesDeOC();
