@@ -1,0 +1,90 @@
+﻿@using gc.infraestructura.ViewModels
+@model DocumentManagerViewModel
+
+<div class="modal" id="docmgrmodal" tabindex="-1" role="dialog" aria-labelledby="docmgrmodalLabel" data-backdrop="static"
+     style="z-index:9999;">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="docmgrmodalLabel">@Model.Titulo</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <!--Acá se insertará un arbol con los archivos disponibles a operar-->
+                        <div id="archivosDispuestos"></div>
+                    </div>
+                    <div class="col-md-8">
+                        <ul class="nav nav-tabs" id="documentManagerTabs" role="tablist">                           
+                            @if (Model.ShowPrintOption)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link active" id="print-tab" data-toggle="tab" href="#print" role="tab" aria-controls="print" aria-selected="true">
+                                        <i class="bx bx-printer text-warning"></i> Imprimir
+                                    </a>
+                                </li>
+                            }
+                            @if (Model.ShowExportOption)
+                            {
+                                <li class="nav-item">
+                                    <button type="button" class="nav-link" id="export-tab" data-bs-toggle="tab" data-bs-target="#export" role="tab" aria-controls="export" aria-selected="false">
+                                        <i class="bx bxs-file-export text-primary"></i> Exportar
+                                    </button>
+                                </li>
+                            }
+                            @if (Model.ShowEmailOption)
+                            {
+                                <li class="nav-item">
+                                    <button type="button" class="nav-link" id="email-tab" data-bs-toggle="tab" data-bs-target="#email" role="tab" aria-controls="email" aria-selected="false">
+                                        <i class="bx bx-envelope text-danger"></i> Email
+                                    </button>
+                                </li>
+                            }
+                            @if (Model.ShowWhatsAppOption)
+                            {
+                                <li class="nav-item">
+                                    <button type="button" class="nav-link" id="whatsapp-tab" data-bs-toggle="tab" data-bs-target="#whatsapp" role="tab" aria-controls="whatsapp" aria-selected="false">
+                                        <i class="bx bxl-whatsapp text-success"></i> WhatsApp
+                                    </button>
+                                </li>
+                            }
+                        </ul>
+                        <div class="tab-content" id="documentManagerTabContent">                            
+                            @if (Model.ShowPrintOption)
+                            {
+                                <div class="tab-pane fade show active" id="print" role="tabpanel" aria-labelledby="print-tab">
+                                    <button type="button" class="btn btn-warning" id="btnArchImprimir">   <i class="bx bx-printer text-warning"></i> Imprimir</button>
+                                </div>
+                            }
+                            @if (Model.ShowExportOption)
+                            {
+                                <div class="tab-pane fade" id="export" role="tabpanel" aria-labelledby="export-tab">
+                                   @*  <partial name="_ExportTab" model="Model.ExportModel" /> *@
+                                </div>
+                            }
+                            @if (Model.ShowEmailOption)
+                            {
+                                <div class="tab-pane fade" id="email" role="tabpanel" aria-labelledby="email-tab">
+                                   @*  <partial name="_EmailTab" model="Model.EmailModel" /> *@
+                                </div>
+                            }
+                            @if (Model.ShowWhatsAppOption)
+                            {
+                                <div class="tab-pane fade" id="whatsapp" role="tabpanel" aria-labelledby="whatsapp-tab">
+                                   @*  <partial name="_WhatsAppTab" model="Model.WhatsAppModel" /> *@
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btnCancelarGD" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" id="btnGenerarFile" disabled><i class="bx bx-play"></i> Generar</button>
+            </div>
+        </div>
+    </div>
+</div>

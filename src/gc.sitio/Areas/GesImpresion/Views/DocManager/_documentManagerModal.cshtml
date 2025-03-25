@@ -1,4 +1,5 @@
-﻿@using gc.sitio.Areas.GesImpresion.Models
+﻿@using gc.infraestructura.ViewModels
+
 @model DocumentManagerViewModel
 
 <div class="modal" id="documentManagerModal" tabindex="-1" role="dialog" aria-labelledby="documentManagerModalLabel" data-backdrop="static"
@@ -59,16 +60,15 @@
                                 <label class="form-check-label" for="rdpdf">PDF</label>
                             </div>
                             <div class="form-check form-check-inline form-switch mb2">
-                                <input type="radio" id="rdtxt" name="rdgenera" class="form-check-input" value="T" disabled/>
+                                <input type="radio" id="rdtxt" name="rdgenera" class="form-check-input" value="T" />
                                 <label class="form-check-label" for="rdtxt">TXT</label>
                             </div>
                             <div class="form-check form-check-inline form-switch mb2">
-                                <input type="radio" id="rdxls" name="rdgenera" class="form-check-input" value="X" disabled/>
+                                <input type="radio" id="rdxls" name="rdgenera" class="form-check-input" value="X" />
                                 <label class="form-check-label" for="rdxls">XLS</label>
                             </div>
                         </div>
                         <div class="input-group input-group-sm mt-4">
-                            <button type="button" class="btn btn-success" id="btnGenerarFile" disabled><i class="bx bx-play"></i> Generar</button>
                         </div>
 
                     </div>
@@ -100,13 +100,8 @@
             </div>
             <div class="modal-footer">
                 <button type="button" id="btnCancelarGD" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" id="documentManagerActionButton">Ejecutar</button>
+                <button type="button" class="btn btn-success" id="btnGenerarFile" disabled><i class="bx bx-play"></i> Generar</button>
             </div>
         </div>
     </div>
 </div>
-
-<input type="hidden" id="documentManagerSourceApp" value="@Model.SourceApp" />
-<input type="hidden" id="documentManagerEntityId" value="@Model.EntityId" />
-<input type="hidden" id="documentManagerEntityType" value="@Model.EntityType" />
-
