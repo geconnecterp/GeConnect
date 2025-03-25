@@ -1,5 +1,134 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model ConsultaOCModel
 @{
 }
+<style>
+	thead th {
+		position: sticky;
+		top: 0px;
+	}
+</style>
+<div class="row">
+	<div class="col-md-10">
+		<div class="table-responsive table-wrapper-full-width" id="containerListaOC">
+			<table class="table table-bordered table-hover" id="tbListaOC">
+				<thead class="table-dark">
+					<tr>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">N° OC</th>
+						<th style="width:20%;" class="col-header-small align-center tiny-row">Proveedor</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">Fecha</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">Sucursal</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">Estado</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">Usuario</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">Importe</th>
+						<th style="width:0%; display:none;">oce_id</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var item in Model.GrillaOC.ListaDatos)
+					{
+						<tr onclick="selectListaOCRow(this)">
+							<td class="align-center tiny-row">@item.oc_compte</td>
+							<td class="align-left tiny-row">@item.cta_denominacion</td>
+							<td class="align-center tiny-row">@item.oc_fecha</td>
+							<td class="align-center tiny-row">@item.adm_nombre</td>
+							<td class="align-center tiny-row">@item.oce_desc</td>
+							<td class="align-center tiny-row">@item.usu_apellidoynombre</td>
+							<td class="align-center tiny-row">@item.oc_total</td>
+							<td style="display:none;">@item.oce_id</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+			<div class="row">
+				<div class="offset-md-3 col-md-6">
+					<div id="divPaginacion" class="">
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-8">
+			</div>
+			<div class="col-4">
+				<div class="input-group input-group-sm mt-1">
+					<span class="input-group-text fixed-lbl-for-abm-100">Totales: </span>
+					<input type="text" asp-for="Importe" class="form-control" style="text-align: right;" disabled />
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="col-md-2">
+		<div class="row">
+			<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px; width:88%;" id="btnActivarOC">
+				<div class="row" style="display: contents">
+					<div class="col-2">
+						<span class="tf-icons bx bx-check-circle"></span>
+					</div>
+					<div class="col-10" style="font-size: medium;">
+						Activar OC
+					</div>
+				</div>
+			</button>
+		</div>
+		<div class="row mt-1">
+			<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px; width:88%;" id="btnCerrarOC">
+				<div class="row" style="display: contents">
+					<div class="col-2">
+						<span class="tf-icons bx bx-x-circle"></span>
+					</div>
+					<div class="col-10" style="font-size: medium;">
+						Cerrar OC
+					</div>
+				</div>
+			</button>
+		</div>
+		<div class="row mt-1">
+			<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px; width:88%;" id="btnAnularOC">
+				<div class="row" style="display: contents">
+					<div class="col-2">
+						<span class="tf-icons bx bx-eraser"></span>
+					</div>
+					<div class="col-10" style="font-size: medium;">
+						Anular OC
+					</div>
+				</div>
+			</button>
+		</div>
+		<div class="row mt-1">
+			<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px; width:88%;" id="btnModiAdm">
+				<div class="row" style="display: contents">
+					<div class="col-2">
+						<span class="tf-icons bx bxs-edit"></span>
+					</div>
+					<div class="col-10" style="font-size: medium;">
+						Modi. Adm.
+					</div>
+				</div>
+			</button>
+		</div>
+		<div class="row mt-1">
+			<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px; width:88%;" id="btnImprimir">
+				<div class="row" style="display: contents">
+					<div class="col-2">
+						<span class="tf-icons bx bx-printer"></span>
+					</div>
+					<div class="col-10" style="font-size: medium;">
+						Imprimir
+					</div>
+				</div>
+			</button>
+		</div>
+		<div class="row mt-1">
+			<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px; width:88%;" id="btnServicioExt">
+				<div class="row" style="display: contents">
+					<div class="col-2">
+						<span class="tf-icons bx bxl-chrome"></span>
+					</div>
+					<div class="col-10" style="font-size: medium;">
+						Servicio Ext
+					</div>
+				</div>
+			</button>
+		</div>
+	</div>
+</div>

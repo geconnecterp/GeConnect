@@ -120,6 +120,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string OC_Resumen = "/CargarResumenDeOC";
 		private const string OC_Confirmar = "/ConfirmarOC";
 		private const string OC_Lista = "/CargarOrdenDeCompraConsultaLista";
+		private const string OC_Detalle = "/CargarDetalleDeOC";
 
 		private const string OC_Cargar_Lista = "/CargarOrdenesDeCompraList";
 
@@ -2447,6 +2448,37 @@ namespace gc.sitio.core.Servicios.Implementacion
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<OrdenDeCompraConsultaDto>>>(stringData);
 				return (apiResponse.Data, apiResponse.Meta);
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<OrdenDeCompraDetalleDto>> CargarDetalleDeOC(string oc_compte, string token)
+		{
+			ApiResponse<List<OrdenDeCompraDetalleDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{OC_Detalle}?oc_compte={oc_compte}";
+
+			response = client.GetAsync(link).GetAwaiter().GetResult();
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros oc_compte:{oc_compte}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<OrdenDeCompraDetalleDto>>>(stringData);
+				return apiResponse.Data;
 			}
 			else
 			{

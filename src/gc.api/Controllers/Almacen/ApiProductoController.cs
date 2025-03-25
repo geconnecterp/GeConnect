@@ -965,6 +965,17 @@ namespace gc.api.Controllers.Almacen
 			return Ok(response);
 		}
 
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult CargarDetalleDeOC(string oc_compte)
+		{
+			ApiResponse<List<OrdenDeCompraDetalleDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.CargarDetalleDeOC(oc_compte);
+			response = new ApiResponse<List<OrdenDeCompraDetalleDto>>(res);
+			return Ok(response);
+		}
+
 		[HttpPost]
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoNCPIDto>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]

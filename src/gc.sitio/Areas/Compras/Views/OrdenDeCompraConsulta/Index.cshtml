@@ -86,11 +86,15 @@
 		var pags = 0;
 		var pagina = 1;
 		var search = "";
+		var ocIdSeleccionado = "";
+		var oceIdSeleccionado = "";
 		var funcCallBack = "BuscarOrdenesDeCompra";
 		var autoComRel01Url = "@Url.Action("BuscarProvs", "ordendecompraconsulta", new { area = "Compras" })";
 		var autoComRel03Url = "@Url.Action("BuscarSucursales", "ordendecompraconsulta", new { area = "Compras" })";
 		var autoComRel02Url = "@Url.Action("BuscarEstadosDeOC", "ordendecompraconsulta", new { area = "Compras" })";
 		var buscarOrdenesDeCompraURL = "@Url.Action("BuscarOrdenesDeCompra", "ordendecompraconsulta", new { area = "Compras" })";
+		var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "ordendecompraconsulta", new { area = "Compras" })";
+		var buscarDetalleDeOrdenDeCompraURL = "@Url.Action("BuscarDetalleDeOrdenDeCompra", "ordendecompraconsulta", new { area = "Compras" })";
 	</script>
 	<script src="~/js/plugins/jquery.simplePagination.js"></script>
 	<script src="~/js/app/areas/ordendecompra/consultaoc.js"></script>

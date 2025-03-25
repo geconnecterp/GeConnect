@@ -952,6 +952,17 @@ namespace gc.api.core.Servicios
 			return respuesta;
 		}
 
+		public List<OrdenDeCompraDetalleDto> CargarDetalleDeOC(string oc_compte)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_OC_Detalle;
+			var ps = new List<SqlParameter>()
+			{
+				new("@oc_compte",oc_compte),
+			};
+			List<OrdenDeCompraDetalleDto> respuesta = _repository.EjecutarLstSpExt<OrdenDeCompraDetalleDto>(sp, ps, true);
+			return respuesta;
+		}
+
 		public List<ProductoNCPIDto> NCPICargarListaDeProductos(NCPICargarListaDeProductosRequest request)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OC_Productos;

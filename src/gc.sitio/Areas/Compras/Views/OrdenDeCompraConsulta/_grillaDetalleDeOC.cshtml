@@ -1,0 +1,128 @@
+﻿@model ConsultaOCDetalleModel
+@{
+}
+<div class="row">
+	<div class="table-responsive table-wrapper-full-width" id="containerListaOC">
+		<table class="table table-bordered table-hover" id="tbListaDetalleOC">
+			<thead class="table-dark">
+				<tr>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">Código</th>
+					<th style="width:20%;" class="col-header-small align-center tiny-row">Descripción</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">Cod. Prov.</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">Unidad Pres.</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">Precio Lista</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">D1</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">D2</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">D3</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">D4</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">DPA</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">Pedido Bultos</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">Unid. ¨Pres.</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">Boni</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">Cant. total</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">Precio Costo</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">Total Costo</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">Total</th>
+					<th style="width:0%; display:none;">oce_id</th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var item in Model.GrillaDetalle.ListaDatos)
+				{
+					<tr onclick="selectListaOCDetalleRow(this)">
+						<td class="align-center tiny-row">@item.p_id</td>
+						<td class="align-left tiny-row">@item.p_desc</td>
+						<td class="align-center tiny-row">@item.p_id_prov</td>
+						<td class="align-center tiny-row">@item.ocd_unidad_pres</td>
+						<td class="align-right tiny-row">@item.ocd_plista</td>
+						<td class="align-center tiny-row">@item.ocd_dto1</td>
+						<td class="align-center tiny-row">@item.ocd_dto2</td>
+						<td class="align-center tiny-row">@item.ocd_dto3</td>
+						<td class="align-center tiny-row">@item.ocd_dto4</td>
+						<td class="align-center tiny-row">@item.ocd_dto_pa</td>
+						<td class="align-center tiny-row">@item.ocd_bultos</td>
+						<td class="align-center tiny-row">@item.ocd_unidad_x_bulto</td>
+						<td class="align-center tiny-row">@item.ocd_boni</td>
+						<td class="align-center tiny-row">@item.ocd_cantidad</td>
+						<td class="align-right tiny-row">@item.ocd_pcosto</td>
+						<td class="align-right tiny-row">@item.ocd_pcosto</td>
+						<td class="align-right tiny-row">@item.ocd_pcosto_tot</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+</div>
+<div class="row">
+	<div class="col-md-4">
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-70">Entrega</span>
+				@Html.TextBoxFor(t => t.FechaEntrega, "{0:yyyy-MM-dd}", new { disabled = "disabled", type = "date", @class = "form-control activable" })
+				<input type="text" asp-for="SucursalEntrega" class="form-control activable inputEditable" disabled/>
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<div class="form-check form-check-inline form-switch mb-2">
+					<input class="form-check-input activable" type="checkbox" asp-for="PagoAnticipado" value="" id="chkPagoAnticipado" disabled>
+					<label class="form-check-label" for="chkPagoAnticipado"> Pago Anticipado</label>
+				</div>
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-100">Pago a plazo:</span>
+				@Html.TextBoxFor(t => t.PagoPlazo, "{0:yyyy-MM-dd}", new { disabled = "disabled", type = "date", @class = "form-control activable inputEditable" })
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-10">Observaciones:</span>
+				<input type="text" asp-for="Observaciones" class="form-control activable inputEditable" disabled/>
+			</div>
+		</div>
+	</div>
+	<div class="col-md-4">
+		<div class="row">
+			<button type="button" class="btn btn-sm btn-primary" style="margin-left:100px; width:50%;" id="btnImprimirDesdeDetalle">
+				<div class="row" style="display: contents">
+					<div class="col-2">
+						<span class="tf-icons bx bx-printer"></span>
+					</div>
+					<div class="col-10" style="font-size: medium;">
+						Imprimir
+					</div>
+				</div>
+			</button>
+		</div>
+	</div>
+	<div class="col-md-4">
+		<div class="row mt-1">
+			<div class="card">
+				<div class="card-body mt-1-ctm">
+					<div class="table-responsive text-nowrap table-wrapper-300-full-width">
+						<table class="table table-sm mb-0 table-hover" id="tbGridConcepto">
+							<thead class="table-dark">
+								<tr class="header">
+									<th class="col-header-small align-left">Concepto</th>
+									<th class="col-header-small align-right">Importe</th>
+								</tr>
+							</thead>
+							<tbody>
+								@foreach (var item in Model.ResumenGrilla.ListaDatos)
+								{
+									<tr>
+										<td class="align-left">@item.Concepto</td>
+										<td class="align-right font-bold">@item.Importe</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+

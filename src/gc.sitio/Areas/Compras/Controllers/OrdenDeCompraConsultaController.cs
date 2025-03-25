@@ -5,6 +5,7 @@ using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Helpers;
+using gc.sitio.Areas.Compras.Models;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -71,6 +72,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			MetadataGrid metadata;
 			GridCore<OrdenDeCompraConsultaDto> grillaDatos;
+			ConsultaOCModel model = new();
 			try
 			{
 				request.Registros = _settings.NroRegistrosPagina;
@@ -81,7 +83,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 				var pag = request.Pagina == null ? 1 : request.Pagina.Value;
 				ListaOrdenDeCompraConsulta = productos.Item1;
 				grillaDatos = GenerarGrilla(productos.Item1, request.Sort, _settings.NroRegistrosPagina, pag, metadata.TotalCount, metadata.TotalPages, request.SortDir);
-				return PartialView("_grillaProductosOC", grillaDatos);
+				model.GrillaOC = grillaDatos;
+				model.Importe = 0;
+				return PartialView("_grillaProductosOC", model);
 			}
 			catch (Exception ex)
 			{
@@ -95,6 +99,41 @@ namespace gc.sitio.Areas.Compras.Controllers
 				return PartialView("_gridMensaje", response);
 			}
 		}
+
+		[HttpPost]
+		public async Task<IActionResult> BuscarDetalleDeOrdenDeCompra(string ocCompte)
+		{
+			ConsultaOCDetalleModel model = new ConsultaOCDetalleModel();
+			try
+			{
+				var detalle = _productoServicio.CargarDetalleDeOC(ocCompte, TokenCookie).Result;
+				model.GrillaDetalle = ObtenerGridCore<OrdenDeCompraDetalleDto>(detalle);
+				var detalleItem = detalle.First();
+				if (detalleItem != null)
+				{
+					model.FechaEntrega = detalleItem.oc_entrega_fecha;
+					model.SucursalEntrega = detalleItem.adm_nombre;
+					model.Observaciones = detalleItem.oc_observaciones;
+					model.PagoAnticipado = detalleItem.oc_pago_ant == 'S' ? true : false;
+					model.PagoPlazo = detalleItem.oc_pago_ant_vto.Value;
+					CargarDatosDeConceptosEnTabDetalle(model, detalleItem);
+				}
+				return PartialView("_grillaDetalleDeOC", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		
 
 		[HttpPost]
 		public JsonResult BuscarSucursales(string prefix)
@@ -137,6 +176,54 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				ObtenerAdministracionesLista(_adminServicio);
 			}
+		}
+
+		private void CargarDatosDeConceptosEnTabDetalle(ConsultaOCDetalleModel model, OrdenDeCompraDetalleDto item)
+		{
+			var grillaTemp = new List<OrdenDeCompraConceptoDto>();
+			var itemConcepto = new OrdenDeCompraConceptoDto
+			{
+				Orden = 0,
+				Concepto = "Subtotal",
+				Importe = item.oc_gravado + item.oc_no_gravado + item.oc_exento
+			};
+			grillaTemp.Add(itemConcepto);
+			itemConcepto = new OrdenDeCompraConceptoDto
+			{
+				Orden = 1,
+				Concepto = "II",
+				Importe = item.oc_in
+			};
+			grillaTemp.Add(itemConcepto);
+			itemConcepto = new OrdenDeCompraConceptoDto
+			{
+				Orden = 2,
+				Concepto = "Flete",
+				Importe = item.oc_flete_importe
+			};
+			grillaTemp.Add(itemConcepto);
+			itemConcepto = new OrdenDeCompraConceptoDto
+			{
+				Orden = 3,
+				Concepto = "IVA",
+				Importe = item.oc_iva + item.oc_flete_iva
+			};
+			grillaTemp.Add(itemConcepto);
+			itemConcepto = new OrdenDeCompraConceptoDto
+			{
+				Orden = 4,
+				Concepto = "Percepciones",
+				Importe = item.oc_percepciones
+			};
+			grillaTemp.Add(itemConcepto);
+			itemConcepto = new OrdenDeCompraConceptoDto
+			{
+				Orden = 5,
+				Concepto = "TOTAL",
+				Importe = grillaTemp.Sum(x => x.Importe)
+			};
+			grillaTemp.Add(itemConcepto);
+			model.ResumenGrilla = ObtenerGridCore<OrdenDeCompraConceptoDto>(grillaTemp);
 		}
 		#endregion
 	}
