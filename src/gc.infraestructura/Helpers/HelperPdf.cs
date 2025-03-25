@@ -529,7 +529,7 @@ namespace gc.infraestructura.Helpers
 
         public static void GeneraCabeceraLista(Document pdf, List<string> titulos, float[] anchos, Font normal)
         {
-            PdfPTable tabla = GeneraTabla(titulos.Count, anchos, 100, 10, 10);
+            PdfPTable tabla = GeneraTabla(titulos.Count, anchos, 100, 10, 0);
             Paragraph parrafo;
             PdfPCell celda;
             foreach (var txt in titulos)

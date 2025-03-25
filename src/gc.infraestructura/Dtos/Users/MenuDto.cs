@@ -38,6 +38,7 @@
     {
         public string id { get; set; } = string.Empty;
         public string text { get; set; } = string.Empty;
+        public string icon { get; set; } = string.Empty;
         public List<MenuRoot> children { get; set; } = [];
         public Estado state { get; set; }= new Estado();
         public MenuRootData data { get; set; } = new MenuRootData();
@@ -57,5 +58,6 @@
         public string mnu_item_id { get; set; } = string.Empty;
         public string mnu_item_padre { get; set; } = string.Empty;
         public string perfil_default { get; set; } = string.Empty;
+        public string archivoB64 { get; set; } = string.Empty;
     }
 }

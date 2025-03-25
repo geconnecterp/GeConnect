@@ -1,10 +1,18 @@
-﻿using System.Xml.Linq;
+﻿using gc.infraestructura.Enumeraciones;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection.Metadata;
+using System.Text;
+using System.Threading.Tasks;
+using System.Xml.Linq;
 
-namespace gc.sitio.Areas.GesImpresion.Models
+namespace gc.infraestructura.ViewModels
 {
     public class DocumentManagerViewModel
     {
-        public string Titulo { get; set; } = "Gestor Documental";
+        public string Id { get; set; } = string.Empty;
+        public string Titulo { get; set; } = "";
         public bool ShowPrintOption { get; set; } = true;
         public bool ShowExportOption { get; set; } = true;
         public bool ShowEmailOption { get; set; } = true;
@@ -13,9 +21,9 @@ namespace gc.sitio.Areas.GesImpresion.Models
         public ExportDocumentViewModel ExportModel { get; set; } = new ExportDocumentViewModel();
         public EmailDocumentViewModel EmailModel { get; set; } = new EmailDocumentViewModel();
         public WhatsAppDocumentViewModel WhatsAppModel { get; set; } = new WhatsAppDocumentViewModel();
-        public string SourceApp { get; set; }
-        public string EntityId { get; set; }
-        public string EntityType { get; set; }        
+        //public string SourceApp { get; set; }
+        //public string EntityId { get; set; }
+        //public string EntityType { get; set; }        
 
     }
 
@@ -31,7 +39,9 @@ namespace gc.sitio.Areas.GesImpresion.Models
     public class PrintDocumentViewModel
     {
         public List<DocumentViewModel> Documents { get; set; } = new List<DocumentViewModel>();
-        public Dictionary<string, object> Context { get; set; } = new Dictionary<string, object>();
+        //public Dictionary<string, object> Context { get; set; } = new Dictionary<string, object>();
+
+        //permitiria imprimir duplicados si estuvieran seteados en la configuracion
         public bool ShowDuplicates { get; set; }
         //public bool ShowCertificates { get; set; }
     }

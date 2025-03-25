@@ -1,9 +1,29 @@
 ﻿$(function () {
-    $("#btnImprimirCtaCte").on("click", imprimirCtaCte);
-    $("#btnImprimirVenc").on("click", imprimirVenc);
-    $("#btnImprimirCmpte").on("click", imprimirComp);
-    $("#btnImprimirOP").on("click", imprimirOP);
-    $("#btnImprimirRecP").on("click", imprimirRecP);
+    $("#btnImprimirCtaCte").on("click", function () {
+        fkey = ModImpresion.ModCtaCte;
+        var data = GeneradorParametros(fkey);
+        invocacionGestorDoc(data);
+    });
+    $("#btnImprimirVenc").on("click", function () {
+        fkey = ModImpresion.ModVenc;
+        var data = GeneradorParametros(fkey);
+        invocacionGestorDoc(data);
+    });
+    $("#btnImprimirCmpte").on("click", function () {
+        fkey = ModImpresion.ModCmpte;
+        var data = GeneradorParametros(fkey);
+        invocacionGestorDoc(data);
+    });
+    $("#btnImprimirOP").on("click", function () {
+        fkey = ModImpresion.ModOrdPagos;
+        var data = GeneradorParametros(fkey);
+        invocacionGestorDoc(data);
+    });
+    $("#btnImprimirRecP").on("click", function () {
+        fkey = ModImpresion.ModRecProv;
+        var data = GeneradorParametros(fkey);
+        invocacionGestorDoc(data);
+    });
 
 });
 
@@ -26,55 +46,17 @@ function GridCtaCte() {
     return hayRegistrosEnTabla(grid);
 }
 
-
-
-function imprimirCtaCte() {
-
-    fkey = ModImpresion.ModCtaCte
-    var data = GeneradorParametros(fkey);
-    invocacionGestorDoc(data);
-}
-
-function imprimirVenc() {
-    fkey = ModImpresion.ModVenc;
-    var data = GeneradorParametros(fkey);
-    invocacionGestorDoc(data);
-
-}
-
-function imprimirComp() {
-    fkey = ModImpresion.ModCmpte;
-    var data = GeneradorParametros(fkey);
-    invocacionGestorDoc(data);
-
-}
-
-function imprimirOP() {
-    fkey = ModImpresion.ModOrdPagos;
-    var data = GeneradorParametros(fkey);
-    invocacionGestorDoc(data);
-
-}
-
-function imprimirRecP() {
-    var data = GeneradorParametros(ModImpresion.ModRecProv);
-    invocacionGestorDoc(data);
-
-}
-
 function GeneradorParametros(mod) {
     switch (mod) {
         case ModImpresion.ModCtaCte:
-            //ctaId = consCta;
-            //fechaD = $("#fechaD").val();
+            fechaD = $("#fechaD").val();
             var data = {
-                //modulo: mod, parametros: [ consCta.toString(), fechaD.toString() ]
-                modulo: mod
+                modulo: mod, parametros: [ consCta.toString(), fechaD.toString() ]
+                //modulo: mod
             };
             return data;
 
         case ModImpresion.ModVenc:
-            ctaId = consCta;
             fechaD = $("#cvfechaD").val();
             fechaH = $("#cvfechaH").val();
             var data = {
@@ -82,7 +64,6 @@ function GeneradorParametros(mod) {
             };
             return data;
         case ModImpresion.ModCmpte:
-            ctaId = consCta;
             relCuil = false;
             if ($("#relCuil").is(":checked")) {
                 relCuil = true;

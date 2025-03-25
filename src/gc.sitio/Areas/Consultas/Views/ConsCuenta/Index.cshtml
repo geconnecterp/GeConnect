@@ -7,6 +7,7 @@
 }
 @section styles {
     <link rel="stylesheet" href="~/css/simplePagination.css" />
+    <link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
 }
 
 <div class="container">
@@ -72,11 +73,14 @@
 
         var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "abmproducto", new { area = "abms" })";
 
-        var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "DocManager", new { area = "GesImpresion" })";
-        var generadorArchivoUrl = "@Url.Action("GeneradorArchivo", "DocManager", new { area = "GesImpresion" })";
+        var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
+        var generadorArchivoUrl = "@Url.Action("GeneradorArchivo", "GestorImpresion", new { area = "ControlComun" })";
+        var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
 
 
     </script>
+    <script src="~/lib/jstree/jstree.min.js"></script>
+
     <script src="~/js/plugins/jquery.simplePagination.js"></script>
 
     <!--variables Globales y Enums Globales-->

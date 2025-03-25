@@ -27,7 +27,6 @@
     public class DatosPieDto
     {
         public string Observaciones { get; set; } = string.Empty;
-        public string Fecha { get; set; } = string.Empty;
         public string Usuario { get; set; } = string.Empty;     
     }
 

@@ -1,29 +1,23 @@
-﻿using Azure;
-using gc.api.core.Entidades;
+﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
-using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.DocManager;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.sitio.Areas.GesImpresion.Models;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos.DocManager;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Options;
-using System.IO.Pipelines;
 
 namespace gc.sitio.Areas.GesImpresion.Controllers
 {
     [Area("GesImpresion")]
     public class DocManagerController : ControladorBase
-    {
+    {       
         private readonly IHttpClientFactory _clientFactory;
         private readonly ILogger<DocManagerController> _logger;
         private readonly IHttpContextAccessor _accessor;
-        private readonly DocsManager _docsManager;
         private readonly IDocManagerServicio _docManagerServicio;
         private readonly AppSettings _setting;
         private readonly EmpresaGeco _empresaGeco;
@@ -31,14 +25,13 @@ namespace gc.sitio.Areas.GesImpresion.Controllers
 
         public DocManagerController(IOptions<AppSettings> options, IHttpContextAccessor accessor,
             ILogger<DocManagerController> logger, IHttpClientFactory clientFactory,
-            IOptions<DocsManager> docsManager, IOptions<EmpresaGeco> empresa,
+             IOptions<EmpresaGeco> empresa,
             IDocManagerServicio docManager, IWebHostEnvironment env) : base(options, accessor, logger)
         {
             _clientFactory = clientFactory;
             _logger = logger;
             _accessor = accessor;
             _setting = options.Value;
-            _docsManager = docsManager.Value;
             _docManagerServicio = docManager;
             _empresaGeco = empresa.Value;
             _env = env;
@@ -56,7 +49,7 @@ namespace gc.sitio.Areas.GesImpresion.Controllers
             //del modulo respecto a la funcionalidad que tendrá permitida
             try
             {
-                var mc = _docsManager.Modulos.Find(x => x.Modulo == modulo);
+                var mc = _docsManager.Reportes.Find(x => x.Modulo == modulo);
                 if (mc == null)
                 {
                     throw new NegocioException("No se encontró la configuración para el módulo solicitado.");
@@ -73,6 +66,7 @@ namespace gc.sitio.Areas.GesImpresion.Controllers
                     ShowExportOption = mc.Export,
                     ShowEmailOption = mc.Email,
                     ShowWhatsAppOption = mc.Whatsapp,
+                    
                 };
 
                 //if (mc.Print)
@@ -128,7 +122,7 @@ namespace gc.sitio.Areas.GesImpresion.Controllers
                 {
                     return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
                 }
-                var mc = _docsManager.Modulos.Find(x => x.Modulo == modulo);
+                var mc = _docsManager.Reportes.Find(x => x.Modulo == modulo);
                 MemoryStream ms = new MemoryStream();
                 switch (formato)
                 {
@@ -162,7 +156,7 @@ namespace gc.sitio.Areas.GesImpresion.Controllers
             }
         }
 
-        private void SeleccionaTipoInformePDF(ModuloDocMngr modulo, out MemoryStream ms)
+        private void SeleccionaTipoInformePDF(Reporte modulo, out MemoryStream ms)
         {
             ms = new MemoryStream();
             string observacion;
@@ -198,10 +192,9 @@ namespace gc.sitio.Areas.GesImpresion.Controllers
                     break;
             }
 
-
         }
 
-        private void GeneraReporteSegunDatos<T>(ModuloDocMngr modulo, List<T> listado, string observacion, out MemoryStream ms)
+        private void GeneraReporteSegunDatos<T>(Reporte modulo, List<T> listado, string observacion, out MemoryStream ms)
         {
             var cuenta = CuentaComercialSeleccionada;
 

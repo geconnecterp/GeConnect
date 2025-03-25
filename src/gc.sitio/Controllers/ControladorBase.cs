@@ -15,6 +15,7 @@ using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Users;
 using gc.infraestructura.EntidadesComunes;
 using gc.infraestructura.Helpers;
+using gc.infraestructura.ViewModels;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.Users;
 using Microsoft.AspNetCore.Mvc;
@@ -33,8 +34,8 @@ namespace gc.sitio.Controllers
 		private readonly AppSettings _options;
 		protected readonly IHttpContextAccessor _context;
 
-		public List<Orden> _orden;
-		private readonly ILogger _logger;
+        public List<Orden> _orden;
+        internal readonly ILogger _logger;
 
 		public ControladorBase(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger logger)
 		{
@@ -1670,25 +1671,61 @@ namespace gc.sitio.Controllers
         }
         #endregion
 
-		#region Documento Manager
-		public string ModuloDM
-		{
-			get
-			{
-				var txt = _context.HttpContext.Session.GetString("ModuloDM");
-				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
-				{
-					return string.Empty;
-				}
-				return txt;
-			}
-			set
-			{
-				var valor = value.ToString();
-				_context.HttpContext.Session.SetString("ModuloDM", valor);
-			}
-		}
-		#endregion
+        #region Documento Manager
+        public string ModuloDM
+        {
+            get
+            {
+                var txt = _context.HttpContext.Session.GetString("ModuloDM");
+                if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
+                {
+                    return string.Empty;
+                }
+                return txt;
+            }
+            set
+            {
+                var valor = value.ToString();
+                _context.HttpContext.Session.SetString("ModuloDM", valor);
+            }
+        }
+
+        public DocumentManagerViewModel DocumentManager
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("DocumentManager");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return new DocumentManagerViewModel();
+                }
+                return JsonConvert.DeserializeObject<DocumentManagerViewModel>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("DocumentManager", json);
+            }
+        }
+
+        public List<MenuRoot> ArchivosCargadosModulo
+        {
+            get
+            {
+                var json = _context.HttpContext.Session.GetString("ArchivosCargadosModulo");
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return new List<MenuRoot>();
+                }
+                return JsonConvert.DeserializeObject<List<MenuRoot>>(json);
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext.Session.SetString("ArchivosCargadosModulo", json);
+            }
+        }
+        #endregion
 
 		#region	ORDEN DE COMPRA ESTADO LISTA
 		public List<OrdenDeCompraEstadoDto> OrdenDeCompraEstadoLista
