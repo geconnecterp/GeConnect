@@ -617,7 +617,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
 
                     titulos = new List<string> { "Fecha", "N° Mov", "Comprobante", "Concepto", "Debe", "Haber","Saldo" };
                     anchos = [10f, 10f, 20f, 30f, 10f, 10f, 10f];
-                    GeneraReporteSegunDatos(consulta, cDatos, observacion, out ms, titulos, anchos);
+                    GeneraReporteSegunDatos(consulta, cDatos, observacion, out ms, titulos, anchos, true);
 
                     break;
                 case AppReportes.CCUENTAS_VENCIMIENTO_COMPROBANTES:
@@ -635,7 +635,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
                     titulos = new List<string> { "Descripcion", "Cuota", "Est.", "Fecha Comp.", "Fecha Vto", "Importe" };
                     anchos = [50f, 10f, 10f, 10f, 10f, 10f];
 
-                    GeneraReporteSegunDatos(consulta, vDatos, observacion, out ms, titulos, anchos);
+                    GeneraReporteSegunDatos(consulta, vDatos, observacion, out ms, titulos, anchos,true);
                     break;
                 case AppReportes.CCUENTAS_COMPROBANTES:
                     break;
@@ -656,7 +656,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
             return Convert.ToBase64String(ms.ToArray());
         }
 
-        private void GeneraReporteSegunDatos<S>(AppReportes consulta, List<S> vDatos, string observacion, out MemoryStream ms, List<string> titulos, float[] anchos)
+        private void GeneraReporteSegunDatos<S>(AppReportes consulta, List<S> vDatos, string observacion, out MemoryStream ms, List<string> titulos, float[] anchos,bool datosCliente)
         {
             var cuenta = CuentaComercialSeleccionada;
 
@@ -687,7 +687,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 Datos = vDatos,
             };
 
-            _docMSv.GenerarArchivoPDF(request, out ms, titulos, anchos);
+            _docMSv.GenerarArchivoPDF(request, out ms, titulos, anchos,datosCliente);
         }
 
         private async Task<CuentaDto> BuscarCuentaComercial(string ctaId, char t)

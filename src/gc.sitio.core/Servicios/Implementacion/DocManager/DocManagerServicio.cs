@@ -70,7 +70,7 @@ namespace gc.sitio.core.Servicios.Implementacion.DocManager
         /// <typeparam name="T">tipo de dato a utilizar</typeparam>
         /// <param name="request"></param>
         /// <returns></returns>
-        public void GenerarArchivoPDF<T>(PrintRequestDto<T> request, out MemoryStream ms, List<string> titulos, float[] anchos)
+        public void GenerarArchivoPDF<T>(PrintRequestDto<T> request, out MemoryStream ms, List<string> titulos, float[] anchos,bool datosCliente)
         {
             PdfWriter writer = null;
             Document pdf = null;
@@ -110,45 +110,18 @@ namespace gc.sitio.core.Servicios.Implementacion.DocManager
                 #region Carga del listado
                 //la primera hoja tiene los datos del cliente. Luego el listado de datos
                 //cargamos los datos del cliente
-                if (request.ModuloImpresion == Modulo.CUENTA_CORRIENTE || request.ModuloImpresion == Modulo.VENCIMIENTO_COMPROBANTES)
+                if (datosCliente)
                 {
                     var tablaEnc = HelperPdf.GeneraTabla(4, [20f, 40f, 20f, 20f], 100, 10, 20);
                     HelperPdf.CargarDatosCliente(pdf, request.Cuerpo, subtitulo, tablaEnc);
                 }
-                switch (request.ModuloImpresion)
-                {
-                    case Modulo.CUENTA_CORRIENTE:
+                
                         //List<string> titulos = new List<string> { "Descripcion", "Cuota", "Est.", "Fecha Comp.", "Fecha Vto", "Importe" };
                         //float[] anchos = [50f, 10f, 10f, 10f, 10f, 10f];
                         HelperPdf.GeneraCabeceraLista(pdf, titulos, anchos, normal);
 
                         HelperPdf.GenerarListadoDatos(pdf, request.Cuerpo, anchos, normal);
-                        break;
-                    case Modulo.ORDEN_DE_PAGO:
-                        break;
-                    case Modulo.CERTIFICADO_DE_RETENCION_GANANCIA:
-                        break;
-                    case Modulo.CERTIFICADO_DE_RETENCION_IIBB:
-                        break;
-                    case Modulo.ORDEN_DE_PAGO_DUPLICADO:
-                        break;
-                    case Modulo.VENCIMIENTO_COMPROBANTES:
-                        //List<string> titulosV = new List<string> { "Descripcion", "Cuota", "Est.", "Fecha Comp.", "Fecha Vto", "Importe" };
-                        //float[] anchosV = [50f, 10f, 10f, 10f, 10f, 10f];
-                        HelperPdf.GeneraCabeceraLista(pdf, titulos, anchos, normal);
-
-                        HelperPdf.GenerarListadoDatos(pdf, request.Cuerpo, anchos, normal);
-                        break;
-                    case Modulo.COMPROBANTES:
-                        break;
-                    case Modulo.RECEPCION_PROVEEDORES:
-                        break;
-                    default:
-                        break;
-                }
-
-                //HelperPdf.GeneraCabeceraListado(pdf, request.Cuerpo.Titulos,  request.Cuerpo.ColumnasAncho, titulo, subtitulo, normal, chico);
-                // HelperPdf.GenerarListadoDatos(ref pdf, request.Cuerpo, subtitulo, normal, chico);
+                
 
                 #endregion
                 //var parrafo = HelperPdf.GeneraParrafo("Texto Prueba", normal, Element.ALIGN_JUSTIFIED, 10, 10);

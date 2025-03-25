@@ -10,7 +10,7 @@ namespace gc.sitio.core.Servicios.Contratos.DocManager
     public interface IDocManagerServicio
     {
         List<MenuRoot> GeneraArbolArchivos(List<Reporte> reportes);
-        void GenerarArchivoPDF<T>(PrintRequestDto<T> request, out MemoryStream ms, List<string> titulos, float[] anchos);
+        void GenerarArchivoPDF<T>(PrintRequestDto<T> request, out MemoryStream ms, List<string> titulos, float[] anchos,bool datosCliente);
         DocumentManagerViewModel InicializaObjeto(string titulo, AppModulo modulo);
         List<MenuRoot> MarcarConsultaRealizada(List<MenuRoot> reportes, AppReportes consulta, int orden,string archB64);
     }
