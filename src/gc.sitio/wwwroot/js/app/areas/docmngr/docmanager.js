@@ -10,7 +10,7 @@
 
 $(function () {
     $(document).on("click", "#btnCancelarGD", function () {
-        $("#documentManagerModal").modal("hide");
+        $("#docmgrmodal").modal("hide");
         $("#modalGestorDocumental").hide();
     });
 
