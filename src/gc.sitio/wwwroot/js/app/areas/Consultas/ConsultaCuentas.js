@@ -125,7 +125,7 @@ $(function () {
                     consRrss = ui.item.label;
                     consProv = ui.item.prov;
                     $("#controlConsultaCambio" + nnControlCta01).val(true).trigger("change");
-                    consultaCtaCte();
+                    consultaCtaCte(1); //se selecciona la cuenta la pagina a visualizar es la primera
                 }
                 return true;
             }

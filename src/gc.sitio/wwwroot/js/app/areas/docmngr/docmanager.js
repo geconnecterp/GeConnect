@@ -14,6 +14,8 @@ $(function () {
         $("#modalGestorDocumental").hide();
     });
 
+    $(document).on("click", "#btnArchImprimir", imprimirArchivoSeleccionado);
+
     $(document).on("click", "input[name='rdgenera']", function () {
         if ($(this).is(":checked")) {
             $("#btnGenerarFile").prop("disabled", false);
@@ -24,7 +26,14 @@ $(function () {
     });
 
     $(document).on("click", "#btnGenerarFile", invocaGenerarArchivo);
+
+    inicializaArbolArchivos();
 });
+
+function inicializaArbolArchivos() {
+    //borramos el contenido del arbol.
+    $("#archivosDispuestos").jstree("destroy").empty();
+}
 
 function invocacionGestorDoc(data) {
     PostGenHtml(data, OrquestadorDeModulosUrl, function (obj) {
@@ -34,16 +43,21 @@ function invocacionGestorDoc(data) {
             $("#modalGestorDocumental").show();
         }
         else {
-            //si no hubo error, mostramos el modal 
+            //si no hubo error, mostramos el modal
+            //antes de abrir el modal, se cargará el arbol de archivos
+            presentarArchivos();
+
             $("#modalGestorDocumental").show();
-            $("#documentManagerModal").modal("show");
+            
+
+            $("#docmgrmodal").modal("show");
         }
     });
 }
 
 function inicializaGestorDocumental() {
     $("#modalGestorDocumental").hide();
-    $("#documentManagerModal").modal("hide");
+    $("#docmgrmodal").modal("hide");
 }
 
 function invocaGenerarArchivo() {
@@ -77,4 +91,73 @@ function invocaGenerarArchivo() {
             );
         }
     });
+}
+
+function presentarArchivos() {
+    PostGen({}, presentarArchivosUrl, function (obj) {
+        if (obj.error === true) {
+            AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                $("#msjModal").modal("hide");
+                return true;
+            }, false, ["Aceptar"], "error!", null);
+        }
+        else if (obj.warn === true) {
+
+        }
+        else {
+            jsonP = $.parseJSON(obj.arbol);
+            $("#archivosDispuestos").jstree("destroy").empty();
+
+            $("#archivosDispuestos").jstree({
+                "core": { "data": jsonP },
+                "checkbox": {
+                    "keep_selected_style": false
+                },
+                "plugins": ['checkbox']
+            });
+        }
+    });
+}
+
+function imprimirArchivoSeleccionado() {
+    var selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
+    if (selectedNodes.length === 0) {
+        AbrirMensaje("ATENCIÓN", "No hay archivos seleccionados para imprimir.", function () {
+            $("#msjModal").modal("hide");
+            return true;
+        }, false, ["Aceptar"], "error!", null);
+        return;
+    }
+
+    selectedNodes.forEach(function (node) {
+        if (node.data && node.data.archivoB64) {
+            var archivoBase64 = node.data.archivoB64;
+            var blob = base64ToBlob(archivoBase64, 'application/pdf');
+            var url = URL.createObjectURL(blob);
+
+            var printWindow = window.open(url);
+            printWindow.onload = function () {
+                printWindow.print();
+            };
+        }
+    });
+}
+
+function base64ToBlob(base64, mime) {
+    var byteCharacters = atob(base64);
+    var byteArrays = [];
+
+    for (var offset = 0; offset < byteCharacters.length; offset += 512) {
+        var slice = byteCharacters.slice(offset, offset + 512);
+
+        var byteNumbers = new Array(slice.length);
+        for (var i = 0; i < slice.length; i++) {
+            byteNumbers[i] = slice.charCodeAt(i);
+        }
+
+        var byteArray = new Uint8Array(byteNumbers);
+        byteArrays.push(byteArray);
+    }
+
+    return new Blob(byteArrays, { type: mime });
 }

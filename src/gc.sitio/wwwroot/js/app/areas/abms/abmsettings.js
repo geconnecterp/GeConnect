@@ -83,11 +83,11 @@ const Tabs = {
 }
 
 const ModImpresion = {
-    ModCtaCte: "CCtaCte", //Consulta de Cuenta Corriente
-	ModVenc: "CVencimiento", //Consulta de Vencimientos
-	ModCmpte: "CComprobante", //Consulta de Comprobantes"
-	ModOrdPagos: "COrdenesPagos", //Consulta de Ordenes de Pagos
-    ModRecProv: "CRecepcionProv" //Consulta de Recepcion de Proveedores"
+    ModCtaCte: 1, //Consulta de Cuenta Corriente
+	ModVenc: 2, //Consulta de Vencimientos
+	ModCmpte: 3, //Consulta de Comprobantes"
+	ModOrdPagos: 4, //Consulta de Ordenes de Pagos
+    ModRecProv: 5 //Consulta de Recepcion de Proveedores"
 
 }
 
