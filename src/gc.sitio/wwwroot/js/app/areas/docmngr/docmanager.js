@@ -48,7 +48,6 @@ function invocacionGestorDoc(data) {
             presentarArchivos();
 
             $("#modalGestorDocumental").show();
-            
 
             $("#docmgrmodal").modal("show");
         }
@@ -62,33 +61,59 @@ function inicializaGestorDocumental() {
 
 function invocaGenerarArchivo() {
     var formato = $("input[name='rdgenera']:checked").val();
-    var modulo = fkey; //resgardo el modulo que llamo la funcionalidad
-    var data = {
-        modulo: modulo,
-        formato: formato
-    };
-    PostGen(data, generadorArchivoUrl, function (obj) {
-        if (obj.error === true) {
-            AbrirMensaje("Atención!", obj.msg, function () {
-                $("#msjModal").modal("hide");
-                return true;
-            }, false, ["Aceptar"], "error!", null);
-        }
-        else if (obj.warn === true) {
-            AbrirMensaje("Atención!", obj.msg, function () {
-                if (obj.auth === true) {
-                    window.location.href = login;
-                } else {
-                    $("#msjModal").modal("hide");
-                    return true;
+    var selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
+    if (selectedNodes.length === 0) {
+        AbrirMensaje("ATENCIÓN", "No hay archivos seleccionados para exportar.", function () {
+            $("#msjModal").modal("hide");
+            return true;
+        }, false, ["Aceptar"], "error!", null);
+        return;
+    }
+
+    selectedNodes.forEach(function (node) {
+        if (node.data && node.data.archivoB64) {
+            var archivoBase64 = node.data.archivoB64;
+            var tipo = node.data.tipo;
+            var data = {
+                formato: formato,
+                archivoBase64: archivoBase64,
+                nodoId: node.id,
+                moduloId: node.parent,
+                tipo: tipo
+            };
+            PostGen(data, generadorArchivoUrl, function (obj) {
+                if (obj.error === true) {
+                    AbrirMensaje("Atención!", obj.msg, function () {
+                        $("#msjModal").modal("hide");
+                        return true;
+                    }, false, ["Aceptar"], "error!", null);
                 }
-            }, false, ["Aceptar"], "error!", null);
-        }
-        else {
-            var pdfWindow = window.open("");
-            pdfWindow.document.write(
-                "<iframe width='100%' height='100%' src='data:application/pdf;base64, " + encodeURI(obj.pdfBase64) + "'></iframe>"
-            );
+                else if (obj.warn === true) {
+                    AbrirMensaje("Atención!", obj.msg, function () {
+                        if (obj.auth === true) {
+                            window.location.href = login;
+                        } else {
+                            $("#msjModal").modal("hide");
+                            return true;
+                        }
+                    }, false, ["Aceptar"], "error!", null);
+                }
+                else {
+                    if (formato === "P") {
+                        var pdfWindow = window.open("");
+                        pdfWindow.document.write(
+                            "<iframe width='100%' height='100%' src='data:application/pdf;base64, " + encodeURI(obj.pdfBase64) + "'></iframe>"
+                        );
+                    } else if (formato === "X" || formato === "T") {
+                        var link = document.createElement('a');
+                        link.href = obj.fileUrl;
+                        link.download = obj.fileName;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }
+                }
+            });
         }
     });
 }

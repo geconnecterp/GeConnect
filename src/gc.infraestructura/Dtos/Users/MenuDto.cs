@@ -59,5 +59,6 @@
         public string mnu_item_padre { get; set; } = string.Empty;
         public string perfil_default { get; set; } = string.Empty;
         public string archivoB64 { get; set; } = string.Empty;
+        public string tipo { get; set; } = string.Empty;
     }
 }
