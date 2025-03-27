@@ -20,12 +20,13 @@ namespace gc.sitio.core.Servicios.Implementacion.DocManager
 {
     public class DocManagerServicio : IDocManagerServicio
     {
-        public List<MenuRoot> GeneraArbolArchivos(List<Reporte> reportes)
+        public List<MenuRoot> GeneraArbolArchivos(AppModulo modulo)
         {
+            List<Reporte> reportes = modulo.Reportes;
             List<MenuRoot> arbol = new List<MenuRoot>();
             MenuRoot root = new MenuRoot
             {
-                id = "00",
+                id = modulo.Id,
                 text = "Archivos",
                 icon = "bx bx-file",
                 state = new Estado { disabled = true, opened = true, selected = false },
@@ -149,7 +150,7 @@ namespace gc.sitio.core.Servicios.Implementacion.DocManager
             };
         }
 
-        public List<MenuRoot> MarcarConsultaRealizada(List<MenuRoot> reportes, AppReportes consulta, int orden, string archB64)
+        public List<MenuRoot> MarcarConsultaRealizada(List<MenuRoot> reportes, AppReportes consulta, int orden, string archB64, string tipoDato)
         {
             //debo buscar el reporte a modificar
             var id = $"{(int)consulta}{orden}";
@@ -158,6 +159,7 @@ namespace gc.sitio.core.Servicios.Implementacion.DocManager
             repo.state.selected = true;
             repo.state.disabled = false;
             repo.data.archivoB64 = archB64;
+            repo.data.tipo = tipoDato;
             reportes[0].children.Remove(reportes[0].children.First(x => x.id == id));
             reportes[0].children.Add(repo);
             reportes[0].children = reportes[0].children.OrderBy(x => x.id).ToList();

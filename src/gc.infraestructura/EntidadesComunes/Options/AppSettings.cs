@@ -30,5 +30,7 @@ namespace gc.infraestructura.Core.EntidadesComunes.Options
         public string? RutaRepositorioPDF { get; set; }
         public int FechaVtoCota{ get; set; }
         public string MenuId{ get; set; }
+        public string FolderArchivo { get; set; }
+        
     }
 }

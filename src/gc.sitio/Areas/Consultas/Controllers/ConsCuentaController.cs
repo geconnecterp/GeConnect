@@ -90,7 +90,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
 
                 //en este mismo acto se cargan los posibles documentos
                 //que se pueden imprimir, exportar, enviar por email o whatsapp
-                ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo.Reportes); ;
+                ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
 
                 #endregion
 
@@ -153,9 +153,11 @@ namespace gc.sitio.Areas.Consultas.Controllers
                         var consulta = AppReportes.CCUENTAS_CUENTA_CORRIENTE;
                         #region Gestor Impresion - marcando que hay datos para el reporte n
                         var reportes = ArchivosCargadosModulo;
+                        string tipoDato = CuentaCorrienteBuscada.GetType().FullName;    
                         string archb64 = GenerarArchivoB64(lista, consulta);
+
                         //el 3er parametro es el numero de reporte que se esta marcando como consultado
-                        reportes = _docMSv.MarcarConsultaRealizada(reportes, consulta, 1, archb64);
+                        reportes = _docMSv.MarcarConsultaRealizada(reportes, consulta, 1, archb64,tipoDato);
                         ArchivosCargadosModulo = reportes;
 
                         #endregion
@@ -221,9 +223,11 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 {
                     #region Gestor Impresion - marcando que hay datos para el reporte n
                     var reportes = ArchivosCargadosModulo;
+                    string tipoDato = VencimientosBuscados.GetType().FullName;
+
                     string archb64 = GenerarArchivoB64(res.ListaEntidad, consulta);
                     //el 3er parametro es el numero de reporte que se esta marcando como consultado
-                    reportes = _docMSv.MarcarConsultaRealizada(reportes, consulta, 1, archb64);
+                    reportes = _docMSv.MarcarConsultaRealizada(reportes, consulta, 1, archb64, tipoDato);
                     ArchivosCargadosModulo = reportes;
                     #endregion
                 }
@@ -330,9 +334,10 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 {
                     #region Gestor Impresion - marcando que hay datos para el reporte n
                     var reportes = ArchivosCargadosModulo;
+                    string tipoDato = CmptesDetalleBuscados.GetType().FullName;
                     string archb64 = GenerarArchivoB64(res.ListaEntidad, consulta);
                     //el 3er parametro es el numero de reporte que se esta marcando como consultado
-                    reportes = _docMSv.MarcarConsultaRealizada(reportes, consulta, 1, archb64);
+                    reportes = _docMSv.MarcarConsultaRealizada(reportes, consulta, 1, archb64, tipoDato);
                     ArchivosCargadosModulo = reportes;
                     #endregion
                 }
@@ -442,9 +447,10 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 {
                     #region Gestor Impresion - marcando que hay datos para el reporte n
                     var reportes = ArchivosCargadosModulo;
+                    string tipoDato = OrdenPagosDetBuscados.GetType().FullName;
                     string archb64 = GenerarArchivoB64(res.ListaEntidad, consulta);
                     //el 3er parametro es el numero de reporte que se esta marcando como consultado
-                    reportes = _docMSv.MarcarConsultaRealizada(reportes, consulta, 1, archb64);
+                    reportes = _docMSv.MarcarConsultaRealizada(reportes, consulta, 1, archb64, tipoDato);
                     ArchivosCargadosModulo = reportes;
                     #endregion
                 }
@@ -556,10 +562,11 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 {
                     #region Gestor Impresion - marcando que hay datos para el reporte n
                     var reportes = ArchivosCargadosModulo;
+                    string tipoDato = RecepProvDetBuscados.GetType().FullName;
                     string archb64 = GenerarArchivoB64(res.ListaEntidad, consulta);
                     //el 3er parametro es el numero de reporte que se esta marcando como consultado (1=original). 
                     //se deberá ver cuando se tenga que imprimir un duplicado.deberia ser 2 o 3 o lo que corresponda.
-                    reportes = _docMSv.MarcarConsultaRealizada(reportes, consulta, 1, archb64);
+                    reportes = _docMSv.MarcarConsultaRealizada(reportes, consulta, 1, archb64, tipoDato);
                     ArchivosCargadosModulo = reportes;
                     #endregion
                 }
