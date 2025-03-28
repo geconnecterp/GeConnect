@@ -30,7 +30,7 @@ namespace gc.infraestructura.Dtos.Almacen
 	}
 
 	public class OrdenDeCompraDto : Dto
-    {
+	{
 		public string Oc_Compte { get; set; } = string.Empty;
 		public DateTime Oc_Fecha { get; set; }
 		public int Oc_Entrega_Dias { get; set; }
@@ -56,5 +56,42 @@ namespace gc.infraestructura.Dtos.Almacen
 		public decimal Oc_Iva { get; set; } = 0.00M;
 		public decimal Oc_Percepciones { get; set; } = 0.00M;
 		public string? Oc_Observaciones { get; set; }
+		public string Oce_Desc { get; set; } = string.Empty;
+		public string Cta_Denominacion { get; set; } = string.Empty;
+		public string Adm_Nombre { get; set; } = string.Empty;
+		public string Usu_Apellidoynombre { get; set; } = string.Empty;
+	}
+
+	public enum AccionesSobreLasOC
+	{
+		ACTIVAR,
+		CERRAR,
+		ANULAR,
+		LEVANTAR,
+		MODIFICAR_ADM
+	}
+
+	public class ObtenerAccionesSobreLasOC
+	{
+		public static AccionesSobreLasOC ObtenerActivar()
+		{
+			return AccionesSobreLasOC.ACTIVAR;
+		}
+		public static string ObtenerCerrar()
+		{
+			return AccionesSobreLasOC.CERRAR.ToString();
+		}
+		public static string ObtenerAnular()
+		{
+			return AccionesSobreLasOC.ANULAR.ToString();
+		}
+		public static string ObtenerLevantar()
+		{
+			return AccionesSobreLasOC.LEVANTAR.ToString();
+		}
+		public static string ObtenerModificarAdm()
+		{
+			return AccionesSobreLasOC.MODIFICAR_ADM.ToString();
+		}
 	}
 }

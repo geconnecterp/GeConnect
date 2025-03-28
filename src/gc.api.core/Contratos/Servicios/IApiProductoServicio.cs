@@ -86,8 +86,11 @@ namespace gc.api.core.Contratos.Servicios
 		List<OrdenDeCompraTopeDto> CargarTopesDeOC(string admId);
 		List<OrdenDeCompraConceptoDto> CargarResumenDeOC(CargarResumenDeOCRequest request);
 		List<RespuestaDto> ConfirmarOC(ConfirmarOCRequest request);
+		List<OrdenDeCompraDto> ObtenerOrdenDeCompraPorOcCompte(string ocCompte);
 		List<OrdenDeCompraConsultaDto> CargarOrdenDeCompraConsultaLista(BuscarOrdenesDeCompraRequest request);
 		List<OrdenDeCompraDetalleDto> CargarDetalleDeOC(string oc_compte);
+		List<OrdenDeCompraRprAsociadasDto> CargarRprAsociadaDeOC(string oc_compte);
+		List<RespuestaDto> ModificarOC(ModificarOCRequest request);
 
 		BoxInfoDto ObtenerBoxInfo(string box_id);
         List<BoxInfoStkDto> ObtenerBoxInfoStk(string box_id);

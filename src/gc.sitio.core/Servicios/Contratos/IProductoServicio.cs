@@ -101,7 +101,10 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<List<OrdenDeCompraTopeDto>> CargarTopesDeOC(string admId, string token);
 		Task<List<OrdenDeCompraConceptoDto>> CargarResumenDeOC(CargarResumenDeOCRequest req, string token);
 		Task<RespuestaGenerica<RespuestaDto>> ConfirmarOrdenDeCompra(ConfirmarOCRequest request, string token);
+		Task<List<OrdenDeCompraDto>> ObtenerOrdenDeCompraPorOcCompte(string ocCompte, string token);
 		Task<(List<OrdenDeCompraConsultaDto>, MetadataGrid)> CargarOrdenDeCompraConsultaLista(BuscarOrdenesDeCompraRequest request, string token);
 		Task<List<OrdenDeCompraDetalleDto>> CargarDetalleDeOC(string oc_compte, string token);
+		Task<List<OrdenDeCompraRprAsociadasDto>> CargarRprAsociadaDeOC(string oc_compte, string token);
+		Task<RespuestaGenerica<RespuestaDto>> ModificarOrdenDeCompra(ModificarOCRequest request, string token);
 	}
 }
