@@ -1,0 +1,72 @@
+﻿@model GridCore<OrdenDeCompraRprAsociadasDto>
+@{
+}
+<div class="row">
+	<div class="table-responsive table-wrapper-full-width" id="containerListaOC">
+		<table class="table table-bordered table-hover" id="tbListaRprAsociadaDeOC">
+			<thead class="table-dark">
+				<tr>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">Código</th>
+					<th style="width:20%;" class="col-header-small align-center tiny-row">Descripción</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">Cod. Prov.</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">Precio Lista</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">D1</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">D2</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">D3</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">D4</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">DPA</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">Pedido Bultos</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">Unid. ¨Pres.</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">Boni</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">Cant. total</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">Precio Costo</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">N° RPR</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">Cant. RPR</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">Dif. OC/RPR</th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var item in Model.ListaDatos)
+				{
+					<tr onclick="selectListaOCDetalleRow(this)">
+						<td class="align-center tiny-row">@item.p_id</td>
+						<td class="align-left tiny-row">@item.p_desc</td>
+						<td class="align-center tiny-row">@item.p_id_prov</td>
+						<td class="align-right tiny-row">@item.ocd_plista</td>
+						<td class="align-center tiny-row">@item.ocd_dto1</td>
+						<td class="align-center tiny-row">@item.ocd_dto2</td>
+						<td class="align-center tiny-row">@item.ocd_dto3</td>
+						<td class="align-center tiny-row">@item.ocd_dto4</td>
+						<td class="align-center tiny-row">@item.ocd_dto_pa</td>
+						<td class="align-center tiny-row">@item.ocd_bultos</td>
+						<td class="align-center tiny-row">@item.ocd_unidad_pres</td>
+						<td class="align-center tiny-row">@item.ocd_bonificacion</td>
+						<td class="align-center tiny-row">@item.ocd_cantidad</td>
+						<td class="align-right tiny-row">@item.ocd_pcosto</td>
+						<td class="align-right tiny-row">@item.rp_compte</td>
+						<td class="align-right tiny-row">@item.rpd_cantidad</td>
+						<td class="align-right tiny-row">@item.dif_oc_rpr</td> @*Reemplazar por el valor correcto*@
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+</div>
+<div class="row">
+	<div class="col-md-10">
+	</div>
+	<div class="col-md-2">
+		<div class="row">
+			<button type="button" class="btn btn-sm btn-primary" style="margin-left:100px; width:50%;" id="btnImprimirDesdeRpr">
+				<div class="row" style="display: contents">
+					<div class="col-2">
+						<span class="tf-icons bx bx-printer"></span>
+					</div>
+					<div class="col-10" style="font-size: medium;">
+						Imprimir
+					</div>
+				</div>
+			</button>
+		</div>
+	</div>
+</div>

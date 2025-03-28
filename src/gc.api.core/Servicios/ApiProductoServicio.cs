@@ -863,6 +863,17 @@ namespace gc.api.core.Servicios
 			return respuesta;
 		}
 
+		public List<OrdenDeCompraDto> ObtenerOrdenDeCompraPorOcCompte(string ocCompte)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_OC_OBTENER_POR_OC_COMPTE;
+			var ps = new List<SqlParameter>()
+			{
+				new("@oc_compte",ocCompte),
+			};
+			List<OrdenDeCompraDto> respuesta = _repository.EjecutarLstSpExt<OrdenDeCompraDto>(sp, ps, true);
+			return respuesta;
+		}
+
 		public List<OrdenDeCompraConsultaDto> CargarOrdenDeCompraConsultaLista(BuscarOrdenesDeCompraRequest request)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OC_Lista;
@@ -960,6 +971,51 @@ namespace gc.api.core.Servicios
 				new("@oc_compte",oc_compte),
 			};
 			List<OrdenDeCompraDetalleDto> respuesta = _repository.EjecutarLstSpExt<OrdenDeCompraDetalleDto>(sp, ps, true);
+			return respuesta;
+		}
+
+		public List<OrdenDeCompraRprAsociadasDto> CargarRprAsociadaDeOC(string oc_compte)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_OC_RPR_ASOCIADA;
+			var ps = new List<SqlParameter>()
+			{
+				new("@oc_compte",oc_compte),
+			};
+			List<OrdenDeCompraRprAsociadasDto> respuesta = _repository.EjecutarLstSpExt<OrdenDeCompraRprAsociadasDto>(sp, ps, true);
+			return respuesta;
+		}
+
+		public List<RespuestaDto> ModificarOC(ModificarOCRequest request)
+		{
+			var sp = "";
+			var ps = new List<SqlParameter>()
+			{
+				new("@oc_compte",request.oc_compte),
+				new("@usu_id",request.usu_id),
+				new("@adm_id",request.adm_id),
+			};
+			switch (request.accion)
+			{
+				case AccionesSobreLasOC.ACTIVAR:
+					sp = ConstantesGC.StoredProcedures.SP_OC_ACCIONES_ACTIVAR;
+					break;
+				case AccionesSobreLasOC.CERRAR:
+					sp = ConstantesGC.StoredProcedures.SP_OC_ACCIONES_CERRAR;
+					break;
+				case AccionesSobreLasOC.ANULAR:
+					sp = ConstantesGC.StoredProcedures.SP_OC_ACCIONES_ANULAR;
+					break;
+				case AccionesSobreLasOC.LEVANTAR:
+					sp = ConstantesGC.StoredProcedures.SP_OC_ACCIONES_DESANULAR;
+					break;
+				case AccionesSobreLasOC.MODIFICAR_ADM:
+					sp = ConstantesGC.StoredProcedures.SP_OC_ACCIONES_CAMBIA_ADM;
+					ps.Add(new SqlParameter("@adm_id_entrega", request.adm_id_entrega));
+					break;
+				default:
+					break;
+			}
+			List<RespuestaDto> respuesta = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 			return respuesta;
 		}
 
@@ -1377,6 +1433,6 @@ namespace gc.api.core.Servicios
 			return resp.First();
 		}
 
-		
+
 	}
 }

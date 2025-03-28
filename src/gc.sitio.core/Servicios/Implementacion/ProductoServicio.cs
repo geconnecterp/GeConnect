@@ -121,6 +121,9 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string OC_Confirmar = "/ConfirmarOC";
 		private const string OC_Lista = "/CargarOrdenDeCompraConsultaLista";
 		private const string OC_Detalle = "/CargarDetalleDeOC";
+		private const string OC_Rpr_Asociada = "/CargarRprAsociadaDeOC";
+		private const string OC_Modificar = "/ModificarOC";
+		private const string OC_ObtenerPorOcCompte = "/ObtenerOrdenDeCompraPorOcCompte";
 
 		private const string OC_Cargar_Lista = "/CargarOrdenesDeCompraList";
 
@@ -2426,6 +2429,37 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 		}
 
+		public async Task<List<OrdenDeCompraDto>> ObtenerOrdenDeCompraPorOcCompte(string ocCompte, string token)
+		{
+			ApiResponse<List<OrdenDeCompraDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{OC_ObtenerPorOcCompte}?ocCompte={ocCompte}";
+
+			response = client.GetAsync(link).GetAwaiter().GetResult();
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros ocCompte:{ocCompte}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<OrdenDeCompraDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
 		public async Task<(List<OrdenDeCompraConsultaDto>, MetadataGrid)> CargarOrdenDeCompraConsultaLista(BuscarOrdenesDeCompraRequest request, string token)
 		{
 			ApiResponse<List<OrdenDeCompraConsultaDto>> apiResponse;
@@ -2479,6 +2513,68 @@ namespace gc.sitio.core.Servicios.Implementacion
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<OrdenDeCompraDetalleDto>>>(stringData);
 				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<OrdenDeCompraRprAsociadasDto>> CargarRprAsociadaDeOC(string oc_compte, string token)
+		{
+			ApiResponse<List<OrdenDeCompraRprAsociadasDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{OC_Rpr_Asociada}?oc_compte={oc_compte}";
+
+			response = client.GetAsync(link).GetAwaiter().GetResult();
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros oc_compte:{oc_compte}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<OrdenDeCompraRprAsociadasDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<RespuestaGenerica<RespuestaDto>> ModificarOrdenDeCompra(ModificarOCRequest request, string token)
+		{
+			ApiResponse<RespuestaDto> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{OC_Modificar}";
+
+			response = await client.PutAsync(link, contentData);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+				return new RespuestaGenerica<RespuestaDto>() { Entidad = apiResponse.Data };
 			}
 			else
 			{

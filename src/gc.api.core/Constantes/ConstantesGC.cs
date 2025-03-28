@@ -139,6 +139,15 @@
 			public const string SP_OC_Confirmar = "SPGECO_OC_Confirma";
 			public const string SP_OC_Lista = "SPGECO_OC_Lista";
 			public const string SP_OC_Detalle = "SPGECO_OC_d";
+			public const string SP_OC_RPR_ASOCIADA = "SPGECO_OC_RPR_Asociadas";
+			public const string SP_OC_OBTENER_POR_OC_COMPTE = "SPGECO_OC_Obtener_Por_Occompte";
+
+			//Acciones sobre las OC
+			public const string SP_OC_ACCIONES_ACTIVAR = "SPGECO_OC_Activar";
+			public const string SP_OC_ACCIONES_CERRAR = "SPGECO_OC_Cerrar";
+			public const string SP_OC_ACCIONES_ANULAR = "SPGECO_OC_Anular";
+			public const string SP_OC_ACCIONES_DESANULAR = "SPGECO_OC_DesAnular";
+			public const string SP_OC_ACCIONES_CAMBIA_ADM = "SPGECO_OC_Cambia_Adm";
 			#endregion
 
 			public const string SP_BOX_INFO = "SPGECO_BOX_Info";

@@ -8,7 +8,10 @@ using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Compras.Models;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
+using System;
+using System.Security.Cryptography;
 
 namespace gc.sitio.Areas.Compras.Controllers
 {
@@ -20,8 +23,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private readonly IAdministracionServicio _adminServicio;
 		private readonly IOrdenDeCompraEstadoServicio _ordenDeCompraEstadoServicio;
 		private readonly IProductoServicio _productoServicio;
-		public OrdenDeCompraConsultaController(ICuentaServicio cuentaServicio, ILogger<OrdenDeCompraController> logger, IAdministracionServicio adminServicio, 
-											   IOrdenDeCompraEstadoServicio ordenDeCompraEstadoServicio, IOptions<AppSettings> options, IHttpContextAccessor context, 
+		public OrdenDeCompraConsultaController(ICuentaServicio cuentaServicio, ILogger<OrdenDeCompraController> logger, IAdministracionServicio adminServicio,
+											   IOrdenDeCompraEstadoServicio ordenDeCompraEstadoServicio, IOptions<AppSettings> options, IHttpContextAccessor context,
 											   IProductoServicio productoServicio) : base(options, context, logger)
 		{
 			_settings = options.Value;
@@ -31,7 +34,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			_productoServicio = productoServicio;
 		}
 		public IActionResult Index()
-        {
+		{
 			MetadataGrid metadata;
 			try
 			{
@@ -67,8 +70,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		//TODO MARCE: Desarrollar vista parcial de grilla de ordenes de compra
-		public async Task<IActionResult> BuscarOrdenesDeCompra(BuscarOrdenesDeCompraRequest request) 
+		public async Task<IActionResult> BuscarOrdenesDeCompra(BuscarOrdenesDeCompraRequest request)
 		{
 			MetadataGrid metadata;
 			GridCore<OrdenDeCompraConsultaDto> grillaDatos;
@@ -84,7 +86,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 				ListaOrdenDeCompraConsulta = productos.Item1;
 				grillaDatos = GenerarGrilla(productos.Item1, request.Sort, _settings.NroRegistrosPagina, pag, metadata.TotalCount, metadata.TotalPages, request.SortDir);
 				model.GrillaOC = grillaDatos;
-				model.Importe = 0;
+				model.Importe = ListaOrdenDeCompraConsulta.Count > 0 ? ListaOrdenDeCompraConsulta.Sum(x => x.oc_total) : 0;
+				model.ListaAdministraciones = new SelectList(AdministracionesLista, "Adm_id", "Adm_nombre");
 				return PartialView("_grillaProductosOC", model);
 			}
 			catch (Exception ex)
@@ -133,8 +136,82 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		
+		/// <summary>
+		/// Busca las RPR (Requisiciones de Pedido de Reposición) asociadas a una Orden de Compra (OC) específica.
+		/// </summary>
+		/// <param name="ocCompte">El identificador de la Orden de Compra.</param>
+		/// <returns>Una vista parcial con la grilla de RPR asociadas a la OC.</returns>
+		/// <remarks>
+		/// Este método carga las RPR asociadas a la OC desde el servicio de productos y las presenta en una grilla.
+		/// En caso de error, retorna un mensaje de error en una vista parcial.
+		/// </remarks>
+		[HttpPost]
+		public async Task<IActionResult> BuscarRprAsociadasDeOrdenDeCompra(string ocCompte)
+		{
+			GridCore<OrdenDeCompraRprAsociadasDto> grilla = new();
+			try
+			{
+				var detalle = _productoServicio.CargarRprAsociadaDeOC(ocCompte, TokenCookie).Result;
+				grilla = ObtenerGridCore<OrdenDeCompraRprAsociadasDto>(detalle);
+				return PartialView("_grillaRprDeOC", grilla);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
 
+		//TODO MARCE: Probar este método y verificar que funcione correctamente, ademas probar que levante la lista admin en el primer tab
+		/// <summary>
+		/// Modifica el estado de una Orden de Compra (OC) específica.
+		/// </summary>
+		/// <param name="ocCompte">El identificador de la Orden de Compra.</param>
+		/// <param name="opt">El nuevo estado a asignar a la Orden de Compra.</param>
+		/// <returns>Un objeto JSON con el resultado de la operación, incluyendo el nuevo estado de la OC.</returns>
+		/// <remarks>
+		/// Este método busca el nuevo estado en la lista de estados de Orden de Compra y actualiza la OC con el nuevo estado.
+		/// En caso de error, retorna un mensaje de error en formato JSON.
+		/// </remarks>
+		[HttpPost]
+		public JsonResult ModificarOC(ModificarOCRequest request)
+		{
+			try
+			{
+				request.adm_id = AdministracionId;
+				request.usu_id = UserName;
+				var respuesta = _productoServicio.ModificarOrdenDeCompra(request, TokenCookie).Result;
+				if (respuesta == null)
+					return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar actualizar los datos de la Orden de Compra. Oc_Compte: {request.oc_compte}" });
+				if (respuesta.Entidad == null)
+					return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar actualizar los datos de la Orden de Compra. Oc_Compte: {request.oc_compte}" });
+				if (respuesta.Entidad.resultado != 0)
+					return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar actualizar los datos de la Orden de Compra. Oc_Compte: {request.oc_compte} Mensaje: {respuesta.Entidad.resultado_msj}" });
+				var obtenerOcPorCompte = _productoServicio.ObtenerOrdenDeCompraPorOcCompte(request.oc_compte, TokenCookie).Result.First();
+				//return AnalizarRespuesta(respuesta);
+				return Json(new msgRes() { error = false, warn = false, msg = string.Empty, data = new { oc_compte = request.oc_compte, oce_id = obtenerOcPorCompte.Oce_Id, oce_desc = obtenerOcPorCompte.Oce_Desc, adm_id = obtenerOcPorCompte.Adm_Id, adm_nombre = obtenerOcPorCompte.Adm_Nombre } });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar actualizar los datos de la Orden de Compra. Oc_Compte: {request.oc_compte}" });
+			}
+		}
+
+		/// <summary>
+		/// Busca las sucursales cuyo nombre contiene el prefijo especificado.
+		/// </summary>
+		/// <param name="prefix">El prefijo a buscar en los nombres de las sucursales.</param>
+		/// <returns>Un objeto JSON con la lista de sucursales que coinciden con el prefijo.</returns>
+		/// <remarks>
+		/// Este método busca en la lista de administraciones cargadas las que contienen el prefijo especificado en su nombre.
+		/// Si la lista de administraciones no está cargada, la obtiene del servicio de administraciones.
+		/// </remarks>
 		[HttpPost]
 		public JsonResult BuscarSucursales(string prefix)
 		{
@@ -147,6 +224,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return Json(lista);
 		}
 
+		/// <summary>
+		/// Busca los estados de las Ordenes de Compra (OC) cuyo nombre contiene el prefijo especificado.
+		/// </summary>
+		/// <param name="prefix">El prefijo a buscar en los nombres de los estados de las OC.</param>
+		/// <returns>Un objeto JSON con la lista de estados de OC que coinciden con el prefijo.</returns>
+		/// <remarks>
+		/// Este método busca en la lista de estados de Orden de Compra cargados los que contienen el prefijo especificado en su nombre.
+		/// Si la lista de estados de Orden de Compra no está cargada, la obtiene del servicio de estados de Orden de Compra.
+		/// </remarks>
 		[HttpPost]
 		public JsonResult BuscarEstadosDeOC(string prefix)
 		{
@@ -224,6 +310,17 @@ namespace gc.sitio.Areas.Compras.Controllers
 			};
 			grillaTemp.Add(itemConcepto);
 			model.ResumenGrilla = ObtenerGridCore<OrdenDeCompraConceptoDto>(grillaTemp);
+		}
+		#endregion
+
+		#region Clases Privadas
+
+		private class msgRes()
+		{
+			public bool error { get; set; }
+			public bool warn { get; set; }
+			public string msg { get; set; } = string.Empty;
+			public object data { get; set; }
 		}
 		#endregion
 	}

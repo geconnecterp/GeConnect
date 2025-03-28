@@ -930,6 +930,17 @@ namespace gc.api.Controllers.Almacen
 			return Ok(response);
 		}
 
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult ObtenerOrdenDeCompraPorOcCompte(string ocCompte)
+		{
+			ApiResponse<List<OrdenDeCompraDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.ObtenerOrdenDeCompraPorOcCompte(ocCompte);
+			response = new ApiResponse<List<OrdenDeCompraDto>>(res);
+			return Ok(response);
+		}
+
 		[HttpPost]
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<OrdenDeCompraConsultaDto>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -973,6 +984,30 @@ namespace gc.api.Controllers.Almacen
 			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
 			var res = _productosSv.CargarDetalleDeOC(oc_compte);
 			response = new ApiResponse<List<OrdenDeCompraDetalleDto>>(res);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult CargarRprAsociadaDeOC(string oc_compte)
+		{
+			ApiResponse<List<OrdenDeCompraRprAsociadasDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.CargarRprAsociadaDeOC(oc_compte);
+			response = new ApiResponse<List<OrdenDeCompraRprAsociadasDto>>(res);
+			return Ok(response);
+		}
+
+        [HttpPut]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ModificarOC(ModificarOCRequest request)
+		{
+			ApiResponse<RespuestaDto> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _productosSv.ModificarOC(request);
+			response = new ApiResponse<RespuestaDto>(res.First());
 			return Ok(response);
 		}
 

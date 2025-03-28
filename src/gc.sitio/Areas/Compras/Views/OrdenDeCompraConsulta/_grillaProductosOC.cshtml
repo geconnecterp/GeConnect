@@ -1,5 +1,6 @@
 ﻿@model ConsultaOCModel
 @{
+	var adm = Model.ListaAdministraciones;
 }
 <style>
 	thead th {
@@ -21,6 +22,7 @@
 						<th style="width:5%;" class="col-header-small align-center tiny-row">Usuario</th>
 						<th style="width:5%;" class="col-header-small align-center tiny-row">Importe</th>
 						<th style="width:0%; display:none;">oce_id</th>
+						<th style="width:0%; display:none;">adm_id</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -35,6 +37,7 @@
 							<td class="align-center tiny-row">@item.usu_apellidoynombre</td>
 							<td class="align-center tiny-row">@item.oc_total</td>
 							<td style="display:none;">@item.oce_id</td>
+							<td style="display:none;">@item.adm_id</td>
 						</tr>
 					}
 				</tbody>
@@ -95,6 +98,18 @@
 			</button>
 		</div>
 		<div class="row mt-1">
+			<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px; width:88%;" id="btnLevantarOC">
+				<div class="row" style="display: contents">
+					<div class="col-2">
+						<span class="tf-icons bx bx-eraser"></span>
+					</div>
+					<div class="col-10" style="font-size: medium;">
+						Levantar OC
+					</div>
+				</div>
+			</button>
+		</div>
+		<div class="row mt-1">
 			<button type="button" class="btn btn-sm btn-primary" style="margin-left:5px; width:88%;" id="btnModiAdm">
 				<div class="row" style="display: contents">
 					<div class="col-2">
@@ -129,6 +144,12 @@
 					</div>
 				</div>
 			</button>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm" style="margin-left: -8px;">
+				<span class="input-group-text fixed-lbl-for-abm-70">Nueva Suc.: </span>
+				@Html.DropDownListFor(m => m.ListaAdministraciones.First().Value, adm, "Seleccionar...", new { @id = "listaAdm", disabled = "disabled", @class = "form-control activable" })
+			</div>
 		</div>
 	</div>
 </div>

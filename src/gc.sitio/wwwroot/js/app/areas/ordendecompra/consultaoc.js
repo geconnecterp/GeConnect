@@ -1,6 +1,9 @@
 ﻿$(function () {
 	InicializaPantalla();
+	$("#Date1").on("change", function () { ValidarFechas(); });
+	$("#Date2").on("change", function () { ValidarFechas(); });
 	$("#tabDetalleDeOC").on("click", function () { BuscarDetalleDeOCTabClick(); });
+	$("#tabRprAsociadas").on("click", function () { BuscarRprAsociadasDeOCTabClick(); });
 	$("#pagEstado").on("change", function () {
 		var div = $("#divPaginacion");
 		presentaPaginacionConsultaOC(div);
@@ -23,6 +26,132 @@
 		BuscarOrdenesDeCompra(pagina);
 	});
 });
+
+const AccionesOC = {
+	ACTIVAR: 'ACTIVAR',
+	CERRAR: 'CERRAR',
+	ANULAR: 'ANULAR',
+	LEVANTAR: 'LEVANTAR',
+	MODIFICAR_ADM: 'MODIFICAR_ADM'
+}
+
+function ModificarOC(opt) {
+	var puedoModificar = true;
+	var adm_id_entrega = $("#listaAdm").val();
+	if (opt == AccionesOC.MODIFICAR_ADM) {
+		if (adm_id_entrega == "") {
+			AbrirMensaje("ATENCIÓN", "Debe seleccionar una administración para modificar.", function () {
+				$("#msjModal").modal("hide");
+				puedoModificar = false;
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+			return;
+		}
+		if (admIdSeleccionado == "") {
+			AbrirMensaje("ATENCIÓN", "Debe seleccionar una orden de compra para modificar la administración.", function () {
+				$("#msjModal").modal("hide");
+				puedoModificar = false;
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+			return;
+		}
+		if (admIdSeleccionado == adm_id_entrega) {
+			AbrirMensaje("ATENCIÓN", "La administración seleccionada es la misma que la actual, por favor seleccione una diferente.", function () {
+				$("#msjModal").modal("hide");
+				puedoModificar = false;
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+			return;
+		}
+	}
+	if (puedoModificar) {
+		AbrirMensaje("Confirmación", "Esta a punto de modificar una Orden de Compra (" + ocIdSeleccionado +"), esta acción no puede deshacerse. Desea continuar?", function (e) {
+			$("#msjModal").modal("hide");
+			switch (e) {
+				case "SI": //Confirmar comprobante RPR
+					AbrirWaiting("Actualizando datos...");
+					console.log(opt);
+					var oc_compte = ocIdSeleccionado;
+					var accion = opt;
+					var data = { oc_compte, adm_id_entrega, accion };
+					PostGen(data, modificarOCURL, function (obj) {
+						CerrarWaiting();
+						if (obj.error === true) {
+							AbrirMensaje("ATENCIÓN", obj.msg, function () {
+								$("#msjModal").modal("hide");
+								return true;
+							}, false, ["Aceptar"], "error!", null);
+						}
+						else {
+							$("#tbListaOC").find('tr').each(function (i, el) {
+								var td = $(this).find('td');
+								if (td.length > 0 && td[0].innerText !== undefined && td[0].innerText === ocIdSeleccionado) {
+									td[7].innerText = obj.data.oce_id
+									td[4].innerText = obj.data.oce_desc
+									td[3].innerText = obj.data.adm_desc
+									td[7].innerText = obj.data.adm_id
+								}
+							});
+						}
+
+					});
+					break;
+				case "NO":
+					break;
+				default: //NO
+					break;
+			}
+			return true;
+		}, true, ["Aceptar", "Cancelar"], "info!", null);
+	}
+}
+
+function ValidarFechas() {
+	if ($("#Date1").val() <= $("#Date2").val()) {
+		let d1 = moment($("#Date1").val());
+		let d2 = moment($("#Date2").val());
+		let diffInDays = d2.diff(d1, 'days');
+		if (diffInDays > 370) {
+			AbrirMensaje("ATENCIÓN", "La diferencia entre las fechas no puede ser mayor a 370 días, revise.", function () {
+				$("#msjModal").modal("hide");
+				var fecha = moment().format('yyyy-MM-DD');
+				$("#Date2").val(fecha)
+				fecha = moment($("#FechaEntrega").val()).add(-30, 'day').format('yyyy-MM-DD');
+				$("#Date1").val(fecha)
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		return;
+	}
+	if ($("#Date1").val() > $("#Date2").val()) {
+		AbrirMensaje("ATENCIÓN", "El valor de Fecha Desde no puede ser mayor a Fecha Hasta, revise.", function () {
+			$("#msjModal").modal("hide");
+			$("#Date1").val($("#Date2").val())
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	console.log($("#Date2").val() - $("#Date1").val());
+}
+
+function BuscarRprAsociadasDeOCTabClick() {
+	if (ocIdSeleccionado == "") {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar una orden de comprar para visualizar las rpr asociadas.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting("Cargando datos...");
+		var ocCompte = ocIdSeleccionado;
+		var data = { ocCompte };
+		PostGenHtml(data, buscarRprAsociadaDeOrdenDeCompraURL, function (obj) {
+			$("#divRprAsociadas").html(obj);
+			AddEventListenerToGrid("tbListaRprAsociadaDeOC");
+			CerrarWaiting();
+			return true
+		});
+	}
+}
 
 function BuscarDetalleDeOCTabClick() {
 	if (ocIdSeleccionado == "") {
@@ -80,10 +209,12 @@ function selectListaOCRow(x) {
 	if (x) {
 		oceIdSeleccionado = x.cells[7].innerText.trim();
 		ocIdSeleccionado = x.cells[0].innerText.trim();
+		admIdSeleccionado = x.cells[8].innerText.trim();
 	}
 	else {
 		oceIdSeleccionado = "";
 		ocIdSeleccionado = "";
+		admIdSeleccionado = "";
 	}
 	ActivarBotonesTabPrincipal(oceIdSeleccionado);
 }
@@ -148,6 +279,12 @@ function ActivarBotonesTabPrincipal(estado) {
 	$("#btnModiAdm").prop("disabled", true);
 	$("#btnImprimir").prop("disabled", true);
 	$("#btnServicioExt").prop("disabled", true);
+	$("#btnLevantarOC").prop("disabled", true);
+	$("#listaAdm").prop("disabled", true);
+
+	if (estado == 'A') {
+		$("#btnLevantarOC").prop("disabled", false);
+	}
 	if (estado == 'P') {
 		$("#btnActivarOC").prop("disabled", false);
 		$("#btnAnularOC").prop("disabled", false);
@@ -156,12 +293,14 @@ function ActivarBotonesTabPrincipal(estado) {
 	if (estado == "C") {
 		$("#btnAnularOC").prop("disabled", false);
 		$("#btnModiAdm").prop("disabled", false);
+		$("#listaAdm").prop("disabled", false);
 		$("#btnServicioExt").prop("disabled", false);
 		$("#btnImprimir").prop("disabled", false);
 	}
 	if (estado == "R") {
 		$("#btnCerrarOC").prop("disabled", false);
 		$("#btnModiAdm").prop("disabled", false);
+		$("#listaAdm").prop("disabled", false);
 		$("#btnServicioExt").prop("disabled", false);
 		$("#btnImprimir").prop("disabled", false);
 	}
@@ -235,6 +374,14 @@ function BuscarOrdenesDeCompra(pag = 1) {
 		$("#divOrdenesDeCompra").html(obj);
 		AddEventListenerToGrid("tbListaOC");
 		ActivarBotonesTabPrincipal("");
+		$("#btnActivarOC").on("click", function () { ModificarOC(AccionesOC.ACTIVAR); });
+		$("#btnCerrarOC").on("click", function () { ModificarOC(AccionesOC.CERRAR); });
+		$("#btnAnularOC").on("click", function () { ModificarOC(AccionesOC.ANULAR); });
+		$("#btnLevantarOC").on("click", function () { ModificarOC(AccionesOC.LEVANTAR); });
+		$("#btnModiAdm").on("click", function () { ModificarOC(AccionesOC.MODIFICAR_ADM); });
+		FormatearValores("#tbListaOC", 6)
+		$("#Importe").val(formatter.format($("#Importe").val()));
+		//formatter.format(td[idx].innerText);
 		$("#divDetalle").collapse("show");
 
 		PostGen({}, buscarMetadataURL, function (obj) {
