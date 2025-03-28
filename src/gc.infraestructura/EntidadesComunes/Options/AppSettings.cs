@@ -31,6 +31,12 @@ namespace gc.infraestructura.Core.EntidadesComunes.Options
         public int FechaVtoCota{ get; set; }
         public string MenuId{ get; set; }
         public string FolderArchivo { get; set; }
+        public string ServerSMTP { get; set; }
+        public string Port { get; set; }
+        public string CredUserEmail { get; set; } = string.Empty;
+        public string CredPass { get; set; } = string.Empty;
+        public bool EnabledSSL { get; set; }
+
         
     }
 }
