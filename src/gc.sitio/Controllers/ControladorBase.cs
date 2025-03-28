@@ -1526,11 +1526,16 @@ namespace gc.sitio.Controllers
 		#endregion
 
         #region Consultas
+
+		//*********************************************************
+		// las variables de sesion de estas consultas se codificaran como datos_nodo_11, datos_nodo_21.. etc
+		//*********************************************************
         public List<ConsCtaCteDto> CuentaCorrienteBuscada
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("CuentaCorrienteBuscada");
+				//11 = nodo 1 - original 1 (si fuera un reporte duplicado deberia ser 2)
+                var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_11");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
@@ -1540,7 +1545,7 @@ namespace gc.sitio.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("CuentaCorrienteBuscada", json);
+                _context.HttpContext.Session.SetString("datos_CCUENTAS_11", json);
             }
         }
 
@@ -1548,7 +1553,7 @@ namespace gc.sitio.Controllers
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("VencimientosBuscados");
+                var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_21");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
@@ -1558,7 +1563,7 @@ namespace gc.sitio.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("VencimientosBuscados", json);
+                _context.HttpContext.Session.SetString("datos_CCUENTAS_21", json);
             }
         }
 
@@ -1566,7 +1571,7 @@ namespace gc.sitio.Controllers
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("CmptesTotalBuscados");
+                var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_31");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
@@ -1576,7 +1581,7 @@ namespace gc.sitio.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("CmptesTotalBuscados", json);
+                _context.HttpContext.Session.SetString("datos_CCUENTAS_31", json);
             }
         }
 
@@ -1584,7 +1589,7 @@ namespace gc.sitio.Controllers
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("CmptesDetalleBuscados");
+                var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_32");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
@@ -1594,7 +1599,7 @@ namespace gc.sitio.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("CmptesDetalleBuscados", json);
+                _context.HttpContext.Session.SetString("datos_CCUENTAS_32", json);
             }
         }
 
@@ -1602,7 +1607,7 @@ namespace gc.sitio.Controllers
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("OrdenPagosBuscados");
+                var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_41");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
@@ -1612,7 +1617,7 @@ namespace gc.sitio.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("OrdenPagosBuscados", json);
+                _context.HttpContext.Session.SetString("datos_CCUENTAS_41", json);
             }
         }
 
@@ -1620,7 +1625,7 @@ namespace gc.sitio.Controllers
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("OrdenPagosDetBuscados");
+                var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_42");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
@@ -1630,7 +1635,7 @@ namespace gc.sitio.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("OrdenPagosDetBuscados", json);
+                _context.HttpContext.Session.SetString("datos_CCUENTAS_42", json);
             }
         }
 
@@ -1638,7 +1643,7 @@ namespace gc.sitio.Controllers
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("RecepProvBuscados");
+                var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_51");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
@@ -1648,7 +1653,7 @@ namespace gc.sitio.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("RecepProvBuscados", json);
+                _context.HttpContext.Session.SetString("datos_CCUENTAS_51", json);
             }
         }
 
@@ -1656,7 +1661,7 @@ namespace gc.sitio.Controllers
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("RecepProvDetBuscados");
+                var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_52");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
@@ -1666,7 +1671,7 @@ namespace gc.sitio.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("RecepProvDetBuscados", json);
+                _context.HttpContext.Session.SetString("datos_CCUENTAS_52", json);
             }
         }
         #endregion
@@ -1725,7 +1730,39 @@ namespace gc.sitio.Controllers
                 _context.HttpContext.Session.SetString("ArchivosCargadosModulo", json);
             }
         }
-        #endregion
+
+		public string ObtenerSerieDeDatos(string moduloId,string nodoId, out Type? tipo) 
+		{
+            tipo = null;
+            switch (moduloId)
+			{
+				case "CCUENTAS":
+					switch (nodoId)
+					{
+						case "11":
+							tipo = CuentaCorrienteBuscada.GetType();
+							return JsonConvert.SerializeObject( CuentaCorrienteBuscada) ;
+						case "21":
+                            tipo = VencimientosBuscados.GetType();
+                            return JsonConvert.SerializeObject(VencimientosBuscados);
+                        case "31":
+                            tipo = CmptesTotalBuscados.GetType();
+                            return JsonConvert.SerializeObject(CmptesDetalleBuscados);
+							case "41":
+                            tipo = CmptesDetalleBuscados.GetType();
+                            return JsonConvert.SerializeObject(OrdenPagosDetBuscados);
+                        case "51":
+							tipo = RecepProvDetBuscados.GetType();	
+							return JsonConvert.SerializeObject(RecepProvDetBuscados);
+                        default:
+							break;
+					}
+					break;
+			}
+
+            return string.Empty;
+        }
+		#endregion
 
 		#region	ORDEN DE COMPRA ESTADO LISTA
 		public List<OrdenDeCompraEstadoDto> OrdenDeCompraEstadoLista
