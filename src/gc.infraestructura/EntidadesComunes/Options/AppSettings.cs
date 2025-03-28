@@ -37,10 +37,6 @@ namespace gc.infraestructura.Core.EntidadesComunes.Options
         public string CredPass { get; set; } = string.Empty;
         public bool EnabledSSL { get; set; }
 
-        public string WspNroTelefono { get; set; }
-        public string WspAccountSID { get; set; }
-        public string WspAuthToken { get;set; }
-
         
     }
 }
