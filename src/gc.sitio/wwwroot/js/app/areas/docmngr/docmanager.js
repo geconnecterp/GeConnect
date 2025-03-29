@@ -252,21 +252,55 @@ function enviarEmail() {
 }
 
 function enviarWhatsApp() {
-    var selectedNode = $('#archivosDispuestos').jstree('get_selected', true)[0];
-    if (!selectedNode || !selectedNode.data || !selectedNode.data.archivoB64) {
-        AbrirMensaje("ATENCIÓN", "No hay archivo seleccionado para enviar por WhatsApp.", function () {
-            $("#msjModal").modal("hide");
-            return true;
-        }, false, ["Aceptar"], "error!", null);
-        return;
+    if ($("#adjuntarArchivos").is(":checked")) {
+        var selectedNode = $('#archivosDispuestos').jstree('get_selected', true)[0];
+        if (selectedNodes.length === 0) {
+
+            AbrirMensaje("ATENCIÓN", "No hay archivos seleccionados para enviar por WhatsApp. ¿Se CONTINUA sin archivos adjuntos?", function (resp) {
+                if (resp === "SI") {
+                    $("#adjuntarArchivos").prop("checked", true);
+                    $("#msjModal").modal("hide");
+                    return true;
+                }
+                else {
+                    $("#msjModal").modal("hide");
+                    return false;
+                }
+            }, true, ["SI", "NO"], "warn!", null);
+        }
     }
 
-    var archivoBase64 = selectedNode.data.archivoB64;
     var whatsappTo = $("#whatsappTo").val();
     var whatsappMessage = $("#whatsappMessage").val();
+    var adjuntarArchivos = $("#adjuntarArchivos").is(":checked");
+    var totalSize = 0;
+    var maxSize = 100 * 1024 * 1024; // 100MB
+    var archivos = [];
 
+    if (adjuntarArchivos) {
+        selectedNodes.forEach(function (node) {
+            if (node.data && node.data.archivoB64) {
+                var archivoBase64 = node.data.archivoB64;
+                var archivoSize = (archivoBase64.length * (3 / 4)) - (archivoBase64.indexOf('=') > 0 ? (archivoBase64.length - archivoBase64.indexOf('=')) : 0);
+                totalSize += archivoSize;
+
+                if (totalSize > maxSize) {
+                    AbrirMensaje("ATENCIÓN", "El tamaño total de los archivos seleccionados excede el límite de 100MB para el envío por WhatsApp.", function () {
+                        $("#msjModal").modal("hide");
+                        return true;
+                    }, false, ["Aceptar"], "error!", null);
+                    return;
+                }
+
+                archivos.push({
+                    archivoBase64: archivoBase64,
+                    nombre: node.text
+                });
+            }
+        });
+    }
     var data = {
-        archivoBase64: archivoBase64,
+        archivos: archivos,
         whatsappTo: whatsappTo,
         whatsappMessage: whatsappMessage
     };
@@ -284,4 +318,5 @@ function enviarWhatsApp() {
             }, false, ["Aceptar"], "success", null);
         }
     });
+
 }

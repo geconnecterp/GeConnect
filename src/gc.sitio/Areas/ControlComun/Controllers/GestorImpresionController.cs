@@ -22,6 +22,8 @@ using System.Net.Mail;
 using System.Net;
 using Twilio;
 using Twilio.Rest.Api.V2010.Account;
+using System.Text.RegularExpressions;
+using gc.infraestructura.Helpers;
 
 namespace gc.sitio.Areas.ControlComun.Controllers
 {
@@ -306,7 +308,13 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                     return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
                 }
 
-                TwilioClient.Init("tuAccountSid", "tuAuthToken");
+                if(archivos.Count == 0)
+                {
+                    HelperWsp.EnviarMensaje(whatsappTo, whatsappMessage);
+                    return Json(new { error = false, warn = false,msg=$"Mensaje enviado a {whatsappTo} satisfactoriamente" });
+                }   
+
+                TwilioClient.Init(_setting.WspAccountSID, _setting.WspAuthToken);
 
                 var mediaUrls = new List<Uri>();
                 foreach (var archivo in archivos)
@@ -314,9 +322,12 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                     mediaUrls.Add(new Uri("data:application/pdf;base64," + archivo.archivoBase64));
                 }
 
+                // Limpiar el número de teléfono
+                whatsappTo = Regex.Replace(whatsappTo, @"[\s\-\.\(\)]", "");
+
                 var message = MessageResource.Create(
                     body: whatsappMessage,
-                    from: new Twilio.Types.PhoneNumber("whatsapp:+5492645015337"),
+                    from: new Twilio.Types.PhoneNumber($"whatsapp:{_setting.WspNroTelefono}"),
                     to: new Twilio.Types.PhoneNumber("whatsapp:" + whatsappTo),
                     mediaUrl: mediaUrls
                 );
