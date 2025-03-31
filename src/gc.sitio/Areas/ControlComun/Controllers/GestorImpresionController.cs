@@ -5,14 +5,12 @@ using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Gen;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos.DocManager;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using OfficeOpenXml;
 using System.Collections;
-using System.ComponentModel;
+using System.Net;
+using System.Net.Mail;
 using System.Reflection;
 using System.Text;
 
@@ -27,9 +25,9 @@ namespace gc.sitio.Areas.ControlComun.Controllers
         private readonly IWebHostEnvironment _env;
 
 
-        public GestorImpresionController(IOptions<AppSettings> options, IHttpContextAccessor accessor,ILogger<GestorImpresionController> logger,
-            IDocManagerServicio docManager, IWebHostEnvironment env) 
-            :base(options,accessor,logger)
+        public GestorImpresionController(IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger<GestorImpresionController> logger,
+            IDocManagerServicio docManager, IWebHostEnvironment env)
+            : base(options, accessor, logger)
         {
             _setting = options.Value;
             _accessor = accessor;
@@ -127,64 +125,10 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                 switch (formato)
                 {
                     case "P":
-                        fileUrl = GuardarArchivoPDF(ms, fileName,nodoId,moduloId,path);
-                        break;
-                    case "X":
-                        fileUrl = ExportarAExcel(nodoId, fileName,moduloId, tipo, path);
-                        break;
-                    case "T":
-                        fileUrl = ExportarATxt(nodoId, fileName,moduloId, tipo, path);
-                        break;
-                    default:
-                        break;
-                }
-
-                return Json(new { error = false, warn = false, fileUrl = fileUrl, fileName = $"{fileName}.{formato.ToLower()}" });
-            }
-            catch (NegocioException ex)
-            {
-                return Json(new { error = false, warn = true, msg = ex.Message });
-            }
-            catch (UnauthorizedException ex)
-            {
-                return Json(new { error = false, warn = true, auth = true, msg = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { error = true, warn = false, msg = ex.Message });
-            }
-        }
-
-        [HttpPost]
-        public JsonResult GeneradorArchivo(string formato, string archivoBase64, string nodoId, string moduloId, string tipo)
-        {
-            try
-            {
-                var auth = EstaAutenticado;
-                if (!auth.Item1 || auth.Item2 < DateTime.Now)
-                {
-                    return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
-                }
-
-                MemoryStream ms = new MemoryStream(Convert.FromBase64String(archivoBase64));
-                string fileName = $"{moduloId}_{nodoId}_{DateTime.Now.Ticks}";
-                string fileUrl = string.Empty;
-
-                #region Verificación de la ruta 
-                var path = Path.Combine(_env.WebRootPath, _setting.FolderArchivo);
-                if (!Directory.Exists(path))
-                {
-                    Directory.CreateDirectory(path);
-                }
-                #endregion
-
-                switch (formato)
-                {
-                    case "P":
                         fileUrl = GuardarArchivoPDF(ms, fileName, nodoId, moduloId, path);
                         break;
                     case "X":
-                        fileUrl = ExportarAExcel(nodoId, fileName, moduloId, tipo, path);
+                        fileUrl = ExportarAExcel(nodoId, fileName,moduloId, tipo, path);
                         break;
                     case "T":
                         fileUrl = ExportarATxt(nodoId, fileName, moduloId, tipo, path);
@@ -614,11 +558,11 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                     return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
                 }
 
-                if(archivos.Count == 0)
+                if (archivos.Count == 0)
                 {
                     // Construir la URL de la API de WhatsApp
                     var url = $"https://api.whatsapp.com/send?phone={whatsappTo}&text={Uri.EscapeDataString(whatsappMessage)}";
-                    return Json(new { error = false, warn = false,url = url, msg=$"Mensaje enviado a {whatsappTo} satisfactoriamente" });
+                    return Json(new { error = false, warn = false, url = url, msg = $"Mensaje enviado a {whatsappTo} satisfactoriamente" });
                 }
                 else
                 {
@@ -750,21 +694,5 @@ namespace gc.sitio.Areas.ControlComun.Controllers
             }
         }
 
-        private string ExportarATxt(string nodoId, string fileName, string moduloId,string tipo, string path)
-        {
-            var tipoObjeto = Type.GetType(tipo);
-            // Recuperar los datos de la variable de sesión
-            var datos = _context.HttpContext.Session.GetObjectFromJson($"datos_{moduloId}_{nodoId}", tipoObjeto);
-
-            // Convertir los datos a TXT
-            var sb = new StringBuilder();
-            foreach (var item in (IEnumerable<object>)datos)
-            {
-                sb.AppendLine(string.Join("\t", item.GetType().GetProperties().Select(p => p.GetValue(item, null))));
-            }
-            var filePath = Path.Combine(path, $"{fileName}.txt");
-            System.IO.File.WriteAllText(filePath, sb.ToString());
-            return $"/{_setting.FolderArchivo}/{fileName}.txt";
-        }
     }
 }
