@@ -27,6 +27,9 @@ $(function () {
 
     $(document).on("click", "#btnGenerarFile", invocaGenerarArchivo);
 
+    $(document).on("click", "#btnEnviarEmail", enviarEmail);
+    $(document).on("click", "#btnEnviarWhatsApp", enviarWhatsApp);
+
     inicializaArbolArchivos();
 });
 
@@ -185,4 +188,170 @@ function base64ToBlob(base64, mime) {
     }
 
     return new Blob(byteArrays, { type: mime });
+}
+
+function enviarEmail() {
+    var selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
+    if (selectedNodes.length === 0) {
+        AbrirMensaje("ATENCIÓN", "No hay archivos seleccionados para enviar por email.", function () {
+            $("#msjModal").modal("hide");
+            return true;
+        }, false, ["Aceptar"], "error!", null);
+        return;
+    }
+
+    //inicializamos variables obteniendo los datos cargados para enviar el mail
+    var emailTo = $("#emailTo").val();
+    var emailSubject = $("#emailSubject").val();
+    var emailBody = $("#emailBody").val();
+    var totalSize = 0;
+    var maxSize = 25 * 1024 * 1024; // 25MB
+    var archivos = [];
+
+    selectedNodes.forEach(function (node) {
+        if (node.data && node.data.archivoB64) {
+            var archivoBase64 = node.data.archivoB64;
+            var archivoSize = (archivoBase64.length * (3 / 4)) - (archivoBase64.indexOf('=') > 0 ? (archivoBase64.length - archivoBase64.indexOf('=')) : 0);
+            totalSize += archivoSize;
+
+            if (totalSize > maxSize) {
+                AbrirMensaje("ATENCIÓN", "El tamaño total de los archivos seleccionados excede el límite de 25MB para el envío por email.", function () {
+                    $("#msjModal").modal("hide");
+                    return true;
+                }, false, ["Aceptar"], "error!", null);
+                return;
+            }
+
+            archivos.push({
+                archivoBase64: archivoBase64,
+                nombre: node.text
+            });
+        }
+    });
+
+    var data = {
+        archivos: archivos,
+        emailTo: emailTo,
+        emailSubject: emailSubject,
+        emailBody: emailBody
+    };
+
+    PostGen(data, enviarEmailUrl, function (obj) {
+        if (obj.error === true) {
+            AbrirMensaje("Atención!", obj.msg, function () {
+                $("#msjModal").modal("hide");
+                return true;
+            }, false, ["Aceptar"], "error!", null);
+        } else {
+            AbrirMensaje("Éxito", "El email ha sido enviado correctamente.", function () {
+                $("#msjModal").modal("hide");
+                return true;
+            }, false, ["Aceptar"], "success", null);
+        }
+    });
+}
+
+function enviarWhatsApp() {
+
+    var selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
+    var whatsappTo = $("#whatsappTo").val();
+    var whatsappMessage = $("#whatsappMessage").val();
+    var adjuntarArchivos = $("#adjuntarArchivos").is(":checked");
+    var totalSize = 0;
+    var maxSize = 100 * 1024 * 1024; // 100MB
+    var archivos = [];
+
+    if (adjuntarArchivos) {
+
+        if (selectedNodes.length === 0) {
+
+            AbrirMensaje("ATENCIÓN", "No hay archivos seleccionados para enviar por WhatsApp. ¿Se CONTINUA sin archivos adjuntos?", function (resp) {
+                if (resp === "SI") {
+                    $("#adjuntarArchivos").prop("checked", false);
+                    adjuntarArchivos = false;
+                    $("#msjModal").modal("hide");
+                    return true;
+                }
+                else {
+                    $("#msjModal").modal("hide");
+                    return false;
+                }
+            }, true, ["SI", "NO"], "warn!", null);
+        }
+    }
+
+    var whatsappTo = $("#whatsappTo").val();
+    var whatsappMessage = $("#whatsappMessage").val();
+    var adjuntarArchivos = $("#adjuntarArchivos").is(":checked");
+    var totalSize = 0;
+    var maxSize = 100 * 1024 * 1024; // 100MB
+    var archivos = [];
+
+    if (adjuntarArchivos) {
+        selectedNodes.forEach(function (node) {
+            if (node.data && node.data.archivoB64) {
+                var archivoBase64 = node.data.archivoB64;
+                var archivoSize = (archivoBase64.length * (3 / 4)) - (archivoBase64.indexOf('=') > 0 ? (archivoBase64.length - archivoBase64.indexOf('=')) : 0);
+                totalSize += archivoSize;
+
+                if (totalSize > maxSize) {
+                    AbrirMensaje("ATENCIÓN", "El tamaño total de los archivos seleccionados excede el límite de 100MB para el envío por WhatsApp.", function () {
+                        $("#msjModal").modal("hide");
+                        return true;
+                    }, false, ["Aceptar"], "error!", null);
+                    return;
+                }
+
+                archivos.push({
+                    archivoBase64: archivoBase64,
+                    nombre: node.text
+                });
+            }
+        });
+
+        var data = {
+            archivos: archivos,
+            whatsappTo: whatsappTo,
+            whatsappMessage: whatsappMessage
+        };
+
+        PostGen(data, enviarWhatsAppUrl, function (obj) {
+            if (obj.error === true) {
+                AbrirMensaje("Atención!", obj.msg, function () {
+                    $("#msjModal").modal("hide");
+                    return true;
+                }, false, ["Aceptar"], "error!", null);
+            } else {
+                window.open(obj.url, "_blank");
+                AbrirMensaje("Éxito", "El mensaje de WhatsApp ha sido enviado correctamente.", function () {
+                    $("#msjModal").modal("hide");
+                    $("#whatsappMessage").val("");
+                    $("#whatsappTo").val("");
+                    return true;
+                }, false, ["Aceptar"], "success", null);
+            }
+        });
+    }
+    else {
+        var data = {
+            whatsappTo: whatsappTo,
+            whatsappMessage: whatsappMessage
+        };
+        PostGen(data, enviarWhatsAppUrl, function (obj) {
+            if (obj.error === false) {
+                window.open(obj.url, "_blank");
+                AbrirMensaje("Éxito", "El mensaje de WhatsApp ha sido enviado correctamente.", function () {
+                    $("#msjModal").modal("hide");
+                    $("#whatsappMessage").val("");
+                    $("#whatsappTo").val("");
+                    return true;
+                }, false, ["Aceptar"], "error!", null);
+            } else {
+                AbrirMensaje("Atención", obj.msj, function () {
+                    $("#msjModal").modal("hide");
+                    return true;
+                }, false, ["Aceptar"], "error!", null);
+            }
+        });
+    }
 }

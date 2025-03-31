@@ -260,10 +260,12 @@
 			public const string SP_ABM_GASTOS_LISTA = "SPGECO_ABM_Gastos_Lista";
 			public const string SP_ABM_GASTOS_DATOS = "SPGECO_ABM_Gastos_Datos";
 
-			#endregion
+            public const string SP_ABM_VENDEDOR_LISTA = "SPGECO_ABM_Ve_Lista";
+            public const string SP_ABM_VENDEDOR_DATO = "SPGECO_ABM_Ve_Datos";
+            #endregion
 
-			#region Tipos
-			public const string SP_TIPOS_NEGOCIO_LISTA = "SPGECO_Tipos_Negocios_Lista";
+            #region Tipos
+            public const string SP_TIPOS_NEGOCIO_LISTA = "SPGECO_Tipos_Negocios_Lista";
             public const string SP_ZONAS_LISTA = "SPGECO_Zonas_Lista";
             public const string SP_CONDICION_AFIP_LISTA = "SPGECO_Condiciones_AFIP_Lista";
             public const string SP_NATURALEZA_JURIDICA_LISTA = "SPGECO_Naturaleza_Juridicas_Lista";

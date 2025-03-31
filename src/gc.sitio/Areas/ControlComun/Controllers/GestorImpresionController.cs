@@ -3,17 +3,14 @@ using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.ViewModels;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos.DocManager;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using OfficeOpenXml;
 using System.Collections;
-using System.ComponentModel;
+using System.Net;
+using System.Net.Mail;
 using System.Reflection;
 using System.Text;
 
@@ -28,9 +25,9 @@ namespace gc.sitio.Areas.ControlComun.Controllers
         private readonly IWebHostEnvironment _env;
 
 
-        public GestorImpresionController(IOptions<AppSettings> options, IHttpContextAccessor accessor,ILogger<GestorImpresionController> logger,
-            IDocManagerServicio docManager, IWebHostEnvironment env) 
-            :base(options,accessor,logger)
+        public GestorImpresionController(IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger<GestorImpresionController> logger,
+            IDocManagerServicio docManager, IWebHostEnvironment env)
+            : base(options, accessor, logger)
         {
             _setting = options.Value;
             _accessor = accessor;
@@ -128,13 +125,13 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                 switch (formato)
                 {
                     case "P":
-                        fileUrl = GuardarArchivoPDF(ms, fileName,nodoId,moduloId,path);
+                        fileUrl = GuardarArchivoPDF(ms, fileName, nodoId, moduloId, path);
                         break;
                     case "X":
-                        fileUrl = ExportarAExcel(nodoId, fileName,moduloId, tipo, path);
+                        fileUrl = ExportarAExcel(nodoId, fileName, moduloId, tipo, path);
                         break;
                     case "T":
-                        fileUrl = ExportarATxt(nodoId, fileName,moduloId, tipo, path);
+                        fileUrl = ExportarATxt(nodoId, fileName, moduloId, tipo, path);
                         break;
                     default:
                         break;
@@ -156,7 +153,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
             }
         }
 
-        private string GuardarArchivoPDF(MemoryStream ms, string fileName,string nodoId,string moduloId,string path)
+        private string GuardarArchivoPDF(MemoryStream ms, string fileName, string nodoId, string moduloId, string path)
         {
             string filePath = Path.Combine(path, $"{fileName}.pdf");
             using (var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
@@ -166,8 +163,8 @@ namespace gc.sitio.Areas.ControlComun.Controllers
             return $"/{_setting.FolderArchivo}/{fileName}.pdf";
         }
 
-        private string ExportarAExcel(string nodoId, string fileName, string moduloId,string tipo, string path)
-        {           
+        private string ExportarAExcel(string nodoId, string fileName, string moduloId, string tipo, string path)
+        {
             var listType = Type.GetType(tipo);
             // Recuperar los datos de la variable de sesión
             var datos = _context.HttpContext.Session.GetObjectFromJson($"datos_{moduloId}_{nodoId}", listType);
@@ -200,7 +197,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                     i++;
                 }
 
-  
+
 
                 // Agregar datos
                 var listaDatos = (IEnumerable<object>)datos;
@@ -211,7 +208,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                     foreach (PropertyInfo prop in properties)
                     {
                         var valor = prop.GetValue(item);
-                        worksheet.Cell(fila, i + 1).Value = valor != null?valor.ToString():string.Empty;
+                        worksheet.Cell(fila, i + 1).Value = valor != null ? valor.ToString() : string.Empty;
                         i++;
                     }
 
@@ -229,7 +226,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
             }
         }
 
-        private string ExportarATxt(string nodoId, string fileName, string moduloId,string tipo, string path)
+        private string ExportarATxt(string nodoId, string fileName, string moduloId, string tipo, string path)
         {
             var tipoObjeto = Type.GetType(tipo);
             // Recuperar los datos de la variable de sesión
@@ -245,5 +242,123 @@ namespace gc.sitio.Areas.ControlComun.Controllers
             System.IO.File.WriteAllText(filePath, sb.ToString());
             return $"/{_setting.FolderArchivo}/{fileName}.txt";
         }
+
+
+
+        [HttpPost]
+        public JsonResult EnviarEmail(List<ArchivoSendDto> archivos, string emailTo, string emailSubject, string emailBody)
+        {
+            try
+            {
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+                }
+
+                var message = new MailMessage();
+                message.To.Add(new MailAddress(emailTo));
+                message.Subject = emailSubject;
+                message.Body = emailBody;
+                message.IsBodyHtml = true;
+
+                foreach (var archivo in archivos)
+                {
+                    var archivoBytes = Convert.FromBase64String(archivo.archivoBase64);
+                    var archivoStream = new MemoryStream(archivoBytes);
+                    message.Attachments.Add(new Attachment(archivoStream, archivo.nombre, "application/pdf"));
+                }
+
+                using (var smtp = new SmtpClient())
+                {
+                    smtp.Host = "smtp.tuservidor.com";
+                    smtp.Port = 587;
+                    smtp.Credentials = new NetworkCredential("tuemail@tuservidor.com", "tucontraseña");
+                    smtp.EnableSsl = true;
+                    smtp.Send(message);
+                }
+
+                return Json(new { error = false, warn = false });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult EnviarWhatsApp(List<ArchivoSendDto> archivos, string whatsappTo, string whatsappMessage)
+        {
+            try
+            {
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+                }
+
+                if (archivos.Count == 0)
+                {
+                    // Construir la URL de la API de WhatsApp
+                    var url = $"https://api.whatsapp.com/send?phone={whatsappTo}&text={Uri.EscapeDataString(whatsappMessage)}";
+                    return Json(new { error = false, warn = false, url = url, msg = $"Mensaje enviado a {whatsappTo} satisfactoriamente" });
+                }
+                else
+                {
+                    var cuentaActual = CuentaComercialSeleccionada;
+                    var ahora = DateTime.Now.Ticks;
+                    // Guardar los archivos en el servidor
+                    var fileLinks = new List<string>();
+                    var path = Path.Combine(_env.WebRootPath, _setting.FolderArchivo);
+                    if (!Directory.Exists(path))
+                    {
+                        Directory.CreateDirectory(path);
+                    }
+
+                    foreach (var archivo in archivos)
+                    {
+                        var archivoBytes = Convert.FromBase64String(archivo.archivoBase64);
+                        var filePath = Path.Combine(path, $"{archivo.nombre}-{cuentaActual.Cta_Id}-{ahora}.pdf");
+                        System.IO.File.WriteAllBytes(filePath, archivoBytes);
+                        fileLinks.Add($"{_setting.RutaBase}/{_setting.FolderArchivo}/{archivo.nombre}");
+                    }
+
+                    // Construir el mensaje con enlaces a los archivos
+                    var messageWithLinks = $"{whatsappMessage}\n\nArchivos:\n" + string.Join("\n", fileLinks);
+                    var url = $"https://api.whatsapp.com/send?phone={whatsappTo}&text={Uri.EscapeDataString(messageWithLinks)}";
+                    return Json(new { error = false, warn = false, url });
+                }
+                //TwilioClient.Init(_setting.WspAccountSID, _setting.WspAuthToken);
+
+                //var mediaUrls = new List<Uri>();
+                //foreach (var archivo in archivos)
+                //{
+                //    mediaUrls.Add(new Uri("data:application/pdf;base64," + archivo.archivoBase64));
+                //}
+
+                //// Limpiar el número de teléfono
+                //whatsappTo = Regex.Replace(whatsappTo, @"[\s\-\.\(\)]", "");
+
+                //var message = MessageResource.Create(
+                //    body: whatsappMessage,
+                //    from: new Twilio.Types.PhoneNumber($"whatsapp:{_setting.WspNroTelefono}"),
+                //    to: new Twilio.Types.PhoneNumber("whatsapp:" + whatsappTo),
+                //    mediaUrl: mediaUrls
+                //);
+
+                //return Json(new { error = false, warn = false });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+        }
+
+        public class ArchivoSendDto
+        {
+            public string archivoBase64 { get; set; }
+            public string nombre { get; set; }
+        }
+
     }
 }
