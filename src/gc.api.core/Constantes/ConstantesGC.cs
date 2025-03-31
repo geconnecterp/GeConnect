@@ -294,10 +294,12 @@
 			public const string SP_CCB_CUENTA_LISTA = "SPGECO_CCB_Cuentas_Lista";
 			public const string SP_TIPO_CUENTA_GASTO_LISTA = "SPGECO_Tipos_Cuentas_Gastos_Lista";
 			public const string SP_OC_ESTADO_LISTA = "SPGECO_Estados_OC_Lista";
-			//SPGECO_Estados_OC_Lista
+			public const string SP_TIPO_COMPROBANTE = "SPGECO_Tipos_Comprobantes";
+			//
 			#endregion
 
 			public const string SP_ADMINISTRACIONES = "SPGECO_Administraciones";
+			public const string SP_COMPTE_DATOS_PROV = "SPGECO_Compte_DatosProv";
 			//
 		}
 	}

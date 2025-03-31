@@ -24,5 +24,7 @@ namespace gc.api.core.Contratos.Servicios
         List<ProveedorGrupoDto> GetABMProveedorFamiliaLista(string ctaId);
         List<ProveedorGrupoDto> GetABMProveedorFamiliaDatos(string ctaId, string pgId);
         List<ClienteListaDto> GetClienteLista(string search);
-    }
+        List<ComprobanteDeCompraDto> GetCompteDatosProv(string ctaId);
+
+	}
 }

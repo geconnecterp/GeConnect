@@ -42,5 +42,34 @@ namespace gc.api.core.Servicios
 					#endregion
 				}).ToList();
 		}
+
+		public List<TipoComprobanteDto> GetTipoComprobanteListaPorTipoAfip(string afip_id)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_TIPO_COMPROBANTE;
+			var ps = new List<SqlParameter>()
+			{
+					new("@afip_id",afip_id)
+			};
+			var res = _repository.InvokarSp2Lst(sp, ps, true);
+			if (res.Count == 0)
+				return [];
+			else
+				return res.Select(x => new TipoComprobanteDto()
+				{
+					#region Campos
+					tco_desc = x.Tco_desc,
+					tco_desc_libro = x.Tco_desc_libro,
+					tco_grupo = x.Tco_grupo,
+					tco_id = x.Tco_id,
+					tco_id_afip = x.Tco_id_afip,
+					tco_iva_compra = x.Tco_iva_compra,
+					tco_iva_discriminado = x.Tco_iva_discriminado,
+					tco_iva_venta = x.Tco_iva_venta,
+					tco_letra = x.Tco_letra,
+					tco_sin_nro = x.Tco_sin_nro,
+					tco_tipo = x.Tco_tipo,
+					#endregion
+				}).ToList();
+		}
 	}
 }

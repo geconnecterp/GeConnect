@@ -23,7 +23,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private readonly IAdministracionServicio _adminServicio;
 		private readonly IOrdenDeCompraEstadoServicio _ordenDeCompraEstadoServicio;
 		private readonly IProductoServicio _productoServicio;
-		public OrdenDeCompraConsultaController(ICuentaServicio cuentaServicio, ILogger<OrdenDeCompraController> logger, IAdministracionServicio adminServicio,
+		public OrdenDeCompraConsultaController(ICuentaServicio cuentaServicio, ILogger<OrdenDeCompraConsultaController> logger, IAdministracionServicio adminServicio,
 											   IOrdenDeCompraEstadoServicio ordenDeCompraEstadoServicio, IOptions<AppSettings> options, IHttpContextAccessor context,
 											   IProductoServicio productoServicio) : base(options, context, logger)
 		{

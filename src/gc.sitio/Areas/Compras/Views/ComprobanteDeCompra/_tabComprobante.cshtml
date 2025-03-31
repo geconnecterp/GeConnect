@@ -1,0 +1,54 @@
+﻿@model ComprobanteDeCompraModel
+@{
+	var aux = new ComprobanteDeCompraModel();
+	aux = Model;
+	var compte = aux.Comprobante;
+	var tOpe = aux.TipoOpe;
+	var cAfip = aux.CondAfip;
+	var mon = aux.Moneda;
+	var tCompte = aux.TipoCompte;
+	var cDir = aux.CtaDirecta;
+
+}
+<div class="row">
+	<div class="col-md-4">
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-100">Tipo de Ope.: </span>
+				@Html.DropDownListFor(m => m.Comprobante.ope_iva, tOpe, "Seleccionar...", new { @id = "listaOpeIva", @class = "form-control activable" })
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-100">Cond. AFIP: </span>
+				@Html.DropDownListFor(m => m.Comprobante.afip_id, cAfip, "Seleccionar...", new { @id = "listaCAfip", @class = "form-control activable" })
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-100">CUIT:</span>
+				<input type="text" asp-for="Comprobante.cuit_parcial" class="form-control activable inputEditable" />
+				<span class="input-group-text fixed-lbl-for-abm-70">Cod. Cli.:</span>
+				<input type="text" asp-for="Comprobante.ctap_id_externo" class="form-control activable inputEditable" />
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-100">Razón Social:</span>
+				<input type="text" asp-for="Comprobante.cta_denominacion" class="form-control activable inputEditable" />
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-100">Razón Social:</span>
+				<input type="text" asp-for="Comprobante.cta_domicilio" class="form-control activable inputEditable" />
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-100">Tipo de Compte.: </span>
+				@Html.DropDownListFor(m => m.Comprobante.tco_id, tCompte, "Seleccionar...", new { @id = "listaTCompte", @class = "form-control activable" })
+			</div>
+		</div>
+	</div>
+</div>

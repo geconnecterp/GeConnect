@@ -401,6 +401,15 @@ namespace gc.api.core.Servicios
             return listaTemp;
         }
 
-
-    }
+		public List<ComprobanteDeCompraDto> GetCompteDatosProv(string ctaId)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_COMPTE_DATOS_PROV;
+			var ps = new List<SqlParameter>()
+			{
+				new("@cta_id",ctaId),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<ComprobanteDeCompraDto>(sp, ps, true);
+			return listaTemp;
+		}
+	}
 }

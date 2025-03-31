@@ -387,5 +387,20 @@ namespace gc.api.Controllers.Almacen
             var response = new ApiResponse<bool>(res);
             return Ok(response);
         }
-    }
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ComprobanteDeCompraDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetCompteDatosProv(string cta_id)
+		{
+			ApiResponse<List<ComprobanteDeCompraDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _cuentasSv.GetCompteDatosProv(cta_id);
+
+			response = new ApiResponse<List<ComprobanteDeCompraDto>>(res);
+
+			return Ok(response);
+		}
+	}
 }
