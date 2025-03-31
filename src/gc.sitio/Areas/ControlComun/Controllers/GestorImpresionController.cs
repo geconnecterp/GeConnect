@@ -563,22 +563,56 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                     return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
                 }
 
-                TwilioClient.Init("tuAccountSid", "tuAuthToken");
-
-                var mediaUrls = new List<Uri>();
-                foreach (var archivo in archivos)
+                if(archivos.Count == 0)
                 {
-                    mediaUrls.Add(new Uri("data:application/pdf;base64," + archivo.archivoBase64));
+                    // Construir la URL de la API de WhatsApp
+                    var url = $"https://api.whatsapp.com/send?phone={whatsappTo}&text={Uri.EscapeDataString(whatsappMessage)}";
+                    return Json(new { error = false, warn = false,url = url, msg=$"Mensaje enviado a {whatsappTo} satisfactoriamente" });
                 }
+                else
+                {
+                    var cuentaActual = CuentaComercialSeleccionada;
+                    var ahora = DateTime.Now.Ticks;
+                    // Guardar los archivos en el servidor
+                    var fileLinks = new List<string>();
+                    var path = Path.Combine(_env.WebRootPath, _setting.FolderArchivo);
+                    if (!Directory.Exists(path))
+                    {
+                        Directory.CreateDirectory(path);
+                    }
 
-                var message = MessageResource.Create(
-                    body: whatsappMessage,
-                    from: new Twilio.Types.PhoneNumber("whatsapp:+5492645015337"),
-                    to: new Twilio.Types.PhoneNumber("whatsapp:" + whatsappTo),
-                    mediaUrl: mediaUrls
-                );
+                    foreach (var archivo in archivos)
+                    {
+                        var archivoBytes = Convert.FromBase64String(archivo.archivoBase64);
+                        var filePath = Path.Combine(path, $"{archivo.nombre}-{cuentaActual.Cta_Id}-{ahora}.pdf");
+                        System.IO.File.WriteAllBytes(filePath, archivoBytes);
+                        fileLinks.Add($"{_setting.RutaBase}/{_setting.FolderArchivo}/{archivo.nombre}");
+                    }
 
-                return Json(new { error = false, warn = false });
+                    // Construir el mensaje con enlaces a los archivos
+                    var messageWithLinks = $"{whatsappMessage}\n\nArchivos:\n" + string.Join("\n", fileLinks);
+                    var url = $"https://api.whatsapp.com/send?phone={whatsappTo}&text={Uri.EscapeDataString(messageWithLinks)}";
+                    return Json(new { error = false, warn = false, url });
+                }
+                //TwilioClient.Init(_setting.WspAccountSID, _setting.WspAuthToken);
+
+                //var mediaUrls = new List<Uri>();
+                //foreach (var archivo in archivos)
+                //{
+                //    mediaUrls.Add(new Uri("data:application/pdf;base64," + archivo.archivoBase64));
+                //}
+
+                //// Limpiar el número de teléfono
+                //whatsappTo = Regex.Replace(whatsappTo, @"[\s\-\.\(\)]", "");
+
+                //var message = MessageResource.Create(
+                //    body: whatsappMessage,
+                //    from: new Twilio.Types.PhoneNumber($"whatsapp:{_setting.WspNroTelefono}"),
+                //    to: new Twilio.Types.PhoneNumber("whatsapp:" + whatsappTo),
+                //    mediaUrl: mediaUrls
+                //);
+
+                //return Json(new { error = false, warn = false });
             }
             catch (Exception ex)
             {
