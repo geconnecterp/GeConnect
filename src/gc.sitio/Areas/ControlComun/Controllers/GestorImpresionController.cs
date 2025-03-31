@@ -128,60 +128,6 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                         fileUrl = GuardarArchivoPDF(ms, fileName, nodoId, moduloId, path);
                         break;
                     case "X":
-                        fileUrl = ExportarAExcel(nodoId, fileName,moduloId, tipo, path);
-                        break;
-                    case "T":
-                        fileUrl = ExportarATxt(nodoId, fileName, moduloId, tipo, path);
-                        break;
-                    default:
-                        break;
-                }
-
-                return Json(new { error = false, warn = false, fileUrl = fileUrl, fileName = $"{fileName}.{formato.ToLower()}" });
-            }
-            catch (NegocioException ex)
-            {
-                return Json(new { error = false, warn = true, msg = ex.Message });
-            }
-            catch (UnauthorizedException ex)
-            {
-                return Json(new { error = false, warn = true, auth = true, msg = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { error = true, warn = false, msg = ex.Message });
-            }
-        }
-
-        [HttpPost]
-        public JsonResult GeneradorArchivo(string formato, string archivoBase64, string nodoId, string moduloId, string tipo)
-        {
-            try
-            {
-                var auth = EstaAutenticado;
-                if (!auth.Item1 || auth.Item2 < DateTime.Now)
-                {
-                    return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
-                }
-
-                MemoryStream ms = new MemoryStream(Convert.FromBase64String(archivoBase64));
-                string fileName = $"{moduloId}_{nodoId}_{DateTime.Now.Ticks}";
-                string fileUrl = string.Empty;
-
-                #region Verificación de la ruta 
-                var path = Path.Combine(_env.WebRootPath, _setting.FolderArchivo);
-                if (!Directory.Exists(path))
-                {
-                    Directory.CreateDirectory(path);
-                }
-                #endregion
-
-                switch (formato)
-                {
-                    case "P":
-                        fileUrl = GuardarArchivoPDF(ms, fileName, nodoId, moduloId, path);
-                        break;
-                    case "X":
                         fileUrl = ExportarAExcel(nodoId, fileName, moduloId, tipo, path);
                         break;
                     case "T":
@@ -406,13 +352,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
             {
                 return Json(new { error = true, warn = false, msg = ex.Message });
             }
-        }
-
-        public class ArchivoSendDto
-        {
-            public string archivoBase64 { get; set; }
-            public string nombre { get; set; }
-        }
+        }      
 
         private string GuardarArchivoPDF(MemoryStream ms, string fileName, string nodoId, string moduloId, string path)
         {
@@ -619,79 +559,6 @@ namespace gc.sitio.Areas.ControlComun.Controllers
         {
             public string archivoBase64 { get; set; }
             public string nombre { get; set; }
-        }
-
-        private string GuardarArchivoPDF(MemoryStream ms, string fileName,string nodoId,string moduloId,string path)
-        {
-            string filePath = Path.Combine(path, $"{fileName}.pdf");
-            using (var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
-            {
-                ms.WriteTo(fileStream);
-            }
-            return $"/{_setting.FolderArchivo}/{fileName}.pdf";
-        }
-
-        private string ExportarAExcel(string nodoId, string fileName, string moduloId,string tipo, string path)
-        {           
-            var listType = Type.GetType(tipo);
-            // Recuperar los datos de la variable de sesión
-            var datos = _context.HttpContext.Session.GetObjectFromJson($"datos_{moduloId}_{nodoId}", listType);
-
-            // Convertir los datos a Excel
-            using (var workbook = new XLWorkbook())
-            {
-                var worksheet = workbook.Worksheets.Add("Sheet1");
-
-                // Obtener el tipo genérico (el tipo de los elementos de la lista)
-                Type elementType = listType.GetGenericArguments().FirstOrDefault();
-                if (elementType == null)
-                    throw new ArgumentException("No se pudo obtener el tipo de los elementos de la lista");
-
-                // Obtener las propiedades públicas del tipo de elemento
-                var properties = elementType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-                // Verificar que data sea una lista
-                if (!(datos is IList listData))
-                    throw new ArgumentException("El parámetro data debe ser una lista");
-
-                // Obtener los nombres de las propiedades como encabezados
-                var headers = properties.Select(p => p.Name).ToList();
-
-                //carga cabecera
-                int i = 0;
-                foreach (var item in headers)
-                {
-                    worksheet.Cell(1, i + 1).Value = item;
-                    i++;
-                }
-
-  
-
-                // Agregar datos
-                var listaDatos = (IEnumerable<object>)datos;
-                int fila = 2;
-                foreach (var item in listaDatos)
-                {
-                    i = 0;
-                    foreach (PropertyInfo prop in properties)
-                    {
-                        var valor = prop.GetValue(item);
-                        worksheet.Cell(fila, i + 1).Value = valor != null?valor.ToString():string.Empty;
-                        i++;
-                    }
-
-                    //for (int i = 0; i < propiedades.Length; i++)
-                    //{
-                    //    var valor = propiedades[i].GetValue(item);
-                    //    worksheet.Cell(fila, i + 1).Value = valor != null?valor.ToString():string.Empty;
-                    //}
-                    fila++;
-                }
-
-                var filePath = Path.Combine(path, $"{fileName}.xlsx");
-                workbook.SaveAs(filePath);
-                return $"/{_setting.FolderArchivo}/{fileName}.xlsx";
-            }
         }
 
     }
