@@ -3,25 +3,16 @@ using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.ViewModels;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos.DocManager;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using OfficeOpenXml;
 using System.Collections;
-using System.ComponentModel;
-using System.Net.Mail;
 using System.Net;
+using System.Net.Mail;
 using System.Reflection;
 using System.Text;
-using System.Net.Mail;
-using System.Net;
-using Twilio;
-using Twilio.Rest.Api.V2010.Account;
 
 namespace gc.sitio.Areas.ControlComun.Controllers
 {
