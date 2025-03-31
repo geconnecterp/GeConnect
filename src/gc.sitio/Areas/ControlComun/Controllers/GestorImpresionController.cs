@@ -5,7 +5,9 @@ using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Gen;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos.DocManager;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Collections;
@@ -84,6 +86,60 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                 var jarbol = JsonConvert.SerializeObject(arbol);
                 return Json(new { error = false, warn = false, arbol = jarbol });
 
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+                return Json(new { error = false, warn = true, auth = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult GeneradorArchivo(string formato, string archivoBase64, string nodoId, string moduloId, string tipo)
+        {
+            try
+            {
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+                }
+
+                MemoryStream ms = new MemoryStream(Convert.FromBase64String(archivoBase64));
+                string fileName = $"{moduloId}_{nodoId}_{DateTime.Now.Ticks}";
+                string fileUrl = string.Empty;
+
+                #region Verificación de la ruta 
+                var path = Path.Combine(_env.WebRootPath, _setting.FolderArchivo);
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+                #endregion
+
+                switch (formato)
+                {
+                    case "P":
+                        fileUrl = GuardarArchivoPDF(ms, fileName,nodoId,moduloId,path);
+                        break;
+                    case "X":
+                        fileUrl = ExportarAExcel(nodoId, fileName,moduloId, tipo, path);
+                        break;
+                    case "T":
+                        fileUrl = ExportarATxt(nodoId, fileName,moduloId, tipo, path);
+                        break;
+                    default:
+                        break;
+                }
+
+                return Json(new { error = false, warn = false, fileUrl = fileUrl, fileName = $"{fileName}.{formato.ToLower()}" });
             }
             catch (NegocioException ex)
             {
