@@ -83,10 +83,10 @@ namespace gc.api.infra.Extensions
             services.AddScoped<IABMCuentaDirectaServicio, ABMCuentaDirectaServicio>();
 			services.AddScoped<ICuentaGastoServicio, CuentaGastoServicio>();
             services.AddScoped<IOrdenDeCompraEstadoServicio, OrdenDeCompraEstadoServicio>();
-			//services.AddScoped<IApiUsuarioServicio, ApiUsuarioServicio>();
+            services.AddScoped<IABMVendedorServicio, ABMVendedorServicio>();
 
 
-			services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));
             services.AddScoped(typeof(IServicio<>), typeof(Servicio<>));
             services.AddScoped(typeof(IExceptionManager), typeof(ExceptionManager));
