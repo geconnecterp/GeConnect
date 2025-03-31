@@ -252,13 +252,23 @@ function enviarEmail() {
 }
 
 function enviarWhatsApp() {
-    if ($("#adjuntarArchivos").is(":checked")) {
-        var selectedNode = $('#archivosDispuestos').jstree('get_selected', true)[0];
+
+    var selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
+    var whatsappTo = $("#whatsappTo").val();
+    var whatsappMessage = $("#whatsappMessage").val();
+    var adjuntarArchivos = $("#adjuntarArchivos").is(":checked");
+    var totalSize = 0;
+    var maxSize = 100 * 1024 * 1024; // 100MB
+    var archivos = [];
+
+    if (adjuntarArchivos) {
+
         if (selectedNodes.length === 0) {
 
             AbrirMensaje("ATENCIÓN", "No hay archivos seleccionados para enviar por WhatsApp. ¿Se CONTINUA sin archivos adjuntos?", function (resp) {
                 if (resp === "SI") {
-                    $("#adjuntarArchivos").prop("checked", true);
+                    $("#adjuntarArchivos").prop("checked", false);
+                    adjuntarArchivos = false;
                     $("#msjModal").modal("hide");
                     return true;
                 }
@@ -270,12 +280,6 @@ function enviarWhatsApp() {
         }
     }
 
-    var whatsappTo = $("#whatsappTo").val();
-    var whatsappMessage = $("#whatsappMessage").val();
-    var adjuntarArchivos = $("#adjuntarArchivos").is(":checked");
-    var totalSize = 0;
-    var maxSize = 100 * 1024 * 1024; // 100MB
-    var archivos = [];
 
     if (adjuntarArchivos) {
         selectedNodes.forEach(function (node) {
@@ -298,25 +302,50 @@ function enviarWhatsApp() {
                 });
             }
         });
+
+        var data = {
+            archivos: archivos,
+            whatsappTo: whatsappTo,
+            whatsappMessage: whatsappMessage
+        };
+
+        PostGen(data, enviarWhatsAppUrl, function (obj) {
+            if (obj.error === true) {
+                AbrirMensaje("Atención!", obj.msg, function () {
+                    $("#msjModal").modal("hide");
+                    return true;
+                }, false, ["Aceptar"], "error!", null);
+            } else {
+                window.open(obj.url, "_blank");
+                AbrirMensaje("Éxito", "El mensaje de WhatsApp ha sido enviado correctamente.", function () {
+                    $("#msjModal").modal("hide");
+                    $("#whatsappMessage").val("");
+                    $("#whatsappTo").val("");
+                    return true;
+                }, false, ["Aceptar"], "success", null);
+            }
+        });
     }
-    var data = {
-        archivos: archivos,
-        whatsappTo: whatsappTo,
-        whatsappMessage: whatsappMessage
-    };
-
-    PostGen(data, enviarWhatsAppUrl, function (obj) {
-        if (obj.error === true) {
-            AbrirMensaje("Atención!", obj.msg, function () {
-                $("#msjModal").modal("hide");
-                return true;
-            }, false, ["Aceptar"], "error!", null);
-        } else {
-            AbrirMensaje("Éxito", "El mensaje de WhatsApp ha sido enviado correctamente.", function () {
-                $("#msjModal").modal("hide");
-                return true;
-            }, false, ["Aceptar"], "success", null);
-        }
-    });
-
+    else {
+        var data = {
+            whatsappTo: whatsappTo,
+            whatsappMessage: whatsappMessage
+        };
+        PostGen(data, enviarWhatsAppUrl, function (obj) {
+            if (obj.error === false) {
+                window.open(obj.url, "_blank");
+                AbrirMensaje("Éxito", "El mensaje de WhatsApp ha sido enviado correctamente.", function () {
+                    $("#msjModal").modal("hide");
+                    $("#whatsappMessage").val("");
+                    $("#whatsappTo").val("");
+                    return true;
+                }, false, ["Aceptar"], "error!", null);
+            } else {
+                AbrirMensaje("Atención", obj.msj, function () {
+                    $("#msjModal").modal("hide");
+                    return true;
+                }, false, ["Aceptar"], "error!", null);
+            }
+        });
+    }
 }
