@@ -39,12 +39,6 @@ function InicializaPantalla() {
 
 function InicializarComprobante(id) {
 	AbrirWaiting();
-	//var Buscar = "";
-	//var Id = "";
-	//var Id2 = "";
-	//var Rel01 = [];
-	//var Rel02 = [];
-	//var Rel03 = [];
 	var cta_id = ctaIdSelected;
 
 	var data = { cta_id };
@@ -55,10 +49,77 @@ function InicializarComprobante(id) {
 		$("#divFiltro").collapse("hide")
 		MostrarDatosDeCuenta(true);
 		activarBotones(true);
-		$("#Comprobante_cuit_parcial").mask("00-00000000-0", { reverse: false });
+		SetMascarasYValores();
+		ActualizaEstadosVarios();
+		CargarGrillasAdicionales();
 		CerrarWaiting();
 		return true
 	});
+}
+
+function CargarGrillasAdicionales() {
+	//Grilla de Conceptos Facturados
+
+	//Grilla de Otros Tributos
+	//Depende si corresponde, grilla de Rpr Asociados o grilla A Cuentas Asociadas
+	//Grilla Totales
+}
+
+function selectReg(x, gridId) {
+	$("#" + gridId + " tbody tr").each(function (index) {
+		$(this).removeClass("selected-row");
+		$(this).removeClass("selectedEdit-row");
+	});
+	$(x).addClass("selected-row");
+
+}
+
+function quitarConceptoFacturado(e) {
+}
+
+function quitarOtroTributo(e) {
+}
+
+function ActualizaEstadosVarios() {
+	$("#chkCtlFis").on("click", function () {
+		ActualizarEstadoCAE();
+	});
+	ActualizarEstadoCAE();
+	$("#chkImpCtaDirecta").on("click", function () {
+		ActualizarEstadoCtaDirecta();
+	});
+	ActualizarEstadoCtaDirecta();
+}
+function ActualizarEstadoCtaDirecta() {
+	if ($("#chkImpCtaDirecta").prop("checked")) {
+		$("#listaCtaDir").prop("disabled", false);
+		$("#listaCtaDir").focus();
+	}
+	else {
+		$("#listaCtaDir").val("");
+		$("#listaCtaDir").prop("disabled", true);
+	}
+}
+
+function ActualizarEstadoCAE() {
+	if ($("#chkCtlFis").prop("checked")) {
+		$("#Comprobante_cm_cae").prop("disabled", false);
+		$("#Comprobante_cm_cae_vto").prop("disabled", false);
+		$("#Comprobante_cm_cae_vto").focus();
+	}
+	else {
+		$("#Comprobante_cm_cae").val("");
+		$("#Comprobante_cm_cae").prop("disabled", true);
+		$("#Comprobante_cm_cae_vto").prop("disabled", true);
+	}
+}
+
+function SetMascarasYValores() {
+	$("#Comprobante_cuit_parcial").mask("00-00000000-0", { reverse: false });
+	$("#Comprobante_cm_compte").mask("0000-00000000", { reverse: false });
+	var now = moment().format('yyyy-MM-DD');
+	$("#Comprobante_fecha_pago").val(now);
+	$("#Comprobante_cm_cae_vto").val(now);
 }
 
 function activarBotones(activar) {
@@ -87,6 +148,12 @@ function MostrarDatosDeCuenta(mostrar) {
 		$("#CtaDesc").val("");
 		$("#divProveedorSeleccionado").collapse("hide");
 	}
+}
+
+function onChangeFechaDePago(e) {
+}
+
+function onChangeCaeVto(e) {
 }
 
 $("#Rel01").autocomplete({

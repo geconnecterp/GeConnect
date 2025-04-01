@@ -1,5 +1,6 @@
 using gc.api.core.Entidades;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra;
 using gc.infraestructura.Dtos.CuentaComercial;
 
 namespace gc.api.core.Contratos.Servicios
@@ -25,6 +26,7 @@ namespace gc.api.core.Contratos.Servicios
         List<ProveedorGrupoDto> GetABMProveedorFamiliaDatos(string ctaId, string pgId);
         List<ClienteListaDto> GetClienteLista(string search);
         List<ComprobanteDeCompraDto> GetCompteDatosProv(string ctaId);
-
+        List<RprAsociadosDto> GetCompteCargaRprAsoc(string ctaId);
+        List<NotasACuenta> GetCompteCargaCtaAsoc(string ctaId);
 	}
 }

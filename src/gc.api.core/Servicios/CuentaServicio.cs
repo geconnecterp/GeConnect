@@ -4,6 +4,7 @@ using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra;
 using gc.infraestructura.Dtos.CuentaComercial;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
@@ -409,6 +410,26 @@ namespace gc.api.core.Servicios
 				new("@cta_id",ctaId),
 			};
 			var listaTemp = _repository.EjecutarLstSpExt<ComprobanteDeCompraDto>(sp, ps, true);
+			return listaTemp;
+		}
+		public List<RprAsociadosDto> GetCompteCargaRprAsoc(string ctaId)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_COMPTE_CARGA_RPR;
+			var ps = new List<SqlParameter>()
+			{
+				new("@cta_id",ctaId),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RprAsociadosDto>(sp, ps, true);
+			return listaTemp;
+		}
+		public List<NotasACuenta> GetCompteCargaCtaAsoc(string ctaId)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_COMPTE_CARGA_A_CTA;
+			var ps = new List<SqlParameter>()
+			{
+				new("@cta_id",ctaId),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<NotasACuenta>(sp, ps, true);
 			return listaTemp;
 		}
 	}

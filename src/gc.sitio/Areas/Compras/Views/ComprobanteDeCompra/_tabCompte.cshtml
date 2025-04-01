@@ -1,0 +1,132 @@
+﻿@model ComprobanteDeCompraModel
+@{
+	var aux = new ComprobanteDeCompraModel();
+	aux = Model;
+	var compte = aux.Comprobante;
+	var tOpe = aux.TipoOpe;
+	var cAfip = aux.CondAfip;
+	var mon = aux.Moneda;
+	var tCompte = aux.TipoCompte;
+	var cDir = aux.CtaDirecta;
+	var opc = aux.Opciones;
+}
+<div class="row">
+	<div class="col-md-5">
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-100">Tipo de Ope.: </span>
+				@Html.DropDownListFor(m => m.Comprobante.ope_iva, tOpe, "Seleccionar...", new { @id = "listaOpeIva", @class = "form-control activable" })
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-100">Cond. AFIP: </span>
+				@Html.DropDownListFor(m => m.Comprobante.afip_id, cAfip, "Seleccionar...", new { @id = "listaCAfip", @class = "form-control activable" })
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-100">CUIT:</span>
+				<input type="text" asp-for="Comprobante.cuit_parcial" class="form-control activable inputEditable" />
+				<span class="input-group-text fixed-lbl-for-abm-70">Cod. Cli.:</span>
+				<input type="text" asp-for="Comprobante.ctap_id_externo" class="form-control activable inputEditable" />
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-100">Razón Social:</span>
+				<input type="text" asp-for="Comprobante.cta_denominacion" class="form-control activable inputEditable" />
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-100">Domicilio:</span>
+				<input type="text" asp-for="Comprobante.cta_domicilio" class="form-control activable inputEditable" />
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-100">Tipo de Compte.: </span>
+				@Html.DropDownListFor(m => m.Comprobante.tco_id, tCompte, "Seleccionar...", new { @id = "listaTCompte", @class = "form-control activable" })
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-100">N° Compte:</span>
+				<input type="text" asp-for="Comprobante.cm_compte" class="form-control activable inputEditable" />
+				<div class="form-check form-check-inline form-switch mb-2">
+					<input class="form-check-input activable" type="checkbox" asp-for="Comprobante.ctl_fis" value="" id="chkCtlFis">
+					<label class="form-check-label" for="chkCtlFis"> Ctl. Fis.</label>
+				</div>
+				<span class="input-group-text fixed-lbl-for-abm-70">CAE Vto:</span>
+				@Html.TextBoxFor(m => m.Comprobante.cm_cae_vto, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeCaeVto(this);" })
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-100">Fecha Compte.: </span>
+				@Html.DropDownListFor(m => m.Comprobante.tco_id, tCompte, "Seleccionar...", new { @id = "listaTCompte", @class = "form-control activable" })
+				<span class="input-group-text fixed-lbl-for-abm-70">CAE:</span>
+				<input type="text" asp-for="Comprobante.cm_cae" class="form-control activable inputEditable" />
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-100">Moneda: </span>
+				@Html.DropDownListFor(m => m.Comprobante.mon_id, mon, "Seleccionar...", new { @id = "listaMoneda", @class = "form-control activable" })
+				<div class="form-check form-check-inline form-switch mb-2">
+					<input class="form-check-input activable" type="checkbox" asp-for="Comprobante.imputa_cta_directa" value="" id="chkImpCtaDirecta">
+					<label class="form-check-label" for="chkImpCtaDirecta"> Imputa Cta. Directa</label>
+				</div>
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-100">Cuenta Directa: </span>
+				@Html.DropDownListFor(m => m.Comprobante.ctag_id, cDir, "Seleccionar...", new { @id = "listaCtaDir", @class = "form-control activable" })
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-100">Fecha Pago: </span>
+				@Html.TextBoxFor(m => m.Comprobante.fecha_pago, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeFechaDePago(this);" })
+				<span class="input-group-text fixed-lbl-for-abm-70">Cuotas: </span>
+				<input type="number" asp-for="Comprobante.cuotas" min="1" max="120" class="form-control activable inputEditable" />
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-100">Observaciones: </span>
+				<input type="text" asp-for="Comprobante.observaciones" maxlength="50" class="form-control activable inputEditable" />
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-100">Opciones: </span>
+				@Html.DropDownListFor(m => m.Comprobante.opc_id, opc, "Seleccionar...", new { @id = "listaOpciones", @class = "form-control activable" })
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-100">Libro: </span>
+				<input type="text" asp-for="Comprobante.libro_iva" class="form-control activable" readonly />
+			</div>
+		</div>
+	</div>
+	<div class="col-md-7">
+		<div class="row" id="divConceptosFacturados" style="max-height:100px;">
+		</div>
+		<div class="row" id="divOtrosTributos" style="max-height:100px;">
+		</div>
+		<div class="row">
+			<div class="col-md-5">
+				<div id="divRprAsociados">
+				</div>
+				<div id="divACuentasAsociadas">
+				</div>
+			</div>
+			<div class="col-md-7" id="divTotales">
+			</div>
+		</div>
+	</div>
+</div>

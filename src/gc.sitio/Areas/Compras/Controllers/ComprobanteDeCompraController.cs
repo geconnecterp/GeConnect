@@ -1,9 +1,10 @@
-﻿using gc.api.core.Entidades;
+﻿using AspNetCoreGeneratedDocument;
+using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Helpers;
-using gc.sitio.Areas.ABMs.Models;
 using gc.sitio.Areas.Compras.Models;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
@@ -24,6 +25,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private readonly ITipoMonedaServicio _tipoMonedaServicio;
 		private readonly ITipoComprobanteServicio _tipoComprobanteServicio;
 		private readonly ITipoGastoServicio _tipoGastoServicio;
+		private const string PESOS = "PES";
 		public ComprobanteDeCompraController(ICuentaServicio cuentaServicio, ITipoOpeIvaServicio tipoOpeIvaServicio, ICondicionAfipServicio condicionAfipServicio,
 											 ITipoProveedorServicio tipoProveedorServicio, ITipoMonedaServicio tipoMonedaServicio, ITipoComprobanteServicio tipoComprobanteServicio, 
 											 ITipoGastoServicio tipoGastoServicio, IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger<ComprobanteDeCompraController> logger) : base(options, accessor, logger)
@@ -81,19 +83,85 @@ namespace gc.sitio.Areas.Compras.Controllers
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 				}
 				if (string.IsNullOrEmpty(cta_id))
-					return PartialView("_tabComprobante", model);
+					return PartialView("_tabCompte", model);
 
 				var response = _cuentaServicio.GetCompteDatosProv(cta_id, TokenCookie).First();
 				if (response == null)
-					return PartialView("_tabComprobante", model);
+					return PartialView("_tabCompte", model);
 
 				model.Moneda = ComboMoneda();
 				model.TipoOpe = ComboTipoOpe();
 				model.CondAfip = ComboAfip();
 				model.TipoCompte = ComboTipoCompte(response.afip_id);
 				model.CtaDirecta = ComboTipoGasto();
+				model.Cuotas = HelperMvc<ComboGenDto>.ListaGenerica([.. Enumerable.Range(1, 120).Select(x => new ComboGenDto { Id = x.ToString(), Descripcion = x.ToString() })]);
+				model.Opciones = ObtenerOpciones(response);
 				model.Comprobante = response;
-				return PartialView("_tabComprobante", model);
+				response.cuotas = 1;
+				if (string.IsNullOrEmpty(response.mon_id) || response.mon_id.Equals(string.Empty))
+					response.mon_id = PESOS;
+				
+				return PartialView("_tabCompte", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public IActionResult CargarCompteCargaRprAsoc(string cta_id)
+		{
+			var model = new GridCore<RprAsociadosDto>();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+				{
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+				}
+				if (string.IsNullOrEmpty(cta_id))
+					return PartialView("_tabCompte_RprAsoc", model);
+				var lista = _cuentaServicio.GetCompteCargaRprAsoc(cta_id, TokenCookie);
+				model =ObtenerGridCore<RprAsociadosDto>(lista);
+				return PartialView("_tabCompte_RprAsoc", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public IActionResult CargarCompteCargaCtaAsoc(string cta_id)
+		{
+			var model = new GridCore<NotasACuenta>();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+				{
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+				}
+				if (string.IsNullOrEmpty(cta_id))
+					return PartialView("_tabCompte_ACtaAsoc", model);
+				var lista = _cuentaServicio.GetCompteCargaCtaAsoc(cta_id, TokenCookie);
+				model = ObtenerGridCore<NotasACuenta>(lista);
+				return PartialView("_tabCompte_ACtaAsoc", model);
 			}
 			catch (Exception ex)
 			{
@@ -109,6 +177,20 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		#region Métodos Privados
+		private SelectList ObtenerOpciones(ComprobanteDeCompraDto response)
+		{
+			var lista = new List<ComboGenDto>();
+			if (response.mostrarGrillaRPR)
+			{
+				lista.Add(new ComboGenDto { Id = "1", Descripcion = "RPR Asociada" });
+				lista.Add(new ComboGenDto { Id = "2", Descripcion = "Flete" });
+				lista.Add(new ComboGenDto { Id = "3", Descripcion = "Pago anticipado" });
+			}
+			if (response.mostrarGrillaNotasACuentaAsociadas)
+				lista.Add(new ComboGenDto { Id = "4", Descripcion = "Notas a cuenta asociadas" });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+
 		private void CargarDatosIniciales(bool actualizar)
 		{
 			if (ProveedoresLista.Count == 0 || actualizar)

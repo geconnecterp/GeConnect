@@ -1,8 +1,23 @@
 ﻿
-namespace gc.infraestructura.Dtos.Almacen
+namespace gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra
 {
-    public class ComprobanteDeCompraDto : Dto
-    {
+	public class ComprobanteDeCompraDto : Dto
+	{
+		public DateTime fecha_pago { get; set; }
+		public string mon_id { get; set; }
+		public DateTime fecha_compte { get; set; }
+		public bool ctl_fis { get; set; } = false;
+		private bool _imputa_cta_directa;
+		public bool imputa_cta_directa
+		{
+			get
+			{
+				return ctag_id != null && ctag_id != string.Empty;
+			}
+			set { _imputa_cta_directa = value; }
+		}
+		public int cuotas { get; set; } = 1;
+		public string cm_compte { get; set; } = string.Empty;
 		public string cta_id { get; set; } = string.Empty;
 		public string cta_denominacion { get; set; } = string.Empty;
 		public string tdoc_id { get; set; } = string.Empty;
@@ -49,17 +64,8 @@ namespace gc.infraestructura.Dtos.Almacen
 		public DateTime? cm_cae_vto { get; set; }
 		public string tco_id { get; set; } = string.Empty;
 		public string tco_desc { get; set; } = string.Empty;
-		//private string _cuit_parcial;
-
-		//public string cuit_parcial
-		//{
-		//	get { 
-		//		return cta_documento[..8]; 
-		//	}
-		//	//set { 
-		//	//	cuit_parcial = cta_documento[..8]; 
-		//	//}
-		//}
+		public string tco_tipo { get; set; } = string.Empty;
+		public string observaciones { get; set; } = string.Empty;
 
 		private string _cuit_parcial;
 
@@ -72,6 +78,35 @@ namespace gc.infraestructura.Dtos.Almacen
 			set { _cuit_parcial = value; }
 		}
 
-		//public ComprobanteDeCompraDto() { }
+		private bool _mostrarGrillaRPR;
+
+		public bool mostrarGrillaRPR
+		{
+			get { return ope_iva.Equals("BI") && tco_tipo.Equals("FT"); }
+			set { _mostrarGrillaRPR = value; }
+		}
+
+		private bool _mostrarGrillaNotasACuentaAsociadas;
+
+		public bool mostrarGrillaNotasACuentaAsociadas
+		{
+			get { return ope_iva.Equals("BI") && tco_tipo.Equals("NC"); }
+			set { _mostrarGrillaNotasACuentaAsociadas = value; }
+		}
+
+		private string _opc_id;
+		public string opc_id
+		{
+			get
+			{
+				if (mostrarGrillaNotasACuentaAsociadas)
+					return "4";
+				else if (mostrarGrillaRPR)
+					return "1";
+				else
+					return "";
+			}
+			set { _opc_id = value; }
+		} //Id de elemento seleccionado en la ultima lista del costado izquierdo
 	}
 }

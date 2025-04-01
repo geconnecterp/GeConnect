@@ -1,0 +1,37 @@
+﻿@model GridCore<ConceptoFacturadoDto>
+@{
+    var alt = true;
+    string clase = string.Empty;
+}
+Conceptos Facturados
+<div class="table-responsive text-nowrap  table-wrapper">
+    <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridConceptoFacturado">
+        <thead class="table-dark">
+            <tr class="header">
+                <th style="width:5%;" class="col-header-small align-center tiny-row">Concepto</th>
+                <th style="width:5%;" class="col-header-small align-center tiny-row">Tipo IVA</th>
+                <th style="width:5%;" class="col-header-small align-center tiny-row">Ali IVA</th>
+                <th style="width:5%;" class="col-header-small align-center tiny-row">Subtotal</th>
+                <th style="width:5%;" class="col-header-small align-center tiny-row">IVA</th>
+                <th style="width:5%;" class="col-header-small align-center tiny-row">Subtotal+IVA</th>
+                <th style="width:0.1%;" class="col-header-small align-center tiny-row">Carro</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ListaDatos)
+            {
+                if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+                <tr class="@clase" onclick="selectReg(this, 'tbGridConceptoFacturado')">
+                    <td class="text-sm-center">@item.concepto</td>
+                    <td class="text-sm-start">@item.iva_situacion</td>
+                    <td class="text-sm-end">@item.iva_alicuota</td>
+                    <td class="text-sm-start">@item.subtotal</td>
+                    <td class="text-sm-start">@item.iva</td>
+                    <td class="text-sm-start">@item.total</td>
+                    <td><a class="btn btn-xs btn-outline-dark" data-interaction="@item.concepto" onclick="quitarConceptoFacturado(this);"> <i class="bx bxs-trash"></i></a></td> @*20*@
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

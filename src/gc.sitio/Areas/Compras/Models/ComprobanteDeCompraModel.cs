@@ -1,4 +1,4 @@
-﻿using gc.infraestructura.Dtos.Almacen;
+﻿using gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace gc.sitio.Areas.Compras.Models
@@ -11,5 +11,7 @@ namespace gc.sitio.Areas.Compras.Models
 		public SelectList TipoCompte { get; set; }
 		public SelectList Moneda { get; set; }
 		public SelectList CtaDirecta { get; set; }
+		public SelectList Cuotas { get; set; }
+		public SelectList Opciones { get; set; }
 	}
 }

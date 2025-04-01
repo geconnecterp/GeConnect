@@ -8,7 +8,8 @@ namespace gc.api.Controllers.Almacen
     using gc.infraestructura.Core.Responses;
     using gc.infraestructura.Dtos;
     using gc.infraestructura.Dtos.Almacen;
-    using gc.infraestructura.Dtos.CuentaComercial;
+	using gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra;
+	using gc.infraestructura.Dtos.CuentaComercial;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json;
@@ -399,6 +400,36 @@ namespace gc.api.Controllers.Almacen
 			var res = _cuentasSv.GetCompteDatosProv(cta_id);
 
 			response = new ApiResponse<List<ComprobanteDeCompraDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RprAsociadosDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetCompteCargaRprAsoc(string cta_id)
+		{
+			ApiResponse<List<RprAsociadosDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _cuentasSv.GetCompteCargaRprAsoc(cta_id);
+
+			response = new ApiResponse<List<RprAsociadosDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<NotasACuenta>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetCompteCargaCtaAsoc(string cta_id)
+		{
+			ApiResponse<List<NotasACuenta>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _cuentasSv.GetCompteCargaCtaAsoc(cta_id);
+
+			response = new ApiResponse<List<NotasACuenta>>(res);
 
 			return Ok(response);
 		}
