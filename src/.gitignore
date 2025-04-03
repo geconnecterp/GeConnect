@@ -398,4 +398,4 @@ FodyWeavers.xsd
 *.sln.iml
 
 #Ignorando carpetas especificas
-wwwroot/archivos/
+**/archivos/

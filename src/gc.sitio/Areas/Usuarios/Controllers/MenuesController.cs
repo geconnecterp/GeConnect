@@ -46,7 +46,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             PerfilSeleccionado = new PerfilDto();
             //se carga el combo de tipos de menues
             ViewBag.MenuId = await ComboMenues(_mnSrv);
-
+            ViewData["Titulo"] = "Gestión de Perfiles";
             return View();
         }
 
@@ -469,7 +469,8 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 else
                 {
                     //busco cual es el padre
-                    var rama = arbol.Single(x => x.id.Equals(item.mnu_item_padre));
+                    MenuRoot rama = BuscarNodoPadre(arbol, item.mnu_item_padre);
+                    
                     if (rama.children == null)
                     {
                         rama.children = new List<MenuRoot>();
@@ -492,6 +493,30 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             }
 
             return arbol;
+        }
+
+        private MenuRoot BuscarNodoPadre(List<MenuRoot> arbol, string mnu_item_padre)
+        {
+            foreach (var nodo in arbol)
+            {
+                if (nodo.id.Equals(mnu_item_padre))
+                {
+                    return nodo;
+                }
+                else
+                {
+                    if (nodo.children.Count() > 0)
+                    {
+                        var nodoPadre = BuscarNodoPadre(nodo.children, mnu_item_padre);
+                        if (nodoPadre != null)
+                        {
+                            return nodoPadre;
+                        }
+                    }
+                }
+
+            }
+            return null;
         }
 
         private static MenuRoot CargaItem(MenuItemsDto item)

@@ -257,6 +257,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                 }
 
                 var message = new MailMessage();
+                message.From = new MailAddress(_setting.CredUserEmail); // Establecer la dirección de correo del remitente
                 message.To.Add(new MailAddress(emailTo));
                 message.Subject = emailSubject;
                 message.Body = emailBody;
@@ -271,10 +272,10 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 
                 using (var smtp = new SmtpClient())
                 {
-                    smtp.Host = "smtp.tuservidor.com";
-                    smtp.Port = 587;
-                    smtp.Credentials = new NetworkCredential("tuemail@tuservidor.com", "tucontraseña");
-                    smtp.EnableSsl = true;
+                    smtp.Host = _setting.ServerSMTP;
+                    smtp.Port = _setting.Port.ToInt();
+                    smtp.Credentials = new NetworkCredential(_setting.CredUserEmail, _setting.CredPass);
+                    smtp.EnableSsl = _setting.EnabledSSL;
                     smtp.Send(message);
                 }
 

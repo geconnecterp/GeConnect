@@ -14,10 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="Areas\GesImpresion\Controllers\DocManagerController.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Remove="log4net.config" />
   </ItemGroup>
 
@@ -38,8 +34,6 @@
     <Folder Include="Areas\Consultas\Models\" />
     <Folder Include="Areas\ControlComun\Data\" />
     <Folder Include="Areas\ControlComun\Models\" />
-    <Folder Include="Areas\GesImpresion\Controllers\" />
-    <Folder Include="Areas\GesImpresion\Models\" />
     <Folder Include="Areas\Seguridad\Data\" />
     <Folder Include="Areas\Seguridad\Models\" />
     <Folder Include="Areas\Usuarios\Data\" />

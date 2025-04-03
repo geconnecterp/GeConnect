@@ -191,6 +191,7 @@ function base64ToBlob(base64, mime) {
 }
 
 function enviarEmail() {
+    AbrirWaiting("Espere mientras se envia el correo electrónico...");
     var selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
     if (selectedNodes.length === 0) {
         AbrirMensaje("ATENCIÓN", "No hay archivos seleccionados para enviar por email.", function () {
@@ -237,6 +238,7 @@ function enviarEmail() {
     };
 
     PostGen(data, enviarEmailUrl, function (obj) {
+        CerrarWaiting();
         if (obj.error === true) {
             AbrirMensaje("Atención!", obj.msg, function () {
                 $("#msjModal").modal("hide");
