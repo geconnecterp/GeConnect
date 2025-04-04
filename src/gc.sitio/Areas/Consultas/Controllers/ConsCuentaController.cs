@@ -670,7 +670,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 case AppReportes.CCUENTAS_RECEPCION_PROVEEDORES:
                     break;
                 case AppReportes.CCUENTAS_COMPROBANTES_DETALLE:
-                    observacion = "VENCIMIENTOS DE COMPROBANTES - Documento generado por el sistema de Gestión Comercial";
+                    observacion = "DETALLE DE COMPROBANTES - Documento generado por el sistema de Gestión Comercial";
                     if (provId.Equals('P'))
                     {
                         var cdDatos = (lista as List<ConsCompDetDto>).Select(x => new
@@ -717,8 +717,29 @@ namespace gc.sitio.Areas.Consultas.Controllers
 
                     break;
                 case AppReportes.CCUENTAS_ORDEN_DE_PAGO_DETALLE:
+                    observacion = "DETALLE DE ORDENES DE PAGO - Documento generado por el sistema de Gestión Comercial";
+
+                    var opDatos = (lista as List<ConsOrdPagosDetDto>)
+                        .GroupBy(x => new { x.Grupo, x.Grupo_des })
+                        .Select(g => new
+                        {
+                            Group = g.Key.Grupo,
+                            GrupoDesc = g.Key.Grupo_des,
+                            Items = g.Select(item => new
+                            {
+                                item.Concepto,
+                                item.Cc_importe,
+                            }).ToList()
+                            
+                        }).ToList();
+
+                    titulos = new List<string> { "", "Importe" };
+                    anchos = [80f, 20f];
+
+                    GeneraReporteSegunDatos(consulta, opDatos, observacion, out ms, titulos, anchos, true);
                     break;
                 case AppReportes.CCUENTAS_RECEPCION_PROVEEDORES_DETALLE:
+
                     break;
                 default:
                     break;
