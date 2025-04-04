@@ -30,9 +30,15 @@ function InicializaPantalla() {
 	$("#btnAbmAceptar").hide();
 	$("#btnAbmCancelar").hide();
 	$("#btnDetalle").prop("disabled", true);
+
 	activarBotones(false);
 	ctaIdSelected = "";
 	MostrarDatosDeCuenta(false);
+
+	$(document).on("change", "#listaTCompte", ControlaListaOpcionesSeleccion);
+	$(document).on("change", "#listaOpeIva", ControlaListaOpcionesSeleccion);
+	$(document).on("change", "#listaOpciones", ObtenerGrillaDesdeOpcionSeleccionada);
+
 	CerrarWaiting();
 	return true;
 }
@@ -52,17 +58,65 @@ function InicializarComprobante(id) {
 		SetMascarasYValores();
 		ActualizaEstadosVarios();
 		CargarGrillasAdicionales();
+		ObtenerGrillaDesdeOpcionSeleccionada();
 		CerrarWaiting();
 		return true
 	});
 }
 
+function ControlaListaOpcionesSeleccion() {
+	var tco_id = $("#listaTCompte option:selected").val()
+	var ope_iva = $("#listaOpeIva option:selected").val()
+	if (tco_id !== "" && ope_iva != "") {
+		var data = { tco_id, ope_iva }
+		AbrirWaiting();
+		PostGenHtml(data, actualizarListaOpcionesUrl, function (obj) {
+			$("#divListaOpciones").html(obj);
+			ObtenerGrillaDesdeOpcionSeleccionada();
+			CerrarWaiting();
+		}, function (obj) {
+			ControlaMensajeError(obj.message);
+			CerrarWaiting();
+		});
+	}
+}
+
+function ObtenerGrillaDesdeOpcionSeleccionada() {
+	var id_selected = $("#listaOpciones option:selected").val()
+	var cta_id = $("#CtaID").val();
+	if (id_selected != "") {
+		var data = { cta_id, id_selected };
+		AbrirWaiting();
+		PostGenHtml(data, obtenerGrillaDesdeOpcionSeleccionadaUrl, function (obj) {
+			$("#divGrillaOpcional").html(obj);
+			CerrarWaiting();
+		}, function (obj) {
+			ControlaMensajeError(obj.message);
+			CerrarWaiting();
+		});
+	}
+}
+
 function CargarGrillasAdicionales() {
 	//Grilla de Conceptos Facturados
-
+	var data = {};
+	PostGenHtml(data, cargarCargarConceptosFacturadosUrl, function (obj) {
+		$("#divConceptosFacturados").html(obj);
+		return true
+	});
 	//Grilla de Otros Tributos
-	//Depende si corresponde, grilla de Rpr Asociados o grilla A Cuentas Asociadas
+	var data = {};
+	PostGenHtml(data, cargarOtrosTributosUrl, function (obj) {
+		$("#divOtrosTributos").html(obj);
+		return true
+	});
 	//Grilla Totales
+	var data = {};
+	PostGenHtml(data, cargarGrillaTotalesUrl, function (obj) {
+		$("#divTotales").html(obj);
+		return true
+	});
+	//Depende si corresponde, grilla de Rpr Asociados o grilla A Cuentas Asociadas
 }
 
 function selectReg(x, gridId) {
@@ -120,6 +174,13 @@ function SetMascarasYValores() {
 	var now = moment().format('yyyy-MM-DD');
 	$("#Comprobante_fecha_pago").val(now);
 	$("#Comprobante_cm_cae_vto").val(now);
+	$("#Comprobante_fecha_compte").val(now);
+	//$("#listaTCompte").on("change", function () {
+	//	console.log(this);
+	//});
+	//$(document).on("change", "#listaTCompte", function () {
+	//	console.log(this);
+	//});
 }
 
 function activarBotones(activar) {
@@ -155,6 +216,10 @@ function onChangeFechaDePago(e) {
 
 function onChangeCaeVto(e) {
 }
+
+function onChangeFechaCompte(e) { }
+
+function selectListaRprAsociado(e) { }
 
 $("#Rel01").autocomplete({
 	source: function (request, response) {

@@ -1,5 +1,23 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model GridCore<OrdenDeCompraConceptoDto>
 @{
 }
+<div class="table-responsive text-nowrap table-wrapper-300-full-width">
+	<table class="table table-sm mb-0 table-hover" id="tbGridTotales">
+		<thead class="table-dark">
+			<tr class="header">
+				<th class="col-header-small align-left">Concepto</th>
+				<th class="col-header-small align-right">Importe</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in Model.ListaDatos)
+			{
+				<tr>
+					<td class="align-left">@item.Concepto</td>
+					<td class="align-right font-bold">@item.Importe</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>
+

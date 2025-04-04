@@ -1,5 +1,27 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model GridCore<RprAsociadosDto>
 @{
 }
+<div class="table-responsive text-nowrap table-wrapper-300-full-width">
+	<table class="table table-sm mb-0 table-hover" id="tbGridRprAsociado">
+		<thead class="table-dark">
+			<tr class="header">
+				<th><input name="select_all" value="1" type="checkbox"></th>
+				<th class="col-header-small align-center">RPR N°</th>
+				<th class="col-header-small align-left">Tipo Compte</th>
+				<th class="col-header-small align-left">Importe</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in Model.ListaDatos)
+			{
+				var nombre = "chk" + item.rp_compte;
+				<tr onclick="selectListaRprAsociado(this)">
+					<td><input type="checkbox" name=@nombre /></td> @*00*@
+					<td class="align-center">@item.rp_compte</td>
+					<td class="align-left">@item.tco_desc_rp</td>
+					<td class="align-right">@item.cm_importe_rp</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>

@@ -1125,6 +1125,26 @@ namespace gc.sitio.Controllers
 		}
 		#endregion
 
+		#region TIPOS COMPROBANTES
+		public List<TipoComprobanteDto> TiposComprobante
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("TiposComprobante");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<TipoComprobanteDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("TiposComprobante", json);
+			}
+		}
+		#endregion
+
 		#region TIPO CUENTA BANCO
 		public List<TipoCuentaBcoDto> TipoCuentaBcoLista
 		{

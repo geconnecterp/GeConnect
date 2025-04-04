@@ -1,0 +1,8 @@
+﻿@model SelectList
+@{
+	var lstOpc = Model;
+}
+<div class="input-group input-group-sm">
+	<span class="input-group-text fixed-lbl-for-abm-100">Opciones: </span>
+	@Html.DropDownListFor(m => m.First().Value, lstOpc, "Seleccionar...", new { @id = "listaOpciones", @class = "form-control" })
+</div>

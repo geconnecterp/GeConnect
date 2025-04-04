@@ -6,6 +6,7 @@ namespace gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra
 		public string rp_compte { get; set; } = string.Empty;
 		public DateTime rp_fecha { get; set; }
 		public string tco_id_rp { get; set; } = string.Empty;
+		public string tco_desc_rp { get; set; } = string.Empty;
 		public string cm_compte_rp { get; set; } = string.Empty;
 		public DateTime cm_fecha_rp { get; set; }
 		public decimal cm_importe_rp { get; set; } = 0.00M;
