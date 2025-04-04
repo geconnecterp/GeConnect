@@ -3,8 +3,38 @@
 @model RespuestaGenerica<MenuPpalDto>
 
 @{
-    
+    async Task RenderMenuItems(IEnumerable<MenuPpalDto> items, string parentId = "00")
+    {
+        var subItems = items.Where(x => x.mnu_item_padre == parentId).OrderBy(x => x.mnu_item).ToList();
+        if (subItems.Any())
+        {
+            <ul class="dropdown-menu">
+                @foreach (var item in subItems)
+                {
+                    var hasChildren = items.Any(x => x.mnu_item_padre == item.mnu_item);
+                    if (hasChildren)
+                    {
+                        <li class="dropdown-submenu">
+                            <a class="dropdown-item dropdown-toggle" href="javascript:void(0)">
+                                <span>@item.mnu_item_name</span>
+                            </a>
+                            @{await RenderMenuItems(items, item.mnu_item);}
+                        </li>
+                    }
+                    else
+                    {
+                        <li>
+                            <a asp-action="@item.mnu_app_action" asp-controller="@item.mnu_app_controller" asp-area="@item.mnu_app_area" class="dropdown-item">
+                                @item.mnu_item_name
+                            </a>
+                        </li>
+                    }
+                }
+            </ul>
+        }
+    }
 }
+
 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
     @if (!Model.Ok)
     {
@@ -18,32 +48,26 @@
         var listaOrd = Model.ListaEntidad.OrderBy(X => X.mnu_item).ToList();
         foreach (var mn in listaOrd.Where(x => x.mnu_item_padre.Equals("00")))
         {
-            @* verifico que si no esta asignado el root pero tiene hijos que si estan asignados.Debo genarar la cabecera del menu y sus hijos debajo. *@
-            if (lista.Any(x => x.mnu_item_padre.Equals(mn.mnu_item)))
+            var hasChildren = lista.Any(x => x.mnu_item_padre == mn.mnu_item);
+            if (hasChildren)
             {
                 <li class="nav-item dropdown">
+                    @* Generar ID único para el botón *@
                     @{
                         string id = $"btn{mn.mnu_item_id}";
                     }
-                    <a class="nav-link dropdown-toggle" href="javascript:void(0)" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <a id="@id" class="nav-link dropdown-toggle" href="javascript:void(0)" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <span>@mn.mnu_item_name</span>
                     </a>
-                    <ul class="dropdown-menu">
-                        @* aria-labelledby="@id" *@
-                        @foreach (var item in lista.Where(x => x.mnu_item_padre.Equals(mn.mnu_item)).OrderBy(x => x.mnu_item))
-                        {
-                            <li>
-                                <a asp-action="@item.mnu_app_action" asp-controller="@item.mnu_app_controller" asp-area="@item.mnu_app_area" class="dropdown-item">
-                                    @item.mnu_item_name
-                                </a>
-                            </li>
-                        }
-                    </ul>
+                    @{
+                        await RenderMenuItems(lista, mn.mnu_item);
+                    }
                 </li>
             }
-            else 
+            else
             {
                 <li class="nav-item">
+                    @* Generar ID único para el botón *@
                     @{
                         string id = $"btn{mn.mnu_item_id}";
                     }
