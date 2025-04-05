@@ -135,10 +135,11 @@ function AgregarConceptoFacturado() {
 		PostGen(data, agregarConceptoFacturadoUrl, function (obj) {
 			CerrarWaiting();
 			if (obj.error === true) {
-				AbrirMensaje("ATENCIÓN", obj.msg, function () {
-					$("#msjModal").modal("hide");
-					return true;
-				}, false, ["Aceptar"], "error!", null);
+				ControlaMensajeError(obj.msg);
+				//AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				//	$("#msjModal").modal("hide");
+				//	return true;
+				//}, false, ["Aceptar"], "error!", null);
 			}
 			else {
 				//Actualizar grilla Conceptos facturados

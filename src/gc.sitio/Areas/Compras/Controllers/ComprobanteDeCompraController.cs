@@ -411,6 +411,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 			try
 			{
 				ListaConceptoFacturado ??= [];
+				if (ListaConceptoFacturado.Exists(x=>x.concepto.Equals(concepto)))
+					return Json(new { error = true, warn = true, msg = $"El concepto '{concepto}' ya se encuentra en la lista." });
 				var newItem = new ConceptoFacturadoDto() { concepto = concepto, cantidad = 1, iva = iva, iva_alicuota = ali, iva_situacion = sit, subtotal = subt, total = tot };
 				var listaTemp = new List<ConceptoFacturadoDto>();
 				listaTemp = ListaConceptoFacturado;
