@@ -485,7 +485,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			if (ProveedoresLista.Count == 0 || actualizar)
 			{
-				ObtenerProveedores(_cuentaServicio);
+				ObtenerProveedores(_cuentaServicio, "BI");
 			}
 
 			if (RubroLista.Count == 0 || actualizar)

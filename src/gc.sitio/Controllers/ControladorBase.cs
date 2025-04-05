@@ -12,6 +12,7 @@ using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Dtos.Users;
 using gc.infraestructura.EntidadesComunes;
 using gc.infraestructura.Helpers;
@@ -1325,6 +1326,46 @@ namespace gc.sitio.Controllers
 		}
 		#endregion
 
+		#region IVA SITUACION
+		public List<IVASituacionDto> IvaSituacionLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("IvaSituacionLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<IVASituacionDto>();
+				}
+				return JsonConvert.DeserializeObject<List<IVASituacionDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("IvaSituacionLista", json);
+			}
+		}
+		#endregion
+
+		#region IVA ALICUOTAS
+		public List<IVAAlicuotaDto> IvaAlicuotasLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("IvaAlicuotasLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<IVAAlicuotaDto>();
+				}
+				return JsonConvert.DeserializeObject<List<IVAAlicuotaDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("IvaAlicuotasLista", json);
+			}
+		}
+		#endregion
+
 		#region MONEDA
 		public List<TipoMonedaDto> TipoMonedaLista
 		{
@@ -1912,11 +1953,11 @@ namespace gc.sitio.Controllers
 			RubroLista = _rubSv.ObtenerListaRubros("", TokenCookie);
 		}
 
-		protected void ObtenerProveedores(ICuentaServicio _ctaSv)
+		protected void ObtenerProveedores(ICuentaServicio _ctaSv, string opeIva="%")
 		{
 			//se guardan los proveedores en session. Para ser utilizados posteriormente
 
-			ProveedoresLista = _ctaSv.ObtenerListaProveedores("BI", TokenCookie);
+			ProveedoresLista = _ctaSv.ObtenerListaProveedores(opeIva, TokenCookie);
 		}
 
 		protected void ObtenerTiposNegocio(ITipoNegocioServicio _tipoNegSv)
@@ -2051,6 +2092,14 @@ namespace gc.sitio.Controllers
 		protected void ObtenerOrdenDeCompraEstadoLista(IOrdenDeCompraEstadoServicio _ordenDeCompraEstadoServicio)
 		{
 			OrdenDeCompraEstadoLista = _ordenDeCompraEstadoServicio.GetOrdenDeCompraEstadoLista(TokenCookie);
+		}
+		protected void ObtenerIvaSituacionLista(IProducto2Servicio _prod2servicio)
+		{
+			IvaSituacionLista = _prod2servicio.ObtenerIVASituacion(TokenCookie).Result.ListaEntidad;
+		}
+		protected void ObtenerIvaAlicuotasLista(IProducto2Servicio _prod2servicio)
+		{
+			IvaAlicuotasLista = _prod2servicio.ObtenerIVAAlicuotas(TokenCookie).Result.ListaEntidad;
 		}
 		#endregion
 		protected void ObtenerDiasDeLaSemana()
@@ -2206,6 +2255,17 @@ namespace gc.sitio.Controllers
 		protected SelectList ComboTipoCuentaGastoLista()
 		{
 			var lista = TipoCuentaGastoLista.Select(x => new ComboGenDto { Id = x.tcg_id, Descripcion = x.tcg_desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+
+		protected SelectList ComboIvaSituacionLista()
+		{
+			var lista = IvaSituacionLista.Select(x => new ComboGenDto { Id = x.Iva_Situacion, Descripcion = x.Iva_Situacion_Desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		protected SelectList ComboIvaAlicuotaLista()
+		{
+			var lista = IvaAlicuotasLista.Select(x => new ComboGenDto { Id = x.IVA_Alicuota.ToString(), Descripcion = x.IVA_Alicuota.ToString() });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
 		#endregion

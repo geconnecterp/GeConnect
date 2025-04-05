@@ -32,7 +32,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 
 			if (ProveedoresLista.Count == 0)
 			{
-				ObtenerProveedores(_ctaSv);
+				ObtenerProveedores(_ctaSv, "BI");
 			}
 
 			if (RubroLista.Count == 0)
@@ -53,7 +53,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 
 				if (ProveedoresLista.Count == 0 || actualizar)
 				{
-					ObtenerProveedores(_ctaSv);
+					ObtenerProveedores(_ctaSv, "BI");
 				}
 
 				if (RubroLista.Count == 0 || actualizar)
