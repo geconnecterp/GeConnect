@@ -30,9 +30,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private readonly ITipoMonedaServicio _tipoMonedaServicio;
 		private readonly ITipoComprobanteServicio _tipoComprobanteServicio;
 		private readonly ITipoGastoServicio _tipoGastoServicio;
+		private readonly IProducto2Servicio _producto2Servicio;
 		private const string PESOS = "PES";
 		public ComprobanteDeCompraController(ICuentaServicio cuentaServicio, ITipoOpeIvaServicio tipoOpeIvaServicio, ICondicionAfipServicio condicionAfipServicio,
 											 ITipoProveedorServicio tipoProveedorServicio, ITipoMonedaServicio tipoMonedaServicio, ITipoComprobanteServicio tipoComprobanteServicio,
+											 IProducto2Servicio producto2Servicio,
 											 ITipoGastoServicio tipoGastoServicio, IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger<ComprobanteDeCompraController> logger) : base(options, accessor, logger)
 		{
 			_setting = options.Value;
@@ -43,6 +45,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			_tipoMonedaServicio = tipoMonedaServicio;
 			_tipoComprobanteServicio = tipoComprobanteServicio;
 			_tipoGastoServicio = tipoGastoServicio;
+			_producto2Servicio = producto2Servicio;
 		}
 
 		public IActionResult Index()
@@ -233,24 +236,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		protected SelectList ComboListaOpciones(string tco_id, string ope_iva)
-		{
-			var lista = new List<ComboGenDto>();
-			var tcoTipo = "";
-			if (TiposComprobante != null && TiposComprobante.Count > 0)
-				tcoTipo = TiposComprobante.Where(x => x.tco_id.Equals(tco_id)).First().tco_tipo;
-			if (ope_iva.Equals("BI") && tcoTipo.Equals("FT"))
-			{
-				lista.Add(new ComboGenDto { Id = ((int)EnOpciones.RPR_ASOCIADA).ToString(), Descripcion = GetDescription(EnOpciones.RPR_ASOCIADA) });
-				lista.Add(new ComboGenDto { Id = ((int)EnOpciones.FLETE).ToString(), Descripcion = GetDescription(EnOpciones.FLETE) });
-				lista.Add(new ComboGenDto { Id = ((int)EnOpciones.PAGO_ANTICIPADO).ToString(), Descripcion = GetDescription(EnOpciones.PAGO_ANTICIPADO) });
-			}
-			else if (ope_iva.Equals("BI") && tcoTipo.Equals("NC"))
-				lista.Add(new ComboGenDto { Id = ((int)EnOpciones.NOTAS_A_CUENTA_ASOCIADAS).ToString(), Descripcion = GetDescription(EnOpciones.NOTAS_A_CUENTA_ASOCIADAS) });
-			else
-				lista.Add(new ComboGenDto { Id = "0", Descripcion = "<Sin opciones>" });
-			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
-		}
+
 
 		[HttpPost]
 		public IActionResult ObtenerGrillaDesdeOpcionSeleccionada(string cta_id, int id_selected)
@@ -363,7 +349,102 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
+		[HttpPost]
+		public IActionResult ObtenerDatosModalConceptoFacturado(string tco_id)
+		{
+			var model = new ModalIvaModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				if (string.IsNullOrEmpty(tco_id))
+					return PartialView("_empty_view");
+
+				var tco = TiposComprobante.Where(x => x.tco_id.Equals(tco_id)).First();
+				if (tco == null)
+				{
+					RespuestaGenerica<EntidadBase> response = new()
+					{
+						Ok = false,
+						EsError = true,
+						EsWarn = false,
+						Mensaje = $"No se ha encontrado el tipo de comprobante {tco_id}"
+					};
+					return PartialView("_gridMensaje", response);
+				}
+				if (tco.tco_iva_discriminado == "S")
+				{
+					model.EsGravado = true;
+					model.IvaSituacionLista = ComboIvaSituacionLista();
+					model.IvaAlicuotaLista = ComboIvaAlicuotaLista();
+				}
+				else
+				{
+					var lista = new List<ComboGenDto>
+					{
+						new() { Id = "0", Descripcion = "<Sin opciones>" }
+					};
+
+					model.EsGravado = false;
+					model.IvaSituacionLista = HelperMvc<ComboGenDto>.ListaGenerica(lista);
+					model.IvaAlicuotaLista = HelperMvc<ComboGenDto>.ListaGenerica(lista);
+				}
+				return PartialView("_tabCompte_modal_iva", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public JsonResult AgregarConceptoFacturado(string concepto, string sit, decimal ali, decimal subt, decimal iva, decimal tot)
+		{
+			try
+			{
+				ListaConceptoFacturado ??= [];
+				var newItem = new ConceptoFacturadoDto() { concepto = concepto, cantidad = 1, iva = iva, iva_alicuota = ali, iva_situacion = sit, subtotal = subt, total = tot };
+				var listaTemp = new List<ConceptoFacturadoDto>();
+				listaTemp = ListaConceptoFacturado;
+				listaTemp.Add(newItem);
+				ListaConceptoFacturado = listaTemp;
+
+				return Json(new { error = false, warn = false, msg = string.Empty });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar cargar el concepto facturado." });
+			}
+		}
+
 		#region Métodos Privados
+		protected SelectList ComboListaOpciones(string tco_id, string ope_iva)
+		{
+			var lista = new List<ComboGenDto>();
+			var tcoTipo = "";
+			if (TiposComprobante != null && TiposComprobante.Count > 0)
+				tcoTipo = TiposComprobante.Where(x => x.tco_id.Equals(tco_id)).First().tco_tipo;
+			if (ope_iva.Equals("BI") && tcoTipo.Equals("FT"))
+			{
+				lista.Add(new ComboGenDto { Id = ((int)EnOpciones.RPR_ASOCIADA).ToString(), Descripcion = GetDescription(EnOpciones.RPR_ASOCIADA) });
+				lista.Add(new ComboGenDto { Id = ((int)EnOpciones.FLETE).ToString(), Descripcion = GetDescription(EnOpciones.FLETE) });
+				lista.Add(new ComboGenDto { Id = ((int)EnOpciones.PAGO_ANTICIPADO).ToString(), Descripcion = GetDescription(EnOpciones.PAGO_ANTICIPADO) });
+			}
+			else if (ope_iva.Equals("BI") && tcoTipo.Equals("NC"))
+				lista.Add(new ComboGenDto { Id = ((int)EnOpciones.NOTAS_A_CUENTA_ASOCIADAS).ToString(), Descripcion = GetDescription(EnOpciones.NOTAS_A_CUENTA_ASOCIADAS) });
+			else
+				lista.Add(new ComboGenDto { Id = "0", Descripcion = "<Sin opciones>" });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+
 		private SelectList ObtenerOpciones(ComprobanteDeCompraDto response)
 		{
 			var lista = new List<ComboGenDto>();
@@ -397,7 +478,14 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 			if (TipoGastoLista.Count == 0 || actualizar)
 				ObtenerTipoGastos(_tipoGastoServicio);
+
+			if (IvaSituacionLista.Count == 0 || actualizar)
+				ObtenerIvaSituacionLista(_producto2Servicio);
+
+			if (IvaAlicuotasLista.Count == 0 || actualizar)
+				ObtenerIvaAlicuotasLista(_producto2Servicio);
 		}
+
 		protected SelectList ComboTipoCompte(string afip_id)
 		{
 			var listaTemp = _tipoComprobanteServicio.BuscarTipoComprobanteListaPorTipoAfip(afip_id, Token).Result;
@@ -409,7 +497,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private enum EnOpciones
 		{
 			[Description("RPR Asociada")]
-			RPR_ASOCIADA =1,
+			RPR_ASOCIADA = 1,
 			[Description("Flete")]
 			FLETE,
 			[Description("Pago Anticipado")]

@@ -8,12 +8,12 @@
 		<h6>Conceptos Facturados</h6>
 	</div>
 	<div class="col-md-6">
-		<button id="btnAbmAceptar" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Agregar Concepto Facturado">
+		<button id="btnAgregarConceptoFacturado" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Agregar Concepto Facturado">
 			<i class="bx bx-plus bx-xs"></i>
 		</button>
 	</div>
 </div>
-<div class="table-responsive text-nowrap  table-wrapper">
+<div class="table-responsive text-nowrap table-wrapper-200">
 	<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridConceptoFacturado">
 		<thead class="table-dark">
 			<tr class="header">
@@ -32,12 +32,12 @@
 				if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
 				<tr class="@clase" onclick="selectReg(this, 'tbGridConceptoFacturado')">
-					<td class="text-sm-center">@item.concepto</td>
-					<td class="text-sm-start">@item.iva_situacion</td>
+					<td class="text-sm-left">@item.concepto</td>
+					<td class="text-sm-center">@item.iva_situacion</td>
 					<td class="text-sm-end">@item.iva_alicuota</td>
-					<td class="text-sm-start">@item.subtotal</td>
-					<td class="text-sm-start">@item.iva</td>
-					<td class="text-sm-start">@item.total</td>
+					<td class="text-sm-end">@item.subtotal</td>
+					<td class="text-sm-end">@item.iva</td>
+					<td class="text-sm-end">@item.total</td>
 					<td><a class="btn btn-xs btn-outline-dark" data-interaction="@item.concepto" onclick="quitarConceptoFacturado(this);"> <i class="bx bxs-trash"></i></a></td> @*20*@
 				</tr>
 			}

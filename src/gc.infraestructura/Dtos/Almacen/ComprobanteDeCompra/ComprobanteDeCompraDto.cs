@@ -44,7 +44,7 @@ namespace gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra
 		public char rib_cert { get; set; }
 		public DateTime? rib_cert_vto { get; set; }
 		public decimal rib_porc { get; set; } = 0.00M;
-		public char ctap_ret_iva { get; set; }
+		public char? ctap_ret_iva { get; set; }
 		public decimal? ctap_ret_iva_porc { get; set; } = 0.00M;
 		public char ctap_per_iva { get; set; }
 		public decimal ctap_per_iva_ali { get; set; } = 0.00M;
