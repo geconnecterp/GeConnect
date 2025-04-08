@@ -257,36 +257,74 @@ namespace gc.sitio.Areas.Compras.Controllers
 					var producto = productos.FirstOrDefault(x => x.P_Id == pId);
 					if (producto != null)
 					{
-						switch (field)
+						if (field.Contains("p_dto1"))
 						{
-							case "P_Dto1":
-								producto.P_Dto1 = Convert.ToDecimal(val);
-								break;
-							case "P_Dto2":
-								producto.P_Dto2 = Convert.ToDecimal(val);
-								break;
-							case "P_Dto3":
-								producto.P_Dto3 = Convert.ToDecimal(val);
-								break;
-							case "P_Dto4":
-								producto.P_Dto4 = Convert.ToDecimal(val);
-								break;
-							case "P_Dto_Pa":
-								producto.P_Dto_Pa = Convert.ToDecimal(val);
-								break;
-							case "P_Plista":
-								producto.P_Plista = Convert.ToDecimal(val);
-								break;
-							case "P_Boni":
-								producto.P_Boni = val;
-								break;
-							case "Bultos":
-								producto.Bultos = Convert.ToInt32(val);
-								producto.Cantidad = producto.Bultos * producto.P_Unidad_Pres;
-								break;
-							default:
-								break;
+							val = val.Replace(",", ".");
+							producto.P_Dto1 = Convert.ToDecimal(val);
 						}
+						else if (field.Contains("p_dto2"))
+						{
+							val = val.Replace(",", ".");
+							producto.P_Dto2 = Convert.ToDecimal(val);
+						}
+						else if (field.Contains("p_dto3"))
+						{
+							val = val.Replace(",", ".");
+							producto.P_Dto3 = Convert.ToDecimal(val);
+						}
+						else if (field.Contains("p_dto4"))
+						{
+							val = val.Replace(",", ".");
+							producto.P_Dto4 = Convert.ToDecimal(val);
+						}
+						else if (field.Contains("p_dto_pa"))
+						{
+							val = val.Replace(",", ".");
+							producto.P_Dto_Pa = Convert.ToDecimal(val);
+						}
+						else if (field.Contains("p_plista"))
+						{
+							producto.P_Plista = Convert.ToDecimal(val);
+						}
+						else if (field.Contains("p_boni"))
+						{
+							producto.P_Boni = val;
+						}
+						else if (field.Contains("bultos"))
+						{
+							producto.Bultos = Convert.ToInt32(val);
+							producto.Cantidad = producto.Bultos * producto.P_Unidad_Pres;
+						}
+						//switch (field)
+						//	{
+						//		case "P_Dto1":
+						//			producto.P_Dto1 = Convert.ToDecimal(val);
+						//			break;
+						//		case "P_Dto2":
+						//			producto.P_Dto2 = Convert.ToDecimal(val);
+						//			break;
+						//		case "P_Dto3":
+						//			producto.P_Dto3 = Convert.ToDecimal(val);
+						//			break;
+						//		case "P_Dto4":
+						//			producto.P_Dto4 = Convert.ToDecimal(val);
+						//			break;
+						//		case "P_Dto_Pa":
+						//			producto.P_Dto_Pa = Convert.ToDecimal(val);
+						//			break;
+						//		case "P_Plista":
+						//			producto.P_Plista = Convert.ToDecimal(val);
+						//			break;
+						//		case "P_Boni":
+						//			producto.P_Boni = val;
+						//			break;
+						//		case "Bultos":
+						//			producto.Bultos = Convert.ToInt32(val);
+						//			producto.Cantidad = producto.Bultos * producto.P_Unidad_Pres;
+						//			break;
+						//		default:
+						//			break;
+						//	}
 						producto.Pedido_Mas_Boni = Math.Round(CalcularPedidoMasBoni(producto.P_Boni, producto), 1);
 						producto.P_Pcosto = Math.Round(ProductoParaOcDto.CalcularPCosto(producto.P_Plista, producto.P_Dto1, producto.P_Dto2, producto.P_Dto3, producto.P_Dto4, producto.P_Dto_Pa, producto.P_Boni, producto.P_Porc_Flete), 2);
 						producto.P_Pcosto_Total = Math.Round(producto.P_Pcosto * (producto.Pedido_Mas_Boni == 0.0M ? 1.0M : producto.Pedido_Mas_Boni), 2);

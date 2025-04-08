@@ -38,6 +38,14 @@
 			@foreach (var item in Model.ListaOC.ListaDatos)
 			{
 				var nombre = "chk" + item.P_Id;
+				var nombre_Bultos = "bultos_" + item.P_Id;
+				var nombre_P_Plista = "p_plista_" + item.P_Id;
+				var nombre_P_Dto1 = "p_dto1_" + item.P_Id;
+				var nombre_P_Dto2 = "p_dto2_" + item.P_Id;
+				var nombre_P_Dto3 = "p_dto3_" + item.P_Id;
+				var nombre_P_Dto4 = "p_dto4_" + item.P_Id;
+				var nombre_P_Dto_Pa = "p_dto_pa_" + item.P_Id;
+				var nombre_P_Boni = "p_boni_" + item.P_Id;
 				<tr onclick="selectListaProductoRowOC(this)">
 					<td><input type="checkbox" name=@nombre /></td> @*00*@
 					<td class="align-center tiny-row">@item.P_Id</td> @*01*@
@@ -46,15 +54,15 @@
 					<td class="align-center tiny-row">@item.Stk_Suc</td> @*04*@
 					<td class="align-center tiny-row">@item.Stk</td> @*05*@
 					<td class="align-center tiny-row">@item.P_Unidad_Pres</td> @*06*@
-					<td class="align-center tiny-row content-editable-td" contenteditable='true' onfocusin="focusOnTd(this);" id="Bultos">@item.Bultos</td> @*07*@
+					<td class="align-center tiny-row content-editable-td" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_Bultos>@item.Bultos</td> @*07*@
 					<td class="align-center tiny-row">@item.Cantidad</td> @*08*@
-					<td class="align-right tiny-row content-editable-td" contenteditable='true' onfocusin="focusOnTd(this);" id="P_Plista">@item.P_Plista.ToString("0.##")</td> @*09*@
-					<td class="align-center tiny-row content-editable-td" contenteditable='true' onfocusin="focusOnTd(this);" id="P_Dto1">@item.P_Dto1.ToString("0.#")</td> @*10*@
-					<td class="align-center tiny-row content-editable-td" contenteditable='true' onfocusin="focusOnTd(this);" id="P_Dto2">@item.P_Dto2.ToString("0.#")</td> @*11*@
-					<td class="align-center tiny-row content-editable-td" contenteditable='true' onfocusin="focusOnTd(this);" id="P_Dto3">@item.P_Dto3.ToString("0.#")</td> @*12*@
-					<td class="align-center tiny-row content-editable-td" contenteditable='true' onfocusin="focusOnTd(this);" id="P_Dto4">@item.P_Dto4.ToString("0.#")</td> @*13*@
-					<td class="align-center tiny-row content-editable-td" contenteditable='true' onfocusin="focusOnTd(this);" id="P_Dto_Pa">@item.P_Dto_Pa.ToString("0.#")</td> @*14*@
-					<td class="align-center tiny-row content-editable-td" contenteditable='true' onfocusin="focusOnTd(this);" id="P_Boni">@item.P_Boni</td> @*15*@
+					<td class="align-right tiny-row content-editable-td" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_P_Plista>@item.P_Plista.ToString("0.##")</td> @*09*@
+					<td class="align-center tiny-row content-editable-td" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_P_Dto1>@item.P_Dto1.ToString("0.#")</td> @*10*@
+					<td class="align-center tiny-row content-editable-td" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_P_Dto2>@item.P_Dto2.ToString("0.#")</td> @*11*@
+					<td class="align-center tiny-row content-editable-td" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_P_Dto3>@item.P_Dto3.ToString("0.#")</td> @*12*@
+					<td class="align-center tiny-row content-editable-td" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_P_Dto4>@item.P_Dto4.ToString("0.#")</td> @*13*@
+					<td class="align-center tiny-row content-editable-td" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_P_Dto_Pa>@item.P_Dto_Pa.ToString("0.#")</td> @*14*@
+					<td class="align-center tiny-row content-editable-td" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_P_Boni>@item.P_Boni</td> @*15*@
 					<td class="align-center tiny-row">@item.Pedido_Mas_Boni</td> @*16*@
 					<td class="align-right tiny-row">@item.P_Pcosto.ToString("0.##")</td> @*17*@
 					<td class="align-right tiny-row">@item.P_Pcosto_Total.ToString("0.##")</td> @*18*@
