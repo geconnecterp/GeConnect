@@ -88,6 +88,8 @@
 	<script type="text/javascript">
 		var ctaIdSelected = "";
 		var ctaDescSelected = "";
+		var cellValueTemp = "";
+		var idOtroTributoSeleccionado = "";
 		var autoComRel01Url = "@Url.Action("BuscarProvs", "comprobantedecompra", new { area = "Compras" })";
 		var inicializarComprobanteUrl = "@Url.Action("InicializarComprobante", "comprobantedecompra", new { area = "Compras" })";
 		var cargarCargarConceptosFacturadosUrl = "@Url.Action("CargarConceptosFacturados", "comprobantedecompra", new { area = "Compras" })";
@@ -97,6 +99,9 @@
 		var obtenerGrillaDesdeOpcionSeleccionadaUrl = "@Url.Action("ObtenerGrillaDesdeOpcionSeleccionada", "comprobantedecompra", new { area = "Compras" })";
 		var obtenerDatosModalConceptoFacturadoUrl = "@Url.Action("ObtenerDatosModalConceptoFacturado", "comprobantedecompra", new { area = "Compras" })";
 		var agregarConceptoFacturadoUrl = "@Url.Action("AgregarConceptoFacturado", "comprobantedecompra", new { area = "Compras" })";
+		var quitarProductoEnConceptoFacturadoURL = "@Url.Action("QuitarProductoEnConceptoFacturado", "comprobantedecompra", new { area = "Compras" })";
+		var editarItemEnOtrosConceptosUrl = "@Url.Action("EditarItemEnOtrosConceptos", "comprobantedecompra", new { area = "Compras" })";
+		var obtenerDatosModalOtrosTributosUrl = "@Url.Action("ObtenerDatosModalOtrosTributos", "comprobantedecompra", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/areas/comprobantedecompra/comprobantedecompra.js"></script>
 }

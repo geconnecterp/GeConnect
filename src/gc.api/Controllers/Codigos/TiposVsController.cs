@@ -44,6 +44,7 @@ namespace gc.api.Controllers.Codigos
 		private readonly ITipoCuentaGastoServicio _tipoCuentaGastoServicio;
 		private readonly ITipoMonedaServicio _tipoMonedaServicio;
 		private readonly IOrdenDeCompraEstadoServicio _ordenDeCompraEstadoServicio;
+		private readonly ITipoTributoServicio _tipoTributoServicio;
 
 		public TiposVsController( IMapper mapper, IUriService uriService, ILogger<TiposVsController> logger, ICondicionAfipServicio condicionAfipServicio,
 								ICondicionIBServicio condicionIBServicio, IDepartamentoServicio departamentoServicio, IFormaDePagoServicio formaDePagoServicio,
@@ -53,7 +54,7 @@ namespace gc.api.Controllers.Codigos
 								ITipoContactoServicio tipoContactoServicio, ITipoObsServicio tipoObsServicio, ITipoOpeIvaServicio tipoOpeIvaServicio,
 								ITipoProveedorServicio tipoProveedorServicio, ITipoGastoServicio tipoGastoServicio, ITipoRetGanServicio tipoRetGanServicio,
 								ITipoRetIbServicio tipoRetIbServicio, ITipoCuentaFinServicio tipoCuentaFinServicio, ITipoMonedaServicio tipoMonedaServicio,
-								ITipoCuentaGastoServicio tipoCuentaGastoServicio, IOrdenDeCompraEstadoServicio ordenDeCompraEstadoServicio)
+								ITipoCuentaGastoServicio tipoCuentaGastoServicio, IOrdenDeCompraEstadoServicio ordenDeCompraEstadoServicio, ITipoTributoServicio tipoTributoServicio)
         {
             _mapper = mapper;
             _uriService = uriService;
@@ -82,6 +83,7 @@ namespace gc.api.Controllers.Codigos
 			_tipoMonedaServicio = tipoMonedaServicio;
 			_tipoCuentaGastoServicio = tipoCuentaGastoServicio;
 			_ordenDeCompraEstadoServicio = ordenDeCompraEstadoServicio;
+			_tipoTributoServicio = tipoTributoServicio;
 		}
 
 		[HttpGet]
@@ -405,6 +407,18 @@ namespace gc.api.Controllers.Codigos
 			var lista = _mapper.Map<List<OrdenDeCompraEstadoDto>>(financiero);
 
 			var response = new ApiResponse<List<OrdenDeCompraEstadoDto>>(lista);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult GetTipoTributoLista()
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			List<TipoTributoDto> financiero = _tipoTributoServicio.GetTiposTributo();
+			var lista = _mapper.Map<List<TipoTributoDto>>(financiero);
+
+			var response = new ApiResponse<List<TipoTributoDto>>(lista);
 			return Ok(response);
 		}
 		//

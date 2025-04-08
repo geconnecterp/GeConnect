@@ -1326,6 +1326,26 @@ namespace gc.sitio.Controllers
 		}
 		#endregion
 
+		#region TIPO TRIBUTOS
+		public List<TipoTributoDto> TiposTributoLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("TiposTributoLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<TipoTributoDto>();
+				}
+				return JsonConvert.DeserializeObject<List<TipoTributoDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("TiposTributoLista", json);
+			}
+		}
+		#endregion
+
 		#region IVA SITUACION
 		public List<IVASituacionDto> IvaSituacionLista
 		{
@@ -2101,6 +2121,11 @@ namespace gc.sitio.Controllers
 		{
 			IvaAlicuotasLista = _prod2servicio.ObtenerIVAAlicuotas(TokenCookie).Result.ListaEntidad;
 		}
+		protected void ObtenerTiposTributoLista(ITipoTributoServicio _tipoTributoServicio)
+		{
+			TiposTributoLista = _tipoTributoServicio.GetTiposTributoLista(TokenCookie);
+		}
+
 		#endregion
 		protected void ObtenerDiasDeLaSemana()
 		{

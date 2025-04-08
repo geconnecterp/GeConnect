@@ -17,6 +17,7 @@
 	<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridConceptoFacturado">
 		<thead class="table-dark">
 			<tr class="header">
+				<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">Id</th>
 				<th style="width:5%;" class="col-header-small align-center tiny-row">Concepto</th>
 				<th style="width:5%;" class="col-header-small align-center tiny-row">Tipo IVA</th>
 				<th style="width:5%;" class="col-header-small align-center tiny-row">Ali IVA</th>
@@ -32,13 +33,14 @@
 				if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
 				<tr class="@clase" onclick="selectReg(this, 'tbGridConceptoFacturado')">
+					<td style="display:none;">@item.id</td>
 					<td class="text-sm-left">@item.concepto</td>
 					<td class="text-sm-center">@item.iva_situacion</td>
 					<td class="text-sm-end">@item.iva_alicuota</td>
 					<td class="text-sm-end">@item.subtotal</td>
 					<td class="text-sm-end">@item.iva</td>
 					<td class="text-sm-end">@item.total</td>
-					<td><a class="btn btn-xs btn-outline-dark" data-interaction="@item.concepto" onclick="quitarConceptoFacturado(this);"> <i class="bx bxs-trash"></i></a></td> @*20*@
+					<td><a class="btn btn-xs btn-outline-dark" data-interaction="@item.id" onclick="quitarConceptoFacturado(this);"> <i class="bx bxs-trash"></i></a></td> @*20*@
 				</tr>
 			}
 		</tbody>

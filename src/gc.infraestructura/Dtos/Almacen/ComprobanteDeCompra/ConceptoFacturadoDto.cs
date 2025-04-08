@@ -3,6 +3,7 @@ namespace gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra
 {
     public class ConceptoFacturadoDto : Dto
     {
+		public int id { get; set; } = 0; //Valor que se usa para poder identificar un elemento de la colección
 		public string concepto { get; set; } = string.Empty;
 		public int cantidad { get; set; } = 1;
 		public string iva_situacion { get; set; } = string.Empty;

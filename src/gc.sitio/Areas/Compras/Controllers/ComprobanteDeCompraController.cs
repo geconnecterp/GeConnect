@@ -31,10 +31,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private readonly ITipoComprobanteServicio _tipoComprobanteServicio;
 		private readonly ITipoGastoServicio _tipoGastoServicio;
 		private readonly IProducto2Servicio _producto2Servicio;
+		private readonly ITipoTributoServicio _tipoTributoServicio;
 		private const string PESOS = "PES";
 		public ComprobanteDeCompraController(ICuentaServicio cuentaServicio, ITipoOpeIvaServicio tipoOpeIvaServicio, ICondicionAfipServicio condicionAfipServicio,
 											 ITipoProveedorServicio tipoProveedorServicio, ITipoMonedaServicio tipoMonedaServicio, ITipoComprobanteServicio tipoComprobanteServicio,
-											 IProducto2Servicio producto2Servicio,
+											 IProducto2Servicio producto2Servicio, ITipoTributoServicio tipoTributoServicio,
 											 ITipoGastoServicio tipoGastoServicio, IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger<ComprobanteDeCompraController> logger) : base(options, accessor, logger)
 		{
 			_setting = options.Value;
@@ -46,6 +47,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			_tipoComprobanteServicio = tipoComprobanteServicio;
 			_tipoGastoServicio = tipoGastoServicio;
 			_producto2Servicio = producto2Servicio;
+			_tipoTributoServicio = tipoTributoServicio;
 		}
 
 		public IActionResult Index()
@@ -155,7 +157,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		[HttpPost]
-		public IActionResult CargarOtrosTributos()
+		public IActionResult CargarOtrosTributos(string tco_id)
 		{
 			var model = new GridCore<OtroTributoDto>();
 			try
@@ -165,8 +167,53 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 				}
+				if (string.IsNullOrEmpty(tco_id))
+					return PartialView("_empty_view");
+
+				var tco = TiposComprobante.Where(x => x.tco_id.Equals(tco_id)).First();
+				if (tco == null)
+				{
+					RespuestaGenerica<EntidadBase> response = new()
+					{
+						Ok = false,
+						EsError = true,
+						EsWarn = false,
+						Mensaje = $"No se ha encontrado el tipo de comprobante {tco_id}"
+					};
+					return PartialView("_gridMensaje", response);
+				}
+				var listTempo = new List<OtroTributoDto>();
+				if (tco.tco_iva_discriminado == "S")
+				{
+					//Busco en la lista de Tipos de tributo los que se deben cargar previamente
+					var listaTributos = TiposTributoLista.Where(x => x.carga_aut_discriminado).OrderBy(y => y.orden).ToList();
+					if (listaTributos != null && listaTributos.Count > 0)
+					{
+						foreach (var item in listaTributos)
+						{
+							var otroTributo = new OtroTributoDto
+							{
+								ins_id = item.ins_id,
+								imp = item.ins_desc,
+								base_imp = 0.00M,
+								alicuota = 0.00M,
+								importe = 0.00M
+							};
+							if (!ListaOtroTributo.Exists(x => x.ins_id.Equals(item.ins_id)))
+								listTempo.Add(otroTributo);
+						}
+					}
+					else
+					{
+						listTempo = [];
+					}
+				}
 				if (ListaOtroTributo != null && ListaOtroTributo.Count >= 0)
+				{
+					listTempo.AddRange(ListaOtroTributo);
+					ListaOtroTributo = listTempo;
 					model = ObtenerGridCore<OtroTributoDto>(ListaOtroTributo);
+				}
 				else
 					model = ObtenerGridCore<OtroTributoDto>([]);
 				return PartialView("_tabCompte_OtrosTrib", model);
@@ -181,6 +228,60 @@ namespace gc.sitio.Areas.Compras.Controllers
 					Mensaje = ex.Message
 				};
 				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public JsonResult EditarItemEnOtrosConceptos(string id, decimal val, string idOtroTributoSeleccionado)
+		{
+			try
+			{
+				ListaOtroTributo ??= [];
+				var importe = 0.00M;
+				//Si existe, actualizo el valor indicado en el parametro id (campo)
+				if (ListaOtroTributo.Exists(x => x.ins_id.Equals(idOtroTributoSeleccionado)))
+				{
+					var listaTempo = ListaOtroTributo;
+					if (id.Contains("base_imp"))
+					{
+						listaTempo.ForEach(x =>
+						{
+							if (x.ins_id.Equals(idOtroTributoSeleccionado))
+							{
+								x.base_imp = val;
+								x.importe = Math.Round((x.base_imp * x.alicuota) / 100, 2);
+							}
+						});
+					}
+					else if (id.Contains("alicuota"))
+					{
+						listaTempo.ForEach(x =>
+						{
+							if (x.ins_id.Equals(idOtroTributoSeleccionado))
+							{
+								x.alicuota = val;
+								x.importe = Math.Round((x.base_imp * x.alicuota) / 100, 2);
+							}
+						});
+					}
+					else
+					{
+						listaTempo.ForEach(x =>
+						{
+							if (x.ins_id.Equals(idOtroTributoSeleccionado))
+								x.importe = val;
+						});
+					}
+
+					ListaOtroTributo = listaTempo;
+					importe = ListaOtroTributo.Where(x => x.ins_id.Equals(idOtroTributoSeleccionado)).First().importe;
+				}
+
+				return Json(new { error = false, warn = false, msg = string.Empty, data = new { insId = idOtroTributoSeleccionado, importe } });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar cargar el concepto facturado." });
 			}
 		}
 
@@ -406,14 +507,88 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
+		protected SelectList ComboTiposTributosParaModalOtrosTributos()
+		{
+			var lista = TiposTributoLista.Where(x => !x.carga_aut_discriminado).Select(x => new ComboGenDto { Id = x.ins_id.ToString(), Descripcion = x.ins_desc.ToString() });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+
+		protected SelectList ComboTiposTributosParaModalOtrosTributosNoDiscrimina()
+		{
+			var lista = TiposTributoLista.Where(x => x.carga_aut_no_discriminado).Select(x => new ComboGenDto { Id = x.ins_id.ToString(), Descripcion = x.ins_desc.ToString() });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+
+		public IActionResult ObtenerDatosModalOtrosTributos(string tco_id)
+		{
+			var model = new ModalOtroConceptoModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				if (TiposTributoLista.Count == 0)
+					return PartialView("_empty_view");
+
+				if (string.IsNullOrEmpty(tco_id))
+				{
+					RespuestaGenerica<EntidadBase> response = new()
+					{
+						Ok = false,
+						EsError = true,
+						EsWarn = false,
+						Mensaje = $"Se debe especificar un tipo de comprobante"
+					};
+					return PartialView("_gridMensaje", response);
+				}
+
+				var tco = TiposComprobante.Where(x => x.tco_id.Equals(tco_id)).First();
+				if (tco == null)
+				{
+					RespuestaGenerica<EntidadBase> response = new()
+					{
+						Ok = false,
+						EsError = true,
+						EsWarn = false,
+						Mensaje = $"No se ha encontrado el tipo de comprobante {tco_id}"
+					};
+					return PartialView("_gridMensaje", response);
+				}
+				
+				if (tco.tco_iva_discriminado == "S")
+					model.OtrasPercepcionesLista = ComboTiposTributosParaModalOtrosTributos();
+				else
+					model.OtrasPercepcionesLista = ComboTiposTributosParaModalOtrosTributosNoDiscrimina();
+				
+				return PartialView("_tabCompte_modal_otro_concepto", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
 		public JsonResult AgregarConceptoFacturado(string concepto, string sit, decimal ali, decimal subt, decimal iva, decimal tot)
 		{
 			try
 			{
 				ListaConceptoFacturado ??= [];
-				if (ListaConceptoFacturado.Exists(x=>x.concepto.Equals(concepto)))
-					return Json(new { error = true, warn = true, msg = $"El concepto '{concepto}' ya se encuentra en la lista." });
-				var newItem = new ConceptoFacturadoDto() { concepto = concepto, cantidad = 1, iva = iva, iva_alicuota = ali, iva_situacion = sit, subtotal = subt, total = tot };
+				//Por lo pronto, de acuerdo a lo pedido por CR, no se validan conceptos duplicados
+				//if (ListaConceptoFacturado.Exists(x=>x.concepto.Equals(concepto)))
+				//	return Json(new { error = true, warn = true, msg = $"El concepto '{concepto}' ya se encuentra en la lista." });
+				var maxId = 0;
+				if (ListaConceptoFacturado.Count != 0)
+					maxId = ListaConceptoFacturado.Max(x => x.id);
+				maxId++;
+				var newItem = new ConceptoFacturadoDto() { id = maxId, concepto = concepto, cantidad = 1, iva = iva, iva_alicuota = ali, iva_situacion = sit, subtotal = subt, total = tot };
 				var listaTemp = new List<ConceptoFacturadoDto>();
 				listaTemp = ListaConceptoFacturado;
 				listaTemp.Add(newItem);
@@ -424,6 +599,42 @@ namespace gc.sitio.Areas.Compras.Controllers
 			catch (Exception ex)
 			{
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar cargar el concepto facturado." });
+			}
+		}
+
+		public IActionResult QuitarProductoEnConceptoFacturado(int id)
+		{
+			try
+			{
+				var model = new GridCore<ConceptoFacturadoDto>();
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				if (id <= 0)
+				{
+					if (ListaConceptoFacturado != null && ListaConceptoFacturado.Count >= 0)
+						model = ObtenerGridCore<ConceptoFacturadoDto>(ListaConceptoFacturado);
+					else
+						model = ObtenerGridCore<ConceptoFacturadoDto>([]);
+					return PartialView("_tabCompte_ConFactu", model);
+				}
+				var listaTemp = ListaConceptoFacturado;
+				listaTemp = [.. listaTemp.Where(x => !x.id.Equals(id))];
+				ListaConceptoFacturado = listaTemp;
+				model = ObtenerGridCore<ConceptoFacturadoDto>(ListaConceptoFacturado);
+				return PartialView("_tabCompte_ConFactu", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
 			}
 		}
 
@@ -486,6 +697,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 			if (IvaAlicuotasLista.Count == 0 || actualizar)
 				ObtenerIvaAlicuotasLista(_producto2Servicio);
+
+			if (TiposTributoLista.Count == 0 || actualizar)
+				ObtenerTiposTributoLista(_tipoTributoServicio);
 		}
 
 		protected SelectList ComboTipoCompte(string afip_id)
