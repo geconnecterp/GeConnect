@@ -23,6 +23,37 @@
 	}
 }
 
+function activarBotones2(activar) {
+	if (activar === true) {
+		//el activarlos es activar BM
+		$("#btnAbmModif").prop("disabled", false);
+		if (tabAbm === 1) {
+			$("#btnAbmNuevo").prop("disabled", false);
+			$("#btnAbmElimi").prop("disabled", false);
+		}
+		else {
+			$("#btnAbmNuevo").prop("disabled", true);
+			$("#btnAbmElimi").prop("disabled", true);
+		}
+
+		$("#btnAbmAceptar").prop("disabled", true);
+		$("#btnAbmCancelar").prop("disabled", true);
+		$("#btnAbmAceptar").hide();
+		$("#btnAbmCancelar").hide();
+	}
+	else {
+		$("#btnAbmNuevo").prop("disabled", false);
+		$("#btnAbmModif").prop("disabled", true);
+		$("#btnAbmElimi").prop("disabled", true);
+
+		$("#btnAbmAceptar").prop("disabled", true);
+		$("#btnAbmCancelar").prop("disabled", true);
+		$("#btnAbmAceptar").hide();
+		$("#btnAbmCancelar").hide();
+	}
+}
+
+
 function ejecutaDblClickGrid(x, grid) {
 	AbrirWaiting("Espere mientras se busca el elementos seleccionado...");
 	selectRegDbl(x, grid);

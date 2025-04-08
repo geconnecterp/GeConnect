@@ -12,11 +12,9 @@ namespace gc.sitio.Areas.Usuarios.Controllers
     public class ControladorUsuariosBase:ControladorBase
     {
         private readonly AppSettings _setting;
-        private readonly ILogger _logger;
         public ControladorUsuariosBase(IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger logger) : base(options, accessor, logger)
         {
             _setting = options.Value;
-            _logger = logger;
         }
 
         public int PaginaActual

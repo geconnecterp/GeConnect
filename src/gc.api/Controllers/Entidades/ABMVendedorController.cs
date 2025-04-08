@@ -1,11 +1,8 @@
-﻿using gc.api.core.Contratos.Servicios;
-using gc.api.core.Contratos.Servicios.ABM;
+﻿using gc.api.core.Contratos.Servicios.ABM;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.ABM;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Net;
@@ -30,10 +27,10 @@ namespace gc.api.Controllers.Entidades
             _uriService = uriService;
         }
 
-        [HttpGet]
+        [HttpPost]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(IEnumerable<ABMVendedorDto>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-        public IActionResult ObtenerVendedores([FromQuery] QueryFilters filters)
+        public IActionResult ObtenerVendedores( QueryFilters filters)
         {
             var reg = new ABMVendedorDto() { Total_Paginas = 0, Total_Registros = 0 };
             var lista = _vendedorServicio.ObtenerVendedores(filters);
@@ -71,7 +68,7 @@ namespace gc.api.Controllers.Entidades
             return Ok(response);
         }
 
-        [HttpGet("{ve_id}")]
+        [HttpGet]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ABMVendedorDatoDto))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public IActionResult ObtenerVendedorPorId(string ve_id)

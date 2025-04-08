@@ -1,0 +1,58 @@
+﻿@using System.Text
+@using static gc.infraestructura.Constantes.Constantes
+@model GridCore<ABMVendedorDto>
+
+@{
+    var alt = true;
+    string clase = string.Empty;
+    string color = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive text-nowrap  table-wrapper">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridVendedor">
+                <thead class="table-dark">
+                    <tr class="header">
+                        <th scope="col">Id</th>
+                        <th scope="col">Denominación</th>
+                        <th scope="col">Activo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ListaDatos)
+                    {
+                        string block;
+                        if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
+                        if (item.ve_activo.Equals('N'))
+                        {
+                            block = "NO";
+                            color = EstadoColor.NoActivo;
+                        }
+                        else
+                        {
+                            block = "SI";
+                            color = EstadoColor.Activo;
+                        }
+                        <tr class="@clase" onclick="selectRegVendedor(this,'tbGridVendedor')">
+                            <!--ondblclick="selectAbmRegDbl(this,'tbGridProd')"-->
+                            <td class="text-sm-center" style="border-left: 5px solid @color;text-align: left;">@item.ve_id</td>
+                            <td class="text-sm-start" >@item.ve_nombre</td>
+                            <td class="text-sm-center">@block</td>                            
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="row m-3">
+            <table style="width:100px;text-align:center">
+                <tr><td colspan="3" class="text-md-center"><strong>ESTADOS</strong></td></tr>
+                <tr>
+                    <td style="background-color: @EstadoColor.Activo;color:#FFFFFF;font-weight:600;display:block;">ACTIVO</td>
+                    <td style="background-color: @EstadoColor.NoActivo;color:#FFFFFF;font-weight:600;display:block;">NO ACTIVO</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>

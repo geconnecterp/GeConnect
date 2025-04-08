@@ -90,6 +90,13 @@ td.corta-linea {
     font-weight: 700;
 }
 
+.inputEditable_r {
+    border-color: rgb(70, 196, 104);
+    text-align: right;
+    font-weight: 700;
+}
+
+
 /* VER COMO HACER PARA QUE APLIQUEN ESTOS ESTILOS EN TABLA */
 .estados {
     border-left: 5px solid #00ff00;

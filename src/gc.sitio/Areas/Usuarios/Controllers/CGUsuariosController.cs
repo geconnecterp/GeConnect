@@ -126,8 +126,8 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             catch (Exception ex)
             {
 
-                string msg = "Error en la invocación de la API - Busqueda Producto";
-                _logger.LogError(ex, "Error en la invocación de la API - Busqueda Producto");
+                string msg = "Error en la invocación de la API - Busqueda de Usuarios";
+                _logger.LogError(ex, "Error en la invocación de la API - Busqueda de Usuarios");
                 response.Mensaje = msg;
                 response.Ok = false;
                 response.EsWarn = false;

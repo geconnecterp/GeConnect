@@ -59,6 +59,7 @@ namespace gc.infraestructura.Constantes
             public const string ORDEN_DE_COMPRA = "ORDEN_DE_COMPRA";
 			public const string ORDEN_DE_COMPRA_CONSULTA = "ORDEN_DE_COMPRA_CONSULTA";
 			public const string COMPROBANTE_DE_COMPRA = "COMPROBANTE_DE_COMPRA";
-		}
+            public const string VENDEDORES = "VENDEDORES";
+        }
     }
 }
