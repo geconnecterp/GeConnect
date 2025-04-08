@@ -7,15 +7,30 @@
 
     }
 
-    public class ABMVendedorDatoDto
+    public class ABMVendedorDatoDto:Dto
     {
-        public string Ve_Id { get; set; } = string.Empty;
-        public string Ve_Nombre { get; set; } = string.Empty;
-        public string Ve_LIsta { get; set; } = string.Empty;
-        public string Ve_Comision { get; set; } = string.Empty;
-        public string Ve_Celu { get; set; } = string.Empty;
-        public string Ve_Mail { get; set; } = string.Empty;
-        public string Ve_Te { get; set; } = string.Empty;
-        public string Ve_Activo { get; set; } = string.Empty;
+        public string ve_id { get; set; } = string.Empty;
+        public string ve_nombre { get; set; } = string.Empty;
+        public string ve_lista { get; set; } = string.Empty;
+        public decimal ve_comision { get; set; }
+        public string ve_celu { get; set; } = string.Empty;
+        public string ve_mail { get; set; } = string.Empty;
+        public string ve_te { get; set; } = string.Empty;
+        public char? ve_activo { get; set; }
+        private bool veActivo;
+        public bool VeActivo
+        {
+            get
+            {
+                if (!ve_activo.HasValue ||
+                    string.IsNullOrWhiteSpace(char.ToString(ve_activo.Value)))
+                    return false;
+                return ve_activo.Equals('S');
+            }
+            set
+            {
+                veActivo = value;
+            }
+        }
     }
 }

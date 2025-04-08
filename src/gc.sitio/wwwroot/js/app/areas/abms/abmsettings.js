@@ -56,6 +56,7 @@ const Grids = {
 	GridConsVto: 'tbGridVto',
 	GridConsCmpteTot: 'tbGridCmpteTot',
 	GridConsCmpteDet: 'tbGridCmpteDet',
+	GridVendedor: 'tbGridVendedor',
 
 
 	//GridLimite: 'tbGridLim',

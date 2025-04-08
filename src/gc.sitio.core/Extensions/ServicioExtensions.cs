@@ -71,6 +71,7 @@ namespace gc.sitio.core.Extensions
 			services.AddScoped<IDocManagerServicio, DocManagerServicio>();
 			services.AddScoped<IOrdenDeCompraEstadoServicio, OrdenDeCompraEstadoServicio>();
 			services.AddScoped<ITipoTributoServicio, TipoTributoServicio>();
+			services.AddScoped<IABMVendedorServicio, ABMVendedorServicio>();
 
 			return services;
         }

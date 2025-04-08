@@ -142,7 +142,7 @@ function selectRegPerfil(x, gridId) {
 }
 
 function ejecutaDblClickGrid1(x) {
-    AbrirWaiting("Espere mientras se busca el producto seleccionado...");
+    AbrirWaiting("Espere mientras se busca el perfil seleccionado...");
     selectMnRegDbl(x, Grids.GridPerfil);
 }
 
