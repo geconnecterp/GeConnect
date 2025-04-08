@@ -8,9 +8,9 @@ const IvaSituacion = {
 	EXENTO: 'E'
 }
 
-const formatter = new Intl.NumberFormat('en-US', {
-	style: 'currency',
-	currency: 'USD',
+const formatter = new Intl.NumberFormat('de-DE', {
+	//style: 'currency',
+	//currency: 'USD',
 
 	trailingZeroDisplay: 'stripIfInteger'
 });
@@ -55,6 +55,7 @@ function InicializaPantalla() {
 	$(document).on("change", "#listaIvaSit", ControlaSituacionSeleccionada);
 	$(document).on("change", "#listaIvaAli", ControlaIvaAliSeleccionada);
 	$(document).on("click", "#btnAgregarOtroTributo", AbrirModalAgregarOtroTributo); //Abrir modal
+	$(document).on("change", "#listaOtroTrib", ControlaOtroTribSeleccionada);
 
 	$(".inputEditable").on("keypress", analizaEnterInput);
 
@@ -166,7 +167,7 @@ function CalcularImporteOT() {
 		var num_subt = parseFloat(subt.replace(".", "").replace(",", "."));
 		var ali = $("#OtroTributo_alicuota").val();
 		var num_ali = parseFloat(ali.replace(".", "").replace(",", "."));
-		var calc = (num_subt * num_ali) / 100;
+		var calc = ((num_subt * num_ali) / 100) + num_subt;
 		$("#OtroTributo_importe").val(calc.toFixed(2));
 	}
 }
@@ -202,8 +203,31 @@ function AgregarConceptoFacturado() {
 
 function AgregarOtroTributo() {
 	//TODO MARCE:
-	//Agregar funcion de validacion de campos antes de agrega del tributo
-	//Luego llamar a un metodo (aun no existe) de BE para agregarlo a la lista en sesion.
+	//Agregar funcion de validacion de campos antes de agrega del tributo DONE
+	if (ValidarCamposModalOT()) {
+		AbrirWaiting();
+		var insId = $("#listaOtroTrib option:selected").val();
+		var baseImp_temp = $("#OtroTributo_base_imp").val();
+		var baseImp = parseFloat(baseImp_temp.replace(".", "").replace(",", "."));
+		var alicuota_temp = $("#OtroTributo_alicuota").val();
+		var alicuota = parseFloat(alicuota_temp.replace(".", "").replace(",", "."));
+		//var importe_temp = $("#OtroTributo_importe").val();
+		//var importe = parseFloat(importe_temp.replace(".", "").replace(",", "."));
+		var importe = $("#OtroTributo_importe").val();
+		var data = { insId, baseImp, alicuota, importe };
+		PostGen(data, agregarOtroTributoUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				ControlaMensajeError(obj.msg);
+			}
+			else {
+				CargarGrillaOtrosTributos();
+				LimpiarCamposEnModalCargaOT();
+				//$('#modalCargaIVA').modal('hide');
+			}
+		});
+	};
+	//Luego llamar a un metodo (aun no existe) de BE para agregarlo a la lista en sesion. DONE
 	//Agregar el metodo de quitar tributo (icono de tacho de basura)
 }
 
@@ -214,6 +238,14 @@ function LimpiarCamposEnModalCargaIva() {
 	$("#ConceptoFacturado_subtotal").val("");
 	$("#ConceptoFacturado_iva").val("");
 	$("#ConceptoFacturado_total").val("");
+}
+
+function LimpiarCamposEnModalCargaOT() {
+	$("#listaOtroTrib").val("");
+	$("#OtroTributo_base_imp").val("");
+	$("#OtroTributo_alicuota").val("");
+	$("#OtroTributo_importe").val("");
+	$("#listaOtroTrib").focus();
 }
 
 function FormatearValores(grilla, idx) {
@@ -249,6 +281,26 @@ function ValidarCamposModalIva() {
 	return true;
 }
 
+function ValidarCamposModalOT() {
+	if ($("#listaOtroTrib").val() == "") {
+		ControlaMensajeWarning("Debe seleccionar un valor de 'Otro tributo.");
+		return false;
+	}
+	if ($("#OtroTributo_base_imp").val() == "") {
+		ControlaMensajeWarning("El campo 'Base imponible' es obligatorio.");
+		return false;
+	}
+	if ($("#OtroTributo_alicuota").val() == "") {
+		ControlaMensajeWarning("El campo 'Alicuota' es obligatorio.");
+		return false;
+	}
+	if ($("#OtroTributo_importe").val() == "") {
+		ControlaMensajeWarning("El campo 'Importe' es obligatorio.");
+		return false;
+	}
+	return true;
+}
+
 function ControlaIvaAliSeleccionada() {
 	var iva_ali_id = $("#listaIvaAli option:selected").val()
 	if (iva_ali_id != "") {
@@ -265,6 +317,13 @@ function ControlaSituacionSeleccionada() {
 	else {
 		$("#listaIvaAli").prop("disabled", true);
 		$("#ConceptoFacturado_subtotal").focus();
+	}
+}
+
+function ControlaOtroTribSeleccionada() {
+	var otro_tirb_id = $("#listaOtroTrib option:selected").val()
+	if (otro_tirb_id != "") {
+		$("#OtroTributo_base_imp").focus();
 	}
 }
 
@@ -334,7 +393,7 @@ function CargarGrillaOtrosTributos() {
 		addInCellGotFocusHandler();
 		addInCellEditHandler();
 		addInCellLostFocusHandler();
-		FormatearValores(tbGridOtroTributo, [4]);
+		FormatearValores(tbGridOtroTributo, [2, 3, 4]);
 		return true
 	});
 }
@@ -353,13 +412,24 @@ function selectReg(x, gridId) {
 function quitarConceptoFacturado(e) {
 	var id = $(e).attr("data-interaction");
 	var data = { id };
-	PostGenHtml(data, quitarProductoEnConceptoFacturadoURL, function (obj) {
+	PostGenHtml(data, quitarItemEnConceptoFacturadoURL, function (obj) {
 		$("#divConceptosFacturados").html(obj);
 		FormatearValores(tbGridConceptoFacturado, [4, 5, 6]);
 	});
 }
 
 function quitarOtroTributo(e) {
+	var id = $(e).attr("data-interaction");
+	var data = { id };
+	PostGenHtml(data, quitarItemEnOtrosTributosUrl, function (obj) {
+		$("#divOtrosTributos").html(obj);
+		addInCellKeyDownHandler();
+		tableUpDownArrow();
+		addInCellGotFocusHandler();
+		addInCellEditHandler();
+		addInCellLostFocusHandler();
+		FormatearValores(tbGridOtroTributo, [4]);
+	});
 }
 
 function ActualizaEstadosVarios() {
@@ -579,6 +649,8 @@ function addInCellLostFocusHandler() {
 }
 
 function ActualizarOtroTributo(id, val) {
+	var temp = val.replace(".", "");
+
 	val = parseFloat(val.replace(".", "").replace(",", "."));
 	var data = { id, val, idOtroTributoSeleccionado };
 	PostGen(data, editarItemEnOtrosConceptosUrl, function (obj) {

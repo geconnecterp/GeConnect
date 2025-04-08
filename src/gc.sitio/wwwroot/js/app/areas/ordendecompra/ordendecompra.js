@@ -229,18 +229,18 @@ function addInCellEditHandler() {
 	$("#tbListaProductoOC").on('input', 'td[contenteditable]', function (e) {
 		//Do something
 		var val = $("#" + this.id).text();
-		if (this.id === "P_Dto1" || this.id === "P_Dto2" || this.id === "P_Dto3" || this.id === "P_Dto4" || this.id === "P_Dto_Pa") {
+		if (this.id.includes("p_dto1") || this.id.includes("p_dto2") || this.id.includes("p_dto3") || this.id.includes("p_dto4") || this.id.includes("p_dto_pa")) {
 			var num = Number(val);
 			if (num > 50) val = "50";
 			$("#" + this.id).mask("00,0", { reverse: true });
 			$("#" + this.id).val(val);
 			$("#" + this.id).text(val);
 		}
-		else if (this.id === "P_Plista") {
+		else if (this.id.includes("p_plista")) {
 			$("#" + this.id).mask("000.000.000.000,00", { reverse: false });
 			$("#" + this.id).val(val);
 		}
-		else if (this.id === "P_Boni") {
+		else if (this.id.includes("p_boni")) {
 			$("#" + this.id).mask("000/000", { reverse: false });
 			$("#" + this.id).val(val);
 		}
@@ -273,13 +273,13 @@ function addInCellLostFocusHandler() {
 		if (cellValueTemp == $("#" + this.id).text())
 			actualiza = false;
 		else {
-			if (this.id === "P_Dto1" || this.id === "P_Dto2" || this.id === "P_Dto3" || this.id === "P_Dto4" || this.id === "P_Dto_Pa") {
+			if (this.id.includes("p_dto1") || this.id.includes("p_dto2") || this.id.includes("p_dto3") || this.id.includes("p_dto4") || this.id.includes("p_dto_pa")) {
 
 			}
-			else if (this.id === "P_Plista") {
+			else if (this.id.includes("p_plista")) {
 
 			}
-			else if (this.id === "P_Boni") {
+			else if (this.id.includes("p_boni")) {
 				var spl = $("#" + this.id).val().split("/");
 				if (spl.length === 2) {
 					var num1 = Number(spl[0]);
