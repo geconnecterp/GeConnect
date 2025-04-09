@@ -26,6 +26,7 @@
 	$("#btnEliminarAutoRP").on("click", EliminarAutoRP); //Eliminar RPR cargado
 
 	$("#txtNroCompte").mask("0000-00000000", { reverse: true });
+	$("#txtMonto").mask("000.000.000.000,00", { reverse: true });
 
 	$("#Cuenta").on("keyup", analizaInput);
 	$("#txtNota").on("keyup", analizaInputTxtNota);

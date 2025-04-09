@@ -6,14 +6,14 @@
 	<table class="drageable-table table table-bordered table-hover" id="tbDetalleDeProd">
 		<thead class="table-dark">
 			<tr class="header">
-				<th scope="col" class="table-fontsize align-center col-header-small" style="width:10%;">ID</th>
-				<th scope="col" class="table-fontsize align-center col-header-small" style="width:20%">Descripción</th>
-				<th scope="col" class="table-fontsize align-center col-header-small" style="width:10%">ID Prov</th>
-				<th scope="col" class="table-fontsize align-center col-header-small" style="width:10%">OC</th>
-				<th scope="col" class="table-fontsize align-center col-header-small" style="width:10%">UP</th>
-				<th scope="col" class="table-fontsize align-center col-header-small" style="width:10%">Btos</th>
-				<th scope="col" class="table-fontsize align-center col-header-small" style="width:15%">Unidades</th>
-				<th scope="col" class="table-fontsize align-center col-header-small" style="width:15%">Cantidad</th>
+				<th scope="col" class="table-fontsize align-center col-header-x-small" style="width:10%;">ID</th>
+				<th scope="col" class="table-fontsize align-center col-header-x-small" style="width:20%">Descripción</th>
+				<th scope="col" class="table-fontsize align-center col-header-x-small" style="width:10%">ID Prov</th>
+				<th scope="col" class="table-fontsize align-center col-header-x-small" style="width:10%">OC</th>
+				<th scope="col" class="table-fontsize align-center col-header-x-small" style="width:10%">UP</th>
+				<th scope="col" class="table-fontsize align-center col-header-x-small" style="width:10%">Btos</th>
+				<th scope="col" class="table-fontsize align-center col-header-x-small" style="width:15%">Unidades</th>
+				<th scope="col" class="table-fontsize align-center col-header-x-small" style="width:15%">Cantidad</th>
 				<th style="width:0%; display:none;">Item</th>
 			</tr>
 		</thead>
@@ -23,14 +23,14 @@
 				var resCantidad = string.Format(CultureInfo.InvariantCulture, "{0:#,0.000}", @item.Cantidad);
 				var resUnidad = string.Format(CultureInfo.InvariantCulture, "{0:#,0.000}", @item.Unidad);
 				<tr onclick="selectDetalleDeProdRow(this)" class="sortme" id="productRow">
-					<td class ="table-fontsize align-center">@item.P_id</td>
-					<td class="table-fontsize align-left">@item.P_desc</td>
-					<td class="table-fontsize align-center">@item.P_id_prov</td>
-					<td class="table-fontsize align-center">@item.oc_compte</td>
-					<td class="table-fontsize align-right">@item.P_unidad_pres</td>
-					<td class="table-fontsize align-right">@item.Bulto</td>
-					<td class="table-fontsize align-right">@resUnidad</td>
-					<td class="table-fontsize align-right">@resCantidad</td>
+					<td class ="table-fontsize align-center tiny-row">@item.P_id</td>
+					<td class="table-fontsize align-left tiny-row">@item.P_desc</td>
+					<td class="table-fontsize align-center tiny-row">@item.P_id_prov</td>
+					<td class="table-fontsize align-center tiny-row">@item.oc_compte</td>
+					<td class="table-fontsize align-right tiny-row">@item.P_unidad_pres</td>
+					<td class="table-fontsize align-right tiny-row">@item.Bulto</td>
+					<td class="table-fontsize align-right tiny-row">@resUnidad</td>
+					<td class="table-fontsize align-right tiny-row">@resCantidad</td>
 					<td style="display:none;">@item.Item</td>
 				</tr>
 			}

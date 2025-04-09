@@ -679,7 +679,7 @@ namespace gc.sitio.Areas.Compras.Controllers
         {
             try
             {
-                if (guardado) //Guardo el detalle de productos del compte en la variable de sesion
+                 if (guardado) //Guardo el detalle de productos del compte en la variable de sesion
                 {
                     if (JsonDeRP == null)
                         JsonDeRP = new();
@@ -770,6 +770,23 @@ namespace gc.sitio.Areas.Compras.Controllers
                             item.Nota = nota;
                             item.Turno = fechaTurno;
                             item.Rpe_id = ponerEnCurso ? "C" : "P";
+                            foreach (var itemComp in item.Comprobantes)
+                            {
+                                var arrStr = itemComp.Cm_importe.Split('.');
+                                if (arrStr.Length > 0)
+                                {
+                                    for (int i = 0; i < arrStr.Length; i++)
+                                    {
+                                        arrStr[i] = arrStr[i].Replace(',', '.'); //reemplazo la coma por el punto como separador de decimales
+                                    }
+                                    itemComp.Cm_importe = String.Join("", arrStr);
+								}
+                                else
+                                { 
+                                    itemComp.Cm_importe = itemComp.Cm_importe.Replace(',', '.'); //reemplazo la coma por el punto como separador de decimales
+
+								}
+                            }
                         }
                         JsonDeRP = aux;
                         var resultado = CargarNuevoComprobante();
