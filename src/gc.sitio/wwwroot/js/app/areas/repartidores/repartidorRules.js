@@ -3,8 +3,8 @@
     $("#btnAbmModif").on("click", ejecutarModificacion);
     $("#btnAbmElimi").on("click", ejecutarBaja);
 
-    $("#btnAbmCancelar").on("click", InicializaPantallaVendedor);
-    $("#btnAbmAceptar").on("click", confirmarOperacionAbmVendedor);
+    $("#btnAbmCancelar").on("click", InicializaPantallaRepartidor);
+    $("#btnAbmAceptar").on("click", confirmarOperacionAbmRepartidor);
 
     $("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle);
 
@@ -49,7 +49,7 @@ function ejecutarAlta() {
     var data = {};
     switch (tabAbm) {
         case 1:
-            PostGenHtml(data, nuevoVendedorUrl, function (obj) {
+            PostGenHtml(data, nuevoRepartidorUrl, function (obj) {
                 $("#divpanel01").html(obj);
                 ////se procede a buscar la grilla de barrado
                 //buscarBarrado(data);
@@ -131,7 +131,7 @@ function accionBotones(btn) {
 
             if (tabAbm === 1) {
                 $("#btnDetalle").prop("disabled", true);
-                activarGrilla(Grids.GridVendedor);
+                activarGrilla(Grids.GridPerfil);
             }
 
         }
@@ -154,10 +154,10 @@ function activarControles(act) {
                 $("#VeActivo").prop("disabled", act);
 
                 //Linea 02
-                $("#ve_nombre").prop("disabled", act);
-                $("#ve_comision").mask("99.99", { reverse: true }).prop("disabled", act);                
-                $("#ve_mail").prop("disabled", act);
-                $("#ve_celu").mask("(000) 000-0000").prop("disabled", act);                
+                $("#rp_nombre").prop("disabled", act);
+                $("#rp_comision").mask("99.99", { reverse: true }).prop("disabled", act);                
+                $("#rp_mail").prop("disabled", act);
+                $("#rp_celu").mask("(000) 000-0000").prop("disabled", act);                
                 break;
            
             default:
@@ -167,8 +167,8 @@ function activarControles(act) {
     }
 }
 
-function buscarVendedor(data) {
-    PostGenHtml(data, buscarVendedorUrl, function (obj) {
+function buscarRepartidor(data) {
+    PostGenHtml(data, buscarRepartidorUrl, function (obj) {
         $("#divpanel01").html(obj);
         //se procede a buscar la grilla de barrado
 
@@ -199,7 +199,7 @@ function buscarVendedor(data) {
 }
 
 
-function confirmarOperacionAbmVendedor() {
+function confirmarOperacionAbmRepartidor() {
     AbrirWaiting("Completando proceso...");
     var data = {};
     switch (tabAbm) {
@@ -212,7 +212,7 @@ function confirmarOperacionAbmVendedor() {
     urlabm = ""
     switch (tabAbm) {
         case 1:
-            urlabm = confirmarAbmVendedorUrl;
+            urlabm = confirmarAbmRepartidorUrl;
             break;
         
         default:
@@ -244,9 +244,9 @@ function confirmarOperacionAbmVendedor() {
                 var grilla = "";
                 switch (tabAbm) {
                     case 1:
-                        grilla = Grids.GridVendedor;
+                        grilla = Grids.GridUser;
                         dataBak = "";
-                        InicializaPantallaVendedor(grilla);
+                        InicializaPantallaRepartidor(grilla);
                         break;
 
                     default:
@@ -262,7 +262,7 @@ function confirmarOperacionAbmVendedor() {
                             }
                             //data = { p_id: EntidadSelect };
                             //buscarProductoServer(data);
-                            InicializaFiltroAbmVendedor(EntidadSelect);
+                            InicializaFiltroAbmRepartidor(EntidadSelect);
                             $("#btnBuscar").trigger("click");
                             $("#divpanel01").empty();
                             //inicializamos la acción.
@@ -272,7 +272,7 @@ function confirmarOperacionAbmVendedor() {
                             //borramos el id del producto si se eliminó
                             EntidadSelect = "";
                             //VAMOS A EJECUTAR NUEVAMENTE EL BUSCAR
-                            buscarVendedores(pagina);
+                            buscarRepartidores(pagina);
                         }
                         break;
                    
@@ -291,7 +291,7 @@ function confirmarOperacionAbmVendedor() {
     });
 }
 
-function InicializaFiltroAbmVendedor(id) {
+function InicializaFiltroAbmRepartidor(id) {
     if ($("#chkDescr").is(":checked")) {
         $("#chkDescr").prop("checked", false);
         $("#Buscar").val("");
@@ -320,22 +320,22 @@ function InicializaFiltroAbmVendedor(id) {
 }
 function analizaEstadoBtnDetalle() {
     tabMn = 1;
-    InicializaPantallaVendedor(Grids.GridVendedor);
+    InicializaPantallaRepartidor(Grids.GridRepartidor);
     return true;
 }
 
 function confirmarDatosTab01() {
-    var ve_id = $("#ve_id").val();
-    var ve_activo = "N";
-    if ($("#VeActivo").is(":checked")) {
-        ve_activo = "S";
+    var rp_id = $("#rp_id").val();
+    var rp_activo = "N";
+    if ($("#RpActivo").is(":checked")) {
+        rp_activo = "S";
     }
 
-    var ve_nombre = $("#ve_nombre").val();
-    var ve_comision = $("#ve_comision").val();
-    var ve_mail = $("#ve_mail").val();
-    var ve_celu = $("#ve_celu").val();
+    var rp_nombre = $("#rp_nombre").val();
+    var rp_comision = $("#rp_comision").val();
+    var rp_mail = $("#rp_mail").val();
+    var rp_celu = $("#rp_celu").val();
 
-    var data = { ve_id, ve_activo, ve_nombre, ve_comision, ve_mail, ve_celu,accion };
+    var data = { rp_id, rp_activo, rp_nombre, rp_comision, rp_mail, rp_celu,accion };
     return data;
 }

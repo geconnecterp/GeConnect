@@ -1,6 +1,6 @@
 ﻿@using System.Text
 @using static gc.infraestructura.Constantes.Constantes
-@model GridCore<ABMVendedorDto>
+@model GridCore<ABMRepartidorDto>
 
 @{
     var alt = true;
@@ -12,7 +12,7 @@
 <div class="card">
     <div class="card-body">
         <div class="table-responsive text-nowrap  table-wrapper">
-            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridVendedor">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridRepartidor">
                 <thead class="table-dark">
                     <tr class="header">
                         <th scope="col">Id</th>
@@ -25,7 +25,7 @@
                     {
                         string block;
                         if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
-                        if (item.ve_activo.Equals('N'))
+                        if (item.rp_activo.Equals('N'))
                         {
                             block = "NO";
                             color = EstadoColor.NoActivo;
@@ -35,11 +35,11 @@
                             block = "SI";
                             color = EstadoColor.Activo;
                         }
-                        <tr class="@clase" onclick="selectRegVendedor(this,'tbGridVendedor')">
+                        <tr class="@clase" onclick="selectRegRepartidor(this,'tbGridRepartidor')">
                             <!--ondblclick="selectAbmRegDbl(this,'tbGridProd')"-->
-                            <td class="text-sm-center" style="border-left: 5px solid @color;text-align: left;">@item.ve_id</td>
-                            <td class="text-sm-start" >@item.ve_nombre</td>
-                            <td class="text-sm-center">@block</td>                            
+                            <td class="text-sm-center" style="border-left: 5px solid @color;text-align: left;">@item.rp_id</td>
+                            <td class="text-sm-start">@item.rp_nombre</td>
+                            <td class="text-sm-center">@block</td>
                         </tr>
                     }
                 </tbody>
@@ -47,7 +47,7 @@
         </div>
         <div class="row m-3">
             <table style="width:300px;text-align:center">
-                <tr><td colspan="3" class="text-md-center"><strong>ESTADOS</strong></td></tr>
+                <tr><td colspan="2" class="text-md-center"><strong>ESTADOS</strong></td></tr>
                 <tr>
                     <td style="background-color: @EstadoColor.Activo;color:#FFFFFF;font-weight:600;width:150px;">ACTIVO</td>
                     <td style="background-color: @EstadoColor.NoActivo;color:#FFFFFF;font-weight:600;width:150px;">NO ACTIVO</td>

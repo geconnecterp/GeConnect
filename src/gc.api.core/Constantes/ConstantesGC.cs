@@ -262,6 +262,9 @@
 
             public const string SP_ABM_VENDEDOR_LISTA = "SPGECO_ABM_Ve_Lista";
             public const string SP_ABM_VENDEDOR_DATO = "SPGECO_ABM_Ve_Datos";
+
+            public const string SP_ABM_REPARTIDOR_LISTA = "SPGECO_ABM_RT_Lista";
+            public const string SP_ABM_REPARTIDOR_DATO = "SPGECO_ABM_RT_Datos";
             #endregion
 
             #region Tipos
