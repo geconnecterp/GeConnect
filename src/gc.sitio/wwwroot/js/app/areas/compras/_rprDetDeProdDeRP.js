@@ -470,7 +470,7 @@ function selectOCRow(x) {
 	var data = { oc_compte };
 	PostGenHtml(data, VerDetalleDeOCRPUrl, function (obj) {
 		$("#divDetalleDeOrdenDeCompra").html(obj);
-		document.getElementById("leyendDetalleOC").outerHTML = "<h5 id=\"leyendDetalleOC\"> Detalle de OC " + oc_compte + "</h5>";
+		document.getElementById("leyendDetalleOC").outerHTML = "<h5 id=\"leyendDetalleOC\" style=\"margin-bottom: 0; margin-top: 10px;\"> Detalle de OC " + oc_compte + "</h5>";
 		AgregarHandlerAGrillaDetalleDeOC();
 		return true;
 	}, function (obj) {
