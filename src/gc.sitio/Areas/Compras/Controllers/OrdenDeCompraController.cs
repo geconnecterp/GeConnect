@@ -284,6 +284,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 						}
 						else if (field.Contains("p_plista"))
 						{
+							val = val.Replace(",", ".");
 							producto.P_Plista = Convert.ToDecimal(val);
 						}
 						else if (field.Contains("p_boni"))
@@ -511,7 +512,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				request.Nueva = string.IsNullOrEmpty(request.Oc_Compte);
 				request.Json = JsonConvert.SerializeObject(ListaProductosOC, new JsonSerializerSettings());
 				var respuesta = _productoServicio.ConfirmarOrdenDeCompra(request, TokenCookie).Result;
-				return AnalizarRespuesta(respuesta);
+				return AnalizarRespuesta(respuesta, "La Orden de Compra se Confirmo con Éxito");
 			}
 			catch (Exception ex)
 			{

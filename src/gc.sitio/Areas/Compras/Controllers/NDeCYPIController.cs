@@ -248,6 +248,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new GridCore<NDeCYPI.InfoProdIExMesDto>();
 			try
 			{
+				if (string.IsNullOrWhiteSpace(admId))
+					admId = AdministracionId;
 				var info = await _productoServicio.InfoProdIExMes(admId, pId, meses, TokenCookie);
 				model = ObtenerGridCore<NDeCYPI.InfoProdIExMesDto>(info);
 				return PartialView("_infoProdIExMeses", model);
@@ -270,6 +272,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new GridCore<NDeCYPI.InfoProdIExSemanaDto>();
 			try
 			{
+				if (string.IsNullOrWhiteSpace(admId))
+					admId = AdministracionId;
 				var info = await _productoServicio.InfoProdIExSemana(admId, pId, semanas, TokenCookie);
 				model = ObtenerGridCore<NDeCYPI.InfoProdIExSemanaDto>(info);
 				return PartialView("_infoProdIExSemanas", model);

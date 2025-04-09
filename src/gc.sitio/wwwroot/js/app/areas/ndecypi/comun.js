@@ -1,6 +1,9 @@
 ﻿$(function () {
 	$("#btnCollapseSection").on("click", btnCollapseSectionClicked);
-	
+	$("#btnCancel").on("click", function () {
+		LimpiarDatosDelFiltroInicial();
+		$("#btnFiltro").trigger("click");
+	});
 	$("input#Rel03").on("click", function () {
 		$("input#Rel03").val("");
 		$("#Rel03Item").val("");
@@ -13,10 +16,64 @@
 		pagina = 1;
 		BuscarProductos(pagina);
 	});
+	$(document).on("change", "#listaSucursales", ControlaSucursalSeleccionada);
 	InicializaPantallaNC();
 	funcCallBack = BuscarProductos;
 	return true;
 });
+
+function ControlaSucursalSeleccionada() {
+	BuscarInfoAdicional();
+}
+
+function LimpiarDatosDelFiltroInicial() {
+	$("input#Rel01").val("");
+	$("#Rel01Item").val("");
+	$("#Rel01List").empty();
+	$("#chkRel01").prop('checked', false);
+	$("#chkRel01").trigger("change");
+	$("input#Rel01").prop('disabled', true);
+	$("#Rel01List").prop('disabled', true);
+
+	$("input#Rel03").val("");
+	$("#Rel03Item").val("");
+	$("#Rel03List").empty();
+	$("#chkRel03").prop('checked', false);
+	$("#chkRel03").trigger("change");
+	$("input#Rel03").prop('disabled', true);
+	$("#Rel03List").prop('disabled', true);
+
+	$("input#Rel02").val("");
+	$("#Rel02Item").val("");
+	$("#Rel02List").empty();
+	$("#chkRel02").prop('checked', false);
+	$("#chkRel02").trigger("change");
+	$("input#Rel02").prop('disabled', true);
+	$("#Rel02List").prop('disabled', true);
+
+	$("#chk01").prop('checked', false);
+	$("#chk01").trigger("change");
+	$("#chk02").prop('checked', false);
+	$("#chk02").trigger("change");
+	$("#chk03").prop('checked', false);
+	$("#chk03").trigger("change");
+	$("#chk04").prop('checked', false);
+	$("#chk04").trigger("change");
+	$("#chk05").prop('checked', false);
+	$("#chk05").trigger("change");
+
+	$("#chkDescr").prop('checked', false);
+	$("#chkDescr").trigger("change");
+	$("input#Buscar").val("");
+	$("input#Buscar").prop('disabled', true);
+
+	$("#chkDesdeHasta").prop('checked', false);
+	$("#chkDesdeHasta").trigger("change");
+	$("input#Id").val("");
+	$("input#Id").prop('disabled', true);
+	$("input#Id2").val("");
+	$("input#Id2").prop('disabled', true);
+}
 
 function NoHayProdSeleccionado() {
 	if (pIdSeleccionado == undefined || pIdSeleccionado == "") {
@@ -127,7 +184,7 @@ function InicializaPantallaNC() {
 	$("#lbRel01").text("Proveedor");
 	$("#lbRel02").text("Rubro");
 	$("#lbRel03").text("Familia");
-	$("#lbChkDescr").text("Denominación");
+	$("#lbChkDescr").text("Descripción Producto");
 	$("#lbDescr").html("Desc");
 
 	$("#lbchk01").text("Alta Rotación");
@@ -136,7 +193,7 @@ function InicializaPantallaNC() {
 	$("#lbchk04").text("Sin Stk");
 	$("#lbchk05").text("Con Stk a Vencer");
 
-	$("#lbChkDesdeHasta").text("ID");
+	$("#lbChkDesdeHasta").text("ID Producto");
 
 	$(".activable").prop("disabled", true);
 	$("#chkRel03").prop("disabled", true);
@@ -299,6 +356,7 @@ function BuscarProductos(pag = 1) {
 		addInCellKeyDownHandler();
 		AddEventListenerToGrid("tbListaProducto");
 		tableUpDownArrow();
+		LimpiarDatosDelFiltroInicial();
 		PostGen({}, buscarMetadataURL, function (obj) {
 			if (obj.error === true) {
 				AbrirMensaje("ATENCIÓN", obj.msg, function () {

@@ -45,10 +45,12 @@
 		}
 	});
 	$("#btnAbmAceptar").on("click", function () {
-		console.log(this);
 		ConfirmarOrdenDeCompra();
 	});
-
+	$("#btnCancel").on("click", function () {
+		LimpiarDatosDelFiltroInicial();
+		$("#btnFiltro").trigger("click");
+	});
 	funcCallBack = BuscarProductos;
 	InicializaPantalla();
 	$("#Rel01").focus();
@@ -77,36 +79,99 @@ const formatter = new Intl.NumberFormat('en-US', {
 	//maximumFractionDigits: 0, // Causes 2500.99 to be printed as $2,501
 });
 
+function LimpiarDatosDelFiltroInicial() {
+	$("input#Rel01").val("");
+	$("#Rel01Item").val("");
+	$("#Rel01List").empty();
+
+	$("#chkRel04").prop('checked', false);
+	$("#chkRel04").trigger("change");
+	$("input#Rel04").val("");
+	$("#Rel04Item").val("");
+	$("input#Rel04").prop('disabled', true);
+
+	$("input#Rel03").val("");
+	$("#Rel03Item").val("");
+	$("#Rel03List").empty();
+	$("#chkRel03").prop('checked', false);
+	$("#chkRel03").trigger("change");
+	$("input#Rel03").prop('disabled', true);
+	$("#Rel03List").prop('disabled', true);
+	$("#chkRel03").prop('disabled', true);
+
+	$("input#Rel02").val("");
+	$("#Rel02Item").val("");
+	$("#Rel02List").empty();
+	$("#chkRel02").prop('checked', false);
+	$("#chkRel02").trigger("change");
+	$("input#Rel02").prop('disabled', true);
+	$("#Rel02List").prop('disabled', true);
+
+	$("#chk01").prop('checked', false);
+	$("#chk01").trigger("change");
+	$("#chk02").prop('checked', false);
+	$("#chk02").trigger("change");
+	$("#chk03").prop('checked', false);
+	$("#chk03").trigger("change");
+	$("#chk04").prop('checked', false);
+	$("#chk04").trigger("change");
+	$("#chk05").prop('checked', false);
+	$("#chk05").trigger("change");
+
+	$("#chkDescr").prop('checked', false);
+	$("#chkDescr").trigger("change");
+	$("input#Buscar").val("");
+	$("input#Buscar").prop('disabled', true);
+
+	$("#chkDesdeHasta").prop('checked', false);
+	$("#chkDesdeHasta").trigger("change");
+	$("input#Id").val("");
+	$("input#Id").prop('disabled', true);
+	$("input#Id2").val("");
+	$("input#Id2").prop('disabled', true);
+}
+
 function ConfirmarOrdenDeCompra() {
-	AbrirMensaje("ATENCIÓN", "¿Confirma la generación de la Orden de Compra?", function () {
-		var Oc_Compte = ocIdSelected;
-		var Entrega_Fecha = $("#FechaEntrega").val();
-		var Entrega_Adm = $("#listaSucEntrega").val()
-		var Pago_Anticipado = 'N';
-		if ($("#chkPagoAnticipado")[0].checked)
-			Pago_Anticipado = 'S';
-		var Pago_Fecha = $("#PagoPlazo").val();
-		var Observaciones = $("#Obs").val();
-		var Oce_Id = 'P';
-		if ($("#chkDejarOCActiva")[0].checked)
-			Oce_Id = 'C';
-		var data = { Oc_Compte, Entrega_Fecha, Entrega_Adm, Pago_Anticipado, Pago_Fecha, Observaciones, Oce_Id };
-		PostGen(data, "/Compras/ordendecompra/ConfirmarOrdenDeCompra", function (obj) {
-			if (obj.error === true) {
-				AbrirMensaje("ATENCIÓN", obj.msg, function () {
-					$("#msjModal").modal("hide");
-					return true;
-				}, false, ["Aceptar"], "error!", null);
-			}
-			else {
-				AbrirMensaje("ATENCIÓN", obj.msg, function () {
-					$("#msjModal").modal("hide");
-					InicializaPantalla();
-					return true;
-				}, false, ["Aceptar"], "info!", null);
-			}
-		});
-	}, false, ["Aceptar", "Cancelar"], "question!", null);
+	AbrirMensaje("ATENCIÓN", "¿Confirma la generación de la Orden de Compra?", function (e) {
+		$("#msjModal").modal("hide");
+		switch (e) {
+			case "SI": //Confirmar 
+				var Oc_Compte = ocIdSelected;
+				var Entrega_Fecha = $("#FechaEntrega").val();
+				var Entrega_Adm = $("#listaSucEntrega").val()
+				var Pago_Anticipado = 'N';
+				if ($("#chkPagoAnticipado")[0].checked)
+					Pago_Anticipado = 'S';
+				var Pago_Fecha = $("#PagoPlazo").val();
+				var Observaciones = $("#Obs").val();
+				var Oce_Id = 'P';
+				if ($("#chkDejarOCActiva")[0].checked)
+					Oce_Id = 'C';
+				var data = { Oc_Compte, Entrega_Fecha, Entrega_Adm, Pago_Anticipado, Pago_Fecha, Observaciones, Oce_Id };
+				PostGen(data, "/Compras/ordendecompra/ConfirmarOrdenDeCompra", function (obj) {
+					if (obj.error === true) {
+						AbrirMensaje("ATENCIÓN", obj.msg, function () {
+							$("#msjModal").modal("hide");
+							return true;
+						}, false, ["Aceptar"], "error!", null);
+					}
+					else {
+						AbrirMensaje("ATENCIÓN", obj.msg, function () {
+							$("#msjModal").modal("hide");
+							InicializaPantalla();
+							return true;
+						}, false, ["Aceptar"], "info!", null);
+					}
+				});
+				break;
+			case "NO":
+				break;
+			default: //NO
+				break;
+		}
+		return true;
+		
+	}, true, ["Aceptar", "Cancelar"], "question!", null);
 }
 
 function ActualizarGrillaConceptos() {
@@ -237,11 +302,11 @@ function addInCellEditHandler() {
 			$("#" + this.id).text(val);
 		}
 		else if (this.id.includes("p_plista")) {
-			$("#" + this.id).mask("000.000.000.000,00", { reverse: false });
+			$("#" + this.id).mask("000.000.000.000,00", { reverse: true });
 			$("#" + this.id).val(val);
 		}
 		else if (this.id.includes("p_boni")) {
-			$("#" + this.id).mask("000/000", { reverse: false });
+			$("#" + this.id).mask("000/000", { reverse: true });
 			$("#" + this.id).val(val);
 		}
 		//else if (this.id === "Bultos") {
@@ -428,6 +493,7 @@ function ActualizarProductoEnOc(field, val) {
 				var td = $(this).find('td');
 				if (td.length > 0 && td[1].innerText !== undefined && td[1].innerText === pId) {
 					//GRILLA
+					td[8].innerText = obj.data.pedidoCantidad;//
 					td[16].innerText = obj.data.pedido_Mas_Boni;//PEDIDO +BONI -> obj.data.pedido_Mas_Boni
 					td[17].innerText = obj.data.p_Pcosto;//PRECIO COSTO -> obj.data.p_Pcosto
 					td[18].innerText = obj.data.p_Pcosto_Total;//TOTAL COSTO -> obj.data.p_Pcosto_Total
@@ -703,7 +769,7 @@ function InicializaPantalla() {
 	$("#lbRel02").text("Rubro");
 	$("#lbRel03").text("Familia");
 	$("#lbRel04").text("OC Pendiente");
-	$("#lbChkDescr").text("Descripción");
+	$("#lbChkDescr").text("Descripción Producto");
 	$("#lbDescr").html("Desc");
 
 	$("#lbchk01").text("Alta Rotación");
@@ -844,7 +910,7 @@ function BuscarProductos(pag = 1) {
 		//addInCellEditHandler();
 		//addInCellLostFocusHandler();
 		//addInCellKeyDownHandler();
-		//AddEventListenerToGrid("tbListaProducto");
+		AddEventListenerToGrid("tbListaProducto");
 		//tableUpDownArrow();
 		PostGen({}, buscarMetadataURL, function (obj) {
 			if (obj.error === true) {
@@ -868,6 +934,7 @@ function BuscarProductos(pag = 1) {
 		$("#btnDetalle").prop("disabled", false);
 		MostrarDatosDeCuenta(true);
 		CargarTopesDeOC();
+		LimpiarDatosDelFiltroInicial();
 		CerrarWaiting();
 		viendeDesdeBusquedaDeProducto = false;
 		return true

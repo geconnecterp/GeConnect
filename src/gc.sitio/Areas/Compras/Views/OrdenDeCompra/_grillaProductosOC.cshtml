@@ -55,7 +55,7 @@
 					<td class="align-center tiny-row">@item.Stk</td> @*05*@
 					<td class="align-center tiny-row">@item.P_Unidad_Pres</td> @*06*@
 					<td class="align-center tiny-row content-editable-td" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_Bultos>@item.Bultos</td> @*07*@
-					<td class="align-center tiny-row">@item.Cantidad</td> @*08*@
+					<td class="align-center tiny-row">@item.Cantidad.ToString("0.##")</td> @*08*@
 					<td class="align-right tiny-row content-editable-td" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_P_Plista>@item.P_Plista.ToString("0.##")</td> @*09*@
 					<td class="align-center tiny-row content-editable-td" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_P_Dto1>@item.P_Dto1.ToString("0.#")</td> @*10*@
 					<td class="align-center tiny-row content-editable-td" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_P_Dto2>@item.P_Dto2.ToString("0.#")</td> @*11*@
@@ -67,7 +67,11 @@
 					<td class="align-right tiny-row">@item.P_Pcosto.ToString("0.##")</td> @*17*@
 					<td class="align-right tiny-row">@item.P_Pcosto_Total.ToString("0.##")</td> @*18*@
 					<td class="align-center tiny-row">@item.Paletizado.ToString("0.##")</td> @*19*@
-					<td><a class="btn btn-xs btn-outline-dark" data-interaction="@item.P_Id" onclick="quitarProductoEnOC(this);"> <i class="bx bxs-trash"></i></a></td> @*20*@
+					<td>
+						<a class="btn btn-xs btn-outline-dark" data-interaction="@item.P_Id" onclick="quitarProductoEnOC(this);"> 
+							<i class="bx bxs-trash" style="line-height: 1.0;font-size: 1rem;"></i>
+						</a>
+					</td> @*20*@
 				</tr>
 			}
 		</tbody>

@@ -35,8 +35,8 @@ namespace gc.sitio.Controllers
 		private readonly AppSettings _options;
 		protected readonly IHttpContextAccessor _context;
 
-        public List<Orden> _orden;
-        internal readonly ILogger _logger;
+		public List<Orden> _orden;
+		internal readonly ILogger _logger;
 
 		public ControladorBase(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger logger)
 		{
@@ -1606,243 +1606,243 @@ namespace gc.sitio.Controllers
 		}
 		#endregion
 
-        #region Consultas
+		#region Consultas
 
 		//*********************************************************
 		// las variables de sesion de estas consultas se codificaran como datos_nodo_11, datos_nodo_21.. etc
 		//*********************************************************
-        public List<ConsCtaCteDto> CuentaCorrienteBuscada
-        {
-            get
-            {
-				//11 = nodo 1 - original 1 (si fuera un reporte duplicado deberia ser 2)
-                var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_11");
-                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
-                {
-                    return [];
-                }
-                return JsonConvert.DeserializeObject<List<ConsCtaCteDto>>(json);
-            }
-            set
-            {
-                var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("datos_CCUENTAS_11", json);
-            }
-        }
-
-        public List<ConsVtoDto> VencimientosBuscados
-        {
-            get
-            {
-                var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_21");
-                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
-                {
-                    return [];
-                }
-                return JsonConvert.DeserializeObject<List<ConsVtoDto>>(json);
-            }
-            set
-            {
-                var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("datos_CCUENTAS_21", json);
-            }
-        }
-
-        public List<ConsCompTotDto> CmptesTotalBuscados
-        {
-            get
-            {
-                var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_31");
-                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
-                {
-                    return [];
-                }
-                return JsonConvert.DeserializeObject<List<ConsCompTotDto>>(json);
-            }
-            set
-            {
-                var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("datos_CCUENTAS_31", json);
-            }
-        }
-
-        public List<ConsCompDetDto> CmptesDetalleBuscados
-        {
-            get
-            {
-                var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_32");
-                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
-                {
-                    return [];
-                }
-                return JsonConvert.DeserializeObject<List<ConsCompDetDto>>(json);
-            }
-            set
-            {
-                var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("datos_CCUENTAS_32", json);
-            }
-        }
-
-        public List<ConsOrdPagosDto> OrdenPagosBuscados
-        {
-            get
-            {
-                var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_41");
-                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
-                {
-                    return [];
-                }
-                return JsonConvert.DeserializeObject<List<ConsOrdPagosDto>>(json);
-            }
-            set
-            {
-                var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("datos_CCUENTAS_41", json);
-            }
-        }
-
-        public List<ConsOrdPagosDetDto> OrdenPagosDetBuscados
-        {
-            get
-            {
-                var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_42");
-                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
-                {
-                    return [];
-                }
-                return JsonConvert.DeserializeObject<List<ConsOrdPagosDetDto>>(json);
-            }
-            set
-            {
-                var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("datos_CCUENTAS_42", json);
-            }
-        }
-
-        public List<ConsRecepcionProveedorDto> RecepProvBuscados
-        {
-            get
-            {
-                var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_51");
-                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
-                {
-                    return [];
-                }
-                return JsonConvert.DeserializeObject<List<ConsRecepcionProveedorDto>>(json);
-            }
-            set
-            {
-                var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("datos_CCUENTAS_51", json);
-            }
-        }
-
-        public List<ConsRecepcionProveedorDetalleDto> RecepProvDetBuscados
-        {
-            get
-            {
-                var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_52");
-                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
-                {
-                    return [];
-                }
-                return JsonConvert.DeserializeObject<List<ConsRecepcionProveedorDetalleDto>>(json);
-            }
-            set
-            {
-                var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("datos_CCUENTAS_52", json);
-            }
-        }
-        #endregion
-
-        #region Documento Manager
-        public string ModuloDM
-        {
-            get
-            {
-                var txt = _context.HttpContext.Session.GetString("ModuloDM");
-                if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
-                {
-                    return string.Empty;
-                }
-                return txt;
-            }
-            set
-            {
-                var valor = value.ToString();
-                _context.HttpContext.Session.SetString("ModuloDM", valor);
-            }
-        }
-
-        public DocumentManagerViewModel DocumentManager
-        {
-            get
-            {
-                var json = _context.HttpContext.Session.GetString("DocumentManager");
-                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
-                {
-                    return new DocumentManagerViewModel();
-                }
-                return JsonConvert.DeserializeObject<DocumentManagerViewModel>(json);
-            }
-            set
-            {
-                var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("DocumentManager", json);
-            }
-        }
-
-        public List<MenuRoot> ArchivosCargadosModulo
-        {
-            get
-            {
-                var json = _context.HttpContext.Session.GetString("ArchivosCargadosModulo");
-                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
-                {
-                    return new List<MenuRoot>();
-                }
-                return JsonConvert.DeserializeObject<List<MenuRoot>>(json);
-            }
-            set
-            {
-                var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("ArchivosCargadosModulo", json);
-            }
-        }
-
-		public string ObtenerSerieDeDatos(string moduloId,string nodoId, out Type? tipo) 
+		public List<ConsCtaCteDto> CuentaCorrienteBuscada
 		{
-            tipo = null;
-            switch (moduloId)
+			get
+			{
+				//11 = nodo 1 - original 1 (si fuera un reporte duplicado deberia ser 2)
+				var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_11");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<ConsCtaCteDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("datos_CCUENTAS_11", json);
+			}
+		}
+
+		public List<ConsVtoDto> VencimientosBuscados
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_21");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<ConsVtoDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("datos_CCUENTAS_21", json);
+			}
+		}
+
+		public List<ConsCompTotDto> CmptesTotalBuscados
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_31");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<ConsCompTotDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("datos_CCUENTAS_31", json);
+			}
+		}
+
+		public List<ConsCompDetDto> CmptesDetalleBuscados
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_32");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<ConsCompDetDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("datos_CCUENTAS_32", json);
+			}
+		}
+
+		public List<ConsOrdPagosDto> OrdenPagosBuscados
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_41");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<ConsOrdPagosDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("datos_CCUENTAS_41", json);
+			}
+		}
+
+		public List<ConsOrdPagosDetDto> OrdenPagosDetBuscados
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_42");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<ConsOrdPagosDetDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("datos_CCUENTAS_42", json);
+			}
+		}
+
+		public List<ConsRecepcionProveedorDto> RecepProvBuscados
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_51");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<ConsRecepcionProveedorDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("datos_CCUENTAS_51", json);
+			}
+		}
+
+		public List<ConsRecepcionProveedorDetalleDto> RecepProvDetBuscados
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_52");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<ConsRecepcionProveedorDetalleDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("datos_CCUENTAS_52", json);
+			}
+		}
+		#endregion
+
+		#region Documento Manager
+		public string ModuloDM
+		{
+			get
+			{
+				var txt = _context.HttpContext.Session.GetString("ModuloDM");
+				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
+				{
+					return string.Empty;
+				}
+				return txt;
+			}
+			set
+			{
+				var valor = value.ToString();
+				_context.HttpContext.Session.SetString("ModuloDM", valor);
+			}
+		}
+
+		public DocumentManagerViewModel DocumentManager
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("DocumentManager");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new DocumentManagerViewModel();
+				}
+				return JsonConvert.DeserializeObject<DocumentManagerViewModel>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("DocumentManager", json);
+			}
+		}
+
+		public List<MenuRoot> ArchivosCargadosModulo
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("ArchivosCargadosModulo");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<MenuRoot>();
+				}
+				return JsonConvert.DeserializeObject<List<MenuRoot>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("ArchivosCargadosModulo", json);
+			}
+		}
+
+		public string ObtenerSerieDeDatos(string moduloId, string nodoId, out Type? tipo)
+		{
+			tipo = null;
+			switch (moduloId)
 			{
 				case "CCUENTAS":
 					switch (nodoId)
 					{
 						case "11":
 							tipo = CuentaCorrienteBuscada.GetType();
-							return JsonConvert.SerializeObject( CuentaCorrienteBuscada) ;
+							return JsonConvert.SerializeObject(CuentaCorrienteBuscada);
 						case "21":
-                            tipo = VencimientosBuscados.GetType();
-                            return JsonConvert.SerializeObject(VencimientosBuscados);
-                        case "31":
-                            tipo = CmptesTotalBuscados.GetType();
-                            return JsonConvert.SerializeObject(CmptesDetalleBuscados);
-							case "41":
-                            tipo = CmptesDetalleBuscados.GetType();
-                            return JsonConvert.SerializeObject(OrdenPagosDetBuscados);
-                        case "51":
-							tipo = RecepProvDetBuscados.GetType();	
+							tipo = VencimientosBuscados.GetType();
+							return JsonConvert.SerializeObject(VencimientosBuscados);
+						case "31":
+							tipo = CmptesTotalBuscados.GetType();
+							return JsonConvert.SerializeObject(CmptesDetalleBuscados);
+						case "41":
+							tipo = CmptesDetalleBuscados.GetType();
+							return JsonConvert.SerializeObject(OrdenPagosDetBuscados);
+						case "51":
+							tipo = RecepProvDetBuscados.GetType();
 							return JsonConvert.SerializeObject(RecepProvDetBuscados);
-                        default:
+						default:
 							break;
 					}
 					break;
 			}
 
-            return string.Empty;
-        }
+			return string.Empty;
+		}
 		#endregion
 
 		#region	ORDEN DE COMPRA ESTADO LISTA
@@ -1901,7 +1901,7 @@ namespace gc.sitio.Controllers
 		}
 		#endregion
 
-		public JsonResult AnalizarRespuesta(RespuestaGenerica<RespuestaDto> res)
+		public JsonResult AnalizarRespuesta(RespuestaGenerica<RespuestaDto> res, string mensajeDeRespuesta = "")
 		{
 			if (res == null)
 				return Json(new { error = true, warn = false, msg = "Ha ocurrido un error al intentar actualizar la información.", codigo = 1, setFocus = string.Empty });
@@ -1924,7 +1924,7 @@ namespace gc.sitio.Controllers
 				return Json(new { error = true, warn = false, msg = res.Mensaje, codigo = 1, setFocus = string.Empty });
 
 			if (res.Entidad != null)
-				return Json(new { error = false, warn = false, msg = "La entidad de ha actualizado con éxito.", id = string.IsNullOrWhiteSpace(res.Entidad.resultado_id) ? (string.IsNullOrWhiteSpace(res.Entidad.resultado.ToString()) ? string.Empty : res.Entidad.resultado.ToString()) : res.Entidad.resultado_id });
+				return Json(new { error = false, warn = false, msg = !string.IsNullOrWhiteSpace(mensajeDeRespuesta) ? mensajeDeRespuesta : "La entidad de ha actualizado con éxito.", id = string.IsNullOrWhiteSpace(res.Entidad.resultado_id) ? (string.IsNullOrWhiteSpace(res.Entidad.resultado.ToString()) ? string.Empty : res.Entidad.resultado.ToString()) : res.Entidad.resultado_id });
 			else
 				return Json(new { error = true, warn = false, msg = "Se ha producido un error al intentar actualizar la entidad", codigo = 1, setFocus = string.Empty });
 		}
@@ -1973,7 +1973,7 @@ namespace gc.sitio.Controllers
 			RubroLista = _rubSv.ObtenerListaRubros("", TokenCookie);
 		}
 
-		protected void ObtenerProveedores(ICuentaServicio _ctaSv, string opeIva="%")
+		protected void ObtenerProveedores(ICuentaServicio _ctaSv, string opeIva = "%")
 		{
 			//se guardan los proveedores en session. Para ser utilizados posteriormente
 

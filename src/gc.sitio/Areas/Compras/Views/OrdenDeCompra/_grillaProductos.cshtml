@@ -63,22 +63,29 @@
 					<td class="align-right tiny-row">@item.costo</td>
 					@if (item.p_activo == "D")
 					{
-						<td><a class="btn btn-xs btn-outline-secondary" id=@nombre data-interaction="@item.p_id" onclick="actualizarProducto(this);" title="Producto discontinuo"> <i class="bx bx-cart-alt"></i></a></td>
+						<td><a class="btn btn-xs btn-outline-secondary" id=@nombre data-interaction="@item.p_id" onclick="actualizarProducto(this);" title="Producto discontinuo">
+								<i class="bx bx-cart-alt" style="line-height: 1.0;font-size: 1rem;"></i>
+							</a>
+						</td>
 					}
 					else
 					{
-						<td><a class="btn btn-xs btn-outline-success" id=@nombre data-interaction="@item.p_id" onclick="actualizarProducto(this);"> <i class="bx bx-cart-alt"></i></a></td>
+						<td>
+							<a class="btn btn-xs btn-outline-success" id=@nombre data-interaction="@item.p_id" onclick="actualizarProducto(this);">
+								<i class="bx bx-cart-alt" style="line-height: 1.0;font-size: 1rem;"></i>
+							</a>
+						</td>
 					}
 				</tr>
 			}
 		</tbody>
 	</table>
-	<div class="row">
+	@* <div class="row">
 		<div class="offset-md-3 col-md-6">
 			<div id="divPaginacion" class="">
 			</div>
 		</div>
-	</div>
+	</div> *@
 </div>
 
 @section scripts {
