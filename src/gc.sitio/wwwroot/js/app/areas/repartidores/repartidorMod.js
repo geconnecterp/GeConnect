@@ -4,7 +4,7 @@
         if ($("#divFiltro").hasClass("show")) {
             $("#divDetalle").collapse("hide");
         }
-        activarGrilla(Grids.GridVendedor);
+        activarGrilla(Grids.GridRepartidor);
     });
 
     $("#btnDetalle").prop("disabled", true);
@@ -22,16 +22,16 @@
         dataBak = "";
         //es una busqueda por filtro. siempre sera pagina 1
         pagina = 1;
-        buscarVendedores(pagina);
+        buscarRepartidores(pagina);
     });
     //callback para que funcione la paginación
-    funcCallBack = buscarVendedores;
+    funcCallBack = buscarRepartidores;
 
     $(".inputEditable").on("keypress", analizaEnterInput);
 
     $("#BtnLiTab01").on("click", function () {
         tabAbm = 1;
-        activarGrilla(Grids.GridVendedor);
+        activarGrilla(Grids.GridRepartidor);
         //$("#btnAbmNuevo").prop("disabled", false);
         //$("#btnAbmElimi").prop("disabled", false);       
 
@@ -57,24 +57,24 @@
     //    presentaDerechosUsuario();
     //});
 
-    $(document).on("dblclick", "#" + Grids.GridVendedor + " tbody tr", function () {
+    $(document).on("dblclick", "#" + Grids.GridRepartidor + " tbody tr", function () {
         x = $(this);
         //se resguarda el registro de la tabla
         regSelected = x;
         ejecutaDblClickGrid1(x);
     });
 
-    InicializaPantallaVendedor(Grids.GridVendedor);
+    InicializaPantallaRepartidor(Grids.GridRepartidor);
     //inicia la pantalla presentando la primer pagina de usuarios
     //$("#btnBuscar").trigger("click");
 });
 
-function InicializaPantallaVendedor(grilla) {
+function InicializaPantallaRepartidor(grilla) {
     //si no es una de las grillas deteminadas en el modulo, se asignará una grilla segun el tab que se encuentre.
 
     switch (tabAbm) {
         case 1:
-            grilla = Grids.GridVendedor;
+            grilla = Grids.GridRepartidor;
             if ($("#divDetalle").is(":visible")) {
                 $("#divDetalle").collapse("hide");
             }
@@ -126,7 +126,7 @@ function InicializaPantallaVendedor(grilla) {
     return true;
 }
 
-function selectRegVendedor(x, gridId) {
+function selectRegRepartidor(x, gridId) {
     //reinvoco para que me marque el registro 
     selectReg(x, gridId);
     //limpio el tab01 para que se seleccione el registro.
@@ -142,7 +142,7 @@ function selectRegVendedor(x, gridId) {
             activarBotones(false);
             break;
         case 2:
-            InicializaPantallaVendedor(Grids.GridVendedor);
+            InicializaPantallaRepartidor(Grids.GridRepartidor);
 
             break;
         default:
@@ -152,11 +152,11 @@ function selectRegVendedor(x, gridId) {
 }
 
 function ejecutaDblClickGrid1(x) {
-    AbrirWaiting("Espere mientras se busca el Vendedor solicitado...");
-    selectVendedorDbl(x, Grids.GridVendedor);
+    AbrirWaiting("Espere mientras se busca el Repartidor solicitado...");
+    selectRepartidorDbl(x, Grids.GridRepartidor);
 }
 
-function selectVendedorDbl(x, gridId) {
+function selectRepartidorDbl(x, gridId) {
     $("#" + gridId + " tbody tr").each(function (index) {
         $(this).removeClass("selectedEdit-row");
     });
@@ -171,7 +171,7 @@ function selectVendedorDbl(x, gridId) {
             EntidadSelect = id;
             desactivarGrilla(gridId);
             //se busca el perfil
-            buscarVendedor(data);           
+            buscarRepartidor(data);           
             //se posiciona el registro seleccionado
             posicionarRegOnTop(x);
             break;
@@ -181,7 +181,7 @@ function selectVendedorDbl(x, gridId) {
 }
 
 
-function buscarVendedores(pagina) {
+function buscarRepartidores(pagina) {
     AbrirWaiting();
     //desactivamos los botones de acción
     activarBotones2(false);

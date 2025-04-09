@@ -3,8 +3,8 @@
     $("#btnAbmModif").on("click", ejecutarModificacion);
     $("#btnAbmElimi").on("click", ejecutarBaja);
 
-    $("#btnAbmCancelar").on("click", InicializaPantallaVendedor);
-    $("#btnAbmAceptar").on("click", confirmarOperacionAbmVendedor);
+    $("#btnAbmCancelar").on("click", InicializaPantallaRepartidor);
+    $("#btnAbmAceptar").on("click", confirmarOperacionAbmRepartidor);
 
     $("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle);
 
@@ -49,7 +49,7 @@ function ejecutarAlta() {
     var data = {};
     switch (tabAbm) {
         case 1:
-            PostGenHtml(data, nuevoVendedorUrl, function (obj) {
+            PostGenHtml(data, nuevoRepartidorUrl, function (obj) {
                 $("#divpanel01").html(obj);
                 ////se procede a buscar la grilla de barrado
                 //buscarBarrado(data);
@@ -131,7 +131,7 @@ function accionBotones(btn) {
 
             if (tabAbm === 1) {
                 $("#btnDetalle").prop("disabled", true);
-                activarGrilla(Grids.GridVendedor);
+                activarGrilla(Grids.GridPerfil);
             }
 
         }
@@ -167,8 +167,8 @@ function activarControles(act) {
     }
 }
 
-function buscarVendedor(data) {
-    PostGenHtml(data, buscarVendedorUrl, function (obj) {
+function buscarRepartidor(data) {
+    PostGenHtml(data, buscarRepartidorUrl, function (obj) {
         $("#divpanel01").html(obj);
         //se procede a buscar la grilla de barrado
 
@@ -199,7 +199,7 @@ function buscarVendedor(data) {
 }
 
 
-function confirmarOperacionAbmVendedor() {
+function confirmarOperacionAbmRepartidor() {
     AbrirWaiting("Completando proceso...");
     var data = {};
     switch (tabAbm) {
@@ -212,7 +212,7 @@ function confirmarOperacionAbmVendedor() {
     urlabm = ""
     switch (tabAbm) {
         case 1:
-            urlabm = confirmarAbmVendedorUrl;
+            urlabm = confirmarAbmRepartidorUrl;
             break;
         
         default:
@@ -244,9 +244,9 @@ function confirmarOperacionAbmVendedor() {
                 var grilla = "";
                 switch (tabAbm) {
                     case 1:
-                        grilla = Grids.GridVendedor;
+                        grilla = Grids.GridUser;
                         dataBak = "";
-                        InicializaPantallaVendedor(grilla);
+                        InicializaPantallaRepartidor(grilla);
                         break;
 
                     default:
@@ -262,7 +262,7 @@ function confirmarOperacionAbmVendedor() {
                             }
                             //data = { p_id: EntidadSelect };
                             //buscarProductoServer(data);
-                            InicializaFiltroAbmVendedor(EntidadSelect);
+                            InicializaFiltroAbmRepartidor(EntidadSelect);
                             $("#btnBuscar").trigger("click");
                             $("#divpanel01").empty();
                             //inicializamos la acción.
@@ -291,7 +291,7 @@ function confirmarOperacionAbmVendedor() {
     });
 }
 
-function InicializaFiltroAbmVendedor(id) {
+function InicializaFiltroAbmRepartidor(id) {
     if ($("#chkDescr").is(":checked")) {
         $("#chkDescr").prop("checked", false);
         $("#Buscar").val("");
@@ -320,7 +320,7 @@ function InicializaFiltroAbmVendedor(id) {
 }
 function analizaEstadoBtnDetalle() {
     tabMn = 1;
-    InicializaPantallaVendedor(Grids.GridVendedor);
+    InicializaPantallaRepartidor(Grids.GridRepartidor);
     return true;
 }
 
