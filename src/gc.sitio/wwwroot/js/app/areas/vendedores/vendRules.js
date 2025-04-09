@@ -272,7 +272,7 @@ function confirmarOperacionAbmVendedor() {
                             //borramos el id del producto si se eliminó
                             EntidadSelect = "";
                             //VAMOS A EJECUTAR NUEVAMENTE EL BUSCAR
-                            buscarUsers(pagina);
+                            buscarVendedores(pagina);
                         }
                         break;
                    

@@ -189,7 +189,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Repartidor
                 AbmGenDto abm = new AbmGenDto()
                 {
                     Json = JsonConvert.SerializeObject(ve),
-                    Objeto = "vendedores",
+                    Objeto = "repartidores",
                     Administracion = AdministracionId,
                     Usuario = UserName,
                     Abm = accion
@@ -202,13 +202,13 @@ namespace gc.sitio.Areas.ABMs.Controllers.Repartidor
                     switch (accion)
                     {
                         case 'A':
-                            msg = $"EL PROCESAMIENTO DEL ALTA DEL VENDEDOR {ve.rp_id} SE REALIZO SATISFACTORIAMENTE";
+                            msg = $"EL PROCESAMIENTO DEL ALTA DEL REPARTIDOR {ve.rp_id} SE REALIZO SATISFACTORIAMENTE";
                             break;
                         case 'M':
-                            msg = $"EL PROCESAMIENTO DE LA MODIFICIACION DEL VENDEDOR {ve.rp_id} SE REALIZO SATISFACTORIAMENTE";
+                            msg = $"EL PROCESAMIENTO DE LA MODIFICIACION DEL REPARTIDOR {ve.rp_id} SE REALIZO SATISFACTORIAMENTE";
                             break;
                         default:
-                            msg = $"EL PROCESAMIENTO DE LA BAJA DEL VENDEDOR {ve.rp_id} SE REALIZO SATISFACTORIAMENTE";
+                            msg = $"EL PROCESAMIENTO DE LA BAJA DEL REPARTIDOR {ve.rp_id} SE REALIZO SATISFACTORIAMENTE";
                             break;
                     }
                     RepartidoresLista = [];

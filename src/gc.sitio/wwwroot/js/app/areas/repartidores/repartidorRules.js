@@ -154,10 +154,10 @@ function activarControles(act) {
                 $("#VeActivo").prop("disabled", act);
 
                 //Linea 02
-                $("#ve_nombre").prop("disabled", act);
-                $("#ve_comision").mask("99.99", { reverse: true }).prop("disabled", act);                
-                $("#ve_mail").prop("disabled", act);
-                $("#ve_celu").mask("(000) 000-0000").prop("disabled", act);                
+                $("#rp_nombre").prop("disabled", act);
+                $("#rp_comision").mask("99.99", { reverse: true }).prop("disabled", act);                
+                $("#rp_mail").prop("disabled", act);
+                $("#rp_celu").mask("(000) 000-0000").prop("disabled", act);                
                 break;
            
             default:
@@ -272,7 +272,7 @@ function confirmarOperacionAbmRepartidor() {
                             //borramos el id del producto si se eliminó
                             EntidadSelect = "";
                             //VAMOS A EJECUTAR NUEVAMENTE EL BUSCAR
-                            buscarUsers(pagina);
+                            buscarRepartidores(pagina);
                         }
                         break;
                    
@@ -325,17 +325,17 @@ function analizaEstadoBtnDetalle() {
 }
 
 function confirmarDatosTab01() {
-    var ve_id = $("#ve_id").val();
-    var ve_activo = "N";
-    if ($("#VeActivo").is(":checked")) {
-        ve_activo = "S";
+    var rp_id = $("#rp_id").val();
+    var rp_activo = "N";
+    if ($("#RpActivo").is(":checked")) {
+        rp_activo = "S";
     }
 
-    var ve_nombre = $("#ve_nombre").val();
-    var ve_comision = $("#ve_comision").val();
-    var ve_mail = $("#ve_mail").val();
-    var ve_celu = $("#ve_celu").val();
+    var rp_nombre = $("#rp_nombre").val();
+    var rp_comision = $("#rp_comision").val();
+    var rp_mail = $("#rp_mail").val();
+    var rp_celu = $("#rp_celu").val();
 
-    var data = { ve_id, ve_activo, ve_nombre, ve_comision, ve_mail, ve_celu,accion };
+    var data = { rp_id, rp_activo, rp_nombre, rp_comision, rp_mail, rp_celu,accion };
     return data;
 }
