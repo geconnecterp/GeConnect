@@ -8,6 +8,20 @@
 @section styles {
     <link rel="stylesheet" href="~/css/simplePagination.css" />
     <link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+
+    <style>
+        .autocomplete-prov-p {
+            background-color: #fff8dc; /* dorado suave */
+        }
+
+        .autocomplete-prov-e {
+            background-color: #dceeff; /* azul suave */
+        }
+
+        .autocomplete-prov-default {
+            background-color: #ffffff; /* blanco por defecto */
+        }
+    </style>
 }
 
 <div class="container">
@@ -79,6 +93,8 @@
 
         var enviarEmailUrl =  "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
         var enviarWhatsAppUrl =  "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
+
+        var initConsultaUrl =  "@Url.Action("index", "ConsCuenta", new { area = "Consultas" })";
     </script>
     <script src="~/lib/jstree/jstree.min.js"></script>
 

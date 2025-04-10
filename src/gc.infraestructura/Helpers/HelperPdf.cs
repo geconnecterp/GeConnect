@@ -3,6 +3,7 @@ using iTextSharp.text;
 using iTextSharp.text.pdf;
 using SixLabors.ImageSharp.Advanced;
 using System.ComponentModel;
+using System.Globalization;
 
 
 namespace gc.infraestructura.Helpers
@@ -362,7 +363,7 @@ namespace gc.infraestructura.Helpers
         /// <param name="espaciadoAnterior"></param>
         /// <param name="espaciadoPosterior"></param>
         /// <returns>devuelve un Parrafo</returns>
-        public static Paragraph GeneraParrafo(string texto, Font fuente, int alineacion, float espaciadoAnterior, float espaciadoPosterior,bool especificaColor=false, BaseColor? color=null)
+        public static Paragraph GeneraParrafo(string texto, Font fuente, int alineacion, float espaciadoAnterior, float espaciadoPosterior, bool especificaColor = false, BaseColor? color = null)
         {
             if (especificaColor)
             {
@@ -410,7 +411,7 @@ namespace gc.infraestructura.Helpers
             celda.HorizontalAlignment = alineacion;
             if (hasBackground)
             {
-                celda.BackgroundColor = bkg;                
+                celda.BackgroundColor = bkg;
             }
 
             return celda;
@@ -439,7 +440,7 @@ namespace gc.infraestructura.Helpers
             return celda;
         }
 
-        
+
 
         private static PdfPTable CargarCabeceraDeLista(List<string> columnas, float[] anchos, Font normal)
         {
@@ -463,12 +464,12 @@ namespace gc.infraestructura.Helpers
             tablaEnc.AddCell(celda);
 
             parrafo = GeneraParrafo(cuerpo.CtaId, subtitulo, Element.ALIGN_LEFT, 10, 10);
-            celda = HelperPdf.GeneraCelda(parrafo, false, BaseColor.Black, Element.ALIGN_CENTER);
+            celda = HelperPdf.GeneraCelda(parrafo, false, BaseColor.Black, Element.ALIGN_LEFT);
             celda.Border = Rectangle.NO_BORDER;
             tablaEnc.AddCell(celda);
 
             parrafo = GeneraParrafo($"CUIT:", subtitulo, Element.ALIGN_RIGHT, 10, 10);
-            celda = HelperPdf.GeneraCelda(parrafo, false, BaseColor.Black, Element.ALIGN_CENTER);
+            celda = HelperPdf.GeneraCelda(parrafo, false, BaseColor.Black, Element.ALIGN_LEFT);
             celda.Border = Rectangle.NO_BORDER;
             tablaEnc.AddCell(celda);
 
@@ -484,7 +485,7 @@ namespace gc.infraestructura.Helpers
             tablaEnc.AddCell(celda);
 
             parrafo = GeneraParrafo(cuerpo.RazonSocial, subtitulo, Element.ALIGN_LEFT, 10, 10);
-            celda = HelperPdf.GeneraCelda(parrafo, false, BaseColor.Black, Element.ALIGN_CENTER);
+            celda = HelperPdf.GeneraCelda(parrafo, false, BaseColor.Black, Element.ALIGN_LEFT);
             celda.Border = Rectangle.NO_BORDER;
             tablaEnc.AddCell(celda);
 
@@ -494,7 +495,7 @@ namespace gc.infraestructura.Helpers
             tablaEnc.AddCell(celda);
 
             parrafo = GeneraParrafo(cuerpo.Contacto, subtitulo, Element.ALIGN_LEFT, 10, 10);
-            celda = HelperPdf.GeneraCelda(parrafo, false, BaseColor.Black, Element.ALIGN_CENTER);
+            celda = HelperPdf.GeneraCelda(parrafo, false, BaseColor.Black, Element.ALIGN_LEFT);
             celda.Border = Rectangle.NO_BORDER;
             tablaEnc.AddCell(celda);
 
@@ -512,7 +513,7 @@ namespace gc.infraestructura.Helpers
             pdf.Add(tablaEnc);
         }
 
-        public static void GeneraCabeceraListado(Document pdf, List<string> titulos,  
+        public static void GeneraCabeceraListado(Document pdf, List<string> titulos,
             List<float> columnasAncho, Font titulo, Font subtitulo, Font normal, Font chico)
         {
             PdfPTable tabla = GeneraTabla(titulos.Count, columnasAncho.ToArray(), 100, 10, 10);
@@ -521,7 +522,7 @@ namespace gc.infraestructura.Helpers
             foreach (var txt in titulos)
             {
                 parrafo = GeneraParrafo(txt, normal, Element.ALIGN_CENTER, 10, 10);
-                celda = GeneraCelda(parrafo,false,BaseColor.White, Element.ALIGN_CENTER);
+                celda = GeneraCelda(parrafo, false, BaseColor.White, Element.ALIGN_CENTER);
                 tabla.AddCell(celda);
             }
 
@@ -534,9 +535,9 @@ namespace gc.infraestructura.Helpers
             PdfPCell celda;
             foreach (var txt in titulos)
             {
-                parrafo = GeneraParrafo(txt, normal, Element.ALIGN_CENTER, 10, 10,true,BaseColor.White);
-                
-                celda = GeneraCelda(parrafo, true , BaseColor.Black, Element.ALIGN_CENTER);
+                parrafo = GeneraParrafo(txt, normal, Element.ALIGN_CENTER, 10, 10, true, BaseColor.White);
+
+                celda = GeneraCelda(parrafo, true, BaseColor.Black, Element.ALIGN_CENTER);
                 tabla.AddCell(celda);
             }
             pdf.Add(tabla);
@@ -544,10 +545,12 @@ namespace gc.infraestructura.Helpers
 
         public static void GenerarListadoDatos<T>(Document pdf, DatosCuerpoDto<T> cuerpo, float[] anchos, Font normal)
         {
+                    int alig;
+            CultureInfo cultura = new CultureInfo("es-ES");
             Type entidad = typeof(T);
             PropertyDescriptorCollection propiedades = TypeDescriptor.GetProperties(entidad);
 
-            PdfPTable tabla = GeneraTabla(propiedades.Count, anchos, 100, 10, 10);
+            PdfPTable tabla = GeneraTabla(propiedades.Count, anchos, 100, 0, 10);
 
             Paragraph parrafo;
             PdfPCell celda;
@@ -556,18 +559,34 @@ namespace gc.infraestructura.Helpers
                 foreach (PropertyDescriptor prop in propiedades)
                 {
                     var valor = prop.GetValue(elemento);
-                    if (valor.GetType().Equals("decimal") || valor.GetType().Equals("int"))
+                    if (valor == null)
                     {
-                        parrafo = GeneraParrafo(valor.ToString(), normal, Element.ALIGN_RIGHT, 10, 10,true,BaseColor.Black);
+                        valor = string.Empty;
+                    }
+                    if (decimal.TryParse(valor.ToString(),NumberStyles.Number,cultura,out decimal resultado))
+                    {
+                        alig = Element.ALIGN_RIGHT;
+                    }
+                    //trato de identificar si es una fecha
+                    else if (valor.ToString().ToDateTimeOrNull() != null)
+                    {
+                        alig = Element.ALIGN_CENTER;
+                    }
+                    //si es un string y tiene un solo caracter lo considero char
+                    else if (valor.ToString().Length==1)
+                    {
+                        alig = Element.ALIGN_CENTER;
                     }
                     else
                     {
-                        parrafo = GeneraParrafo(valor.ToString(), normal, Element.ALIGN_LEFT, 10, 10, true, BaseColor.Black);
+                        alig = Element.ALIGN_LEFT;
                     }
-                    
-                    celda = GeneraCelda(parrafo, true, BaseColor.White, Element.ALIGN_CENTER);
+
+                    parrafo = GeneraParrafo(valor.ToString(), normal, alig, 10, 10, true, BaseColor.Black);
+
+                    celda = GeneraCelda(parrafo, true, BaseColor.White, alig);
                     tabla.AddCell(celda);
-                }                               
+                }
             }
             pdf.Add(tabla);
         }
