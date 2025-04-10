@@ -58,18 +58,7 @@ th, td {
     overflow: hidden;
 }
 
-.table-wrapper {
-    max-height: 500px;
-    max-width: 100%;
-    overflow: auto;
-    /*display: inline-block;*/
-}
-.table-wrapper-modal {
-    max-height: 300px;
-    max-width: 100%;
-    overflow: auto;
-    /*display: inline-block;*/
-}
+
 
 .table-thead, .table-tbody{display:block;  }
 
@@ -80,8 +69,96 @@ th, td {
 }
 
 /*-----FIN CONFIGURACION TABLA----*/
+/*------Hereda de Sitio -------*/
+.table-wrapper-fixed-head thead th {
+    position: sticky;
+    top: 0px;
+}
 
 
+.table-wrapper-full-width {
+    max-height: 500px;
+    max-width: 100%;
+    overflow: auto;
+}
+
+.table-wrapper {
+    max-height: 500px;
+    max-width: 100%;
+    overflow: auto;
+}
+
+.table-wrapper-500 {
+    max-height: 500px;
+    max-width: 98%;
+    overflow: auto;
+}
+
+.table-wrapper-400 {
+    max-height: 400px;
+    max-width: 98%;
+    overflow: auto;
+}
+
+.table-wrapper-300 {
+    max-height: 300px;
+    max-width: 98%;
+    overflow: auto;
+}
+
+.table-wrapper-700 {
+    max-height: 700px;
+    max-width: 98%;
+    overflow: auto;
+}
+
+.table-wrapper-300-full-width {
+    max-height: 300px;
+    max-width: 100%;
+    overflow: auto;
+}
+
+.table-wrapper-200 {
+    max-height: 200px;
+    max-width: 98%;
+    overflow: auto;
+}
+
+.table-wrapper-100-full {
+    max-height: 100px;
+    max-width: 100%;
+    overflow: auto;
+}
+
+.table-wrapper-200-full {
+    max-height: 200px;
+    max-width: 100%;
+    overflow: auto;
+}
+
+.table-wrapper-100 {
+    max-height: 100px;
+    max-width: 98%;
+    overflow: auto;
+}
+
+.table-wrapper-xs {
+    max-height: 270px;
+    max-width: 98%;
+    overflow: auto;
+}
+
+.table-fixed-header {
+    position: sticky;
+    top: 0px;
+}
+
+.table-wrapper-modal {
+    max-height: 300px;
+    max-width: 100%;
+    overflow: auto;
+}
+/*----- FIN HERENCIA ----- */
 .alinearDerecha {
     justify-content: flex-end;
 }

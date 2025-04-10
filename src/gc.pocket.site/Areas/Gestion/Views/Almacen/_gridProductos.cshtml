@@ -10,7 +10,7 @@
 <div class="card">
     <div class="card-body">
         <div class="table-responsive table-wrapper text-nowrap">
-            <table class="table mb-0 table-bordered table-hover">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head">
                 <thead>
                     <tr class="header">
                         <th scope="col">@nameof(dataMod.P_id)</th>
@@ -29,8 +29,8 @@
                         <tr class="@clase">
 
 
-                            <td>@item.P_id</td>
-                            <td>@item.P_desc</td>
+                            <td class="text-sm-center">@item.P_id</td>
+                            <td class="text-sm-start">@item.P_desc</td>
                             <td class="text-sm-end">@item.Ps_stk</td>
                             <td class="text-sm-center">@item.P_id_barrado</td>
                             <td class="text-sm-center">@item.P_activo</td>

@@ -106,7 +106,7 @@ $(function () {
                     data: data,
                     success: function (obj) {
                         response($.map(obj, function (item) {
-                            var texto = item.descripcion;
+                            var texto = "" + item.descripcion + " ("+item.provId + ")";
                             return { label: texto, value: item.descripcion, id: item.id, prov: item.provId };
                         }));
                     }
@@ -129,11 +129,38 @@ $(function () {
                 }
                 return true;
             }
-        });
+        }).data("ui-autocomplete")._renderItem = function (ul, item) {
+            //let bgColor = "";
+
+            //if (item.prov === "P") {
+            //    bgColor = "#fff8dc"; // light beige/dorado
+            //} else if (item.prov === "E") {
+            //    bgColor = "#dceeff"; // azul suave
+            //}
+
+            //return $("<li>")
+            //    .css("background-color", bgColor)
+            //    .append($("<div>").text(item.label))
+            //    .appendTo(ul);
+            let className = "autocomplete-prov-default";
+
+            if (item.prov === "P") {
+                className = "autocomplete-prov-p";
+            } else if (item.prov === "E") {
+                className = "autocomplete-prov-e";
+            }
+
+            return $("<li>")
+                .addClass(className)
+                .append($("<div>").text(item.label))
+                .appendTo(ul);
+        };
     });
 
 
-    /*$("#btnCancel").on("click",)*/
+    $("#btnCancel").on("click", function () {
+        window.location.href = initConsultaUrl;
+    });
 
     inicializaPantallaConsulta();
     $("#divFiltro").collapse("show");
@@ -142,15 +169,20 @@ $(function () {
 function inicializaPantallaConsulta() {
     var f = new Date();
     $("#fechaD").val(formatoFechaYMD(restarFecha(f, 365)));
+    //definición de fecha para vencimientos
     f = new Date("01/01/1900");
     $("#cvfechaD").val(formatoFechaYMD(f));
-    $("#opfechaD").val(formatoFechaYMD(f));
-    $("#rpfechaD").val(formatoFechaYMD(f));
-
     f = new Date("01/01/3500");
     $("#cvfechaH").val(formatoFechaYMD(f));
+
+    f = new Date();
     $("#opfechaH").val(formatoFechaYMD(f));
     $("#rpfechaH").val(formatoFechaYMD(f));
+
+    // Determinar la fecha desde (primer día del mes anterior)
+    var primerDiaMesAnterior = new Date(f.getFullYear(), f.getMonth() - 1, 1);
+    $("#opfechaD").val(formatoFechaYMD(primerDiaMesAnterior));
+    $("#rpfechaD").val(formatoFechaYMD(primerDiaMesAnterior)); 
 
     $("#divpanel01").empty();
     $("#divPaginacion").empty();
