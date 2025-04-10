@@ -8,6 +8,27 @@
 
     $("#estadoFuncion").on("change", verificaEstado); //este control debe ser insertado el mismo o similar para cada modulo.
 
+    $("#txtBox").on("input", function () {
+        var inputLength = $(this).val().length; // Obtener la longitud del texto ingresado
+
+        if (inputLength === 11) {
+            // Si el texto tiene exactamente 11 caracteres, activar el botón
+            $("#btnValBox")
+                .prop("disabled", false) // Activar el botón
+                .removeClass("btn-danger") // Quitar la clase de color rojo
+                .addClass("btn-success"); // Agregar la clase de color verde
+            //$("#chkDesarma").prop("disabled", false);
+        } else {
+            // Si el texto tiene menos o más de 11 caracteres, desactivar el botón
+            //$("#btnValBox")
+            //    .prop("disabled", true) // Desactivar el botón
+            //    .removeClass("btn-success") // Quitar la clase de color verde
+            //    .addClass("btn-danger"); // Agregar la clase de color rojo
+            //$("#chkDesarma").prop("checked",true).prop("disabled", true);
+            InicializaVista
+        }
+    });
+
     //$("#btnCleanProd").on("click", limpiarProductoCarrito);
 
     //este boton valida el BOX
@@ -27,12 +48,22 @@
         var sinau = autorizacionActual.sinAU;
         if ($("#chkDesarma").is(":checked")) {
             //habilito los controles
-            //$("#btnBusquedaBase").prop("disabled", true);
-            //$("input#Busqueda").prop("disabled", true);
+            $("#btnBusquedaBase").prop("disabled", true);
+            $("input#Busqueda").prop("disabled", true);
+            $("#btnCargarProd")
+                .prop("disabled", true) // Desactivar el botón
+                .removeClass("btn-success") // Quitar la clase de color verde
+                .addClass("btn-danger"); // Agregar la clase de color rojo
+            
         }
         else {
             $("#btnBusquedaBase").prop("disabled", true);
             $("input#Busqueda").prop("disabled", true);
+           
+            $("#btnCargarProd")
+                .prop("disabled", false) // Activar el botón
+                .removeClass("btn-danger") // Quitar la clase de color rojo
+                .addClass("btn-success"); // Agregar la clase de color verde
         }
     });
 
@@ -44,11 +75,20 @@
 
 function InicializaVista() {
     if (activarCheckDesarma === true) {
-        $("#chkDesarma").prop("disabled", false);
+        $("#chkDesarma").prop("checked", true);
     }
     else {
-        $("#chkDesarma").prop("disabled", true);
+        $("#chkDesarma").prop("checked", false);
     }
+
+    $("#btnCargarProd")
+        .prop("disabled", true) // Desactivar el botón
+        .removeClass("btn-success") // Quitar la clase de color verde
+        .addClass("btn-danger"); // Agregar la clase de color rojo
+
+
+    $("#btnBusquedaBase").prop("disabled", true);
+    $("input#Busqueda").prop("disabled", true);
 }
 
 function InicializaBusqueda() {

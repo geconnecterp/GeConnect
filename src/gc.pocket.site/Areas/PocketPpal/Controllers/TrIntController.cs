@@ -251,7 +251,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         #region VISTA 02
 
         /// <summary>
-        /// SELECCIONADA LA AUTORIZACION PENDIENTE SE PRESENTARAN EN PANTALLA LOS PRODUCTOS A INCLUIR BUSCANDOLOS POR BOX O RUBRO
+        /// SELECCIONADA LA AUTORIZACION PENDIENTE SE PRESENTARAN EN PANTALLA LOS PRODUCTOS 
+        /// A INCLUIR BUSCANDOLOS POR BOX O RUBRO
         /// </summary>
         /// <returns></returns>
         [HttpGet]
@@ -631,7 +632,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                     if (resp.Ok)
                     {
-                        return Json(new { error = false, warn = false, msg = $"Producto {ProductoBase.P_desc} fue limpiado exitosamente" });
+                        return Json(new { error = false, warn = false, msg = $"Producto {ProductoBase.P_desc} fue limpiado exitosamente",tiId = TI_ModId });
                     }
                     else { return Json(new { error = false, warn = true, msg = resp.Mensaje }); }
                 }
