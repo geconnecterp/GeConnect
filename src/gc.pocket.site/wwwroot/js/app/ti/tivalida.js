@@ -17,7 +17,7 @@
                 .prop("disabled", false) // Activar el botón
                 .removeClass("btn-danger") // Quitar la clase de color rojo
                 .addClass("btn-success"); // Agregar la clase de color verde
-            //$("#chkDesarma").prop("disabled", false);
+            $("#chkDesarma").prop("disabled", false);
         } else {
             // Si el texto tiene menos o más de 11 caracteres, desactivar el botón
             $("#btnValBox")
