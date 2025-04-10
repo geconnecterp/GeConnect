@@ -20,12 +20,12 @@
             //$("#chkDesarma").prop("disabled", false);
         } else {
             // Si el texto tiene menos o más de 11 caracteres, desactivar el botón
-            //$("#btnValBox")
-            //    .prop("disabled", true) // Desactivar el botón
-            //    .removeClass("btn-success") // Quitar la clase de color verde
-            //    .addClass("btn-danger"); // Agregar la clase de color rojo
-            //$("#chkDesarma").prop("checked",true).prop("disabled", true);
-            InicializaVista
+            $("#btnValBox")
+                .prop("disabled", true) // Desactivar el botón
+                .removeClass("btn-success") // Quitar la clase de color verde
+                .addClass("btn-danger"); // Agregar la clase de color rojo
+            $("#chkDesarma").prop("checked",true).prop("disabled", true);
+            //InicializaVista();
         }
     });
 
