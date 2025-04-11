@@ -35,9 +35,9 @@ namespace gc.infraestructura.Dtos.Almacen
 		[JsonProperty(PropertyName = "bultos")]
 		public int Bultos { get; set; }
 		[JsonProperty(PropertyName = "cantidad")]
-		public decimal Cantidad { get; set; } = 0.000M;
+		public decimal Cantidad { get; set; } = 0.00M;
 		[JsonProperty(PropertyName = "p_plista")]
-		public decimal P_Plista { get; set; } = 0.0000M;
+		public decimal P_Plista { get; set; } = 0.00M;
 		[JsonProperty(PropertyName = "p_dto1")]
 		public decimal P_Dto1 { get; set; } = 0.0M;
 		[JsonProperty(PropertyName = "p_dto2")]
@@ -59,21 +59,21 @@ namespace gc.infraestructura.Dtos.Almacen
 		[JsonProperty(PropertyName = "in_alicuota")]
 		public decimal In_Alicuota { get; set; } = 0.00M;
 		[JsonProperty(PropertyName = "p_pcosto")]
-		public decimal P_Pcosto { get; set; } = 0.0000M;
+		public decimal P_Pcosto { get; set; } = 0.00M;
 		[JsonProperty(PropertyName = "bonificados")]
 		public int Bonificados { get; set; }
 		[JsonProperty(PropertyName = "pedido_mas_boni")]
-		public decimal Pedido_Mas_Boni { get; set; } = 0.0000M;
+		public decimal Pedido_Mas_Boni { get; set; } = 0.00M;
 		[JsonProperty(PropertyName = "cantidad_total")]
-		public decimal Cantidad_Total { get; set; } = 0.000M;
+		public decimal Cantidad_Total { get; set; } = 0.00M;
 		[JsonProperty(PropertyName = "p_pcosto_total")]
-		public decimal P_Pcosto_Total { get; set; } = 0.0000M;
+		public decimal P_Pcosto_Total { get; set; } = 0.00M;
 		[JsonProperty(PropertyName = "paletizado")]
 		public decimal Paletizado { get; set; } = 0.00M;
 		[JsonProperty(PropertyName = "stk")]
-		public decimal Stk { get; set; } = 0.000M;
+		public decimal Stk { get; set; } = 0.00M;
 		[JsonProperty(PropertyName = "stk_suc")]
-		public decimal Stk_Suc { get; set; } = 0.000M;
+		public decimal Stk_Suc { get; set; } = 0.00M;
 
 		public ProductoParaOcDto() { }
 

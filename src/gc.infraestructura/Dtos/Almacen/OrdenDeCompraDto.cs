@@ -1,4 +1,6 @@
 ﻿
+using Microsoft.AspNetCore.Mvc.Rendering;
+
 namespace gc.infraestructura.Dtos.Almacen
 {
 	public class OrdenDeCompraConsultaDto : OrdenDeCompraListDto
@@ -27,6 +29,7 @@ namespace gc.infraestructura.Dtos.Almacen
 		public string Lim_Mensual { get; set; } = string.Empty;
 		public string OC_Emitidas { get; set; } = string.Empty;
 		public string Tope_Emision { get; set; } = string.Empty;
+		public SelectList ComboSucursales { get; set; }
 	}
 
 	public class OrdenDeCompraDto : Dto

@@ -1,0 +1,60 @@
+﻿@model GridCore<InfoProductoDto>
+@{
+	var obj = Model.ListaDatos.First();
+	var fecha1 = obj.p_actu_fecha == null ? "" : obj.p_actu_fecha.Value.ToString("dd/MM/yy");
+	var fecha2 = obj.rp_fecha == null ? "" : obj.rp_fecha.Value.ToString("dd/MM/yy");
+}
+
+<div class="table-responsive table-wrapper-full-width">
+	<table class="table table-bordered table-hover" id="tbInfoProducto">
+		<thead class="table-dark">
+			<tr>
+				<th style="width:5%;" class="col-header-x-small align-center tiny-row">Código</th>
+				<th colspan="2" style="width:20%;" class="col-header-x-small align-center tiny-row">Datos Logísticos</th>
+				<th style="width:5%;" class="col-header-x-small align-center tiny-row" title="Precio de Lista">P.L.</th>
+				<th style="width:5%;" class="col-header-x-small align-center tiny-row">D1</th>
+				<th style="width:5%;" class="col-header-x-small align-center tiny-row">D2</th>
+				<th style="width:5%;" class="col-header-x-small align-center tiny-row">D3</th>
+				<th style="width:5%;" class="col-header-x-small align-center tiny-row">D4</th>
+				<th style="width:5%;" class="col-header-x-small align-center tiny-row">D5</th>
+				<th style="width:5%;" class="col-header-x-small align-center tiny-row">D6</th>
+				<th style="width:5%;" class="col-header-x-small align-center tiny-row" title="Bonificación">Boni.</th>
+				<th style="width:5%;" class="col-header-x-small align-center tiny-row" title="Porcentaje Flete">%Fl.</th>
+				<th style="width:5%;" class="col-header-x-small align-center tiny-row" title="Impuestos Internos">I.I.</th>
+				<th style="width:5%;" class="col-header-x-small align-center tiny-row">IVA</th>
+				<th style="width:5%;" class="col-header-x-small align-center tiny-row" title="Precio de Costo">P.C.</th>
+				<th colspan="2" style="width:15%;" class="col-header-small align-center tiny-row" title="Precio de Venta">P.Vta.</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td class="align-center tiny-row font-bold">@obj.p_id</td>
+				<td class="align-left tiny-row">EAN: @obj.p_id_barrado_ean</td>
+				<td class="align-center tiny-row" title="Unidad de Presentación">U.Pres.: @obj.unidad_presentacion</td>
+				<td class="align-right tiny-row">@obj.p_plista</td>
+				<td class="align-right tiny-row">@obj.p_dto1</td>
+				<td class="align-right tiny-row">@obj.p_dto2</td>
+				<td class="align-right tiny-row">@obj.p_dto3</td>
+				<td class="align-right tiny-row">@obj.p_dto4</td>
+				<td class="align-right tiny-row">@obj.p_dto5</td>
+				<td class="align-right tiny-row">@obj.p_dto6</td>
+				<td class="align-right tiny-row">@obj.p_boni</td>
+				<td class="align-right tiny-row">@obj.p_porc_flete</td>
+				<td class="align-right tiny-row">@obj.in_alicuota</td>
+				<td class="align-center tiny-row">@obj.iva_situacion : @obj.iva_alicuota</td>
+				<td class="align-right tiny-row">@obj.p_pcosto</td>
+				<td class="align-center tiny-row">Neto: @obj.p_pneto_may</td>
+				<td class="align-center tiny-row" title="Venta">Vta: @obj.p_pvta_may</td>
+			</tr>
+			<tr>
+				<td class="align-center tiny-row"></td>
+				<td class="align-left tiny-row">DUN: @obj.p_id_barrado_dun</td>
+				<td class="align-center tiny-row" title="Medida">Med.: @obj.up_desc</td>
+				<td colspan="10" class="align-left tiny-row" title="Observaciones">Obs.: @obj.obs_compra</td>
+				<td colspan="2" class="font-bold align-center tiny-row">U.R.P.: @fecha2 | @obj.rp_compte</td>
+				<td class="align-center tiny-row">Margen: @obj.p_margen_may</td>
+				<td class="align-center tiny-row">Act: @fecha1 | @obj.usu_id</td>
+			</tr>
+		</tbody>
+	</table>
+</div>

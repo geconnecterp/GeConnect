@@ -19,6 +19,8 @@ using gc.infraestructura.Dtos;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using gc.infraestructura.Dtos.Administracion;
 using Newtonsoft.Json;
+using gc.infraestructura.Dtos.Productos;
+using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 
 namespace gc.sitio.Areas.Compras.Controllers
 {
@@ -80,6 +82,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			MetadataGrid metadata;
 			GridCore<ProductoNCPIDto> grillaDatos;
+			CargarOcBuscarProductoModel model = new CargarOcBuscarProductoModel();
 			try
 			{
 				if (request.Rel01 == null || request.Rel01.Count <= 0)
@@ -105,7 +108,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 				var pag = request.Pagina == null ? 1 : request.Pagina.Value;
 				ListaProductos = productos.Item1;
 				grillaDatos = GenerarGrilla(productos.Item1, request.Sort, _settings.NroRegistrosPagina, pag, metadata.TotalCount, metadata.TotalPages, request.SortDir);
-				return PartialView("_grillaProductos", grillaDatos);
+				model.grillaDatos = grillaDatos;
+				model.ComboSucursales = ComboSucursales();
+				return PartialView("_grillaProductos", model);
 			}
 			catch (Exception ex)
 			{
@@ -330,6 +335,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 						producto.P_Pcosto = Math.Round(ProductoParaOcDto.CalcularPCosto(producto.P_Plista, producto.P_Dto1, producto.P_Dto2, producto.P_Dto3, producto.P_Dto4, producto.P_Dto_Pa, producto.P_Boni, producto.P_Porc_Flete), 2);
 						producto.P_Pcosto_Total = Math.Round(producto.P_Pcosto * (producto.Pedido_Mas_Boni == 0.0M ? 1.0M : producto.Pedido_Mas_Boni), 2);
 						producto.Paletizado = Math.Round((producto.Pedido_Mas_Boni == 0.0M ? 1.0M : producto.Pedido_Mas_Boni) / producto.P_Unidad_Palet, 1);
+						producto.Cantidad_Total = producto.Cantidad + producto.Bonificados;
 					}
 					ListaProductosOC = productos; //Actualizo la lista en memoria
 					return Json(new msgRes()
@@ -500,6 +506,16 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		[HttpPost]
+		public IActionResult CargarSucursalesParInfoAdicional()
+		{
+			ListaSucursalesModel model = new()
+			{
+				ComboSucursales = ComboSucursales()
+			};
+			return PartialView("_listaSucursales", model);
+		}
+
+		[HttpPost]
 		public JsonResult ConfirmarOrdenDeCompra(ConfirmarOCRequest request)
 		{
 			try
@@ -541,7 +557,22 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-
+		[HttpPost]
+		public JsonResult InicializarDatosEnSesion()
+		{
+			try
+			{
+				CtaIdSelected = "";
+				ListaProductos = [];
+				ListaProductosOC = [];
+				
+				return Json(new { error = false, warn = false, msg = "Inicializacion correcta." });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar inicializar los datos en Sesion - ORDENDECOMPRA" });
+			}
+		}
 
 		//Invocar cuando se haya seleccionado solo un proveedor desde el filtro base.
 		[HttpPost]
@@ -624,7 +655,151 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return Json(ocs);
 		}
 
+		#region Información Adicional
+		public async Task<IActionResult> BuscarInfoProdIExMeses(string pId, string admId, int meses)
+		{
+			var model = new GridCore<NDeCYPI.InfoProdIExMesDto>();
+			try
+			{
+				if (string.IsNullOrWhiteSpace(admId))
+					admId = AdministracionId;
+				var info = await _productoServicio.InfoProdIExMes(admId, pId, meses, TokenCookie);
+				model = ObtenerGridCore<NDeCYPI.InfoProdIExMesDto>(info);
+				return PartialView("_infoProdIExMeses", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public async Task<IActionResult> BuscarInfoProdIExSemanas(string pId, string admId, int semanas)
+		{
+			var model = new GridCore<NDeCYPI.InfoProdIExSemanaDto>();
+			try
+			{
+				if (string.IsNullOrWhiteSpace(admId))
+					admId = AdministracionId;
+				var info = await _productoServicio.InfoProdIExSemana(admId, pId, semanas, TokenCookie);
+				model = ObtenerGridCore<NDeCYPI.InfoProdIExSemanaDto>(info);
+				return PartialView("_infoProdIExSemanas", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public async Task<IActionResult> BuscarInfoProdStkDeposito(string pId, string admId)
+		{
+			var model = new GridCore<InfoProdStkD>();
+			try
+			{
+				var info = await _productoServicio.InfoProductoStkD(pId, AdministracionId, TokenCookie);
+				model = ObtenerGridCore<InfoProdStkD>(info);
+				return PartialView("_infoProdPorDeposito", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public async Task<IActionResult> BuscarInfoProdStkSucursal(string pId, string admId)
+		{
+			var model = new GridCore<InfoProdStkA>();
+			try
+			{
+				var info = await _productoServicio.InfoProductoStkA(pId, AdministracionId, TokenCookie);
+				model = ObtenerGridCore<InfoProdStkA>(info);
+				return PartialView("_infoProdPorSucursal", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public async Task<IActionResult> BuscarInfoProdSustituto(string pId, string tipo, bool soloProv)
+		{
+			var model = new GridCore<ProductoNCPISustitutoDto>();
+			try
+			{
+				var info = await _productoServicio.InfoProdSustituto(pId, tipo, AdministracionId, soloProv, TokenCookie);
+				model = ObtenerGridCore<ProductoNCPISustitutoDto>(info);
+				return PartialView("_infoProdSustituto", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public async Task<IActionResult> BuscarInfoProd(string pId)
+		{
+			var model = new GridCore<NDeCYPI.InfoProductoDto>();
+			try
+			{
+				var info = await _productoServicio.InfoProd(pId, TokenCookie);
+				model = ObtenerGridCore<NDeCYPI.InfoProductoDto>(info);
+				return PartialView("_infoProducto", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+		#endregion
+
 		#region Métodos privados
+		private SelectList ComboSucursales()
+		{
+			var adms = _adminServicio.GetAdministracionLogin();
+			var lista = adms.Select(x => new ComboGenDto { Id = x.Id, Descripcion = x.Descripcion });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
 		private decimal CalcularPedidoMasBoni(string val, ProductoParaOcDto producto)
 		{
 			if (string.IsNullOrWhiteSpace(val))
@@ -651,9 +826,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var res = den - num; //En la bonificacion viene NNN/MMM donde sería "cada NNN, lleva MMM", siendo MMM mayor a NNN. La diferencia es el valor adicional que se suma al pedido.
 			var multiplo = producto.Cantidad / num;
 			if (multiplo > 0)
-				producto.Pedido_Mas_Boni = (res * (int)multiplo) + producto.Cantidad;
+			{
+				producto.Bonificados = (res * (int)multiplo);
+				producto.Pedido_Mas_Boni = producto.Bonificados + producto.Cantidad;
+			}
 			else
+			{
+				producto.Bonificados = 0;
 				producto.Pedido_Mas_Boni = producto.Cantidad;
+			}
 			return producto.Pedido_Mas_Boni;
 		}
 		private static SelectList ObtenerComboAdministraciones(List<AdministracionDto> lista)
@@ -676,10 +857,20 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 		private static void ObtenerColor(ref List<ProductoNCPIDto> listaProd)
 		{
+			/*
+			 * ROJO (INACTIVO[N]) -> #ff0000
+			 * VERDE (ACTIVO[S]) -> #33ff33
+			 * AZUL (DISCONTINUO[D]) -> #0066cc
+			 */
 			foreach (var item in listaProd)
 			{
 				if (item.p_activo == "D") //Discontinuo
-					item.Row_color = "#fc4641";
+					item.Row_color = "#0066cc";
+					//item.Row_color = "#fc4641";
+				if (item.p_activo=="S") //Activo
+					item.Row_color = "#33ff33";
+				if (item.p_activo == "N") //Inactivo
+					item.Row_color = "#ff0000";
 			}
 		}
 		protected void CargarProveedoresFamiliaLista(string ctaId, ICuentaServicio _cuentaServicio, string? fam = null)

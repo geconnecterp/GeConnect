@@ -51,6 +51,14 @@
 		LimpiarDatosDelFiltroInicial();
 		$("#btnFiltro").trigger("click");
 	});
+	$("#btnAbmCancelar").on("click", function () {
+		InicializarDatosEnSesion();
+		InicializaPantalla();
+		LimpiarDatosDelFiltroInicial();
+		$("#btnFiltro").trigger("click");
+		$("#btnDetalle").trigger("click");
+		$("#divDetalle").collapse("hide");
+	});
 	funcCallBack = BuscarProductos;
 	InicializaPantalla();
 	$("#Rel01").focus();
@@ -59,6 +67,18 @@
 		presentaPaginacionOC(div);
 	});
 	$(document).on("change", "#listaOCPend", ControlaListaOcSelected);
+	$(document).on("change", "#listaSucursales", ControlaSucursalSeleccionada);
+	$("#btnCollapseSection").on("click", btnCollapseSectionClicked);
+	$("#tabResumen").on("click", function () {
+		$("#btnAbmAceptar").prop("disabled", false);
+		CargarResumenDeOc();
+	});
+	$("#tabNuevaOC").on("click", function () {
+		$("#btnAbmAceptar").prop("disabled", true);
+	});
+	$("#tabProductos").on("click", function () {
+		$("#btnAbmAceptar").prop("disabled", true);
+	});
 	return true;
 });
 
@@ -66,19 +86,18 @@
 const formatter = new Intl.NumberFormat('en-US', {
 	style: 'currency',
 	currency: 'USD',
-
-	// These options can be used to round to whole numbers.
-	trailingZeroDisplay: 'stripIfInteger'   // This is probably what most people
-	// want. It will only stop printing
-	// the fraction when the input
-	// amount is a round number (int)
-	// already. If that's not what you
-	// need, have a look at the options
-	// below.
-	//minimumFractionDigits: 0, // This suffices for whole numbers, but will
-	// print 2500.10 as $2,500.1
-	//maximumFractionDigits: 0, // Causes 2500.99 to be printed as $2,501
+	trailingZeroDisplay: 'stripIfInteger'
 });
+
+const EstadoColor = {
+	Activo: '#34dc22', //≈ Lima
+	NoActivo: '#f74146', //≈ Sunset Orange
+	Discontinuo: '#4180f7' //≈ Dodger Blue
+}
+
+function ControlaSucursalSeleccionada() {
+	BuscarInfoAdicional();
+}
 
 function ControlaListaOcSelected() {
 	if ($("#listaOCPend").val() != "")
@@ -178,7 +197,12 @@ function ConfirmarOrdenDeCompra() {
 					else {
 						AbrirMensaje("ATENCIÓN", obj.msg, function () {
 							$("#msjModal").modal("hide");
+							InicializarDatosEnSesion();
 							InicializaPantalla();
+							LimpiarDatosDelFiltroInicial();
+							$("#btnFiltro").trigger("click");
+							$("#btnDetalle").trigger("click");
+							$("#divDetalle").collapse("hide");
 							return true;
 						}, false, ["Aceptar"], "info!", null);
 					}
@@ -194,6 +218,20 @@ function ConfirmarOrdenDeCompra() {
 	}, true, ["Aceptar", "Cancelar"], "question!", null);
 }
 
+function InicializarDatosEnSesion() {
+	PostGen({}, inicializarDatosEnSesionURL, function (obj) {
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			console.log(obj.msg);
+		}
+	});
+}
+
 function ActualizarGrillaConceptos() {
 	var Oc_Compte = ocIdSelected;
 	var Entrega_Fecha = $("#FechaEntrega").val();
@@ -207,7 +245,6 @@ function ActualizarGrillaConceptos() {
 	if ($("#chkDejarOCActiva")[0].checked)
 		Oce_Id = 'C';
 	var data = { Oc_Compte, Entrega_Fecha, Entrega_Adm, Pago_Anticipado, Pago_Fecha, Observaciones, Oce_Id };
-	console.log(data);
 	PostGenHtml(data, ObtenerConceptoURL, function (obj) {
 		if (obj.error === true) {
 			AbrirMensaje("ATENCIÓN", obj.msg, function () {
@@ -293,7 +330,6 @@ function AplicarSeteoMasivo() {
 				$("#Total_Costo").val(formatter.format($("#Total_Costo").val()));
 				$("#Total_Pallet").val(formatter.format($("#Total_Pallet").val()));
 				AgregarHandlerAGrillaProdOC();
-				//ActualizarInfoDeProductosEnGrilla();
 				addInCellLostFocusHandler();
 				addInCellGotFocusHandler();
 				addInCellKeyDownHandler();
@@ -312,7 +348,6 @@ function AplicarSeteoMasivo() {
 
 function addInCellEditHandler() {
 	$("#tbListaProductoOC").on('input', 'td[contenteditable]', function (e) {
-		//Do something
 		var val = $("#" + this.id).text();
 		if (this.id.includes("p_dto1") || this.id.includes("p_dto2") || this.id.includes("p_dto3") || this.id.includes("p_dto4") || this.id.includes("p_dto_pa")) {
 			var num = Number(val);
@@ -329,10 +364,6 @@ function addInCellEditHandler() {
 			$("#" + this.id).mask("000/000", { reverse: true });
 			$("#" + this.id).val(val);
 		}
-		//else if (this.id === "Bultos") {
-		//	$("#" + this.id).mask("000.000.000.000", { reverse: false });
-		//	$("#" + this.id).val(val);
-		//}
 	});
 }
 
@@ -435,8 +466,6 @@ function tableUpDownArrow() {
 			(evt.altKey && evt.shiftKey && movKey[evt.code])
 			||
 			(evt.ctrlKey && movKey[evt.code])
-			//||
-			//evt.code === 'Tab'
 			) {
 			let loop = true
 				, nxFocus = null
@@ -491,8 +520,6 @@ function tableUpDownArrow() {
 			event.preventDefault();
 		else if (evt.code === 'NumpadEnter')
 			event.preventDefault();
-		//else
-		//	console.log(evt.code);
 	}
 }
 
@@ -560,12 +587,7 @@ function CargarResumenDeOc() {
 						dateControl2[i].setAttribute('min', min);
 						dateControl2[i].setAttribute('max', max.format('yyyy-MM-DD'));
 					}
-					//if (dateControl2[i].id == "dtpFechaTurno") {
-					//	dateControl2[i].setAttribute('min', local);
-					//}
 				}
-				//$("#FechaEntrega").setAttribute('min', min);
-				//$("#FechaEntrega").setAttribute('max', max);
 			}
 		});
 	}
@@ -573,7 +595,6 @@ function CargarResumenDeOc() {
 
 ///Da formato monetario a los campos de tipo "money"
 function FormatearValores(grilla, idx) {
-	//grilla = "#tbListaProductoOC"
 	$(grilla).find('tr').each(function (i, el) {
 		var td = $(this).find('td');
 		if (td.length > 0 && td[idx].innerText !== undefined) {
@@ -613,6 +634,8 @@ function presentaPaginacionOC(div) {
 	return true;
 }
 
+
+
 /// Funcion que restaura el estado del producto en la grilla del primer Tab, luego de quitarlo de la lista de OC (segundo Tab)
 function ActualizarInfoDeProductoEnGrilla(pId) {
 	$("#tbListaProducto").find('tr').each(function (i, el) {
@@ -621,7 +644,7 @@ function ActualizarInfoDeProductoEnGrilla(pId) {
 			var p_Id = td[0].innerText;
 			if (p_Id === pId) {
 				var id = "a" + pId;
-				$("#" + id).addClass('btn-outline-success').removeClass('btn-outline-danger');
+				$("#" + id).addClass('btn-success').removeClass('btn-danger');
 				$("#" + id).prop('title', '');
 			}
 		}
@@ -646,7 +669,7 @@ function ActualizarInfoDeProductosEnGrilla() {
 					var pId = td[0].innerText;
 					if (idArrayOC.find(x => x === pId)) {
 						var id = "a" + pId;
-						$("#" + id).addClass('btn-outline-danger').removeClass('btn-outline-success');
+						$("#" + id).addClass('btn-danger').removeClass('btn-success');
 						$("#" + id).prop('title', 'Producto existente en OC.');
 					}
 				}
@@ -713,7 +736,7 @@ function quitarProductoEnOC(e) {
 
 //Funcion que agrega el producto seleccionado en la grilla del primer, en la grilla de OC (Segundo Tab)
 function actualizarProducto(e) {
-	if ($(e).hasClass("btn-outline-success")) {
+	if ($(e).hasClass("btn-success")) {
 		AbrirWaiting("Actualizando información de Orden de Compra.");
 		var pId = $(e).attr("data-interaction");
 		var data = { pId };
@@ -738,13 +761,13 @@ function actualizarProducto(e) {
 			}
 		});
 	}
-	else if ($(e).hasClass("btn-outline-secondary")) {
+	else if ($(e).hasClass("btn-secondary")) {
 		AbrirMensaje("ATENCIÓN", "El producto seleccionado esta discontínuo.", function () {
 			$("#msjModal").modal("hide");
 			return true;
 		}, false, ["Aceptar"], "error!", null);
 	}
-	else if ($(e).hasClass("btn-outline-danger")) {
+	else if ($(e).hasClass("btn-danger")) {
 		AbrirMensaje("ATENCIÓN", "El producto seleccionado ya esta incluído en la OC.", function () {
 			$("#msjModal").modal("hide");
 			return true;
@@ -754,30 +777,6 @@ function actualizarProducto(e) {
 		console.log("chan!");
 	}
 }
-
-//Funcion que actualiza los valores del elemento seleccionado y editado de la grilla de OC (segundo TAB)
-//function actualizarProductoEnOC(e) {
-//	var pId = $(e).attr("data-interaction");
-//	var data = { pId };
-//	PostGenHtml(data, ActualizarProductoEnOcURL, function (obj) {
-//		if (obj.error === true) {
-//			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-//				$("#msjModal").modal("hide");
-//				return true;
-//			}, false, ["Aceptar"], "error!", null);
-//		}
-//		else {
-//			$("#divListaProductoNuevaOC").html(obj);
-//			AgregarHandlerAGrillaProdOC();
-//			AddEventListenerToGrid("tbListaProductoOC");
-//			ActualizarInfoDeProductoEnGrilla(pId);
-//			addInCellLostFocusHandler();
-//			addInCellGotFocusHandler();
-//			addInCellKeyDownHandler();
-//			addInCellEditHandler();
-//		}
-//	});
-//}
 
 function InicializaPantalla() {
 	var tb = $("#tbListaProducto tbody tr");
@@ -810,6 +809,7 @@ function InicializaPantalla() {
 	ocIdSelected = "";
 	ctaIdSelected = "";
 	MostrarDatosDeCuenta(false);
+	$("#btnAbmAceptar").prop("disabled", true);
 	CerrarWaiting();
 	return true;
 }
@@ -825,27 +825,103 @@ function ExitensItemsEnOC() {
 
 function activarBotones(activar) {
 	if (activar === true && ExitensItemsEnOC()) {
-		$("#btnAbmAceptar").prop("disabled", false);
-		$("#btnAbmCancelar").prop("disabled", false);
 		$("#btnAbmAceptar").show();
 		$("#btnAbmCancelar").show();
 	}
 	else {
-		$("#btnAbmAceptar").prop("disabled", true);
-		$("#btnAbmCancelar").prop("disabled", true);
 		$("#btnAbmAceptar").hide();
 		$("#btnAbmCancelar").hide();
 	}
 }
 
+function addTxtMesesKeyUpHandler() {
+	$("#txtMeses").on('keyup', function (e) {
+		if (e.keyCode == 13) {
+			BuscarInfoAdicional();
+		}
+	});
+}
+
+function addTxtSemanasKeyUpHandler() {
+	$("#txtSemanas").on('keyup', function (e) {
+		if (e.keyCode == 13) {
+			BuscarInfoAdicional();
+		}
+	});
+}
+
 function selectListaProductoRow(x) {
 	if (x) {
 		pIdSeleccionado = x.cells[0].innerText.trim();
-		//BuscarInfoAdicional();
+		BuscarInfoAdicional();
 	}
 	else {
 		pIdSeleccionado = "";
 	}
+}
+
+function NoHayProdSeleccionado() {
+	if (pIdSeleccionado == undefined || pIdSeleccionado == "") {
+		return true;
+	}
+	return false;
+}
+
+function BuscarInfoAdicional() {
+	if (NoHayProdSeleccionado()) {
+		AbrirMensaje("Atención", "Debe seleccionar un producto.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	AbrirWaiting();
+	var admId = $("#listaSucursales").val();
+	var meses = $("#txtMeses").val();
+	var semanas = $("#txtSemanas").val();
+	var pId = pIdSeleccionado;
+	var datos = { pId, admId, meses };
+	PostGenHtml(datos, BuscarInfoProdIExMesesURL, function (obj) {
+		$("#divInfoProdIExMeses").html(obj);
+		AddEventListenerToGrid("tbInfoProdIExMes");
+		CerrarWaiting();
+		return true
+	});
+	datos = { pId, admId, semanas };
+	PostGenHtml(datos, BuscarInfoProdIExSemanasURL, function (obj) {
+		$("#divInfoProdIExSemanas").html(obj);
+		AddEventListenerToGrid("tbInfoProdIExSemana");
+		CerrarWaiting();
+		return true
+	});
+	datos = { pId, admId };
+	PostGenHtml(datos, BuscarInfoProdStkDepositoURL, function (obj) {
+		$("#divInfoProductoStkD").html(obj);
+		AddEventListenerToGrid("tbInfoProdStkD");
+		CerrarWaiting();
+		return true
+	});
+	PostGenHtml(datos, BuscarInfoProdStkSucursalURL, function (obj) {
+		$("#divInfoProductoStkA").html(obj);
+		AddEventListenerToGrid("tbInfoProdStkA");
+		CerrarWaiting();
+		return true
+	});
+	var tipo = tipoDeOperacion;
+	var soloProv = true; //Valor por default
+	datos = { pId, tipo, soloProv }
+	PostGenHtml(datos, BuscarInfoProdSustitutoURL, function (obj) {
+		$("#divInfoProdSustituto").html(obj);
+		AddEventListenerToGrid("tbListaProductoSust");
+		CerrarWaiting();
+		return true
+	});
+	datos = { pId }
+	PostGenHtml(datos, BuscarInfoProdURL, function (obj) {
+		$("#divInfoProducto").html(obj);
+		AddEventListenerToGrid("tbInfoProducto");
+		CerrarWaiting();
+		return true
+	});
 }
 
 function selectListaProductoRowOC(x) {
@@ -927,11 +1003,7 @@ function BuscarProductos(pag = 1) {
 	PostGenHtml(data, BuscarProductosURL, function (obj) {
 		$("#divListaProducto").html(obj);
 		$("#divDetalle").collapse("show");
-		//addInCellEditHandler();
-		//addInCellLostFocusHandler();
-		//addInCellKeyDownHandler();
 		AddEventListenerToGrid("tbListaProducto");
-		//tableUpDownArrow();
 		PostGen({}, buscarMetadataURL, function (obj) {
 			if (obj.error === true) {
 				AbrirMensaje("ATENCIÓN", obj.msg, function () {
@@ -952,11 +1024,23 @@ function BuscarProductos(pag = 1) {
 		BuscarProductosTabOC();
 
 		$("#btnDetalle").prop("disabled", false);
+		$("#btnAbmCancelar").prop("disabled", false);
 		MostrarDatosDeCuenta(true);
 		CargarTopesDeOC();
+		CargarSucursalesParInfoAdicional();
 		LimpiarDatosDelFiltroInicial();
+		addTxtMesesKeyUpHandler();
+		addTxtSemanasKeyUpHandler()
 		CerrarWaiting();
 		viendeDesdeBusquedaDeProducto = false;
+		return true
+	});
+}
+
+function CargarSucursalesParInfoAdicional() {
+	datos = {}
+	PostGenHtml(datos, CargarSucursalesParInfoAdicionalURL, function (obj) {
+		$("#divSucursales").html(obj);
 		return true
 	});
 }
@@ -1027,18 +1111,7 @@ $("#Rel01").autocomplete({
 		$("#chkRel03").prop("disabled", false);
 		CargarFamiliaLista(ui.item.id);
 		CargarOCLista(ui.item.id);
-		//if ($("#Rel01List")[0].length === 1) {
-		//	$("#chkRel03").prop("disabled", false);
-		//	CargarFamiliaLista(ui.item.id);
-		//	CargarOCLista(ui.item.id);
-		//}
-		//else {
-		//	$("#chkRel03").prop("disabled", true);
-		//	$("#Rel03").prop("disabled", true).val("");
-		//	$("#Rel03List").prop("disabled", true).empty();
-		//	$("#chkRel03")[0].checked = false;
-		//}
-
+		
 		return true;
 	}
 });
@@ -1134,4 +1207,14 @@ function CargarOCLista(id) {
 			$("#divLstOcPendiente").html(obj);
 		}
 	});
+}
+
+function btnCollapseSectionClicked() {
+	if ($("#containerListaProducto").hasClass('table-wrapper-400-full-width')) {
+		$("#containerListaProducto").removeClass('table-wrapper-400-full-width');
+		$("#containerListaProducto").addClass('table-wrapper-300-full-width');
+	} else {
+		$("#containerListaProducto").removeClass('table-wrapper-300-full-width');
+		$("#containerListaProducto").addClass('table-wrapper-400-full-width');
+	}
 }

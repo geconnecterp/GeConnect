@@ -1,0 +1,5 @@
+﻿@model ListaSucursalesModel
+@{
+	var lst = Model.ComboSucursales;
+}
+@Html.DropDownListFor(m => m.adm_id, lst, "Seleccionar", new { @id = "listaSucursales", @class = "form-control activable" })

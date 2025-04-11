@@ -2,6 +2,8 @@
 @model OrdenDeCompraCargaDto
 @{
 	Layout = "~/views/shared/_Layout.cshtml";
+	var lista = new List<ComboGenDto>();
+	var sucursales = HelperMvc<ComboGenDto>.ListaGenerica(lista);
 	var filtro = new QueryFilters()
 			{
 				Rel01 = new List<string>(),
@@ -142,6 +144,14 @@
 		var CargarResumenDeOcURL = "@Url.Action("CargarResumenDeOc", "ordendecompra", new { area = "Compras" })";
 		var ObtenerConceptoURL = "@Url.Action("ObtenerConcepto", "ordendecompra", new { area = "Compras" })";
 		var ConfirmarOrdenDeCompraUrl = "@Url.Action("ConfirmarOrdenDeCompra", "ordendecompra", new { area = "Compras" })";
+		var inicializarDatosEnSesionURL = "@Url.Action("InicializarDatosEnSesion", "ordendecompra", new { area = "Compras" })";
+		var CargarSucursalesParInfoAdicionalURL = "@Url.Action("CargarSucursalesParInfoAdicional", "ordendecompra", new { area = "Compras" })";
+		var BuscarInfoProdIExMesesURL = "@Url.Action("BuscarInfoProdIExMeses", "ordendecompra", new { area = "Compras" })";
+		var BuscarInfoProdIExSemanasURL = "@Url.Action("BuscarInfoProdIExSemanas", "ordendecompra", new { area = "Compras" })";
+		var BuscarInfoProdStkDepositoURL = "@Url.Action("BuscarInfoProdStkDeposito", "ordendecompra", new { area = "Compras" })";
+		var BuscarInfoProdStkSucursalURL = "@Url.Action("BuscarInfoProdStkSucursal", "ordendecompra", new { area = "Compras" })";
+		var BuscarInfoProdSustitutoURL = "@Url.Action("BuscarInfoProdSustituto", "ordendecompra", new { area = "Compras" })";
+		var BuscarInfoProdURL = "@Url.Action("BuscarInfoProd", "ordendecompra", new { area = "Compras" })";
 	</script>
 	<script src="~/js/plugins/jquery.simplePagination.js"></script>
 	<script src="~/js/app/areas/ordendecompra/ordendecompra.js"></script>

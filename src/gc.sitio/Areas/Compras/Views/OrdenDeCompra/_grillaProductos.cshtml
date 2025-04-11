@@ -1,5 +1,9 @@
-﻿@model GridCore<ProductoNCPIDto>
+﻿@using static gc.infraestructura.Constantes.Constantes
+@model CargarOcBuscarProductoModel
 @{
+	var lista = new List<ComboGenDto>();
+	var sucursales = HelperMvc<ComboGenDto>.ListaGenerica(lista);
+	string color = string.Empty;
 }
 <style>
 	thead th {
@@ -7,7 +11,7 @@
 	top: 0px;
 	}
 </style>
-<div class="table-responsive table-wrapper-full-width" id="containerListaProducto">
+<div class="table-responsive table-wrapper-400-full-width" id="containerListaProducto">
 	<table class="table table-bordered table-hover" id="tbListaProducto">
 		<thead class="table-dark">
 			<tr>
@@ -25,20 +29,24 @@
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var item in Model.ListaDatos)
+			@foreach (var item in Model.grillaDatos.ListaDatos)
 			{
 				var nombre = "a" + item.p_id;
+				switch (item.p_activo)
+				{
+					case "N":
+						color = EstadoColor.NoActivo;
+						break;
+					case "D":
+						color = EstadoColor.Discontinuo;
+						break;
+					default:
+						color = EstadoColor.Activo;
+						break;
+				}
 				<tr onclick="selectListaProductoRow(this)">
-					<td class="align-center tiny-row">@item.p_id</td>
+					<td class="align-center tiny-row" style="border-left: 5px solid @color;text-align: left;">@item.p_id</td>
 					<td class="align-left tiny-row" style="text-overflow:ellipsis;">@item.p_desc</td>
-					@* 					@if (item.p_activo == "D")
-					{
-						<td class="align-left tiny-row" style="text-overflow:ellipsis;">@item.p_desc<span style="float:right;" title="Producto discontínuo"><i class="bx bx-dislike"></i></span></td>
-					}
-					else
-					{
-						<td class="align-left tiny-row" style="text-overflow:ellipsis;">@item.p_desc</td>
-					} *@
 					<td class="align-center tiny-row">@item.p_id_prov</td>
 					@if (item.pi_pendiente == 0)
 					{
@@ -63,7 +71,7 @@
 					<td class="align-right tiny-row">@item.costo</td>
 					@if (item.p_activo == "D")
 					{
-						<td><a class="btn btn-xs btn-outline-secondary" id=@nombre data-interaction="@item.p_id" onclick="actualizarProducto(this);" title="Producto discontinuo">
+						<td><a class="btn btn-xs btn-secondary" id=@nombre data-interaction="@item.p_id" onclick="actualizarProducto(this);" title="Producto discontinuo">
 								<i class="bx bx-cart-alt" style="line-height: 1.0;font-size: 1rem;"></i>
 							</a>
 						</td>
@@ -71,11 +79,12 @@
 					else
 					{
 						<td>
-							<a class="btn btn-xs btn-outline-success" id=@nombre data-interaction="@item.p_id" onclick="actualizarProducto(this);">
+							<a class="btn btn-xs btn-success" id=@nombre data-interaction="@item.p_id" onclick="actualizarProducto(this);">
 								<i class="bx bx-cart-alt" style="line-height: 1.0;font-size: 1rem;"></i>
 							</a>
 						</td>
 					}
+
 				</tr>
 			}
 		</tbody>
@@ -86,6 +95,108 @@
 			</div>
 		</div>
 	</div> *@
+</div>
+<div class="row" style="padding-top:10px;">
+	<div class="row">
+		<div class="col-2">
+			<a class="btn btn-sm btn-primary me-1 collapsed" id="btnCollapseSection" data-bs-toggle="collapse" href="#collapseSection" role="button" aria-expanded="false" aria-controls="collapseSection">
+				Info. Adicional
+			</a>
+		</div>
+		<div class="col-5"></div>
+	</div>
+	<div class="collapse" id="collapseSection" style="">
+		<div class="d-grid p-3 border">
+			<div class="row" style="padding-top:10px;">
+				<div class="nav-align-top mb-4">
+					<ul class="nav nav-tabs" role="tablist">
+						<li class="nav-item" role="presentation">
+							<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-info1" aria-controls="navs-top-info1" aria-selected="true">
+								<span id="tabOne" class="custom-lbl">Info. Producto</span>
+							</button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-info2" aria-controls="navs-top-info2" aria-selected="false" tabindex="-1">
+								<span id="tabTwo" class="custom-lbl">Datos de Entrada/Salida</span>
+							</button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-info3" aria-controls="navs-top-info3" aria-selected="false" tabindex="-1">
+								<span id="tabThree" class="custom-lbl">Datos de Stock</span>
+							</button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-info4" aria-controls="navs-top-info4" aria-selected="false" tabindex="-1">
+								<span id="tabFour" class="custom-lbl">Prod. Sustituto</span>
+							</button>
+						</li>
+					</ul>
+					<div class="tab-content" style="padding:0;">
+						<div class="tab-pane fade active show" id="navs-top-info1" role="tabpanel">
+							<div class="row">
+								<div class="col-12" id="divInfoProducto"></div>
+							</div>
+						</div>
+						<div class="tab-pane fade" id="navs-top-info2" role="tabpanel">
+							<div id="divInfoES" class="row">
+								<div class="col-6">
+									<div class="row">
+										<div class="input-group">
+											<span class="input-group-text custom-lbl">Datos E/S del Mes</span>
+											<span class="input-group-text fixed-width">Sucursal: </span>
+											<div id="divSucursales">
+												@Html.DropDownList("id", sucursales, "Seleccionar...", new { @id = "listaSucursales", @class = "form-control fixed-width" })
+											</div>
+											<span class="input-group-text fixed-width-75">Meses: </span>
+											<input type="number" id="txtMeses" class="fixed-width-50 align-right" value="12" />
+										</div>
+									</div>
+									<div class="row">
+										<div id="divInfoProdIExMeses"></div>
+									</div>
+								</div>
+								<div class="col-6">
+									<div class="row">
+										<div class="input-group">
+											<span class="input-group-text custom-lbl">Datos de E/S últimas semanas</span>
+											<span class="input-group-text fixed-width-75">Semanas: </span>
+											<input type="number" id="txtSemanas" class="fixed-width-50 align-right" value="4" />
+										</div>
+									</div>
+									<div class="row">
+										<div id="divInfoProdIExSemanas"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="tab-pane fade" id="navs-top-info3" role="tabpanel">
+							<div id="divInfoStk" class="row">
+								<div class="col-6">
+									<div class="row">
+										<div id="divInfoProductoStkD">
+										</div>
+									</div>
+								</div>
+								<div class="col-6">
+									<div class="row">
+										<div id="divInfoProductoStkA">
+										</div>
+									</div>
+								</div>
+							</div>
+
+						</div>
+						<div class="tab-pane fade" id="navs-top-info4" role="tabpanel">
+							<label class="form-check-label" for="chkProductosDelMismoProveedor"> Productos del mismo Proveedor</label>
+							<div class="row">
+								<div id="divInfoProdSustituto"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 
 @section scripts {
