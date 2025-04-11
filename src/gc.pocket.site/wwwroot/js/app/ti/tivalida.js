@@ -17,15 +17,15 @@
                 .prop("disabled", false) // Activar el botón
                 .removeClass("btn-danger") // Quitar la clase de color rojo
                 .addClass("btn-success"); // Agregar la clase de color verde
-            //$("#chkDesarma").prop("disabled", false);
+           // $("#chkDesarma").prop("disabled", false);
         } else {
             // Si el texto tiene menos o más de 11 caracteres, desactivar el botón
-            //$("#btnValBox")
-            //    .prop("disabled", true) // Desactivar el botón
-            //    .removeClass("btn-success") // Quitar la clase de color verde
-            //    .addClass("btn-danger"); // Agregar la clase de color rojo
+            $("#btnValBox")
+                .prop("disabled", true) // Desactivar el botón
+                .removeClass("btn-success") // Quitar la clase de color verde
+                .addClass("btn-danger"); // Agregar la clase de color rojo
             //$("#chkDesarma").prop("checked",true).prop("disabled", true);
-            InicializaVista
+            //InicializaVista();
         }
     });
 
@@ -64,6 +64,7 @@
                 .prop("disabled", false) // Activar el botón
                 .removeClass("btn-danger") // Quitar la clase de color rojo
                 .addClass("btn-success"); // Agregar la clase de color verde
+            InicializaBusqueda();
         }
     });
 
@@ -92,6 +93,7 @@ function InicializaVista() {
 }
 
 function InicializaBusqueda() {
+    $("input#Busqueda").val("");
     $("#P_id").val("");
     $("#Descipcion").val("");
     $("#Rubro").val("");
@@ -101,6 +103,18 @@ function InicializaBusqueda() {
     $("#box").val(0).prop("disabled", true);
     $("#unid").val(0).prop("disabled", true);
     $("#btnCargaProd").prop("disabled", true);
+
+    //si el desarma esta activado
+    if ($("#chkDesarma").is(":disabled") === false) {
+        if ($("#chkDesarma").is(":checked") === true) {
+            $("input#Busqueda").prop("disabled", false);
+            $("btnBusquedaBase").prop("disabled", false);
+        }
+        else {
+            $("input#Busqueda").prop("disabled", true);
+            $("btnBusquedaBase").prop("disabled", true);
+        }
+    }  
 }
 
 function cargarCarrito() {
@@ -214,15 +228,19 @@ function validaBoxCarrito() {
         }
         else {
             ControlaMensajeSuccess(obj.msg);
-            if ($("#chkDesarma").prop("disabled") === false && !$("#chkDesarma").is(":checked")) {
-                $("#Busqueda").prop("disabled", true);
-                $("#btnCargarProd").prop("disabled", false);
-            } else {
-                //solo pasa al otro campo.           
-                $("#btnCargarProd").prop("disabled", true);
-                $("#Busqueda").prop("disabled",false);
-                $("#Busqueda").focus();
-            }
+            $("#chkDesarma").prop("checked", true).prop("disabled", false);
+            $("#Busqueda").prop("disabled", false);
+            $("#btnBusquedaBase").prop("disabled", false);
+            
+            //if ($("#chkDesarma").prop("disabled") === false && !$("#chkDesarma").is(":checked")) {
+            //    $("#Busqueda").prop("disabled", true);
+            //    $("#btnCargarProd").prop("disabled", false);
+            //} else {
+            //    //solo pasa al otro campo.           
+            //    $("#btnCargarProd").prop("disabled", true);
+            //    $("#Busqueda").prop("disabled",false);
+            //    $("#Busqueda").focus();
+            //}
             
             return true;
         }
