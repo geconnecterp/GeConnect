@@ -48,8 +48,8 @@
         var sinau = autorizacionActual.sinAU;
         if ($("#chkDesarma").is(":checked")) {
             //habilito los controles
-            $("#btnBusquedaBase").prop("disabled", true);
-            $("input#Busqueda").prop("disabled", true);
+            $("#btnBusquedaBase").prop("disabled", false);
+            $("input#Busqueda").prop("disabled", false);
             $("#btnCargarProd")
                 .prop("disabled", true) // Desactivar el botón
                 .removeClass("btn-success") // Quitar la clase de color verde
@@ -354,7 +354,10 @@ function verificaEstado() {
                             
 
                             //activamos el boton
-                            $("#btnCargarProd").prop("disabled", false);
+                            $("#btnCargarProd")
+                                .prop("disabled", false) // Activar el botón
+                                .removeClass("btn-danger") // Quitar la clase de color rojo
+                                .addClass("btn-success"); // Agregar la clase de color verde
 
                             //inicializamos el campo de busqueda
                             $("#Busqueda").val("");
