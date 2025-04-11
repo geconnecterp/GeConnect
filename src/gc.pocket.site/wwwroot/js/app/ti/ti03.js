@@ -107,7 +107,7 @@ function limpiarProductoCarrito(id,boxId) {
         else {
             CerrarWaiting();
             ControlaMensajeSuccess(obj.msg);
-            window.location.href = proximoProductoUrl + "?esrubro=false&esbox=false";
+            window.location.href = proximoProductoUrl + "?esrubro=false&esbox=false&tiId=" + obj.tiId;
         }
     });
 

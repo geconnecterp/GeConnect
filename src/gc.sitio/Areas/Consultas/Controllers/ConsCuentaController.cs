@@ -42,7 +42,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
 
         public ConsCuentaController(IOptions<AppSettings> options, IHttpContextAccessor contexto,
             ILogger<ConsCuentaController> logger, IConsultasServicio consulta,
-            IOptions<DocsManager> docsManager, ICuentaServicio cuentaServicio, 
+            IOptions<DocsManager> docsManager, ICuentaServicio cuentaServicio,
             IDocManagerServicio docManager, IWebHostEnvironment env, IOptions<EmpresaGeco> empresa) : base(options, contexto, logger)
         {
             _consSv = consulta;
@@ -154,13 +154,14 @@ namespace gc.sitio.Areas.Consultas.Controllers
                         var consulta = AppReportes.CCUENTAS_CUENTA_CORRIENTE;
                         #region Gestor Impresion - marcando que hay datos para el reporte n
                         var reportes = ArchivosCargadosModulo;
-                        string tipoDato = CuentaCorrienteBuscada.GetType().FullName;    
-
-                        string archb64 = GenerarArchivoB64(lista, consulta, CuentaComercialSeleccionada.Prov_Id);
+                        string tipoDato = CuentaCorrienteBuscada.GetType().FullName;
+                        var mod = _docsManager.Modulos.Find(x => x.Id.Equals(APP_MODULO)).Reportes.Find(x => x.Id == (int)consulta);
+                        var titulo = mod.Titulos[0];
+                        string archb64 = GenerarArchivoB64(lista, consulta, CuentaComercialSeleccionada.Prov_Id,titulo);
 
 
                         //el 3er parametro es el numero de reporte que se esta marcando como consultado
-                        reportes = _docMSv.MarcarConsultaRealizada(reportes, consulta, 1, archb64,tipoDato);
+                        reportes = _docMSv.MarcarConsultaRealizada(reportes, consulta, 1, archb64, tipoDato);
                         ArchivosCargadosModulo = reportes;
 
                         #endregion
@@ -170,7 +171,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
 
                 metadata = MetadataGeneral;
 
-                
+
 
                 //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
                 grillaDatos = GenerarGrilla(CuentaCorrienteBuscada, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
@@ -198,7 +199,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
             }
         }
 
-       
+
         public async Task<IActionResult> ConsultarVencimiento(string ctaId, DateTime fechaD, DateTime fechaH)
         {
             List<ConsVtoDto> lista;
@@ -228,8 +229,9 @@ namespace gc.sitio.Areas.Consultas.Controllers
                     var reportes = ArchivosCargadosModulo;
                     string tipoDato = VencimientosBuscados.GetType().FullName;
 
-
-                    string archb64 = GenerarArchivoB64(res.ListaEntidad, consulta, CuentaComercialSeleccionada.Prov_Id);
+                    var mod = _docsManager.Modulos.Find(x => x.Id.Equals(APP_MODULO)).Reportes.Find(x => x.Id == (int)consulta);
+                    var titulo = mod.Titulos[0];
+                    string archb64 = GenerarArchivoB64(res.ListaEntidad, consulta, CuentaComercialSeleccionada.Prov_Id,titulo);
 
                     //el 3er parametro es el numero de reporte que se esta marcando como consultado
                     reportes = _docMSv.MarcarConsultaRealizada(reportes, consulta, 1, archb64, tipoDato);
@@ -320,6 +322,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
 
             //INICIALMENTE SE INDICA QUE EL REPORTE A GENERAR ES EL DE DETALLE DE COMPROBANTES
             //ESTO ES ORIENTADO A LA GENERACION DE ARCHIVOS B64 PARA EL GESTOR DE IMPRESION
+            var consultaPpal = AppReportes.CCUENTAS_COMPROBANTES;
             var consulta = AppReportes.CCUENTAS_COMPROBANTES_DETALLE;
 
             try
@@ -342,8 +345,9 @@ namespace gc.sitio.Areas.Consultas.Controllers
                     #region Gestor Impresion - marcando que hay datos para el reporte n
                     var reportes = ArchivosCargadosModulo;
                     string tipoDato = CmptesDetalleBuscados.GetType().FullName;
-
-                    string archb64 = GenerarArchivoB64(res.ListaEntidad, consulta, CuentaComercialSeleccionada.Prov_Id);
+                    var mod = _docsManager.Modulos.Find(x => x.Id.Equals(APP_MODULO)).Reportes.Find(x => x.Id == (int)consultaPpal);
+                    var titulo = mod.Titulos[0];
+                    string archb64 = GenerarArchivoB64(res.ListaEntidad, consulta, CuentaComercialSeleccionada.Prov_Id, titulo);
 
                     //ACA SE CAMBIA LA VARIABLE CONSULTA PARA INDICAR EL MODULO GENERAL
                     consulta = AppReportes.CCUENTAS_COMPROBANTES;
@@ -438,6 +442,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
             List<ConsOrdPagosDetDto> lista;
             GridCore<ConsOrdPagosDetDto> grillaDatos;
             RespuestaGenerica<EntidadBase> response = new();
+            var consultaPpal = AppReportes.CCUENTAS_ORDEN_DE_PAGO;
             var consulta = AppReportes.CCUENTAS_ORDEN_DE_PAGO_DETALLE;
             try
             {
@@ -460,8 +465,9 @@ namespace gc.sitio.Areas.Consultas.Controllers
                     #region Gestor Impresion - marcando que hay datos para el reporte n
                     var reportes = ArchivosCargadosModulo;
                     string tipoDato = OrdenPagosDetBuscados.GetType().FullName;
-
-                    string archb64 = GenerarArchivoB64(res.ListaEntidad, consulta, CuentaComercialSeleccionada.Prov_Id);
+                    var mod = _docsManager.Modulos.Find(x => x.Id.Equals(APP_MODULO)).Reportes.Find(x=>x.Id== (int)consultaPpal);
+                    var titulo = mod.Titulos[0];
+                    string archb64 = GenerarArchivoB64(res.ListaEntidad, consulta, CuentaComercialSeleccionada.Prov_Id,titulo);
                     //el 3er parametro es el numero de reporte que se esta marcando como consultado
                     consulta = AppReportes.CCUENTAS_ORDEN_DE_PAGO;
                     reportes = _docMSv.MarcarConsultaRealizada(reportes, consulta, 2, archb64, tipoDato);
@@ -555,6 +561,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
             List<ConsRecepcionProveedorDetalleDto> lista;
             GridCore<ConsRecepcionProveedorDetalleDto> grillaDatos;
             RespuestaGenerica<EntidadBase> response = new();
+            var consultaPpal = AppReportes.CCUENTAS_RECEPCION_PROVEEDORES;
             var consulta = AppReportes.CCUENTAS_RECEPCION_PROVEEDORES_DETALLE;
 
             try
@@ -578,8 +585,9 @@ namespace gc.sitio.Areas.Consultas.Controllers
                     #region Gestor Impresion - marcando que hay datos para el reporte n
                     var reportes = ArchivosCargadosModulo;
                     string tipoDato = RecepProvDetBuscados.GetType().FullName;
-
-                    string archb64 = GenerarArchivoB64(res.ListaEntidad, consulta,CuentaComercialSeleccionada.Prov_Id);
+                    var mod = _docsManager.Modulos.Find(x => x.Id.Equals(APP_MODULO)).Reportes.Find(x => x.Id == (int)consultaPpal);
+                    var titulo = mod.Titulos[0];
+                    string archb64 = GenerarArchivoB64(res.ListaEntidad, consulta, CuentaComercialSeleccionada.Prov_Id,titulo);
 
                     consulta = AppReportes.CCUENTAS_RECEPCION_PROVEEDORES;
                     //el 3er parametro es el numero de reporte que se esta marcando como consultado (1=original). 
@@ -620,7 +628,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
         }
 
         #region Metodos Privados
-        private string GenerarArchivoB64<T>(List<T> lista, AppReportes consulta, char? provId)
+        private string GenerarArchivoB64<T>(List<T> lista, AppReportes consulta, char? provId,string titulo)
         {
             MemoryStream ms = new();
             string observacion = string.Empty;
@@ -641,9 +649,9 @@ namespace gc.sitio.Areas.Consultas.Controllers
                         Saldo = x.Cc_saldo
                     }).ToList();
 
-                    titulos = new List<string> { "Fecha", "N° Mov", "Comprobante", "Concepto", "Debe", "Haber","Saldo" };
+                    titulos = new List<string> { "Fecha", "N° Mov", "Comprobante", "Concepto", "Debe", "Haber", "Saldo" };
                     anchos = [10f, 10f, 20f, 30f, 10f, 10f, 10f];
-                    GeneraReporteSegunDatos(consulta, cDatos, observacion, out ms, titulos, anchos, true);
+                    GeneraReporteSegunDatos(consulta, cDatos, observacion, out ms, titulos, anchos, true,titulo);
 
                     break;
                 case AppReportes.CCUENTAS_VENCIMIENTO_COMPROBANTES:
@@ -661,7 +669,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
                     titulos = new List<string> { "Descripcion", "Cuota", "Est.", "Fecha Comp.", "Fecha Vto", "Importe" };
                     anchos = [50f, 10f, 10f, 10f, 10f, 10f];
 
-                    GeneraReporteSegunDatos(consulta, vDatos, observacion, out ms, titulos, anchos,true);
+                    GeneraReporteSegunDatos(consulta, vDatos, observacion, out ms, titulos, anchos, true, titulo);
                     break;
                 case AppReportes.CCUENTAS_COMPROBANTES:
                     break;
@@ -688,9 +696,9 @@ namespace gc.sitio.Areas.Consultas.Controllers
 
 
                         titulos = new List<string> { "Fecha", "N° Cmpte", "Neto", "IVA", "TOTAL", "N° Or.Pago", "Cmpte ORI", "CARGADO", "USUARIO" };
-                        anchos = [10f, 15f, 10f, 10f, 10f, 15f,10f,10f,10f];
+                        anchos = [10f, 15f, 10f, 10f, 10f, 15f, 10f, 10f, 10f];
 
-                        GeneraReporteSegunDatos(consulta, cdDatos, observacion, out ms, titulos, anchos, true);
+                        GeneraReporteSegunDatos(consulta, cdDatos, observacion, out ms, titulos, anchos, true, titulo);
                     }
                     else
                     {
@@ -711,7 +719,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
                         titulos = new List<string> { "Fecha", "N° Cmpte", "Neto", "IVA", "TOTAL", "N° DOC", "Cmpte ORI", "CARGADO", "USUARIO" };
                         anchos = [10f, 15f, 10f, 10f, 10f, 15f, 10f, 10f, 10f];
 
-                        GeneraReporteSegunDatos(consulta, cdDatos, observacion, out ms, titulos, anchos, true);
+                        GeneraReporteSegunDatos(consulta, cdDatos, observacion, out ms, titulos, anchos, true, titulo   );
                     }
 
 
@@ -720,23 +728,33 @@ namespace gc.sitio.Areas.Consultas.Controllers
                     observacion = "DETALLE DE ORDENES DE PAGO - Documento generado por el sistema de Gestión Comercial";
 
                     var opDatos = (lista as List<ConsOrdPagosDetDto>)
-                        .GroupBy(x => new { x.Grupo, x.Grupo_des })
-                        .Select(g => new
-                        {
-                            Group = g.Key.Grupo,
-                            GrupoDesc = g.Key.Grupo_des,
-                            Items = g.Select(item => new
-                            {
-                                item.Concepto,
-                                item.Cc_importe,
-                            }).ToList()
-                            
-                        }).ToList();
+                                    .OrderBy(x => x.Grupo) // Ordenar por el campo Grupo
+                                    .Select(x => new
+                                    {
+                                        x.Grupo,
+                                        GrupoDesc = x.Grupo_des,
+                                        x.Concepto,
+                                        Importe = x.Cc_importe
+                                    }).ToList();
 
-                    titulos = new List<string> { "", "Importe" };
-                    anchos = [80f, 20f];
+                    //var opDatos = (lista as List<ConsOrdPagosDetDto>)
+                    //    .GroupBy(x => new { x.Grupo, x.Grupo_des })
+                    //    .Select(g => new
+                    //    {
+                    //        Group = g.Key.Grupo,
+                    //        GrupoDesc = g.Key.Grupo_des,
+                    //        Items = g.Select(item => new
+                    //        {
+                    //            item.Concepto,
+                    //            item.Cc_importe,
+                    //        }).ToList()
 
-                    GeneraReporteSegunDatos(consulta, opDatos, observacion, out ms, titulos, anchos, true);
+                    //    }).ToList();
+
+                    titulos = new List<string> { "Grupo", "Descripcion", "Concepto", "Importe" };
+                    anchos = [5f,50f,25f, 20f];
+
+                    GeneraReporteSegunDatos(consulta, opDatos, observacion, out ms, titulos, anchos, true, titulo);
                     break;
                 case AppReportes.CCUENTAS_RECEPCION_PROVEEDORES_DETALLE:
 
@@ -748,10 +766,10 @@ namespace gc.sitio.Areas.Consultas.Controllers
             return Convert.ToBase64String(ms.ToArray());
         }
 
-        private void GeneraReporteSegunDatos<S>(AppReportes consulta, List<S> vDatos, string observacion, out MemoryStream ms, List<string> titulos, float[] anchos,bool datosCliente)
+        private void GeneraReporteSegunDatos<S>(AppReportes consulta, List<S> vDatos, string observacion, out MemoryStream ms, List<string> titulos, float[] anchos, bool datosCliente,string titulo)
         {
             var cuenta = CuentaComercialSeleccionada;
-
+            
             PrintRequestDto<S> request = new PrintRequestDto<S>();
             string logoPath = Path.Combine(_env.WebRootPath, "img", "gc.png");
             request.Cabecera = new DatosCabeceraDto
@@ -761,7 +779,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 CUIT = _empresaGeco.CUIT,
                 IIBB = _empresaGeco.IngresosBrutos,
                 Sucursal = AdministracionId,
-                TituloDocumento = $"{ModuloDM}_{cuenta.Cta_Id}_{DateTime.Now.Ticks}",
+                TituloDocumento = $"{titulo}_{cuenta.Cta_Id}_{DateTime.Now.Ticks}",
                 Logo = logoPath,
             };
             request.Pie = new DatosPieDto
@@ -779,7 +797,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 Datos = vDatos,
             };
 
-            _docMSv.GenerarArchivoPDF(request, out ms, titulos, anchos,datosCliente);
+            _docMSv.GenerarArchivoPDF(request, out ms, titulos, anchos, datosCliente);
         }
 
         private async Task<CuentaDto> BuscarCuentaComercial(string ctaId, char t)

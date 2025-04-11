@@ -9,7 +9,7 @@
         var data = GeneradorParametros(fkey);
         invocacionGestorDoc(data);
     });
-    $("#btnImprimirCmpte").on("click", function () {
+    $("#btnImprimirComp").on("click", function () {
         fkey = ModImpresion.ModCmpte;
         var data = GeneradorParametros(fkey);
         invocacionGestorDoc(data);
