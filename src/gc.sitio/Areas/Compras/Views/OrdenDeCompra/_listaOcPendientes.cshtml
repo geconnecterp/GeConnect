@@ -1,0 +1,5 @@
+﻿@model ListaOcPendienteModel
+@{
+	var lst = Model.LstOcPendiente;
+}
+@Html.DropDownListFor(m => m.oc_compte, lst, "Seleccionar", new { @id = "listaOCPend", disabled = "disabled", @class = "form-control activable" })

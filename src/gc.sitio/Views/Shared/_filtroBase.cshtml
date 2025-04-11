@@ -1,10 +1,8 @@
 ﻿@using static gc.infraestructura.Constantes.Constantes
 @model QueryFilters
-@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
 @{
 	var titulo = Model.TituloLeyend;
+	var lst = HelperMvc<ComboGenDto>.ListaGenerica(Model.Rel03);
 }
 <form id="frmFiltro" asp-action="index" asp-controller="abmproducto" asp-area="abms" method="get">
 	@if (Model.Rel01 != null && Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA))
@@ -30,10 +28,9 @@
 						<label class="form-check-label" for="chkRel04" id="lbRel04"></label>
 					</div>
 				</div>
-				<div class="input-group  input-group-sm">
+				<div class="input-group  input-group-sm" id="divLstOcPendiente">
 					<span class="input-group-text">Nombre</span>
-					<input type="text" class="form-control inputEditable" name="Rel04" id="Rel04" disabled />
-					@Html.Hidden("Rel04Item")
+					@Html.DropDownListFor(m => m.Id, lst, "Seleccionar", new { @id = "listaOCPend", disabled = "disabled", @class = "form-control inputEditable activable" })
 				</div>
 			</div>
 		</div>

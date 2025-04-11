@@ -97,16 +97,43 @@ function AbrirModalConceptoFacturado() {
 		});
 		$('#modalCargaIVA').modal('show');
 
-		$("#ConceptoFacturado_subtotal").mask("000.000.000.000,00", { reverse: true });
-		$("#ConceptoFacturado_subtotal").on('focusout', function (e) {
-			CalcularIva();
+		//$("#ConceptoFacturado_subtotal").mask("000.000.000.000,00", { reverse: true });
+		$("#ConceptoFacturado_subtotal").inputmask({
+			alias: 'numeric',
+			groupSeparator: '.',
+			radixPoint: ',',
+			digits: 2,
+			digitsOptional: false,
+			allowMinus: false,
+			prefix: '',
+			suffix: '',
+			rightAlign: true,
+			unmaskAsNumber: true // Devuelve un número al obtener el valor
 		});
-		$("#ConceptoFacturado_iva").mask("000.000.000.000,00", { reverse: true });
+		$("#ConceptoFacturado_subtotal").on('focusout', function (e) {
+			CalcularIva(e);
+		});
+		//$("#ConceptoFacturado_iva").inputmask({ mask: '99,9', alias: 'numeric', digits: 1, digitsOptional: false, rightAlign: true, unmaskAsNumber: true, radixPoint: ',', placeholder: '' });
+		//$("#ConceptoFacturado_iva").mask("000.000.000.000,00", { reverse: true });
+		$("#ConceptoFacturado_iva").inputmask({
+			alias: 'numeric',
+			groupSeparator: '.',
+			radixPoint: ',',
+			digits: 2,
+			digitsOptional: false,
+			allowMinus: false,
+			prefix: '',
+			suffix: '',
+			rightAlign: true,
+			unmaskAsNumber: true // Devuelve un número al obtener el valor
+		});
 		$("#ConceptoFacturado_iva").on('focusout', function (e) {
-			CalcularIva();
+			CalcularIva(e);
 		});
 		$("#ConceptoFacturado_total").mask("000.000.000.000,00", { reverse: true });
-		$(".inputEditable").on("keypress", analizaEnterInput);
+		setTimeout(() => {
+			$(".inputEditable").on("keypress", analizaEnterInput)
+		}, 500);
 		$("#ConceptoFacturado_concepto").focus();
 		CerrarWaiting();
 		return true
@@ -125,15 +152,51 @@ function AbrirModalAgregarOtroTributo() {
 		});
 		$('#modalCargaOT').modal('show');
 
-		$("#OtroTributo_base_imp").mask("000.000.000.000,00", { reverse: true });
+		/*$("#OtroTributo_base_imp").mask("000.000.000.000,00", { reverse: true });*/
+		$("#OtroTributo_base_imp").inputmask({
+			alias: 'numeric',
+			groupSeparator: '.',
+			radixPoint: ',',
+			digits: 2,
+			digitsOptional: false,
+			allowMinus: false,
+			prefix: '',
+			suffix: '',
+			rightAlign: true,
+			unmaskAsNumber: true // Devuelve un número al obtener el valor
+		});
 		$("#OtroTributo_base_imp").on('focusout', function (e) {
 			CalcularImporteOT();
 		});
-		$("#OtroTributo_alicuota").mask("000.000.000.000,00", { reverse: true });
+		//$("#OtroTributo_alicuota").mask("000.000.000.000,00", { reverse: true });
+		$("#OtroTributo_alicuota").inputmask({
+			alias: 'numeric',
+			groupSeparator: '.',
+			radixPoint: ',',
+			digits: 2,
+			digitsOptional: false,
+			allowMinus: false,
+			prefix: '',
+			suffix: '',
+			rightAlign: true,
+			unmaskAsNumber: true // Devuelve un número al obtener el valor
+		});
 		$("#OtroTributo_alicuota").on('focusout', function (e) {
 			CalcularImporteOT();
 		});
 		$("#OtroTributo_importe").mask("000.000.000.000,00", { reverse: true });
+		//$("#OtroTributo_importe").inputmask({
+		//	alias: 'numeric',
+		//	groupSeparator: '.',
+		//	radixPoint: ',',
+		//	digits: 2,
+		//	digitsOptional: false,
+		//	allowMinus: false,
+		//	prefix: '$',
+		//	suffix: '',
+		//	rightAlign: true,
+		//	unmaskAsNumber: true // Devuelve un número al obtener el valor
+		//});
 		$(".inputEditable").on("keypress", analizaEnterInput);
 		$("#listaOtroTrib").focus();
 		CerrarWaiting();
@@ -141,33 +204,49 @@ function AbrirModalAgregarOtroTributo() {
 	});
 }
 
-function CalcularIva() {
+function CalcularIva(e) {
 	var sit_id = $("#listaIvaSit option:selected").val()
 	var ali_id = $("#listaIvaAli option:selected").val()
-	var subt = $("#ConceptoFacturado_subtotal").val();
-	var num_subt = parseFloat(subt.replace(".", "").replace(",", "."));
+	var subt = $("#ConceptoFacturado_subtotal").inputmask('unmaskedvalue');
+	var iva = $("#ConceptoFacturado_iva").inputmask('unmaskedvalue');
+	//var num_subt = parseFloat(subt.replace(".", "").replace(",", "."));
 	//var num_ali_id = parseFloat(ali_id);
-	if (num_subt > 0 && sit_id == "G") {
+	if (subt > 0 && sit_id == "G") {
 		if (ali_id != "") {
-			var calc = (num_subt * parseFloat(ali_id)) / 100;
-			$("#ConceptoFacturado_iva").val(calc.toFixed(2));
-			$("#ConceptoFacturado_total").val((num_subt + calc).toFixed(2));
+			if (e.target.id != "ConceptoFacturado_iva") {
+				var calc = (subt * parseFloat(ali_id)) / 100;
+				$("#ConceptoFacturado_iva").val(calc.toFixed(2).replace(".",","));
+				//$("#ConceptoFacturado_iva").val(calc);
+				$("#ConceptoFacturado_total").val((subt + calc).toFixed(2));
+			}
+			else {
+				var calc = subt + iva;
+				$("#ConceptoFacturado_total").val((calc).toFixed(2));
+			}
 		}
 	}
-	else if (num_subt > 0 && sit_id != "G") {
-		var calc = num_subt / 100;
-		$("#ConceptoFacturado_iva").val(calc);
-		$("#ConceptoFacturado_total").val(num_subt + calc);
+	else if (subt > 0 && sit_id != "G") {
+		if (e.target.id != "ConceptoFacturado_iva") {
+			var calc = subt / 100;
+			$("#ConceptoFacturado_iva").val(calc);
+			$("#ConceptoFacturado_total").val(subt + calc);
+		}
+		else {
+			var calc = subt / 100;
+			$("#ConceptoFacturado_total").val(subt + calc);
+		}
 	}
 }
 
 function CalcularImporteOT() {
+	var baseImp = $("#OtroTributo_base_imp").inputmask('unmaskedvalue');
+	var aliCuota = $("#OtroTributo_alicuota").inputmask('unmaskedvalue');
 	if ($("#OtroTributo_base_imp").val() != "" && $("#OtroTributo_alicuota").val() != "") {
-		var subt = $("#OtroTributo_base_imp").val();
-		var num_subt = parseFloat(subt.replace(".", "").replace(",", "."));
-		var ali = $("#OtroTributo_alicuota").val();
-		var num_ali = parseFloat(ali.replace(".", "").replace(",", "."));
-		var calc = ((num_subt * num_ali) / 100) + num_subt;
+		//var subt = $("#OtroTributo_base_imp").val();
+		//var num_subt = parseFloat(subt.replace(".", "").replace(",", "."));
+		//var ali = $("#OtroTributo_alicuota").val();
+		//var num_ali = parseFloat(ali.replace(".", "").replace(",", "."));
+		var calc = ((baseImp * aliCuota) / 100) + baseImp;
 		$("#OtroTributo_importe").val(calc.toFixed(2));
 	}
 }
@@ -175,13 +254,13 @@ function CalcularImporteOT() {
 function AgregarConceptoFacturado() {
 	if (ValidarCamposModalIva()) {
 		AbrirWaiting();
-		var subt = $("#ConceptoFacturado_subtotal").val();
-		var num_subt = parseFloat(subt.replace(".", "").replace(",", "."));
+		var subt = $("#ConceptoFacturado_subtotal").inputmask('unmaskedvalue');
+		//var num_subt = parseFloat(subt.replace(".", "").replace(",", "."));
 		var concepto = $("#ConceptoFacturado_concepto").val();
 		var sit = $("#listaIvaSit").val();
 		var ali = $("#listaIvaAli").val();
-		var subt = num_subt;
-		var iva = $("#ConceptoFacturado_iva").val();
+		//var subt = num_subt;
+		var iva = $("#ConceptoFacturado_iva").inputmask('unmaskedvalue');
 		var tot = $("#ConceptoFacturado_total").val();
 		var data = { concepto, sit, ali, subt, iva, tot };
 		PostGen(data, agregarConceptoFacturadoUrl, function (obj) {
@@ -207,10 +286,10 @@ function AgregarOtroTributo() {
 	if (ValidarCamposModalOT()) {
 		AbrirWaiting();
 		var insId = $("#listaOtroTrib option:selected").val();
-		var baseImp_temp = $("#OtroTributo_base_imp").val();
-		var baseImp = parseFloat(baseImp_temp.replace(".", "").replace(",", "."));
-		var alicuota_temp = $("#OtroTributo_alicuota").val();
-		var alicuota = parseFloat(alicuota_temp.replace(".", "").replace(",", "."));
+		var baseImp = $("#OtroTributo_base_imp").inputmask('unmaskedvalue');
+		//var baseImp = parseFloat(baseImp_temp.replace(".", "").replace(",", "."));
+		var alicuota = $("#OtroTributo_alicuota").inputmask('unmaskedvalue');
+		//var alicuota = parseFloat(alicuota_temp.replace(".", "").replace(",", "."));
 		//var importe_temp = $("#OtroTributo_importe").val();
 		//var importe = parseFloat(importe_temp.replace(".", "").replace(",", "."));
 		var importe = $("#OtroTributo_importe").val();

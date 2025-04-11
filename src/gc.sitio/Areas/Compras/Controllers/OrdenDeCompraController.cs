@@ -577,6 +577,34 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		[HttpPost]
+		public IActionResult BuscarOCDesdeCtaIdSeleccionado(string ctaId)
+		{
+			var model = new ListaOcPendienteModel();
+			try
+			{
+				CtaIdSelected = ctaId;
+				CargarOrdenesDeCompraLista(ctaId, _productoServicio);
+				model.LstOcPendiente = ComboOcPendientes();
+				//if (OrdenDeCompraLista !=null && OrdenDeCompraLista.Count>0)
+				//	model.oc_compte = OrdenDeCompraLista.First().oc_compte;
+				//else
+					model.oc_compte = string.Empty;
+				return PartialView("_listaOcPendientes", model);
+			}
+			catch (Exception ex)
+			{
+				return PartialView("_empty_view");
+			}
+
+		}
+
+		protected SelectList ComboOcPendientes()
+		{
+			var lista = OrdenDeCompraLista.Select(x => new ComboGenDto { Id = x.oc_compte.ToString(), Descripcion = $"{x.oc_compte} {DateTime.Parse(x.oc_fecha).ToShortDateString()}" });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+
+		[HttpPost]
 		public JsonResult BuscarFlias(string prefix)
 		{
 			if ((ProveedorFamiliaLista == null || ProveedorFamiliaLista.Count <= 0) && (!string.IsNullOrEmpty(CtaIdSelected)))

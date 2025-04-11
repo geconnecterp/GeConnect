@@ -58,6 +58,7 @@
 		var div = $("#divPaginacion");
 		presentaPaginacionOC(div);
 	});
+	$(document).on("change", "#listaOCPend", ControlaListaOcSelected);
 	return true;
 });
 
@@ -77,6 +78,25 @@ const formatter = new Intl.NumberFormat('en-US', {
 	//minimumFractionDigits: 0, // This suffices for whole numbers, but will
 	// print 2500.10 as $2,500.1
 	//maximumFractionDigits: 0, // Causes 2500.99 to be printed as $2,501
+});
+
+function ControlaListaOcSelected() {
+	if ($("#listaOCPend").val() != "")
+		ocIdSelected = $("#listaOCPend").val();
+	else
+		ocIdSelected = "";
+}
+
+$("#chkRel04").on("click", function () {
+	if ($("#chkRel04").is(":checked")) {
+		$("#listaOCPend").prop("disabled", false);
+		$("#listaOCPend").trigger("focus");
+
+	}
+	else {
+		$("#listaOCPend").prop("disabled", true).val("");
+		ocIdSelected = "";
+	}
 });
 
 function LimpiarDatosDelFiltroInicial() {
@@ -1103,7 +1123,7 @@ function CargarFamiliaLista(id) {
 function CargarOCLista(id) {
 	var ctaId = id;
 	data = { ctaId };
-	PostGen(data, buscarOCDesdeProveedorSeleccionadoUrl, function (obj) {
+	PostGen(data, buscarOCDesdeCtaIdSeleccionadoUrl, function (obj) {
 		if (obj.error === true) {
 			AbrirMensaje("ATENCIÓN", obj.msg, function () {
 				$("#msjModal").modal("hide");
@@ -1111,7 +1131,7 @@ function CargarOCLista(id) {
 			}, false, ["Aceptar"], "error!", null);
 		}
 		else {
-
+			$("#divLstOcPendiente").html(obj);
 		}
 	});
 }
