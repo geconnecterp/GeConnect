@@ -68,6 +68,8 @@
 	});
 	$(document).on("change", "#listaOCPend", ControlaListaOcSelected);
 	$(document).on("change", "#listaSucursales", ControlaSucursalSeleccionada);
+	$(document).on("keypress", ".inputEditable", analizaEnterInput);
+
 	$("#btnCollapseSection").on("click", btnCollapseSectionClicked);
 	$("#tabResumen").on("click", function () {
 		$("#btnAbmAceptar").prop("disabled", false);
@@ -214,7 +216,7 @@ function ConfirmarOrdenDeCompra() {
 				break;
 		}
 		return true;
-		
+
 	}, true, ["Aceptar", "Cancelar"], "question!", null);
 }
 
@@ -350,19 +352,31 @@ function addInCellEditHandler() {
 	$("#tbListaProductoOC").on('input', 'td[contenteditable]', function (e) {
 		var val = $("#" + this.id).text();
 		if (this.id.includes("p_dto1") || this.id.includes("p_dto2") || this.id.includes("p_dto3") || this.id.includes("p_dto4") || this.id.includes("p_dto_pa")) {
-			var num = Number(val);
-			if (num > 50) val = "50";
-			$("#" + this.id).mask("00,0", { reverse: true });
-			$("#" + this.id).val(val);
-			$("#" + this.id).text(val);
+			//var num = Number(val);
+			//if (num > 50) val = "50";
+			////$("#" + this.id).mask("00,0", { reverse: true });
+			//$("#" + this.id).val(val);
+			//$("#" + this.id).text(val);
 		}
 		else if (this.id.includes("p_plista")) {
-			$("#" + this.id).mask("000.000.000.000,00", { reverse: true });
-			$("#" + this.id).val(val);
+			/*$("#" + this.id).mask("000.000.000.000,00", { reverse: true });*/
+			//$("#" + this.id).inputmask({
+			//	alias: 'numeric',
+			//	groupSeparator: '.',
+			//	radixPoint: ',',
+			//	digits: 2,
+			//	digitsOptional: false,
+			//	allowMinus: false,
+			//	prefix: '',
+			//	suffix: '',
+			//	rightAlign: true,
+			//	unmaskAsNumber: true // Devuelve un número al obtener el valor
+			//});
+			//$("#" + this.id).val(val);
 		}
 		else if (this.id.includes("p_boni")) {
-			$("#" + this.id).mask("000/000", { reverse: true });
-			$("#" + this.id).val(val);
+			//$("#" + this.id).mask("000/000", { reverse: true });
+			//$("#" + this.id).val(val);
 		}
 	});
 }
@@ -389,32 +403,34 @@ function addInCellLostFocusHandler() {
 		if (cellValueTemp == $("#" + this.id).text())
 			actualiza = false;
 		else {
-			if (this.id.includes("p_dto1") || this.id.includes("p_dto2") || this.id.includes("p_dto3") || this.id.includes("p_dto4") || this.id.includes("p_dto_pa")) {
-
+			if (this.id.includes("p_dto1") || this.id.includes("p_dto2") || this.id.includes("p_dto3") || this.id.includes("p_dto4") || this.id.includes("p_dto_pa") || this.id.includes("bulto")) {
+				var valor = this.innerText;
 			}
 			else if (this.id.includes("p_plista")) {
-
+				var valor = $("#" + this.id).inputmask('unmaskedvalue');
 			}
 			else if (this.id.includes("p_boni")) {
-				var spl = $("#" + this.id).val().split("/");
+				var spl = this.innerText.split("/");
 				if (spl.length === 2) {
 					var num1 = Number(spl[0]);
 					var num2 = Number(spl[1]);
 					if (num1 > num2) {
-						actualiza = false;
 						$("#" + this.id).val("");
 						$("#" + this.id).text("");
+						actualiza = false;
 					}
+					var valor = this.innerText;
 				}
 				else
 					actualiza = false;
 			}
 		}
 		if (actualiza) {
-			if ($("#" + this.id).val() == "")
-				ActualizarProductoEnOc(this.id, $("#" + this.id).text());
-			else
-				ActualizarProductoEnOc(this.id, $("#" + this.id).val());
+			ActualizarProductoEnOc(this.id, valor);
+			//if ($("#" + this.id).val() == "")
+			//	ActualizarProductoEnOc(this.id, $("#" + this.id).text());
+			//else
+			//	ActualizarProductoEnOc(this.id, $("#" + this.id).val());
 		}
 	});
 }
@@ -461,16 +477,17 @@ function tableUpDownArrow() {
 				r: sPos ? sPos.rowIndex : -1
 				, c: sPos ? (sPos.cellIndex ? sPos.cellIndex : cellIndexTemp) : -1
 			}
-		
+
 		if (sPos &&
-			(evt.altKey && evt.shiftKey && movKey[evt.code])
+			//(evt.altKey && evt.shiftKey && movKey[evt.code])
+			(evt.shiftKey && movKey[evt.code])
 			||
 			(evt.ctrlKey && movKey[evt.code])
-			) {
+		) {
 			let loop = true
 				, nxFocus = null
 				, cell = null
-			
+
 			do {
 				if (evt.code === 'ArrowDown' && pos.r == nbRows)
 					pos.r = 0;
@@ -481,7 +498,7 @@ function tableUpDownArrow() {
 				}
 				else
 					movKey[evt.code](pos);
-				
+
 				if (pos.r == nbRows)
 					cell = myTable.rows[pos.r - 1].cells[pos.c];
 				else
@@ -500,7 +517,7 @@ function tableUpDownArrow() {
 				if (pos.c == 16 && cellIndexTemp < pos.c) //moviendome desde la columna 'boni' hacia la derecha, la cual no es editable, debo saltar a la siguiente
 					pos.c = 7;
 				nxFocus = myTable.rows[pos.r - 1].cells[pos.c]
-				
+
 				if (nxFocus
 					&& cell.style.display !== 'none'
 					&& cell.parentNode.style.display !== 'none') {
@@ -619,6 +636,68 @@ function focusOnTd(x) {
 	}
 }
 
+function keyUpFromEditableCell(x) {
+	if (event.key == "Enter") {
+		var id = $(x).prop("id");
+		if (id.includes("bultos_")) {
+			var arr_p_id = id.split("_");
+			var p_id = arr_p_id[arr_p_id.length - 1];
+			var next = "p_plista_" + p_id;
+			$("#" + next).focus();
+			return true;
+		}
+		if (id.includes("p_plista")) {
+			var arr_p_id = id.split("_");
+			var p_id = arr_p_id[arr_p_id.length - 1];
+			var next = "p_dto1_" + p_id;
+			$("#" + next).focus();
+			return true;
+		}
+		if (id.includes("p_dto1")) {
+			var arr_p_id = id.split("_");
+			var p_id = arr_p_id[arr_p_id.length - 1];
+			var next = "p_dto2_" + p_id;
+			$("#" + next).focus();
+			return true;
+		}
+		if (id.includes("p_dto2")) {
+			var arr_p_id = id.split("_");
+			var p_id = arr_p_id[arr_p_id.length - 1];
+			var next = "p_dto3_" + p_id;
+			$("#" + next).focus();
+			return true;
+		}
+		if (id.includes("p_dto3")) {
+			var arr_p_id = id.split("_");
+			var p_id = arr_p_id[arr_p_id.length - 1];
+			var next = "p_dto4_" + p_id;
+			$("#" + next).focus();
+			return true;
+		}
+		if (id.includes("p_dto4")) {
+			var arr_p_id = id.split("_");
+			var p_id = arr_p_id[arr_p_id.length - 1];
+			var next = "p_dto_pa_" + p_id;
+			$("#" + next).focus();
+			return true;
+		}
+		if (id.includes("p_dto_pa")) {
+			var arr_p_id = id.split("_");
+			var p_id = arr_p_id[arr_p_id.length - 1];
+			var next = "p_boni_" + p_id;
+			$("#" + next).focus();
+			return true;
+		}
+		if (id.includes("p_boni")) {
+			var arr_p_id = id.split("_");
+			var p_id = arr_p_id[arr_p_id.length - 1];
+			var next = "bultos_" + p_id;
+			$("#" + next).focus();
+			return true;
+		}
+	}
+}
+
 function presentaPaginacionOC(div) {
 	div.pagination({
 		items: totalRegs,
@@ -633,8 +712,6 @@ function presentaPaginacionOC(div) {
 	$("#divFiltro").collapse("hide")
 	return true;
 }
-
-
 
 /// Funcion que restaura el estado del producto en la grilla del primer Tab, luego de quitarlo de la lista de OC (segundo Tab)
 function ActualizarInfoDeProductoEnGrilla(pId) {
@@ -962,10 +1039,97 @@ function BuscarProductosTabOC() {
 			addInCellKeyDownHandler();
 			addInCellEditHandler();
 			AddEventListenerToGrid("tbListaProductoOC");
+			addMaskInEditableCells();
+			//$(".inputEditable").on("keypress", analizaEnterInput)
 			activarBotones(true);
 			tableUpDownArrow();
 			CargarResumenDeOc();
 		}
+	});
+}
+
+function analizaEnterInput(e) {
+	if (e.which == "13") {
+		tope = 99999;
+		index = -1;
+		//obtengo los inputs dentro del div
+		var inputss = $("main :input:not(:disabled)");
+		tope = inputss.length;
+		//le el id del input en el que he dado enter
+		var cual = $(this).prop("id");
+		inputss.each(function (i, item) {
+			if ($(item).prop("id") === cual) {
+				index = i;
+				return false;
+			}
+		});
+		if (index > -1 && tope > index + 1) {
+			inputss[index + 1].focus();
+		}
+
+	}
+	return true;
+}
+
+function addMaskInEditableCells() {
+	if ($("#tbListaProductoOC").length != 0) {
+		$("#tbListaProductoOC").find('tr').each(function (i, el) {
+			var td = $(this).find('td');
+			if (td.length > 0) {
+				if (td[9].id.includes("p_plista")) {
+					getMaskForMoneyType("#" + td[9].id);
+				}
+				if (td[10].id.includes("p_dto1")) {
+					getMaskForDiscountType("#" + td[10].id);
+				}
+				if (td[11].id.includes("p_dto2")) {
+					getMaskForDiscountType("#" + td[11].id);
+				}
+				if (td[12].id.includes("p_dto3")) {
+					getMaskForDiscountType("#" + td[12].id);
+				}
+				if (td[13].id.includes("p_dto4")) {
+					getMaskForDiscountType("#" + td[13].id);
+				}
+				if (td[14].id.includes("p_dto_pa")) {
+					getMaskForDiscountType("#" + td[14].id);
+				}
+				if (td[15].id.includes("p_boni")) {
+					$("#" + td[15].id).mask("000/000", { reverse: false });
+				}
+			}
+		});
+	}
+}
+
+function getMaskForDiscountType(selector) {
+	$(selector).inputmask({
+		alias: 'numeric',
+		groupSeparator: '.',
+		radixPoint: ',',
+		digits: 1,
+		digitsOptional: false,
+		allowMinus: false,
+		prefix: '',
+		suffix: '',
+		min: 0,
+		max: 50,
+		unmaskAsNumber: true
+	});
+}
+
+function getMaskForMoneyType(selector) {
+	$(selector).inputmask({
+		alias: 'numeric',
+		groupSeparator: '.',
+		radixPoint: ',',
+		digits: 2,
+		digitsOptional: false,
+		allowMinus: false,
+		prefix: '',
+		suffix: '',
+		rightAlign: true,
+		unmaskAsNumber: true
 	});
 }
 
@@ -1111,7 +1275,7 @@ $("#Rel01").autocomplete({
 		$("#chkRel03").prop("disabled", false);
 		CargarFamiliaLista(ui.item.id);
 		CargarOCLista(ui.item.id);
-		
+
 		return true;
 	}
 });

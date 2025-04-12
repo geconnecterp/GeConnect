@@ -54,15 +54,15 @@
 					<td class="align-center tiny-row">@item.Stk_Suc</td> @*04*@
 					<td class="align-center tiny-row">@item.Stk</td> @*05*@
 					<td class="align-center tiny-row">@item.P_Unidad_Pres</td> @*06*@
-					<td class="align-center tiny-row content-editable-td" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_Bultos>@item.Bultos</td> @*07*@
+					<td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_Bultos>@item.Bultos</td> @*07*@
 					<td class="align-center tiny-row">@item.Cantidad.ToString("0.##")</td> @*08*@
-					<td class="align-right tiny-row content-editable-td" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_P_Plista>@item.P_Plista.ToString("0.##")</td> @*09*@
-					<td class="align-center tiny-row content-editable-td" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_P_Dto1>@item.P_Dto1.ToString("0.#")</td> @*10*@
-					<td class="align-center tiny-row content-editable-td" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_P_Dto2>@item.P_Dto2.ToString("0.#")</td> @*11*@
-					<td class="align-center tiny-row content-editable-td" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_P_Dto3>@item.P_Dto3.ToString("0.#")</td> @*12*@
-					<td class="align-center tiny-row content-editable-td" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_P_Dto4>@item.P_Dto4.ToString("0.#")</td> @*13*@
-					<td class="align-center tiny-row content-editable-td" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_P_Dto_Pa>@item.P_Dto_Pa.ToString("0.#")</td> @*14*@
-					<td class="align-center tiny-row content-editable-td" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_P_Boni>@item.P_Boni</td> @*15*@
+					<td class="align-right tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Plista>@item.P_Plista.ToString("0.##")</td> @*09*@
+					<td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Dto1>@item.P_Dto1.ToString("0.#")</td> @*10*@
+					<td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Dto2>@item.P_Dto2.ToString("0.#")</td> @*11*@
+					<td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Dto3>@item.P_Dto3.ToString("0.#")</td> @*12*@
+					<td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Dto4>@item.P_Dto4.ToString("0.#")</td> @*13*@
+					<td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Dto_Pa>@item.P_Dto_Pa.ToString("0.#")</td> @*14*@
+					<td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Boni>@item.P_Boni</td> @*15*@
 					<td class="align-center tiny-row">@item.Pedido_Mas_Boni</td> @*16*@
 					<td class="align-right tiny-row">@item.P_Pcosto.ToString("0.##")</td> @*17*@
 					<td class="align-right tiny-row">@item.P_Pcosto_Total.ToString("0.##")</td> @*18*@
