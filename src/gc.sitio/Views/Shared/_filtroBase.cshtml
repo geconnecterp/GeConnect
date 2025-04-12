@@ -2,7 +2,7 @@
 @model QueryFilters
 @{
 	var titulo = Model.TituloLeyend;
-	var lst = HelperMvc<ComboGenDto>.ListaGenerica(Model.Rel03);
+	var lst = HelperMvc<ComboGenDto>.ListaGenerica(new List<ComboGenDto>());
 }
 <form id="frmFiltro" asp-action="index" asp-controller="abmproducto" asp-area="abms" method="get">
 	@if (Model.Rel01 != null && Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA))
@@ -21,7 +21,7 @@
 					@Html.Hidden("Rel01Item")
 				</div>
 			</div>
-			<div class=" col-sm-6">
+			<div class=" col-sm-6" id=" ">
 				<div class="input-group input-group-sm">
 					<div class="form-check form-check-inline form-switch mb-2">
 						<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkRel04" />
