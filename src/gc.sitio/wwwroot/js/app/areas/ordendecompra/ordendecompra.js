@@ -108,17 +108,19 @@ function ControlaListaOcSelected() {
 		ocIdSelected = "";
 }
 
-$("#chkRel04").on("click", function () {
-	if ($("#chkRel04").is(":checked")) {
-		$("#listaOCPend").prop("disabled", false);
-		$("#listaOCPend").trigger("focus");
+function addHandlerOnChkRel04_Click() {
+	$("#chkRel04").on("click", function () {
+		if ($("#chkRel04").is(":checked")) {
+			$("#listaOCPend").prop("disabled", false);
+			$("#listaOCPend").trigger("focus");
 
-	}
-	else {
-		$("#listaOCPend").prop("disabled", true).val("");
-		ocIdSelected = "";
-	}
-});
+		}
+		else {
+			$("#listaOCPend").prop("disabled", true).val("");
+			ocIdSelected = "";
+		}
+	});
+}
 
 function LimpiarDatosDelFiltroInicial() {
 	$("input#Rel01").val("");
@@ -170,6 +172,8 @@ function LimpiarDatosDelFiltroInicial() {
 	$("input#Id").prop('disabled', true);
 	$("input#Id2").val("");
 	$("input#Id2").prop('disabled', true);
+	$("#listaOCPend").empty();
+	$("#divLstOcPendiente").html("");
 }
 
 function ConfirmarOrdenDeCompra() {
@@ -1369,6 +1373,8 @@ function CargarOCLista(id) {
 		}
 		else {
 			$("#divLstOcPendiente").html(obj);
+			$("#lbRel04").text("OC Pendiente");
+			addHandlerOnChkRel04_Click();
 		}
 	});
 }
