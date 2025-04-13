@@ -27,7 +27,6 @@ namespace gc.sitio.Areas.ABMs.Controllers
         private readonly IRubroServicio _rubSv;
         private readonly IProducto2Servicio _prodSv;
         private readonly IListaDePrecioServicio _listaDePrecioServicio;
-        private readonly ILogger<AbmProductoController> _logger;
         private readonly IAbmServicio _abmSv;
 
         public AbmProductoController(IOptions<AppSettings> options, IHttpContextAccessor accessor, IABMProductoServicio productoServicio,
@@ -38,18 +37,15 @@ namespace gc.sitio.Areas.ABMs.Controllers
             _abmProdServ = productoServicio;
             _ctaSv = cta;
             _rubSv = rubro;
-            _logger = logger;
             _prodSv = producto2Servicio;
             _listaDePrecioServicio = listaDePrecio;
             _abmSv = abmServicio;
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index(bool actualizar = false)
+        public IActionResult Index(bool actualizar = false)
         {
-            List<ProductoListaDto> lista;
-            MetadataGrid metadata;
-            GridCore<ProductoListaDto> grillaDatos;
+            
 
             var auth = EstaAutenticado;
             if (!auth.Item1 || auth.Item2 < DateTime.Now)
@@ -60,13 +56,16 @@ namespace gc.sitio.Areas.ABMs.Controllers
             ProductoBarrados = [];
             LimitesStk = [];
 
-            string volver = Url.Action("index", "home", new { area = "" });
-            ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
+            //string volver = Url.Action("index", "home", new { area = "" });
+            //ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
 
             var listR01 = new List<ComboGenDto>();
             ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
             var listR02 = new List<ComboGenDto>();
             ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR02);
+            var listR03 = new List<ComboGenDto>();
+            ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
+
             ViewBag.adm_id = ComboAdministraciones();
             ViewData["Titulo"] = "Gestión de Productos";
             return View();
