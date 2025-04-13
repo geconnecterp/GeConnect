@@ -212,11 +212,19 @@ function accionBotones(btn) {
             activarControles(false);
 
             if (tabAbm === 1) {
+                accion = "";
                 $("#btnDetalle").prop("disabled", true);
                 activarGrilla(tabGrid01);
+
+
+                $("#BtnLiTab02").prop("disabled", false);
+                $("#BtnLiTab02").removeClass("text-danger");
+                $("#BtnLiTab03").prop("disabled", false);
+                $("#BtnLiTab03").removeClass("text-danger");
+
             }
 
-        }
+        }      
     }
 }
 

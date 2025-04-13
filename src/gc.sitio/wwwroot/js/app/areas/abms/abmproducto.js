@@ -153,7 +153,10 @@
 
     $("#BtnLiTab01").on("click", function () {
         tabAbm = 1;
-        activarGrilla(tabGrid01);
+        activarGrilla(tabGrid01);        
+        if (EntidadSelect !== "" && regSelected !== "") {
+            activarBotones(true);
+        }
     });
 
     $("#BtnLiTab02").on("click", presentarBarrado);
@@ -182,16 +185,16 @@ function InicializaPantallaAbmProd(grilla) {
     if (grilla !== tabGrid01 || grilla !== tabGrid02 || grilla !== tabGrid03) {
         switch (tabAbm) {
             case 1:
-                grilla = tabGrid01;
+                grilla = Grids.GridProductos;
                 if ($("#divDetalle").is(":visible")) {
                     $("#divDetalle").collapse("hide");
                 }
                 break;
             case 2:
-                grilla = tabGrid02;
+                grilla = Grids.GridBarrado;
                 break;
             case 3:
-                grilla = tabGrid03;
+                grilla = Grids.GridLimite;
             default:
                 return false;
         }
@@ -341,13 +344,7 @@ function buscarProductoServer(data) {
             $("#BtnLiTab03").prop("disabled", true);
             $("#BtnLiTab03").addClass("text-danger");
 
-        }
-        else {
-            $("#BtnLiTab02").prop("disabled", false);
-            $("#BtnLiTab02").removeClass("text-danger");
-            $("#BtnLiTab03").prop("disabled", false);
-            $("#BtnLiTab03").removeClass("text-danger");
-        }
+        }      
 
         CerrarWaiting();
 
@@ -506,8 +503,8 @@ function buscarBarrado(data) {
 function presentarBarrado() {
     AbrirWaiting("Buscando Barrados...");
     tabAbm = 2;
-    desactivarGrilla(tabGrid01);
-    InicializaPantallaAbmProd(tabGrid02);
+    desactivarGrilla(Grids.GridBarrado);
+    InicializaPantallaAbmProd(Grids.GridBarrado);
     $("#divBarrado2").empty();
     PostGenHtml({}, presentarBarradoUrl, function (obj) {
         $("#divBarrado2").html(obj);
