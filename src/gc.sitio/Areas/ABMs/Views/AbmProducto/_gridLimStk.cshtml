@@ -13,10 +13,10 @@
             <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridLim">
                 <thead class="table-dark">
                     <tr class="header">
-                        <th scope="col">@nameof(dataMod.adm_id)</th>
-                        <th scope="col">@nameof(dataMod.adm_lista)</th>
-                        <th scope="col">@nameof(dataMod.p_stk_min)</th>
-                        <th scope="col">@nameof(dataMod.p_stk_max)</th>
+                        <th scope="col">Sucursal</th>
+                        <th scope="col">Nombre</th>
+                        <th scope="col">Stk Min</th>
+                        <th scope="col">Stk Max</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -28,7 +28,7 @@
                             <td class="text-sm-center">@item.adm_id</td>
                             <td class="text-sm-start">@item.adm_lista</td>
                             <td class="text-sm-end">@item.p_stk_min</td>
-                            <td class="text-sm-start">@item.p_stk_max</td>
+                            <td class="text-sm-end">@item.p_stk_max</td>
                         </tr>
                     }
                 </tbody>

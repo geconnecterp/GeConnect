@@ -45,7 +45,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
         [HttpGet]
         public IActionResult Index(bool actualizar = false)
         {
-            
+
 
             var auth = EstaAutenticado;
             if (!auth.Item1 || auth.Item2 < DateTime.Now)
@@ -71,7 +71,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             return View();
         }
 
-        
+
 
         [HttpPost]
         public async Task<IActionResult> BuscarBarrados(string p_id)
@@ -198,8 +198,16 @@ namespace gc.sitio.Areas.ABMs.Controllers
                     return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
                 }
                 var barr = await _prodSv.ObtenerBarrado(ProductoABMSeleccionado.p_id, barradoId, TokenCookie);
-                if (barr == null || !barr.Ok)
+                if (barr == null)
                 {
+                    throw new NegocioException("No se recepcionó el barrado buscado.");
+                }
+                else if (!barr.Ok)
+                {
+                    if (string.IsNullOrEmpty(barr.Mensaje))
+                    {
+                        throw new NegocioException("No se recepcionó el barrado buscado.");
+                    }
                     throw new NegocioException(barr.Mensaje);
                 }
 
@@ -282,7 +290,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
                     while (continuar)
                     {
                         var l = await ObtenerLimiteStkGen(ProductoABMSeleccionado.p_id);
-                        if (l.Ok && l.ListaEntidad.Count > 0) { 
+                        if (l.Ok && l.ListaEntidad.Count > 0)
+                        {
                             LimitesStk = l.ListaEntidad;
                             continuar = false;
                             encontrado = true;
@@ -290,7 +299,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                         cont++;
                         if (cont > tope)
                         {
-                            continuar=false; 
+                            continuar = false;
                         }
                     }
                     if (!encontrado)
@@ -430,7 +439,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                     ProductosBuscados = [];
                     if (abm.Abm.Equals('A'))
                     {
-                        return Json(new { error = false, warn = false, msg , id=res.Entidad.resultado_id});
+                        return Json(new { error = false, warn = false, msg, id = res.Entidad.resultado_id });
                     }
                     return Json(new { error = false, warn = false, msg });
                 }
@@ -489,7 +498,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                             break;
                         case 'M':
                             msg = $"EL PROCESAMIENTO DE LA MODIFICIACION DEL BARRADO {barr.p_id_barrado} SE REALIZO SATISFACTORIAMENTE";
-                            
+
                             break;
                         default:
                             msg = $"EL PROCESAMIENTO DE LA BAJA/DISCONTINUAR DEL PRODUCTO {barr.p_id_barrado} SE REALIZO SATISFACTORIAMENTE";
@@ -535,7 +544,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 {
                     throw new NegocioException("Es Stock Mínimo núnca puede ser mayor al Stock Máximo. Verifique.");
                 }
-                if(lim.p_stk_max<1 || lim.p_stk_min < 1|| lim.p_stk_max >99999 || lim.p_stk_min >99999  )
+                if (lim.p_stk_max < 1 || lim.p_stk_min < 1 || lim.p_stk_max > 99999 || lim.p_stk_min > 99999)
                 {
                     throw new NegocioException("El Stock mínimo y el máximo siempre deben ser mayores a 1 y menores a 99999. Verifique.");
                 }
@@ -565,7 +574,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                         case 'M':
                             msg = $"EL PROCESAMIENTO DE LA MODIFICIACION DEL BARRADO {lim.adm_nombre} SE REALIZO SATISFACTORIAMENTE";
                             break;
-                        default:                            
+                        default:
                             msg = $"EL PROCESAMIENTO DE LA BAJA/DISCONTINUAR DEL PRODUCTO {lim.adm_nombre} SE REALIZO SATISFACTORIAMENTE";
                             break;
                     }
@@ -646,7 +655,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             RespuestaGenerica<EntidadBase> response = new();
             try
             {
-                if (PaginaGrid == pag && !buscaNew && ProductosBuscados.Count()>0)
+                if (PaginaGrid == pag && !buscaNew && ProductosBuscados.Count() > 0)
                 {
                     //es la misma pagina y hay registros, se realiza el reordenamiento de los datos.
                     lista = ProductosBuscados.ToList();
@@ -690,7 +699,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             }
         }
 
-        
+
 
         [HttpPost]
         public JsonResult ComboProveedorFamilia(string cta_id)

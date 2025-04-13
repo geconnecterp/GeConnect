@@ -127,11 +127,26 @@
         presentaPaginacion(div);
     });
     $("#btnBuscar").on("click", function () {
-        //es nueva la busqueda no resguardamos la busqueda anterior. es util para paginado
-        dataBak = "";
+       
         //es una busqueda por filtro. siempre sera pagina 1
-        pagina = 1;
-        buscarProductos(pagina);
+        if (accion !== AbmAction.MODIFICACION && accion !== AbmAction.ALTA) {
+            //es nueva la busqueda no resguardamos la busqueda anterior. es util para paginado
+            dataBak = "";
+            pagina = 1;
+            buscarProductos(pagina);
+        }
+        else {
+            buscarProductos(pagina, function () {
+                if (accion === AbmAction.MODIFICACION) {
+                    // Seleccionar el registro modificado
+                    selectRegProd(regSelected, Grids.GridProductos);
+                } else if (accion === AbmAction.ALTA) {
+                    // Presentar solo el registro recién creado
+                    presentarRegistroAlta(regSelected);
+                }
+            });
+        }
+        
     });
 
     $(".inputEditable").on("keypress", analizaEnterInput);
@@ -226,7 +241,7 @@ function cargaPaginacion() {
     return true;
 }
 
-function buscarProductos(pag) {
+function buscarProductos(pag,callback) {
     AbrirWaiting();
 
     //desactivamos los botones de acción
@@ -253,9 +268,13 @@ function buscarProductos(pag) {
 
     var buscaNew = JSON.stringify(dataBak) != JSON.stringify(data1)
 
-    if (buscaNew === false) {
+    if (buscaNew === false || callback!==undefined) {
         //son iguales las condiciones cambia de pagina
         pagina = pag;
+        //esto lo hago para que en caso que se haya hecho una modificación, si no se tiene la busqueda anterior, se carga en dataBak = data1
+        if (callback !== undefined && dataBak === "") {
+            dataBak = data1;
+        }
     }
     else {
         dataBak = data1;
@@ -291,6 +310,10 @@ function buscarProductos(pag) {
 
         });
         CerrarWaiting();
+        // Ejecutar callback si está definido
+        if (typeof callback === "function") {
+            callback();
+        }
     }, function (obj) {
         ControlaMensajeError(obj.message);
         CerrarWaiting();

@@ -86,45 +86,6 @@ function ejecutarAlta() {
     }
 }
 
-function controlaBalanza() {
-    if ($(this).is(":checked")) {
-        $("#P_Balanza_Dvto").prop("disabled", false);
-        $("#P_Peso").prop("disabled", false);
-    }
-    else {
-        $("#P_Balanza_Dvto").prop("disabled", true);
-        $("#P_Peso").prop("disabled", true);
-    }
-}
-
-function controlaVencimiento() {
-    if ($(this).is(":checked")) {
-        $("#P_Con_Vto_Min").prop("disabled", false);
-    }
-    else {
-        $("#P_Con_Vto_Min").prop("disabled", true);
-    }
-}
-
-function controlaMateriaPrima() {
-    if ($(this).is(":checked")) {
-        $("#PElaboracion").prop("disabled", false);
-    }
-    else {
-        $("#PElaboracion").prop("disabled", true);
-    }
-}
-
-function controlaValorUpId() {
-    if ($("#Up_Id option:selected").val() !== "07") {
-        $("#PBalanza").prop("disabled", false);
-    }
-    else {
-        $("#PBalanza").prop("checked", false);
-        $("#PBalanza").prop("disabled", true);
-    }
-}
-
 function controlaValorIva() {
     if ($("#iva_situacion option:selected").val() === "N") {
         $("#iva_alicuota").val("0.00");

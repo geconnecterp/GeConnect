@@ -13,12 +13,12 @@
             <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridBarr">
                 <thead class="table-dark">
                     <tr class="header">
-                        <th scope="col">@nameof(dataMod.p_id_barrado)</th>
-                        <th scope="col">@nameof(dataMod.tba_desc)</th>
-                        <th scope="col">@nameof(dataMod.p_unidad_pres)</th>
-                        <th scope="col">@nameof(dataMod.p_unidad_x_bulto)</th>
-                        <th scope="col">@nameof(dataMod.p_bulto_x_piso)</th>
-                        <th scope="col">@nameof(dataMod.p_piso_x_pallet)</th>                        
+                        <th scope="col">Barrado</th>
+                        <th scope="col">T.Barra</th>
+                        <th scope="col">Un.Present.</th>
+                        <th scope="col">Un. Bulto</th>
+                        <th scope="col">Bulto Piso</th>
+                        <th scope="col">Piso Palet</th>                        
                     </tr>
                 </thead>
                 <tbody>
@@ -30,8 +30,8 @@
                             <td class="text-sm-center">@item.p_id_barrado</td>
                             <td class="text-sm-start">@item.tba_desc</td>
                             <td class="text-sm-end">@item.p_unidad_pres</td>
-                            <td class="text-sm-start">@item.p_unidad_x_bulto</td>
-                            <td class="text-sm-start">@item.p_bulto_x_piso</td>
+                            <td class="text-sm-end">@item.p_unidad_x_bulto</td>
+                            <td class="text-sm-end">@item.p_bulto_x_piso</td>
                             <td class="text-sm-end">@item.p_piso_x_pallet</td>                           
                         </tr>
                     }

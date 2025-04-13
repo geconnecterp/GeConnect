@@ -17,16 +17,11 @@
                 <thead class="table-dark">
                     <tr class="header">
 
-                        <th scope="col">@nameof(dataMod.P_id)</th>
-                        <th scope="col">@nameof(dataMod.P_desc)</th>
-                        <th scope="col">@nameof(dataMod.Cta_id)</th>
-                        <th scope="col">@nameof(dataMod.Cta_denominacion)</th>
-                        <th scope="col">@nameof(dataMod.Cta_lista)</th>
-                        <th scope="col">@nameof(dataMod.Rub_id)</th>
-                        <th scope="col">@nameof(dataMod.Rub_desc)</th>
-                        <th scope="col">@nameof(dataMod.Rub_lista)</th>
-                        <th scope="col">@nameof(dataMod.P_activo)</th>
-                        <th scope="col">@nameof(dataMod.P_activo_des)</th>
+                        <th scope="col">ID</th>
+                        <th scope="col">PRODUCTO</th>
+                        <th scope="col">PROVEEDOR</th>
+                        <th scope="col">RUBRO</th>
+                        <th scope="col">ACTIVO</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -49,13 +44,9 @@
                             <!--ondblclick="selectAbmRegDbl(this,'tbGridProd')"-->
                             <td class="text-sm-center" style="border-left: 5px solid @color;text-align: left;">@item.P_id</td>
                             <td class="text-sm-start">@item.P_desc</td>
-                            <td class="text-sm-end">@item.Cta_id</td>
-                            <td class="text-sm-start">@item.Cta_denominacion</td>
+
                             <td class="text-sm-start">@item.Cta_lista</td>
-                            <td class="text-sm-end">@item.Rub_id</td>
-                            <td class="text-sm-start">@item.Rub_desc</td>
                             <td class="text-sm-start">@item.Rub_lista</td>
-                            <td class="text-sm-center">@item.P_activo</td>
                             <td class="text-sm-start">@item.P_activo_des</td>
                         </tr>
                     }

@@ -14,7 +14,7 @@
     $(document).on("click", "#PBalanza", controlaBalanza);
     $(document).on("click", "#PConVto", controlaVencimiento);
     $(document).on("click", "#PMatPri", controlaMateriaPrima);
-    $(document).on("change", "#Up_Id", controlaValorUpId);
+    $(document).on("change", "#up_id", controlaValorUpId);
     $(document).on("change", "#iva_situacion", controlaValorIva);
 
 });
@@ -90,21 +90,21 @@ function ejecutarAlta() {
 
 function controlaBalanza() {
     if ($(this).is(":checked")) {
-        $("#P_Balanza_Dvto").prop("disabled", false);
-        $("#P_Peso").prop("disabled", false);
+        $("#p_balanza_dvto").prop("disabled", false);
+        $("#p_peso").prop("disabled", false);
     }
     else {
-        $("#P_Balanza_Dvto").prop("disabled", true);
-        $("#P_Peso").prop("disabled", true);
+        $("#p_balanza_dvto").prop("disabled", true);
+        $("#p_peso").prop("disabled", true);
     }
 }
 
 function controlaVencimiento() {
     if ($(this).is(":checked")) {
-        $("#P_Con_Vto_Min").prop("disabled", false);
+        $("#p_con_vto_min").prop("disabled", false);
     }
     else {
-        $("#P_Con_Vto_Min").prop("disabled", true);
+        $("#p_con_vto_min").prop("disabled", true);
     }
 }
 
@@ -118,7 +118,7 @@ function controlaMateriaPrima() {
 }
 
 function controlaValorUpId() {
-    if ($("#Up_Id option:selected").val() !== "07") {
+    if ($("#up_id option:selected").val() !== "07") {
         $("#PBalanza").prop("disabled", false);
     }
     else {
@@ -410,7 +410,7 @@ function confirmarOperacionAbmProducto() {
 
                             //data = { p_id: EntidadSelect };
                             //buscarProductoServer(data);
-                            InicializaFiltroAbmProducto(EntidadSelect);
+                            //InicializaFiltroAbmProducto(EntidadSelect);
                             $("#btnBuscar").trigger("click");
 
                             break;
