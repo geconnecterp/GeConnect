@@ -230,28 +230,30 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var box = _context.HttpContext.Session.GetString("BoxSeleccionado");
+               
+                var box = _context.HttpContext?.Session.GetString("BoxSeleccionado");
                 if (string.IsNullOrEmpty(box) || string.IsNullOrWhiteSpace(box))
                 {
                     return string.Empty;
                 }
                 return box.Trim().ToUpper();
             }
-            set { _context.HttpContext.Session.SetString("BoxSeleccionado", value); }
+            set { if(_context.HttpContext != null) _context.HttpContext.Session.SetString("BoxSeleccionado", value); }
+
         }
 
         public string TipoAjusteStk
         {
             get
             {
-                var taj = _context.HttpContext.Session.GetString("TipoAjusteStk");
+                var taj = _context.HttpContext?.Session.GetString("TipoAjusteStk");
                 if (string.IsNullOrEmpty(taj) || string.IsNullOrWhiteSpace(taj))
                 {
                     return string.Empty;
                 }
                 return taj.Trim().ToUpper();
             }
-            set { _context.HttpContext.Session.SetString("TipoAjusteStk", value); }
+            set { _context.HttpContext?.Session.SetString("TipoAjusteStk", value); }
         }
 
         public List<TipoAjusteDeStockDto> ListaTipoAjuste
@@ -703,7 +705,8 @@ namespace gc.pocket.site.Controllers
             set
             {
 
-                _context.HttpContext.Session.SetString("TIModuloActual", value);
+                if (_context.HttpContext != null)
+                    _context.HttpContext.Session.SetString("TIModuloActual", value);
             }
         }
 

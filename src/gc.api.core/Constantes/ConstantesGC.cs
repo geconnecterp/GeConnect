@@ -265,6 +265,9 @@
 
             public const string SP_ABM_REPARTIDOR_LISTA = "SPGECO_ABM_RT_Lista";
             public const string SP_ABM_REPARTIDOR_DATO = "SPGECO_ABM_RT_Datos";
+
+            public const string SP_ABM_ZONA_LISTA = "SPGECO_ABM_Zn_Lista";
+            public const string SP_ABM_ZONA_DATO = "SPGECO_ABM_Zn_Datos";
             #endregion
 
             #region Tipos

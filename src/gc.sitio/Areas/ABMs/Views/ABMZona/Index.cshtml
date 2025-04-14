@@ -3,7 +3,7 @@
 
 @{
     Layout = "~/views/shared/_Layout.cshtml";
-    var filtro = new QueryFilters() { Rel01 = null, Rel02 = null, Modelo = ModeloFilter.REPARTIDORES };
+    var filtro = new QueryFilters() { Rel01 = null, Rel02 = null, Modelo = ModeloFilter.ZONAS };
 
 }
 @section styles {
@@ -55,7 +55,7 @@
         @Html.Hidden("pagEstado", false)
     </div>
     <div class="collapse" id="divDetalle" style="">
-        <partial name="_n01tabsRepartidor" />
+        <partial name="_n01tabsZona" />
     </div>
     <div class="row">
         @* <partial name="_gridAbmProds"  /> *@
@@ -76,15 +76,14 @@
 @section scripts {
     <script type="text/javascript">
 
-        var buscarUrl = "@Url.Action("buscar", "ABMRepartidor", new { area = "abms" })";
-        var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "ABMRepartidor", new { area = "abms" })";
-        var buscarRepartidorUrl = "@Url.Action("BuscarRepartidorDatos", "ABMRepartidor", new { area = "abms" })";
-        var nuevoRepartidorUrl = "@Url.Action("NuevoRepartidor", "ABMRepartidor", new { area = "abms" })";
+        var buscarUrl = "@Url.Action("buscar", "ABMZona", new { area = "abms" })";
+        var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "ABMZona", new { area = "abms" })";
+        var buscarZonaUrl = "@Url.Action("BuscarZonaDatos", "ABMZona", new { area = "abms" })";
+        var nuevoZonaUrl = "@Url.Action("NuevoZona", "ABMZona", new { area = "abms" })";
 
-        var confirmarAbmRepartidorUrl = "@Url.Action("ConfirmarAbmRepartidor", "ABMRepartidor", new { area = "abms" })";
+        var confirmarAbmZonaUrl = "@Url.Action("ConfirmarAbmZona", "ABMZona", new { area = "abms" })";
 
-        var homeRepartidorUrl = "@Url.Action("index", "ABMRepartidor", new { area = "abms" })";
-
+        var homeZonaUrl = "@Url.Action("index", "ABMZona", new { area = "abms" })";
 
     </script>
 
@@ -94,13 +93,8 @@
     <script src="~/js/app/areas/abms/abmsettings.js"></script>
     <script src="~/js/app/areas/abms/abmcommons.js"></script>
 
-    <script src="~/js/app/areas/repartidores/repartidorMod.js"></script>
-    <script src="~/js/app/areas/repartidores/repartidorRules.js"></script>
+    <script src="~/js/app/areas/Zonas/zonaMod.js"></script>
+    <script src="~/js/app/areas/Zonas/zonaRules.js"></script>
 
 
-    @*  <script type="text/javascript" src="~/js/app/areas/usuarios/menuSettings.js"></script>
-    <script type="text/javascript" src="~/js/app/areas/abms/abmcommons.js"></script>
-
-    <script type="text/javascript" src="~/js/app/areas/usuarios/menuRules.js"></script>
-    <script type="text/javascript" src="~/js/app/areas/usuarios/menu.js"></script> *@
-}
+   }

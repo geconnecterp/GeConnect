@@ -4,12 +4,12 @@
         if ($("#divFiltro").hasClass("show")) {
             $("#divDetalle").collapse("hide");
         }
-        activarGrilla(Grids.GridRepartidor);
+        activarGrilla(Grids.GridZona);
     });
 
     $("#btnDetalle").prop("disabled", true);
     $("#btnCancel").on("click", function () {
-        window.location.href = homeRepartidorUrl
+        window.location.href = homeZonaUrl;
     });
     $("#pagEstado").on("change", function () {
         var div = $("#divPaginacion");
@@ -22,59 +22,38 @@
         dataBak = "";
         //es una busqueda por filtro. siempre sera pagina 1
         pagina = 1;
-        buscarRepartidores(pagina);
+        buscarZonaes(pagina);
     });
     //callback para que funcione la paginación
-    funcCallBack = buscarRepartidores;
+    funcCallBack = buscarZonaes;
 
     $(".inputEditable").on("keypress", analizaEnterInput);
 
     $("#BtnLiTab01").on("click", function () {
         tabAbm = 1;
-        activarGrilla(Grids.GridRepartidor);
-        //$("#btnAbmNuevo").prop("disabled", false);
-        //$("#btnAbmElimi").prop("disabled", false);       
+        activarGrilla(Grids.GridZona);    
 
     });
-    //$("#BtnLiTab02").on("click", function () {
-    //    tabAbm = 2;
-    //    desactivarGrilla(Grids.GridUser);
-    //    activarBotones(true);
-    //    presentaPerfilesUsuario();
-    //});
-    //$("#BtnLiTab03").on("click", function () {
-    //    tabAbm = 3;
-    //    desactivarGrilla(Grids.GridUser);
-    //    activarBotones(true);
+   
 
-    //    presentaAdministracionesUsuario();
-    //});
-    //$("#BtnLiTab04").on("click", function () {
-    //    tabAbm = 4;
-    //    desactivarGrilla(Grids.GridUser);
-    //    activarBotones(true);
-
-    //    presentaDerechosUsuario();
-    //});
-
-    $(document).on("dblclick", "#" + Grids.GridRepartidor + " tbody tr", function () {
+    $(document).on("dblclick", "#" + Grids.GridZona + " tbody tr", function () {
         x = $(this);
         //se resguarda el registro de la tabla
         regSelected = x;
         ejecutaDblClickGrid1(x);
     });
 
-    InicializaPantallaRepartidor(Grids.GridRepartidor);
+    InicializaPantallaZona(Grids.GridZona);
     //inicia la pantalla presentando la primer pagina de usuarios
     //$("#btnBuscar").trigger("click");
 });
 
-function InicializaPantallaRepartidor(grilla) {
+function InicializaPantallaZona(grilla) {
     //si no es una de las grillas deteminadas en el modulo, se asignará una grilla segun el tab que se encuentre.
 
     switch (tabAbm) {
         case 1:
-            grilla = Grids.GridRepartidor;
+            grilla = Grids.GridZona;
             if ($("#divDetalle").is(":visible")) {
                 $("#divDetalle").collapse("hide");
             }
@@ -126,7 +105,7 @@ function InicializaPantallaRepartidor(grilla) {
     return true;
 }
 
-function selectRegRepartidor(x, gridId) {
+function selectRegZona(x, gridId) {
     //reinvoco para que me marque el registro 
     selectReg(x, gridId);
     //limpio el tab01 para que se seleccione el registro.
@@ -142,7 +121,7 @@ function selectRegRepartidor(x, gridId) {
             activarBotones(false);
             break;
         case 2:
-            InicializaPantallaRepartidor(Grids.GridRepartidor);
+            InicializaPantallaZona(Grids.GridZona);
 
             break;
         default:
@@ -152,11 +131,11 @@ function selectRegRepartidor(x, gridId) {
 }
 
 function ejecutaDblClickGrid1(x) {
-    AbrirWaiting("Espere mientras se busca el Repartidor solicitado...");
-    selectRepartidorDbl(x, Grids.GridRepartidor);
+    AbrirWaiting("Espere mientras se busca el Zona solicitado...");
+    selectZonaDbl(x, Grids.GridZona);
 }
 
-function selectRepartidorDbl(x, gridId) {
+function selectZonaDbl(x, gridId) {
     $("#" + gridId + " tbody tr").each(function (index) {
         $(this).removeClass("selectedEdit-row");
     });
@@ -171,7 +150,7 @@ function selectRepartidorDbl(x, gridId) {
             EntidadSelect = id;
             desactivarGrilla(gridId);
             //se busca el perfil
-            buscarRepartidor(data);           
+            buscarZona(data);           
             //se posiciona el registro seleccionado
             posicionarRegOnTop(x);
             break;
@@ -181,7 +160,7 @@ function selectRepartidorDbl(x, gridId) {
 }
 
 
-function buscarRepartidores(pagina) {
+function buscarZonaes(pagina) {
     AbrirWaiting();
     //desactivamos los botones de acción
     activarBotones2(false);

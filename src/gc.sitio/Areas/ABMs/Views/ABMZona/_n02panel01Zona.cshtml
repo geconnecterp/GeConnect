@@ -1,0 +1,35 @@
+﻿@using gc.infraestructura.Dtos
+@model ZonaDto
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    var dato = Model;
+}
+
+<div class="row">
+    <div class="col-md-12">
+
+        <!--Linea 01-->
+        <div class="row mt-1">
+            <div class="col-sm-6">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text" style="width:100px;">ID </span>
+                    <input type="text" asp-for="zn_id" class="form-control" disabled style="width:50px;margin-right:20px;" />
+                   
+                </div>
+            </div>
+        </div>
+        <!--Linea 02-->
+        <div class="row mt-1">
+            <div class="col-sm-6">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text" style="width:100px;">Ap y Nom </span>
+                    <input type="text" asp-for="zn_desc" class="form-control inputEditable" disabled />
+                </div>
+            </div>
+        </div>
+       
+      
+    </div>
+</div>

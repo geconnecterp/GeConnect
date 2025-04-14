@@ -58,7 +58,7 @@ const Grids = {
 	GridConsCmpteDet: 'tbGridCmpteDet',
 	GridVendedor: 'tbGridVendedor',
 	GridRepartidor: 'tbGridRepartidor',
-
+	GridZona: 'tbGridZona',
 
 	//GridLimite: 'tbGridLim',
 	GridBanco: 'tbGridBanco',
