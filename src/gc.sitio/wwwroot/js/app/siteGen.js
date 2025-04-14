@@ -406,20 +406,41 @@ function activarGrilla(gridId) {
 
 //mueve registro al top de la grilla
 function posicionarRegOnTop(x) {
-    rowOffset = 0;
-    posActScrollTop = 0;
-    newPosScrollTop = 0
 
-    posTabla = $(".table-wrapper");
-    //calculamos la posicion del offset del registro seleccionado
-    rowOffset = x.position().top;
-    //posición actual del scroll
-    posActScrollTop = posTabla.scrollTop();
-    //calculamos la nueva posición del scroll
-    newPosScrollTop = rowOffset + posActScrollTop - posTabla.position().top;
-    posTabla.animate({
-        scrollTop: newPosScrollTop
+    var $registro = $(x); // El registro seleccionado
+    var $contenedor = $(".table-wrapper"); // El contenedor desplazable
+    var $header = $contenedor.find("thead"); // El header fijo de la tabla
+
+    // Calcular la posición del registro relativo al contenedor
+    var registroOffset = $registro.offset().top; // Posición del registro en el documento
+    var contenedorOffset = $contenedor.offset().top; // Posición del contenedor en el documento
+    var scrollActual = $contenedor.scrollTop(); // Posición actual del scroll del contenedor
+
+    // Obtener la altura del header
+    var headerHeight = $header.outerHeight() || 0; // Si no hay header, usar 0
+
+    // Calcular el nuevo scroll para que el registro quede en la parte superior
+    var nuevoScroll = scrollActual + (registroOffset - contenedorOffset) - headerHeight;
+
+    // Animar el scroll del contenedor para posicionar el registro en la parte superior
+    $contenedor.animate({
+        scrollTop: nuevoScroll
     }, 500);
+
+    //rowOffset = 0;
+    //posActScrollTop = 0;
+    //newPosScrollTop = 0
+
+    //posTabla = $(".table-wrapper");
+    ////calculamos la posicion del offset del registro seleccionado
+    //rowOffset = x.position().top;
+    ////posición actual del scroll
+    //posActScrollTop = posTabla.scrollTop();
+    ////calculamos la nueva posición del scroll
+    //newPosScrollTop = rowOffset + posActScrollTop - posTabla.position().top;
+    //posTabla.animate({
+    //    scrollTop: newPosScrollTop
+    //}, 500);
 }
 
 function cambiaMenuApp() {
