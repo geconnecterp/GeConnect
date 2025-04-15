@@ -61,6 +61,7 @@ namespace gc.infraestructura.Constantes
 			public const string COMPROBANTE_DE_COMPRA = "COMPROBANTE_DE_COMPRA";
             public const string VENDEDORES = "VENDEDORES";
             public const string REPARTIDORES = "REPARTIDORES";
+            public const string ZONAS = "ZONAS";
         }
     }
 }

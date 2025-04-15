@@ -1,0 +1,37 @@
+﻿@using System.Text
+@using gc.infraestructura.Dtos
+@using static gc.infraestructura.Constantes.Constantes
+@model GridCore<ABMZonaDto>
+
+@{
+    var alt = true;
+    string clase = string.Empty;
+    string color = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive text-nowrap  table-wrapper">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridZona">
+                <thead class="table-dark">
+                    <tr class="header">
+                        <th scope="col">Id</th>
+                        <th scope="col">Descripción</th>                        
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ListaDatos)
+                    {
+                        if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
+                        <tr class="@clase" onclick="selectRegZona(this,'tbGridZona')">
+                            <!--ondblclick="selectAbmRegDbl(this,'tbGridProd')"-->
+                            <td class="text-sm-start" style="border-left: 5px solid @color;text-align: left;">@item.zn_id</td>
+                            <td class="text-sm-start">@item.zn_desc</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>       
+    </div>
+</div>

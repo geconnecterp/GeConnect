@@ -22,12 +22,39 @@ namespace gc.api.core.Servicios.ABM
 
         }
        
-        public List<ABMVendedorDto> ObtenerVendedores(QueryFilters filters)
+        public List<ABMVendedorDto> ObtenerVendedores(QueryFilters filtros)
         {
             var sp = ConstantesGC.StoredProcedures.SP_ABM_VENDEDOR_LISTA;
 
             var ps = new List<SqlParameter>();
-             
+
+            //debo cargar aca todos los filtros sobre los parametros a utilizar
+            if (!string.IsNullOrEmpty(filtros.Id))
+            {
+                ps.Add(new SqlParameter("@id", true));
+                //hay un id de producto. se habilita la seccion de productos
+                ps.Add(new SqlParameter("@id_d", filtros.Id));
+
+                if (!string.IsNullOrEmpty(filtros.Id2))
+                {
+                    ps.Add(new SqlParameter("@id_h", filtros.Id2));
+                }
+                else
+                {
+                    ps.Add(new SqlParameter("@id_h", filtros.Id));
+                }
+            }
+            else
+            {
+                ps.Add(new SqlParameter("@id", false));
+            }
+
+            //se carga si es necesario los parametros del sp
+            if (!string.IsNullOrEmpty(filtros.Buscar))
+            {
+                ps.Add(new SqlParameter("@deno", true));
+                ps.Add(new SqlParameter("@deno_like", filtros.Buscar));
+            }
 
             List<ABMVendedorDto> res = _repository.EjecutarLstSpExt<ABMVendedorDto>(sp, ps, true);
             return res;
