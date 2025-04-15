@@ -4,7 +4,9 @@ using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
 using gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra;
+using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Users;
@@ -42,6 +44,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string ObtenerCompteDatosProv = "/GetCompteDatosProv";
 		private const string ObtenerCompteCargaRprAsoc = "/GetCompteCargaRprAsoc";
 		private const string ObtenerCompteCargaCtaAsoc = "/GetCompteCargaCtaAsoc";
+		private const string SetCompteCargaConfirma = "/CompteCargaConfirma";
 		//
 		private readonly AppSettings _appSettings;
 		public CuentaServicio(IOptions<AppSettings> options, ILogger<CuentaServicio> logger) : base(options, logger)
@@ -901,6 +904,37 @@ namespace gc.sitio.core.Servicios.Implementacion
 			{
 				_logger.LogError(ex, "Error al intentar obtener los datos de la cuenta.");
 				throw;
+			}
+		}
+
+		public List<RespuestaDto> CompteCargaConfirma(CompteCargaConfirmaRequest request, string token)
+		{
+			ApiResponse<List<RespuestaDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{SetCompteCargaConfirma}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros cta_id:{request.cta_id} usu_id: {request.usu_id} adm_id: {request.adm_id} json_encabezado: {request.json_encabezado} json_concepto: {request.json_concepto} json_otro: {request.json_otro} json_relacion: {request.json_relacion}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
 			}
 		}
 	}

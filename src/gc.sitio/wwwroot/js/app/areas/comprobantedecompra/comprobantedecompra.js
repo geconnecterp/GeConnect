@@ -249,6 +249,10 @@ function CalcularImporteOT() {
 		var calc = ((baseImp * aliCuota) / 100) + baseImp;
 		$("#OtroTributo_importe").val(calc.toFixed(2));
 	}
+	else if ($("#OtroTributo_base_imp").val() != "" && $("#OtroTributo_alicuota").val() == "") {
+		$("#OtroTributo_alicuota").val("0");
+		$("#OtroTributo_importe").val(baseImp);
+	}
 }
 
 function AgregarConceptoFacturado() {
@@ -271,6 +275,7 @@ function AgregarConceptoFacturado() {
 			else {
 				//Actualizar grilla Conceptos facturados
 				CargarGrillaConceptosFacturados();
+				CargarGrillaTotales();
 				LimpiarCamposEnModalCargaIva();
 				//De deshabilita para que el usuario pueda cargar mas de un item sin cerrar el modal.
 				//$('#modalCargaIVA').modal('hide');
@@ -301,6 +306,7 @@ function AgregarOtroTributo() {
 			}
 			else {
 				CargarGrillaOtrosTributos();
+				CargarGrillaTotales();
 				LimpiarCamposEnModalCargaOT();
 				//$('#modalCargaIVA').modal('hide');
 			}
@@ -445,12 +451,15 @@ function CargarGrillasAdicionales() {
 	//Grilla de Otros Tributos
 	CargarGrillaOtrosTributos();
 	//Grilla Totales
+	CargarGrillaTotales();
+}
+
+function CargarGrillaTotales() {
 	var data = {};
 	PostGenHtml(data, cargarGrillaTotalesUrl, function (obj) {
 		$("#divTotales").html(obj);
 		return true
 	});
-	//Depende si corresponde, grilla de Rpr Asociados o grilla A Cuentas Asociadas
 }
 
 function CargarGrillaConceptosFacturados() {
@@ -473,6 +482,7 @@ function CargarGrillaOtrosTributos() {
 		addInCellEditHandler();
 		addInCellLostFocusHandler();
 		FormatearValores(tbGridOtroTributo, [2, 3, 4]);
+		addMaskInEditableCells();
 		return true
 	});
 }
@@ -494,6 +504,7 @@ function quitarConceptoFacturado(e) {
 	PostGenHtml(data, quitarItemEnConceptoFacturadoURL, function (obj) {
 		$("#divConceptosFacturados").html(obj);
 		FormatearValores(tbGridConceptoFacturado, [4, 5, 6]);
+		CargarGrillaTotales();
 	});
 }
 
@@ -508,6 +519,7 @@ function quitarOtroTributo(e) {
 		addInCellEditHandler();
 		addInCellLostFocusHandler();
 		FormatearValores(tbGridOtroTributo, [4]);
+		CargarGrillaTotales();
 	});
 }
 
@@ -677,6 +689,57 @@ function focusOnTd(x) {
 }
 
 var keysAceptadas = [8, 37, 39, 46, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 110, 190];
+
+function getMaskForDiscountType(selector) {
+	$(selector).inputmask({
+		alias: 'numeric',
+		groupSeparator: '.',
+		radixPoint: ',',
+		digits: 1,
+		digitsOptional: false,
+		allowMinus: false,
+		prefix: '',
+		suffix: '',
+		min: 0,
+		max: 50,
+		unmaskAsNumber: true
+	});
+}
+
+function getMaskForMoneyType(selector) {
+	$(selector).inputmask({
+		alias: 'numeric',
+		groupSeparator: '.',
+		radixPoint: ',',
+		digits: 2,
+		digitsOptional: false,
+		allowMinus: false,
+		prefix: '',
+		suffix: '',
+		rightAlign: true,
+		unmaskAsNumber: true
+	});
+}
+
+function addMaskInEditableCells() {
+	if ($("#tbGridOtroTributo").length != 0) {
+		$("#tbGridOtroTributo").find('tr').each(function (i, el) {
+			var td = $(this).find('td');
+			if (td.length > 0) {
+				if (td[2].id.includes("base_imp_")) {
+					getMaskForMoneyType("#" + td[2].id);
+				}
+				if (td[4].id.includes("importe_")) {
+					getMaskForMoneyType("#" + td[4].id);
+				}
+				if (td[3].id.includes("alicuota_")) {
+					getMaskForDiscountType("#" + td[3].id);
+				}
+			}
+		});
+	}
+}
+
 function addInCellKeyDownHandler() {
 	$("#tbGridOtroTributo").on('keydown', 'td[contenteditable]', function (e) {
 		if (isNaN(String.fromCharCode(e.which)) && !(keysAceptadas.indexOf(e.which) != -1) && !(e.shiftKey && (e.which == 37 || e.which == 39))) e.preventDefault();
@@ -685,6 +748,7 @@ function addInCellKeyDownHandler() {
 
 function addInCellGotFocusHandler() {
 	$("#tbGridOtroTributo").on('focusin', 'td[contenteditable]', function (e) {
+
 		cellValueTemp = $("#" + this.id).text();
 		if (e.target) {
 			cellIndexTemp = e.target.cellIndex;
@@ -696,18 +760,18 @@ function addInCellEditHandler() {
 	$("#tbGridOtroTributo").on('input', 'td[contenteditable]', function (e) {
 		var val = $("#" + this.id).text();
 		if (this.id.includes("alicuota")) {
-			var num = Number(val);
-			if (num > 50) val = "50";
-			$("#" + this.id).mask("00,0", { reverse: true });
-			$("#" + this.id).val(val);
-			$("#" + this.id).text(val);
+			//var num = Number(val);
+			//if (num > 50) val = "50";
+			//$("#" + this.id).mask("00,0", { reverse: true });
+			//$("#" + this.id).val(val);
+			//$("#" + this.id).text(val);
 		}
 		else if (this.id.includes("base_imp") || this.id.includes("importe")) {
-			console.log($("#" + this.id));
-			console.log($("#" + this.id).text());
-			console.log($("#" + this.id).val());
-			$("#" + this.id).mask("000.000.000.000,00", { reverse: false });
-			$("#" + this.id).val(val);
+			//console.log($("#" + this.id));
+			//console.log($("#" + this.id).text());
+			//console.log($("#" + this.id).val());
+			//$("#" + this.id).mask("000.000.000.000,00", { reverse: false });
+			//$("#" + this.id).val(val);
 		}
 	});
 }
@@ -717,20 +781,27 @@ function addInCellLostFocusHandler() {
 		var actualiza = true;
 		if (cellValueTemp == $("#" + this.id).text())
 			actualiza = false;
-		
+		if (this.id.includes("alicuota")) {
+			var valor = $("#" + this.id).inputmask('unmaskedvalue');
+		}
+		else if (this.id.includes("base_imp") || this.id.includes("importe")) {
+			var valor = $("#" + this.id).inputmask('unmaskedvalue');
+		}
 		if (actualiza) {
-			if ($("#" + this.id).val() == "")
-				ActualizarOtroTributo(this.id, $("#" + this.id).text());
-			else
-				ActualizarOtroTributo(this.id, $("#" + this.id).val());
+			ActualizarOtroTributo(this.id, valor);
+			//if ($("#" + this.id).val() == "")
+			//	ActualizarOtroTributo(this.id, $("#" + this.id).text());
+			//else
+			//	ActualizarOtroTributo(this.id, $("#" + this.id).val());
 		}
 	});
 }
 
 function ActualizarOtroTributo(id, val) {
-	var temp = val.replace(".", "");
+	//var temp = val.replace(".", "");
 
-	val = parseFloat(val.replace(".", "").replace(",", "."));
+	//val = parseFloat(val.replace(".", "").replace(",", "."));
+	console.log("idOtroTributoSeleccionado: " + idOtroTributoSeleccionado + " id: " + id + " val: " + val);
 	var data = { id, val, idOtroTributoSeleccionado };
 	PostGen(data, editarItemEnOtrosConceptosUrl, function (obj) {
 		if (obj.error === true) {
@@ -740,16 +811,16 @@ function ActualizarOtroTributo(id, val) {
 			}, false, ["Aceptar"], "error!", null);
 		}
 		else {
+			CargarGrillaTotales(); //Actualizo grilla de totales con info del BE
 			//Actualizar valores en la grilla
 			$("#tbGridOtroTributo").find('tr').each(function (i, el) {
 				var td = $(this).find('td');
 				if (td.length > 0 && td[0].innerText !== undefined && td[0].innerText === idOtroTributoSeleccionado) {
-					console.log(td.id);
-					//GRILLA
-					//formatter.format(obj.data.importe)
-					td[4].innerText = formatter.format(obj.data.importe);
+					console.log("td[0].innerText: " + td[0].innerText);
+					$("#" + td[4].id).val(formatter.format(obj.data.importe));
 				}
 			});
+			
 		}
 	});
 	///TODO:

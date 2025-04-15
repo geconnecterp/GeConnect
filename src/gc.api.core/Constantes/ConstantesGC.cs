@@ -306,6 +306,7 @@
 			public const string SP_COMPTE_DATOS_PROV = "SPGECO_Compte_DatosProv";
 			public const string SP_COMPTE_CARGA_RPR = "SPGECO_Compte_Carga_RPR";
 			public const string SP_COMPTE_CARGA_A_CTA = "SPGECO_Compte_Carga_A_Cta";
+			public const string SP_COMPTE_CARGA_CONFIRMA = "SPGECO_Compte_Carga_Confirma";
 		}
 	}
 }

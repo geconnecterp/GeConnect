@@ -33,6 +33,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private readonly IProducto2Servicio _producto2Servicio;
 		private readonly ITipoTributoServicio _tipoTributoServicio;
 		private const string PESOS = "PES";
+		private const string GRAVADA = "G";
+		private const string NO_GRAVADA = "N";
+		private const string EXENTO = "E";
 		public ComprobanteDeCompraController(ICuentaServicio cuentaServicio, ITipoOpeIvaServicio tipoOpeIvaServicio, ICondicionAfipServicio condicionAfipServicio,
 											 ITipoProveedorServicio tipoProveedorServicio, ITipoMonedaServicio tipoMonedaServicio, ITipoComprobanteServicio tipoComprobanteServicio,
 											 IProducto2Servicio producto2Servicio, ITipoTributoServicio tipoTributoServicio,
@@ -275,6 +278,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 					ListaOtroTributo = listaTempo;
 					importe = ListaOtroTributo.Where(x => x.ins_id.Equals(idOtroTributoSeleccionado)).First().importe;
+
+					ActualizarGrillaTotales_OtrosTributos();
 				}
 
 				return Json(new { error = false, warn = false, msg = string.Empty, data = new { insId = idOtroTributoSeleccionado, importe } });
@@ -296,10 +301,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 				}
-				if (ListaTotales != null && ListaTotales.Count >= 0)
+				if (ListaTotales != null && ListaTotales.Count > 0)
 					model = ObtenerGridCore<OrdenDeCompraConceptoDto>(ListaTotales);
 				else
-					model = ObtenerGridCore<OrdenDeCompraConceptoDto>([]);
+				{
+					InicializarGrillaTotales();
+					if (ListaOtroTributo != null && ListaOtroTributo.Count > 0)
+						ActualizarItemEnGrillaTotales("OtrosTributos", ListaOtroTributo.Sum(x => x.importe));
+					model = ObtenerGridCore<OrdenDeCompraConceptoDto>(ListaTotales);
+				}
 				return PartialView("_tabCompte_Totales", model);
 			}
 			catch (Exception ex)
@@ -512,9 +522,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 			try
 			{
 				ListaConceptoFacturado ??= [];
-				//Por lo pronto, de acuerdo a lo pedido por CR, no se validan conceptos duplicados
-				//if (ListaConceptoFacturado.Exists(x=>x.concepto.Equals(concepto)))
-				//	return Json(new { error = true, warn = true, msg = $"El concepto '{concepto}' ya se encuentra en la lista." });
+				
+				//sit contiene si es gravado, no gravado y exento
 				var maxId = 0;
 				if (ListaConceptoFacturado.Count != 0)
 					maxId = ListaConceptoFacturado.Max(x => x.id);
@@ -524,6 +533,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 				listaTemp = ListaConceptoFacturado;
 				listaTemp.Add(newItem);
 				ListaConceptoFacturado = listaTemp;
+
+				ActualizarGrillaTotales_ConceptosFacturados();
 
 				return Json(new { error = false, warn = false, msg = string.Empty });
 			}
@@ -554,6 +565,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 				listaTemp = [.. listaTemp.Where(x => !x.id.Equals(id))];
 				ListaConceptoFacturado = listaTemp;
 				model = ObtenerGridCore<ConceptoFacturadoDto>(ListaConceptoFacturado);
+
+				ActualizarGrillaTotales_ConceptosFacturados();
+
 				return PartialView("_tabCompte_ConFactu", model);
 			}
 			catch (Exception ex)
@@ -640,6 +654,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 				listaTemp = ListaOtroTributo;
 				listaTemp.Add(newItem);
 				ListaOtroTributo = listaTemp;
+
+				ActualizarGrillaTotales_OtrosTributos();
+
 				return Json(new { error = false, warn = false, msg = string.Empty });
 			}
 			catch (Exception ex)
@@ -684,6 +701,113 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		#region Métodos Privados
+		private void ActualizarGrillaTotales_ConceptosFacturados()
+		{
+			if (ListaTotales == null || ListaTotales.Count <= 0)
+				InicializarGrillaTotales();
+			var listaTotalesTemp = ListaTotales;
+			var listaConcFactuTemp = ListaConceptoFacturado;
+			//Sumar conceptos Gravados
+			if (listaConcFactuTemp.Exists(x => x.iva_situacion.Equals("G")))
+			{
+				var items_Sum = listaConcFactuTemp.Where(x => x.iva_situacion.Equals("G")).ToList().Sum(x => x.subtotal);
+				var itemListaTotalGravado = listaTotalesTemp.Where(x => x.id.Equals("NetoGravado")).First(); //Obtengo el item que corresponde a Neto Gravado
+				itemListaTotalGravado.Importe = items_Sum;
+			}
+			else
+			{
+				var itemListaTotalGravado = listaTotalesTemp.Where(x => x.id.Equals("NetoGravado")).First(); //Obtengo el item que corresponde a Neto Gravado
+				itemListaTotalGravado.Importe = 0;
+			}
+
+			//Sumas conceptos No Gravados
+			if (listaConcFactuTemp.Exists(x => x.iva_situacion.Equals("N")))
+			{
+				var items_Sum = listaConcFactuTemp.Where(x => x.iva_situacion.Equals("N")).ToList().Sum(x => x.subtotal);
+				var itemListaTotalGravado = listaTotalesTemp.Where(x => x.id.Equals("NetoNoGravado")).First(); //Obtengo el item que corresponde a Neto No Gravado
+				itemListaTotalGravado.Importe = items_Sum;
+			}
+			else
+			{
+				var itemListaTotalGravado = listaTotalesTemp.Where(x => x.id.Equals("NetoNoGravado")).First(); //Obtengo el item que corresponde a Neto Gravado
+				itemListaTotalGravado.Importe = 0;
+			}
+
+			//Sumas conceptos Exentos
+			if (listaConcFactuTemp.Exists(x => x.iva_situacion.Equals("E")))
+			{
+				var items_Sum = listaConcFactuTemp.Where(x => x.iva_situacion.Equals("E")).ToList().Sum(x => x.subtotal);
+				var itemListaTotalGravado = listaTotalesTemp.Where(x => x.id.Equals("NetoExento")).First(); //Obtengo el item que corresponde a Neto No Gravado
+				itemListaTotalGravado.Importe = items_Sum;
+			}
+			else
+			{
+				var itemListaTotalGravado = listaTotalesTemp.Where(x => x.id.Equals("NetoExento")).First(); //Obtengo el item que corresponde a Neto Gravado
+				itemListaTotalGravado.Importe = 0;
+			}
+
+			//Sumar por Alicuota de IVA
+			//Con esas sumas actualizar la grilla de totales, la unida diferencia es que hay que discriminar por Alicuotas, es decir, si tengo un concepto por 21% y otro por 27%, van a haber dos registros (uno para cada uno)
+			//Si hay dos registros que aplica 21%, agrego un solo registro para esa alicuota pero sumarizado
+			var _index = 2;
+			var listaTempAgrupados = listaConcFactuTemp.GroupBy(x => x.iva_alicuota).Select(y => new { alicuota = y.Key, sumaImporte = y.Sum(z => z.subtotal) }).ToList();
+			if (listaTempAgrupados != null && listaTempAgrupados.Count > 0)
+			{
+				foreach (var item in listaTempAgrupados)
+				{
+					if (listaTotalesTemp.Exists(x => x.id.Contains(item.alicuota.ToString())))
+					{
+						var itemListaTotal = listaTotalesTemp.Where(x => x.Concepto.Contains(item.alicuota.ToString())).First();
+						itemListaTotal.Importe = item.sumaImporte;
+					}
+					else
+					{
+						_index++;
+						listaTotalesTemp.Add(new OrdenDeCompraConceptoDto()
+						{
+							Concepto = $"IVA {item.alicuota}%",
+							Importe = item.sumaImporte,
+							Orden = _index++,
+							id = $"IVA{item.alicuota}"
+						});
+					}
+				}
+				var item_Total = listaTotalesTemp.Where(x => x.id.Contains("total")).First();
+				item_Total.Importe = listaTotalesTemp.Where(y => y.id.Equals("NetoNoGravado") || y.id.Equals("NetoExento") || y.id.Equals("NetoGravado") || y.id.Equals("OtrosTributos")).Sum(x => x.Importe);
+			}
+			ListaTotales = [.. listaTotalesTemp.OrderBy(x => x.Orden)];
+		}
+		private void ActualizarGrillaTotales_OtrosTributos()
+		{
+			if (ListaTotales == null || ListaTotales.Count <= 0)
+				InicializarGrillaTotales();
+			var listaTotalesTemp = ListaTotales;
+			var importeTotalParaLista = ListaOtroTributo.Sum(x => x.importe);
+			var item = listaTotalesTemp.Where(x => x.id.Equals("OtrosTributos")).First();
+			item.Importe = importeTotalParaLista;
+			ListaTotales = listaTotalesTemp;
+		}
+		private void ActualizarItemEnGrillaTotales(string id, decimal val)
+		{
+			var listaTemp = ListaTotales;
+			var item = listaTemp.Where(x => x.id.Equals(id)).First();
+			item.Importe = val;
+			ListaTotales = listaTemp;
+		}
+
+		private void InicializarGrillaTotales()
+		{
+			var listaTemp = new List<OrdenDeCompraConceptoDto>
+			{
+				new() { Concepto = "Neto No Gravado", id = "NetoNoGravado", Orden = 0, Importe = 0 },
+				new() { Concepto = "Neto Exento", id = "NetoExento", Orden = 1, Importe = 0 },
+				new() { Concepto = "Neto Gravado", id = "NetoGravado", Orden = 2, Importe = 0 },
+				new() { Concepto = "Otros Tributos", id = "OtrosTributos", Orden = 998, Importe = 0 },
+				new() { Concepto = "Total", id = "total", Orden = 999, Importe = 0 }
+			};
+			ListaTotales = [.. listaTemp.OrderBy(x => x.Orden)];
+		}
+
 		protected SelectList ComboTiposTributosParaModalOtrosTributos()
 		{
 			var lista = TiposTributoLista.Where(x => !x.carga_aut_discriminado).Select(x => new ComboGenDto { Id = x.ins_id.ToString(), Descripcion = x.ins_desc.ToString() });

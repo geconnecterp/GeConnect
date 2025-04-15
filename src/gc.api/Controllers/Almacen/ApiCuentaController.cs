@@ -9,8 +9,10 @@ namespace gc.api.Controllers.Almacen
     using gc.infraestructura.Dtos;
     using gc.infraestructura.Dtos.Almacen;
 	using gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra;
+	using gc.infraestructura.Dtos.Almacen.Request;
 	using gc.infraestructura.Dtos.CuentaComercial;
-    using Microsoft.AspNetCore.Authorization;
+	using gc.infraestructura.Dtos.Gen;
+	using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json;
     using System.Collections.Generic;
@@ -430,6 +432,18 @@ namespace gc.api.Controllers.Almacen
 			var res = _cuentasSv.GetCompteCargaCtaAsoc(cta_id);
 
 			response = new ApiResponse<List<NotasACuenta>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[Route("[action]")]
+		public IActionResult CompteCargaConfirma(CompteCargaConfirmaRequest request)
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _cuentasSv.CompteCargaConfirma(request);
+
+			var response = new ApiResponse<RespuestaDto>(res.First());
 
 			return Ok(response);
 		}

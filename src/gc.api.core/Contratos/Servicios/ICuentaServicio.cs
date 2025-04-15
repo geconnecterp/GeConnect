@@ -1,7 +1,9 @@
 using gc.api.core.Entidades;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra;
+using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.CuentaComercial;
+using gc.infraestructura.Dtos.Gen;
 
 namespace gc.api.core.Contratos.Servicios
 {
@@ -28,5 +30,6 @@ namespace gc.api.core.Contratos.Servicios
         List<ComprobanteDeCompraDto> GetCompteDatosProv(string ctaId);
         List<RprAsociadosDto> GetCompteCargaRprAsoc(string ctaId);
         List<NotasACuenta> GetCompteCargaCtaAsoc(string ctaId);
+        List<RespuestaDto> CompteCargaConfirma(CompteCargaConfirmaRequest request);
 	}
 }
