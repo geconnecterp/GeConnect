@@ -302,20 +302,22 @@ function AplicarSeteoMasivo() {
 	var alMenosUno = false;
 	var dataTable = document.getElementById('tbListaProductoOC');
 	var inputs = dataTable.querySelectorAll('tbody>tr>td>input');
+	var pIds = [];
 	inputs.forEach(function (input) {
 		if (input.checked) {
 			alMenosUno = true;
+			pIds.push(input.id.substr(3, 6));
 		}
 	});
 	if (alMenosUno) {
 		//Recorrer los items seleccionados y enviarlos al backend, junto con los valores de los campos de seteo masivo.
-		var pIds = [];
-		$("#tbListaProductoOC").find('tr').each(function (i, el) {
-			var td = $(this).find('td');
-			if (td.length > 0 && td[1].innerText !== undefined) {
-				pIds.push(td[1].innerText);
-			}
-		});
+		
+		//$("#tbListaProductoOC").find('tr').each(function (i, el) {
+		//	var td = $(this).find('td');
+		//	if (td.length > 0 && td[1].innerText !== undefined) {
+		//		pIds.push(td[1].innerText);
+		//	}
+		//});
 		var dto1 = $("#Dto1").val();
 		var dto2 = $("#Dto2").val();
 		var dto3 = $("#Dto3").val();
@@ -334,7 +336,7 @@ function AplicarSeteoMasivo() {
 			else {
 				$("#divListaProductoNuevaOC").html(obj);
 				$("#Total_Costo").val(formatter.format($("#Total_Costo").val()));
-				$("#Total_Pallet").val(formatter.format($("#Total_Pallet").val()));
+				//$("#Total_Pallet").val(formatter.format($("#Total_Pallet").val()));
 				AgregarHandlerAGrillaProdOC();
 				addInCellLostFocusHandler();
 				addInCellGotFocusHandler();
@@ -431,10 +433,6 @@ function addInCellLostFocusHandler() {
 		}
 		if (actualiza) {
 			ActualizarProductoEnOc(this.id, valor);
-			//if ($("#" + this.id).val() == "")
-			//	ActualizarProductoEnOc(this.id, $("#" + this.id).text());
-			//else
-			//	ActualizarProductoEnOc(this.id, $("#" + this.id).val());
 		}
 	});
 }
@@ -532,7 +530,6 @@ function tableUpDownArrow() {
 				}
 			}
 			while (loop)
-			//ActualizarProductoEnOc(nxFocus.id, sPos.val());
 			if (evt.code === 'Tab') {
 				event.preventDefault();
 			}
@@ -569,7 +566,7 @@ function ActualizarProductoEnOc(field, val) {
 
 					//TOTALES
 					$("#Total_Costo").val(formatter.format(obj.data.total_Costo));//TOTAL_COSTO -> obj.data.total_Costo
-					$("#Total_Pallet").val(formatter.format(obj.data.total_Pallet));//TOTAL_PALLET -> obj.data.total_Pallet
+					//$("#Total_Pallet").val(formatter.format(obj.data.total_Pallet));//TOTAL_PALLET -> obj.data.total_Pallet
 				}
 			});
 		}
@@ -1035,7 +1032,7 @@ function BuscarProductosTabOC() {
 		else {
 			$("#divListaProductoNuevaOC").html(obj);
 			$("#Total_Costo").val(formatter.format($("#Total_Costo").val()));
-			$("#Total_Pallet").val(formatter.format($("#Total_Pallet").val()));
+			//$("#Total_Pallet").val(formatter.format($("#Total_Pallet").val()));
 			AgregarHandlerAGrillaProdOC();
 			ActualizarInfoDeProductosEnGrilla();
 			addInCellLostFocusHandler();

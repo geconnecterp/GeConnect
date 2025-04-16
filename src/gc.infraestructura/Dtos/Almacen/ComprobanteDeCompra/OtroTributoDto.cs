@@ -7,6 +7,8 @@ namespace gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra
 	{
 		public string ins_id { get; set; } = string.Empty; //Valor que se usa para poder identificar un elemento de la colección
 		public string imp { get; set; } = string.Empty;
+		public string tipo { get; set; } = string.Empty;
+		public string ctaf_id { get; set; } = string.Empty;
 		[JsonProperty(PropertyName = "base")]
 		public decimal base_imp { get; set; } = 0.00M; //Al armar el json esta columna se debe llamar 'base'
 		public decimal alicuota { get; set; } = 0.00M;

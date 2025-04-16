@@ -47,7 +47,7 @@
 				var nombre_P_Dto_Pa = "p_dto_pa_" + item.P_Id;
 				var nombre_P_Boni = "p_boni_" + item.P_Id;
 				<tr onclick="selectListaProductoRowOC(this)">
-					<td><input type="checkbox" name=@nombre /></td> @*00*@
+					<td><input type="checkbox" name=@nombre id="@nombre" /></td> @*00*@
 					<td class="align-center tiny-row">@item.P_Id</td> @*01*@
 					<td class="align-left tiny-row" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;" title="@item.P_Desc">@item.P_Desc</td> @*02*@
 					<td class="align-center tiny-row">@item.P_Id_Prov</td> @*03*@

@@ -28,6 +28,6 @@ namespace gc.sitio.core.Servicios.Contratos
         List<ComprobanteDeCompraDto> GetCompteDatosProv(string ctaId, string token);
         List<RprAsociadosDto> GetCompteCargaRprAsoc(string ctaId, string token);
         List<NotasACuenta> GetCompteCargaCtaAsoc(string ctaId, string token);
-		List<RespuestaDto> CompteCargaConfirma(CompteCargaConfirmaRequest request, string token);
+        RespuestaGenerica<RespuestaDto> CompteCargaConfirma(CompteCargaConfirmaRequest request, string token);
 	}
 }

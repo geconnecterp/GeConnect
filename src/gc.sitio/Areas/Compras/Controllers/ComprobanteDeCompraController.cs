@@ -1,11 +1,13 @@
 ﻿using AspNetCoreGeneratedDocument;
 using DocumentFormat.OpenXml.Drawing.Spreadsheet;
+using DocumentFormat.OpenXml.Wordprocessing;
 using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra;
+using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Compras.Models;
@@ -13,6 +15,7 @@ using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System.ComponentModel;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -202,7 +205,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 								alicuota = 0.00M,
 								importe = 0.00M
 							};
-							if (!ListaOtroTributo.Exists(x => x.ins_id.Equals(item.ins_id)))
+							if (!ListaOtrosTributos.Exists(x => x.ins_id.Equals(item.ins_id)))
 								listTempo.Add(otroTributo);
 						}
 					}
@@ -211,11 +214,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 						listTempo = [];
 					}
 				}
-				if (ListaOtroTributo != null && ListaOtroTributo.Count >= 0)
+				if (ListaOtrosTributos != null && ListaOtrosTributos.Count >= 0)
 				{
-					listTempo.AddRange(ListaOtroTributo);
-					ListaOtroTributo = listTempo;
-					model = ObtenerGridCore<OtroTributoDto>(ListaOtroTributo);
+					listTempo.AddRange(ListaOtrosTributos);
+					ListaOtrosTributos = listTempo;
+					model = ObtenerGridCore<OtroTributoDto>(ListaOtrosTributos);
 				}
 				else
 					model = ObtenerGridCore<OtroTributoDto>([]);
@@ -234,17 +237,63 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
+		private void InicializarListaOtrosTributos(string tco_id)
+		{
+			var tco = TiposComprobante.Where(x => x.tco_id.Equals(tco_id)).First();
+			if (tco == null)
+			{
+			}
+			else
+			{
+				var listTempo = new List<OtroTributoDto>();
+				if (tco.tco_iva_discriminado == "S")
+				{
+					//Busco en la lista de Tipos de tributo los que se deben cargar previamente
+					var listaTributos = TiposTributoLista.Where(x => x.carga_aut_discriminado).OrderBy(y => y.orden).ToList();
+					if (listaTributos != null && listaTributos.Count > 0)
+					{
+						foreach (var item in listaTributos)
+						{
+							var otroTributo = new OtroTributoDto
+							{
+								ins_id = item.ins_id,
+								imp = item.ins_desc,
+								base_imp = 0.00M,
+								alicuota = 0.00M,
+								importe = 0.00M
+							};
+							if (!ListaOtrosTributos.Exists(x => x.ins_id.Equals(item.ins_id)))
+								listTempo.Add(otroTributo);
+						}
+					}
+					else
+					{
+						listTempo = [];
+					}
+				}
+				if (ListaOtrosTributos != null && ListaOtrosTributos.Count >= 0)
+				{
+					listTempo.AddRange(ListaOtrosTributos);
+					ListaOtrosTributos = listTempo;
+				}
+			}
+		}
+
 		[HttpPost]
-		public JsonResult EditarItemEnOtrosConceptos(string id, decimal val, string idOtroTributoSeleccionado)
+		public JsonResult EditarItemEnOtrosConceptos(string id, decimal val, string idOtroTributoSeleccionado, string tco_id = "")
 		{
 			try
 			{
-				ListaOtroTributo ??= [];
+				//ListaOtrosTributos ??= [];
+				if (ListaOtrosTributos == null || ListaOtrosTributos.Count <= 0)
+					InicializarListaOtrosTributos(tco_id);
+
+				//ListaOtrosTributos ??= [];
 				var importe = 0.00M;
 				//Si existe, actualizo el valor indicado en el parametro id (campo)
-				if (ListaOtroTributo.Exists(x => x.ins_id.Equals(idOtroTributoSeleccionado)))
+				if (ListaOtrosTributos.Exists(x => x.ins_id.Equals(idOtroTributoSeleccionado)))
 				{
-					var listaTempo = ListaOtroTributo;
+					var listaTempo = ListaOtrosTributos;
 					if (id.Contains("base_imp"))
 					{
 						listaTempo.ForEach(x =>
@@ -276,8 +325,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 						});
 					}
 
-					ListaOtroTributo = listaTempo;
-					importe = ListaOtroTributo.Where(x => x.ins_id.Equals(idOtroTributoSeleccionado)).First().importe;
+					ListaOtrosTributos = listaTempo;
+					importe = ListaOtrosTributos.Where(x => x.ins_id.Equals(idOtroTributoSeleccionado)).First().importe;
 
 					ActualizarGrillaTotales_OtrosTributos();
 				}
@@ -306,8 +355,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 				else
 				{
 					InicializarGrillaTotales();
-					if (ListaOtroTributo != null && ListaOtroTributo.Count > 0)
-						ActualizarItemEnGrillaTotales("OtrosTributos", ListaOtroTributo.Sum(x => x.importe));
+					if (ListaOtrosTributos != null && ListaOtrosTributos.Count > 0)
+						ActualizarItemEnGrillaTotales("OtrosTributos", ListaOtrosTributos.Sum(x => x.importe));
 					model = ObtenerGridCore<OrdenDeCompraConceptoDto>(ListaTotales);
 				}
 				return PartialView("_tabCompte_Totales", model);
@@ -371,12 +420,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				switch (en)
 				{
 					case EnOpciones.RPR_ASOCIADA:
-						var model = new GridCore<RprAsociadosDto>();
-						if (string.IsNullOrEmpty(cta_id))
-							return PartialView("_tabCompte_RprAsoc", model);
-						var lista = _cuentaServicio.GetCompteCargaRprAsoc(cta_id, TokenCookie);
-						model = ObtenerGridCore<RprAsociadosDto>(lista);
-						return PartialView("_tabCompte_RprAsoc", model);
+						return CargarCompteCargaRprAsoc(cta_id);
 					case EnOpciones.NOTAS_A_CUENTA_ASOCIADAS:
 						return CargarCompteCargaCtaAsoc(cta_id);
 					case EnOpciones.FLETE:
@@ -414,6 +458,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (string.IsNullOrEmpty(cta_id))
 					return PartialView("_tabCompte_RprAsoc", model);
 				var lista = _cuentaServicio.GetCompteCargaRprAsoc(cta_id, TokenCookie);
+				ListaRprAsociados = lista;
 				model = ObtenerGridCore<RprAsociadosDto>(lista);
 				return PartialView("_tabCompte_RprAsoc", model);
 			}
@@ -444,6 +489,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (string.IsNullOrEmpty(cta_id))
 					return PartialView("_tabCompte_ACtaAsoc", model);
 				var lista = _cuentaServicio.GetCompteCargaCtaAsoc(cta_id, TokenCookie);
+				ListaNotasACuenta = lista;
 				model = ObtenerGridCore<NotasACuenta>(lista);
 				return PartialView("_tabCompte_ACtaAsoc", model);
 			}
@@ -457,6 +503,25 @@ namespace gc.sitio.Areas.Compras.Controllers
 					Mensaje = ex.Message
 				};
 				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public JsonResult InicializarDatosEnSesion()
+		{
+			try
+			{
+				ListaNotasACuenta = [];
+				ListaRprAsociados = [];
+				ListaTotales = [];
+				ListaOtrosTributos = [];
+				ListaConceptoFacturado = [];
+
+				return Json(new { error = false, warn = false, msg = "Inicializacion correcta." });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar inicializar los datos en Sesion - COMPROBANTEDECOMPRA" });
 			}
 		}
 
@@ -522,7 +587,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			try
 			{
 				ListaConceptoFacturado ??= [];
-				
+
 				//sit contiene si es gravado, no gravado y exento
 				var maxId = 0;
 				if (ListaConceptoFacturado.Count != 0)
@@ -644,16 +709,16 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			try
 			{
-				ListaOtroTributo ??= [];
+				ListaOtrosTributos ??= [];
 				if (string.IsNullOrWhiteSpace(insId))
 					return Json(new { error = true, warn = true, msg = $"El concepto es obligatorio." });
-				if (ListaOtroTributo.Exists(x => x.ins_id.Equals(insId)))
+				if (ListaOtrosTributos.Exists(x => x.ins_id.Equals(insId)))
 					return Json(new { error = true, warn = true, msg = $"El concepto '{insId}' ya se encuentra en la lista." });
 				var newItem = new OtroTributoDto() { ins_id = insId, base_imp = baseImp, alicuota = alicuota, importe = importe, imp = TiposTributoLista.Where(x => x.ins_id.Equals(insId)).First().ins_desc };
 				var listaTemp = new List<OtroTributoDto>();
-				listaTemp = ListaOtroTributo;
+				listaTemp = ListaOtrosTributos;
 				listaTemp.Add(newItem);
-				ListaOtroTributo = listaTemp;
+				ListaOtrosTributos = listaTemp;
 
 				ActualizarGrillaTotales_OtrosTributos();
 
@@ -675,16 +740,16 @@ namespace gc.sitio.Areas.Compras.Controllers
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 				if (string.IsNullOrEmpty(id))
 				{
-					if (ListaOtroTributo != null && ListaOtroTributo.Count >= 0)
-						model = ObtenerGridCore<OtroTributoDto>(ListaOtroTributo);
+					if (ListaOtrosTributos != null && ListaOtrosTributos.Count >= 0)
+						model = ObtenerGridCore<OtroTributoDto>(ListaOtrosTributos);
 					else
 						model = ObtenerGridCore<OtroTributoDto>([]);
 					return PartialView("_tabCompte_OtrosTrib", model);
 				}
-				var listaTemp = ListaOtroTributo;
+				var listaTemp = ListaOtrosTributos;
 				listaTemp = [.. listaTemp.Where(x => !x.ins_id.Equals(id))];
-				ListaOtroTributo = listaTemp;
-				model = ObtenerGridCore<OtroTributoDto>(ListaOtroTributo);
+				ListaOtrosTributos = listaTemp;
+				model = ObtenerGridCore<OtroTributoDto>(ListaOtrosTributos);
 				return PartialView("_tabCompte_OtrosTrib", model);
 			}
 			catch (Exception ex)
@@ -700,7 +765,114 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
+		[HttpPost]
+		public JsonResult ConfirmarComprobanteDeCompra(ConfirmarComprobanteDeCompraRequest request)
+		{
+			try
+			{
+				var json_encabezado = "";
+				var json_asociaciones = "";
+				var json_concepto = "";
+				var json_otros = "";
+				if (ListaConceptoFacturado == null || ListaConceptoFacturado.Count <= 0)
+					return Json(new { error = true, warn = false, msg = $"No existen conceptos facturados cargados en el comprobante de compra." });
+				if (string.IsNullOrEmpty(request.cta_id))
+					return Json(new { error = true, warn = false, msg = $"Se ha producido un error al selecciona la cuenta." });
+				if (request.encabezado == null)
+					return Json(new { error = true, warn = false, msg = $"Se ha producido un error al intentar obtener los datos del encabezado." });
+
+				if (request.asociaciones != null && request.asociaciones.Count > 0)
+					json_asociaciones = JsonConvert.SerializeObject(request.asociaciones, new JsonSerializerSettings());
+
+				CompletarEncabezadoConTotales(request.encabezado);
+				//json_encabezado = JsonConvert.SerializeObject(request.encabezado, new JsonSerializerSettings());
+				json_encabezado = JsonConvert.SerializeObject(request.encabezado, new JsonSerializerSettings());
+				json_concepto = JsonConvert.SerializeObject(ListaConceptoFacturado, new JsonSerializerSettings());
+				json_otros = ObtenerJsonOtrosTributos(ListaOtrosTributos);
+				var req = new CompteCargaConfirmaRequest
+				{
+					cta_id = request.cta_id,
+					adm_id = AdministracionId,
+					usu_id = UserName,
+					json_encabezado = json_encabezado,
+					json_concepto = json_concepto,
+					json_otro = json_otros,
+					json_relacion = json_asociaciones
+				};
+				Console.WriteLine($"Json: {json_encabezado}");
+				Console.WriteLine($"Json: {json_concepto}");
+				Console.WriteLine($"Json: {json_otros}");
+				Console.WriteLine($"Json: {json_asociaciones}");
+				var respuesta = _cuentaServicio.CompteCargaConfirma(req, TokenCookie);
+				return AnalizarRespuesta(respuesta, "El Comprobante de Compra se Confirmo con Éxito");
+				//return Json(new { error = false, warn = false, msg = "" });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar confirmar los datos del comprobante de compra" });
+			}
+		}
+
 		#region Métodos Privados
+		private class OtroTributoParaJson
+		{
+			public string imp { get; set; } = string.Empty;
+			public string tipo { get; set; } = string.Empty;
+			public string ctaf_id { get; set; } = string.Empty;
+			[JsonProperty(PropertyName = "base")]
+			public decimal base_imp { get; set; } = 0.00M; //Al armar el json esta columna se debe llamar 'base'
+			public decimal alicuota { get; set; } = 0.00M;
+			public decimal importe { get; set; } = 0.00M;
+		}
+		private string ObtenerJsonOtrosTributos(List<OtroTributoDto> lista)
+		{
+			if (lista == null || lista.Count <= 0)
+				return string.Empty;
+			var listaTemp = new List<OtroTributoParaJson>();
+			foreach (var item in lista)
+			{
+				var aux = TiposTributoLista.Where(x => x.ins_id.Equals(item.ins_id)).First();
+				listaTemp.Add(new OtroTributoParaJson() { alicuota = item.alicuota, base_imp = item.base_imp, imp = item.ins_id, importe = item.importe, tipo = aux.ins_tipo, ctaf_id = "" });
+			}
+			return JsonConvert.SerializeObject(listaTemp, new JsonSerializerSettings());
+		}
+		private void CompletarEncabezadoConTotales(Encabezado encabezado)
+		{
+			//cm_exento
+			encabezado.cm_exento = ListaTotales.Where(x => x.id.Equals("NetoExento")).First().Importe;
+			//cm_no_gravado
+			encabezado.cm_no_gravado = ListaTotales.Where(x => x.id.Equals("NetoNoGravado")).First().Importe;
+			//cm_gravado
+			encabezado.cm_gravado = ListaTotales.Where(x => x.id.Equals("NetoGravado")).First().Importe;
+			//cm_iva
+			encabezado.cm_iva = ListaTotales.Where(x => x.id.Contains("IVA")).Sum(x => x.Importe);
+			//cm_total
+			encabezado.cm_total = ListaTotales.Where(x => x.id.Equals("total")).First().Importe;
+
+			//Para estos, trabajar con TiposTributoLista
+			//Si no hay ningun elemento con importe, por default van 0
+			if (!ListaOtrosTributos.Exists(x => x.importe > 0))
+			{
+				encabezado.cm_otros_ng = 0;
+				encabezado.cm_ii = 0;
+				encabezado.cm_percepciones = 0;
+			}
+			else
+			{
+				//cm_otros_ng
+				var listaIdsTemp = TiposTributoLista.Where(x => x.ins_tipo.Equals("O")).Select(y => y.ins_id).ToList();
+				encabezado.cm_otros_ng = ListaOtrosTributos.Where(x => listaIdsTemp.Contains(x.ins_id)).Sum(y => y.importe);
+
+				//cm_ii
+				listaIdsTemp = TiposTributoLista.Where(x => x.ins_tipo.Equals("I")).Select(y => y.ins_id).ToList();
+				encabezado.cm_ii = ListaOtrosTributos.Where(x => listaIdsTemp.Contains(x.ins_id)).Sum(y => y.importe);
+
+				//cm_percepciones
+				listaIdsTemp = TiposTributoLista.Where(x => x.ins_tipo.Equals("P") || x.ins_tipo.Equals("R")).Select(y => y.ins_id).ToList();
+				encabezado.cm_percepciones = ListaOtrosTributos.Where(x => listaIdsTemp.Contains(x.ins_id)).Sum(y => y.importe);
+			}
+		}
+
 		private void ActualizarGrillaTotales_ConceptosFacturados()
 		{
 			if (ListaTotales == null || ListaTotales.Count <= 0)
@@ -750,7 +922,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			//Con esas sumas actualizar la grilla de totales, la unida diferencia es que hay que discriminar por Alicuotas, es decir, si tengo un concepto por 21% y otro por 27%, van a haber dos registros (uno para cada uno)
 			//Si hay dos registros que aplica 21%, agrego un solo registro para esa alicuota pero sumarizado
 			var _index = 2;
-			var listaTempAgrupados = listaConcFactuTemp.GroupBy(x => x.iva_alicuota).Select(y => new { alicuota = y.Key, sumaImporte = y.Sum(z => z.subtotal) }).ToList();
+			var listaTempAgrupados = listaConcFactuTemp.GroupBy(x => x.iva_alicuota).Select(y => new { alicuota = y.Key, sumaImporte = y.Sum(z => z.iva) }).ToList();
 			if (listaTempAgrupados != null && listaTempAgrupados.Count > 0)
 			{
 				foreach (var item in listaTempAgrupados)
@@ -782,9 +954,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 			if (ListaTotales == null || ListaTotales.Count <= 0)
 				InicializarGrillaTotales();
 			var listaTotalesTemp = ListaTotales;
-			var importeTotalParaLista = ListaOtroTributo.Sum(x => x.importe);
+			var importeTotalParaLista = ListaOtrosTributos.Sum(x => x.importe);
 			var item = listaTotalesTemp.Where(x => x.id.Equals("OtrosTributos")).First();
 			item.Importe = importeTotalParaLista;
+			var item_Total = listaTotalesTemp.Where(x => x.id.Contains("total")).First();
+			item_Total.Importe = listaTotalesTemp.Where(y => y.id.Equals("NetoNoGravado") || y.id.Equals("NetoExento") || y.id.Equals("NetoGravado") || y.id.Equals("OtrosTributos")).Sum(x => x.Importe);
 			ListaTotales = listaTotalesTemp;
 		}
 		private void ActualizarItemEnGrillaTotales(string id, decimal val)

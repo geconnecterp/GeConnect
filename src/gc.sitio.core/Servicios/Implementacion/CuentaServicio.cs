@@ -907,9 +907,9 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 		}
 
-		public List<RespuestaDto> CompteCargaConfirma(CompteCargaConfirmaRequest request, string token)
+		public RespuestaGenerica<RespuestaDto> CompteCargaConfirma(CompteCargaConfirmaRequest request, string token)
 		{
-			ApiResponse<List<RespuestaDto>> apiResponse;
+			ApiResponse<RespuestaDto> apiResponse;
 
 			HelperAPI helper = new();
 			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
@@ -927,8 +927,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 					_logger.LogWarning($"La API devolvió error. Parametros cta_id:{request.cta_id} usu_id: {request.usu_id} adm_id: {request.adm_id} json_encabezado: {request.json_encabezado} json_concepto: {request.json_concepto} json_otro: {request.json_otro} json_relacion: {request.json_relacion}");
 					return new();
 				}
-				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaDto>>>(stringData);
-				return apiResponse.Data;
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+				return new RespuestaGenerica<RespuestaDto>() { Entidad = apiResponse.Data };
 			}
 			else
 			{

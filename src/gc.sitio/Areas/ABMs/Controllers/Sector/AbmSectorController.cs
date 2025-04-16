@@ -118,6 +118,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				if (res == null)
 					return PartialView("_tabDatosCliente", new SectorAbmModel());
 
+				var subSectores = _sectorServicio.GetSubSectorParaABM(secId, TokenCookie);
+				SubSectorLista = subSectores;
 				var SectorModel = new SectorAbmModel()
 				{
 					Sector = res.First()
@@ -334,9 +336,9 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				if (res == null)
 					return PartialView("_tabDatosRubro", new SectorABMRubroModel());
 
-				SubSectorLista = res.GroupBy(c => new { c.Rubg_Id, c.Rubg_Desc, c.Rubg_Lista })
-									.Select(gc => new SubSectorDto() { Rubg_Id = gc.Key.Rubg_Id, Rubg_Desc = gc.Key.Rubg_Desc, Rubg_Lista = gc.Key.Rubg_Lista })
-									.ToList();
+				//SubSectorLista = res.GroupBy(c => new { c.Rubg_Id, c.Rubg_Desc, c.Rubg_Lista })
+				//					.Select(gc => new SubSectorDto() { Rubg_Id = gc.Key.Rubg_Id, Rubg_Desc = gc.Key.Rubg_Desc, Rubg_Lista = gc.Key.Rubg_Lista })
+				//					.ToList();
 
 				var SubSectorModel = new SectorABMRubroModel()
 				{

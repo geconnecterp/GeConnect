@@ -39,6 +39,21 @@ function InicializaPantalla() {
 			InicializarComprobante(ctaIdSelected);
 		}
 	});
+	$("#btnAbmAceptar").on("click", function () {
+		ConfirmarComprobanteDeCompra();
+	});
+	$("#btnCancel").on("click", function () {
+		LimpiarDatosDelFiltroInicial();
+		$("#btnFiltro").trigger("click");
+	});
+	$("#btnAbmCancelar").on("click", function () {
+		InicializarDatosEnSesion();
+		InicializaPantalla();
+		LimpiarDatosDelFiltroInicial();
+		$("#btnFiltro").trigger("click");
+		$("#btnDetalle").trigger("click");
+		$("#divDetalle").collapse("hide");
+	});
 	$(".activable").prop("disabled", true);
 	$("#btnAbmAceptar").hide();
 	$("#btnAbmCancelar").hide();
@@ -56,11 +71,177 @@ function InicializaPantalla() {
 	$(document).on("change", "#listaIvaAli", ControlaIvaAliSeleccionada);
 	$(document).on("click", "#btnAgregarOtroTributo", AbrirModalAgregarOtroTributo); //Abrir modal
 	$(document).on("change", "#listaOtroTrib", ControlaOtroTribSeleccionada);
+	$(document).on("change", "#Comprobante_fecha_compte", ControlaFechaCompteSeleccionada);
 
 	$(".inputEditable").on("keypress", analizaEnterInput);
 
 	CerrarWaiting();
 	return true;
+}
+
+function ConfirmarComprobanteDeCompra() {
+	var valido = true;
+	var cuit = $("#Comprobante_cuit_parcial").inputmask('unmaskedvalue');
+	if (cuit.length != 11) {
+		valido = false;
+		AbrirMensaje("ATENCIÓN", "El valor de 'CUIT' no es válido.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	var rowsConceptosFacturados = $("#tbGridConceptoFacturado > tbody > tr").length;
+	if (rowsConceptosFacturados <= 0 && valido) {
+		valido = false;
+		AbrirMensaje("ATENCIÓN", "Debe al menos ingresar un Concepto Facturado.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	if (valido) {
+		AbrirMensaje("ATENCIÓN", "¿Confirma la generación del Comprobante de Compra?", function (e) {
+			$("#msjModal").modal("hide");
+			switch (e) {
+				case "SI": //Confirmar
+					//Armado de request
+					var cta_id = $("#CtaID").val();
+
+					//Encabezado
+					var encabezado = ObtenerEncabezado();
+
+					//Tengo que ver cual de las grillas opcionales armar para enviar los datos
+					var asociaciones = ObtenerAsociaciones();
+
+					var data = { cta_id, encabezado, asociaciones };
+					PostGen(data, confirmarComprobanteDeCompraURL, function (obj) {
+						if (obj.error === true) {
+							AbrirMensaje("ATENCIÓN", obj.msg, function () {
+								$("#msjModal").modal("hide");
+								return true;
+							}, false, ["Aceptar"], "error!", null);
+						}
+						else {
+							console.log(obj.msg);
+							// MOstrar mensaje
+							AbrirMensaje("ATENCIÓN", obj.msg, function () {
+								$("#msjModal").modal("hide");
+								///Aca hay que inicializar todo
+								InicializarDatosEnSesion();
+								InicializaPantalla();
+								LimpiarDatosDelFiltroInicial();
+								$("#btnFiltro").trigger("click");
+								$("#btnDetalle").trigger("click");
+								$("#divDetalle").collapse("hide");
+								return true;
+							}, false, ["Aceptar"], "info!", null);
+						}
+					});
+					break;
+				case "NO":
+					break;
+				default: //NO
+					break;
+			}
+			return true;
+
+		}, true, ["Aceptar", "Cancelar"], "question!", null);
+	}
+}
+
+function ObtenerAsociaciones() {
+	var id_selected = $("#listaOpciones option:selected").val()
+
+	var asociaciones = [];
+	if (id_selected == 1) {
+		//RPR
+		var dataTable = document.getElementById('tbGridRprAsociado');
+		var inputs = dataTable.querySelectorAll('tbody>tr>td>input');
+		var pIds = [];
+		inputs.forEach(function (input) {
+			if (input.checked) {
+				alMenosUno = true;
+				pIds.push(input.id.substr(3, 11));
+			}
+		});
+		if (pIds.length > 0) {
+			for (var i = 0; i < pIds.length; i++) {
+				asociaciones.push({ tco_id: "RPR", cm_compte_rp: pIds[i] });
+			}
+		}
+	}
+	else if (id_selected == 4) {
+		//Notas a cuenta
+		var dataTable = document.getElementById('tbGridNotasACuenta');
+		var inputs = dataTable.querySelectorAll('tbody>tr>td>input');
+		var pIds = [];
+		inputs.forEach(function (input) {
+			if (input.checked) {
+				alMenosUno = true;
+				pIds.push(input.id.substr(3, 16));
+			}
+		});
+		if (pIds.length > 0) {
+			for (var i = 0; i < pIds.length; i++) {
+				asociaciones.push({ tco_id: pIds[i].substr(13, 16), cm_compte_rp: pIds[i].substr(0, 13) });
+			}
+		}
+	}
+	return asociaciones;
+}
+
+function ObtenerEncabezado() {
+	var cta_id = $("#CtaID").val();
+	var ope_iva = $("#listaOpeIva").val();
+	var afip_id = $("#listaCAfip").val();
+	var cm_cuit = $("#Comprobante_cuit_parcial").inputmask('unmaskedvalue');
+	var ctap_id_externo = $("#Comprobante_ctap_id_externo").val();
+	var cm_nombre = $("#CtaDesc").val();
+	var cm_domicilio = $("#Comprobante_cta_domicilio").val();
+	var tco_id = $("#listaTCompte").val();
+	var cm_compte = $("#Comprobante_cm_compte").val();
+	var cm_fecha = $("#Comprobante_fecha_compte").val();
+	var cm_ctl_fiscal = $("#chkCtlFis").val();
+	var cm_cae = $("#Comprobante_cm_cae").val();
+	var cm_cae_vto = $("#Comprobante_cm_cae_vto").val();
+	var mon_codigo = $("#listaMoneda").val();
+	var ctag_imputa = $("#chkImpCtaDirecta").val();
+	var ctag_id = $("#listaCtaDir").val();
+	var cm_pago = $("#Comprobante_fecha_pago").val();
+	var cm_cuota = $("#Comprobante_cuotas").val();
+	var cm_obs = $("#Comprobante_observaciones").val();
+	var cm_libro_iva = $("#Comprobante_libro_iva").val();
+	//Estos datos los completo con los datos del BE
+	var cm_no_gravado = 0;
+	var cm_exento = 0;
+	var cm_gravado = 0;
+	var cm_iva = 0;
+	var cm_otros_ng = 0;
+	var cm_ii = 0;
+	var cm_percepciones = 0;
+	var cm_total = 0;
+	var encabezado = {
+		cta_id, ope_iva, afip_id, cm_cuit, ctap_id_externo, cm_nombre, cm_domicilio, tco_id, cm_compte, cm_fecha, cm_ctl_fiscal, cm_cae, cm_cae_vto, mon_codigo,
+		ctag_imputa, ctag_id, cm_pago, cm_cuota, cm_obs, cm_libro_iva, cm_no_gravado, cm_exento, cm_gravado, cm_iva, cm_otros_ng, cm_ii, cm_percepciones, cm_total
+	};
+	return encabezado;
+}
+function InicializarDatosEnSesion() {
+	PostGen({}, inicializarDatosEnSesionURL, function (obj) {
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			console.log(obj.msg);
+		}
+	});
+}
+
+function LimpiarDatosDelFiltroInicial() {
+	$("input#Rel01").val("");
+	$("#Rel01Item").val("");
+	$("#Rel01List").empty();
 }
 
 function InicializarComprobante(id) {
@@ -93,11 +274,9 @@ function AbrirModalConceptoFacturado() {
 		$("#divModalCargaIVA").html(obj);
 		$('#modalCargaIVA').modal({
 			backdrop: 'static',
-			/*keyboard: false*/
 		});
 		$('#modalCargaIVA').modal('show');
 
-		//$("#ConceptoFacturado_subtotal").mask("000.000.000.000,00", { reverse: true });
 		$("#ConceptoFacturado_subtotal").inputmask({
 			alias: 'numeric',
 			groupSeparator: '.',
@@ -113,8 +292,7 @@ function AbrirModalConceptoFacturado() {
 		$("#ConceptoFacturado_subtotal").on('focusout', function (e) {
 			CalcularIva(e);
 		});
-		//$("#ConceptoFacturado_iva").inputmask({ mask: '99,9', alias: 'numeric', digits: 1, digitsOptional: false, rightAlign: true, unmaskAsNumber: true, radixPoint: ',', placeholder: '' });
-		//$("#ConceptoFacturado_iva").mask("000.000.000.000,00", { reverse: true });
+
 		$("#ConceptoFacturado_iva").inputmask({
 			alias: 'numeric',
 			groupSeparator: '.',
@@ -148,11 +326,9 @@ function AbrirModalAgregarOtroTributo() {
 		$("#divModalCargaOT").html(obj);
 		$('#modalCargaOT').modal({
 			backdrop: 'static',
-			/*keyboard: false*/
 		});
 		$('#modalCargaOT').modal('show');
 
-		/*$("#OtroTributo_base_imp").mask("000.000.000.000,00", { reverse: true });*/
 		$("#OtroTributo_base_imp").inputmask({
 			alias: 'numeric',
 			groupSeparator: '.',
@@ -168,7 +344,7 @@ function AbrirModalAgregarOtroTributo() {
 		$("#OtroTributo_base_imp").on('focusout', function (e) {
 			CalcularImporteOT();
 		});
-		//$("#OtroTributo_alicuota").mask("000.000.000.000,00", { reverse: true });
+
 		$("#OtroTributo_alicuota").inputmask({
 			alias: 'numeric',
 			groupSeparator: '.',
@@ -185,18 +361,7 @@ function AbrirModalAgregarOtroTributo() {
 			CalcularImporteOT();
 		});
 		$("#OtroTributo_importe").mask("000.000.000.000,00", { reverse: true });
-		//$("#OtroTributo_importe").inputmask({
-		//	alias: 'numeric',
-		//	groupSeparator: '.',
-		//	radixPoint: ',',
-		//	digits: 2,
-		//	digitsOptional: false,
-		//	allowMinus: false,
-		//	prefix: '$',
-		//	suffix: '',
-		//	rightAlign: true,
-		//	unmaskAsNumber: true // Devuelve un número al obtener el valor
-		//});
+
 		$(".inputEditable").on("keypress", analizaEnterInput);
 		$("#listaOtroTrib").focus();
 		CerrarWaiting();
@@ -209,14 +374,12 @@ function CalcularIva(e) {
 	var ali_id = $("#listaIvaAli option:selected").val()
 	var subt = $("#ConceptoFacturado_subtotal").inputmask('unmaskedvalue');
 	var iva = $("#ConceptoFacturado_iva").inputmask('unmaskedvalue');
-	//var num_subt = parseFloat(subt.replace(".", "").replace(",", "."));
-	//var num_ali_id = parseFloat(ali_id);
+
 	if (subt > 0 && sit_id == "G") {
 		if (ali_id != "") {
 			if (e.target.id != "ConceptoFacturado_iva") {
 				var calc = (subt * parseFloat(ali_id)) / 100;
-				$("#ConceptoFacturado_iva").val(calc.toFixed(2).replace(".",","));
-				//$("#ConceptoFacturado_iva").val(calc);
+				$("#ConceptoFacturado_iva").val(calc.toFixed(2).replace(".", ","));
 				$("#ConceptoFacturado_total").val((subt + calc).toFixed(2));
 			}
 			else {
@@ -227,13 +390,13 @@ function CalcularIva(e) {
 	}
 	else if (subt > 0 && sit_id != "G") {
 		if (e.target.id != "ConceptoFacturado_iva") {
-			var calc = subt / 100;
-			$("#ConceptoFacturado_iva").val(calc);
-			$("#ConceptoFacturado_total").val(subt + calc);
+			//var calc = subt / 100;
+			$("#ConceptoFacturado_iva").val(0);
+			$("#ConceptoFacturado_total").val(subt);
 		}
 		else {
-			var calc = subt / 100;
-			$("#ConceptoFacturado_total").val(subt + calc);
+			//var calc = subt / 100;
+			$("#ConceptoFacturado_total").val(subt);
 		}
 	}
 }
@@ -242,10 +405,6 @@ function CalcularImporteOT() {
 	var baseImp = $("#OtroTributo_base_imp").inputmask('unmaskedvalue');
 	var aliCuota = $("#OtroTributo_alicuota").inputmask('unmaskedvalue');
 	if ($("#OtroTributo_base_imp").val() != "" && $("#OtroTributo_alicuota").val() != "") {
-		//var subt = $("#OtroTributo_base_imp").val();
-		//var num_subt = parseFloat(subt.replace(".", "").replace(",", "."));
-		//var ali = $("#OtroTributo_alicuota").val();
-		//var num_ali = parseFloat(ali.replace(".", "").replace(",", "."));
 		var calc = ((baseImp * aliCuota) / 100) + baseImp;
 		$("#OtroTributo_importe").val(calc.toFixed(2));
 	}
@@ -259,11 +418,9 @@ function AgregarConceptoFacturado() {
 	if (ValidarCamposModalIva()) {
 		AbrirWaiting();
 		var subt = $("#ConceptoFacturado_subtotal").inputmask('unmaskedvalue');
-		//var num_subt = parseFloat(subt.replace(".", "").replace(",", "."));
 		var concepto = $("#ConceptoFacturado_concepto").val();
 		var sit = $("#listaIvaSit").val();
 		var ali = $("#listaIvaAli").val();
-		//var subt = num_subt;
 		var iva = $("#ConceptoFacturado_iva").inputmask('unmaskedvalue');
 		var tot = $("#ConceptoFacturado_total").val();
 		var data = { concepto, sit, ali, subt, iva, tot };
@@ -286,17 +443,11 @@ function AgregarConceptoFacturado() {
 }
 
 function AgregarOtroTributo() {
-	//TODO MARCE:
-	//Agregar funcion de validacion de campos antes de agrega del tributo DONE
 	if (ValidarCamposModalOT()) {
 		AbrirWaiting();
 		var insId = $("#listaOtroTrib option:selected").val();
 		var baseImp = $("#OtroTributo_base_imp").inputmask('unmaskedvalue');
-		//var baseImp = parseFloat(baseImp_temp.replace(".", "").replace(",", "."));
 		var alicuota = $("#OtroTributo_alicuota").inputmask('unmaskedvalue');
-		//var alicuota = parseFloat(alicuota_temp.replace(".", "").replace(",", "."));
-		//var importe_temp = $("#OtroTributo_importe").val();
-		//var importe = parseFloat(importe_temp.replace(".", "").replace(",", "."));
 		var importe = $("#OtroTributo_importe").val();
 		var data = { insId, baseImp, alicuota, importe };
 		PostGen(data, agregarOtroTributoUrl, function (obj) {
@@ -308,12 +459,9 @@ function AgregarOtroTributo() {
 				CargarGrillaOtrosTributos();
 				CargarGrillaTotales();
 				LimpiarCamposEnModalCargaOT();
-				//$('#modalCargaIVA').modal('hide');
 			}
 		});
 	};
-	//Luego llamar a un metodo (aun no existe) de BE para agregarlo a la lista en sesion. DONE
-	//Agregar el metodo de quitar tributo (icono de tacho de basura)
 }
 
 function LimpiarCamposEnModalCargaIva() {
@@ -396,11 +544,15 @@ function ControlaIvaAliSeleccionada() {
 function ControlaSituacionSeleccionada() {
 	var iva_sit_id = $("#listaIvaSit option:selected").val()
 	if (iva_sit_id == IvaSituacion.GRAVADO) {
+		$("#listaIvaAli").val("");
 		$("#listaIvaAli").prop("disabled", false);
+		$("#ConceptoFacturado_iva").prop("disabled", false);
 		$("#listaIvaAli").focus();
 	}
 	else {
+		$("#listaIvaAli").val("");
 		$("#listaIvaAli").prop("disabled", true);
+		$("#ConceptoFacturado_iva").prop("disabled", true);
 		$("#ConceptoFacturado_subtotal").focus();
 	}
 }
@@ -414,6 +566,7 @@ function ControlaOtroTribSeleccionada() {
 
 function ControlaListaOpcionesSeleccion() {
 	var tco_id = $("#listaTCompte option:selected").val()
+	tcoIdSelected = tco_id;
 	var ope_iva = $("#listaOpeIva option:selected").val()
 	if (tco_id !== "" && ope_iva != "") {
 		var data = { tco_id, ope_iva }
@@ -437,6 +590,12 @@ function ObtenerGrillaDesdeOpcionSeleccionada() {
 		AbrirWaiting();
 		PostGenHtml(data, obtenerGrillaDesdeOpcionSeleccionadaUrl, function (obj) {
 			$("#divGrillaOpcional").html(obj);
+			if (id_selected == 1) {
+				AgregarHandlerSelectAll("tbGridRprAsociado");
+			}
+			else if (id_selected == 4) {
+				AgregarHandlerSelectAll("tbGridNotasACuenta");
+			}
 			CerrarWaiting();
 		}, function (obj) {
 			ControlaMensajeError(obj.message);
@@ -473,6 +632,7 @@ function CargarGrillaConceptosFacturados() {
 
 function CargarGrillaOtrosTributos() {
 	var tco_id = $("#listaTCompte option:selected").val()
+	tcoIdSelected = tco_id;
 	var data = { tco_id };
 	PostGenHtml(data, cargarOtrosTributosUrl, function (obj) {
 		$("#divOtrosTributos").html(obj);
@@ -558,18 +718,53 @@ function ActualizarEstadoCAE() {
 }
 
 function SetMascarasYValores() {
-	$("#Comprobante_cuit_parcial").mask("00-00000000-0", { reverse: false });
-	$("#Comprobante_cm_compte").mask("0000-00000000", { reverse: false });
+	//$("#Comprobante_cuit_parcial").mask("00-00000000-0", { reverse: false });
+	$("#Comprobante_cuit_parcial").inputmask("99-99999999-9");
+	$("#Comprobante_cm_compte").inputmask("9999-99999999");
 	var now = moment().format('yyyy-MM-DD');
-	$("#Comprobante_fecha_pago").val(now);
+
 	$("#Comprobante_cm_cae_vto").val(now);
+
+	var min = moment().add(-4, 'months');
+	$("#Comprobante_fecha_compte").attr('min', min.format('yyyy-MM-DD'));
+	$("#Comprobante_fecha_compte").attr('max', now);
 	$("#Comprobante_fecha_compte").val(now);
-	//$("#listaTCompte").on("change", function () {
-	//	console.log(this);
-	//});
-	//$(document).on("change", "#listaTCompte", function () {
-	//	console.log(this);
-	//});
+
+	var max = moment().add(4, 'months');
+	$("#Comprobante_fecha_pago").attr('min', now);
+	$("#Comprobante_fecha_pago").attr('max', max.format('yyyy-MM-DD'));
+	$("#Comprobante_fecha_pago").val(now);
+
+	var fPago = $("#Comprobante_fecha_compte").val();
+	$("#Comprobante_libro_iva").val(moment(fPago).year().toString() + (moment(fPago).month() + 1).toString().padStart(2, '0'));
+}
+
+function AgregarHandlerSelectAll(grilla) {
+	var dataTable = document.getElementById(grilla);
+	var checkItAll = dataTable.querySelector('input[name="select_all"]');
+	var inputs = dataTable.querySelectorAll('tbody>tr>td>input');
+	checkItAll.addEventListener('change', function () {
+		if (checkItAll.checked) {
+			inputs.forEach(function (input) {
+				input.checked = true;
+			});
+		}
+		else {
+			inputs.forEach(function (input) {
+				input.checked = false;
+			});
+		}
+	});
+}
+
+function ControlaFechaCompteSeleccionada() {
+	var fPago = $("#Comprobante_fecha_compte").val();
+	$("#Comprobante_libro_iva").val(moment(fPago).year().toString() + (moment(fPago).month() + 1).toString().padStart(2, '0'));
+	var min = moment(fPago);
+	$("#Comprobante_fecha_pago").attr('min', min.format('yyyy-MM-DD'));
+	var max = moment(fPago).add(4, 'months');
+	$("#Comprobante_fecha_pago").attr('max', max.format('yyyy-MM-DD'));
+	$("#Comprobante_fecha_pago").val(fPago);
 }
 
 function activarBotones(activar) {
@@ -798,11 +993,8 @@ function addInCellLostFocusHandler() {
 }
 
 function ActualizarOtroTributo(id, val) {
-	//var temp = val.replace(".", "");
-
-	//val = parseFloat(val.replace(".", "").replace(",", "."));
-	console.log("idOtroTributoSeleccionado: " + idOtroTributoSeleccionado + " id: " + id + " val: " + val);
-	var data = { id, val, idOtroTributoSeleccionado };
+	var tco_id = tcoIdSelected;
+	var data = { id, val, idOtroTributoSeleccionado, tco_id };
 	PostGen(data, editarItemEnOtrosConceptosUrl, function (obj) {
 		if (obj.error === true) {
 			AbrirMensaje("ATENCIÓN", obj.msg, function () {
@@ -816,47 +1008,12 @@ function ActualizarOtroTributo(id, val) {
 			$("#tbGridOtroTributo").find('tr').each(function (i, el) {
 				var td = $(this).find('td');
 				if (td.length > 0 && td[0].innerText !== undefined && td[0].innerText === idOtroTributoSeleccionado) {
-					console.log("td[0].innerText: " + td[0].innerText);
 					$("#" + td[4].id).val(formatter.format(obj.data.importe));
 				}
 			});
-			
+
 		}
 	});
-	///TODO:
-	//usar idOtroTributoSeleccionado que lo almaceno cuando selecciono un elemento de la grilla y mandar:
-	// idOtroTributoSeleccionado -> id del "otro tributo" seleccionado
-	// id -> campo que he editado
-	// val -> valor
-	// con esos datos calcular el valor de la columna Importe y pisarlo
-
-	//var data = { pId, field, val };
-	//PostGen(data, ActualizarProductoEnOcURL, function (obj) {
-	//	if (obj.error === true) {
-	//		AbrirMensaje("ATENCIÓN", obj.msg, function () {
-	//			$("#msjModal").modal("hide");
-	//			return true;
-	//		}, false, ["Aceptar"], "error!", null);
-	//	}
-	//	else {
-	//		//Actualizar valores en la grilla
-	//		$("#tbListaProductoOC").find('tr').each(function (i, el) {
-	//			var td = $(this).find('td');
-	//			if (td.length > 0 && td[1].innerText !== undefined && td[1].innerText === pId) {
-	//				//GRILLA
-	//				td[16].innerText = obj.data.pedido_Mas_Boni;//PEDIDO +BONI -> obj.data.pedido_Mas_Boni
-	//				td[17].innerText = obj.data.p_Pcosto;//PRECIO COSTO -> obj.data.p_Pcosto
-	//				td[18].innerText = obj.data.p_Pcosto_Total;//TOTAL COSTO -> obj.data.p_Pcosto_Total
-	//				td[19].innerText = obj.data.paletizado;//TOTAL PALLET -> obj.data.paletizado
-
-	//				//TOTALES
-	//				$("#Total_Costo").val(formatter.format(obj.data.total_Costo));//TOTAL_COSTO -> obj.data.total_Costo
-	//				$("#Total_Pallet").val(formatter.format(obj.data.total_Pallet));//TOTAL_PALLET -> obj.data.total_Pallet
-	//			}
-	//		});
-	//	}
-
-	//});
 }
 
 function tableUpDownArrow() {

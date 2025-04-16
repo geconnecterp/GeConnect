@@ -16,10 +16,11 @@
 			{
 				var nombre = "chk" + item.rp_compte;
 				<tr onclick="selectListaRprAsociado(this)">
-					<td><input type="checkbox" name=@nombre /></td> @*00*@
+					<td><input type="checkbox" name=@nombre id="@nombre" /></td> @*00*@
 					<td class="align-center">@item.rp_compte</td>
 					<td class="align-left">@item.tco_desc_rp</td>
 					<td class="align-right">@item.cm_importe_rp</td>
+					<td style="display:none;">@item.tco_id_rp</td>
 				</tr>
 			}
 		</tbody>
