@@ -799,10 +799,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 					json_otro = json_otros,
 					json_relacion = json_asociaciones
 				};
-				Console.WriteLine($"Json: {json_encabezado}");
-				Console.WriteLine($"Json: {json_concepto}");
-				Console.WriteLine($"Json: {json_otros}");
-				Console.WriteLine($"Json: {json_asociaciones}");
+				Console.WriteLine($"Json encabezado: {json_encabezado}");
+				Console.WriteLine($"Json concepto: {json_concepto}");
+				Console.WriteLine($"Json otros: {json_otros}");
+				Console.WriteLine($"Json asociaciones: {json_asociaciones}");
 				var respuesta = _cuentaServicio.CompteCargaConfirma(req, TokenCookie);
 				return AnalizarRespuesta(respuesta, "El Comprobante de Compra se Confirmo con Éxito");
 				//return Json(new { error = false, warn = false, msg = "" });
@@ -845,7 +845,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 			//cm_gravado
 			encabezado.cm_gravado = ListaTotales.Where(x => x.id.Equals("NetoGravado")).First().Importe;
 			//cm_iva
-			encabezado.cm_iva = ListaTotales.Where(x => x.id.Contains("IVA")).Sum(x => x.Importe);
+			encabezado.cm_iva = ListaConceptoFacturado.Select(x => x.iva).Sum();
+			//encabezado.cm_iva = ListaTotales.Where(x => x.id.Contains("IVA")).Sum(x => x.Importe);
 			//cm_total
 			encabezado.cm_total = ListaTotales.Where(x => x.id.Equals("total")).First().Importe;
 
@@ -945,7 +946,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					}
 				}
 				var item_Total = listaTotalesTemp.Where(x => x.id.Contains("total")).First();
-				item_Total.Importe = listaTotalesTemp.Where(y => y.id.Equals("NetoNoGravado") || y.id.Equals("NetoExento") || y.id.Equals("NetoGravado") || y.id.Equals("OtrosTributos")).Sum(x => x.Importe);
+				item_Total.Importe = listaTotalesTemp.Where(y => y.id.Equals("NetoNoGravado") || y.id.Equals("NetoExento") || y.id.Equals("NetoGravado") || y.id.Equals("OtrosTributos") || y.id.Contains("IVA")).Sum(x => x.Importe);
 			}
 			ListaTotales = [.. listaTotalesTemp.OrderBy(x => x.Orden)];
 		}
