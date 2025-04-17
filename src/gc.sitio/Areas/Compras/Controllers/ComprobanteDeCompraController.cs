@@ -783,11 +783,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				if (request.asociaciones != null && request.asociaciones.Count > 0)
 					json_asociaciones = JsonConvert.SerializeObject(request.asociaciones, new JsonSerializerSettings());
+				else
+					json_asociaciones = "{}";
 
-				CompletarEncabezadoConTotales(request.encabezado);
+					CompletarEncabezadoConTotales(request.encabezado);
 				//json_encabezado = JsonConvert.SerializeObject(request.encabezado, new JsonSerializerSettings());
 				json_encabezado = JsonConvert.SerializeObject(request.encabezado, new JsonSerializerSettings());
 				json_concepto = JsonConvert.SerializeObject(ListaConceptoFacturado, new JsonSerializerSettings());
+				if (ListaOtrosTributos == null || ListaOtrosTributos.Count <= 0)
+					InicializarListaOtrosTributos(request.encabezado.tco_id);
 				json_otros = ObtenerJsonOtrosTributos(ListaOtrosTributos);
 				var req = new CompteCargaConfirmaRequest
 				{
