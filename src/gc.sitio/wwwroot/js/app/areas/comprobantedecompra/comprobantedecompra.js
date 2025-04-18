@@ -199,11 +199,11 @@ function ObtenerEncabezado() {
 	var tco_id = $("#listaTCompte").val();
 	var cm_compte = $("#Comprobante_cm_compte").val();
 	var cm_fecha = $("#Comprobante_fecha_compte").val();
-	var cm_ctl_fiscal = $("#chkCtlFis").val();
+	var cm_ctl_fiscal = $("#chkCtlFis")[0].checked;
 	var cm_cae = $("#Comprobante_cm_cae").val();
 	var cm_cae_vto = $("#Comprobante_cm_cae_vto").val();
 	var mon_codigo = $("#listaMoneda").val();
-	var ctag_imputa = $("#chkImpCtaDirecta").val();
+	var ctag_imputa = $("#chkImpCtaDirecta")[0].checked;
 	var ctag_id = $("#listaCtaDir").val();
 	var cm_pago = $("#Comprobante_fecha_pago").val();
 	var cm_cuota = $("#Comprobante_cuotas").val();
