@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>jsTree - Prueba de estilos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/themes/default/style.min.css">
+    <style>
+        /* Estilo específico para tipo M (hojas) */
+        .jstree-anchor.tipo-m {
+            font-weight: bold;
+            color: #007bff; /* azul */
+        }
+
+        /* Estilos por tipo de cuenta contable */
+        .jstree-anchor.cuenta-activo {
+            color: #28a745; /* verde */
+        }
+
+        .jstree-anchor.cuenta-pasivo {
+            color: #dc3545; /* rojo */
+        }
+
+        .jstree-anchor.cuenta-patrimonio {
+            color: #6f42c1; /* violeta */
+        }
+
+        .jstree-anchor.cuenta-ingresos {
+            color: #fd7e14; /* naranja */
+        }
+
+        .jstree-anchor.cuenta-egresos {
+            color: #17a2b8; /* cian */
+        }
+    </style>
+</head>
+<body>
+    <h2>Árbol de Plan de Cuentas</h2>
+    <div id="divpanel01"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/jstree.min.js"></script>
+    <script>
+        const jsonP = [
+            {
+                "id": "1",
+                "text": "ACTIVO",
+                "data": { "tipo": "S", "cuenta": "ACTIVO" },
+                "children": [
+                    {
+                        "id": "1.1",
+                        "text": "Caja",
+                        "data": { "tipo": "M", "cuenta": "ACTIVO" },
+                        "type": "M"
+                    },
+                    {
+                        "id": "1.2",
+                        "text": "Bancos",
+                        "data": { "tipo": "M", "cuenta": "ACTIVO" },
+                        "type": "M"
+                    }
+                ]
+            },
+            {
+                "id": "2",
+                "text": "PASIVO",
+                "data": { "tipo": "S", "cuenta": "PASIVO" },
+                "children": [
+                    {
+                        "id": "2.1",
+                        "text": "Deudas Bancarias",
+                        "data": { "tipo": "M", "cuenta": "PASIVO" },
+                        "type": "M"
+                    }
+                ]
+            }
+        ];
+
+        function procesarNodos(nodos) {
+            nodos.forEach(nodo => {
+                const tipo = nodo.data?.tipo;
+                const cuenta = nodo.data?.cuenta;
+
+                nodo.type = tipo === "M" ? "M" : "S";
+
+                nodo.a_attr = nodo.a_attr || {};
+                let clases = [];
+
+                if (tipo === "M") clases.push("tipo-m");
+                if (cuenta) clases.push("cuenta-" + cuenta.toLowerCase());
+
+                nodo.a_attr.class = clases.join(" ");
+
+                if (nodo.children && nodo.children.length > 0) {
+                    procesarNodos(nodo.children);
+                }
+            });
+        }
+
+        procesarNodos(jsonP);
+
+        $(function () {
+            $('#divpanel01').jstree({
+                'core': {
+                    'data': jsonP
+                },
+                'types': {
+                    "M": {
+                        "icon": "jstree-icon"
+                    },
+                    "S": {
+                        "icon": "jstree-icon"
+                    }
+                },
+                'plugins': ['types']
+            });
+        });
+    </script>
+</body>
+</html>
