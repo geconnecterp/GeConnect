@@ -14,12 +14,14 @@
 		<tbody>
 			@foreach (var item in Model.ListaDatos)
 			{
-				var nombre = "chk" + item.cm_compte;
+				var nombre = "chk" + item.cm_compte + item.tco_id;
 				<tr onclick="selectListaRprAsociado(this)">
-					<td><input type="checkbox" name=@nombre /></td> @*00*@
+					<td><input type="checkbox" name=@nombre id="@nombre" /></td> @*00*@
 					<td class="align-center">@item.cm_compte</td>
 					<td class="align-left">@item.tco_desc_rp</td>
 					<td class="align-right">@item.cm_total</td>
+					<td style="display:none;">@item.tco_id</td>
+					<td style="display:none;">@item.cm_compte_rp</td>
 				</tr>
 			}
 		</tbody>

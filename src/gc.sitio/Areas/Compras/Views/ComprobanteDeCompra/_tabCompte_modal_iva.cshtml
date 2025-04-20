@@ -19,35 +19,29 @@
 			<div class="input-group input-group-sm">
 				<div class="col-3 input-group-sm" style="float:left;margin-right:5px;">
 					<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">Concepto: </span>
-					@* <label for="ConceptoFacturado_concepto" class="input-group-text fixed-lbl-for-abm-100">Concepto:</label> *@
 					<input type="text" asp-for="ConceptoFacturado.concepto" class="form-control activable inputEditable" />
 				</div>
 				@if (Model.EsGravado)
 				{
 					<div class="col-2 input-group-sm" style="float:left;margin-right:5px;">
 						<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">Situación: </span>
-						@* <label for="ConceptoFacturado_iva_situacion" class="input-group-text fixed-lbl-for-abm-100">Situación:</label> *@
 						@Html.DropDownListFor(m => m.ConceptoFacturado.iva_situacion, sit, "Seleccionar...", new { @id = "listaIvaSit", @class = "form-control activable inputEditable" })
 					</div>
 					<div class="col-2 input-group-sm" style="float:left;margin-right:5px;">
 						<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">Alicuota: </span>
-						@* <label for="ConceptoFacturado_iva_alicuota" class="input-group-text fixed-lbl-for-abm-100">Alicuota:</label> *@
 						@Html.DropDownListFor(m => m.ConceptoFacturado.iva_alicuota, ali, "Seleccionar...", new { @id = "listaIvaAli", disabled = "disabled", @class = "form-control activable inputEditable" })
 					</div>
 				}
 				<div class="col-1 input-group-sm" style="float:left;margin-right:5px;">
 					<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">Subtotal: </span>
-					@* <label for="ConceptoFacturado_subtotal" class="input-group-text fixed-lbl-for-abm-100">Subtotal:</label> *@
 					<input type="text" asp-for="ConceptoFacturado.subtotal" class="form-control activable inputEditable" />
 				</div>
 				<div class="col-1 input-group-sm" style="float:left;margin-right:5px;">
 					<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">IVA: </span>
-					@* <label for="ConceptoFacturado_iva" class="input-group-text fixed-lbl-for-abm-100">IVA:</label> *@
 					<input type="text" asp-for="ConceptoFacturado.iva" class="form-control activable inputEditable" />
 				</div>
 				<div class="col-1 input-group-sm" style="float:left;margin-right:5px;">
 					<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">Subtotal+IVA: </span>
-					@* <label for="ConceptoFacturado_total" class="input-group-text fixed-lbl-for-abm-100">Subtotal+IVA:</label> *@
 					<input type="text" asp-for="ConceptoFacturado.total" class="form-control activable" disabled/>
 				</div>
 			</div>

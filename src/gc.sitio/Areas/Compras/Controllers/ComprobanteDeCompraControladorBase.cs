@@ -37,11 +37,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		}
 
-		public List<OtroTributoDto> ListaOtroTributo
+		public List<OtroTributoDto> ListaOtrosTributos
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("ListaOtroTributo");
+				var txt = _context.HttpContext.Session.GetString("ListaOtrosTributos");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return new List<OtroTributoDto>();
@@ -51,7 +51,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			set
 			{
 				var valor = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("ListaOtroTributo", valor);
+				_context.HttpContext.Session.SetString("ListaOtrosTributos", valor);
 			}
 
 		}
@@ -71,6 +71,63 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				var valor = JsonConvert.SerializeObject(value);
 				_context.HttpContext.Session.SetString("ListaTotales", valor);
+			}
+
+		}
+
+		public List<RprAsociadosDto> ListaRprAsociados
+		{
+			get
+			{
+				var txt = _context.HttpContext.Session.GetString("ListaRprAsociados");
+				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
+				{
+					return new List<RprAsociadosDto>();
+				}
+				return JsonConvert.DeserializeObject<List<RprAsociadosDto>>(txt); ;
+			}
+			set
+			{
+				var valor = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("ListaRprAsociados", valor);
+			}
+
+		}
+
+		public List<NotasACuenta> ListaNotasACuenta
+		{
+			get
+			{
+				var txt = _context.HttpContext.Session.GetString("ListaNotasACuenta");
+				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
+				{
+					return new List<NotasACuenta>();
+				}
+				return JsonConvert.DeserializeObject<List<NotasACuenta>>(txt); ;
+			}
+			set
+			{
+				var valor = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("ListaNotasACuenta", valor);
+			}
+
+		}
+
+		public string CtaIdSelected
+		{
+			get
+			{
+				var txt = _context.HttpContext.Session.GetString("CtaIdSelected");
+				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
+				{
+					return string.Empty;
+				}
+				return JsonConvert.DeserializeObject<string>(txt); ;
+			}
+			set
+			{
+				var valor = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("CtaIdSelected", valor);
 			}
 
 		}

@@ -5,7 +5,9 @@ using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra;
+using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.CuentaComercial;
+using gc.infraestructura.Dtos.Gen;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 
@@ -430,6 +432,22 @@ namespace gc.api.core.Servicios
 				new("@cta_id",ctaId),
 			};
 			var listaTemp = _repository.EjecutarLstSpExt<NotasACuenta>(sp, ps, true);
+			return listaTemp;
+		}
+		public List<RespuestaDto> CompteCargaConfirma(CompteCargaConfirmaRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_COMPTE_CARGA_CONFIRMA;
+			var ps = new List<SqlParameter>()
+			{
+				new("@cta_id",request.cta_id),
+				new("@usu_id",request.usu_id),
+				new("@adm_id",request.adm_id),
+				new("@json_encabezado",request.json_encabezado),
+				new("@json_concepto",request.json_concepto),
+				new("@json_otro",request.json_otro),
+				new("@json_relacion",request.json_relacion),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 			return listaTemp;
 		}
 	}
