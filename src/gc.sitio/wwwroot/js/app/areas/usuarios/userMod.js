@@ -9,7 +9,7 @@
 
     $("#btnDetalle").prop("disabled", true);
     $("#btnCancel").on("click", function () {
-        $("#btnFiltro").trigger("click");
+        window.location.href = homeUser;
     });
     $("#pagEstado").on("change", function () {
         var div = $("#divPaginacion");

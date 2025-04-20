@@ -9,7 +9,7 @@ namespace gc.infraestructura.Dtos.Almacen.Tr.Transferencia
 		public string TipoTR { get; set; } = string.Empty;
 		public string Tipo { get; set; } = string.Empty;
 		public string Destino { get; set; } = string.Empty;
-        public string ti { get; set; }
+        public string ti { get; set; } = string.Empty;
         public TRVerTransferenciaDto()
 		{
 			ListaTransferencias = new GridCore<TRVerConteosDto>();

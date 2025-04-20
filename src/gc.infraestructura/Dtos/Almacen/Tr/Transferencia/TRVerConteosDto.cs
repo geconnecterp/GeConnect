@@ -31,7 +31,7 @@ namespace gc.infraestructura.Dtos.Almacen.Tr.Transferencia
 			get { return cantidad - cantidad_c; }
 			set { diferencia = value; }
 		}
-		private string row_color;
+		private string? row_color;
 		public string Row_color
 		{
 			get

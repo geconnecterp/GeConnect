@@ -8,9 +8,9 @@ namespace gc.infraestructura.Dtos.Almacen
             Rub_Desc=string.Empty;
             Rub_Id =string.Empty;
         }
-        public string Rub_Id { get; set; }
-        public string Rub_Desc { get; set; }
-        public string Rub_Lista { get; set; }
+        public string Rub_Id { get; set; }=string.Empty;
+        public string Rub_Desc { get; set; }= string.Empty;
+        public string Rub_Lista { get; set; } = string.Empty;
     }
 
     public class RubroListaABMDto : RubroListaDto

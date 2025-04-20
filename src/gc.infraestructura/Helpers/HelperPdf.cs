@@ -1,7 +1,131 @@
-﻿using gc.infraestructura.Dtos.DocManager;
+﻿//// Proyecto base .NET 8 MVC - Reporte Gerencial con iTextSharp y gráficos
+
+//using gc.infraestructura.Dtos.DocManager;
+//using iTextSharp.text;
+//using iTextSharp.text.pdf;
+//using Microsoft.AspNetCore.Mvc;
+//using SixLabors.ImageSharp.Advanced;
+//using System.ComponentModel;
+//using System.Globalization;
+//using System.IO;
+//using DrawingColor = System.Drawing.Color;
+//using DrawingBitmap = System.Drawing.Bitmap;
+//using DrawingImageFormat = System.Drawing.Imaging.ImageFormat;
+
+//namespace gc.infraestructura.Helpers
+//{
+//    public static class EstilosPdf
+//    {
+//        public static iTextSharp.text.Font TituloPrincipal => FontFactory.GetFont("Arial", 16, iTextSharp.text.Font.BOLD, BaseColor.Black);
+//        public static iTextSharp.text.Font Subtitulo => FontFactory.GetFont("Arial", 12, iTextSharp.text.Font.BOLD, BaseColor.DarkGray);
+//        public static iTextSharp.text.Font TextoNormal => FontFactory.GetFont("Arial", 10, iTextSharp.text.Font.NORMAL, BaseColor.Black);
+//        public static iTextSharp.text.Font TextoChico => FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL, BaseColor.Gray);
+//    }
+
+//    public static class HelperPdf
+//    {
+//        public static Document GenerarInstanciaAndInit(ref PdfWriter writer, string fileName, HojaSize pagina = HojaSize.A4, bool esVertical = true)
+//        {
+//            Document doc = new Document(ObtenerHoja(pagina, esVertical), 50, 50, 50, 20);
+//            writer = PdfWriter.GetInstance(doc, File.Create(fileName));
+//            return doc;
+//        }
+
+//        public static Document GenerarInstanciaAndInit(ref PdfWriter writer, out MemoryStream mStream, string nombreArchivo, HojaSize pagina = HojaSize.A4, bool esVertical = true)
+//        {
+//            Document doc = new Document(ObtenerHoja(pagina, esVertical), 20, 20, 15, 50);
+//            mStream = new MemoryStream();
+//            writer = PdfWriter.GetInstance(doc, mStream);
+//            return doc;
+//        }
+
+//        public static void VerificaDirTemp()
+//        {
+//            if (!Directory.Exists(@"c:\temp"))
+//            {
+//                Directory.CreateDirectory(@"c:\temp");
+//            }
+//        }
+
+//        private static iTextSharp.text.Rectangle ObtenerHoja(HojaSize pagina, bool esVertical)
+//        {
+//            return pagina switch
+//            {
+//                HojaSize.A3 => esVertical ? PageSize.A3 : PageSize.A3.Rotate(),
+//                HojaSize.A5 => esVertical ? PageSize.A5 : PageSize.A5.Rotate(),
+//                HojaSize.A6 => esVertical ? PageSize.A6 : PageSize.A6.Rotate(),
+//                _ => esVertical ? PageSize.A4 : PageSize.A4.Rotate()
+//            };
+//        }
+
+//        public static void InsertarGrafico(Document doc, DrawingBitmap grafico, float ancho = 300, float alto = 300, int alineacion = Element.ALIGN_CENTER)
+//        {
+//            using var ms = new MemoryStream();
+//            grafico.Save(ms, DrawingImageFormat.Png);
+//            var img = iTextSharp.text.Image.GetInstance(ms.ToArray());
+//            img.ScaleToFit(ancho, alto);
+//            img.Alignment = alineacion;
+//            doc.Add(img);
+//        }
+
+//        public static void VerificarEspacioYAgregarSalto(Document doc, float alturaNecesaria)
+//        {
+//            float posicionVertical = doc.Top - doc.TopMargin;
+//            float espacioDisponible = posicionVertical - doc.BottomMargin;
+//            if (espacioDisponible < alturaNecesaria)
+//            {
+//                doc.NewPage();
+//            }
+//        }
+//    }
+
+//    public class PieDePagina : PdfPageEventHelper
+//    {
+//        private readonly string _texto;
+
+//        public PieDePagina(string texto)
+//        {
+//            _texto = texto;
+//        }
+
+//        public override void OnEndPage(PdfWriter writer, Document document)
+//        {
+//            PdfPTable tabla = new PdfPTable(2)
+//            {
+//                TotalWidth = document.PageSize.Width - document.LeftMargin - document.RightMargin
+//            };
+//            tabla.DefaultCell.Border = iTextSharp.text.Rectangle.NO_BORDER;
+
+//            PdfPCell celdaTexto = new PdfPCell(new Phrase(_texto, EstilosPdf.TextoChico))
+//            {
+//                Border = iTextSharp.text.Rectangle.NO_BORDER,
+//                HorizontalAlignment = Element.ALIGN_LEFT
+//            };
+//            tabla.AddCell(celdaTexto);
+
+//            PdfPCell celdaNum = new PdfPCell(new Phrase($"Página {writer.PageNumber}", EstilosPdf.TextoChico))
+//            {
+//                Border = iTextSharp.text.Rectangle.NO_BORDER,
+//                HorizontalAlignment = Element.ALIGN_RIGHT
+//            };
+//            tabla.AddCell(celdaNum);
+
+//            tabla.WriteSelectedRows(0, -1, document.LeftMargin, document.BottomMargin - 10, writer.DirectContent);
+//        }
+//    }
+
+//    public enum HojaSize
+//    {
+//        A1, A2, A3, A4, A5, A6
+//    }
+//}
+
+
+
+
+using gc.infraestructura.Dtos.DocManager;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
-using SixLabors.ImageSharp.Advanced;
 using System.ComponentModel;
 using System.Globalization;
 
@@ -545,7 +669,7 @@ namespace gc.infraestructura.Helpers
 
         public static void GenerarListadoDatos<T>(Document pdf, DatosCuerpoDto<T> cuerpo, float[] anchos, Font normal)
         {
-                    int alig;
+            int alig;
             CultureInfo cultura = new CultureInfo("es-ES");
             Type entidad = typeof(T);
             PropertyDescriptorCollection propiedades = TypeDescriptor.GetProperties(entidad);
@@ -563,7 +687,7 @@ namespace gc.infraestructura.Helpers
                     {
                         valor = string.Empty;
                     }
-                    if (decimal.TryParse(valor.ToString(),NumberStyles.Number,cultura,out decimal resultado))
+                    if (decimal.TryParse(valor.ToString(), NumberStyles.Number, cultura, out decimal resultado))
                     {
                         alig = Element.ALIGN_RIGHT;
                     }
@@ -573,7 +697,7 @@ namespace gc.infraestructura.Helpers
                         alig = Element.ALIGN_CENTER;
                     }
                     //si es un string y tiene un solo caracter lo considero char
-                    else if (valor.ToString().Length==1)
+                    else if (valor.ToString().Length == 1)
                     {
                         alig = Element.ALIGN_CENTER;
                     }

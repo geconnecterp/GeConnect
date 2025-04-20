@@ -15,6 +15,6 @@ namespace gc.infraestructura.Dtos.Almacen.Tr.Remito
         public string pv_compte { get; set; } = string.Empty;
         public string ti { get; set; }= string.Empty;
         public bool EsModificacion { get; set; } = true;
-        public string Ul { get; set; }
+        public string Ul { get; set; } = string.Empty;
     }
 }

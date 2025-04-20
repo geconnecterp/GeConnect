@@ -1,0 +1,44 @@
+﻿@model PlanCuentaDto
+<!--LINEA 1-->
+<div class="row">
+    <div class="col-lg-12 col-md-12 col-sm-12">
+        <div class="input-group input-group-sm">
+            <span class="input-group-text" style="width:75px;">ID </span>
+            <input type="text" asp-for="id_padre" class="form-control" readonly style="margin-right:20px; display:none" />
+            <input type="text" asp-for="ccb_id" class="form-control" disabled style="margin-right:20px;" />            
+        </div>
+    </div>
+</div>
+<!--LINEA 2-->
+<div class="row">
+    <div class="col-lg-12 col-md-12 col-sm-12">
+        <div class="input-group input-group-sm">
+            <span class="input-group-text" style="width:75px;">Descr.</span>
+            <input type="text" asp-for="ccb_desc" class="form-control" disabled style="margin-right:20px;" />
+        </div>
+    </div>
+</div>
+<!--LINEA 3-->
+<div class="row">
+    <div class="col-lg-12 col-md-12 col-sm-12">
+        <div class="input-group input-group-sm">
+            <span class="input-group-text" style="width:75px;">ID Padre</span>
+            <input type="text" asp-for="ccb_id_padre" class="form-control" disabled style="margin-right:20px;" />
+        </div>
+    </div>
+</div>
+<!--LINEA 4-->
+<div class="row">
+    <div class="col-lg-3 col-md-3 col-sm-6">
+        <div class="form-check form-check-inline form-switch mb-2">
+            <input class="form-check-input" type="checkbox" asp-for="HayAjusteInflacion" disabled />
+            <label class="form-check-label" for="HayAjusteInflacion">Ajuste Inflación</label>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-3 col-sm-6">
+        <div class="form-check form-check-inline form-switch mb-2">
+            <input class="form-check-input" type="checkbox" asp-for="EsMovimiento" disabled />
+            <label class="form-check-label" for="EsMovimiento">Movimiento</label>
+        </div>
+    </div>
+</div>

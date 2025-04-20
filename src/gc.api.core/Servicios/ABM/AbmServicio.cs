@@ -19,28 +19,28 @@ namespace gc.api.core.Servicios.ABM
             //Agregar try...catch
             try
             {
-				string sp = ConstantesGC.StoredProcedures.SP_ABM_CONFIRMAR;
-				var ps = new List<SqlParameter> {
-				new SqlParameter("@objeto",abmGen.Objeto),
-				new SqlParameter("@abm",abmGen.Abm),
-				new SqlParameter("@usu_id",abmGen.Usuario),
-				new SqlParameter("@adm_id",abmGen.Administracion),
-				new SqlParameter("@json",abmGen.Json),
+                string sp = ConstantesGC.StoredProcedures.SP_ABM_CONFIRMAR;
+                var ps = new List<SqlParameter> {
+                new SqlParameter("@objeto",abmGen.Objeto),
+                new SqlParameter("@abm",abmGen.Abm),
+                new SqlParameter("@usu_id",abmGen.Usuario),
+                new SqlParameter("@adm_id",abmGen.Administracion),
+                new SqlParameter("@json",abmGen.Json),
 
-			};
+                };
 
-				List<RespuestaDto> respuesta = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+                List<RespuestaDto> respuesta = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 
-				if (respuesta.Count == 0)
-				{
-					return new RespuestaDto() { resultado = -1, resultado_msj = "No se Recepcionó respuesta del proceso." };
-				}
-				return respuesta.First();
-			}
+                if (respuesta.Count == 0)
+                {
+                    return new RespuestaDto() { resultado = -1, resultado_msj = "No se Recepcionó respuesta del proceso." };
+                }
+                return respuesta.First();
+            }
             catch (Exception ex)
             {
-				return new RespuestaDto() { resultado = -1, resultado_msj = ex.Message };
-			}
+                return new RespuestaDto() { resultado = -1, resultado_msj = ex.Message };
+            }
         }
     }
 }

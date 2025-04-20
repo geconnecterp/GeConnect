@@ -268,6 +268,10 @@
 
             public const string SP_ABM_ZONA_LISTA = "SPGECO_ABM_Zn_Lista";
             public const string SP_ABM_ZONA_DATO = "SPGECO_ABM_Zn_Datos";
+
+            public const string SP_CCB_PLANCUENTAS_LISTA = "SPGECO_ABM_CCB_Lista";
+            public const string SP_CCB_PLANCUENTAS_DATO = "SPGECO_ABM_CCB_Datos";
+
             #endregion
 
             #region Tipos

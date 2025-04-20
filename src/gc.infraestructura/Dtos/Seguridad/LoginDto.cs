@@ -24,7 +24,7 @@ namespace gc.infraestructura.Dtos.Seguridad
 
         [Required]
         [Display(Name = "Administración")]
-        public string Admid { get; set; }
+        public string Admid { get; set; } = string.Empty;
 
         public DateTime Fecha { get; set; }
         public string FechaNN { get { return Fecha.ToString("g", System.Globalization.CultureInfo.CreateSpecificCulture("es-ES")); } }

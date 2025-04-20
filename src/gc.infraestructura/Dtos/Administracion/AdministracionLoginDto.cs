@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace gc.infraestructura.Dtos.Administracion
+﻿namespace gc.infraestructura.Dtos.Administracion
 {
     public class AdministracionLoginDto
     {
-        public string Id { get; set; }
-        public string Descripcion { get; set; }
+        public string Id { get; set; } = string.Empty;
+        public string Descripcion { get; set; } = string.Empty; 
     }
 }

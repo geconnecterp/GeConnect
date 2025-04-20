@@ -45,10 +45,12 @@ namespace gc.infraestructura.Core.EntidadesComunes
         /// </summary>
         public int? Pagina { get; set; }
 
-		/*
+        public string Tipo { get; set; } = string.Empty;
+
+        /*
         
          */
-		public bool? Opt1 { get; set; }
+        public bool? Opt1 { get; set; }
 		public bool? Opt2 { get; set; }
 		public bool? Opt3 { get; set; }
 		public bool? Opt4 { get; set; }

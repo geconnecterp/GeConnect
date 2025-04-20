@@ -32,11 +32,11 @@
 
     public class PrintRequestDto<T>
     {
-        public TipoEjecucion TipoEjecucion { get; set; }
+        public TipoEjecucion TipoEjecucion { get; set; } 
         public Modulo ModuloImpresion { get; set; }
-        public DatosCabeceraDto Cabecera { get; set; }
-        public DatosCuerpoDto<T> Cuerpo { get; set; }
-        public DatosPieDto Pie { get; set; }
+        public DatosCabeceraDto Cabecera { get; set; } = new DatosCabeceraDto();
+        public DatosCuerpoDto<T> Cuerpo { get; set; } = new DatosCuerpoDto<T>();
+        public DatosPieDto Pie { get; set; } = new DatosPieDto();
     }
 
     public enum TipoEjecucion

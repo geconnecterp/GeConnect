@@ -4,7 +4,7 @@ namespace gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra
 	public class ComprobanteDeCompraDto : Dto
 	{
 		public DateTime fecha_pago { get; set; }
-		public string mon_id { get; set; }
+		public string mon_id { get; set; } = string.Empty;
 		public DateTime fecha_compte { get; set; }
 		public bool ctl_fis { get; set; } = false;
 		private bool _imputa_cta_directa;
@@ -67,7 +67,7 @@ namespace gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra
 		public string tco_tipo { get; set; } = string.Empty;
 		public string observaciones { get; set; } = string.Empty;
 
-		private string _cuit_parcial;
+		private string? _cuit_parcial;
 
 		public string cuit_parcial
 		{
@@ -94,7 +94,7 @@ namespace gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra
 			set { _mostrarGrillaNotasACuentaAsociadas = value; }
 		}
 
-		private string _opc_id;
+		private string? _opc_id;
 		public string opc_id
 		{
 			get

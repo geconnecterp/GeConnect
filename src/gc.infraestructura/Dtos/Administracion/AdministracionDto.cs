@@ -17,10 +17,10 @@ namespace gc.infraestructura.Dtos.Administracion
             Cx_login = string.Empty;
             Cx_pass = string.Empty;
         }
-        public string Adm_id { get; set; }
-        public string Adm_nombre { get; set; }
-        public string Adm_direccion { get; set; }
-        public string Usu_id_encargado { get; set; }
+        public string Adm_id { get; set; } = string.Empty;
+        public string Adm_nombre { get; set; } = string.Empty;
+        public string Adm_direccion { get; set; } = string.Empty;
+        public string Usu_id_encargado { get; set; } = string.Empty;        
         public int Adm_nro_lote { get; set; }
         public int Adm_nro_lote_central { get; set; }
         public char Adm_central { get; set; }
@@ -34,11 +34,11 @@ namespace gc.infraestructura.Dtos.Administracion
         public char Adm_activa { get; set; }
         public decimal Adm_oc_limite { get; set; }
         public string? Adm_MePa_Id { get; set; }
-        public string Adm_Mepa_Localidad { get; set; }
-        public string Adm_Mepa_Provincia { get; set; }
-        public string Adm_Mepa_Latitud { get; set; }
-        public string Adm_Mepa_Longitud { get; set; }
-        public string Adm_Mepa_Calle { get; set; }
+        public string Adm_Mepa_Localidad { get; set; }=string.Empty;
+        public string Adm_Mepa_Provincia { get; set; } = string.Empty;
+        public string Adm_Mepa_Latitud { get; set; } = string.Empty;
+        public string Adm_Mepa_Longitud { get; set; } = string.Empty;
+        public string Adm_Mepa_Calle { get; set; } = string.Empty;
         public int Adm_Mepa_Numero { get; set; }
 
     }

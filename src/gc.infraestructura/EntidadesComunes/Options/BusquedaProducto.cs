@@ -29,7 +29,7 @@
         public bool AbrirAppBusqueda { get; set; }
         public int? Registros { get; set; }
         public int? Pagina { get; set; }
-        public string Sort { get; set; }
-        public string SortDir { get; set; }
+        public string Sort { get; set; } = string.Empty;
+        public string SortDir { get; set; } = string.Empty; 
     }
 }

@@ -427,7 +427,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> ActualizarTitulo()
+		public IActionResult ActualizarTitulo()
 		{
 			var tituloModel = new TituloModel
 			{

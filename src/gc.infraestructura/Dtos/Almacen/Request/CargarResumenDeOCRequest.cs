@@ -7,7 +7,7 @@ namespace gc.infraestructura.Dtos.Almacen.Request
 		public string Adm_Id { get; set; } = string.Empty;
 		public string Usu_Id { get; set; } = string.Empty;
 		
-		public string Json { get; set; }
+		public string Json { get; set; } = string.Empty;
 	}
 
 	public class ActualizarConceptosRequest

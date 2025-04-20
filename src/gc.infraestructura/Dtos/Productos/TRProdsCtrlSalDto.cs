@@ -4,6 +4,6 @@ namespace gc.infraestructura.Dtos.Productos
 {
     public class TRProdsCtrlSalDto
     {
-        public List<ProductoGenDto> ProdsCargar { get; set; }
+        public List<ProductoGenDto> ProdsCargar { get; set; } = new List<ProductoGenDto>();
     }
 }

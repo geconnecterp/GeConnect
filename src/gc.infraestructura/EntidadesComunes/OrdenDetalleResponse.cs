@@ -38,10 +38,10 @@ namespace gc.infraestructura.EntidadesComunes
         public int transaction_amount { get; set; }
         public int total_paid_amount { get; set; }
         public int shipping_cost { get; set; }
-        public string currency_id { get; set; }
-        public string status { get; set; }
-        public string status_detail { get; set; }
-        public string operation_type { get; set; }
+        public string currency_id { get; set; } = string.Empty;
+        public string status { get; set; } = string.Empty;
+        public string status_detail { get; set; } = string.Empty;
+        public string operation_type { get; set; } = string.Empty;
         public DateTime date_approved { get; set; }
         public DateTime date_created { get; set; }
         public DateTime last_modified { get; set; }
@@ -51,30 +51,30 @@ namespace gc.infraestructura.EntidadesComunes
     public class OrdenDetalleResponse
     {
         public long id { get; set; }
-        public string status { get; set; }
-        public string external_reference { get; set; }
-        public string preference_id { get; set; }
-        public List<Payment> payments { get; set; }
-        public List<object> shipments { get; set; }
-        public List<object> payouts { get; set; }
-        public Collector collector { get; set; }
-        public string marketplace { get; set; }
-        public string notification_url { get; set; }
+        public string status { get; set; } = string.Empty;
+        public string external_reference { get; set; } = string.Empty;
+        public string preference_id { get; set; } = string.Empty;
+        public List<Payment> payments { get; set; } = new List<Payment>();  
+        public List<object> shipments { get; set; } = new List<object>();
+        public List<object> payouts { get; set; } = new List<object>();
+        public Collector collector { get; set; }    
+        public string marketplace { get; set; } = string.Empty;
+        public string notification_url { get; set; } = string.Empty;
         public DateTime date_created { get; set; }
         public DateTime last_updated { get; set; }
         public object sponsor_id { get; set; }
         public int shipping_cost { get; set; }
         public int total_amount { get; set; }
-        public string site_id { get; set; }
+        public string site_id { get; set; } = string.Empty;
         public int paid_amount { get; set; }
         public int refunded_amount { get; set; }
-        public Payer payer { get; set; }
-        public List<Item> items { get; set; }
+        public Payer payer { get; set; } = new Payer();
+        public List<Item> items { get; set; } = new List<Item>();
         public bool cancelled { get; set; }
-        public string additional_info { get; set; }
-        public object application_id { get; set; }
-        public bool is_test { get; set; }
-        public string order_status { get; set; }
-        public string client_id { get; set; }
+        public string additional_info { get; set; } = string.Empty;
+        public object application_id { get; set; } = new object();
+        public bool is_test { get; set; } 
+        public string order_status { get; set; } = string.Empty;
+        public string client_id { get; set; } = string.Empty;   
     }    
 }

@@ -197,6 +197,12 @@ fieldset {
     pointer-events: none;
 }
 
+.div-wrapper-full-width {
+    max-height: 500px;
+    max-width: 100%;
+    overflow: auto;
+}
+
 .table-wrapper-fixed-head thead th {
     position: sticky;
     top: 0px;

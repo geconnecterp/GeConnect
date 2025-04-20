@@ -5,7 +5,7 @@ namespace gc.infraestructura.Dtos.CuentaComercial
     public class BuscarCuentaDto
     {
         public string Cuenta { get; set; } = string.Empty;
-        public SelectList ComboDeposito { get; set; }
+        public SelectList ComboDeposito { get; set; } = new SelectList(new List<Dto>());
         public string IdTipoCompte { get; set; } = string.Empty;
         public string NroCompte { get; set; } = string.Empty;
         public string rp { get; set; } = string.Empty;

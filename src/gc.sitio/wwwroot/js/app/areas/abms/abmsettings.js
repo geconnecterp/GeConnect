@@ -59,10 +59,9 @@ const Grids = {
 	GridVendedor: 'tbGridVendedor',
 	GridRepartidor: 'tbGridRepartidor',
 	GridZona: 'tbGridZona',
-
-	//GridLimite: 'tbGridLim',
 	GridBanco: 'tbGridBanco',
 	GridCuentaDirecta: 'tbGridCuentaDirecta',
+	
 }
 
 const Tabs = {

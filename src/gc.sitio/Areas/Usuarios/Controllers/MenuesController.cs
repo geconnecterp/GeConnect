@@ -449,9 +449,9 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 asignado = item.state.selected,
                 mnu_id = mnId,
                 mnu_item = item.id,
-                mnu_item_id = item.data.mnu_item_id,
+                mnu_item_id = item.data.item_id,
                 mnu_item_name = item.text,
-                mnu_item_padre = item.data.mnu_item_padre,
+                mnu_item_padre = item.data.item_padre,
                 perfil_id = perfil,
             };
         }
@@ -534,9 +534,9 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 },
                 data = new MenuRootData
                 {
-                    mnu_item_id = item.mnu_item_id,
+                    item_id = item.mnu_item_id,
                     asignado = item.asignado,
-                    mnu_item_padre = item.mnu_item_padre,
+                    item_padre = item.mnu_item_padre,
                 }
 
             };

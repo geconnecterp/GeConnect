@@ -4,6 +4,6 @@ namespace gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI
 {
 	public class ProveedoresFamiliaDto : Dto
 	{
-		public SelectList ComboProveedoresFamilia { get; set; }
+		public SelectList ComboProveedoresFamilia { get; set; } = new SelectList(new List<Dto>());
 	}
 }

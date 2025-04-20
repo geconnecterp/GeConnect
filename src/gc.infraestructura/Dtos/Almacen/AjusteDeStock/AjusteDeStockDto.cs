@@ -5,9 +5,9 @@ namespace gc.infraestructura.Dtos.Almacen.AjusteDeStock
 {
 	public class AjusteDeStockDto : Dto
 	{
-        public SelectList ComboDepositos { get; set; }
-        public SelectList ComboBoxes { get; set; }
-        public SelectList ComboMotivos { get; set; }
+        public SelectList ComboDepositos { get; set; } = new SelectList(new List<SelectListItem>());
+        public SelectList ComboBoxes { get; set; } = new SelectList(new List<SelectListItem>());
+        public SelectList ComboMotivos { get; set; } = new SelectList(new List<SelectListItem>());
         public GridCore<ProductoAAjustarDto> ProductosAAjustar { get; set; }
 
         public AjusteDeStockDto()

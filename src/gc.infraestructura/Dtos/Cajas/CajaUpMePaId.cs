@@ -8,8 +8,8 @@ namespace gc.infraestructura.Dtos.Cajas
 {
     public class CajaUpMePaId
     {
-        public string SucId { get; set; }
-        public string CajaId { get; set; }
-        public string PosMePaId { get; set; }
+        public string SucId { get; set; } = string.Empty;   
+        public string CajaId { get; set; } = string.Empty;
+        public string PosMePaId { get; set; } = string.Empty;
     }
 }

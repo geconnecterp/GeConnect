@@ -21,6 +21,8 @@ using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.Users;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Globalization;
@@ -35,10 +37,11 @@ namespace gc.sitio.Controllers
 		private readonly AppSettings _options;
 		protected readonly IHttpContextAccessor _context;
 
-		public List<Orden> _orden;
+        public List<Orden> _orden;
 		internal readonly ILogger _logger;
 
-		public ControladorBase(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger logger)
+		public ControladorBase(IOptions<AppSettings> options, IHttpContextAccessor contexto, 
+			ILogger logger)
 		{
 			_options = options.Value;
 			_context = contexto;
@@ -2391,7 +2394,30 @@ namespace gc.sitio.Controllers
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
 
-		public MetadataGrid MetadataGeneral
+        protected string RenderPartialViewToString(string viewName, object model, ICompositeViewEngine _viewEngine)
+        {
+            ViewData.Model = model;
+            using var writer = new StringWriter();
+            var viewResult = _viewEngine.FindView(ControllerContext, viewName, false);
+            if (viewResult.View == null)
+            {
+                throw new ArgumentNullException($"La vista '{viewName}' no fue encontrada.");
+            }
+
+            var viewContext = new ViewContext(
+                ControllerContext,
+                viewResult.View,
+                ViewData,
+                TempData,
+                writer,
+                new HtmlHelperOptions()
+            );
+
+            viewResult.View.RenderAsync(viewContext).Wait();
+            return writer.GetStringBuilder().ToString();
+        }
+
+        public MetadataGrid MetadataGeneral
 		{
 			get
 			{

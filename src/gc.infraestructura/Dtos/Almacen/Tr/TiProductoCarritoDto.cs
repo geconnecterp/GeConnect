@@ -11,8 +11,8 @@ namespace gc.infraestructura.Dtos.Almacen.Tr
         public string? Fvto { get; set; }
         public string Ti { get; set; } = string.Empty;
         public string AdmId { get; set; } = string.Empty;
-        public string UsuId { get; set; }
-        public string BoxId { get; set; }
+        public string UsuId { get; set; } = string.Empty;   
+        public string BoxId { get; set; } = string.Empty;
         public bool Desarma { get; set; }
     }
 }

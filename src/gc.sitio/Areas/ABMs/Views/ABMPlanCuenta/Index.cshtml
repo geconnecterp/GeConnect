@@ -3,13 +3,58 @@
 
 @{
     Layout = "~/views/shared/_Layout.cshtml";
-    var filtro = new QueryFilters() { Rel01 = null, Rel02 = null, Modelo = ModeloFilter.USUARIOS };
-    
+    var filtro = new QueryFilters() { Modelo = ModeloFilter.PLAN_CUENTA };
 }
 
 @section styles {
-    <link rel="stylesheet" href="~/css/simplePagination.css" />
     <link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+    <style>
+        /* Para hojas tipo M */
+        .jstree-anchor.tipo-m {
+            font-weight: bold;
+        }
+        /* verde azulado */
+        /*  .jstree-anchor.cuenta-activo {
+                    color: #2a9d8f;
+                } */
+        /* rojo quemado */
+        /*  .jstree-anchor.cuenta-pasivo {
+                    color: #e76f51;
+                } */
+        /* púrpura */
+        /* .jstree-anchor.cuenta-patrimonio {
+                    color: #6a4c93;
+                } */
+        /* naranja suave */
+        /* .jstree-anchor.cuenta-ingresos {
+                    color: #f4a261;
+                } */
+        /* azul oscuro */
+        /*  .jstree-anchor.cuenta-egresos {
+                    color: #264653;
+                } */
+
+        /* /* Colores según cuenta contable */
+        .jstree-anchor.cuenta-activo {
+            color: #28a745; /* verde */
+        }
+
+        .jstree-anchor.cuenta-pasivo {
+            color: #dc3545; /* rojo */
+        }
+
+        .jstree-anchor.cuenta-patrimonio {
+            color: #6f42c1; /* violeta */
+        }
+
+        .jstree-anchor.cuenta-ingresos {
+            color: #fd7e14; /* naranja */
+        }
+
+        .jstree-anchor.cuenta-egresos {
+            color: #17a2b8; /* cian */
+        }
+    </style>
 }
 
 <div class="container">
@@ -51,49 +96,36 @@
             </div>
         </div>
     </div>
-    <div class="collapse" id="divFiltro" style="">
+    <div class="collapse" id="divFiltro">
         <partial name="_filtroBase" model="filtro" />
         @Html.Hidden("pagEstado", false)
     </div>
-    <div class="collapse" id="divDetalle" style="">
-        <partial name="_n01tabsUsuarios" />
+    <div class="collapse" id="divDetalle">
+        <partial name="_n01tabsPlanCuenta" />
     </div>
-    <div class="row">
-        @* <partial name="_gridAbmProds"  /> *@
+    @*  <div class="row">        
         <div id="divGrilla">
             <p style="background-color:gray">
                 <h5>No se han especificado datos aún.</h5>
             </p>
         </div>
-    </div>
-    <div class="row">
+    </div> *@
+    @* <div class="row">
         <div class="offset-md-3 col-md-6">
             <div id="divPaginacion" class="">
             </div>
         </div>
-    </div>
+    </div> *@
 </div>
 
 @section scripts {
     <script type="text/javascript">
 
-        var buscarUrl = "@Url.Action("buscar", "cgusuarios", new { area = "usuarios" })";
-        var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "cgusuarios", new { area = "usuarios" })";
-        var buscarUserUrl = "@Url.Action("BuscarUsuarioDatos", "cgusuarios", new { area = "usuarios" })";
-        var nuevoUsuarioUrl = "@Url.Action("NuevoUsuario", "cgusuarios", new { area = "usuarios" })";
-
-        var autoComRel01Url = "@Url.Action("ComboListaClientes", "cgusuarios", new { area = "usuarios" })";
-        var confirmarAbmUsuarioUrl = "@Url.Action("ConfirmarAbmUsuario", "cgusuarios", new { area = "usuarios" })";
-
-        var presentarPerfilUrl = "@Url.Action("presentarPerfil", "cgusuarios", new { area = "usuarios" })";
-        var presentarAdminsUrl = "@Url.Action("presentarAdmins", "cgusuarios", new { area = "usuarios" })";
-        var presentarDerecsUrl = "@Url.Action("presentarDerecs", "cgusuarios", new { area = "usuarios" })";
-
-        var confirmarPerfsUserUrl = "@Url.Action("ConfirmarPerfsUser", "cgusuarios", new { area = "usuarios" })";
-        var confirmarAdmsUserUrl = "@Url.Action("confirmarAdmsUser", "cgusuarios", new { area = "usuarios" })";
-        var confirmarDersUserUrl = "@Url.Action("confirmarDersUser", "cgusuarios", new { area = "usuarios" })";
-
-        
+        var buscarUrl  = "@Url.Action("buscar", "abmplancuenta", new { area = "abms" })";
+        var buscarCuentaUrl  = "@Url.Action("buscarCuenta", "abmplancuenta", new { area = "abms" })";
+        var nuevaCuentaUrl = "@Url.Action("nuevaCuenta", "abmplancuenta", new { area = "abms" })";
+        var confirmarAbmCuentaUrl = "@Url.Action("confirmarAbmCuenta", "abmplancuenta", new { area = "abms" })";
+        // var buscarPerfilUsersUrl = "@Url.Action("buscarPerfilUsers", "menues", new { area = "usuarios" })";
         // var buscarPerfilesUrl = "@Url.Action("buscarPerfiles", "menues", new { area = "usuarios" })";
         // var buscarPerfilUrl = "@Url.Action("buscarPerfil", "menues", new { area = "usuarios" })";
         // var buscarPerfilesMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "menues", new { area = "usuarios" })";
@@ -103,23 +135,15 @@
 
         // var obtenerMenuPerfilUrl = "@Url.Action("obtenerMenuPerfil", "menues", new { area = "usuarios" })";
 
-        var homeUser = "@Url.Action("index", "cgusuarios", new { area = "usuarios" })";
+        var homepc = "@Url.Action("index", "abmplancuenta", new { area = "abms" })";
 
     </script>
 
     <script src="~/lib/jstree/jstree.min.js"></script>
-    <script src="~/js/plugins/jquery.simplePagination.js"></script>
 
     <script src="~/js/app/areas/abms/abmsettings.js"></script>
-
-    <script src="~/js/app/areas/usuarios/userSettings.js"></script>
-    <script src="~/js/app/areas/usuarios/userMod.js"></script>
-    <script src="~/js/app/areas/usuarios/userRules.js"></script>
-
-
-    @*  <script type="text/javascript" src="~/js/app/areas/usuarios/menuSettings.js"></script>
     <script type="text/javascript" src="~/js/app/areas/abms/abmcommons.js"></script>
 
-    <script type="text/javascript" src="~/js/app/areas/usuarios/menuRules.js"></script>
-    <script type="text/javascript" src="~/js/app/areas/usuarios/menu.js"></script> *@
+    <script type="text/javascript" src="~/js/app/areas/plancuenta/pcMod.js"></script>
+    <script type="text/javascript" src="~/js/app/areas/plancuenta/pcRules.js"></script>
 }

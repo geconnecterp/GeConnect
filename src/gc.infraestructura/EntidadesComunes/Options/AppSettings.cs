@@ -13,11 +13,11 @@ namespace gc.infraestructura.Core.EntidadesComunes.Options
         /// <summary>
         /// Nombre del sitio o aplicación
         /// </summary>
-        public string Nombre{  get; set; }
+        public string Nombre{  get; set; } = string.Empty;  
         /// <summary>
         /// Sigla o Nombre resumido del sitio o aplicación
         /// </summary>
-        public string Sigla { get; set; }
+        public string Sigla { get; set; } = string.Empty;
         public int IntentosAcceso { get; set; }
         public bool ExceptionManagerEnabled { get; set; }
         public string? RutaBase { get; set; }
@@ -29,11 +29,11 @@ namespace gc.infraestructura.Core.EntidadesComunes.Options
         public bool LogExtension { get; set; }
         public string? RutaRepositorioPDF { get; set; }
         public int FechaVtoCota{ get; set; }
-        public string MenuId{ get; set; }
-        public string FolderArchivo { get; set; }
+        public string MenuId { get; set; } = string.Empty;
+        public string FolderArchivo { get; set; } = string.Empty;
 
-        public string ServerSMTP { get; set; }
-        public string Port { get; set; }
+        public string ServerSMTP { get; set; } = string.Empty;
+        public string Port { get; set; } = string.Empty;    
         public string CredUserEmail { get; set; } = string.Empty;
         public string CredPass { get; set; } = string.Empty;
         public bool EnabledSSL { get; set; }

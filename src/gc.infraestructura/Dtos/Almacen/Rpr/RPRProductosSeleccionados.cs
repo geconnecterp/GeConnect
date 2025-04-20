@@ -8,6 +8,6 @@ namespace gc.infraestructura.Dtos.Almacen.Rpr
 {
     public class RPRProductosSeleccionados
     {
-        public List<ProductoBusquedaDto> ProductosSeleccionados { get; set; }
+        public List<ProductoBusquedaDto> ProductosSeleccionados { get; set; } = new List<ProductoBusquedaDto>();
     }
 }

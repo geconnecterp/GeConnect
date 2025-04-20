@@ -29,11 +29,14 @@
 
     public class MenuJsTree
     {
-        public List<MenuRoot> menu { get; set; }
-        public string menu_id { get; set; }
-        public string perfil_id { get; set; }
+        public List<MenuRoot> menu { get; set; } = new List<MenuRoot>();
+        public string menu_id { get; set; } = string.Empty; 
+        public string perfil_id { get; set; } = string.Empty;
     }
 
+    /// <summary>
+    /// Estructura Ppal para la generacion de arboles de datos jsTree
+    /// </summary>
     public class MenuRoot
     {
         public string id { get; set; } = string.Empty;
@@ -42,6 +45,9 @@
         public List<MenuRoot> children { get; set; } = [];
         public Estado state { get; set; }= new Estado();
         public MenuRootData data { get; set; } = new MenuRootData();
+        public string type { get; set; } = string.Empty;
+        public string a_attr { get; set; } = string.Empty;
+        
 
     }
 
@@ -55,10 +61,14 @@
     public class MenuRootData
     {
         public bool asignado { get; set; } = false;
-        public string mnu_item_id { get; set; } = string.Empty;
-        public string mnu_item_padre { get; set; } = string.Empty;
+        public string item_id { get; set; } = string.Empty;
+        public string item_padre { get; set; } = string.Empty;
         public string perfil_default { get; set; } = string.Empty;
         public string archivoB64 { get; set; } = string.Empty;
         public string tipo { get; set; } = string.Empty;
+        public string ajuste_inflacion { get; set; } = string.Empty;
+        public  decimal saldo { get; set; }
+        public string cuenta { get; set; } = string.Empty;
+
     }
 }
