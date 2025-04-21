@@ -31,7 +31,7 @@ function InicializaPantalla() {
 		if (ctaIdSelected == "") {
 			AbrirMensaje("ATENCIÓN", "Debe seleccionar una cuenta.", function () {
 				$("#msjModal").modal("hide");
-				$("input#Rel01").focus();
+				$("input#Rel01").trigger("focus");
 				return true;
 			}, false, ["Aceptar"], "error!", null);
 		}
@@ -72,11 +72,29 @@ function InicializaPantalla() {
 	$(document).on("click", "#btnAgregarOtroTributo", AbrirModalAgregarOtroTributo); //Abrir modal
 	$(document).on("change", "#listaOtroTrib", ControlaOtroTribSeleccionada);
 	$(document).on("change", "#Comprobante_fecha_compte", ControlaFechaCompteSeleccionada);
+	$(document).on("keyup", "#Comprobante_cm_compte_pto_vta", ControlaKeyUpComptePtoVta);
+	$(document).on("keyup", "#Comprobante_cm_compte_pto_nro", ControlaKeyUpCompteNro);
 
 	$(".inputEditable").on("keypress", analizaEnterInput);
-
+	document.getElementById("Rel01").focus();
 	CerrarWaiting();
 	return true;
+}
+
+function ControlaKeyUpComptePtoVta(e) {
+	if (e.which == 13 || e.which==109) {
+		var aux = $("#Comprobante_cm_compte_pto_vta").inputmask('unmaskedvalue').padStart(4, '0');
+		$("#Comprobante_cm_compte_pto_vta").val(aux);
+		$("#Comprobante_cm_compte_pto_nro").trigger("focus");
+	}
+}
+
+function ControlaKeyUpCompteNro(e) {
+	if (e.which == 13) {
+		var aux = $("#Comprobante_cm_compte_pto_nro").inputmask('unmaskedvalue').padStart(8, '0');
+		$("#Comprobante_cm_compte_pto_nro").val(aux);
+		$("#Comprobante_fecha_compte").trigger("focus");
+	}
 }
 
 function ConfirmarComprobanteDeCompra() {
@@ -197,7 +215,7 @@ function ObtenerEncabezado() {
 	var cm_nombre = $("#CtaDesc").val();
 	var cm_domicilio = $("#Comprobante_cta_domicilio").val();
 	var tco_id = $("#listaTCompte").val();
-	var cm_compte = $("#Comprobante_cm_compte").val();
+	var cm_compte = $("#Comprobante_cm_compte_pto_vta").val() + '-' + $("#Comprobante_cm_compte_pto_nro").val();
 	var cm_fecha = $("#Comprobante_fecha_compte").val();
 	var cm_ctl_fiscal = $("#chkCtlFis")[0].checked;
 	var cm_cae = $("#Comprobante_cm_cae").val();
@@ -209,6 +227,7 @@ function ObtenerEncabezado() {
 	var cm_cuota = $("#Comprobante_cuotas").val();
 	var cm_obs = $("#Comprobante_observaciones").val();
 	var cm_libro_iva = $("#Comprobante_libro_iva").val();
+	var rela_opciones = $("#listaOpciones option:selected").text();
 	//Estos datos los completo con los datos del BE
 	var cm_no_gravado = 0;
 	var cm_exento = 0;
@@ -220,7 +239,7 @@ function ObtenerEncabezado() {
 	var cm_total = 0;
 	var encabezado = {
 		cta_id, ope_iva, afip_id, cm_cuit, ctap_id_externo, cm_nombre, cm_domicilio, tco_id, cm_compte, cm_fecha, cm_ctl_fiscal, cm_cae, cm_cae_vto, mon_codigo,
-		ctag_imputa, ctag_id, cm_pago, cm_cuota, cm_obs, cm_libro_iva, cm_no_gravado, cm_exento, cm_gravado, cm_iva, cm_otros_ng, cm_ii, cm_percepciones, cm_total
+		ctag_imputa, ctag_id, cm_pago, cm_cuota, cm_obs, cm_libro_iva, rela_opciones, cm_no_gravado, cm_exento, cm_gravado, cm_iva, cm_otros_ng, cm_ii, cm_percepciones, cm_total
 	};
 	return encabezado;
 }
@@ -261,6 +280,7 @@ function InicializarComprobante(id) {
 		CargarGrillasAdicionales();
 		ObtenerGrillaDesdeOpcionSeleccionada();
 		$(".inputEditable").on("keypress", analizaEnterInput);
+		document.getElementById("Comprobante_cuit_parcial").focus();
 		CerrarWaiting();
 		return true
 	});
@@ -311,8 +331,9 @@ function AbrirModalConceptoFacturado() {
 		$("#ConceptoFacturado_total").mask("000.000.000.000,00", { reverse: true });
 		setTimeout(() => {
 			$(".inputEditable").on("keypress", analizaEnterInput)
+			document.getElementById("ConceptoFacturado_concepto").focus();
 		}, 500);
-		$("#ConceptoFacturado_concepto").focus();
+		$("#ConceptoFacturado_concepto").trigger("focus");
 		CerrarWaiting();
 		return true
 	});
@@ -362,8 +383,10 @@ function AbrirModalAgregarOtroTributo() {
 		});
 		$("#OtroTributo_importe").mask("000.000.000.000,00", { reverse: true });
 
-		$(".inputEditable").on("keypress", analizaEnterInput);
-		$("#listaOtroTrib").focus();
+		setTimeout(() => {
+			$(".inputEditable").on("keypress", analizaEnterInput)
+			document.getElementById("listaOtroTrib").focus();
+		}, 500);
 		CerrarWaiting();
 		return true
 	});
@@ -390,12 +413,10 @@ function CalcularIva(e) {
 	}
 	else if (subt > 0 && sit_id != "G") {
 		if (e.target.id != "ConceptoFacturado_iva") {
-			//var calc = subt / 100;
 			$("#ConceptoFacturado_iva").val(0);
 			$("#ConceptoFacturado_total").val(subt);
 		}
 		else {
-			//var calc = subt / 100;
 			$("#ConceptoFacturado_total").val(subt);
 		}
 	}
@@ -478,7 +499,7 @@ function LimpiarCamposEnModalCargaOT() {
 	$("#OtroTributo_base_imp").val("");
 	$("#OtroTributo_alicuota").val("");
 	$("#OtroTributo_importe").val("");
-	$("#listaOtroTrib").focus();
+	$("#listaOtroTrib").trigger("focus");
 }
 
 function FormatearValores(grilla, idx) {
@@ -537,7 +558,7 @@ function ValidarCamposModalOT() {
 function ControlaIvaAliSeleccionada() {
 	var iva_ali_id = $("#listaIvaAli option:selected").val()
 	if (iva_ali_id != "") {
-		$("#ConceptoFacturado_subtotal").focus();
+		$("#ConceptoFacturado_subtotal").trigger("focus");
 	}
 }
 
@@ -547,20 +568,20 @@ function ControlaSituacionSeleccionada() {
 		$("#listaIvaAli").val("");
 		$("#listaIvaAli").prop("disabled", false);
 		$("#ConceptoFacturado_iva").prop("disabled", false);
-		$("#listaIvaAli").focus();
+		$("#listaIvaAli").trigger("focus");
 	}
 	else {
 		$("#listaIvaAli").val("");
 		$("#listaIvaAli").prop("disabled", true);
 		$("#ConceptoFacturado_iva").prop("disabled", true);
-		$("#ConceptoFacturado_subtotal").focus();
+		$("#ConceptoFacturado_subtotal").trigger("focus");
 	}
 }
 
 function ControlaOtroTribSeleccionada() {
 	var otro_tirb_id = $("#listaOtroTrib option:selected").val()
 	if (otro_tirb_id != "") {
-		$("#OtroTributo_base_imp").focus();
+		$("#OtroTributo_base_imp").trigger("focus");
 	}
 }
 
@@ -696,7 +717,7 @@ function ActualizaEstadosVarios() {
 function ActualizarEstadoCtaDirecta() {
 	if ($("#chkImpCtaDirecta").prop("checked")) {
 		$("#listaCtaDir").prop("disabled", false);
-		$("#listaCtaDir").focus();
+		$("#listaCtaDir").trigger("focus");
 	}
 	else {
 		$("#listaCtaDir").val("");
@@ -708,7 +729,7 @@ function ActualizarEstadoCAE() {
 	if ($("#chkCtlFis").prop("checked")) {
 		$("#Comprobante_cm_cae").prop("disabled", false);
 		$("#Comprobante_cm_cae_vto").prop("disabled", false);
-		$("#Comprobante_cm_cae_vto").focus();
+		$("#Comprobante_cm_cae_vto").trigger("focus");
 	}
 	else {
 		$("#Comprobante_cm_cae").val("");
@@ -718,9 +739,10 @@ function ActualizarEstadoCAE() {
 }
 
 function SetMascarasYValores() {
-	//$("#Comprobante_cuit_parcial").mask("00-00000000-0", { reverse: false });
 	$("#Comprobante_cuit_parcial").inputmask("99-99999999-9");
-	$("#Comprobante_cm_compte").inputmask("9999-99999999");
+	$("#Comprobante_cm_compte_pto_vta").inputmask("9999");
+	$("#Comprobante_cm_compte_pto_nro").inputmask("99999999");
+
 	var now = moment().format('yyyy-MM-DD');
 
 	$("#Comprobante_cm_cae_vto").val(now);
@@ -945,6 +967,7 @@ function addInCellGotFocusHandler() {
 	$("#tbGridOtroTributo").on('focusin', 'td[contenteditable]', function (e) {
 
 		cellValueTemp = $("#" + this.id).text();
+		idOtroTributoSeleccionado = $("#" + this.id).attr("data-interaction")
 		if (e.target) {
 			cellIndexTemp = e.target.cellIndex;
 		}
@@ -955,18 +978,8 @@ function addInCellEditHandler() {
 	$("#tbGridOtroTributo").on('input', 'td[contenteditable]', function (e) {
 		var val = $("#" + this.id).text();
 		if (this.id.includes("alicuota")) {
-			//var num = Number(val);
-			//if (num > 50) val = "50";
-			//$("#" + this.id).mask("00,0", { reverse: true });
-			//$("#" + this.id).val(val);
-			//$("#" + this.id).text(val);
 		}
 		else if (this.id.includes("base_imp") || this.id.includes("importe")) {
-			//console.log($("#" + this.id));
-			//console.log($("#" + this.id).text());
-			//console.log($("#" + this.id).val());
-			//$("#" + this.id).mask("000.000.000.000,00", { reverse: false });
-			//$("#" + this.id).val(val);
 		}
 	});
 }
@@ -984,10 +997,6 @@ function addInCellLostFocusHandler() {
 		}
 		if (actualiza) {
 			ActualizarOtroTributo(this.id, valor);
-			//if ($("#" + this.id).val() == "")
-			//	ActualizarOtroTributo(this.id, $("#" + this.id).text());
-			//else
-			//	ActualizarOtroTributo(this.id, $("#" + this.id).val());
 		}
 	});
 }

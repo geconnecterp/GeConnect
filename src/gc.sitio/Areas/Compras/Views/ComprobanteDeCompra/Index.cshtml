@@ -41,7 +41,7 @@
 		@Html.Hidden("pagEstado", false);
 	</div>
 	<div class="collapse" id="divDetalle" style="">
-		<div class="row">
+		<div class="row mt-2">
 			<div class="col-md-5">
 				<div class="input-group input-group-sm mt-1" id="divProveedorSeleccionado">
 					<span class="input-group-text fixed-lbl-for-abm-70">Cuenta: </span>
@@ -50,36 +50,7 @@
 				</div>
 			</div>
 		</div>
-		<ul class="nav nav-tabs mt-2" role="tablist" id="tabsComprobanteDeCompra">
-			<li class="nav-item" role="presentation" id="tabComprobante">
-				<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-home" aria-controls="navs-top-home" aria-selected="true" id="btnTabComprobante">
-					Comprobante
-				</button>
-			</li>
-			<li class="nav-item" role="presentation" id="tabRpr">
-				<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-profile" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1" id="btnTabRpr">
-					RPR
-				</button>
-			</li>
-			<li class="nav-item" role="presentation" id="tabACuenta">
-				<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-resume" aria-controls="navs-top-resume" aria-selected="false" tabindex="-1" id="btnTabACuenta">
-					A Cuenta
-				</button>
-			</li>
-		</ul>
-		<div class="tab-content">
-			<div class="tab-pane fade show active" id="navs-top-home" role="tabpanel">
-				<div id="divComprobante">
-				</div>
-			</div>
-			<div class="tab-pane fade" id="navs-top-profile" role="tabpanel">
-				<div id="divRPR">
-				</div>
-			</div>
-			<div class="tab-pane fade" id="navs-top-resume" role="tabpanel">
-				<div id="divACuenta">
-				</div>
-			</div>
+		<div class="mt-2" id="divComprobante">
 		</div>
 	</div>
 </div>

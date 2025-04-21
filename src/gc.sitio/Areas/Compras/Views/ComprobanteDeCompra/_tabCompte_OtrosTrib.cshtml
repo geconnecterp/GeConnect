@@ -36,9 +36,9 @@
                 <tr class="@clase" onclick="selectReg(this, 'tbGridOtroTributo')">
                     <td style="display:none;">@item.ins_id</td>
                     <td class="text-sm-start">@item.imp</td>
-                    <td class="text-sm-end content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_base_imp>@item.base_imp.ToString("0.##")</td>
-                    <td class="text-sm-end content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_alicuota>@item.alicuota.ToString("0.##")</td>
-                    <td class="text-sm-end content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_importe>@item.importe.ToString("0.##")</td>
+                    <td class="text-sm-end content-editable-td inputEditable" data-interaction="@item.ins_id" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_base_imp>@item.base_imp.ToString("0.##")</td>
+                    <td class="text-sm-end content-editable-td inputEditable" data-interaction="@item.ins_id" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_alicuota>@item.alicuota.ToString("0.##")</td>
+                    <td class="text-sm-end content-editable-td inputEditable" data-interaction="@item.ins_id" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_importe>@item.importe.ToString("0.##")</td>
                     <td><a class="btn btn-xs btn-outline-dark" data-interaction="@item.ins_id" onclick="quitarOtroTributo(this);"> <i class="bx bxs-trash"></i></a></td> @*20*@
                 </tr>
             }

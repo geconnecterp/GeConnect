@@ -2294,6 +2294,9 @@ namespace gc.sitio.Controllers
 		protected SelectList ComboIvaAlicuotaLista()
 		{
 			var lista = IvaAlicuotasLista.Select(x => new ComboGenDto { Id = x.IVA_Alicuota.ToString(), Descripcion = x.IVA_Alicuota.ToString() });
+			var selectedValue = IvaAlicuotasLista.Where(x => x.IVA_Grl.Equals("S")).First();
+			if (selectedValue != null)
+				return HelperMvc<ComboGenDto>.ListaGenerica(lista, selectedValue);
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
 		#endregion

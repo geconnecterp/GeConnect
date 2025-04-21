@@ -9,6 +9,7 @@ using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra;
 using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Compras.Models;
 using gc.sitio.core.Servicios.Contratos;
@@ -552,9 +553,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 				}
 				if (tco.tco_iva_discriminado == "S")
 				{
+					model.ConceptoFacturado = new ConceptoFacturadoDto();
 					model.EsGravado = true;
 					model.IvaSituacionLista = ComboIvaSituacionLista();
 					model.IvaAlicuotaLista = ComboIvaAlicuotaLista();
+					if (model.IvaAlicuotaLista.SelectedValue != null)
+					{
+						model.ConceptoFacturado.iva_alicuota = ((IVAAlicuotaDto)model.IvaAlicuotaLista.SelectedValue).IVA_Alicuota;
+						model.ConceptoFacturado.iva_situacion = "G";
+					}
 				}
 				else
 				{

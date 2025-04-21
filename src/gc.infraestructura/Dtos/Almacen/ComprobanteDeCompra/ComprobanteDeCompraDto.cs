@@ -108,5 +108,30 @@ namespace gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra
 			}
 			set { _opc_id = value; }
 		} //Id de elemento seleccionado en la ultima lista del costado izquierdo
+
+		private string? _cm_compte_pto_vta;
+		public string cm_compte_pto_vta
+		{
+			get
+			{
+				if (string.IsNullOrEmpty(cm_compte))
+					return string.Empty;
+				else
+					return cm_compte.Split('-')[0];
+			}
+			set { _cm_compte_pto_vta = value; }
+		}
+		private string? _cm_compte_pto_nro;
+		public string cm_compte_pto_nro
+		{
+			get
+			{
+				if (string.IsNullOrEmpty(cm_compte))
+					return string.Empty;
+				else
+					return cm_compte.Split('-')[1];
+			}
+			set { _cm_compte_pto_nro = value; }
+		}
 	}
 }

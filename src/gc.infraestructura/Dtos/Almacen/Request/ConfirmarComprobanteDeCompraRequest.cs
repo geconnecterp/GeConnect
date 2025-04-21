@@ -36,6 +36,7 @@ namespace gc.infraestructura.Dtos.Almacen.Request
 		public int cm_cuota { get; set; }
 		public string cm_obs { get; set; } = string.Empty;
 		public string cm_libro_iva { get; set; } = string.Empty;
+		public string rela_opciones { get; set; } = string.Empty;
 		public decimal cm_no_gravado { get; set; }
 		public decimal cm_exento { get; set; }
 		public decimal cm_gravado { get; set; }
