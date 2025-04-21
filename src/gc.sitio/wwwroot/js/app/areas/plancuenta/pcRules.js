@@ -92,7 +92,7 @@ function ejecutarAlta() {
             accionBotones(AbmAction.ALTA);
             activarControles(true);
         }
-       
+
     });
     return true;
 }
@@ -115,6 +115,10 @@ function cancelarOperacionCuenta() {
     activarArbol("#divpanel01", "#", true);
     accionBotones(AbmAction.CANCEL);
     activarControles(false);
+
+    if (accion === AbmAction.MODIFICACION || accion === AbmAction.BAJA) {
+        activarBotones(true);
+    }
 }
 
 function activarBotones(activar) {
@@ -262,63 +266,38 @@ function confirmarOperacionAbmUsuario() {
         else {
             CerrarWaiting();
             AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                
+
                 //todo fue bien, por lo que se deberia reinicializar la pantalla.
                 var grilla = "";
-                switch (tabAbm) {
-                    case 1:
-                        grilla = Grids.GridUser;
-                        dataBak = "";
-                        InicializaPantallaUser(grilla);
-                        break;
+                InicializaPantallaPlanCuenta();
 
-                    default:
 
+                if (accion !== AbmAction.BAJA) {
+                    //se dió de alta o se modificó, se realiza la presentación del producto
+                    if (accion === AbmAction.ALTA) {
+                        EntidadSelect = obj.id;
+                    }
+                                    
+                    $("#divpanel01").empty();
+                    //inicializamos la acción.
+                    accion = "";
                 }
-
-                switch (tabAbm) {
-                    case 1:
-                        if (accion !== AbmAction.BAJA) {
-                            //se dió de alta o se modificó, se realiza la presentación del producto
-                            if (accion === AbmAction.ALTA) {
-                                EntidadSelect = obj.id;
-                            }
-                            //data = { p_id: EntidadSelect };
-                            //buscarProductoServer(data);
-                            InicializaFiltroAbmUsuario(EntidadSelect);
-                            $("#btnBuscar").trigger("click");
-                            $("#divpanel01").empty();
-                            //inicializamos la acción.
-                            accion = "";
-                        }
-                        else {
-                            //borramos el id del producto si se eliminó
-                            EntidadSelect = "";
-                            //VAMOS A EJECUTAR NUEVAMENTE EL BUSCAR
-                            buscarPlanCuenta(pagina);
-                        }
-                        break;
-                    case 2:
-                        $("#BtnLiTab02").trigger("click");
-                        accionBotones(accion02);
-                        break;
-                    case 3:
-                        $("#BtnLiTab03").trigger("click");
-                        accionBotones(accion03);
-                        break;
-                    case 4:
-                        $("#BtnLiTab04").trigger("click");
-                        accionBotones(accion04);
-                        break;
-                    default:
-                }
-
-
+                else {
+                    //borramos el id del producto si se eliminó
+                    EntidadSelect = "";
+                  
+                }                             
+                const mainContent = $("main"); // Ajusta el selector según tu estructura HTML
+                // Eliminar inert temporalmente
+                mainContent.removeAttr("inert");
+                // Realizar la acción (por ejemplo, forzar una búsqueda)
+                $("#btnBuscar").trigger("click");
+                // Restaurar inert
+                mainContent.attr("inert", "true");
 
 
                 $("#msjModal").modal("hide");
-                //$("#msjModal").toggle();
-
-
             }, false, ["CONTINUAR"], "succ!", null);
         }
     });
@@ -369,12 +348,12 @@ function confirmarDatosTab01() {
     var ccb_id_padre = $("#ccb_id_padre").val();
     var ccb_tipo = 'S';
     if ($("#EsMovimiento").is(":checked")) {
-        usu_bloqueado = 'M';
+        ccb_tipo = 'M';
     }
 
     var ccb_ajuste_inflacion = 'N';
     if ($("#HayAjusteInflacion").is(":checked")) {
-        usu_bloqueado = 'S';
+        ccb_ajuste_inflacion = 'S';
     }
 
     var data = {
