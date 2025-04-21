@@ -1874,3 +1874,28 @@ function ObtenerDatosDeFormaDePagoPParaJson(destinoDeOperacion, tipoDeOperacion)
 	var data = { cta_id, fp_id, fp_desc, fp_lista, fp_dias, tcb_id, tcb_desc, tcb_lista, cta_bco_cuenta_nro, cta_bco_cuenta_cbu, cta_valores_a_nombre, cta_obs, fp_default, destinoDeOperacion, tipoDeOperacion };
 	return data;
 }
+
+function activarArbol(div, node, activar, cancelar = false) {
+	var nodo = $(div).jstree().get_node(node);
+	if (activar === true) {
+		$(div).jstree(true).enable_node(nodo);
+		nodo.children.forEach(function (child_id) {
+			activarArbol(div, child_id, activar);
+		});
+	}
+	else {
+		$(div).jstree(true).disable_node(nodo);
+		//al cancelar se debe restituir los valores por defecto
+		if (cancelar === true && nodo.id !== "00" && nodo.id !== "#") {
+			if (nodo.data.asignado === true) {
+				$(div).jstree(true).select_node(nodo);
+			}
+			else {
+				$(div).jstree(true).deselect_node(node);
+			}
+		}
+		nodo.children.forEach(function (child_id) {
+			activarArbol(div, child_id, activar, cancelar);
+		});
+	}
+}

@@ -117,12 +117,17 @@ namespace gc.sitio.Areas.ABMs.Controllers.PlanCuenta
 
                 var cta = await _pcuentaSv.ObtenerCuentaPorId(id, TokenCookie);
 
-                if (cta == null)
+                if (!cta.Ok )
                 {
-                    throw new NegocioException("No se encontró la Cuenta. Verificar.");
+                    throw new NegocioException(cta.Mensaje);
                 }
+                if(cta.Entidad== null)
+                {
+                    throw new NegocioException("No se logró obtener la cuenta solicitada. Verifique");
+                }
+                CuentaSeleccionada = cta.Entidad;
                 var cuenta = RenderPartialViewToString("_cuenta", cta.Entidad, _viewEngine);
-                return Json(new { error = false, warn = false, cuenta });
+                return Json(new { error = false, warn = false, cuenta, entidad = cta.Entidad});
 
             }
             catch (NegocioException ex)
@@ -146,32 +151,46 @@ namespace gc.sitio.Areas.ABMs.Controllers.PlanCuenta
         }
 
         [HttpPost]
-        public IActionResult NuevaCuenta()
+        public JsonResult NuevaCuenta()
         {
             RespuestaGenerica<EntidadBase> response = new();
             try
             {
                 var ctaAct = CuentaSeleccionada;
+                if(ctaAct.ccb_tipo.Equals('M'))
+                {
+                    throw new NegocioException("No se puede crear una cuenta hija de una cuenta movimiento.");
+                }
                 var nuevoId = ObtenerParteSignificativa(ctaAct.ccb_id);
                 var cta = new PlanCuentaDto()
                 {
-                    ccb_id = nuevoId,
+                    id_padre = nuevoId,                    
                     ccb_id_padre = ctaAct.ccb_id
                 };
-                
-                ViewBag.tdoc_id = ComboTipoDoc();
 
-                return View("_cuenta", cta);
+                var cuenta = RenderPartialViewToString("_cuenta", cta, _viewEngine);
+                return Json(new { error = false, warn = false, cuenta });
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+                //_logger.LogError(ex, ex.Message);
+                //response.Mensaje = ex.Message;
+                //response.Ok = false;
+                //response.EsWarn = true;
+                //response.EsError = false;
+                //return PartialView("_gridMensaje", response);
             }
             catch (Exception ex)
             {
                 string msg = "Error en la invocación de la API - Nueva CUENTA";
-                _logger.LogError(ex, "Error en la invocación de la API - al Inicializar el Usuario");
-                response.Mensaje = msg;
-                response.Ok = false;
-                response.EsWarn = false;
-                response.EsError = true;
-                return PartialView("_gridMensaje", response);
+                _logger.LogError(ex, msg);
+                return Json(new { error = false, warn = true, msg });
+                //response.Mensaje = msg;
+                //response.Ok = false;
+                //response.EsWarn = false;
+                //response.EsError = true;
+                //return PartialView("_gridMensaje", response);
             }
         }
 

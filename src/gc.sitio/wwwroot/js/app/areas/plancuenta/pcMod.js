@@ -23,6 +23,7 @@
             console.log("Colapsando #divDetalle...");
             // Oculta el divDetalle
             $("#divDetalle").collapse("hide");
+            $("#divFiltro").collapse("show");
         }
         else {
             // Muestra el divFiltro
@@ -85,6 +86,8 @@ function analizaEstadoBtnDetalle() {
 function InicializaPantallaPlanCuenta() {
     $("#divpanel01").jstree("destroy").empty();
     $("#btnDetalle").trigger("mousedown");
+    // INICIALIZAMOS el id del elemento para verificar lo antes del ABM
+    EntidadSelect = "";
     activarBotones(false);
 
     CerrarWaiting();
@@ -175,8 +178,9 @@ function buscarPlanCuenta(pagina) {
             $("#divpanel01").on("select_node.jstree", function (e, data) {
                 // Capturamos el ID del nodo seleccionado
                 var nodoId = data.node.id;
+                
                 console.log("Nodo seleccionado con ID:", nodoId);
-
+               
                 // Realizamos la llamada AJAX con PostGen
                 var requestData = { id: nodoId };
                 AbrirWaiting("Buscando datos de la cuenta...");
@@ -195,17 +199,21 @@ function buscarPlanCuenta(pagina) {
                             $("#divCuentaData").html(obj.msg);
                         }
                     } else {
+                        // resguardamos el id del elemento para verificar lo antes del ABM
+                        EntidadSelect = obj.entidad;
+                        //activar botones de acción
+                        activarBotones(true);
+                        $("#btnDetalle").prop("disabled", false);
                         $("#divCuentaData").html(obj.cuenta);
                     }                  
                 });
             });
 
-            $("#btnDetalle").prop("disabled", false);
+            
             $("#divFiltro").collapse("hide");
             $("#divDetalle").collapse("show");
 
-            //activar botones de acción
-            activarBotones(true);
+            
         }
         CerrarWaiting();
     }, function (obj) {

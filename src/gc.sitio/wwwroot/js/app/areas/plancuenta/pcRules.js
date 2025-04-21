@@ -6,7 +6,7 @@
     $("#btnAbmModif").on("click", ejecutarModificacion);
     $("#btnAbmElimi").on("click", ejecutarBaja);
 
-    $("#btnAbmCancelar").on("click", InicializaPantallaPlanCuenta);
+    $("#btnAbmCancelar").on("click", cancelarOperacionCuenta);
     $("#btnAbmAceptar").on("click", confirmarOperacionAbmUsuario);
 
     $("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle);
@@ -20,11 +20,27 @@
 });
 
 function ejecutarBaja() {
+    if (EntidadSelect === undefined || EntidadSelect.ccb_id === "") {
+        AbrirMensaje("ATENCIÓN!!", "AÚN NO SE HA SELECCIONADO NINGUNA CUENTA, ANTES DE DAR DE BAJA. VERIFIQUE.",
+            function () {
+                $("#msjModal").modal("hide");
+            }, false, ["ACEPTAR"], "warn!", null);
+        return false;
+    }
+
     $("#divFiltro").collapse("hide");
     accionBotones(AbmAction.BAJA);
 }
 
 function ejecutarModificacion() {
+    if (EntidadSelect === undefined || EntidadSelect.ccb_id === "") {
+        AbrirMensaje("ATENCIÓN!!", "AÚN NO SE HA SELECCIONADO NINGUNA CUENTA, ANTES DE MODIFICAR. VERIFIQUE.",
+            function () {
+                $("#msjModal").modal("hide");
+            }, false, ["ACEPTAR"], "warn!", null);
+        return false;
+    }
+
     $("#divFiltro").collapse("hide");
     accionBotones(AbmAction.MODIFICACION);
     activarControles(true);
@@ -32,47 +48,82 @@ function ejecutarModificacion() {
 
 function ejecutarAlta() {
 
+    if (EntidadSelect === undefined || EntidadSelect.ccb_id === "") {
+        AbrirMensaje("ATENCIÓN!!", "AÚN NO SE HA SELECCIONADO NINGUNA CUENTA. ANTES DE DAR DE ALTA, TIENE QUE INDICAR O SELECCIONAR QUIEN SERA EL PADRE DE LA CUENTA.",
+            function () {
+                $("#msjModal").modal("hide");
+            }, false, ["ACEPTAR"], "warn!", null);
+        return false;
+    }
+
     AbrirWaiting("Espere, se inicializa el formulario");
 
     var data = {};
 
-    PostGenHtml(data, nuevaCuentaUrl, function (obj) {
-        $("#divpanel01").html(obj);
-
-        $("#btnDetalle").prop("disabled", false);
-        $("#divFiltro").collapse("hide");
-        $("#divDetalle").collapse("show");
-
-        accionBotones(AbmAction.ALTA);
-        activarControles(true);
-
+    PostGen(data, nuevaCuentaUrl, function (obj) {
         CerrarWaiting();
-    });
+        if (obj.error === true) {
+            AbrirMensaje("ALGO NO SALIO BIEN!", obj.msg, function () {
+                $("#msjModal").modal("hide");
+            }, false, ["CONTINUAR"], "error!", null);
+            return false;
+        } else if (obj.warn === true) {
+            if (obj.auth === true) {
+                window.location.href = homepc;
+            }
+            else {
+                AbrirMensaje("ALGO NO SALIO BIEN!", obj.msg, function () {
+                    $("#msjModal").modal("hide");
+                }, false, ["CONTINUAR"], "warn!", null);
+            }
+            return false;
+        } else {
+            $("#divCuentaData").html(obj.cuenta);
+            let largo = $("#id_padre").val().trim().length;
+            let msg = "Ingrese " + (8 - largo) + " dígitos.";
+            $("#ccb_id").attr("maxlength", 8 - largo);
+            $("#ccb_id").attr("placeholder", msg);
 
+            $("#btnDetalle").prop("disabled", false);
+            $("#divFiltro").collapse("hide");
+            $("#divDetalle").collapse("show");
+
+            activarArbol("#divpanel01", "#", false, true);
+            accionBotones(AbmAction.ALTA);
+            activarControles(true);
+        }
+       
+    });
+    return true;
 }
 
-function controlaValorIva() {
-    if ($("#iva_situacion option:selected").val() === "N") {
-        $("#iva_alicuota").val("0.00");
-        $("#iva_alicuota").prop("disabled", true);
+function cancelarOperacionCuenta() {
+    if (accion === AbmAction.MODIFICACION && EntidadSelect !== undefined && EntidadSelect !== "") {
+        $("#ccb_desc").val(EntidadSelect.ccb_desc);
+        if (EntidadSelect.ccb_tipo === 'S') {
+            $("#EsMovimiento").prop("checked", false);
+        } else {
+            $("#EsMovimiento").prop("checked", true);
+        }
+
+        if (EntidadSelect.ccb_ajuste_inflacion === 'S') {
+            $("#HayAjusteInflacion").prop("checked", true);
+        } else {
+            $("#HayAjusteInflacion").prop("checked", false);
+        }
     }
-    else {
-        $("#iva_alicuota").prop("disabled", false);
-    }
+    activarArbol("#divpanel01", "#", true);
+    accionBotones(AbmAction.CANCEL);
+    activarControles(false);
 }
 
 function activarBotones(activar) {
     if (activar === true) {
         //el activarlos es activar BM
         $("#btnAbmModif").prop("disabled", false);
-        if (tabAbm === 1) {
-            $("#btnAbmNuevo").prop("disabled", false);
-            $("#btnAbmElimi").prop("disabled", false);
-        }
-        else {
-            $("#btnAbmNuevo").prop("disabled", true);
-            $("#btnAbmElimi").prop("disabled", true);
-        }
+        $("#btnAbmNuevo").prop("disabled", false);
+        $("#btnAbmElimi").prop("disabled", false);
+
 
         $("#btnAbmAceptar").prop("disabled", true);
         $("#btnAbmCancelar").prop("disabled", true);
@@ -80,7 +131,8 @@ function activarBotones(activar) {
         $("#btnAbmCancelar").hide();
     }
     else {
-        $("#btnAbmNuevo").prop("disabled", false);
+        //el alta se activará cuando haya un elemento seleccionado en el arbol
+        $("#btnAbmNuevo").prop("disabled", true);
         $("#btnAbmModif").prop("disabled", true);
         $("#btnAbmElimi").prop("disabled", true);
 
@@ -157,7 +209,7 @@ function activarControles(act) {
             $("#id_padre").hide();
         }
 
-        $("#ccb_id").prop("disabled", false);
+        $("#ccb_id").prop("disabled", act);
         //Linea 02
         $("#ccb_desc").prop("disabled", act);
 
@@ -184,9 +236,9 @@ function activarControles(act) {
 function confirmarOperacionAbmUsuario() {
     AbrirWaiting("Completando proceso...");
     var data = confirmarDatosTab01();
-           
-    urlabm =  confirmarAbmCuentaUrl;
-            
+
+    urlabm = confirmarAbmCuentaUrl;
+
     PostGen(data, urlabm, function (obj) {
         if (obj.error === true) {
             CerrarWaiting();
@@ -311,7 +363,7 @@ function confirmarDatosTab01() {
     }
     if (accion === AbmAction.ALTA) {
         var id_padre = $("#id_padre").val();
-        ccb_id = id_padre + ccb_id.trim();        
+        ccb_id = id_padre + ccb_id.trim();
     }
     var ccb_desc = $("#ccb_desc").val();
     var ccb_id_padre = $("#ccb_id_padre").val();
@@ -323,7 +375,7 @@ function confirmarDatosTab01() {
     var ccb_ajuste_inflacion = 'N';
     if ($("#HayAjusteInflacion").is(":checked")) {
         usu_bloqueado = 'S';
-    }   
+    }
 
     var data = {
         ccb_id,//
@@ -331,7 +383,7 @@ function confirmarDatosTab01() {
         ccb_lista: ccb_desc + " (" + ccb_id + ")",//
         ccb_id_padre,//
         ccb_tipo,
-        ccb_ajuste_inflacion,                
+        ccb_ajuste_inflacion,
         accion
     };
 
@@ -371,27 +423,27 @@ function inicializaControlesTab03() {
     }
 }
 
-function activarArbol(div, node, activar, cancelar = false) {
-    var nodo = $(div).jstree().get_node(node);
-    if (activar === true) {
-        $(div).jstree(true).enable_node(nodo);
-        nodo.children.forEach(function (child_id) {
-            activarArbol(div, child_id, activar);
-        });
-    }
-    else {
-        $(div).jstree(true).disable_node(nodo);
-        //al cancelar se debe restituir los valores por defecto
-        if (cancelar === true && nodo.id !== "00" && nodo.id !== "#") {
-            if (nodo.data.asignado === true) {
-                $(div).jstree(true).select_node(nodo);
-            }
-            else {
-                $(div).jstree(true).deselect_node(node);
-            }
-        }
-        nodo.children.forEach(function (child_id) {
-            activarArbol(div, child_id, activar, cancelar);
-        });
-    }
-}
+//function activarArbol(div, node, activar, cancelar = false) {
+//    var nodo = $(div).jstree().get_node(node);
+//    if (activar === true) {
+//        $(div).jstree(true).enable_node(nodo);
+//        nodo.children.forEach(function (child_id) {
+//            activarArbol(div, child_id, activar);
+//        });
+//    }
+//    else {
+//        $(div).jstree(true).disable_node(nodo);
+//        //al cancelar se debe restituir los valores por defecto
+//        if (cancelar === true && nodo.id !== "00" && nodo.id !== "#") {
+//            if (nodo.data.asignado === true) {
+//                $(div).jstree(true).select_node(nodo);
+//            }
+//            else {
+//                $(div).jstree(true).deselect_node(node);
+//            }
+//        }
+//        nodo.children.forEach(function (child_id) {
+//            activarArbol(div, child_id, activar, cancelar);
+//        });
+//    }
+//}
