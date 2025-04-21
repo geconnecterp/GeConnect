@@ -18,27 +18,7 @@
 
     ///utilizo el evento mousedown para ejecutar el evento antes que el collapse.
     $("#btnDetalle").on("mousedown", function () {
-        // Verifica si el divDetalle está visible (tiene la clase "show")
-        if ($("#divDetalle").hasClass("show")) {
-            console.log("Colapsando #divDetalle...");
-            // Oculta el divDetalle
-            $("#divDetalle").collapse("hide");
-            $("#divFiltro").collapse("show");
-        }
-        else {
-            // Muestra el divFiltro
-            console.log("Mostrando #divFiltro...");
-            $("#divFiltro").collapse("hide");
-        }
-      
-
-        // Limpia el contenido del divCuentaData
-        console.log("Limpiando contenido de #divCuentaData...");
-        $("#divCuentaData").empty();
-
-        // Deshabilita el botón para evitar múltiples clics
-        console.log("Deshabilitando botón #btnDetalle...");
-        $(this).prop("disabled", true);
+        manejarDetalle();
     });
 
     $("#btnDetalle").prop("disabled", true);
@@ -76,6 +56,26 @@
     $("#btnFiltro").trigger("click");
 });
 
+function manejarDetalle() {
+    // Verifica si el divDetalle está visible (tiene la clase "show")
+    if ($("#divDetalle").hasClass("show")) {
+        console.log("Colapsando #divDetalle...");
+        $("#divDetalle").collapse("hide");
+        $("#divFiltro").collapse("show");
+    } else {
+        console.log("Mostrando #divFiltro...");
+        $("#divFiltro").collapse("hide");
+    }
+
+    // Limpia el contenido del divCuentaData
+    console.log("Limpiando contenido de #divCuentaData...");
+    $("#divCuentaData").empty();
+
+    // Deshabilita el botón para evitar múltiples clics
+    console.log("Deshabilitando botón #btnDetalle...");
+    $("#btnDetalle").prop("disabled", true);
+}
+
 function analizaEstadoBtnDetalle() {
     InicializaPantallaPlanCuenta();
 
@@ -85,7 +85,7 @@ function analizaEstadoBtnDetalle() {
 
 function InicializaPantallaPlanCuenta() {
     $("#divpanel01").jstree("destroy").empty();
-    $("#btnDetalle").trigger("mousedown");
+    manejarDetalle();
     // INICIALIZAMOS el id del elemento para verificar lo antes del ABM
     EntidadSelect = "";
     activarBotones(false);

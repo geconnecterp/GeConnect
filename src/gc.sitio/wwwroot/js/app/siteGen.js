@@ -6,6 +6,38 @@ var nnControlCta03 = "";
 var nnControlCta04 = "";
 
 $(function () {
+    const mainContent = $("main"); // Ajusta el selector según tu estructura HTML
+
+    const modal = $("#msjModal");
+    const btnAceptar = $("#btnMensajeAceptar");
+
+    // Gestionar el foco y eliminar aria-hidden al mostrar el modal
+    modal.on("show.bs.modal", function () {
+        // Asegúrate de que aria-hidden no esté presente
+        modal.removeAttr("aria-hidden");
+
+        mainContent.attr("inert", "true"); // Desactiva el contenido principal
+    });
+
+    // Mover el foco al botón "Aceptar" cuando el modal se abre
+    modal.on("shown.bs.modal", function () {
+        btnAceptar.focus();
+    });
+
+    // Restaurar aria-hidden y el foco al cerrar el modal
+    modal.on("hide.bs.modal", function () {
+        // Opcional: Si necesitas ocultar el modal de los lectores de pantalla
+        modal.attr("aria-hidden", "true");
+
+        mainContent.removeAttr("inert"); // Reactiva el contenido principal
+    });
+
+    // Restaurar el foco al elemento que activó el modal cuando se cierra
+    modal.on("hidden.bs.modal", function () {
+        const triggerElement = $(document.activeElement);
+        triggerElement.focus();
+    });
+
     //check generico REL01 activando componentes disables
     $("#chkRel01").on("click", function () {
         if ($("#chkRel01").is(":checked")) {
