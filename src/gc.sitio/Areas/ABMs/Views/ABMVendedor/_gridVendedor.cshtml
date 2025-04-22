@@ -1,6 +1,7 @@
 ﻿@using System.Text
+@using static gc.infraestructura.Helpers.GridHelper
 @using static gc.infraestructura.Constantes.Constantes
-@model GridCore<ABMVendedorDto>
+@model GridCoreSmart<ABMVendedorDto>
 
 @{
     var alt = true;
@@ -15,9 +16,9 @@
             <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridVendedor">
                 <thead class="table-dark">
                     <tr class="header">
-                        <th scope="col">Id</th>
-                        <th scope="col">Denominación</th>
-                        <th scope="col">Activo</th>
+                        <th class="text-sm-center" scope="col">Id</th>
+                        <th class="text-sm-center" scope="col">Denominación</th>
+                        <th class="text-sm-center" scope="col">Activo</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -36,10 +37,9 @@
                             color = EstadoColor.Activo;
                         }
                         <tr class="@clase" onclick="selectRegVendedor(this,'tbGridVendedor')">
-                            <!--ondblclick="selectAbmRegDbl(this,'tbGridProd')"-->
-                            <td class="text-sm-center" style="border-left: 5px solid @color;text-align: left;">@item.ve_id</td>
-                            <td class="text-sm-start" >@item.ve_nombre</td>
-                            <td class="text-sm-center">@block</td>                            
+                            <td class="@Model.ObtenerClase('c')" style="border-left: 5px solid @color;text-align: left;">@Model.FormatearDato(item.ve_id, FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.ve_nombre)">@Model.FormatearDato(item.ve_nombre, FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.VeActivo)">@Model.FormatearDato(@block, FormatDato.BandSN)</td>
                         </tr>
                     }
                 </tbody>

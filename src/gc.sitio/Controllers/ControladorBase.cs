@@ -1970,8 +1970,19 @@ namespace gc.sitio.Controllers
 			return GenerarGrilla(lista, sort, _options.NroRegistrosPagina, 1, 99999);
 		}
 
-		#region Metodos unicos para realizar busquedas con autocomplete
-		protected void ObtenerRubros(IRubroServicio _rubSv)
+        protected GridCoreSmart<T> GenerarGrillaSmart<T>(List<T>? lista, string nnCol, int cantReg, int pagina, int totalReg, int totalPag = 0, string sortDir = "ASC")
+        {
+            var l = new StaticPagedList<T>(lista, pagina, cantReg, lista != null ? lista.Count : 0);
+
+            return new GridCoreSmart<T>() { ListaDatos = l, CantidadReg = cantReg, PaginaActual = pagina, CantidadPaginas = totalPag, Sort = nnCol, SortDir = sortDir };
+        }
+        protected GridCoreSmart<T> GenerarGrillaSmart<T>(List<T>? lista, string sort)
+        {
+            return GenerarGrillaSmart(lista, sort, _options.NroRegistrosPagina, 1, 99999);
+        }
+
+        #region Metodos unicos para realizar busquedas con autocomplete
+        protected void ObtenerRubros(IRubroServicio _rubSv)
 		{
 			RubroLista = _rubSv.ObtenerListaRubros("", TokenCookie);
 		}

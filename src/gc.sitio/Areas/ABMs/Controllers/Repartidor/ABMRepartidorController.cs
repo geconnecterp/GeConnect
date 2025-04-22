@@ -57,7 +57,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Repartidor
         {
             List<ABMRepartidorDto> lista;
             MetadataGrid metadata;
-            GridCore<ABMRepartidorDto> grillaDatos;
+            GridCoreSmart<ABMRepartidorDto> grillaDatos;
             RespuestaGenerica<EntidadBase> response = new();
             try
             {
@@ -85,7 +85,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Repartidor
                 metadata = MetadataGeneral;
 
                 //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
-                grillaDatos = GenerarGrilla(RepartidoresBuscardo, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
+                grillaDatos = GenerarGrillaSmart(RepartidoresBuscardo, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 
                 //string volver = Url.Action("index", "home", new { area = "" });
                 //ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };

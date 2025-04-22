@@ -1,6 +1,7 @@
 ﻿@using System.Text
+@using static gc.infraestructura.Helpers.GridHelper
 @using static gc.infraestructura.Constantes.Constantes
-@model GridCore<ABMRepartidorDto>
+@model GridCoreSmart<ABMRepartidorDto>
 
 @{
     var alt = true;
@@ -15,9 +16,9 @@
             <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridRepartidor">
                 <thead class="table-dark">
                     <tr class="header">
-                        <th scope="col">Id</th>
-                        <th scope="col">Denominación</th>
-                        <th scope="col">Activo</th>
+                        <th class="text-sm-center" scope="col">Id</th>
+                        <th class="text-sm-center" scope="col">Denominación</th>
+                        <th class="text-sm-center" scope="col">Activo</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -36,10 +37,9 @@
                             color = EstadoColor.Activo;
                         }
                         <tr class="@clase" onclick="selectRegRepartidor(this,'tbGridRepartidor')">
-                            <!--ondblclick="selectAbmRegDbl(this,'tbGridProd')"-->
-                            <td class="text-sm-center" style="border-left: 5px solid @color;text-align: left;">@item.rp_id</td>
-                            <td class="text-sm-start">@item.rp_nombre</td>
-                            <td class="text-sm-center">@block</td>
+                            <td class="@Model.ObtenerClase('C')" style="border-left: 5px solid @color;text-align: left;">@Model.FormatearDato(item.rp_id, FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.rp_nombre)">@Model.FormatearDato(item.rp_nombre,FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.rp_activo)">@Model.FormatearDato(block, FormatDato.BandSN)</td>
                         </tr>
                     }
                 </tbody>
