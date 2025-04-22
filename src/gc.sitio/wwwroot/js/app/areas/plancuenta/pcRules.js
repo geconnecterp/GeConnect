@@ -206,14 +206,14 @@ function activarControles(act) {
         //se tiene en cuenta que tab es el que esta activo al momento de presionar el boton de acción
 
         //Linea 1
-        if (accion == AbmAction.ALTA) {
+        if (accion === AbmAction.ALTA) {
             $("#id_padre").show();
+            $("#ccb_id").prop("disabled", act);
         }
         else {
             $("#id_padre").hide();
-        }
-
-        $("#ccb_id").prop("disabled", act);
+        }       
+       
         //Linea 02
         $("#ccb_desc").prop("disabled", act);
 
