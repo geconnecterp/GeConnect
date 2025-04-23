@@ -1,4 +1,5 @@
-﻿@model GridCore<ConsCompTotDto>
+﻿@using static gc.infraestructura.Helpers.GridHelper
+@model GridCoreSmart<ConsCompTotDto>
 
 @{
     var dataMod = new ConsCompTotDto();
@@ -15,10 +16,10 @@
             <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridCmpteTot">
                 <thead class="table-dark">
                     <tr class="header">
-                        <th scope="col">MES</th>
-                        <th scope="col">NETO</th>
-                        <th scope="col">TOTAL</th>
-                        <th scope="col">Dif.Mes Ant</th>
+                        <th class="text-sm-center" scope="col">MES</th>
+                        <th class="text-sm-center" scope="col">NETO</th>
+                        <th class="text-sm-center" scope="col">TOTAL</th>
+                        <th class="text-sm-center" scope="col">Dif.Mes Ant</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -28,10 +29,10 @@
                         ft += item.Cm_total;
                         nc += item.Nc_cm_total;
                         <tr class="@clase" onclick="SeleccionarPeriodo(this,'tbGridCmpteTot')">
-                            <td class="text-sm-center">@item.Periodo</td>
-                            <td class="text-sm-end">@item.Cm_neto</td>
-                            <td class="text-sm-end">@item.Cm_total</td>
-                            <td class="text-sm-end">@item.Dif_m_ant</td>
+                            <td class="@Model.ObtenerClase(item.Periodo)">@Model.FormatearDato(item.Periodo,FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.Cm_neto)">@Model.FormatearDato(item.Cm_neto, FormatDato.Monto)</td>
+                            <td class="@Model.ObtenerClase(item.Cm_total)">@Model.FormatearDato(item.Cm_total, FormatDato.Monto)</td>
+                            <td class="@Model.ObtenerClase(item.Dif_m_ant)">@Model.FormatearDato(item.Dif_m_ant, FormatDato.Monto)</td>
                         </tr>
                     }
                     @{

@@ -12,11 +12,11 @@ namespace gc.infraestructura.Dtos.Consultas
         public string Tco_id { get; set; } = string.Empty;
         public string Tco_desc { get; set; } = string.Empty;
         public string Cm_compte { get; set; } = string.Empty;
-        public string Cc_fecha { get; set; } = string.Empty;
+        public DateTime Cc_fecha { get; set; } 
         public string Cc_concepto { get; set; } = string.Empty;
-        public string Cc_debe { get; set; } = string.Empty;
-        public string Cc_haber { get; set; } = string.Empty;
-        public string Cc_saldo { get; set; } = string.Empty;
+        public decimal Cc_debe { get; set; } 
+        public decimal Cc_haber { get; set; }
+        public decimal Cc_saldo { get; set; } 
         public string Usu_id { get; set; } = string.Empty;
         public string Usu_apellidoynombre { get; set; } = string.Empty;
     }

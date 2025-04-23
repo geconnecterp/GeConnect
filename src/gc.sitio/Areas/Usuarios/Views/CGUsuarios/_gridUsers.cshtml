@@ -1,6 +1,7 @@
 ﻿@using System.Text
+@using static gc.infraestructura.Helpers.GridHelper
 @using static gc.infraestructura.Constantes.Constantes
-@model GridCore<UserDto>
+@model GridCoreSmart<UserDto>
 
 @{
     var dataMod = new UserDto();
@@ -17,9 +18,9 @@
                 <thead class="table-dark">
                     <tr class="header">
 
-                        <th scope="col">Logon</th>
-                        <th scope="col">Apellido y Nombre</th>
-                        <th scope="col">Bloqueado</th>
+                        <th class="text-sm-center" scope="col">Logon</th>
+                        <th class="text-sm-center" scope="col">Apellido y Nombre</th>
+                        <th class="text-sm-center" scope="col">Bloqueado</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -39,9 +40,9 @@
                         }
                         <tr class="@clase" onclick="selectRegUser(this,'tbGridUsers')">
                             <!--ondblclick="selectAbmRegDbl(this,'tbGridProd')"-->
-                            <td class="text-sm-start" style="border-left: 5px solid @color;text-align: left;">@item.usu_id</td>
-                            <td class="text-sm-start">@item.usu_apellidoynombre</td>
-                            <td class="text-sm-center">@block</td>                            
+                            <td class="@Model.ObtenerClase(item.usu_id)" style="border-left: 5px solid @color;text-align: left;">@Model.FormatearDato(item.usu_id, FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.usu_apellidoynombre)">@Model.FormatearDato(item.usu_apellidoynombre,FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.usu_bloqueado)">@Model.FormatearDato(block, FormatDato.BandSN)</td>
                         </tr>
                     }
                 </tbody>

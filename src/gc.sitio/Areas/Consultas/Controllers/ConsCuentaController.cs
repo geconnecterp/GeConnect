@@ -114,7 +114,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
             //la misma que esta especificado en el appsettings.json
 
             List<ConsCtaCteDto> lista;
-            GridCore<ConsCtaCteDto> grillaDatos;
+            GridCoreSmart<ConsCtaCteDto> grillaDatos;
             RespuestaGenerica<EntidadBase> response = new();
             MetadataGrid metadata;
 
@@ -174,7 +174,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
 
 
                 //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
-                grillaDatos = GenerarGrilla(CuentaCorrienteBuscada, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
+                grillaDatos = GenerarGrillaSmart(CuentaCorrienteBuscada, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 
                 return View("_gridCtaCte", grillaDatos);
             }
@@ -203,7 +203,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
         public async Task<IActionResult> ConsultarVencimiento(string ctaId, DateTime fechaD, DateTime fechaH)
         {
             List<ConsVtoDto> lista;
-            GridCore<ConsVtoDto> grillaDatos;
+            GridCoreSmart<ConsVtoDto> grillaDatos;
             RespuestaGenerica<EntidadBase> response = new();
             //la misma que esta especificado en el appsettings.json
             var consulta = AppReportes.CCUENTAS_VENCIMIENTO_COMPROBANTES;
@@ -240,7 +240,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 }
 
                 //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
-                grillaDatos = GenerarGrilla(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
+                grillaDatos = GenerarGrillaSmart(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 
                 //string volver = Url.Action("index", "home", new { area = "" });
                 //ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
@@ -271,7 +271,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
         public async Task<IActionResult> ConsultarCmpteTotal(string ctaId, int meses, bool relCuil)
         {
             List<ConsCompTotDto> lista;
-            GridCore<ConsCompTotDto> grillaDatos;
+            GridCoreSmart<ConsCompTotDto> grillaDatos;
             RespuestaGenerica<EntidadBase> response = new();
             try
             {
@@ -289,7 +289,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 CmptesTotalBuscados = res.ListaEntidad;
 
                 //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
-                grillaDatos = GenerarGrilla(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
+                grillaDatos = GenerarGrillaSmart(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 
                 return View("_gridCmptTot", grillaDatos);
             }
@@ -317,7 +317,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
         public async Task<IActionResult> ConsultarCmpteDetalle(string ctaId, string mes, bool relCuil)
         {
             List<ConsCompDetDto> lista;
-            GridCore<ConsCompDetDto> grillaDatos;
+            GridCoreSmart<ConsCompDetDto> grillaDatos;
             RespuestaGenerica<EntidadBase> response = new();
 
             //INICIALMENTE SE INDICA QUE EL REPORTE A GENERAR ES EL DE DETALLE DE COMPROBANTES
@@ -360,7 +360,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
 
                 string provId = CuentaComercialSeleccionada.Prov_Id.ToString();
                 //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
-                grillaDatos = GenerarGrilla(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
+                grillaDatos = GenerarGrillaSmart(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
                 grillaDatos.DatoAux01 = provId;
 
                 return View("_gridCmptDet", grillaDatos);
@@ -390,7 +390,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
         public async Task<IActionResult> ConsultaOPagoProveedor(string ctaId, DateTime fechaD, DateTime fechaH)
         {
             List<ConsOrdPagosDto> lista;
-            GridCore<ConsOrdPagosDto> grillaDatos;
+            GridCoreSmart<ConsOrdPagosDto> grillaDatos;
             RespuestaGenerica<EntidadBase> response = new();
             try
             {
@@ -408,7 +408,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 }
                 OrdenPagosBuscados = res.ListaEntidad;
                 //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
-                grillaDatos = GenerarGrilla(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
+                grillaDatos = GenerarGrillaSmart(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 
                 //string volver = Url.Action("index", "home", new { area = "" });
                 //ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
@@ -440,7 +440,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
         public async Task<IActionResult> ConsultaOPagoProveedorDetalle(string cmptId)
         {
             List<ConsOrdPagosDetDto> lista;
-            GridCore<ConsOrdPagosDetDto> grillaDatos;
+            GridCoreSmart<ConsOrdPagosDetDto> grillaDatos;
             RespuestaGenerica<EntidadBase> response = new();
             var consultaPpal = AppReportes.CCUENTAS_ORDEN_DE_PAGO;
             var consulta = AppReportes.CCUENTAS_ORDEN_DE_PAGO_DETALLE;
@@ -477,7 +477,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 }
 
                 //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
-                grillaDatos = GenerarGrilla(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
+                grillaDatos = GenerarGrillaSmart(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 
                 //string volver = Url.Action("index", "home", new { area = "" });
                 //ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
@@ -509,7 +509,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
         public async Task<IActionResult> ConsultaRecepcionProveedor(string ctaId, DateTime fechaD, DateTime fechaH)
         {
             List<ConsRecepcionProveedorDto> lista;
-            GridCore<ConsRecepcionProveedorDto> grillaDatos;
+            GridCoreSmart<ConsRecepcionProveedorDto> grillaDatos;
             RespuestaGenerica<EntidadBase> response = new();
             try
             {
@@ -527,7 +527,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 }
                 RecepProvBuscados = res.ListaEntidad;
                 //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
-                grillaDatos = GenerarGrilla(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
+                grillaDatos = GenerarGrillaSmart(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 
                 //string volver = Url.Action("index", "home", new { area = "" });
                 //ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
@@ -559,7 +559,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
         public async Task<IActionResult> ConsultaRecepcionProveedorDetalle(string cmptId)
         {
             List<ConsRecepcionProveedorDetalleDto> lista;
-            GridCore<ConsRecepcionProveedorDetalleDto> grillaDatos;
+            GridCoreSmart<ConsRecepcionProveedorDetalleDto> grillaDatos;
             RespuestaGenerica<EntidadBase> response = new();
             var consultaPpal = AppReportes.CCUENTAS_RECEPCION_PROVEEDORES;
             var consulta = AppReportes.CCUENTAS_RECEPCION_PROVEEDORES_DETALLE;
@@ -599,7 +599,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 }
 
                 //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
-                grillaDatos = GenerarGrilla(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
+                grillaDatos = GenerarGrillaSmart(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 
                 //string volver = Url.Action("index", "home", new { area = "" });
                 //ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
@@ -640,7 +640,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
                     observacion = "CUENTA CORRIENTE - Documento generado por el sistema de Gestión Comercial";
                     var cDatos = (lista as List<ConsCtaCteDto>).Select(x => new
                     {
-                        Fecha = x.Cc_fecha.ToDateTime().ToShortDateString(),
+                        Fecha = x.Cc_fecha.ToShortDateString(),
                         DiaMovi = x.Dia_movi,
                         Comprobante = $"{x.Tco_desc}-{x.Cm_compte}",
                         Concepto = x.Cc_concepto,

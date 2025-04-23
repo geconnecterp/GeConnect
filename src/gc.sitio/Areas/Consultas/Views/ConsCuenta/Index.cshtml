@@ -10,15 +10,15 @@
     <link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
 
     <style>
-        .autocomplete-prov-p {
-            background-color: #fff8dc; /* dorado suave */
+        .autocomplete-tipo-p {
+            background-color: #fff8dc !important; /* dorado suave */
         }
 
-        .autocomplete-prov-e {
-            background-color: #dceeff; /* azul suave */
+        .autocomplete-tipo-c {
+            background-color: #dceeff !important; /* azul suave */
         }
 
-        .autocomplete-prov-default {
+        .autocomplete-tipo-default {
             background-color: #ffffff; /* blanco por defecto */
         }
     </style>
@@ -62,6 +62,8 @@
     <script type="text/javascript">
         //esta variable global tendra por funcion afectar la logica de algunos controles
         //del filtro
+        // Bandera para evitar recursión infinita
+        let isInitializing = false;
         var modeloDato= "@filtro.Modelo";
        
 

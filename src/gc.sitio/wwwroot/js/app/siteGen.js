@@ -6,7 +6,7 @@ var nnControlCta03 = "";
 var nnControlCta04 = "";
 
 $(function () {
-    const mainContent = $("main"); // Ajusta el selector según tu estructura HTML
+    //const mainContent = $("main"); // Ajusta el selector según tu estructura HTML
 
     const modal = $("#msjModal");
     const btnAceptar = $("#btnMensajeAceptar");
@@ -16,7 +16,7 @@ $(function () {
         // Asegúrate de que aria-hidden no esté presente
         modal.removeAttr("aria-hidden");
 
-        mainContent.attr("inert", "true"); // Desactiva el contenido principal
+        //mainContent.attr("inert", "true"); // Desactiva el contenido principal
     });
 
     // Mover el foco al botón "Aceptar" cuando el modal se abre
@@ -29,7 +29,7 @@ $(function () {
         // Opcional: Si necesitas ocultar el modal de los lectores de pantalla
         modal.attr("aria-hidden", "true");
 
-        mainContent.removeAttr("inert"); // Reactiva el contenido principal
+        //mainContent.removeAttr("inert"); // Reactiva el contenido principal
     });
 
     // Restaurar el foco al elemento que activó el modal cuando se cierra

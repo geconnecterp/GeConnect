@@ -1,4 +1,5 @@
-﻿@model GridCore<ConsRecepcionProveedorDetalleDto>
+﻿@using static gc.infraestructura.Helpers.GridHelper
+@model GridCoreSmart<ConsRecepcionProveedorDetalleDto>
 
 @{
     var alt = true;
@@ -13,12 +14,12 @@
             <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridRpProvDet">
                 <thead class="table-dark">
                     <tr class="header">
-                        <th scope="col">Código</th>
-                        <th scope="col">Producto</th>
-                        <th scope="col">Orden de</th>
-                        <th scope="col">Unidad de</th>
-                        <th scope="col" colspan="3" class="text-sm-center bg-primary">Factura/Remito</th>
-                        <th scope="col" colspan="3" class="text-sm-center bg-secondary">Recepción</th>
+                        <th class="text-sm-center" scope="col">Código</th>
+                        <th class="text-sm-center" scope="col">Producto</th>
+                        <th class="text-sm-center" scope="col">Orden de</th>
+                        <th class="text-sm-center" scope="col">Unidad de</th>
+                        <th class="text-sm-center bg-primary" scope="col" colspan="3">Factura/Remito</th>
+                        <th class="text-sm-center bg-secondary" scope="col" colspan="3">Recepción</th>
 
                     </tr>
                     <tr class="header">
@@ -39,16 +40,16 @@
                         if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
                         
                         <tr class="@clase">
-                            <td class="text-sm-center">@item.P_id</td>
-                            <td class="text-sm-start">@item.P_desc</td>
-                            <td class="text-sm-center">@item.Oc_compte</td>
-                            <td class="text-sm-center">@item.Rpd_unidad_pres</td>
-                            <td class="text-sm-center">@item.Rpd_bulto_compte</td>
-                            <td class="text-sm-center">@item.Rpd_unidad_suelta_compte</td>
-                            <td class="text-sm-center">@item.Rpd_cantidad_compte</td>
-                            <td class="text-sm-center">@item.Rpd_bulto_recibidos</td>
-                            <td class="text-sm-center">@item.Rpd_unidad_suelta</td>
-                            <td class="text-sm-end">@item.Rpd_Cantidad</td>
+                            <td class="@Model.ObtenerClase(item.P_id)">@Model.FormatearDato(item.P_id,FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.P_desc)">@Model.FormatearDato(item.P_desc, FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.Oc_compte)">@Model.FormatearDato(item.Oc_compte, FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.Rpd_unidad_pres)">@Model.FormatearDato(item.Rpd_unidad_pres, FormatDato.Monto)</td>
+                            <td class="@Model.ObtenerClase(item.Rpd_bulto_compte)">@Model.FormatearDato(item.Rpd_bulto_compte, FormatDato.Monto)</td>
+                            <td class="@Model.ObtenerClase(item.Rpd_unidad_suelta_compte)">@Model.FormatearDato(item.Rpd_unidad_suelta_compte, FormatDato.Monto)</td>
+                            <td class="@Model.ObtenerClase(item.Rpd_cantidad_compte)">@Model.FormatearDato(item.Rpd_cantidad_compte, FormatDato.Monto)</td>
+                            <td class="@Model.ObtenerClase(item.Rpd_bulto_recibidos)">@Model.FormatearDato(item.Rpd_bulto_recibidos, FormatDato.Monto)</td>
+                            <td class="@Model.ObtenerClase(item.Rpd_unidad_suelta)">@Model.FormatearDato(item.Rpd_unidad_suelta, FormatDato.Monto)</td>
+                            <td class="@Model.ObtenerClase(item.Rpd_Cantidad)">@Model.FormatearDato(item.Rpd_Cantidad, FormatDato.Monto)</td>
                         </tr>
                     }
 

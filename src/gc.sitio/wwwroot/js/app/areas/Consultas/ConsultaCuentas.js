@@ -14,6 +14,7 @@ $(function () {
     //este evento esta en sitegen de manera estandar pero neceistaba ahora que afecte a otros componenes
     //de la vista 
     $("#chkRel01").on("click", function () {
+        if (isInitializing) return; // Evita la recursión
         if ($("#chkRel01").is(":checked")) {
             $("#Rel01").prop("disabled", false);
             $("#Rel01List").prop("disabled", false);
@@ -77,7 +78,9 @@ $(function () {
     
     
 
-    $("#controlConsultaCambio" + nnControlCta01).on("change", function () {
+    $("#controlConsultaCambio" + nnControlCta01).on("change", function (evento) {
+        evento.preventDefault();
+        evento.stopPropagation();
         //if (callbackConsultaCuenta !== null &&
         //    callbackConsultaCuenta !== "" &&
         //    callbackConsultaCuenta !== undefined) {
@@ -90,6 +93,7 @@ $(function () {
         $("#btnFiltro").trigger("click");
         presentarTabsConsulta();
         //inicio la primera presentacion de datos 
+        //ctrlconsultacambio();
     });
 
     //se debe tapar el evento en siteGen del autocompletar del #Rel01
@@ -106,13 +110,14 @@ $(function () {
                     data: data,
                     success: function (obj) {
                         response($.map(obj, function (item) {
-                            var texto = "" + item.descripcion + " ("+item.provId + ")";
-                            return { label: texto, value: item.descripcion, id: item.id, prov: item.provId };
+                            var tipo = ""; if (item.tipo === 'P') { tipo = 'Proveedor' } else { tipo = 'Cliente' }
+                            var texto = "" + item.descripcion + " ("+ item.id + ") ("+tipo + ")";
+                            return { label: texto, value: item.descripcion, id: item.id, tipo: item.tipo };
                         }));
                     }
                 })
             },
-            minLength: 4,
+            minLength: 3,
             select: function (event, ui) {
                 if ($("#Rel01List").has('option:contains("' + ui.item.id + '")').length === 0) {
                     $("#Rel01Item").val(ui.item.id);
@@ -123,11 +128,13 @@ $(function () {
                     $("#Rel01List").prop("disabled", true);
                     consCta = ui.item.id;
                     consRrss = ui.item.label;
-                    consProv = ui.item.prov;
-                    $("#controlConsultaCambio" + nnControlCta01).val(true).trigger("change");
+                    consTipo = ui.item.tipo;
+                    $("#controlConsultaCambio" + nnControlCta01).val(true);
+                    //no hacemos trigger como antes, ejecutamos el metodo aislado
+                    ctrlconsultacambio();
+
                     consultaCtaCte(1); //se selecciona la cuenta la pagina a visualizar es la primera
                 }
-                return true;
             }
         }).data("ui-autocomplete")._renderItem = function (ul, item) {
             //let bgColor = "";
@@ -142,12 +149,12 @@ $(function () {
             //    .css("background-color", bgColor)
             //    .append($("<div>").text(item.label))
             //    .appendTo(ul);
-            let className = "autocomplete-prov-default";
+            let className = "autocomplete-tipo-default";
 
-            if (item.prov === "P") {
-                className = "autocomplete-prov-p";
-            } else if (item.prov === "E") {
-                className = "autocomplete-prov-e";
+            if (item.tipo === "P") {
+                className = "autocomplete-tipo-p";
+            } else {
+                className = "autocomplete-tipo-e";
             }
 
             return $("<li>")
@@ -166,7 +173,35 @@ $(function () {
     $("#divFiltro").collapse("show");
 });
 
+function ControlaEstadoChkRel01() {
+    if (isInitializing) return; // Evita la recursión
+    if ($("#chkRel01").is(":checked")) {
+        $("#Rel01").prop("disabled", false);
+        $("#Rel01List").prop("disabled", false);
+        $("#Rel01").trigger("focus");
+    }
+    else {
+        $("#Rel01").prop("disabled", true).val("");
+        $("#Rel01List").prop("disabled", true).empty();
+        ocultarTabsConsulta();
+        window["inicializaCtrl" + nnControlCta01]();
+        inicializaPantallaConsulta();
+    }
+}
+function ctrlconsultacambio() {
+    window["AsignaDatosCuenta" + nnControlCta01]();
+
+    //muestro el control
+    $("#controlCta" + nnControlCta01).show("fast");
+    //oculto el filtro
+    $("#btnFiltro").trigger("click");
+    presentarTabsConsulta();
+}
+
 function inicializaPantallaConsulta() {
+    if (isInitializing) return; // Evita la recursión
+    isInitializing = true;
+
     var f = new Date();
     $("#fechaD").val(formatoFechaYMD(restarFecha(f, 365)));
     //definición de fecha para vencimientos
@@ -194,7 +229,11 @@ function inicializaPantallaConsulta() {
     $("#divRpProv").empty().html("<span class='text - danger'>SIN REGISTROS</span>");
     $("#divRpProvDet").empty().html("<span class='text - danger'>SIN REGISTROS</span>");
     $("#BtnLiTab01").trigger("click");
-    
+
+    // Llama al evento click de #chkRel01 solo si no está ya en ejecución
+    $("#chkRel01").trigger("click");
+
+    isInitializing = false; // Restablece la bandera
 }
 
 function presentarTabsConsulta() {

@@ -1,5 +1,5 @@
-﻿
-@model GridCore<ConsCtaCteDto>
+﻿@using static gc.infraestructura.Helpers.GridHelper
+@model GridCoreSmart<ConsCtaCteDto>
 
 @{
     var dataMod = new ConsCtaCteDto();
@@ -14,14 +14,14 @@
             <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridCtaCte">
                 <thead class="table-dark">
                     <tr class="header">
-                        <th scope="col">FECHA</th>
-                        <th scope="col">N° MOV.</th>
-                        <th scope="col">TIPO COMPTE</th>
-                        <th scope="col">N° COMPTE</th>
-                        <th scope="col">CONCEPTO</th>
-                        <th scope="col">DEBE</th>                        
-                        <th scope="col">HABER</th>
-                        <th scope="col">SALDO</th>
+                        <th class="text-sm-center" scope="col">FECHA</th>
+                        <th class="text-sm-center" scope="col">N° MOV.</th>
+                        <th class="text-sm-center" scope="col">TIPO COMPTE</th>
+                        <th class="text-sm-center" scope="col">N° COMPTE</th>
+                        <th class="text-sm-center" scope="col">CONCEPTO</th>
+                        <th class="text-sm-center" scope="col">DEBE</th>
+                        <th class="text-sm-center" scope="col">HABER</th>
+                        <th class="text-sm-center" scope="col">SALDO</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -33,14 +33,14 @@
                             @* 
                                 onclick="selectRegProd(this,'tbGridCtaCte')"
                                 ondblclick="selectAbmRegDbl(this,'tbGridBarr')" *@
-                            <td class="text-sm-center">@item.Cc_fecha.ToDateTime().ToShortDateString()</td>
-                            <td class="text-sm-start">@item.Dia_movi</td>
-                            <td class="text-sm-end">@item.Tco_desc</td>
-                            <td class="text-sm-start">@item.Cm_compte</td>
-                            <td class="text-sm-start">@item.Cc_concepto</td>
-                            <td class="text-sm-start">@item.Cc_debe</td>
-                            <td class="text-sm-end">@item.Cc_haber</td>
-                            <td class="text-sm-end">@item.Cc_saldo</td>
+                            <td class="@Model.ObtenerClase(item.Cc_fecha)">@Model.FormatearDato(item.Cc_fecha,FormatDato.Fecha)</td>
+                            <td class="@Model.ObtenerClase(item.Dia_movi)">@Model.FormatearDato(item.Dia_movi,FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.Tco_desc)">@Model.FormatearDato(item.Tco_desc, FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.Cm_compte)">@Model.FormatearDato(item.Cm_compte, FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.Cc_concepto)">@Model.FormatearDato(item.Cc_concepto, FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.Cc_debe)">@Model.FormatearDato(item.Cc_debe, FormatDato.Monto)</td>
+                            <td class="@Model.ObtenerClase(item.Cc_haber)">@Model.FormatearDato(item.Cc_haber, FormatDato.Monto)</td>
+                            <td class="@Model.ObtenerClase(item.Cc_saldo)">@Model.FormatearDato(item.Cc_saldo, FormatDato.Monto)</td>
                         </tr>
                     }
                 </tbody>

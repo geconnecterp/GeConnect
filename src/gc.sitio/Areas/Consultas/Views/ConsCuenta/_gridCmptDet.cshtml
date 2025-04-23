@@ -1,5 +1,6 @@
-﻿
-@model GridCore<ConsCompDetDto>
+﻿@using static gc.infraestructura.Helpers.GridHelper
+
+@model GridCoreSmart<ConsCompDetDto>
 
 @{
     var dataMod = new ConsCompDetDto();
@@ -21,22 +22,22 @@
             <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridCmpteDet">
                 <thead class="table-dark">
                     <tr class="header">
-                        <th scope="col">FECHA</th>
-                        <th scope="col">N° Cmpte</th>
-                        <th scope="col">Neto</th>
-                        <th scope="col">IVA</th>
-                        <th scope="col">TOTAL</th>
+                        <th class="text-sm-center" scope="col">FECHA</th>
+                        <th class="text-sm-center" scope="col">N° Cmpte</th>
+                        <th class="text-sm-center" scope="col">Neto</th>
+                        <th class="text-sm-center" scope="col">IVA</th>
+                        <th class="text-sm-center" scope="col">TOTAL</th>
                         @if(!provId.Equals('P')){
-                            <th scope="col">N° DOC</th>
-                            <th scope="col">Cmpte ORI</th>
+                            <th class="text-sm-center" scope="col">N° DOC</th>
+                            <th class="text-sm-center" scope="col">Cmpte ORI</th>
                         }
                         else{
-                            <th scope="col">N° Or.Pago</th>
-                            <th scope="col">Cmpte ORI</th>
+                            <th class="text-sm-center" scope="col">N° Or.Pago</th>
+                            <th class="text-sm-center" scope="col">Cmpte ORI</th>
                         }
 
-                        <th scope="col">CARGADO</th>
-                        <th scope="col">USUARIO</th>
+                        <th class="text-sm-center" scope="col">CARGADO</th>
+                        <th class="text-sm-center" scope="col">USUARIO</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -55,25 +56,25 @@
                             ft_tot += item.Cm_total;
                         }
                         <tr class="@clase" >
-                            <td class="text-sm-center">@item.Cm_fecha.ToShortDateString()</td>
+                            <td class="@Model.ObtenerClase(item.Cm_fecha)">@Model.FormatearDato(item.Cm_fecha,FormatDato.Fecha)</td>
                             @{
-                                string cmpt = $"({item.Tco_id}){item.Cm_compte}";
+                                string cmpt = $"({item.Tco_id}) {item.Cm_compte}";
                             }
-                            <td class="text-sm-end">@cmpt</td>
-                            <td class="text-sm-end">@item.Cm_neto</td>
-                            <td class="text-sm-end">@item.Cm_iva</td>
-                            <td class="text-sm-end">@item.Cm_total</td>
+                            <td class="@Model.ObtenerClase('c')">@Model.FormatearDato(cmpt,FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.Cm_neto)">@Model.FormatearDato(item.Cm_neto, FormatDato.Monto)</td>
+                            <td class="@Model.ObtenerClase(item.Cm_iva)">@Model.FormatearDato(item.Cm_iva, FormatDato.Monto)</td>
+                            <td class="@Model.ObtenerClase(item.Cm_total)">@Model.FormatearDato(item.Cm_total, FormatDato.Monto)</td>
                             @if(provId.Equals('P')){
-                                <td class="text-sm-end">@item.Op_compte</td>
-                                <td class="text-sm-end">@cmpt</td>
+                                <td class="@Model.ObtenerClase(item.Op_compte)">@Model.FormatearDato(item.Op_compte, FormatDato.Ninguno)</td>
+                                <td class="@Model.ObtenerClase('c')">@Model.FormatearDato(cmpt, FormatDato.Ninguno)</td>
                             }
                             else{
-                                <td class="text-sm-end">@item.Doc_compte</td>
+                                <td class="@Model.ObtenerClase(item.Doc_compte)">@Model.FormatearDato(item.Doc_compte, FormatDato.Ninguno)</td>
                                 cmpt = $"({item.Tco_id_ori}){item.Cm_compte_ori}";
-                                <td class="text-sm-end">@cmpt</td>
+                                <td class="@Model.ObtenerClase('c')">@Model.FormatearDato(cmpt, FormatDato.Ninguno)</td>
                             }
-                            <td class="text-sm-center">@item.Cm_fecha_carga.ToShortDateString()</td>
-                            <td class="text-sm-end">@item.Usu_id</td>
+                            <td class="@Model.ObtenerClase(item.Cm_fecha_carga)">@Model.FormatearDato(item.Cm_fecha_carga, FormatDato.FechaCompleta)</td>
+                            <td class="@Model.ObtenerClase(item.Usu_id)">@Model.FormatearDato(item.Usu_id, FormatDato.Ninguno)</td>
                         </tr>
                     }
                     @{

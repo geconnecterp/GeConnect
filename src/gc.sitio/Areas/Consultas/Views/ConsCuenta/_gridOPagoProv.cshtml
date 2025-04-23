@@ -1,4 +1,5 @@
-﻿@model GridCore<ConsOrdPagosDto>
+﻿@using static gc.infraestructura.Helpers.GridHelper
+@model GridCoreSmart<ConsOrdPagosDto>
 
 @{
     var alt = true;
@@ -12,10 +13,10 @@
             <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridOpProv">
                 <thead class="table-dark">
                     <tr class="header">
-                        <th scope="col">OP N°</th>
-                        <th scope="col">TIPO</th>
-                        <th scope="col">FECHA</th>
-                        <th scope="col">IMPORTE</th>
+                        <th class="text-sm-center" scope="col">OP N°</th>
+                        <th class="text-sm-center" scope="col">TIPO</th>
+                        <th class="text-sm-center" scope="col">FECHA</th>
+                        <th class="text-sm-center" scope="col">IMPORTE</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -23,10 +24,10 @@
                     {
                         if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
                         <tr class="@clase" onclick="SeleccionarPeriodo(this,'tbGridOpProv')">
-                            <td class="text-sm-center">@item.Op_compte</td>
-                            <td class="text-sm-start">@item.Opt_desc</td>
-                            <td class="text-sm-center">@item.Op_fecha.ToShortDateString()</td>
-                            <td class="text-sm-end">@item.Op_importe</td>
+                            <td class="@Model.ObtenerClase(item.Op_compte)">@Model.FormatearDato(item.Op_compte,FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.Opt_desc)">@Model.FormatearDato(item.Opt_desc, FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.Op_fecha)">@Model.FormatearDato(item.Op_fecha, FormatDato.Fecha)</td>
+                            <td class="@Model.ObtenerClase(item.Op_importe)">@Model.FormatearDato(item.Op_importe, FormatDato.Monto)</td>
                         </tr>
                     }
 

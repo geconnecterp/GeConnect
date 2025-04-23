@@ -1,4 +1,5 @@
-﻿@model GridCore<ConsRecepcionProveedorDto>
+﻿@using static gc.infraestructura.Helpers.GridHelper
+@model GridCoreSmart<ConsRecepcionProveedorDto>
 
 @{
     var alt = true;
@@ -12,17 +13,17 @@
             <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridRpProv">
                 <thead class="table-dark">
                     <tr class="header">
-                        <th scope="col">RP N°</th>
-                        <th scope="col">Fecha</th>
-                        <th scope="col">Cmpte RP</th>
-                        <th scope="col">Cmpte CtaCte</th>
-                        <th scope="col">Sucursal</th>
-                        <th scope="col">OC</th>
-                        <th scope="col">Ctl</th>
-                        <th scope="col">Fac</th>
-                        <th scope="col">Val</th>
-                        <th scope="col">Mod</th>
-                        <th scope="col">Col</th>
+                        <th class="text-sm-center" scope="col">RP N°</th>
+                        <th class="text-sm-center" scope="col">Fecha</th>
+                        <th class="text-sm-center" scope="col">Cmpte RP</th>
+                        <th class="text-sm-center" scope="col">Cmpte CtaCte</th>
+                        <th class="text-sm-center" scope="col">Sucursal</th>
+                        <th class="text-sm-center" scope="col">OC</th>
+                        <th class="text-sm-center" scope="col">Ctl</th>
+                        <th class="text-sm-center" scope="col">Fac</th>
+                        <th class="text-sm-center" scope="col">Val</th>
+                        <th class="text-sm-center" scope="col">Mod</th>
+                        <th class="text-sm-center" scope="col">Col</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -30,33 +31,37 @@
                     {
                         if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
                         <tr class="@clase" onclick="SeleccionarPeriodo(this,'tbGridRpProv')">
-                            <td class="text-sm-center">@item.Rp_compte</td>
-                            <td class="text-sm-start">@item.Rp_fecha.ToShortDateString()</td>
+                            <td class="@Model.ObtenerClase(item.Rp_compte)">@Model.FormatearDato(item.Rp_compte,FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.Rp_fecha)">@Model.FormatearDato(item.Rp_fecha, FormatDato.Fecha)</td>
                             @{
-                                string cmpte = $"({item.Tco_id_rp}){item.Cm_compte_rp}";
-                                string cctacte = $"({item.Tco_id}){item.Cm_compte}";
+                                string cmpte = $"({item.Tco_id_rp}) {item.Cm_compte_rp}";
+                                string cctacte = $"({item.Tco_id}) {item.Cm_compte}";
                             }
-                            <td class="text-sm-center">@cmpte</td>
-                            <td class="text-sm-end">@cctacte</td>
-                            <td class="text-sm-end">@item.Adm_nombre</td>
-                            <td class="text-sm-end">@item.Oc_compte</td>
-                            <td class="text-sm-center">@if (item.Controlada) { <i class="bx bx-check text-success"></i> }</td>
-                            <td class="text-sm-center">
+                            <td class="@Model.ObtenerClase('c')">@Model.FormatearDato(cmpte, FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase('c')">@Model.FormatearDato(cctacte, FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.Adm_nombre)">@Model.FormatearDato(item.Adm_nombre, FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.Oc_compte)">@Model.FormatearDato(item.Oc_compte, FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.Controlada)">
+                                @if (item.Controlada)
+                                {
+                                    <i class="bx bx-check text-success"></i>
+                                }</td>
+                            <td class="@Model.ObtenerClase(item.Factura)">
                                 @if (item.Factura)
                                 {
                                     <i class="bx bx-check text-danger"></i>
                                 }</td>
-                            <td class="text-sm-center">
+                            <td class="@Model.ObtenerClase(item.Valorizada)">
                                 @if (item.Valorizada)
                                 {
                                     <i class="bx bx-check text-primary"></i>
                                 }</td>
-                            <td class="text-sm-center">
+                            <td class="@Model.ObtenerClase(item.Modificada)">
                                 @if (item.Modificada)
                                 {
                                     <i class="bx bx-check text-info"></i>
                                 }</td>
-                            <td class="text-sm-center">
+                            <td class="@Model.ObtenerClase(item.Colector)">
                                 @if (item.Colector)
                                 {
                                     <i class="bx bx-check text-secondary"></i>

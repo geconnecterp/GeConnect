@@ -26,21 +26,16 @@
     {
         cuentaCCv3@(nombreControl) = consCta;
         rrssSeleccionada@(nombreControl) = consRrss;
-        provIdSeleccionado@(nombreControl) = consProv;
+        tipoSeleccionado@(nombreControl) = consTipo;
 
 
-        if(provIdSeleccionado@(nombreControl)==="C"){
+        if(tipoSeleccionado@(nombreControl)==="C"){
             $("#iconTipoCCv2@(nombreControl)").addClass("text-success");
-        }
-        else if(provIdSeleccionado@(nombreControl)==="B"){
-            $("#iconTipoCCv2@(nombreControl)").addClass("text-info");
-        }
-        else if(provIdSeleccionado@(nombreControl)==="P"){
+        }       
+        else {
             $("#iconTipoCCv2@(nombreControl)").addClass("text-danger");
         }
-        else{
-            $("#iconTipoCCv2@(nombreControl)").addClass("text-secondary");
-        }
+        
         $("#cuentaId@(nombreControl)").val(consCta);
         $("#rrss@(nombreControl)").val(consRrss);
 
@@ -53,7 +48,7 @@
         $("#rrss@(nombreControl)").val("");
         cuentaCCv3@(nombreControl)= "";
         rrssSeleccionada@(nombreControl) = "";
-        provIdSeleccionado@(nombreControl) = "";
+        tipoSeleccionado@(nombreControl) = "";
 
         $("#controlCta@(nombreControl)").hide();
     }

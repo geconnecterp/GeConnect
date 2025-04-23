@@ -41,12 +41,10 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             _abmSv = abmServicio;
         }
 
-        public async Task<IActionResult> Index(bool actualizar)
+        public  IActionResult Index(bool actualizar)
         {
             //se definen variables iniciales
-            List<UserDto> lista;
-            MetadataGrid metadata;
-            GridCore<UserDto> grillaDatos;
+
             try
             {
                 var auth = EstaAutenticado;
@@ -88,7 +86,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
         {
             List<UserDto> lista;
             MetadataGrid metadata;
-            GridCore<UserDto> grillaDatos;
+            GridCoreSmart<UserDto> grillaDatos;
             RespuestaGenerica<EntidadBase> response = new();
             try
             {
@@ -116,7 +114,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 metadata = MetadataGeneral;
 
                 //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
-                grillaDatos = GenerarGrilla(ListaDeUsuarios, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
+                grillaDatos = GenerarGrillaSmart(ListaDeUsuarios, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 
                 //string volver = Url.Action("index", "home", new { area = "" });
                 //ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
