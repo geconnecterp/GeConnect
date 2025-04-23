@@ -48,6 +48,7 @@ namespace gc.infraestructura.Dtos.Gen
 
         public Func<object?, string> ObtenerClase => GridHelper.ObtenerClaseAlineacion;
         public Func<object?, FormatDato, string> FormatearDato => GridHelper.FormatearDato;
+
         //public Func<object?, string> FormatearDato => GridHelper.FormatearDato;
     }
 }

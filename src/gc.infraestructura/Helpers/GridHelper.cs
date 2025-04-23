@@ -70,6 +70,9 @@ namespace gc.infraestructura.Helpers
             if (dato is char c && formato== FormatDato.BandSN)
                 return c == 'S' ? "SI" : "NO";
 
+            if (dato is int i && formato == FormatDato.Entero)
+                return i.ToString("N");
+
             if (dato is decimal d && formato== FormatDato.Monto)
                 return d.ToString("N2");
 
@@ -96,7 +99,8 @@ namespace gc.infraestructura.Helpers
             Hora,
             FechaHora,
             BandSN,
-            Monto
+            Monto,
+            Entero
         }
     }
 }

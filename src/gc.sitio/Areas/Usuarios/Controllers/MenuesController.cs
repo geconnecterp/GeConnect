@@ -55,7 +55,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
         {
             List<PerfilDto> lista;
             MetadataGrid metadata;
-            GridCore<PerfilDto> grillaDatos;
+            GridCoreSmart<PerfilDto> grillaDatos;
             RespuestaGenerica<EntidadBase> response = new();
             try
             {
@@ -83,7 +83,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 metadata = MetadataGeneral;
 
                 //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
-                grillaDatos = GenerarGrilla(PerfilesBuscados, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
+                grillaDatos = GenerarGrillaSmart(PerfilesBuscados, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 
                 //string volver = Url.Action("index", "home", new { area = "" });
                 //ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
@@ -160,7 +160,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
         public async Task<IActionResult> buscarPerfilUsers(string id)
         {
             RespuestaGenerica<EntidadBase> response = new();
-            GridCore<PerfilUserDto> grillaDatos;
+            GridCoreSmart<PerfilUserDto> grillaDatos;
 
             try
             {
@@ -171,7 +171,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 }
                
                 UsuariosXPerfil = per.ListaEntidad;
-                grillaDatos = GenerarGrilla(UsuariosXPerfil, "usu_apellidoynombre");
+                grillaDatos = GenerarGrillaSmart(UsuariosXPerfil, "usu_apellidoynombre");
 
 
                 return View("_gridPerfilUsers", grillaDatos);

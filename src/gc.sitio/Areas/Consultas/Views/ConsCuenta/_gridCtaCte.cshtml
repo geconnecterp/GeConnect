@@ -16,8 +16,6 @@
                     <tr class="header">
                         <th class="text-sm-center" scope="col">FECHA</th>
                         <th class="text-sm-center" scope="col">N° MOV.</th>
-                        <th class="text-sm-center" scope="col">TIPO COMPTE</th>
-                        <th class="text-sm-center" scope="col">N° COMPTE</th>
                         <th class="text-sm-center" scope="col">CONCEPTO</th>
                         <th class="text-sm-center" scope="col">DEBE</th>
                         <th class="text-sm-center" scope="col">HABER</th>
@@ -29,15 +27,13 @@
                     {
                         if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
-                        <tr class="@clase" >
-                            @* 
-                                onclick="selectRegProd(this,'tbGridCtaCte')"
-                                ondblclick="selectAbmRegDbl(this,'tbGridBarr')" *@
+                        <tr class="@clase" onclick="selectReg(this,'tbGridCtaCte')">
+                            @{
+                                string concepto = $"{item.Tco_desc} {item.Cm_compte} {item.Cc_concepto}";
+                            }
                             <td class="@Model.ObtenerClase(item.Cc_fecha)">@Model.FormatearDato(item.Cc_fecha,FormatDato.Fecha)</td>
-                            <td class="@Model.ObtenerClase(item.Dia_movi)">@Model.FormatearDato(item.Dia_movi,FormatDato.Ninguno)</td>
-                            <td class="@Model.ObtenerClase(item.Tco_desc)">@Model.FormatearDato(item.Tco_desc, FormatDato.Ninguno)</td>
-                            <td class="@Model.ObtenerClase(item.Cm_compte)">@Model.FormatearDato(item.Cm_compte, FormatDato.Ninguno)</td>
-                            <td class="@Model.ObtenerClase(item.Cc_concepto)">@Model.FormatearDato(item.Cc_concepto, FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.Dia_movi)">@Model.FormatearDato(item.Dia_movi,FormatDato.Ninguno)</td>                            
+                            <td class="@Model.ObtenerClase(item.Cc_concepto)">@Model.FormatearDato(concepto, FormatDato.Ninguno)</td>
                             <td class="@Model.ObtenerClase(item.Cc_debe)">@Model.FormatearDato(item.Cc_debe, FormatDato.Monto)</td>
                             <td class="@Model.ObtenerClase(item.Cc_haber)">@Model.FormatearDato(item.Cc_haber, FormatDato.Monto)</td>
                             <td class="@Model.ObtenerClase(item.Cc_saldo)">@Model.FormatearDato(item.Cc_saldo, FormatDato.Monto)</td>
