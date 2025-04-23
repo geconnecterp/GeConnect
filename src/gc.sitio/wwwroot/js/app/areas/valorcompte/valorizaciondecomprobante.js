@@ -7,6 +7,7 @@
 		$("input#Rel03").prop("disabled", true);
 		$("input#Rel04").prop("disabled", true);
 	});
+	$(document).on("change", "#listaComptesPend", ControlaListaCompteSelected);
 	InicializarPantallaDeFiltros();
 });
 
@@ -18,6 +19,30 @@ function InicializarPantallaDeFiltros() {
 	$("#chkRel01").prop("disabled", true);
 	$("#divFiltro").collapse("show");
 	document.getElementById("Rel01").focus();
+}
+
+function ControlaListaCompteSelected() {
+	if ($("#listaComptesPend").val() != "")
+		cmCompteSelected = $("#listaComptesPend").val();
+	else
+		cmCompteSelected = "";
+	if (cmCompteSelected != "") {
+		//Cargar Detalles de Rpr y Dtos en el Backend, y devolver la grilla de Valorizacion
+		var cm_compte = cmCompteSelected;
+		data = { cm_compte };
+		PostGenHtml(data, cargarDatosParaValorizarURL, function (obj) {
+			if (obj.error === true) {
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				$("#divGridConcepto").html(obj);
+				FormatearValores("#tbGridConcepto", 1);
+			}
+		});
+	}
 }
 
 $("#Rel01").autocomplete({
@@ -84,33 +109,3 @@ function addHandlerOnChkRel04_Click() {
 		}
 	});
 }
-
-////codigo generico para autocomplete 03
-//$("#Rel03").autocomplete({
-//	source: function (request, response) {
-
-//		data = { prefix: request.term }; Rel03
-
-//		$.ajax({
-//			url: autoComRel03Url,
-//			type: "POST",
-//			dataType: "json",
-//			data: data,
-//			success: function (obj) {
-//				response($.map(obj, function (item) {
-//					var texto = item.descripcion;
-//					return { label: texto, value: item.descripcion, id: item.id, prov: item.provId };
-//				}));
-//			}
-//		})
-//	},
-//	minLength: 3,
-//	select: function (event, ui) {
-//		if ($("#Rel03List").has('option:contains("' + ui.item.id + '")').length === 0) {
-//			$("#Rel03Item").val(ui.item.id);
-//			var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
-//			$("#Rel03List").append(opc);
-//		}
-//		return true;
-//	}
-//});

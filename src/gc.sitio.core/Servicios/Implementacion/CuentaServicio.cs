@@ -14,6 +14,8 @@ using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Org.BouncyCastle.Asn1.Ocsp;
+using Org.BouncyCastle.Ocsp;
 using System;
 using System.Net;
 using System.Reflection;
@@ -46,6 +48,9 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string ObtenerCompteCargaCtaAsoc = "/GetCompteCargaCtaAsoc";
 		private const string SetCompteCargaConfirma = "/CompteCargaConfirma";
 		private const string ObtenerComptePendientesDeValorizar = "/GetComprobantesPendientesDeValorizar";
+		private const string ObtenerCompteDetalleRpr = "/GetComprobantesDetalleRpr";
+		private const string ObtenerCompteDtos = "/GetComprobantesDtos";
+		private const string ObtenerCompteValorizaLista = "/GetCompteValorizaLista";
 		//
 		private readonly AppSettings _appSettings;
 		public CuentaServicio(IOptions<AppSettings> options, ILogger<CuentaServicio> logger) : base(options, logger)
@@ -979,6 +984,99 @@ namespace gc.sitio.core.Servicios.Implementacion
 			{
 				_logger.LogError(ex, "Error al intentar obtener los datos de la cuenta.");
 				throw;
+			}
+		}
+
+		public List<CompteValorizaDetalleRprListaDto> ObtenerComprobantesDetalleRpr(CompteValorizaRprDtosRequest request, string token)
+		{
+			ApiResponse<List<CompteValorizaDetalleRprListaDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerCompteDetalleRpr}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().Result;
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros cm_compte:{request.cm_compte} tco_id:{request.tco_id} cta_id:{request.cta_id}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<CompteValorizaDetalleRprListaDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().Result;
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public List<CompteValorizaDtosListaDto> ObtenerComprobantesDtos(CompteValorizaRprDtosRequest request, string token)
+		{
+			ApiResponse<List<CompteValorizaDtosListaDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerCompteDtos}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().Result;
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros cm_compte:{request.cm_compte} tco_id:{request.tco_id} cta_id:{request.cta_id}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<CompteValorizaDtosListaDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().Result;
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public List<CompteValorizaListaDto> ObtenerComprobanteValorizaLista(CompteValorizaRequest request, string token)
+		{
+			ApiResponse<List<CompteValorizaListaDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerCompteValorizaLista}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().Result;
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros cm_compte:{request.cm_compte} tco_id:{request.tco_id} cta_id:{request.cta_id}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<CompteValorizaListaDto>>>(stringData);
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().Result;
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
 			}
 		}
 	}

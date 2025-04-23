@@ -462,5 +462,50 @@ namespace gc.api.Controllers.Almacen
 
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CompteValorizaDetalleRprListaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetComprobantesDetalleRpr(CompteValorizaRprDtosRequest request)
+		{
+			ApiResponse<List<CompteValorizaDetalleRprListaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _cuentasSv.ObtenerComprobantesDetalleRpr(request);
+
+			response = new ApiResponse<List<CompteValorizaDetalleRprListaDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CompteValorizaDtosListaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetComprobantesDtos(CompteValorizaRprDtosRequest request)
+		{
+			ApiResponse<List<CompteValorizaDtosListaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _cuentasSv.ObtenerComprobantesDtos(request);
+
+			response = new ApiResponse<List<CompteValorizaDtosListaDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CompteValorizaListaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetCompteValorizaLista(CompteValorizaRequest request)
+		{
+			ApiResponse<List<CompteValorizaListaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _cuentasSv.ObtenerCompteValorizaLista(request);
+
+			response = new ApiResponse<List<CompteValorizaListaDto>>(res);
+
+			return Ok(response);
+		}
 	}
 }

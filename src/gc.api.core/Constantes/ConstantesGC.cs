@@ -315,6 +315,9 @@
 			public const string SP_COMPTE_CARGA_A_CTA = "SPGECO_Compte_Carga_A_Cta";
 			public const string SP_COMPTE_CARGA_CONFIRMA = "SPGECO_Compte_Carga_Confirma";
 			public const string SP_COMPTE_VALORIZA_PENDIENTES = "SPGECO_Compte_Valoriza_Pendientes";
+			public const string SP_COMPTE_VALORIZA_DETALLE_RPR = "SPGECO_Compte_Valoriza_Detalle_RPR";
+			public const string SP_COMPTE_VALORIZA_DTOS = "SPGECO_Compte_Valoriza_Dtos";
+			public const string SP_COMPTE_VALORIZA = "SPGECO_Compte_Valoriza";
 		}
 	}
 }
