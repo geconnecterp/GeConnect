@@ -3,7 +3,7 @@
 @{
     var titulo = Model.TituloLeyend;
 }
-@* <form id="frmFiltro" asp-action="index" asp-controller="abmproducto" asp-area="abms" method="get"> *@
+<form id="frmFiltro" asp-action="index" asp-controller="abmproducto" asp-area="abms" method="get">
     @if (Model.Rel01 != null && Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA))
     {
         <div class="row  mb-1 mt-1">
@@ -24,6 +24,7 @@
             </div>
         </div>
     }
+
     <fieldset id="fs">
         <legend>
             <span id="tituloLegend"></span>
@@ -54,7 +55,7 @@
                 </div>
             </div>
         }
-        @if (!Model.Modelo.Equals(ModeloFilter.CONSULTAS) && !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA) && !Model.Modelo.Equals(ModeloFilter.COMPROBANTE_DE_COMPRA))
+        @if (!Model.Modelo.Equals(ModeloFilter.CONSULTAS) && !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA) && !Model.Modelo.Equals(ModeloFilter.COMPROBANTE_DE_COMPRA) && !Model.Modelo.Equals(ModeloFilter.VALORIZACION_COMPROBANTE))
         {
             <div class="row  mb-1 mt-1">
                 <div class=" col-md-4 col-sm-12">
@@ -124,7 +125,7 @@
             </div>
         }
         <!---------------------------BUSQUEDA DE PROVEEDORES------------------------------------>
-        @if (Model.Rel01 != null && !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA))
+        @if (Model.Rel01 != null && !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA) && !Model.Modelo.Equals(ModeloFilter.VALORIZACION_COMPROBANTE))
         {
             <div class="row">
                 <div class="col-sm-6">
@@ -147,6 +148,26 @@
                 <div class="col-sm-6">
                     @Html.ListBox("Rel01List", null, new { @class = "form-control", @disabled = "disabled" })
                     @* @Html.ListBoxFor(p => p.Rel01, Model.Rel01.Select(X => new SelectListItem { Text = X.Descripcion, Value = X.Id }), new { @class = "form-control", @disabled = "disabled" }) *@
+                </div>
+            </div>
+        }
+        @if (Model.Rel01 != null && Model.Modelo.Equals(ModeloFilter.VALORIZACION_COMPROBANTE))
+        {
+            <div class="row  mb-1 mt-1">
+                <div class=" col-md-6 col-sm-12">
+                    <div class="input-group input-group-sm">
+                        <div class="form-check form-check-inline form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkRel01" />
+                            <label class="form-check-label" for="chkRel01" id="lbRel01"></label>
+                        </div>
+                    </div>
+                    <div class="input-group  input-group-sm">
+                        <span class="input-group-text">Nombre</span>
+                        <input type="text" class="form-control inputEditable" name="Rel01" id="Rel01" disabled />
+                        @Html.Hidden("Rel01Item")
+                    </div>
+                </div>
+                <div class=" col-sm-6" id="divLstComptesPendiente">
                 </div>
             </div>
         }
@@ -279,4 +300,5 @@
             <button type="button" id="btnBuscar" class="btn btn-sm btn-success"><i class="bx bx-sm bx-search"></i></button>
         </div>
     </div>
-@* </form> *@
+</form>
+

@@ -1,0 +1,73 @@
+﻿@using static gc.infraestructura.Constantes.Constantes
+@model QueryFilters
+@{
+	Layout = "~/views/shared/_Layout.cshtml";
+	var filtro = new QueryFilters()
+			{
+				Rel01 = new List<string>(),
+				Modelo = ModeloFilter.VALORIZACION_COMPROBANTE,
+			};
+}
+
+<div class="container">
+	<div class="row">
+		<div class="col-md-6">
+			<div class="d-flex justify-content-sm-around">
+				<button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
+					<i class="bx bx-filter bx-xs"></i>
+				</button>
+
+				<button class="btn btn-primary btn-sm mt-1 me-1" type="button" id="btnDetalle" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle">
+					<i class="bx bx-arrow-to-bottom bx-xs"></i>
+				</button>
+			</div>
+		</div>
+	</div>
+	<div class="collapse" id="divFiltro" style="">
+		<partial name="_filtroBase" model="filtro" />
+		@Html.Hidden("pagEstado", false);
+	</div>
+	<div class="collapse" id="divDetalle" style="">
+		<div class="row">
+			<div class="col-md-5">
+				<div class="input-group input-group-sm mt-1" id="divProveedorSeleccionado">
+					<span class="input-group-text fixed-lbl-for-abm-70">Cuenta: </span>
+					<input type="text" id="CtaID" class="form-control" style="max-width: 100px;text-align: right;" disabled />
+					<input type="text" id="CtaDesc" class="form-control" disabled />
+				</div>
+			</div>
+		</div>
+		<ul class="nav nav-tabs mt-2" role="tablist" id="tabsValorizacionDeComprobante">
+			<li class="nav-item" role="presentation" id="tabComprobantes">
+				<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-home" aria-controls="navs-top-home" aria-selected="true" id="btnTabComprobantes">
+					Comprobantes
+				</button>
+			</li>
+			<li class="nav-item" role="presentation" id="tabDetalle">
+				<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-profile" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1" id="btnTabDetalle">
+					Detalle
+				</button>
+			</li>
+		</ul>
+		<div class="tab-content">
+			<div class="tab-pane fade show active" id="navs-top-home" role="tabpanel">
+				<div id="divComprobantes">
+				</div>
+			</div>
+			<div class="tab-pane fade" id="navs-top-profile" role="tabpanel">
+				<div id="divDetalles">
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section scripts {
+	<script type="text/javascript">
+		var cmCompteSelected = "";
+		var autoComRel01Url = "@Url.Action("BuscarProvs", "valorizaciondecomprobante", new { area = "Compras" })";
+		var autoComRel03Url = "@Url.Action("CargarComprobantesDelProveedorSeleccionado", "valorizaciondecomprobante", new { area = "Compras" })";
+		var cargarComprobantesDelProveedorSeleccionadoUrl = "@Url.Action("CargarComprobantesDelProveedorSeleccionado", "valorizaciondecomprobante", new { area = "Compras" })";
+	</script>
+	<script src="~/js/app/areas/valorcompte/valorizaciondecomprobante.js"></script>
+}

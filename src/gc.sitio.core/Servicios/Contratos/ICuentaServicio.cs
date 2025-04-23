@@ -29,5 +29,6 @@ namespace gc.sitio.core.Servicios.Contratos
         List<RprAsociadosDto> GetCompteCargaRprAsoc(string ctaId, string token);
         List<NotasACuenta> GetCompteCargaCtaAsoc(string ctaId, string token);
         RespuestaGenerica<RespuestaDto> CompteCargaConfirma(CompteCargaConfirmaRequest request, string token);
+		List<CompteValorizaPendienteListaDto> ObtenerComprobantesPendientesDeValorizar(string ctaId, string token);
 	}
 }

@@ -63,6 +63,7 @@ namespace gc.infraestructura.Constantes
             public const string REPARTIDORES = "REPARTIDORES";
             public const string ZONAS = "ZONAS";
             public const string PLAN_CUENTA = "PLAN_CUENTA";
-        }
+			public const string VALORIZACION_COMPROBANTE = "VALORIZACION_COMPROBANTE";
+		}
     }
 }

@@ -447,5 +447,20 @@ namespace gc.api.Controllers.Almacen
 
 			return Ok(response);
 		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CompteValorizaPendienteListaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetComprobantesPendientesDeValorizar(string cta_id)
+		{
+			ApiResponse<List<CompteValorizaPendienteListaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			var res = _cuentasSv.ObtenerComprobantesPendientesDeValorizar(cta_id);
+
+			response = new ApiResponse<List<CompteValorizaPendienteListaDto>>(res);
+
+			return Ok(response);
+		}
 	}
 }

@@ -450,5 +450,16 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<CompteValorizaPendienteListaDto> ObtenerComprobantesPendientesDeValorizar(string ctaId)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_COMPTE_VALORIZA_PENDIENTES;
+			var ps = new List<SqlParameter>()
+			{
+				new("@cta_id",ctaId),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<CompteValorizaPendienteListaDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

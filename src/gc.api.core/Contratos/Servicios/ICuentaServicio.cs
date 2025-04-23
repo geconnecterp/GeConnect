@@ -31,5 +31,6 @@ namespace gc.api.core.Contratos.Servicios
         List<RprAsociadosDto> GetCompteCargaRprAsoc(string ctaId);
         List<NotasACuenta> GetCompteCargaCtaAsoc(string ctaId);
         List<RespuestaDto> CompteCargaConfirma(CompteCargaConfirmaRequest request);
+		List<CompteValorizaPendienteListaDto> ObtenerComprobantesPendientesDeValorizar(string ctaId);
 	}
 }
