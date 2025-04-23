@@ -38,8 +38,8 @@ function ControlaListaCompteSelected() {
 				}, false, ["Aceptar"], "error!", null);
 			}
 			else {
-				$("#divGridConcepto").html(obj);
-				FormatearValores("#tbGridConcepto", 1);
+				$("#divComprobantes").html(obj);
+				//FormatearValores("#tbGridConcepto", 1);
 			}
 		});
 	}

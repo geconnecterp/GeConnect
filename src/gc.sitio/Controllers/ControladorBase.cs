@@ -1902,6 +1902,11 @@ namespace gc.sitio.Controllers
 			var listaDetalle = new StaticPagedList<T>(lista, 1, 999, lista.Count);
 			return new GridCore<T>() { ListaDatos = listaDetalle, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
 		}
+		public GridCoreSmart<T> ObtenerGridCoreSmart<T>(List<T> lista) where T : Dto
+		{
+			var listaDetalle = new StaticPagedList<T>(lista, 1, 999, lista.Count);
+			return new GridCoreSmart<T>() { ListaDatos = listaDetalle, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
+		}
 		#endregion
 
 		public JsonResult AnalizarRespuesta(RespuestaGenerica<RespuestaDto> res, string mensajeDeRespuesta = "")

@@ -124,8 +124,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 				};
 				var responseValorizar=_cuentaServicio.ObtenerComprobanteValorizaLista(reqValorizados, TokenCookie);
 
-				model.GrillaValoracion = ObtenerGridCore<CompteValorizaListaDto>(responseValorizar);
-				model.GrillaDescuentosFin = ObtenerGridCore<CompteValorizaDtosListaDto>(responseDtos);
+				model.GrillaValoracion = ObtenerGridCoreSmart<CompteValorizaListaDto>(responseValorizar);
+				model.GrillaDescuentosFin = ObtenerGridCoreSmart<CompteValorizaDtosListaDto>(responseDtos);
 				///TODO MARCE: Seguir aca
 				return PartialView("_tabComprobante", model);
 			}
@@ -150,7 +150,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 		private void CargarDatosIniciales(bool actualizar)
 		{
-
+			if (ProveedoresLista.Count == 0 || actualizar)
+				ObtenerProveedores(_cuentaServicio);
 		}
 		protected void CargarComprobantesDelProveedor(string ctaId, ICuentaServicio _cuentaServicio)
 		{

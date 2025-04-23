@@ -168,7 +168,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		//TODO MARCE: Probar este método y verificar que funcione correctamente, ademas probar que levante la lista admin en el primer tab
 		/// <summary>
 		/// Modifica el estado de una Orden de Compra (OC) específica.
 		/// </summary>
