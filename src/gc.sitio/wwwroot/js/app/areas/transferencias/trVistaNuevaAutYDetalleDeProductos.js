@@ -449,8 +449,8 @@ function ExisteProductoEnTR(p_id) {
 }
 
 
-function analizaEnterInput(e) {
-}
+//function analizaEnterInput(e) {
+//}
 
 function cargarProductos() {
 }

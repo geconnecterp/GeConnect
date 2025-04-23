@@ -1049,28 +1049,28 @@ function BuscarProductosTabOC() {
 	});
 }
 
-function analizaEnterInput(e) {
-	if (e.which == "13") {
-		tope = 99999;
-		index = -1;
-		//obtengo los inputs dentro del div
-		var inputss = $("main :input:not(:disabled)");
-		tope = inputss.length;
-		//le el id del input en el que he dado enter
-		var cual = $(this).prop("id");
-		inputss.each(function (i, item) {
-			if ($(item).prop("id") === cual) {
-				index = i;
-				return false;
-			}
-		});
-		if (index > -1 && tope > index + 1) {
-			inputss[index + 1].focus();
-		}
+//function analizaEnterInput(e) {
+//	if (e.which == "13") {
+//		tope = 99999;
+//		index = -1;
+//		//obtengo los inputs dentro del div
+//		var inputss = $("main :input:not(:disabled)");
+//		tope = inputss.length;
+//		//le el id del input en el que he dado enter
+//		var cual = $(this).prop("id");
+//		inputss.each(function (i, item) {
+//			if ($(item).prop("id") === cual) {
+//				index = i;
+//				return false;
+//			}
+//		});
+//		if (index > -1 && tope > index + 1) {
+//			inputss[index + 1].focus();
+//		}
 
-	}
-	return true;
-}
+//	}
+//	return true;
+//}
 
 function addMaskInEditableCells() {
 	if ($("#tbListaProductoOC").length != 0) {
