@@ -8,6 +8,7 @@
 		$("input#Rel04").prop("disabled", true);
 	});
 	$(document).on("change", "#listaComptesPend", ControlaListaCompteSelected);
+	$(document).on("click", "#btnAceptarDescFinanc", AceptarDescFinanc); 
 	InicializarPantallaDeFiltros();
 });
 
@@ -20,7 +21,42 @@ function InicializarPantallaDeFiltros() {
 	$("#divFiltro").collapse("show");
 	document.getElementById("Rel01").focus();
 	MostrarDatosDeCuenta(false);
-	
+
+}
+
+function AceptarDescFinanc() {
+	var esValido = true;
+	if ($("#listaConcDescFinanc").val() == "") {
+		esValido = false;
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un Concepto.", function () {
+			$("#msjModal").modal("hide");
+			document.getElementById("listaConcDescFinanc").focus();
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	if ($("#chkSobreTotal")[0].checked) {
+		if ($("#DescFinanc_dto").inputmask('unmaskedvalue') <= 0) {
+			esValido = false;
+			AbrirMensaje("ATENCIÓN", "Debe prorcionar un valor mayor a 0.", function () {
+				$("#msjModal").modal("hide");
+				document.getElementById("DescFinanc_dto").focus();
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+	}
+	else {
+		if ($("#DescFinanc_dto_importe").inputmask('unmaskedvalue') <= 0) {
+			esValido = false;
+			AbrirMensaje("ATENCIÓN", "Debe prorcionar un valor mayor a 0.", function () {
+				$("#msjModal").modal("hide");
+				document.getElementById("DescFinanc_dto_importe").focus();
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+	}
+	if (esValido) {
+		//TODO MARCE : completar el metodo para agregar un elemento en la lista Desc Financ.
+	}
 }
 
 function selectListaValorizacion(x) { }
@@ -86,9 +122,15 @@ function ControlaListaCompteSelected() {
 					//ActualizarVisualizacionDeControlesABMDescFinanc();
 				});
 				ActualizarVisualizacionDeControlesABMDescFinanc();
+				AplicarMascarasEnInput_Section_DescFinanc();
 			}
 		});
 	}
+}
+
+function AplicarMascarasEnInput_Section_DescFinanc() {
+	getMaskForMoneyType("#DescFinanc_dto_importe");
+	getMaskForDiscountType("#DescFinanc_dto");
 }
 
 function ActualizarEstadoChecks_SobreTotal() {
@@ -104,6 +146,8 @@ function ActualizarEstadoChecks_SobreTotal() {
 		$("#divDescFinancDto").collapse("hide");
 		$("#divDescFinancDtoImporte").collapse("show");
 	}
+	$("#DescFinanc_dto_importe").val(0);
+	$("#DescFinanc_dto").val(0);
 }
 
 function ActualizarEstadoChecks_NetoFijo() {
@@ -119,6 +163,8 @@ function ActualizarEstadoChecks_NetoFijo() {
 		$("#divDescFinancDto").collapse("show");
 		$("#divDescFinancDtoImporte").collapse("hide");
 	}
+	$("#DescFinanc_dto_importe").val(0);
+	$("#DescFinanc_dto").val(0);
 }
 
 function ActualizarVisualizacionDtoSobreTotal() {
@@ -134,9 +180,9 @@ function ActualizarVisualizacionDtoSobreTotal() {
 }
 
 function ActualizarVisualizacionDeControlesABMDescFinanc() {
-	
+
 	var auxNetoFijo = $("#chkNetoFijo")[0].checked;
-	
+
 	if (auxNetoFijo) {
 		$("#divDescFinancDto").collapse("hide");
 		$("#divDescFinancDtoImporte").collapse("show");
@@ -218,5 +264,36 @@ function addHandlerOnChkRel04_Click() {
 			$("#listaComptesPend").prop("disabled", true).val("");
 			cmCompteSelected = "";
 		}
+	});
+}
+
+function getMaskForDiscountType(selector) {
+	$(selector).inputmask({
+		alias: 'numeric',
+		groupSeparator: '.',
+		radixPoint: ',',
+		digits: 1,
+		digitsOptional: false,
+		allowMinus: false,
+		prefix: '',
+		suffix: '',
+		min: 0,
+		max: 50,
+		unmaskAsNumber: true
+	});
+}
+
+function getMaskForMoneyType(selector) {
+	$(selector).inputmask({
+		alias: 'numeric',
+		groupSeparator: '.',
+		radixPoint: ',',
+		digits: 2,
+		digitsOptional: false,
+		allowMinus: false,
+		prefix: '',
+		suffix: '',
+		rightAlign: true,
+		unmaskAsNumber: true
 	});
 }
