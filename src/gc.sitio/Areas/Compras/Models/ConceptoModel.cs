@@ -5,6 +5,6 @@ namespace gc.sitio.Areas.Compras.Models
 {
 	public class ConceptoModel
 	{
-		public GridCore<OrdenDeCompraConceptoDto> ResumenGrilla { get; set; }
+		public GridCoreSmart<OrdenDeCompraConceptoDto> ResumenGrilla { get; set; }
 	}
 }

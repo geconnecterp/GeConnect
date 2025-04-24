@@ -69,14 +69,14 @@ namespace gc.pocket.site.Controllers
 
         public string Etiqueta
         {
-            get { return _context.HttpContext.Session.GetString("Etiqueta"); }
+            get { return _context.HttpContext?.Session.GetString("Etiqueta"); }
 
             set { HttpContext.Session.SetString("Etiqueta", value); }
         }
 
         public string Token
         {
-            get { return _context.HttpContext.Session.GetString("JwtToken"); }
+            get { return _context.HttpContext?.Session.GetString("JwtToken"); }
 
             set { HttpContext.Session.SetString("JwtToken", value); }
         }
@@ -87,7 +87,7 @@ namespace gc.pocket.site.Controllers
             {
                 //la Cookie se resgardará con una etiqueta distinta cada vez que se mandara desde el servidor. 
                 //var nombre = User.Claims.First(c => c.Type.Contains("name")).Value;
-                return _context.HttpContext.Request.Cookies[Etiqueta];
+                return _context.HttpContext?.Request.Cookies[Etiqueta];
             }
 
         }
@@ -238,7 +238,7 @@ namespace gc.pocket.site.Controllers
                 }
                 return box.Trim().ToUpper();
             }
-            set { if(_context.HttpContext != null) _context.HttpContext.Session.SetString("BoxSeleccionado", value); }
+            set { if(_context.HttpContext != null) _context.HttpContext?.Session.SetString("BoxSeleccionado", value); }
 
         }
 
@@ -260,7 +260,7 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("ListaTipoAjuste");
+                var json = _context.HttpContext?.Session.GetString("ListaTipoAjuste");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return new List<TipoAjusteDeStockDto>();
@@ -270,7 +270,7 @@ namespace gc.pocket.site.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("ListaTipoAjuste", json);
+                _context.HttpContext?.Session.SetString("ListaTipoAjuste", json);
             }
         }
 
@@ -278,7 +278,7 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("ProveedoresLista");
+                var json = _context.HttpContext?.Session.GetString("ProveedoresLista");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return new List<ProveedorListaDto>();
@@ -288,7 +288,7 @@ namespace gc.pocket.site.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("ProveedoresLista", json);
+                _context.HttpContext?.Session.SetString("ProveedoresLista", json);
             }
         }
 
@@ -296,7 +296,7 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("RubroLista");
+                var json = _context.HttpContext?.Session.GetString("RubroLista");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return new List<RubroListaDto>();
@@ -306,7 +306,7 @@ namespace gc.pocket.site.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("RubroLista", json);
+                _context.HttpContext?.Session.SetString("RubroLista", json);
             }
         }
 
@@ -328,7 +328,7 @@ namespace gc.pocket.site.Controllers
 
             get
             {
-                var json = _context.HttpContext.Session.GetString("ProductosParaControlar");
+                var json = _context.HttpContext?.Session.GetString("ProductosParaControlar");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
@@ -338,7 +338,7 @@ namespace gc.pocket.site.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("ProductosParaControlar", json);
+                _context.HttpContext?.Session.SetString("ProductosParaControlar", json);
             }
         }
 
@@ -346,7 +346,7 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("ProductosSeleccionados");
+                var json = _context.HttpContext?.Session.GetString("ProductosSeleccionados");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
@@ -356,7 +356,7 @@ namespace gc.pocket.site.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("ProductosSeleccionados", json);
+                _context.HttpContext?.Session.SetString("ProductosSeleccionados", json);
             }
         }
 
@@ -365,7 +365,7 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                string json = _context.HttpContext.Session.GetString("ProductoBase");
+                string json = _context.HttpContext?.Session.GetString("ProductoBase");
                 if (string.IsNullOrEmpty(json))
                 {
                     return new();
@@ -375,7 +375,7 @@ namespace gc.pocket.site.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("ProductoBase", json);
+                _context.HttpContext?.Session.SetString("ProductoBase", json);
             }
         }
         #endregion
@@ -387,7 +387,7 @@ namespace gc.pocket.site.Controllers
 
             get
             {
-                string json = _context.HttpContext.Session.GetString("InfoProdStkDId");
+                string json = _context.HttpContext?.Session.GetString("InfoProdStkDId");
                 if (string.IsNullOrEmpty(json))
                 {
                     return string.Empty;
@@ -397,14 +397,14 @@ namespace gc.pocket.site.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("InfoProdStkDId", json);
+                _context.HttpContext?.Session.SetString("InfoProdStkDId", json);
             }
         }
         protected List<InfoProdStkD> InfoProdStkDRegs
         {
             get
             {
-                string json = _context.HttpContext.Session.GetString("InfoProdStkDRegs");
+                string json = _context.HttpContext?.Session.GetString("InfoProdStkDRegs");
                 if (string.IsNullOrEmpty(json))
                 {
                     return new();
@@ -414,7 +414,7 @@ namespace gc.pocket.site.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("InfoProdStkDRegs", json);
+                _context.HttpContext?.Session.SetString("InfoProdStkDRegs", json);
             }
         }
         #endregion
@@ -426,7 +426,7 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                string json = _context.HttpContext.Session.GetString("InfoProdStkBoxesIds");
+                string json = _context.HttpContext?.Session.GetString("InfoProdStkBoxesIds");
                 if (string.IsNullOrEmpty(json))
                 {
                     return (string.Empty, string.Empty);
@@ -436,14 +436,14 @@ namespace gc.pocket.site.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("InfoProdStkBoxesIds", json);
+                _context.HttpContext?.Session.SetString("InfoProdStkBoxesIds", json);
             }
         }
         protected List<InfoProdStkBox> InfoProdStkBoxesRegs
         {
             get
             {
-                string json = _context.HttpContext.Session.GetString("InfoProdStkBoxesRegs");
+                string json = _context.HttpContext?.Session.GetString("InfoProdStkBoxesRegs");
                 if (string.IsNullOrEmpty(json))
                 {
                     return new();
@@ -453,7 +453,7 @@ namespace gc.pocket.site.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("InfoProdStkBoxesRegs", json);
+                _context.HttpContext?.Session.SetString("InfoProdStkBoxesRegs", json);
             }
         }
         #endregion
@@ -463,7 +463,7 @@ namespace gc.pocket.site.Controllers
 
             get
             {
-                string json = _context.HttpContext.Session.GetString("InfoProdStkAId");
+                string json = _context.HttpContext?.Session.GetString("InfoProdStkAId");
                 if (string.IsNullOrEmpty(json))
                 {
                     return string.Empty;
@@ -473,14 +473,14 @@ namespace gc.pocket.site.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("InfoProdStkAId", json);
+                _context.HttpContext?.Session.SetString("InfoProdStkAId", json);
             }
         }
         protected List<InfoProdStkA> InfoProdStkARegs
         {
             get
             {
-                string json = _context.HttpContext.Session.GetString("InfoProdStkARegs");
+                string json = _context.HttpContext?.Session.GetString("InfoProdStkARegs");
                 if (string.IsNullOrEmpty(json))
                 {
                     return new();
@@ -490,7 +490,7 @@ namespace gc.pocket.site.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("InfoProdStkARegs", json);
+                _context.HttpContext?.Session.SetString("InfoProdStkARegs", json);
             }
         }
         #endregion
@@ -504,7 +504,7 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                string json = _context.HttpContext.Session.GetString("InfoProdMovStkIds");
+                string json = _context.HttpContext?.Session.GetString("InfoProdMovStkIds");
                 if (string.IsNullOrEmpty(json))
                 {
                     return string.Empty;
@@ -514,14 +514,14 @@ namespace gc.pocket.site.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("InfoProdMovStkIds", json);
+                _context.HttpContext?.Session.SetString("InfoProdMovStkIds", json);
             }
         }
         protected List<InfoProdMovStk> InfoProdMovStkRegs
         {
             get
             {
-                string json = _context.HttpContext.Session.GetString("InfoProdMovStkRegs");
+                string json = _context.HttpContext?.Session.GetString("InfoProdMovStkRegs");
                 if (string.IsNullOrEmpty(json))
                 {
                     return new();
@@ -531,7 +531,7 @@ namespace gc.pocket.site.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("InfoProdMovStkRegs", json);
+                _context.HttpContext?.Session.SetString("InfoProdMovStkRegs", json);
             }
         }
         #endregion
@@ -541,7 +541,7 @@ namespace gc.pocket.site.Controllers
 
             get
             {
-                string json = _context.HttpContext.Session.GetString("InfoProdLPId");
+                string json = _context.HttpContext?.Session.GetString("InfoProdLPId");
                 if (string.IsNullOrEmpty(json))
                 {
                     return string.Empty;
@@ -551,14 +551,14 @@ namespace gc.pocket.site.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("InfoProdLPId", json);
+                _context.HttpContext?.Session.SetString("InfoProdLPId", json);
             }
         }
         protected List<InfoProdLP> InfoProdLPRegs
         {
             get
             {
-                string json = _context.HttpContext.Session.GetString("InfoProdLPRegs");
+                string json = _context.HttpContext?.Session.GetString("InfoProdLPRegs");
                 if (string.IsNullOrEmpty(json))
                 {
                     return new();
@@ -568,7 +568,7 @@ namespace gc.pocket.site.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("InfoProdLPRegs", json);
+                _context.HttpContext?.Session.SetString("InfoProdLPRegs", json);
             }
         }
         #endregion
@@ -579,7 +579,7 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("AutorizacionesPendientes");
+                var json = _context.HttpContext?.Session.GetString("AutorizacionesPendientes");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
@@ -589,7 +589,7 @@ namespace gc.pocket.site.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("AutorizacionesPendientes", json);
+                _context.HttpContext?.Session.SetString("AutorizacionesPendientes", json);
             }
         }
 
@@ -597,7 +597,7 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("AutorizacionPendienteSeleccionada");
+                var json = _context.HttpContext?.Session.GetString("AutorizacionPendienteSeleccionada");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return null;
@@ -607,7 +607,7 @@ namespace gc.pocket.site.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("AutorizacionPendienteSeleccionada", json);
+                _context.HttpContext?.Session.SetString("AutorizacionPendienteSeleccionada", json);
             }
         }
 
@@ -615,7 +615,7 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                string json = _context.HttpContext.Session.GetString("RPRProductoTemp");
+                string json = _context.HttpContext?.Session.GetString("RPRProductoTemp");
                 if (string.IsNullOrEmpty(json))
                 {
                     return new();
@@ -625,7 +625,7 @@ namespace gc.pocket.site.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("RPRProductoTemp", json);
+                _context.HttpContext?.Session.SetString("RPRProductoTemp", json);
             }
         }
 
@@ -633,7 +633,7 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                string json = _context.HttpContext.Session.GetString("ProductoGenRegs");
+                string json = _context.HttpContext?.Session.GetString("ProductoGenRegs");
                 if (string.IsNullOrEmpty(json))
                 {
                     return new();
@@ -643,7 +643,7 @@ namespace gc.pocket.site.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("ProductoGenRegs", json);
+                _context.HttpContext?.Session.SetString("ProductoGenRegs", json);
             }
         }
 
@@ -655,7 +655,7 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("RemitosPendientes");
+                var json = _context.HttpContext?.Session.GetString("RemitosPendientes");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
@@ -665,7 +665,7 @@ namespace gc.pocket.site.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("RemitosPendientes", json);
+                _context.HttpContext?.Session.SetString("RemitosPendientes", json);
             }
         }
 
@@ -673,7 +673,7 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("RemitoActual");
+                var json = _context.HttpContext?.Session.GetString("RemitoActual");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return null;
@@ -683,7 +683,7 @@ namespace gc.pocket.site.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("RemitoActual", json);
+                _context.HttpContext?.Session.SetString("RemitoActual", json);
             }
         }
 
@@ -695,7 +695,7 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var txt = _context.HttpContext.Session.GetString("TIModuloActual");
+                var txt = _context.HttpContext?.Session.GetString("TIModuloActual");
                 if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
                 {
                     return Constantes.ValoresDefault.TI_MODID;
@@ -706,7 +706,7 @@ namespace gc.pocket.site.Controllers
             {
 
                 if (_context.HttpContext != null)
-                    _context.HttpContext.Session.SetString("TIModuloActual", value);
+                    _context.HttpContext?.Session.SetString("TIModuloActual", value);
             }
         }
 
@@ -714,7 +714,7 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var txt = _context.HttpContext.Session.GetString("TIControlSalida");
+                var txt = _context.HttpContext?.Session.GetString("TIControlSalida");
                 if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
                 {
                     return false;
@@ -724,7 +724,7 @@ namespace gc.pocket.site.Controllers
             set
             {
                 var valor = value.ToString();
-                _context.HttpContext.Session.SetString("TIControlSalida", valor);
+                _context.HttpContext?.Session.SetString("TIControlSalida", valor);
             }
         }
 
@@ -733,7 +733,7 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("TIActual");
+                var json = _context.HttpContext?.Session.GetString("TIActual");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return new();
@@ -743,14 +743,14 @@ namespace gc.pocket.site.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("TIActual", json);
+                _context.HttpContext?.Session.SetString("TIActual", json);
             }
         }
         public List<AutorizacionTIDto> ListadoTIAutoPendientes
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("ListadoTIAutoPendientes");
+                var json = _context.HttpContext?.Session.GetString("ListadoTIAutoPendientes");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
@@ -760,7 +760,7 @@ namespace gc.pocket.site.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("ListadoTIAutoPendientes", json);
+                _context.HttpContext?.Session.SetString("ListadoTIAutoPendientes", json);
             }
         }
 
@@ -768,7 +768,7 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("ListaProductosActual");
+                var json = _context.HttpContext?.Session.GetString("ListaProductosActual");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
@@ -778,7 +778,7 @@ namespace gc.pocket.site.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("ListaProductosActual", json);
+                _context.HttpContext?.Session.SetString("ListaProductosActual", json);
             }
         }
 
@@ -786,7 +786,7 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("ListaProductosSegunBox");
+                var json = _context.HttpContext?.Session.GetString("ListaProductosSegunBox");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
@@ -796,7 +796,7 @@ namespace gc.pocket.site.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("ListaProductosSegunBox", json);
+                _context.HttpContext?.Session.SetString("ListaProductosSegunBox", json);
             }
         }
 
@@ -804,7 +804,7 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("TiposMotivo");
+                var json = _context.HttpContext?.Session.GetString("TiposMotivo");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
@@ -814,7 +814,7 @@ namespace gc.pocket.site.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("TiposMotivo", json);
+                _context.HttpContext?.Session.SetString("TiposMotivo", json);
             }
         }
 
@@ -851,13 +851,13 @@ namespace gc.pocket.site.Controllers
             return result.ToList();
         }
 
-        protected GridCore<T> GenerarGrilla<T>(List<T>? lista, string nnCol, int cantReg, int pagina, int totalReg, int totalPag = 0, string sortDir = "ASC")
+        protected GridCoreSmart<T> GenerarGrilla<T>(List<T>? lista, string nnCol, int cantReg, int pagina, int totalReg, int totalPag = 0, string sortDir = "ASC")
         {
             var l = new StaticPagedList<T>(lista, pagina, cantReg, lista.Count);
 
-            return new GridCore<T>() { ListaDatos = l, CantidadReg = cantReg, PaginaActual = pagina, CantidadPaginas = totalPag, Sort = nnCol, SortDir = sortDir };
+            return new GridCoreSmart<T>() { ListaDatos = l, CantidadReg = cantReg, PaginaActual = pagina, CantidadPaginas = totalPag, Sort = nnCol, SortDir = sortDir };
         }
-        protected GridCore<T> GenerarGrilla<T>(List<T>? lista, string sort)
+        protected GridCoreSmart<T> GenerarGrilla<T>(List<T>? lista, string sort)
         {
             return GenerarGrilla(lista, sort, _options.NroRegistrosPagina, 1, 99999);
         }

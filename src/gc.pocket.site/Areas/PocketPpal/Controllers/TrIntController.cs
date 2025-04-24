@@ -157,7 +157,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 return RedirectToAction("Login", "Token", new { area = "seguridad" });
             }
 
-            GridCore<AutorizacionTIDto> grid;
+            GridCoreSmart<AutorizacionTIDto> grid;
             try
             {
                 var autos = await _productoServicio.TRObtenerAutorizacionesPendientes(AdministracionId, UserName, TI_ModId, TokenCookie);
@@ -304,7 +304,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         [HttpPost]
         public async Task<IActionResult> PresentarBoxDeProductos()
         {
-            GridCore<BoxRubProductoDto> grid;
+            GridCoreSmart<BoxRubProductoDto> grid;
             try
             {
                 var regs = await _productoServicio.PresentarBoxDeProductos(tr: TIActual.Ti, admId: AdministracionId, usuId: UserName, token: TokenCookie);
@@ -331,18 +331,18 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             return PartialView("_gridTIBox", grid);
         }
 
-        private GridCore<BoxRubProductoDto> ObtenerGrillaDeBoxRubros(List<BoxRubProductoDto> regs)
+        private GridCoreSmart<BoxRubProductoDto> ObtenerGrillaDeBoxRubros(List<BoxRubProductoDto> regs)
         {
             var lista = new StaticPagedList<BoxRubProductoDto>(regs, 1, 999, regs.Count);
 
-            return new GridCore<BoxRubProductoDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" };
+            return new GridCoreSmart<BoxRubProductoDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" };
 
         }
 
         [HttpPost]
         public async Task<IActionResult> PresentarRubroDeProductos()
         {
-            GridCore<BoxRubProductoDto> response;
+            GridCoreSmart<BoxRubProductoDto> response;
             try
             {
                 var regs = await _productoServicio.PresentarRubrosDeProductos(tr: TIActual.Ti, admId: AdministracionId, usuId: UserName, token: TokenCookie);
@@ -370,12 +370,12 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         }
 
 
-        private GridCore<AutorizacionTIDto> ObtenerAutorizaciones(List<AutorizacionTIDto> autos)
+        private GridCoreSmart<AutorizacionTIDto> ObtenerAutorizaciones(List<AutorizacionTIDto> autos)
         {
 
             var lista = new StaticPagedList<AutorizacionTIDto>(autos, 1, 999, autos.Count);
 
-            return new GridCore<AutorizacionTIDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Ti", SortDir = "ASC" };
+            return new GridCoreSmart<AutorizacionTIDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Ti", SortDir = "ASC" };
         }
 
         #endregion
@@ -500,7 +500,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         [HttpPost]
         public async Task<IActionResult> BuscaTIListaProductos(string orden)
         {
-            GridCore<TiListaProductoDto> grid;
+            GridCoreSmart<TiListaProductoDto> grid;
             try
             {
                 var selec = TIActual;
@@ -542,11 +542,11 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             return PartialView("_gridTIListaProducto", grid);
         }
 
-        private GridCore<TiListaProductoDto> ObtenerGrillaTIListaProductos(List<TiListaProductoDto> regs)
+        private GridCoreSmart<TiListaProductoDto> ObtenerGrillaTIListaProductos(List<TiListaProductoDto> regs)
         {
             var lista = new StaticPagedList<TiListaProductoDto>(regs, 1, 999, regs.Count);
 
-            return new GridCore<TiListaProductoDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Ti", SortDir = "ASC" };
+            return new GridCoreSmart<TiListaProductoDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Ti", SortDir = "ASC" };
 
         }
 

@@ -28,7 +28,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("PaginaSector");
+				var txt = _context.HttpContext?.Session.GetString("PaginaSector");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return 0;
@@ -38,7 +38,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			set
 			{
 				var valor = value.ToString();
-				_context.HttpContext.Session.SetString("PaginaSector", valor);
+				_context.HttpContext?.Session.SetString("PaginaSector", valor);
 			}
 		}
 
@@ -46,7 +46,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("DirSortSector");
+				var txt = _context.HttpContext?.Session.GetString("DirSortSector");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return "asc";
@@ -56,14 +56,14 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			set
 			{
 				var valor = value.ToString();
-				_context.HttpContext.Session.SetString("DirSortSector", valor);
+				_context.HttpContext?.Session.SetString("DirSortSector", valor);
 			}
 		}
 		public List<ABMSectorSearchDto> SectoresBuscados
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("SectoresBuscados");
+				var json = _context.HttpContext?.Session.GetString("SectoresBuscados");
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return [];
@@ -73,7 +73,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("SectoresBuscados", json);
+				_context.HttpContext?.Session.SetString("SectoresBuscados", json);
 			}
 		}
 
@@ -84,7 +84,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("SubSectores");
+				var json = _context.HttpContext?.Session.GetString("SubSectores");
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return [];
@@ -94,7 +94,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("SubSectores", json);
+				_context.HttpContext?.Session.SetString("SubSectores", json);
 			}
 		}
 
@@ -102,7 +102,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("MetadataSector");
+				var txt = _context.HttpContext?.Session.GetString("MetadataSector");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return new MetadataGrid();
@@ -112,7 +112,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			set
 			{
 				var valor = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("MetadataSector", valor);
+				_context.HttpContext?.Session.SetString("MetadataSector", valor);
 			}
 
 		}

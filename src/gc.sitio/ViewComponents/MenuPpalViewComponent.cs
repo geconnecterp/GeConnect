@@ -30,15 +30,15 @@ namespace gc.sitio.ViewComponents
             RespuestaGenerica<MenuPpalDto> menu = new RespuestaGenerica<MenuPpalDto>() { Ok = false, Mensaje = "No se pudo generar el menu" };
             try
             {
-                var p = _context.HttpContext.Session.GetString("UserPerfilSeleccionado");
+                var p = _context.HttpContext?.Session.GetString("UserPerfilSeleccionado");
                 if (p == null)
                 {
                     throw new Exception("No se localizó el perfil");
                 }
                 var perfil = JsonConvert.DeserializeObject<PerfilUserDto>(p);
-                var adm = _context.HttpContext.Session.GetString("ADMID");
-                var etiqueta = _context.HttpContext.Session.GetString("Etiqueta");
-                var token = _context.HttpContext.Request.Cookies[etiqueta];
+                var adm = _context.HttpContext?.Session.GetString("ADMID");
+                var etiqueta = _context.HttpContext?.Session.GetString("Etiqueta");
+                var token = _context.HttpContext?.Request.Cookies[etiqueta];
 
 
                 menu = _mnSv.ObtenerMenu(perfil.perfil_id, perfil.usu_id, _appSettings.MenuId, adm, token).GetAwaiter().GetResult();

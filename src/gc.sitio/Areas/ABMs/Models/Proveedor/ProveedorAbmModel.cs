@@ -18,10 +18,10 @@ namespace gc.sitio.Areas.ABMs.Models
 		public SelectList ComboTipoRetGan { get; set; }
 		public SelectList ComboTipoRetIB { get; set; }
 		public ProveedorABMDto Proveedor { get; set; }
-		public GridCore<CuentaFPDto> CuentaFormasDePago { get; set; }
-		public GridCore<CuentaContactoDto> CuentaContactos { get; set; }
-		public GridCore<CuentaObsDto> CuentaObs { get; set; }
-		public GridCore<CuentaNotaDto> CuentaNota { get; set; }
+		public GridCoreSmart<CuentaFPDto> CuentaFormasDePago { get; set; }
+		public GridCoreSmart<CuentaContactoDto> CuentaContactos { get; set; }
+		public GridCoreSmart<CuentaObsDto> CuentaObs { get; set; }
+		public GridCoreSmart<CuentaNotaDto> CuentaNota { get; set; }
 
 		public ProveedorAbmModel()
 		{

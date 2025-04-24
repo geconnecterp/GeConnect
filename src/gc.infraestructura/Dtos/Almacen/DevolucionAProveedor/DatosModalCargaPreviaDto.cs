@@ -7,11 +7,11 @@ namespace gc.infraestructura.Dtos.Almacen.DevolucionAProveedor
 	{
 		public SelectList ComboDepositos { get; set; } = new SelectList(new List<SelectListItem>());
 		public SelectList ComboBoxes { get; set; } = new SelectList(new List<SelectListItem>());	
-        public GridCore<DevolucionPrevioCargadoDto> ListaProductos { get; set; }
+        public GridCoreSmart<DevolucionPrevioCargadoDto> ListaProductos { get; set; }
 
 		public DatosModalCargaPreviaDPDto()
 		{
-			ListaProductos = new GridCore<DevolucionPrevioCargadoDto>();
+			ListaProductos = new GridCoreSmart<DevolucionPrevioCargadoDto>();
 		}
     }
 }

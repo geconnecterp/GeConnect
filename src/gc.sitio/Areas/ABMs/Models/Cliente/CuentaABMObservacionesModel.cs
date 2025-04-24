@@ -7,7 +7,7 @@ namespace gc.sitio.Areas.ABMs.Models
 	public class CuentaABMObservacionesModel
 	{
 		public SelectList ComboTipoObs { get; set; }
-		public GridCore<CuentaObsDto> CuentaObservaciones { get; set; }
+		public GridCoreSmart<CuentaObsDto> CuentaObservaciones { get; set; }
         public ObservacionesModel Observacion { get; set; }
 
 		public CuentaABMObservacionesModel()

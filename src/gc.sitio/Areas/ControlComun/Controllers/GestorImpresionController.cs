@@ -167,7 +167,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
         {
             var listType = Type.GetType(tipo);
             // Recuperar los datos de la variable de sesión
-            var datos = _context.HttpContext.Session.GetObjectFromJson($"datos_{moduloId}_{nodoId}", listType);
+            var datos = _context.HttpContext?.Session.GetObjectFromJson($"datos_{moduloId}_{nodoId}", listType);
 
             // Convertir los datos a Excel
             using (var workbook = new XLWorkbook())
@@ -230,7 +230,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
         {
             var tipoObjeto = Type.GetType(tipo);
             // Recuperar los datos de la variable de sesión
-            var datos = _context.HttpContext.Session.GetObjectFromJson($"datos_{moduloId}_{nodoId}", tipoObjeto);
+            var datos = _context.HttpContext?.Session.GetObjectFromJson($"datos_{moduloId}_{nodoId}", tipoObjeto);
 
             // Convertir los datos a TXT
             var sb = new StringBuilder();

@@ -76,7 +76,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		{
 			List<ABMMedioDePagoSearchDto> lista;
 			MetadataGrid metadata;
-			GridCore<ABMMedioDePagoSearchDto> grillaDatos;
+			GridCoreSmart<ABMMedioDePagoSearchDto> grillaDatos;
 			RespuestaGenerica<EntidadBase> response = new();
 			try
 			{
@@ -113,7 +113,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 				}
 				metadata = MetadataGeneral;
 				//no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
-				grillaDatos = GenerarGrilla(MediosDePagoBuscados, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
+				grillaDatos = GenerarGrillaSmart(MediosDePagoBuscados, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 
 				return View("_gridAbmMedioDePago", grillaDatos);
 			}
@@ -179,7 +179,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 				var model = new MedioDePagoAbmOpcCuotaModel()
 				{
 					OpcionCuota = new OpcionCuotaModel(),
-					ListaOpcionesCuota = ObtenerGridCore<OpcionCuotaDto>(opcCuota)
+					ListaOpcionesCuota = ObtenerGridCoreSmart<OpcionCuotaDto>(opcCuota)
 				};
 				return PartialView("_tabDatosOpcionesCuotas", model);
 			}
@@ -240,7 +240,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 					ComboCuentaGasto = ComboTipoGasto(),
 					ComboAdministracion = ComboAdministracionesLista(),
 					ComboCuentaContable = ComboCuentaPlanContableLista(),
-					ListaCuentaFin = ObtenerGridCore<FinancieroListaDto>(cuentasFin)
+					ListaCuentaFin = ObtenerGridCoreSmart<FinancieroListaDto>(cuentasFin)
 				};
 				return PartialView("_tabDatosCuentaFinYContable", model);
 			}

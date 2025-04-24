@@ -65,7 +65,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Banco
 		{
 			List<ABMBancoSearchDto> lista;
 			MetadataGrid metadata;
-			GridCore<ABMBancoSearchDto> grillaDatos;
+			GridCoreSmart<ABMBancoSearchDto> grillaDatos;
 			RespuestaGenerica<EntidadBase> response = new();
 			try
 			{
@@ -93,7 +93,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Banco
 				metadata = MetadataBanco;
 
 				//no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
-				grillaDatos = GenerarGrilla(BancosBuscados, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
+				grillaDatos = GenerarGrillaSmart(BancosBuscados, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 
 				return View("_gridAbmBanco", grillaDatos);
 			}

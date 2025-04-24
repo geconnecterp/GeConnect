@@ -73,7 +73,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		public async Task<IActionResult> BuscarOrdenesDeCompra(BuscarOrdenesDeCompraRequest request)
 		{
 			MetadataGrid metadata;
-			GridCore<OrdenDeCompraConsultaDto> grillaDatos;
+			GridCoreSmart<OrdenDeCompraConsultaDto> grillaDatos;
 			ConsultaOCModel model = new();
 			try
 			{
@@ -84,7 +84,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				var pag = request.Pagina == null ? 1 : request.Pagina.Value;
 				ListaOrdenDeCompraConsulta = productos.Item1;
-				grillaDatos = GenerarGrilla(productos.Item1, request.Sort, _settings.NroRegistrosPagina, pag, metadata.TotalCount, metadata.TotalPages, request.SortDir);
+				grillaDatos = GenerarGrillaSmart(productos.Item1, request.Sort, _settings.NroRegistrosPagina, pag, metadata.TotalCount, metadata.TotalPages, request.SortDir);
 				model.GrillaOC = grillaDatos;
 				model.Importe = ListaOrdenDeCompraConsulta.Count > 0 ? ListaOrdenDeCompraConsulta.Sum(x => x.oc_total) : 0;
 				model.ListaAdministraciones = new SelectList(AdministracionesLista, "Adm_id", "Adm_nombre");
@@ -110,7 +110,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			try
 			{
 				var detalle = _productoServicio.CargarDetalleDeOC(ocCompte, TokenCookie).Result;
-				model.GrillaDetalle = ObtenerGridCore<OrdenDeCompraDetalleDto>(detalle);
+				model.GrillaDetalle = ObtenerGridCoreSmart<OrdenDeCompraDetalleDto>(detalle);
 				var detalleItem = detalle.First();
 				if (detalleItem != null)
 				{
@@ -148,11 +148,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 		[HttpPost]
 		public async Task<IActionResult> BuscarRprAsociadasDeOrdenDeCompra(string ocCompte)
 		{
-			GridCore<OrdenDeCompraRprAsociadasDto> grilla = new();
+			GridCoreSmart<OrdenDeCompraRprAsociadasDto> grilla = new();
 			try
 			{
 				var detalle = _productoServicio.CargarRprAsociadaDeOC(ocCompte, TokenCookie).Result;
-				grilla = ObtenerGridCore<OrdenDeCompraRprAsociadasDto>(detalle);
+				grilla = ObtenerGridCoreSmart<OrdenDeCompraRprAsociadasDto>(detalle);
 				return PartialView("_grillaRprDeOC", grilla);
 			}
 			catch (Exception ex)
@@ -308,7 +308,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				Importe = grillaTemp.Sum(x => x.Importe)
 			};
 			grillaTemp.Add(itemConcepto);
-			model.ResumenGrilla = ObtenerGridCore<OrdenDeCompraConceptoDto>(grillaTemp);
+			model.ResumenGrilla = ObtenerGridCoreSmart<OrdenDeCompraConceptoDto>(grillaTemp);
 		}
 		#endregion
 

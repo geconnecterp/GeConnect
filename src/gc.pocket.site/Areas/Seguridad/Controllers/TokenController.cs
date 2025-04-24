@@ -151,8 +151,8 @@ namespace gc.pocket.site.Areas.Seguridad.Controllers
                         //var etiqueta = $"{user}";//{HelperGen.ConvierteStrToHex(user)}
 
                         var principal = new ClaimsPrincipal(new[] { identity });
-                        await _context.HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
-                        _context.HttpContext.Response.Cookies.Append(Etiqueta, token, cookieOptions); //se resguarda el token con el nombre del usuario
+                        await _context.HttpContext?.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
+                        _context.HttpContext?.Response.Cookies.Append(Etiqueta, token, cookieOptions); //se resguarda el token con el nombre del usuario
                         //if (roleUser[0].Equals(RolesUsuario.VENDEDOR.ToString()))
                         //{
                         //    return RedirectToAction("Venta", new RouteValueDictionary(new { area = "Salon", controller = "Bandeja", action = "Venta" }));

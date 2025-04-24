@@ -36,7 +36,7 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
         {
             List<ProductoListaDto> lista;
             MetadataGrid metadata;
-            GridCore<ProductoListaDto> grillaDatos;
+            GridCoreSmart<ProductoListaDto> grillaDatos;
 
             
             
@@ -72,7 +72,7 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
         {
             List<ProductoListaDto> lista;
             MetadataGrid metadata;
-            GridCore<ProductoListaDto> grillaDatos;
+            GridCoreSmart<ProductoListaDto> grillaDatos;
 
             if (PaginaProd == pag && ProductosBuscados.Count > 0)
             {

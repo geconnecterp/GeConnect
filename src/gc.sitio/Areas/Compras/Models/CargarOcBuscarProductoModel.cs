@@ -7,6 +7,6 @@ namespace gc.sitio.Areas.Compras.Models
 	public class CargarOcBuscarProductoModel
 	{
 		public SelectList ComboSucursales { get; set; }
-		public GridCore<ProductoNCPIDto> grillaDatos { get; set; }
+		public GridCoreSmart<ProductoNCPIDto> grillaDatos { get; set; }
 	}
 }

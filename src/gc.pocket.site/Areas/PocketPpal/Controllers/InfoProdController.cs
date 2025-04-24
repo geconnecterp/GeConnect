@@ -195,7 +195,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         public ActionResult InfoProductoStkD()
         {
             RespuestaGenerica<EntidadBase> response = new();
-            GridCore<InfoProdStkD> grillaDatos;
+            GridCoreSmart<InfoProdStkD> grillaDatos;
 
             try
             {
@@ -243,12 +243,12 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             return PartialView("_infoProdStkDGrid", grillaDatos);
         }
 
-        private GridCore<InfoProdStkD> ObtenerInfoProdStkD(List<InfoProdStkD> listInfoProd)
+        private GridCoreSmart<InfoProdStkD> ObtenerInfoProdStkD(List<InfoProdStkD> listInfoProd)
         {
 
             var lista = new StaticPagedList<InfoProdStkD>(listInfoProd, 1, 999, listInfoProd.Count);
 
-            return new GridCore<InfoProdStkD>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" };
+            return new GridCoreSmart<InfoProdStkD>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" };
         }
 
 
@@ -256,7 +256,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         public ActionResult InfoProductoStkBoxes()
         {
             RespuestaGenerica<EntidadBase> response = new();
-            GridCore<InfoProdStkBox> grillaDatos;
+            GridCoreSmart<InfoProdStkBox> grillaDatos;
             //en documentacion GECO POCKET INFOPROD el valor default de depo = %
             string depo = "%";
             try
@@ -312,7 +312,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             return PartialView("_infoProdStkBoxGrid", grillaDatos);
         }
 
-        private GridCore<InfoProdStkBox> ObtenerInfoProdStkBox((string, string) ids, bool esSession = false)
+        private GridCoreSmart<InfoProdStkBox> ObtenerInfoProdStkBox((string, string) ids, bool esSession = false)
         {
             List<InfoProdStkBox> listInfoProd;
             if (esSession)
@@ -326,14 +326,14 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
             var lista = new StaticPagedList<InfoProdStkBox>(listInfoProd, 1, 999, listInfoProd.Count);
 
-            return new GridCore<InfoProdStkBox>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" };
+            return new GridCoreSmart<InfoProdStkBox>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" };
         }
 
         [HttpPost]
         public ActionResult InfoProductoStkA()
         {
             RespuestaGenerica<EntidadBase> response = new();
-            GridCore<InfoProdStkA> grillaDatos;
+            GridCoreSmart<InfoProdStkA> grillaDatos;
             try
             {
                 string id = ProductoBase.P_id;
@@ -379,11 +379,11 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             return PartialView("_infoProdStkAGrid", grillaDatos);
         }
 
-        private GridCore<InfoProdStkA> ObtenerInfoProdStkA(List<InfoProdStkA> listInfoProd)
+        private GridCoreSmart<InfoProdStkA> ObtenerInfoProdStkA(List<InfoProdStkA> listInfoProd)
         {
             var lista = new StaticPagedList<InfoProdStkA>(listInfoProd, 1, 999, listInfoProd.Count);
 
-            return new GridCore<InfoProdStkA>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" };
+            return new GridCoreSmart<InfoProdStkA>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" };
         }
 
 
@@ -391,7 +391,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         public ActionResult InfoProductoMovStk(string idTm, DateTime fdesde, DateTime fhasta)
         {
             RespuestaGenerica<EntidadBase> response = new();
-            GridCore<InfoProdMovStk> grillaDatos;
+            GridCoreSmart<InfoProdMovStk> grillaDatos;
             idTm = idTm ?? "%";
             string depo = "%";
 
@@ -440,19 +440,19 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             return PartialView("_infoProdMovStkGrid", grillaDatos);
         }
 
-        private GridCore<InfoProdMovStk> ObtenerInfoProdMovStk(List<InfoProdMovStk> listInfoProd)
+        private GridCoreSmart<InfoProdMovStk> ObtenerInfoProdMovStk(List<InfoProdMovStk> listInfoProd)
         {
 
             var lista = new StaticPagedList<InfoProdMovStk>(listInfoProd, 1, 999, listInfoProd.Count);
 
-            return new GridCore<InfoProdMovStk>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" };
+            return new GridCoreSmart<InfoProdMovStk>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" };
         }
 
         [HttpPost]
         public ActionResult InfoProductoLP()
         {
             RespuestaGenerica<EntidadBase> response = new();
-            GridCore<InfoProdLP> grillaDatos;
+            GridCoreSmart<InfoProdLP> grillaDatos;
             try
             {
                 string id = ProductoBase.P_id;
@@ -499,12 +499,12 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             return PartialView("_infoProdLPGrid", grillaDatos);
         }
 
-        private GridCore<InfoProdLP> ObtenerInfoProdLP(List<InfoProdLP> listInfoProd)
+        private GridCoreSmart<InfoProdLP> ObtenerInfoProdLP(List<InfoProdLP> listInfoProd)
         {
 
             var lista = new StaticPagedList<InfoProdLP>(listInfoProd, 1, 999, listInfoProd.Count);
 
-            return new GridCore<InfoProdLP>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" };
+            return new GridCoreSmart<InfoProdLP>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" };
         }
 
 
@@ -536,7 +536,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         public async Task<IActionResult> BuscarBoxLibres(string depo_id, bool soloLibres)
         {
             RespuestaGenerica<EntidadBase> response = new();
-            GridCore<DepositoInfoBoxDto> grillaDatos;
+            GridCoreSmart<DepositoInfoBoxDto> grillaDatos;
 
             try
             {
@@ -572,18 +572,18 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             return PartialView("_gridBoxLibres", grillaDatos);
         }
 
-        private GridCore<DepositoInfoBoxDto> PreparaGridBoxLibres(List<DepositoInfoBoxDto> regs)
+        private GridCoreSmart<DepositoInfoBoxDto> PreparaGridBoxLibres(List<DepositoInfoBoxDto> regs)
         {
             var lista = new StaticPagedList<DepositoInfoBoxDto>(regs, 1, 999, regs.Count);
 
-            return new GridCore<DepositoInfoBoxDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" };
+            return new GridCoreSmart<DepositoInfoBoxDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" };
         }
 
         [HttpPost]
         public async Task<IActionResult> BuscarDepoStk(string depo_id)
         {
             RespuestaGenerica<EntidadBase> response = new();
-            GridCore<DepositoInfoStkDto> grillaDatos;
+            GridCoreSmart<DepositoInfoStkDto> grillaDatos;
 
             try
             {
@@ -619,18 +619,18 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             return PartialView("_gridDepoInfoStk", grillaDatos);
         }
 
-        private GridCore<DepositoInfoStkDto> PreparaGridInfoStk(List<DepositoInfoStkDto> regs)
+        private GridCoreSmart<DepositoInfoStkDto> PreparaGridInfoStk(List<DepositoInfoStkDto> regs)
         {
             var lista = new StaticPagedList<DepositoInfoStkDto>(regs, 1, 999, regs.Count);
 
-            return new GridCore<DepositoInfoStkDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" };
+            return new GridCoreSmart<DepositoInfoStkDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" };
         }
 
         [HttpPost]
         public async Task<IActionResult> BuscarDepoStkVAl(string depo_id, string concepto)
         {
             RespuestaGenerica<EntidadBase> response = new();
-            GridCore<DepositoInfoStkValDto> grillaDatos;
+            GridCoreSmart<DepositoInfoStkValDto> grillaDatos;
 
             try
             {
@@ -666,11 +666,11 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             return PartialView("_gridDepoInfoStkVal", grillaDatos);
         }
 
-        private GridCore<DepositoInfoStkValDto> PreparaGridInfoStkVal(List<DepositoInfoStkValDto> regs)
+        private GridCoreSmart<DepositoInfoStkValDto> PreparaGridInfoStkVal(List<DepositoInfoStkValDto> regs)
         {
             var lista = new StaticPagedList<DepositoInfoStkValDto>(regs, 1, 999, regs.Count);
 
-            return new GridCore<DepositoInfoStkValDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" };
+            return new GridCoreSmart<DepositoInfoStkValDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Depo_nombre", SortDir = "ASC" };
         }
         #endregion
 
@@ -738,7 +738,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         public async Task<IActionResult> ObtenerBoxInfoStk(string boxId)
         {
             RespuestaGenerica<EntidadBase> response = new();
-            GridCore<BoxInfoStkDto> grillaDatos;
+            GridCoreSmart<BoxInfoStkDto> grillaDatos;
             try
             {
                 if (string.IsNullOrEmpty(boxId) || string.IsNullOrWhiteSpace(boxId))
@@ -786,7 +786,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         public async Task<IActionResult> ObtenerBoxInfoMovStk(string boxId, string sm, DateTime desde, DateTime hasta)
         {
             RespuestaGenerica<EntidadBase> response = new();
-            GridCore<BoxInfoMovStkDto> grillaDatos;
+            GridCoreSmart<BoxInfoMovStkDto> grillaDatos;
             try
             {
                 if (string.IsNullOrEmpty(boxId) || string.IsNullOrWhiteSpace(boxId))
@@ -854,7 +854,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         [HttpPost]
         public async Task<IActionResult> ConsultarUL(string tipo,DateTime desde,DateTime hasta)
         {
-            GridCore<ConsULDto> grillaDatos;
+            GridCoreSmart<ConsULDto> grillaDatos;
             RespuestaGenerica<EntidadBase> response = new();
             try
             {

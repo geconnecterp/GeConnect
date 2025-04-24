@@ -27,7 +27,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("PaginaProd");
+				var txt = _context.HttpContext?.Session.GetString("PaginaProd");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return 0;
@@ -37,7 +37,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			set
 			{
 				var valor = value.ToString();
-				_context.HttpContext.Session.SetString("PaginaProd", valor);
+				_context.HttpContext?.Session.SetString("PaginaProd", valor);
 			}
 		}
 
@@ -45,7 +45,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("DirSortProd");
+				var txt = _context.HttpContext?.Session.GetString("DirSortProd");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return "asc";
@@ -55,7 +55,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			set
 			{
 				var valor = value.ToString();
-				_context.HttpContext.Session.SetString("DirSortProd", valor);
+				_context.HttpContext?.Session.SetString("DirSortProd", valor);
 			}
 		}
 
@@ -63,7 +63,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("ProveedoresBuscados");
+				var json = _context.HttpContext?.Session.GetString("ProveedoresBuscados");
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return [];
@@ -73,7 +73,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("ProveedoresBuscados", json);
+				_context.HttpContext?.Session.SetString("ProveedoresBuscados", json);
 			}
 		}
 
@@ -81,7 +81,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("MetadataProveedor");
+				var txt = _context.HttpContext?.Session.GetString("MetadataProveedor");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return new MetadataGrid();
@@ -91,7 +91,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			set
 			{
 				var valor = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("MetadataProveedor", valor);
+				_context.HttpContext?.Session.SetString("MetadataProveedor", valor);
 			}
 
 		}

@@ -108,7 +108,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		{
 			List<ABMClienteSearchDto> lista;
 			MetadataGrid metadata;
-			GridCore<ABMClienteSearchDto> grillaDatos;
+			GridCoreSmart<ABMClienteSearchDto> grillaDatos;
 			RespuestaGenerica<EntidadBase> response = new();
 			try
 			{
@@ -136,7 +136,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				metadata = MetadataCliente;
 
 				//no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
-				grillaDatos = GenerarGrilla(ClientesBuscados, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
+				grillaDatos = GenerarGrillaSmart(ClientesBuscados, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 
 				//string volver = Url.Action("index", "home", new { area = "" });
 				//ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
@@ -225,10 +225,10 @@ namespace gc.sitio.Areas.ABMs.Controllers
 					ComboZonas = ComboZonas(),
 					ComboRepartidores = ComboRepartidores(),
 					ComboFinancieros = ComboFinanciero("BA", res.First().Cta_Emp.ToString()),
-					CuentaFormasDePago = ObtenerGridCore<CuentaFPDto>(cfp),
-					CuentaContactos = ObtenerGridCore<CuentaContactoDto>(ccon),
-					CuentaObs = ObtenerGridCore<CuentaObsDto>(cobs),
-					CuentaNota = ObtenerGridCore<CuentaNotaDto>(cnota)
+					CuentaFormasDePago = ObtenerGridCoreSmart<CuentaFPDto>(cfp),
+					CuentaContactos = ObtenerGridCoreSmart<CuentaContactoDto>(ccon),
+					CuentaObs = ObtenerGridCoreSmart<CuentaObsDto>(cobs),
+					CuentaNota = ObtenerGridCoreSmart<CuentaNotaDto>(cnota)
 				};
 				return PartialView("_tabDatosCliente", ClienteModel);
 			}
@@ -264,7 +264,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				{
 					ComboTipoCuentaBco = ComboTipoCuentaBco(),
 					ComboFormasDePago = ComboFormaDePago(),
-					CuentaFormasDePago = ObtenerGridCore<CuentaFPDto>(cfp),
+					CuentaFormasDePago = ObtenerGridCoreSmart<CuentaFPDto>(cfp),
 				};
 				return PartialView("_tabDatosFormaDePago", FPModel);
 			}
@@ -341,7 +341,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				var FPModel = new CuentaAbmOCModel()
 				{
 					ComboTipoContacto = ComboTipoContacto(),
-					CuentaOtrosContactos = ObtenerGridCore<CuentaContactoDto>(coc),
+					CuentaOtrosContactos = ObtenerGridCoreSmart<CuentaContactoDto>(coc),
 				};
 				return PartialView("_tabDatosOtroContacto", FPModel);
 			}
@@ -402,7 +402,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				var cno = _cuentaServicio.GetCuentaNota(ctaId, TokenCookie);
 				var FPModel = new CuentaABMNotaModel()
 				{
-					CuentaNotas = ObtenerGridCore<CuentaNotaDto>(cno),
+					CuentaNotas = ObtenerGridCoreSmart<CuentaNotaDto>(cno),
 				};
 				return PartialView("_tabDatosNota", FPModel);
 			}
@@ -466,7 +466,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				var ObsModel = new CuentaABMObservacionesModel()
 				{
 					ComboTipoObs = ComboTipoObservaciones(),
-					CuentaObservaciones = ObtenerGridCore<CuentaObsDto>(cob),
+					CuentaObservaciones = ObtenerGridCoreSmart<CuentaObsDto>(cob),
 				};
 				return PartialView("_tabDatosObs", ObsModel);
 			}
@@ -624,10 +624,10 @@ namespace gc.sitio.Areas.ABMs.Controllers
 					ComboZonas = ComboZonas(),
 					ComboRepartidores = ComboRepartidores(),
 					ComboFinancieros = ComboFinanciero(),
-					CuentaFormasDePago = ObtenerGridCore<CuentaFPDto>(cfp),
-					CuentaContactos = ObtenerGridCore<CuentaContactoDto>(ccon),
-					CuentaObs = ObtenerGridCore<CuentaObsDto>(cobs),
-					CuentaNota = ObtenerGridCore<CuentaNotaDto>(cnota)
+					CuentaFormasDePago = ObtenerGridCoreSmart<CuentaFPDto>(cfp),
+					CuentaContactos = ObtenerGridCoreSmart<CuentaContactoDto>(ccon),
+					CuentaObs = ObtenerGridCoreSmart<CuentaObsDto>(cobs),
+					CuentaNota = ObtenerGridCoreSmart<CuentaNotaDto>(cnota)
 				};
 				return PartialView("_tabDatosCliente", ClienteModel);
 			}

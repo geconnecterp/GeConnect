@@ -6,7 +6,7 @@ namespace gc.sitio.Areas.ABMs.Models
 {
 	public class SectorABMRubroModel
 	{
-		public GridCore<RubroListaABMDto> SectorRubro { get; set; }
+		public GridCoreSmart<RubroListaABMDto> SectorRubro { get; set; }
         public RubroListaABMDto Rubro { get; set; }
 		public SelectList ComboSubSector { get; set; }
 		public SectorABMRubroModel()

@@ -5,6 +5,6 @@ namespace gc.sitio.Areas.ABMs.Models
 {
 	public class ProdPorRubroModel
 	{
-		public GridCore<ProductoListaDto> ProductosPorRubro { get; set; }
+		public GridCoreSmart<ProductoListaDto> ProductosPorRubro { get; set; }
 	}
 }

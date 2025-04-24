@@ -77,11 +77,11 @@ namespace gc.sitio.Areas.ABMs.Controllers
         public async Task<IActionResult> BuscarBarrados(string p_id)
         {
             RespuestaGenerica<EntidadBase> response = new();
-            GridCore<ProductoBarradoDto> grillaDatos;
+            GridCoreSmart<ProductoBarradoDto> grillaDatos;
             try
             {
                 await ActualizaBarrados(p_id);
-                grillaDatos = GenerarGrilla(ProductoBarrados, "P_Id_barrado");
+                grillaDatos = GenerarGrillaSmart(ProductoBarrados, "P_Id_barrado");
                 return View("_gridBarrado", grillaDatos);
             }
             catch (NegocioException ex)
@@ -95,7 +95,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             catch (Exception ex)
             {
                 string msg = "Error en la invocación de la API - Busqueda de Barrados";
-                _logger.LogError(ex, "Error en la invocación de la API - Busqueda de Barrados");
+                _logger?.LogError(ex, "Error en la invocación de la API - Busqueda de Barrados");
                 response.Mensaje = msg;
                 response.Ok = false;
                 response.EsWarn = false;
@@ -107,11 +107,22 @@ namespace gc.sitio.Areas.ABMs.Controllers
         private async Task ActualizaBarrados(string p_id)
         {
             RespuestaGenerica<ProductoBarradoDto>? barr = await BuscarBarradosGen(p_id);
-            if (barr == null || !barr.Ok)
+            if (barr == null)
             {
-                throw new NegocioException(barr.Mensaje);
+                throw new NegocioException("No se recepcionó el barrado buscado.");
             }
-            else if (barr.Ok && barr.ListaEntidad.Count() == 0)
+            else if (!barr.Ok)
+            {
+                if (string.IsNullOrEmpty(barr.Mensaje))
+                {
+                    throw new NegocioException("No se recepcionó el barrado buscado.");
+                }
+                else
+                {
+                    throw new NegocioException(barr.Mensaje);
+                }
+            }
+            else if (barr.Ok && barr.ListaEntidad?.Count == 0)
             {
                 throw new NegocioException("No se encontraron barrados para el producto.");
             }
@@ -127,7 +138,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
         public async Task<IActionResult> PresentarBarrado()
         {
             RespuestaGenerica<EntidadBase> response = new();
-            GridCore<ProductoBarradoDto> grillaDatos;
+            GridCoreSmart<ProductoBarradoDto> grillaDatos;
             int cont = 0;
             int tope = 2;
             bool continuar = true;
@@ -136,12 +147,13 @@ namespace gc.sitio.Areas.ABMs.Controllers
             {
                 var barr = ProductoBarrados;
 
-                if (barr.Count == 0)
+                if (barr == null || barr.Count == 0)
                 {
                     while (continuar)
                     {
                         var b = await BuscarBarradosGen(ProductoABMSeleccionado.p_id);
-                        if (b.Ok && b.ListaEntidad.Count > 0)
+
+                        if (b!= null && b.Ok && b.ListaEntidad?.Count > 0)
                         {
                             ProductoBarrados = b.ListaEntidad;
                             continuar = false;
@@ -159,7 +171,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                     }
                 }
 
-                grillaDatos = GenerarGrilla(ProductoBarrados, "P_Id_barrado");
+                grillaDatos = GenerarGrillaSmart(ProductoBarrados, "P_Id_barrado");
                 return View("_gridBarrado", grillaDatos);
             }
             catch (NegocioException ex)
@@ -173,7 +185,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             catch (Exception ex)
             {
                 string msg = "Error la Presentar  - Busqueda de Barrados";
-                _logger.LogError(ex, "Error en la invocación de la API - Busqueda de Barrados");
+                _logger?.LogError(ex, "Error en la invocación de la API - Busqueda de Barrados");
                 response.Mensaje = msg;
                 response.Ok = false;
                 response.EsWarn = false;
@@ -231,20 +243,24 @@ namespace gc.sitio.Areas.ABMs.Controllers
         public async Task<IActionResult> ObtenerLimiteStk(string p_id)
         {
             RespuestaGenerica<EntidadBase> response = new();
-            GridCore<LimiteStkDto> grillaDatos;
+            GridCoreSmart<LimiteStkDto> grillaDatos;
             try
             {
                 RespuestaGenerica<LimiteStkDto>? lim = await ObtenerLimiteStkGen(p_id);
-                if (lim == null || !lim.Ok)
-                {
-                    throw new NegocioException(lim.Mensaje);
-                }
-                else if (lim.Ok && lim.ListaEntidad.Count() == 0)
+                if (lim == null || (!lim.Ok && string.IsNullOrEmpty(lim.Mensaje)))
                 {
                     throw new NegocioException("No se recepcionaron los limites de stock.");
                 }
-                LimitesStk = lim.ListaEntidad;
-                grillaDatos = GenerarGrilla(lim.ListaEntidad, "Adm_Id");
+                else if (!lim.Ok || !string.IsNullOrEmpty(lim.Mensaje))
+                {
+                    throw new NegocioException(lim.Mensaje ?? "Error desconocido al obtener los límites de stock.");
+                }
+                else if (lim.Ok && lim.ListaEntidad?.Count == 0)
+                {
+                    throw new NegocioException("No se recepcionaron los limites de stock.");
+                }
+                LimitesStk = lim.ListaEntidad ?? new List<LimiteStkDto>();
+                grillaDatos = GenerarGrillaSmart(lim.ListaEntidad, "Adm_Id");
                 return View("_gridLimStk", grillaDatos);
             }
             catch (NegocioException ex)
@@ -258,7 +274,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             catch (Exception ex)
             {
                 string msg = "Error en la invocación de la API - Busqueda Producto";
-                _logger.LogError(ex, "Error en la invocación de la API - Busqueda Producto");
+                _logger?.LogError(ex, "Error en la invocación de la API - Busqueda Producto");
                 response.Mensaje = msg;
                 response.Ok = false;
                 response.EsWarn = false;
@@ -277,7 +293,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
         public async Task<IActionResult> PresentarLimiteStk()
         {
             RespuestaGenerica<EntidadBase> response = new();
-            GridCore<LimiteStkDto> grillaDatos;
+            GridCoreSmart<LimiteStkDto> grillaDatos;
             int cont = 0;
             int tope = 2;
             bool continuar = true;
@@ -290,7 +306,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                     while (continuar)
                     {
                         var l = await ObtenerLimiteStkGen(ProductoABMSeleccionado.p_id);
-                        if (l.Ok && l.ListaEntidad.Count > 0)
+                        if (l != null && l.Ok && l.ListaEntidad != null && l.ListaEntidad.Count > 0)
                         {
                             LimitesStk = l.ListaEntidad;
                             continuar = false;
@@ -308,7 +324,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                     }
                 }
 
-                grillaDatos = GenerarGrilla(lim, "Adm_Nombre");
+                grillaDatos = GenerarGrillaSmart(lim, "Adm_Nombre");
                 return View("_gridLimStk", grillaDatos);
             }
             catch (NegocioException ex)
@@ -322,7 +338,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             catch (Exception ex)
             {
                 string msg = "Error la Presentar  - Busqueda de Barrados";
-                _logger.LogError(ex, "Error en la invocación de la API - Busqueda de Barrados");
+                _logger?.LogError(ex, "Error en la invocación de la API - Busqueda de Barrados");
                 response.Mensaje = msg;
                 response.Ok = false;
                 response.EsWarn = false;
@@ -349,7 +365,15 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 RespuestaGenerica<LimiteStkDto> lim = await _prodSv.BuscarLimite(ProductoABMSeleccionado.p_id, admId, TokenCookie);
                 if (lim == null || !lim.Ok)
                 {
-                    throw new NegocioException(lim.Mensaje);
+                    // Solución para evitar el warning CS8602 y CS8604
+                    if (string.IsNullOrEmpty(lim?.Mensaje))
+                    {
+                        throw new NegocioException("No se recepcionaron los límites de stock.");
+                    }
+                    else
+                    {
+                        throw new NegocioException(lim.Mensaje);
+                    }
                 }
 
                 return Json(new { error = false, warn = false, datos = lim.Entidad });
@@ -389,7 +413,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             catch (Exception ex)
             {
                 string msg = "Error en la invocación de la API - Inicializar Producto";
-                _logger.LogError(ex, "Error en la invocación de la API - al Inicializar Producto");
+                _logger?.LogError(ex, "Error en la invocación de la API - al Inicializar Producto");
                 response.Mensaje = msg;
                 response.Ok = false;
                 response.EsWarn = false;
@@ -439,13 +463,13 @@ namespace gc.sitio.Areas.ABMs.Controllers
                     ProductosBuscados = [];
                     if (abm.Abm.Equals('A'))
                     {
-                        return Json(new { error = false, warn = false, msg, id = res.Entidad.resultado_id });
+                        return Json(new { error = false, warn = false, msg, id = res.Entidad?.resultado_id });
                     }
                     return Json(new { error = false, warn = false, msg });
                 }
                 else
                 {
-                    return Json(new { error = false, warn = true, msg = res.Entidad.resultado_msj, focus = res.Entidad.resultado_setfocus });
+                    return Json(new { error = false, warn = true, msg = res.Entidad?.resultado_msj, focus = res.Entidad?.resultado_setfocus });
                 }
             }
             catch (NegocioException ex)
@@ -509,7 +533,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 }
                 else
                 {
-                    return Json(new { error = false, warn = true, msg = res.Entidad.resultado_msj, focus = res.Entidad.resultado_setfocus });
+                    return Json(new { error = false, warn = true, msg = res.Entidad?.resultado_msj, focus = res.Entidad?.resultado_setfocus });
                 }
             }
             catch (NegocioException ex)
@@ -582,7 +606,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 }
                 else
                 {
-                    return Json(new { error = false, warn = true, msg = res.Entidad.resultado_msj, focus = res.Entidad.resultado_setfocus });
+                    return Json(new { error = false, warn = true, msg = res.Entidad?.resultado_msj, focus = res.Entidad?.resultado_setfocus });
                 }
             }
             catch (NegocioException ex)
@@ -637,7 +661,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             catch (Exception ex)
             {
                 string msg = "Error en la invocación de la API - Busqueda Producto";
-                _logger.LogError(ex, "Error en la invocación de la API - Busqueda Producto");
+                _logger?.LogError(ex, "Error en la invocación de la API - Busqueda Producto");
                 response.Mensaje = msg;
                 response.Ok = false;
                 response.EsWarn = false;
@@ -651,7 +675,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
         {
             List<ProductoListaDto> lista;
             MetadataGrid metadata;
-            GridCore<ProductoListaDto> grillaDatos;
+            GridCoreSmart<ProductoListaDto> grillaDatos;
             RespuestaGenerica<EntidadBase> response = new();
             try
             {
@@ -679,9 +703,10 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 metadata = MetadataGeneral;
 
                 //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
-                grillaDatos = GenerarGrilla(ProductosBuscados, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
+                grillaDatos = GenerarGrillaSmart(ProductosBuscados, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 
-                string volver = Url.Action("index", "home", new { area = "" });
+                string? volverAction = Url.Action("index", "home", new { area = "" });
+                string volver = volverAction ?? "#";
                 ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
 
                 return View("_gridAbmProds", grillaDatos);
@@ -690,7 +715,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             {
 
                 string msg = "Error en la invocación de la API - Busqueda Producto";
-                _logger.LogError(ex, "Error en la invocación de la API - Busqueda Producto");
+                _logger?.LogError(ex, "Error en la invocación de la API - Busqueda Producto");
                 response.Mensaje = msg;
                 response.Ok = false;
                 response.EsWarn = false;
@@ -710,8 +735,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 return Json(new { error = false, lista });
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error en {this.GetType().Name}-{MethodBase.GetCurrentMethod().Name}");
+            {                
+                _logger?.LogError(ex, $"Error en {GetType().Name}");
                 return Json(new { error = true, msg = ex.Message });
             }
         }

@@ -42,11 +42,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 				return RedirectToAction("Login", "Token", new { area = "seguridad" });
 			}
 
-			GridCore<TRPendienteDto> grid;
+			GridCoreSmart<TRPendienteDto> grid;
 			try
 			{
 				var items = await _productoServicio.TRObtenerPendientes(AdministracionId, "%", "S", TokenCookie);
-				grid = ObtenerGridCore<TRPendienteDto>(items);
+				grid = ObtenerGridCoreSmart<TRPendienteDto>(items);
 			}
 			catch (Exception ex)
 			{
@@ -60,13 +60,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> TRAutorizacionesListaPorSucursal(string titId)
 		{
-			GridCore<TRPendienteDto> grid;
+			GridCoreSmart<TRPendienteDto> grid;
 			try
 			{
 				if (string.IsNullOrEmpty(titId))
 					titId = "S";
 				var items = await _productoServicio.TRObtenerPendientes(AdministracionId, "%", titId, TokenCookie);
-				grid = ObtenerGridCore<TRPendienteDto>(items);
+				grid = ObtenerGridCoreSmart<TRPendienteDto>(items);
 			}
 			catch (Exception ex)
 			{
@@ -84,11 +84,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 			try
 			{
 				if (TRSucursalesLista != null && TRSucursalesLista.Count > 0)
-					model.ListaAutSucursales = ObtenerGridCore<TRAutSucursalesDto>(TRSucursalesLista);
+					model.ListaAutSucursales = ObtenerGridCoreSmart<TRAutSucursalesDto>(TRSucursalesLista);
 				else
 				{
 					var itemsAutSucursales = await _productoServicio.TRObtenerAutSucursales(AdministracionId, TokenCookie);
-					model.ListaAutSucursales = ObtenerGridCore<TRAutSucursalesDto>(itemsAutSucursales);
+					model.ListaAutSucursales = ObtenerGridCoreSmart<TRAutSucursalesDto>(itemsAutSucursales);
 					if (model.ListaAutSucursales != null && model.ListaAutSucursales.ListaDatos != null && model.ListaAutSucursales.ListaDatos.Count > 0)
 					{
 
@@ -98,13 +98,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 					}
 					TRSucursalesLista = itemsAutSucursales;
 				}
-				model.ListaPedidosSucursal = ObtenerGridCore<TRAutPIDto>([]);
+				model.ListaPedidosSucursal = ObtenerGridCoreSmart<TRAutPIDto>([]);
 				if (TRAutPedidosIncluidosILista != null)
-					model.ListaPedidosIncluidos = ObtenerGridCore<TRAutPIDto>(TRAutPedidosIncluidosILista);
+					model.ListaPedidosIncluidos = ObtenerGridCoreSmart<TRAutPIDto>(TRAutPedidosIncluidosILista);
 				else
-					model.ListaPedidosIncluidos = ObtenerGridCore<TRAutPIDto>([]);
+					model.ListaPedidosIncluidos = ObtenerGridCoreSmart<TRAutPIDto>([]);
 				var itemsAutDepo = await _productoServicio.TRObtenerAutDepositos(AdministracionId, TokenCookie);
-				model.ListaDepositosDeEnvio = ObtenerGridCore<TRAutDepoDto>(itemsAutDepo);
+				model.ListaDepositosDeEnvio = ObtenerGridCoreSmart<TRAutDepoDto>(itemsAutDepo);
 			}
 			catch (Exception ex)
 			{
@@ -116,11 +116,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> CargarPedidosPorSucursal(string admId)
 		{
-			var model = new GridCore<TRAutPIDto>();
+			var model = new GridCoreSmart<TRAutPIDto>();
 			try
 			{
 				var itemsAutPI = await _productoServicio.TRObtenerAutPI(AdministracionId, admId, TokenCookie);
-				model = ObtenerGridCore<TRAutPIDto>(itemsAutPI);
+				model = ObtenerGridCoreSmart<TRAutPIDto>(itemsAutPI);
 			}
 			catch (Exception ex)
 			{
@@ -132,11 +132,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> CargarDepositosInclPorSucursal(string admId)
 		{
-			var model = new GridCore<TRAutDepoDto>();
+			var model = new GridCoreSmart<TRAutDepoDto>();
 			try
 			{
 				var itemsAutDepo = await _productoServicio.TRObtenerAutDepositos(admId, TokenCookie);
-				model = ObtenerGridCore<TRAutDepoDto>(itemsAutDepo);
+				model = ObtenerGridCoreSmart<TRAutDepoDto>(itemsAutDepo);
 			}
 			catch (Exception ex)
 			{
@@ -152,7 +152,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			try
 			{
 				var itemsAutPIDetalle = await _productoServicio.TRObtenerAutPIDetalle(piCompte, TokenCookie);
-				model.Detalle = ObtenerGridCore<TRAutPIDetalleDto>(itemsAutPIDetalle);
+				model.Detalle = ObtenerGridCoreSmart<TRAutPIDetalleDto>(itemsAutPIDetalle);
 				model.Titulo = $"Detalle de Pedido {piCompte}";
 			}
 			catch (Exception ex)
@@ -166,7 +166,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> AgregarAPedidosIncluidosParaAutTR(string picompte)
 		{
-			var model = new GridCore<TRAutPIDto>();
+			var model = new GridCoreSmart<TRAutPIDto>();
 			try
 			{
 				//No existe en la lista de pedidos incluidos, lo agrego
@@ -180,7 +180,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 						TRAutPedidosIncluidosILista = listaTemp;
 					}
 				}
-				model = ObtenerGridCore<TRAutPIDto>(listaTemp);
+				model = ObtenerGridCoreSmart<TRAutPIDto>(listaTemp);
 			}
 			catch (Exception ex)
 			{
@@ -192,7 +192,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> QuitarDePedidosIncluidosParaAutTR(string picompte)
 		{
-			var model = new GridCore<TRAutPIDto>();
+			var model = new GridCoreSmart<TRAutPIDto>();
 			try
 			{
 				//Existe en la lista de pedidos incluidos, lo quito
@@ -203,7 +203,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					listaTemp.Remove(itemTemp);
 					TRAutPedidosIncluidosILista = listaTemp;
 				}
-				model = ObtenerGridCore<TRAutPIDto>(listaTemp);
+				model = ObtenerGridCoreSmart<TRAutPIDto>(listaTemp);
 			}
 			catch (Exception ex)
 			{
@@ -215,7 +215,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> ActualizarInfoEnListaDeSucursalesTR()
 		{
-			var model = new GridCore<TRAutSucursalesDto>();
+			var model = new GridCoreSmart<TRAutSucursalesDto>();
 			try
 			{
 				var listaSucursal = TRSucursalesLista;
@@ -227,7 +227,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 						sucursalItem.tiene_pi = false;
 				}
 				TRSucursalesLista = listaSucursal;
-				model = ObtenerGridCore<TRAutSucursalesDto>(listaSucursal);
+				model = ObtenerGridCoreSmart<TRAutSucursalesDto>(listaSucursal);
 			}
 			catch (Exception ex)
 			{
@@ -291,7 +291,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 									  group i by new { i.adm_id, i.adm_nombre, i.autorizacion } into x
 									  select new TRNuevaAutSucursalDto() { adm_id = x.Key.adm_id, adm_nombre = x.Key.adm_nombre, pallet_aprox = x.Sum(y => y.unidad_palet), aut_a_generar = x.Max(y => y.autorizacion), orden = orden++ };
 				TRNuevaAutSucursalLista = listaSucursales.ToList();
-				model.Sucursales = ObtenerGridCore<TRNuevaAutSucursalDto>(listaSucursales.ToList());
+				model.Sucursales = ObtenerGridCoreSmart<TRNuevaAutSucursalDto>(listaSucursales.ToList());
 				TRNuevaAutDetallelLista = TRAutAnaliza.Select(x => new TRNuevaAutDetalleDto()
 				{
 					#region Campos
@@ -318,7 +318,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					p_id_prov = x.p_id_prov,
 					#endregion
 				}).OrderBy(y => y.p_id).ToList();
-				model.Detalle = ObtenerGridCore<TRNuevaAutDetalleDto>(TRNuevaAutDetallelLista);
+				model.Detalle = ObtenerGridCoreSmart<TRNuevaAutDetalleDto>(TRNuevaAutDetallelLista);
 				return View("TRVistaNuevaAutYDetalleDeProductos", model);
 			}
 			catch (Exception ex)
@@ -331,7 +331,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> FiltrarListaDeProductosPorSucursal(string admId, string aut = "")
 		{
-			var model = new GridCore<TRNuevaAutDetalleDto>();
+			var model = new GridCoreSmart<TRNuevaAutDetalleDto>();
 			try
 			{
 				var listaFiltrada = new List<TRNuevaAutDetalleDto>();
@@ -343,7 +343,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					if (int.TryParse(aut, out int auto))
 						listaFiltrada = listaTemp.Where(x => x.adm_id == admId && x.autorizacion == auto).ToList();
 				}
-				model = ObtenerGridCore<TRNuevaAutDetalleDto>(listaFiltrada);
+				model = ObtenerGridCoreSmart<TRNuevaAutDetalleDto>(listaFiltrada);
 			}
 			catch (Exception ex)
 			{
@@ -552,7 +552,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (!string.IsNullOrWhiteSpace(TRDepositosSeleccionados))
 					listaDepo = TRDepositosSeleccionados; //Lo seteo cuando abro la ventana TRCrudAutorizacion.cshtml
 				var itemsSustitutoParaAgregar = await _productoServicio.TRObtenerSustituto(pId, string.IsNullOrWhiteSpace(listaDepo) ? "N" : listaDepo, admIdDesc, tipo, TokenCookie);
-				model.Productos = ObtenerGridCore<TRProductoParaAgregar>(itemsSustitutoParaAgregar);
+				model.Productos = ObtenerGridCoreSmart<TRProductoParaAgregar>(itemsSustitutoParaAgregar);
 				return PartialView("_trCargarNuevoProducto", model);
 			}
 			catch (Exception ex)
@@ -570,7 +570,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				model.Titulo = $"Detalle de TR {admId} - {TRSucursalesLista.Where(x => x.adm_id == admId).Select(y => y.adm_nombre).First()}";
 				var listaTemp = new List<TRProductoParaAgregar>();
-				model.Productos = ObtenerGridCore<TRProductoParaAgregar>(listaTemp);
+				model.Productos = ObtenerGridCoreSmart<TRProductoParaAgregar>(listaTemp);
 				model.adm_id = admId;
 			}
 			catch (Exception ex)
@@ -591,7 +591,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (!string.IsNullOrWhiteSpace(TRDepositosSeleccionados))
 					listaDepo = TRDepositosSeleccionados; //Lo seteo cuando abro la ventana TRCrudAutorizacion.cshtml
 				var itemsSustitutoParaAgregar = await _productoServicio.TRObtenerSustituto(prodSeleccionado, string.IsNullOrWhiteSpace(listaDepo) ? "N" : listaDepo, admId, tipo, TokenCookie);
-				model.Productos = ObtenerGridCore<TRProductoParaAgregar>(itemsSustitutoParaAgregar);
+				model.Productos = ObtenerGridCoreSmart<TRProductoParaAgregar>(itemsSustitutoParaAgregar);
 				model.adm_id = admId;
 				return PartialView("_trCargarNuevoProducto", model);
 			}
@@ -624,7 +624,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					box_id = producto.box_id,
 					stk = producto.a_transferir_box,
 				});
-				model.Productos = ObtenerGridCore<TRProductoParaAgregar>(listaProdAEditar);
+				model.Productos = ObtenerGridCoreSmart<TRProductoParaAgregar>(listaProdAEditar);
 				return PartialView("_trCargarNuevoProducto", model);
 			}
 			catch (Exception ex)
@@ -637,7 +637,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> EliminarProducto(string pId, string admId, int autorizacion)
 		{
-			var model = new GridCore<TRNuevaAutDetalleDto>();
+			var model = new GridCoreSmart<TRNuevaAutDetalleDto>();
 			try
 			{
 				if (string.IsNullOrWhiteSpace(pId))
@@ -648,7 +648,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				var listaTemp = TRNuevaAutDetallelLista;
 				listaTemp.RemoveAll(y => y.p_id == pId && y.adm_id == admId);
 				TRNuevaAutDetallelLista = listaTemp;
-				model = ObtenerGridCore<TRNuevaAutDetalleDto>(listaTemp.Where(x => x.adm_id == admId && x.autorizacion == autorizacion).ToList());
+				model = ObtenerGridCoreSmart<TRNuevaAutDetalleDto>(listaTemp.Where(x => x.adm_id == admId && x.autorizacion == autorizacion).ToList());
 				return PartialView("_trNuevaAutListaProductos", model);
 			}
 			catch (Exception ex)
@@ -856,7 +856,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				model.Destino = $"Destino: {destino}";
 				model.ti = ti;
 				var lista = await _productoServicio.TRVerConteos(ti, TokenCookie);
-				model.ListaTransferencias = ObtenerGridCore<TRVerConteosDto>(lista);
+				model.ListaTransferencias = ObtenerGridCoreSmart<TRVerConteosDto>(lista);
 			}
 			catch (Exception ex)
 			{

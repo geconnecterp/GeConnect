@@ -57,7 +57,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Zona
         {
             List<ABMZonaDto> lista;
             MetadataGrid metadata;
-            GridCore<ABMZonaDto> grillaDatos;
+            GridCoreSmart<ABMZonaDto> grillaDatos;
             RespuestaGenerica<EntidadBase> response = new();
             try
             {
@@ -85,7 +85,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Zona
                 metadata = MetadataGeneral;
 
                 //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
-                grillaDatos = GenerarGrilla(ZonasBuscardo, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
+                grillaDatos = GenerarGrillaSmart(ZonasBuscardo, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 
                 //string volver = Url.Action("index", "home", new { area = "" });
                 //ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };

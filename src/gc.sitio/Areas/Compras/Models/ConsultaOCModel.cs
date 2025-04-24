@@ -6,7 +6,7 @@ namespace gc.sitio.Areas.Compras.Models
 {
 	public class ConsultaOCModel
 	{
-		public GridCore<OrdenDeCompraConsultaDto> GrillaOC { get; set; }
+		public GridCoreSmart<OrdenDeCompraConsultaDto> GrillaOC { get; set; }
 		public SelectList ListaAdministraciones { get; set; }
 		public decimal Importe { get; set; }
 	}

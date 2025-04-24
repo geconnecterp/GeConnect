@@ -32,7 +32,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         public async Task<IActionResult> Index(string buscar, string sortdir = "ASC", string sort = "cta_id", int page = 1)
         {
             RespuestaGenerica<EntidadBase> response = new();
-            GridCore<ProveedorDto> grillaDatos;
+            GridCoreSmart<ProveedorDto> grillaDatos;
             try
             {
                 string token = TokenCookie;
@@ -54,14 +54,14 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
 
         }
 
-        private async Task<GridCore<ProveedorDto>> ObtenerProveedorAsync(string buscar, string sortdir, string sort, int page, string token)
+        private async Task<GridCoreSmart<ProveedorDto>> ObtenerProveedorAsync(string buscar, string sortdir, string sort, int page, string token)
         {
             var proveedoress = await _provSv.BuscarAsync(new QueryFilters { Buscar = buscar, Pagina = page, Sort = sort, SortDir = sortdir }, token);
             List<ProveedorDto> entidades = proveedoress.Item1;
             var lista = new StaticPagedList<ProveedorDto>(entidades, proveedoress.Item2.CurrentPage, proveedoress.Item2.PageSize, proveedoress.Item2.TotalCount);
 
 
-            return new GridCore<ProveedorDto>() { ListaDatos = lista, CantidadReg = _appSettings.LimiteAvalancha, PaginaActual = page, CantidadPaginas = _appSettings.LimiteAvalancha / 20, Sort = sort, SortDir = sortdir.Equals("ASC") ? "DESC" : "ASC" };
+            return new GridCoreSmart<ProveedorDto>() { ListaDatos = lista, CantidadReg = _appSettings.LimiteAvalancha, PaginaActual = page, CantidadPaginas = _appSettings.LimiteAvalancha / 20, Sort = sort, SortDir = sortdir.Equals("ASC") ? "DESC" : "ASC" };
         }
 
         // GET: proveedoresController/Details/5

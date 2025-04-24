@@ -29,7 +29,7 @@ namespace gc.sitio.Areas.Compras.Controllers
         private readonly ICuentaServicio _cuentaServicio;
         private readonly ITipoComprobanteServicio _tiposComprobantesServicio;
         private readonly AppSettings _appSettings;
-        private readonly ILogger<CompraController> _logger;
+
         private readonly IProductoServicio _productoServicio;
         private readonly IDepositoServicio _depositoServicio;
         private const char TipoCuenta = 'B';
@@ -37,7 +37,6 @@ namespace gc.sitio.Areas.Compras.Controllers
         public CompraController(ILogger<CompraController> logger, IOptions<AppSettings> options, IProductoServicio productoServicio, ICuentaServicio cuentaServicio,
             ITipoComprobanteServicio tipoComprobanteServicio, IDepositoServicio depositoServicio, IHttpContextAccessor context) : base(options, context)
         {
-            _logger = logger;
             _appSettings = options.Value;
             _productoServicio = productoServicio;
             _cuentaServicio = cuentaServicio;
@@ -64,7 +63,7 @@ namespace gc.sitio.Areas.Compras.Controllers
             RPRAutorizacionSeleccionada = null;
             RPRComptesDeRPRegs = null;
             List<AutoComptesPendientesDto> pendientes;
-            GridCore<AutoComptesPendientesDto> grid;
+            GridCoreSmart<AutoComptesPendientesDto> grid;
             try
             {
                 pendientes = await _productoServicio.RPRObtenerComptesPendiente(AdministracionId, TokenCookie);
@@ -73,7 +72,7 @@ namespace gc.sitio.Areas.Compras.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al obtener Autorizaciones pendientes");
+                _logger?.LogError(ex, "Error al obtener Autorizaciones pendientes");
                 TempData["error"] = "Hubo algun problema al intentar obtener las Autorizaciones Pendientes. Si el problema persiste informe al Administrador";
                 grid = new();
             }
@@ -81,7 +80,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return View(grid);
         }
 
-        public async Task<JsonResult> ObtenerRPRAutorizacionPendienteSeleccionadoEnLista()
+        public JsonResult ObtenerRPRAutorizacionPendienteSeleccionadoEnLista()
         {
             try
             {
@@ -92,7 +91,7 @@ namespace gc.sitio.Areas.Compras.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al intentar generar y cargar JSON de nuevo comprobante RPR.");
+                _logger?.LogError(ex, "Error al intentar generar y cargar JSON de nuevo comprobante RPR.");
                 TempData["error"] = "Hubo algun problema al intentar generar y cargar JSON de nuevo comprobante RPR. Si el problema persiste informe al Administrador";
                 return Json(new { error = true, warn = false, codigo = "", msg = $"" });
             }
@@ -115,7 +114,13 @@ namespace gc.sitio.Areas.Compras.Controllers
                 model.ComboDeposito = ComboDepositos();
                 model.Rp = rp;
                 var objeto = JsonDeRPVerCompte.encabezado.FirstOrDefault();
-                var cuenta = await _cuentaServicio.ObtenerListaCuentaComercial(objeto?.Cta_id, TipoCuenta, TokenCookie);
+                if(objeto == null)
+                {
+                    TempData["error"] = "No se encontraron datos para el comprobante seleccionado.";
+                    return RedirectToAction("RPRAutorizacionesLista");
+                }
+
+                var cuenta = await _cuentaServicio.ObtenerListaCuentaComercial(objeto.Cta_id, TipoCuenta, TokenCookie);
                 var detalleVerCompte = await _productoServicio.RPRObtenerItemVerCompte(rp, TokenCookie);
                 if (detalleVerCompte != null)
                 {
@@ -132,7 +137,7 @@ namespace gc.sitio.Areas.Compras.Controllers
                     RPRItemVerConteoLista = detalleVerConteos;
                 }
 
-                model.Depo_id = objeto?.Depo_id;
+                model.Depo_id = objeto.Depo_id;
                 model.Leyenda = $"Autorización RP {rp} Cuenta: {cuenta.FirstOrDefault().Cta_Denominacion} ({objeto.Cta_id}) Turno: {FormateoDeFecha(objeto.Turno, FechaTipoFormato.PARAUSUARIO)}";
                 //Cargar conteos x UL
                 var conteosxul = await _productoServicio.RPRxUL(rp, TokenCookie);
@@ -141,24 +146,24 @@ namespace gc.sitio.Areas.Compras.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al intentar abrir pantalla Ver Autorización.");
+                _logger?.LogError(ex, "Error al intentar abrir pantalla Ver Autorización.");
                 TempData["error"] = "Hubo algun problema al intentar abrir pantalla Ver Autorización. Si el problema persiste informe al Administrador";
-                return null;
+                return RedirectToAction("RPRAutorizacionesLista");
             }
 
         }
 
         public async Task<IActionResult> BuscarDetalleULxRPR(string ul_id)
         {
-            GridCore<RPRxULDetalleDto> datosIP = new();
+            GridCoreSmart<RPRxULDetalleDto> datosIP = new();
             try
             {
                 var detalle = await _productoServicio.RPRxULDetalle(ul_id, TokenCookie);
-                datosIP = ObtenerGridCore<RPRxULDetalleDto>(detalle);
+                datosIP = ObtenerGridCoreSmart<RPRxULDetalleDto>(detalle);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al intentar obtener el detalle del comprobante UL.");
+                _logger?.LogError(ex, "Error al intentar obtener el detalle del comprobante UL.");
                 TempData["error"] = "Hubo algun problema al intentar obtener el detalle del comprobante UL. Si el problema persiste informe al Administrador";
                 return PartialView("_rprULxRPRDetalle", datosIP);
             }
@@ -167,7 +172,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
         public async Task<IActionResult> ObtenerDetalleVerCompte(string rp, string tco_id, string cc_compte)
         {
-            GridCore<RPRItemVerCompteDto> datosIP = new();
+            GridCoreSmart<RPRItemVerCompteDto> datosIP = new();
             var lista = new List<RPRItemVerCompteDto>();
             var detalleVerCompte = new List<RPRItemVerCompteDto>();
             try
@@ -180,7 +185,7 @@ namespace gc.sitio.Areas.Compras.Controllers
                         item.Row_color = ObtenerColor(item.No_recibido);
                     }
                     RPRItemVerCompteLista = lista;
-                    datosIP = ObtenerGridCore(RPRItemVerCompteLista.Where(x => x.Tco_id == tco_id && x.Cm_compte == cc_compte).ToList());
+                    datosIP = ObtenerGridCoreSmart(RPRItemVerCompteLista.Where(x => x.Tco_id == tco_id && x.Cm_compte == cc_compte).ToList());
                 }
                 else
                 {
@@ -189,7 +194,7 @@ namespace gc.sitio.Areas.Compras.Controllers
                     {
                         lista = detalleVerCompte.Where(x => x.Tco_id == tco_id && x.Cm_compte == cc_compte).ToList();
                         lista.ForEach(x => x.Row_color = ObtenerColor(x.No_recibido));
-                        datosIP = ObtenerGridCore(lista);
+                        datosIP = ObtenerGridCoreSmart(lista);
                     }
                     RPRItemVerCompteLista = detalleVerCompte;
                 }
@@ -197,7 +202,7 @@ namespace gc.sitio.Areas.Compras.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al intentar obtener el detalle del comprobante RPR.");
+                _logger?.LogError(ex, "Error al intentar obtener el detalle del comprobante RPR.");
                 TempData["error"] = "Hubo algun problema al intentar obtener el detalle del comprobante RPR. Si el problema persiste informe al Administrador";
                 return PartialView("_rprDetalleVerCompte", datosIP);
             }
@@ -207,17 +212,17 @@ namespace gc.sitio.Areas.Compras.Controllers
 
         public async Task<IActionResult> BuscarDetalleVerConteoSeleccionado(string p_id)
         {
-            GridCore<RPRItemVerCompteDto> datosIP = new();
+            GridCoreSmart<RPRItemVerCompteDto> datosIP = new();
             var lista = new List<RPRItemVerCompteDto>();
             try
             {
                 lista = RPRItemVerCompteLista.Where(x => x.P_id == p_id).ToList();
-                datosIP = ObtenerGridCore(lista);
+                datosIP = ObtenerGridCoreSmart(lista);
                 return PartialView("_rprDetalleVerConteoSeleccionado", datosIP);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al intentar obtener el detalle conteo para el compte seleccionado.");
+                _logger?.LogError(ex, "Error al intentar obtener el detalle conteo para el compte seleccionado.");
                 TempData["error"] = "Hubo algun problema al intentar obtener el detalle conteo para el compte seleccionado. Si el problema persiste informe al Administrador";
                 return PartialView("_rprDetalleVerConteoSeleccionado", datosIP);
             }
@@ -225,12 +230,12 @@ namespace gc.sitio.Areas.Compras.Controllers
 
         public async Task<IActionResult> ObtenerDetalleVerConteos()
         {
-            GridCore<RPRVerConteoDto> datosIP = new();
+            GridCoreSmart<RPRVerConteoDto> datosIP = new();
             if (RPRItemVerConteoLista == null)
             {
                 RPRItemVerConteoLista = [];
             }
-            datosIP = ObtenerGridCore(RPRItemVerConteoLista);
+            datosIP = ObtenerGridCoreSmart(RPRItemVerConteoLista);
             return PartialView("_rprDetalleVerConteos", datosIP);
         }
 
@@ -254,7 +259,15 @@ namespace gc.sitio.Areas.Compras.Controllers
                 var res = await _productoServicio.RPObtenerJsonDesdeRP(rp, TokenCookie);
                 if (res != null && res.FirstOrDefault() != null)
                 {
-                    resObj = JsonConvert.DeserializeObject<JsonDeRPDto>(res?.FirstOrDefault()?.Json);
+                    var jsonContent = res?.FirstOrDefault()?.Json;
+                    if (!string.IsNullOrEmpty(jsonContent))
+                    {
+                        resObj = JsonConvert.DeserializeObject<JsonDeRPDto>(jsonContent) ?? new();
+                    }
+                    else
+                    {
+                        resObj = new JsonDeRPDto(); // Inicialización con objeto vacío por defecto
+                    }
                     if (resObj != null)
                     {
                         foreach (var item in resObj.encabezado)
@@ -267,7 +280,7 @@ namespace gc.sitio.Areas.Compras.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al intentar obtener el json desde el comprobante RP.");
+                _logger?.LogError(ex, "Error al intentar obtener el json desde el comprobante RP.");
                 TempData["error"] = "Hubo algun problema al intentar obtener el json desde el comprobante RP. Si el problema persiste informe al Administrador";
                 return new JsonDeRPDto();
             }
@@ -299,7 +312,7 @@ namespace gc.sitio.Areas.Compras.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al intentar generar y cargar JSON de nuevo comprobante RPR.");
+                _logger?.LogError(ex, "Error al intentar generar y cargar JSON de nuevo comprobante RPR.");
                 TempData["error"] = "Hubo algun problema al intentar generar y cargar JSON de nuevo comprobante RPR. Si el problema persiste informe al Administrador";
                 return Json(new { error = true, warn = false, codigo = 9999, msg = $"Error al intentar cargar el comprobante, intente nuevamente mas tarde." });
             }
@@ -326,7 +339,7 @@ namespace gc.sitio.Areas.Compras.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al intentar eliminar el comprobante RPR.");
+                _logger?.LogError(ex, "Error al intentar eliminar el comprobante RPR.");
                 TempData["error"] = "Hubo algun problema al intentar eliminar el comprobante comprobante RPR. Si el problema persiste informe al Administrador";
                 return Json(new { error = true, warn = false, codigo = 9999, msg = $"Error al intentar eliminar el comprobante, intente nuevamente mas tarde." });
             }
@@ -476,17 +489,17 @@ namespace gc.sitio.Areas.Compras.Controllers
 
         public async Task<IActionResult> CargarOCxCuentaEnRP(string cta_id)
         {
-            GridCore<RPROrdenDeCompraDto> datosIP;
+            GridCoreSmart<RPROrdenDeCompraDto> datosIP;
             var lista = new List<RPROrdenDeCompraDto>();
 
             lista = await _cuentaServicio.ObtenerListaOCxCuenta(cta_id, TokenCookie);
-            datosIP = ObtenerGridCore(lista);
+            datosIP = ObtenerGridCoreSmart(lista);
             return PartialView("_rprOCxCuenta", datosIP);
         }
 
         public async Task<IActionResult> VerDetalleDeOCRP(string oc_compte)
         {
-            GridCore<RPROrdenDeCompraDetalleDto> datosIP;
+            GridCoreSmart<RPROrdenDeCompraDetalleDto> datosIP;
             var lista = new List<RPROrdenDeCompraDetalleDto>();
 
             lista = await _cuentaServicio.ObtenerDetalleDeOC(oc_compte, TokenCookie);
@@ -497,7 +510,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
         public async Task<IActionResult> CargarDetalleDeProductosEnRP(string oc_compte, string id_prod, string up, string bulto, string unidad, int accion, string tco_id, string cm_compte, string up_id = "", string p_desc = "", string prov_id = "", string id_barrado = "", string listaProd = "")
         {
-            GridCore<ProductoBusquedaDto> datosIP;
+            GridCoreSmart<ProductoBusquedaDto> datosIP;
             var lista = new List<ProductoBusquedaDto>();
 
             if (!string.IsNullOrWhiteSpace(oc_compte))
@@ -639,7 +652,7 @@ namespace gc.sitio.Areas.Compras.Controllers
             {
                 RPRDetalleDeProductosEnRP = [];
             }
-            datosIP = ObtenerGridCore(RPRDetalleDeProductosEnRP);
+            datosIP = ObtenerGridCoreSmart(RPRDetalleDeProductosEnRP);
             return PartialView("_rprDetalleDeProductos", datosIP);
         }
 
@@ -670,7 +683,7 @@ namespace gc.sitio.Areas.Compras.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+                _logger?.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
                 return Json(new { error = true, msg = "Algo no fue bien al verificar detalle de productos cargados para RP, intente nuevamente mas tarde." });
             }
         }
@@ -813,7 +826,7 @@ namespace gc.sitio.Areas.Compras.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+                _logger?.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
                 return Json(new { error = true, msg = "Algo no fue bien al guardar el detalle de comprobante RP, intente nuevamente mas tarde." });
             }
         }
@@ -833,14 +846,14 @@ namespace gc.sitio.Areas.Compras.Controllers
                         RPRDetalleDeProductosEnRP = listaTemp;
                     }
                 }
-                GridCore<ProductoBusquedaDto> datosIP;
-                datosIP = ObtenerGridCore(RPRDetalleDeProductosEnRP);
+                GridCoreSmart<ProductoBusquedaDto> datosIP;
+                datosIP = ObtenerGridCoreSmart(RPRDetalleDeProductosEnRP);
                 return PartialView("_rprDetalleDeProductos", datosIP);
             }
             catch (Exception ex)
             {
 
-                _logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+                _logger?.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
                 return Json(new { error = true, msg = "Algo no fue bien al quitar un producto del detalle, intente nuevamente mas tarde." });
             }
         }
@@ -864,7 +877,7 @@ namespace gc.sitio.Areas.Compras.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+                _logger?.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
                 return Json(new { error = true, msg = "Algo no fue bien al actualizar la cuenta comercial, intente nuevamente mas tarde." });
             }
         }
@@ -907,7 +920,7 @@ namespace gc.sitio.Areas.Compras.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name} cuenta: {cuenta} tipo: {tipo}");
+                _logger?.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name} cuenta: {cuenta} tipo: {tipo}");
                 return Json(new { error = true, msg = "Algo no fue bien al buscar la cuenta comercial, intente nuevamente mas tarde." });
             }
         }
@@ -925,24 +938,24 @@ namespace gc.sitio.Areas.Compras.Controllers
         [HttpPost]
         public ActionResult ActualizarComprobantesDeRP(string tipo, string nroComprobante)
         {
-            GridCore<RPRComptesDeRPDto> datosIP;
+            GridCoreSmart<RPRComptesDeRPDto> datosIP;
             var lista = new List<RPRComptesDeRPDto>();
             var rp = "";
             if (RPRComprobanteDeRPSeleccionado != null && RPRComprobanteDeRPSeleccionado != default(RPRDetalleComprobanteDeRP))
                 rp = RPRComprobanteDeRPSeleccionado.CompteSeleccionado.Rp;
             if (tipo.IsNullOrEmpty())
             {
-                datosIP = ObtenerGridCore(RPRComptesDeRPRegs);
+                datosIP = ObtenerGridCoreSmart(RPRComptesDeRPRegs);
             }
             else if (RPRComptesDeRPRegs.Exists(x => x.Tipo == tipo && x.NroComprobante == nroComprobante && x.Rp == rp))
             {
                 lista = RPRComptesDeRPRegs.Where(x => x.Tipo != tipo && x.NroComprobante != nroComprobante && x.Rp != rp).ToList();
                 RPRComptesDeRPRegs = lista.Where(x => x.Rp == "").ToList();
-                datosIP = ObtenerGridCore(RPRComptesDeRPRegs);
+                datosIP = ObtenerGridCoreSmart(RPRComptesDeRPRegs);
             }
             else
             {
-                datosIP = ObtenerGridCore(RPRComptesDeRPRegs);
+                datosIP = ObtenerGridCoreSmart(RPRComptesDeRPRegs);
             }
             return PartialView("_rprComprobantesDeRP", datosIP);
         }
@@ -950,7 +963,7 @@ namespace gc.sitio.Areas.Compras.Controllers
         [HttpPost]
         public ActionResult CargarComprobantesDeRP(string tipo, string tipoDescripcion, string nroComprobante, string fecha, string importe, string rp)
         {
-            GridCore<RPRComptesDeRPDto> datosIP;
+            GridCoreSmart<RPRComptesDeRPDto> datosIP;
             var lista = new List<RPRComptesDeRPDto>();
             var listaProd = new List<ProductoBusquedaDto>();
             JsonEncabezadoDeRPDto encaTemp;
@@ -963,9 +976,9 @@ namespace gc.sitio.Areas.Compras.Controllers
             if (string.IsNullOrWhiteSpace(tipo) && string.IsNullOrWhiteSpace(tipoDescripcion) && string.IsNullOrWhiteSpace(nroComprobante) && string.IsNullOrWhiteSpace(fecha) && string.IsNullOrWhiteSpace(importe))
             {
                 if (RPRComptesDeRPRegs != null)
-                    datosIP = ObtenerGridCore(RPRComptesDeRPRegs.Where(x => string.IsNullOrWhiteSpace(x.Rp)).ToList());
+                    datosIP = ObtenerGridCoreSmart(RPRComptesDeRPRegs.Where(x => string.IsNullOrWhiteSpace(x.Rp)).ToList());
                 else
-                    datosIP = ObtenerGridCore(new List<RPRComptesDeRPDto>());
+                    datosIP = ObtenerGridCoreSmart(new List<RPRComptesDeRPDto>());
                 return PartialView("_rprComprobantesDeRP", datosIP);
             }
             else if (!string.IsNullOrWhiteSpace(rp) && RPRComptesDeRPRegs != null && RPRComptesDeRPRegs.Exists(x => x.Rp == rp))
@@ -975,7 +988,7 @@ namespace gc.sitio.Areas.Compras.Controllers
                     RPRComptesDeRPRegs = CargarComprobanteRP(RPRComptesDeRPRegs, tipo, tipoDescripcion, nroComprobante, fecha, importe, rp);
                     ElementoEditado = true;
                 }
-                datosIP = ObtenerGridCore(RPRComptesDeRPRegs.Where(x => x.Rp == rp).ToList());
+                datosIP = ObtenerGridCoreSmart(RPRComptesDeRPRegs.Where(x => x.Rp == rp).ToList());
             }
             else
             {
@@ -992,7 +1005,7 @@ namespace gc.sitio.Areas.Compras.Controllers
                 {
                     RPRComptesDeRPRegs = CargarComprobanteRP([], tipo, tipoDescripcion, nroComprobante, fecha, importe, rp);
                 }
-                datosIP = ObtenerGridCore(RPRComptesDeRPRegs);
+                datosIP = ObtenerGridCoreSmart(RPRComptesDeRPRegs);
             }
             return PartialView("_rprComprobantesDeRP", datosIP);
         }
@@ -1102,7 +1115,7 @@ namespace gc.sitio.Areas.Compras.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name} intentando genera objeto para almacenar");
+                _logger?.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name} intentando genera objeto para almacenar");
                 return null;
             }
         }
@@ -1251,7 +1264,7 @@ namespace gc.sitio.Areas.Compras.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name} formateoDeFecha: {formateoDeFecha}");
+                _logger?.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name} formateoDeFecha: {formateoDeFecha}");
                 return string.Empty;
             }
         }
@@ -1310,7 +1323,7 @@ namespace gc.sitio.Areas.Compras.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+                _logger?.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
                 return new RespuestaDto() { resultado = -1, resultado_msj = ex.Message };
             }
 
@@ -1377,25 +1390,25 @@ namespace gc.sitio.Areas.Compras.Controllers
             lista.Add(nuevo);
             return lista;
         }
-        //private GridCore<T> ObtenerGridCore<T>(List<T> lista) where T : Dto
+        //private GridCoreSmart<T> ObtenerGridCoreSmart<T>(List<T> lista) where T : Dto
         //{
         //	var listaDetalle = new StaticPagedList<T>(lista, 1, 999, lista.Count);
-        //	return new GridCore<T>() { ListaDatos = listaDetalle, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
+        //	return new GridCoreSmart<T>() { ListaDatos = listaDetalle, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
         //}
-        private GridCore<RPROrdenDeCompraDetalleDto> ObtenerOCDetalleRPGrid(List<RPROrdenDeCompraDetalleDto> listaOCDetalle)
+        private GridCoreSmart<RPROrdenDeCompraDetalleDto> ObtenerOCDetalleRPGrid(List<RPROrdenDeCompraDetalleDto> listaOCDetalle)
         {
 
             var lista = new StaticPagedList<RPROrdenDeCompraDetalleDto>(listaOCDetalle, 1, 999, listaOCDetalle.Count);
 
-            return new GridCore<RPROrdenDeCompraDetalleDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
+            return new GridCoreSmart<RPROrdenDeCompraDetalleDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
         }
 
-        private GridCore<AutoComptesPendientesDto> ObtenerAutorizacionPendienteGrid(List<AutoComptesPendientesDto> pendientes)
+        private GridCoreSmart<AutoComptesPendientesDto> ObtenerAutorizacionPendienteGrid(List<AutoComptesPendientesDto> pendientes)
         {
 
             var lista = new StaticPagedList<AutoComptesPendientesDto>(pendientes, 1, 999, pendientes.Count);
 
-            return new GridCore<AutoComptesPendientesDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Cta_denominacion", SortDir = "ASC" };
+            return new GridCoreSmart<AutoComptesPendientesDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Cta_denominacion", SortDir = "ASC" };
         }
 
 

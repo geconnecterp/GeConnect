@@ -27,7 +27,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("PaginaProd");
+				var txt = _context.HttpContext?.Session.GetString("PaginaProd");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return 0;
@@ -37,7 +37,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 			set
 			{
 				var valor = value.ToString();
-				_context.HttpContext.Session.SetString("PaginaProd", valor);
+				_context.HttpContext?.Session.SetString("PaginaProd", valor);
 			}
 		}
 
@@ -45,7 +45,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("DirSortProd");
+				var txt = _context.HttpContext?.Session.GetString("DirSortProd");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return "asc";
@@ -55,7 +55,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 			set
 			{
 				var valor = value.ToString();
-				_context.HttpContext.Session.SetString("DirSortProd", valor);
+				_context.HttpContext?.Session.SetString("DirSortProd", valor);
 			}
 		}
 
@@ -63,7 +63,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("MediosDePagoBuscados");
+				var json = _context.HttpContext?.Session.GetString("MediosDePagoBuscados");
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return [];
@@ -73,7 +73,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("MediosDePagoBuscados", json);
+				_context.HttpContext?.Session.SetString("MediosDePagoBuscados", json);
 			}
 		}
 
@@ -81,7 +81,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("MetadataMedioDePago");
+				var txt = _context.HttpContext?.Session.GetString("MetadataMedioDePago");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return new MetadataGrid();
@@ -91,7 +91,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 			set
 			{
 				var valor = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("MetadataMedioDePago", valor);
+				_context.HttpContext?.Session.SetString("MetadataMedioDePago", valor);
 			}
 
 		}
@@ -100,7 +100,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("PosSeleccionado");
+				var txt = _context.HttpContext?.Session.GetString("PosSeleccionado");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return new Pos();
@@ -110,7 +110,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 			set
 			{
 				var valor = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("PosSeleccionado", valor);
+				_context.HttpContext?.Session.SetString("PosSeleccionado", valor);
 			}
 
 		}
@@ -119,7 +119,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("MedioDePagoSelected");
+				var txt = _context.HttpContext?.Session.GetString("MedioDePagoSelected");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return new MedioDePagoABMDto();
@@ -129,7 +129,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 			set
 			{
 				var valor = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("MedioDePagoSelected", valor);
+				_context.HttpContext?.Session.SetString("MedioDePagoSelected", valor);
 			}
 
 		}
@@ -138,7 +138,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("TCSelected");
+				var txt = _context.HttpContext?.Session.GetString("TCSelected");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return string.Empty;
@@ -148,7 +148,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 			set
 			{
 				var valor = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("TCSelected", valor);
+				_context.HttpContext?.Session.SetString("TCSelected", valor);
 			}
 
 		}

@@ -37,8 +37,8 @@ namespace gc.sitio.Controllers
 		private readonly AppSettings _options;
 		protected readonly IHttpContextAccessor _context;
 
-        public List<Orden> _orden;
-		internal readonly ILogger _logger;
+        public List<Orden>? _orden;
+		internal readonly ILogger? _logger;
 
 		public ControladorBase(IOptions<AppSettings> options, IHttpContextAccessor contexto, 
 			ILogger logger)
@@ -60,13 +60,13 @@ namespace gc.sitio.Controllers
 		}
 		public string Etiqueta
 		{
-			get { return _context.HttpContext.Session.GetString("Etiqueta"); }
+			get { return _context.HttpContext?.Session.GetString("Etiqueta") ?? string.Empty; }
 
 			set { HttpContext.Session.SetString("Etiqueta", value); }
 		}
 		public string Token
 		{
-			get { return HttpContext.Session.GetString("JwtToken"); }
+			get { return _context.HttpContext?.Session.GetString("JwtToken")?? string.Empty; }
 
 			set { HttpContext.Session.SetString("JwtToken", value); }
 		}
@@ -76,7 +76,7 @@ namespace gc.sitio.Controllers
 			get
 			{
 				//var nombre = User.Claims.First(c => c.Type.Contains("name")).Value;
-				return _context.HttpContext.Request.Cookies[Etiqueta];
+				return _context.HttpContext?.Request.Cookies[Etiqueta] ?? string.Empty;
 			}
 		}
 
@@ -84,17 +84,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				string json = _context.HttpContext.Session.GetString("Administraciones");
+				string json = _context.HttpContext?.Session.GetString("Administraciones") ?? string.Empty;
 				if (string.IsNullOrEmpty(json))
 				{
 					return new();
 				}
-				return JsonConvert.DeserializeObject<List<AdministracionLoginDto>>(json);
+				return JsonConvert.DeserializeObject<List<AdministracionLoginDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("Administraciones", json);
+				_context.HttpContext?.Session.SetString("Administraciones", json);
 			}
 		}
 
@@ -102,17 +102,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				string json = _context.HttpContext.Session.GetString("UserPerfiles");
+				string json = _context.HttpContext?.Session.GetString("UserPerfiles") ?? string.Empty;
 				if (string.IsNullOrEmpty(json))
 				{
 					return new();
 				}
-				return JsonConvert.DeserializeObject<List<PerfilUserDto>>(json);
+				return JsonConvert.DeserializeObject<List<PerfilUserDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("UserPerfiles", json);
+				_context.HttpContext?.Session.SetString("UserPerfiles", json);
 			}
 		}
 
@@ -120,34 +120,34 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				string json = _context.HttpContext.Session.GetString("UserPerfilSeleccionado");
+				string json = _context.HttpContext?.Session.GetString("UserPerfilSeleccionado") ?? string.Empty;
 				if (string.IsNullOrEmpty(json))
 				{
 					return new();
 				}
-				return JsonConvert.DeserializeObject<PerfilUserDto>(json);
+				return JsonConvert.DeserializeObject<PerfilUserDto>(json)?? new PerfilUserDto();
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("UserPerfilSeleccionado", json);
+				_context.HttpContext?.Session.SetString("UserPerfilSeleccionado", json);
 			}
 		}
 		public string ADMID
 		{
 			get
 			{
-				string json = _context.HttpContext.Session.GetString("ADMID");
+				string json = _context.HttpContext?.Session.GetString("ADMID") ?? string.Empty;
 				if (string.IsNullOrEmpty(json))
 				{
 					return string.Empty;
 				}
-				return JsonConvert.DeserializeObject<string>(json);
+				return JsonConvert.DeserializeObject<string>(json) ?? string.Empty;
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("ADMID", json);
+				_context.HttpContext?.Session.SetString("ADMID", json);
 			}
 		}
 		public string AdministracionId
@@ -161,7 +161,7 @@ namespace gc.sitio.Controllers
 					return string.Empty;
 				}
 				var parts = adm.Split('#');
-				_context.HttpContext.Session.SetString("ADMID", parts[0]);
+				_context.HttpContext?.Session.SetString("ADMID", parts[0]);
 				return parts[0];
 			}
 		}
@@ -191,6 +191,10 @@ namespace gc.sitio.Controllers
 				try
 				{
 					var tokenS = handler.ReadToken(TokenCookie) as JwtSecurityToken;
+					if (tokenS == null)
+					{
+						throw new Exception("Token no valido");
+                    }
 					var venc = tokenS.Claims.First(c => c.Type.Contains("expires")).Value;
 					expira = venc.ToDateTimeFromTicks();
 					if (!expira.HasValue || expira.Value < DateTime.Now)
@@ -296,17 +300,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				string json = _context.HttpContext.Session.GetString("PermisosMenuPorUsuario");
+				string json = _context.HttpContext?.Session.GetString("PermisosMenuPorUsuario") ?? string.Empty;
 				if (string.IsNullOrEmpty(json))
 				{
 					return new();
 				}
-				return JsonConvert.DeserializeObject<List<UsuarioMenu>>(json);
+				return JsonConvert.DeserializeObject<List<UsuarioMenu>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("PermisosMenuPorUsuario", json);
+				_context.HttpContext?.Session.SetString("PermisosMenuPorUsuario", json);
 			}
 		}
 
@@ -317,7 +321,7 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("PaginaGrid");
+				var txt = _context.HttpContext?.Session.GetString("PaginaGrid") ?? string.Empty;
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return 0;
@@ -327,7 +331,7 @@ namespace gc.sitio.Controllers
 			set
 			{
 				var valor = value.ToString();
-				_context.HttpContext.Session.SetString("PaginaGrid", valor);
+				_context.HttpContext?.Session.SetString("PaginaGrid", valor);
 			}
 		}
 
@@ -342,7 +346,7 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				string json = _context.HttpContext.Session.GetString("ElementoEditado");
+				string json = _context.HttpContext?.Session.GetString("ElementoEditado")?? string.Empty;
 				if (string.IsNullOrEmpty(json))
 				{
 					return new();
@@ -352,7 +356,7 @@ namespace gc.sitio.Controllers
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("ElementoEditado", json);
+				_context.HttpContext?.Session.SetString("ElementoEditado", json);
 			}
 		}
 
@@ -363,17 +367,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				string json = _context.HttpContext.Session.GetString("ProductoABMSeleccionado");
+				string json = _context.HttpContext?.Session.GetString("ProductoABMSeleccionado") ?? string.Empty;
 				if (string.IsNullOrEmpty(json))
 				{
 					return new();
 				}
-				return JsonConvert.DeserializeObject<ProductoDto>(json);
+				return JsonConvert.DeserializeObject<ProductoDto>(json) ?? new ProductoDto();
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("ProductoABMSeleccionado", json);
+				_context.HttpContext?.Session.SetString("ProductoABMSeleccionado", json);
 			}
 		}
 
@@ -382,21 +386,21 @@ namespace gc.sitio.Controllers
 		/// <summary>
 		/// Producto buscado con el control de busqueda de productos. Es utilizado para carga de datos en grid
 		/// </summary>
-		protected ProductoBusquedaDto ProductoBase
+		protected ProductoBusquedaDto? ProductoBase
 		{
 			get
 			{
-				string json = _context.HttpContext.Session.GetString("ProductoBase");
+				string json = _context.HttpContext?.Session.GetString("ProductoBase") ?? string.Empty;
 				if (string.IsNullOrEmpty(json))
 				{
 					return new();
 				}
-				return JsonConvert.DeserializeObject<ProductoBusquedaDto>(json);
+				return JsonConvert.DeserializeObject<ProductoBusquedaDto>(json) ?? new ProductoBusquedaDto();
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("ProductoBase", json);
+				_context.HttpContext?.Session.SetString("ProductoBase", json);
 			}
 		}
 
@@ -404,17 +408,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("ProductosSeleccionados");
+				var json = _context.HttpContext?.Session.GetString("ProductosSeleccionados") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return [];
 				}
-				return JsonConvert.DeserializeObject<List<ProductoBusquedaDto>>(json);
+				return JsonConvert.DeserializeObject<List<ProductoBusquedaDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("ProductosSeleccionados", json);
+				_context.HttpContext?.Session.SetString("ProductosSeleccionados", json);
 			}
 		}
 		#endregion
@@ -424,124 +428,124 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("TiposComprobantePorCuenta");
+				var json = _context.HttpContext?.Session.GetString("TiposComprobantePorCuenta") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return [];
 				}
-				return JsonConvert.DeserializeObject<List<TipoComprobanteDto>>(json);
+				return JsonConvert.DeserializeObject<List<TipoComprobanteDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("TiposComprobantePorCuenta", json);
+				_context.HttpContext?.Session.SetString("TiposComprobantePorCuenta", json);
 			}
 		}
-		public CuentaDto CuentaComercialSeleccionada
+		public CuentaDto? CuentaComercialSeleccionada
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("CuentaComercialSeleccionada");
+				var json = _context.HttpContext?.Session.GetString("CuentaComercialSeleccionada") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return null;
 				}
-				return JsonConvert.DeserializeObject<CuentaDto>(json);
+				return JsonConvert.DeserializeObject<CuentaDto>(json) ?? new CuentaDto();
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("CuentaComercialSeleccionada", json);
+				_context.HttpContext?.Session.SetString("CuentaComercialSeleccionada", json);
 			}
 		}
 
-		public AutoComptesPendientesDto RPRAutorizacionSeleccionada
+		public AutoComptesPendientesDto? RPRAutorizacionSeleccionada
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("RPRAutorizacionSeleccionada");
+				var json = _context.HttpContext?.Session.GetString("RPRAutorizacionSeleccionada") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return null;
 				}
-				return JsonConvert.DeserializeObject<AutoComptesPendientesDto>(json);
+				return JsonConvert.DeserializeObject<AutoComptesPendientesDto>(json) ?? new AutoComptesPendientesDto();
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("RPRAutorizacionSeleccionada", json);
+				_context.HttpContext?.Session.SetString("RPRAutorizacionSeleccionada", json);
 			}
 		}
 
-		public JsonDeRPDto JsonDeRPVerCompte
+		public JsonDeRPDto? JsonDeRPVerCompte
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("JsonDeRPVerCompte");
+				var json = _context.HttpContext?.Session.GetString("JsonDeRPVerCompte") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return null;
 				}
-				return JsonConvert.DeserializeObject<JsonDeRPDto>(json);
+				return JsonConvert.DeserializeObject<JsonDeRPDto>(json) ?? new JsonDeRPDto();
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("JsonDeRPVerCompte", json);
+				_context.HttpContext?.Session.SetString("JsonDeRPVerCompte", json);
 			}
 		}
 
-		public JsonDeRPDto JsonDeRP
+		public JsonDeRPDto?	 JsonDeRP
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("JsonDeRP");
+				var json = _context.HttpContext?.Session.GetString("JsonDeRP") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return null;
 				}
-				return JsonConvert.DeserializeObject<JsonDeRPDto>(json);
+				return JsonConvert.DeserializeObject<JsonDeRPDto>(json) ?? new JsonDeRPDto();
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("JsonDeRP", json);
+				_context.HttpContext?.Session.SetString("JsonDeRP", json);
 			}
 		}
 
-		public RPRDetalleComprobanteDeRP RPRComprobanteDeRPSeleccionado
+		public RPRDetalleComprobanteDeRP? RPRComprobanteDeRPSeleccionado
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("RPRComprobanteDeRPSeleccionado");
+				var json = _context.HttpContext?.Session.GetString("RPRComprobanteDeRPSeleccionado") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return null;
 				}
-				return JsonConvert.DeserializeObject<RPRDetalleComprobanteDeRP>(json);
+				return JsonConvert.DeserializeObject<RPRDetalleComprobanteDeRP>(json) ?? new RPRDetalleComprobanteDeRP()	;
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("RPRComprobanteDeRPSeleccionado", json);
+				_context.HttpContext?.Session.SetString("RPRComprobanteDeRPSeleccionado", json);
 			}
 		}
 
-		protected List<RPRComptesDeRPDto> RPRComptesDeRPRegs
+		protected List<RPRComptesDeRPDto>? RPRComptesDeRPRegs
 		{
 			get
 			{
-				string json = _context.HttpContext.Session.GetString("RPRComptesDeRPRegs");
+				string json = _context.HttpContext?.Session.GetString("RPRComptesDeRPRegs") ?? string.Empty;
 				if (string.IsNullOrEmpty(json))
 				{
 					return new();
 				}
-				return JsonConvert.DeserializeObject<List<RPRComptesDeRPDto>>(json);
+				return JsonConvert.DeserializeObject<List<RPRComptesDeRPDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("RPRComptesDeRPRegs", json);
+				_context.HttpContext?.Session.SetString("RPRComptesDeRPRegs", json);
 			}
 		}
 
@@ -549,17 +553,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				string json = _context.HttpContext.Session.GetString("RPRItemVerCompteLista");
+				string json = _context.HttpContext?.Session.GetString("RPRItemVerCompteLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json))
 				{
 					return new();
 				}
-				return JsonConvert.DeserializeObject<List<RPRItemVerCompteDto>>(json);
+				return JsonConvert.DeserializeObject<List<RPRItemVerCompteDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("RPRItemVerCompteLista", json);
+				_context.HttpContext?.Session.SetString("RPRItemVerCompteLista", json);
 			}
 		}
 
@@ -567,17 +571,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				string json = _context.HttpContext.Session.GetString("RPRItemVerConteoLista");
+				string json = _context.HttpContext?.Session.GetString("RPRItemVerConteoLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json))
 				{
 					return new();
 				}
-				return JsonConvert.DeserializeObject<List<RPRVerConteoDto>>(json);
+				return JsonConvert.DeserializeObject<List<RPRVerConteoDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("RPRItemVerConteoLista", json);
+				_context.HttpContext?.Session.SetString("RPRItemVerConteoLista", json);
 			}
 		}
 
@@ -585,17 +589,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				string json = _context.HttpContext.Session.GetString("RPRDetalleDeProductosEnRP");
+				string json = _context.HttpContext?.Session.GetString("RPRDetalleDeProductosEnRP") ?? string.Empty;
 				if (string.IsNullOrEmpty(json))
 				{
 					return new();
 				}
-				return JsonConvert.DeserializeObject<List<ProductoBusquedaDto>>(json);
+				return JsonConvert.DeserializeObject<List<ProductoBusquedaDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("RPRDetalleDeProductosEnRP", json);
+				_context.HttpContext?.Session.SetString("RPRDetalleDeProductosEnRP", json);
 			}
 		}
 
@@ -603,35 +607,35 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				string json = _context.HttpContext.Session.GetString("RPRAutorizacionesPendientesEnRP");
+				string json = _context.HttpContext?.Session.GetString("RPRAutorizacionesPendientesEnRP") ?? string.Empty;
 				if (string.IsNullOrEmpty(json))
 				{
 					return new();
 				}
-				return JsonConvert.DeserializeObject<List<AutoComptesPendientesDto>>(json);
+				return JsonConvert.DeserializeObject<List<AutoComptesPendientesDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("RPRAutorizacionesPendientesEnRP", json);
+				_context.HttpContext?.Session.SetString("RPRAutorizacionesPendientesEnRP", json);
 			}
 		}
 
-		protected AutoComptesPendientesDto RPRAutorizacionPendienteSeleccionadoEnLista
+		protected AutoComptesPendientesDto? RPRAutorizacionPendienteSeleccionadoEnLista
 		{
 			get
 			{
-				string json = _context.HttpContext.Session.GetString("RPRAutorizacionPendienteSeleccionadoEnLista");
+				string json = _context.HttpContext?.Session.GetString("RPRAutorizacionPendienteSeleccionadoEnLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json))
 				{
 					return new();
 				}
-				return JsonConvert.DeserializeObject<AutoComptesPendientesDto>(json);
+				return JsonConvert.DeserializeObject<AutoComptesPendientesDto>(json) ?? new AutoComptesPendientesDto()	;
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("RPRAutorizacionPendienteSeleccionadoEnLista", json);
+				_context.HttpContext?.Session.SetString("RPRAutorizacionPendienteSeleccionadoEnLista", json);
 			}
 		}
 		#endregion
@@ -641,119 +645,119 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				string json = _context.HttpContext.Session.GetString("TRDepositosSeleccionados");
+				string json = _context.HttpContext?.Session.GetString("TRDepositosSeleccionados") ?? string.Empty;
 				if (string.IsNullOrEmpty(json))
 				{
 					return string.Empty;
 				}
-				return JsonConvert.DeserializeObject<string>(json);
+				return JsonConvert.DeserializeObject<string>(json)?? string.Empty;
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("TRDepositosSeleccionados", json);
+				_context.HttpContext?.Session.SetString("TRDepositosSeleccionados", json);
 			}
 		}
 		protected List<TRAutPIDto> TRAutPedidosSucursalLista //ListaPedidosSucursal
 		{
 			get
 			{
-				string json = _context.HttpContext.Session.GetString("TRAutPedidosSucursalLista");
+				string json = _context.HttpContext?.Session.GetString("TRAutPedidosSucursalLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json))
 				{
 					return new();
 				}
-				return JsonConvert.DeserializeObject<List<TRAutPIDto>>(json);
+				return JsonConvert.DeserializeObject<List<TRAutPIDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("TRAutPedidosSucursalLista", json);
+				_context.HttpContext?.Session.SetString("TRAutPedidosSucursalLista", json);
 			}
 		}
 		protected List<TRAutPIDto> TRAutPedidosIncluidosILista
 		{
 			get
 			{
-				string json = _context.HttpContext.Session.GetString("TRAutPedidosIncluidosILista");
+				string json = _context.HttpContext?.Session.GetString("TRAutPedidosIncluidosILista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json))
 				{
 					return new();
 				}
-				return JsonConvert.DeserializeObject<List<TRAutPIDto>>(json);
+				return JsonConvert.DeserializeObject<List<TRAutPIDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("TRAutPedidosIncluidosILista", json);
+				_context.HttpContext?.Session.SetString("TRAutPedidosIncluidosILista", json);
 			}
 		}
 		protected List<TRAutSucursalesDto> TRSucursalesLista
 		{
 			get
 			{
-				string json = _context.HttpContext.Session.GetString("TRSucursalesLista");
+				string json = _context.HttpContext?.Session.GetString("TRSucursalesLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json))
 				{
 					return new();
 				}
-				return JsonConvert.DeserializeObject<List<TRAutSucursalesDto>>(json);
+				return JsonConvert.DeserializeObject<List<TRAutSucursalesDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("TRSucursalesLista", json);
+				_context.HttpContext?.Session.SetString("TRSucursalesLista", json);
 			}
 		}
 		protected List<TRAutAnalizaDto> TRAutAnaliza
 		{
 			get
 			{
-				string json = _context.HttpContext.Session.GetString("TRAutAnaliza");
+				string json = _context.HttpContext?.Session.GetString("TRAutAnaliza") ?? string.Empty;
 				if (string.IsNullOrEmpty(json))
 				{
 					return new();
 				}
-				return JsonConvert.DeserializeObject<List<TRAutAnalizaDto>>(json);
+				return JsonConvert.DeserializeObject<List<TRAutAnalizaDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("TRAutAnaliza", json);
+				_context.HttpContext?.Session.SetString("TRAutAnaliza", json);
 			}
 		}
 		protected List<TRNuevaAutSucursalDto> TRNuevaAutSucursalLista
 		{
 			get
 			{
-				string json = _context.HttpContext.Session.GetString("TRNuevaAutSucursalLista");
+				string json = _context.HttpContext?.Session.GetString("TRNuevaAutSucursalLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json))
 				{
 					return new();
 				}
-				return JsonConvert.DeserializeObject<List<TRNuevaAutSucursalDto>>(json);
+				return JsonConvert.DeserializeObject<List<TRNuevaAutSucursalDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("TRNuevaAutSucursalLista", json);
+				_context.HttpContext?.Session.SetString("TRNuevaAutSucursalLista", json);
 			}
 		}
 		protected List<TRNuevaAutDetalleDto> TRNuevaAutDetallelLista
 		{
 			get
 			{
-				string json = _context.HttpContext.Session.GetString("TRNuevaAutDetallelLista");
+				string json = _context.HttpContext?.Session.GetString("TRNuevaAutDetallelLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json))
 				{
 					return new();
 				}
-				return JsonConvert.DeserializeObject<List<TRNuevaAutDetalleDto>>(json);
+				return JsonConvert.DeserializeObject<List<TRNuevaAutDetalleDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("TRNuevaAutDetallelLista", json);
+				_context.HttpContext?.Session.SetString("TRNuevaAutDetallelLista", json);
 			}
 		}
 		#endregion
@@ -763,51 +767,51 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				string json = _context.HttpContext.Session.GetString("AjustePrevioCargadoLista");
+				string json = _context.HttpContext?.Session.GetString("AjustePrevioCargadoLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json))
 				{
 					return new();
 				}
-				return JsonConvert.DeserializeObject<List<AjustePrevioCargadoDto>>(json);
+				return JsonConvert.DeserializeObject<List<AjustePrevioCargadoDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("AjustePrevioCargadoLista", json);
+				_context.HttpContext?.Session.SetString("AjustePrevioCargadoLista", json);
 			}
 		}
 		protected List<ProductoAAjustarDto> AjusteProductosLista
 		{
 			get
 			{
-				string json = _context.HttpContext.Session.GetString("AjusteProductosLista");
+				string json = _context.HttpContext?.Session.GetString("AjusteProductosLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json))
 				{
 					return new();
 				}
-				return JsonConvert.DeserializeObject<List<ProductoAAjustarDto>>(json);
+				return JsonConvert.DeserializeObject<List<ProductoAAjustarDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("AjusteProductosLista", json);
+				_context.HttpContext?.Session.SetString("AjusteProductosLista", json);
 			}
 		}
 		protected List<DepositoDto> DepositoLista
 		{
 			get
 			{
-				string json = _context.HttpContext.Session.GetString("DepositoLista");
+				string json = _context.HttpContext?.Session.GetString("DepositoLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json))
 				{
 					return new();
 				}
-				return JsonConvert.DeserializeObject<List<DepositoDto>>(json);
+				return JsonConvert.DeserializeObject<List<DepositoDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("DepositoLista", json);
+				_context.HttpContext?.Session.SetString("DepositoLista", json);
 			}
 		}
 		#endregion
@@ -817,34 +821,34 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				string json = _context.HttpContext.Session.GetString("DevolucionProductosLista");
+				string json = _context.HttpContext?.Session.GetString("DevolucionProductosLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json))
 				{
 					return new();
 				}
-				return JsonConvert.DeserializeObject<List<ProductoADevolverDto>>(json);
+				return JsonConvert.DeserializeObject<List<ProductoADevolverDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("DevolucionProductosLista", json);
+				_context.HttpContext?.Session.SetString("DevolucionProductosLista", json);
 			}
 		}
 		protected List<DevolucionPrevioCargadoDto> DevolucionPrevioCargadoLista
 		{
 			get
 			{
-				string json = _context.HttpContext.Session.GetString("DevolucionPrevioCargadoLista");
+				string json = _context.HttpContext?.Session.GetString("DevolucionPrevioCargadoLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json))
 				{
 					return new();
 				}
-				return JsonConvert.DeserializeObject<List<DevolucionPrevioCargadoDto>>(json);
+				return JsonConvert.DeserializeObject<List<DevolucionPrevioCargadoDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("DevolucionPrevioCargadoLista", json);
+				_context.HttpContext?.Session.SetString("DevolucionPrevioCargadoLista", json);
 			}
 		}
 		#endregion
@@ -854,17 +858,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("ProveedoresLista");
+				var json = _context.HttpContext?.Session.GetString("ProveedoresLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<ProveedorListaDto>();
 				}
-				return JsonConvert.DeserializeObject<List<ProveedorListaDto>>(json);
+				return JsonConvert.DeserializeObject<List<ProveedorListaDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("ProveedoresLista", json);
+				_context.HttpContext?.Session.SetString("ProveedoresLista", json);
 			}
 		}
 		#endregion
@@ -874,17 +878,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("RubroLista");
+				var json = _context.HttpContext?.Session.GetString("RubroLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<RubroListaDto>();
 				}
-				return JsonConvert.DeserializeObject<List<RubroListaDto>>(json);
+				return JsonConvert.DeserializeObject<List<RubroListaDto>>(json) ?? []	;
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("RubroLista", json);
+				_context.HttpContext?.Session.SetString("RubroLista", json);
 			}
 		}
 		#endregion
@@ -894,17 +898,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("ProveedorFamiliaLista");
+				var json = _context.HttpContext?.Session.GetString("ProveedorFamiliaLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<ProveedorFamiliaListaDto>();
 				}
-				return JsonConvert.DeserializeObject<List<ProveedorFamiliaListaDto>>(json);
+				return JsonConvert.DeserializeObject<List<ProveedorFamiliaListaDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("ProveedorFamiliaLista", json);
+				_context.HttpContext?.Session.SetString("ProveedorFamiliaLista", json);
 			}
 		}
 		#endregion
@@ -914,17 +918,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("TipoNegocioLista");
+				var json = _context.HttpContext?.Session.GetString("TipoNegocioLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<TipoNegocioDto>();
 				}
-				return JsonConvert.DeserializeObject<List<TipoNegocioDto>>(json);
+				return JsonConvert.DeserializeObject<List<TipoNegocioDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("TipoNegocioLista", json);
+				_context.HttpContext?.Session.SetString("TipoNegocioLista", json);
 			}
 		}
 		#endregion
@@ -934,17 +938,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("ZonasLista");
+				var json = _context.HttpContext?.Session.GetString("ZonasLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<ZonaDto>();
 				}
-				return JsonConvert.DeserializeObject<List<ZonaDto>>(json);
+				return JsonConvert.DeserializeObject<List<ZonaDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("ZonasLista", json);
+				_context.HttpContext?.Session.SetString("ZonasLista", json);
 			}
 		}
 		#endregion
@@ -954,17 +958,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("TipoDocumentoLista");
+				var json = _context.HttpContext?.Session.GetString("TipoDocumentoLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<TipoDocumentoDto>();
 				}
-				return JsonConvert.DeserializeObject<List<TipoDocumentoDto>>(json);
+				return JsonConvert.DeserializeObject<List<TipoDocumentoDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("TipoDocumentoLista", json);
+				_context.HttpContext?.Session.SetString("TipoDocumentoLista", json);
 			}
 		}
 		#endregion
@@ -974,17 +978,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("CondicionesAfipLista");
+				var json = _context.HttpContext?.Session.GetString("CondicionesAfipLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<CondicionAfipDto>();
 				}
-				return JsonConvert.DeserializeObject<List<CondicionAfipDto>>(json);
+				return JsonConvert.DeserializeObject<List<CondicionAfipDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("CondicionesAfipLista", json);
+				_context.HttpContext?.Session.SetString("CondicionesAfipLista", json);
 			}
 		}
 		#endregion
@@ -994,17 +998,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("CondicionIBLista");
+				var json = _context.HttpContext?.Session.GetString("CondicionIBLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<CondicionIBDto>();
 				}
-				return JsonConvert.DeserializeObject<List<CondicionIBDto>>(json);
+				return JsonConvert.DeserializeObject<List<CondicionIBDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("CondicionIBLista", json);
+				_context.HttpContext?.Session.SetString("CondicionIBLista", json);
 			}
 		}
 		#endregion
@@ -1014,17 +1018,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("NaturalezaJuridicaLista");
+				var json = _context.HttpContext?.Session.GetString("NaturalezaJuridicaLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<NaturalezaJuridicaDto>();
 				}
-				return JsonConvert.DeserializeObject<List<NaturalezaJuridicaDto>>(json);
+				return JsonConvert.DeserializeObject<List<NaturalezaJuridicaDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("NaturalezaJuridicaLista", json);
+				_context.HttpContext?.Session.SetString("NaturalezaJuridicaLista", json);
 			}
 		}
 		#endregion
@@ -1034,17 +1038,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("DepartamentoLista");
+				var json = _context.HttpContext?.Session.GetString("DepartamentoLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<DepartamentoDto>();
 				}
-				return JsonConvert.DeserializeObject<List<DepartamentoDto>>(json);
+				return JsonConvert.DeserializeObject<List<DepartamentoDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("DepartamentoLista", json);
+				_context.HttpContext?.Session.SetString("DepartamentoLista", json);
 			}
 		}
 		#endregion
@@ -1054,17 +1058,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("FormaDePagoLista");
+				var json = _context.HttpContext?.Session.GetString("FormaDePagoLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<FormaDePagoDto>();
 				}
-				return JsonConvert.DeserializeObject<List<FormaDePagoDto>>(json);
+				return JsonConvert.DeserializeObject<List<FormaDePagoDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("FormaDePagoLista", json);
+				_context.HttpContext?.Session.SetString("FormaDePagoLista", json);
 			}
 		}
 		#endregion
@@ -1074,17 +1078,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("TipoContactoLista");
+				var json = _context.HttpContext?.Session.GetString("TipoContactoLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<TipoContactoDto>();
 				}
-				return JsonConvert.DeserializeObject<List<TipoContactoDto>>(json);
+				return JsonConvert.DeserializeObject<List<TipoContactoDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("TipoContactoLista", json);
+				_context.HttpContext?.Session.SetString("TipoContactoLista", json);
 			}
 		}
 		#endregion
@@ -1094,17 +1098,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("ProvinciaLista");
+				var json = _context.HttpContext?.Session.GetString("ProvinciaLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<ProvinciaDto>();
 				}
-				return JsonConvert.DeserializeObject<List<ProvinciaDto>>(json);
+				return JsonConvert.DeserializeObject<List<ProvinciaDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("ProvinciaLista", json);
+				_context.HttpContext?.Session.SetString("ProvinciaLista", json);
 			}
 		}
 		#endregion
@@ -1114,17 +1118,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("TipoCanalLista");
+				var json = _context.HttpContext?.Session.GetString("TipoCanalLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<TipoCanalDto>();
 				}
-				return JsonConvert.DeserializeObject<List<TipoCanalDto>>(json);
+				return JsonConvert.DeserializeObject<List<TipoCanalDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("TipoCanalLista", json);
+				_context.HttpContext?.Session.SetString("TipoCanalLista", json);
 			}
 		}
 		#endregion
@@ -1134,17 +1138,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("TiposComprobante");
+				var json = _context.HttpContext?.Session.GetString("TiposComprobante") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return [];
 				}
-				return JsonConvert.DeserializeObject<List<TipoComprobanteDto>>(json);
+				return JsonConvert.DeserializeObject<List<TipoComprobanteDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("TiposComprobante", json);
+				_context.HttpContext?.Session.SetString("TiposComprobante", json);
 			}
 		}
 		#endregion
@@ -1154,17 +1158,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("TipoCuentaBcoLista");
+				var json = _context.HttpContext?.Session.GetString("TipoCuentaBcoLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<TipoCuentaBcoDto>();
 				}
-				return JsonConvert.DeserializeObject<List<TipoCuentaBcoDto>>(json);
+				return JsonConvert.DeserializeObject<List<TipoCuentaBcoDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("TipoCuentaBcoLista", json);
+				_context.HttpContext?.Session.SetString("TipoCuentaBcoLista", json);
 			}
 		}
 		#endregion
@@ -1174,17 +1178,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("ListaDePreciosLista");
+				var json = _context.HttpContext?.Session.GetString("ListaDePreciosLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<ListaPrecioDto>();
 				}
-				return JsonConvert.DeserializeObject<List<ListaPrecioDto>>(json);
+				return JsonConvert.DeserializeObject<List<ListaPrecioDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("ListaDePreciosLista", json);
+				_context.HttpContext?.Session.SetString("ListaDePreciosLista", json);
 			}
 		}
 		#endregion
@@ -1194,17 +1198,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("VendedoresLista");
+				var json = _context.HttpContext?.Session.GetString("VendedoresLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<VendedorDto>();
 				}
-				return JsonConvert.DeserializeObject<List<VendedorDto>>(json);
+				return JsonConvert.DeserializeObject<List<VendedorDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("VendedoresLista", json);
+				_context.HttpContext?.Session.SetString("VendedoresLista", json);
 			}
 		}
 		#endregion
@@ -1214,17 +1218,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("RepartidoresLista");
+				var json = _context.HttpContext?.Session.GetString("RepartidoresLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<RepartidorDto>();
 				}
-				return JsonConvert.DeserializeObject<List<RepartidorDto>>(json);
+				return JsonConvert.DeserializeObject<List<RepartidorDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("RepartidoresLista", json);
+				_context.HttpContext?.Session.SetString("RepartidoresLista", json);
 			}
 		}
 		#endregion
@@ -1234,17 +1238,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("DiasDeLaSemanaLista");
+				var json = _context.HttpContext?.Session.GetString("DiasDeLaSemanaLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<DiaDeLaSemanaDto>();
 				}
-				return JsonConvert.DeserializeObject<List<DiaDeLaSemanaDto>>(json);
+				return JsonConvert.DeserializeObject<List<DiaDeLaSemanaDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("DiasDeLaSemanaLista", json);
+				_context.HttpContext?.Session.SetString("DiasDeLaSemanaLista", json);
 			}
 		}
 		#endregion
@@ -1254,17 +1258,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("FinancierosLista");
+				var json = _context.HttpContext?.Session.GetString("FinancierosLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<FinancieroDto>();
 				}
-				return JsonConvert.DeserializeObject<List<FinancieroDto>>(json);
+				return JsonConvert.DeserializeObject<List<FinancieroDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("FinancierosLista", json);
+				_context.HttpContext?.Session.SetString("FinancierosLista", json);
 			}
 		}
 		#endregion
@@ -1274,17 +1278,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("FinancierosRelaLista");
+				var json = _context.HttpContext?.Session.GetString("FinancierosRelaLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<FinancieroDto>();
 				}
-				return JsonConvert.DeserializeObject<List<FinancieroDto>>(json);
+				return JsonConvert.DeserializeObject<List<FinancieroDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("FinancierosRelaLista", json);
+				_context.HttpContext?.Session.SetString("FinancierosRelaLista", json);
 			}
 		}
 		#endregion
@@ -1294,17 +1298,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("FinancierosEstadosLista");
+				var json = _context.HttpContext?.Session.GetString("FinancierosEstadosLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<FinancieroEstadoDto>();
 				}
-				return JsonConvert.DeserializeObject<List<FinancieroEstadoDto>>(json);
+				return JsonConvert.DeserializeObject<List<FinancieroEstadoDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("FinancierosEstadosLista", json);
+				_context.HttpContext?.Session.SetString("FinancierosEstadosLista", json);
 			}
 		}
 		#endregion
@@ -1314,17 +1318,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("TipoObservacionesLista");
+				var json = _context.HttpContext?.Session.GetString("TipoObservacionesLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<TipoObsDto>();
 				}
-				return JsonConvert.DeserializeObject<List<TipoObsDto>>(json);
+				return JsonConvert.DeserializeObject<List<TipoObsDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("TipoObservacionesLista", json);
+				_context.HttpContext?.Session.SetString("TipoObservacionesLista", json);
 			}
 		}
 		#endregion
@@ -1334,17 +1338,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("TiposTributoLista");
+				var json = _context.HttpContext?.Session.GetString("TiposTributoLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<TipoTributoDto>();
 				}
-				return JsonConvert.DeserializeObject<List<TipoTributoDto>>(json);
+				return JsonConvert.DeserializeObject<List<TipoTributoDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("TiposTributoLista", json);
+				_context.HttpContext?.Session.SetString("TiposTributoLista", json);
 			}
 		}
 		#endregion
@@ -1354,17 +1358,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("IvaSituacionLista");
+				var json = _context.HttpContext?.Session.GetString("IvaSituacionLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<IVASituacionDto>();
 				}
-				return JsonConvert.DeserializeObject<List<IVASituacionDto>>(json);
+				return JsonConvert.DeserializeObject<List<IVASituacionDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("IvaSituacionLista", json);
+				_context.HttpContext?.Session.SetString("IvaSituacionLista", json);
 			}
 		}
 		#endregion
@@ -1374,17 +1378,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("IvaAlicuotasLista");
+				var json = _context.HttpContext?.Session.GetString("IvaAlicuotasLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<IVAAlicuotaDto>();
 				}
-				return JsonConvert.DeserializeObject<List<IVAAlicuotaDto>>(json);
+				return JsonConvert.DeserializeObject<List<IVAAlicuotaDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("IvaAlicuotasLista", json);
+				_context.HttpContext?.Session.SetString("IvaAlicuotasLista", json);
 			}
 		}
 		#endregion
@@ -1394,17 +1398,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("TipoMonedaLista");
+				var json = _context.HttpContext?.Session.GetString("TipoMonedaLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<TipoMonedaDto>();
 				}
-				return JsonConvert.DeserializeObject<List<TipoMonedaDto>>(json);
+				return JsonConvert.DeserializeObject<List<TipoMonedaDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("TipoMonedaLista", json);
+				_context.HttpContext?.Session.SetString("TipoMonedaLista", json);
 			}
 		}
 		#endregion
@@ -1414,17 +1418,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("TipoOpeIvaLista");
+				var json = _context.HttpContext?.Session.GetString("TipoOpeIvaLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<TipoOpeIvaDto>();
 				}
-				return JsonConvert.DeserializeObject<List<TipoOpeIvaDto>>(json);
+				return JsonConvert.DeserializeObject<List<TipoOpeIvaDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("TipoOpeIvaLista", json);
+				_context.HttpContext?.Session.SetString("TipoOpeIvaLista", json);
 			}
 		}
 		#endregion
@@ -1434,17 +1438,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("TipoProvLista");
+				var json = _context.HttpContext?.Session.GetString("TipoProvLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<TipoProveedorDto>();
 				}
-				return JsonConvert.DeserializeObject<List<TipoProveedorDto>>(json);
+				return JsonConvert.DeserializeObject<List<TipoProveedorDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("TipoProvLista", json);
+				_context.HttpContext?.Session.SetString("TipoProvLista", json);
 			}
 		}
 		#endregion
@@ -1454,17 +1458,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("TipoGastoLista");
+				var json = _context.HttpContext?.Session.GetString("TipoGastoLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<TipoGastoDto>();
 				}
-				return JsonConvert.DeserializeObject<List<TipoGastoDto>>(json);
+				return JsonConvert.DeserializeObject<List<TipoGastoDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("TipoGastoLista", json);
+				_context.HttpContext?.Session.SetString("TipoGastoLista", json);
 			}
 		}
 		#endregion
@@ -1474,17 +1478,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("TipoRetGanLista");
+				var json = _context.HttpContext?.Session.GetString("TipoRetGanLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<TipoRetGananciaDto>();
 				}
-				return JsonConvert.DeserializeObject<List<TipoRetGananciaDto>>(json);
+				return JsonConvert.DeserializeObject<List<TipoRetGananciaDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("TipoRetGanLista", json);
+				_context.HttpContext?.Session.SetString("TipoRetGanLista", json);
 			}
 		}
 		#endregion
@@ -1494,17 +1498,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("TipoRetIBLista");
+				var json = _context.HttpContext?.Session.GetString("TipoRetIBLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<TipoRetIngBrDto>();
 				}
-				return JsonConvert.DeserializeObject<List<TipoRetIngBrDto>>(json);
+				return JsonConvert.DeserializeObject<List<TipoRetIngBrDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("TipoRetIBLista", json);
+				_context.HttpContext?.Session.SetString("TipoRetIBLista", json);
 			}
 		}
 		#endregion
@@ -1514,17 +1518,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("TipoCuentaFinLista");
+				var json = _context.HttpContext?.Session.GetString("TipoCuentaFinLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<TipoCuentaFinDto>();
 				}
-				return JsonConvert.DeserializeObject<List<TipoCuentaFinDto>>(json);
+				return JsonConvert.DeserializeObject<List<TipoCuentaFinDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("TipoCuentaFinLista", json);
+				_context.HttpContext?.Session.SetString("TipoCuentaFinLista", json);
 			}
 		}
 		#endregion
@@ -1534,17 +1538,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("TipoCuentaGastoLista");
+				var json = _context.HttpContext?.Session.GetString("TipoCuentaGastoLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<TipoCuentaGastoDto>();
 				}
-				return JsonConvert.DeserializeObject<List<TipoCuentaGastoDto>>(json);
+				return JsonConvert.DeserializeObject<List<TipoCuentaGastoDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("TipoCuentaGastoLista", json);
+				_context.HttpContext?.Session.SetString("TipoCuentaGastoLista", json);
 			}
 		}
 		#endregion
@@ -1554,17 +1558,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("AdministracionesLista");
+				var json = _context.HttpContext?.Session.GetString("AdministracionesLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<AdministracionDto>();
 				}
-				return JsonConvert.DeserializeObject<List<AdministracionDto>>(json);
+				return JsonConvert.DeserializeObject<List<AdministracionDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("AdministracionesLista", json);
+				_context.HttpContext?.Session.SetString("AdministracionesLista", json);
 			}
 		}
 		#endregion
@@ -1574,17 +1578,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("CuentaPlanContableLista");
+				var json = _context.HttpContext?.Session.GetString("CuentaPlanContableLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<PlanContableDto>();
 				}
-				return JsonConvert.DeserializeObject<List<PlanContableDto>>(json);
+				return JsonConvert.DeserializeObject<List<PlanContableDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("CuentaPlanContableLista", json);
+				_context.HttpContext?.Session.SetString("CuentaPlanContableLista", json);
 			}
 		}
 		#endregion
@@ -1594,17 +1598,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("OrdenDeCompraLista");
+				var json = _context.HttpContext?.Session.GetString("OrdenDeCompraLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<OrdenDeCompraListDto>();
 				}
-				return JsonConvert.DeserializeObject<List<OrdenDeCompraListDto>>(json);
+				return JsonConvert.DeserializeObject<List<OrdenDeCompraListDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("OrdenDeCompraLista", json);
+				_context.HttpContext?.Session.SetString("OrdenDeCompraLista", json);
 			}
 		}
 		#endregion
@@ -1619,17 +1623,17 @@ namespace gc.sitio.Controllers
 			get
 			{
 				//11 = nodo 1 - original 1 (si fuera un reporte duplicado deberia ser 2)
-				var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_11");
+				var json = _context.HttpContext?.Session.GetString("datos_CCUENTAS_11") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return [];
 				}
-				return JsonConvert.DeserializeObject<List<ConsCtaCteDto>>(json);
+				return JsonConvert.DeserializeObject<List<ConsCtaCteDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("datos_CCUENTAS_11", json);
+				_context.HttpContext?.Session.SetString("datos_CCUENTAS_11", json);
 			}
 		}
 
@@ -1637,17 +1641,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_21");
+				var json = _context.HttpContext?.Session.GetString("datos_CCUENTAS_21") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return [];
 				}
-				return JsonConvert.DeserializeObject<List<ConsVtoDto>>(json);
+				return JsonConvert.DeserializeObject<List<ConsVtoDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("datos_CCUENTAS_21", json);
+				_context.HttpContext?.Session.SetString("datos_CCUENTAS_21", json);
 			}
 		}
 
@@ -1655,17 +1659,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_31");
+				var json = _context.HttpContext?.Session.GetString("datos_CCUENTAS_31") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return [];
 				}
-				return JsonConvert.DeserializeObject<List<ConsCompTotDto>>(json);
+				return JsonConvert.DeserializeObject<List<ConsCompTotDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("datos_CCUENTAS_31", json);
+				_context.HttpContext?.Session.SetString("datos_CCUENTAS_31", json);
 			}
 		}
 
@@ -1673,17 +1677,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_32");
+				var json = _context.HttpContext?.Session.GetString("datos_CCUENTAS_32") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return [];
 				}
-				return JsonConvert.DeserializeObject<List<ConsCompDetDto>>(json);
+				return JsonConvert.DeserializeObject<List<ConsCompDetDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("datos_CCUENTAS_32", json);
+				_context.HttpContext?.Session.SetString("datos_CCUENTAS_32", json);
 			}
 		}
 
@@ -1691,17 +1695,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_41");
+				var json = _context.HttpContext?.Session.GetString("datos_CCUENTAS_41") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return [];
 				}
-				return JsonConvert.DeserializeObject<List<ConsOrdPagosDto>>(json);
+				return JsonConvert.DeserializeObject<List<ConsOrdPagosDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("datos_CCUENTAS_41", json);
+				_context.HttpContext?.Session.SetString("datos_CCUENTAS_41", json);
 			}
 		}
 
@@ -1709,17 +1713,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_42");
+				var json = _context.HttpContext?.Session.GetString("datos_CCUENTAS_42") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return [];
 				}
-				return JsonConvert.DeserializeObject<List<ConsOrdPagosDetDto>>(json);
+				return JsonConvert.DeserializeObject<List<ConsOrdPagosDetDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("datos_CCUENTAS_42", json);
+				_context.HttpContext?.Session.SetString("datos_CCUENTAS_42", json);
 			}
 		}
 
@@ -1727,17 +1731,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_51");
+				var json = _context.HttpContext?.Session.GetString("datos_CCUENTAS_51") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return [];
 				}
-				return JsonConvert.DeserializeObject<List<ConsRecepcionProveedorDto>>(json);
+				return JsonConvert.DeserializeObject<List<ConsRecepcionProveedorDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("datos_CCUENTAS_51", json);
+				_context.HttpContext?.Session.SetString("datos_CCUENTAS_51", json);
 			}
 		}
 
@@ -1745,17 +1749,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("datos_CCUENTAS_52");
+				var json = _context.HttpContext?.Session.GetString("datos_CCUENTAS_52") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return [];
 				}
-				return JsonConvert.DeserializeObject<List<ConsRecepcionProveedorDetalleDto>>(json);
+				return JsonConvert.DeserializeObject<List<ConsRecepcionProveedorDetalleDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("datos_CCUENTAS_52", json);
+				_context.HttpContext?.Session.SetString("datos_CCUENTAS_52", json);
 			}
 		}
 		#endregion
@@ -1765,7 +1769,7 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("ModuloDM");
+				var txt = _context.HttpContext?.Session.GetString("ModuloDM") ?? string.Empty;
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return string.Empty;
@@ -1775,7 +1779,7 @@ namespace gc.sitio.Controllers
 			set
 			{
 				var valor = value.ToString();
-				_context.HttpContext.Session.SetString("ModuloDM", valor);
+				_context.HttpContext?.Session.SetString("ModuloDM", valor);
 			}
 		}
 
@@ -1783,17 +1787,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("DocumentManager");
+				var json = _context.HttpContext?.Session.GetString("DocumentManager") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new DocumentManagerViewModel();
 				}
-				return JsonConvert.DeserializeObject<DocumentManagerViewModel>(json);
+				return JsonConvert.DeserializeObject<DocumentManagerViewModel>(json) ?? new DocumentManagerViewModel();
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("DocumentManager", json);
+				_context.HttpContext?.Session.SetString("DocumentManager", json);
 			}
 		}
 
@@ -1801,17 +1805,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("ArchivosCargadosModulo");
+				var json = _context.HttpContext?.Session.GetString("ArchivosCargadosModulo") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<MenuRoot>();
 				}
-				return JsonConvert.DeserializeObject<List<MenuRoot>>(json);
+				return JsonConvert.DeserializeObject<List<MenuRoot>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("ArchivosCargadosModulo", json);
+				_context.HttpContext?.Session.SetString("ArchivosCargadosModulo", json);
 			}
 		}
 
@@ -1853,17 +1857,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("OrdenDeCompraEstadoLista");
+				var json = _context.HttpContext?.Session.GetString("OrdenDeCompraEstadoLista") ?? string.Empty;
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return new List<OrdenDeCompraEstadoDto>();
 				}
-				return JsonConvert.DeserializeObject<List<OrdenDeCompraEstadoDto>>(json);
+				return JsonConvert.DeserializeObject<List<OrdenDeCompraEstadoDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("OrdenDeCompraEstadoLista", json);
+				_context.HttpContext?.Session.SetString("OrdenDeCompraEstadoLista", json);
 			}
 		}
 		#endregion
@@ -1897,10 +1901,10 @@ namespace gc.sitio.Controllers
 			}
 			return converted;
 		}
-		public GridCore<T> ObtenerGridCore<T>(List<T> lista) where T : Dto
+		public GridCoreSmart<T> ObtenerGridCoreSmart<T>(List<T> lista) where T : Dto
 		{
 			var listaDetalle = new StaticPagedList<T>(lista, 1, 999, lista.Count);
-			return new GridCore<T>() { ListaDatos = listaDetalle, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
+			return new GridCoreSmart<T>() { ListaDatos = listaDetalle, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
 		}
 		public GridCoreSmart<T> ObtenerGridCoreSmart<T>(List<T> lista) where T : Dto
 		{
@@ -1951,7 +1955,7 @@ namespace gc.sitio.Controllers
 
 		public IQueryable<T> OrdenarEntidad<T>(IQueryable<T> lista, string sortdir, string sort) where T : Dto
 		{
-			IQueryable<T> query = null;
+			IQueryable<T> query;
 			query = lista.AsQueryable().OrderBy($"{sort} {sortdir}");
 
 			return query;
@@ -2134,11 +2138,15 @@ namespace gc.sitio.Controllers
 		}
 		protected void ObtenerIvaSituacionLista(IProducto2Servicio _prod2servicio)
 		{
-			IvaSituacionLista = _prod2servicio.ObtenerIVASituacion(TokenCookie).Result.ListaEntidad;
+			var result = _prod2servicio.ObtenerIVASituacion(TokenCookie).GetAwaiter().GetResult();
+
+            IvaSituacionLista = result?.ListaEntidad ?? [];
 		}
 		protected void ObtenerIvaAlicuotasLista(IProducto2Servicio _prod2servicio)
 		{
-			IvaAlicuotasLista = _prod2servicio.ObtenerIVAAlicuotas(TokenCookie).Result.ListaEntidad;
+			var result = _prod2servicio.ObtenerIVAAlicuotas(TokenCookie).GetAwaiter().GetResult();
+
+            IvaAlicuotasLista = result?.ListaEntidad?? [];
 		}
 		protected void ObtenerTiposTributoLista(ITipoTributoServicio _tipoTributoServicio)
 		{
@@ -2357,13 +2365,13 @@ namespace gc.sitio.Controllers
 		{
 			IEnumerable<ComboGenDto> lista;
 			var medidas = await _prodSv.ObtenerMedidas(TokenCookie);
-			if (medidas.Ok)
+			if (medidas.Ok && medidas.ListaEntidad != null)
 			{
 				lista = medidas.ListaEntidad.Select(x => new ComboGenDto { Id = x.Up_Id, Descripcion = x.Up_Lista });
 			}
 			else
 			{
-				lista = new List<ComboGenDto>() { new ComboGenDto { Id = "", Descripcion = "SIN MEDIDAS" } };
+				lista = [new() { Id = "", Descripcion = "SIN MEDIDAS" }];
 			}
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
@@ -2372,13 +2380,13 @@ namespace gc.sitio.Controllers
 		{
 			IEnumerable<ComboGenDto> lista;
 			var iva = await _prodSv.ObtenerIVASituacion(TokenCookie);
-			if (iva.Ok)
+			if (iva.Ok && iva.ListaEntidad != null)
 			{
 				lista = iva.ListaEntidad.Select(x => new ComboGenDto { Id = x.Iva_Situacion, Descripcion = x.Iva_Situacion_Desc });
 			}
 			else
 			{
-				lista = new List<ComboGenDto>() { new ComboGenDto { Id = "", Descripcion = "SIN IVA SITUACION" } };
+				lista = [new() { Id = "", Descripcion = "SIN IVA SITUACION" }];
 			}
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
@@ -2387,7 +2395,7 @@ namespace gc.sitio.Controllers
 		{
 			IEnumerable<ComboGenDto> lista;
 			var iva = await _prodSv.ObtenerIVAAlicuotas(TokenCookie);
-			if (iva.Ok)
+			if (iva.Ok && iva.ListaEntidad !=null)
 			{
 				lista = iva.ListaEntidad.Select(x => new ComboGenDto { Id = x.IVA_Alicuota.ToString(), Descripcion = x.IVA_Alicuota.ToString() });
 			}
@@ -2402,7 +2410,7 @@ namespace gc.sitio.Controllers
 		{
 			IEnumerable<ComboGenDto> lista;
 			var menu = await _mnSv.GetMenu(TokenCookie);
-			if (menu.Ok)
+			if (menu.Ok && menu.ListaEntidad != null)
 			{
 				lista = menu.ListaEntidad.Select(x => new ComboGenDto { Id = x.mnu_id, Descripcion = x.mnu_descripcion.ToString() });
 			}
@@ -2440,17 +2448,17 @@ namespace gc.sitio.Controllers
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("MetadataGeneral");
+				var txt = _context.HttpContext?.Session.GetString("MetadataGeneral") ?? string.Empty;
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return new MetadataGrid();
 				}
-				return JsonConvert.DeserializeObject<MetadataGrid>(txt); ;
+				return JsonConvert.DeserializeObject<MetadataGrid>(txt)?? new() ;
 			}
 			set
 			{
 				var valor = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("MetadataGeneral", valor);
+				_context.HttpContext?.Session.SetString("MetadataGeneral", valor);
 			}
 
 		}
@@ -2462,7 +2470,7 @@ namespace gc.sitio.Controllers
 			{
 				return Json(new { error = false, Metadata = MetadataGeneral });
 			}
-			catch (Exception ex)
+			catch
 			{
 				return Json(new { error = true, msg = "No se pudo obtener la información de paginación. Verifica" });
 			}

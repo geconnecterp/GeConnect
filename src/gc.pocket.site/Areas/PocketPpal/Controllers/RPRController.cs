@@ -54,7 +54,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             }
 
             List<AutorizacionPendienteDto> pendientes;
-            GridCore<AutorizacionPendienteDto> grid;
+            GridCoreSmart<AutorizacionPendienteDto> grid;
 
             try
             {
@@ -84,12 +84,12 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             return View(grid);
         }
 
-        private GridCore<AutorizacionPendienteDto> ObtenerAutorizacionPendienteGrid(List<AutorizacionPendienteDto> pendientes)
+        private GridCoreSmart<AutorizacionPendienteDto> ObtenerAutorizacionPendienteGrid(List<AutorizacionPendienteDto> pendientes)
         {
 
             var lista = new StaticPagedList<AutorizacionPendienteDto>(pendientes, 1, 999, pendientes.Count);
 
-            return new GridCore<AutorizacionPendienteDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Cta_denominacion", SortDir = "ASC" };
+            return new GridCoreSmart<AutorizacionPendienteDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Cta_denominacion", SortDir = "ASC" };
         }
 
         [HttpGet]
@@ -169,7 +169,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         public async Task<ActionResult> ObtenerDetalleUls()
         {
             RespuestaGenerica<EntidadBase> response = new();
-            GridCore<RPRxULDto> grillaDatos;
+            GridCoreSmart<RPRxULDto> grillaDatos;
 
             try
             {
@@ -364,7 +364,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         [HttpPost]
         public ActionResult PresentarProductosSeleccionados()
         {
-            GridCore<ProductoGenDto> datosIP;
+            GridCoreSmart<ProductoGenDto> datosIP;
 
             datosIP = ObtenerRPRProdGrid(ProductoGenRegs);
 
@@ -372,12 +372,12 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         }
 
 
-        private GridCore<ProductoGenDto> ObtenerRPRProdGrid(List<ProductoGenDto> listaRpr)
+        private GridCoreSmart<ProductoGenDto> ObtenerRPRProdGrid(List<ProductoGenDto> listaRpr)
         {
 
             var lista = new StaticPagedList<ProductoGenDto>(listaRpr, 1, 999, listaRpr.Count);
 
-            return new GridCore<ProductoGenDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
+            return new GridCoreSmart<ProductoGenDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
         }
 
         [HttpPost]

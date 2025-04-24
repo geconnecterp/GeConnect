@@ -59,7 +59,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		{
 			List<ABMSectorSearchDto> lista;
 			MetadataGrid metadata;
-			GridCore<ABMSectorSearchDto> grillaDatos;
+			GridCoreSmart<ABMSectorSearchDto> grillaDatos;
 			RespuestaGenerica<EntidadBase> response = new();
 			try
 			{
@@ -87,7 +87,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				metadata = MetadataSector;
 
 				//no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
-				grillaDatos = GenerarGrilla(SectoresBuscados, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
+				grillaDatos = GenerarGrillaSmart(SectoresBuscados, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 
 				return View("_gridAbmSector", grillaDatos);
 			}
@@ -220,7 +220,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
 				var SubSectorModel = new SectorABMSubSectorModel()
 				{
-					SectorSubSector = ObtenerGridCore<SubSectorDto>(res),
+					SectorSubSector = ObtenerGridCoreSmart<SubSectorDto>(res),
 					SubSector = new SubSectorModel()
 				};
 				return PartialView("_tabDatosSubSector", SubSectorModel);
@@ -342,7 +342,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
 				var SubSectorModel = new SectorABMRubroModel()
 				{
-					SectorRubro = ObtenerGridCore<RubroListaABMDto>(res),
+					SectorRubro = ObtenerGridCoreSmart<RubroListaABMDto>(res),
 					ComboSubSector = ComboSubSector(),
 					Rubro = new RubroListaABMDto()
 				};
@@ -487,7 +487,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				model.RubroProductosAReasignar = ComboFamiliaDeProductos([], true);
 			else
 				model.RubroProductosAReasignar = ComboFamiliaDeProductos(familia, true);
-			model.ProductosPorRubro = ObtenerGridCore<InfoProductoRubroDto>([]);
+			model.ProductosPorRubro = ObtenerGridCoreSmart<InfoProductoRubroDto>([]);
 			return PartialView("_seccionReasignacion", model);
 		}
 
@@ -514,7 +514,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			if (res.Item1 == null)
 				return PartialView("_gridProdPorRubro", model);
 
-			model.ProductosPorRubro = ObtenerGridCore<ProductoListaDto>(res.Item1);
+			model.ProductosPorRubro = ObtenerGridCoreSmart<ProductoListaDto>(res.Item1);
 			return PartialView("_gridProdPorRubro", model);
 		}
 

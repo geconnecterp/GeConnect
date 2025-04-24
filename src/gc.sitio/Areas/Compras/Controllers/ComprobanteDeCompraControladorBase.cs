@@ -22,7 +22,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("ListaConceptoFacturado");
+				var txt = _context.HttpContext?.Session.GetString("ListaConceptoFacturado");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return new List<ConceptoFacturadoDto>();
@@ -32,7 +32,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			set
 			{
 				var valor = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("ListaConceptoFacturado", valor);
+				_context.HttpContext?.Session.SetString("ListaConceptoFacturado", valor);
 			}
 
 		}
@@ -41,7 +41,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("ListaOtrosTributos");
+				var txt = _context.HttpContext?.Session.GetString("ListaOtrosTributos");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return new List<OtroTributoDto>();
@@ -51,7 +51,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			set
 			{
 				var valor = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("ListaOtrosTributos", valor);
+				_context.HttpContext?.Session.SetString("ListaOtrosTributos", valor);
 			}
 
 		}
@@ -60,7 +60,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("ListaTotales");
+				var txt = _context.HttpContext?.Session.GetString("ListaTotales");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return new List<OrdenDeCompraConceptoDto>();
@@ -70,7 +70,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			set
 			{
 				var valor = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("ListaTotales", valor);
+				_context.HttpContext?.Session.SetString("ListaTotales", valor);
 			}
 
 		}
@@ -79,7 +79,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("ListaRprAsociados");
+				var txt = _context.HttpContext?.Session.GetString("ListaRprAsociados");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return new List<RprAsociadosDto>();
@@ -89,7 +89,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			set
 			{
 				var valor = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("ListaRprAsociados", valor);
+				_context.HttpContext?.Session.SetString("ListaRprAsociados", valor);
 			}
 
 		}
@@ -98,7 +98,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("ListaNotasACuenta");
+				var txt = _context.HttpContext?.Session.GetString("ListaNotasACuenta");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return new List<NotasACuenta>();
@@ -108,7 +108,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			set
 			{
 				var valor = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("ListaNotasACuenta", valor);
+				_context.HttpContext?.Session.SetString("ListaNotasACuenta", valor);
 			}
 
 		}
@@ -117,7 +117,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("CtaIdSelected");
+				var txt = _context.HttpContext?.Session.GetString("CtaIdSelected");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return string.Empty;
@@ -127,7 +127,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			set
 			{
 				var valor = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("CtaIdSelected", valor);
+				_context.HttpContext?.Session.SetString("CtaIdSelected", valor);
 			}
 
 		}

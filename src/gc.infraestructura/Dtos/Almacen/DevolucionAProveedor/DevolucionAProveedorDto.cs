@@ -8,10 +8,10 @@ namespace gc.infraestructura.Dtos.Almacen.DevolucionAProveedor
 	{
 		public SelectList ComboDepositos { get; set; } = new SelectList(new List<SelectListItem>());		
 		public SelectList ComboBoxes { get; set; } = new SelectList(new List<SelectListItem>());
-        public GridCore<ProductoADevolverDto> ProductosADevolver { get; set; }
+        public GridCoreSmart<ProductoADevolverDto> ProductosADevolver { get; set; }
 		public DevolucionAProveedorDto()
 		{
-			ProductosADevolver = new GridCore<ProductoADevolverDto>();
+			ProductosADevolver = new GridCoreSmart<ProductoADevolverDto>();
 		}
 	}
 }

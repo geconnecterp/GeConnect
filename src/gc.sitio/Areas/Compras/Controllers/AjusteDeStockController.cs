@@ -59,7 +59,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				model.ComboDepositos = CargarComboDepositos();
 				model.ComboBoxes = HelperMvc<ComboGenDto>.ListaGenerica(boxes.Select(x => new ComboGenDto { Id = x.Box_Id, Descripcion = $"{x.Box_Id}__{x.Box_desc}" }));
 				model.ComboMotivos = CargarComboTiposDeAjusteDeStock();
-				model.ProductosAAjustar = ObtenerGridCore<ProductoAAjustarDto>(listaProdAAjustar);
+				model.ProductosAAjustar = ObtenerGridCoreSmart<ProductoAAjustarDto>(listaProdAAjustar);
 				AjusteProductosLista = [];
 				return View(model);
 			}
@@ -136,7 +136,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				var listaAjustesPrevios = await _productoServicio.ObtenerAJPreviosCargados(AdministracionId, TokenCookie);
 				AjustePrevioCargadoLista = listaAjustesPrevios;
-				model.ListaProductos = ObtenerGridCore<AjustePrevioCargadoDto>(new List<AjustePrevioCargadoDto>());
+				model.ListaProductos = ObtenerGridCoreSmart<AjustePrevioCargadoDto>(new List<AjustePrevioCargadoDto>());
 				var auxdepositos = listaAjustesPrevios.Select(x => new { x.depo_id, x.depo_nombre }).Distinct();
 				var depositos = auxdepositos.Select(x => new ComboGenDto { Id = x.depo_id, Descripcion = x.depo_nombre });
 				model.ComboDepositos = HelperMvc<ComboGenDto>.ListaGenerica(depositos);
@@ -159,7 +159,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> FiltrarProductosModalCargaPrevia(string depoId, string boxId)
 		{
-			var model = new GridCore<AjustePrevioCargadoDto>();
+			var model = new GridCoreSmart<AjustePrevioCargadoDto>();
 			try
 			{
 				if (string.IsNullOrWhiteSpace(depoId) && string.IsNullOrWhiteSpace(boxId))
@@ -176,11 +176,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 				//Limpio la grilla
 				if (!string.IsNullOrWhiteSpace(depoId) && string.IsNullOrWhiteSpace(boxId))
 				{
-					model = ObtenerGridCore<AjustePrevioCargadoDto>(new List<AjustePrevioCargadoDto>());
+					model = ObtenerGridCoreSmart<AjustePrevioCargadoDto>(new List<AjustePrevioCargadoDto>());
 					return PartialView("_grillaProductosEnModalCargaPrevia", model);
 				}
 				var listaAjustesPrevios = AjustePrevioCargadoLista.Where(x => x.depo_id.Equals(depoId) && x.box_id.Equals(boxId)).ToList();
-				model = ObtenerGridCore<AjustePrevioCargadoDto>(listaAjustesPrevios);
+				model = ObtenerGridCoreSmart<AjustePrevioCargadoDto>(listaAjustesPrevios);
 				return PartialView("_grillaProductosEnModalCargaPrevia", model);
 			}
 			catch (Exception ex)
@@ -198,7 +198,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> ActaulizarListaProductosDesdeModalCargaPrevia(string depoId, string boxId, string[] ids)
 		{
-			var model = new GridCore<ProductoAAjustarDto>();
+			var model = new GridCoreSmart<ProductoAAjustarDto>();
 			try
 			{
 				var listaAjustesPrevios = AjustePrevioCargadoLista.Where(x => x.depo_id.Equals(depoId) && x.box_id.Equals(boxId) && ids.Contains(x.p_id)).ToList();
@@ -210,10 +210,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 					var listaTemp = AjusteProductosLista;
 					listaTemp.AddRange(productosMapeados);
 					AjusteProductosLista = listaTemp;
-					model = ObtenerGridCore<ProductoAAjustarDto>(listaTemp);
+					model = ObtenerGridCoreSmart<ProductoAAjustarDto>(listaTemp);
 				}
 				else
-					model = ObtenerGridCore<ProductoAAjustarDto>(AjusteProductosLista);
+					model = ObtenerGridCoreSmart<ProductoAAjustarDto>(AjusteProductosLista);
 
 				return PartialView("_grillaProductos", model);
 			}
@@ -259,7 +259,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> ObtenerProductosDesdeAJRevertido(string ajId)
 		{
-			var model = new GridCore<ProductoAAjustarDto>();
+			var model = new GridCoreSmart<ProductoAAjustarDto>();
 			try
 			{
 				if (ajId == null)
@@ -268,7 +268,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				var listaAjustesPrevios = await _productoServicio.ObtenerAJREVERTIDO(ajId, TokenCookie);
 				if (listaAjustesPrevios == null || listaAjustesPrevios.Count == 0)
 				{
-					model = ObtenerGridCore<ProductoAAjustarDto>(AjusteProductosLista);
+					model = ObtenerGridCoreSmart<ProductoAAjustarDto>(AjusteProductosLista);
 					return PartialView("_grillaProductos", model);
 				}
 				listaAjustesPrevios.RemoveAll(x => AjusteProductosLista.Exists(y => y.p_id.Equals(x.p_id)));
@@ -278,11 +278,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 					var listaTemp = AjusteProductosLista;
 					listaTemp.AddRange(productosMapeados);
 					AjusteProductosLista = listaTemp;
-					model = ObtenerGridCore<ProductoAAjustarDto>(listaTemp);
+					model = ObtenerGridCoreSmart<ProductoAAjustarDto>(listaTemp);
 				}
 				else
 				{
-					model = ObtenerGridCore<ProductoAAjustarDto>(AjusteProductosLista);
+					model = ObtenerGridCoreSmart<ProductoAAjustarDto>(AjusteProductosLista);
 				}
 			}
 			catch (Exception ex)
@@ -301,7 +301,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> QuitarProductoDeLista(string pId)
 		{
-			var model = new GridCore<ProductoAAjustarDto>();
+			var model = new GridCoreSmart<ProductoAAjustarDto>();
 			try
 			{
 				if (pId == null)
@@ -309,7 +309,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				var listaTemp = AjusteProductosLista.Where(x => x.p_id != pId).ToList();
 				AjusteProductosLista = listaTemp;
-				model = ObtenerGridCore<ProductoAAjustarDto>(listaTemp);
+				model = ObtenerGridCoreSmart<ProductoAAjustarDto>(listaTemp);
 			}
 			catch (Exception ex)
 			{
@@ -327,12 +327,12 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> AgregarProductoALista(string pId, string boxId, string depoId, string atId, decimal us, int bto, int unidadPres, string upId)
 		{
-			var model = new GridCore<ProductoAAjustarDto>();
+			var model = new GridCoreSmart<ProductoAAjustarDto>();
 			try
 			{
 				if (AjusteProductosLista.Where(x => x.p_id.Equals(pId)).Any())
 				{
-					model = ObtenerGridCore<ProductoAAjustarDto>(AjusteProductosLista);
+					model = ObtenerGridCoreSmart<ProductoAAjustarDto>(AjusteProductosLista);
 				}
 				else
 				{
@@ -393,11 +393,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 						};
 						listaTemp.Add(newProduct);
 						AjusteProductosLista = listaTemp;
-						model = ObtenerGridCore<ProductoAAjustarDto>(listaTemp);
+						model = ObtenerGridCoreSmart<ProductoAAjustarDto>(listaTemp);
 					}
 					else
 					{
-						model = ObtenerGridCore<ProductoAAjustarDto>(AjusteProductosLista);
+						model = ObtenerGridCoreSmart<ProductoAAjustarDto>(AjusteProductosLista);
 					}
 				}
 			}
@@ -502,13 +502,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> CancelarAjusteDeStock()
 		{
-			var model = new GridCore<ProductoAAjustarDto>();
+			var model = new GridCoreSmart<ProductoAAjustarDto>();
 			try
 			{
 				var listaTemp = AjusteProductosLista;
 				listaTemp = [];
 				AjusteProductosLista = listaTemp;
-				model = ObtenerGridCore<ProductoAAjustarDto>(listaTemp);
+				model = ObtenerGridCoreSmart<ProductoAAjustarDto>(listaTemp);
 			}
 			catch (Exception ex)
 			{

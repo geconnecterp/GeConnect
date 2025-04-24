@@ -5,7 +5,7 @@ namespace gc.sitio.Areas.ABMs.Models
 {
     public class CuentaABMNotaModel
     {
-        public GridCore<CuentaNotaDto> CuentaNotas { get; set; }
+        public GridCoreSmart<CuentaNotaDto> CuentaNotas { get; set; }
         public NotaModel Nota { get; set; }
 
         public CuentaABMNotaModel()
