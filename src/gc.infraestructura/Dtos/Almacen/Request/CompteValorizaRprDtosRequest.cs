@@ -13,5 +13,7 @@ namespace gc.infraestructura.Dtos.Almacen.Request
 	{
 		public string json_dtos { get; set; } = string.Empty;
 		public string json_detalle { get; set; } = string.Empty;
+		public string usu_id { get; set; } = string.Empty;
+		public bool guarda { get; set; } = false;
 	}
 }

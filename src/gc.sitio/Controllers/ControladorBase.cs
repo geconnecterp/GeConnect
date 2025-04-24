@@ -1872,6 +1872,26 @@ namespace gc.sitio.Controllers
 		}
 		#endregion
 
+		#region TIPO DESCUENTO FINANCIERO VALORIZAR RPR
+		public List<TipoDtoValorizaRprDto> TipoDescValorizaRprLista
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("TipoDescValorizaRprLista") ?? string.Empty;
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<TipoDtoValorizaRprDto>();
+				}
+				return JsonConvert.DeserializeObject<List<TipoDtoValorizaRprDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("TipoDescValorizaRprLista", json);
+			}
+		}
+		#endregion
+
 		#region Metodos generales
 		public PartialViewResult ObtenerMensajeDeError(string mensaje)
 		{
@@ -2152,7 +2172,10 @@ namespace gc.sitio.Controllers
 		{
 			TiposTributoLista = _tipoTributoServicio.GetTiposTributoLista(TokenCookie);
 		}
-
+		protected void ObtenerTipoDescValorizaRpr(ITipoDtoValorizaRprServicio _tipoDtoValorizaRpr)
+		{
+			TipoDescValorizaRprLista = _tipoDtoValorizaRpr.ObtenerTipoDtoValorizaRpr(TokenCookie);
+		}
 		#endregion
 		protected void ObtenerDiasDeLaSemana()
 		{
@@ -2321,6 +2344,11 @@ namespace gc.sitio.Controllers
 			var selectedValue = IvaAlicuotasLista.Where(x => x.IVA_Grl.Equals("S")).First();
 			if (selectedValue != null)
 				return HelperMvc<ComboGenDto>.ListaGenerica(lista, selectedValue);
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		protected SelectList ComboConceptoDescuentoFinanc()
+		{
+			var lista = TipoDescValorizaRprLista.Select(x => new ComboGenDto { Id = x.dtoc_id, Descripcion = x.dtoc_lista });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
 		#endregion

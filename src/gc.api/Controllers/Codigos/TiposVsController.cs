@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using gc.api.core.Contratos.Servicios;
+using gc.api.core.Contratos.Servicios.Tipos;
 using gc.api.core.Entidades;
 using gc.api.core.Servicios;
 using gc.infraestructura.Core.Interfaces;
@@ -45,6 +46,7 @@ namespace gc.api.Controllers.Codigos
 		private readonly ITipoMonedaServicio _tipoMonedaServicio;
 		private readonly IOrdenDeCompraEstadoServicio _ordenDeCompraEstadoServicio;
 		private readonly ITipoTributoServicio _tipoTributoServicio;
+		private readonly ITipoDtoValorizaRprServicio _tipoDtoValorizaRprServicio;
 
 		public TiposVsController( IMapper mapper, IUriService uriService, ILogger<TiposVsController> logger, ICondicionAfipServicio condicionAfipServicio,
 								ICondicionIBServicio condicionIBServicio, IDepartamentoServicio departamentoServicio, IFormaDePagoServicio formaDePagoServicio,
@@ -54,7 +56,8 @@ namespace gc.api.Controllers.Codigos
 								ITipoContactoServicio tipoContactoServicio, ITipoObsServicio tipoObsServicio, ITipoOpeIvaServicio tipoOpeIvaServicio,
 								ITipoProveedorServicio tipoProveedorServicio, ITipoGastoServicio tipoGastoServicio, ITipoRetGanServicio tipoRetGanServicio,
 								ITipoRetIbServicio tipoRetIbServicio, ITipoCuentaFinServicio tipoCuentaFinServicio, ITipoMonedaServicio tipoMonedaServicio,
-								ITipoCuentaGastoServicio tipoCuentaGastoServicio, IOrdenDeCompraEstadoServicio ordenDeCompraEstadoServicio, ITipoTributoServicio tipoTributoServicio)
+								ITipoCuentaGastoServicio tipoCuentaGastoServicio, IOrdenDeCompraEstadoServicio ordenDeCompraEstadoServicio, ITipoTributoServicio tipoTributoServicio,
+								ITipoDtoValorizaRprServicio tipoDtoValorizaRprServicio)
         {
             _mapper = mapper;
             _uriService = uriService;
@@ -84,6 +87,7 @@ namespace gc.api.Controllers.Codigos
 			_tipoCuentaGastoServicio = tipoCuentaGastoServicio;
 			_ordenDeCompraEstadoServicio = ordenDeCompraEstadoServicio;
 			_tipoTributoServicio = tipoTributoServicio;
+			_tipoDtoValorizaRprServicio = tipoDtoValorizaRprServicio;
 		}
 
 		[HttpGet]
@@ -419,6 +423,18 @@ namespace gc.api.Controllers.Codigos
 			var lista = _mapper.Map<List<TipoTributoDto>>(financiero);
 
 			var response = new ApiResponse<List<TipoTributoDto>>(lista);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult GetTipoDtoValorizaRpr()
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			List<TipoDtoValorizaRprDto> financiero = _tipoDtoValorizaRprServicio.GetTipoDtoValorizaRpr();
+			var lista = _mapper.Map<List<TipoDtoValorizaRprDto>>(financiero);
+
+			var response = new ApiResponse<List<TipoDtoValorizaRprDto>>(lista);
 			return Ok(response);
 		}
 		//

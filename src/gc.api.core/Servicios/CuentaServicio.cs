@@ -501,6 +501,8 @@ namespace gc.api.core.Servicios
 				new("@dia_movi",request.dia_movi),
 				new("@json_dtos",request.json_dtos),
 				new("@json_detalle",request.json_detalle),
+				new("@usu_id",request.usu_id),
+				new("@guarda",request.guarda),
 			};
 			var listaTemp = _repository.EjecutarLstSpExt<CompteValorizaListaDto>(sp, ps, true);
 			return listaTemp;

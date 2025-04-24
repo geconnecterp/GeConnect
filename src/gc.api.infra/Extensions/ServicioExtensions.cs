@@ -1,5 +1,6 @@
 ﻿using gc.api.core.Contratos.Servicios;
 using gc.api.core.Contratos.Servicios.ABM;
+using gc.api.core.Contratos.Servicios.Tipos;
 using gc.api.core.Interfaces.Datos;
 using gc.api.core.Interfaces.Servicios;
 using gc.api.core.Servicios;
@@ -87,7 +88,7 @@ namespace gc.api.infra.Extensions
             services.AddScoped<ITipoTributoServicio, TipoTributoServicio>();
             services.AddScoped<IABMRepartidorServicio, ABMRepartidorServicio>();
             services.AddScoped<IABMPlanCuentaServicio, ABMPlanCuentaServicio>();
-
+            services.AddScoped<ITipoDtoValorizaRprServicio, TipoDtoValorizaRprServicio>();
 
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));

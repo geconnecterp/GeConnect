@@ -19,6 +19,35 @@ function InicializarPantallaDeFiltros() {
 	$("#chkRel01").prop("disabled", true);
 	$("#divFiltro").collapse("show");
 	document.getElementById("Rel01").focus();
+	MostrarDatosDeCuenta(false);
+}
+
+function selectListaValorizacion(x) { }
+
+function selectListaDescFinanc(x) { }
+
+function quitarDescFinanc(x) {
+	var cm_compte = $(e).attr("data-interaction");
+	var data = { cm_compte };
+	PostGenHtml(data, quitarDescFinancURL, function (obj) {
+		$("#divDescFinanc").html(obj);
+		AddEventListenerToGrid("tbListaDescFinanc");
+	});
+}
+
+function AddEventListenerToGrid(tabla) {
+	var grilla = document.getElementById(tabla);
+	if (grilla) {
+		document.getElementById(tabla).addEventListener('click', function (e) {
+			if (e.target.nodeName === 'TD') {
+				var selectedRow = this.querySelector('.selected-row');
+				if (selectedRow) {
+					selectedRow.classList.remove('selected-row');
+				}
+				e.target.closest('tr').classList.add('selected-row');
+			}
+		});
+	}
 }
 
 function ControlaListaCompteSelected() {
@@ -28,9 +57,11 @@ function ControlaListaCompteSelected() {
 		cmCompteSelected = "";
 	if (cmCompteSelected != "") {
 		//Cargar Detalles de Rpr y Dtos en el Backend, y devolver la grilla de Valorizacion
+		AbrirWaiting("Obteniendo datos de Valorización...");
 		var cm_compte = cmCompteSelected;
 		data = { cm_compte };
 		PostGenHtml(data, cargarDatosParaValorizarURL, function (obj) {
+			CerrarWaiting();
 			if (obj.error === true) {
 				AbrirMensaje("ATENCIÓN", obj.msg, function () {
 					$("#msjModal").modal("hide");
@@ -39,7 +70,12 @@ function ControlaListaCompteSelected() {
 			}
 			else {
 				$("#divComprobantes").html(obj);
-				//FormatearValores("#tbGridConcepto", 1);
+				$("#divDetalle").collapse("show");
+				$("#btnDetalle").prop("disabled", false);
+				$("#divFiltro").collapse("hide")
+				AddEventListenerToGrid("tbListaValorizacion");
+				AddEventListenerToGrid("tbListaDescFinanc");
+				MostrarDatosDeCuenta(true);
 			}
 		});
 	}
@@ -77,6 +113,19 @@ $("#Rel01").autocomplete({
 		return true;
 	}
 });
+
+function MostrarDatosDeCuenta(mostrar) {
+	if (mostrar) {
+		$("#CtaID").val(ctaIdSelected);
+		$("#CtaDesc").val(ctaDescSelected);
+		$("#divProveedorSeleccionado").collapse("show");
+	}
+	else {
+		$("#CtaID").val("");
+		$("#CtaDesc").val("");
+		$("#divProveedorSeleccionado").collapse("hide");
+	}
+}
 
 function CargarComprobantesDelProveedorSeleccionado(id) {
 	var ctaId = id;

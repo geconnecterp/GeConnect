@@ -75,8 +75,9 @@ namespace gc.sitio.core.Extensions
 			services.AddScoped<IABMRepartidorServicio, ABMRepartidorServicio>();
 			services.AddScoped<IABMZonaServicio, ABMZonaServicio>();
 			services.AddScoped<IABMPlanCuentaServicio, ABMPlanCuentaServicio>();
+			services.AddScoped<ITipoDtoValorizaRprServicio, TipoDtoValorizaRprServicio>();
 
-            return services;
+			return services;
         }
     }
 }

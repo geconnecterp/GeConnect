@@ -65,9 +65,12 @@
 @section scripts {
 	<script type="text/javascript">
 		var cmCompteSelected = "";
+		var ctaIdSelected = "";
+		var ctaDescSelected = "";
 		var autoComRel01Url = "@Url.Action("BuscarProvs", "valorizaciondecomprobante", new { area = "Compras" })";
 		var cargarComprobantesDelProveedorSeleccionadoUrl = "@Url.Action("CargarComprobantesDelProveedorSeleccionado", "valorizaciondecomprobante", new { area = "Compras" })";
 		var cargarDatosParaValorizarURL = "@Url.Action("CargarDatosParaValorizar", "valorizaciondecomprobante", new { area = "Compras" })";
+		var quitarDescFinancURL = "@Url.Action("QuitarDescFinanc", "valorizaciondecomprobante", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/areas/valorcompte/valorizaciondecomprobante.js"></script>
 }

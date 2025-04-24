@@ -31,6 +31,7 @@ namespace gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra
 		public decimal? cm_percep_imp_nacionales { get; set; }
 		public decimal? cm_percep_imp_municipales { get; set; }
 		public string? cm_ib { get; set; }
+		public string cm_obs { get; set; } = string.Empty;
 		public bool seleccionable { get; set; }
 		public bool aplica_valorizacion { get; set; }
 		public int resultado { get; set; }
