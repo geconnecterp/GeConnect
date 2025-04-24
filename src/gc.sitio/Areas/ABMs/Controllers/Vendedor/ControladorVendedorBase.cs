@@ -20,7 +20,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Vendedor
 
             get
             {
-                var json = _context.HttpContext.Session.GetString("VendedoresBuscardo");
+                var json = _context.HttpContext?.Session.GetString("VendedoresBuscardo");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
@@ -30,7 +30,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Vendedor
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("VendedoresBuscardo", json);
+                _context.HttpContext?.Session.SetString("VendedoresBuscardo", json);
             }
         }
 
@@ -38,7 +38,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Vendedor
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("VendedorSeleccionado");
+                var json = _context.HttpContext?.Session.GetString("VendedorSeleccionado");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return new ABMVendedorDatoDto();
@@ -48,7 +48,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Vendedor
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("VendedorSeleccionado", json);
+                _context.HttpContext?.Session.SetString("VendedorSeleccionado", json);
             }
         }
     }

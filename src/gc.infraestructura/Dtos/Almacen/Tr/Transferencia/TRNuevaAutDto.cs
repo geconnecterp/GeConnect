@@ -5,11 +5,11 @@ namespace gc.infraestructura.Dtos.Almacen.Tr.Transferencia
 {
 	public class TRNuevaAutDto : Dto
 	{
-        public GridCore<TRNuevaAutSucursalDto> Sucursales { get; set; }
-        public GridCore<TRNuevaAutDetalleDto> Detalle { get; set; }
+        public GridCoreSmart<TRNuevaAutSucursalDto> Sucursales { get; set; }
+        public GridCoreSmart<TRNuevaAutDetalleDto> Detalle { get; set; }
         public TRNuevaAutDto() {
-            Sucursales = new GridCore<TRNuevaAutSucursalDto>();
-            Detalle = new GridCore<TRNuevaAutDetalleDto>();
+            Sucursales = new GridCoreSmart<TRNuevaAutSucursalDto>();
+            Detalle = new GridCoreSmart<TRNuevaAutDetalleDto>();
         }
     }
 }

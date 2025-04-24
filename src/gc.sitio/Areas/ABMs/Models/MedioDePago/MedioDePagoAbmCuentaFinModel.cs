@@ -11,7 +11,7 @@ namespace gc.sitio.Areas.ABMs.Models
 		public SelectList ComboAdministracion { get; set; }
 		public SelectList ComboCuentaGasto { get; set; }
 		public SelectList ComboCuentaContable { get; set; }
-		public GridCore<FinancieroListaDto> ListaCuentaFin { get; set; }
+		public GridCoreSmart<FinancieroListaDto> ListaCuentaFin { get; set; }
 		public MedioDePagoAbmCuentaFinModel()
 		{ 
 			CuentaFin = new CuentaFinModel();

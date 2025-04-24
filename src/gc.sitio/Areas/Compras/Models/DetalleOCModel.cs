@@ -5,7 +5,7 @@ namespace gc.sitio.Areas.Compras.Models
 {
 	public class DetalleOCModel
 	{
-        public GridCore<RPROrdenDeCompraDetalleDto> Detalle { get; set; }
+        public GridCoreSmart<RPROrdenDeCompraDetalleDto> Detalle { get; set; }
         public string OCCompte { get; set; } = string.Empty;
     }
 }

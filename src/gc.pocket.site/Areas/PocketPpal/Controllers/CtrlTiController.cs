@@ -308,7 +308,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         [HttpPost]
         public async Task<ActionResult> PresentarProductosSeleccionados()
         {
-            GridCore<ProductoGenDto> datosIP;
+            GridCoreSmart<ProductoGenDto> datosIP;
             var sel = TIActual;
 
 
@@ -318,12 +318,12 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         }
 
 
-        private GridCore<ProductoGenDto> ObtenerCtrlProdGrid(List<ProductoGenDto> listaRpr)
+        private GridCoreSmart<ProductoGenDto> ObtenerCtrlProdGrid(List<ProductoGenDto> listaRpr)
         {
 
             var lista = new StaticPagedList<ProductoGenDto>(listaRpr, 1, 999, listaRpr.Count);
 
-            return new GridCore<ProductoGenDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
+            return new GridCoreSmart<ProductoGenDto>() { ListaDatos = lista, CantidadReg = 999, PaginaActual = 1, CantidadPaginas = 1, Sort = "Item", SortDir = "ASC" };
         }
 
         [HttpPost]

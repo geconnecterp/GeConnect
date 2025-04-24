@@ -67,7 +67,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.CuentaDirecta
 		{
 			List<ABMCuentaDirectaSearchDto> lista;
 			MetadataGrid metadata;
-			GridCore<ABMCuentaDirectaSearchDto> grillaDatos;
+			GridCoreSmart<ABMCuentaDirectaSearchDto> grillaDatos;
 			RespuestaGenerica<EntidadBase> response = new();
 			try
 			{
@@ -95,7 +95,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.CuentaDirecta
 				metadata = MetadataCuentaDirecta;
 
 				//no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
-				grillaDatos = GenerarGrilla(CuentaDirectaBuscadas, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
+				grillaDatos = GenerarGrillaSmart(CuentaDirectaBuscadas, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 
 				return View("_gridAbmCuentaDirecta", grillaDatos);
 			}

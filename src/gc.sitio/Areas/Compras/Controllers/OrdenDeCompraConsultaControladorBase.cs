@@ -21,7 +21,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("ListaOrdenDeCompraConsulta");
+				var txt = _context.HttpContext?.Session.GetString("ListaOrdenDeCompraConsulta");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return new List<OrdenDeCompraConsultaDto>();
@@ -31,7 +31,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			set
 			{
 				var valor = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("ListaOrdenDeCompraConsulta", valor);
+				_context.HttpContext?.Session.SetString("ListaOrdenDeCompraConsulta", valor);
 			}
 
 		}

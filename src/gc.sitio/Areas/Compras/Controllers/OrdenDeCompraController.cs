@@ -81,7 +81,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		public async Task<IActionResult> BuscarProductos(NCPICargarListaDeProductos2Request request)
 		{
 			MetadataGrid metadata;
-			GridCore<ProductoNCPIDto> grillaDatos;
+			GridCoreSmart<ProductoNCPIDto> grillaDatos;
 			CargarOcBuscarProductoModel model = new CargarOcBuscarProductoModel();
 			try
 			{
@@ -107,7 +107,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				var pag = request.Pagina == null ? 1 : request.Pagina.Value;
 				ListaProductos = productos.Item1;
-				grillaDatos = GenerarGrilla(productos.Item1, request.Sort, _settings.NroRegistrosPagina, pag, metadata.TotalCount, metadata.TotalPages, request.SortDir);
+				grillaDatos = GenerarGrillaSmart(productos.Item1, request.Sort, _settings.NroRegistrosPagina, pag, metadata.TotalCount, metadata.TotalPages, request.SortDir);
 				model.grillaDatos = grillaDatos;
 				model.ComboSucursales = ComboSucursales();
 				return PartialView("_grillaProductos", model);
@@ -128,7 +128,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		public async Task<IActionResult> BuscarProductosTabOC(string ctaId, string ocCompte)
 		{
 			ProductoParaOcModel model = new();
-			GridCore<ProductoParaOcDto> grillaDatos;
+			GridCoreSmart<ProductoParaOcDto> grillaDatos;
 			try
 			{
 				CtaIdSelected = ctaId;
@@ -141,7 +141,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					Oc_Compte = ocCompte
 				};
 				var productos = _productoServicio.CargarProductosDeOC(request, TokenCookie).Result;
-				grillaDatos = ObtenerGridCore<ProductoParaOcDto>(productos);
+				grillaDatos = ObtenerGridCoreSmart<ProductoParaOcDto>(productos);
 				ListaProductosOC = productos;
 				model.ListaOC = grillaDatos;
 				CalcularTotalesParaOC(model, productos);
@@ -166,7 +166,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			try
 			{
 				ProductoParaOcModel model = new();
-				GridCore<ProductoParaOcDto> grillaDatos;
+				GridCoreSmart<ProductoParaOcDto> grillaDatos;
 
 				if (ListaProductos != null && ListaProductos.Count > 0)
 				{
@@ -179,7 +179,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 							productos = [];
 						}
 						productos.Add(new ProductoParaOcDto(producto));
-						grillaDatos = ObtenerGridCore<ProductoParaOcDto>(productos);
+						grillaDatos = ObtenerGridCoreSmart<ProductoParaOcDto>(productos);
 						ListaProductosOC = productos;
 						model.ListaOC = grillaDatos;
 						CalcularTotalesParaOC(model, productos);
@@ -208,14 +208,14 @@ namespace gc.sitio.Areas.Compras.Controllers
 			try
 			{
 				ProductoParaOcModel model = new();
-				GridCore<ProductoParaOcDto> grillaDatos;
+				GridCoreSmart<ProductoParaOcDto> grillaDatos;
 				if (ListaProductosOC != null && ListaProductosOC.Count > 0)
 				{
 					var producto = ListaProductosOC.FirstOrDefault(x => x.P_Id == pId);
 					if (producto != null)
 					{
 						var productos = ListaProductosOC.Where(x => x.P_Id != pId).ToList();
-						grillaDatos = ObtenerGridCore<ProductoParaOcDto>(productos);
+						grillaDatos = ObtenerGridCoreSmart<ProductoParaOcDto>(productos);
 						ListaProductosOC = productos;
 						model.ListaOC = grillaDatos;
 						CalcularTotalesParaOC(model, productos);
@@ -373,7 +373,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				if (ListaProductosOC != null && ListaProductosOC.Count > 0)
 				{
-					model.ListaOC = ObtenerGridCore<ProductoParaOcDto>(ListaProductosOC);
+					model.ListaOC = ObtenerGridCoreSmart<ProductoParaOcDto>(ListaProductosOC);
 					CalcularTotalesParaOC(model, ListaProductosOC);
 					productos = ListaProductosOC;
 				}
@@ -396,7 +396,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 						}
 					}
 					ListaProductosOC = productos;
-					model.ListaOC = ObtenerGridCore<ProductoParaOcDto>(productos);
+					model.ListaOC = ObtenerGridCoreSmart<ProductoParaOcDto>(productos);
 					CalcularTotalesParaOC(model, productos);
 				}
 				return PartialView("_grillaProductosOC", model);
@@ -450,7 +450,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					PagoPlazo = DateTime.Now.AddDays(1),
 					Obs = string.Empty,
 					DejarOCActiva = false,
-					ResumenGrilla = ObtenerGridCore<OrdenDeCompraConceptoDto>(resumen)
+					ResumenGrilla = ObtenerGridCoreSmart<OrdenDeCompraConceptoDto>(resumen)
 				};
 				return PartialView("_resumen", model);
 			}
@@ -489,7 +489,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					Oce_Id = request.Oce_Id,
 					Json = jsonstring
 				}, TokenCookie).Result;
-				model.ResumenGrilla = ObtenerGridCore<OrdenDeCompraConceptoDto>(resumen);
+				model.ResumenGrilla = ObtenerGridCoreSmart<OrdenDeCompraConceptoDto>(resumen);
 				return PartialView("_gridConceptos", model);
 			}
 			catch (Exception ex)
@@ -658,13 +658,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 		#region Información Adicional
 		public async Task<IActionResult> BuscarInfoProdIExMeses(string pId, string admId, int meses)
 		{
-			var model = new GridCore<NDeCYPI.InfoProdIExMesDto>();
+			var model = new GridCoreSmart<NDeCYPI.InfoProdIExMesDto>();
 			try
 			{
 				if (string.IsNullOrWhiteSpace(admId))
 					admId = AdministracionId;
 				var info = await _productoServicio.InfoProdIExMes(admId, pId, meses, TokenCookie);
-				model = ObtenerGridCore<NDeCYPI.InfoProdIExMesDto>(info);
+				model = ObtenerGridCoreSmart<NDeCYPI.InfoProdIExMesDto>(info);
 				return PartialView("_infoProdIExMeses", model);
 			}
 			catch (Exception ex)
@@ -682,13 +682,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> BuscarInfoProdIExSemanas(string pId, string admId, int semanas)
 		{
-			var model = new GridCore<NDeCYPI.InfoProdIExSemanaDto>();
+			var model = new GridCoreSmart<NDeCYPI.InfoProdIExSemanaDto>();
 			try
 			{
 				if (string.IsNullOrWhiteSpace(admId))
 					admId = AdministracionId;
 				var info = await _productoServicio.InfoProdIExSemana(admId, pId, semanas, TokenCookie);
-				model = ObtenerGridCore<NDeCYPI.InfoProdIExSemanaDto>(info);
+				model = ObtenerGridCoreSmart<NDeCYPI.InfoProdIExSemanaDto>(info);
 				return PartialView("_infoProdIExSemanas", model);
 			}
 			catch (Exception ex)
@@ -706,11 +706,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> BuscarInfoProdStkDeposito(string pId, string admId)
 		{
-			var model = new GridCore<InfoProdStkD>();
+			var model = new GridCoreSmart<InfoProdStkD>();
 			try
 			{
 				var info = await _productoServicio.InfoProductoStkD(pId, AdministracionId, TokenCookie);
-				model = ObtenerGridCore<InfoProdStkD>(info);
+				model = ObtenerGridCoreSmart<InfoProdStkD>(info);
 				return PartialView("_infoProdPorDeposito", model);
 			}
 			catch (Exception ex)
@@ -728,11 +728,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> BuscarInfoProdStkSucursal(string pId, string admId)
 		{
-			var model = new GridCore<InfoProdStkA>();
+			var model = new GridCoreSmart<InfoProdStkA>();
 			try
 			{
 				var info = await _productoServicio.InfoProductoStkA(pId, AdministracionId, TokenCookie);
-				model = ObtenerGridCore<InfoProdStkA>(info);
+				model = ObtenerGridCoreSmart<InfoProdStkA>(info);
 				return PartialView("_infoProdPorSucursal", model);
 			}
 			catch (Exception ex)
@@ -750,11 +750,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> BuscarInfoProdSustituto(string pId, string tipo, bool soloProv)
 		{
-			var model = new GridCore<ProductoNCPISustitutoDto>();
+			var model = new GridCoreSmart<ProductoNCPISustitutoDto>();
 			try
 			{
 				var info = await _productoServicio.InfoProdSustituto(pId, tipo, AdministracionId, soloProv, TokenCookie);
-				model = ObtenerGridCore<ProductoNCPISustitutoDto>(info);
+				model = ObtenerGridCoreSmart<ProductoNCPISustitutoDto>(info);
 				return PartialView("_infoProdSustituto", model);
 			}
 			catch (Exception ex)
@@ -772,11 +772,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> BuscarInfoProd(string pId)
 		{
-			var model = new GridCore<NDeCYPI.InfoProductoDto>();
+			var model = new GridCoreSmart<NDeCYPI.InfoProductoDto>();
 			try
 			{
 				var info = await _productoServicio.InfoProd(pId, TokenCookie);
-				model = ObtenerGridCore<NDeCYPI.InfoProductoDto>(info);
+				model = ObtenerGridCoreSmart<NDeCYPI.InfoProductoDto>(info);
 				return PartialView("_infoProducto", model);
 			}
 			catch (Exception ex)

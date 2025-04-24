@@ -136,7 +136,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		[HttpPost]
 		public IActionResult CargarConceptosFacturados()
 		{
-			var model = new GridCore<ConceptoFacturadoDto>();
+			var model = new GridCoreSmart<ConceptoFacturadoDto>();
 			try
 			{
 				var auth = EstaAutenticado;
@@ -145,9 +145,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 				}
 				if (ListaConceptoFacturado != null && ListaConceptoFacturado.Count >= 0)
-					model = ObtenerGridCore<ConceptoFacturadoDto>(ListaConceptoFacturado);
+					model = ObtenerGridCoreSmart<ConceptoFacturadoDto>(ListaConceptoFacturado);
 				else
-					model = ObtenerGridCore<ConceptoFacturadoDto>([]);
+					model = ObtenerGridCoreSmart<ConceptoFacturadoDto>([]);
 				return PartialView("_tabCompte_ConFactu", model);
 			}
 			catch (Exception ex)
@@ -166,7 +166,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		[HttpPost]
 		public IActionResult CargarOtrosTributos(string tco_id)
 		{
-			var model = new GridCore<OtroTributoDto>();
+			var model = new GridCoreSmart<OtroTributoDto>();
 			try
 			{
 				var auth = EstaAutenticado;
@@ -219,10 +219,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					listTempo.AddRange(ListaOtrosTributos);
 					ListaOtrosTributos = listTempo;
-					model = ObtenerGridCore<OtroTributoDto>(ListaOtrosTributos);
+					model = ObtenerGridCoreSmart<OtroTributoDto>(ListaOtrosTributos);
 				}
 				else
-					model = ObtenerGridCore<OtroTributoDto>([]);
+					model = ObtenerGridCoreSmart<OtroTributoDto>([]);
 				return PartialView("_tabCompte_OtrosTrib", model);
 			}
 			catch (Exception ex)
@@ -343,7 +343,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		[HttpPost]
 		public IActionResult CargarGrillaTotales()
 		{
-			var model = new GridCore<OrdenDeCompraConceptoDto>();
+			var model = new GridCoreSmart<OrdenDeCompraConceptoDto>();
 			try
 			{
 				var auth = EstaAutenticado;
@@ -352,13 +352,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 				}
 				if (ListaTotales != null && ListaTotales.Count > 0)
-					model = ObtenerGridCore<OrdenDeCompraConceptoDto>(ListaTotales);
+					model = ObtenerGridCoreSmart<OrdenDeCompraConceptoDto>(ListaTotales);
 				else
 				{
 					InicializarGrillaTotales();
 					if (ListaOtrosTributos != null && ListaOtrosTributos.Count > 0)
 						ActualizarItemEnGrillaTotales("OtrosTributos", ListaOtrosTributos.Sum(x => x.importe));
-					model = ObtenerGridCore<OrdenDeCompraConceptoDto>(ListaTotales);
+					model = ObtenerGridCoreSmart<OrdenDeCompraConceptoDto>(ListaTotales);
 				}
 				return PartialView("_tabCompte_Totales", model);
 			}
@@ -448,7 +448,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		[HttpPost]
 		public IActionResult CargarCompteCargaRprAsoc(string cta_id)
 		{
-			var model = new GridCore<RprAsociadosDto>();
+			var model = new GridCoreSmart<RprAsociadosDto>();
 			try
 			{
 				var auth = EstaAutenticado;
@@ -460,7 +460,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					return PartialView("_tabCompte_RprAsoc", model);
 				var lista = _cuentaServicio.GetCompteCargaRprAsoc(cta_id, TokenCookie);
 				ListaRprAsociados = lista;
-				model = ObtenerGridCore<RprAsociadosDto>(lista);
+				model = ObtenerGridCoreSmart<RprAsociadosDto>(lista);
 				return PartialView("_tabCompte_RprAsoc", model);
 			}
 			catch (Exception ex)
@@ -479,7 +479,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		[HttpPost]
 		public IActionResult CargarCompteCargaCtaAsoc(string cta_id)
 		{
-			var model = new GridCore<NotasACuenta>();
+			var model = new GridCoreSmart<NotasACuenta>();
 			try
 			{
 				var auth = EstaAutenticado;
@@ -491,7 +491,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					return PartialView("_tabCompte_ACtaAsoc", model);
 				var lista = _cuentaServicio.GetCompteCargaCtaAsoc(cta_id, TokenCookie);
 				ListaNotasACuenta = lista;
-				model = ObtenerGridCore<NotasACuenta>(lista);
+				model = ObtenerGridCoreSmart<NotasACuenta>(lista);
 				return PartialView("_tabCompte_ACtaAsoc", model);
 			}
 			catch (Exception ex)
@@ -620,7 +620,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			try
 			{
-				var model = new GridCore<ConceptoFacturadoDto>();
+				var model = new GridCoreSmart<ConceptoFacturadoDto>();
 				var auth = EstaAutenticado;
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
@@ -628,15 +628,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (id <= 0)
 				{
 					if (ListaConceptoFacturado != null && ListaConceptoFacturado.Count >= 0)
-						model = ObtenerGridCore<ConceptoFacturadoDto>(ListaConceptoFacturado);
+						model = ObtenerGridCoreSmart<ConceptoFacturadoDto>(ListaConceptoFacturado);
 					else
-						model = ObtenerGridCore<ConceptoFacturadoDto>([]);
+						model = ObtenerGridCoreSmart<ConceptoFacturadoDto>([]);
 					return PartialView("_tabCompte_ConFactu", model);
 				}
 				var listaTemp = ListaConceptoFacturado;
 				listaTemp = [.. listaTemp.Where(x => !x.id.Equals(id))];
 				ListaConceptoFacturado = listaTemp;
-				model = ObtenerGridCore<ConceptoFacturadoDto>(ListaConceptoFacturado);
+				model = ObtenerGridCoreSmart<ConceptoFacturadoDto>(ListaConceptoFacturado);
 
 				ActualizarGrillaTotales_ConceptosFacturados();
 
@@ -741,22 +741,22 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			try
 			{
-				var model = new GridCore<OtroTributoDto>();
+				var model = new GridCoreSmart<OtroTributoDto>();
 				var auth = EstaAutenticado;
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 				if (string.IsNullOrEmpty(id))
 				{
 					if (ListaOtrosTributos != null && ListaOtrosTributos.Count >= 0)
-						model = ObtenerGridCore<OtroTributoDto>(ListaOtrosTributos);
+						model = ObtenerGridCoreSmart<OtroTributoDto>(ListaOtrosTributos);
 					else
-						model = ObtenerGridCore<OtroTributoDto>([]);
+						model = ObtenerGridCoreSmart<OtroTributoDto>([]);
 					return PartialView("_tabCompte_OtrosTrib", model);
 				}
 				var listaTemp = ListaOtrosTributos;
 				listaTemp = [.. listaTemp.Where(x => !x.ins_id.Equals(id))];
 				ListaOtrosTributos = listaTemp;
-				model = ObtenerGridCore<OtroTributoDto>(ListaOtrosTributos);
+				model = ObtenerGridCoreSmart<OtroTributoDto>(ListaOtrosTributos);
 				return PartialView("_tabCompte_OtrosTrib", model);
 			}
 			catch (Exception ex)

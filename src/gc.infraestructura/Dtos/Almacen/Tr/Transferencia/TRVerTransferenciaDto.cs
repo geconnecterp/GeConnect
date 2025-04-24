@@ -4,7 +4,7 @@ namespace gc.infraestructura.Dtos.Almacen.Tr.Transferencia
 {
 	public class TRVerTransferenciaDto : Dto
 	{
-		public GridCore<TRVerConteosDto> ListaTransferencias { get; set; }
+		public GridCoreSmart<TRVerConteosDto> ListaTransferencias { get; set; }
         public string Autorizacion { get; set; } = string.Empty;
 		public string TipoTR { get; set; } = string.Empty;
 		public string Tipo { get; set; } = string.Empty;
@@ -12,7 +12,7 @@ namespace gc.infraestructura.Dtos.Almacen.Tr.Transferencia
         public string ti { get; set; } = string.Empty;
         public TRVerTransferenciaDto()
 		{
-			ListaTransferencias = new GridCore<TRVerConteosDto>();
+			ListaTransferencias = new GridCoreSmart<TRVerConteosDto>();
 		}
 	}
 }

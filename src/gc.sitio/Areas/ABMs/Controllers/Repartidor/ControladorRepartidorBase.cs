@@ -20,7 +20,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Repartidor
 
             get
             {
-                var json = _context.HttpContext.Session.GetString("RepartidoresBuscardo");
+                var json = _context.HttpContext?.Session.GetString("RepartidoresBuscardo");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
@@ -30,7 +30,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Repartidor
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("RepartidoresBuscardo", json);
+                _context.HttpContext?.Session.SetString("RepartidoresBuscardo", json);
             }
         }
 
@@ -38,7 +38,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Repartidor
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("RepartidorSeleccionado");
+                var json = _context.HttpContext?.Session.GetString("RepartidorSeleccionado");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return new ABMRepartidorDatoDto();
@@ -48,7 +48,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Repartidor
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("RepartidorSeleccionado", json);
+                _context.HttpContext?.Session.SetString("RepartidorSeleccionado", json);
             }
         }
     }

@@ -21,7 +21,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
         {
             get
             {
-                var txt = _context.HttpContext.Session.GetString("PaginaActual");
+                var txt = _context.HttpContext?.Session.GetString("PaginaActual");
                 if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
                 {
                     return 0;
@@ -31,7 +31,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             set
             {
                 var valor = value.ToString();
-                _context.HttpContext.Session.SetString("PaginaActual", valor);
+                _context.HttpContext?.Session.SetString("PaginaActual", valor);
             }
         }
 
@@ -39,7 +39,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("PerfilesBuscados");
+                var json = _context.HttpContext?.Session.GetString("PerfilesBuscados");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
@@ -49,7 +49,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("PerfilesBuscados", json);
+                _context.HttpContext?.Session.SetString("PerfilesBuscados", json);
             }
         }
 
@@ -57,7 +57,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
         {
             get
             {
-                string json = _context.HttpContext.Session.GetString("PerfilIDSeleccionado");
+                string json = _context.HttpContext?.Session.GetString("PerfilIDSeleccionado");
                 if (string.IsNullOrEmpty(json))
                 {
                     return string.Empty;
@@ -67,7 +67,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("PerfilIDSeleccionado", json);
+                _context.HttpContext?.Session.SetString("PerfilIDSeleccionado", json);
             }
         }
 
@@ -75,7 +75,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
         {
             get
             {
-                string json = _context.HttpContext.Session.GetString("PerfilSeleccionado");
+                string json = _context.HttpContext?.Session.GetString("PerfilSeleccionado");
                 if (string.IsNullOrEmpty(json))
                 {
                     return new();
@@ -85,7 +85,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("PerfilSeleccionado", json);
+                _context.HttpContext?.Session.SetString("PerfilSeleccionado", json);
             }
         }
 
@@ -93,7 +93,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("UsuariosXPerfil");
+                var json = _context.HttpContext?.Session.GetString("UsuariosXPerfil");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
@@ -103,7 +103,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("UsuariosXPerfil", json);
+                _context.HttpContext?.Session.SetString("UsuariosXPerfil", json);
             }
         }
 
@@ -113,7 +113,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("PerfilesDelUsuario");
+                var json = _context.HttpContext?.Session.GetString("PerfilesDelUsuario");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
@@ -123,7 +123,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("PerfilesDelUsuario", json);
+                _context.HttpContext?.Session.SetString("PerfilesDelUsuario", json);
             }
         }
 
@@ -131,7 +131,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("AdministracionesDelUsuario");
+                var json = _context.HttpContext?.Session.GetString("AdministracionesDelUsuario");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
@@ -141,7 +141,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("AdministracionesDelUsuario", json);
+                _context.HttpContext?.Session.SetString("AdministracionesDelUsuario", json);
             }
         }
 
@@ -149,7 +149,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("DerechosDelUsuario");
+                var json = _context.HttpContext?.Session.GetString("DerechosDelUsuario");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
@@ -159,7 +159,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("DerechosDelUsuario", json);
+                _context.HttpContext?.Session.SetString("DerechosDelUsuario", json);
             }
         }
 
@@ -167,7 +167,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("ListaDeUsuarios");
+                var json = _context.HttpContext?.Session.GetString("ListaDeUsuarios");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
@@ -177,7 +177,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("ListaDeUsuarios", json);
+                _context.HttpContext?.Session.SetString("ListaDeUsuarios", json);
             }
         }
 
@@ -185,7 +185,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("UsuarioSeleccionado");
+                var json = _context.HttpContext?.Session.GetString("UsuarioSeleccionado");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return new UserDto();
@@ -195,7 +195,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("UsuarioSeleccionado", json);
+                _context.HttpContext?.Session.SetString("UsuarioSeleccionado", json);
             }
         }
 

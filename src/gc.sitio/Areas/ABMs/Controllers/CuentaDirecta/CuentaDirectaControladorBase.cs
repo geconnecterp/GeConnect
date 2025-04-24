@@ -28,7 +28,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.CuentaDirecta
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("PaginaBanco");
+				var txt = _context.HttpContext?.Session.GetString("PaginaBanco");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return 0;
@@ -38,7 +38,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.CuentaDirecta
 			set
 			{
 				var valor = value.ToString();
-				_context.HttpContext.Session.SetString("PaginaBanco", valor);
+				_context.HttpContext?.Session.SetString("PaginaBanco", valor);
 			}
 		}
 
@@ -46,7 +46,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.CuentaDirecta
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("DirSortCuentaDirecta");
+				var txt = _context.HttpContext?.Session.GetString("DirSortCuentaDirecta");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return "asc";
@@ -56,7 +56,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.CuentaDirecta
 			set
 			{
 				var valor = value.ToString();
-				_context.HttpContext.Session.SetString("DirSortCuentaDirecta", valor);
+				_context.HttpContext?.Session.SetString("DirSortCuentaDirecta", valor);
 			}
 		}
 
@@ -64,7 +64,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.CuentaDirecta
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("CuentaDirectaBuscadas");
+				var json = _context.HttpContext?.Session.GetString("CuentaDirectaBuscadas");
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return [];
@@ -74,7 +74,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.CuentaDirecta
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("CuentaDirectaBuscadas", json);
+				_context.HttpContext?.Session.SetString("CuentaDirectaBuscadas", json);
 			}
 		}
 
@@ -82,7 +82,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.CuentaDirecta
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("MetadataCuentaDirecta");
+				var txt = _context.HttpContext?.Session.GetString("MetadataCuentaDirecta");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return new MetadataGrid();
@@ -92,7 +92,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.CuentaDirecta
 			set
 			{
 				var valor = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("MetadataCuentaDirecta", valor);
+				_context.HttpContext?.Session.SetString("MetadataCuentaDirecta", valor);
 			}
 
 		}

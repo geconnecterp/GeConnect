@@ -139,10 +139,10 @@ namespace gc.sitio.Areas.ABMs.Controllers
 					ComboTipoGasto = ComboTipoGasto(),
 					ComboTipoRetGan = ComboTipoRetGan(),
 					ComboTipoRetIB = ComboTipoRetIb(),
-					CuentaFormasDePago = ObtenerGridCore<CuentaFPDto>(cfp),
-					CuentaContactos = ObtenerGridCore<CuentaContactoDto>(ccon),
-					CuentaObs = ObtenerGridCore<CuentaObsDto>(cobs),
-					CuentaNota = ObtenerGridCore<CuentaNotaDto>(cnota)
+					CuentaFormasDePago = ObtenerGridCoreSmart<CuentaFPDto>(cfp),
+					CuentaContactos = ObtenerGridCoreSmart<CuentaContactoDto>(ccon),
+					CuentaObs = ObtenerGridCoreSmart<CuentaObsDto>(cobs),
+					CuentaNota = ObtenerGridCoreSmart<CuentaNotaDto>(cnota)
 				};
 				return PartialView("_tabDatosProveedor", proveedorModel);
 			}
@@ -163,7 +163,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		{
 			List<ABMProveedorSearchDto> lista;
 			MetadataGrid metadata;
-			GridCore<ABMProveedorSearchDto> grillaDatos;
+			GridCoreSmart<ABMProveedorSearchDto> grillaDatos;
 			RespuestaGenerica<EntidadBase> response = new();
 			try
 			{
@@ -190,7 +190,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				}
 				metadata = MetadataGeneral;
 				//no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
-				grillaDatos = GenerarGrilla(ProveedoresBuscados, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
+				grillaDatos = GenerarGrillaSmart(ProveedoresBuscados, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 
 				//string volver = Url.Action("index", "home", new { area = "" });
 				//ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
@@ -245,7 +245,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				{
 					ComboTipoCuentaBco = ComboTipoCuentaBco(),
 					ComboFormasDePago = ComboFormaDePago(),
-					CuentaFormasDePago = ObtenerGridCore<CuentaFPDto>(cfp),
+					CuentaFormasDePago = ObtenerGridCoreSmart<CuentaFPDto>(cfp),
 				};
 				return PartialView("~/Areas/ABMs/Views/AbmCliente/_tabDatosFormaDePago", FPModel);
 			}
@@ -322,7 +322,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				var FPModel = new CuentaAbmOCModel()
 				{
 					ComboTipoContacto = ComboTipoContacto(),
-					CuentaOtrosContactos = ObtenerGridCore<CuentaContactoDto>(coc),
+					CuentaOtrosContactos = ObtenerGridCoreSmart<CuentaContactoDto>(coc),
 				};
 				return PartialView("~/Areas/ABMs/Views/AbmCliente/_tabDatosOtroContacto", FPModel);
 			}
@@ -383,7 +383,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				var cno = _cuentaServicio.GetCuentaNota(ctaId, TokenCookie);
 				var FPModel = new CuentaABMNotaModel()
 				{
-					CuentaNotas = ObtenerGridCore<CuentaNotaDto>(cno),
+					CuentaNotas = ObtenerGridCoreSmart<CuentaNotaDto>(cno),
 				};
 				return PartialView("~/Areas/ABMs/Views/AbmCliente/_tabDatosNota", FPModel);
 			}
@@ -447,7 +447,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				var ObsModel = new CuentaABMObservacionesModel()
 				{
 					ComboTipoObs = ComboTipoObservaciones(),
-					CuentaObservaciones = ObtenerGridCore<CuentaObsDto>(cob),
+					CuentaObservaciones = ObtenerGridCoreSmart<CuentaObsDto>(cob),
 				};
 				return PartialView("~/Areas/ABMs/Views/AbmCliente/_tabDatosObs", ObsModel);
 			}
@@ -511,7 +511,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
 				var ObsModel = new ProveedorABMFliaGrupoModel()
 				{
-					ListaProveedorGrupo = ObtenerGridCore<ProveedorGrupoDto>(pg),
+					ListaProveedorGrupo = ObtenerGridCoreSmart<ProveedorGrupoDto>(pg),
 				};
 				return PartialView("_tabDatosFliaProv", ObsModel);
 			}
@@ -658,10 +658,10 @@ namespace gc.sitio.Areas.ABMs.Controllers
 					ComboTipoGasto = ComboTipoGasto(),
 					ComboTipoRetGan = ComboTipoRetGan(),
 					ComboTipoRetIB = ComboTipoRetIb(),
-					CuentaFormasDePago = ObtenerGridCore<CuentaFPDto>(cfp),
-					CuentaContactos = ObtenerGridCore<CuentaContactoDto>(ccon),
-					CuentaObs = ObtenerGridCore<CuentaObsDto>(cobs),
-					CuentaNota = ObtenerGridCore<CuentaNotaDto>(cnota)
+					CuentaFormasDePago = ObtenerGridCoreSmart<CuentaFPDto>(cfp),
+					CuentaContactos = ObtenerGridCoreSmart<CuentaContactoDto>(ccon),
+					CuentaObs = ObtenerGridCoreSmart<CuentaObsDto>(cobs),
+					CuentaNota = ObtenerGridCoreSmart<CuentaNotaDto>(cnota)
 				};
 				return PartialView("_tabDatosProveedor", ProveedorModel);
 			}
@@ -776,7 +776,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				return PartialView("_seccionReasignacion", model);
 
 			model.FamiliaProductos = ComboFamiliaDeProductos(familia, true);
-			model.ProductosPorFamilia = ObtenerGridCore<InfoProductoFamiliaDto>([]);
+			model.ProductosPorFamilia = ObtenerGridCoreSmart<InfoProductoFamiliaDto>([]);
 			return PartialView("_seccionReasignacion", model);
 		}
 
@@ -804,7 +804,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			if (res.Item1 == null)
 				return PartialView("_gridProdPorFlia", model);
 
-			model.ProductosPorFamilia = ObtenerGridCore<ProductoListaDto>(res.Item1);
+			model.ProductosPorFamilia = ObtenerGridCoreSmart<ProductoListaDto>(res.Item1);
 			return PartialView("_gridProdPorFlia", model);
 		}
 

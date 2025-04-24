@@ -22,10 +22,10 @@ namespace gc.sitio.Areas.ABMs.Models
         public SelectList ComboRepartidores { get; set; }
         public SelectList ComboFinancieros { get; set; }
         public CuentaABMDto Cliente { get; set; }
-        public GridCore<CuentaFPDto> CuentaFormasDePago { get; set; }
-        public GridCore<CuentaContactoDto> CuentaContactos { get; set; }
-        public GridCore<CuentaObsDto> CuentaObs { get; set; }
-        public GridCore<CuentaNotaDto> CuentaNota { get; set; }
+        public GridCoreSmart<CuentaFPDto> CuentaFormasDePago { get; set; }
+        public GridCoreSmart<CuentaContactoDto> CuentaContactos { get; set; }
+        public GridCoreSmart<CuentaObsDto> CuentaObs { get; set; }
+        public GridCoreSmart<CuentaNotaDto> CuentaNota { get; set; }
 
         public CuentaAbmModel()
         {

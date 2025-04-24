@@ -8,6 +8,6 @@ namespace gc.sitio.Areas.ABMs.Models
 	{
 		public string Pg_Id { get; set; } = string.Empty;
         public SelectList FamiliaProductos { get; set; }
-		public GridCore<InfoProductoFamiliaDto> ProductosPorFamilia { get; set; }
+		public GridCoreSmart<InfoProductoFamiliaDto> ProductosPorFamilia { get; set; }
 	}
 }

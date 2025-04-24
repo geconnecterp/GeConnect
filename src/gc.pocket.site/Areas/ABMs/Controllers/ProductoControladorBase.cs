@@ -35,7 +35,7 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
         {
             get
             {
-                var txt = _context.HttpContext.Session.GetString("PaginaProd");
+                var txt = _context.HttpContext?.Session.GetString("PaginaProd");
                 if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
                 {
                     return 0;
@@ -45,7 +45,7 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
             set
             {
                 var valor = value.ToString();
-                _context.HttpContext.Session.SetString("PaginaProd", valor);
+                _context.HttpContext?.Session.SetString("PaginaProd", valor);
             }
         }
 
@@ -53,7 +53,7 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
         {
             get
             {
-                var txt = _context.HttpContext.Session.GetString("DirSortProd");
+                var txt = _context.HttpContext?.Session.GetString("DirSortProd");
                 if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
                 {
                     return "asc";
@@ -63,7 +63,7 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
             set
             {
                 var valor = value.ToString();
-                _context.HttpContext.Session.SetString("DirSortProd", valor);
+                _context.HttpContext?.Session.SetString("DirSortProd", valor);
             }
         }
 
@@ -71,7 +71,7 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("ProductosBuscados");
+                var json = _context.HttpContext?.Session.GetString("ProductosBuscados");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
@@ -81,7 +81,7 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("ProductosBuscados", json);
+                _context.HttpContext?.Session.SetString("ProductosBuscados", json);
             }
         }
 
@@ -89,7 +89,7 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
         {
             get
             {
-                var txt = _context.HttpContext.Session.GetString("MetadataProd");
+                var txt = _context.HttpContext?.Session.GetString("MetadataProd");
                 if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
                 {
                     return new MetadataGrid();
@@ -99,7 +99,7 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
             set
             {
                 var valor = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("MetadataProd", valor);
+                _context.HttpContext?.Session.SetString("MetadataProd", valor);
             }
 
         }
@@ -112,7 +112,7 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
         {
             List<ProductoListaDto> lista;
             MetadataGrid metadata;
-            GridCore<ProductoListaDto> grillaDatos;
+            GridCoreSmart<ProductoListaDto> grillaDatos;
             RespuestaGenerica<EntidadBase> response = new();
             try
             {

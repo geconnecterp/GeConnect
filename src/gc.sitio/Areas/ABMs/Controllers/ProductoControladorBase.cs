@@ -17,11 +17,10 @@ namespace gc.sitio.Areas.ABMs.Controllers
     public class ProductoControladorBase : ControladorBase
     {
 		private readonly AppSettings _setting;
-		private readonly ILogger _logger;
+		//private readonly ILogger _logger;
 		public ProductoControladorBase(IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger logger) :base(options,accessor, logger)
         {
-			_setting = options.Value;
-			_logger = logger;
+			_setting = options.Value;			
 		}
 
 
@@ -32,7 +31,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
         {
             get
             {
-                var txt = _context.HttpContext.Session.GetString("DirSortProd");
+                var txt = _context.HttpContext?.Session?.GetString("DirSortProd");
                 if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
                 {
                     return "asc";
@@ -42,7 +41,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             set
             {
                 var valor = value.ToString();
-                _context.HttpContext.Session.SetString("DirSortProd", valor);
+                _context.HttpContext?.Session?.SetString("DirSortProd", valor);
             }
         }
 
@@ -50,17 +49,17 @@ namespace gc.sitio.Areas.ABMs.Controllers
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("ProductosBuscados");
+                var json = _context.HttpContext?.Session?.GetString("ProductosBuscados");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
                 }
-                return JsonConvert.DeserializeObject<List<ProductoListaDto>>(json);
+                return JsonConvert.DeserializeObject<List<ProductoListaDto>>(json) ?? [];
             }
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("ProductosBuscados", json);
+                _context.HttpContext?.Session?.SetString("ProductosBuscados", json);
             }
         }
 
@@ -68,17 +67,17 @@ namespace gc.sitio.Areas.ABMs.Controllers
         {
             get
             {
-                var txt = _context.HttpContext.Session.GetString("MetadataProd");
+                var txt = _context.HttpContext?.Session?.GetString("MetadataProd");
                 if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
                 {
                     return new MetadataGrid();
                 }
-                return JsonConvert.DeserializeObject<MetadataGrid>(txt); ;
+                return JsonConvert.DeserializeObject<MetadataGrid>(txt) ?? new MetadataGrid() ;
             }
             set
             {
                 var valor = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("MetadataProd", valor);
+                _context.HttpContext?.Session?.SetString("MetadataProd", valor);
             }
 
         }
@@ -87,17 +86,17 @@ namespace gc.sitio.Areas.ABMs.Controllers
         {
             get
             {
-                string json = _context.HttpContext.Session.GetString("BarradoSeleccionado");
+                string json = _context.HttpContext?.Session?.GetString("BarradoSeleccionado")?? string.Empty; 
                 if (string.IsNullOrEmpty(json))
                 {
                     return new();
                 }
-                return JsonConvert.DeserializeObject<ProductoBarradoDto>(json);
+                return JsonConvert.DeserializeObject<ProductoBarradoDto>(json)?? new ProductoBarradoDto();
             }
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("BarradoSeleccionado", json);
+                _context.HttpContext?.Session?.SetString("BarradoSeleccionado", json);
             }
         }
 
@@ -105,7 +104,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("ProductoBarrados");
+                var json = _context.HttpContext?.Session?.GetString("ProductoBarrados");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
@@ -115,7 +114,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("ProductoBarrados", json);
+                _context.HttpContext?.Session?.SetString("ProductoBarrados", json);
             }
         }
 
@@ -123,17 +122,17 @@ namespace gc.sitio.Areas.ABMs.Controllers
         {
             get
             {
-                var json = _context.HttpContext.Session.GetString("LimitesStk");
+                var json = _context.HttpContext?.Session?.GetString("LimitesStk");
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
                 }
-                return JsonConvert.DeserializeObject<List<LimiteStkDto>>(json);
+                return JsonConvert.DeserializeObject<List<LimiteStkDto>>(json) ?? [];
             }
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("LimitesStk", json);
+                _context.HttpContext?.Session?.SetString("LimitesStk", json);
             }
         }
 
@@ -141,17 +140,17 @@ namespace gc.sitio.Areas.ABMs.Controllers
         {
             get
             {
-                string json = _context.HttpContext.Session.GetString("LimiteStkSeleccionado");
+                string json = _context.HttpContext?.Session?.GetString("LimiteStkSeleccionado")??string.Empty;
                 if (string.IsNullOrEmpty(json))
                 {
                     return new();
                 }
-                return JsonConvert.DeserializeObject<LimiteStkDto>(json);
+                return JsonConvert.DeserializeObject<LimiteStkDto>(json) ?? new LimiteStkDto();
             }
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext.Session.SetString("LimiteStkSeleccionado", json);
+                _context.HttpContext?.Session?.SetString("LimiteStkSeleccionado", json);
             }
         }
 
@@ -161,7 +160,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		{
 			List<ProductoListaDto> lista;
 			MetadataGrid metadata;
-			GridCore<ProductoListaDto> grillaDatos;
+			GridCoreSmart<ProductoListaDto> grillaDatos;
 			RespuestaGenerica<EntidadBase> response = new();
 			try
 			{
@@ -195,14 +194,14 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
 					var res = await _productoServicio.BusquedaListaProductos(busc, TokenCookie);
 					lista = res.Item1 ?? [];
-					MetadataProd = res.Item2 ?? null;
+					MetadataProd = res.Item2 ?? new();
 					//metadata = MetadataProd;
 					ProductosBuscados = lista;
 				}
                 metadata = MetadataProd;
 
                 //grillaDatos = GenerarGrilla<ProductoListaDto>(ProductosBuscados, "p_desc");
-                grillaDatos = GenerarGrilla<ProductoListaDto>(ProductosBuscados, sort, _setting.NroRegistrosPagina, pag, metadata.TotalCount, metadata.TotalPages, sortDir);
+                grillaDatos = GenerarGrillaSmart<ProductoListaDto>(ProductosBuscados, sort, _setting.NroRegistrosPagina, pag, metadata.TotalCount, metadata.TotalPages, sortDir);
                 return PartialView("_gridProdsAdv", grillaDatos);
 			}
 			catch (Exception ex)

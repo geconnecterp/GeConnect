@@ -13,6 +13,6 @@ namespace gc.sitio.Areas.Compras.Models
 		public DateTime PagoPlazo { get; set; }
 		public string Obs { get; set; }
 		public bool DejarOCActiva { get; set; }
-		public GridCore<OrdenDeCompraConceptoDto> ResumenGrilla { get; set; }
+		public GridCoreSmart<OrdenDeCompraConceptoDto> ResumenGrilla { get; set; }
 	}
 }

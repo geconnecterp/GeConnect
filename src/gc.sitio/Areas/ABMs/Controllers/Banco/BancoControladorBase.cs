@@ -13,11 +13,10 @@ namespace gc.sitio.Areas.ABMs.Controllers.Banco
 	public class BancoControladorBase : ControladorBase
 	{
 		private readonly AppSettings _setting;
-		private readonly ILogger _logger;
+
 		public BancoControladorBase(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger logger) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
-			_logger = logger;
 		}
 
 		#region ABM
@@ -28,7 +27,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Banco
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("PaginaBanco");
+				var txt = _context.HttpContext?.Session.GetString("PaginaBanco");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return 0;
@@ -38,7 +37,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Banco
 			set
 			{
 				var valor = value.ToString();
-				_context.HttpContext.Session.SetString("PaginaBanco", valor);
+				_context.HttpContext?.Session.SetString("PaginaBanco", valor);
 			}
 		}
 
@@ -46,7 +45,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Banco
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("DirSortBanco");
+				var txt = _context.HttpContext?.Session.GetString("DirSortBanco");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return "asc";
@@ -56,7 +55,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Banco
 			set
 			{
 				var valor = value.ToString();
-				_context.HttpContext.Session.SetString("DirSortBanco", valor);
+				_context.HttpContext?.Session.SetString("DirSortBanco", valor);
 			}
 		}
 
@@ -64,17 +63,17 @@ namespace gc.sitio.Areas.ABMs.Controllers.Banco
 		{
 			get
 			{
-				var json = _context.HttpContext.Session.GetString("BancosBuscados");
+				var json = _context.HttpContext?.Session.GetString("BancosBuscados");
 				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
 				{
 					return [];
 				}
-				return JsonConvert.DeserializeObject<List<ABMBancoSearchDto>>(json);
+				return JsonConvert.DeserializeObject<List<ABMBancoSearchDto>>(json) ?? [];
 			}
 			set
 			{
 				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("BancosBuscados", json);
+				_context.HttpContext?.Session.SetString("BancosBuscados", json);
 			}
 		}
 
@@ -82,17 +81,17 @@ namespace gc.sitio.Areas.ABMs.Controllers.Banco
 		{
 			get
 			{
-				var txt = _context.HttpContext.Session.GetString("MetadataBanco");
+				var txt = _context.HttpContext?.Session.GetString("MetadataBanco");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
 					return new MetadataGrid();
 				}
-				return JsonConvert.DeserializeObject<MetadataGrid>(txt); ;
+				return JsonConvert.DeserializeObject<MetadataGrid>(txt)??new() ;
 			}
 			set
 			{
 				var valor = JsonConvert.SerializeObject(value);
-				_context.HttpContext.Session.SetString("MetadataBanco", valor);
+				_context.HttpContext?.Session.SetString("MetadataBanco", valor);
 			}
 
 		}

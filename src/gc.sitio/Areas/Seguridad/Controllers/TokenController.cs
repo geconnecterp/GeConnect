@@ -139,8 +139,8 @@ namespace gc.sitio.Areas.Seguridad.Controllers
                         };
 
                         var principal = new ClaimsPrincipal(new[] { identity });
-                        await _context.HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
-                        _context.HttpContext.Response.Cookies.Append(Etiqueta, token, cookieOptions); //se resguarda el token con el nombre del usuario
+                        await _context.HttpContext?.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
+                        _context.HttpContext?.Response.Cookies.Append(Etiqueta, token, cookieOptions); //se resguarda el token con el nombre del usuario
 
                         #region resguardamos los perfiles del usuario. 11/02/2025
 

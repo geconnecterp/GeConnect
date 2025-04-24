@@ -38,12 +38,12 @@ namespace gc.sitio.Areas.Compras.Controllers
 				return RedirectToAction("Login", "Token", new { area = "seguridad" });
 			}
 
-			GridCore<RemitoGenDto> grid;
+			GridCoreSmart<RemitoGenDto> grid;
 			try
 			{
 				// Carga por default al iniciar la pantalla
 				var items = await _remitoServicio.ObtenerRemitosTransferidos(AdministracionId, TokenCookie);
-				grid = ObtenerGridCore<RemitoGenDto>(items);
+				grid = ObtenerGridCoreSmart<RemitoGenDto>(items);
 			}
 			catch (Exception ex)
 			{
@@ -123,13 +123,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					item.Row_color = ObtenerColor(item.diferencia);
 				}
-				var grid = ObtenerGridCore<RemitoVerConteoDto>(items);
+				var grid = ObtenerGridCoreSmart<RemitoVerConteoDto>(items);
 				remito.Productos = grid;
 				remito.Remito = $"Remito N°: {remCompte}";
 				remito.QuienEnvia = $"Enviado por: {quienEnvia}";
 				remito.rem_compte = remCompte;
 				var conteosxul = await _remitoServicio.RTRCargarConteosXUL(remCompte, TokenCookie);
-				remito.ConteosxUL = ObtenerGridCore<RTRxULDto>(conteosxul);
+				remito.ConteosxUL = ObtenerGridCoreSmart<RTRxULDto>(conteosxul);
 			}
 			catch (Exception ex)
 			{
@@ -142,11 +142,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> BuscarDetalleULxRTR(string ul_id)
 		{
-			GridCore<RPRxULDetalleDto> datosIP = new();
+			GridCoreSmart<RPRxULDetalleDto> datosIP = new();
 			try
 			{
 				var detalle = await _productoServicio.RPRxULDetalle(ul_id, TokenCookie);
-				datosIP = ObtenerGridCore<RPRxULDetalleDto>(detalle);
+				datosIP = ObtenerGridCoreSmart<RPRxULDetalleDto>(detalle);
 			}
 			catch (Exception ex)
 			{

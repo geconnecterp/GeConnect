@@ -5,7 +5,7 @@ namespace gc.sitio.Areas.Compras.Models
 {
 	public class ProductoParaOcModel
 	{
-		public GridCore<ProductoParaOcDto> ListaOC { get; set; }
+		public GridCoreSmart<ProductoParaOcDto> ListaOC { get; set; }
 		public string Total_Costo { get; set; } = string.Empty;
 		public string Total_Pallet { get; set; } = string.Empty;
 		public decimal Dto1 { get; set; } = 0.0M;

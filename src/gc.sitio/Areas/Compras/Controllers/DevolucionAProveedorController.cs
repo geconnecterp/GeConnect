@@ -52,7 +52,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				model.ComboDepositos = CargarComboDepositos();
 				model.ComboBoxes = HelperMvc<ComboGenDto>.ListaGenerica(boxes.Select(x => new ComboGenDto { Id = x.Box_Id, Descripcion = $"{x.Box_Id}__{x.Box_desc}" }));
-				model.ProductosADevolver = ObtenerGridCore<ProductoADevolverDto>(listaProdAAjustar);
+				model.ProductosADevolver = ObtenerGridCoreSmart<ProductoADevolverDto>(listaProdAAjustar);
 				DevolucionProductosLista = [];
 				return View(model);
 			}
@@ -125,12 +125,12 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> AgregarProductoALista(string pId, string boxId, string ctaId, string depoId, decimal us, int bto, int unidadPres, string upId)
 		{
-			var model = new GridCore<ProductoADevolverDto>();
+			var model = new GridCoreSmart<ProductoADevolverDto>();
 			try
 			{
 				if (DevolucionProductosLista.Where(x => x.p_id.Equals(pId)).Any())
 				{
-					model = ObtenerGridCore<ProductoADevolverDto>(DevolucionProductosLista);
+					model = ObtenerGridCoreSmart<ProductoADevolverDto>(DevolucionProductosLista);
 				}
 				else
 				{
@@ -140,7 +140,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					var box = await _depositoServicio.ObtenerInfoDeBox(boxId, TokenCookie);
 					if (producto.Cta_id != ctaId)
 					{
-						model = ObtenerGridCore<ProductoADevolverDto>(DevolucionProductosLista);
+						model = ObtenerGridCoreSmart<ProductoADevolverDto>(DevolucionProductosLista);
 					}
 					if (productoStk != null && productoStk.Count > 0 && producto != null)
 					{
@@ -183,11 +183,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 						};
 						listaTemp.Add(newProduct);
 						DevolucionProductosLista = listaTemp;
-						model = ObtenerGridCore<ProductoADevolverDto>(listaTemp);
+						model = ObtenerGridCoreSmart<ProductoADevolverDto>(listaTemp);
 					}
 					else
 					{
-						model = ObtenerGridCore<ProductoADevolverDto>(DevolucionProductosLista);
+						model = ObtenerGridCoreSmart<ProductoADevolverDto>(DevolucionProductosLista);
 					}
 				}
 			}
@@ -206,7 +206,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 		public async Task<IActionResult> FiltrarProductosModalCargaPrevia(string depoId, string boxId)
 		{
-			var model = new GridCore<DevolucionPrevioCargadoDto>();
+			var model = new GridCoreSmart<DevolucionPrevioCargadoDto>();
 			try
 			{
 				if (string.IsNullOrWhiteSpace(depoId) && string.IsNullOrWhiteSpace(boxId))
@@ -223,11 +223,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 				//Limpio la grilla
 				if (!string.IsNullOrWhiteSpace(depoId) && string.IsNullOrWhiteSpace(boxId))
 				{
-					model = ObtenerGridCore<DevolucionPrevioCargadoDto>([]);
+					model = ObtenerGridCoreSmart<DevolucionPrevioCargadoDto>([]);
 					return PartialView("_grillaProductosEnModalCargaPrevia", model);
 				}
 				var listaAjustesPrevios = DevolucionPrevioCargadoLista.Where(x => x.depo_id.Equals(depoId) && x.box_id.Equals(boxId)).ToList();
-				model = ObtenerGridCore<DevolucionPrevioCargadoDto>(listaAjustesPrevios);
+				model = ObtenerGridCoreSmart<DevolucionPrevioCargadoDto>(listaAjustesPrevios);
 				return PartialView("_grillaProductosEnModalCargaPrevia", model);
 			}
 			catch (Exception ex)
@@ -270,7 +270,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> ObtenerProductosDesdeDPRevertido(string dpId)
 		{
-			var model = new GridCore<ProductoADevolverDto>();
+			var model = new GridCoreSmart<ProductoADevolverDto>();
 			try
 			{
 				if (dpId == null)
@@ -279,7 +279,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				var listaAjustesPrevios = await _productoServicio.ObtenerDPREVERTIDO(dpId, TokenCookie);
 				if (listaAjustesPrevios == null || listaAjustesPrevios.Count == 0)
 				{
-					model = ObtenerGridCore<ProductoADevolverDto>(DevolucionProductosLista);
+					model = ObtenerGridCoreSmart<ProductoADevolverDto>(DevolucionProductosLista);
 					return PartialView("_grillaProductos", model);
 				}
 				listaAjustesPrevios.RemoveAll(x => DevolucionProductosLista.Exists(y => y.p_id.Equals(x.p_id)));
@@ -289,11 +289,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 					var listaTemp = DevolucionProductosLista;
 					listaTemp.AddRange(productosMapeados);
 					DevolucionProductosLista = listaTemp;
-					model = ObtenerGridCore<ProductoADevolverDto>(listaTemp);
+					model = ObtenerGridCoreSmart<ProductoADevolverDto>(listaTemp);
 				}
 				else
 				{
-					model = ObtenerGridCore<ProductoADevolverDto>(DevolucionProductosLista);
+					model = ObtenerGridCoreSmart<ProductoADevolverDto>(DevolucionProductosLista);
 				}
 			}
 			catch (Exception ex)
@@ -320,7 +320,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				var listaDevolucionPrevios = await _productoServicio.ObtenerDPPreviosCargados(AdministracionId, ctaId, TokenCookie);
 				DevolucionPrevioCargadoLista = listaDevolucionPrevios;
-				model.ListaProductos = ObtenerGridCore<DevolucionPrevioCargadoDto>([]);
+				model.ListaProductos = ObtenerGridCoreSmart<DevolucionPrevioCargadoDto>([]);
 				var auxdepositos = listaDevolucionPrevios.Select(x => new { x.depo_id, x.depo_nombre }).Distinct();
 				var depositos = auxdepositos.Select(x => new ComboGenDto { Id = x.depo_id, Descripcion = x.depo_nombre });
 				model.ComboDepositos = HelperMvc<ComboGenDto>.ListaGenerica(depositos);
@@ -367,7 +367,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> QuitarProductoDeLista(string pId)
 		{
-			var model = new GridCore<ProductoADevolverDto>();
+			var model = new GridCoreSmart<ProductoADevolverDto>();
 			try
 			{
 				if (pId == null)
@@ -375,7 +375,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				var listaTemp = DevolucionProductosLista.Where(x => x.p_id != pId).ToList();
 				DevolucionProductosLista = listaTemp;
-				model = ObtenerGridCore<ProductoADevolverDto>(listaTemp);
+				model = ObtenerGridCoreSmart<ProductoADevolverDto>(listaTemp);
 			}
 			catch (Exception ex)
 			{
@@ -393,7 +393,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public async Task<IActionResult> ActualizarListaProductosDesdeModalCargaPrevia(string depoId, string boxId, string[] ids)
 		{
-			var model = new GridCore<ProductoADevolverDto>();
+			var model = new GridCoreSmart<ProductoADevolverDto>();
 			try
 			{
 				var listaDevolucionPrevios = DevolucionPrevioCargadoLista.Where(x => x.depo_id.Equals(depoId) && x.box_id.Equals(boxId) && ids.Contains(x.p_id)).ToList();
@@ -405,10 +405,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 					var listaTemp = DevolucionProductosLista;
 					listaTemp.AddRange(productosMapeados);
 					DevolucionProductosLista = listaTemp;
-					model = ObtenerGridCore<ProductoADevolverDto>(listaTemp);
+					model = ObtenerGridCoreSmart<ProductoADevolverDto>(listaTemp);
 				}
 				else
-					model = ObtenerGridCore<ProductoADevolverDto>(DevolucionProductosLista);
+					model = ObtenerGridCoreSmart<ProductoADevolverDto>(DevolucionProductosLista);
 
 				return PartialView("_grillaProductos", model);
 			}
