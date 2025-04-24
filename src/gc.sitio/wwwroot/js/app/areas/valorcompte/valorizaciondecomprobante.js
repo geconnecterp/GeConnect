@@ -20,6 +20,7 @@ function InicializarPantallaDeFiltros() {
 	$("#divFiltro").collapse("show");
 	document.getElementById("Rel01").focus();
 	MostrarDatosDeCuenta(false);
+	
 }
 
 function selectListaValorizacion(x) { }
@@ -76,8 +77,69 @@ function ControlaListaCompteSelected() {
 				AddEventListenerToGrid("tbListaValorizacion");
 				AddEventListenerToGrid("tbListaDescFinanc");
 				MostrarDatosDeCuenta(true);
+				$("#chkSobreTotal").on("click", function () {
+					ActualizarEstadoChecks_SobreTotal();
+					//ActualizarVisualizacionDeControlesABMDescFinanc();
+				});
+				$("#chkNetoFijo").on("click", function () {
+					ActualizarEstadoChecks_NetoFijo();
+					//ActualizarVisualizacionDeControlesABMDescFinanc();
+				});
+				ActualizarVisualizacionDeControlesABMDescFinanc();
 			}
 		});
+	}
+}
+
+function ActualizarEstadoChecks_SobreTotal() {
+	if ($("#chkSobreTotal")[0].checked) {
+		$("#chkNetoFijo").prop('checked', false);
+		$("#chkNetoFijo").trigger("change");
+		$("#divDescFinancDto").collapse("show");
+		$("#divDescFinancDtoImporte").collapse("hide");
+	}
+	else {
+		$("#chkNetoFijo").prop('checked', true);
+		$("#chkNetoFijo").trigger("change");
+		$("#divDescFinancDto").collapse("hide");
+		$("#divDescFinancDtoImporte").collapse("show");
+	}
+}
+
+function ActualizarEstadoChecks_NetoFijo() {
+	if ($("#chkNetoFijo")[0].checked) {
+		$("#chkSobreTotal").prop('checked', false);
+		$("#chkSobreTotal").trigger("change");
+		$("#divDescFinancDto").collapse("hide");
+		$("#divDescFinancDtoImporte").collapse("show");
+	}
+	else {
+		$("#chkSobreTotal").prop('checked', true);
+		$("#chkSobreTotal").trigger("change");
+		$("#divDescFinancDto").collapse("show");
+		$("#divDescFinancDtoImporte").collapse("hide");
+	}
+}
+
+function ActualizarVisualizacionDtoSobreTotal() {
+	var auxSobreTotal = $("#chkSobreTotal")[0].checked;
+	if (auxSobreTotal) {
+		$("#divDescFinancDto").collapse("show");
+		$("#divDescFinancDtoImporte").collapse("hide");
+	}
+	else {
+		$("#divDescFinancDto").collapse("hide");
+		$("#divDescFinancDtoImporte").collapse("show");
+	}
+}
+
+function ActualizarVisualizacionDeControlesABMDescFinanc() {
+	
+	var auxNetoFijo = $("#chkNetoFijo")[0].checked;
+	
+	if (auxNetoFijo) {
+		$("#divDescFinancDto").collapse("hide");
+		$("#divDescFinancDtoImporte").collapse("show");
 	}
 }
 

@@ -81,7 +81,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		[HttpPost]
-		public IActionResult CargarDatosParaValorizar(string cm_compte) 
+		public IActionResult CargarDatosParaValorizar(string cm_compte)
 		{
 			var model = new TabComprobanteModel();
 			try
@@ -95,12 +95,12 @@ namespace gc.sitio.Areas.Compras.Controllers
 					return PartialView("_tabComprobante", model);
 
 				//Armado de Request, que es común para ambos servicios
-				var compteSeleccionado = ComprobantesPendientesDeValorizarLista.Where(x=>x.cm_compte.Equals(cm_compte)).First();
+				var compteSeleccionado = ComprobantesPendientesDeValorizarLista.Where(x => x.cm_compte.Equals(cm_compte)).First();
 				if (compteSeleccionado == null)
 					return PartialView("_tabComprobante", model);
 
 				var req = new CompteValorizaRprDtosRequest()
-				{ 
+				{
 					cm_compte = compteSeleccionado.cm_compte,
 					cta_id = compteSeleccionado.cta_id,
 					dia_movi = compteSeleccionado.dia_movi,
@@ -113,7 +113,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				//Cargar Detalle de Descuentos Financieros
 				var responseDtos = _cuentaServicio.ObtenerComprobantesDtos(req, TokenCookie);
 				ComprobantesValorizaDescuentosFinancLista = responseDtos;
-				
+
 				var jsonResponseDtos = JsonConvert.SerializeObject(responseDtos, new JsonSerializerSettings());
 
 				//Cargar Datos Valorizados
@@ -128,11 +128,16 @@ namespace gc.sitio.Areas.Compras.Controllers
 					usu_id = UserName,
 					guarda = false
 				};
-				var responseValorizar=_cuentaServicio.ObtenerComprobanteValorizaLista(reqValorizados, TokenCookie);
+				var responseValorizar = _cuentaServicio.ObtenerComprobanteValorizaLista(reqValorizados, TokenCookie);
 
 				model.GrillaValoracion = ObtenerGridCoreSmart<CompteValorizaListaDto>(responseValorizar);
 				model.GrillaDescuentosFin = ObtenerGridCoreSmart<CompteValorizaDtosListaDto>(responseDtos);
 				model.ConceptoDtoFinanc = ComboConceptoDescuentoFinanc();
+				model.DescFinanc = new CompteValorizaDtosListaDto
+				{
+					dto_sobre_total = 'S',
+					dto_sobre_total_bool = true
+				};
 				///TODO MARCE: Seguir aca
 				return PartialView("_tabComprobante", model);
 			}

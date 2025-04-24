@@ -99,7 +99,7 @@
 		<div class="row mt-1">
 			<div class="input-group input-group-sm">
 				<div class="form-check form-check-inline form-switch mb-2">
-					<input class="form-check-input activable" type="checkbox" asp-for="DescFinanc.dto_sobre_total_bool" value="" id="chkSobreTotal">
+					<input class="form-check-input activable" type="checkbox" asp-for="DescFinanc.dto_sobre_total_bool" value="true" id="chkSobreTotal">
 					<label class="form-check-label" for="chkSobreTotal"> Aplica sobre Total</label>
 				</div>
 			</div>
@@ -118,25 +118,29 @@
 				@Html.DropDownListFor(m => m.Comprobante.tco_id, lst, "Seleccionar...", new { @id = "listaConcDescFinanc", @class = "form-control activable" })
 			</div>
 		</div>
-		<div class="row mt-1">
-			<div class="input-group input-group-sm">
-				<span class="input-group-text fixed-lbl-for-abm-100">Dto %:</span>
-				<input type="text" asp-for="DescFinanc.dto" class="form-control activable inputEditable" />
+		<div id="divDescFinancDto" class="show">
+			<div class="row mt-1">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text fixed-lbl-for-abm-100">Dto %:</span>
+					<input type="text" asp-for="DescFinanc.dto" class="form-control activable inputEditable" />
+				</div>
 			</div>
 		</div>
-		<div class="row mt-1">
-			<div class="input-group input-group-sm">
-				<span class="input-group-text fixed-lbl-for-abm-100">Neto Fijo:</span>
-				<input type="text" asp-for="DescFinanc.dto_importe" class="form-control activable inputEditable" />
+		<div id="divDescFinancDtoImporte" class="collapse">
+			<div class="row mt-1" id="divDescFinancDtoImporte">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text fixed-lbl-for-abm-100">Neto Fijo:</span>
+					<input type="text" asp-for="DescFinanc.dto_importe" class="form-control activable inputEditable" />
+				</div>
 			</div>
 		</div>
 		<div class="row mt-1">
 			<div class="d-flex justify-content-sm-center">
-				<button id="btnAceptarDescFinanc" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Aceptar" disabled>
+				<button id="btnAceptarDescFinanc" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Aceptar">
 					<i class="bx bx-check-circle bx-xs"></i>
 				</button>
 
-				<button id="btnCancelarDescFinanc" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar" disabled>
+				<button id="btnCancelarDescFinanc" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar">
 					<i class="bx bx-x-circle bx-xs"></i>
 				</button>
 			</div>
