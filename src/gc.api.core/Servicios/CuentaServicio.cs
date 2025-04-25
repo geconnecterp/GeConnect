@@ -503,6 +503,10 @@ namespace gc.api.core.Servicios
 				new("@json_detalle",request.json_detalle),
 				new("@usu_id",request.usu_id),
 				new("@guarda",request.guarda),
+				new("@confirma",request.confirma),
+				new("@dp",request.dp),
+				new("@dc",request.dc),
+				new("@adm_id",request.adm_id),
 			};
 			var listaTemp = _repository.EjecutarLstSpExt<CompteValorizaListaDto>(sp, ps, true);
 			return listaTemp;

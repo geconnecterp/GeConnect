@@ -49,7 +49,7 @@
 				</button>
 			</li>
 		</ul>
-		<div class="tab-content">
+		<div class="tab-content" style="padding:0;">
 			<div class="tab-pane fade show active" id="navs-top-home" role="tabpanel">
 				<div id="divComprobantes">
 				</div>
@@ -70,7 +70,10 @@
 		var autoComRel01Url = "@Url.Action("BuscarProvs", "valorizaciondecomprobante", new { area = "Compras" })";
 		var cargarComprobantesDelProveedorSeleccionadoUrl = "@Url.Action("CargarComprobantesDelProveedorSeleccionado", "valorizaciondecomprobante", new { area = "Compras" })";
 		var cargarDatosParaValorizarURL = "@Url.Action("CargarDatosParaValorizar", "valorizaciondecomprobante", new { area = "Compras" })";
+		var agregarDescFinancURL = "@Url.Action("AgregarDescFinanc", "valorizaciondecomprobante", new { area = "Compras" })";
 		var quitarDescFinancURL = "@Url.Action("QuitarDescFinanc", "valorizaciondecomprobante", new { area = "Compras" })";
+		var actualizarValorizacionURL = "@Url.Action("ActualizarValorizacion", "valorizaciondecomprobante", new { area = "Compras" })";
+		var cargarListaDetalleRprURL = "@Url.Action("CargarListaDetalleRpr", "valorizaciondecomprobante", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/areas/valorcompte/valorizaciondecomprobante.js"></script>
 }

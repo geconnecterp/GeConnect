@@ -1,4 +1,6 @@
 ﻿
+using System.Runtime.Intrinsics.Arm;
+
 namespace gc.infraestructura.Dtos.Almacen.Request
 {
 	public class CompteValorizaRprDtosRequest
@@ -15,5 +17,9 @@ namespace gc.infraestructura.Dtos.Almacen.Request
 		public string json_detalle { get; set; } = string.Empty;
 		public string usu_id { get; set; } = string.Empty;
 		public bool guarda { get; set; } = false;
+		public string adm_id { get; set; } = string.Empty;
+		public bool confirma { get; set; } = false;
+		public bool dp { get; set; } = false;
+		public bool dc { get; set; } = false;
 	}
 }

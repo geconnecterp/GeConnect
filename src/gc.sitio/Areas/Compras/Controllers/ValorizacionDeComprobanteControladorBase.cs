@@ -72,5 +72,23 @@ namespace gc.sitio.Areas.Compras.Controllers
 				_context.HttpContext.Session.SetString("ComprobantesValorizaDescuentosFinancLista", json);
 			}
 		}
+
+		public List<CompteValorizaDetalleRprListaDto> ComprobantesValorizaDetalleRprLista
+		{
+			get
+			{
+				var json = _context.HttpContext.Session.GetString("ComprobantesValorizaDetalleRprLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<CompteValorizaDetalleRprListaDto>();
+				}
+				return JsonConvert.DeserializeObject<List<CompteValorizaDetalleRprListaDto>>(json);
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext.Session.SetString("ComprobantesValorizaDetalleRprLista", json);
+			}
+		}
 	}
 }

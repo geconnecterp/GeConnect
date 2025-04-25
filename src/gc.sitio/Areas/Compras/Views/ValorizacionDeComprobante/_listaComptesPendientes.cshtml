@@ -5,11 +5,11 @@
 
 <div class="input-group input-group-sm">
 	<div class="form-check form-check-inline form-switch mb-2">
-		<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkRel04" />
+		<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkRel04" checked/>
 		<label class="form-check-label" for="chkRel04" id="lbRel04"></label>
 	</div>
 </div>
 <div class="input-group  input-group-sm">
 	<span class="input-group-text">Nombre</span>
-	@Html.DropDownListFor(m => m.cm_compte, lst, "Seleccionar", new { @id = "listaComptesPend", disabled = "disabled", @class = "form-control inputEditable activable" })
+	@Html.DropDownListFor(m => m.cm_compte, lst, "Seleccionar", new { @id = "listaComptesPend", @class = "form-control inputEditable activable" })
 </div>

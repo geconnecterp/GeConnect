@@ -8,7 +8,7 @@
 		$("input#Rel04").prop("disabled", true);
 	});
 	$(document).on("change", "#listaComptesPend", ControlaListaCompteSelected);
-	$(document).on("click", "#btnAceptarDescFinanc", AceptarDescFinanc); 
+	$(document).on("click", "#btnAceptarDescFinanc", AceptarDescFinanc);
 	InicializarPantallaDeFiltros();
 });
 
@@ -55,20 +55,60 @@ function AceptarDescFinanc() {
 		}
 	}
 	if (esValido) {
-		//TODO MARCE : completar el metodo para agregar un elemento en la lista Desc Financ.
+		AbrirWaiting("Actualizando Descuentos Financieros...");
+		var cm_compte = $("#cm_compte").val();
+		var dia_movi = $("#dia_movi").val();
+		var dto_fijo = $("#chkNetoFijo")[0].checked;
+		var dto_sobre_total = $("#chkSobreTotal")[0].checked;
+		var tco_id = $("#tco_id").val();
+		var dto = $("#DescFinanc_dto").inputmask('unmaskedvalue');
+		var dto_importe = $("#DescFinanc_dto_importe").inputmask('unmaskedvalue');
+		var dtoc_id = $("#listaConcDescFinanc").val();
+		var dtoc_desc = $("#listaConcDescFinanc option:selected").text();
+		var data = { cm_compte, dia_movi, dto_fijo, dto_sobre_total, tco_id, dto, dto_importe, dtoc_id, dtoc_desc }
+		PostGenHtml(data, agregarDescFinancURL, function (obj) {
+			CerrarWaiting();
+			$("#divDescFinanc").html(obj);
+			AddEventListenerToGrid("tbListaDescFinanc");
+			LimpiarCamposEnDescFinanc();
+			ActualizarListaValorizaciones();
+		});
 	}
+}
+
+function ActualizarListaValorizaciones() {
+	AbrirWaiting("Actualizando Valorizaciones...");
+	var cm_compte = $("#cm_compte").val();
+	var data = { cm_compte }
+	PostGenHtml(data, actualizarValorizacionURL, function (obj) {
+		$("#divListaValorizacion").html(obj);
+		AddEventListenerToGrid("tbListaValorizacion");
+		CerrarWaiting();
+	});
+}
+
+function LimpiarCamposEnDescFinanc() {
+	$("#listaConcDescFinanc").val("");
+	$("#DescFinanc_dto").val(0);
+	$("#DescFinanc_dto_importe").val(0);
+	ActualizarEstadoChecks_SobreTotal();
 }
 
 function selectListaValorizacion(x) { }
 
 function selectListaDescFinanc(x) { }
 
+function selectListaDetalleRpr(x) { }
+
 function quitarDescFinanc(x) {
-	var cm_compte = $(e).attr("data-interaction");
-	var data = { cm_compte };
+	AbrirWaiting("Eliminando Descuentos Financieros...");
+	var item = $(x).attr("data-interaction");
+	var data = { item };
 	PostGenHtml(data, quitarDescFinancURL, function (obj) {
+		CerrarWaiting();
 		$("#divDescFinanc").html(obj);
 		AddEventListenerToGrid("tbListaDescFinanc");
+		ActualizarListaValorizaciones();
 	});
 }
 
@@ -123,9 +163,20 @@ function ControlaListaCompteSelected() {
 				});
 				ActualizarVisualizacionDeControlesABMDescFinanc();
 				AplicarMascarasEnInput_Section_DescFinanc();
+				ObtenerListaDetalleRpr();
 			}
 		});
 	}
+}
+
+function ObtenerListaDetalleRpr() {
+	AbrirWaiting("Obteniendo Detalles de Rpr...");
+	var data = {};
+	PostGenHtml(data, cargarListaDetalleRprURL, function (obj) {
+		CerrarWaiting();
+		$("#divDetalles").html(obj);
+		AddEventListenerToGrid("tbListaDetalleRpr");
+	});
 }
 
 function AplicarMascarasEnInput_Section_DescFinanc() {

@@ -1,0 +1,77 @@
+﻿@model TabDetalleRprModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+}
+<style>
+	thead th {
+		position: sticky;
+		top: 0px;
+	}
+</style>
+<div class="row" style="padding-top: 10px;">
+	<div id="divListaDetalleRpr">
+		<div class="table-responsive table-wrapper-400-full-width" id="containerListaDetalleRpr">
+			<table class="table table-bordered table-hover" id="tbListaDetalleRpr">
+				<thead class="table-dark">
+					<tr>
+						<th colspan="2" class="col-header-x-small align-center"></th>
+						<th colspan="9" class="col-header-x-small align-center">Precio OC y Cantidad RP</th>
+						<th colspan="9" class="col-header-x-small align-center">Factura</th>
+						<th colspan="2" class="col-header-x-small align-center">Valorización</th>
+					</tr>
+					<tr>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">ID</th>
+						<th style="width:10%;" class="col-header-small align-center tiny-row">Descripcion</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">P. Lista</th>@*Precio OC y Cantidad RP*@
+						<th style="width:5%;" class="col-header-small align-center tiny-row">D1</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">D2</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">D3</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">D4</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">Dpa</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">Boni.</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">Costo</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">Recibido</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">P. Lista</th>@*Factura*@
+						<th style="width:5%;" class="col-header-small align-center tiny-row">D1</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">D2</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">D3</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">D4</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">Dpa</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">Boni.</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">Costo</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">Cant. Fact.</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">DC</th>@*Factura*@
+						<th style="width:5%;" class="col-header-small align-center tiny-row">DP</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var item in Model.GrillaDetalleRpr.ListaDatos)
+					{
+						<tr onclick="selectListaDetalleRpr(this)">
+							<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.p_id)">@Model.GrillaDetalleRpr.FormatearDato(item.p_id, FormatDato.Ninguno)</td>
+							<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.p_desc)">@Model.GrillaDetalleRpr.FormatearDato(item.p_desc, FormatDato.Ninguno)</td>
+							<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.ocd_plista)">@Model.GrillaDetalleRpr.FormatearDato(item.ocd_plista, FormatDato.Monto)</td>
+							<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.ocd_dto1)">@Model.GrillaDetalleRpr.FormatearDato(item.ocd_dto1, FormatDato.Monto)</td>
+							<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.ocd_dto2)">@Model.GrillaDetalleRpr.FormatearDato(item.ocd_dto2, FormatDato.Monto)</td>
+							<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.ocd_dto3)">@Model.GrillaDetalleRpr.FormatearDato(item.ocd_dto3, FormatDato.Monto)</td>
+							<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.ocd_dto4)">@Model.GrillaDetalleRpr.FormatearDato(item.ocd_dto4, FormatDato.Monto)</td>
+							<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.ocd_dto_pa)">@Model.GrillaDetalleRpr.FormatearDato(item.ocd_dto_pa, FormatDato.Monto)</td>
+							<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.ocd_boni)">@Model.GrillaDetalleRpr.FormatearDato(item.ocd_boni, FormatDato.Monto)</td>
+							<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.ocd_pcosto)">@Model.GrillaDetalleRpr.FormatearDato(item.ocd_pcosto, FormatDato.Monto)</td>
+							<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_cantidad)">@Model.GrillaDetalleRpr.FormatearDato(item.rpd_cantidad, FormatDato.Monto)</td>
+							<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_plista)">@Model.GrillaDetalleRpr.FormatearDato(item.rpd_plista, FormatDato.Monto)</td>
+							<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_dto1)">@Model.GrillaDetalleRpr.FormatearDato(item.rpd_dto1, FormatDato.Monto)</td>
+							<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_dto2)">@Model.GrillaDetalleRpr.FormatearDato(item.rpd_dto2, FormatDato.Monto)</td>
+							<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_dto3)">@Model.GrillaDetalleRpr.FormatearDato(item.rpd_dto3, FormatDato.Monto)</td>
+							<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_dto4)">@Model.GrillaDetalleRpr.FormatearDato(item.rpd_dto4, FormatDato.Monto)</td>
+							<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_dto_pa)">@Model.GrillaDetalleRpr.FormatearDato(item.rpd_dto_pa, FormatDato.Monto)</td>
+							<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_boni)">@Model.GrillaDetalleRpr.FormatearDato(item.rpd_boni, FormatDato.Monto)</td>
+							<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_pcosto)">@Model.GrillaDetalleRpr.FormatearDato(item.rpd_pcosto, FormatDato.Monto)</td>
+							<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_cantidad_compte)">@Model.GrillaDetalleRpr.FormatearDato(item.rpd_cantidad_compte, FormatDato.Monto)</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>

@@ -9,53 +9,49 @@
 		top: 0px;
 	}
 </style>
-<div class="row">
-	<div class="table-responsive table-wrapper-400-full-width" id="containerListaValorizacion">
-		<table class="table table-bordered table-hover" id="tbListaValorizacion">
-			<thead class="table-dark">
-				<tr>
-					<th style="width:20%;" class="col-header-small align-center tiny-row">Comprobante</th>
-					<th style="width:5%;" class="col-header-small align-center tiny-row">No Gravado</th>
-					<th style="width:5%;" class="col-header-small align-center tiny-row">Exento</th>
-					<th style="width:5%;" class="col-header-small align-center tiny-row">Gravado</th>
-					<th style="width:5%;" class="col-header-small align-center tiny-row">IVA</th>
-					<th style="width:5%;" class="col-header-small align-center tiny-row">II</th>
-					<th style="width:5%;" class="col-header-small align-center tiny-row">Percep.</th>
-					<th style="width:5%;" class="col-header-small align-center tiny-row">Otros NG</th>
-					<th style="width:5%;" class="col-header-small align-center tiny-row">Total</th>
-					<th style="width:5%;" class="col-header-small align-center tiny-row"></th> @*columna check*@
-				</tr>
-			</thead>
-			<tbody>
-				@foreach (var item in Model.GrillaValoracion.ListaDatos)
-				{
-					var nombre = "chk" + item.cm_compte;
-					<tr onclick="selectListaValorizacion(this)">
-						<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_obs)">@Model.GrillaValoracion.FormatearDato(item.cm_obs, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_no_gravado)">@Model.GrillaValoracion.FormatearDato(item.cm_no_gravado, FormatDato.Monto)</td>
-						<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_exento)">@Model.GrillaValoracion.FormatearDato(item.cm_exento, FormatDato.Monto)</td>
-						<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_gravado)">@Model.GrillaValoracion.FormatearDato(item.cm_gravado, FormatDato.Monto)</td>
-						<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_iva)">@Model.GrillaValoracion.FormatearDato(item.cm_iva, FormatDato.Monto)</td>
-						<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_ii)">@Model.GrillaValoracion.FormatearDato(item.cm_ii, FormatDato.Monto)</td>
-						<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_percepciones)">@Model.GrillaValoracion.FormatearDato(item.cm_percepciones, FormatDato.Monto)</td>
-						<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_otro_ng)">@Model.GrillaValoracion.FormatearDato(item.cm_otro_ng, FormatDato.Monto)</td>
-						<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_total)">@Model.GrillaValoracion.FormatearDato(item.cm_total, FormatDato.Monto)</td>
-						@if (item.seleccionable)
-						{
-							<td><input type="checkbox" name=@nombre id="@nombre" /></td> @*00*@
-						}
-						else
-						{
-							<td><input type="checkbox" name=@nombre id="@nombre" disabled /></td> @*00*@	
-						}
+<div class="row" style="padding-top: 10px;">
+	@Html.Hidden("cm_compte", Model.DescFinanc.cm_compte)
+	@Html.Hidden("dia_movi", Model.DescFinanc.dia_movi)
+	@Html.Hidden("tco_id", Model.DescFinanc.tco_id)
+	<div id="divListaValorizacion">
+		<div class="table-responsive table-wrapper-400-full-width" id="containerListaValorizacion">
+			<table class="table table-bordered table-hover" id="tbListaValorizacion">
+				<thead class="table-dark">
+					<tr>
+						<th style="width:20%;" class="col-header-small align-center tiny-row">Comprobante</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">No Gravado</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">Exento</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">Gravado</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">IVA</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">II</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">Percep.</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">Otros NG</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">Total</th>
 					</tr>
-				}
-			</tbody>
-		</table>
+				</thead>
+				<tbody>
+					@foreach (var item in Model.GrillaValoracion.ListaDatos)
+					{
+						var nombre = "chk" + item.cm_compte;
+						<tr onclick="selectListaValorizacion(this)">
+							<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_compte_obs)">@Model.GrillaValoracion.FormatearDato(item.cm_compte_obs, FormatDato.Ninguno)</td>
+							<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_no_gravado)">@Model.GrillaValoracion.FormatearDato(item.cm_no_gravado, FormatDato.Monto)</td>
+							<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_exento)">@Model.GrillaValoracion.FormatearDato(item.cm_exento, FormatDato.Monto)</td>
+							<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_gravado)">@Model.GrillaValoracion.FormatearDato(item.cm_gravado, FormatDato.Monto)</td>
+							<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_iva)">@Model.GrillaValoracion.FormatearDato(item.cm_iva, FormatDato.Monto)</td>
+							<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_ii)">@Model.GrillaValoracion.FormatearDato(item.cm_ii, FormatDato.Monto)</td>
+							<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_percepciones)">@Model.GrillaValoracion.FormatearDato(item.cm_percepciones, FormatDato.Monto)</td>
+							<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_otro_ng)">@Model.GrillaValoracion.FormatearDato(item.cm_otro_ng, FormatDato.Monto)</td>
+							<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_total)">@Model.GrillaValoracion.FormatearDato(item.cm_total, FormatDato.Monto)</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
 	</div>
 </div>
 <div class="row">
-	<div class="col-md-4">
+	<div class="col-md-6">
 		@*Grilla Descuentos Financieros*@
 		<div class="row">
 			<div class="col-md-8" style="display: flex; align-items: center; text-align: justify; margin-top: 5px; margin-bottom: -15px;">
@@ -67,6 +63,7 @@
 				<table class="table table-bordered table-hover" id="tbListaDescFinanc">
 					<thead class="table-dark">
 						<tr>
+							<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">Item</th>
 							<th style="width:15%;" class="col-header-small align-center tiny-row">Neto Fijo</th>
 							<th style="width:15%;" class="col-header-small align-center tiny-row">Dto/Tot</th>
 							<th style="width:25%;" class="col-header-small align-center tiny-row">Concepto</th>
@@ -81,12 +78,27 @@
 							var nombre1 = "chkNetoFijo" + item.cm_compte;
 							var nombre2 = "chkDtoTot" + item.cm_compte;
 							<tr onclick="selectListaDescFinanc(this)">
-								<td class="@Model.GrillaValoracion.ObtenerClase(item.dto_fijo_bool)"><input type="checkbox" name=@nombre1 id="@nombre1" /></td>
-								<td class="@Model.GrillaValoracion.ObtenerClase(item.dto_sobre_total_bool)"><input type="checkbox" name=@nombre2 id="@nombre2" /></td>
-								<td class="@Model.GrillaValoracion.ObtenerClase(item.dtoc_desc)">@Model.GrillaDescuentosFin.FormatearDato(item.dtoc_desc, FormatDato.Ninguno)</td>
-								<td class="@Model.GrillaValoracion.ObtenerClase(item.dto)">@Model.GrillaValoracion.FormatearDato(item.dto, FormatDato.Monto)</td>
-								<td class="@Model.GrillaValoracion.ObtenerClase(item.dto_importe)">@Model.GrillaValoracion.FormatearDato(item.dto_importe, FormatDato.Monto)</td>
-								<td><a class="btn btn-xs btn-outline-dark" data-interaction="@item.cm_compte" onclick="quitarDescFinanc(this);"> <i class="bx bxs-trash"></i></a></td>
+								<td style="display:none;">@item.item</td>
+								@if (item.dto_fijo_bool)
+								{
+									<td class="@Model.GrillaDescuentosFin.ObtenerClase(item.dto_fijo_bool)"><input type="checkbox" name=@nombre1 id="@nombre1" checked disabled /></td>
+								}
+								else
+								{
+									<td class="@Model.GrillaDescuentosFin.ObtenerClase(item.dto_fijo_bool)"><input type="checkbox" name=@nombre1 id="@nombre1" disabled /></td>
+								}
+								@if (item.dto_sobre_total_bool)
+								{
+									<td class="@Model.GrillaDescuentosFin.ObtenerClase(item.dto_sobre_total_bool)"><input type="checkbox" name=@nombre2 id="@nombre2" checked disabled /></td>
+								}
+								else
+								{
+									<td class="@Model.GrillaDescuentosFin.ObtenerClase(item.dto_sobre_total_bool)"><input type="checkbox" name=@nombre2 id="@nombre2" disabled /></td>
+								}
+								<td class="@Model.GrillaDescuentosFin.ObtenerClase(item.dtoc_desc)">@Model.GrillaDescuentosFin.FormatearDato(item.dtoc_desc, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaDescuentosFin.ObtenerClase(item.dto)">@Model.GrillaValoracion.FormatearDato(item.dto, FormatDato.Monto)</td>
+								<td class="@Model.GrillaDescuentosFin.ObtenerClase(item.dto_importe)">@Model.GrillaValoracion.FormatearDato(item.dto_importe, FormatDato.Monto)</td>
+								<td><a class="btn btn-xs btn-outline-dark" data-interaction="@item.item" onclick="quitarDescFinanc(this);"> <i class="bx bxs-trash"></i></a></td>
 							</tr>
 						}
 					</tbody>
@@ -94,7 +106,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="col-md-4">
+	<div class="col-md-3">
 		@*Campos*@
 		<div class="row mt-1">
 			<div class="input-group input-group-sm">
@@ -127,7 +139,7 @@
 			</div>
 		</div>
 		<div id="divDescFinancDtoImporte" class="collapse">
-			<div class="row mt-1" id="divDescFinancDtoImporte">
+			<div class="row mt-1">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text fixed-lbl-for-abm-100">Neto Fijo:</span>
 					<input type="text" asp-for="DescFinanc.dto_importe" class="form-control activable inputEditable" />
@@ -146,7 +158,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="col-md-2">
+	<div class="col-md-1">
 		@*espacio*@
 	</div>
 	<div class="col-md-2">

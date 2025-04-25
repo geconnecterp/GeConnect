@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Org.BouncyCastle.Ocsp;
 
 namespace gc.sitio.Areas.Compras.Controllers
 {
@@ -108,12 +109,12 @@ namespace gc.sitio.Areas.Compras.Controllers
 				};
 				//Cargar Detalle de Productos RPR
 				var responseRpr = _cuentaServicio.ObtenerComprobantesDetalleRpr(req, TokenCookie);
+				ComprobantesValorizaDetalleRprLista = responseRpr;
 				var jsonResponseRpr = JsonConvert.SerializeObject(responseRpr, new JsonSerializerSettings());
 
 				//Cargar Detalle de Descuentos Financieros
 				var responseDtos = _cuentaServicio.ObtenerComprobantesDtos(req, TokenCookie);
 				ComprobantesValorizaDescuentosFinancLista = responseDtos;
-
 				var jsonResponseDtos = JsonConvert.SerializeObject(responseDtos, new JsonSerializerSettings());
 
 				//Cargar Datos Valorizados
@@ -126,7 +127,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 					json_detalle = jsonResponseRpr,
 					json_dtos = jsonResponseDtos,
 					usu_id = UserName,
-					guarda = false
+					guarda = false,
+					confirma = false,
+					dp = false,
+					dc = false,
+					adm_id = AdministracionId
 				};
 				var responseValorizar = _cuentaServicio.ObtenerComprobanteValorizaLista(reqValorizados, TokenCookie);
 
@@ -136,7 +141,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 				model.DescFinanc = new CompteValorizaDtosListaDto
 				{
 					dto_sobre_total = 'S',
-					dto_sobre_total_bool = true
+					dto_sobre_total_bool = true,
+					cm_compte = compteSeleccionado.cm_compte,
+					dia_movi = compteSeleccionado.dia_movi,
+					tco_id = compteSeleccionado.tco_id
 				};
 				///TODO MARCE: Seguir aca
 				return PartialView("_tabComprobante", model);
@@ -154,15 +162,162 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public IActionResult QuitarDescFinanc(string cm_compte)
+		public IActionResult CargarListaDetalleRpr()
+		{
+			var model = new TabDetalleRprModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+				{
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+				}
+				var grilla = ObtenerGridCoreSmart<CompteValorizaDetalleRprListaDto>(ComprobantesValorizaDetalleRprLista);
+				model.GrillaDetalleRpr = grilla;
+				return PartialView("_tabDetalleRpr", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public IActionResult AgregarDescFinanc(CompteValorizarAgregarDescFinanRequest request)
+		{
+			var model = new GridCoreSmart<CompteValorizaDtosListaDto>();
+			try
+			{
+				if (request != null)
+				{
+					var newItem = new CompteValorizaDtosListaDto
+					{
+						cm_compte = request.cm_compte,
+						dia_movi = request.dia_movi,
+						tco_id = request.tco_id,
+						item = 0,
+						dto = request.dto,
+						dto_importe = request.dto_importe,
+						dto_fijo = request.dto_fijo ? 'S' : 'N',
+						dto_sobre_total = request.dto_sobre_total ? 'S' : 'N',
+						dtoc_id = request.dtoc_id,
+						dtoc_desc = request.dtoc_desc,
+						dto_fijo_bool = request.dto_fijo,
+						dto_sobre_total_bool = request.dto_sobre_total
+					};
+					var listaDescuentosFinancTemp = ComprobantesValorizaDescuentosFinancLista;
+					var maxIdx = 0;
+					if (listaDescuentosFinancTemp.Count > 0)
+						maxIdx = listaDescuentosFinancTemp.Max(x => x.item);
+
+					maxIdx++;
+					newItem.item = maxIdx;
+					listaDescuentosFinancTemp.Add(newItem);
+					ComprobantesValorizaDescuentosFinancLista = listaDescuentosFinancTemp;
+					model = ObtenerGridCoreSmart<CompteValorizaDtosListaDto>(ComprobantesValorizaDescuentosFinancLista);
+					//TODO MARCE: Recalcular Valorizacion con el nuevo json de descuentos financ.
+				}
+
+				return PartialView("_listaDescFinanc", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public IActionResult ActualizarValorizacion(string cm_compte)
+		{
+			var model = new GridCoreSmart<CompteValorizaListaDto>();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+				{
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+				}
+				model = ObtenerValorizacionActualizada(cm_compte);
+				return PartialView("_listaValorizacion", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		private GridCoreSmart<CompteValorizaListaDto> ObtenerValorizacionActualizada(string cm_compte)
+		{
+			var model = new GridCoreSmart<CompteValorizaListaDto>();
+			try
+			{
+				//Armado de Request, que es común para ambos servicios
+				var compteSeleccionado = ComprobantesPendientesDeValorizarLista.Where(x => x.cm_compte.Equals(cm_compte)).First();
+				if (compteSeleccionado == null)
+					return model;
+
+				//Cargar Detalle de Productos RPR
+				var jsonResponseRpr = JsonConvert.SerializeObject(ComprobantesValorizaDetalleRprLista, new JsonSerializerSettings());
+
+				//Cargar Detalle de Descuentos Financieros
+				var jsonResponseDtos = JsonConvert.SerializeObject(ComprobantesValorizaDescuentosFinancLista, new JsonSerializerSettings());
+
+				//Cargar Datos Valorizados
+				var reqValorizados = new CompteValorizaRequest()
+				{
+					cm_compte = compteSeleccionado.cm_compte,
+					cta_id = compteSeleccionado.cta_id,
+					dia_movi = compteSeleccionado.dia_movi,
+					tco_id = compteSeleccionado.tco_id,
+					json_detalle = jsonResponseRpr,
+					json_dtos = jsonResponseDtos,
+					usu_id = UserName,
+					guarda = false,
+					confirma = false,
+					dp = false,
+					dc = false,
+					adm_id = AdministracionId
+				};
+				var responseValorizar = _cuentaServicio.ObtenerComprobanteValorizaLista(reqValorizados, TokenCookie);
+				model = ObtenerGridCoreSmart<CompteValorizaListaDto>(responseValorizar);
+				return model;
+			}
+			catch (Exception ex)
+			{
+				return model;
+			}
+		}
+
+		public IActionResult QuitarDescFinanc(int item)
 		{
 			var model = new GridCoreSmart<CompteValorizaDtosListaDto>();
 			try
 			{
 				if (ComprobantesValorizaDescuentosFinancLista != null && ComprobantesValorizaDescuentosFinancLista.Count > 0)
 				{
+					var idx = 1;
 					var listaDescuentosFinancTemp = ComprobantesValorizaDescuentosFinancLista;
-					var listaDescuentosFinanc = listaDescuentosFinancTemp.Where(x => !x.cm_compte.Equals(cm_compte)).ToList();
+					var listaDescuentosFinanc = listaDescuentosFinancTemp.Where(x => !x.item.Equals(item)).ToList();
+					listaDescuentosFinanc.ForEach(x => x.item = idx++);
 					ComprobantesValorizaDescuentosFinancLista = listaDescuentosFinanc;
 					model = ObtenerGridCoreSmart<CompteValorizaDtosListaDto>(ComprobantesValorizaDescuentosFinancLista);
 					//TODO MARCE: Recalcular Valorizacion con el nuevo json de descuentos financ.

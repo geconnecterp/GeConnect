@@ -15,35 +15,5 @@ namespace gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra
 		public string dtoc_desc { get; set; } = string.Empty;
 		public bool dto_fijo_bool { get; set; } = false;
 		public bool dto_sobre_total_bool { get; set; } = false;
-
-		//private bool _dto_fijo_bool;
-
-		//public bool dto_fijo_bool
-		//{
-		//	get 
-		//	{ 
-		//		return dto_fijo.Equals("S"); 
-		//	}
-		//	set 
-		//	{ 
-		//		_dto_fijo_bool = value;
-		//		dto_fijo = _dto_fijo_bool == true ? 'S' : 'N';
-		//	}
-		//}
-		//private bool _dto_sobre_total_bool;
-
-		//public bool dto_sobre_total_bool
-		//{
-		//	get 
-		//	{ 
-		//		return dto_sobre_total.Equals("S"); 
-		//	}
-		//	set 
-		//	{ 
-		//		_dto_sobre_total_bool = value;
-		//		dto_sobre_total = _dto_sobre_total_bool == true ? 'S' : 'N';
-		//	}
-		//}
-
 	}
 }
