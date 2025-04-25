@@ -11,7 +11,7 @@
 <div class="card">
     <div class="card-body">
         <div class="table-responsive text-nowrap  table-wrapper-500">
-            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridCmpteTot">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridPagoDet">
                 <thead class="table-dark">
                     <tr class="header">
                         <th class="text-sm-center" scope="col"></th>
@@ -30,7 +30,7 @@
                             //repito nuevamente esta linea porque al agregar un registro adicional en la tabla tengo que continuar con el orden de color intercalado.
                             if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
                         }
-                        <tr class="@clase" >
+                        <tr class="@clase" onclick="selectReg(this,'tbGridPagoDet')">
                             <td class="@Model.ObtenerClase(item.Concepto)">@Model.FormatearDato(item.Concepto,FormatDato.Ninguno)</td>
                             <td class="@Model.ObtenerClase(item.Cc_importe)">@Model.FormatearDato(item.Cc_importe, FormatDato.Monto)</td>
                         </tr>

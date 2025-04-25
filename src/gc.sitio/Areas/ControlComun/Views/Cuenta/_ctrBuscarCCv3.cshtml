@@ -5,15 +5,15 @@
 }
 
 <div class="row mt-2" id="controlCta@(nombreControl)" style="display:none;">
-    <div class="col-12">
+    <div class="col-md-6 col-sm-12 m-0">
         <div class="input-group">
             <span class="input-group-text">Cuenta: </span>
-            <input type="text" id="cuentaId@(nombreControl)" class="form-control" style="width:10%;" readonly />@*aca*@
-
-            @*  <button type="button" class="btn btn-icon btn-outline-primary" id="btnBuscarCCv2@(nombreControl)" title="Buscar cuenta comercial">
-                <span class="tf-icons bx bx-search"></span>
-            </button> *@
-            <input type="text" class="form-control" style="width: 50%;" id="rrss@(nombreControl)" readonly />@*aca*@
+            <input type="text" id="cuentaId@(nombreControl)" class="form-control"  readonly />@*aca*@
+        </div>
+    </div>
+    <div class="col-md-6 col-sm-12 m-0">
+        <div class="input-group">
+            <input type="text" class="form-control text-truncate"  id="rrss@(nombreControl)" readonly />@*aca*@
             <i class="bx bx-user bx-md" id="iconTipoCCv2@(nombreControl)"></i> @*aca*@
             <input type="hidden" id="controlConsultaCambio@(nombreControl)" value="false" />
         </div>
@@ -31,11 +31,11 @@
 
         if(tipoSeleccionado@(nombreControl)==="C"){
             $("#iconTipoCCv2@(nombreControl)").addClass("text-success");
-        }       
+        }
         else {
             $("#iconTipoCCv2@(nombreControl)").addClass("text-danger");
         }
-        
+
         $("#cuentaId@(nombreControl)").val(consCta);
         $("#rrss@(nombreControl)").val(consRrss);
 

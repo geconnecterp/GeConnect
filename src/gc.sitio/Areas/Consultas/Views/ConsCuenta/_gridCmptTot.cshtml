@@ -28,7 +28,7 @@
                         if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
                         ft += item.Cm_total;
                         nc += item.Nc_cm_total;
-                        <tr class="@clase" onclick="SeleccionarPeriodo(this,'tbGridCmpteTot')">
+                        <tr class="@clase" onclick="selectReg(this,'tbGridCmpteTot')" ondblclick="SeleccionarPeriodo(this,'tbGridCmpteTot')">
                             <td class="@Model.ObtenerClase(item.Periodo)">@Model.FormatearDato(item.Periodo,FormatDato.Ninguno)</td>
                             <td class="@Model.ObtenerClase(item.Cm_neto)">@Model.FormatearDato(item.Cm_neto, FormatDato.Monto)</td>
                             <td class="@Model.ObtenerClase(item.Cm_total)">@Model.FormatearDato(item.Cm_total, FormatDato.Monto)</td>

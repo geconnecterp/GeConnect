@@ -38,8 +38,8 @@
                     @foreach (var item in Model.ListaDatos)
                     {
                         if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-                        
-                        <tr class="@clase">
+
+                        <tr class="@clase" onclick="selectReg(this,'tbGridRpProvDet')">
                             <td class="@Model.ObtenerClase(item.P_id)">@Model.FormatearDato(item.P_id,FormatDato.Ninguno)</td>
                             <td class="@Model.ObtenerClase(item.P_desc)">@Model.FormatearDato(item.P_desc, FormatDato.Ninguno)</td>
                             <td class="@Model.ObtenerClase(item.Oc_compte)">@Model.FormatearDato(item.Oc_compte, FormatDato.Ninguno)</td>

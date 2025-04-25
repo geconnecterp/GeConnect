@@ -30,7 +30,7 @@
                     {
                         if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
-                        <tr class="@clase" >
+                        <tr class="@clase" onclick="selectReg(this,'tbGridVto')">
                             <td class="@Model.ObtenerClase(item.Cv_fecha_carga)">@Model.FormatearDato(item.Cv_fecha_carga,FormatDato.Fecha)</td>
                             <td class="@Model.ObtenerClase(item.Dia_movi)">@Model.FormatearDato(item.Dia_movi,FormatDato.Ninguno)</td>
                             <td class="@Model.ObtenerClase(item.Tco_desc)">@Model.FormatearDato(item.Tco_desc, FormatDato.Ninguno)</td>

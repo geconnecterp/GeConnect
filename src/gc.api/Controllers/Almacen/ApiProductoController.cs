@@ -23,7 +23,7 @@ namespace gc.api.Controllers.Almacen
     using gc.infraestructura.Dtos.Gen;
     using gc.infraestructura.Dtos.General;
     using gc.infraestructura.Dtos.Productos;
-	using gc.infraestructura.EntidadesComunes.Options;
+    using gc.infraestructura.EntidadesComunes.Options;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json;
@@ -31,7 +31,7 @@ namespace gc.api.Controllers.Almacen
     using System.Collections.Generic;
     using System.Net;
     using System.Reflection;
-	using System.Threading.Tasks;
+    using System.Threading.Tasks;
     using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 
     [Authorize]
@@ -82,13 +82,13 @@ namespace gc.api.Controllers.Almacen
             var metadata = new MetadataGrid
             {
                 TotalCount = reg.Total_Registros,
-                PageSize = filters.Registros.Value,
-                CurrentPage = filters.Pagina.Value,
+                PageSize = filters.Registros ?? 0,
+                CurrentPage = filters.Pagina ?? 0,
                 TotalPages = reg.Total_Paginas,
-                HasNextPage = filters.Pagina.Value < reg.Total_Paginas,
-                HasPreviousPage = filters.Pagina.Value > 1,
-                //NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(ProductoListaBuscar)) ?? "").ToString(),
-                //PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(ProductoListaBuscar)) ?? "").ToString(),
+                HasNextPage = (filters.Pagina ?? 0) < reg.Total_Paginas,
+                HasPreviousPage = (filters.Pagina ?? 0) > 1,
+                NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getproductoss)) ?? string.Empty).ToString(),
+                PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getproductoss)) ?? string.Empty).ToString(),
 
             };
 
@@ -118,8 +118,8 @@ namespace gc.api.Controllers.Almacen
                 TotalPages = productoss.TotalPages,
                 HasNextPage = productoss.HasNextPage,
                 HasPreviousPage = productoss.HasPreviousPage,
-                NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getproductoss))).ToString(),
-                PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getproductoss))).ToString(),
+                NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getproductoss)) ?? string.Empty).ToString(),
+                PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getproductoss)) ?? string.Empty).ToString(),
 
             };
 
@@ -878,227 +878,227 @@ namespace gc.api.Controllers.Almacen
             return Ok(response);
         }
 
-		[HttpPost]
-		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoParaOcDto>))]
-		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
-		[Route("[action]")]
-		public IActionResult CargarProductosDeOC(CargarProductoParaOcRequest request)
-		{
-			ApiResponse<List<ProductoParaOcDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			var res = _productosSv.CargarProductosDeOC(request);
-			response = new ApiResponse<List<ProductoParaOcDto>>(res);
-			return Ok(response);
-		}
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoParaOcDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult CargarProductosDeOC(CargarProductoParaOcRequest request)
+        {
+            ApiResponse<List<ProductoParaOcDto>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.CargarProductosDeOC(request);
+            response = new ApiResponse<List<ProductoParaOcDto>>(res);
+            return Ok(response);
+        }
 
-		[HttpGet]
-		[Route("[action]")]
-		public IActionResult CargarTopesDeOC(string admId)
-		{
-			ApiResponse<List<OrdenDeCompraTopeDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			var res = _productosSv.CargarTopesDeOC(admId);
-			response = new ApiResponse<List<OrdenDeCompraTopeDto>>(res);
-			return Ok(response);
-		}
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult CargarTopesDeOC(string admId)
+        {
+            ApiResponse<List<OrdenDeCompraTopeDto>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.CargarTopesDeOC(admId);
+            response = new ApiResponse<List<OrdenDeCompraTopeDto>>(res);
+            return Ok(response);
+        }
 
-		[HttpPost]
-		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<OrdenDeCompraConceptoDto>))]
-		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
-		[Route("[action]")]
-		public IActionResult CargarResumenDeOC(CargarResumenDeOCRequest request)
-		{
-			ApiResponse<List<OrdenDeCompraConceptoDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			var res = _productosSv.CargarResumenDeOC(request);
-			response = new ApiResponse<List<OrdenDeCompraConceptoDto>>(res);
-			return Ok(response);
-		}
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<OrdenDeCompraConceptoDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult CargarResumenDeOC(CargarResumenDeOCRequest request)
+        {
+            ApiResponse<List<OrdenDeCompraConceptoDto>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.CargarResumenDeOC(request);
+            response = new ApiResponse<List<OrdenDeCompraConceptoDto>>(res);
+            return Ok(response);
+        }
 
-		[HttpPost]
-		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
-		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
-		[Route("[action]")]
-		public IActionResult ConfirmarOC(ConfirmarOCRequest request)
-		{
-			ApiResponse<RespuestaDto> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			var res = _productosSv.ConfirmarOC(request);
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult ConfirmarOC(ConfirmarOCRequest request)
+        {
+            ApiResponse<RespuestaDto> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.ConfirmarOC(request);
 
             response = new ApiResponse<RespuestaDto>(res.First());
 
-			return Ok(response);
-		}
+            return Ok(response);
+        }
 
-		[HttpGet]
-		[Route("[action]")]
-		public IActionResult ObtenerOrdenDeCompraPorOcCompte(string ocCompte)
-		{
-			ApiResponse<List<OrdenDeCompraDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			var res = _productosSv.ObtenerOrdenDeCompraPorOcCompte(ocCompte);
-			response = new ApiResponse<List<OrdenDeCompraDto>>(res);
-			return Ok(response);
-		}
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult ObtenerOrdenDeCompraPorOcCompte(string ocCompte)
+        {
+            ApiResponse<List<OrdenDeCompraDto>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.ObtenerOrdenDeCompraPorOcCompte(ocCompte);
+            response = new ApiResponse<List<OrdenDeCompraDto>>(res);
+            return Ok(response);
+        }
 
-		[HttpPost]
-		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<OrdenDeCompraConsultaDto>))]
-		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
-		[Route("[action]")]
-		public IActionResult CargarOrdenDeCompraConsultaLista(BuscarOrdenesDeCompraRequest request)
-		{
-			OrdenDeCompraConsultaDto reg = new();
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			var res = _productosSv.CargarOrdenDeCompraConsultaLista(request);
-			if (res.Count > 0)
-			{
-				reg = res.First();
-			}
-			// presentando en el header información basica sobre la paginación
-			var metadata = new MetadataGrid
-			{
-				TotalCount = reg.total_registros,
-				PageSize = request.Registros.Value,
-				CurrentPage = request.Pagina.Value,
-				TotalPages = reg.total_paginas,
-				HasNextPage = request.Pagina.Value < reg.total_paginas,
-				HasPreviousPage = request.Pagina.Value > 1,
-				NextPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(CargarOrdenDeCompraConsultaLista)) ?? "").ToString(),
-				PreviousPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(CargarOrdenDeCompraConsultaLista)) ?? "").ToString(),
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<OrdenDeCompraConsultaDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult CargarOrdenDeCompraConsultaLista(BuscarOrdenesDeCompraRequest request)
+        {
+            OrdenDeCompraConsultaDto reg = new();
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.CargarOrdenDeCompraConsultaLista(request);
+            if (res.Count > 0)
+            {
+                reg = res.First();
+            }
+            // presentando en el header información basica sobre la paginación
+            var metadata = new MetadataGrid
+            {
+                TotalCount = reg.total_registros,
+                PageSize = request.Registros.Value,
+                CurrentPage = request.Pagina.Value,
+                TotalPages = reg.total_paginas,
+                HasNextPage = request.Pagina.Value < reg.total_paginas,
+                HasPreviousPage = request.Pagina.Value > 1,
+                NextPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(CargarOrdenDeCompraConsultaLista)) ?? "").ToString(),
+                PreviousPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(CargarOrdenDeCompraConsultaLista)) ?? "").ToString(),
 
-			};
+            };
 
-			var response = new ApiResponse<IEnumerable<OrdenDeCompraConsultaDto>>(res)
-			{
-				Meta = metadata
-			};
-			Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
-			return Ok(response);
-		}
+            var response = new ApiResponse<IEnumerable<OrdenDeCompraConsultaDto>>(res)
+            {
+                Meta = metadata
+            };
+            Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
+            return Ok(response);
+        }
 
-		[HttpGet]
-		[Route("[action]")]
-		public IActionResult CargarDetalleDeOC(string oc_compte)
-		{
-			ApiResponse<List<OrdenDeCompraDetalleDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			var res = _productosSv.CargarDetalleDeOC(oc_compte);
-			response = new ApiResponse<List<OrdenDeCompraDetalleDto>>(res);
-			return Ok(response);
-		}
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult CargarDetalleDeOC(string oc_compte)
+        {
+            ApiResponse<List<OrdenDeCompraDetalleDto>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.CargarDetalleDeOC(oc_compte);
+            response = new ApiResponse<List<OrdenDeCompraDetalleDto>>(res);
+            return Ok(response);
+        }
 
-		[HttpGet]
-		[Route("[action]")]
-		public IActionResult CargarRprAsociadaDeOC(string oc_compte)
-		{
-			ApiResponse<List<OrdenDeCompraRprAsociadasDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			var res = _productosSv.CargarRprAsociadaDeOC(oc_compte);
-			response = new ApiResponse<List<OrdenDeCompraRprAsociadasDto>>(res);
-			return Ok(response);
-		}
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult CargarRprAsociadaDeOC(string oc_compte)
+        {
+            ApiResponse<List<OrdenDeCompraRprAsociadasDto>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.CargarRprAsociadaDeOC(oc_compte);
+            response = new ApiResponse<List<OrdenDeCompraRprAsociadasDto>>(res);
+            return Ok(response);
+        }
 
         [HttpPut]
-		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
-		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
-		[Route("[action]")]
-		public IActionResult ModificarOC(ModificarOCRequest request)
-		{
-			ApiResponse<RespuestaDto> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			var res = _productosSv.ModificarOC(request);
-			response = new ApiResponse<RespuestaDto>(res.First());
-			return Ok(response);
-		}
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult ModificarOC(ModificarOCRequest request)
+        {
+            ApiResponse<RespuestaDto> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.ModificarOC(request);
+            response = new ApiResponse<RespuestaDto>(res.First());
+            return Ok(response);
+        }
 
-		[HttpPost]
-		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoNCPIDto>))]
-		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
-		[Route("[action]")]
-		public IActionResult NCPICargarListaDeProductosPag(NCPICargarListaDeProductosRequest request)
-		{
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoNCPIDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult NCPICargarListaDeProductosPag(NCPICargarListaDeProductosRequest request)
+        {
             ProductoNCPIDto reg = new ProductoNCPIDto();
-			//ApiResponse<List<ProductoNCPIDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			var res = _productosSv.NCPICargarListaDeProductos(request);
-			if (res.Count > 0)
-			{
-				reg = res.First();
-			}
-			// presentando en el header información basica sobre la paginación
-			var metadata = new MetadataGrid
-			{
-				TotalCount = reg.total_registros,
-				PageSize = request.Registros.Value,
-				CurrentPage = request.Pagina.Value,
-				TotalPages = reg.total_paginas,
-				HasNextPage = request.Pagina.Value < reg.total_paginas,
-				HasPreviousPage = request.Pagina.Value > 1,
-				NextPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(NCPICargarListaDeProductosPag)) ?? "").ToString(),
-				PreviousPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(NCPICargarListaDeProductosPag)) ?? "").ToString(),
+            //ApiResponse<List<ProductoNCPIDto>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.NCPICargarListaDeProductos(request);
+            if (res.Count > 0)
+            {
+                reg = res.First();
+            }
+            // presentando en el header información basica sobre la paginación
+            var metadata = new MetadataGrid
+            {
+                TotalCount = reg.total_registros,
+                PageSize = request.Registros.Value,
+                CurrentPage = request.Pagina.Value,
+                TotalPages = reg.total_paginas,
+                HasNextPage = request.Pagina.Value < reg.total_paginas,
+                HasPreviousPage = request.Pagina.Value > 1,
+                NextPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(NCPICargarListaDeProductosPag)) ?? "").ToString(),
+                PreviousPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(NCPICargarListaDeProductosPag)) ?? "").ToString(),
 
-			};
+            };
 
-			var response = new ApiResponse<IEnumerable<ProductoNCPIDto>>(res)
-			{
-				Meta = metadata
-			};
-			//response = new ApiResponse<List<ProductoNCPIDto>>(res);
-			Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
-			return Ok(response);
-		}
+            var response = new ApiResponse<IEnumerable<ProductoNCPIDto>>(res)
+            {
+                Meta = metadata
+            };
+            //response = new ApiResponse<List<ProductoNCPIDto>>(res);
+            Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
+            return Ok(response);
+        }
 
-		[HttpGet]
-		//[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<OrdenDeCompraListDto>))]
-		//[ProducesResponseType((int)HttpStatusCode.BadRequest)]
-		[Route("[action]")]
-		public IActionResult CargarOrdenesDeCompraList(string ctaId, string admId, string usuId)
-		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			List<OrdenDeCompraListDto> oc = _productosSv.CargarOrdenesDeCompraList(ctaId, admId, usuId);
-			var lista = _mapper.Map<List<OrdenDeCompraListDto>>(oc);
+        [HttpGet]
+        //[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<OrdenDeCompraListDto>))]
+        //[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult CargarOrdenesDeCompraList(string ctaId, string admId, string usuId)
+        {
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            List<OrdenDeCompraListDto> oc = _productosSv.CargarOrdenesDeCompraList(ctaId, admId, usuId);
+            var lista = _mapper.Map<List<OrdenDeCompraListDto>>(oc);
 
-			var response = new ApiResponse<List<OrdenDeCompraListDto>>(lista);
-			return Ok(response);
-		}
+            var response = new ApiResponse<List<OrdenDeCompraListDto>>(lista);
+            return Ok(response);
+        }
 
-		[HttpPost]
-		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoNCPIDto>))]
-		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
-		[Route("[action]")]
-		public IActionResult NCPICargarListaDeProductosPag2(NCPICargarListaDeProductos2Request request)
-		{
-			ProductoNCPIDto reg = new();
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
-			var res = _productosSv.NCPICargarListaDeProductos2(request);
-			if (res.Count > 0)
-			{
-				reg = res.First();
-			}
-			// presentando en el header información basica sobre la paginación
-			var metadata = new MetadataGrid
-			{
-				TotalCount = reg.total_registros,
-				PageSize = request.Registros.Value,
-				CurrentPage = request.Pagina.Value,
-				TotalPages = reg.total_paginas,
-				HasNextPage = request.Pagina.Value < reg.total_paginas,
-				HasPreviousPage = request.Pagina.Value > 1,
-				NextPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(NCPICargarListaDeProductosPag2)) ?? "").ToString(),
-				PreviousPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(NCPICargarListaDeProductosPag2)) ?? "").ToString(),
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoNCPIDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult NCPICargarListaDeProductosPag2(NCPICargarListaDeProductos2Request request)
+        {
+            ProductoNCPIDto reg = new();
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _productosSv.NCPICargarListaDeProductos2(request);
+            if (res.Count > 0)
+            {
+                reg = res.First();
+            }
+            // presentando en el header información basica sobre la paginación
+            var metadata = new MetadataGrid
+            {
+                TotalCount = reg.total_registros,
+                PageSize = request.Registros.Value,
+                CurrentPage = request.Pagina.Value,
+                TotalPages = reg.total_paginas,
+                HasNextPage = request.Pagina.Value < reg.total_paginas,
+                HasPreviousPage = request.Pagina.Value > 1,
+                NextPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(NCPICargarListaDeProductosPag2)) ?? "").ToString(),
+                PreviousPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(NCPICargarListaDeProductosPag2)) ?? "").ToString(),
 
-			};
+            };
 
-			var response = new ApiResponse<IEnumerable<ProductoNCPIDto>>(res)
-			{
-				Meta = metadata
-			};
-			//response = new ApiResponse<List<ProductoNCPIDto>>(res);
-			Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
-			return Ok(response);
-		}
+            var response = new ApiResponse<IEnumerable<ProductoNCPIDto>>(res)
+            {
+                Meta = metadata
+            };
+            //response = new ApiResponse<List<ProductoNCPIDto>>(res);
+            Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
+            return Ok(response);
+        }
 
-		[HttpPost]
+        [HttpPost]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<NCPICargaPedidoResponse>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
@@ -1271,9 +1271,9 @@ namespace gc.api.Controllers.Almacen
                 throw new NegocioException("No se recepcionó que Sucursal Administrativa es la que se desea consultar.");
             }
 
-            DateTime? desde = fecD==0?null: new DateTime(fecD);
-            DateTime? hasta = fecH==0?null:new DateTime(fecH);
-           
+            DateTime? desde = fecD == 0 ? null : new DateTime(fecD);
+            DateTime? hasta = fecH == 0 ? null : new DateTime(fecH);
+
             var res = _productosSv.ConsultarUL(tipo, admId, desde, hasta);
             return Ok(new ApiResponse<List<ConsULDto>>(res));
         }
@@ -1323,7 +1323,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult ObtenerMedidas()
         {
             var res = _productosSv.ObtenerMedidas();
-            return Ok(new ApiResponse<List<MedidaDto>>(res));   
+            return Ok(new ApiResponse<List<MedidaDto>>(res));
         }
 
         [HttpGet]
@@ -1356,13 +1356,13 @@ namespace gc.api.Controllers.Almacen
 
         [HttpGet]
         [Route("[action]")]
-        public IActionResult BuscarBarrado(string p_id,string barradoId)
+        public IActionResult BuscarBarrado(string p_id, string barradoId)
         {
             if (string.IsNullOrEmpty(barradoId))
             {
                 return BadRequest("No se recepcionó el identificador del barrado");
             }
-            var res = _productosSv.BuscarBarrado(p_id,barradoId);
+            var res = _productosSv.BuscarBarrado(p_id, barradoId);
             return Ok(new ApiResponse<ProductoBarradoDto>(res));
         }
 
@@ -1381,7 +1381,7 @@ namespace gc.api.Controllers.Almacen
 
         [HttpGet]
         [Route("[action]")]
-        public IActionResult BuscaLimite(string p_id,string adm_id)
+        public IActionResult BuscaLimite(string p_id, string adm_id)
         {
             if (string.IsNullOrEmpty(p_id))
             {
@@ -1393,7 +1393,7 @@ namespace gc.api.Controllers.Almacen
                 return BadRequest("No se recepcionó la sucursal");
             }
 
-            var res = _productosSv.ObtenerLimiteStkDato(p_id,adm_id);
+            var res = _productosSv.ObtenerLimiteStkDato(p_id, adm_id);
 
             return Ok(new ApiResponse<LimiteStkDto>(res));
         }
