@@ -55,7 +55,7 @@
                             ft_iva += item.Cm_iva;
                             ft_tot += item.Cm_total;
                         }
-                        <tr class="@clase" >
+                        <tr class="@clase" onclick="selectReg(this,'tbGridCmpteDet')">
                             <td class="@Model.ObtenerClase(item.Cm_fecha)">@Model.FormatearDato(item.Cm_fecha,FormatDato.Fecha)</td>
                             @{
                                 string cmpt = $"({item.Tco_id}) {item.Cm_compte}";

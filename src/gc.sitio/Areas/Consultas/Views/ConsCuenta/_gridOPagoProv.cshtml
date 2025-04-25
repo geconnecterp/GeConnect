@@ -23,7 +23,7 @@
                     @foreach (var item in Model.ListaDatos)
                     {
                         if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-                        <tr class="@clase" onclick="SeleccionarPeriodo(this,'tbGridOpProv')">
+                        <tr class="@clase" onclick="selectReg(this,'tbGridOpProv')" ondblclick="SeleccionarPeriodo(this,'tbGridOpProv')">
                             <td class="@Model.ObtenerClase(item.Op_compte)">@Model.FormatearDato(item.Op_compte,FormatDato.Ninguno)</td>
                             <td class="@Model.ObtenerClase(item.Opt_desc)">@Model.FormatearDato(item.Opt_desc, FormatDato.Ninguno)</td>
                             <td class="@Model.ObtenerClase(item.Op_fecha)">@Model.FormatearDato(item.Op_fecha, FormatDato.Fecha)</td>

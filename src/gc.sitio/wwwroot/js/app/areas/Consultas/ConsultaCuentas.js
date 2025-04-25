@@ -1,4 +1,5 @@
-﻿//variables de inicialización de aplicación
+﻿
+//variables de inicialización de aplicación
 var tipoCta = "T";
 //Estas variables se asignan al selecciona la cuenta en el autocompletar
 var consCta = "";
@@ -130,6 +131,16 @@ $(function () {
                     consRrss = ui.item.label;
                     consTipo = ui.item.tipo;
                     $("#controlConsultaCambio" + nnControlCta01).val(true);
+
+                    //se presenta u ocultan pagos y recepciones
+                    if (consTipo === "P") {
+                        $("#BtnLiTab04").show();
+                        $("#BtnLiTab05").show();
+                    } else {
+                        $("#BtnLiTab04").hide();
+                        $("#BtnLiTab05").hide();
+                    }
+
                     //no hacemos trigger como antes, ejecutamos el metodo aislado
                     ctrlconsultacambio();
 
@@ -137,18 +148,7 @@ $(function () {
                 }
             }
         }).data("ui-autocomplete")._renderItem = function (ul, item) {
-            //let bgColor = "";
 
-            //if (item.prov === "P") {
-            //    bgColor = "#fff8dc"; // light beige/dorado
-            //} else if (item.prov === "E") {
-            //    bgColor = "#dceeff"; // azul suave
-            //}
-
-            //return $("<li>")
-            //    .css("background-color", bgColor)
-            //    .append($("<div>").text(item.label))
-            //    .appendTo(ul);
             let className = "autocomplete-tipo-default";
 
             if (item.tipo === "P") {

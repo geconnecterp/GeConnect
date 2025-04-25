@@ -21,30 +21,23 @@
     </li>
     <li class="nav-item" role="presentation" id="liTab05">
         <button type="button" id="BtnLiTab05" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navLiTab05" aria-controls="navLiTab05" aria-selected="false" tabindex="-1">
-            RECEPCIONES 
+            RECEPCIONES
         </button>
     </li>
-@*     <li class="nav-item" role="presentation" id="liTab06">
-        <button type="button" id="BtnLiTab06" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navLiTab06" aria-controls="navLiTab06" aria-selected="false" tabindex="-1">
-            VENTAS
-        </button>
-    </li>
-    <li class="nav-item" role="presentation" id="liTab07">
-        <button type="button" id="BtnLiTab07" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navLiTab07" aria-controls="navLiTab07" aria-selected="false" tabindex="-1">
-            COMPRAS
-        </button>
-    </li> *@
 </ul>
 <div class="tab-content">
     <div class="tab-pane fade show active" id="navLiTab01" role="tabpanel">
         <div class="row">
-            <div class="col-md-5">
+            <div class="col-md-3 col-sm-6">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text">Desde:</span>
                     <input type="date" class="form-control" id="fechaD" />
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="input-group input-group-sm">
                     <button type="button" class="btn btn-success" id="btnTraerCtaCte"><i class="bx bx-play"></i></button>
                     <button type="button" class="btn btn-warning" id="btnImprimirCtaCte"><i class="bx bx-printer"></i></button>
-                    <button type="button" class="btn btn-success" id="btnExcel"><i class="bx bxs-grid"></i></button>
                 </div>
             </div>
         </div>
@@ -59,15 +52,22 @@
     </div>
     <div class="tab-pane fade" id="navLiTab02" role="tabpanel">
         <div class="row">
-            <div class="col-md-5">
+            <div class="col-md-3 col-sm-6">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text">Desde:</span>
                     <input type="date" class="form-control" id="cvfechaD" />
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="input-group input-group-sm">
                     <span class="input-group-text">Hasta:</span>
                     <input type="date" class="form-control" id="cvfechaH" />
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="input-group input-group-sm">
                     <button type="button" class="btn btn-success" id="btnTraerVenc"><i class="bx bx-play"></i></button>
                     <button type="button" class="btn btn-warning" id="btnImprimirVenc"><i class="bx bx-printer"></i></button>
-                    <button type="button" class="btn btn-success" id="btnExcel"><i class="bx bxs-grid"></i></button>
                 </div>
             </div>
         </div>
@@ -75,19 +75,29 @@
         </div>
     </div>
     <div class="tab-pane fade" id="navLiTab03" role="tabpanel">
-        <div class="col-md-6">
-            <div class="input-group input-group-sm">
-                <div class="form-check form-check-inline form-switch mb-2">
-                    <input class="form-check-input" type="checkbox" name="relCuil" id="relCuil" />
-                    <label class="form-check-label" for="relCuil" id="lbrelCuil">Relacinoados a CUIT</label>
+        <div class="row">
+            <div class="col-md-3 col-sm-6">
+                <div class="input-group input-group-sm">
+                    <div class="form-check form-check-inline form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" name="relCuil" id="relCuil" />
+                        <label class="form-check-label" for="relCuil" id="lbrelCuil">Relacinoados a CUIT</label>
+                    </div>
                 </div>
-                <span class="input-group-text">MESES:</span>
-                <input type="number" class="form-control inputEditable" style="text-align:center;" id="inMeses" min="0" max="60" />
-                <button type="button" class="btn btn-success" id="btnTraerCmpts"><i class="bx bx-play"></i></button>
-                <button type="button" class="btn btn-warning" id="btnImprimirComp"><i class="bx bx-printer"></i></button>
-                <button type="button" class="btn btn-success" id="btnExcel"><i class="bx bxs-grid"></i></button>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text">MESES:</span>
+                    <input type="number" class="form-control inputEditable" style="text-align:center;" id="inMeses" min="0" max="60" />
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="input-group input-group-sm">
+                    <button type="button" class="btn btn-success" id="btnTraerCmpts"><i class="bx bx-play"></i></button>
+                    <button type="button" class="btn btn-warning" id="btnImprimirComp"><i class="bx bx-printer"></i></button>
+                </div>
             </div>
         </div>
+
         <div id="divpanel03">
             <div class="row">
                 <div class="col-md-4" id="divCmpteTot">
@@ -100,56 +110,79 @@
         </div>
     </div>
     <div class="tab-pane fade" id="navLiTab04" role="tabpanel">
-        <div class="input-group input-group-sm">
-            <span class="input-group-text">Desde:</span>
-            <input type="date" class="form-control" id="opfechaD" />
-            <span class="input-group-text">Hasta:</span>
-            <input type="date" class="form-control" id="opfechaH" />
-            <button type="button" class="btn btn-success" id="btnTraerOP"><i class="bx bx-play"></i></button>
-            <button type="button" class="btn btn-warning" id="btnImprimirOP"><i class="bx bx-printer"></i></button>
-            <button type="button" class="btn btn-success" id="btnExcel"><i class="bx bxs-grid"></i></button>
-        </div>
+        <div class="row">
+            <div class="col-md-3 col-sm-6">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text">Desde:</span>
+                    <input type="date" class="form-control" id="opfechaD" />
+                </div>
+            </div>
 
-        <div id="divpanel04">
-            <div class="row">
-                <div class="col-md-4" id="divOpProv">
-                    <span class="text-danger">SIN REGISTROS</span>
+            <div class="col-md-3 col-sm-6">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text">Hasta:</span>
+                    <input type="date" class="form-control" id="opfechaH" />
                 </div>
-                <div class="col-md-8" id="divOpProvDet">
-                    <span class="text-danger">SIN REGISTROS</span>
+            </div>
+
+            <div class="col-md-3 col-sm-6">
+                <div class="input-group input-group-sm">
+                    <button type="button" class="btn btn-success" id="btnTraerOP"><i class="bx bx-play"></i></button>
+                    <button type="button" class="btn btn-warning" id="btnImprimirOP"><i class="bx bx-printer"></i></button>
                 </div>
             </div>
         </div>
+    
+    <div id="divpanel04">
+        <div class="row">
+            <div class="col-md-4" id="divOpProv">
+                <span class="text-danger">SIN REGISTROS</span>
+            </div>
+            <div class="col-md-8" id="divOpProvDet">
+                <span class="text-danger">SIN REGISTROS</span>
+            </div>
+        </div>
     </div>
+    </div>
+
     <div class="tab-pane fade" id="navLiTab05" role="tabpanel">
-        <div class="input-group input-group-sm">
-            <span class="input-group-text">Desde:</span>
-            <input type="date" class="form-control" id="rpfechaD" />
-            <span class="input-group-text">Hasta:</span>
-            <input type="date" class="form-control" id="rpfechaH" />
-            <button type="button" class="btn btn-success" id="btnTraerRP"><i class="bx bx-play"></i></button>
-            <button type="button" class="btn btn-warning" id="btnImprimirRecP"><i class="bx bx-printer"></i></button>
-            <button type="button" class="btn btn-success" id="btnExcel"><i class="bx bxs-grid"></i></button>
-        </div>
-        <div id="divpanel05">
-            <div class="row">
-                <div class="col-md-12" id="divRpProv">
-                    <span class="text-danger">SIN REGISTROS</span>
+        <div class="row">
+            <div class="col-md-3 col-sm-6">
+
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text">Desde:</span>
+                    <input type="date" class="form-control" id="rpfechaD" />
                 </div>
             </div>
-            <div class="row">
-                <div class="col-md-12" id="divRpProvDet">
-                    <span class="text-danger">SIN REGISTROS</span>
+
+            <div class="col-md-3 col-sm-6">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text">Hasta:</span>
+                    <input type="date" class="form-control" id="rpfechaH" />
                 </div>
             </div>
+
+            <div class="col-md-3 col-sm-6">
+                <div class="input-group input-group-sm">
+
+                    <button type="button" class="btn btn-success" id="btnTraerRP"><i class="bx bx-play"></i></button>
+                    <button type="button" class="btn btn-warning" id="btnImprimirRecP"><i class="bx bx-printer"></i></button>
+                </div>
+            </div>
+
+        </div>
+   
+    <div id="divpanel05">
+        <div class="row">
+            <div class="col-md-12" id="divRpProv">
+                <span class="text-danger">SIN REGISTROS</span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12" id="divRpProvDet">
+                <span class="text-danger">SIN REGISTROS</span>
+            </div>
+        </div>
         </div>
     </div>
-   @*  <div class="tab-pane fade" id="navLiTab06" role="tabpanel">
-        <div id="divpanel06">
-        </div>
-    </div>
-    <div class="tab-pane fade" id="navLiTab07" role="tabpanel">
-        <div id="divpanel07">
-        </div>
-    </div> *@
 </div>
