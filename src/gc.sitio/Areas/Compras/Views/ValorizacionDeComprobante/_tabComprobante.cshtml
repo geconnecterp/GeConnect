@@ -60,7 +60,7 @@
 		</div>
 		<div id="divDescFinanc">
 			<div class="table-responsive table-wrapper-400-full-width" id="containerListaDescFinanc">
-				<table class="table table-bordered table-hover" id="tbListaDescFinanc">
+				<table class="drageable-table table table-bordered table-hover" id="tbListaDescFinanc">
 					<thead class="table-dark">
 						<tr>
 							<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">Item</th>
@@ -77,7 +77,7 @@
 						{
 							var nombre1 = "chkNetoFijo" + item.cm_compte;
 							var nombre2 = "chkDtoTot" + item.cm_compte;
-							<tr onclick="selectListaDescFinanc(this)">
+							<tr onclick="selectListaDescFinanc(this)" class="sortme">
 								<td style="display:none;">@item.item</td>
 								@if (item.dto_fijo_bool)
 								{

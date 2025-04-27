@@ -9,8 +9,37 @@
 	});
 	$(document).on("change", "#listaComptesPend", ControlaListaCompteSelected);
 	$(document).on("click", "#btnAceptarDescFinanc", AceptarDescFinanc);
+	$(document).on("mouseup", "#tbListaDescFinanc tbody tr", function (e) {
+		setTimeout(() => {
+			RecalcularItemValue()
+		}, 500);
+	});
+
 	InicializarPantallaDeFiltros();
+
+	//$(".mytable > thead > tr").sortable({
+	//	items: "> th.sortme",
+	//	start: function (event, ui) {
+	//		ui.item.data("source", ui.item.index());
+	//	},
+	//	update: function (event, ui) {
+	//		moveColumn($(this).closest("table"), ui.item.data("source"), ui.item.index());
+	//		$(".mytable > tbody").sortable("refresh");
+	//	}
+	//});
+
+	//$(".mytable > tbody").sortable({
+	//	items: "> tr.sortme"
+	//});
 });
+
+function moveColumn(table, sourceIndex, targetIndex) {
+	console.log("Move Col " + sourceIndex + " to " + targetIndex);
+	var body = $("tbody", table);
+	$("tr", body).each(function (i, row) {
+		$("td", row).eq(sourceIndex).insertAfter($("td", row).eq(targetIndex - 1));
+	});
+}
 
 function InicializarPantallaDeFiltros() {
 	$("#Rel01").prop("disabled", false);
@@ -72,6 +101,79 @@ function AceptarDescFinanc() {
 			AddEventListenerToGrid("tbListaDescFinanc");
 			LimpiarCamposEnDescFinanc();
 			ActualizarListaValorizaciones();
+			AgregarHandlerDragAndDrop();
+		});
+	}
+}
+
+function AgregarHandlerDragAndDrop() {
+	$(".drageable-table > thead > tr").sortable({
+		items: "> th.sortme",
+		start: function (event, ui) {
+			ui.item.data("source", ui.item.index());
+		},
+		update: function (event, ui) {
+			moveColumn($(this).closest("table"), ui.item.data("source"), ui.item.index());
+			$(".drageable-table > tbody").sortable("refresh");
+		}
+	});
+
+	$(".drageable-table > tbody").sortable({
+		items: "> tr.sortme"
+	});
+
+
+}
+
+function RecalcularItemValue() {
+	AbrirWaiting();
+	var index = 1;
+	$("#tbListaDescFinanc").find('tr').each(function (i, el) {
+		var td = $(this).find('td');
+		if (td.length > 0 && td[0].innerText !== undefined) {
+			td[0].innerText = index.toString();
+			index++;
+		}
+	});
+	console.log("RecalcularItemValue");
+	ActualizarOrdenDeDescFinancEnBackEnd();
+	CerrarWaiting();
+}
+
+function ActualizarOrdenDeDescFinancEnBackEnd() {
+	var listaDesFinanc = [];
+	$("#tbListaDescFinanc").find('tr').each(function (i, el) {
+		var td = $(this).find('td');
+		var $tr = $(this);
+		if (td.length > 0 && td[0].innerText !== undefined) {
+			var cm_compte = td[7].innerText;
+			var dia_movi = td[8].innerText;
+			var dto_fijo_bool = $tr.find(".chkNetoFijo").is(":checked");
+			var dto_fijo = dto_fijo_bool; //tomar el valor bool
+			var dto_sobre_total_bool = $tr.find(".chkDtoTot").is(":checked");
+			var dto_sobre_total = dto_sobre_total_bool; //tomar el valor bool
+			var tco_id = td[9].innerText;
+			var dto = Number(td[4].innerText); //tomar valor decimal
+			var dto_importe = Number(td[5].innerText.replace(',', '')); //tomar valor decimal
+			var dtoc_id = td[10].innerText;
+			var dtoc_desc = td[3].innerText;
+			var item = td[0].innerText;
+			var item_data = { cm_compte, dia_movi, dto_fijo, dto_sobre_total, tco_id, dto, dto_importe, dtoc_id, dtoc_desc, item };
+			listaDesFinanc.push(item_data);
+		}
+	});
+	if (listaDesFinanc.length > 0) {
+		var data = { listaDesFinanc };
+		PostGen(data, actualizarOrdenDescFinancURL, function (obj) {
+			if (obj.error === true) {
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				ActualizarListaValorizaciones();
+			}
 		});
 	}
 }
@@ -108,6 +210,7 @@ function quitarDescFinanc(x) {
 		CerrarWaiting();
 		$("#divDescFinanc").html(obj);
 		AddEventListenerToGrid("tbListaDescFinanc");
+		AgregarHandlerDragAndDrop();
 		ActualizarListaValorizaciones();
 	});
 }
@@ -176,6 +279,12 @@ function ObtenerListaDetalleRpr() {
 		CerrarWaiting();
 		$("#divDetalles").html(obj);
 		AddEventListenerToGrid("tbListaDetalleRpr");
+		addInCellKeyDownHandler();
+		addInCellGotFocusHandler();
+		addInCellLostFocusHandler();
+		addMaskInEditableCells();
+		//tableUpDownArrow();
+
 	});
 }
 
@@ -316,6 +425,345 @@ function addHandlerOnChkRel04_Click() {
 			cmCompteSelected = "";
 		}
 	});
+}
+
+function getMaskForDiscountType(selector) {
+	$(selector).inputmask({
+		alias: 'numeric',
+		groupSeparator: '.',
+		radixPoint: ',',
+		digits: 1,
+		digitsOptional: false,
+		allowMinus: false,
+		prefix: '',
+		suffix: '',
+		min: 0,
+		max: 50,
+		unmaskAsNumber: true
+	});
+}
+
+function getMaskForMoneyType(selector) {
+	$(selector).inputmask({
+		alias: 'numeric',
+		groupSeparator: '.',
+		radixPoint: ',',
+		digits: 2,
+		digitsOptional: false,
+		allowMinus: false,
+		prefix: '',
+		suffix: '',
+		rightAlign: true,
+		unmaskAsNumber: true
+	});
+}
+
+function focusOnTd(x) {
+	var cell = x;
+	var range, selection;
+	if (document.body.createTextRange) {
+		range = document.body.createTextRange();
+		range.moveToElementText(cell);
+		range.select();
+	} else if (window.getSelection) {
+		selection = window.getSelection();
+		range = document.createRange();
+		range.selectNodeContents(cell);
+		selection.removeAllRanges();
+		selection.addRange(range);
+	}
+}
+
+function keyUpFromEditableCell(x) {
+	///TODO MARCE: mover el cursor por las celdas editables
+	if (event.key == "Enter") {
+		var id = $(x).prop("id");
+		if (id.includes("ocd_plista")) {
+			var arr_p_id = id.split("_");
+			var p_id = arr_p_id[0];
+			var next = p_id + "_ocd_dto1";
+			$("#" + next).focus();
+			return true;
+		}
+		if (id.includes("ocd_dto1")) {
+			var arr_p_id = id.split("_");
+			var p_id = arr_p_id[0];
+			var next = p_id + "_ocd_dto2";
+			$("#" + next).focus();
+			return true;
+		}
+		if (id.includes("ocd_dto2")) {
+			var arr_p_id = id.split("_");
+			var p_id = arr_p_id[0];
+			var next = p_id + "_ocd_dto3";
+			$("#" + next).focus();
+			return true;
+		}
+		if (id.includes("ocd_dto3")) {
+			var arr_p_id = id.split("_");
+			var p_id = arr_p_id[0];
+			var next = p_id + "_ocd_dto4";
+			$("#" + next).focus();
+			return true;
+		}
+		if (id.includes("ocd_dto4")) {
+			var arr_p_id = id.split("_");
+			var p_id = arr_p_id[0];
+			var next = p_id + "_ocd_dto_pa";
+			$("#" + next).focus();
+			return true;
+		}
+		if (id.includes("ocd_dto_pa")) {
+			var arr_p_id = id.split("_");
+			var p_id = arr_p_id[0];
+			var next = p_id + "_ocd_boni";
+			$("#" + next).focus();
+			return true;
+		}
+		if (id.includes("ocd_boni")) {
+			var arr_p_id = id.split("_");
+			var p_id = arr_p_id[0];
+			var next = p_id + "_rpd_plista";
+			$("#" + next).focus();
+			return true;
+		}
+		if (id.includes("rpd_plista")) {
+			var arr_p_id = id.split("_");
+			var p_id = arr_p_id[0];
+			var next = p_id + "_rpd_dto1";
+			$("#" + next).focus();
+			return true;
+		}
+		if (id.includes("rpd_dto1")) {
+			var arr_p_id = id.split("_");
+			var p_id = arr_p_id[0];
+			var next = p_id + "_rpd_dto2";
+			$("#" + next).focus();
+			return true;
+		}
+		if (id.includes("rpd_dto2")) {
+			var arr_p_id = id.split("_");
+			var p_id = arr_p_id[0];
+			var next = p_id + "_rpd_dto3";
+			$("#" + next).focus();
+			return true;
+		}
+		if (id.includes("rpd_dto3")) {
+			var arr_p_id = id.split("_");
+			var p_id = arr_p_id[0];
+			var next = p_id + "_rpd_dto4";
+			$("#" + next).focus();
+			return true;
+		}
+		if (id.includes("rpd_dto4")) {
+			var arr_p_id = id.split("_");
+			var p_id = arr_p_id[0];
+			var next = p_id + "_rpd_dto_pa";
+			$("#" + next).focus();
+			return true;
+		}
+		if (id.includes("rpd_dto_pa")) {
+			var arr_p_id = id.split("_");
+			var p_id = arr_p_id[0];
+			var next = p_id + "_rpd_boni";
+			$("#" + next).focus();
+			return true;
+		}
+		if (id.includes("rpd_boni")) {
+			var arr_p_id = id.split("_");
+			var p_id = arr_p_id[0];
+			var next = p_id + "_ocd_plista";
+			$("#" + next).focus();
+			return true;
+		}
+	}
+}
+
+var keysAceptadas = [8, 37, 39, 46, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 110, 190];
+function addInCellKeyDownHandler() {
+	$("#tbListaDetalleRpr").on('keydown', 'td[contenteditable]', function (e) {
+		if (isNaN(String.fromCharCode(e.which)) && !(keysAceptadas.indexOf(e.which) != -1) && !(e.shiftKey && (e.which == 37 || e.which == 39))) e.preventDefault();
+	});
+}
+
+function addInCellGotFocusHandler() {
+	$("#tbListaDetalleRpr").on('focusin', 'td[contenteditable]', function (e) {
+		cellValueTemp = $("#" + this.id).text();
+		if (e.target) {
+			cellIndexTemp = e.target.cellIndex;
+		}
+	});
+}
+
+function addInCellLostFocusHandler() {
+	$("#tbListaDetalleRpr").on('focusout', 'td[contenteditable]', function (e) {
+		var actualiza = true;
+		if (cellValueTemp == $("#" + this.id).text())
+			actualiza = false;
+		else {
+			if (this.id.includes("_dto1") || this.id.includes("_dto2") || this.id.includes("_dto3") || this.id.includes("_dto4") || this.id.includes("_dto_pa") || this.id.includes("_cantidad_compte")) {
+				var valor = this.innerText;
+			}
+			else if (this.id.includes("_plista")) {
+				var valor = $("#" + this.id).inputmask('unmaskedvalue');
+			}
+			else if (this.id.includes("_boni")) {
+				var spl = this.innerText.split("/");
+				if (spl.length === 2) {
+					var num1 = Number(spl[0]);
+					var num2 = Number(spl[1]);
+					if (num1 > num2) {
+						$("#" + this.id).val("");
+						$("#" + this.id).text("");
+						actualiza = false;
+					}
+					var valor = this.innerText;
+				}
+				else
+					actualiza = false;
+			}
+		}
+		if (actualiza) {
+			ActualizarProductoEnDetalleRpr(this.id, valor);
+		}
+	});
+}
+
+///Actualizar datos de producto, luego de la edicion de algunos de sus parámetros editables
+function ActualizarProductoEnDetalleRpr(field, val) {
+
+}
+
+///TODO MARCE: Revisar y actualizar este metodo
+function tableUpDownArrow() {
+	var table = document.querySelector('#tbListaDetalleRpr tbody');
+	if (table == undefined)
+		return;
+	if (table.rows[0] == undefined)
+		return;
+	const myTable = table
+		, nbRows = myTable.rows.length
+		, nbCells = myTable.rows[0].cells.length
+		, movKey = {
+			ArrowUp: p => { p.r = (--p.r + nbRows) % nbRows }
+			, ArrowLeft: p => { p.c = (--p.c + nbCells) % nbCells }
+			, ArrowDown: p => {
+				p.r = ++p.r % nbRows
+			}
+			, ArrowRight: p => { p.c = ++p.c % nbCells }
+			, Tab: p => {
+				p.r = ++p.r % nbRows
+			}
+		}
+
+	myTable
+		.querySelectorAll('input, [contenteditable=true]')
+		.forEach(elm => {
+			elm.onfocus = e => {
+				let sPos = myTable.querySelector('.selected-row')
+					, tdPos = elm.parentNode
+
+				if (sPos) sPos.classList.remove('selected-row')
+
+				tdPos.classList.add('selected-row')
+			}
+		})
+
+
+	document.onkeydown = e => {
+		let sPos = myTable.querySelector('.selected-row')
+			, evt = (e == null ? event : e)
+			, pos = {
+				r: sPos ? sPos.rowIndex : -1
+				, c: sPos ? (sPos.cellIndex ? sPos.cellIndex : cellIndexTemp) : -1
+			}
+
+		if (sPos &&
+			//(evt.altKey && evt.shiftKey && movKey[evt.code])
+			(evt.shiftKey && movKey[evt.code])
+			||
+			(evt.ctrlKey && movKey[evt.code])
+		) {
+			let loop = true
+				, nxFocus = null
+				, cell = null
+
+			do {
+				if (evt.code === 'ArrowDown' && pos.r == nbRows)
+					pos.r = 0;
+				if (evt.code === 'Tab' && evt.shiftKey && pos.r == 0)
+					pos.r = nbRows - 1;
+				if (evt.code === 'Tab' && evt.shiftKey) {
+					movKey['ArrowUp'](pos)
+				}
+				else
+					movKey[evt.code](pos);
+
+				if (pos.r == nbRows)
+					cell = myTable.rows[pos.r - 1].cells[pos.c];
+				else
+					cell = myTable.rows[pos.r].cells[pos.c];
+				if (pos.r == 0)
+					pos.r = nbRows;
+				else if (pos.r == nbRows)
+					pos.r = nbRows;
+
+				///TODO MARCE: Revisar esto, actualizarlo para la lista actual
+				if (pos.c == 8 && cellIndexTemp < pos.c) //moviendome desde la columna 'pedido bultos' hacia la derecha, la cual no es editable, debo saltar a la siguiente
+					pos.c = 9;
+				if (pos.c == 6 && cellIndexTemp > pos.c) //moviendome desde la columna 'pedido bultos' hacia la izquierda, la cual no es editable, debo saltar a la siguiente
+					pos.c = 15;
+				if (pos.c == 8 && cellIndexTemp > pos.c) //moviendome desde la columna 'precio lista' hacia la izquierda, la cual no es editable, debo saltar a la siguiente
+					pos.c = 7;
+				if (pos.c == 16 && cellIndexTemp < pos.c) //moviendome desde la columna 'boni' hacia la derecha, la cual no es editable, debo saltar a la siguiente
+					pos.c = 7;
+				nxFocus = myTable.rows[pos.r - 1].cells[pos.c]
+
+				if (nxFocus
+					&& cell.style.display !== 'none'
+					&& cell.parentNode.style.display !== 'none') {
+					nxFocus.focus();
+					nxFocus.closest('tr').classList.add('selected-row');
+					nxFocus.focus();
+					loop = false
+				}
+			}
+			while (loop)
+			if (evt.code === 'Tab') {
+				event.preventDefault();
+			}
+		}
+		else if (evt.code === 'Enter')
+			event.preventDefault();
+		else if (evt.code === 'NumpadEnter')
+			event.preventDefault();
+	}
+}
+
+function addMaskInEditableCells() {
+	if ($("#tbListaDetalleRpr").length != 0) {
+		$("#tbListaDetalleRpr").find('tr').each(function (i, el) {
+			var td = $(this).find('td');
+			if (td.length == 22) {
+				getMaskForMoneyType("#" + td[2].id); //_plista
+				getMaskForDiscountType("#" + td[3].id);//_dto1
+				getMaskForDiscountType("#" + td[4].id);//_dto2
+				getMaskForDiscountType("#" + td[5].id);//p_dto3
+				getMaskForDiscountType("#" + td[6].id);//p_dto4
+				getMaskForDiscountType("#" + td[7].id);//p_dto_pa
+				$("#" + td[8].id).mask("000/000", { reverse: false });//p_boni
+
+				getMaskForMoneyType("#" + td[11].id); //_plista
+				getMaskForDiscountType("#" + td[12].id);//_dto1
+				getMaskForDiscountType("#" + td[13].id);//_dto2
+				getMaskForDiscountType("#" + td[14].id);//p_dto3
+				getMaskForDiscountType("#" + td[15].id);//p_dto4
+				getMaskForDiscountType("#" + td[16].id);//p_dto_pa
+				$("#" + td[17].id).mask("000/000", { reverse: false });//p_boni
+				getMaskForDiscountType("#" + td[19].id);//p_dto_pa
+			}
+		});
+	}
 }
 
 function getMaskForDiscountType(selector) {

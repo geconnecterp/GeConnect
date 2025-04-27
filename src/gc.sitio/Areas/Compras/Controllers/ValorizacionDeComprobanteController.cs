@@ -239,6 +239,47 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
+		public JsonResult ActualizarOrdenDescFinanc(List<CompteValorizarAgregarDescFinanRequest> listaDesFinanc)
+		{
+			try
+			{
+				if (listaDesFinanc == null || listaDesFinanc.Count <= 0)
+					return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar actualizar Lista de Desc. Financieros. Lista vacía." });
+
+				var listaDescFinancTemporal = new List<CompteValorizaDtosListaDto>();
+				foreach (var item in listaDesFinanc)
+				{
+					var newItem = new CompteValorizaDtosListaDto
+					{
+						cm_compte = item.cm_compte,
+						dia_movi = item.dia_movi,
+						dto = item.dto,
+						dtoc_desc = item.dtoc_desc,
+						dtoc_id = item.dtoc_id,
+						dto_fijo = item.dto_fijo ? 'S' : 'N',
+						dto_fijo_bool = item.dto_fijo,
+						dto_importe = item.dto_importe,
+						dto_sobre_total = item.dto_sobre_total ? 'S' : 'N',
+						dto_sobre_total_bool = item.dto_sobre_total,
+						item = item.item,
+						tco_id = item.tco_id
+					};
+					listaDescFinancTemporal.Add(newItem);
+				}
+				if (listaDescFinancTemporal.Count > 0) {
+					ComprobantesValorizaDescuentosFinancLista = listaDescFinancTemporal;
+				}
+				else
+					return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar actualizar Lista de Desc. Financieros. Error al parsear datos." });
+
+				return Json(new { error = false, warn = false, msg = string.Empty });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar cargar el concepto facturado." });
+			}
+		}
+
 		public IActionResult ActualizarValorizacion(string cm_compte)
 		{
 			var model = new GridCoreSmart<CompteValorizaListaDto>();
@@ -297,6 +338,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 					dc = false,
 					adm_id = AdministracionId
 				};
+				Console.WriteLine($"Json detalle rpr: {jsonResponseRpr}");
+				Console.WriteLine($"Json desc financ.: {jsonResponseDtos}");
 				var responseValorizar = _cuentaServicio.ObtenerComprobanteValorizaLista(reqValorizados, TokenCookie);
 				model = ObtenerGridCoreSmart<CompteValorizaListaDto>(responseValorizar);
 				return model;

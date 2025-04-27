@@ -67,6 +67,8 @@
 		var cmCompteSelected = "";
 		var ctaIdSelected = "";
 		var ctaDescSelected = "";
+		var cellValueTemp = "";
+		var cellIndexTemp = 0;
 		var autoComRel01Url = "@Url.Action("BuscarProvs", "valorizaciondecomprobante", new { area = "Compras" })";
 		var cargarComprobantesDelProveedorSeleccionadoUrl = "@Url.Action("CargarComprobantesDelProveedorSeleccionado", "valorizaciondecomprobante", new { area = "Compras" })";
 		var cargarDatosParaValorizarURL = "@Url.Action("CargarDatosParaValorizar", "valorizaciondecomprobante", new { area = "Compras" })";
@@ -74,6 +76,7 @@
 		var quitarDescFinancURL = "@Url.Action("QuitarDescFinanc", "valorizaciondecomprobante", new { area = "Compras" })";
 		var actualizarValorizacionURL = "@Url.Action("ActualizarValorizacion", "valorizaciondecomprobante", new { area = "Compras" })";
 		var cargarListaDetalleRprURL = "@Url.Action("CargarListaDetalleRpr", "valorizaciondecomprobante", new { area = "Compras" })";
+		var actualizarOrdenDescFinancURL = "@Url.Action("ActualizarOrdenDescFinanc", "valorizaciondecomprobante", new { area = "Compras" })";
 	</script>
 	<script src="~/js/app/areas/valorcompte/valorizaciondecomprobante.js"></script>
 }
