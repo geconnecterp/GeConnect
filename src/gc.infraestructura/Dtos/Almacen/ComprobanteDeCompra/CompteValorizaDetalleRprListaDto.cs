@@ -41,5 +41,17 @@ namespace gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra
 		public decimal nc_pcosto_difp { get; set; } = 0.000M;
 		public decimal nc_cantidad_difc { get; set; } = 0.000M;
 		public decimal nc_pcosto_difc { get; set; } = 0.000M;
+
+		public static decimal CalcularPCosto(decimal p_plista, decimal p_d1, decimal p_d2, decimal p_d3, decimal p_d4, decimal p_dpa, string p_boni, decimal flete = 0)
+		{
+			var arr = p_boni.Split('/');
+			var boni = 1.0M;
+			if (arr.Length == 2)
+			{
+				if (decimal.TryParse(arr[1], out decimal val1) && decimal.TryParse(arr[0], out decimal val0))
+					boni = val1 / val0;
+			}
+			return p_plista * ((100 - p_d1) / 100) * ((100 - p_d2) / 100) * ((100 - p_d3) / 100) * ((100 - p_d4) / 100) * ((100 - p_dpa) / 100) * boni * ((100 + flete) / 100);
+		}
 	}
 }

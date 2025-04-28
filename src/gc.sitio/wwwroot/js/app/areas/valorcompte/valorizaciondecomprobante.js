@@ -624,12 +624,16 @@ function addInCellLostFocusHandler() {
 			}
 		}
 		if (actualiza) {
-			ActualizarProductoEnDetalleRpr(this.id, valor);
+			if (this.id.includes("_ocd_"))
+				ActualizarProductoEnDetalleRprSeccionPrecio(this.id, valor);
+			else
+				ActualizarProductoEnDetalleRprSeccionFactura(this.id, valor);
 		}
 	});
 }
 
-///Actualizar datos de producto, luego de la edicion de algunos de sus parámetros editables
+///TODO MARCE: Actualizar datos de producto, luego de la edicion de algunos de sus parámetros editables
+///Generar un metodo para Precio y otro para Factura
 function ActualizarProductoEnDetalleRpr(field, val) {
 
 }

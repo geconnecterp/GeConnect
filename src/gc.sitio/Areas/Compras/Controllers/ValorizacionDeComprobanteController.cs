@@ -1,6 +1,8 @@
-﻿using gc.api.core.Entidades;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra;
 using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Almacen.Tr.Request;
@@ -266,7 +268,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 					};
 					listaDescFinancTemporal.Add(newItem);
 				}
-				if (listaDescFinancTemporal.Count > 0) {
+				if (listaDescFinancTemporal.Count > 0)
+				{
 					ComprobantesValorizaDescuentosFinancLista = listaDescFinancTemporal;
 				}
 				else
@@ -305,6 +308,194 @@ namespace gc.sitio.Areas.Compras.Controllers
 				return PartialView("_gridMensaje", response);
 			}
 		}
+
+		/// <summary>
+		/// Funcion que actualiza los valores de un producto seleccionado en la Grilla de RPR (Segundo Tab) - Seccion 'Precio OC y Cantidad RP'
+		/// Los valores a actualizar son 'Precio Costo'
+		/// </summary>
+		/// <param name="pId">ID del producto seleccionado</param>
+		/// <param name="field">Campo que se ha editado, los cuales pueden ser: Precio de Lista, Dto1, Dto2, Dto3, Dto4, DtoPa, Boni</param>
+		/// <param name="val">Valor correspondiente al campo editado</param>
+		/// <returns></returns>
+		[HttpPost]
+		public JsonResult ActualizarProdEnRprSeccionPrecio(string pId, string field, string val)
+		{
+			List<CompteValorizaDetalleRprListaDto> productos = [];
+			try
+			{
+				if (ComprobantesValorizaDetalleRprLista != null && ComprobantesValorizaDetalleRprLista.Count > 0)
+				{
+					productos = ComprobantesValorizaDetalleRprLista;
+				}
+				if (productos.Count > 0)
+				{
+					var producto = productos.FirstOrDefault(x => x.p_id == pId);
+					if (producto != null)
+					{
+						if (field.Contains("ocd_dto1"))
+						{
+							val = val.Replace(",", ".");
+							producto.ocd_dto1 = Convert.ToDecimal(val);
+						}
+						else if (field.Contains("ocd_dto2"))
+						{
+							val = val.Replace(",", ".");
+							producto.ocd_dto2 = Convert.ToDecimal(val);
+						}
+						else if (field.Contains("ocd_dto3"))
+						{
+							val = val.Replace(",", ".");
+							producto.ocd_dto3 = Convert.ToDecimal(val);
+						}
+						else if (field.Contains("ocd_dto4"))
+						{
+							val = val.Replace(",", ".");
+							producto.ocd_dto4 = Convert.ToDecimal(val);
+						}
+						else if (field.Contains("ocd_dto_pa"))
+						{
+							val = val.Replace(",", ".");
+							producto.ocd_dto_pa = Convert.ToDecimal(val);
+						}
+						else if (field.Contains("ocd_plista"))
+						{
+							val = val.Replace(",", ".");
+							producto.ocd_plista = Convert.ToDecimal(val);
+						}
+						else if (field.Contains("ocd_boni"))
+						{
+							producto.ocd_boni = val;
+						}
+
+						producto.ocd_pcosto = Math.Round(ProductoParaOcDto.CalcularPCosto(producto.ocd_plista, producto.ocd_dto1, producto.ocd_dto2, producto.ocd_dto3, producto.ocd_dto4, producto.ocd_dto_pa, producto.ocd_boni, 0), 2);
+					}
+					ComprobantesValorizaDetalleRprLista = productos; //Actualizo la lista en memoria
+					return Json(new msgRes()
+					{
+						error = false,
+						warn = false,
+						msg = string.Empty,
+						costo = producto?.ocd_pcosto ?? 0,
+					});
+				}
+				else
+					return Json(new { error = true, warn = false, msg = $"No existen productos cargados en detalle RPR" });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar actualizar los datos del producto recientemente editado. Id de Producto: {pId}" });
+			}
+		}
+
+		/// <summary>
+		/// Funcion que actualiza los valores de un producto seleccionado en la Grilla de RPR (Segundo Tab) - Seccion 'Factura'
+		/// Los valores a actualizar son 'Precio Costo'
+		/// </summary>
+		/// <param name="pId">ID del producto seleccionado</param>
+		/// <param name="field">Campo que se ha editado, los cuales pueden ser: Precio de Lista, Dto1, Dto2, Dto3, Dto4, DtoPa, Boni</param>
+		/// <param name="val">Valor correspondiente al campo editado</param>
+		/// <returns></returns>
+		[HttpPost]
+		public JsonResult ActualizarProdEnRprSeccionFactura(string pId, string field, string val)
+		{
+			List<CompteValorizaDetalleRprListaDto> productos = [];
+			try
+			{
+				if (ComprobantesValorizaDetalleRprLista != null && ComprobantesValorizaDetalleRprLista.Count > 0)
+				{
+					productos = ComprobantesValorizaDetalleRprLista;
+				}
+				if (productos.Count > 0)
+				{
+					var producto = productos.FirstOrDefault(x => x.p_id == pId);
+					if (producto != null)
+					{
+						if (field.Contains("rpd_dto1"))
+						{
+							val = val.Replace(",", ".");
+							producto.rpd_dto1 = Convert.ToDecimal(val);
+						}
+						else if (field.Contains("rpd_dto2"))
+						{
+							val = val.Replace(",", ".");
+							producto.rpd_dto2 = Convert.ToDecimal(val);
+						}
+						else if (field.Contains("rpd_dto3"))
+						{
+							val = val.Replace(",", ".");
+							producto.rpd_dto3 = Convert.ToDecimal(val);
+						}
+						else if (field.Contains("rpd_dto4"))
+						{
+							val = val.Replace(",", ".");
+							producto.rpd_dto4 = Convert.ToDecimal(val);
+						}
+						else if (field.Contains("rpd_dto_pa"))
+						{
+							val = val.Replace(",", ".");
+							producto.rpd_dto_pa = Convert.ToDecimal(val);
+						}
+						else if (field.Contains("rpd_plista"))
+						{
+							val = val.Replace(",", ".");
+							producto.rpd_plista = Convert.ToDecimal(val);
+						}
+						else if (field.Contains("rpd_boni"))
+						{
+							producto.rpd_boni = val;
+						}
+
+						producto.rpd_pcosto = Math.Round(ProductoParaOcDto.CalcularPCosto(producto.rpd_plista, producto.rpd_dto1, producto.rpd_dto2, producto.rpd_dto3, producto.rpd_dto4, producto.rpd_dto_pa, producto.rpd_boni, 0), 2);
+					}
+					ComprobantesValorizaDetalleRprLista = productos; //Actualizo la lista en memoria
+					return Json(new msgRes()
+					{
+						error = false,
+						warn = false,
+						msg = string.Empty,
+						costo = producto?.rpd_pcosto ?? 0,
+					});
+				}
+				else
+					return Json(new { error = true, warn = false, msg = $"No existen productos cargados en detalle RPR" });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar actualizar los datos del producto recientemente editado. Id de Producto: {pId}" });
+			}
+		}
+
+		public IActionResult QuitarDescFinanc(int item)
+		{
+			var model = new GridCoreSmart<CompteValorizaDtosListaDto>();
+			try
+			{
+				if (ComprobantesValorizaDescuentosFinancLista != null && ComprobantesValorizaDescuentosFinancLista.Count > 0)
+				{
+					var idx = 1;
+					var listaDescuentosFinancTemp = ComprobantesValorizaDescuentosFinancLista;
+					var listaDescuentosFinanc = listaDescuentosFinancTemp.Where(x => !x.item.Equals(item)).ToList();
+					listaDescuentosFinanc.ForEach(x => x.item = idx++);
+					ComprobantesValorizaDescuentosFinancLista = listaDescuentosFinanc;
+					model = ObtenerGridCoreSmart<CompteValorizaDtosListaDto>(ComprobantesValorizaDescuentosFinancLista);
+					//TODO MARCE: Recalcular Valorizacion con el nuevo json de descuentos financ.
+				}
+				return PartialView("_listaDescFinanc", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		#region Métodos privados
 
 		private GridCoreSmart<CompteValorizaListaDto> ObtenerValorizacionActualizada(string cm_compte)
 		{
@@ -350,37 +541,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public IActionResult QuitarDescFinanc(int item)
-		{
-			var model = new GridCoreSmart<CompteValorizaDtosListaDto>();
-			try
-			{
-				if (ComprobantesValorizaDescuentosFinancLista != null && ComprobantesValorizaDescuentosFinancLista.Count > 0)
-				{
-					var idx = 1;
-					var listaDescuentosFinancTemp = ComprobantesValorizaDescuentosFinancLista;
-					var listaDescuentosFinanc = listaDescuentosFinancTemp.Where(x => !x.item.Equals(item)).ToList();
-					listaDescuentosFinanc.ForEach(x => x.item = idx++);
-					ComprobantesValorizaDescuentosFinancLista = listaDescuentosFinanc;
-					model = ObtenerGridCoreSmart<CompteValorizaDtosListaDto>(ComprobantesValorizaDescuentosFinancLista);
-					//TODO MARCE: Recalcular Valorizacion con el nuevo json de descuentos financ.
-				}
-				return PartialView("_listaDescFinanc", model);
-			}
-			catch (Exception ex)
-			{
-				RespuestaGenerica<EntidadBase> response = new()
-				{
-					Ok = false,
-					EsError = true,
-					EsWarn = false,
-					Mensaje = ex.Message
-				};
-				return PartialView("_gridMensaje", response);
-			}
-		}
 
-		#region Métodos privados
 		private void SetearValorAConcepto(List<CompteValorizaDtosListaDto> lista)
 		{
 			foreach (var item in lista)
@@ -415,6 +576,16 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			var adms = _cuentaServicio.ObtenerComprobantesPendientesDeValorizar(ctaId, TokenCookie);
 			ComprobantesPendientesDeValorizarLista = adms;
+		}
+		#endregion
+
+		#region Clases Locales
+		private class msgRes()
+		{
+			public bool error { get; set; }
+			public bool warn { get; set; }
+			public string msg { get; set; } = string.Empty;
+			public decimal costo { get; set; } = 0.00M;
 		}
 		#endregion
 	}
