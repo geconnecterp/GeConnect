@@ -81,8 +81,8 @@ function GeneradorParametros(mod) {
             };
             return data;
         case ModImpresion.ModRecProv:
-            fechaD = $("#opfechaD").val();
-            fechaH = $("#opfechaH").val();
+            fechaD = $("#rpfechaD").val(); 
+            fechaH = $("#rpfechaH").val();
 
             var data = {
                 modulo: mod, parametros: [consCta.toString(), fechaD.toString(), fechaH.toString(), fkey.toString()]

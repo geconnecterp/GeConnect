@@ -17,7 +17,6 @@ namespace gc.api.Controllers.Entidades
 	{
 		private readonly IMapper _mapper;
 		private readonly IUriService _uriService;
-		private readonly ILogger<ABMBancoController> _logger;
 		private readonly IABMBancoServicio _aBMBancoServicio;
 
 		public ABMBancoController(IMapper mapper, IUriService uriService, IABMBancoServicio aBMBancoServicio)
@@ -45,11 +44,11 @@ namespace gc.api.Controllers.Entidades
 			var metadata = new MetadataGrid
 			{
 				TotalCount = reg.total_registros,
-				PageSize = filters.Registros.Value,
-				CurrentPage = filters.Pagina.Value,
+				PageSize = filters.Registros??0,
+				CurrentPage = filters.Pagina ?? 0,
 				TotalPages = reg.total_paginas,
-				HasNextPage = filters.Pagina.Value < reg.total_paginas,
-				HasPreviousPage = filters.Pagina.Value > 1,
+				HasNextPage = filters.Pagina < reg.total_paginas,
+				HasPreviousPage = filters.Pagina > 1,
 				NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(BuscarBancos)) ?? "").ToString(),
 				PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(BuscarBancos)) ?? "").ToString(),
 
