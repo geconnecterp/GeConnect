@@ -277,6 +277,23 @@ namespace gc.api.core.Servicios
                 }).ToList();
         }
 
+        public List<CuentaDatoDto> GetCuentaDatos(string cta, char tipo)
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_CUENTA_DATO;
+            var ps = new List<SqlParameter>()
+            {
+                    new("@cta_id",cta),
+                    new("@tc_id",tipo)
+            };
+            var res = _repository.EjecutarLstSpExt<CuentaDatoDto>(sp, ps, true);
+            if (res.Count == 0)
+                return [];
+            else
+                return res;
+        }
+
+
+
         public List<RPROrdenDeCompraDto> GetOCporCuenta(string cta_id)
         {
             var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_OC;

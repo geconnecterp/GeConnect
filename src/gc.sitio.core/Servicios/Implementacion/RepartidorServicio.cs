@@ -58,7 +58,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al intentar obtener los Rubros.");
+				_logger.LogError(ex, "Error al intentar obtener los Repartidores.");
 				throw;
 			}
 		}

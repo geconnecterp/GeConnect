@@ -63,8 +63,8 @@ namespace gc.api.Controllers.Almacen
                 TotalPages = cuentass.TotalPages,
                 HasNextPage = cuentass.HasNextPage,
                 HasPreviousPage = cuentass.HasPreviousPage,
-                NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getcuentass))).ToString(),
-                PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getcuentass))).ToString(),
+                NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getcuentass))??"").ToString(),
+                PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getcuentass)) ?? "").ToString(),
 
             };
 
@@ -93,7 +93,22 @@ namespace gc.api.Controllers.Almacen
             return Ok(response);
         }
 
-		[HttpGet]
+        [HttpGet]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaDatoDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult GetCuentaDatos(string cta, char tipo)
+        {
+            ApiResponse<List<CuentaDatoDto>> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            var res = _cuentasSv.GetCuentaDatos(cta, tipo);
+
+            response = new ApiResponse<List<CuentaDatoDto>>(res);
+
+            return Ok(response);
+        }
+
+        [HttpGet]
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaDto>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]
