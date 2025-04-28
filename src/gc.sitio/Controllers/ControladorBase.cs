@@ -459,7 +459,25 @@ namespace gc.sitio.Controllers
 			}
 		}
 
-		public AutoComptesPendientesDto? RPRAutorizacionSeleccionada
+        public CuentaDatoDto? CuentaComercialDatosSeleccionada
+        {
+            get
+            {
+                var json = _context.HttpContext?.Session.GetString("CuentaComercialDatosSeleccionada") ?? string.Empty;
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return null;
+                }
+                return JsonConvert.DeserializeObject<CuentaDatoDto>(json) ?? new CuentaDatoDto();
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session.SetString("CuentaComercialDatosSeleccionada", json);
+            }
+        }
+
+        public AutoComptesPendientesDto? RPRAutorizacionSeleccionada
 		{
 			get
 			{

@@ -397,8 +397,8 @@ function consultaOP() {
 
 function consultaRP() {
     tabAbm = 5;
-    fechaD = $("#opfechaD").val();
-    fechaH = $("#opfechaH").val();
+    fechaD = $("#rpfechaD").val();
+    fechaH = $("#rpfechaH").val();
 
     var data = { ctaId: consCta, fechaD, fechaH };
     AbrirWaiting("Espere un momento mientras se presenta las recepciones del proveedor en el periodo seleccionado...");

@@ -50,6 +50,8 @@ function invocacionGestorDoc(data) {
             //antes de abrir el modal, se cargará el arbol de archivos
             presentarArchivos();
 
+        
+
             $("#modalGestorDocumental").show();
 
             $("#docmgrmodal").modal("show");
@@ -130,18 +132,50 @@ function presentarArchivos() {
             }, false, ["Aceptar"], "error!", null);
         }
         else if (obj.warn === true) {
-
+            AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                $("#msjModal").modal("hide");
+            }, false, ["Aceptar"], "warn!", null);
         }
         else {
+            let cuenta = obj.cuenta;
+            $("#emailTo").val(cuenta.cta_Email);
+            $("#whatsappTo").val(cuenta.cta_Celu);
+
             jsonP = $.parseJSON(obj.arbol);
             $("#archivosDispuestos").jstree("destroy").empty();
 
+            // Inicializamos el árbol jsTree
             $("#archivosDispuestos").jstree({
                 "core": { "data": jsonP },
                 "checkbox": {
                     "keep_selected_style": false
                 },
                 "plugins": ['checkbox']
+            });
+
+            // Escuchamos el evento 'loaded.jstree' para ejecutar el código después de que el árbol se haya cargado
+            $("#archivosDispuestos").on("loaded.jstree", function () {
+                let archivosSeleccionados = [];
+
+                // Obtenemos los IDs de los nodos seleccionados
+                let nodosSeleccionados = $("#archivosDispuestos").jstree("get_selected", true);
+
+                // Recorremos los nodos seleccionados para obtener sus nombres
+                nodosSeleccionados.forEach(function (nodo) {
+                    if (nodo.data && nodo.data.asignado) {
+                        // Agregamos el nombre del nodo (nodo.text) a la lista
+                        archivosSeleccionados.push(nodo.text);
+                    }
+                });
+
+                // Generamos un mensaje con los nombres de los nodos seleccionados
+                let mensaje = archivosSeleccionados.length > 0
+                    ? "Archivos seleccionados: " + archivosSeleccionados.join(", ")
+                    : "No hay archivos seleccionados.";
+
+                // Asignamos el mensaje al campo de texto #whatsappMessage
+                $("#whatsappMessage").val(mensaje);
+                $("#emailBody").val(mensaje);
             });
         }
     });

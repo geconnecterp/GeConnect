@@ -60,7 +60,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
             {
 
                 string msg = "Error en la obtención de la configuración para el Gestor Documental.";
-                _logger.LogError(ex, msg);
+                _logger?.LogError(ex, msg);
                 response.Mensaje = msg;
                 response.Ok = false;
                 response.EsWarn = false;
@@ -82,7 +82,14 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 
                 var arbol = ArchivosCargadosModulo;
                 var jarbol = JsonConvert.SerializeObject(arbol);
-                return Json(new { error = false, warn = false, arbol = jarbol });
+
+                if (CuentaComercialDatosSeleccionada == null)
+                {
+
+                }
+
+                var cuenta = CuentaComercialDatosSeleccionada;
+                return Json(new { error = false, warn = false, arbol = jarbol, cuenta });
 
             }
             catch (NegocioException ex)
@@ -95,6 +102,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
             }
             catch (Exception ex)
             {
+                _logger?.LogError(ex, "Error al presentar los archivos");
                 return Json(new { error = true, warn = false, msg = ex.Message });
             }
         }
