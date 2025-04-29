@@ -375,7 +375,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 						error = false,
 						warn = false,
 						msg = string.Empty,
-						costo = producto?.ocd_pcosto ?? 0,
+						costo = producto?.ocd_pcosto.ToString("N2") ?? "0",
 					});
 				}
 				else
@@ -453,7 +453,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 						error = false,
 						warn = false,
 						msg = string.Empty,
-						costo = producto?.rpd_pcosto ?? 0,
+						costo = producto?.rpd_pcosto.ToString("N2") ?? "0",
 					});
 				}
 				else
@@ -585,7 +585,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			public bool error { get; set; }
 			public bool warn { get; set; }
 			public string msg { get; set; } = string.Empty;
-			public decimal costo { get; set; } = 0.00M;
+			public string costo { get; set; } = string.Empty;
 		}
 		#endregion
 	}

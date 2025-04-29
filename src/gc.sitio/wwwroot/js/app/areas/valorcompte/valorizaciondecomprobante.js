@@ -16,21 +16,6 @@
 	});
 
 	InicializarPantallaDeFiltros();
-
-	//$(".mytable > thead > tr").sortable({
-	//	items: "> th.sortme",
-	//	start: function (event, ui) {
-	//		ui.item.data("source", ui.item.index());
-	//	},
-	//	update: function (event, ui) {
-	//		moveColumn($(this).closest("table"), ui.item.data("source"), ui.item.index());
-	//		$(".mytable > tbody").sortable("refresh");
-	//	}
-	//});
-
-	//$(".mytable > tbody").sortable({
-	//	items: "> tr.sortme"
-	//});
 });
 
 function moveColumn(table, sourceIndex, targetIndex) {
@@ -106,6 +91,19 @@ function AceptarDescFinanc() {
 	}
 }
 
+function quitarDescFinanc(x) {
+	AbrirWaiting("Eliminando Descuentos Financieros...");
+	var item = $(x).attr("data-interaction");
+	var data = { item };
+	PostGenHtml(data, quitarDescFinancURL, function (obj) {
+		CerrarWaiting();
+		$("#divDescFinanc").html(obj);
+		AddEventListenerToGrid("tbListaDescFinanc");
+		AgregarHandlerDragAndDrop();
+		ActualizarListaValorizaciones();
+	});
+}
+
 function AgregarHandlerDragAndDrop() {
 	$(".drageable-table > thead > tr").sortable({
 		items: "> th.sortme",
@@ -121,8 +119,24 @@ function AgregarHandlerDragAndDrop() {
 	$(".drageable-table > tbody").sortable({
 		items: "> tr.sortme"
 	});
+}
 
-
+function AgregarHandlerAGrillaDetalleRprCheckAll() {
+	var dataTable = document.getElementById('tbListaDetalleRpr');
+	var checkItAll = dataTable.querySelector('input[name="select_all"]');
+	var inputs = dataTable.querySelectorAll('tbody>tr>td>input');
+	checkItAll.addEventListener('change', function () {
+		if (checkItAll.checked) {
+			inputs.forEach(function (input) {
+				input.checked = true;
+			});
+		}
+		else {
+			inputs.forEach(function (input) {
+				input.checked = false;
+			});
+		}
+	});
 }
 
 function RecalcularItemValue() {
@@ -135,7 +149,6 @@ function RecalcularItemValue() {
 			index++;
 		}
 	});
-	console.log("RecalcularItemValue");
 	ActualizarOrdenDeDescFinancEnBackEnd();
 	CerrarWaiting();
 }
@@ -200,19 +213,13 @@ function selectListaValorizacion(x) { }
 
 function selectListaDescFinanc(x) { }
 
-function selectListaDetalleRpr(x) { }
-
-function quitarDescFinanc(x) {
-	AbrirWaiting("Eliminando Descuentos Financieros...");
-	var item = $(x).attr("data-interaction");
-	var data = { item };
-	PostGenHtml(data, quitarDescFinancURL, function (obj) {
-		CerrarWaiting();
-		$("#divDescFinanc").html(obj);
-		AddEventListenerToGrid("tbListaDescFinanc");
-		AgregarHandlerDragAndDrop();
-		ActualizarListaValorizaciones();
-	});
+function selectListaDetalleRpr(x) {
+	if (x) {
+		pIdEnOcSeleccionado = x.cells[1].innerText.trim();
+	}
+	else {
+		pIdSeleccionado = "";
+	}
 }
 
 function AddEventListenerToGrid(tabla) {
@@ -267,6 +274,7 @@ function ControlaListaCompteSelected() {
 				ActualizarVisualizacionDeControlesABMDescFinanc();
 				AplicarMascarasEnInput_Section_DescFinanc();
 				ObtenerListaDetalleRpr();
+				//AgregarHandlerAGrillaDetalleRprCheckAll()
 			}
 		});
 	}
@@ -283,8 +291,8 @@ function ObtenerListaDetalleRpr() {
 		addInCellGotFocusHandler();
 		addInCellLostFocusHandler();
 		addMaskInEditableCells();
-		//tableUpDownArrow();
-
+		tableUpDownArrow();
+		AgregarHandlerAGrillaDetalleRprCheckAll();
 	});
 }
 
@@ -475,7 +483,6 @@ function focusOnTd(x) {
 }
 
 function keyUpFromEditableCell(x) {
-	///TODO MARCE: mover el cursor por las celdas editables
 	if (event.key == "Enter") {
 		var id = $(x).prop("id");
 		if (id.includes("ocd_plista")) {
@@ -572,6 +579,13 @@ function keyUpFromEditableCell(x) {
 		if (id.includes("rpd_boni")) {
 			var arr_p_id = id.split("_");
 			var p_id = arr_p_id[0];
+			var next = p_id + "_rpd_cantidad_compte";
+			$("#" + next).focus();
+			return true;
+		}
+		if (id.includes("_rpd_cantidad_compte")) {
+			var arr_p_id = id.split("_");
+			var p_id = arr_p_id[0];
 			var next = p_id + "_ocd_plista";
 			$("#" + next).focus();
 			return true;
@@ -591,6 +605,7 @@ function addInCellGotFocusHandler() {
 		cellValueTemp = $("#" + this.id).text();
 		if (e.target) {
 			cellIndexTemp = e.target.cellIndex;
+			console.log("cellIndexTemp " + cellIndexTemp);
 		}
 	});
 }
@@ -632,10 +647,50 @@ function addInCellLostFocusHandler() {
 	});
 }
 
-///TODO MARCE: Actualizar datos de producto, luego de la edicion de algunos de sus parámetros editables
-///Generar un metodo para Precio y otro para Factura
-function ActualizarProductoEnDetalleRpr(field, val) {
+function ActualizarProductoEnDetalleRprSeccionPrecio(field, val) {
+	var pId = pIdEnOcSeleccionado;
+	var data = { pId, field, val };
+	PostGen(data, actualizarProdEnRprSeccionPrecioURL, function (obj) {
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			//Actualizar valores en la grilla
+			$("#tbListaDetalleRpr").find('tr').each(function (i, el) {
+				var td = $(this).find('td');
+				if (td.length > 0 && td[1].innerText !== undefined && td[1].innerText === pId) {
+					console.log(obj.costo);
+					td[10].innerText = obj.costo;
+				}
+			});
+		}
+	});
+}
 
+function ActualizarProductoEnDetalleRprSeccionFactura(field, val) {
+	var pId = pIdEnOcSeleccionado;
+	var data = { pId, field, val };
+	PostGen(data, actualizarProdEnRprSeccionFacturaURL, function (obj) {
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			//Actualizar valores en la grilla
+			$("#tbListaDetalleRpr").find('tr').each(function (i, el) {
+				var td = $(this).find('td');
+				if (td.length > 0 && td[1].innerText !== undefined && td[1].innerText === pId) {
+					console.log(obj.costo);
+					td[19].innerText = obj.costo;
+				}
+			});
+		}
+	});
 }
 
 ///TODO MARCE: Revisar y actualizar este metodo
@@ -678,7 +733,7 @@ function tableUpDownArrow() {
 		let sPos = myTable.querySelector('.selected-row')
 			, evt = (e == null ? event : e)
 			, pos = {
-				r: sPos ? sPos.rowIndex : -1
+				r: sPos ? sPos.rowIndex - 1 : -1 //sPos.rowIndex -1 => porque tiene doble fila en la cabecera
 				, c: sPos ? (sPos.cellIndex ? sPos.cellIndex : cellIndexTemp) : -1
 			}
 
@@ -713,14 +768,16 @@ function tableUpDownArrow() {
 					pos.r = nbRows;
 
 				///TODO MARCE: Revisar esto, actualizarlo para la lista actual
-				if (pos.c == 8 && cellIndexTemp < pos.c) //moviendome desde la columna 'pedido bultos' hacia la derecha, la cual no es editable, debo saltar a la siguiente
+				if (pos.c == 10 && cellIndexTemp < pos.c) //moviendome desde la columna 'ocd_boni' hacia la derecha, la cual no es editable, debo saltar a la siguiente editable 'rpd_plista'
+					pos.c = 12;
+				if (pos.c == 19 && cellIndexTemp < pos.c) //moviendome desde la columna 'rpd_boni' hacia la derecha, la cual no es editable, debo saltar a la siguiente editable 'rpd_cantidad_compte'
+					pos.c = 20;
+
+				if (pos.c == 19 && cellIndexTemp > pos.c) //moviendome desde la columna 'rpd_cantidad_compte' hacia la izquierda, la cual no es editable, debo saltar a la siguiente editable 'rpd_boni'
+					pos.c = 18;
+				if (pos.c == 11 && cellIndexTemp > pos.c) //moviendome desde la columna 'rpd_plista' hacia la izquierda, la cual no es editable, debo saltar a la siguiente editable 'ocd_boni'
 					pos.c = 9;
-				if (pos.c == 6 && cellIndexTemp > pos.c) //moviendome desde la columna 'pedido bultos' hacia la izquierda, la cual no es editable, debo saltar a la siguiente
-					pos.c = 15;
-				if (pos.c == 8 && cellIndexTemp > pos.c) //moviendome desde la columna 'precio lista' hacia la izquierda, la cual no es editable, debo saltar a la siguiente
-					pos.c = 7;
-				if (pos.c == 16 && cellIndexTemp < pos.c) //moviendome desde la columna 'boni' hacia la derecha, la cual no es editable, debo saltar a la siguiente
-					pos.c = 7;
+				
 				nxFocus = myTable.rows[pos.r - 1].cells[pos.c]
 
 				if (nxFocus
@@ -748,23 +805,23 @@ function addMaskInEditableCells() {
 	if ($("#tbListaDetalleRpr").length != 0) {
 		$("#tbListaDetalleRpr").find('tr').each(function (i, el) {
 			var td = $(this).find('td');
-			if (td.length == 22) {
-				getMaskForMoneyType("#" + td[2].id); //_plista
-				getMaskForDiscountType("#" + td[3].id);//_dto1
-				getMaskForDiscountType("#" + td[4].id);//_dto2
-				getMaskForDiscountType("#" + td[5].id);//p_dto3
-				getMaskForDiscountType("#" + td[6].id);//p_dto4
-				getMaskForDiscountType("#" + td[7].id);//p_dto_pa
-				$("#" + td[8].id).mask("000/000", { reverse: false });//p_boni
+			if (td.length == 23) {
+				getMaskForMoneyType("#" + td[3].id); //_plista
+				getMaskForDiscountType("#" + td[4].id);//_dto1
+				getMaskForDiscountType("#" + td[5].id);//_dto2
+				getMaskForDiscountType("#" + td[6].id);//p_dto3
+				getMaskForDiscountType("#" + td[7].id);//p_dto4
+				getMaskForDiscountType("#" + td[8].id);//p_dto_pa
+				$("#" + td[9].id).mask("000/000", { reverse: false });//p_boni
 
-				getMaskForMoneyType("#" + td[11].id); //_plista
-				getMaskForDiscountType("#" + td[12].id);//_dto1
-				getMaskForDiscountType("#" + td[13].id);//_dto2
-				getMaskForDiscountType("#" + td[14].id);//p_dto3
-				getMaskForDiscountType("#" + td[15].id);//p_dto4
-				getMaskForDiscountType("#" + td[16].id);//p_dto_pa
-				$("#" + td[17].id).mask("000/000", { reverse: false });//p_boni
-				getMaskForDiscountType("#" + td[19].id);//p_dto_pa
+				getMaskForMoneyType("#" + td[12].id); //_plista
+				getMaskForDiscountType("#" + td[13].id);//_dto1
+				getMaskForDiscountType("#" + td[14].id);//_dto2
+				getMaskForDiscountType("#" + td[15].id);//p_dto3
+				getMaskForDiscountType("#" + td[16].id);//p_dto4
+				getMaskForDiscountType("#" + td[17].id);//p_dto_pa
+				$("#" + td[18].id).mask("000/000", { reverse: false });//p_boni
+				getMaskForDiscountType("#" + td[20].id);//p_dto_pa
 			}
 		});
 	}
