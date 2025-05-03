@@ -36,7 +36,7 @@ namespace gc.api.Controllers.Almacen
 		public IActionResult GetCuentaGastoParaABM(string ctag_id)
 		{
 			ApiResponse<List<CuentaGastoDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _cuentaGastoServicio.GetCuentaGastoParaABM(ctag_id);
 
 			response = new ApiResponse<List<CuentaGastoDto>>(res);

@@ -40,7 +40,7 @@ namespace gc.api.Controllers.Billeteras
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public IActionResult Getbilleterass([FromQuery] QueryFilters filters)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var billeterass = _billeterasSv.GetAll(filters);
             var billeterasDtos = _mapper.Map<IEnumerable<BilleteraDto>>(billeterass);
 
@@ -53,8 +53,8 @@ namespace gc.api.Controllers.Billeteras
                 TotalPages = billeterass.TotalPages,
                 HasNextPage = billeterass.HasNextPage,
                 HasPreviousPage = billeterass.HasPreviousPage,
-                NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getbilleterass))).ToString(),
-                PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getbilleterass))).ToString(),
+                NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getbilleterass)) ?? "").ToString(),
+                PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getbilleterass)) ?? "").ToString(),
 
             };
 
@@ -70,9 +70,9 @@ namespace gc.api.Controllers.Billeteras
 
         // GET api/<billeterasController>/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(string id)
+        public IActionResult Get(string id)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var billeteras = _billeterasSv.FindBilletera(id);
             var datoDto = _mapper.Map<BilleteraDto>(billeteras.Item1);            
             datoDto.Bill_Ruta_PublicKey = billeteras.Item2;
@@ -85,7 +85,7 @@ namespace gc.api.Controllers.Billeteras
         [HttpPost]
         public async Task<IActionResult> Post(BilleteraDto datoDto)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var billeteras = _mapper.Map<Billetera>(datoDto);
             var res = await _billeterasSv.AddAsync(billeteras);
 
@@ -98,7 +98,7 @@ namespace gc.api.Controllers.Billeteras
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(string id, [FromBody] BilleteraDto datoDto)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var billeteras = _mapper.Map<Billetera>(datoDto);
             billeteras.Bill_id = id; //garantizo que el id buscado es el que se envia al negocio
             var result = await _billeterasSv.Update(billeteras);
@@ -111,7 +111,7 @@ namespace gc.api.Controllers.Billeteras
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = await _billeterasSv.Delete(id);
             var response = new ApiResponse<bool>(res);
             return Ok(response);

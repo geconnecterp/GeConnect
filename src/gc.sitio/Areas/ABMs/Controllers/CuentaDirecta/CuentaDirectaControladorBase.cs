@@ -12,12 +12,10 @@ namespace gc.sitio.Areas.ABMs.Controllers.CuentaDirecta
 	public class CuentaDirectaControladorBase : ControladorBase
 	{
 		private readonly AppSettings _setting;
-		private readonly ILogger _logger;
 
 		public CuentaDirectaControladorBase(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger logger) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
-			_logger = logger;
 		}
 
 		#region ABM
@@ -69,7 +67,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.CuentaDirecta
 				{
 					return [];
 				}
-				return JsonConvert.DeserializeObject<List<ABMCuentaDirectaSearchDto>>(json);
+				return JsonConvert.DeserializeObject<List<ABMCuentaDirectaSearchDto>>(json) ?? [];
 			}
 			set
 			{
@@ -87,7 +85,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.CuentaDirecta
 				{
 					return new MetadataGrid();
 				}
-				return JsonConvert.DeserializeObject<MetadataGrid>(txt); ;
+				return JsonConvert.DeserializeObject<MetadataGrid>(txt) ?? new() ;
 			}
 			set
 			{

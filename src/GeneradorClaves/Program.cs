@@ -18,7 +18,7 @@ void InicializaPantalla()
 
 try
 {
-	InicializaPantalla();
+    InicializaPantalla();
 
     IConfiguration configuration = new ConfigurationBuilder()
 
@@ -35,24 +35,26 @@ try
     var serviceProvider = serviceColeccion.BuildServiceProvider();
 
     Console.Clear();
-    
+
     var proc = serviceProvider.GetService<IGeneradorClave>();
+    if (proc != null)
+    {
+        Thread thProcCud = new Thread(new ThreadStart(proc.TestDeRSA));
+        thProcCud.Start();
+        thProcCud.Join();
+    }
+    else
+    {
+        Console.WriteLine("No se pudo obtener el servicio de generador de claves.");
+        return;
+    }
 
-    Thread thProcCud = new Thread(new ThreadStart(proc.TestDeRSA));
-
-    thProcCud.Start();
-
-
-
-    //indico que espere a que todos terminen
-
-    thProcCud.Join();
 
     Console.WriteLine("Claves Generadas");
 }
-catch (Exception ex)
+catch (Exception)
 {
 
-	throw;
+    throw;
 }
 

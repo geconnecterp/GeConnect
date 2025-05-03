@@ -33,7 +33,7 @@ namespace gc.api.Controllers.Security
         [HttpPost]
         public async Task<IActionResult> Post(RegistroUserDto registroUserDto) //la entidad enviada debe venir en formato Json
         {
-            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             registroUserDto.Password = _passwordService.CalculaClave(registroUserDto);
 
             Usuario usuarios = _mapper.Map<Usuario>(registroUserDto);
@@ -47,9 +47,9 @@ namespace gc.api.Controllers.Security
 
         [HttpGet]
 		[Route("[action]")]
-		public async Task<IActionResult> ObtenerMenuPorUsuario(string usuId)
+		public IActionResult ObtenerMenuPorUsuario(string usuId)
 		{
-			_logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var respuesta = _menuService.GetMenuList(usuId);
 			var response = new ApiResponse<List<UsuarioMenu>>(respuesta);
 

@@ -47,8 +47,9 @@ namespace gc.sitio.core.Servicios.Implementacion
 					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 					if (!string.IsNullOrEmpty(stringData))
 					{
-						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<AdministracionDto>>>(stringData);
-					}
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<AdministracionDto>>>(stringData)
+                            ?? new ApiResponse<List<AdministracionDto>>(new List<AdministracionDto>());
+                    }
 					else
 					{
 						throw new Exception("No se logro obtener la respuesta de la API con los datos de la cuenta administrativa. Verifique.");
@@ -88,7 +89,8 @@ namespace gc.sitio.core.Servicios.Implementacion
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                    respuesta = JsonConvert.DeserializeObject<ApiResponse<List<AdministracionLoginDto>>>(stringData);
+                    respuesta = JsonConvert.DeserializeObject<ApiResponse<List<AdministracionLoginDto>>>(stringData) 
+                        ?? throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde.");
 
                     return respuesta.Data;
                 }
@@ -146,19 +148,19 @@ namespace gc.sitio.core.Servicios.Implementacion
                 try
                 {                
                     var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
-                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    if (error != null && error.TypeException?.Equals(nameof(NegocioException)) == true)
                     {
-                        throw new NegocioException(error.Detail);
+                        throw new NegocioException(error.Detail ?? "Hubo un problema en la recepcion de las Administraciones");
                     }
-                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    else if (error != null && error.TypeException?.Equals(nameof(NotFoundException)) == true)
                     {
-                        throw new NegocioException(error.Detail);
+                        throw new NegocioException(error.Detail ?? "Hubo un problema en la recepcion de las Administraciones");
                     }
                     else
                     {
-                        throw new Exception(error.Detail);
+                        throw new Exception(error?.Detail);
                     }
-                    return new();
+                    
                 }
                 catch
                 {

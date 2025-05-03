@@ -37,7 +37,7 @@ namespace gc.api.Controllers.Almacen
         [Route("[action]")]
         public IActionResult ObtenerRemitosTransferidosLista(string admId, string reeId = "%")
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             List<RemitoGenDto> remitos = _remSv.ObtenerRemitosPendientes(admId, reeId);
             var lista = _mapper.Map<List<RemitoGenDto>>(remitos);
 
@@ -49,7 +49,7 @@ namespace gc.api.Controllers.Almacen
         [Route("[action]")]
         public IActionResult SetearEstado(RSetearEstadoRequest request)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             List<RespuestaDto> remitos = _remSv.SeteaEstado(request);
             var lista = _mapper.Map<List<RespuestaDto>>(remitos);
 
@@ -61,7 +61,7 @@ namespace gc.api.Controllers.Almacen
         [Route("[action]")]
         public IActionResult VerConteos(string remCompte)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             List<RemitoVerConteoDto> remitos = _remSv.VerConteos(remCompte);
             var lista = _mapper.Map<List<RemitoVerConteoDto>>(remitos);
 
@@ -73,7 +73,7 @@ namespace gc.api.Controllers.Almacen
         [Route("[action]")]
         public IActionResult ConfirmarRecepcion(RConfirmaRecepcionRequest request)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             List<RespuestaDto> remitos = _remSv.ConfirmaRecepcion(request);
             var lista = _mapper.Map<List<RespuestaDto>>(remitos);
 
@@ -85,7 +85,7 @@ namespace gc.api.Controllers.Almacen
         [Route("[action]")]
         public IActionResult VerificaProductoEnRemito(string remCompte, string pId)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             RespuestaDto resp = _remSv.VerificaProductoEnRemito(remCompte, pId);
             
 
@@ -100,7 +100,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult RTRCargarConteos(CargarJsonGenRequest request,bool esMod =false)
         {
             ApiResponse<RespuestaDto> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             RespuestaDto res = _remSv.RTRCargarConteos(request,esMod);
 
             response = new ApiResponse<RespuestaDto>(res);
@@ -112,7 +112,7 @@ namespace gc.api.Controllers.Almacen
 		[Route("[action]")]
 		public IActionResult RTRCargarConteosXUL(string reCompte)
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<RTRxULDto> remitos = _remSv.RTRCargarConteosXUL(reCompte);
 			var lista = _mapper.Map<List<RTRxULDto>>(remitos);
 

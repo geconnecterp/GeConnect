@@ -1,10 +1,12 @@
 ﻿using gc.api.core.Contratos.Servicios;
 using gc.api.core.Contratos.Servicios.ABM;
+using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Contratos.Servicios.Tipos;
 using gc.api.core.Interfaces.Datos;
 using gc.api.core.Interfaces.Servicios;
 using gc.api.core.Servicios;
 using gc.api.core.Servicios.ABM;
+using gc.api.core.Servicios.Reportes;
 using gc.api.core.Servicios.Tipos;
 using gc.api.infra.Datos.Contratos;
 using gc.api.infra.Datos.Contratos.Security;
@@ -89,6 +91,13 @@ namespace gc.api.infra.Extensions
             services.AddScoped<IABMRepartidorServicio, ABMRepartidorServicio>();
             services.AddScoped<IABMPlanCuentaServicio, ABMPlanCuentaServicio>();
             services.AddScoped<ITipoDtoValorizaRprServicio, TipoDtoValorizaRprServicio>();
+
+            //De Reportes
+            
+            services.AddScoped<IPdfReportService, PdfReportService>();
+            services.AddScoped<IGeneradorReporte, R001_InformeCuentaCorriente>();
+
+            
 
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));

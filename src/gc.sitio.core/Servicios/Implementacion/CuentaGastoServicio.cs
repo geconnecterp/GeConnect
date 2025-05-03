@@ -43,8 +43,9 @@ namespace gc.sitio.core.Servicios.Implementacion
 					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 					if (!string.IsNullOrEmpty(stringData))
 					{
-						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<CuentaGastoDto>>>(stringData);
-					}
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<CuentaGastoDto>>>(stringData)
+                            ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+                    }
 					else
 					{
 						throw new Exception("No se logro obtener la respuesta de la API con los datos de la cuenta directa. Verifique.");

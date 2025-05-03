@@ -252,7 +252,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				_logger?.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name}");
 				return Json(new { error = true, warn = false, msg = "Algo no fue bien al validar el ajuste, intente nuevamente mas tarde." });
 			}
 		}
@@ -475,7 +475,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				_logger?.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name}");
 				return Json(new { error = true, warn = false, msg = "Algo no fue bien al confirmar el ajuste, intente nuevamente mas tarde." });
 			}
 		}
@@ -495,7 +495,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				_logger?.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name}");
 				return Json(new { error = true, warn = false, msg = "Algo no fue bien al validar el ajuste, intente nuevamente mas tarde." });
 			}
 		}

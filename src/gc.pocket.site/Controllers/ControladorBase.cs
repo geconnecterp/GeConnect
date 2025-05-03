@@ -31,7 +31,7 @@ namespace gc.pocket.site.Controllers
         private readonly AppSettings _options;
         private readonly MenuSettings? _menuSettings;
         protected readonly IHttpContextAccessor _context;
-        public List<Orden> _orden;
+        //public List<Orden> _orden;
         private readonly ILogger _logger;
 
         public ControladorBase(IOptions<AppSettings> options, IOptions<MenuSettings> options1, IHttpContextAccessor contexto, ILogger logger)
@@ -55,7 +55,7 @@ namespace gc.pocket.site.Controllers
             {
                 throw new NegocioException("No se encuentra cargada la configuración de los modulos. Verifique funcianalidad.");
             }
-            return _menuSettings.Aplicaciones.SingleOrDefault(m => m.Sigla.Equals(sigla));
+            return _menuSettings.Aplicaciones.SingleOrDefault(m => m.Sigla.Equals(sigla)) ?? new();
         }
 
 
@@ -69,14 +69,14 @@ namespace gc.pocket.site.Controllers
 
         public string Etiqueta
         {
-            get { return _context.HttpContext?.Session.GetString("Etiqueta"); }
+            get { return _context.HttpContext?.Session.GetString("Etiqueta")??string.Empty; }
 
             set { HttpContext.Session.SetString("Etiqueta", value); }
         }
 
         public string Token
         {
-            get { return _context.HttpContext?.Session.GetString("JwtToken"); }
+            get { return _context.HttpContext?.Session.GetString("JwtToken") ?? string.Empty; }
 
             set { HttpContext.Session.SetString("JwtToken", value); }
         }
@@ -87,7 +87,7 @@ namespace gc.pocket.site.Controllers
             {
                 //la Cookie se resgardará con una etiqueta distinta cada vez que se mandara desde el servidor. 
                 //var nombre = User.Claims.First(c => c.Type.Contains("name")).Value;
-                return _context.HttpContext?.Request.Cookies[Etiqueta];
+                return _context.HttpContext?.Request.Cookies[Etiqueta] ?? string.Empty;
             }
 
         }
@@ -132,6 +132,10 @@ namespace gc.pocket.site.Controllers
                 try
                 {
                     var tokenS = handler.ReadToken(TokenCookie) as JwtSecurityToken;
+                    if (tokenS == null)
+                    {
+                        return (false, null);
+                    }
                     var venc = tokenS.Claims.First(c => c.Type.Contains("expires")).Value;
                     expira = venc.ToDateTimeFromTicks();
                     if (!expira.HasValue || expira.Value < DateTime.Now)
@@ -151,7 +155,10 @@ namespace gc.pocket.site.Controllers
             {
                 var handler = new JwtSecurityTokenHandler(); //Libreria System.IdentityModel.Token.Jwt (6.7.1)
                 var tokenS = handler.ReadToken(Token) as JwtSecurityToken;
-
+                if(tokenS == null)
+                {
+                    return false;
+                }
                 var rolesUser = tokenS.Claims.First(c => c.Type.Contains("role")).Value;
                 if (string.IsNullOrEmpty(rolesUser)) { return false; }
                 return true;
@@ -164,6 +171,10 @@ namespace gc.pocket.site.Controllers
             {
                 var handler = new JwtSecurityTokenHandler(); //Libreria System.IdentityModel.Token.Jwt (6.7.1)
                 var tokenS = handler.ReadToken(TokenCookie) as JwtSecurityToken;
+                if (tokenS == null)
+                {
+                    return string.Empty;
+                }
                 var rolesUser = tokenS.Claims.First(c => c.Type.Contains("role")).Value;
 
                 #region codigo despreciable para saber el rol
@@ -207,6 +218,10 @@ namespace gc.pocket.site.Controllers
             {
                 var handler = new JwtSecurityTokenHandler(); //Libreria System.IdentityModel.Token.Jwt (6.7.1)
                 var tokenS = handler.ReadToken(TokenCookie) as JwtSecurityToken;
+                if (tokenS == null)
+                {
+                    return default;
+                }
                 var id = tokenS.Claims.First(c => c.Type.Contains("id")).Value;
                 if (string.IsNullOrEmpty(id)) { return default; }
                 return id.ToGuid();
@@ -219,6 +234,10 @@ namespace gc.pocket.site.Controllers
             {
                 var handler = new JwtSecurityTokenHandler(); //Libreria System.IdentityModel.Token.Jwt (6.7.1)
                 var tokenS = handler.ReadToken(TokenCookie) as JwtSecurityToken;
+                if (tokenS == null)
+                {
+                    return string.Empty;
+                }
                 var usuario = tokenS.Claims.First(c => c.Type.Contains("user")).Value;
                 if (string.IsNullOrEmpty(usuario)) { return string.Empty; }
                 return usuario;
@@ -231,7 +250,7 @@ namespace gc.pocket.site.Controllers
             get
             {
                
-                var box = _context.HttpContext?.Session.GetString("BoxSeleccionado");
+                var box = _context.HttpContext?.Session.GetString("BoxSeleccionado") ?? string.Empty;
                 if (string.IsNullOrEmpty(box) || string.IsNullOrWhiteSpace(box))
                 {
                     return string.Empty;
@@ -246,7 +265,7 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var taj = _context.HttpContext?.Session.GetString("TipoAjusteStk");
+                var taj = _context.HttpContext?.Session.GetString("TipoAjusteStk") ?? string.Empty;
                 if (string.IsNullOrEmpty(taj) || string.IsNullOrWhiteSpace(taj))
                 {
                     return string.Empty;
@@ -260,12 +279,12 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var json = _context.HttpContext?.Session.GetString("ListaTipoAjuste");
+                var json = _context.HttpContext?.Session.GetString("ListaTipoAjuste") ?? string.Empty;
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return new List<TipoAjusteDeStockDto>();
                 }
-                return JsonConvert.DeserializeObject<List<TipoAjusteDeStockDto>>(json);
+                return JsonConvert.DeserializeObject<List<TipoAjusteDeStockDto>>(json) ?? [];
             }
             set
             {
@@ -278,12 +297,12 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var json = _context.HttpContext?.Session.GetString("ProveedoresLista");
+                var json = _context.HttpContext?.Session.GetString("ProveedoresLista") ?? string.Empty;
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return new List<ProveedorListaDto>();
                 }
-                return JsonConvert.DeserializeObject<List<ProveedorListaDto>>(json);
+                return JsonConvert.DeserializeObject<List<ProveedorListaDto>>(json) ?? [];
             }
             set
             {
@@ -296,12 +315,12 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var json = _context.HttpContext?.Session.GetString("RubroLista");
+                var json = _context.HttpContext?.Session.GetString("RubroLista") ?? string.Empty;
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return new List<RubroListaDto>();
                 }
-                return JsonConvert.DeserializeObject<List<RubroListaDto>>(json);
+                return JsonConvert.DeserializeObject<List<RubroListaDto>>(json) ?? [];
             }
             set
             {
@@ -328,12 +347,12 @@ namespace gc.pocket.site.Controllers
 
             get
             {
-                var json = _context.HttpContext?.Session.GetString("ProductosParaControlar");
+                var json = _context.HttpContext?.Session.GetString("ProductosParaControlar") ?? string.Empty;
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
                 }
-                return JsonConvert.DeserializeObject<List<TiListaProductoDto>>(json);
+                return JsonConvert.DeserializeObject<List<TiListaProductoDto>>(json) ?? [];
             }
             set
             {
@@ -346,12 +365,12 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var json = _context.HttpContext?.Session.GetString("ProductosSeleccionados");
+                var json = _context.HttpContext?.Session.GetString("ProductosSeleccionados") ?? string.Empty;
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
                 }
-                return JsonConvert.DeserializeObject<List<ProductoBusquedaDto>>(json);
+                return JsonConvert.DeserializeObject<List<ProductoBusquedaDto>>(json) ?? [];
             }
             set
             {
@@ -365,12 +384,12 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                string json = _context.HttpContext?.Session.GetString("ProductoBase");
+                string json = _context.HttpContext?.Session.GetString("ProductoBase") ?? string.Empty   ;
                 if (string.IsNullOrEmpty(json))
                 {
                     return new();
                 }
-                return JsonConvert.DeserializeObject<ProductoBusquedaDto>(json);
+                return JsonConvert.DeserializeObject<ProductoBusquedaDto>(json)??new();
             }
             set
             {
@@ -387,12 +406,12 @@ namespace gc.pocket.site.Controllers
 
             get
             {
-                string json = _context.HttpContext?.Session.GetString("InfoProdStkDId");
+                string json = _context.HttpContext?.Session.GetString("InfoProdStkDId")??string.Empty;
                 if (string.IsNullOrEmpty(json))
                 {
                     return string.Empty;
                 }
-                return JsonConvert.DeserializeObject<string>(json);
+                return JsonConvert.DeserializeObject<string>(json)??string.Empty;
             }
             set
             {
@@ -404,12 +423,12 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                string json = _context.HttpContext?.Session.GetString("InfoProdStkDRegs");
+                string json = _context.HttpContext?.Session.GetString("InfoProdStkDRegs")??string.Empty;
                 if (string.IsNullOrEmpty(json))
                 {
                     return new();
                 }
-                return JsonConvert.DeserializeObject<List<InfoProdStkD>>(json);
+                return JsonConvert.DeserializeObject<List<InfoProdStkD>>(json) ?? [];
             }
             set
             {
@@ -426,7 +445,7 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                string json = _context.HttpContext?.Session.GetString("InfoProdStkBoxesIds");
+                string json = _context.HttpContext?.Session.GetString("InfoProdStkBoxesIds") ?? string.Empty;
                 if (string.IsNullOrEmpty(json))
                 {
                     return (string.Empty, string.Empty);
@@ -443,12 +462,12 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                string json = _context.HttpContext?.Session.GetString("InfoProdStkBoxesRegs");
+                string json = _context.HttpContext?.Session.GetString("InfoProdStkBoxesRegs") ?? string.Empty;
                 if (string.IsNullOrEmpty(json))
                 {
                     return new();
                 }
-                return JsonConvert.DeserializeObject<List<InfoProdStkBox>>(json);
+                return JsonConvert.DeserializeObject<List<InfoProdStkBox>>(json) ?? [];
             }
             set
             {
@@ -463,12 +482,12 @@ namespace gc.pocket.site.Controllers
 
             get
             {
-                string json = _context.HttpContext?.Session.GetString("InfoProdStkAId");
+                string json = _context.HttpContext?.Session.GetString("InfoProdStkAId") ?? string.Empty;
                 if (string.IsNullOrEmpty(json))
                 {
                     return string.Empty;
                 }
-                return JsonConvert.DeserializeObject<string>(json);
+                return JsonConvert.DeserializeObject<string>(json)??string.Empty;
             }
             set
             {
@@ -480,12 +499,12 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                string json = _context.HttpContext?.Session.GetString("InfoProdStkARegs");
+                string json = _context.HttpContext?.Session.GetString("InfoProdStkARegs") ?? string.Empty;
                 if (string.IsNullOrEmpty(json))
                 {
                     return new();
                 }
-                return JsonConvert.DeserializeObject<List<InfoProdStkA>>(json);
+                return JsonConvert.DeserializeObject<List<InfoProdStkA>>(json) ?? [];
             }
             set
             {
@@ -504,12 +523,12 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                string json = _context.HttpContext?.Session.GetString("InfoProdMovStkIds");
+                string json = _context.HttpContext?.Session.GetString("InfoProdMovStkIds") ?? string.Empty;
                 if (string.IsNullOrEmpty(json))
                 {
                     return string.Empty;
                 }
-                return JsonConvert.DeserializeObject<string>(json);
+                return JsonConvert.DeserializeObject<string>(json) ??string.Empty;
             }
             set
             {
@@ -521,12 +540,12 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                string json = _context.HttpContext?.Session.GetString("InfoProdMovStkRegs");
+                string json = _context.HttpContext?.Session.GetString("InfoProdMovStkRegs") ?? string.Empty;
                 if (string.IsNullOrEmpty(json))
                 {
                     return new();
                 }
-                return JsonConvert.DeserializeObject<List<InfoProdMovStk>>(json);
+                return JsonConvert.DeserializeObject<List<InfoProdMovStk>>(json) ?? [];
             }
             set
             {
@@ -541,12 +560,12 @@ namespace gc.pocket.site.Controllers
 
             get
             {
-                string json = _context.HttpContext?.Session.GetString("InfoProdLPId");
+                string json = _context.HttpContext?.Session.GetString("InfoProdLPId") ?? string.Empty;
                 if (string.IsNullOrEmpty(json))
                 {
                     return string.Empty;
                 }
-                return JsonConvert.DeserializeObject<string>(json);
+                return JsonConvert.DeserializeObject<string>(json) ?? string.Empty;
             }
             set
             {
@@ -558,12 +577,12 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                string json = _context.HttpContext?.Session.GetString("InfoProdLPRegs");
+                string json = _context.HttpContext?.Session.GetString("InfoProdLPRegs") ?? string.Empty;
                 if (string.IsNullOrEmpty(json))
                 {
                     return new();
                 }
-                return JsonConvert.DeserializeObject<List<InfoProdLP>>(json);
+                return JsonConvert.DeserializeObject<List<InfoProdLP>>(json) ?? [];
             }
             set
             {
@@ -579,12 +598,12 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var json = _context.HttpContext?.Session.GetString("AutorizacionesPendientes");
+                var json = _context.HttpContext?.Session.GetString("AutorizacionesPendientes") ?? string.Empty;
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
                 }
-                return JsonConvert.DeserializeObject<List<AutorizacionPendienteDto>>(json);
+                return JsonConvert.DeserializeObject<List<AutorizacionPendienteDto>>(json) ?? [];
             }
             set
             {
@@ -597,12 +616,12 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var json = _context.HttpContext?.Session.GetString("AutorizacionPendienteSeleccionada");
+                var json = _context.HttpContext?.Session.GetString("AutorizacionPendienteSeleccionada") ?? string.Empty;
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
-                    return null;
+                    return new();
                 }
-                return JsonConvert.DeserializeObject<AutorizacionPendienteDto>(json);
+                return JsonConvert.DeserializeObject<AutorizacionPendienteDto>(json) ?? new();
             }
             set
             {
@@ -615,12 +634,12 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                string json = _context.HttpContext?.Session.GetString("RPRProductoTemp");
+                string json = _context.HttpContext?.Session.GetString("RPRProductoTemp") ?? string.Empty;
                 if (string.IsNullOrEmpty(json))
                 {
                     return new();
                 }
-                return JsonConvert.DeserializeObject<ProductoGenDto>(json);
+                return JsonConvert.DeserializeObject<ProductoGenDto>(json)??new();
             }
             set
             {
@@ -633,12 +652,12 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                string json = _context.HttpContext?.Session.GetString("ProductoGenRegs");
+                string json = _context.HttpContext?.Session.GetString("ProductoGenRegs") ?? string.Empty;
                 if (string.IsNullOrEmpty(json))
                 {
                     return new();
                 }
-                return JsonConvert.DeserializeObject<List<ProductoGenDto>>(json);
+                return JsonConvert.DeserializeObject<List<ProductoGenDto>>(json) ?? [];
             }
             set
             {
@@ -655,12 +674,12 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var json = _context.HttpContext?.Session.GetString("RemitosPendientes");
+                var json = _context.HttpContext?.Session.GetString("RemitosPendientes") ?? string.Empty;
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
                 }
-                return JsonConvert.DeserializeObject<List<RemitoGenDto>>(json);
+                return JsonConvert.DeserializeObject<List<RemitoGenDto>>(json) ?? [];
             }
             set
             {
@@ -673,12 +692,12 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var json = _context.HttpContext?.Session.GetString("RemitoActual");
+                var json = _context.HttpContext?.Session.GetString("RemitoActual") ?? string.Empty;
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
-                    return null;
+                    return new();
                 }
-                return JsonConvert.DeserializeObject<RemitoGenDto>(json);
+                return JsonConvert.DeserializeObject<RemitoGenDto>(json) ?? new();
             }
             set
             {
@@ -695,7 +714,7 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var txt = _context.HttpContext?.Session.GetString("TIModuloActual");
+                var txt = _context.HttpContext?.Session.GetString("TIModuloActual") ?? string.Empty;
                 if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
                 {
                     return Constantes.ValoresDefault.TI_MODID;
@@ -714,7 +733,7 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var txt = _context.HttpContext?.Session.GetString("TIControlSalida");
+                var txt = _context.HttpContext?.Session.GetString("TIControlSalida") ?? string.Empty;
                 if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
                 {
                     return false;
@@ -733,12 +752,12 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var json = _context.HttpContext?.Session.GetString("TIActual");
+                var json = _context.HttpContext?.Session.GetString("TIActual") ?? string.Empty;
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return new();
                 }
-                return JsonConvert.DeserializeObject<AutorizacionTIDto>(json);
+                return JsonConvert.DeserializeObject<AutorizacionTIDto>(json) ?? new()  ;
             }
             set
             {
@@ -750,12 +769,12 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var json = _context.HttpContext?.Session.GetString("ListadoTIAutoPendientes");
+                var json = _context.HttpContext?.Session.GetString("ListadoTIAutoPendientes") ?? string.Empty;
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
                 }
-                return JsonConvert.DeserializeObject<List<AutorizacionTIDto>>(json);
+                return JsonConvert.DeserializeObject<List<AutorizacionTIDto>>(json) ?? [];
             }
             set
             {
@@ -768,12 +787,12 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var json = _context.HttpContext?.Session.GetString("ListaProductosActual");
+                var json = _context.HttpContext?.Session.GetString("ListaProductosActual") ?? string.Empty;
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
                 }
-                return JsonConvert.DeserializeObject<List<TiListaProductoDto>>(json);
+                return JsonConvert.DeserializeObject<List<TiListaProductoDto>>(json) ?? [];
             }
             set
             {
@@ -786,12 +805,12 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var json = _context.HttpContext?.Session.GetString("ListaProductosSegunBox");
+                var json = _context.HttpContext?.Session.GetString("ListaProductosSegunBox") ?? string.Empty;
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
                 }
-                return JsonConvert.DeserializeObject<List<TiListaProductoDto>>(json);
+                return JsonConvert.DeserializeObject<List<TiListaProductoDto>>(json) ?? [];
             }
             set
             {
@@ -804,12 +823,12 @@ namespace gc.pocket.site.Controllers
         {
             get
             {
-                var json = _context.HttpContext?.Session.GetString("TiposMotivo");
+                var json = _context.HttpContext?.Session.GetString("TiposMotivo") ?? string.Empty;
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
                 }
-                return JsonConvert.DeserializeObject<List<TipoMotivoDto>>(json);
+                return JsonConvert.DeserializeObject<List<TipoMotivoDto>>(json) ?? []   ;
             }
             set
             {
@@ -838,7 +857,7 @@ namespace gc.pocket.site.Controllers
 
         public IQueryable<T> OrdenarEntidad<T>(IQueryable<T> lista, string sortdir, string sort) where T : Dto
         {
-            IQueryable<T> query = null;
+            IQueryable<T> query ;
             query = lista.AsQueryable().OrderBy($"{sort} {sortdir}");
 
             return query;
@@ -853,7 +872,7 @@ namespace gc.pocket.site.Controllers
 
         protected GridCoreSmart<T> GenerarGrilla<T>(List<T>? lista, string nnCol, int cantReg, int pagina, int totalReg, int totalPag = 0, string sortDir = "ASC")
         {
-            var l = new StaticPagedList<T>(lista, pagina, cantReg, lista.Count);
+            var l = new StaticPagedList<T>(lista, pagina, cantReg, lista?.Count ?? 0);
 
             return new GridCoreSmart<T>() { ListaDatos = l, CantidadReg = cantReg, PaginaActual = pagina, CantidadPaginas = totalPag, Sort = nnCol, SortDir = sortDir };
         }

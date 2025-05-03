@@ -1,6 +1,9 @@
 ﻿using IronBarCode;
-using System.Drawing;
-using System.Drawing.Imaging;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Drawing.Processing;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using System.Net.Mail;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -362,49 +365,57 @@ namespace gc.infraestructura.Core.Helpers
         /// <returns></returns>
         public static string GeneraIdEnCodeBar3of9(string id)
         {
-          string b64=string.Empty;
-            var  barcode = BarcodeWriter.CreateBarcode($"*{id}*", BarcodeEncoding.Code39);
-            using(MemoryStream ms = new MemoryStream())
+            string b64 = string.Empty;
+            // Generar el código de barras  
+            var barcode = BarcodeWriter.CreateBarcode($"*{id}*", BarcodeEncoding.Code39);
+
+            using (MemoryStream ms = new MemoryStream())
             {
-                using (Bitmap bmp = barcode.ToBitmap())
+                // Convertir la imagen del código de barras a bytes  
+                byte[] barcodeBytes = barcode.ToPngBinaryData(); // Cambiado de ToByteArray a ToPngBinaryData  
+
+                // Cargar la imagen desde los bytes usando ImageSharp  
+                using (var img = Image.Load<Rgba32>(barcodeBytes))
                 {
-                    bmp.Save(ms, ImageFormat.Png);
+                    // Crear una instancia del PngEncoder  
+                    var pngEncoder = new PngEncoder();
+
+                    // Guardar la imagen en el MemoryStream usando SixLabors.ImageSharp  
+                    img.Save(ms, pngEncoder);
                 }
 
                 byte[] data = ms.ToArray();
-                b64 =Convert.ToBase64String(data);
+                b64 = Convert.ToBase64String(data);
             }
+
             return b64;
-            
         }
 
         public static string GeneraIdEnCodeBar3of9WithText(string id)
         {
             string b64 = string.Empty;
+            //se crea el codigo de barras
             var barcode = BarcodeWriter.CreateBarcode(id, BarcodeEncoding.Code39, 100, 50);
-            using (MemoryStream ms = new MemoryStream())
-            {
-                using (var finalImg = new Bitmap(barcode.Width, barcode.Height + 50))
-                {
-                    using (var graphics= Graphics.FromImage(finalImg))
-                    {
-                        graphics.DrawImage(barcode.ToImage(), 0, 0);
+            var font = SixLabors.Fonts.SystemFonts.CreateFont("Arial", 12);
 
-                        // Configurar la fuente y el color del texto
-                        using (var font = new Font("Arial", 12, FontStyle.Regular))
-                        {
-                            using (var brush = new SolidBrush(Color.Black))
-                            {
-                                // Dibujar el texto debajo del código de barras
-                                graphics.DrawString(id, font, brush, new PointF(10, barcode.Height + 5)); // Ajusta la posición según sea necesario
-                            }
-                        }
-                    }
-                    finalImg.Save(ms, ImageFormat.Png);
+            using (var finalImg = new Image<Rgba32>(barcode.Width, barcode.Height + 50))
+            {
+                finalImg.Mutate(ctx =>
+                {
+                    // Dibujar el código de barras
+                    ctx.DrawImage(barcode.ToImage(), new SixLabors.ImageSharp.Point(0, 0), 1);
+
+                    // Dibujar el texto debajo del código de barras
+                    ctx.DrawText(id, font, SixLabors.ImageSharp.Color.Black, new SixLabors.ImageSharp.PointF(10, barcode.Height + 5));
+                });
+
+                using (var ms = new MemoryStream())
+                {
+                    finalImg.Save(ms, new PngEncoder());
+                    b64 = Convert.ToBase64String(ms.ToArray());
                 }
-                byte[] data = ms.ToArray();
-                b64 = Convert.ToBase64String(data);
             }
+
             return b64;
         }
 
@@ -413,8 +424,9 @@ namespace gc.infraestructura.Core.Helpers
             var props = entidad.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
             foreach (var p in props)
             {
-                if (p.PropertyType == typeof(string) && p.CanWrite) {
-                    string valor = (string)p.GetValue(entidad);
+                if (p.PropertyType == typeof(string) && p.CanWrite)
+                {
+                    string? valor = p.GetValue(entidad) as string; // Use safe casting to handle potential null values
                     if (!string.IsNullOrEmpty(valor))
                     {
                         valor = valor.ToUpper();
@@ -424,6 +436,6 @@ namespace gc.infraestructura.Core.Helpers
             }
 
             return entidad;
-        }        
+        }
     }
 }

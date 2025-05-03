@@ -35,7 +35,7 @@ namespace gc.api.Controllers.Almacen
 		public IActionResult GetBancoParaABM(string ctaf_id)
 		{
 			ApiResponse<List<BancoDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _bancoServicio.GetBancoParaABM(ctaf_id);
 
 			response = new ApiResponse<List<BancoDto>>(res);

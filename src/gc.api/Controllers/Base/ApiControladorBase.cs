@@ -58,7 +58,11 @@ namespace gc.api.Controllers.Base
             //    //{
             //    //    res= Request.HttpContext.Connection.RemoteIpAddress.ToString();
             //    //};
-            string? ip = GetHeaderValueAs<string>("X-ClientUsr").SplitCsv().FirstOrDefault();
+            //string? ip = GetHeaderValueAs<string>("X-ClientUsr").SplitCsv().FirstOrDefault();
+
+            string? headerValue = GetHeaderValueAs<string>("X-ClientUsr");
+            string? ip = headerValue != null ? headerValue.SplitCsv()?.FirstOrDefault() : null;
+
             //////string ip = GetHeaderValueAs<string>("X-Forwarded-For").SplitCsv().FirstOrDefault();
             //////if(string.IsNullOrWhiteSpace(ip) && HttpContext?.Connection?.RemoteIpAddress != null)
             //////{

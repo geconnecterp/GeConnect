@@ -149,7 +149,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Proveedor";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Proveedor");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Proveedor");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -200,7 +200,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda Cliente";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda Cliente");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda Cliente");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -252,7 +252,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Formas de Pago";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Formas de Pago");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Formas de Pago");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -293,7 +293,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Formas de Pago -> FP Selected";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Formas de Pago -> FP Selected");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Formas de Pago -> FP Selected");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -329,7 +329,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -360,7 +360,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> OC Selected";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> OC Selected");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> OC Selected");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -390,7 +390,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Notas";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Notas");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Notas");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -420,7 +420,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Notas Selected";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Notas Selected");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Notas Selected");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -454,7 +454,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Observaciones";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Observaciones");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Observaciones");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -485,7 +485,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Obs Selected";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Obs Selected");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Obs Selected");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -518,7 +518,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Familias";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Familias");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Familias");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -551,7 +551,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Obs Selected";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Obs Selected");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Otros Contactos -> Obs Selected");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -586,7 +586,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda de Departamentos";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda de Departamentos");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda de Departamentos");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -668,7 +668,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Alta de Cliente - Nueva entidad";
-				_logger.LogError(ex, "Error en la invocación de la API - Alta de Cliente - Nueva entidad");
+				_logger?.LogError(ex, "Error en la invocación de la API - Alta de Cliente - Nueva entidad");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -731,7 +731,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Familia -> Nueva";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Familia -> Nueva");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Familia -> Nueva");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;

@@ -157,12 +157,12 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             catch (UnauthorizedException ex)
             {
 
-                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} No se pudo enviar los productos para Control de Salida");
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} No se pudo enviar los productos para Control de Salida");
                 return Json(new { error = true, warn = false, msg = ex.Message });
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} Error durante el proceso");
+                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} Error durante el proceso");
                 return Json(new { error = true, warn = false, msg = "Algo no fue bien en el procesamiento CtrlSalida. Ingrese de nuevo si fuera necesario. " });
             }
         }

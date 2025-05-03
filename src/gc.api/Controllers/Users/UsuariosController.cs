@@ -54,11 +54,11 @@ namespace gc.api.Controllers.Users
             var metadata = new MetadataGrid
             {
                 TotalCount = reg.Total_registros,
-                PageSize = filtro.Registros.Value,
-                CurrentPage = filtro.Pagina.Value,
+                PageSize = filtro.Registros??0,
+                CurrentPage = filtro.Pagina??0,
                 TotalPages = reg.Total_paginas,
-                HasNextPage = filtro.Pagina.Value < reg.Total_paginas,
-                HasPreviousPage = filtro.Pagina.Value > 1,
+                HasNextPage = (filtro.Pagina ?? 0) < reg.Total_paginas,
+                HasPreviousPage = (filtro.Pagina ?? 0) > 1,
                 NextPageUrl = _uriService.GetPostPaginationUri(filtro, Url.RouteUrl(nameof(BuscarUsuarios)) ?? "").ToString(),
                 PreviousPageUrl = _uriService.GetPostPaginationUri(filtro, Url.RouteUrl(nameof(BuscarUsuarios)) ?? "").ToString(),
 

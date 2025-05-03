@@ -38,7 +38,7 @@ namespace gc.api.Controllers.Codigos
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public IActionResult Getadministraciones([FromQuery] QueryFilters filters)
         {
-            //_logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            //_logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var administracioness = _adminSv.GetAll(filters);
             var administracionesDtos = _mapper.Map<IEnumerable<AdministracionDto>>(administracioness);
 
@@ -70,7 +70,7 @@ namespace gc.api.Controllers.Codigos
         [HttpGet("{id}")]
         public IActionResult Get(string id)
         {
-            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var Administracion = _adminSv.Find(id);
             var datoDto = _mapper.Map<AdministracionDto>(Administracion);
             var response = new ApiResponse<AdministracionDto>(datoDto);
@@ -126,7 +126,7 @@ namespace gc.api.Controllers.Codigos
 		public IActionResult ObtenerAdministraciones(string adm_activa)
 		{
 			ApiResponse<List<AdministracionDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _adminSv.ObtenerAdministraciones(adm_activa);
 			response = new ApiResponse<List<AdministracionDto>>(res);
 			return Ok(response);
@@ -136,7 +136,7 @@ namespace gc.api.Controllers.Codigos
 		//[HttpPost]
 		//public async Task<IActionResult> Post(AdministracionDto datoDto)
 		//{
-		//    _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+		//    _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 		//    var Admin = _mapper.Map<Administracion>(datoDto);
 		//    var res = await _adminSv.AddAsync(Admin);
 
@@ -149,7 +149,7 @@ namespace gc.api.Controllers.Codigos
 		//[HttpPut("{id}")]
 		//public async Task<IActionResult> Put(string id, [FromBody] AdministracionDto datoDto)
 		//{
-		//    _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+		//    _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 		//    var Administracion = _mapper.Map<Administracion>(datoDto);
 		//    Administracion.Adm_id = id; //garantizo que el id buscado es el que se envia al negocio
 		//    var result = await _adminSv.Update(Administracion);
@@ -162,7 +162,7 @@ namespace gc.api.Controllers.Codigos
 		//[HttpDelete("{id}")]
 		//public async Task<IActionResult> Delete(string id)
 		//{
-		//    _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+		//    _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 		//    var res = await _adminSv.Delete(id);
 		//    var response = new ApiResponse<bool>(res);
 		//    return Ok(response);

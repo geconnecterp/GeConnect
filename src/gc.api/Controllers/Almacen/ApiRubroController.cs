@@ -43,7 +43,7 @@ namespace gc.api.Controllers.Almacen
         [Route("[action]")]
         public IActionResult GetRubroLista(string? cta_id)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             if (string.IsNullOrEmpty(cta_id)) { cta_id = "%"; }
             
             List<RubroListaDto> rubros = _rubSv.GetRubroLista(cta_id);

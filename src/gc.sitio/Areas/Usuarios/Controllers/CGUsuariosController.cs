@@ -125,7 +125,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             {
 
                 string msg = "Error en la invocación de la API - Busqueda de Usuarios";
-                _logger.LogError(ex, "Error en la invocación de la API - Busqueda de Usuarios");
+                _logger?.LogError(ex, "Error en la invocación de la API - Busqueda de Usuarios");
                 response.Mensaje = msg;
                 response.Ok = false;
                 response.EsWarn = false;
@@ -175,7 +175,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             catch (Exception ex)
             {
                 string msg = "Error en la invocación de la API - Busqueda de Usuarios";
-                _logger.LogError(ex, "Error en la invocación de la API - Busqueda de Usuarios");
+                _logger?.LogError(ex, "Error en la invocación de la API - Busqueda de Usuarios");
                 response.Mensaje = msg;
                 response.Ok = false;
                 response.EsWarn = false;
@@ -199,7 +199,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             catch (Exception ex)
             {
                 string msg = "Error en la invocación de la API - Inicializar Usuario";
-                _logger.LogError(ex, "Error en la invocación de la API - al Inicializar el Usuario");
+                _logger?.LogError(ex, "Error en la invocación de la API - al Inicializar el Usuario");
                 response.Mensaje = msg;
                 response.Ok = false;
                 response.EsWarn = false;
@@ -226,7 +226,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error en {this.GetType().Name}-{MethodBase.GetCurrentMethod().Name}");
+                _logger?.LogError(ex, $"Error en {this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name}");
                 return Json(new { error = true, msg = ex.Message });
             }
 
@@ -330,7 +330,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             catch (Exception ex)
             {
                 string msg = "Error en la invocación de la API - Busqueda de los Perfiles del Usuario.";
-                _logger.LogError(ex, "Error en la invocación de la API - Busqueda de los Perfiles del Usuario.");
+                _logger?.LogError(ex, "Error en la invocación de la API - Busqueda de los Perfiles del Usuario.");
                 return Json(new { error = true, warn = false, msg });
             }
         }
@@ -372,7 +372,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             catch (Exception ex)
             {
                 string msg = "Error en la invocación de la API - Busqueda de las Administraciones del Usuario.";
-                _logger.LogError(ex, "Error en la invocación de la API - Busqueda de las Administraciones del Usuario.");
+                _logger?.LogError(ex, "Error en la invocación de la API - Busqueda de las Administraciones del Usuario.");
                 return Json(new { error = true, warn = false, msg });
             }
         }
@@ -411,7 +411,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             catch (Exception ex)
             {
                 string msg = "Error en la invocación de la API - Busqueda de los Derechos del Usuario.";
-                _logger.LogError(ex, "Error en la invocación de la API - Busqueda de los Derechos del Usuario.");
+                _logger?.LogError(ex, "Error en la invocación de la API - Busqueda de los Derechos del Usuario.");
                 return Json(new { error = true, warn = false, msg });
             }
         }
@@ -569,10 +569,10 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 //Se procede a generar estructura esperada en Base de Datos a partir del menu 
                 List<PerfilUserDto> perfiles = ConvierteDatosPerfilUsuario(json, usuId);
                 var jsonp = JsonConvert.SerializeObject(perfiles);
-                _logger.LogInformation("#***************************************#");
-                _logger.LogInformation(json);
-                _logger.LogInformation(jsonp);
-                _logger.LogInformation("#***************************************#");
+                _logger?.LogInformation("#***************************************#");
+                _logger?.LogInformation(json);
+                _logger?.LogInformation(jsonp);
+                _logger?.LogInformation("#***************************************#");
                 //armando request del confirmar
                 AbmGenDto abm = new AbmGenDto()
                 {
@@ -602,7 +602,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             catch (Exception ex)
             {
                 string msg = "Error en la invocación de la API - Carga de Perfiles de Usuario.";
-                _logger.LogError(ex, "Error en la invocación de la API - Carga de Perfiles de Usuario.");
+                _logger?.LogError(ex, "Error en la invocación de la API - Carga de Perfiles de Usuario.");
                 return Json(new { error = true, warn = false, msg });
             }
         }
@@ -659,7 +659,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             catch (Exception ex)
             {
                 string msg = "Error en la invocación de la API - Carga de Administraciones de Usuario.";
-                _logger.LogError(ex, "Error en la invocación de la API - Carga de Administraciones de Usuario.");
+                _logger?.LogError(ex, "Error en la invocación de la API - Carga de Administraciones de Usuario.");
                 return Json(new { error = true, warn = false, msg });
             }
         }
@@ -716,7 +716,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             catch (Exception ex)
             {
                 string msg = "Error en la invocación de la API - Carga de Derechos de Usuario.";
-                _logger.LogError(ex, "Error en la invocación de la API - Carga de Derechos de Usuario.");
+                _logger?.LogError(ex, "Error en la invocación de la API - Carga de Derechos de Usuario.");
                 return Json(new { error = true, warn = false, msg });
             }
         }

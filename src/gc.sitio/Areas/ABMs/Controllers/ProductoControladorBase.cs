@@ -207,7 +207,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda Avanzada";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda Avanzada");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda Avanzada");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;

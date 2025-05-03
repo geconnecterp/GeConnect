@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="img\gc.png">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="log4net" Version="2.0.17" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.15" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.15" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.15" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Log4Net.AspNetCore" Version="8.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="8.1.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="8.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\gc.api.core\gc.api.core.csproj" />
+    <ProjectReference Include="..\gc.api.infra\gc.api.infra.csproj" />
+    <ProjectReference Include="..\gc.infraestructura\gc.infraestructura.csproj" />
+  </ItemGroup>
+
+</Project>

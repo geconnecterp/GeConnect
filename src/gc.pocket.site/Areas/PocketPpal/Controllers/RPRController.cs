@@ -64,7 +64,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 AutorizacionesPendientes = pendientes;
                 grid = ObtenerAutorizacionPendienteGrid(pendientes);
 
-                string volver = Url.Action("rpr", "almacen", new { area = "gestion" });
+                string volver = Url.Action("rpr", "almacen", new { area = "gestion" })??"#";
                 if (modifica)
                 {
                     ViewBag.AppItem = new AppItem { Nombre = "Detalle de autorizaciones pendientes - MODIFICA UL", VolverUrl = volver ?? "#" };
@@ -105,8 +105,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 }
 
 
-                auto = AutorizacionesPendientes.SingleOrDefault(x => x.Rp.Equals(rp));
-                if (auto == null)
+                auto = AutorizacionesPendientes.SingleOrDefault(x => x.Rp.Equals(rp))??new();
+                if (string.IsNullOrEmpty(auto.Cta_id))
                 {
                     TempData["warn"] = $"No se pudo seleccionar la Autorización {rp}. Intente de nuevo.";
                     return RedirectToAction("Index");
@@ -249,14 +249,14 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 }).ToList();
                 ProductoGenRegs = lista;
 
-                string volver = Url.Action("ResguardarAutorizacionProveedor", "rpr", new { area = "pocketppal", rp = AutorizacionPendienteSeleccionada.Rp, esUpdate = true });
+                string volver = Url.Action("ResguardarAutorizacionProveedor", "rpr", new { area = "pocketppal", rp = AutorizacionPendienteSeleccionada.Rp, esUpdate = true })??"#";
 
                 ViewBag.AppItem = new AppItem { Nombre = $"Detalle de ULs de {AutorizacionPendienteSeleccionada.Rp}", VolverUrl = volver ?? "#", BotonEspecial = false };
                 return View(AutorizacionPendienteSeleccionada);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name}");
+                _logger.LogError(ex, $"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name}");
                 TempData["error"] = "Hubo algun problema. Si el mismo persiste informe al Administrador";
                 return RedirectToAction("Index");
             }
@@ -536,7 +536,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} Error al intentar confirmar");
+                _logger.LogError(ex, $"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} Error al intentar confirmar");
                 msg = $"Hubo algún inconveniente al intentar Confirmar la Autorización.";
             }
 

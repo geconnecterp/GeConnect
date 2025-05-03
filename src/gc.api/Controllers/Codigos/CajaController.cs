@@ -42,7 +42,7 @@ namespace geco_0000.API.Controllers.Codigos
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public IActionResult Getcajass([FromQuery] QueryFilters filters)
         {
-            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var cajass = _cajasSv.GetAll(filters);
             var cajasDtos = _mapper.Map<IEnumerable<CajaDto>>(cajass);
 
@@ -55,8 +55,8 @@ namespace geco_0000.API.Controllers.Codigos
                 TotalPages = cajass.TotalPages,
                 HasNextPage = cajass.HasNextPage,
                 HasPreviousPage = cajass.HasPreviousPage,
-                NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getcajass))).ToString(),
-                PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getcajass))).ToString(),
+                NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getcajass)) ?? "").ToString(),
+                PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getcajass)) ?? "").ToString(),
 
             };
 
@@ -77,7 +77,7 @@ namespace geco_0000.API.Controllers.Codigos
         [ProducesResponseType((int)HttpStatusCode.Conflict, Type = typeof(ExceptionValidation))]
         public IActionResult Get(string sucId,string cajaId)
         {
-            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var cajas = _cajasSv.Find(sucId,cajaId) ?? throw new NegocioException("La Caja buscada no se ha encontrado.");
             var datoDto = _mapper.Map<CajaDto>(cajas);
             var response = new ApiResponse<CajaDto>(datoDto);
@@ -102,7 +102,7 @@ namespace geco_0000.API.Controllers.Codigos
         [HttpPost]
         public async Task<IActionResult> Post(CajaDto datoDto)
         {
-            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var cajas = _mapper.Map<Caja>(datoDto);
             var res = await _cajasSv.AddAsync(cajas);
 
@@ -115,7 +115,7 @@ namespace geco_0000.API.Controllers.Codigos
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(string id, [FromBody] CajaDto datoDto)
         {
-            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var cajas = _mapper.Map<Caja>(datoDto);
             cajas.Caja_Id = id; //garantizo que el id buscado es el que se envia al negocio
             var result = await _cajasSv.Update(cajas);
@@ -128,7 +128,7 @@ namespace geco_0000.API.Controllers.Codigos
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = await _cajasSv.Delete(id);
             var response = new ApiResponse<bool>(res);
             return Ok(response);

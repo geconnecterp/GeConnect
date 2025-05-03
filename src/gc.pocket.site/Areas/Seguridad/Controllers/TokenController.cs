@@ -92,14 +92,17 @@ namespace gc.pocket.site.Areas.Seguridad.Controllers
                     //se debe leer el cuerpo del response
                     string strJWT = await response.Content.ReadAsStringAsync();
                     //obtenermos el TOKEN   
-                    AutenticacionDto auth = JsonConvert.DeserializeObject<AutenticacionDto>(strJWT);
+                    AutenticacionDto auth = JsonConvert.DeserializeObject<AutenticacionDto>(strJWT)?? throw new NegocioException("Hubo un problema para la deserialización de los datos.");
                     if (!string.IsNullOrEmpty(auth.Token))
                     {
                         var token = auth.Token;
                         var handler = new JwtSecurityTokenHandler(); //Libreria System.IdentityModel.Token.Jwt (6.7.1)
 
                         var tokenS = handler.ReadToken(token) as JwtSecurityToken;
-
+                        if (tokenS == null)
+                        {
+                            throw new NegocioException("El token no es válido.");
+                        }
 
 
                         var user = tokenS.Claims.First(c => c.Type.Contains("name")).Value;
@@ -151,7 +154,17 @@ namespace gc.pocket.site.Areas.Seguridad.Controllers
                         //var etiqueta = $"{user}";//{HelperGen.ConvierteStrToHex(user)}
 
                         var principal = new ClaimsPrincipal(new[] { identity });
-                        await _context.HttpContext?.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
+
+                        if (_context.HttpContext != null)
+                        {
+                            await _context.HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
+                        }
+                        else
+                        {
+                            _logger.LogError("HttpContext es null. No se puede completar el inicio de sesión.");
+                            TempData["error"] = "Hubo un problema al procesar la autenticación. Por favor, intente nuevamente.";
+                            return View(autenticar);
+                        }
                         _context.HttpContext?.Response.Cookies.Append(Etiqueta, token, cookieOptions); //se resguarda el token con el nombre del usuario
                         //if (roleUser[0].Equals(RolesUsuario.VENDEDOR.ToString()))
                         //{

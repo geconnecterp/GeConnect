@@ -42,12 +42,12 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
             }
             catch (UnauthorizedException ex)
             {
-                _logger.LogError(ex, "Error de Autenticación");
+                _logger?.LogError(ex, "Error de Autenticación");
                 return RedirectToAction("Login", new RouteValueDictionary(new { area = "Seguridad", controller = "Token", action = "Login" }));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error No Controlado");
+                _logger?.LogError(ex, "Error No Controlado");
                 TempData["error"] = ex.Message;
             }
             return RedirectToAction("Index", new RouteValueDictionary(new { area = "", controller = "Home", action = "Index" }));
@@ -78,12 +78,12 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
             }
             catch (UnauthorizedException ex)
             {
-                _logger.LogError(ex, "Error de Autenticación");
+                _logger?.LogError(ex, "Error de Autenticación");
                 return RedirectToAction("Login", new RouteValueDictionary(new { area = "Seguridad", controller = "Token", action = "Login" }));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error No Controlado");
+                _logger?.LogError(ex, "Error No Controlado");
                 TempData["error"] = ex.Message;
             }
             return RedirectToAction("Index", new RouteValueDictionary(new { area = "ESPECIFICAR", controller = "proveedores", action = "Index" }));
@@ -126,12 +126,12 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
             }
             catch (UnauthorizedException ex)
             {
-                _logger.LogError(ex, "Error de Autenticación");
+                _logger?.LogError(ex, "Error de Autenticación");
                 return RedirectToAction("Login", new RouteValueDictionary(new { area = "Seguridad", controller = "Token", action = "Login" }));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error No Controlado");
+                _logger?.LogError(ex, "Error No Controlado");
                 TempData["error"] = ex.Message;
             }
 
@@ -152,12 +152,12 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
             }
             catch (UnauthorizedException ex)
             {
-                _logger.LogError(ex, "Error de Autenticación");
+                _logger?.LogError(ex, "Error de Autenticación");
                 return RedirectToAction("Login", new RouteValueDictionary(new { area = "Seguridad", controller = "Token", action = "Login" }));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error No Controlado");
+                _logger?.LogError(ex, "Error No Controlado");
                 TempData["error"] = ex.Message;
             }
             return RedirectToAction("Index", new RouteValueDictionary(new { area = "ESPECIFICAR", controller = "proveedores", action = "Index" }));
@@ -194,12 +194,12 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
             }
             catch (UnauthorizedException ex)
             {
-                _logger.LogError(ex, "Error de Autenticación");
+                _logger?.LogError(ex, "Error de Autenticación");
                 return RedirectToAction("Login", new RouteValueDictionary(new { area = "Seguridad", controller = "Token", action = "Login" }));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error No Controlado");
+                _logger?.LogError(ex, "Error No Controlado");
                 TempData["error"] = ex.Message;
             }
 
@@ -220,12 +220,12 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
             }
             catch (UnauthorizedException ex)
             {
-                _logger.LogError(ex, "Error de Autenticación");
+                _logger?.LogError(ex, "Error de Autenticación");
                 return RedirectToAction("Login", new RouteValueDictionary(new { area = "Seguridad", controller = "Token", action = "Login" }));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error No Controlado");
+                _logger?.LogError(ex, "Error No Controlado");
                 TempData["error"] = ex.Message;
             }
             return RedirectToAction("Index", new RouteValueDictionary(new { area = "ESPECIFICAR", controller = "proveedores", action = "Index" }));
@@ -251,12 +251,12 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
             }
             catch (UnauthorizedException ex)
             {
-                _logger.LogError(ex, "Error de Autenticación");
+                _logger?.LogError(ex, "Error de Autenticación");
                 return RedirectToAction("Login", new RouteValueDictionary(new { area = "Seguridad", controller = "Token", action = "Login" }));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error No Controlado");
+                _logger?.LogError(ex, "Error No Controlado");
                 TempData["error"] = ex.Message;
             }
             return RedirectToAction("Index", new RouteValueDictionary(new { area = "ESPECIFICAR", controller = "proveedores", action = "Index" }));

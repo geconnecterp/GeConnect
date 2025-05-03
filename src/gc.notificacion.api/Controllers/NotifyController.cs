@@ -1,4 +1,5 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Billeteras;
@@ -200,7 +201,7 @@ namespace gc.notificacion.api.Controllers
                                         }
                                     }
                                 }
-                                catch (Exception ex)
+                                catch (Exception )
                                 {
                                     throw;
                                 }
@@ -242,6 +243,11 @@ namespace gc.notificacion.api.Controllers
             {
                 string dataString = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult();
                 response = JsonConvert.DeserializeObject<ApiResponse<BilleteraDto>>(dataString);
+                if(response == null)
+                {
+                    throw new NegocioException("Hubo un problema con la deserialización de los datos de la billetera");
+                }
+
                 return response.Data;
             }
             else
@@ -261,7 +267,8 @@ namespace gc.notificacion.api.Controllers
             {
                 //se recepcionan los datos. 
                 string dataString = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                PagoMepaDto pago = JsonConvert.DeserializeObject<PagoMepaDto>(dataString);
+                PagoMepaDto pago = JsonConvert.DeserializeObject<PagoMepaDto>(dataString)
+                    ?? throw new NegocioException("Hubo un problema con la deserialización de los datos de MePa") ;
 
 
                 _logger.LogInformation(JsonConvert.SerializeObject(dataString));
@@ -291,7 +298,10 @@ namespace gc.notificacion.api.Controllers
                 string stringData = await response.Content.ReadAsStringAsync();
                 var respuesta = JsonConvert.DeserializeObject<ApiResponse<BilleteraOrdenDto>>(stringData);
                 //respuesta = ExtraeContentRespuesta<ApiResponse<BilleteraOrdenDto>>(response).GetAwaiter().GetResult();
-
+                if(respuesta == null)
+                {
+                    throw new NegocioException("Hubo un problema con la deserialización de los datos de la billetera");
+                }
                 return respuesta.Data;
             }
             else
@@ -299,7 +309,7 @@ namespace gc.notificacion.api.Controllers
                 var error = ExtraeContentRespuesta<ExceptionValidation>(response).GetAwaiter().GetResult();
                 _logger.LogError($"{error.Status}-{error.Title}:{error.Detail}");
 
-                return null;
+                return new();
             }
         }
 
@@ -333,7 +343,8 @@ namespace gc.notificacion.api.Controllers
         {
             string stringData = await response.Content.ReadAsStringAsync();
             _logger.LogInformation(stringData);
-            T respuesta = JsonConvert.DeserializeObject<T>(stringData);
+            T respuesta = JsonConvert.DeserializeObject<T>(stringData) 
+                ?? throw new NegocioException("Hubo un problema al deserializar datos del content");
             return respuesta;
         }
     }

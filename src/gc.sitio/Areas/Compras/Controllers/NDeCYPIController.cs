@@ -60,7 +60,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al inicializar vista Necesidades de Compra");
+				_logger?.LogError(ex, "Error al inicializar vista Necesidades de Compra");
 				TempData["error"] = "Hubo algun problema al inicializar vista Necesidades de Compra. Si el problema persiste informe al Administrador";
 				model = new();
 			}
@@ -159,7 +159,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al obtener intentar obtener la vista de Pedidos Internos");
+				_logger?.LogError(ex, "Error al obtener intentar obtener la vista de Pedidos Internos");
 				TempData["error"] = "Hubo algun problema al intentar obtener la vista de Pedidos Internos. Si el problema persiste informe al Administrador";
 				model = new();
 			}
@@ -400,7 +400,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al intentar setear el estado del remito.");
+				_logger?.LogError(ex, "Error al intentar setear el estado del remito.");
 				TempData["error"] = "Hubo algun problema al intentar setear el estado del remito. Si el problema persiste informe al Administrador";
 				return Json(new { error = true, warn = false, msg = "Error al intentar setear el estado del remito." });
 			}

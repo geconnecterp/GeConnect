@@ -31,7 +31,7 @@ namespace gc.api.Controllers.Codigos
 		public IActionResult GetTipoComprobanteListaPorCuenta(string cuenta)
 		{
 			ApiResponse<List<TipoComprobanteDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _tipos_comprobanteSv.GetTipoComprobanteListaPorCuenta(cuenta);
 
 			response = new ApiResponse<List<TipoComprobanteDto>>(res);
@@ -46,7 +46,7 @@ namespace gc.api.Controllers.Codigos
 		public IActionResult GetTipoComprobanteListaPorTipoAfip(string afip_id)
 		{
 			ApiResponse<List<TipoComprobanteDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _tipos_comprobanteSv.GetTipoComprobanteListaPorTipoAfip(afip_id);
 
 			response = new ApiResponse<List<TipoComprobanteDto>>(res);

@@ -38,7 +38,7 @@ namespace gc.api.Controllers.Almacen
 		public IActionResult GetMedioDePagoParaABM(string ins_id)
 		{
 			ApiResponse<List<MedioDePagoABMDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _medioDePagoServicio.GetMedioDePagoParaABM(ins_id);
 
 			response = new ApiResponse<List<MedioDePagoABMDto>>(res);
@@ -53,7 +53,7 @@ namespace gc.api.Controllers.Almacen
 		public IActionResult GetOpcionesDeCuotaParaABM(string ins_id)
 		{
 			ApiResponse<List<OpcionCuotaDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _medioDePagoServicio.GetOpcionesDeCuotaParaABM(ins_id);
 
 			response = new ApiResponse<List<OpcionCuotaDto>>(res);
@@ -68,7 +68,7 @@ namespace gc.api.Controllers.Almacen
 		public IActionResult GetOpcionDeCuotaParaABM(string ins_id, int cuota)
 		{
 			ApiResponse<List<OpcionCuotaDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _medioDePagoServicio.GetOpcionDeCuotaParaABM(ins_id, cuota);
 
 			response = new ApiResponse<List<OpcionCuotaDto>>(res);
@@ -83,7 +83,7 @@ namespace gc.api.Controllers.Almacen
 		public IActionResult GetCuentaFinYContableLista(string ins_id)
 		{
 			ApiResponse<List<FinancieroListaDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _medioDePagoServicio.GetCuentaFinYContableListaParaABM(ins_id);
 
 			response = new ApiResponse<List<FinancieroListaDto>>(res);
@@ -98,7 +98,7 @@ namespace gc.api.Controllers.Almacen
 		public IActionResult GetCuentaFinYContable(string ctaf_id)
 		{
 			ApiResponse<List<FinancieroListaDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _medioDePagoServicio.GetCuentaFinYContableParaABM(ctaf_id);
 
 			response = new ApiResponse<List<FinancieroListaDto>>(res);

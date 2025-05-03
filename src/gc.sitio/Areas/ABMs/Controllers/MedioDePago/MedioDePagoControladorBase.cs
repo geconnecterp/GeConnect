@@ -2,6 +2,7 @@
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.ABM;
 using gc.sitio.Controllers;
+using Humanizer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -12,11 +13,9 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 	public class MedioDePagoControladorBase : ControladorBase
 	{
 		private readonly AppSettings _setting;
-		private readonly ILogger _logger;
 		public MedioDePagoControladorBase(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger logger) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
-			_logger = logger;
 		}
 
 		#region ABM
@@ -68,7 +67,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 				{
 					return [];
 				}
-				return JsonConvert.DeserializeObject<List<ABMMedioDePagoSearchDto>>(json);
+				return JsonConvert.DeserializeObject<List<ABMMedioDePagoSearchDto>>(json) ?? [];
 			}
 			set
 			{
@@ -86,7 +85,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 				{
 					return new MetadataGrid();
 				}
-				return JsonConvert.DeserializeObject<MetadataGrid>(txt); ;
+				return JsonConvert.DeserializeObject<MetadataGrid>(txt)??new() ;
 			}
 			set
 			{
@@ -105,7 +104,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 				{
 					return new Pos();
 				}
-				return JsonConvert.DeserializeObject<Pos>(txt); ;
+				return JsonConvert.DeserializeObject<Pos>(txt)??new() ;
 			}
 			set
 			{
@@ -124,7 +123,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 				{
 					return new MedioDePagoABMDto();
 				}
-				return JsonConvert.DeserializeObject<MedioDePagoABMDto>(txt); ;
+				return JsonConvert.DeserializeObject<MedioDePagoABMDto>(txt)??new() ;
 			}
 			set
 			{
@@ -143,7 +142,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 				{
 					return string.Empty;
 				}
-				return JsonConvert.DeserializeObject<string>(txt); ;
+				return JsonConvert.DeserializeObject<string>(txt)??string.Empty ;
 			}
 			set
 			{

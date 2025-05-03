@@ -71,7 +71,7 @@ namespace gc.api.Controllers.Almacen
             var reg = new ProductoListaDto { Total_Paginas = 0, Total_Registros = 0 };
 
             ApiResponse<List<ProductoListaDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             List<ProductoListaDto> res = _productosSv.ProductoListaBuscar(filters);
 
             if (res.Count > 0)
@@ -105,7 +105,7 @@ namespace gc.api.Controllers.Almacen
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public IActionResult Getproductoss([FromQuery] QueryFilters filters)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var productoss = _productosSv.GetAll(filters);
             var productosDtos = _mapper.Map<IEnumerable<ProductoDto>>(productoss);
 
@@ -137,7 +137,7 @@ namespace gc.api.Controllers.Almacen
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(string id)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var productos = await _productosSv.FindAsync(id);
             var datoDto = _mapper.Map<ProductoDto>(productos);
             var response = new ApiResponse<ProductoDto>(datoDto);
@@ -150,7 +150,7 @@ namespace gc.api.Controllers.Almacen
         [HttpPost]
         public async Task<IActionResult> Post(ProductoDto datoDto)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var productos = _mapper.Map<Producto>(datoDto);
             var res = await _productosSv.AddAsync(productos);
 
@@ -163,7 +163,7 @@ namespace gc.api.Controllers.Almacen
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(string id, [FromBody] ProductoDto datoDto)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var productos = _mapper.Map<Producto>(datoDto);
             productos.Cta_Id = id; //garantizo que el id buscado es el que se envia al negocio
             var result = await _productosSv.Update(productos);
@@ -176,7 +176,7 @@ namespace gc.api.Controllers.Almacen
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = await _productosSv.Delete(id);
             var response = new ApiResponse<bool>(res);
             return Ok(response);
@@ -191,7 +191,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult ProductoBuscar([FromQuery] BusquedaBase search)
         {
             ApiResponse<ProductoBusquedaDto> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.ProductoBuscar(search);
 
             response = new ApiResponse<ProductoBusquedaDto>(res);
@@ -206,7 +206,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult ProductoBuscarPorIds([FromQuery] BusquedaBase search)
         {
             ApiResponse<List<ProductoBusquedaDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.ProductoBuscarPorIds(search);
 
             response = new ApiResponse<List<ProductoBusquedaDto>>(res);
@@ -221,7 +221,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult InfoProductoStkD(string id, string admId)
         {
             ApiResponse<List<InfoProdStkD>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.InfoProductoStkD(id, admId);
 
             response = new ApiResponse<List<InfoProdStkD>>(res);
@@ -236,7 +236,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult InfoProductoStkBoxes(string id, string adm, string depo, string box = "")
         {
             ApiResponse<List<InfoProdStkBox>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.InfoProductoStkBoxes(id, adm, depo, box);
 
             response = new ApiResponse<List<InfoProdStkBox>>(res);
@@ -251,7 +251,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult InfoProductoStkA(string id, string admId)
         {
             ApiResponse<List<InfoProdStkA>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.InfoProductoStkA(id, admId);
 
             response = new ApiResponse<List<InfoProdStkA>>(res);
@@ -265,7 +265,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult InfoProductoMovStk(string id, string adm, string depo, string tmov, long desde, long hasta)
         {
             ApiResponse<List<InfoProdMovStk>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             //if (depo.Equals("porc."))
             //{
             //    depo = "%";
@@ -287,7 +287,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult InfoProductoLP(string id)
         {
             ApiResponse<List<InfoProdLP>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.InfoProductoLP(id);
 
             response = new ApiResponse<List<InfoProdLP>>(res);
@@ -299,7 +299,7 @@ namespace gc.api.Controllers.Almacen
         [Route("[action]")]
         public IActionResult ObtenerTiposMotivo()
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _tmServicio.ObtenerTiposMotivo();
             return Ok(new ApiResponse<List<TipoMotivo>>(res));
         }
@@ -311,7 +311,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult InfoProdIExMes(string admId, string pId, int meses)
         {
             ApiResponse<List<NDeCYPI.InfoProdIExMesDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.InfoProdIExMes(admId, pId, meses);
 
             response = new ApiResponse<List<NDeCYPI.InfoProdIExMesDto>>(res);
@@ -326,7 +326,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult InfoProdIExSemana(string admId, string pId, int semanas)
         {
             ApiResponse<List<NDeCYPI.InfoProdIExSemanaDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.InfoProdIExSemana(admId, pId, semanas);
 
             response = new ApiResponse<List<NDeCYPI.InfoProdIExSemanaDto>>(res);
@@ -341,7 +341,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult InfoProdSustituto(string pId, string tipo, string admId, bool soloProv)
         {
             ApiResponse<List<ProductoNCPISustitutoDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.InfoProdSustituto(pId, tipo, admId, soloProv);
 
             response = new ApiResponse<List<ProductoNCPISustitutoDto>>(res);
@@ -356,7 +356,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult InfoProd(string pId)
         {
             ApiResponse<List<NDeCYPI.InfoProductoDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.InfoProd(pId);
 
             response = new ApiResponse<List<NDeCYPI.InfoProductoDto>>(res);
@@ -371,7 +371,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult ObtenerTipoDeAjusteDeStock()
         {
             ApiResponse<List<TipoAjusteDeStockDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.ObtenerTipoDeAjusteDeStock();
 
             response = new ApiResponse<List<TipoAjusteDeStockDto>>(res);
@@ -386,7 +386,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult ObtenerAJPreviosCargados(string admId)
         {
             ApiResponse<List<AjustePrevioCargadoDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.ObtenerAJPreviosCargados(admId);
 
             response = new ApiResponse<List<AjustePrevioCargadoDto>>(res);
@@ -401,7 +401,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult ObtenerAJREVERTIDO(string ajId)
         {
             ApiResponse<List<AjusteRevertidoDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.ObtenerAJREVERTIDO(ajId);
 
             response = new ApiResponse<List<AjusteRevertidoDto>>(res);
@@ -416,7 +416,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult ConfirmarAjusteStk(ConfirmarAjusteStkRequest request)
         {
             ApiResponse<List<RespuestaDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.ConfirmarAjusteStk(request);
 
             response = new ApiResponse<List<RespuestaDto>>(res);
@@ -431,7 +431,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult AJ_CargaConteosPrevios(CargarJsonGenRequest request)
         {
             ApiResponse<RespuestaDto> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.AJ_CargaConteosPrevios(request.json_str, request.admid);
 
             response = new ApiResponse<RespuestaDto>(res);
@@ -446,7 +446,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult DV_CargaConteosPrevios(CargarJsonGenRequest request)
         {
             ApiResponse<RespuestaDto> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.DV_CargaConteosPrevios(request.json_str, request.admid);
 
             response = new ApiResponse<RespuestaDto>(res);
@@ -461,7 +461,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult ObtenerDPPreviosCargados(string admId, string ctaId)
         {
             ApiResponse<List<DevolucionPrevioCargadoDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.ObtenerDPPreviosCargados(admId, ctaId);
 
             response = new ApiResponse<List<DevolucionPrevioCargadoDto>>(res);
@@ -476,7 +476,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult ObtenerDPREVERTIDO(string dvCompte)
         {
             ApiResponse<List<DevolucionRevertidoDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.ObtenerDPREVERTIDO(dvCompte);
 
             response = new ApiResponse<List<DevolucionRevertidoDto>>(res);
@@ -491,7 +491,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult ConfirmarDP(ConfirmarDPRequest request)
         {
             ApiResponse<List<RespuestaDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.ConfirmarDP(request);
 
             response = new ApiResponse<List<RespuestaDto>>(res);
@@ -509,7 +509,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult RPRAutorizacionPendiente(string adm)
         {
             ApiResponse<List<AutorizacionPendienteDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.RPRObtenerAutorizacionPendiente(adm);
 
             response = new ApiResponse<List<AutorizacionPendienteDto>>(res);
@@ -524,7 +524,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult RPRCargar(CargarJsonGenRequest request)
         {
             ApiResponse<List<RespuestaDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.RPRCargar(request);
 
             response = new ApiResponse<List<RespuestaDto>>(res);
@@ -539,7 +539,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult RPRElimina(string rp)
         {
             ApiResponse<List<RespuestaDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.RPRElimina(rp);
 
             response = new ApiResponse<List<RespuestaDto>>(res);
@@ -554,7 +554,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult RPRConfirma(RPRAConfirmarRequest request)
         {
             ApiResponse<List<RespuestaDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.RPRConfirma(request.rp, request.adm_id);
 
             response = new ApiResponse<List<RespuestaDto>>(res);
@@ -569,7 +569,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult RPRxUL(string rp)
         {
             ApiResponse<List<RPRxULDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.RPRxUL(rp);
 
             response = new ApiResponse<List<RPRxULDto>>(res);
@@ -584,7 +584,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult RPRxULDetalle(string ulId)
         {
             ApiResponse<List<RPRxULDetalleDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.RPRxULDetalle(ulId);
 
             response = new ApiResponse<List<RPRxULDetalleDto>>(res);
@@ -599,7 +599,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult RPRObtenerJson(string rp)
         {
             ApiResponse<List<JsonDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.RPREObtenerDatosJsonDesdeRP(rp);
 
             response = new ApiResponse<List<JsonDto>>(res);
@@ -614,7 +614,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult RPRObtenerItemVerCompte(string rp)
         {
             ApiResponse<List<RPRItemVerCompteDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.RPRObtenerDatosVerCompte(rp);
 
             response = new ApiResponse<List<RPRItemVerCompteDto>>(res);
@@ -629,7 +629,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult RPRObtenerVerConteos(string rp)
         {
             ApiResponse<List<RPRVerConteoDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.RPRObtenerConteos(rp);
 
             response = new ApiResponse<List<RPRVerConteoDto>>(res);
@@ -644,7 +644,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult TRCargarCtrlSalida(TRProdsCtrlSalDto prods) ////PARA FACTORIZAR ACA ####################################
         {
             ApiResponse<RespuestaDto> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 
             if (prods.ProdsCargar.Count == 0)
             {
@@ -685,7 +685,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult RPRRegistrar(List<ProductoGenDto> prods, bool esMod = false)   ////PARA FACTORIZAR ACA ####################################
         {
             ApiResponse<RegistroResponseDto> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 
             if (prods.Count == 0)
             {
@@ -713,7 +713,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult RPRObtenerAutoComptesPendientes(string adm_id)
         {
             ApiResponse<List<AutoComptesPendientesDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             if (string.IsNullOrEmpty(adm_id))
                 return BadRequest("No se recepciono dato alguno.");
 
@@ -838,7 +838,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult TRConfirmaAutorizaciones(TRConfirmaRequest request)
         {
             ApiResponse<List<RespuestaDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.TRConfirmaAutorizaciones(request);
 
             //response = new ApiResponse<RespuestaDto>(res);
@@ -855,7 +855,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult TRValidarTransferencia(TRValidarTransferenciaRequest request)
         {
             ApiResponse<List<RespuestaDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.TRValidarTransferencia(request);
 
             response = new ApiResponse<List<RespuestaDto>>(res);
@@ -870,7 +870,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult NCPICargarListaDeProductos(NCPICargarListaDeProductosRequest request)
         {
             ApiResponse<List<ProductoNCPIDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.NCPICargarListaDeProductos(request);
 
             response = new ApiResponse<List<ProductoNCPIDto>>(res);
@@ -885,7 +885,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult CargarProductosDeOC(CargarProductoParaOcRequest request)
         {
             ApiResponse<List<ProductoParaOcDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.CargarProductosDeOC(request);
             response = new ApiResponse<List<ProductoParaOcDto>>(res);
             return Ok(response);
@@ -896,7 +896,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult CargarTopesDeOC(string admId)
         {
             ApiResponse<List<OrdenDeCompraTopeDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.CargarTopesDeOC(admId);
             response = new ApiResponse<List<OrdenDeCompraTopeDto>>(res);
             return Ok(response);
@@ -909,7 +909,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult CargarResumenDeOC(CargarResumenDeOCRequest request)
         {
             ApiResponse<List<OrdenDeCompraConceptoDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.CargarResumenDeOC(request);
             response = new ApiResponse<List<OrdenDeCompraConceptoDto>>(res);
             return Ok(response);
@@ -922,7 +922,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult ConfirmarOC(ConfirmarOCRequest request)
         {
             ApiResponse<RespuestaDto> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.ConfirmarOC(request);
 
             response = new ApiResponse<RespuestaDto>(res.First());
@@ -935,7 +935,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult ObtenerOrdenDeCompraPorOcCompte(string ocCompte)
         {
             ApiResponse<List<OrdenDeCompraDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.ObtenerOrdenDeCompraPorOcCompte(ocCompte);
             response = new ApiResponse<List<OrdenDeCompraDto>>(res);
             return Ok(response);
@@ -948,7 +948,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult CargarOrdenDeCompraConsultaLista(BuscarOrdenesDeCompraRequest request)
         {
             OrdenDeCompraConsultaDto reg = new();
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.CargarOrdenDeCompraConsultaLista(request);
             if (res.Count > 0)
             {
@@ -958,11 +958,11 @@ namespace gc.api.Controllers.Almacen
             var metadata = new MetadataGrid
             {
                 TotalCount = reg.total_registros,
-                PageSize = request.Registros.Value,
-                CurrentPage = request.Pagina.Value,
+                PageSize = request.Registros??0,
+                CurrentPage = request.Pagina??0,
                 TotalPages = reg.total_paginas,
-                HasNextPage = request.Pagina.Value < reg.total_paginas,
-                HasPreviousPage = request.Pagina.Value > 1,
+                HasNextPage = (request.Pagina??0) < reg.total_paginas,
+                HasPreviousPage = (request.Pagina??0) > 1,
                 NextPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(CargarOrdenDeCompraConsultaLista)) ?? "").ToString(),
                 PreviousPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(CargarOrdenDeCompraConsultaLista)) ?? "").ToString(),
 
@@ -981,7 +981,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult CargarDetalleDeOC(string oc_compte)
         {
             ApiResponse<List<OrdenDeCompraDetalleDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.CargarDetalleDeOC(oc_compte);
             response = new ApiResponse<List<OrdenDeCompraDetalleDto>>(res);
             return Ok(response);
@@ -992,7 +992,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult CargarRprAsociadaDeOC(string oc_compte)
         {
             ApiResponse<List<OrdenDeCompraRprAsociadasDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.CargarRprAsociadaDeOC(oc_compte);
             response = new ApiResponse<List<OrdenDeCompraRprAsociadasDto>>(res);
             return Ok(response);
@@ -1005,7 +1005,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult ModificarOC(ModificarOCRequest request)
         {
             ApiResponse<RespuestaDto> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.ModificarOC(request);
             response = new ApiResponse<RespuestaDto>(res.First());
             return Ok(response);
@@ -1019,7 +1019,7 @@ namespace gc.api.Controllers.Almacen
         {
             ProductoNCPIDto reg = new ProductoNCPIDto();
             //ApiResponse<List<ProductoNCPIDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.NCPICargarListaDeProductos(request);
             if (res.Count > 0)
             {
@@ -1029,11 +1029,11 @@ namespace gc.api.Controllers.Almacen
             var metadata = new MetadataGrid
             {
                 TotalCount = reg.total_registros,
-                PageSize = request.Registros.Value,
-                CurrentPage = request.Pagina.Value,
+                PageSize = request.Registros??0,
+                CurrentPage = request.Pagina??0,
                 TotalPages = reg.total_paginas,
-                HasNextPage = request.Pagina.Value < reg.total_paginas,
-                HasPreviousPage = request.Pagina.Value > 1,
+                HasNextPage = (request.Pagina??0) < reg.total_paginas,
+                HasPreviousPage =(request.Pagina??0)> 1,
                 NextPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(NCPICargarListaDeProductosPag)) ?? "").ToString(),
                 PreviousPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(NCPICargarListaDeProductosPag)) ?? "").ToString(),
 
@@ -1054,7 +1054,7 @@ namespace gc.api.Controllers.Almacen
         [Route("[action]")]
         public IActionResult CargarOrdenesDeCompraList(string ctaId, string admId, string usuId)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             List<OrdenDeCompraListDto> oc = _productosSv.CargarOrdenesDeCompraList(ctaId, admId, usuId);
             var lista = _mapper.Map<List<OrdenDeCompraListDto>>(oc);
 
@@ -1069,7 +1069,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult NCPICargarListaDeProductosPag2(NCPICargarListaDeProductos2Request request)
         {
             ProductoNCPIDto reg = new();
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.NCPICargarListaDeProductos2(request);
             if (res.Count > 0)
             {
@@ -1079,11 +1079,11 @@ namespace gc.api.Controllers.Almacen
             var metadata = new MetadataGrid
             {
                 TotalCount = reg.total_registros,
-                PageSize = request.Registros.Value,
-                CurrentPage = request.Pagina.Value,
+                PageSize = request.Registros??0,
+                CurrentPage = request.Pagina??0,
                 TotalPages = reg.total_paginas,
-                HasNextPage = request.Pagina.Value < reg.total_paginas,
-                HasPreviousPage = request.Pagina.Value > 1,
+                HasNextPage =(request.Pagina??0)< reg.total_paginas,
+                HasPreviousPage =(request.Pagina??0)> 1,
                 NextPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(NCPICargarListaDeProductosPag2)) ?? "").ToString(),
                 PreviousPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(NCPICargarListaDeProductosPag2)) ?? "").ToString(),
 
@@ -1105,7 +1105,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult NCPICargaPedido(NCPICargaPedidoRequest request)
         {
             ApiResponse<List<NCPICargaPedidoResponse>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _productosSv.NCPICargaPedido(request);
 
             response = new ApiResponse<List<NCPICargaPedidoResponse>>(res);

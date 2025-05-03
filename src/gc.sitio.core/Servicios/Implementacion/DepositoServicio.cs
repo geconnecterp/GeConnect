@@ -49,17 +49,15 @@ namespace gc.sitio.core.Servicios.Implementacion
             {
                 HelperAPI helper = new();
                 HttpClient client = helper.InicializaCliente(token);
-                HttpResponseMessage response = null;
+                HttpResponseMessage response;
                 var link = $"{_appSettings.RutaBase}{RutaAPI}{AccionInfoBox}?depo_id={depo_id}&soloLibre={soloLibres}";
                 response = await client.GetAsync(link);
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                    respuesta = JsonConvert.DeserializeObject<ApiResponse<List<DepositoInfoBoxDto>>>(stringData);
-                    if (response == null)
-                    {
-                        throw new NegocioException("No se desserializo correctamente la lista de Box. Verifique");
-                    }
+                    respuesta = JsonConvert.DeserializeObject<ApiResponse<List<DepositoInfoBoxDto>>>(stringData) 
+                        ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+                   
                     return respuesta.Data;
                 }
                 else
@@ -90,13 +88,13 @@ namespace gc.sitio.core.Servicios.Implementacion
             {
                 HelperAPI helper = new();
                 HttpClient client = helper.InicializaCliente(token);
-                HttpResponseMessage response = null;
+                HttpResponseMessage response;
                 var link = $"{_appSettings.RutaBase}{RutaAPI}{AccionInfoStk}?depo_id={depo_id}";
                 response = await client.GetAsync(link);
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                    respuesta = JsonConvert.DeserializeObject<ApiResponse<List<DepositoInfoStkDto>>>(stringData);
+                    respuesta = JsonConvert.DeserializeObject<ApiResponse<List<DepositoInfoStkDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
                     if (response == null)
                     {
                         throw new NegocioException("No se desserializo correctamente la lista de Box. Verifique");
@@ -131,13 +129,13 @@ namespace gc.sitio.core.Servicios.Implementacion
             {
                 HelperAPI helper = new();
                 HttpClient client = helper.InicializaCliente(token);
-                HttpResponseMessage response = null;
+                HttpResponseMessage response;
                 var link = $"{_appSettings.RutaBase}{RutaAPI}{AccionInfoStkVal}?adm_id={adm_id}&depo_id={depo_id}&concepto={concepto}";
                 response = await client.GetAsync(link);
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                    respuesta = JsonConvert.DeserializeObject<ApiResponse<List<DepositoInfoStkValDto>>>(stringData);
+                    respuesta = JsonConvert.DeserializeObject<ApiResponse<List<DepositoInfoStkValDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
                     if (response == null)
                     {
                         throw new NegocioException("No se desserializo correctamente la lista de Stk Valorizado. Verifique");
@@ -172,17 +170,13 @@ namespace gc.sitio.core.Servicios.Implementacion
             {
                 HelperAPI helper = new();
                 HttpClient client = helper.InicializaCliente(token);
-                HttpResponseMessage response = null;
+                HttpResponseMessage response;
                 var link = $"{_appSettings.RutaBase}{RutaAPI}{Accion}?adm_id={adm_id}";
                 response = client.GetAsync(link).GetAwaiter().GetResult();
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                    respuesta = JsonConvert.DeserializeObject<ApiResponse<List<DepositoDto>>>(stringData);
-                    if (response == null)
-                    {
-                        throw new NegocioException("No se desserializo correctamente la lista de Depositos. Verifique");
-                    }
+                    respuesta = JsonConvert.DeserializeObject<ApiResponse<List<DepositoDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
                     return respuesta.Data;
                 }
                 else
@@ -205,7 +199,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-        public async Task<List<RemitoGenDto>> ObtenerRemitos(string admId, string token)
+        public List<RemitoGenDto> ObtenerRemitos(string admId, string token)
         {
             ApiResponse<List<RemitoGenDto>>? respuesta;
             string stringData;
@@ -213,17 +207,14 @@ namespace gc.sitio.core.Servicios.Implementacion
             {
                 HelperAPI helper = new();
                 HttpClient client = helper.InicializaCliente(token);
-                HttpResponseMessage response = null;
+                HttpResponseMessage response;
                 var link = $"{_appSettings.RutaBase}{RutaAPI}{RTI_REMITOS_PENDIENTES}?adm_id={admId}";
                 response = client.GetAsync(link).GetAwaiter().GetResult();
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                    respuesta = JsonConvert.DeserializeObject<ApiResponse<List<RemitoGenDto>>>(stringData);
-                    if (response == null)
-                    {
-                        throw new NegocioException("No se desserializo correctamente la lista de Depositos. Verifique");
-                    }
+                    respuesta = JsonConvert.DeserializeObject<ApiResponse<List<RemitoGenDto>>>(stringData)
+                        ?? throw new NegocioException("Hubo un problema al deserializar los datos"); 
                     return respuesta.Data;
                 }
                 else
@@ -254,17 +245,14 @@ namespace gc.sitio.core.Servicios.Implementacion
 			{
 				HelperAPI helper = new();
 				HttpClient client = helper.InicializaCliente(token);
-				HttpResponseMessage response = null;
+				HttpResponseMessage response;
 				var link = $"{_appSettings.RutaBase}{RutaApiAlmacen}{BOX_BUSCAR_POR_DEPOSITO}?depoId={depoId}";
 				response = await client.GetAsync(link);
 				if (response.StatusCode == HttpStatusCode.OK)
 				{
 					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-					respuesta = JsonConvert.DeserializeObject<ApiResponse<List<DepositoInfoBoxDto>>>(stringData);
-					if (response == null)
-					{
-						throw new NegocioException("No se desserializo correctamente la lista de Box. Verifique");
-					}
+					respuesta = JsonConvert.DeserializeObject<ApiResponse<List<DepositoInfoBoxDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+					
 					return respuesta.Data;
 				}
 				else
@@ -295,17 +283,14 @@ namespace gc.sitio.core.Servicios.Implementacion
 			{
 				HelperAPI helper = new();
 				HttpClient client = helper.InicializaCliente(token);
-				HttpResponseMessage response = null;
+				HttpResponseMessage response    ;
 				var link = $"{_appSettings.RutaBase}{RutaApiAlmacen}{BOX_BUSCAR}?boxId={boxId}";
 				response = await client.GetAsync(link);
 				if (response.StatusCode == HttpStatusCode.OK)
 				{
 					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-					respuesta = JsonConvert.DeserializeObject<ApiResponse<List<DepositoInfoBoxDto>>>(stringData);
-					if (response == null)
-					{
-						throw new NegocioException("No se desserializo correctamente la lista de Box. Verifique");
-					}
+					respuesta = JsonConvert.DeserializeObject<ApiResponse<List<DepositoInfoBoxDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+					
 					return respuesta.Data;
 				}
 				else

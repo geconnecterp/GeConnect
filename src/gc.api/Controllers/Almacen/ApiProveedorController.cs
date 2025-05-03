@@ -40,7 +40,7 @@ namespace gc.api.Controllers.Almacen
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public IActionResult Getproveedoress([FromQuery] QueryFilters filters)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var proveedoress = _proveedoresSv.GetAll(filters);
             var proveedoresDtos = _mapper.Map<IEnumerable<ProveedorDto>>(proveedoress);
 
@@ -53,8 +53,8 @@ namespace gc.api.Controllers.Almacen
                 TotalPages = proveedoress.TotalPages,
                 HasNextPage = proveedoress.HasNextPage,
                 HasPreviousPage = proveedoress.HasPreviousPage,
-                NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getproveedoress))).ToString(),
-                PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getproveedoress))).ToString(),
+                NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getproveedoress))??"").ToString(),
+                PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getproveedoress)) ?? "").ToString(),
 
             };
 
@@ -72,7 +72,7 @@ namespace gc.api.Controllers.Almacen
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(string id)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var proveedores = await _proveedoresSv.FindAsync(id);
             var datoDto = _mapper.Map<ProveedorDto>(proveedores);
             var response = new ApiResponse<ProveedorDto>(datoDto);
@@ -84,7 +84,7 @@ namespace gc.api.Controllers.Almacen
         [HttpPost]
         public async Task<IActionResult> Post(ProveedorDto datoDto)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var proveedores = _mapper.Map<Proveedor>(datoDto);
             var res = await _proveedoresSv.AddAsync(proveedores);
 
@@ -97,7 +97,7 @@ namespace gc.api.Controllers.Almacen
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(string id, [FromBody] ProveedorDto datoDto)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var proveedores = _mapper.Map<Proveedor>(datoDto);
             proveedores.Cta_Id = id; //garantizo que el id buscado es el que se envia al negocio
             var result = await _proveedoresSv.Update(proveedores);
@@ -110,7 +110,7 @@ namespace gc.api.Controllers.Almacen
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = await _proveedoresSv.Delete(id);
             var response = new ApiResponse<bool>(res);
             return Ok(response);
@@ -123,7 +123,7 @@ namespace gc.api.Controllers.Almacen
 		public IActionResult GetProveedorParaABM(string cta_id)
 		{
 			ApiResponse<List<ProveedorABMDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _proveedoresSv.GetProveedorParaABM(cta_id);
 
 			response = new ApiResponse<List<ProveedorABMDto>>(res);
