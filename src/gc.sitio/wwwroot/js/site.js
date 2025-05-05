@@ -1,4 +1,7 @@
-﻿$(document).ready(function () {
+﻿var usuarioAuth = "";
+var administracion = "";
+
+$(function () {
     AbrirWaiting("Espere, se esta inicializando la vista...");
     $("#formulario").slideUp(300).fadeIn(400);
     CerrarWaiting();

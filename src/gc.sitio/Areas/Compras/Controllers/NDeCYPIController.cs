@@ -1,10 +1,8 @@
-﻿using Azure;
-using gc.api.core.Entidades;
+﻿using gc.api.core.Entidades;
+using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Request;
-using gc.infraestructura.Dtos.Almacen.Response;
-using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Helpers;
@@ -13,11 +11,7 @@ using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
-using System.Collections.Generic;
-using System.Linq.Expressions;
-using gc.infraestructura.Core.EntidadesComunes;
-using gc.infraestructura.Dtos.Users;
-using gc.sitio.core.Servicios.Implementacion;
+using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 
 namespace gc.sitio.Areas.Compras.Controllers
 {
@@ -25,7 +19,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 	public class NDeCYPIController : ControladorBase
 	{
 		private readonly AppSettings _appSettings;
-		private readonly ILogger<CompraController> _logger;
 		private readonly ICuentaServicio _cuentaServicio;
 		private readonly IRubroServicio _rubroServicio;
 		private readonly IProductoServicio _productoServicio;
@@ -33,7 +26,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 		public NDeCYPIController(ICuentaServicio cuentaServicio, IRubroServicio rubroServicio, IProductoServicio productoServicio,
 								 IAdministracionServicio administracionServicio, ILogger<CompraController> logger, IOptions<AppSettings> options, IHttpContextAccessor context) : base(options, context)
 		{
-			_logger = logger;
 			_appSettings = options.Value;
 			_cuentaServicio = cuentaServicio;
 			_rubroServicio = rubroServicio;
@@ -46,7 +38,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return View();
 		}
 
-		public async Task<IActionResult> NecesidadesDeCompraBack()
+		public IActionResult NecesidadesDeCompraBack()
 		{
 			NDeCYPI.NecesidadesDeCompraDto model = new();
 			List<ProveedorFamiliaListaDto> proveedoresFamilias = [];
@@ -67,10 +59,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return View(model);
 		}
 
-		public async Task<IActionResult> NecesidadesDeCompra()
+		public IActionResult NecesidadesDeCompra()
 		{
 			NDeCYPI.NecesidadesDeCompraDto model = new();
-			MetadataGrid metadata;
 			try
 			{
 				var auth = EstaAutenticado;
@@ -106,10 +97,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public async Task<IActionResult> PedidosInternos()
+		public IActionResult PedidosInternos()
 		{
 			NDeCYPI.PedidosInternosDto model = new();
-			MetadataGrid metadata;
 			try
 			{
 				var auth = EstaAutenticado;
@@ -145,7 +135,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public async Task<IActionResult> PedidosInternosBack()
+		public IActionResult PedidosInternosBack()
 		{
 			NDeCYPI.PedidosInternosDto model = new();
 			List<ProveedorFamiliaListaDto> proveedoresFamilias = [];
@@ -166,7 +156,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return View(model);
 		}
 
-		public async Task<IActionResult> BuscarProductosOCPI(string filtro, string id, string tipo, string sort = "p_m_desc", string sortDir = "asc", int pag = 1, bool actualizar = false)
+		public IActionResult BuscarProductosOCPI(string filtro, string id, string tipo, string sort = "p_m_desc", string sortDir = "asc", int pag = 1, bool actualizar = false)
 		{
 			var model = new GridCoreSmart<ProductoNCPIDto>();
 			MetadataGrid metadata;
@@ -200,7 +190,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public async Task<IActionResult> BuscarProductosOCPI2(NCPICargarListaDeProductos2Request request)
+		public IActionResult BuscarProductosOCPI2(NCPICargarListaDeProductos2Request request)
 		{
 			var model = new GridCoreSmart<ProductoNCPIDto>();
 			MetadataGrid metadata;
@@ -217,7 +207,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				//grillaDatos = GenerarGrillaSmart(ListaDeUsuarios, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 				var pag = request.Pagina == null ? 1 : request.Pagina.Value;
-				grillaDatos = GenerarGrillaSmart(productos.Item1, request.Sort, _appSettings.NroRegistrosPagina, pag, metadata.TotalCount, metadata.TotalPages, request.SortDir);
+				grillaDatos = GenerarGrillaSmart(productos.Item1, request.Sort ?? "p_desc", _appSettings.NroRegistrosPagina, pag, metadata.TotalCount, metadata.TotalPages, request.SortDir ?? "ASC");
 				//model = ObtenerGridCoreSmart<ProductoNCPIDto>(productos);
 				return PartialView("_grillaProductos", grillaDatos);
 			}
@@ -406,7 +396,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public async Task<IActionResult> ObtenerProveedoresFamilia(string ctaId)
+		public  IActionResult ObtenerProveedoresFamilia(string ctaId)
 		{
 			var model = new NDeCYPI.ProveedoresFamiliaDto();
 			try
@@ -436,7 +426,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				CargarProveedoresFamiliaLista(ctaId, _cuentaServicio);
 				return Json(new { error = false, warn = false, msg = string.Empty });
 			}
-			catch (Exception ex)
+			catch (Exception )
 			{
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar obtener los datos de la familia de productos del proveedor: {ctaId}" });
 			}

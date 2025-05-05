@@ -6,7 +6,7 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="navbar-collapse collapse" id="navbarSupportedContent">
-            @if (User.Identity.IsAuthenticated)
+            @if (User!= null && User.Identity!=null && User.Identity.IsAuthenticated)
             {
                 <!-- Módulos -->
                 @await Component.InvokeAsync("MenuPpal")
