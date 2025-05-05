@@ -118,7 +118,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					model.SucursalEntrega = detalleItem.adm_nombre;
 					model.Observaciones = detalleItem.oc_observaciones;
 					model.PagoAnticipado = detalleItem.oc_pago_ant == 'S' ? true : false;
-					model.PagoPlazo = detalleItem.oc_pago_ant_vto.Value;
+					model.PagoPlazo = detalleItem.oc_pago_ant_vto??DateTime.MinValue;
 					CargarDatosDeConceptosEnTabDetalle(model, detalleItem);
 				}
 				return PartialView("_grillaDetalleDeOC", model);

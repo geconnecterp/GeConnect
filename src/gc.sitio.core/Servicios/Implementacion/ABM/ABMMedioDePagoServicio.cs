@@ -60,7 +60,7 @@ namespace gc.sitio.core.Servicios.Implementacion.ABM
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+				_logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
 				throw new Exception("Algo no fue bien al intentar cargar los conteos previso de ajustes.");
 			}

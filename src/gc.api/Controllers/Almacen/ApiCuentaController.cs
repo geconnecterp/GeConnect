@@ -50,7 +50,7 @@ namespace gc.api.Controllers.Almacen
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public IActionResult Getcuentass([FromQuery] QueryFilters filters)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var cuentass = _cuentasSv.GetAll(filters);
             var cuentasDtos = _mapper.Map<IEnumerable<CuentaDto>>(cuentass);
 
@@ -85,7 +85,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult GetCuentaComercialLista(string texto, char tipo)
         {
             ApiResponse<List<CuentaDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _cuentasSv.GetCuentaComercialLista(texto, tipo);
 
             response = new ApiResponse<List<CuentaDto>>(res);
@@ -100,7 +100,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult GetCuentaDatos(string cta, char tipo)
         {
             ApiResponse<List<CuentaDatoDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _cuentasSv.GetCuentaDatos(cta, tipo);
 
             response = new ApiResponse<List<CuentaDatoDto>>(res);
@@ -115,7 +115,7 @@ namespace gc.api.Controllers.Almacen
 		public IActionResult GetOCxCuenta(string cta_id)
 		{
 			ApiResponse<List<RPROrdenDeCompraDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _cuentasSv.GetOCporCuenta(cta_id);
 
 			response = new ApiResponse<List<RPROrdenDeCompraDto>>(res);
@@ -130,7 +130,7 @@ namespace gc.api.Controllers.Almacen
 		public IActionResult GetOCDetalle(string oc_compte)
 		{
 			ApiResponse<List<RPROrdenDeCompraDetalleDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _cuentasSv.GetDetalleDeOC(oc_compte);
 
 			response = new ApiResponse<List<RPROrdenDeCompraDetalleDto>>(res);
@@ -145,7 +145,7 @@ namespace gc.api.Controllers.Almacen
 		public IActionResult GetCuentaParaABM(string cta_id)
 		{
 			ApiResponse<List<CuentaABMDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _cuentasSv.GetCuentaParaABM(cta_id);
 
 			response = new ApiResponse<List<CuentaABMDto>>(res);
@@ -160,7 +160,7 @@ namespace gc.api.Controllers.Almacen
 		public IActionResult GetCuentaFormaDePago(string cta_id)
 		{
 			ApiResponse<List<CuentaFPDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _cuentasSv.GetCuentaFormaDePago(cta_id);
 
 			response = new ApiResponse<List<CuentaFPDto>>(res);
@@ -175,7 +175,7 @@ namespace gc.api.Controllers.Almacen
 		public IActionResult GetCuentaContactos(string cta_id)
 		{
 			ApiResponse<List<CuentaContactoDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _cuentasSv.GetCuentContactos(cta_id);
 
 			response = new ApiResponse<List<CuentaContactoDto>>(res);
@@ -190,7 +190,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult GetCuentaContactosPorCuentaYTC(string cta_id, string tc_id)
         {
             ApiResponse<List<CuentaContactoDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _cuentasSv.GetCuentContactosporCuentaYTC(cta_id, tc_id);
 
             response = new ApiResponse<List<CuentaContactoDto>>(res);
@@ -205,7 +205,7 @@ namespace gc.api.Controllers.Almacen
 		public IActionResult GetCuentaObs(string cta_id)
 		{
 			ApiResponse<List<CuentaObsDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _cuentasSv.GetCuentaObs(cta_id);
 
 			response = new ApiResponse<List<CuentaObsDto>>(res);
@@ -220,7 +220,7 @@ namespace gc.api.Controllers.Almacen
 		public IActionResult GetCuentaObsDatos(string cta_id, string to_id)
 		{
 			ApiResponse<List<CuentaObsDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _cuentasSv.GetCuentaObsDatos(cta_id, to_id);
 
 			response = new ApiResponse<List<CuentaObsDto>>(res);
@@ -235,7 +235,7 @@ namespace gc.api.Controllers.Almacen
 		public IActionResult GetCuentaNota(string cta_id)
 		{
 			ApiResponse<List<CuentaNotaDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _cuentasSv.GetCuentaNota(cta_id);
 
 			response = new ApiResponse<List<CuentaNotaDto>>(res);
@@ -250,7 +250,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult GetCuentaNotaDatos(string cta_id, string usu_id)
         {
             ApiResponse<List<CuentaNotaDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _cuentasSv.GetCuentaNotaDatos(cta_id, usu_id);
 
             response = new ApiResponse<List<CuentaNotaDto>>(res);
@@ -265,7 +265,7 @@ namespace gc.api.Controllers.Almacen
 		public IActionResult GetFormaDePagoPorCuentaYFP(string cta_id, string fp_id)
 		{
 			ApiResponse<List<CuentaFPDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _cuentasSv.GetFormaDePagoPorCuentaYFP(cta_id, fp_id);
 
 			response = new ApiResponse<List<CuentaFPDto>>(res);
@@ -277,7 +277,7 @@ namespace gc.api.Controllers.Almacen
 		[HttpGet("{id}")]
         public async Task<IActionResult> Get(string id)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var cuentas = await _cuentasSv.FindAsync(id);
             var datoDto = _mapper.Map<CuentaDto>(cuentas);
             var response = new ApiResponse<CuentaDto>(datoDto);
@@ -289,7 +289,7 @@ namespace gc.api.Controllers.Almacen
         [Route("[action]")]
         public IActionResult GetProveedorLista(string ope_iva)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             List<ProveedorLista> proveedores = _cuentasSv.GetProveedorLista(ope_iva);
             var lista = _mapper.Map<List<ProveedorListaDto>>(proveedores);
 
@@ -301,7 +301,7 @@ namespace gc.api.Controllers.Almacen
         [Route("[action]")]
         public IActionResult GetClienteLista(string search)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             List<ClienteListaDto> clientes = _cuentasSv.GetClienteLista(search);
             
             var response = new ApiResponse<List<ClienteListaDto>>(clientes);
@@ -314,7 +314,7 @@ namespace gc.api.Controllers.Almacen
         [Route("[action]")]
         public IActionResult GetTiposDeNegocio()
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             List<TipoNegocioDto> tipoNegocio = _tipoNegocioServicio.GetTiposDeNegocio();
             var lista = _mapper.Map<List<TipoNegocioDto>>(tipoNegocio);
 
@@ -326,7 +326,7 @@ namespace gc.api.Controllers.Almacen
         [Route("[action]")]
         public IActionResult GetZonaLista()
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             List<ZonaDto> tipoNegocio = _zonaServicio.GetZonaLista();
             var lista = _mapper.Map<List<ZonaDto>>(tipoNegocio);
 
@@ -338,7 +338,7 @@ namespace gc.api.Controllers.Almacen
 		[Route("[action]")]
 		public IActionResult GetProveedorFamiliaLista(string ctaId)
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<ProveedorFamiliaListaDto> proveedores = _cuentasSv.GetProveedorFamiliaLista(ctaId);
 			var lista = _mapper.Map<List<ProveedorFamiliaListaDto>>(proveedores);
 
@@ -350,7 +350,7 @@ namespace gc.api.Controllers.Almacen
 		[Route("[action]")]
 		public IActionResult GetABMProveedorFamiliaLista(string ctaId)
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<ProveedorGrupoDto> proveedores = _cuentasSv.GetABMProveedorFamiliaLista(ctaId);
 			var lista = _mapper.Map<List<ProveedorGrupoDto>>(proveedores);
 
@@ -362,7 +362,7 @@ namespace gc.api.Controllers.Almacen
 		[Route("[action]")]
 		public IActionResult GetABMProveedorFamiliaDatos(string ctaId, string pgId)
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<ProveedorGrupoDto> proveedores = _cuentasSv.GetABMProveedorFamiliaDatos(ctaId, pgId);
 			var lista = _mapper.Map<List<ProveedorGrupoDto>>(proveedores);
 
@@ -374,7 +374,7 @@ namespace gc.api.Controllers.Almacen
 		[HttpPost]
         public async Task<IActionResult> Post(CuentaDto datoDto)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var cta = _mapper.Map<Cuenta>(datoDto);
             var res = await _cuentasSv.AddAsync(cta);
 
@@ -387,7 +387,7 @@ namespace gc.api.Controllers.Almacen
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(string id, [FromBody] CuentaDto datoDto)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var cuentas = _mapper.Map<Cuenta>(datoDto);
             cuentas.Cta_Id = id; //garantizo que el id buscado es el que se envia al negocio
             var result = await _cuentasSv.Update(cuentas);
@@ -400,7 +400,7 @@ namespace gc.api.Controllers.Almacen
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = await _cuentasSv.Delete(id);
             var response = new ApiResponse<bool>(res);
             return Ok(response);
@@ -413,7 +413,7 @@ namespace gc.api.Controllers.Almacen
 		public IActionResult GetCompteDatosProv(string cta_id)
 		{
 			ApiResponse<List<ComprobanteDeCompraDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _cuentasSv.GetCompteDatosProv(cta_id);
 
 			response = new ApiResponse<List<ComprobanteDeCompraDto>>(res);
@@ -428,7 +428,7 @@ namespace gc.api.Controllers.Almacen
 		public IActionResult GetCompteCargaRprAsoc(string cta_id)
 		{
 			ApiResponse<List<RprAsociadosDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _cuentasSv.GetCompteCargaRprAsoc(cta_id);
 
 			response = new ApiResponse<List<RprAsociadosDto>>(res);
@@ -443,7 +443,7 @@ namespace gc.api.Controllers.Almacen
 		public IActionResult GetCompteCargaCtaAsoc(string cta_id)
 		{
 			ApiResponse<List<NotasACuenta>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _cuentasSv.GetCompteCargaCtaAsoc(cta_id);
 
 			response = new ApiResponse<List<NotasACuenta>>(res);
@@ -455,7 +455,7 @@ namespace gc.api.Controllers.Almacen
 		[Route("[action]")]
 		public IActionResult CompteCargaConfirma(CompteCargaConfirmaRequest request)
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _cuentasSv.CompteCargaConfirma(request);
 
 			var response = new ApiResponse<RespuestaDto>(res.First());
@@ -470,7 +470,7 @@ namespace gc.api.Controllers.Almacen
 		public IActionResult GetComprobantesPendientesDeValorizar(string cta_id)
 		{
 			ApiResponse<List<CompteValorizaPendienteListaDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _cuentasSv.ObtenerComprobantesPendientesDeValorizar(cta_id);
 
 			response = new ApiResponse<List<CompteValorizaPendienteListaDto>>(res);
@@ -485,7 +485,7 @@ namespace gc.api.Controllers.Almacen
 		public IActionResult GetComprobantesDetalleRpr(CompteValorizaRprDtosRequest request)
 		{
 			ApiResponse<List<CompteValorizaDetalleRprListaDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _cuentasSv.ObtenerComprobantesDetalleRpr(request);
 
 			response = new ApiResponse<List<CompteValorizaDetalleRprListaDto>>(res);
@@ -500,7 +500,7 @@ namespace gc.api.Controllers.Almacen
 		public IActionResult GetComprobantesDtos(CompteValorizaRprDtosRequest request)
 		{
 			ApiResponse<List<CompteValorizaDtosListaDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _cuentasSv.ObtenerComprobantesDtos(request);
 
 			response = new ApiResponse<List<CompteValorizaDtosListaDto>>(res);
@@ -515,7 +515,7 @@ namespace gc.api.Controllers.Almacen
 		public IActionResult GetCompteValorizaLista(CompteValorizaRequest request)
 		{
 			ApiResponse<List<CompteValorizaListaDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _cuentasSv.ObtenerCompteValorizaLista(request);
 
 			response = new ApiResponse<List<CompteValorizaListaDto>>(res);

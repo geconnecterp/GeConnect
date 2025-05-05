@@ -3,22 +3,14 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
-using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.Gen;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.Metrics;
-using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace gc.sitio.core.Servicios.Implementacion
 {
@@ -64,7 +56,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 
                         return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
                     }
-                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ConsCompDetDto>>>(stringData);
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ConsCompDetDto>>>(stringData)
+                        ?? throw new NegocioException("No se pudo deserializar los datos de la Consulta Comprobantes del Mes.");
 
                     return new RespuestaGenerica<ConsCompDetDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
 
@@ -74,28 +67,32 @@ namespace gc.sitio.core.Servicios.Implementacion
                     string stringData = await response.Content.ReadAsStringAsync();
                     _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
                     var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
-                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    if (error != null && error.TypeException?.Equals(nameof(NegocioException)) == true)
                     {
                         return new RespuestaGenerica<ConsCompDetDto> { Ok = false, Mensaje = error.Detail };
                     }
-                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    else if (error != null && error.TypeException?.Equals(nameof(NotFoundException)) == true)
                     {
                         return new RespuestaGenerica<ConsCompDetDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else if (error != null)
+                    {
+                        throw new Exception(error.Detail);
                     }
                     else
                     {
-                        throw new Exception(error.Detail);
+                        throw new Exception("Error desconocido al procesar la respuesta de la API.");
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
                 return new RespuestaGenerica<ConsCompDetDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener el detalle de comprobantes." };
             }
         }
-        
+
 
         public async Task<RespuestaGenerica<ConsCompTotDto>> ConsultaComprobantesMeses(string ctaId, int meses, bool relCuit, string userId, string token)
         {
@@ -119,7 +116,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 
                         return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
                     }
-                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ConsCompTotDto>>>(stringData);
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ConsCompTotDto>>>(stringData)
+                        ?? throw new NegocioException("Hubo un problema al deserializar datos de Consulta de Comprobantes.");
 
                     return new RespuestaGenerica<ConsCompTotDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
 
@@ -129,31 +127,35 @@ namespace gc.sitio.core.Servicios.Implementacion
                     string stringData = await response.Content.ReadAsStringAsync();
                     _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
                     var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
-                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    if (error != null && error.TypeException?.Equals(nameof(NegocioException)) == true)
                     {
                         return new RespuestaGenerica<ConsCompTotDto> { Ok = false, Mensaje = error.Detail };
                     }
-                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    else if (error != null && error.TypeException?.Equals(nameof(NotFoundException)) == true)
                     {
                         return new RespuestaGenerica<ConsCompTotDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else if (error != null)
+                    {
+                        throw new Exception(error.Detail);
                     }
                     else
                     {
-                        throw new Exception(error.Detail);
+                        throw new Exception("Error desconocido al procesar la respuesta de la API.");
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
                 return new RespuestaGenerica<ConsCompTotDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener los comprobantes de la cuenta." };
             }
         }
 
-        
 
-        public async Task<(List<ConsCtaCteDto>,MetadataGrid)> ConsultarCuentaCorriente(string ctaId, long fechaD, string userId,int pagina, int registros, string token)
+
+        public async Task<(List<ConsCtaCteDto>, MetadataGrid)> ConsultarCuentaCorriente(string ctaId, long fechaD, string userId, int pagina, int registros, string token)
         {
             try
             {
@@ -174,9 +176,10 @@ namespace gc.sitio.core.Servicios.Implementacion
                     {
                         throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde.");
                     }
-                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ConsCtaCteDto>>>(stringData);
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ConsCtaCteDto>>>(stringData)
+                        ?? throw new NegocioException("Hubo un problema al deserializar los datos de la cuenta corriente.");
 
-                    return (apiResponse.Data, apiResponse.Meta);
+                    return (apiResponse.Data ?? [], apiResponse.Meta ?? new MetadataGrid());
 
                 }
                 else
@@ -184,29 +187,41 @@ namespace gc.sitio.core.Servicios.Implementacion
                     string stringData = await response.Content.ReadAsStringAsync();
                     _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
                     var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
-                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    if (error != null && error.TypeException?.Equals(nameof(NegocioException)) == true)
                     {
-                        throw new NegocioException(error.Detail);
+                        if (error == null)
+                        {
+                            throw new NegocioException("Error desconocido al procesar la respuesta de la API.");
+                        }
+                        throw new NegocioException(error.Detail ?? "Error desconocido al procesar la respuesta de la API.");
                     }
-                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    else if (error != null && error.TypeException?.Equals(nameof(NotFoundException)) == true)
                     {
-                        throw new NegocioException(error.Detail);
+                        if (error == null)
+                        {
+                            throw new NegocioException("Error desconocido al procesar la respuesta de la API.");
+                        }
+                        throw new NegocioException(error.Detail ?? "Error desconocido al procesar la respuesta de la API.");
+                    }
+                    else if (error != null)
+                    {
+                        throw new Exception(error.Detail);
                     }
                     else
                     {
-                        throw new Exception(error.Detail);
+                        throw new Exception("Error desconocido al procesar la respuesta de la API.");
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
                 throw new Exception($"Algo no fue bien al intentar obtener los registros de la Cuenta Corriente de la cuenta {ctaId}");
             }
         }
 
-       
+
 
         public async Task<RespuestaGenerica<ConsVtoDto>> ConsultaVencimientoComprobantesNoImputados(string ctaId, long fechaD, long fechaH, string userId, string token)
         {
@@ -230,7 +245,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 
                         return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
                     }
-                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ConsVtoDto>>>(stringData);
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ConsVtoDto>>>(stringData)
+                        ?? throw new NegocioException("Hubo un error al deserializar los datos del Vencimiento de comprobantes.");
 
                     return new RespuestaGenerica<ConsVtoDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
 
@@ -240,23 +256,35 @@ namespace gc.sitio.core.Servicios.Implementacion
                     string stringData = await response.Content.ReadAsStringAsync();
                     _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
                     var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
-                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    if (error != null && error.TypeException?.Equals(nameof(NegocioException)) == true)
                     {
-                        return new RespuestaGenerica<ConsVtoDto> { Ok = false, Mensaje = error.Detail };
+                        if (error == null)
+                        {
+                            throw new NegocioException("Error desconocido al procesar la respuesta de la API.");
+                        }
+                        throw new NegocioException(error.Detail ?? "Error desconocido al procesar la respuesta de la API.");
                     }
-                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    else if (error != null && error.TypeException?.Equals(nameof(NotFoundException)) == true)
                     {
-                        return new RespuestaGenerica<ConsVtoDto> { Ok = false, Mensaje = error.Detail };
+                        if (error == null)
+                        {
+                            throw new NegocioException("Error desconocido al procesar la respuesta de la API.");
+                        }
+                        throw new NegocioException(error.Detail ?? "Error desconocido al procesar la respuesta de la API.");
+                    }
+                    else if (error != null)
+                    {
+                        throw new Exception(error.Detail);
                     }
                     else
                     {
-                        throw new Exception(error.Detail);
+                        throw new Exception("Error desconocido al procesar la respuesta de la API.");
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
                 return new RespuestaGenerica<ConsVtoDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener los comprobantes vencidos de la cuenta." };
             }
@@ -287,7 +315,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 
                         return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
                     }
-                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ConsOrdPagosDto>>>(stringData);
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ConsOrdPagosDto>>>(stringData)
+                        ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 
                     return new RespuestaGenerica<ConsOrdPagosDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
 
@@ -297,29 +326,41 @@ namespace gc.sitio.core.Servicios.Implementacion
                     string stringData = await response.Content.ReadAsStringAsync();
                     _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
                     var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
-                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    if (error != null && error.TypeException?.Equals(nameof(NegocioException)) == true)
                     {
-                        return new RespuestaGenerica<ConsOrdPagosDto> { Ok = false, Mensaje = error.Detail };
+                        if (error == null)
+                        {
+                            throw new NegocioException("Error desconocido al procesar la respuesta de la API.");
+                        }
+                        throw new NegocioException(error.Detail ?? "Error desconocido al procesar la respuesta de la API.");
                     }
-                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    else if (error != null && error.TypeException?.Equals(nameof(NotFoundException)) == true)
                     {
-                        return new RespuestaGenerica<ConsOrdPagosDto> { Ok = false, Mensaje = error.Detail };
+                        if (error == null)
+                        {
+                            throw new NegocioException("Error desconocido al procesar la respuesta de la API.");
+                        }
+                        throw new NegocioException(error.Detail ?? "Error desconocido al procesar la respuesta de la API.");
+                    }
+                    else if (error != null)
+                    {
+                        throw new Exception(error.Detail);
                     }
                     else
                     {
-                        throw new Exception(error.Detail);
+                        throw new Exception("Error desconocido al procesar la respuesta de la API.");
                     }
                 }
             }
             catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
             {
-                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
                 return new RespuestaGenerica<ConsOrdPagosDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener las recepciones del proveedor. La Solicitud ha excedido el tiempo de espera." };
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
                 return new RespuestaGenerica<ConsOrdPagosDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener las ordenes de pago del proveedor." };
             }
@@ -347,7 +388,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 
                         return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
                     }
-                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ConsOrdPagosDetDto>>>(stringData);
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ConsOrdPagosDetDto>>>(stringData)
+                        ?? throw new NegocioException("Hubo un problema al deserializar los datos"); 
 
                     return new RespuestaGenerica<ConsOrdPagosDetDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
 
@@ -357,29 +399,41 @@ namespace gc.sitio.core.Servicios.Implementacion
                     string stringData = await response.Content.ReadAsStringAsync();
                     _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
                     var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
-                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    if (error != null && error.TypeException?.Equals(nameof(NegocioException)) == true)
                     {
-                        return new RespuestaGenerica<ConsOrdPagosDetDto> { Ok = false, Mensaje = error.Detail };
+                        if (error == null)
+                        {
+                            throw new NegocioException("Error desconocido al procesar la respuesta de la API.");
+                        }
+                        throw new NegocioException(error.Detail ?? "Error desconocido al procesar la respuesta de la API.");
                     }
-                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    else if (error != null && error.TypeException?.Equals(nameof(NotFoundException)) == true)
                     {
-                        return new RespuestaGenerica<ConsOrdPagosDetDto> { Ok = false, Mensaje = error.Detail };
+                        if (error == null)
+                        {
+                            throw new NegocioException("Error desconocido al procesar la respuesta de la API.");
+                        }
+                        throw new NegocioException(error.Detail ?? "Error desconocido al procesar la respuesta de la API.");
+                    }
+                    else if (error != null)
+                    {
+                        throw new Exception(error.Detail);
                     }
                     else
                     {
-                        throw new Exception(error.Detail);
+                        throw new Exception("Error desconocido al procesar la respuesta de la API.");
                     }
                 }
             }
             catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
             {
-                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
                 return new RespuestaGenerica<ConsOrdPagosDetDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener las recepciones del proveedor. La Solicitud ha excedido el tiempo de espera." };
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
                 return new RespuestaGenerica<ConsOrdPagosDetDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener el detalle de las ordenes de pago del proveedor." };
             }
@@ -413,7 +467,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 
                         return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
                     }
-                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ConsRecepcionProveedorDto>>>(stringData);
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ConsRecepcionProveedorDto>>>(stringData) 
+                        ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 
                     return new RespuestaGenerica<ConsRecepcionProveedorDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
 
@@ -423,29 +478,41 @@ namespace gc.sitio.core.Servicios.Implementacion
                     string stringData = await response.Content.ReadAsStringAsync();
                     _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
                     var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
-                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    if (error != null && error.TypeException?.Equals(nameof(NegocioException)) == true)
                     {
-                        return new RespuestaGenerica<ConsRecepcionProveedorDto> { Ok = false, Mensaje = error.Detail };
+                        if (error == null)
+                        {
+                            throw new NegocioException("Error desconocido al procesar la respuesta de la API.");
+                        }
+                        throw new NegocioException(error.Detail ?? "Error desconocido al procesar la respuesta de la API.");
                     }
-                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    else if (error != null && error.TypeException?.Equals(nameof(NotFoundException)) == true)
                     {
-                        return new RespuestaGenerica<ConsRecepcionProveedorDto> { Ok = false, Mensaje = error.Detail };
+                        if (error == null)
+                        {
+                            throw new NegocioException("Error desconocido al procesar la respuesta de la API.");
+                        }
+                        throw new NegocioException(error.Detail ?? "Error desconocido al procesar la respuesta de la API.");
                     }
-                    else
+                    else if (error != null)
                     {
                         throw new Exception(error.Detail);
                     }
+                    else
+                    {
+                        throw new Exception("Error desconocido al procesar la respuesta de la API.");
+                    }
                 }
             }
-            catch(TaskCanceledException ex) when(ex.InnerException is TimeoutException)
+            catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
             {
-                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
                 return new RespuestaGenerica<ConsRecepcionProveedorDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener las recepciones del proveedor. La Solicitud ha excedido el tiempo de espera." };
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
                 return new RespuestaGenerica<ConsRecepcionProveedorDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener las recepciones del proveedor." };
             }
@@ -475,7 +542,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 
                         return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
                     }
-                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ConsRecepcionProveedorDetalleDto>>>(stringData);
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ConsRecepcionProveedorDetalleDto>>>(stringData)
+                                                ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 
                     return new RespuestaGenerica<ConsRecepcionProveedorDetalleDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
 
@@ -485,29 +553,41 @@ namespace gc.sitio.core.Servicios.Implementacion
                     string stringData = await response.Content.ReadAsStringAsync();
                     _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
                     var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
-                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    if (error != null && error.TypeException?.Equals(nameof(NegocioException)) == true)
                     {
-                        return new RespuestaGenerica<ConsRecepcionProveedorDetalleDto> { Ok = false, Mensaje = error.Detail };
+                        if (error == null)
+                        {
+                            throw new NegocioException("Error desconocido al procesar la respuesta de la API.");
+                        }
+                        throw new NegocioException(error.Detail ?? "Error desconocido al procesar la respuesta de la API.");
                     }
-                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    else if (error != null && error.TypeException?.Equals(nameof(NotFoundException)) == true)
                     {
-                        return new RespuestaGenerica<ConsRecepcionProveedorDetalleDto> { Ok = false, Mensaje = error.Detail };
+                        if (error == null)
+                        {
+                            throw new NegocioException("Error desconocido al procesar la respuesta de la API.");
+                        }
+                        throw new NegocioException(error.Detail ?? "Error desconocido al procesar la respuesta de la API.");
+                    }
+                    else if (error != null)
+                    {
+                        throw new Exception(error.Detail);
                     }
                     else
                     {
-                        throw new Exception(error.Detail);
+                        throw new Exception("Error desconocido al procesar la respuesta de la API.");
                     }
                 }
             }
             catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
             {
-                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
                 return new RespuestaGenerica<ConsRecepcionProveedorDetalleDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener las recepciones del proveedor. La Solicitud ha excedido el tiempo de espera." };
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
                 return new RespuestaGenerica<ConsRecepcionProveedorDetalleDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener el detalle de las recepciones del proveedor." };
             }

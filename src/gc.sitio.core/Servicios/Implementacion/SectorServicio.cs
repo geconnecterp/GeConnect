@@ -46,7 +46,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 					if (!string.IsNullOrEmpty(stringData))
 					{
-						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<RubroListaABMDto>>>(stringData);
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<RubroListaABMDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 					}
 					else
 					{
@@ -89,7 +89,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 					if (!string.IsNullOrEmpty(stringData))
 					{
-						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<RubroListaABMDto>>>(stringData);
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<RubroListaABMDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 					}
 					else
 					{
@@ -132,7 +132,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 					if (!string.IsNullOrEmpty(stringData))
 					{
-						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<SectorDto>>>(stringData);
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<SectorDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 					}
 					else
 					{
@@ -175,7 +175,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 					if (!string.IsNullOrEmpty(stringData))
 					{
-						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<SubSectorDto>>>(stringData);
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<SubSectorDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 					}
 					else
 					{
@@ -218,7 +218,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 					if (!string.IsNullOrEmpty(stringData))
 					{
-						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<SubSectorDto>>>(stringData);
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<SubSectorDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 					}
 					else
 					{

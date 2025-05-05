@@ -388,7 +388,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda de Opciones";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda de Opciones");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda de Opciones");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;

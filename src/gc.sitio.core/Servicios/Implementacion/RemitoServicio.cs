@@ -10,6 +10,7 @@ using System.Net;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Almacen.Tr.Request;
 using gc.infraestructura.Dtos.Almacen.Rpr;
+using gc.infraestructura.Core.Exceptions;
 
 namespace gc.sitio.core.Servicios.Implementacion
 {
@@ -52,7 +53,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                     _logger.LogWarning($"La API devolvió error. Parametros rem_compte:{remCompte}");
                     return new();
                 }
-                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaDto>>>(stringData);
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
                 return apiResponse.Data;
             }
             else
@@ -84,7 +85,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                     _logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda admId:{admId}");
                     return new();
                 }
-                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RemitoGenDto>>>(stringData);
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RemitoGenDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
                 return apiResponse.Data;
             }
             else
@@ -116,7 +117,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                     _logger.LogWarning($"La API devolvió error. Parametros rem_compte:{remCompte}");
                     return new();
                 }
-                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaDto>>>(stringData);
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
                 return apiResponse.Data;
             }
             else
@@ -148,7 +149,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                     _logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda remCompte:{remCompte}");
                     return new();
                 }
-                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RemitoVerConteoDto>>>(stringData);
+                apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RemitoVerConteoDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
                 return apiResponse.Data;
             }
             else
@@ -183,7 +184,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                         _logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda remCompte={rm}&pId={pId} - stringData{stringData}");
                         return new() { resultado = -1, resultado_msj = "Se produjo un problema al querer verifiar el producto en el Remito. Consultar el log." }; ;
                     }
-                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
                     return apiResponse.Data;
                 }
                 else
@@ -227,7 +228,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                         _logger.LogWarning($"La API no devolvió dato alguno. RTRCargarConteos.");
                         return new() { resultado = -1, resultado_msj = "Se produjo un problema al querer realizar la carga de conteos (RTR). Consultar el log." }; ;
                     }
-                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
                     return apiResponse.Data;
                 }
                 else
@@ -265,7 +266,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 					_logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda reCompte:{reCompte}");
 					return new();
 				}
-				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RTRxULDto>>>(stringData);
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RTRxULDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 				return apiResponse.Data;
 			}
 			else

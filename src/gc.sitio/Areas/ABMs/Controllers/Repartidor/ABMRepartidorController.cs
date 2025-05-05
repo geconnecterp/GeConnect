@@ -96,7 +96,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Repartidor
             {
 
                 string msg = "Error en la invocación de la API - Busqueda de Repartidores";
-                _logger.LogError(ex, "Error en la invocación de la API - Busqueda de Repartidores");
+                _logger?.LogError(ex, "Error en la invocación de la API - Busqueda de Repartidores");
                 response.Mensaje = msg;
                 response.Ok = false;
                 response.EsWarn = false;
@@ -140,7 +140,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Repartidor
             catch (Exception ex)
             {
                 string msg = "Error en la invocación de la API - Busqueda de Usuarios";
-                _logger.LogError(ex, "Error en la invocación de la API - Busqueda de Usuarios");
+                _logger?.LogError(ex, "Error en la invocación de la API - Busqueda de Usuarios");
                 response.Mensaje = msg;
                 response.Ok = false;
                 response.EsWarn = false;
@@ -164,7 +164,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Repartidor
             catch (Exception ex)
             {
                 string msg = "Error en la invocación de la API - Inicializar Repartidor";
-                _logger.LogError(ex, msg);
+                _logger?.LogError(ex, msg);
                 response.Mensaje = msg;
                 response.Ok = false;
                 response.EsWarn = false;

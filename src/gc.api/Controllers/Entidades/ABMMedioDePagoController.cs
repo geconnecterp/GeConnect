@@ -17,7 +17,6 @@ namespace gc.api.Controllers.Entidades
     {
         private readonly IMapper _mapper;
         private readonly IUriService _uriService;
-        private readonly ILogger<ABMMedioDePagoController> _logger;
         private readonly IABMMedioDePagoServicio _abmMedioDePagoServicio;
 
         public ABMMedioDePagoController(IABMMedioDePagoServicio abmMedioDePagoServicio, IMapper mapper, IUriService uriService)

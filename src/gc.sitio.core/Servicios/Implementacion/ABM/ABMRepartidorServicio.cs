@@ -47,26 +47,50 @@ namespace gc.sitio.core.Servicios.Implementacion.ABM
                         throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde.");
                     }
                     apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ABMRepartidorDto>>>(stringData);
-
-                    return (apiResponse.Data, apiResponse.Meta);
+                    if(apiResponse == null)
+                    {
+                        throw new NegocioException("La deserialización devolvió un valor nulo.");
+                    }
+                    return (apiResponse.Data ?? [], apiResponse.Meta??new());
                 }
                 else
                 {
                     string stringData = await response.Content.ReadAsStringAsync();
                     _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
                     var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
-                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    if (error != null && error.TypeException?.Equals(nameof(NegocioException)) == true)
                     {
-                        throw new NegocioException(error.Detail);
+                        if (error.Detail != null)
+                        {
+                            throw new NegocioException(error.Detail);
+                        }
+                        else
+                        {
+                            throw new NotFoundException("No se encontraron los Repartidores.");
+                        }
                     }
-                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    else if (error != null && error.TypeException?.Equals(nameof(NotFoundException)) == true)
+                    {
+                        if (error.Detail != null)
+                        {
+                            throw new NegocioException(error.Detail);
+                        }
+                        else
+                        {
+                            throw new NotFoundException("No se encontraron los Repartidores.");
+                        }
+                    }
+                    else if (error != null && error.Detail != null)
                     {
                         throw new NegocioException(error.Detail);
                     }
                     else
                     {
-                        throw new Exception(error.Detail);
+                        throw new NotFoundException("No se encontraron los Repartidores.");
                     }
+
+
+
                 }
             }
             catch (NegocioException)
@@ -75,7 +99,7 @@ namespace gc.sitio.core.Servicios.Implementacion.ABM
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
                 throw new Exception("Algo no fue bien al intentar obtener los Perfiles solicitados según el filtro actual.");
             }
@@ -104,7 +128,8 @@ namespace gc.sitio.core.Servicios.Implementacion.ABM
 
                         return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
                     }
-                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<ABMRepartidorDatoDto>>(stringData);
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<ABMRepartidorDatoDto>>(stringData)
+                        ?? throw new Exception("La deserialización devolvió un valor nulo.");
 
                     return new RespuestaGenerica<ABMRepartidorDatoDto> { Ok = true, Mensaje = "OK", Entidad = apiResponse.Data };
 
@@ -114,23 +139,27 @@ namespace gc.sitio.core.Servicios.Implementacion.ABM
                     string stringData = await response.Content.ReadAsStringAsync();
                     _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
                     var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
-                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    if (error != null && error.TypeException?.Equals(nameof(NegocioException)) == true)
                     {
                         return new RespuestaGenerica<ABMRepartidorDatoDto> { Ok = false, Mensaje = error.Detail };
                     }
-                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    else if (error != null && error.TypeException?.Equals(nameof(NotFoundException)) == true)
                     {
                         return new RespuestaGenerica<ABMRepartidorDatoDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else if (error != null)
+                    {
+                        throw new Exception(error.Detail);
                     }
                     else
                     {
-                        throw new Exception(error.Detail);
+                        return new RespuestaGenerica<ABMRepartidorDatoDto> { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
                 return new RespuestaGenerica<ABMRepartidorDatoDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener los datos del vendedor." };
             }

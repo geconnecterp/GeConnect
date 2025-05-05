@@ -43,8 +43,9 @@ namespace gc.sitio.core.Servicios.Implementacion
 					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 					if (!string.IsNullOrEmpty(stringData))
 					{
-						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<BancoDto>>>(stringData);
-					}
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<BancoDto>>>(stringData)
+                            ?? new ApiResponse<List<BancoDto>>(new List<BancoDto>());
+                    }
 					else
 					{
 						throw new Exception("No se logro obtener la respuesta de la API con los datos del banco. Verifique.");

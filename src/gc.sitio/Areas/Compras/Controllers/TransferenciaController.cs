@@ -50,7 +50,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al obtener Autorizaciones de transferencias pendientes.");
+				_logger?.LogError(ex, "Error al obtener Autorizaciones de transferencias pendientes.");
 				TempData["error"] = "Hubo algun problema al intentar obtener las Autorizaciones de transferencias pendientes. Si el problema persiste informe al Administrador";
 				grid = new();
 			}
@@ -70,7 +70,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al obtener Autorizaciones de transferencias pendientes.");
+				_logger?.LogError(ex, "Error al obtener Autorizaciones de transferencias pendientes.");
 				TempData["error"] = "Hubo algun problema al intentar obtener las Autorizaciones de transferencias pendientes. Si el problema persiste informe al Administrador";
 				grid = new();
 			}
@@ -108,7 +108,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al obtener las Sucursales en transferencias pendientes.");
+				_logger?.LogError(ex, "Error al obtener las Sucursales en transferencias pendientes.");
 				TempData["error"] = "Hubo algun problema al intentar obtener las Sucursales en transferencias pendientes. Si el problema persiste informe al Administrador";
 			}
 			return PartialView("TRCrudAutorizacion", model);
@@ -124,7 +124,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al obtener los Pedidos Internos por Sucursal.");
+				_logger?.LogError(ex, "Error al obtener los Pedidos Internos por Sucursal.");
 				TempData["error"] = "Hubo algun problema al intentar obtener los Pedidos Internos por Sucursal. Si el problema persiste informe al Administrador";
 			}
 			return PartialView("_trPedidosPorSucursal", model);
@@ -140,7 +140,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al obtener los Depositos Incluidos por Sucursal.");
+				_logger?.LogError(ex, "Error al obtener los Depositos Incluidos por Sucursal.");
 				TempData["error"] = "Hubo algun problema al intentar obtener los Depositos Incluidos por Sucursal. Si el problema persiste informe al Administrador";
 			}
 			return PartialView("_trDepositosInclPorSucursal", model);
@@ -157,7 +157,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al obtener el detalle del Pedido Interno por Sucursal.");
+				_logger?.LogError(ex, "Error al obtener el detalle del Pedido Interno por Sucursal.");
 				TempData["error"] = "Hubo algun problema al intentar obtener el detalle del Pedido Interno por Sucursal. Si el problema persiste informe al Administrador.";
 				return ObtenerMensajeDeError("Hubo algun problema al intentar obtener el detalle del Pedido Interno por Sucursal. Si el problema persiste informe al Administrador.");
 			}
@@ -184,7 +184,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al intentar agregar un pedido a la lista de Pedidos Incluidos.");
+				_logger?.LogError(ex, "Error al intentar agregar un pedido a la lista de Pedidos Incluidos.");
 				TempData["error"] = "Hubo algun problema al intentar agregar un pedido a la lista de Pedidos Incluidos. Si el problema persiste informe al Administrador";
 			}
 			return PartialView("_trPedidosInclParaAutoTR", model);
@@ -207,7 +207,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al intentar agregar un pedido a la lista de Pedidos Incluidos.");
+				_logger?.LogError(ex, "Error al intentar agregar un pedido a la lista de Pedidos Incluidos.");
 				TempData["error"] = "Hubo algun problema al intentar agregar un pedido a la lista de Pedidos Incluidos. Si el problema persiste informe al Administrador";
 			}
 			return PartialView("_trPedidosInclParaAutoTR", model);
@@ -231,7 +231,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al intentar actualizar la información de sucursales.");
+				_logger?.LogError(ex, "Error al intentar actualizar la información de sucursales.");
 				TempData["error"] = "Hubo algun problema al intentar actualizar la información de sucursales. Si el problema persiste informe al Administrador";
 			}
 			return PartialView("_trListaSucursalesTR", model);
@@ -273,7 +273,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				_logger?.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name}");
 				return Json(new { error = true, msg = "Algo no fue bien al analizar los parámetros de la transferencia solicitada, intente nuevamente mas tarde." });
 			}
 		}
@@ -323,7 +323,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al abrir la vista de edicion de nuevas autorizaciones y detalle de TR.");
+				_logger?.LogError(ex, "Error al abrir la vista de edicion de nuevas autorizaciones y detalle de TR.");
 				TempData["error"] = "Hubo algun problema al abrir la vista de edicion de nuevas autorizaciones y detalle de TR. Si el problema persiste informe al Administrador";
 				return ObtenerMensajeDeError("Hubo algun problema al abrir la vista de edicion de nuevas autorizaciones y detalle de TR. Si el problema persiste informe al Administrador");
 			}
@@ -347,7 +347,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al filtrar la lista de productos por sucursal.");
+				_logger?.LogError(ex, "Error al filtrar la lista de productos por sucursal.");
 				TempData["error"] = "Hubo algun problema al filtrar la lista de productos por sucursal. Si el problema persiste informe al Administrador";
 				return ObtenerMensajeDeError("Hubo algun problema al filtrar la lista de productos por sucursal. Si el problema persiste informe al Administrador");
 			}
@@ -381,7 +381,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				_logger?.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name}");
 				return Json(new { error = true, msg = "Algo no fue bien al verificar si existe el producto ingresado, intente nuevamente mas tarde." });
 			}
 		}
@@ -439,7 +439,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				_logger?.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name}");
 				return Json(new { error = true, msg = "Algo no fue bien al ingresar el producto a la TR, intente nuevamente mas tarde." });
 			}
 		}
@@ -497,7 +497,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				_logger?.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name}");
 				return Json(new { error = true, msg = "Algo no fue bien al ingresar el producto a la TR, intente nuevamente mas tarde." });
 			}
 		}
@@ -532,7 +532,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				_logger?.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name}");
 				return Json(new { error = true, msg = "Algo no fue bien al ingresar el producto a la TR, intente nuevamente mas tarde." });
 			}
 		}
@@ -557,7 +557,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al obtener lista de productos sustitutos.");
+				_logger?.LogError(ex, "Error al obtener lista de productos sustitutos.");
 				TempData["error"] = "Hubo algun problema al obtener lista de productos sustitutos. Si el problema persiste informe al Administrador.";
 				return ObtenerMensajeDeError("Hubo algun problema al obtener lista de productos sustitutos. Si el problema persiste informe al Administrador.");
 			}
@@ -575,7 +575,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al inicializar modal de carga de producto a TR.");
+				_logger?.LogError(ex, "Error al inicializar modal de carga de producto a TR.");
 				TempData["error"] = "Hubo algun problema al inicializar modal de carga de producto a TR. Si el problema persiste informe al Administrador.";
 				return ObtenerMensajeDeError("Hubo algun problema al inicializar modal de carga de producto a TR. Si el problema persiste informe al Administrador.");
 			}
@@ -597,7 +597,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al inicializar modal de carga de producto a TR.");
+				_logger?.LogError(ex, "Error al inicializar modal de carga de producto a TR.");
 				TempData["error"] = "Hubo algun problema al inicializar modal de carga de producto a TR. Si el problema persiste informe al Administrador.";
 				return ObtenerMensajeDeError("Hubo algun problema al inicializar modal de carga de producto a TR. Si el problema persiste informe al Administrador.");
 			}
@@ -629,7 +629,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al inicializar modal de modificación de cantidad.");
+				_logger?.LogError(ex, "Error al inicializar modal de modificación de cantidad.");
 				TempData["error"] = "Hubo algun problema al inicializar modal de modificación de cantidad. Si el problema persiste informe al Administrador.";
 				return ObtenerMensajeDeError("Hubo algun problema al inicializar modal de modificación de cantidad. Si el problema persiste informe al Administrador.");
 			}
@@ -653,7 +653,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al eliminar un producto por sucursal.");
+				_logger?.LogError(ex, "Error al eliminar un producto por sucursal.");
 				TempData["error"] = "Hubo algun problema al eliminar un producto por sucursal. Si el problema persiste informe al Administrador";
 				return ObtenerMensajeDeError("Hubo algun problema al eliminar un producto por sucursal. Si el problema persiste informe al Administrador");
 			}
@@ -678,7 +678,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				_logger?.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name}");
 				return Json(new { error = true, msg = "Algo no fue bien al si existe un análisis realizado, intente nuevamente mas tarde." });
 			}
 		}
@@ -692,7 +692,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				_logger?.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name}");
 				return Json(new { error = true, msg = "Algo no fue bien al intentar limpiar el analisis realizado, intente nuevamente mas tarde." });
 			}
 		}
@@ -729,7 +729,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod().Name}");
+				_logger?.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name}");
 				return Json(new { error = true, msg = "Algo no fue bien al intentar confirmar las autorizaciones de TR, intente nuevamente mas tarde." });
 			}
 		}
@@ -756,7 +756,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al obtener el formlario de Nota de Sucursal.");
+				_logger?.LogError(ex, "Error al obtener el formlario de Nota de Sucursal.");
 				TempData["error"] = "Hubo algun problema al intentar obtener el formlario de Nota de Sucursal. Si el problema persiste informe al Administrador.";
 				return ObtenerMensajeDeError("Hubo algun problema al intentar obtener el formlario de Nota de Sucursal. Si el problema persiste informe al Administrador.");
 			}
@@ -785,7 +785,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al intentar agregar una nota a la sucursal.");
+				_logger?.LogError(ex, "Error al intentar agregar una nota a la sucursal.");
 				TempData["error"] = "Hubo algun problema al intentar agregar una nota a la sucursal. Si el problema persiste informe al Administrador";
 				return Json(new { error = true, msg = "Algo no fue bien al intentar agregar una nota a la sucursal, intente nuevamente mas tarde." });
 			}
@@ -810,7 +810,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al obtener el formulario de Nota de Producto.");
+				_logger?.LogError(ex, "Error al obtener el formulario de Nota de Producto.");
 				TempData["error"] = "Hubo algun problema al intentar obtener el formulario de Nota de Producto. Si el problema persiste informe al Administrador.";
 				return ObtenerMensajeDeError("Hubo algun problema al intentar obtener el formulario de Nota de Producto. Si el problema persiste informe al Administrador.");
 			}
@@ -838,7 +838,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al intentar agregar una nota a la sucursal.");
+				_logger?.LogError(ex, "Error al intentar agregar una nota a la sucursal.");
 				TempData["error"] = "Hubo algun problema al intentar agregar una nota a la sucursal. Si el problema persiste informe al Administrador";
 				return Json(new { error = true, msg = "Algo no fue bien al intentar agregar una nota a la sucursal, intente nuevamente mas tarde." });
 			}
@@ -860,7 +860,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al obtener el detalle de la transferencia.");
+				_logger?.LogError(ex, "Error al obtener el detalle de la transferencia.");
 				TempData["error"] = "Hubo algun problema al intentar obtener el detalle de la transferencia. Si el problema persiste informe al Administrador";
 				return ObtenerMensajeDeError("Hubo algun problema al intentar obtener el detalle de la transferencia. Si el problema persiste informe al Administrador.");
 			}
@@ -884,7 +884,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al intentar validar la transferencia.");
+				_logger?.LogError(ex, "Error al intentar validar la transferencia.");
 				TempData["error"] = "Hubo algun problema al intentar validar la transferencia. Si el problema persiste informe al Administrador";
 				return Json(new { error = true, msg = "Algo no fue bien al intentar validar la transferencia, intente nuevamente mas tarde." });
 			}
@@ -908,7 +908,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al intentar confirmar la transferencia.");
+				_logger?.LogError(ex, "Error al intentar confirmar la transferencia.");
 				TempData["error"] = "Hubo algun problema al intentar confirmar la transferencia. Si el problema persiste informe al Administrador";
 				return Json(new { error = true, msg = "Algo no fue bien al intentar confirmar la transferencia, intente nuevamente mas tarde." });
 			}

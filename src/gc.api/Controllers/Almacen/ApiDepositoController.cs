@@ -39,7 +39,7 @@ namespace gc.api.Controllers.Almacen
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public IActionResult Getdepositoss([FromQuery] QueryFilters filters)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var depositoss = _depositosSv.GetAll(filters);
             var depositosDtos = _mapper.Map<IEnumerable<DepositoDto>>(depositoss);
 
@@ -52,8 +52,8 @@ namespace gc.api.Controllers.Almacen
                 TotalPages = depositoss.TotalPages,
                 HasNextPage = depositoss.HasNextPage,
                 HasPreviousPage = depositoss.HasPreviousPage,
-                NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getdepositoss))).ToString(),
-                PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getdepositoss))).ToString(),
+                NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getdepositoss)) ?? "").ToString(),
+                PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getdepositoss))??"").ToString(),
 
             };
 
@@ -71,7 +71,7 @@ namespace gc.api.Controllers.Almacen
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(string id)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var depositos = await _depositosSv.FindAsync(id);
             var datoDto = _mapper.Map<DepositoDto>(depositos);
             var response = new ApiResponse<DepositoDto>(datoDto);
@@ -85,7 +85,7 @@ namespace gc.api.Controllers.Almacen
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public IActionResult GetDepositoXAdm(string adm_id)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var depositos = _depositosSv.ObtenerDepositosDeAdministracion(adm_id);
             var datoDto = _mapper.Map<List<DepositoDto>>(depositos);
             var response = new ApiResponse<List<DepositoDto>>(datoDto);
@@ -95,7 +95,7 @@ namespace gc.api.Controllers.Almacen
         [HttpGet]
         [Route("[action]")]
         public IActionResult GetDepositoInfoBox(string depo_id, bool soloLibre) {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var depositos = _depositosSv.ObtenerDepositioInfoBox(depo_id,soloLibre);
            
             var response = new ApiResponse<List<DepositoInfoBoxDto>>(depositos);
@@ -106,7 +106,7 @@ namespace gc.api.Controllers.Almacen
         [Route("[action]")]
         public IActionResult GetDepositoInfoStk(string depo_id)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var depositos = _depositosSv.ObtenerDepositoInfoStk(depo_id);
             var response = new ApiResponse<List<DepositoInfoStkDto>>(depositos);
             return Ok(response);
@@ -116,7 +116,7 @@ namespace gc.api.Controllers.Almacen
         [Route("[action]")]
         public IActionResult GetDepositoInfoStkVal(string adm_id, string depo_id, string concepto)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var depositos = _depositosSv.ObtenerDepositoInfoStkValorizado(adm_id,depo_id,concepto);
             var response = new ApiResponse<List<DepositoInfoStkValDto>>(depositos);
             return Ok(response);
@@ -128,7 +128,7 @@ namespace gc.api.Controllers.Almacen
         //[HttpPost]
         //public async Task<IActionResult> Post(DepositoDto datoDto)
         //{
-        //    _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+        //    _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
         //    var depo = _mapper.Map<Deposito>(datoDto);
         //    var res = await _depositosSv.AddAsync(depo);
 
@@ -141,7 +141,7 @@ namespace gc.api.Controllers.Almacen
         //[HttpPut("{id}")]
         //public async Task<IActionResult> Put(string id, [FromBody] DepositoDto datoDto)
         //{
-        //    _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+        //    _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
         //    var depositos = _mapper.Map<Deposito>(datoDto);
         //    depositos.Depo_Id = id; //garantizo que el id buscado es el que se envia al negocio
         //    var result = await _depositosSv.Update(depositos);
@@ -154,7 +154,7 @@ namespace gc.api.Controllers.Almacen
         //[HttpDelete("{id}")]
         //public async Task<IActionResult> Delete(string id)
         //{
-        //    _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+        //    _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
         //    var res = await _depositosSv.Delete(id);
         //    var response = new ApiResponse<bool>(res);
         //    return Ok(response);

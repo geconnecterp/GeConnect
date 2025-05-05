@@ -35,7 +35,7 @@ namespace gc.api.Controllers.Almacen
 		public IActionResult GetRubro(string rub_id)
 		{
 			ApiResponse<List<RubroListaABMDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _sectorServicio.GetRubro(rub_id);
 
 			response = new ApiResponse<List<RubroListaABMDto>>(res);
@@ -50,7 +50,7 @@ namespace gc.api.Controllers.Almacen
 		public IActionResult GetRubroParaABM(string sec_id)
 		{
 			ApiResponse<List<RubroListaABMDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _sectorServicio.GetRubroParaABM(sec_id);
 
 			response = new ApiResponse<List<RubroListaABMDto>>(res);
@@ -65,7 +65,7 @@ namespace gc.api.Controllers.Almacen
 		public IActionResult GetSectorParaABM(string sec_id)
 		{
 			ApiResponse<List<SectorDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _sectorServicio.GetSectorParaABM(sec_id);
 
 			response = new ApiResponse<List<SectorDto>>(res);
@@ -80,7 +80,7 @@ namespace gc.api.Controllers.Almacen
 		public IActionResult GetSubSectorParaABM(string sec_id)
 		{
 			ApiResponse<List<SubSectorDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _sectorServicio.GetSubSectorParaABM(sec_id);
 
 			response = new ApiResponse<List<SubSectorDto>>(res);
@@ -95,7 +95,7 @@ namespace gc.api.Controllers.Almacen
 		public IActionResult GetSubSector(string rubg_id)
 		{
 			ApiResponse<List<SubSectorDto>> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _sectorServicio.GetSubSector(rubg_id);
 
 			response = new ApiResponse<List<SubSectorDto>>(res);

@@ -23,7 +23,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         private readonly AppSettings _settings;
 
         public AStkController(IOptions<AppSettings> options, IHttpContextAccessor context, IOptions<MenuSettings> options1,
-            ILogger<RPRController> logger, IProductoServicio productoServicio, IDepositoServicio depositoServicio,IProducto2Servicio producto2Servicio) : base(options, context, logger)
+            ILogger<RPRController> logger, IProductoServicio productoServicio, IDepositoServicio depositoServicio, IProducto2Servicio producto2Servicio) : base(options, context, logger)
         {
             _menuSettings = options1.Value;
             _logger = logger;
@@ -41,12 +41,12 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             {
                 return RedirectToAction("Login", "Token", new { area = "seguridad" });
             }
-            string volver = Url.Action("cprev", "almacen", new { area = "gestion" });
+            string volver = Url.Action("cprev", "almacen", new { area = "gestion" }) ?? "#";
             ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Ajuste de Stock", VolverUrl = volver ?? "#" };
 
             var aj = await _productoServicio.ObtenerTipoDeAjusteDeStock(TokenCookie);
             ListaTipoAjuste = aj;
-            var lista = aj.Select(x => new ComboGenDto { Id = $"{x.at_id}-{x.at_tipo}", Descripcion = x.at_desc});
+            var lista = aj.Select(x => new ComboGenDto { Id = $"{x.at_id}-{x.at_tipo}", Descripcion = x.at_desc });
 
             ViewBag.ddlTipoAjuste = HelperMvc<ComboGenDto>.ListaGenerica(lista);
             //inicializamos lista de productos a ajustar
@@ -57,7 +57,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> CargarProductos(string box, string taj)
+        public IActionResult CargarProductos(string box, string taj)
         {
             try
             {
@@ -78,21 +78,21 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 var t = taj.Split('-');
                 var tajDesc = ListaTipoAjuste.Single(x => x.at_id.Equals(t[0])).at_desc;
 
-                string volver = Url.Action("index", "astk", new { area = "pocketppal" });
+                string volver = Url.Action("index", "astk", new { area = "pocketppal" })??"#";
 
                 ViewBag.AppItem = new AppItem { Nombre = $"CARGA DE PRODUCTOS A AJUSTAR STOCK", VolverUrl = volver ?? "#", BotonEspecial = false };
-                return View((box,(t[1],tajDesc)));
+                return View((box, (t[1], tajDesc)));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name}");
+                _logger.LogError(ex, $"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name}");
                 TempData["error"] = "Hubo algun problema. Si el mismo persiste informe al Administrador";
                 return RedirectToAction("Index");
             }
         }
 
         [HttpPost]
-        public async Task<JsonResult> ReguardarProductoEnLista(int up, string vto, int bulto, decimal unidad,bool sig = true)
+        public async Task<JsonResult> ReguardarProductoEnLista(int up, string vto, int bulto, decimal unidad, bool sig = true)
         {
             string msg;
             try
@@ -148,7 +148,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                 //valido cantidad. Si el resultado es igual a 0 dar error
                 if (!sig)
-                {                  
+                {
                     if (ProductoBase.Up_id.Equals("07"))
                     {
                         bulto *= -1;
@@ -160,7 +160,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     }
                 }
                 var cantidad = ProductoBase.Up_id.Equals("07") ? (up * bulto) + unidad : unidad;
-               
+
 
                 //if (cantidad <= 0)
                 //{
@@ -169,7 +169,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                 //armo producto a resguardar
                 var item = new ProductoGenDto();
-                item.depo_id = BoxSeleccionado.Substring(0,2);
+                item.depo_id = BoxSeleccionado.Substring(0, 2);
                 item.box_id = BoxSeleccionado;
                 item.at_id = TipoAjusteStk.Substring(0, 1);
                 item.item = ProductoGenRegs.Count + 1;
@@ -207,15 +207,15 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 else
                 {
                     //antes de cargarlo se revisa que el stock actual + ajuste sea >= 0
-                    var restk =await _productoServicio.InfoProductoStkBoxes(item.p_id, AdministracionId, item.depo_id, TokenCookie, item.box_id);
+                    var restk = await _productoServicio.InfoProductoStkBoxes(item.p_id, AdministracionId, item.depo_id, TokenCookie, item.box_id);
 
                     if (restk.Count > 0)
                     {
                         //hay algun producto en el box.
                         var prod = restk.Single();
-                        if((prod.Ps_stk + item.cantidad) < 0)
+                        if ((prod.Ps_stk + item.cantidad) < 0)
                         {
-                            return Json(new { error = true,msg=$"Verifique el ajuste del producto {item.p_desc} ya que el ajuste daria un Stock NEGATIVO."});
+                            return Json(new { error = true, msg = $"Verifique el ajuste del producto {item.p_desc} ya que el ajuste daria un Stock NEGATIVO." });
                         }
                     }
 
@@ -368,7 +368,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             var t = taj.Split('-');
             var tajDesc = ListaTipoAjuste.Single(x => x.at_id.Equals(t[0])).at_desc;
 
-            string volver = Url.Action("CargarProductos", "astk", new { area = "pocketppal",box = box,taj=taj });
+            string volver = Url.Action("CargarProductos", "astk", new { area = "pocketppal", box = box, taj = taj })??"#";
 
             ViewBag.AppItem = new AppItem { Nombre = $"CARGA DE PRODUCTOS A AJUSTAR STOCK", VolverUrl = volver ?? "#", BotonEspecial = false };
             return View((box, (t[1], tajDesc)));
@@ -380,7 +380,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             try
             {
                 var box = BoxSeleccionado;
-                var res =await _producto2Servicio.AJ_CargaConteosPrevios(ProductoGenRegs, AdministracionId, box.Substring(0, 2), box, TokenCookie);
+                var res = await _producto2Servicio.AJ_CargaConteosPrevios(ProductoGenRegs, AdministracionId, box.Substring(0, 2), box, TokenCookie);
                 if (res.Ok)
                 {
                     return Json(new { error = false, msg = "Se realizo exitosamente la Carga de Conteos Previos por Ajustes de Control." });
@@ -392,7 +392,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error al Confirmar Ajustes", ex);
+                //_logger.LogError("Error al Confirmar Ajustes", ex);
+                _logger.LogError(ex, $"Error al Confirmar Ajustes - {this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name}");
                 return Json(new { error = true, msg = "Hubo algun problema al intentar Confirmar los Conteos previos de Ajustes " });
             }
         }

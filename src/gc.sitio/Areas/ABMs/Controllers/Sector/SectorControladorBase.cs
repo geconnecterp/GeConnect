@@ -13,11 +13,9 @@ namespace gc.sitio.Areas.ABMs.Controllers
 	public class SectorControladorBase : ControladorBase
 	{
 		private readonly AppSettings _setting;
-		private readonly ILogger _logger;
 		public SectorControladorBase(IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger logger) : base(options, accessor, logger)
 		{
 			_setting = options.Value;
-			_logger = logger;
 		}
 
 		#region ABM
@@ -68,7 +66,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				{
 					return [];
 				}
-				return JsonConvert.DeserializeObject<List<ABMSectorSearchDto>>(json);
+				return JsonConvert.DeserializeObject<List<ABMSectorSearchDto>>(json) ?? [];
 			}
 			set
 			{
@@ -89,7 +87,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				{
 					return [];
 				}
-				return JsonConvert.DeserializeObject<List<SubSectorDto>>(json);
+				return JsonConvert.DeserializeObject<List<SubSectorDto>>(json) ?? [];
 			}
 			set
 			{
@@ -107,7 +105,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				{
 					return new MetadataGrid();
 				}
-				return JsonConvert.DeserializeObject<MetadataGrid>(txt); ;
+				return JsonConvert.DeserializeObject<MetadataGrid>(txt)??new() ;
 			}
 			set
 			{

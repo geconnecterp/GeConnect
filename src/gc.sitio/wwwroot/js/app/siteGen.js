@@ -5,6 +5,10 @@ var nnControlCta02 = "";
 var nnControlCta03 = "";
 var nnControlCta04 = "";
 
+//arreglo destinado a contener los parametros del los reportes
+//Inicialmente se genera con 300 posiciones
+var arrRepoParams = new Array(300);
+
 $(function () {
     //const mainContent = $("main"); // Ajusta el selector según tu estructura HTML
 
@@ -535,4 +539,29 @@ function hayRegistrosEnTabla(grid) {
     else {
         return false;
     }
+}
+
+/**
+ * Carga los datos de un reporte en la posición correspondiente del arreglo.
+ * @param {number} numeroReporte - El índice (número de reporte).
+ * @param {Object} parametros - Objeto con los parámetros clave-valor del reporte.
+ * @param {string} titulo - Título del reporte.
+ * @param {string} observacion - Observación del reporte.
+ * @param {number} admId - ID de la Sucursal.
+ */
+function cargarReporteEnArre(numeroReporte, parametros,titulo,observacion,admId) {
+    if (numeroReporte - 1 < 0 || numeroReporte - 1 >= arrRepoParams.length) {
+        let msg = "El número de reporte está fuera de rango (0-" + arrRepoParams.length+"). Verifique la identificación del Reporte. El mismo no se ha resguardado. ";
+        ControlaMensajeWarning(msg);
+        console.error("Número de reporte fuera de rango (0-299).");
+        return;
+    }
+
+    arrRepoParams[numeroReporte -1] = {
+        reporte: numeroReporte,
+        parametros: parametros,
+        titulo: titulo,
+        observacion: observacion,
+        administracion: admId
+    };
 }

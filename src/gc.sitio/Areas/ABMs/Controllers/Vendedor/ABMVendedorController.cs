@@ -99,7 +99,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Vendedor
             {
 
                 string msg = "Error en la invocación de la API - Busqueda de Vendedores";
-                _logger.LogError(ex, "Error en la invocación de la API - Busqueda de Vendedores");
+                _logger?.LogError(ex, "Error en la invocación de la API - Busqueda de Vendedores");
                 response.Mensaje = msg;
                 response.Ok = false;
                 response.EsWarn = false;
@@ -143,7 +143,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Vendedor
             catch (Exception ex)
             {
                 string msg = "Error en la invocación de la API - Busqueda de Usuarios";
-                _logger.LogError(ex, "Error en la invocación de la API - Busqueda de Usuarios");
+                _logger?.LogError(ex, "Error en la invocación de la API - Busqueda de Usuarios");
                 response.Mensaje = msg;
                 response.Ok = false;
                 response.EsWarn = false;
@@ -167,7 +167,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Vendedor
             catch (Exception ex)
             {
                 string msg = "Error en la invocación de la API - Inicializar Vendedor";
-                _logger.LogError(ex, msg);
+                _logger?.LogError(ex, msg);
                 response.Mensaje = msg;
                 response.Ok = false;
                 response.EsWarn = false;

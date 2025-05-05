@@ -94,7 +94,7 @@ namespace gc.api.Controllers.Codigos
 		[Route("[action]")]
 		public IActionResult GetTiposCuentaGastoLista()
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<TipoCuentaGastoDto> condAfip = _tipoCuentaGastoServicio.GetTiposCuentaGasto();
 			var lista = _mapper.Map<List<TipoCuentaGastoDto>>(condAfip);
 
@@ -106,7 +106,7 @@ namespace gc.api.Controllers.Codigos
 		[Route("[action]")]
 		public IActionResult GetTiposCuentaFinLista()
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<TipoCuentaFinDto> condAfip = _tipoCuentaFinServicio.GetTiposCuentaFin();
 			var lista = _mapper.Map<List<TipoCuentaFinDto>>(condAfip);
 
@@ -118,7 +118,7 @@ namespace gc.api.Controllers.Codigos
 		[Route("[action]")]
 		public IActionResult GetCondicionesAfipLista()
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<CondicionAfipDto> condAfip = _condicionAfipServicio.GetCondicionesAfipLista();
 			var lista = _mapper.Map<List<CondicionAfipDto>>(condAfip);
 
@@ -130,7 +130,7 @@ namespace gc.api.Controllers.Codigos
 		[Route("[action]")]
 		public IActionResult GetCondicionIBLista()
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             List<CondicionIBDto> condIB = _condicionIBServicio.GetCondicionIBLista();
 			var lista = _mapper.Map<List<CondicionIBDto>>(condIB);
 
@@ -142,7 +142,7 @@ namespace gc.api.Controllers.Codigos
 		[Route("[action]")]
 		public IActionResult GetDepartamentoPorProvinciaLista(string prov_id)
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<DepartamentoDto> deptos = _departamentoServicio.GetDepartamentoPorProvinciaLista(prov_id);
 			var lista = _mapper.Map<List<DepartamentoDto>>(deptos);
 
@@ -154,7 +154,7 @@ namespace gc.api.Controllers.Codigos
 		[Route("[action]")]
 		public IActionResult GetFormaDePagoLista(string tipo = "C")
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<FormaDePagoDto> formaPago = _formaDePagoServicio.GetFormaDePagoLista(tipo);
 			var lista = _mapper.Map<List<FormaDePagoDto>>(formaPago);
 
@@ -166,7 +166,7 @@ namespace gc.api.Controllers.Codigos
 		[Route("[action]")]
 		public IActionResult GetNaturalezaJuridicaLista()
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<NaturalezaJuridicaDto> natJud = _naturalezaJuridicaServicio.GetNaturalezaJuridicaLista();
 			var lista = _mapper.Map<List<NaturalezaJuridicaDto>>(natJud);
 
@@ -178,7 +178,7 @@ namespace gc.api.Controllers.Codigos
 		[Route("[action]")]
 		public IActionResult GetProvinciaLista()
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<ProvinciaDto> provincia = _provinciaServicio.GetProvinciaLista();
 			var lista = _mapper.Map<List<ProvinciaDto>>(provincia);
 
@@ -190,7 +190,7 @@ namespace gc.api.Controllers.Codigos
 		[Route("[action]")]
 		public IActionResult GetTipoCanalLista()
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<TipoCanalDto> tipoCanal = _tipoCanalServicio.GetTipoCanalLista();
 			var lista = _mapper.Map<List<TipoCanalDto>>(tipoCanal);
 
@@ -202,7 +202,7 @@ namespace gc.api.Controllers.Codigos
 		[Route("[action]")]
 		public IActionResult GetTipoCuentaBcoLista()
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<TipoCuentaBcoDto> tipoCuentaBco = _tipoCuentaBcoServicio.GetTipoCuentaBcoLista();
 			var lista = _mapper.Map<List<TipoCuentaBcoDto>>(tipoCuentaBco);
 
@@ -214,7 +214,7 @@ namespace gc.api.Controllers.Codigos
         [Route("[action]")]
         public IActionResult GetTipoDocumentoLista()
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             List<TipoDocumentoDto> tipoDoc = _tiposDocumentoServicio.GetTipoDocumentoLista();
             var lista = _mapper.Map<List<TipoDocumentoDto>>(tipoDoc);
 
@@ -226,7 +226,7 @@ namespace gc.api.Controllers.Codigos
 		[Route("[action]")]
 		public IActionResult GetListaDePreciosLista()
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<ListaPrecioDto> listaPrecio = _listaPrecioServicio.GetListaPrecio();
 			var lista = _mapper.Map<List<ListaPrecioDto>>(listaPrecio);
 
@@ -238,7 +238,7 @@ namespace gc.api.Controllers.Codigos
 		[Route("[action]")]
 		public IActionResult GetVendedoresLista()
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<VendedorDto> vendedores = _vendedorServicio.GetVendedorLista();
 			var lista = _mapper.Map<List<VendedorDto>>(vendedores);
 
@@ -250,7 +250,7 @@ namespace gc.api.Controllers.Codigos
 		[Route("[action]")]
 		public IActionResult GetRepartidoresLista()
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<RepartidorDto> repartidores = _repartidorServicio.GetRepartidorLista();
 			var lista = _mapper.Map<List<RepartidorDto>>(repartidores);
 
@@ -262,7 +262,7 @@ namespace gc.api.Controllers.Codigos
 		[Route("[action]")]
 		public IActionResult GetFinancierosPorTipoCfLista(string tcf_id)
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<FinancieroDto> financiero = _financieroServicio.GetFinancierosPorTipoCfLista(tcf_id);
 			var lista = _mapper.Map<List<FinancieroDto>>(financiero);
 
@@ -274,7 +274,7 @@ namespace gc.api.Controllers.Codigos
 		[Route("[action]")]
 		public IActionResult GetFinancierosRelaPorTipoCfLista(string tcf_id)
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<FinancieroDto> financiero = _financieroServicio.GetFinancierosRelaPorTipoCfLista(tcf_id);
 			var lista = _mapper.Map<List<FinancieroDto>>(financiero);
 
@@ -286,7 +286,7 @@ namespace gc.api.Controllers.Codigos
 		[Route("[action]")]
 		public IActionResult GetTipoContactoLista(string tipo = "P")
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<TipoContactoDto> tipoCanal = _tipoContactoServicio.GetTipoContactoLista(tipo);
 			var lista = _mapper.Map<List<TipoContactoDto>>(tipoCanal);
 
@@ -298,7 +298,7 @@ namespace gc.api.Controllers.Codigos
         [Route("[action]")]
         public IActionResult GetTipoObsLista(string tipo = "C")
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<TipoObsDto> tipoCanal = _tipoObsServicio.GetTiposDeObs(tipo);
             var lista = _mapper.Map<List<TipoObsDto>>(tipoCanal);
 
@@ -310,7 +310,7 @@ namespace gc.api.Controllers.Codigos
 		[Route("[action]")]
 		public IActionResult GetTipoOpeIva()
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<TipoOpeIvaDto> tipoOpe = _tipoOpeIvaServicio.GetTipoOpeIva();
 			var lista = _mapper.Map<List<TipoOpeIvaDto>>(tipoOpe);
 
@@ -322,7 +322,7 @@ namespace gc.api.Controllers.Codigos
 		[Route("[action]")]
 		public IActionResult GetTiposProveedor()
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<TipoProveedorDto> tipoOpe = _tipoProveedorServicio.GetTiposProveedor();
 			var lista = _mapper.Map<List<TipoProveedorDto>>(tipoOpe);
 
@@ -334,7 +334,7 @@ namespace gc.api.Controllers.Codigos
 		[Route("[action]")]
 		public IActionResult GetTipoGastos()
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<TipoGastoDto> tipoOpe = _tipoGastoServicio.GetTipoGastos();
 			var lista = _mapper.Map<List<TipoGastoDto>>(tipoOpe);
 
@@ -346,7 +346,7 @@ namespace gc.api.Controllers.Codigos
 		[Route("[action]")]
 		public IActionResult GetTipoRetGan()
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<TipoRetGananciaDto> tipoOpe = _tipoRetGanServicio.GetTiposRetGanancia();
 			var lista = _mapper.Map<List<TipoRetGananciaDto>>(tipoOpe);
 
@@ -358,7 +358,7 @@ namespace gc.api.Controllers.Codigos
 		[Route("[action]")]
 		public IActionResult GetTipoRetIb()
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<TipoRetIngBrDto> tipoOpe = _tipoRetIbServicio.GetTiposRetIngBr();
 			var lista = _mapper.Map<List<TipoRetIngBrDto>>(tipoOpe);
 
@@ -370,7 +370,7 @@ namespace gc.api.Controllers.Codigos
 		[Route("[action]")]
 		public IActionResult GetTipoMonedaLista()
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<TipoMonedaDto> tipoOpe = _tipoMonedaServicio.GetTiposMoneda();
 			var lista = _mapper.Map<List<TipoMonedaDto>>(tipoOpe);
 
@@ -382,7 +382,7 @@ namespace gc.api.Controllers.Codigos
 		[Route("[action]")]
 		public IActionResult GetFinancierosEstados()
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<FinancieroEstadoDto> financiero = _financieroServicio.GetFinancieroEstados();
 			var lista = _mapper.Map<List<FinancieroEstadoDto>>(financiero);
 
@@ -394,7 +394,7 @@ namespace gc.api.Controllers.Codigos
 		[Route("[action]")]
 		public IActionResult GetPlanContableCuentaLista()
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<PlanContableDto> financiero = _financieroServicio.GetPlanContableCuentaLista();
 			var lista = _mapper.Map<List<PlanContableDto>>(financiero);
 
@@ -406,7 +406,7 @@ namespace gc.api.Controllers.Codigos
 		[Route("[action]")]
 		public IActionResult GetOrdenDeCompraEstadoLista()
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<OrdenDeCompraEstadoDto> financiero = _ordenDeCompraEstadoServicio.GetOrdenDeCompraEstadoLista();
 			var lista = _mapper.Map<List<OrdenDeCompraEstadoDto>>(financiero);
 
@@ -418,7 +418,7 @@ namespace gc.api.Controllers.Codigos
 		[Route("[action]")]
 		public IActionResult GetTipoTributoLista()
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<TipoTributoDto> financiero = _tipoTributoServicio.GetTiposTributo();
 			var lista = _mapper.Map<List<TipoTributoDto>>(financiero);
 
@@ -430,7 +430,7 @@ namespace gc.api.Controllers.Codigos
 		[Route("[action]")]
 		public IActionResult GetTipoDtoValorizaRpr()
 		{
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			List<TipoDtoValorizaRprDto> financiero = _tipoDtoValorizaRprServicio.GetTipoDtoValorizaRpr();
 			var lista = _mapper.Map<List<TipoDtoValorizaRprDto>>(financiero);
 

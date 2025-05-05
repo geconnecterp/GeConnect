@@ -26,7 +26,7 @@ namespace gc.sitio.core.Servicios.Implementacion.Users
 
         private readonly AppSettings _appSettings;
 
-        public UserServicio(IOptions<AppSettings> options, ILogger<UserServicio> logger):base(options,logger)
+        public UserServicio(IOptions<AppSettings> options, ILogger<UserServicio> logger) : base(options, logger)
         {
             _appSettings = options.Value;
         }
@@ -55,7 +55,7 @@ namespace gc.sitio.core.Servicios.Implementacion.Users
 
                         return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
                     }
-                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<UserDto>>(stringData);
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<UserDto>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 
                     return new RespuestaGenerica<UserDto> { Ok = true, Mensaje = "OK", Entidad = apiResponse.Data };
 
@@ -65,23 +65,27 @@ namespace gc.sitio.core.Servicios.Implementacion.Users
                     string stringData = await response.Content.ReadAsStringAsync();
                     _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
                     var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
-                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    if (error != null && error.TypeException?.Equals(nameof(NegocioException)) == true)
                     {
-                        return new RespuestaGenerica<UserDto> { Ok = false, Mensaje = error.Detail };
+                        throw new NegocioException(error.Detail ?? "Algo no fue bien con la API de Usuarios.");
                     }
-                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    else if (error != null && error.TypeException?.Equals(nameof(NotFoundException)) == true)
                     {
-                        return new RespuestaGenerica<UserDto> { Ok = false, Mensaje = error.Detail };
+                        throw new NegocioException(error.Detail ?? "Algo no fue bien con la API de Usuarios");
+                    }
+                    else if (error != null)
+                    {
+                        throw new Exception(error.Detail);
                     }
                     else
                     {
-                        throw new Exception(error.Detail);
+                        throw new Exception("Algo no fue bien con la API de Usuarios");
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
                 return new RespuestaGenerica<UserDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener el Perfil de Usuarios." };
             }
@@ -108,36 +112,40 @@ namespace gc.sitio.core.Servicios.Implementacion.Users
                     {
                         throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde.");
                     }
-                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<UserDto>>>(stringData);
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<UserDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 
-                    return (apiResponse.Data, apiResponse.Meta);
+                    return (apiResponse.Data ?? [], apiResponse.Meta ?? new());
                 }
                 else
                 {
                     string stringData = await response.Content.ReadAsStringAsync();
                     _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
                     var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
-                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    if (error != null && error.TypeException?.Equals(nameof(NegocioException)) == true)
                     {
-                        throw new NegocioException(error.Detail);
+                        throw new NegocioException(error.Detail ?? "Algo no fue bien con la API de Usuarios.");
                     }
-                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    else if (error != null && error.TypeException?.Equals(nameof(NotFoundException))==true)
                     {
-                        throw new NegocioException(error.Detail);
+                        throw new NegocioException(error.Detail?? "Algo no fue bien con la API de Usuarios");
                     }
-                    else
+                    else if(error!=null)
                     {
                         throw new Exception(error.Detail);
                     }
+                    else
+                    {
+                        throw new Exception("Algo no fue bien con la API de Usuarios");
+                    }
                 }
             }
-            catch (NegocioException )
+            catch (NegocioException)
             {
                 throw;
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
                 throw new Exception("Algo no fue bien al intentar obtener los Perfiles solicitados según el filtro actual.");
             }
@@ -166,7 +174,7 @@ namespace gc.sitio.core.Servicios.Implementacion.Users
 
                         return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
                     }
-                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AdmUserDto>>>(stringData);
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AdmUserDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 
                     return new RespuestaGenerica<AdmUserDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
 
@@ -176,23 +184,27 @@ namespace gc.sitio.core.Servicios.Implementacion.Users
                     string stringData = await response.Content.ReadAsStringAsync();
                     _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
                     var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
-                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    if (error != null && error.TypeException?.Equals(nameof(NegocioException)) == true)
                     {
-                        return new RespuestaGenerica<AdmUserDto> { Ok = false, Mensaje = error.Detail };
+                        throw new NegocioException(error.Detail ?? "Algo no fue bien con la API de Usuarios.");
                     }
-                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    else if (error != null && error.TypeException?.Equals(nameof(NotFoundException)) == true)
                     {
-                        return new RespuestaGenerica<AdmUserDto> { Ok = false, Mensaje = error.Detail };
+                        throw new NegocioException(error.Detail ?? "Algo no fue bien con la API de Usuarios");
+                    }
+                    else if (error != null)
+                    {
+                        throw new Exception(error.Detail);
                     }
                     else
                     {
-                        throw new Exception(error.Detail);
+                        throw new Exception("Algo no fue bien con la API de Usuarios");
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
                 return new RespuestaGenerica<AdmUserDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener las administraciones del Usuario." };
             }
@@ -221,7 +233,7 @@ namespace gc.sitio.core.Servicios.Implementacion.Users
 
                         return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
                     }
-                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<DerUserDto>>>(stringData);
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<DerUserDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 
                     return new RespuestaGenerica<DerUserDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
 
@@ -231,23 +243,27 @@ namespace gc.sitio.core.Servicios.Implementacion.Users
                     string stringData = await response.Content.ReadAsStringAsync();
                     _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
                     var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
-                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    if (error != null && error.TypeException?.Equals(nameof(NegocioException)) == true)
                     {
-                        return new RespuestaGenerica<DerUserDto> { Ok = false, Mensaje = error.Detail };
+                        throw new NegocioException(error.Detail ?? "Algo no fue bien con la API de Usuarios.");
                     }
-                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    else if (error != null && error.TypeException?.Equals(nameof(NotFoundException)) == true)
                     {
-                        return new RespuestaGenerica<DerUserDto> { Ok = false, Mensaje = error.Detail };
+                        throw new NegocioException(error.Detail ?? "Algo no fue bien con la API de Usuarios");
+                    }
+                    else if (error != null)
+                    {
+                        throw new Exception(error.Detail);
                     }
                     else
                     {
-                        throw new Exception(error.Detail);
+                        throw new Exception("Algo no fue bien con la API de Usuarios");
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
                 return new RespuestaGenerica<DerUserDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener los derechos del Usuario." };
             }
@@ -276,7 +292,7 @@ namespace gc.sitio.core.Servicios.Implementacion.Users
 
                         return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
                     }
-                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<PerfilUserDto>>>(stringData);
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<PerfilUserDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 
                     return new RespuestaGenerica<PerfilUserDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
 
@@ -286,23 +302,27 @@ namespace gc.sitio.core.Servicios.Implementacion.Users
                     string stringData = await response.Content.ReadAsStringAsync();
                     _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
                     var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
-                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    if (error != null && error.TypeException?.Equals(nameof(NegocioException)) == true)
                     {
-                        return new RespuestaGenerica<PerfilUserDto> { Ok = false, Mensaje = error.Detail };
+                        throw new NegocioException(error.Detail ?? "Algo no fue bien con la API de Usuarios.");
                     }
-                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    else if (error != null && error.TypeException?.Equals(nameof(NotFoundException)) == true)
                     {
-                        return new RespuestaGenerica<PerfilUserDto> { Ok = false, Mensaje = error.Detail };
+                        throw new NegocioException(error.Detail ?? "Algo no fue bien con la API de Usuarios");
+                    }
+                    else if (error != null)
+                    {
+                        throw new Exception(error.Detail);
                     }
                     else
                     {
-                        throw new Exception(error.Detail);
+                        throw new Exception("Algo no fue bien con la API de Usuarios");
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
                 return new RespuestaGenerica<PerfilUserDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener los perfiles del Usuario." };
             }

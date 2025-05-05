@@ -49,11 +49,11 @@ namespace gc.api.Controllers.Entidades
             var metadata = new MetadataGrid
             {
                 TotalCount = reg.Total_Registros,
-                PageSize = filters.Registros.Value,
-                CurrentPage = filters.Pagina.Value,
+                PageSize = filters.Registros??0,
+                CurrentPage = filters.Pagina??0,
                 TotalPages = reg.Total_Paginas,
-                HasNextPage = filters.Pagina.Value < reg.Total_Paginas,
-                HasPreviousPage = filters.Pagina.Value > 1,
+                HasNextPage = (filters.Pagina ?? 0) < reg.Total_Paginas,
+                HasPreviousPage = (filters.Pagina??0) > 1,
                 NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(ObtenerRepartidores)) ?? "").ToString(),
                 PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(ObtenerRepartidores)) ?? "").ToString(),
 

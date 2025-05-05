@@ -60,7 +60,7 @@ namespace gc.sitio.Areas.Seguridad.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error en Login");
+                _logger?.LogError(ex, "Error en Login");
                 TempData["error"] = "Hubo algún error al intentar cargar la vista de autenticación. Si el problema persiste, avise al administardor.";
                 var lv = new List<AdministracionLoginDto>();
                 ViewBag.Admid = HelperMvc<AdministracionLoginDto>.ListaGenerica(lv);
@@ -181,7 +181,7 @@ namespace gc.sitio.Areas.Seguridad.Controllers
                 {
                     var respuesta = await response.Content.ReadAsStringAsync();
 
-                    _logger.LogError($"Error al autenticar: {respuesta}");
+                    _logger?.LogError($"Error al autenticar: {respuesta}");
                     throw new NegocioException("No se ha podido autenticar. El usuario o contraseña no son correctos.");
                 }
 
@@ -260,7 +260,7 @@ namespace gc.sitio.Areas.Seguridad.Controllers
             //else
             //{
             //    string stringData = await response.Content.ReadAsStringAsync();
-            //    _logger.LogError($"stringData: {stringData}");
+            //    _logger?.LogError($"stringData: {stringData}");
 
 
             //}
@@ -278,7 +278,7 @@ namespace gc.sitio.Areas.Seguridad.Controllers
             {
                 string stringData = await response.Content.ReadAsStringAsync();
                 if (string.IsNullOrEmpty(stringData))
-                    _logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda usuId:{user}");
+                    _logger?.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda usuId:{user}");
 
                 var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<UsuarioMenu>>>(stringData);
                 return apiResponse?.Data;
@@ -286,7 +286,7 @@ namespace gc.sitio.Areas.Seguridad.Controllers
             else
             {
                 string stringData = await response.Content.ReadAsStringAsync();
-                _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                _logger?.LogWarning($"Algo no fue bien. Error de API {stringData}");
                 return new List<UsuarioMenu>();
             }
         }

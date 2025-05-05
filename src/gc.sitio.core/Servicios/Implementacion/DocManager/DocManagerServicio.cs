@@ -29,7 +29,7 @@ namespace gc.sitio.core.Servicios.Implementacion.DocManager
                 id = modulo.Id,
                 text = "Archivos",
                 icon = "bx bx-file",
-                state = new Estado { disabled = true, opened = true, selected = false },
+                state = new Estado { disabled = false, opened = true, selected = false },
                 children = new List<MenuRoot>()
             };
             ;
@@ -58,7 +58,7 @@ namespace gc.sitio.core.Servicios.Implementacion.DocManager
             {
                 id = id,
                 text = titulo,
-                state = new Estado { disabled = true, opened = true, selected = false },
+                state = new Estado { disabled = false, opened = true, selected = false },
                 data = new MenuRootData { archivoB64 = string.Empty }
             };
 
@@ -73,8 +73,8 @@ namespace gc.sitio.core.Servicios.Implementacion.DocManager
         /// <returns></returns>
         public void GenerarArchivoPDF<T>(PrintRequestDto<T> request, out MemoryStream ms, List<string> titulos, float[] anchos,bool datosCliente)
         {
-            PdfWriter writer = null;
-            Document pdf = null;
+            PdfWriter? writer = null;
+            Document pdf;
             ms = new MemoryStream();
             try
             {
@@ -130,7 +130,7 @@ namespace gc.sitio.core.Servicios.Implementacion.DocManager
                 pdf.Close();
 
             }
-            catch (Exception ex)
+            catch (Exception )
             {
 
                 throw;

@@ -134,6 +134,28 @@ namespace gc.infraestructura.Helpers
 {
     public static class HelperPdf
     {
+        /// <summary>
+        /// Genera un documento A4
+        /// </summary>
+        /// <param name="writer"></param>
+        /// <param name="nombreArchivo"></param>
+        /// <returns></returns>
+        public static Document GenerarInstanciaAndInit(ref PdfWriter writer, out MemoryStream mStream, string nombreArchivo, HojaSize pagina = HojaSize.A4, bool esVertical = true)
+        {
+            Document doc = new Document(ObtenerHoja(pagina, esVertical), 20, 20, 15, 50);
+            mStream = new MemoryStream();
+            writer = PdfWriter.GetInstance(doc, mStream);
+            return doc;
+        }
+
+        public static Document GenerarInstanciaAndInit(ref PdfWriter writer,out MemoryStream mStream, HojaSize pagina = HojaSize.A4, bool esVertical = true)
+        {
+            Document doc = new Document(ObtenerHoja(pagina, esVertical), 20, 20, 15, 50);
+            mStream = new MemoryStream();
+            writer = PdfWriter.GetInstance(doc, mStream);
+            return doc;
+        }
+
         public static Document GenerarInstanciaAndInit(ref PdfWriter writer, string fileName, HojaSize pagina = HojaSize.A4, bool esVertical = true)
         {
             Document doc = new Document(ObtenerHoja(pagina, esVertical), 50, 50, 50, 20);
@@ -220,19 +242,7 @@ namespace gc.infraestructura.Helpers
             memory = msDestino;
         }
 
-        /// <summary>
-        /// Genera un documento A4
-        /// </summary>
-        /// <param name="writer"></param>
-        /// <param name="nombreArchivo"></param>
-        /// <returns></returns>
-        public static Document GenerarInstanciaAndInit(ref PdfWriter writer, out MemoryStream mStream, string nombreArchivo, HojaSize pagina = HojaSize.A4, bool esVertical = true)
-        {
-            Document doc = new Document(ObtenerHoja(pagina, esVertical), 20, 20, 15, 50);
-            mStream = new MemoryStream();
-            writer = PdfWriter.GetInstance(doc, mStream);
-            return doc;
-        }
+       
 
         /// <summary>
         /// Los estilos pueden ser BOLD = 1;
@@ -396,7 +406,7 @@ namespace gc.infraestructura.Helpers
 
             return header;
         }
-        private static PdfPCell CrearCeldaTexto(string texto, Font fuente)
+        public static PdfPCell CrearCeldaTexto(string texto, Font fuente)
         {
             PdfPCell celda = new PdfPCell(new Phrase(texto, fuente))
             {
@@ -541,8 +551,12 @@ namespace gc.infraestructura.Helpers
             return celda;
         }
 
-        public static PdfPCell GeneraCelda(Image logo, bool fit = true)
+        public static PdfPCell GeneraCelda(Image? logo, bool fit = true)
         {
+            if(logo == null)
+            {
+                return new PdfPCell();
+            }
             PdfPCell celdaLogo = new PdfPCell(logo, fit)
             {
                 Border = Rectangle.NO_BORDER,
@@ -692,7 +706,7 @@ namespace gc.infraestructura.Helpers
                         alig = Element.ALIGN_RIGHT;
                     }
                     //trato de identificar si es una fecha
-                    else if (valor.ToString().ToDateTimeOrNull() != null)
+                    else if (valor.ToString()?.ToDateTimeOrNull() != null)
                     {
                         alig = Element.ALIGN_CENTER;
                     }
@@ -706,7 +720,7 @@ namespace gc.infraestructura.Helpers
                         alig = Element.ALIGN_LEFT;
                     }
 
-                    parrafo = GeneraParrafo(valor.ToString(), normal, alig, 10, 10, true, BaseColor.Black);
+                    parrafo = GeneraParrafo(valor.ToString()??"", normal, alig, 10, 10, true, BaseColor.Black);
 
                     celda = GeneraCelda(parrafo, true, BaseColor.White, alig);
                     tabla.AddCell(celda);
@@ -718,6 +732,26 @@ namespace gc.infraestructura.Helpers
         public static HeaderFooter GenerarPie(DatosPieDto rPie, Font chico)
         {
             throw new NotImplementedException();
+        }
+
+        public static Font FontTituloPredeterminado()
+        {
+            return DefineFontWithStyle("Arial", 12, Font.BOLD, 0, 0, 0);
+        }
+
+        public static Font FontSubtituloPredeterminado()
+        {
+            return DefineFontWithStyle("Arial", 10, Font.NORMAL, 0, 0, 0);
+        }
+
+        public static Font FontNormalPredeterminado()
+        {
+            return DefineFontWithStyle("Arial", 8, Font.NORMAL, 0, 0, 0);
+        }
+
+        public static Font FontChicoPredeterminado()
+        {
+            return DefineFontWithStyle("Arial", 6, Font.NORMAL, 0, 0, 0);
         }
     }
 

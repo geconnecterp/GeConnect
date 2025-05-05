@@ -137,7 +137,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 ViewBag.Callback = callback;
             }
 
-            string volver = Url.Action("info", "almacen", new { area = "gestion" });
+            string volver = Url.Action("info", "almacen", new { area = "gestion" })??"#";
             ViewBag.AppItem = new AppItem { Nombre = "Información de Productos", VolverUrl = volver ?? "#" };
 
             TempData["cota"] = _settings.FechaVtoCota;
@@ -170,7 +170,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 return RedirectToAction("Login", "Token", new { area = "Seguridad" });
             }
 
-            string volver = Url.Action("info", "almacen", new { area = "gestion" });
+            string volver = Url.Action("info", "almacen", new { area = "gestion" })??"#";
             ViewBag.AppItem = new AppItem { Nombre = "Información de Productos", VolverUrl = volver ?? "#" };
 
             return View();
@@ -185,7 +185,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 return RedirectToAction("Login", "Token", new { area = "Seguridad" });
             }
 
-            string volver = Url.Action("info", "almacen", new { area = "gestion" });
+            string volver = Url.Action("info", "almacen", new { area = "gestion" })??"#";
             ViewBag.AppItem = new AppItem { Nombre = "Información de Productos", VolverUrl = volver ?? "#" };
 
             return View();
@@ -519,7 +519,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             }
             ComboDepositos();
 
-            string volver = Url.Action("info", "almacen", new { area = "gestion" });
+            string volver = Url.Action("info", "almacen", new { area = "gestion" })??"#";
             ViewBag.AppItem = new AppItem { Nombre = "Información de Productos - Gestión de Depósitos", VolverUrl = volver ?? "#" };
 
             return View();
@@ -686,7 +686,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             ComboDepositos();
             await ObtenerTiposMotivo();
 
-            string volver = Url.Action("info", "almacen", new { area = "gestion" });
+            string volver = Url.Action("info", "almacen", new { area = "gestion" })??"#";
             ViewBag.AppItem = new AppItem { Nombre = "Información de Productos - Gestión de Box", VolverUrl = volver ?? "#" };
 
             return View();
@@ -712,7 +712,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     }
                     else
                     {
-                        throw new NegocioException(info.Mensaje);
+                        throw new NegocioException(info.Mensaje??"Hubo un problema para Validar el Box");
                     }
                 }
                 else
@@ -752,7 +752,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 }
                 else
                 {
-                    throw new NegocioException(res.Mensaje);
+                    throw new NegocioException(res.Mensaje ?? "Hubo un problema al obtener info de Stk en el Box");
                 }
             }
             catch (NegocioException ex)
@@ -803,7 +803,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 }
                 else
                 {
-                    throw new NegocioException(res.Mensaje);
+                    throw new NegocioException(res.Mensaje ?? "Hubo un problema para obtener la información de los Movimientos de Productos.");
                 }
             }
             catch (NegocioException ex)
@@ -837,7 +837,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
         #region INFO UL
         [HttpGet]
-        public async Task<IActionResult> InfoUL()
+        public IActionResult InfoUL()
         {
             var auth = EstaAutenticado;
             if (!auth.Item1 || (auth.Item1 && !auth.Item2.HasValue) || (auth.Item1 && auth.Item2.HasValue && auth.Item2.Value < DateTime.Now))
@@ -845,7 +845,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 return RedirectToAction("Login", "Token", new { area = "Seguridad" });
             }
 
-            string volver = Url.Action("info", "almacen", new { area = "gestion" });
+            string volver = Url.Action("info", "almacen", new { area = "gestion" })??"#";
             ViewBag.AppItem = new AppItem { Nombre = "Información de Productos - CONSULTA DE UL", VolverUrl = volver ?? "#" };
 
             return View();
@@ -865,7 +865,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 var res = await _producto2Servicio.ConsultaUL(tipo, desde, hasta, AdministracionId, TokenCookie);
                 if (res.Ok)
                 {
-                    if (res.ListaEntidad.Count > 0)
+                    if (res.ListaEntidad?.Count > 0)
                     {
                         foreach (var item in res.ListaEntidad)
                         {
@@ -894,7 +894,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 }
                 else
                 {
-                    throw new NegocioException(res.Mensaje);
+                    throw new NegocioException(res.Mensaje ?? "Hubo un problema para consultar la UL");
                 }
             }
             catch(NegocioException ex)

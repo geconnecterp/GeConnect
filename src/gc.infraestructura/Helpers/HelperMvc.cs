@@ -5,7 +5,7 @@ namespace gc.infraestructura.Helpers
 {
     public class HelperMvc<T> where T : class
     {
-        public static SelectList ListaGenerica(IEnumerable<T> listado,string textoValor,string textoDato,object valorSeleccionado = null)
+        public static SelectList ListaGenerica(IEnumerable<T> listado,string textoValor,string textoDato,object? valorSeleccionado = null)
         {
             if (valorSeleccionado != null)
             {
@@ -17,7 +17,7 @@ namespace gc.infraestructura.Helpers
             }
         }
 
-        public static SelectList ListaGenerica(IEnumerable<T> listado, object valorSeleccionado = null)
+        public static SelectList ListaGenerica(IEnumerable<T> listado, object? valorSeleccionado = null)
         {
             return ListaGenerica(listado, "Id", "Descripcion", valorSeleccionado);
         }

@@ -1,4 +1,5 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
@@ -42,7 +43,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 						_logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda afip_id:{afip_id}");
 						return [];
 					}
-					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<TipoComprobanteDto>>>(stringData);
+					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<TipoComprobanteDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 					return apiResponse.Data;
 				}
 				else
@@ -80,7 +81,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 						_logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda cuenta:{cuenta}");
 						return [];
 					}
-					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<TipoComprobanteDto>>>(stringData);
+					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<TipoComprobanteDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 					return apiResponse.Data;
 				}
 				else
