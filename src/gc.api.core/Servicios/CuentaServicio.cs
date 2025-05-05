@@ -528,5 +528,17 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<CompteValorizaListaDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<CompteValorizaCostoPorProductoDto> ObtenerCompteValorizaCostoOC(CompteValorizaCostoOcRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_COMPTE_VALORIZA_COSTO_OC;
+			var ps = new List<SqlParameter>()
+			{
+				new("@oc_compte",request.oc_compte),
+				new("@p_id",request.p_id),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<CompteValorizaCostoPorProductoDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

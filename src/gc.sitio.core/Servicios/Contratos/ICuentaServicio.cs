@@ -33,7 +33,8 @@ namespace gc.sitio.core.Servicios.Contratos
 		List<CompteValorizaDetalleRprListaDto> ObtenerComprobantesDetalleRpr(CompteValorizaRprDtosRequest request, string token);
 		List<CompteValorizaDtosListaDto> ObtenerComprobantesDtos(CompteValorizaRprDtosRequest request, string token);
         List<CompteValorizaListaDto> ObtenerComprobanteValorizaLista(CompteValorizaRequest request, string token);
-        Task<List<CuentaDatoDto>> ObtenerCuentaDatos(string cta, char tipo, string token);
+        List<CompteValorizaCostoPorProductoDto> ObtenerComprobanteValorizaCostoOC(CompteValorizaCostoOcRequest request, string token);
+		Task<List<CuentaDatoDto>> ObtenerCuentaDatos(string cta, char tipo, string token);
 
     }
 }

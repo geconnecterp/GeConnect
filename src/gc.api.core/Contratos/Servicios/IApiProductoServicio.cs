@@ -107,5 +107,7 @@ namespace gc.api.core.Contratos.Servicios
 		List<LimiteStkDto> ObtenerLimitesStkLista(string p_id);
 		LimiteStkDto ObtenerLimiteStkDato(string p_id, string admId);
         ProductoBarradoDto BuscarBarrado(string p_id, string barradoId);
-    }
+		RespuestaDto OCValidar(string oc_compte, string cta_id);
+
+	}
 }

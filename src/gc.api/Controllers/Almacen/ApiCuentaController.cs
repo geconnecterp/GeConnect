@@ -522,5 +522,20 @@ namespace gc.api.Controllers.Almacen
 
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CompteValorizaCostoPorProductoDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetCompteValorizaCostoOC(CompteValorizaCostoOcRequest request)
+		{
+			ApiResponse<List<CompteValorizaCostoPorProductoDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _cuentasSv.ObtenerCompteValorizaCostoOC(request);
+
+			response = new ApiResponse<List<CompteValorizaCostoPorProductoDto>>(res);
+
+			return Ok(response);
+		}
 	}
 }

@@ -49,6 +49,7 @@
 					@foreach (var item in Model.GrillaDetalleRpr.ListaDatos)
 					{
 						var nombre = item.p_id + "_";
+						var nombre_check = nombre + "checkbox";
 						var nombre_ocd_plista = nombre + "ocd_plista";
 						var nombre_ocd_dto1 = nombre + "ocd_dto1";
 						var nombre_ocd_dto2 = nombre + "ocd_dto2";
@@ -64,8 +65,10 @@
 						var nombre_rpd_dto_pa = nombre + "rpd_dto_pa";
 						var nombre_rpd_boni = nombre + "rpd_boni";
 						var nombre_rpd_cantidad_compte = nombre + "rpd_cantidad_compte";
-						<tr onclick="selectListaDetalleRpr(this)" title="oc_compte: @item.oc_compte // rp_compte: @item.rp_compte">
-							@*0*@ <td style="padding: 0; text-align-last: center;"><input type="checkbox" name=@nombre id="@nombre" /></td>
+						var nombre_span_dc = nombre + "_dc";
+						var nombre_span_dp = nombre + "_dp";
+						<tr onclick="selectListaDetalleRpr(this)" title="OC: @item.oc_compte // RP: @item.rp_compte">
+							@*0*@ <td style="padding: 0; text-align-last: center;"><input type="checkbox" name=@nombre_check id="@nombre_check" /></td>
 							@*1*@ <td class="@Model.GrillaDetalleRpr.ObtenerClase(item.p_id)" style="padding-left: 0.5px; padding-right: 0.5px; text-align-last: center;">@Model.GrillaDetalleRpr.FormatearDato(item.p_id, FormatDato.Ninguno)</td>
 							@*2*@ <td class="@Model.GrillaDetalleRpr.ObtenerClase(item.p_desc)">@Model.GrillaDetalleRpr.FormatearDato(item.p_desc, FormatDato.Ninguno)</td>
 							@*3*@ <td class="@Model.GrillaDetalleRpr.ObtenerClase(item.ocd_plista) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_ocd_plista">@item.ocd_plista.ToString().Replace('.',',')</td>
@@ -122,9 +125,6 @@
 						<div class="input-group input-group-sm" style="padding-right:0px;">
 							<span class="input-group-text fixed-lbl-for-abm-30">OC:</span>
 							<input type="text" class="form-control activable inputEditable" id="txtOC"/>
-@* 							<button type="button" class="btn btn-primary fixed-width-130" style="margin-left:5px;" id="btnAplicarOC">
-								<span class="tf-icons bx bx-check-circle">Aplicar</span>
-							</button> *@
 							<button id="btnAplicarOC" class="btn btn-primary btn-sm" type="button" title="Aplicar descuento">
 								<i class="bx bx-check-circle bx-xs"></i>
 							</button>
@@ -192,8 +192,6 @@
 					<span class="input-group-text fixed-lbl-for-abm-50">Dto4: </span>
 					<input type="number" id="txtDto4" class="form-control" style="text-align: right;" min="0.1" max="50" />
 					<span class="input-group-text fixed-lbl-for-abm-50">DPA: </span>
-					<input type="number" id="txtDpa" class="form-control" style="text-align: right;" min="0.1" max="50" />
-					<span class="input-group-text fixed-lbl-for-abm-30">%: </span>
 					<input type="number" id="txtDpa" class="form-control" style="text-align: right;" min="0.1" max="50" />
 					<span class="input-group-text fixed-lbl-for-abm-50">Boni: </span>
 					<input type="number" id="txtDpa" class="form-control" style="text-align: right;" min="0.1" max="50" />

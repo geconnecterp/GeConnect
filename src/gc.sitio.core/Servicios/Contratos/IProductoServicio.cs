@@ -106,5 +106,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<List<OrdenDeCompraDetalleDto>> CargarDetalleDeOC(string oc_compte, string token);
 		Task<List<OrdenDeCompraRprAsociadasDto>> CargarRprAsociadaDeOC(string oc_compte, string token);
 		Task<RespuestaGenerica<RespuestaDto>> ModificarOrdenDeCompra(ModificarOCRequest request, string token);
+		Task<RespuestaGenerica<RespuestaDto>> OCValidar(OCValidarRequest request, string token);
 	}
 }

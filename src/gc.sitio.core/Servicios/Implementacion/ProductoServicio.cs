@@ -126,6 +126,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string OC_ObtenerPorOcCompte = "/ObtenerOrdenDeCompraPorOcCompte";
 
 		private const string OC_Cargar_Lista = "/CargarOrdenesDeCompraList";
+		private const string OC_Validar = "/OCValidar";
 
 		private readonly AppSettings _appSettings;
 
@@ -2564,6 +2565,37 @@ namespace gc.sitio.core.Servicios.Implementacion
 			var link = $"{_appSettings.RutaBase}{RutaAPI}{OC_Modificar}";
 
 			response = await client.PutAsync(link, contentData);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+				return new RespuestaGenerica<RespuestaDto>() { Entidad = apiResponse.Data };
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<RespuestaGenerica<RespuestaDto>> OCValidar(OCValidarRequest request, string token)
+		{
+			ApiResponse<RespuestaDto> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{OC_Validar}";
+
+			response = await client.PostAsync(link, contentData);
 
 			if (response.StatusCode == HttpStatusCode.OK)
 			{

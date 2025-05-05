@@ -149,6 +149,7 @@
 			public const string SP_OC_ACCIONES_ANULAR = "SPGECO_OC_Anular";
 			public const string SP_OC_ACCIONES_DESANULAR = "SPGECO_OC_DesAnular";
 			public const string SP_OC_ACCIONES_CAMBIA_ADM = "SPGECO_OC_Cambia_Adm";
+			public const string SP_OC_VALIDAR = "SPGECO_OC_Validar";
 			#endregion
 
 			public const string SP_BOX_INFO = "SPGECO_BOX_Info";
@@ -320,6 +321,7 @@
 			public const string SP_COMPTE_VALORIZA_DETALLE_RPR = "SPGECO_Compte_Valoriza_Detalle_RPR";
 			public const string SP_COMPTE_VALORIZA_DTOS = "SPGECO_Compte_Valoriza_Dtos";
 			public const string SP_COMPTE_VALORIZA = "SPGECO_Compte_Valoriza";
+			public const string SP_COMPTE_VALORIZA_COSTO_OC = "SPGECO_Compte_Valoriza_Costo_OC";
 		}
 	}
 }

@@ -35,7 +35,8 @@ namespace gc.api.core.Contratos.Servicios
         List<CompteValorizaDetalleRprListaDto> ObtenerComprobantesDetalleRpr(CompteValorizaRprDtosRequest request);
         List<CompteValorizaDtosListaDto> ObtenerComprobantesDtos(CompteValorizaRprDtosRequest request);
         List<CompteValorizaListaDto> ObtenerCompteValorizaLista(CompteValorizaRequest request);
-        List<CuentaDatoDto> GetCuentaDatos(string cta, char tipo);
+        List<CompteValorizaCostoPorProductoDto> ObtenerCompteValorizaCostoOC(CompteValorizaCostoOcRequest request);
+		List<CuentaDatoDto> GetCuentaDatos(string cta, char tipo);
 
     }
 }

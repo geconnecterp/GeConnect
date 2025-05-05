@@ -9,6 +9,7 @@
 	});
 	$(document).on("change", "#listaComptesPend", ControlaListaCompteSelected);
 	$(document).on("click", "#btnAceptarDescFinanc", AceptarDescFinanc);
+	$(document).on("click", "#btnAplicarOC", ValidarOC);
 	$(document).on("mouseup", "#tbListaDescFinanc tbody tr", function (e) {
 		setTimeout(() => {
 			RecalcularItemValue()
@@ -665,6 +666,29 @@ function ActualizarProductoEnDetalleRprSeccionPrecio(field, val) {
 				if (td.length > 0 && td[1].innerText !== undefined && td[1].innerText === pId) {
 					console.log(obj.costo);
 					td[10].innerText = obj.costo;
+					//DC
+					if (obj.valorizacion_mostrar_dc) {
+						td[21].innerHTML = "<span class=" + obj.valorizacion_class_dc + " style=\"font - size: small;\">" + obj.valorizacion_value_dc + "</span>";
+						td[21].style.padding = "0";
+						td[21].style.textAlignLast = "center";
+						td[21].style.width = "10px";
+						//td[21].setAttribute('style', 'padding: 0; text-align-last: center; width:10px;');
+					}
+					else {
+						td[21].innerHTML = "";
+					}
+
+					//DP
+					if (obj.valorizacion_mostrar_dp) {
+						td[22].innerHTML = "<span class=" + obj.valorizacion_class_dp + " style=\"font-size: small;\">" + obj.valorizacion_value_dp + "</span>";
+						td[22].style.padding = "0";
+						td[22].style.textAlignLast = "center";
+						td[22].style.width = "10px";
+						//td[22].setAttribute('style', 'padding: 0; text-align-last: center; width:10px;');
+					}
+					else {
+						td[22].innerHTML = "";
+					}
 				}
 			});
 		}
@@ -688,10 +712,94 @@ function ActualizarProductoEnDetalleRprSeccionFactura(field, val) {
 				if (td.length > 0 && td[1].innerText !== undefined && td[1].innerText === pId) {
 					console.log(obj.costo);
 					td[19].innerText = obj.costo;
+					//DC
+					if (obj.valorizacion_mostrar_dc) {
+						//td[21].innerHTML = "<span class=" + obj.valorizacion_class_dc + " style=\"font-size: small;\">" + obj.valorizacion_value_dc + "</span>";
+						td[21].innerHTML = obj.td_dc;
+						td[21].style.padding = "0";
+						td[21].style.textAlignLast = "center";
+						td[21].style.width = "10px";
+						//td[21].setAttribute('style', 'padding: 0; text-align-last: center; width:10px;');
+					}
+					else {
+						td[21].innerHTML = "";
+					}
+
+					//DP
+					if (obj.valorizacion_mostrar_dp) {
+						//td[22].innerHTML = "<span class=" + obj.valorizacion_class_dp + " style=\"font - size: small;\">" + obj.valorizacion_value_dp + "</span>";
+						td[22].innerHTML = obj.td_dp;
+						td[22].style.padding = "0";
+						td[22].style.textAlignLast = "center";
+						td[22].style.width = "10px";
+						//td[22].setAttribute('style', 'padding: 0; text-align-last: center; width:10px;');
+					}
+					else {
+						td[22].innerHTML = "";
+					}
 				}
 			});
 		}
 	});
+}
+
+function ValidarOC() {
+	var idsProductos = ObtenerIdsProdSeleccionadosEnDetalleRpr();
+	var oc_compte = $("#txtOC").val();
+	if (idsProductos.length == 0) {
+		AbrirMensaje("ATENCIÓN", "Debe al menos seleccionar un producto", function () {
+			$("#msjModal").modal("hide");
+			document.getElementById("tbListaDetalleRpr").focus();
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else if (oc_compte == "") {
+		AbrirMensaje("ATENCIÓN", "Debe indicar un valor válido de OC", function () {
+			$("#msjModal").modal("hide");
+			document.getElementById("txtOC").focus();
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		var cta_id = $("#CtaID").val()
+		var data = { oc_compte, cta_id };
+		PostGen(data, validarOcURL, function (obj) {
+			if (obj.error === true) {
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				//Si me devuelve ok, actualizo los valores de los productos
+				CargarDetalleRprDesdeOcValidada(oc_compte, idsProductos);
+			}
+		});
+	}
+}
+
+function CargarDetalleRprDesdeOcValidada(ocCompte, idsProds) {
+	AbrirWaiting("Cargando información desde OC: " + ocCompte);
+	var data = { oc_compte: ocCompte, idsProds: idsProds }
+	PostGenHtml(data, cargarDetalleRprDesdeOcValidadaUrl, function (obj) {
+		CerrarWaiting();
+		$("#divListaDetalleRpr").html(obj);
+		
+	});
+}
+
+function ObtenerIdsProdSeleccionadosEnDetalleRpr() {
+	//RPR
+	var dataTable = document.getElementById('tbListaDetalleRpr');
+	var inputs = dataTable.querySelectorAll('tbody>tr>td>input');
+	var pIds = [];
+	inputs.forEach(function (input) {
+		if (input.checked) {
+			alMenosUno = true;
+			pIds.push(input.id.substr(0, 6));
+		}
+	});
+	return pIds;
 }
 
 ///TODO MARCE: Revisar y actualizar este metodo
@@ -778,7 +886,7 @@ function tableUpDownArrow() {
 					pos.c = 18;
 				if (pos.c == 11 && cellIndexTemp > pos.c) //moviendome desde la columna 'rpd_plista' hacia la izquierda, la cual no es editable, debo saltar a la siguiente editable 'ocd_boni'
 					pos.c = 9;
-				
+
 				nxFocus = myTable.rows[pos.r - 1].cells[pos.c]
 
 				if (nxFocus

@@ -23,16 +23,18 @@ namespace gc.sitio.Areas.Compras.Controllers
 	{
 		private readonly AppSettings _setting;
 		private readonly ICuentaServicio _cuentaServicio;
+		private readonly IProductoServicio _productoServicio;
 		private readonly ITipoDtoValorizaRprServicio _tipoDtoValorizaRprServicio;
 		private const string valorizacion_class_blue = "badge bg-label-info me-1";
 		private const string valorizacion_class_red = "badge bg-label-danger me-1";
 
-		public ValorizacionDeComprobanteController(ICuentaServicio cuentaServicio, ITipoDtoValorizaRprServicio tipoDtoValorizaRprServicio,
+		public ValorizacionDeComprobanteController(ICuentaServicio cuentaServicio, ITipoDtoValorizaRprServicio tipoDtoValorizaRprServicio, IProductoServicio productoServicio,
 												   IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger<ValorizacionDeComprobanteController> logger) : base(options, accessor, logger)
 		{
 			_setting = options.Value;
 			_cuentaServicio = cuentaServicio;
 			_tipoDtoValorizaRprServicio = tipoDtoValorizaRprServicio;
+			_productoServicio = productoServicio;
 		}
 
 		public IActionResult Index()
@@ -164,54 +166,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 					Mensaje = ex.Message
 				};
 				return PartialView("_gridMensaje", response);
-			}
-		}
-
-		private void CalcularValorizacionDC_DP(List<CompteValorizaDetalleRprListaDto> lista)
-		{
-			if (lista.Count > 0)
-			{
-				foreach (var item in lista)
-				{
-					var boni = 0;
-					if (!string.IsNullOrWhiteSpace(item.ocd_boni))
-						boni = CalcularBoni(item.rpd_boni, item.rpd_cantidad_compte);
-					var result = item.rpd_cantidad - (item.rpd_cantidad_compte + boni);
-					if (result == 0)
-						item.valorizacion_mostrar_dc = false;
-					else 
-					{
-						item.valorizacion_mostrar_dc = true;
-						if (result > 0)
-						{
-							item.valorizacion_class_dc = valorizacion_class_blue;
-							item.valorizacion_value_dc = "+";
-						}
-						else
-						{
-							item.valorizacion_class_dc = valorizacion_class_red;
-							item.valorizacion_value_dc = "-";
-						}
-					}
-
-					var result2 = item.ocd_pcosto - item.rpd_pcosto;
-					if (result2 == 0)
-						item.valorizacion_mostrar_dp = false;
-					else
-					{
-						item.valorizacion_mostrar_dp = true;
-						if (result2 > 0)
-						{
-							item.valorizacion_class_dp = valorizacion_class_blue;
-							item.valorizacion_value_dp = "+";
-						}
-						else
-						{
-							item.valorizacion_class_dp = valorizacion_class_red;
-							item.valorizacion_value_dp = "-";
-						}
-					}
-				}
 			}
 		}
 
@@ -420,13 +374,25 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 						producto.ocd_pcosto = Math.Round(CalcularPCosto(producto.ocd_plista, producto.ocd_dto1, producto.ocd_dto2, producto.ocd_dto3, producto.ocd_dto4, producto.ocd_dto_pa, producto.ocd_boni, 0, producto.rpd_cantidad), 2);
 					}
+					else
+						return Json(new { error = true, warn = false, msg = $"No existen productos cargados en detalle RPR con identificador {pId}" });
+
 					ComprobantesValorizaDetalleRprLista = productos; //Actualizo la lista en memoria
+					var prodAux = new List<CompteValorizaDetalleRprListaDto>
+					{
+						producto
+					};
+					CalcularValorizacionDC_DP(prodAux); //recalculo DC // DP
 					return Json(new msgRes()
 					{
 						error = false,
 						warn = false,
 						msg = string.Empty,
 						costo = producto?.ocd_pcosto.ToString("N2") ?? "0",
+						valorizacion_class_dc = prodAux.First().valorizacion_class_dc,
+						valorizacion_class_dp = prodAux.First().valorizacion_class_dp,
+						valorizacion_value_dc = prodAux.First().valorizacion_value_dc,
+						valorizacion_value_dp = prodAux.First().valorizacion_value_dp
 					});
 				}
 				else
@@ -495,16 +461,37 @@ namespace gc.sitio.Areas.Compras.Controllers
 						{
 							producto.rpd_boni = val;
 						}
+						else if (field.Contains("rpd_cantidad_compte"))
+						{
+							val = val.Replace(",", ".");
+							producto.rpd_cantidad_compte = Convert.ToDecimal(val);
+						}
 
 						producto.rpd_pcosto = Math.Round(CalcularPCosto(producto.rpd_plista, producto.rpd_dto1, producto.rpd_dto2, producto.rpd_dto3, producto.rpd_dto4, producto.rpd_dto_pa, producto.rpd_boni, 0, producto.rpd_cantidad_compte), 2);
 					}
+					else
+						return Json(new { error = true, warn = false, msg = $"No existen productos cargados en detalle RPR con identificador {pId}" });
+
 					ComprobantesValorizaDetalleRprLista = productos; //Actualizo la lista en memoria
+					var prodAux = new List<CompteValorizaDetalleRprListaDto>
+					{
+						producto
+					};
+					CalcularValorizacionDC_DP(prodAux); //recalculo DC // DP
 					return Json(new msgRes()
 					{
 						error = false,
 						warn = false,
 						msg = string.Empty,
 						costo = producto?.rpd_pcosto.ToString("N2") ?? "0",
+						valorizacion_class_dc = prodAux.First().valorizacion_class_dc,
+						valorizacion_class_dp = prodAux.First().valorizacion_class_dp,
+						valorizacion_value_dc = prodAux.First().valorizacion_value_dc,
+						valorizacion_value_dp = prodAux.First().valorizacion_value_dp,
+						valorizacion_mostrar_dc = prodAux.First().valorizacion_mostrar_dc,
+						valorizacion_mostrar_dp = prodAux.First().valorizacion_mostrar_dp,
+						td_dc = $"<span class=\"{prodAux.First().valorizacion_class_dc}\" style=\"font-size: small;\">{prodAux.First().valorizacion_value_dc}</span>",
+						td_dp = $"<span class=\"{prodAux.First().valorizacion_class_dp}\" style=\"font-size: small;\">{prodAux.First().valorizacion_value_dp}</span>"
 					});
 				}
 				else
@@ -513,6 +500,97 @@ namespace gc.sitio.Areas.Compras.Controllers
 			catch (Exception ex)
 			{
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar actualizar los datos del producto recientemente editado. Id de Producto: {pId}" });
+			}
+		}
+
+		[HttpPost]
+		public JsonResult OCValidar(string oc_compte, string cta_id)
+		{
+			try
+			{
+				var req = new OCValidarRequest() { oc_compte = oc_compte, cta_id = cta_id };
+				var res = _productoServicio.OCValidar(req, TokenCookie);
+				if (res != null)
+				{
+					var objRes = res.Result;
+					if (objRes.Entidad == null)
+						return Json(new { error = true, warn = false, msg = $"Ha ocurrido un error al intentar validar el comprobante." });
+
+					if (objRes.Entidad.resultado != 0)
+						return Json(new { error = true, warn = false, msg = objRes.Entidad.resultado_msj });
+
+					return Json(new { error = false, warn = false, msg = string.Empty });
+				}
+				else
+					return Json(new { error = true, warn = false, msg = $"Ha ocurrido un error al intentar validar el comprobante. OC: {oc_compte}" });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar validar el comprobante. OC: {oc_compte}" });
+			}
+		}
+
+		/// <summary>
+		/// Funcion que carga los valores de un producto seleccionado en la Grilla de RPR (Segundo Tab) - Seccion 'Precio OC y Cantidad RP'
+		/// y los reemplaza con los valores de la OC seleccionada.
+		/// </summary>
+		/// <param name="oc_compte"></param>
+		/// <param name="idsProds"></param>
+		/// <returns>Retorna la vista parcial con los productos actualizados, en base a la oc_compte proporcionada</returns>
+		[HttpPost]
+
+		public IActionResult CargarDetalleRprDesdeOcValidada(string oc_compte, string[] idsProds)
+		{
+			var model = new TabDetalleRprModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				if (string.IsNullOrEmpty(oc_compte))
+					return PartialView("_listaDetalleRpr", model);
+
+				if (idsProds == null || idsProds.Length <= 0)
+					return PartialView("_listaDetalleRpr", model);
+				///TODO Marce: Obtener los datos con los valores que vienen como parametros
+				///			   Con esos datos, reemplazar los productos en el detalle
+				var listaProdTemporal = ComprobantesValorizaDetalleRprLista;
+				var listaIdsProds = idsProds.ToList();
+				foreach (var item in listaIdsProds)
+				{
+					var resProdOc = _cuentaServicio.ObtenerComprobanteValorizaCostoOC(new CompteValorizaCostoOcRequest() { oc_compte = oc_compte, p_id = item }, TokenCookie);
+					if (resProdOc != null && resProdOc.Count > 0)
+					{
+						var prod = listaProdTemporal.FirstOrDefault(x => x.p_id == item);
+						if (prod != null)
+						{
+							prod.ocd_plista = resProdOc.First().ocd_plista;
+							prod.ocd_dto1 = resProdOc.First().ocd_dto1;
+							prod.ocd_dto2 = resProdOc.First().ocd_dto2;
+							prod.ocd_dto3 = resProdOc.First().ocd_dto3;
+							prod.ocd_dto4 = resProdOc.First().ocd_dto4;
+							prod.ocd_dto_pa = resProdOc.First().ocd_dto_pa;
+							prod.ocd_boni = resProdOc.First().ocd_boni;
+							prod.rpd_pcosto = resProdOc.First().ocd_pcosto;
+						}
+					}
+				}
+				CalcularValorizacionDC_DP(listaProdTemporal);
+				ComprobantesValorizaDetalleRprLista = listaProdTemporal;
+				model.GrillaDetalleRpr = ObtenerGridCoreSmart<CompteValorizaDetalleRprListaDto>(ComprobantesValorizaDetalleRprLista);
+				return PartialView("_listaDetalleRpr", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
 			}
 		}
 
@@ -547,6 +625,53 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		#region Métodos privados
+		private void CalcularValorizacionDC_DP(List<CompteValorizaDetalleRprListaDto> lista)
+		{
+			if (lista.Count > 0)
+			{
+				foreach (var item in lista)
+				{
+					var boni = 0;
+					if (!string.IsNullOrWhiteSpace(item.ocd_boni))
+						boni = CalcularBoni(item.rpd_boni, item.rpd_cantidad_compte);
+					var result = item.rpd_cantidad - (item.rpd_cantidad_compte + boni);
+					if (result == 0)
+						item.valorizacion_mostrar_dc = false;
+					else
+					{
+						item.valorizacion_mostrar_dc = true;
+						if (result > 0)
+						{
+							item.valorizacion_class_dc = valorizacion_class_blue;
+							item.valorizacion_value_dc = "+";
+						}
+						else
+						{
+							item.valorizacion_class_dc = valorizacion_class_red;
+							item.valorizacion_value_dc = "-";
+						}
+					}
+
+					var result2 = item.ocd_pcosto - item.rpd_pcosto;
+					if (result2 == 0)
+						item.valorizacion_mostrar_dp = false;
+					else
+					{
+						item.valorizacion_mostrar_dp = true;
+						if (result2 > 0)
+						{
+							item.valorizacion_class_dp = valorizacion_class_blue;
+							item.valorizacion_value_dp = "+";
+						}
+						else
+						{
+							item.valorizacion_class_dp = valorizacion_class_red;
+							item.valorizacion_value_dp = "-";
+						}
+					}
+				}
+			}
+		}
 		private static decimal CalcularPCosto(decimal p_plista, decimal p_d1, decimal p_d2, decimal p_d3, decimal p_d4, decimal p_dpa, string p_boni, decimal flete, decimal cantidad = 0)
 		{
 			var boni = CalcularBoni(p_boni, cantidad);
@@ -678,6 +803,14 @@ namespace gc.sitio.Areas.Compras.Controllers
 			public bool warn { get; set; }
 			public string msg { get; set; } = string.Empty;
 			public string costo { get; set; } = string.Empty;
+			public string valorizacion_class_dc { get; set; } = string.Empty;
+			public string valorizacion_class_dp { get; set; } = string.Empty;
+			public string valorizacion_value_dc { get; set; } = string.Empty;
+			public string valorizacion_value_dp { get; set; } = string.Empty;
+			public bool valorizacion_mostrar_dc { get; set; } = false;
+			public bool valorizacion_mostrar_dp { get; set; } = false;
+			public string td_dc { get; set; } = string.Empty;
+			public string td_dp { get; set; } = string.Empty;
 		}
 		#endregion
 	}

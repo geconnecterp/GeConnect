@@ -51,7 +51,8 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string ObtenerCompteDetalleRpr = "/GetComprobantesDetalleRpr";
         private const string ObtenerCompteDtos = "/GetComprobantesDtos";
         private const string ObtenerCompteValorizaLista = "/GetCompteValorizaLista";
-        private const string GetCuentaDatos = "/GetCuentaDatos";
+		private const string ObtenerCompteValorizaCostoOC = "/GetCompteValorizaCostoOC";
+		private const string GetCuentaDatos = "/GetCuentaDatos";
         //
         private readonly AppSettings _appSettings;
         public CuentaServicio(IOptions<AppSettings> options, ILogger<CuentaServicio> logger) : base(options, logger)
@@ -1119,5 +1120,36 @@ namespace gc.sitio.core.Servicios.Implementacion
                 return new();
             }
         }
-    }
+
+		public List<CompteValorizaCostoPorProductoDto> ObtenerComprobanteValorizaCostoOC(CompteValorizaCostoOcRequest request, string token)
+		{
+			ApiResponse<List<CompteValorizaCostoPorProductoDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerCompteValorizaCostoOC}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().Result;
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros cm_compte:{request.oc_compte} p_id:{request.p_id}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<CompteValorizaCostoPorProductoDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().Result;
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+	}
 }

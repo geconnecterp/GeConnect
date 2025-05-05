@@ -1433,6 +1433,16 @@ namespace gc.api.core.Servicios
 			return resp.First();
 		}
 
-
+		public RespuestaDto OCValidar(string oc_compte, string cta_id)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_OC_VALIDAR;
+			var ps = new List<SqlParameter>()
+			{
+				new("@oc_compte",oc_compte),
+				new("@cta_id",cta_id),
+			};
+			List<RespuestaDto> resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return resp.First();
+		}
 	}
 }

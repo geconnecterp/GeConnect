@@ -1398,12 +1398,27 @@ namespace gc.api.Controllers.Almacen
             return Ok(new ApiResponse<LimiteStkDto>(res));
         }
 
-        /// <summary>
-        /// Método destinado a validar la estructura del Json antes de ser enviado a la base de datos
-        /// </summary>
-        /// <param name = "json" ></ param >
-        /// < returns ></ returns >
-        private bool JsonValido(string json)
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult OCValidar(OCValidarRequest request)
+		{
+			ApiResponse<RespuestaDto> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _productosSv.OCValidar(request.oc_compte, request.cta_id);
+
+			response = new ApiResponse<RespuestaDto>(res);
+
+			return Ok(response);
+		}
+
+		/// <summary>
+		/// Método destinado a validar la estructura del Json antes de ser enviado a la base de datos
+		/// </summary>
+		/// <param name = "json" ></ param >
+		/// < returns ></ returns >
+		private bool JsonValido(string json)
         {
             try
             {
