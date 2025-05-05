@@ -1,4 +1,6 @@
 ﻿
+using Newtonsoft.Json;
+
 namespace gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra
 {
 	public class CompteValorizaDetalleRprListaDto : Dto
@@ -41,6 +43,12 @@ namespace gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra
 		public decimal nc_pcosto_difp { get; set; } = 0.000M;
 		public decimal nc_cantidad_difc { get; set; } = 0.000M;
 		public decimal nc_pcosto_difc { get; set; } = 0.000M;
+		public bool valorizacion_mostrar_dc { get; set; } = false;
+		public bool valorizacion_mostrar_dp { get; set; } = false;
+		public string valorizacion_class_dc { get; set; } = string.Empty;
+		public string valorizacion_class_dp { get; set; } = string.Empty;
+		public string valorizacion_value_dc { get; set; } = string.Empty;
+		public string valorizacion_value_dp { get; set; } = string.Empty;
 
 		public static decimal CalcularPCosto(decimal p_plista, decimal p_d1, decimal p_d2, decimal p_d3, decimal p_d4, decimal p_dpa, string p_boni, decimal flete = 0)
 		{

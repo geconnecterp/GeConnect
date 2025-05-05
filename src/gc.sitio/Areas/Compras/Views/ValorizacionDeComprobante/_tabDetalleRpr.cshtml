@@ -20,29 +20,29 @@
 						<th colspan="2" class="col-header-x-small align-center">Valorización</th>
 					</tr>
 					<tr>
-						<th><input name="select_all" value="1" type="checkbox"></th>
+						<th style="width:2%;padding: 0;text-align-last: center;vertical-align: middle;"><input name="select_all" value="1" type="checkbox"></th>
 						<th style="width:2%;" class="col-header-small align-center tiny-row">ID</th>
 						<th style="width:25%;" class="col-header-small align-center tiny-row">Descripcion</th>
 						<th style="width:5%;" class="col-header-small align-center tiny-row">P. Lista</th>@*Precio OC y Cantidad RP*@
-						<th style="width:5%;" class="col-header-small align-center tiny-row">D1</th>
-						<th style="width:5%;" class="col-header-small align-center tiny-row">D2</th>
-						<th style="width:5%;" class="col-header-small align-center tiny-row">D3</th>
-						<th style="width:5%;" class="col-header-small align-center tiny-row">D4</th>
-						<th style="width:5%;" class="col-header-small align-center tiny-row">Dpa</th>
+						<th style="width:2.5%;" class="col-header-small align-center tiny-row">D1</th>
+						<th style="width:2.5%;" class="col-header-small align-center tiny-row">D2</th>
+						<th style="width:2.5%;" class="col-header-small align-center tiny-row">D3</th>
+						<th style="width:2.5%;" class="col-header-small align-center tiny-row">D4</th>
+						<th style="width:2.5%;" class="col-header-small align-center tiny-row">Dpa</th>
 						<th style="width:5%;" class="col-header-small align-center tiny-row">Boni.</th>
 						<th style="width:5%;" class="col-header-small align-center tiny-row">Costo</th>
 						<th style="width:5%;" class="col-header-small align-center tiny-row">Recibido</th>
 						<th style="width:5%;" class="col-header-small align-center tiny-row">P. Lista</th>@*Factura*@
-						<th style="width:5%;" class="col-header-small align-center tiny-row">D1</th>
-						<th style="width:5%;" class="col-header-small align-center tiny-row">D2</th>
-						<th style="width:5%;" class="col-header-small align-center tiny-row">D3</th>
-						<th style="width:5%;" class="col-header-small align-center tiny-row">D4</th>
-						<th style="width:5%;" class="col-header-small align-center tiny-row">Dpa</th>
+						<th style="width:2.5%;" class="col-header-small align-center tiny-row">D1</th>
+						<th style="width:2.5%;" class="col-header-small align-center tiny-row">D2</th>
+						<th style="width:2.5%;" class="col-header-small align-center tiny-row">D3</th>
+						<th style="width:2.5%;" class="col-header-small align-center tiny-row">D4</th>
+						<th style="width:2.5%;" class="col-header-small align-center tiny-row">Dpa</th>
 						<th style="width:5%;" class="col-header-small align-center tiny-row">Boni.</th>
 						<th style="width:5%;" class="col-header-small align-center tiny-row">Costo</th>
 						<th style="width:5%;" class="col-header-small align-center tiny-row">Cant. Fact.</th>
-						<th style="width:2%;" class="col-header-small align-center tiny-row">DC</th>@*Factura*@
-						<th style="width:2%;" class="col-header-small align-center tiny-row">DP</th>
+						<th style="width:1%;" class="col-header-small align-center tiny-row">DC</th>@*Factura*@
+						<th style="width:1%;" class="col-header-small align-center tiny-row">DP</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -65,29 +65,49 @@
 						var nombre_rpd_boni = nombre + "rpd_boni";
 						var nombre_rpd_cantidad_compte = nombre + "rpd_cantidad_compte";
 						<tr onclick="selectListaDetalleRpr(this)" title="oc_compte: @item.oc_compte // rp_compte: @item.rp_compte">
-						@*0*@ <td><input type="checkbox" name=@nombre id="@nombre" /></td>
-						@*1*@ <td class="@Model.GrillaDetalleRpr.ObtenerClase(item.p_id)">@Model.GrillaDetalleRpr.FormatearDato(item.p_id, FormatDato.Ninguno)</td>
-						@*2*@ <td class="@Model.GrillaDetalleRpr.ObtenerClase(item.p_desc)">@Model.GrillaDetalleRpr.FormatearDato(item.p_desc, FormatDato.Ninguno)</td>
-						@*3*@ <td class="@Model.GrillaDetalleRpr.ObtenerClase(item.ocd_plista) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_ocd_plista">@item.ocd_plista.ToString().Replace('.',',')</td>
-						@*4*@ <td class="@Model.GrillaDetalleRpr.ObtenerClase(item.ocd_dto1) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_ocd_dto1">@item.ocd_dto1.ToString().Replace('.', ',')</td>
-						@*5*@ <td class="@Model.GrillaDetalleRpr.ObtenerClase(item.ocd_dto2) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_ocd_dto2">@item.ocd_dto2.ToString().Replace('.', ',')</td>
-						@*6*@ <td class="@Model.GrillaDetalleRpr.ObtenerClase(item.ocd_dto3) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_ocd_dto3">@item.ocd_dto3.ToString().Replace('.', ',')</td>
-						@*7*@ <td class="@Model.GrillaDetalleRpr.ObtenerClase(item.ocd_dto4) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_ocd_dto4">@item.ocd_dto4.ToString().Replace('.', ',')</td>
-						@*8*@ <td class="@Model.GrillaDetalleRpr.ObtenerClase(item.ocd_dto_pa) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_ocd_dto_pa">@item.ocd_dto_pa.ToString().Replace('.', ',')</td>
-						@*9*@ <td class="@Model.GrillaDetalleRpr.ObtenerClase(item.ocd_boni) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_ocd_boni">@Model.GrillaDetalleRpr.FormatearDato(item.ocd_boni, FormatDato.Monto)</td>
-						@*10*@ <td class="@Model.GrillaDetalleRpr.ObtenerClase(item.ocd_pcosto)">@Model.GrillaDetalleRpr.FormatearDato(item.ocd_pcosto, FormatDato.Monto)</td>
-						@*11*@<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_cantidad)">@Model.GrillaDetalleRpr.FormatearDato(item.rpd_cantidad, FormatDato.Monto)</td>
-						@*12*@<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_plista) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_rpd_plista">@item.rpd_plista.ToString().Replace('.', ',')</td>
-						@*13*@<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_dto1) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_rpd_dto1">@item.rpd_dto1.ToString().Replace('.', ',')</td>
-						@*14*@<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_dto2) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_rpd_dto2">@item.rpd_dto2.ToString().Replace('.', ',')</td>
-						@*15*@<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_dto3) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_rpd_dto3">@item.rpd_dto3.ToString().Replace('.', ',')</td>
-						@*16*@<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_dto4) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_rpd_dto4">@item.rpd_dto4.ToString().Replace('.', ',')</td>
-						@*17*@<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_dto_pa) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_rpd_dto_pa">@item.rpd_dto_pa.ToString().Replace('.', ',')</td>
-						@*18*@<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_boni) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_rpd_boni">@Model.GrillaDetalleRpr.FormatearDato(item.rpd_boni, FormatDato.Monto)</td>
-						@*19*@<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_pcosto)">@Model.GrillaDetalleRpr.FormatearDato(item.rpd_pcosto, FormatDato.Monto)</td>
-						@*20*@<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_cantidad_compte) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_rpd_cantidad_compte">@item.rpd_cantidad_compte.ToString().Replace('.', ',')</td>
-						@*21*@<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.p_id)"></td>
-						@*22*@<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.p_id)"></td>
+							@*0*@ <td style="padding: 0; text-align-last: center;"><input type="checkbox" name=@nombre id="@nombre" /></td>
+							@*1*@ <td class="@Model.GrillaDetalleRpr.ObtenerClase(item.p_id)" style="padding-left: 0.5px; padding-right: 0.5px; text-align-last: center;">@Model.GrillaDetalleRpr.FormatearDato(item.p_id, FormatDato.Ninguno)</td>
+							@*2*@ <td class="@Model.GrillaDetalleRpr.ObtenerClase(item.p_desc)">@Model.GrillaDetalleRpr.FormatearDato(item.p_desc, FormatDato.Ninguno)</td>
+							@*3*@ <td class="@Model.GrillaDetalleRpr.ObtenerClase(item.ocd_plista) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_ocd_plista">@item.ocd_plista.ToString().Replace('.',',')</td>
+							@*4*@ <td class="@Model.GrillaDetalleRpr.ObtenerClase(item.ocd_dto1) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_ocd_dto1">@item.ocd_dto1.ToString().Replace('.', ',')</td>
+							@*5*@ <td class="@Model.GrillaDetalleRpr.ObtenerClase(item.ocd_dto2) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_ocd_dto2">@item.ocd_dto2.ToString().Replace('.', ',')</td>
+							@*6*@ <td class="@Model.GrillaDetalleRpr.ObtenerClase(item.ocd_dto3) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_ocd_dto3">@item.ocd_dto3.ToString().Replace('.', ',')</td>
+							@*7*@ <td class="@Model.GrillaDetalleRpr.ObtenerClase(item.ocd_dto4) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_ocd_dto4">@item.ocd_dto4.ToString().Replace('.', ',')</td>
+							@*8*@ <td class="@Model.GrillaDetalleRpr.ObtenerClase(item.ocd_dto_pa) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_ocd_dto_pa">@item.ocd_dto_pa.ToString().Replace('.', ',')</td>
+							@*9*@ <td class="@Model.GrillaDetalleRpr.ObtenerClase(item.ocd_boni) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_ocd_boni">@Model.GrillaDetalleRpr.FormatearDato(item.ocd_boni, FormatDato.Monto)</td>
+							@*10*@ <td class="@Model.GrillaDetalleRpr.ObtenerClase(item.ocd_pcosto)">@Model.GrillaDetalleRpr.FormatearDato(item.ocd_pcosto, FormatDato.Monto)</td>
+							@*11*@<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_cantidad)">@Model.GrillaDetalleRpr.FormatearDato(item.rpd_cantidad, FormatDato.Monto)</td>
+							@*12*@<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_plista) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_rpd_plista">@item.rpd_plista.ToString().Replace('.', ',')</td>
+							@*13*@<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_dto1) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_rpd_dto1">@item.rpd_dto1.ToString().Replace('.', ',')</td>
+							@*14*@<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_dto2) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_rpd_dto2">@item.rpd_dto2.ToString().Replace('.', ',')</td>
+							@*15*@<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_dto3) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_rpd_dto3">@item.rpd_dto3.ToString().Replace('.', ',')</td>
+							@*16*@<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_dto4) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_rpd_dto4">@item.rpd_dto4.ToString().Replace('.', ',')</td>
+							@*17*@<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_dto_pa) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_rpd_dto_pa">@item.rpd_dto_pa.ToString().Replace('.', ',')</td>
+							@*18*@<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_boni) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_rpd_boni">@Model.GrillaDetalleRpr.FormatearDato(item.rpd_boni, FormatDato.Monto)</td>
+							@*19*@<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_pcosto)">@Model.GrillaDetalleRpr.FormatearDato(item.rpd_pcosto, FormatDato.Monto)</td>
+							@*20*@<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_cantidad_compte) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_rpd_cantidad_compte">@item.rpd_cantidad_compte.ToString().Replace('.', ',')</td>
+							@*21*@
+							@if (!item.valorizacion_mostrar_dc)
+							{
+								<td></td>
+							}
+							else
+							{
+								<td style="padding: 0; text-align-last: center; width:10px;"><span class="@item.valorizacion_class_dc" style="font-size:small;">@item.valorizacion_value_dc</span></td>
+							}
+							@*22*@
+							@if (!item.valorizacion_mostrar_dp)
+							{
+								<td></td>
+							}
+							else
+							{
+								<td style="padding: 0; text-align-last: center; width:10px;"><span class="@item.valorizacion_class_dp" style="font-size:small;">@item.valorizacion_value_dp</span></td>
+							}
+							@* <td style="padding: 0; text-align-last: center; width:10px;"><span class="badge bg-label-info me-1" style="font-size:small;">+</span></td> *@
+						@* <td style="padding: 0; text-align-last: center; width:10px;"><span class="badge bg-label-danger me-1" style="font-size:small;">-</span></td> *@
+						@*<td style="padding: 0; text-align-last: center;"><a class="btn btn-xs btn-outline-info"><i class="bx bx-plus" style="width:5px; margin-left: -13px;"></i></a></td>
+						<td style="padding: 0; text-align-last: center;"><a class="btn btn-xs btn-outline-danger"><i class="bx bx-minus" style="width:5px; margin-left: -13px;"></i></a></td>*@
 						</tr>
 					}
 				</tbody>

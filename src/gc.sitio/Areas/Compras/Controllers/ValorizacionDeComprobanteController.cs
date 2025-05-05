@@ -24,6 +24,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private readonly AppSettings _setting;
 		private readonly ICuentaServicio _cuentaServicio;
 		private readonly ITipoDtoValorizaRprServicio _tipoDtoValorizaRprServicio;
+		private const string valorizacion_class_blue = "badge bg-label-info me-1";
+		private const string valorizacion_class_red = "badge bg-label-danger me-1";
 
 		public ValorizacionDeComprobanteController(ICuentaServicio cuentaServicio, ITipoDtoValorizaRprServicio tipoDtoValorizaRprServicio,
 												   IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger<ValorizacionDeComprobanteController> logger) : base(options, accessor, logger)
@@ -111,6 +113,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				};
 				//Cargar Detalle de Productos RPR
 				var responseRpr = _cuentaServicio.ObtenerComprobantesDetalleRpr(req, TokenCookie);
+				CalcularValorizacionDC_DP(responseRpr);
 				ComprobantesValorizaDetalleRprLista = responseRpr;
 				var jsonResponseRpr = JsonConvert.SerializeObject(responseRpr, new JsonSerializerSettings());
 
@@ -161,6 +164,54 @@ namespace gc.sitio.Areas.Compras.Controllers
 					Mensaje = ex.Message
 				};
 				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		private void CalcularValorizacionDC_DP(List<CompteValorizaDetalleRprListaDto> lista)
+		{
+			if (lista.Count > 0)
+			{
+				foreach (var item in lista)
+				{
+					var boni = 0;
+					if (!string.IsNullOrWhiteSpace(item.ocd_boni))
+						boni = CalcularBoni(item.rpd_boni, item.rpd_cantidad_compte);
+					var result = item.rpd_cantidad - (item.rpd_cantidad_compte + boni);
+					if (result == 0)
+						item.valorizacion_mostrar_dc = false;
+					else 
+					{
+						item.valorizacion_mostrar_dc = true;
+						if (result > 0)
+						{
+							item.valorizacion_class_dc = valorizacion_class_blue;
+							item.valorizacion_value_dc = "+";
+						}
+						else
+						{
+							item.valorizacion_class_dc = valorizacion_class_red;
+							item.valorizacion_value_dc = "-";
+						}
+					}
+
+					var result2 = item.ocd_pcosto - item.rpd_pcosto;
+					if (result2 == 0)
+						item.valorizacion_mostrar_dp = false;
+					else
+					{
+						item.valorizacion_mostrar_dp = true;
+						if (result2 > 0)
+						{
+							item.valorizacion_class_dp = valorizacion_class_blue;
+							item.valorizacion_value_dp = "+";
+						}
+						else
+						{
+							item.valorizacion_class_dp = valorizacion_class_red;
+							item.valorizacion_value_dp = "-";
+						}
+					}
+				}
 			}
 		}
 
@@ -367,7 +418,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 							producto.ocd_boni = val;
 						}
 
-						producto.ocd_pcosto = Math.Round(ProductoParaOcDto.CalcularPCosto(producto.ocd_plista, producto.ocd_dto1, producto.ocd_dto2, producto.ocd_dto3, producto.ocd_dto4, producto.ocd_dto_pa, producto.ocd_boni, 0), 2);
+						producto.ocd_pcosto = Math.Round(CalcularPCosto(producto.ocd_plista, producto.ocd_dto1, producto.ocd_dto2, producto.ocd_dto3, producto.ocd_dto4, producto.ocd_dto_pa, producto.ocd_boni, 0, producto.rpd_cantidad), 2);
 					}
 					ComprobantesValorizaDetalleRprLista = productos; //Actualizo la lista en memoria
 					return Json(new msgRes()
@@ -445,7 +496,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 							producto.rpd_boni = val;
 						}
 
-						producto.rpd_pcosto = Math.Round(ProductoParaOcDto.CalcularPCosto(producto.rpd_plista, producto.rpd_dto1, producto.rpd_dto2, producto.rpd_dto3, producto.rpd_dto4, producto.rpd_dto_pa, producto.rpd_boni, 0), 2);
+						producto.rpd_pcosto = Math.Round(CalcularPCosto(producto.rpd_plista, producto.rpd_dto1, producto.rpd_dto2, producto.rpd_dto3, producto.rpd_dto4, producto.rpd_dto_pa, producto.rpd_boni, 0, producto.rpd_cantidad_compte), 2);
 					}
 					ComprobantesValorizaDetalleRprLista = productos; //Actualizo la lista en memoria
 					return Json(new msgRes()
@@ -496,6 +547,47 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		#region Métodos privados
+		private static decimal CalcularPCosto(decimal p_plista, decimal p_d1, decimal p_d2, decimal p_d3, decimal p_d4, decimal p_dpa, string p_boni, decimal flete, decimal cantidad = 0)
+		{
+			var boni = CalcularBoni(p_boni, cantidad);
+			return p_plista * ((100 - p_d1) / 100) * ((100 - p_d2) / 100) * ((100 - p_d3) / 100) * ((100 - p_d4) / 100) * ((100 - p_dpa) / 100) * boni * ((100 + flete) / 100);
+		}
+
+		/// <summary>
+		/// Funcion que calcula la bonificacion a agregar a las cantidades
+		/// </summary>
+		/// <param name="val">valor de tipo string en formato NNN/NNN, Ej: 110/100 -> 110 unidades entregadas por cada 100 compradas, la bonificacion serían los 10</param>
+		/// <param name="cant">cantidad de productos comprados</param>
+		/// <returns></returns>
+		private static int CalcularBoni(string val, decimal cant)
+		{
+			var boni = 1;
+			if (string.IsNullOrWhiteSpace(val))
+			{
+				return boni;
+			}
+			var arr = val.Split('/');
+			if (!int.TryParse(arr[0], out int num))
+			{
+				return boni;
+			}
+			if (!int.TryParse(arr[1], out int den))
+			{
+				return boni;
+			}
+			if (num > den)
+			{
+				return boni;
+			}
+			var res = den - num; //En la bonificacion viene NNN/MMM donde sería "cada NNN, lleva MMM", siendo MMM mayor a NNN. La diferencia es el valor adicional que se suma al pedido.
+			var multiplo = cant / num;
+			if (multiplo > 0)
+			{
+				boni = (res * (int)multiplo);
+			}
+
+			return boni;
+		}
 
 		private GridCoreSmart<CompteValorizaListaDto> ObtenerValorizacionActualizada(string cm_compte)
 		{

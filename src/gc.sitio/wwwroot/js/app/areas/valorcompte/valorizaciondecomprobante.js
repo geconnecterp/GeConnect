@@ -604,8 +604,9 @@ function addInCellGotFocusHandler() {
 	$("#tbListaDetalleRpr").on('focusin', 'td[contenteditable]', function (e) {
 		cellValueTemp = $("#" + this.id).text();
 		if (e.target) {
+			console.log(e.target.parentNode.cells[1].innerText);
+			pIdEnOcSeleccionado = e.target.parentNode.cells[1].innerText;
 			cellIndexTemp = e.target.cellIndex;
-			console.log("cellIndexTemp " + cellIndexTemp);
 		}
 	});
 }
@@ -740,8 +741,8 @@ function tableUpDownArrow() {
 		if (sPos &&
 			//(evt.altKey && evt.shiftKey && movKey[evt.code])
 			(evt.shiftKey && movKey[evt.code])
-			||
-			(evt.ctrlKey && movKey[evt.code])
+			//||
+			//(evt.ctrlKey && movKey[evt.code])
 		) {
 			let loop = true
 				, nxFocus = null
@@ -798,6 +799,8 @@ function tableUpDownArrow() {
 			event.preventDefault();
 		else if (evt.code === 'NumpadEnter')
 			event.preventDefault();
+		else if (evt.ctrlKey && movKey[evt.code])
+			event.preventDefault();
 	}
 }
 
@@ -821,7 +824,7 @@ function addMaskInEditableCells() {
 				getMaskForDiscountType("#" + td[16].id);//p_dto4
 				getMaskForDiscountType("#" + td[17].id);//p_dto_pa
 				$("#" + td[18].id).mask("000/000", { reverse: false });//p_boni
-				getMaskForDiscountType("#" + td[20].id);//p_dto_pa
+				getMaskForMoneyType("#" + td[20].id);//p_dto_pa
 			}
 		});
 	}
