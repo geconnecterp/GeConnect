@@ -45,18 +45,22 @@ namespace gc.api.Controllers.Security
         [HttpPost]
         public async Task<IActionResult> Authentication(UserLogin login)
         {
-            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             //string ip = ObtenerIPRemota(HttpContext);
             ////se generara un usuario y lo vamos a validar a modo de prueba. 
             ////Si el usuario fuera valido se deberia generar el token
             var validation = await IsValidUser(login);
+            if(string.IsNullOrEmpty(login.Admid) )
+            {
+                return BadRequest("La sucursal no es valida");
+            }
             if (validation.Item1)
             {   //el usuario es valido. Verificamos si esta logueado o no.
-                var adm = _adminServicio.Find(login.Admid);
+                var adm = _adminServicio.Find(login.Admid??"");
 
                 //Obtener los perfiles de acceso del usuario.
                 List<PerfilUserDto> perfiles = _usuSv.GetUserPerfiles(login.UserName);
-                var token = GenerateToken(validation.Item2,login.Admid,adm.Adm_nombre,perfiles);
+                var token = GenerateToken(validation.Item2 ?? new(),login.Admid ?? "",adm.Adm_nombre,perfiles);
                 return Ok(new { token });
             }
             return NotFound();
@@ -64,7 +68,7 @@ namespace gc.api.Controllers.Security
 
         [HttpGet]
         [Route("[action]")]
-        public async Task<IActionResult> Logoff(string userName)
+        public IActionResult Logoff(string userName)
         {
             //ApiResponse<bool> ret;
             //string ip = ObtenerIPRemota(HttpContext);
@@ -77,7 +81,7 @@ namespace gc.api.Controllers.Security
         [HttpPost, Authorize, Route("[action]")]
         public async Task<IActionResult> CambioClave(CambioClaveDto cambio)
         {
-            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             if (string.IsNullOrEmpty(cambio.PassAct))
             {
                 return BadRequest("No se recepcionó la clave.");
@@ -135,7 +139,7 @@ namespace gc.api.Controllers.Security
 
         private async Task<(bool, Usuario?)> IsValidUser(UserLogin login,bool esUp=false)
         {
-            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 
             if (login == null)
             {
@@ -182,7 +186,7 @@ namespace gc.api.Controllers.Security
 
         private string GenerateToken(Usuario usuario, string admId,string admName, List<PerfilUserDto> perfiles)/**/
         {
-            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             //bool first = true;
             /******************************************************************************************************************************
              * SE DEBE REALIZAR LA CONSULTA A LA BASE PARA OBTENER EL ARREGLO CON EL MENU A GENERAR, PADRE CON HIJOS Y RUTAS DE CADA HIJO *

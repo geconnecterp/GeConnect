@@ -96,7 +96,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Zona
             {
 
                 string msg = "Error en la invocación de la API - Busqueda de Zonaes";
-                _logger.LogError(ex, "Error en la invocación de la API - Busqueda de Zonaes");
+                _logger?.LogError(ex, "Error en la invocación de la API - Busqueda de Zonaes");
                 response.Mensaje = msg;
                 response.Ok = false;
                 response.EsWarn = false;
@@ -140,7 +140,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Zona
             catch (Exception ex)
             {
                 string msg = "Error en la invocación de la API - Busqueda de Usuarios";
-                _logger.LogError(ex, "Error en la invocación de la API - Busqueda de Usuarios");
+                _logger?.LogError(ex, "Error en la invocación de la API - Busqueda de Usuarios");
                 response.Mensaje = msg;
                 response.Ok = false;
                 response.EsWarn = false;
@@ -164,7 +164,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Zona
             catch (Exception ex)
             {
                 string msg = "Error en la invocación de la API - Inicializar Zona";
-                _logger.LogError(ex, msg);
+                _logger?.LogError(ex, msg);
                 response.Mensaje = msg;
                 response.Ok = false;
                 response.EsWarn = false;

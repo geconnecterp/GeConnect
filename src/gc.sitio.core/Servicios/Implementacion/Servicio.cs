@@ -34,7 +34,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             _rutaEntidad = string.Empty;
         }
 
-        public virtual async Task<(List<T>?, MetadataGrid?)> BuscarAsync(string? token)
+        public virtual async Task<(List<T>, MetadataGrid)> BuscarAsync(string? token)
         {
             ValidaToken(token);
             ApiResponse<List<T>> respuesta;
@@ -54,8 +54,8 @@ namespace gc.sitio.core.Servicios.Implementacion
             {
                 string stringData = await response.Content.ReadAsStringAsync();
                 //_logger.Log(TraceEventType.Information, $"String Response: {stringData}");
-                respuesta = JsonConvert.DeserializeObject<ApiResponse<List<T>>>(stringData);
-                return (respuesta.Data, respuesta.Meta);
+                respuesta = JsonConvert.DeserializeObject<ApiResponse<List<T>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+                return (respuesta.Data ?? [], respuesta.Meta??new());
             }
             else if (response.StatusCode == HttpStatusCode.Unauthorized)
             {
@@ -68,7 +68,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 //var error = resp.Error.First();
                 //throw new NegocioException($"Código: {response.StatusCode} - Error: {error.Detail}");
                 await ParseoError(response);
-                return (null, null);
+                return ([], new());
             }
         }
 
@@ -80,7 +80,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-        public virtual async Task<(List<T>?, MetadataGrid?)> BuscarAsync(QueryFilters filters, string? token)
+        public virtual async Task<(List<T>, MetadataGrid)> BuscarAsync(QueryFilters filters, string token)
         {
             ValidaToken(token);
 
@@ -108,8 +108,8 @@ namespace gc.sitio.core.Servicios.Implementacion
                 {
                     string stringData = await response.Content.ReadAsStringAsync();
                     //_logger.Log(TraceEventType.Information, $"String Response: {stringData}");
-                    respuesta = JsonConvert.DeserializeObject<ApiResponse<List<T>>>(stringData);
-                    return (respuesta.Data, respuesta.Meta);
+                    respuesta = JsonConvert.DeserializeObject<ApiResponse<List<T>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+                    return (respuesta.Data ?? [], respuesta.Meta??new());
                 }
                 else if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
@@ -122,7 +122,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                     //var error = resp.Error.First();
                     //throw new NegocioException($"Código: {response.StatusCode} - Error: {error.Detail}");
                     await ParseoError(response);
-                    return (null, null);
+                    return ([],new());
                 }
 
             }
@@ -154,7 +154,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 {
                     string stringData = await response.Content.ReadAsStringAsync();
                     //_logger.Log(TraceEventType.Information, $"String Response: {stringData}");
-                    respuesta = JsonConvert.DeserializeObject<ApiResponse<T>>(stringData);
+                    respuesta = JsonConvert.DeserializeObject<ApiResponse<T>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
                     return respuesta.Data;
                 }
                 else if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -167,8 +167,8 @@ namespace gc.sitio.core.Servicios.Implementacion
                     //ErrorExceptionValidation resp = JsonSerializer.Deserialize<ErrorExceptionValidation>(stringData);
                     //var error = resp.Error.First();
                     //throw new NegocioException($"Código: {response.StatusCode} - Error: {error.Detail}");
-                    await ParseoError(response);
-                    return null;
+                    await ParseoError(response);  
+                    throw new NegocioException($"Código: {response.StatusCode} - Error: Hubo un error. Verifique logs.");
                 }
             }
             catch (Exception ex)
@@ -197,7 +197,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 {
                     string stringData = await response.Content.ReadAsStringAsync();
                     //_logger.Log(TraceEventType.Information, $"String Response: {stringData}");
-                    respuesta = JsonConvert.DeserializeObject<ApiResponse<T>>(stringData);
+                    respuesta = JsonConvert.DeserializeObject<ApiResponse<T>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
                     return respuesta.Data;
                 }
                 else if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -211,7 +211,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                     //var error = resp.Error.First();
                     //throw new NegocioException($"Código: {response.StatusCode} - Error: {error.Detail}");
                     await ParseoError(response);
-                    return null;
+                    throw new NegocioException($"Código: {response.StatusCode} - Error: Hubo un error. Verifique logs.");
                 }
             }
             catch (Exception ex)
@@ -229,7 +229,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             foreach (var prop in entidad.GetType().GetProperties())
             {
                 var valor = prop.GetValue(entidad, null);
-                if (prop.PropertyType == typeof(int))
+                if (prop.PropertyType == typeof(int) && valor != null)
                 {
                     if ((int)valor != 0)
                     {
@@ -247,7 +247,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 }
 
 
-                if (prop.PropertyType == typeof(decimal))
+                if (prop.PropertyType == typeof(decimal) && valor != null)
                 {
                     if ((decimal)valor != 0)
                     {
@@ -266,7 +266,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                     }
                 }
 
-                if (prop.PropertyType == typeof(string))
+                if (prop.PropertyType == typeof(string) && valor != null)
                 {
                     if (!string.IsNullOrWhiteSpace((string)valor))
                     {
@@ -431,7 +431,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 
         //}
 
-        private static void ComponeCadena(ref bool first, ref string cadena, PropertyInfo prop, object valor)
+        private static void ComponeCadena(ref bool first, ref string cadena, PropertyInfo prop, object? valor)
         {
             if (first) { first = false; }
             else { cadena += "&"; }
@@ -449,7 +449,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 _logger.LogInformation("Agregando los datos de la entidad.");
 
                 HttpClient client = helperAPI.InicializaCliente(entidad, token, out StringContent content);
-                client.BaseAddress = new Uri(appSettings.RutaBase);
+                client.BaseAddress = new Uri(appSettings.RutaBase??"");
                 HttpResponseMessage response;
                 string link = $"{_rutaEntidad}";
                 response = await client.PostAsync(link, content);
@@ -459,7 +459,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                     string stringData = await response.Content.ReadAsStringAsync();
                     _logger.LogInformation($"stringData: {stringData}");
 
-                    respuesta = JsonConvert.DeserializeObject<ApiResponse<bool>>(stringData);
+                    respuesta = JsonConvert.DeserializeObject<ApiResponse<bool>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
                     return respuesta.Data;
                 }
                 else if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -484,7 +484,7 @@ namespace gc.sitio.core.Servicios.Implementacion
         {
             string stringData = await response.Content.ReadAsStringAsync();
             _logger.LogInformation($"stringData: {stringData}");
-            ErrorExceptionValidation resp = JsonConvert.DeserializeObject<ErrorExceptionValidation>(stringData);
+            ErrorExceptionValidation resp = JsonConvert.DeserializeObject<ErrorExceptionValidation>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
             if (resp.Error != null)
             {
                 var error = resp.Error.First();
@@ -517,7 +517,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 HelperAPI helperAPI = new HelperAPI();
                 _logger.LogInformation("Actualizando los datos de la entidad");
                 HttpClient client = helperAPI.InicializaCliente(entidad, token, out StringContent content);
-                client.BaseAddress = new Uri(appSettings.RutaBase);
+                client.BaseAddress = new Uri(appSettings.RutaBase ?? "");
 
                 var link = $"{_rutaEntidad}/{id}";
 
@@ -527,7 +527,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 {
                     string stringData = await response.Content.ReadAsStringAsync();
                     _logger.LogInformation($"String Response: {stringData}");
-                    respuesta = JsonConvert.DeserializeObject<ApiResponse<bool>>(stringData);
+                    respuesta = JsonConvert.DeserializeObject<ApiResponse<bool>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
                     return respuesta.Data;
                 }
                 else if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -541,7 +541,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 
                     if (!string.IsNullOrWhiteSpace(stringData))
                     {
-                        ErrorExceptionValidation resp = JsonConvert.DeserializeObject<ErrorExceptionValidation>(stringData);
+                        ErrorExceptionValidation resp = JsonConvert.DeserializeObject<ErrorExceptionValidation>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
                         if (resp.Error != null)
                         {
                             var error = resp.Error.First();
@@ -611,7 +611,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 HelperAPI helperAPI = new HelperAPI();
                 _logger.LogInformation($"Eliminando datos. Id:{id}");
                 HttpClient client = helperAPI.InicializaCliente(token);
-                client.BaseAddress = new Uri(appSettings.RutaBase);
+                client.BaseAddress = new Uri(appSettings.RutaBase ?? "");
                 HttpResponseMessage response;
                 var link = $"{_rutaEntidad}/{id}";
 
@@ -621,7 +621,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 {
                     string stringData = await response.Content.ReadAsStringAsync();
                     _logger.LogInformation($"String Response: {stringData}");
-                    respuesta = JsonConvert.DeserializeObject<ApiResponse<bool>>(stringData);
+                    respuesta = JsonConvert.DeserializeObject<ApiResponse<bool>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
                     return respuesta.Data;
                 }
                 else if (response.StatusCode == HttpStatusCode.Unauthorized)

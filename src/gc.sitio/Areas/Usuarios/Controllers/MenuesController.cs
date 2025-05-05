@@ -94,7 +94,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             {
 
                 string msg = "Error en la invocación de la API - Busqueda de Perfiles";
-                _logger.LogError(ex, "Error en la invocación de la API - Busqueda de Perfiles");
+                _logger?.LogError(ex, "Error en la invocación de la API - Busqueda de Perfiles");
                 response.Mensaje = msg;
                 response.Ok = false;
                 response.EsWarn = false;
@@ -142,7 +142,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             catch (Exception ex)
             {
                 string msg = "Error en la invocación de la API - Busqueda Producto";
-                _logger.LogError(ex, "Error en la invocación de la API - Busqueda Producto");
+                _logger?.LogError(ex, "Error en la invocación de la API - Busqueda Producto");
                 response.Mensaje = msg;
                 response.Ok = false;
                 response.EsWarn = false;
@@ -188,7 +188,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             catch (Exception ex)
             {
                 string msg = "Error en la invocación de la API - Busqueda Producto";
-                _logger.LogError(ex, "Error en la invocación de la API - Busqueda Producto");
+                _logger?.LogError(ex, "Error en la invocación de la API - Busqueda Producto");
                 response.Mensaje = msg;
                 response.Ok = false;
                 response.EsWarn = false;
@@ -211,7 +211,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             catch (Exception ex)
             {
                 string msg = "Error en la invocación de la API - Inicializar Perfil";
-                _logger.LogError(ex, "Error en la invocación de la API - al Inicializar Perfil");
+                _logger?.LogError(ex, "Error en la invocación de la API - al Inicializar Perfil");
                 response.Mensaje = msg;
                 response.Ok = false;
                 response.EsWarn = false;
@@ -345,7 +345,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             catch (Exception ex)
             {
                 string msg = "Error en la invocación de la API - Busqueda Menu x Perfil";
-                _logger.LogError(ex, "Error en la invocación de la API - Busqueda  Menu x Perfil");
+                _logger?.LogError(ex, "Error en la invocación de la API - Busqueda  Menu x Perfil");
                 return Json(new { error = true, warn = false, msg });
             }
         }
@@ -369,10 +369,10 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 //Se procede a generar estructura esperada en Base de Datos a partir del menu 
                 List<MenuItemsDto> menuPlano = GeneraMenuPlano(json, menu_id, perfil_id);
                 var jsonp = JsonConvert.SerializeObject(menuPlano);
-                _logger.LogInformation("#***************************************#");
-                _logger.LogInformation(json);
-                _logger.LogInformation(jsonp);
-                _logger.LogInformation("#***************************************#");
+                _logger?.LogInformation("#***************************************#");
+                _logger?.LogInformation(json);
+                _logger?.LogInformation(jsonp);
+                _logger?.LogInformation("#***************************************#");
                 //armando request del confirmar
                 AbmGenDto abm = new AbmGenDto()
                 {
@@ -403,7 +403,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             catch (Exception ex)
             {
                 string msg = "Error en la invocación de la API - Busqueda Menu x Perfil";
-                _logger.LogError(ex, "Error en la invocación de la API - Busqueda  Menu x Perfil");
+                _logger?.LogError(ex, "Error en la invocación de la API - Busqueda  Menu x Perfil");
                 return Json(new { error = true, warn = false, msg });
             }
         }

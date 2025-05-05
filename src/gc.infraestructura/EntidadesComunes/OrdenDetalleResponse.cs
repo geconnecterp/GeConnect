@@ -57,12 +57,12 @@ namespace gc.infraestructura.EntidadesComunes
         public List<Payment> payments { get; set; } = new List<Payment>();  
         public List<object> shipments { get; set; } = new List<object>();
         public List<object> payouts { get; set; } = new List<object>();
-        public Collector collector { get; set; }    
+        public Collector collector { get; set; } = new Collector();
         public string marketplace { get; set; } = string.Empty;
         public string notification_url { get; set; } = string.Empty;
         public DateTime date_created { get; set; }
         public DateTime last_updated { get; set; }
-        public object sponsor_id { get; set; }
+        public object sponsor_id { get; set; } = new object();
         public int shipping_cost { get; set; }
         public int total_amount { get; set; }
         public string site_id { get; set; } = string.Empty;

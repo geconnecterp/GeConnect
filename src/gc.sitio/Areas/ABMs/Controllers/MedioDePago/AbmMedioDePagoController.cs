@@ -120,7 +120,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda Medios de Pago";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda Medios de Pago");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda Medios de Pago");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -157,7 +157,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Obtener Medio de Pago";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Obtener Medio de Pago");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Obtener Medio de Pago");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -186,7 +186,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Opciones Cuotas";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Opciones Cuotas");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Opciones Cuotas");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -214,7 +214,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Opciones Cuotas";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Opciones Cuotas");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Opciones Cuotas");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -247,7 +247,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Cuenta Financiera y Contable";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Cuenta Financiera y Contable");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Cuenta Financiera y Contable");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -279,7 +279,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Cuenta Financiera y Contable Selected";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Cuenta Financiera y Contable Selected");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Cuenta Financiera y Contable Selected");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -311,7 +311,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Pos";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Pos");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Pos");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -339,7 +339,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Nuevo Medio de Pago";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Nuevo Medio de Pago");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Nuevo Medio de Pago");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -363,7 +363,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Nueva Opciones Cuotas";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Nueva Opciones Cuotas");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Nueva Opciones Cuotas");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -391,7 +391,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Nueva Cuenta Financiera y Contable Selected";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Nueva Cuenta Financiera y Contable Selected");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Nueva Cuenta Financiera y Contable Selected");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -417,7 +417,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Nueva Pos";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Nueva Pos");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Nueva Pos");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;

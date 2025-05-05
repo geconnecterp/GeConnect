@@ -32,20 +32,14 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index( bool actualizar = false)
+        public IActionResult Index(bool actualizar = false)
         {
-            List<ProductoListaDto> lista;
-            MetadataGrid metadata;
-            GridCoreSmart<ProductoListaDto> grillaDatos;
-
-            
-            
             var auth = EstaAutenticado;
             if (!auth.Item1 || auth.Item2 < DateTime.Now)
             {
                 return RedirectToAction("Login", "Token", new { area = "seguridad" });
             }
-            
+
             if (ProveedoresLista.Count == 0 || actualizar)
             {
                 ObtenerProveedores(_ctaSv);
@@ -55,14 +49,14 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
             {
                 ObtenerRubros(_rubSv);
             }
-            
 
-            string volver = Url.Action("index", "home", new { area = "" });
+
+            string volver = Url.Action("index", "home", new { area = "" }) ?? "#";
             ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
 
             var listR02 = new List<ComboGenDto>();
 
-            ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR02);            
+            ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR02);
 
             return View();
         }
@@ -91,17 +85,17 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
 
                 var res = await _abmProdServ.BuscarAsync(query, TokenCookie);
                 lista = res.Item1 ?? [];
-                MetadataProd = res.Item2 ?? null;
+                MetadataProd = res.Item2 ?? new();
                 metadata = MetadataProd;
                 ProductosBuscados = lista;
             }
             //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
             grillaDatos = GenerarGrilla(ProductosBuscados, sort, _settings.NroRegistrosPagina, pag, MetadataProd.TotalCount, MetadataProd.TotalPages, sortDir);
 
-            string volver = Url.Action("index", "home", new { area = "" });
+            string volver = Url.Action("index", "home", new { area = "" })??"#";
             ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
 
-            return View("_gridAbmProds",grillaDatos);
+            return View("_gridAbmProds", grillaDatos);
         }
 
         [HttpPost]
@@ -109,14 +103,12 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
         {
             try
             {
-                return Json(new {error = false, Metadata = MetadataProd });
+                return Json(new { error = false, Metadata = MetadataProd });
             }
-            catch (Exception ex)
-            {
+            catch (Exception )
+            {                
                 return Json(new { error = true, msg = "No se pudo obtener la información de paginación. Verifica" });
             }
         }
-
-        
     }
 }

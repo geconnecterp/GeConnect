@@ -43,8 +43,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 					if (!string.IsNullOrEmpty(stringData))
 					{
-						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<FinancieroListaDto>>>(stringData);
-					}
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<FinancieroListaDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+                    }
 					else
 					{
 						throw new Exception("No se logro obtener la respuesta de la API con los datos de la cuenta financiera lista. Verifique.");
@@ -86,7 +86,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 					if (!string.IsNullOrEmpty(stringData))
 					{
-						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<FinancieroListaDto>>>(stringData);
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<FinancieroListaDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 					}
 					else
 					{
@@ -129,7 +129,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 					if (!string.IsNullOrEmpty(stringData))
 					{
-						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<OpcionCuotaDto>>>(stringData);
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<OpcionCuotaDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 					}
 					else
 					{
@@ -172,7 +172,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 					if (!string.IsNullOrEmpty(stringData))
 					{
-						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<OpcionCuotaDto>>>(stringData);
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<OpcionCuotaDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 					}
 					else
 					{
@@ -215,7 +215,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 					if (!string.IsNullOrEmpty(stringData))
 					{
-						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<MedioDePagoABMDto>>>(stringData);
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<MedioDePagoABMDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 					}
 					else
 					{

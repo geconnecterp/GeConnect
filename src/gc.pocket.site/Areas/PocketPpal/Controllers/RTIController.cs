@@ -264,7 +264,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name}");
+                _logger.LogError(ex, $"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name}");
                 TempData["error"] = "Hubo algun problema. Si el mismo persiste informe al Administrador";
                 return RedirectToAction("Index");
             }
@@ -580,7 +580,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} Error al intentar confirmar");
+                _logger.LogError(ex, $"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} Error al intentar confirmar");
                 msg = $"Hubo algún inconveniente al intentar Confirmar la Autorización.";
             }
 

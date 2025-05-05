@@ -223,24 +223,24 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 else
                 {
                     //resguardamos la autorizacion seleccionada
-                    _logger.LogWarning($"{resp.Resultado_msj} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} Usuario:{user}");
+                    _logger.LogWarning($"{resp.Resultado_msj} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} Usuario:{user}");
                     return Json(new { error = false, warn = true, msg = resp.Resultado_msj });
                 }
             }
             catch (NegocioException ex)
             {
 
-                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} Usuario:{user}");
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} Usuario:{user}");
                 return Json(new { error = false, warn = true, msg = ex.Message });
             }
             catch (UnauthorizedException ex)
             {
-                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} Usuario:{user}");
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} Usuario:{user}");
                 return Json(new { error = false, warn = true, msg = ex.Message });
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} Usuario:{user}");
+                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} Usuario:{user}");
                 return Json(new { error = true, warn = false, msg = ex.Message });
             }
         }
@@ -643,17 +643,17 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             }
             catch (NegocioException ex)
             {
-                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name}params: {p_id}");
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name}params: {p_id}");
                 return Json(new { error = false, warn = true, msg = ex.Message });
             }
             catch (UnauthorizedException ex)
             {
-                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} params: {p_id} ");
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} params: {p_id} ");
                 return Json(new { error = false, warn = true, msg = ex.Message });
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} params: {p_id} ");
+                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} params: {p_id} ");
                 return Json(new { error = true, warn = false, msg = ex.Message });
             }
         }
@@ -732,17 +732,17 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             }
             catch (NegocioException ex)
             {
-                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name}params: {p_id} {up} {bulto} {unid} {cantidad} {fv}");
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name}params: {p_id} {up} {bulto} {unid} {cantidad} {fv}");
                 return Json(new { error = false, warn = true, msg = ex.Message });
             }
             catch (UnauthorizedException ex)
             {
-                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} params: {p_id} {up} {bulto} {unid} {cantidad} {fv}");
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} params: {p_id} {up} {bulto} {unid} {cantidad} {fv}");
                 return Json(new { error = false, warn = true, msg = ex.Message });
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} params: {p_id} {up} {bulto} {unid} {cantidad} {fv}");
+                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} params: {p_id} {up} {bulto} {unid} {cantidad} {fv}");
                 return Json(new { error = true, warn = false, msg = ex.Message });
             }
         }
@@ -757,19 +757,19 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             catch (NegocioException ex)
             {
                 sel = TIActual;
-                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} boxId ingresado:{boxId} - Box Esperado {sel.BoxId}");
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} boxId ingresado:{boxId} - Box Esperado {sel.BoxId}");
                 return Json(new { error = false, warn = true, msg = ex.Message });
             }
             catch (UnauthorizedException ex)
             {
                 sel = TIActual;
-                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} boxId ingresado:{boxId} - Box Esperado {sel.BoxId}");
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} boxId ingresado:{boxId} - Box Esperado {sel.BoxId}");
                 return Json(new { error = false, warn = true, msg = ex.Message });
             }
             catch (Exception ex)
             {
                 sel = TIActual;
-                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} boxId ingresado:{boxId} - Box Esperado {sel.BoxId}");
+                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} boxId ingresado:{boxId} - Box Esperado {sel.BoxId}");
                 return Json(new { error = true, warn = false, msg = ex.Message });
             }
         }
@@ -841,19 +841,19 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             catch (NegocioException ex)
             {
                 sel = TIActual;
-                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} Producto ingresado:{pId} - Producto Esperado {sel.PId}");
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} Producto ingresado:{pId} - Producto Esperado {sel.PId}");
                 return Json(new { error = false, warn = true, msg = ex.Message });
             }
             catch (UnauthorizedException ex)
             {
                 sel = TIActual;
-                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} Producto ingresado:{pId} - Producto Esperado {sel.PId}");
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} Producto ingresado:{pId} - Producto Esperado {sel.PId}");
                 return Json(new { error = false, warn = true, msg = ex.Message });
             }
             catch (Exception ex)
             {
                 sel = TIActual;
-                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} Producto ingresado:{pId} - Producto Esperado {sel.PId}");
+                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} Producto ingresado:{pId} - Producto Esperado {sel.PId}");
                 return Json(new { error = true, warn = false, msg = ex.Message });
             }
         }
@@ -870,13 +870,13 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             catch (UnauthorizedException ex)
             {
                 sel = TIActual;
-                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} No se pudo Cargar la Autorización Actual en la vista");
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} No se pudo Cargar la Autorización Actual en la vista");
                 return Json(new { error = true, msg = "Las credenciales se han vencido. Debera autenticarse nuevamente." });
             }
             catch (Exception ex)
             {
                 sel = TIActual;
-                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} No se pudo Cargar la Autorización Actual en la vista");
+                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} No se pudo Cargar la Autorización Actual en la vista");
                 return Json(new { error = true, msg = "No se pudo Cargar la Autorización Actual en la vista" });
             }
         }
@@ -924,12 +924,12 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             catch (UnauthorizedException ex)
             {
 
-                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} No se pudo Cargar la Autorización Actual en la vista");
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} No se pudo Cargar la Autorización Actual en la vista");
                 return Json(new { error = true, warn = false, msg = ex.Message });
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} Error durante el proceso");
+                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} Error durante el proceso");
                 return Json(new { error = true, warn = false, msg = "Algo no fue bien en el procesamiento. Ingrese de nuevo si fuera necesario. " });
             }
         }
@@ -1010,12 +1010,12 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             catch (UnauthorizedException ex)
             {
 
-                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} No se pudo Cargar la Autorización Actual en la vista");
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} No se pudo Cargar la Autorización Actual en la vista");
                 return Json(new { error = true, warn = false, msg = ex.Message });
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} Error durante el proceso");
+                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} Error durante el proceso");
                 return Json(new { error = true, warn = false, msg = "Algo no fue bien en el procesamiento. Ingrese de nuevo si fuera necesario. " });
             }
         }
@@ -1058,12 +1058,12 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             catch (UnauthorizedException ex)
             {
 
-                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} No se pudo Cargar la Autorización Actual en la vista");
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} No se pudo Cargar la Autorización Actual en la vista");
                 return Json(new { error = true, warn = false, msg = ex.Message });
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} Error durante el proceso");
+                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} Error durante el proceso");
                 return Json(new { error = true, warn = false, msg = "Algo no fue bien en el procesamiento. Ingrese de nuevo si fuera necesario. " });
             }
         }
@@ -1107,12 +1107,12 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             catch (UnauthorizedException ex)
             {
 
-                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} No se pudo Cargar la Autorización Actual en la vista");
+                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} No se pudo Cargar la Autorización Actual en la vista");
                 return Json(new { error = true, warn = false, msg = ex.Message });
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod().Name} Error durante el proceso");
+                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} Error durante el proceso");
                 return Json(new { error = true, warn = false, msg = "Algo no fue bien en el procesamiento. Ingrese de nuevo si fuera necesario. " });
             }
         }

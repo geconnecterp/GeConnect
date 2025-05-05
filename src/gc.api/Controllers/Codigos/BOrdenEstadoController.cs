@@ -40,7 +40,7 @@ namespace gc.api.Controllers.Codigos
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public IActionResult Getbilleteras_ordenes_es([FromQuery] QueryFilters filters)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var billeteras_ordenes_es = _billeteras_ordenes_eSv.GetAll(filters);
             var billeteras_ordenes_eDtos = _mapper.Map<IEnumerable<BOrdenEstadoDto>>(billeteras_ordenes_es);
 
@@ -53,8 +53,8 @@ namespace gc.api.Controllers.Codigos
                 TotalPages = billeteras_ordenes_es.TotalPages,
                 HasNextPage = billeteras_ordenes_es.HasNextPage,
                 HasPreviousPage = billeteras_ordenes_es.HasPreviousPage,
-                NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getbilleteras_ordenes_es))).ToString(),
-                PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getbilleteras_ordenes_es))).ToString(),
+                NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getbilleteras_ordenes_es)) ?? "").ToString(),
+                PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getbilleteras_ordenes_es)) ?? "").ToString(),
 
             };
 
@@ -72,7 +72,7 @@ namespace gc.api.Controllers.Codigos
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(string id)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var billeteras_ordenes_e = await _billeteras_ordenes_eSv.FindAsync(id);
             var datoDto = _mapper.Map<BOrdenEstadoDto>(billeteras_ordenes_e);
             var response = new ApiResponse<BOrdenEstadoDto>(datoDto);
@@ -85,7 +85,7 @@ namespace gc.api.Controllers.Codigos
         [HttpPost]
         public async Task<IActionResult> Post(BOrdenEstadoDto datoDto)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var billeteras_ordenes_e = _mapper.Map<BOrdenEstado>(datoDto);
             var res = await _billeteras_ordenes_eSv.AddAsync(billeteras_ordenes_e);
 
@@ -98,7 +98,7 @@ namespace gc.api.Controllers.Codigos
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(string id, [FromBody] BOrdenEstadoDto datoDto)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var billeteras_ordenes_e = _mapper.Map<BOrdenEstado>(datoDto);
             billeteras_ordenes_e.Boe_id = id; //garantizo que el id buscado es el que se envia al negocio
             var result = await _billeteras_ordenes_eSv.Update(billeteras_ordenes_e);
@@ -111,7 +111,7 @@ namespace gc.api.Controllers.Codigos
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = await _billeteras_ordenes_eSv.Delete(id);
             var response = new ApiResponse<bool>(res);
             return Ok(response);

@@ -32,7 +32,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 return RedirectToAction("Login", "Token", new { area = "seguridad" });
             }
 
-            string volver = Url.Action("cprev", "almacen", new { area = "gestion" });
+            string volver = Url.Action("cprev", "almacen", new { area = "gestion" }) ?? "#";
             ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
 
             return View();
@@ -41,7 +41,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         [HttpGet]
         public IActionResult LabMenu()
         {
-            string volver = Url.Action("cprev", "almacen", new { area = "gestion" });
+            string volver = Url.Action("cprev", "almacen", new { area = "gestion" }) ?? "#";
             ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Impresión de Etiquetas", VolverUrl = volver ?? "#" };
 
             return View();

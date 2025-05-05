@@ -64,7 +64,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error en la carga de datos periféricos.");
+				_logger?.LogError(ex, "Error en la carga de datos periféricos.");
 				TempData["error"] = "Hubo algún error al intentar cargar la vista de autenticación. Si el problema persiste, avise al administardor.";
 				var lv = new List<AdministracionLoginDto>();
 				ViewBag.Admid = HelperMvc<AdministracionLoginDto>.ListaGenerica(lv);
@@ -139,7 +139,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Hubo un error en la busqueda avanzada");
+                _logger?.LogError(ex, "Hubo un error en la busqueda avanzada");
                 return Json(new { error = true, msg = "Algo no salió bien. Vuelva a intentarlo." });
             }
         }

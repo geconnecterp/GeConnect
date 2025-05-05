@@ -21,7 +21,6 @@ namespace gc.sitio.Areas.ABMs.Controllers
 	public class AbmSectorController : SectorControladorBase
 	{
 		private readonly AppSettings _settings;
-		private readonly ILogger<AbmSectorController> _logger;
 		private readonly IABMSectorServicio _abmsectorServicio;
 		private readonly IAbmServicio _abmServicio;
 		private readonly ISectorServicio _sectorServicio;
@@ -31,7 +30,6 @@ namespace gc.sitio.Areas.ABMs.Controllers
 								   IABMProductoServicio abmProdServ) : base(options, accessor, logger)
 		{
 			_settings = options.Value;
-			_logger = logger;
 			_abmsectorServicio = abmsectorServicio;
 			_sectorServicio = sectorServicio;
 			_abmServicio = abmServicio;
@@ -41,7 +39,6 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		[HttpGet]
 		public IActionResult Index(bool actualizar = false)
 		{
-			MetadataGrid metadata;
 
 			var auth = EstaAutenticado;
 			if (!auth.Item1 || auth.Item2 < DateTime.Now)
@@ -94,7 +91,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda Cliente";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda Cliente");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda Cliente");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -106,7 +103,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> BuscarSector(string secId)
+		public IActionResult BuscarSector(string secId)
 		{
 			RespuestaGenerica<EntidadBase> response = new();
 			try
@@ -129,7 +126,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Sector";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Sector");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Sector");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -139,7 +136,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> NuevoSector()
+		public IActionResult NuevoSector()
 		{
 			RespuestaGenerica<EntidadBase> response = new();
 			try
@@ -153,7 +150,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Alta de Sector - Nueva entidad";
-				_logger.LogError(ex, "Error en la invocación de la API - Alta de Sector - Nueva entidad");
+				_logger?.LogError(ex, "Error en la invocación de la API - Alta de Sector - Nueva entidad");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -184,7 +181,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				else
 					return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
 			}
-			catch (Exception ex)
+			catch (Exception )
 			{
 				return Json(new { error = true, msg = "Ha ocurrido un error al intentar actualizar la información." });
 			}
@@ -205,7 +202,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> BuscarSubSector(string secId)
+		public IActionResult BuscarSubSector(string secId)
 		{
 			RespuestaGenerica<EntidadBase> response = new();
 			try
@@ -228,7 +225,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Sub Sector";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Sub Sector");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Sub Sector");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -238,7 +235,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> BuscarDatosSubSector(string ssId)
+		public IActionResult BuscarDatosSubSector(string ssId)
 		{
 			RespuestaGenerica<EntidadBase> response = new();
 			try
@@ -259,7 +256,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Sub Sector -> Datos";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Sub Sector -> Datos");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Sub Sector -> Datos");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -269,7 +266,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> NuevoSubSector()
+		public IActionResult NuevoSubSector()
 		{
 			RespuestaGenerica<EntidadBase> response = new();
 			try
@@ -285,7 +282,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Sub Sector -> Sub Sector Selected";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Sub Sector -> Sub Sector Selected");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Sub Sector -> Sub Sector Selected");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -316,14 +313,14 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				else
 					return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
 			}
-			catch (Exception ex)
+			catch (Exception )
 			{
 				return Json(new { error = true, msg = "Ha ocurrido un error al intentar actualizar la información." });
 			}
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> BuscarRubro(string secId)
+		public IActionResult BuscarRubro(string secId)
 		{
 			RespuestaGenerica<EntidadBase> response = new();
 			try
@@ -351,7 +348,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Rubro";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Rubro");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Rubro");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -361,7 +358,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> BuscarDatosRubro(string rubId)
+		public IActionResult BuscarDatosRubro(string rubId)
 		{
 			RespuestaGenerica<EntidadBase> response = new();
 			try
@@ -384,7 +381,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Rubro -> Datos";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Rubro -> Datos");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Rubro -> Datos");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -395,7 +392,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> NuevoRubro()
+		public IActionResult NuevoRubro()
 		{
 			RespuestaGenerica<EntidadBase> response = new();
 			try
@@ -412,7 +409,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Rubro -> Rubro Selected";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Rubro -> Rubro Selected");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Rubro -> Rubro Selected");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -443,16 +440,15 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				else
 					return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return Json(new { error = true, msg = "Ha ocurrido un error al intentar actualizar la información." });
 			}
 		}
 
 		#region Reasignación de familia
-		public async Task<IActionResult> ReasignacionDeRubro()
+		public IActionResult ReasignacionDeRubro()
 		{
-			MetadataGrid metadata;
 
 			var auth = EstaAutenticado;
 			if (!auth.Item1 || auth.Item2 < DateTime.Now)
@@ -470,7 +466,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			return View();
 		}
 
-		public async Task<IActionResult> BuscarRubrosPorSector(string secId)
+		public IActionResult BuscarRubrosPorSector(string secId)
 		{
 			var model = new ReasignacionRubroModel();
 
@@ -552,7 +548,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 					break;
 				}
 			}
-			return combo;
+			return combo ?? new SelectList(Enumerable.Empty<ComboGenDto>()); ;
 		}
 		private string ValidarJsonAntesDeGuardar(SectorAbmValidationModel sector, char abm)
 		{

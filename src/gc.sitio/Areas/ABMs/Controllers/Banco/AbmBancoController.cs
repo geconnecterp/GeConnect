@@ -100,7 +100,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Banco
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda Bancos";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda Bancos");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda Bancos");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -137,7 +137,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Banco
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Sector";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Sector");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Sector");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -166,7 +166,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Banco
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Alta de Banco - Nueva entidad";
-				_logger.LogError(ex, "Error en la invocación de la API - Alta de Banco - Nueva entidad");
+				_logger?.LogError(ex, "Error en la invocación de la API - Alta de Banco - Nueva entidad");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;

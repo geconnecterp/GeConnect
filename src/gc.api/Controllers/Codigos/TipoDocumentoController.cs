@@ -40,7 +40,7 @@ namespace gc.api.Controllers.Codigos
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public IActionResult Gettipos_documentoss([FromQuery] QueryFilters filters)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var tipos_documentoss = _tipos_documentosSv.GetAll(filters);
             var tipos_documentosDtos = _mapper.Map<IEnumerable<TipoDocumentoDto>>(tipos_documentoss);
 
@@ -53,8 +53,8 @@ namespace gc.api.Controllers.Codigos
                 TotalPages = tipos_documentoss.TotalPages,
                 HasNextPage = tipos_documentoss.HasNextPage,
                 HasPreviousPage = tipos_documentoss.HasPreviousPage,
-                NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Gettipos_documentoss))).ToString(),
-                PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Gettipos_documentoss))).ToString(),
+                NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Gettipos_documentoss)) ?? "").ToString(),
+                PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Gettipos_documentoss)) ?? "").ToString(),
 
             };
 
@@ -73,7 +73,7 @@ namespace gc.api.Controllers.Codigos
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(string id)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var tipos_documentos = await _tipos_documentosSv.FindAsync(id);
             var datoDto = _mapper.Map<TipoDocumentoDto>(tipos_documentos);
             var response = new ApiResponse<TipoDocumentoDto>(datoDto);
@@ -87,7 +87,7 @@ namespace gc.api.Controllers.Codigos
         [Authorize]
         public async Task<IActionResult> Post(TipoDocumentoDto datoDto)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var tipos_documentos = _mapper.Map<TipoDocumento>(datoDto);
             var res = await _tipos_documentosSv.AddAsync(tipos_documentos);
 
@@ -101,7 +101,7 @@ namespace gc.api.Controllers.Codigos
         [Authorize]
         public async Task<IActionResult> Put(string id, [FromBody] TipoDocumentoDto datoDto)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var tipos_documentos = _mapper.Map<TipoDocumento>(datoDto);
             tipos_documentos.Tdoc_Id = id; //garantizo que el id buscado es el que se envia al negocio
             var result = await _tipos_documentosSv.Update(tipos_documentos);
@@ -115,7 +115,7 @@ namespace gc.api.Controllers.Codigos
         [Authorize]
         public async Task<IActionResult> Delete(string id)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = await _tipos_documentosSv.Delete(id);
             var response = new ApiResponse<bool>(res);
             return Ok(response);

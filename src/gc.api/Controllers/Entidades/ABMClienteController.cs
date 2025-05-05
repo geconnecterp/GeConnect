@@ -19,7 +19,6 @@ namespace gc.api.Controllers.Entidades
     {
         private readonly IMapper _mapper;
         private readonly IUriService _uriService;
-        private readonly ILogger<ABMClienteController> _logger;
         private readonly IABMClienteServicio _abmClienteServicio;
         public ABMClienteController(IABMClienteServicio abmClienteServicio, IMapper mapper, IUriService uriService)
         {
@@ -34,7 +33,7 @@ namespace gc.api.Controllers.Entidades
         public IActionResult GetClientes([FromQuery] QueryFilters filters)
         {
             ABMClienteSearchDto reg = new ABMClienteSearchDto() { total_paginas = 0, total_registros = 0 };
-            //_logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            //_logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var clis = _abmClienteServicio.Buscar(filters);
             if (clis.Count > 0)
             {
@@ -45,11 +44,11 @@ namespace gc.api.Controllers.Entidades
             var metadata = new MetadataGrid
             {
                 TotalCount = reg.total_registros,
-                PageSize = filters.Registros.Value,
-                CurrentPage = filters.Pagina.Value,
+                PageSize = filters.Registros??0,
+                CurrentPage = filters.Pagina??0,
                 TotalPages = reg.total_paginas,
-                HasNextPage = filters.Pagina.Value < reg.total_paginas,
-                HasPreviousPage = filters.Pagina.Value > 1,
+                HasNextPage =(filters.Pagina??0)< reg.total_paginas,
+                HasPreviousPage =(filters.Pagina??0)> 1,
                 NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(GetClientes)) ?? "").ToString(),
                 PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(GetClientes)) ?? "").ToString(),
 
@@ -72,7 +71,7 @@ namespace gc.api.Controllers.Entidades
         public IActionResult BuscarClientes(QueryFilters filters)
         {
             ABMClienteSearchDto reg = new ABMClienteSearchDto() { total_paginas = 0, total_registros = 0 };
-            //_logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            //_logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var clis = _abmClienteServicio.Buscar(filters);
             if (clis.Count > 0)
             {
@@ -83,11 +82,11 @@ namespace gc.api.Controllers.Entidades
             var metadata = new MetadataGrid
             {
                 TotalCount = reg.total_registros,
-                PageSize = filters.Registros.Value,
-                CurrentPage = filters.Pagina.Value,
+                PageSize = filters.Registros??0,
+                CurrentPage = filters.Pagina??0,
                 TotalPages = reg.total_paginas,
-                HasNextPage = filters.Pagina.Value < reg.total_paginas,
-                HasPreviousPage = filters.Pagina.Value > 1,
+                HasNextPage =(filters.Pagina??0)< reg.total_paginas,
+                HasPreviousPage =(filters.Pagina??0)> 1,
                 NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(BuscarClientes)) ?? "").ToString(),
                 PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(BuscarClientes)) ?? "").ToString(),
 

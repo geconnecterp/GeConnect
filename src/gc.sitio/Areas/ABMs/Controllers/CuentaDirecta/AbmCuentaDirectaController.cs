@@ -102,7 +102,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.CuentaDirecta
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda Cuentas Directas";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda Cuentas Directas");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda Cuentas Directas");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -135,7 +135,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.CuentaDirecta
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Busqueda datos TAB -> Obtener Cuenta Directa";
-				_logger.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Obtener Cuenta Directa");
+				_logger?.LogError(ex, "Error en la invocación de la API - Busqueda datos TAB -> Obtener Cuenta Directa");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;
@@ -161,7 +161,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.CuentaDirecta
 			catch (Exception ex)
 			{
 				string msg = "Error en la invocación de la API - Alta de Cuenta Directa - Nueva entidad";
-				_logger.LogError(ex, "Error en la invocación de la API - Alta de Cuenta Directa - Nueva entidad");
+				_logger?.LogError(ex, "Error en la invocación de la API - Alta de Cuenta Directa - Nueva entidad");
 				response.Mensaje = msg;
 				response.Ok = false;
 				response.EsWarn = false;

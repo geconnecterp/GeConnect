@@ -1,4 +1,5 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
@@ -40,7 +41,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 						_logger.LogWarning($"La API no devolvió dato alguno. Sin parámetros de busqueda");
 						return [];
 					}
-					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<TipoGastoDto>>>(stringData);
+					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<TipoGastoDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 					return apiResponse.Data;
 				}
 				else

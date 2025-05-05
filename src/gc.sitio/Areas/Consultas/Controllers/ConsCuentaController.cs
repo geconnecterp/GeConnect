@@ -141,54 +141,30 @@ namespace gc.sitio.Areas.Consultas.Controllers
 
             {
                 if (PaginaGrid == pag && !buscaNew && CuentaCorrienteBuscada.Count() > 0)
-
                 {
-
                     //es la misma pagina y hay registros, se realiza el reordenamiento de los datos.
-
                     lista = CuentaCorrienteBuscada.ToList();
-
                     lista = OrdenarEntidad(lista, sortDir, sort);
-
                     CuentaCorrienteBuscada = lista;
-
                 }
-
                 else
-
                 {
-
                     PaginaGrid = pag;
-
                     int registros = _settings.NroRegistrosPagina;
 
-
-
                     var res = await _consSv.ConsultarCuentaCorriente(ctaId, fechaD.Ticks, UserName, pag, registros, TokenCookie);
-
                     lista = res.Item1 ?? [];
-
                     MetadataGeneral = res.Item2 ?? new MetadataGrid();
-
                     CuentaCorrienteBuscada = lista;
 
 
-
-
-
-                    #region Consulta de Cuenta comercial
+                    #region Consulta de Cuenta comercial
                     var cuenta = await _cuentaServicio.ObtenerListaCuentaComercial(ctaId, 'T', TokenCookie);
-
                     if (cuenta == null || cuenta.Count == 0)
-
                     {
-
                         throw new NegocioException("No se encontraron los datos de la cuenta. Verifique conexión.");
-
                     }
-
                     CuentaComercialSeleccionada = cuenta.First();
-
 
                     #region Obtener datos de la cuenta
                     var datosCta = await _cuentaServicio.ObtenerCuentaDatos(ctaId,'D', TokenCookie);
@@ -199,77 +175,45 @@ namespace gc.sitio.Areas.Consultas.Controllers
                     CuentaComercialDatosSeleccionada = datosCta.FirstOrDefault();
                     #endregion
 
-                    #endregion
-
-                    if (lista.Count > 0)
-
-                    {
-
-                        var consulta = AppReportes.CCUENTAS_CUENTA_CORRIENTE;
-
-                        #region Gestor Impresion - marcando que hay datos para el reporte n
-                        var reportes = ArchivosCargadosModulo;
-
-                        string tipoDato = CuentaCorrienteBuscada?.GetType().FullName ?? "";
-
-                        var mod = _docsManager.Modulos?.Find(x => x.Id.Equals(APP_MODULO))?.Reportes.Find(x => x.Id == (int)consulta);
-
-                        var titulo = mod?.Titulos[0];
-
-                        string archb64 = GenerarArchivoB64(lista, consulta, CuentaComercialSeleccionada.Prov_Id, titulo ?? "");
-
-                        //el 3er parametro es el numero de reporte que se esta marcando como consultado
-
-                        reportes = _docMSv.MarcarConsultaRealizada(reportes, consulta, 1, archb64, tipoDato);
-
-                        ArchivosCargadosModulo = reportes;
-
-                        #endregion
-                    }
-                }
-
+                    #endregion
+                    //if (lista.Count > 0)
+                    //{
+                    //    var consulta = AppReportes.CCUENTAS_CUENTA_CORRIENTE;
+                    //    #region Gestor Impresion - marcando que hay datos para el reporte n
+                    //    var reportes = ArchivosCargadosModulo;
+                    //    string tipoDato = CuentaCorrienteBuscada?.GetType().FullName ?? "";
+                    //    var mod = _docsManager.Modulos?.Find(x => x.Id.Equals(APP_MODULO))?.Reportes.Find(x => x.Id == (int)consulta);
+                    //    var titulo = mod?.Titulos[0];
+                    //    string archb64 = GenerarArchivoB64(lista, consulta, CuentaComercialSeleccionada.Prov_Id, titulo ?? "");
+                    //    //el 3er parametro es el numero de reporte que se esta marcando como consultado
+                    //    reportes = _docMSv.MarcarConsultaRealizada(reportes, consulta, 1, archb64, tipoDato);
+                    //    ArchivosCargadosModulo = reportes;
+                    //    #endregion
+                    //}
+               }
                 metadata = MetadataGeneral;
-
                 //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
-
                 grillaDatos = GenerarGrillaSmart(CuentaCorrienteBuscada, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
-
                 return View("_gridCtaCte", grillaDatos);
-
             }
             catch (NegocioException ex)
             {
-
                 response.Mensaje = ex.Message;
-
                 response.Ok = false;
-
                 response.EsWarn = true;
-
                 response.EsError = false;
-
                 return PartialView("_gridMensaje", response);
-
             }
             catch (Exception ex)
             {
-
                 string msg = "Error en la invocación de la API - Consulta de Cuenta Corriente.";
-
                 _logger?.LogError(ex, msg);
-
                 response.Mensaje = msg;
-
                 response.Ok = false;
-
                 response.EsWarn = false;
-
                 response.EsError = true;
-
                 return PartialView("_gridMensaje", response);
-
             }
-
         }
 
         /// <summary>
@@ -300,7 +244,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
             GridCoreSmart<ConsVtoDto> grillaDatos;
             RespuestaGenerica<EntidadBase> response = new();
             //la misma que esta especificado en el appsettings.json
-            var consulta = AppReportes.CCUENTAS_VENCIMIENTO_COMPROBANTES;
+            //var consulta = AppReportes.CCUENTAS_VENCIMIENTO_COMPROBANTES;
             try
             {
                 //voy a invocar el servicio que me traiga los datos de la cuenta corriente 
@@ -321,21 +265,21 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 }
                 VencimientosBuscados = res.ListaEntidad ?? new List<ConsVtoDto>();
 
-                if (res.ListaEntidad?.Count > 0)
-                {
-                    #region Gestor Impresion - marcando que hay datos para el reporte n
-                    var reportes = ArchivosCargadosModulo;
-                    string tipoDato = VencimientosBuscados.GetType().FullName ?? "";
+                //if (res.ListaEntidad?.Count > 0)
+                //{
+                //    #region Gestor Impresion - marcando que hay datos para el reporte n
+                //    var reportes = ArchivosCargadosModulo;
+                //    string tipoDato = VencimientosBuscados.GetType().FullName ?? "";
 
-                    var mod = _docsManager.Modulos?.Find(x => x.Id.Equals(APP_MODULO))?.Reportes.Find(x => x.Id == (int)consulta);
-                    var titulo = mod?.Titulos[0];
-                    string archb64 = GenerarArchivoB64(res.ListaEntidad, consulta, CuentaComercialSeleccionada?.Prov_Id, titulo ?? "");
+                //    var mod = _docsManager.Modulos?.Find(x => x.Id.Equals(APP_MODULO))?.Reportes.Find(x => x.Id == (int)consulta);
+                //    var titulo = mod?.Titulos[0];
+                //    string archb64 = GenerarArchivoB64(res.ListaEntidad, consulta, CuentaComercialSeleccionada?.Prov_Id, titulo ?? "");
 
-                    //el 3er parametro es el numero de reporte que se esta marcando como consultado
-                    reportes = _docMSv.MarcarConsultaRealizada(reportes, consulta, 1, archb64, tipoDato);
-                    ArchivosCargadosModulo = reportes;
-                    #endregion
-                }
+                //    //el 3er parametro es el numero de reporte que se esta marcando como consultado
+                //    reportes = _docMSv.MarcarConsultaRealizada(reportes, consulta, 1, archb64, tipoDato);
+                //    ArchivosCargadosModulo = reportes;
+                //    #endregion
+                //}
 
                 //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
                 grillaDatos = GenerarGrillaSmart(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
@@ -418,8 +362,8 @@ namespace gc.sitio.Areas.Consultas.Controllers
 
             //INICIALMENTE SE INDICA QUE EL REPORTE A GENERAR ES EL DE DETALLE DE COMPROBANTES
             //ESTO ES ORIENTADO A LA GENERACION DE ARCHIVOS B64 PARA EL GESTOR DE IMPRESION
-            var consultaPpal = AppReportes.CCUENTAS_COMPROBANTES;
-            var consulta = AppReportes.CCUENTAS_COMPROBANTES_DETALLE;
+            //var consultaPpal = AppReportes.CCUENTAS_COMPROBANTES;
+            //var consulta = AppReportes.CCUENTAS_COMPROBANTES_DETALLE;
 
             try
             {
@@ -436,23 +380,23 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 }
                 CmptesDetalleBuscados = res.ListaEntidad ?? [];
 
-                if (res.ListaEntidad?.Count > 0)
-                {
-                    #region Gestor Impresion - marcando que hay datos para el reporte n
-                    var reportes = ArchivosCargadosModulo;
-                    string tipoDato = CmptesDetalleBuscados.GetType().FullName ?? "";
-                    var mod = (_docsManager?.Modulos ?? []).Find(x => x.Id.Equals(APP_MODULO))?.Reportes.Find(x => x.Id == (int)consultaPpal);
-                    var titulo = mod?.Titulos[0];
-                    string archb64 = GenerarArchivoB64(res.ListaEntidad, consulta, CuentaComercialSeleccionada?.Prov_Id, titulo ?? "");
+                //if (res.ListaEntidad?.Count > 0)
+                //{
+                //    #region Gestor Impresion - marcando que hay datos para el reporte n
+                //    var reportes = ArchivosCargadosModulo;
+                //    string tipoDato = CmptesDetalleBuscados.GetType().FullName ?? "";
+                //    var mod = (_docsManager?.Modulos ?? []).Find(x => x.Id.Equals(APP_MODULO))?.Reportes.Find(x => x.Id == (int)consultaPpal);
+                //    var titulo = mod?.Titulos[0];
+                //    string archb64 = GenerarArchivoB64(res.ListaEntidad, consulta, CuentaComercialSeleccionada?.Prov_Id, titulo ?? "");
 
-                    //ACA SE CAMBIA LA VARIABLE CONSULTA PARA INDICAR EL MODULO GENERAL
-                    consulta = AppReportes.CCUENTAS_COMPROBANTES;
-                    //el 3er parametro es el numero de reporte que se esta marcando como consultado
-                    reportes = _docMSv.MarcarConsultaRealizada(reportes, consulta, 2, archb64, tipoDato);
+                //    //ACA SE CAMBIA LA VARIABLE CONSULTA PARA INDICAR EL MODULO GENERAL
+                //    consulta = AppReportes.CCUENTAS_COMPROBANTES;
+                //    //el 3er parametro es el numero de reporte que se esta marcando como consultado
+                //    reportes = _docMSv.MarcarConsultaRealizada(reportes, consulta, 2, archb64, tipoDato);
 
-                    ArchivosCargadosModulo = reportes;
-                    #endregion
-                }
+                //    ArchivosCargadosModulo = reportes;
+                //    #endregion
+                //}
 
                 string provId = CuentaComercialSeleccionada?.Prov_Id.ToString() ?? "";
                 //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
@@ -536,8 +480,8 @@ namespace gc.sitio.Areas.Consultas.Controllers
         {
             GridCoreSmart<ConsOrdPagosDetDto> grillaDatos;
             RespuestaGenerica<EntidadBase> response = new();
-            var consultaPpal = AppReportes.CCUENTAS_ORDEN_DE_PAGO;
-            var consulta = AppReportes.CCUENTAS_ORDEN_DE_PAGO_DETALLE;
+            //var consultaPpal = AppReportes.CCUENTAS_ORDEN_DE_PAGO;
+            //var consulta = AppReportes.CCUENTAS_ORDEN_DE_PAGO_DETALLE;
             try
             {
                 //voy a invocar el servicio que me traiga los datos de la cuenta corriente 
@@ -554,21 +498,21 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 }
                 OrdenPagosDetBuscados = res.ListaEntidad ?? [];
 
-                if (res.ListaEntidad?.Count > 0)
-                {
-                    #region Gestor Impresion - marcando que hay datos para el reporte n
-                    var reportes = ArchivosCargadosModulo;
-                    string tipoDato = OrdenPagosDetBuscados.GetType().FullName ?? string.Empty;
-                    var mod = (_docsManager.Modulos ?? []).Find(x => x.Id.Equals(APP_MODULO))?.Reportes.Find(x => x.Id == (int)consultaPpal);
-                    var titulo = mod?.Titulos[0];
-                    string archb64 = GenerarArchivoB64(res.ListaEntidad, consulta, CuentaComercialSeleccionada?.Prov_Id, titulo ?? "");
-                    //el 3er parametro es el numero de reporte que se esta marcando como consultado
-                    consulta = AppReportes.CCUENTAS_ORDEN_DE_PAGO;
-                    reportes = _docMSv.MarcarConsultaRealizada(reportes, consulta, 2, archb64, tipoDato);
+                //if (res.ListaEntidad?.Count > 0)
+                //{
+                //    #region Gestor Impresion - marcando que hay datos para el reporte n
+                //    var reportes = ArchivosCargadosModulo;
+                //    string tipoDato = OrdenPagosDetBuscados.GetType().FullName ?? string.Empty;
+                //    var mod = (_docsManager.Modulos ?? []).Find(x => x.Id.Equals(APP_MODULO))?.Reportes.Find(x => x.Id == (int)consultaPpal);
+                //    var titulo = mod?.Titulos[0];
+                //    string archb64 = GenerarArchivoB64(res.ListaEntidad, consulta, CuentaComercialSeleccionada?.Prov_Id, titulo ?? "");
+                //    //el 3er parametro es el numero de reporte que se esta marcando como consultado
+                //    consulta = AppReportes.CCUENTAS_ORDEN_DE_PAGO;
+                //    reportes = _docMSv.MarcarConsultaRealizada(reportes, consulta, 2, archb64, tipoDato);
 
-                    ArchivosCargadosModulo = reportes;
-                    #endregion
-                }
+                //    ArchivosCargadosModulo = reportes;
+                //    #endregion
+                //}
 
                 //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
                 grillaDatos = GenerarGrillaSmart(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
@@ -655,8 +599,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
         {
             GridCoreSmart<ConsRecepcionProveedorDetalleDto> grillaDatos;
             RespuestaGenerica<EntidadBase> response = new();
-            var consultaPpal = AppReportes.CCUENTAS_RECEPCION_PROVEEDORES;
-            var consulta = AppReportes.CCUENTAS_RECEPCION_PROVEEDORES_DETALLE;
+     
 
             try
             {
@@ -674,23 +617,23 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 }
                 RecepProvDetBuscados = res.ListaEntidad ?? [];
 
-                if (res.ListaEntidad?.Count > 0)
-                {
-                    #region Gestor Impresion - marcando que hay datos para el reporte n
-                    var reportes = ArchivosCargadosModulo;
-                    string tipoDato = RecepProvDetBuscados.GetType().FullName ?? "";
-                    var mod = (_docsManager.Modulos ?? []).Find(x => x.Id.Equals(APP_MODULO))?.Reportes.Find(x => x.Id == (int)consultaPpal);
-                    var titulo = mod?.Titulos[0];
-                    string archb64 = GenerarArchivoB64(res.ListaEntidad, consulta, CuentaComercialSeleccionada?.Prov_Id, titulo ?? "");
+                //if (res.ListaEntidad?.Count > 0)
+                //{
+                //    #region Gestor Impresion - marcando que hay datos para el reporte n
+                //    var reportes = ArchivosCargadosModulo;
+                //    string tipoDato = RecepProvDetBuscados.GetType().FullName ?? "";
+                //    var mod = (_docsManager.Modulos ?? []).Find(x => x.Id.Equals(APP_MODULO))?.Reportes.Find(x => x.Id == (int)consultaPpal);
+                //    var titulo = mod?.Titulos[0];
+                //    string archb64 = GenerarArchivoB64(res.ListaEntidad, consulta, CuentaComercialSeleccionada?.Prov_Id, titulo ?? "");
 
-                    consulta = AppReportes.CCUENTAS_RECEPCION_PROVEEDORES;
-                    //el 3er parametro es el numero de reporte que se esta marcando como consultado (1=original). 
-                    //se deberá ver cuando se tenga que imprimir un duplicado.deberia ser 2 o 3 o lo que corresponda.
-                    reportes = _docMSv.MarcarConsultaRealizada(reportes, consulta, 2, archb64, tipoDato);
+                //    consulta = AppReportes.CCUENTAS_RECEPCION_PROVEEDORES;
+                //    //el 3er parametro es el numero de reporte que se esta marcando como consultado (1=original). 
+                //    //se deberá ver cuando se tenga que imprimir un duplicado.deberia ser 2 o 3 o lo que corresponda.
+                //    reportes = _docMSv.MarcarConsultaRealizada(reportes, consulta, 2, archb64, tipoDato);
 
-                    ArchivosCargadosModulo = reportes;
-                    #endregion
-                }
+                //    ArchivosCargadosModulo = reportes;
+                //    #endregion
+                //}
 
                 //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
                 grillaDatos = GenerarGrillaSmart(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);

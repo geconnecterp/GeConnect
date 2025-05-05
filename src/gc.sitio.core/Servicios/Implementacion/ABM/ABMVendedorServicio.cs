@@ -47,25 +47,25 @@ namespace gc.sitio.core.Servicios.Implementacion.ABM
                         throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde.");
                     }
                     apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ABMVendedorDto>>>(stringData);
-
-                    return (apiResponse.Data, apiResponse.Meta);
+                    apiResponse = apiResponse ?? throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde.");
+                    return (apiResponse.Data ?? [], apiResponse.Meta ?? new());
                 }
                 else
                 {
                     string stringData = await response.Content.ReadAsStringAsync();
                     _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
                     var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
-                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    if (error != null && error.TypeException?.Equals(nameof(NegocioException)) == true)
                     {
-                        throw new NegocioException(error.Detail);
+                        throw new NegocioException(error.Detail ?? "Hubo un problema en la recepcion de los datos del Vendedor");
                     }
-                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    else if (error != null && error.TypeException?.Equals(nameof(NotFoundException)) == true)
                     {
-                        throw new NegocioException(error.Detail);
+                        throw new NegocioException(error.Detail ?? "Hubo un problema en la recepcion de los datos del Vendedor");
                     }
                     else
                     {
-                        throw new Exception(error.Detail);
+                        throw new Exception(error?.Detail);
                     }
                 }
             }
@@ -75,7 +75,7 @@ namespace gc.sitio.core.Servicios.Implementacion.ABM
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
                 throw new Exception("Algo no fue bien al intentar obtener los Perfiles solicitados según el filtro actual.");
             }
@@ -104,7 +104,8 @@ namespace gc.sitio.core.Servicios.Implementacion.ABM
 
                         return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
                     }
-                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<ABMVendedorDatoDto>>(stringData);
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<ABMVendedorDatoDto>>(stringData)
+                        ?? throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde.");
 
                     return new RespuestaGenerica<ABMVendedorDatoDto> { Ok = true, Mensaje = "OK", Entidad = apiResponse.Data };
 
@@ -114,23 +115,23 @@ namespace gc.sitio.core.Servicios.Implementacion.ABM
                     string stringData = await response.Content.ReadAsStringAsync();
                     _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
                     var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
-                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    if (error != null && error.TypeException?.Equals(nameof(NegocioException)) == true)
                     {
-                        return new RespuestaGenerica<ABMVendedorDatoDto> { Ok = false, Mensaje = error.Detail };
+                        throw new NegocioException(error.Detail ?? "Hubo un problema en la recepcion de los datos del Vendedor");
                     }
-                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    else if (error != null && error.TypeException?.Equals(nameof(NotFoundException)) == true)
                     {
-                        return new RespuestaGenerica<ABMVendedorDatoDto> { Ok = false, Mensaje = error.Detail };
+                        throw new NegocioException(error.Detail ?? "Hubo un problema en la recepcion de los datos del Vendedor");
                     }
                     else
                     {
-                        throw new Exception(error.Detail);
+                        throw new Exception(error?.Detail);
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod().Name} - {ex}");
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
                 return new RespuestaGenerica<ABMVendedorDatoDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener los datos del vendedor." };
             }

@@ -24,6 +24,7 @@ namespace gc.sitio.Controllers
                 return RedirectToAction("login", "token", new { area = "seguridad" });
             }
             ViewData["Titulo"] = "Bienvenidos al GECONet";
+            ViewBag.Administracion = AdministracionId;
 
             return View();
         }

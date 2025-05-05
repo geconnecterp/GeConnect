@@ -47,7 +47,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al obtener los remitos transferidos pendientes.");
+				_logger?.LogError(ex, "Error al obtener los remitos transferidos pendientes.");
 				TempData["error"] = "Hubo algun problema al intentar obtener los remitos transferidos pendientes. Si el problema persiste informe al Administrador";
 				grid = new();
 			}
@@ -73,7 +73,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al intentar setear el estado del remito.");
+				_logger?.LogError(ex, "Error al intentar setear el estado del remito.");
 				TempData["error"] = "Hubo algun problema al intentar setear el estado del remito. Si el problema persiste informe al Administrador";
 				return Json(new { error = true, warn = false, msg = "Error al intentar setear el estado del remito." });
 			}
@@ -105,7 +105,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al intentar setear el estado del remito.");
+				_logger?.LogError(ex, "Error al intentar setear el estado del remito.");
 				TempData["error"] = "Hubo algun problema al intentar setear el estado del remito. Si el problema persiste informe al Administrador";
 				return Json(new { error = true, warn = false, msg = "Error al intentar setear el estado del remito." });
 			}
@@ -133,7 +133,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al obtener el detalle del remito.");
+				_logger?.LogError(ex, "Error al obtener el detalle del remito.");
 				TempData["error"] = "Hubo algun problema al obtener el detalle del remito. Si el problema persiste informe al Administrador";
 				remito = new();
 			}
@@ -150,7 +150,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error al intentar obtener el detalle del comprobante UL.");
+				_logger?.LogError(ex, "Error al intentar obtener el detalle del comprobante UL.");
 				TempData["error"] = "Hubo algun problema al intentar obtener el detalle del comprobante UL. Si el problema persiste informe al Administrador";
 				return PartialView("_rprULxRPRDetalle", datosIP);
 			}

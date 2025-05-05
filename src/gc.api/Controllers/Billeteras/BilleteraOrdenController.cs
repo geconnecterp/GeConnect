@@ -40,7 +40,7 @@ namespace gc.api.Controllers.Billeteras
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public IActionResult Getbilleteras_ordeness([FromQuery] QueryFilters filters)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var billeteras_ordeness = _billeteras_ordenesSv.GetAll(filters);
             var billeteras_ordenesDtos = _mapper.Map<IEnumerable<BilleteraOrdenDto>>(billeteras_ordeness);
 
@@ -53,8 +53,8 @@ namespace gc.api.Controllers.Billeteras
                 TotalPages = billeteras_ordeness.TotalPages,
                 HasNextPage = billeteras_ordeness.HasNextPage,
                 HasPreviousPage = billeteras_ordeness.HasPreviousPage,
-                NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getbilleteras_ordeness))).ToString(),
-                PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getbilleteras_ordeness))).ToString(),
+                NextPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getbilleteras_ordeness)) ?? "").ToString(),
+                PreviousPageUrl = _uriService.GetPostPaginationUri(filters, Url.RouteUrl(nameof(Getbilleteras_ordeness)) ?? "").ToString(),
 
             };
 
@@ -72,7 +72,7 @@ namespace gc.api.Controllers.Billeteras
         [HttpGet("{id}")]
         public IActionResult Get(string id)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var billeteras_ordenes =  _billeteras_ordenesSv.Find(id);
             if (billeteras_ordenes == null)
             {
@@ -101,7 +101,7 @@ namespace gc.api.Controllers.Billeteras
         [ProducesResponseType((int)HttpStatusCode.OK)]
         public IActionResult Post([FromBody] BilleteraOrdenDto datoDto)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var billeteras_ordenes = _mapper.Map<BilleteraOrden>(datoDto);
             var res = _billeteras_ordenesSv.CargarOrden(billeteras_ordenes);
 
@@ -117,7 +117,7 @@ namespace gc.api.Controllers.Billeteras
         public IActionResult OrdenNotificado(string nroOrden, [FromBody] OrdenNotificado ordenNotificado)
         {
             string msg;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             if(ordenNotificado == null)
             {
                 msg = $"Orden: {nroOrden} - No se recepcionó la orden de Notificación";
@@ -145,7 +145,7 @@ namespace gc.api.Controllers.Billeteras
         public IActionResult OrdenRegistro(string nroOrden, [FromBody] OrdenRegistro ordenRegistro)
         {
             string msg;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             if (ordenRegistro == null)
             {
                 msg = $"Orden: {nroOrden} - No se recepcionó la orden de Notificación";
@@ -170,7 +170,7 @@ namespace gc.api.Controllers.Billeteras
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(string id, [FromBody] BilleteraOrdenDto datoDto)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var billeteras_ordenes = _mapper.Map<BilleteraOrden>(datoDto);
             billeteras_ordenes.Bo_Id = id; //garantizo que el id buscado es el que se envia al negocio
             var result = await _billeteras_ordenesSv.Update(billeteras_ordenes);
@@ -183,7 +183,7 @@ namespace gc.api.Controllers.Billeteras
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod().Name}");
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = await _billeteras_ordenesSv.Delete(id);
             var response = new ApiResponse<bool>(res);
             return Ok(response);

@@ -93,7 +93,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.PlanCuenta
             {
 
                 string msg = "Error en la invocación de la API - Busqueda del Plan de Cuentas";
-                _logger.LogError(ex, msg);
+                _logger?.LogError(ex, msg);
                 response.Mensaje = msg;
                 response.Ok = false;
                 response.EsWarn = false;
@@ -141,7 +141,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.PlanCuenta
             catch (Exception ex)
             {
                 string msg = "Error en la invocación de la API - Busqueda de la Cuenta.";
-                _logger.LogError(ex, msg);
+                _logger?.LogError(ex, msg);
                 response.Mensaje = msg;
                 response.Ok = false;
                 response.EsWarn = false;
@@ -174,7 +174,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.PlanCuenta
             catch (NegocioException ex)
             {
                 return Json(new { error = false, warn = true, msg = ex.Message });
-                //_logger.LogError(ex, ex.Message);
+                //_logger?.LogError(ex, ex.Message);
                 //response.Mensaje = ex.Message;
                 //response.Ok = false;
                 //response.EsWarn = true;
@@ -184,7 +184,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.PlanCuenta
             catch (Exception ex)
             {
                 string msg = "Error en la invocación de la API - Nueva CUENTA";
-                _logger.LogError(ex, msg);
+                _logger?.LogError(ex, msg);
                 return Json(new { error = false, warn = true, msg });
                 //response.Mensaje = msg;
                 //response.Ok = false;

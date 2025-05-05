@@ -50,7 +50,7 @@ namespace gc.pocket.site.Areas.ControlComun.Controllers
             catch (Exception ex)
             {
                 string msg = "Error en la invocación de la API - Búsqueda Cuenta Comercial";
-                _logger.LogError(ex, "Error en la invocación de la API - Búsqueda Cuenta Comercial");
+                _logger?.LogError(ex, "Error en la invocación de la API - Búsqueda Cuenta Comercial");
 
                 return Json(new { error = true, msg });
             }
@@ -103,7 +103,7 @@ namespace gc.pocket.site.Areas.ControlComun.Controllers
             catch (Exception ex)
             {
                 string msg = "Error en la invocación de la API - Búsqueda Cuenta Comercial";
-                _logger.LogError(ex, msg);
+                _logger?.LogError(ex, msg);
 
                 return Json(new { error = true, msg });
             }
