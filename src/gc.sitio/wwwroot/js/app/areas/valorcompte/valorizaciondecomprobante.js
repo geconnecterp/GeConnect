@@ -10,6 +10,11 @@
 	$(document).on("change", "#listaComptesPend", ControlaListaCompteSelected);
 	$(document).on("click", "#btnAceptarDescFinanc", AceptarDescFinanc);
 	$(document).on("click", "#btnAplicarOC", ValidarOC);
+	$(document).on("click", "#btnCostoActual", SetearCostoActual);
+	$(document).on("click", "#btnAplicarSeteoMasivo", AplicarSeteoMasivo);
+	$(document).on("click", "#btnCancelarDesdeDetalleRpr", CancelarDesdeDetalleRpr);
+	$(document).on("click", "#btnCostoOC", SetearCostoDesdeOc);
+	//
 	$(document).on("mouseup", "#tbListaDescFinanc tbody tr", function (e) {
 		setTimeout(() => {
 			RecalcularItemValue()
@@ -82,12 +87,12 @@ function AceptarDescFinanc() {
 		var dtoc_desc = $("#listaConcDescFinanc option:selected").text();
 		var data = { cm_compte, dia_movi, dto_fijo, dto_sobre_total, tco_id, dto, dto_importe, dtoc_id, dtoc_desc }
 		PostGenHtml(data, agregarDescFinancURL, function (obj) {
-			CerrarWaiting();
 			$("#divDescFinanc").html(obj);
 			AddEventListenerToGrid("tbListaDescFinanc");
 			LimpiarCamposEnDescFinanc();
 			ActualizarListaValorizaciones();
 			AgregarHandlerDragAndDrop();
+			CerrarWaiting();
 		});
 	}
 }
@@ -102,6 +107,7 @@ function quitarDescFinanc(x) {
 		AddEventListenerToGrid("tbListaDescFinanc");
 		AgregarHandlerDragAndDrop();
 		ActualizarListaValorizaciones();
+		CerrarWaiting();
 	});
 }
 
@@ -177,6 +183,7 @@ function ActualizarOrdenDeDescFinancEnBackEnd() {
 		}
 	});
 	if (listaDesFinanc.length > 0) {
+		AbrirWaiting();
 		var data = { listaDesFinanc };
 		PostGen(data, actualizarOrdenDescFinancURL, function (obj) {
 			if (obj.error === true) {
@@ -187,19 +194,18 @@ function ActualizarOrdenDeDescFinancEnBackEnd() {
 			}
 			else {
 				ActualizarListaValorizaciones();
+				CerrarWaiting();
 			}
 		});
 	}
 }
 
 function ActualizarListaValorizaciones() {
-	AbrirWaiting("Actualizando Valorizaciones...");
 	var cm_compte = $("#cm_compte").val();
 	var data = { cm_compte }
 	PostGenHtml(data, actualizarValorizacionURL, function (obj) {
 		$("#divListaValorizacion").html(obj);
 		AddEventListenerToGrid("tbListaValorizacion");
-		CerrarWaiting();
 	});
 }
 
@@ -689,6 +695,7 @@ function ActualizarProductoEnDetalleRprSeccionPrecio(field, val) {
 					}
 				}
 			});
+			$(".nav-link").prop("disabled", true);
 		}
 	});
 }
@@ -733,6 +740,7 @@ function ActualizarProductoEnDetalleRprSeccionFactura(field, val) {
 					}
 				}
 			});
+			$(".nav-link").prop("disabled", true);
 		}
 	});
 }
@@ -776,9 +784,198 @@ function CargarDetalleRprDesdeOcValidada(ocCompte, idsProds) {
 	AbrirWaiting("Cargando información desde OC: " + ocCompte);
 	var data = { oc_compte: ocCompte, idsProds: idsProds }
 	PostGenHtml(data, cargarDetalleRprDesdeOcValidadaUrl, function (obj) {
-		CerrarWaiting();
 		$("#divListaDetalleRpr").html(obj);
-		
+		$(".nav-link").prop("disabled", true);
+		AddEventListenerToGrid("tbListaDetalleRpr");
+		addInCellKeyDownHandler();
+		addInCellGotFocusHandler();
+		addInCellLostFocusHandler();
+		addMaskInEditableCells();
+		tableUpDownArrow();
+		AgregarHandlerAGrillaDetalleRprCheckAll();
+		ActualizarListaValorizaciones();
+		CerrarWaiting();
+	});
+}
+
+function SetearCostoActual() {
+	var idsProductos = ObtenerIdsProdSeleccionadosEnDetalleRpr();
+	if (idsProductos.length == 0) {
+		AbrirMensaje("ATENCIÓN", "Debe al menos seleccionar un producto", function () {
+			$("#msjModal").modal("hide");
+			document.getElementById("tbListaDetalleRpr").focus();
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		var ocCompte = "actual";
+		AbrirWaiting("Cargando información ...");
+		var data = { oc_compte: ocCompte, idsProds: idsProds }
+		PostGenHtml(data, cargarDetalleRprDesdeOcValidadaUrl, function (obj) {
+			$("#divListaDetalleRpr").html(obj);
+			$(".nav-link").prop("disabled", true);
+			AddEventListenerToGrid("tbListaDetalleRpr");
+			addInCellKeyDownHandler();
+			addInCellGotFocusHandler();
+			addInCellLostFocusHandler();
+			addMaskInEditableCells();
+			tableUpDownArrow();
+			AgregarHandlerAGrillaDetalleRprCheckAll();
+			ActualizarListaValorizaciones();
+			CerrarWaiting();
+		});
+	}
+}
+
+function SetearCostoDesdeOc() {
+	var idsProductos = ObtenerIdsProdSeleccionadosEnDetalleRpr();
+	if (idsProductos.length == 0) {
+		AbrirMensaje("ATENCIÓN", "Debe al menos seleccionar un producto", function () {
+			$("#msjModal").modal("hide");
+			document.getElementById("tbListaDetalleRpr").focus();
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		var oc_compte = $("#txtOC").val();
+		AbrirMensaje("ATENCIÓN", "¿Obtener los costos desde la OC original? OC: " + oc_compte, function (e) {
+			$("#msjModal").modal("hide");
+			switch (e) {
+				case "SI": //Confirmar la cancelacion
+					AbrirWaiting();
+					//TODO MARCE:
+					ActualizarProductosSeleccionadosDesdeOcOriginal(oc_compte, idsProductos);
+					CerrarWaiting();
+					break;
+				case "NO":
+					break;
+				default: //NO
+					break;
+			}
+			return true;
+
+		}, true, ["Aceptar", "Cancelar"], "question!", null);
+	}
+}
+
+function ActualizarProductosSeleccionadosDesdeOcOriginal(oc_compte, idsProds) {
+	var data = { oc_compte, idsProds };
+	PostGenHtml(data, actualizarProductosSeleccionadosDesdeOcOriginalUrl, function (obj) {
+		$("#divListaDetalleRpr").html(obj);
+		$(".nav-link").prop("disabled", true);
+		AddEventListenerToGrid("tbListaDetalleRpr");
+		limpiarValoresDeSeteoMasivo();
+		addInCellKeyDownHandler();
+		addInCellGotFocusHandler();
+		addInCellLostFocusHandler();
+		addMaskInEditableCells();
+		tableUpDownArrow();
+		AgregarHandlerAGrillaDetalleRprCheckAll();
+		ActualizarListaValorizaciones();
+	});
+}
+
+function AplicarSeteoMasivo() {
+	var idsProductos = ObtenerIdsProdSeleccionadosEnDetalleRpr();
+	if (idsProductos.length == 0) {
+		AbrirMensaje("ATENCIÓN", "Debe al menos seleccionar un producto", function () {
+			$("#msjModal").modal("hide");
+			document.getElementById("tbListaDetalleRpr").focus();
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		if ($("input[type='radio'].radioBtnClass").is(':checked')) {
+			var seccion = $("input[type='radio'].radioBtnClass:checked").val();
+			var dto1 = $("#txtDto1").inputmask('unmaskedvalue');
+			var dto2 = $("#txtDto2").inputmask('unmaskedvalue');
+			var dto3 = $("#txtDto3").inputmask('unmaskedvalue');
+			var dto4 = $("#txtDto4").inputmask('unmaskedvalue');
+			var dtodpa = $("#txtDpa").inputmask('unmaskedvalue');
+			var boni = $("#txtBoni").val();
+			if (dto1 == 0 && dto2 == 0 && dto3 == 0 && dto4 == 0 && dtodpa == 0 && boni == "") {
+				AbrirMensaje("ATENCIÓN", "Debe al menos indicar un valor distinto de 0, o indicar un valor válido para bonificación en el caso que se requiera.", function () {
+					$("#msjModal").modal("hide");
+					document.getElementById("txtDto1").focus();
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				AbrirWaiting("Aplicando cambios masivos ...");
+				//Armar request
+				var data = { dto1, dto2, dto3, dto4, dtodpa, boni, idsProductos, seccion };
+				PostGenHtml(data, cargarActualizacionPorSeteoMasivoUrl, function (obj) {
+					$("#divListaDetalleRpr").html(obj);
+					$(".nav-link").prop("disabled", true);
+					AddEventListenerToGrid("tbListaDetalleRpr");
+					limpiarValoresDeSeteoMasivo();
+					addInCellKeyDownHandler();
+					addInCellGotFocusHandler();
+					addInCellLostFocusHandler();
+					addMaskInEditableCells();
+					tableUpDownArrow();
+					AgregarHandlerAGrillaDetalleRprCheckAll();
+					ActualizarListaValorizaciones();
+					CerrarWaiting();
+				});
+			}
+		}
+	}
+}
+
+function limpiarValoresDeSeteoMasivo() {
+	$("#txtDto1").val("");
+	$("#txtDto2").val("");
+	$("#txtDto3").val("");
+	$("#txtDto4").val("");
+	$("#txtDpa").val("");
+	$("#txtBoni").val("");
+}
+
+function CancelarDesdeDetalleRpr() {
+	if ($('.nav-item').hasClass('disabled')) {
+		AbrirMensaje("ATENCIÓN", "¿Cancelar las modificaciones realizadas?", function (e) {
+			$("#msjModal").modal("hide");
+			switch (e) {
+				case "SI": //Confirmar la cancelacion
+					AbrirWaiting();
+					$(".nav-link").prop("disabled", false);
+					//Restaurar valores originales
+					CargarDesdeCopiaDeRespaldoListaRpr();
+
+					//Actualizar valorizaciones calculadas
+					ActualizarListaValorizaciones();
+					CerrarWaiting();
+					break;
+				case "NO":
+					break;
+				default: //NO
+					break;
+			}
+			return true;
+
+		}, true, ["Aceptar", "Cancelar"], "question!", null);
+	} else {
+		// The nav-item is not disabled
+		console.log('Nav item is enabled');
+	}
+
+}
+
+function CargarDesdeCopiaDeRespaldoListaRpr() {
+	AbrirWaiting("Cargando información desde copia de respaldo...");
+	var data = {};
+	PostGenHtml(data, cargarDesdeCopiaDeRespaldoListaRprUrl, function (obj) {
+		$("#divListaDetalleRpr").html(obj);
+		AddEventListenerToGrid("tbListaDetalleRpr");
+		addInCellKeyDownHandler();
+		addInCellGotFocusHandler();
+		addInCellLostFocusHandler();
+		addMaskInEditableCells();
+		tableUpDownArrow();
+		AgregarHandlerAGrillaDetalleRprCheckAll();
+		ActualizarListaValorizaciones();
+		CerrarWaiting();
 	});
 }
 

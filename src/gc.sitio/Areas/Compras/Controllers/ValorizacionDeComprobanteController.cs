@@ -116,6 +116,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				//Cargar Detalle de Productos RPR
 				var responseRpr = _cuentaServicio.ObtenerComprobantesDetalleRpr(req, TokenCookie);
 				CalcularValorizacionDC_DP(responseRpr);
+				ComprobantesValorizaDetalleRprListaOriginal = responseRpr; //Resguardo una copia de los valores originales para resguardar
 				ComprobantesValorizaDetalleRprLista = responseRpr;
 				var jsonResponseRpr = JsonConvert.SerializeObject(responseRpr, new JsonSerializerSettings());
 
@@ -573,12 +574,152 @@ namespace gc.sitio.Areas.Compras.Controllers
 							prod.ocd_dto_pa = resProdOc.First().ocd_dto_pa;
 							prod.ocd_boni = resProdOc.First().ocd_boni;
 							prod.rpd_pcosto = resProdOc.First().ocd_pcosto;
+							prod.oc_compte = oc_compte;
 						}
 					}
 				}
 				CalcularValorizacionDC_DP(listaProdTemporal);
 				ComprobantesValorizaDetalleRprLista = listaProdTemporal;
 				model.GrillaDetalleRpr = ObtenerGridCoreSmart<CompteValorizaDetalleRprListaDto>(ComprobantesValorizaDetalleRprLista);
+				return PartialView("_listaDetalleRpr", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public IActionResult CargarActualizacionPorSeteoMasivo(CompteValorizaSeteoMasivoRequest request)
+		{
+			var model = new TabDetalleRprModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				if (request == null || request.idsProductos == null || request.idsProductos.Length <= 0)
+					return PartialView("_listaDetalleRpr", model);
+
+				var listaProdTemporal = ComprobantesValorizaDetalleRprLista;
+				var listaIdsProds = request.idsProductos.ToList();
+				foreach (var item in listaIdsProds)
+				{
+					var prod = listaProdTemporal.FirstOrDefault(x => x.p_id == item);
+					if (prod != null)
+					{
+						if (request.seccion.Equals(1))  //Precio
+						{
+							prod.ocd_dto1 = request.dto1;
+							prod.ocd_dto2 = request.dto2;
+							prod.ocd_dto3 = request.dto3;
+							prod.ocd_dto4 = request.dto4;
+							prod.ocd_dto_pa = request.dtodpa;
+							prod.ocd_boni = request.boni;
+							prod.ocd_pcosto = Math.Round(CalcularPCosto(prod.ocd_plista, prod.ocd_dto1, prod.ocd_dto2, prod.ocd_dto3, prod.ocd_dto4, prod.ocd_dto_pa, prod.ocd_boni, 0, prod.rpd_cantidad), 2);
+						}
+						else //Factura
+						{
+							prod.rpd_dto1 = request.dto1;
+							prod.rpd_dto2 = request.dto2;
+							prod.rpd_dto3 = request.dto3;
+							prod.rpd_dto4 = request.dto4;
+							prod.rpd_dto_pa = request.dtodpa;
+							prod.rpd_boni = request.boni;
+							prod.rpd_pcosto = Math.Round(CalcularPCosto(prod.rpd_plista, prod.rpd_dto1, prod.rpd_dto2, prod.rpd_dto3, prod.rpd_dto4, prod.rpd_dto_pa, prod.rpd_boni, 0, prod.rpd_cantidad_compte), 2);
+						}
+					}
+				}
+				CalcularValorizacionDC_DP(listaProdTemporal);
+				ComprobantesValorizaDetalleRprLista = listaProdTemporal;
+				model.GrillaDetalleRpr = ObtenerGridCoreSmart<CompteValorizaDetalleRprListaDto>(ComprobantesValorizaDetalleRprLista);
+				return PartialView("_listaDetalleRpr", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public IActionResult CargarDesdeCopiaDeRespaldoListaRpr()
+		{
+			var model = new TabDetalleRprModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				ComprobantesValorizaDetalleRprLista = ComprobantesValorizaDetalleRprListaOriginal;
+				var grilla = ObtenerGridCoreSmart<CompteValorizaDetalleRprListaDto>(ComprobantesValorizaDetalleRprLista);
+				model.GrillaDetalleRpr = grilla;
+				return PartialView("_listaDetalleRpr", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public IActionResult ActualizarProductosSeleccionadosDesdeOcOriginal(string oc_compte, string[] idsProds)
+		{
+			var model = new TabDetalleRprModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				//TODO MARCE: Tengo que levantar los productos desde la lista de respaldo, y restaurar los valores de precio de costo, y el oc_compte
+				if (string.IsNullOrEmpty(oc_compte))
+					return PartialView("_listaDetalleRpr", model);
+				
+				if (idsProds == null || idsProds.Length <= 0)
+					return PartialView("_listaDetalleRpr", model);
+
+				var listaProdTemporal = ComprobantesValorizaDetalleRprListaOriginal;
+				var listaIdsProds = idsProds.ToList();
+				foreach (var item in listaIdsProds)
+				{
+					var resProdOc = listaProdTemporal.FirstOrDefault(x => x.p_id == item);
+					if (resProdOc != null)
+					{
+						resProdOc.oc_compte = oc_compte;
+						resProdOc.rpd_pcosto = resProdOc.ocd_pcosto;
+						resProdOc.rpd_plista = resProdOc.ocd_plista;
+						resProdOc.rpd_dto1 = resProdOc.ocd_dto1;
+						resProdOc.rpd_dto2 = resProdOc.ocd_dto2;
+						resProdOc.rpd_dto3 = resProdOc.ocd_dto3;
+						resProdOc.rpd_dto4 = resProdOc.ocd_dto4;
+						resProdOc.rpd_dto_pa = resProdOc.ocd_dto_pa;
+						resProdOc.rpd_boni = resProdOc.ocd_boni;
+					}
+				}
+				CalcularValorizacionDC_DP(listaProdTemporal);
+				ComprobantesValorizaDetalleRprLista = listaProdTemporal;
+				model.GrillaDetalleRpr = ObtenerGridCoreSmart<CompteValorizaDetalleRprListaDto>(ComprobantesValorizaDetalleRprLista);
+
 				return PartialView("_listaDetalleRpr", model);
 			}
 			catch (Exception ex)
@@ -607,7 +748,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 					listaDescuentosFinanc.ForEach(x => x.item = idx++);
 					ComprobantesValorizaDescuentosFinancLista = listaDescuentosFinanc;
 					model = ObtenerGridCoreSmart<CompteValorizaDtosListaDto>(ComprobantesValorizaDescuentosFinancLista);
-					//TODO MARCE: Recalcular Valorizacion con el nuevo json de descuentos financ.
 				}
 				return PartialView("_listaDescFinanc", model);
 			}
