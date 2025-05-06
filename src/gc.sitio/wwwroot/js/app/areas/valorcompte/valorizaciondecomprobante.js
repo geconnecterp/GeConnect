@@ -672,7 +672,6 @@ function ActualizarProductoEnDetalleRprSeccionPrecio(field, val) {
 						td[21].style.padding = "0";
 						td[21].style.textAlignLast = "center";
 						td[21].style.width = "10px";
-						//td[21].setAttribute('style', 'padding: 0; text-align-last: center; width:10px;');
 					}
 					else {
 						td[21].innerHTML = "";
@@ -684,7 +683,6 @@ function ActualizarProductoEnDetalleRprSeccionPrecio(field, val) {
 						td[22].style.padding = "0";
 						td[22].style.textAlignLast = "center";
 						td[22].style.width = "10px";
-						//td[22].setAttribute('style', 'padding: 0; text-align-last: center; width:10px;');
 					}
 					else {
 						td[22].innerHTML = "";
@@ -714,12 +712,10 @@ function ActualizarProductoEnDetalleRprSeccionFactura(field, val) {
 					td[19].innerText = obj.costo;
 					//DC
 					if (obj.valorizacion_mostrar_dc) {
-						//td[21].innerHTML = "<span class=" + obj.valorizacion_class_dc + " style=\"font-size: small;\">" + obj.valorizacion_value_dc + "</span>";
 						td[21].innerHTML = obj.td_dc;
 						td[21].style.padding = "0";
 						td[21].style.textAlignLast = "center";
 						td[21].style.width = "10px";
-						//td[21].setAttribute('style', 'padding: 0; text-align-last: center; width:10px;');
 					}
 					else {
 						td[21].innerHTML = "";
@@ -727,12 +723,10 @@ function ActualizarProductoEnDetalleRprSeccionFactura(field, val) {
 
 					//DP
 					if (obj.valorizacion_mostrar_dp) {
-						//td[22].innerHTML = "<span class=" + obj.valorizacion_class_dp + " style=\"font - size: small;\">" + obj.valorizacion_value_dp + "</span>";
 						td[22].innerHTML = obj.td_dp;
 						td[22].style.padding = "0";
 						td[22].style.textAlignLast = "center";
 						td[22].style.width = "10px";
-						//td[22].setAttribute('style', 'padding: 0; text-align-last: center; width:10px;');
 					}
 					else {
 						td[22].innerHTML = "";
@@ -936,6 +930,14 @@ function addMaskInEditableCells() {
 			}
 		});
 	}
+
+	//Seccion cambios masivos
+	getMaskForDiscountType("#txtDto1");//_dto1
+	getMaskForDiscountType("#txtDto2");//_dto1
+	getMaskForDiscountType("#txtDto3");//_dto1
+	getMaskForDiscountType("#txtDto4");//_dto1
+	getMaskForDiscountType("#txtDpa");//_dto1
+	$("#txtBoni").mask("000/000", { reverse: false });//p_boni
 }
 
 function getMaskForDiscountType(selector) {
