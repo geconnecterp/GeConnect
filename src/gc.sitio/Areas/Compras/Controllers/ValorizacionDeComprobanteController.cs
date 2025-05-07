@@ -378,22 +378,23 @@ namespace gc.sitio.Areas.Compras.Controllers
 					else
 						return Json(new { error = true, warn = false, msg = $"No existen productos cargados en detalle RPR con identificador {pId}" });
 
+					CalcularValorizacionDC_DP(productos);
 					ComprobantesValorizaDetalleRprLista = productos; //Actualizo la lista en memoria
-					var prodAux = new List<CompteValorizaDetalleRprListaDto>
-					{
-						producto
-					};
-					CalcularValorizacionDC_DP(prodAux); //recalculo DC // DP
+					var prodAux = productos.Where(x => x.p_id.Equals(pId)).First();
 					return Json(new msgRes()
 					{
 						error = false,
 						warn = false,
 						msg = string.Empty,
-						costo = producto?.ocd_pcosto.ToString("N2") ?? "0",
-						valorizacion_class_dc = prodAux.First().valorizacion_class_dc,
-						valorizacion_class_dp = prodAux.First().valorizacion_class_dp,
-						valorizacion_value_dc = prodAux.First().valorizacion_value_dc,
-						valorizacion_value_dp = prodAux.First().valorizacion_value_dp
+						costo = producto?.rpd_pcosto.ToString("N2") ?? "0",
+						valorizacion_class_dc = prodAux.valorizacion_class_dc,
+						valorizacion_class_dp = prodAux.valorizacion_class_dp,
+						valorizacion_value_dc = prodAux.valorizacion_value_dc,
+						valorizacion_value_dp = prodAux.valorizacion_value_dp,
+						valorizacion_mostrar_dc = prodAux.valorizacion_mostrar_dc,
+						valorizacion_mostrar_dp = prodAux.valorizacion_mostrar_dp,
+						td_dc = $"<span class=\"{prodAux.valorizacion_class_dc}\" style=\"font-size: small;\">{prodAux.valorizacion_value_dc}</span>",
+						td_dp = $"<span class=\"{prodAux.valorizacion_class_dp}\" style=\"font-size: small;\">{prodAux.valorizacion_value_dp}</span>"
 					});
 				}
 				else
@@ -473,26 +474,23 @@ namespace gc.sitio.Areas.Compras.Controllers
 					else
 						return Json(new { error = true, warn = false, msg = $"No existen productos cargados en detalle RPR con identificador {pId}" });
 
-					ComprobantesValorizaDetalleRprLista = productos; //Actualizo la lista en memoria
-					var prodAux = new List<CompteValorizaDetalleRprListaDto>
-					{
-						producto
-					};
-					CalcularValorizacionDC_DP(prodAux); //recalculo DC // DP
+					CalcularValorizacionDC_DP(productos);
+					ComprobantesValorizaDetalleRprLista = productos; 
+					var prodAux = productos.Where(x => x.p_id.Equals(pId)).First();
 					return Json(new msgRes()
 					{
 						error = false,
 						warn = false,
 						msg = string.Empty,
 						costo = producto?.rpd_pcosto.ToString("N2") ?? "0",
-						valorizacion_class_dc = prodAux.First().valorizacion_class_dc,
-						valorizacion_class_dp = prodAux.First().valorizacion_class_dp,
-						valorizacion_value_dc = prodAux.First().valorizacion_value_dc,
-						valorizacion_value_dp = prodAux.First().valorizacion_value_dp,
-						valorizacion_mostrar_dc = prodAux.First().valorizacion_mostrar_dc,
-						valorizacion_mostrar_dp = prodAux.First().valorizacion_mostrar_dp,
-						td_dc = $"<span class=\"{prodAux.First().valorizacion_class_dc}\" style=\"font-size: small;\">{prodAux.First().valorizacion_value_dc}</span>",
-						td_dp = $"<span class=\"{prodAux.First().valorizacion_class_dp}\" style=\"font-size: small;\">{prodAux.First().valorizacion_value_dp}</span>"
+						valorizacion_class_dc = prodAux.valorizacion_class_dc,
+						valorizacion_class_dp = prodAux.valorizacion_class_dp,
+						valorizacion_value_dc = prodAux.valorizacion_value_dc,
+						valorizacion_value_dp = prodAux.valorizacion_value_dp,
+						valorizacion_mostrar_dc = prodAux.valorizacion_mostrar_dc,
+						valorizacion_mostrar_dp = prodAux.valorizacion_mostrar_dp,
+						td_dc = $"<span class=\"{prodAux.valorizacion_class_dc}\" style=\"font-size: small;\">{prodAux.valorizacion_value_dc}</span>",
+						td_dp = $"<span class=\"{prodAux.valorizacion_class_dp}\" style=\"font-size: small;\">{prodAux.valorizacion_value_dp}</span>"
 					});
 				}
 				else
@@ -664,7 +662,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 
-				ComprobantesValorizaDetalleRprLista = ComprobantesValorizaDetalleRprListaOriginal;
+				//ComprobantesValorizaDetalleRprLista = [];
+				ComprobantesValorizaDetalleRprLista = [.. ComprobantesValorizaDetalleRprListaOriginal.Select(x => (CompteValorizaDetalleRprListaDto)x.Clone())];
 				var grilla = ObtenerGridCoreSmart<CompteValorizaDetalleRprListaDto>(ComprobantesValorizaDetalleRprLista);
 				model.GrillaDetalleRpr = grilla;
 				return PartialView("_listaDetalleRpr", model);

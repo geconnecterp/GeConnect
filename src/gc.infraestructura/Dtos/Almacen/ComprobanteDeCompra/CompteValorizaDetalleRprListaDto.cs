@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra
 {
-	public class CompteValorizaDetalleRprListaDto : Dto
+	public class CompteValorizaDetalleRprListaDto : Dto, ICloneable
 	{
 		public string rp_compte { get; set; } = string.Empty;
 		public int rpd_item { get; set; }
@@ -60,6 +60,11 @@ namespace gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra
 					boni = val1 / val0;
 			}
 			return p_plista * ((100 - p_d1) / 100) * ((100 - p_d2) / 100) * ((100 - p_d3) / 100) * ((100 - p_d4) / 100) * ((100 - p_dpa) / 100) * boni * ((100 + flete) / 100);
+		}
+
+		public object Clone()
+		{
+			return (CompteValorizaDetalleRprListaDto)MemberwiseClone();
 		}
 	}
 }

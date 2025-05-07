@@ -14,6 +14,11 @@
 	$(document).on("click", "#btnAplicarSeteoMasivo", AplicarSeteoMasivo);
 	$(document).on("click", "#btnCancelarDesdeDetalleRpr", CancelarDesdeDetalleRpr);
 	$(document).on("click", "#btnCostoOC", SetearCostoDesdeOc);
+	$(document).on("click", "#btnAceptarDesdeDetalleRpr", AceptarDesdeDetalleRpr);
+
+	$(document).on("click", "#btnGuardarValorizacion", GuardarValorizacion);
+	$(document).on("click", "#btnConfirmarValorizacion", ConfirmarValorizacion);
+	$(document).on("click", "#btnCancelarValorizacion", CancelarValorizacion);
 	//
 	$(document).on("mouseup", "#tbListaDescFinanc tbody tr", function (e) {
 		setTimeout(() => {
@@ -670,11 +675,10 @@ function ActualizarProductoEnDetalleRprSeccionPrecio(field, val) {
 			$("#tbListaDetalleRpr").find('tr').each(function (i, el) {
 				var td = $(this).find('td');
 				if (td.length > 0 && td[1].innerText !== undefined && td[1].innerText === pId) {
-					console.log(obj.costo);
 					td[10].innerText = obj.costo;
 					//DC
 					if (obj.valorizacion_mostrar_dc) {
-						td[21].innerHTML = "<span class=" + obj.valorizacion_class_dc + " style=\"font - size: small;\">" + obj.valorizacion_value_dc + "</span>";
+						td[21].innerHTML = obj.td_dc;
 						td[21].style.padding = "0";
 						td[21].style.textAlignLast = "center";
 						td[21].style.width = "10px";
@@ -685,7 +689,7 @@ function ActualizarProductoEnDetalleRprSeccionPrecio(field, val) {
 
 					//DP
 					if (obj.valorizacion_mostrar_dp) {
-						td[22].innerHTML = "<span class=" + obj.valorizacion_class_dp + " style=\"font-size: small;\">" + obj.valorizacion_value_dp + "</span>";
+						td[22].innerHTML = obj.td_dp;
 						td[22].style.padding = "0";
 						td[22].style.textAlignLast = "center";
 						td[22].style.width = "10px";
@@ -696,6 +700,10 @@ function ActualizarProductoEnDetalleRprSeccionPrecio(field, val) {
 				}
 			});
 			$(".nav-link").prop("disabled", true);
+			//setTimeout(() => {
+			//	ActualizarListaValorizaciones();
+			//	console.log("Run -> ActualizarListaValorizaciones();")
+			//}, 1000);
 		}
 	});
 }
@@ -715,7 +723,6 @@ function ActualizarProductoEnDetalleRprSeccionFactura(field, val) {
 			$("#tbListaDetalleRpr").find('tr').each(function (i, el) {
 				var td = $(this).find('td');
 				if (td.length > 0 && td[1].innerText !== undefined && td[1].innerText === pId) {
-					console.log(obj.costo);
 					td[19].innerText = obj.costo;
 					//DC
 					if (obj.valorizacion_mostrar_dc) {
@@ -741,6 +748,10 @@ function ActualizarProductoEnDetalleRprSeccionFactura(field, val) {
 				}
 			});
 			$(".nav-link").prop("disabled", true);
+			//setTimeout(() => {
+			//	ActualizarListaValorizaciones();
+			//	console.log("Run -> ActualizarListaValorizaciones();")
+			//}, 1000);
 		}
 	});
 }
@@ -793,7 +804,10 @@ function CargarDetalleRprDesdeOcValidada(ocCompte, idsProds) {
 		addMaskInEditableCells();
 		tableUpDownArrow();
 		AgregarHandlerAGrillaDetalleRprCheckAll();
-		ActualizarListaValorizaciones();
+		//setTimeout(() => {
+		//	ActualizarListaValorizaciones();
+		//	console.log("Run -> ActualizarListaValorizaciones();")
+		//}, 1000);
 		CerrarWaiting();
 	});
 }
@@ -821,7 +835,10 @@ function SetearCostoActual() {
 			addMaskInEditableCells();
 			tableUpDownArrow();
 			AgregarHandlerAGrillaDetalleRprCheckAll();
-			ActualizarListaValorizaciones();
+			//setTimeout(() => {
+			//	ActualizarListaValorizaciones();
+			//	console.log("Run -> ActualizarListaValorizaciones();")
+			//}, 1000);
 			CerrarWaiting();
 		});
 	}
@@ -871,7 +888,10 @@ function ActualizarProductosSeleccionadosDesdeOcOriginal(oc_compte, idsProds) {
 		addMaskInEditableCells();
 		tableUpDownArrow();
 		AgregarHandlerAGrillaDetalleRprCheckAll();
-		ActualizarListaValorizaciones();
+		//setTimeout(() => {
+		//	ActualizarListaValorizaciones();
+		//	console.log("Run -> ActualizarListaValorizaciones();")
+		//}, 1000);
 	});
 }
 
@@ -915,7 +935,10 @@ function AplicarSeteoMasivo() {
 					addMaskInEditableCells();
 					tableUpDownArrow();
 					AgregarHandlerAGrillaDetalleRprCheckAll();
-					ActualizarListaValorizaciones();
+					//setTimeout(() => {
+					//	ActualizarListaValorizaciones();
+					//	console.log("Run -> ActualizarListaValorizaciones();")
+					//}, 1000);
 					CerrarWaiting();
 				});
 			}
@@ -933,7 +956,7 @@ function limpiarValoresDeSeteoMasivo() {
 }
 
 function CancelarDesdeDetalleRpr() {
-	if ($('.nav-item').hasClass('disabled')) {
+	if ($(".nav-link").is(':disabled')) {
 		AbrirMensaje("ATENCIÓN", "¿Cancelar las modificaciones realizadas?", function (e) {
 			$("#msjModal").modal("hide");
 			switch (e) {
@@ -942,9 +965,7 @@ function CancelarDesdeDetalleRpr() {
 					$(".nav-link").prop("disabled", false);
 					//Restaurar valores originales
 					CargarDesdeCopiaDeRespaldoListaRpr();
-
-					//Actualizar valorizaciones calculadas
-					ActualizarListaValorizaciones();
+					
 					CerrarWaiting();
 					break;
 				case "NO":
@@ -962,6 +983,47 @@ function CancelarDesdeDetalleRpr() {
 
 }
 
+function AceptarDesdeDetalleRpr() {
+	if ($(".nav-link").is(':disabled')) {
+		AbrirMensaje("ATENCIÓN", "¿Aceptar las modificaciones realizadas y revalorizar? ", function (e) {
+			$("#msjModal").modal("hide");
+			switch (e) {
+				case "SI": //Confirmar la cancelacion
+					AbrirWaiting();
+					$(".nav-link").prop("disabled", false);
+					setTimeout(() => {
+						ActualizarListaValorizaciones();
+						console.log("Run -> ActualizarListaValorizaciones();")
+					}, 1000);
+
+					CerrarWaiting();
+					break;
+				case "NO":
+					break;
+				default: //NO
+					break;
+			}
+			return true;
+
+		}, true, ["Aceptar", "Cancelar"], "question!", null);
+	} else {
+		// The nav-item is not disabled
+		console.log('Nav item is enabled');
+	}
+}
+
+function GuardarValorizacion() {
+	console.log("Not implemented yet");
+}
+
+function ConfirmarValorizacion() {
+	console.log("Not implemented yet");
+}
+
+function CancelarValorizacion() {
+	console.log("Not implemented yet");
+}
+
 function CargarDesdeCopiaDeRespaldoListaRpr() {
 	AbrirWaiting("Cargando información desde copia de respaldo...");
 	var data = {};
@@ -974,7 +1036,10 @@ function CargarDesdeCopiaDeRespaldoListaRpr() {
 		addMaskInEditableCells();
 		tableUpDownArrow();
 		AgregarHandlerAGrillaDetalleRprCheckAll();
-		ActualizarListaValorizaciones();
+		//setTimeout(() => {
+		//	ActualizarListaValorizaciones();
+		//	console.log("Run -> ActualizarListaValorizaciones();")
+		//}, 1000);
 		CerrarWaiting();
 	});
 }
