@@ -12,7 +12,7 @@
             Modulos = [];
         }
         public List<AppModulo> Modulos { get; set; }
-        public string ApiReporte { get; set; } = string.Empty;
+        public string ApiReporteUrl { get; set; } = string.Empty;
         //
     }
 

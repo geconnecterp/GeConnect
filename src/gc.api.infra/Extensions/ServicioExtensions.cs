@@ -94,7 +94,7 @@ namespace gc.api.infra.Extensions
 
             //De Reportes
             
-            services.AddScoped<IPdfReportService, PdfReportService>();
+            services.AddScoped<IReportService, ReportService>();
             services.AddScoped<IGeneradorReporte, R001_InformeCuentaCorriente>();
 
             

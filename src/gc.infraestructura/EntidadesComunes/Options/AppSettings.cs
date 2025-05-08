@@ -37,7 +37,7 @@ namespace gc.infraestructura.Core.EntidadesComunes.Options
         public string CredUserEmail { get; set; } = string.Empty;
         public string CredPass { get; set; } = string.Empty;
         public bool EnabledSSL { get; set; }
+        public string RepoApiUrl { get; set; } = string.Empty;
 
-        
     }
 }

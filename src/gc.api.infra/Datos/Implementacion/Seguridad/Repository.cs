@@ -164,7 +164,7 @@ namespace gc.api.infra.Datos.Implementacion
         public List<T> InvokarSp2Lst(string sp, List<SqlParameter> parametros, bool ignoreCase = false)
         {
             int contador = 0;
-            List<T> resultado = null;
+            List<T> resultado ;
 
             using (var cnn = _dbContext.ObtenerConexionSql())
             {
@@ -223,7 +223,7 @@ namespace gc.api.infra.Datos.Implementacion
 
         public object InvokarSpScalar(string sp, List<SqlParameter>? parametros, bool esTransacciona = false, bool elUltimo = true, bool esSP = true)
         {
-            object resultado = null;
+            object resultado;
             var cnn = _dbContext.ObtenerConexionSql(esTransacciona);
 
             SqlCommand cmd;

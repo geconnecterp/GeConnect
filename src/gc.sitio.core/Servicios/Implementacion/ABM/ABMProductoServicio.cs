@@ -47,26 +47,33 @@ namespace gc.sitio.core.Servicios.Implementacion.ABM
                     {
                         throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde.");
                     }
-                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProductoListaDto>>>(stringData);
+                    _logger.LogInformation($"Respuesta de API: {stringData}");
 
-                    return (apiResponse.Data, apiResponse.Meta);
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProductoListaDto>>>(stringData) ??
+                         throw new NegocioException("Hubo un problema en la deserialización de los datos. Verifique log.");
+
+                    return (apiResponse.Data ?? [], apiResponse.Meta?? new());
                 }
                 else
                 {
                     string stringData = await response.Content.ReadAsStringAsync();
                     _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
                     var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
-                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    if (error != null && error.TypeException?.Equals(nameof(NegocioException)) == true)
                     {
-                        throw new NegocioException(error.Detail);
+                        throw new NegocioException(error.Detail ?? "Hubo un error en la deserializacion del error. Verifique log.");
                     }
-                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    else if (error != null && error.TypeException?.Equals(nameof(NotFoundException)) == true)
                     {
-                        throw new NegocioException(error.Detail);
+                        throw new NegocioException(error.Detail ?? "Hubo un error en la deserializacion del error. Verifique log.");
+                    }
+                    else if (error != null)
+                    {
+                        throw new Exception(error.Detail);
                     }
                     else
                     {
-                        throw new Exception(error.Detail);
+                        throw new Exception("Hubo un error en la deserializacion del error. Verifique log.");
                     }
                 }
             }
@@ -99,7 +106,10 @@ namespace gc.sitio.core.Servicios.Implementacion.ABM
                     {
                         throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde.");
                     }
-                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<ProductoDto>>(stringData);
+                    _logger.LogInformation($"Respuesta de API: {stringData}");
+
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<ProductoDto>>(stringData)??
+                        throw new NegocioException("Hubo un problema en la deserialización de los datos. Verifique log.");
 
                     return apiResponse.Data;
                 }
@@ -108,17 +118,21 @@ namespace gc.sitio.core.Servicios.Implementacion.ABM
                     string stringData = await response.Content.ReadAsStringAsync();
                     _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
                     var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
-                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    if (error!=null && error.TypeException?.Equals(nameof(NegocioException))==true)
                     {
-                        throw new NegocioException(error.Detail);
+                        throw new NegocioException(error.Detail??"Hubo un error en la deserializacion del error. Verifique log.");
                     }
-                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    else if (error != null && error.TypeException?.Equals(nameof(NotFoundException))==true)
                     {
-                        throw new NegocioException(error.Detail);
+                        throw new NegocioException(error.Detail ?? "Hubo un error en la deserializacion del error. Verifique log.");
+                    }
+                    else if (error != null)
+                    {
+                        throw new Exception(error.Detail);
                     }
                     else
                     {
-                        throw new Exception(error.Detail);
+                        throw new Exception("Hubo un error en la deserializacion del error. Verifique log.");
                     }
 
                     //throw new NegocioException("Algo no fue bien y el proceso no se completó. Intente de nuevo más tarde. Si el problema persiste informe al Administrador del sistema.");

@@ -10,6 +10,7 @@ using gc.infraestructura.Dtos.Administracion;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Seguridad;
 using gc.infraestructura.Dtos.Users;
+using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
@@ -31,22 +32,22 @@ namespace gc.sitio.Areas.Seguridad.Controllers
     public class TokenController : ControladorBase
     {
         private readonly IConfiguration _configuration;
-        //private readonly ILoggerHelper _logger;
-        private readonly ILogger<TokenController> _logger;
         private readonly IAdministracionServicio _admSv;
         private readonly IMenuesServicio _mnSv;
         private readonly AppSettings _appSettings;
         private new readonly IHttpContextAccessor _context;
+        private readonly DocsManager _docsManager;
 
         public TokenController(IConfiguration configuration, IAdministracionServicio servicio, ILogger<TokenController> logger,
-            IOptions<AppSettings> options, IHttpContextAccessor context, IMenuesServicio menuesServicio) : base(options, context)
+            IOptions<AppSettings> options, IHttpContextAccessor context, IMenuesServicio menuesServicio,
+            IOptions<DocsManager> options1) : base(options, context)
         {
             _configuration = configuration;
-            _logger = logger;
             _appSettings = options.Value;
             _admSv = servicio;
             _context = context;
             _mnSv = menuesServicio;
+            _docsManager = options1.Value;
         }
 
         [HttpGet]
@@ -110,13 +111,15 @@ namespace gc.sitio.Areas.Seguridad.Controllers
                         var handler = new JwtSecurityTokenHandler(); //Libreria System.IdentityModel.Token.Jwt (6.7.1)
 
                         var tokenS = handler.ReadToken(token) as JwtSecurityToken;
+                        if (tokenS == null)
+                        {
+                            throw new NegocioException("El Token no es válido. Debe autenticarse nuevamente.");
+                        }
                         var user = tokenS.Claims.First(c => c.Type.Contains("name")).Value;
                         var email = tokenS.Claims.First(c => c.Type.Contains("email")).Value;
                         var nombre = tokenS.Claims.First(c => c.Type.Contains("nya")).Value;
                         var jsonp = tokenS.Claims.First(c => c.Type.Contains("perfiles")).Value.ToString();
                         ADMID = tokenS.Claims.First(c => c.Type.Contains("AdmId")).Value;
-
-
 
                         //29/10/2024 Ñoquis - se resguarda etiqueta, que sera la que almacene los datos en la cookie
                         Etiqueta = $"{user}GCSitio";
