@@ -43,10 +43,19 @@ function InicializarPantallaDeFiltros() {
 	$("#chkRel01").prop('checked', true);
 	$("#chkRel01").trigger("change");
 	$("#chkRel01").prop("disabled", true);
+	$("#btnDetalle").prop("disabled", true);
 	$("#divFiltro").collapse("show");
+	$("#divLstComptesPendiente")[0].innerHTML = "";
 	document.getElementById("Rel01").focus();
 	MostrarDatosDeCuenta(false);
 
+}
+
+function LimpiarDatosDelFiltroInicial() {
+	$("input#Rel01").val("");
+	$("#Rel01Item").val("");
+	$("#Rel01List").empty();
+	$("#listaComptesPend").empty();
 }
 
 function AceptarDescFinanc() {
@@ -1021,7 +1030,26 @@ function ConfirmarValorizacion() {
 }
 
 function CancelarValorizacion() {
-	console.log("Not implemented yet");
+	InicializarDatosEnSesion();
+	LimpiarDatosDelFiltroInicial();
+	InicializarPantallaDeFiltros();
+	$("#btnFiltro").trigger("click");
+	$("#btnDetalle").trigger("click");
+	$("#divDetalle").collapse("hide");
+}
+
+function InicializarDatosEnSesion() {
+	PostGen({}, inicializarDatosEnSesion2Url, function (obj) {
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			console.log(obj.msg);
+		}
+	});
 }
 
 function CargarDesdeCopiaDeRespaldoListaRpr() {

@@ -763,6 +763,25 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
+		[HttpPost]
+		public JsonResult InicializarDatosEnSesion()
+		{
+			try
+			{
+				CtaIdSelected = string.Empty;
+				ComprobantesPendientesDeValorizarLista = [];
+				ComprobantesValorizaDescuentosFinancLista = [];
+				ComprobantesValorizaDetalleRprLista = [];
+				ComprobantesValorizaDetalleRprListaOriginal = [];
+
+				return Json(new { error = false, warn = false, msg = "Inicializacion correcta." });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar inicializar los datos en Sesion - COMPROBANTEDECOMPRA" });
+			}
+		}
+
 		#region Métodos privados
 		private void CalcularValorizacionDC_DP(List<CompteValorizaDetalleRprListaDto> lista)
 		{
