@@ -1,20 +1,6 @@
-﻿@{
-    var userId = User.Claims.First(c => c.Type.Contains("name")).Value;
-    var adm = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
-}
+﻿
 
 <div class="text-center">
     <h1 class="display-4">@ViewBag.Title</h1>
 
 </div>
-@section scripts {
-    <script>
-        $(function(){
-                usuarioAuth = "@userId";
-                administracion = "@adm";
-        });
-
-
-    </script>
-
-}

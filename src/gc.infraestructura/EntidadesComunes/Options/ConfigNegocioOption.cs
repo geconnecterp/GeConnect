@@ -29,7 +29,7 @@ namespace gc.infraestructura.Core.EntidadesComunes.Options
         public string? SmsUsuario { get; set; }
         public string? SmsClave { get; set; }
         public string? RutaRepositorioPDF { get; set; }
-
+        
     }
 
     public class Mensajes

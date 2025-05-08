@@ -27,8 +27,6 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string CONS_REC_PROV_DET = "/ConsultaRecepcionProveedorDetalle";
 
 
-
-
         private readonly AppSettings _appSettings;
         public ConsultasServicio(IOptions<AppSettings> options, ILogger<ConsultasServicio> logger) : base(options, logger)
         {

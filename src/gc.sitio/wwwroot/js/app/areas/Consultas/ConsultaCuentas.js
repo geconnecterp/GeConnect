@@ -230,10 +230,60 @@ function inicializaPantallaConsulta() {
     $("#divRpProvDet").empty().html("<span class='text - danger'>SIN REGISTROS</span>");
     $("#BtnLiTab01").trigger("click");
 
+    //CARGANDO PARAMETROS PARA LOS REPORTES
+    userId = usuarioAuth;   //variable declarada en _layout
+    let admId = administracion;
+    ctaId = consCta;
+
+    //reporte #1
+    if (arrRepoParams[0] === undefined) {
+        fechaD = $("#fechaD").val();
+        cargarReporteEnArre(1, { ctaId, fechaD, userId }, "Informe de Cuenta Corriente", "Observación:", admId);
+    }
+    
+    //reporte #2
+    if (arrRepoParams[1] === undefined) {
+        fechaD = $("#cvfechaD").val();
+        fechaH = $("#cvfechaH").val();
+        cargarReporteEnArre(2, { ctaId, fechaD, fechaH, userId }, "Informe de Vencimiento de Comprobantes", "Observación:", admId)
+    }
+
+    //reporte #3
+    if (arrRepoParams[2] === undefined) {
+        relCuil = false;
+        if ($("#relCuil").is(":checked")) {
+            relCuil = true;
+        }
+        meses = $("#inMeses").val();
+        cargarReporteEnArre(3, { ctaId, relCuil, meses, userId }, "Informe de Comprobantes Total", "Observación:", admId)
+    }
+
+    //reporte #4 Depende del Padre (3)    
+
+    //reporte #5
+    if (arrRepoParams[4] === undefined) {
+        fechaD = $("#opfechaD").val();
+        fechaH = $("#opfechaH").val();
+        cargarReporteEnArre(5, { ctaId: consCta, fechaD, fechaH, userId }, "Informe de Ordenes de Pago", "Observación:", admId)
+    }
+
+    //reporte #6 Depende de que lo active el reporte padre (5)
+
+    //reporte #7
+    if (arrRepoParams[6] === undefined) {
+        fechaD = $("#rpfechaD").val();
+        fechaH = $("#rpfechaH").val();
+        cargarReporteEnArre(7, { ctaId: consCta, fechaD, fechaH, userId }, "Informe de Recepción de Proveedores", "Observación:", admId)
+    }
+    
+    //reporte #8 Depende de su reporte padre
+
     // Llama al evento click de #chkRel01 solo si no está ya en ejecución
     $("#chkRel01").trigger("click");
 
     isInitializing = false; // Restablece la bandera
+
+
 }
 
 function presentarTabsConsulta() {
@@ -375,6 +425,13 @@ function consultaOP() {
     fechaD = $("#opfechaD").val();
     fechaH = $("#opfechaH").val();
 
+    userId = usuarioAuth;   //variable declarada en _layout
+    let admId = administracion;
+
+    //reporte #5
+    cargarReporteEnArre(5, { ctaId: consCta, fechaD, fechaH, userId }, "Informe de Ordenes de Pago", "Observación:", admId)
+
+
     var data = { ctaId: consCta, fechaD, fechaH };
     AbrirWaiting("Espere un momento mientras se presenta las OP del periodo seleccionado...");
     PostGenHtml(data, consultarOPProvUrl, function (obj) {
@@ -389,8 +446,8 @@ function consultaOPPDetalle(cmptId) {
     userId = usuarioAuth;   //variable declarada en _layout
     let admId = administracion;
 
-    //reporte #4
-    cargarReporteEnArre(4, { ctaId, relCuil, mes, userId }, "Informe de Comprobantes Detalle", "Observación:", admId)
+    //reporte #6
+    cargarReporteEnArre(6, { cmptId, userId }, "Informe de Orden de Pago Detalle", "Observación:", admId)
 
     AbrirWaiting("Espere un momento mientras se presenta el detalle de la OP seleccionada...");
     PostGenHtml(data, consultarOPProvDetUrl, function (obj) {
@@ -404,6 +461,12 @@ function consultaRP() {
     fechaD = $("#rpfechaD").val();
     fechaH = $("#rpfechaH").val();
 
+    userId = usuarioAuth;   //variable declarada en _layout
+    let admId = administracion;
+
+    //reporte #7
+    cargarReporteEnArre(7, { ctaId: consCta, fechaD, fechaH, userId }, "Informe de Recepción de Proveedores", "Observación:", admId)
+
     var data = { ctaId: consCta, fechaD, fechaH };
     AbrirWaiting("Espere un momento mientras se presenta las recepciones del proveedor en el periodo seleccionado...");
     PostGenHtml(data, consultarRPProvUrl, function (obj) {
@@ -415,6 +478,13 @@ function consultaRP() {
 function consultarRPPDetalle(cmptId) {
 
     var data = { cmptId };
+
+    userId = usuarioAuth;   //variable declarada en _layout
+    let admId = administracion;
+
+    //reporte #8
+    cargarReporteEnArre(8, { cmptId, userId }, "Informe de Detalle de Recepción de Proveedores ", "Observación:", admId)
+
     AbrirWaiting("Espere un momento mientras se presenta el detalle de la Recepción seleccionada...");
     PostGenHtml(data, consultarRPProvDetUrl, function (obj) {
         $("#divRpProvDet").html(obj);

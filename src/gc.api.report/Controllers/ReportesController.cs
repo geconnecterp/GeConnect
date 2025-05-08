@@ -1,4 +1,6 @@
 ﻿using gc.api.core.Contratos.Servicios.Reportes;
+using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Gen;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,11 +10,11 @@ namespace gc.api.report.Controllers
     [ApiController]
     public class ReportesController : ControllerBase
     {
-        private readonly IPdfReportService _pdfReportService;
+        private readonly IReportService _pdfReportService;
         private readonly ILogger<ReportesController> _logger;
         private readonly IWebHostEnvironment _env;
 
-        public ReportesController(IPdfReportService pdfReportService, ILogger<ReportesController> logger, IWebHostEnvironment env)
+        public ReportesController(IReportService pdfReportService, ILogger<ReportesController> logger, IWebHostEnvironment env)
         {
             _pdfReportService = pdfReportService;
             _logger = logger;
@@ -29,7 +31,53 @@ namespace gc.api.report.Controllers
                 string logoPath = Path.Combine(_env.ContentRootPath, "img", "gc.png");
                 request.LogoPath = logoPath;
                 var base64 = _pdfReportService.GenerateReportAsBase64(request);
-                return Ok(new { fileBase64 = base64 });
+
+                //devolver apiresponse entidad 
+                return Ok(new ApiResponse<RespuestaReportDto>(new RespuestaReportDto { Base64 = base64, resultado = 0, resultado_msj = string.Empty }));
+            }
+            catch (NegocioException ex)
+            {
+                return  Ok(new ApiResponse<RespuestaReportDto>(new RespuestaReportDto { Base64 = string.Empty, resultado = -1, resultado_msj = ex.Message }));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error generating report with ID: {ReportId}", request.Reporte);
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
+        [HttpPost("GenFileFormat")]
+        public IActionResult GeneraReporteFormato([FromBody] ReporteSolicitudDto request)
+        {
+            _logger.LogInformation("Generating report with ID: {ReportId}", request.Reporte);
+
+            try
+            {
+                switch (request.Formato)
+                {
+                    case "P":
+                        string logoPath = Path.Combine(_env.ContentRootPath, "img", "gc.png");
+                        request.LogoPath = logoPath;
+                        var base64 = _pdfReportService.GenerateReportAsBase64(request);
+
+                        //devolver apiresponse entidad 
+                        return Ok(new ApiResponse<RespuestaReportDto>(new RespuestaReportDto { Base64 = base64, resultado = 0, resultado_msj = string.Empty }));          
+                    case "X":
+                        string base64x = _pdfReportService.GenerarReporteFormatoExcel(request);
+                        //devolver apiresponse entidad 
+                        return Ok(new ApiResponse<RespuestaReportDto>(new RespuestaReportDto { Base64 = base64x, resultado = 0, resultado_msj = string.Empty }));
+                    case "T":
+                        string base64t = _pdfReportService.GenerarReporteFormatoTxt(request);
+                        //devolver apiresponse entidad 
+                        return Ok(new ApiResponse<RespuestaReportDto>(new RespuestaReportDto { Base64 = base64t, resultado = 0, resultado_msj = string.Empty }));
+                    default:
+                        throw new NegocioException("No se ha especificado un formato correcto de archivo");
+                }
+                
+            }
+            catch (NegocioException ex)
+            {
+                return Ok(new ApiResponse<RespuestaReportDto>(new RespuestaReportDto { Base64 = string.Empty, resultado = -1, resultado_msj = ex.Message }));
             }
             catch (Exception ex)
             {

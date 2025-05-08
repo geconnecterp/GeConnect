@@ -21,5 +21,15 @@ namespace gc.api.core.Servicios.Reportes
         {
            throw new NotImplementedException();
         }
+
+        public string GenerarTxt(ReporteSolicitudDto solicitud)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string GenerarXls(ReporteSolicitudDto solicitud)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

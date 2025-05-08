@@ -13,6 +13,10 @@
     using gc.infraestructura.Core.Exceptions;
     using gc.infraestructura.Core.EntidadesComunes;
     using Microsoft.Data.SqlClient;
+    using iTextSharp.text.pdf;
+    using iTextSharp.text;
+    using System.Text;
+    using ClosedXML.Excel;
 
     public class Servicio<T> : IServicio<T> where T : EntidadBase
     {
@@ -191,5 +195,59 @@
         {
             return _repository.InvokarSpScalar(sp, parametros, esTransacciona, elUltimo);
         }
+
+        protected string ConvertirTXT2B64(StringBuilder sb)
+        {
+            using (var ms = new MemoryStream())
+            {
+                using (var writer = new StreamWriter(ms))
+                {
+                    writer.Write(sb.ToString());
+                    writer.Flush();
+                    var bytes = ms.ToArray();
+                    return Convert.ToBase64String(bytes);
+                }
+            }
+        }
+
+        protected string ConvertirWorkBook2B64(XLWorkbook workbook)
+        {
+            using (var stream = new MemoryStream())
+            {
+                workbook.SaveAs(stream);
+                var bytes = stream.ToArray();
+                return Convert.ToBase64String(bytes);
+            }
+        }
+
+        //public class CustomPdfPageEventHelper : PdfPageEventHelper
+        //{
+        //    private readonly string _footerText;
+        //    public CustomPdfPageEventHelper(string footerText)
+        //    {
+        //        _footerText = footerText;
+        //    }
+
+        //    public override void OnEndPage(PdfWriter writer, Document document)
+        //    {
+        //        PdfPTable footerTable = new PdfPTable(2);
+        //        footerTable.TotalWidth = document.PageSize.Width - document.LeftMargin - document.RightMargin;
+        //        footerTable.DefaultCell.Border = Rectangle.NO_BORDER;
+
+        //        // Add footer text
+        //        PdfPCell cell = new PdfPCell(new Phrase(_footerText, new Font(Font.HELVETICA, 8, Font.NORMAL)));
+        //        cell.Border = Rectangle.NO_BORDER;
+        //        cell.HorizontalAlignment = Element.ALIGN_LEFT;
+        //        footerTable.AddCell(cell);
+
+        //        // Add page number
+        //        cell = new PdfPCell(new Phrase("Página " + writer.PageNumber, new Font(Font.HELVETICA, 8, Font.NORMAL)));
+        //        cell.Border = Rectangle.NO_BORDER;
+        //        cell.HorizontalAlignment = Element.ALIGN_RIGHT;
+        //        footerTable.AddCell(cell);
+
+        //        footerTable.WriteSelectedRows(0, -1, document.LeftMargin, document.BottomMargin - 20, writer.DirectContent);
+        //    }
+        //}
     }
 }

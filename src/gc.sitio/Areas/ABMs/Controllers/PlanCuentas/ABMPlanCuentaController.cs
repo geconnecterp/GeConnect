@@ -32,7 +32,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.PlanCuenta
             _abmSv = abmSv;
             _viewEngine = viewEngine;
         }
-        public async Task<IActionResult> Index(bool actualizar)
+        public IActionResult Index(bool actualizar)
         {
 
             try
@@ -45,7 +45,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.PlanCuenta
 
                 PlanCuentasLista = [];
 
-                ViewData["Titulo"] = "Gestión de PlanCuentaes";
+                ViewData["Titulo"] = "Gestión de Plan de Cuentas";
                 return View();
             }
             catch (Exception ex)
@@ -249,13 +249,13 @@ namespace gc.sitio.Areas.ABMs.Controllers.PlanCuenta
 
                     if (abm.Abm.Equals('A'))
                     {
-                        return Json(new { error = false, warn = false, msg, id = res.Entidad.resultado_id });
+                        return Json(new { error = false, warn = false, msg, id = res.Entidad?.resultado_id });
                     }
                     return Json(new { error = false, warn = false, msg });
                 }
                 else
                 {
-                    return Json(new { error = false, warn = true, msg = res.Entidad.resultado_msj, focus = res.Entidad.resultado_setfocus });
+                    return Json(new { error = false, warn = true, msg = res.Entidad?.resultado_msj, focus = res.Entidad?.resultado_setfocus });
                 }
             }
             catch (NegocioException ex)

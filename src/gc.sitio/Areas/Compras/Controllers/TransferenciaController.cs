@@ -19,12 +19,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 	public class TransferenciaController : ControladorBase
 	{
 		private readonly AppSettings _appSettings;
-		private readonly ILogger<CompraController> _logger;
 		private readonly IProductoServicio _productoServicio;
 
 		public TransferenciaController(ILogger<CompraController> logger, IOptions<AppSettings> options, IHttpContextAccessor context, IProductoServicio productoServicio) : base(options, context)
 		{
-			_logger = logger;
 			_appSettings = options.Value;
 			_productoServicio = productoServicio;
 		}

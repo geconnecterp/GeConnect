@@ -37,7 +37,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 					if (!string.IsNullOrEmpty(stringData))
 					{
-						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<VendedorDto>>>(stringData);
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<VendedorDto>>>(stringData)??
+							throw new NegocioException("Hubo un problema en la deserialización de los datos de la API.");
 					}
 					else
 					{

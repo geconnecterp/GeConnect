@@ -76,13 +76,13 @@ function invocaGenerarArchivo() {
     }
 
     selectedNodes.forEach(function (node) {
-        if (node.data && node.data.archivoB64) {
-            var archivoBase64 = node.data.archivoB64;
+        if (node.data ) {
+            var id = node.id;
+            if (arrRepoParams[id - 1] !== undefined) { 
             var tipo = node.data.tipo;
             var data = {
-                formato: formato,
-                archivoBase64: archivoBase64,
-                nodoId: node.id,
+                formato: formato,               
+                nodoId: id,
                 moduloId: node.parent,
                 tipo: tipo
             };
@@ -119,6 +119,7 @@ function invocaGenerarArchivo() {
                     }
                 }
             });
+            }
         }
     });
 }
@@ -192,15 +193,38 @@ function imprimirArchivoSeleccionado() {
     }
 
     selectedNodes.forEach(function (node) {
-        if (node.data && node.data.archivoB64) {
-            var archivoBase64 = node.data.archivoB64;
-            var blob = base64ToBlob(archivoBase64, 'application/pdf');
-            var url = URL.createObjectURL(blob);
+        if (node.data ) { //&& node.data.archivoB64
+            var id = node.id;
+            if (arrRepoParams[id - 1] !== undefined) {                           
+                data = arrRepoParams[id - 1];
 
-            var printWindow = window.open(url);
-            printWindow.onload = function () {
-                printWindow.print();
-            };
+                PostGen(data, repoApiUrl, function (obj) {
+                    if (obj.error === true) {
+                        AbrirMensaje("Atención", obj.resultado_msg, function () {
+                            $("#msjModal").modal("hide");
+                            return true;
+                        }, false, ["Aceptar"], "warn!", null);
+                    }
+                    else if (obj.warn === true) {
+                        AbrirMensaje("Atención!", obj.msg, function () {
+                            if (obj.auth === true) {
+                                window.location.href = login;
+                            } else {
+                                $("#msjModal").modal("hide");
+                                return true;
+                            }
+                        }, false, ["Aceptar"], "error!", null);
+                    } else {
+                        var archivoBase64 = obj.base64;
+                        var blob = base64ToBlob(archivoBase64, 'application/pdf');
+                        var url = URL.createObjectURL(blob);
+                        var printWindow = window.open(url);
+                        printWindow.onload = function () {
+                            printWindow.print();
+                        };
+                    }               
+                });
+            }
         }
     });
 }
