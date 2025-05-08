@@ -1,4 +1,5 @@
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.EntidadesComunes.Options;
 using gc.sitio.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -8,13 +9,13 @@ namespace gc.sitio.Controllers
 {
     public class HomeController : ControladorBase
     {
-        private readonly ILogger<HomeController> _logger;
         private new readonly IHttpContextAccessor _context;
-
-        public HomeController(ILogger<HomeController> logger, IOptions<AppSettings> options, IHttpContextAccessor context) : base(options, context)
+        private readonly DocsManager _docsManager;
+        public HomeController(ILogger<HomeController> logger, IOptions<AppSettings> options, IHttpContextAccessor context, 
+            IOptions<DocsManager> docMgr) : base(options, context)
         {
-            _logger = logger;
             _context = context;
+            _docsManager = docMgr.Value;
         }
 
         public IActionResult Index()
@@ -25,7 +26,7 @@ namespace gc.sitio.Controllers
             }
             ViewData["Titulo"] = "Bienvenidos al GECONet";
             ViewBag.Administracion = AdministracionId;
-
+            ViewBag.RepoUrl = _docsManager.ApiReporteUrl;
             return View();
         }
 

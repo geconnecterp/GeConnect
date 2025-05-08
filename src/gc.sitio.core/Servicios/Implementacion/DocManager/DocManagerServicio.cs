@@ -1,4 +1,10 @@
-﻿using gc.infraestructura.Dtos.DocManager;
+﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Core.Helpers;
+using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.DocManager;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Users;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Enumeraciones;
@@ -7,19 +13,32 @@ using gc.infraestructura.ViewModels;
 using gc.sitio.core.Servicios.Contratos.DocManager;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
-using Org.BouncyCastle.Asn1;
-using Org.BouncyCastle.Ocsp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using OfficeOpenXml.FormulaParsing.LexicalAnalysis;
+using System.Net;
 
 namespace gc.sitio.core.Servicios.Implementacion.DocManager
 {
     public class DocManagerServicio : IDocManagerServicio
     {
+        private const string RutaAPI = "/api/reportes";
+        private const string RutaGenerar = "/generate";
+        private const string RutaGenerarFormato = "/GenFileFormat";
+
+        private readonly AppSettings _appSettings;
+        private readonly DocsManager _docManager;
+        private readonly ILogger<DocManagerServicio> _logger;
+
+        public DocManagerServicio(IOptions<AppSettings> options, ILogger<DocManagerServicio> logger, IOptions<DocsManager> options1)
+        {
+            _appSettings = options.Value;
+            _logger = logger;
+            _docManager = options1.Value;
+        }
+
         public List<MenuRoot> GeneraArbolArchivos(AppModulo modulo)
         {
             List<Reporte> reportes = modulo.Reportes;
@@ -52,7 +71,7 @@ namespace gc.sitio.core.Servicios.Implementacion.DocManager
             //hay qeu tener en cuenta que si llegan a ser mas archivos en el mismo 
             //reporte, se deberia agregar un nuevo tipo de seleccion para el titulo del archivo.
 
-            var id = $"{idm}{orden + 1}";
+            var id = idm.ToString(); // $"{idm}{orden + 1}";
 
             var archivo = new MenuRoot
             {
@@ -73,7 +92,7 @@ namespace gc.sitio.core.Servicios.Implementacion.DocManager
         /// <returns></returns>
         public void GenerarArchivoPDF<T>(PrintRequestDto<T> request, out MemoryStream ms, List<string> titulos, float[] anchos,bool datosCliente)
         {
-            PdfWriter? writer = null;
+            PdfWriter? writer=null;
             Document pdf;
             ms = new MemoryStream();
             try
@@ -165,5 +184,93 @@ namespace gc.sitio.core.Servicios.Implementacion.DocManager
             reportes[0].children = reportes[0].children.OrderBy(x => x.id).ToList();
             return reportes;
         }
+
+        public async Task<RespuestaReportDto> ObtenerPdfDesdeAPI(ReporteSolicitudDto reporteSolicitud, string token)
+        {
+            ApiResponse<RespuestaReportDto> respuesta;
+            string stringData;
+            try
+            {
+                HelperAPI helper = new();
+                HttpClient client = helper.InicializaCliente(reporteSolicitud,token,out StringContent content);
+                HttpResponseMessage response;
+                var link = $"{_docManager.ApiReporteUrl}{RutaAPI}{RutaGenerar}";
+                response = await client.PostAsync(link, content);
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    stringData = await response.Content.ReadAsStringAsync();
+                    if (!string.IsNullOrEmpty(stringData))
+                    {
+                        respuesta = JsonConvert.DeserializeObject<ApiResponse<RespuestaReportDto>>(stringData) ??
+                            throw new NegocioException("Hubo un problema en la deserialización de los datos de la API.");
+                    }
+                    else
+                    {
+                        throw new Exception("No se logro obtener la respuesta de la API con el reporte de Cuenta Corriente. Verifique.");
+                    }
+                    return respuesta.Data;
+                }
+                else
+                {
+                    stringData = await response.Content.ReadAsStringAsync();
+                    string msg = "Hubo un error al intentar obtener el Informe de Cta Cte";
+                    _logger.LogError($"{msg} {stringData}");
+                    throw new NegocioException(msg);
+                }
+            }
+            catch (NegocioException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al intentar obtener el Informe de Cta Cte.");
+                throw;
+            }
+        }
+
+        public async Task<RespuestaReportDto> ObtenerRepoDesdeAPI(ReporteSolicitudDto reporteSolicitud, string token)
+        {
+            ApiResponse<RespuestaReportDto> respuesta;
+            string stringData;
+            try
+            {
+                HelperAPI helper = new();
+                HttpClient client = helper.InicializaCliente(reporteSolicitud, token, out StringContent content);
+                HttpResponseMessage response;
+                var link = $"{_docManager.ApiReporteUrl}{RutaAPI}{RutaGenerarFormato}";
+                response = await client.PostAsync(link, content);
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    stringData = await response.Content.ReadAsStringAsync();
+                    if (!string.IsNullOrEmpty(stringData))
+                    {
+                        respuesta = JsonConvert.DeserializeObject<ApiResponse<RespuestaReportDto>>(stringData) ??
+                            throw new NegocioException("Hubo un problema en la deserialización de los datos de la API.");
+                    }
+                    else
+                    {
+                        throw new Exception("No se logro obtener la respuesta de la API con el reporte de Cuenta Corriente. Verifique.");
+                    }
+                    return respuesta.Data;
+                }
+                else
+                {
+                    stringData = await response.Content.ReadAsStringAsync();
+                    string msg = "Hubo un error al intentar obtener el Informe de Cta Cte";
+                    _logger.LogError($"{msg} {stringData}");
+                    throw new NegocioException(msg);
+                }
+            }
+            catch (NegocioException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al intentar obtener el Informe de Cta Cte.");
+                throw;
+            }
+        }      
     }
 }

@@ -21,7 +21,7 @@ namespace gc.api.core.Servicios
             _settings = options.Value;
         }
 
-        public async Task<Usuario?> GetLoginByCredential(UserLogin login,bool esUp = false)
+        public Usuario? GetLoginByCredential(UserLogin login,bool esUp = false)
         {
             var sp = ConstantesGC.StoredProcedures.SP_USU_X_IDYADM;
             var ps = new List<SqlParameter>()
@@ -31,20 +31,7 @@ namespace gc.api.core.Servicios
                     new("@sinAdm",esUp),
             };
             var usuario = _repository.EjecutarLstSpExt<Usuario>(sp, ps, true);
-            return usuario.FirstOrDefault();
-
-            //if (esUp) {
-            //    var regs = GetAllIq();
-            //    return await regs
-            //        .FirstOrDefaultAsync(u => u.Usu_id != null && u.Usu_id.Equals(login.UserName));
-            //}
-            //else {
-            //    var user =  await GetAllIq()
-            //        .FirstOrDefaultAsync(u => u.Usu_id != null && u.Usu_id.Equals(login.UserName) && u.UsuarioAdministraciones.Any(a => a.Adm_Id.Equals(login.Admid)));
-
-                
-            //}
-            
+            return usuario.FirstOrDefault();       
         }
 
         public async Task<bool> RegistrerUser(Usuario registro,bool esUp=false)

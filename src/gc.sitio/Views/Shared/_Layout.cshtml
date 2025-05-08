@@ -1,4 +1,9 @@
-﻿<!DOCTYPE html>
+﻿@{
+    var userId = User.Claims.First(c => c.Type.Contains("name")).Value;
+    var adm = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
+}
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -63,5 +68,12 @@
         var login = "@Url.Action("Login", "Token", new { area = "seguridad" })";
         var cambiaMenu = "@Url.Action("CambiarPerfilUsuario", "token", new { area = "Seguridad" })"
     </script>
+    <script>
+        $(function(){
+                usuarioAuth = "@userId";
+                administracion = "@adm";
+        });
+    </script>
+
 </body>
 </html>

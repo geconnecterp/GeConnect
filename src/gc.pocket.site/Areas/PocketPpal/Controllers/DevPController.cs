@@ -34,14 +34,14 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
 
 
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
             var auth = EstaAutenticado;
             if (!auth.Item1 || auth.Item2 < DateTime.Now)
             {
                 return RedirectToAction("Login", "Token", new { area = "seguridad" });
             }
-            string volver = Url.Action("cprev", "almacen", new { area = "gestion" });
+            string volver = Url.Action("cprev", "almacen", new { area = "gestion" })??"#";
             ViewBag.AppItem = new AppItem { Nombre = "Cargas Previas - Devolución a Proveedores", VolverUrl = volver ?? "#" };
 
             //inicializamos lista de productos a ajustar
@@ -52,7 +52,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> CargarProductos(string box)
+        public IActionResult CargarProductos(string box)
         {
             try
             {
@@ -71,7 +71,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 BoxSeleccionado = box;
 
 
-                string volver = Url.Action("index", "devp", new { area = "pocketppal" });
+                string volver = Url.Action("index", "devp", new { area = "pocketppal" })??"#";
 
                 ViewBag.AppItem = new AppItem { Nombre = $"CARGA DE PRODUCTOS A DEVOLVER A PROVEEDORES", VolverUrl = volver ?? "#", BotonEspecial = false };
                 return View("CargarProductos", box);
@@ -313,7 +313,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             var box = BoxSeleccionado;
 
 
-            string volver = Url.Action("CargarProductos", "devp", new { area = "pocketppal", box });
+            string volver = Url.Action("CargarProductos", "devp", new { area = "pocketppal", box })??"#";
 
             ViewBag.AppItem = new AppItem { Nombre = $"CARGA DE PRODUCTOS A DEVOLVER AL PROVEEDOR", VolverUrl = volver ?? "#", BotonEspecial = false };
             return View("PresentaAjustes", box);
@@ -337,7 +337,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error al Confirmar Ajustes", ex);
+                _logger.LogError( ex, "Error al Confirmar Ajustes");
                 return Json(new { error = true, msg = "Hubo algun problema al intentar Confirmar los Conteos previos de Ajustes " });
             }
         }

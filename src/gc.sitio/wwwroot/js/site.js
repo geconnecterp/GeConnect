@@ -1,5 +1,6 @@
 ﻿var usuarioAuth = "";
 var administracion = "";
+var repoApiUrl = "";
 
 $(function () {
     AbrirWaiting("Espere, se esta inicializando la vista...");

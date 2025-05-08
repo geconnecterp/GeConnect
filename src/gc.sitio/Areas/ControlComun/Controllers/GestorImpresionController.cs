@@ -70,6 +70,98 @@ namespace gc.sitio.Areas.ControlComun.Controllers
         }
 
         [HttpPost]
+        public async Task<JsonResult> ObtenerPdfDesdeAPI(ReporteSolicitudDto reporteSolicitud)
+        {
+            try
+            {
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+                }
+
+                //invocamos servicio para obtener pdf
+                var result = await _docMSv.ObtenerPdfDesdeAPI(reporteSolicitud, TokenCookie);
+
+                if (result.resultado == 0)
+                {
+                    //todo fue bien
+                    return Json(new { error = false, warn = false, base64 = result.Base64 });
+                }
+                else
+                {
+                    throw new NegocioException(result.resultado_msj);
+                }
+
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+                return Json(new { error = false, warn = true, auth = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al presentar los archivos");
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+        }
+        [HttpPost]
+        public async Task<JsonResult> GeneradorArchivo(ReporteSolicitudDto reporteSolicitud)
+        {
+            RespuestaReportDto? response = null; // Initialize the variable to avoid CS0165
+            try
+            {
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+                }
+
+                switch (reporteSolicitud.Formato)
+                {
+                    case "P":
+                        // Invocamos servicio para obtener pdf
+                        response = await _docMSv.ObtenerPdfDesdeAPI(reporteSolicitud, TokenCookie);
+                        break;
+                    case "X":
+                        response = await _docMSv.ObtenerRepoDesdeAPI(reporteSolicitud, TokenCookie);
+                        break;
+                    case "T":
+                        response = await _docMSv.ObtenerRepoDesdeAPI(reporteSolicitud, TokenCookie);
+                        break;
+                    default:
+                        throw new NegocioException("Formato no soportado.");
+                }
+
+                if (response != null && response.resultado == 0)
+                {
+                    // Todo fue bien
+                    return Json(new { error = false, warn = false, base64 = response.Base64 });
+                }
+                else
+                {
+                    throw new NegocioException(response?.resultado_msj ?? "Error desconocido.");
+                }
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+                return Json(new { error = false, warn = true, auth = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+        }
+
+
+        [HttpPost]
         public JsonResult PresentarArchivos()
         {
             try
@@ -107,59 +199,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
             }
         }
 
-        [HttpPost]
-        public JsonResult GeneradorArchivo(string formato, string archivoBase64, string nodoId, string moduloId, string tipo)
-        {
-            try
-            {
-                var auth = EstaAutenticado;
-                if (!auth.Item1 || auth.Item2 < DateTime.Now)
-                {
-                    return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
-                }
 
-                MemoryStream ms = new MemoryStream(Convert.FromBase64String(archivoBase64));
-                string fileName = $"{moduloId}_{nodoId}_{DateTime.Now.Ticks}";
-                string fileUrl = string.Empty;
-
-                #region Verificación de la ruta 
-                var path = Path.Combine(_env.WebRootPath, _setting.FolderArchivo);
-                if (!Directory.Exists(path))
-                {
-                    Directory.CreateDirectory(path);
-                }
-                #endregion
-
-                switch (formato)
-                {
-                    case "P":
-                        fileUrl = GuardarArchivoPDF(ms, fileName, nodoId, moduloId, path);
-                        break;
-                    case "X":
-                        fileUrl = ExportarAExcel(nodoId, fileName, moduloId, tipo, path);
-                        break;
-                    case "T":
-                        fileUrl = ExportarATxt(nodoId, fileName, moduloId, tipo, path);
-                        break;
-                    default:
-                        break;
-                }
-
-                return Json(new { error = false, warn = false, fileUrl = fileUrl, fileName = $"{fileName}.{formato.ToLower()}" });
-            }
-            catch (NegocioException ex)
-            {
-                return Json(new { error = false, warn = true, msg = ex.Message });
-            }
-            catch (UnauthorizedException ex)
-            {
-                return Json(new { error = false, warn = true, auth = true, msg = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { error = true, warn = false, msg = ex.Message });
-            }
-        }
 
         private string GuardarArchivoPDF(MemoryStream ms, string fileName, string nodoId, string moduloId, string path)
         {
@@ -237,11 +277,19 @@ namespace gc.sitio.Areas.ControlComun.Controllers
         private string ExportarATxt(string nodoId, string fileName, string moduloId, string tipo, string path)
         {
             var tipoObjeto = Type.GetType(tipo);
+            if (tipoObjeto == null)
+            {
+                throw new ArgumentException("No se pudo obtener el tipo del objeto");
+            }
             // Recuperar los datos de la variable de sesión
             var datos = _context.HttpContext?.Session.GetObjectFromJson($"datos_{moduloId}_{nodoId}", tipoObjeto);
 
             // Convertir los datos a TXT
             var sb = new StringBuilder();
+            if (datos == null)
+            {
+                throw new ArgumentException("No se pudo obtener los datos de la variable de sesión");
+            }
             foreach (var item in (IEnumerable<object>)datos)
             {
                 sb.AppendLine(string.Join("\t", item.GetType().GetProperties().Select(p => p.GetValue(item, null))));
@@ -315,6 +363,10 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                 else
                 {
                     var cuentaActual = CuentaComercialSeleccionada;
+                    if (cuentaActual == null)
+                    {
+                        throw new NegocioException("No se ha seleccionado una cuenta comercial.");
+                    }
                     var ahora = DateTime.Now.Ticks;
                     // Guardar los archivos en el servidor
                     var fileLinks = new List<string>();
@@ -365,8 +417,8 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 
         public class ArchivoSendDto
         {
-            public string archivoBase64 { get; set; }
-            public string nombre { get; set; }
+            public string archivoBase64 { get; set; } = string.Empty;
+            public string nombre { get; set; } = string.Empty;
         }
 
     }

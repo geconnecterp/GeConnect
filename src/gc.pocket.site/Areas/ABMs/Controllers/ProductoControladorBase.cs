@@ -146,7 +146,7 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
 
                     var res = await _productoServicio.BusquedaListaProductos(busc, TokenCookie);
                     lista = res.Item1 ?? [];
-                    MetadataProd = res.Item2 ?? null;
+                    MetadataProd = res.Item2 ?? new();
 
                     ProductosBuscados = lista;
                 }

@@ -43,13 +43,13 @@ namespace gc.api.Controllers.Security
         }
 
         [HttpPost]
-        public async Task<IActionResult> Authentication(UserLogin login)
+        public IActionResult Authentication(UserLogin login)
         {
             _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             //string ip = ObtenerIPRemota(HttpContext);
             ////se generara un usuario y lo vamos a validar a modo de prueba. 
             ////Si el usuario fuera valido se deberia generar el token
-            var validation = await IsValidUser(login);
+            var validation = IsValidUser(login);
             if(string.IsNullOrEmpty(login.Admid) )
             {
                 return BadRequest("La sucursal no es valida");
@@ -98,7 +98,7 @@ namespace gc.api.Controllers.Security
             ////obtenemos el usuario desde el token
             //var res = ObtenerTokenDesdeRequestAsync(false);
             //var validacion = await IsValidUser(new UserLogin { UserName = res.Item2, Password = cambio.PassAct });
-            var validacion = await IsValidUser(new UserLogin { UserName = cambio.UserName, Password = cambio.PassAct },true);
+            var validacion = IsValidUser(new UserLogin { UserName = cambio.UserName, Password = cambio.PassAct },true);
             if (validacion.Item1)
             {
                 //    //la clave fue valida.. ahora se modifica la clave.
@@ -137,7 +137,7 @@ namespace gc.api.Controllers.Security
         }
 
 
-        private async Task<(bool, Usuario?)> IsValidUser(UserLogin login,bool esUp=false)
+        private (bool, Usuario?) IsValidUser(UserLogin login,bool esUp=false)
         {
             _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 
@@ -165,7 +165,7 @@ namespace gc.api.Controllers.Security
                     //throw new NegocioException("Las credenciales no son correctas.");
                 }
             }
-            var user = await _securityServicio.GetLoginByCredential(login,esUp);
+            var user = _securityServicio.GetLoginByCredential(login,esUp);
             if (user == null)
             {
                 return (false, null);
@@ -224,11 +224,11 @@ namespace gc.api.Controllers.Security
             {
                 new Claim(ClaimTypes.NameIdentifier, usuario.Usu_id),
                 new Claim("nya",usuario.Usu_apellidoynombre),
-                new Claim(ClaimTypes.Email,usuario.Usu_email),
+                new Claim(ClaimTypes.Email,usuario.Usu_email??"sin@mail.com"),
                 new Claim("AdmId", $"{admId}#{admName}"),
                 new Claim("expires",DateTime.Now.AddHours(1).Ticks.ToString()),
                 new Claim("user",usuario.Usu_id),
-                new Claim("perfiles",jsonp),
+                new Claim("perfiles",jsonp)
 
                 //new Claim("etiqueta",DateTime.Now.Ticks.ToString())
 

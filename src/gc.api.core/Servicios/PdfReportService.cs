@@ -12,15 +12,16 @@ using iTextSharp.text.pdf;
 using log4net.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Text;
 
 namespace gc.api.core.Servicios
 {
-    public class PdfReportService : Servicio<EntidadBase>, IPdfReportService
+    public class ReportService : Servicio<EntidadBase>, IReportService
     {
         private readonly Dictionary<InfoReporte, IGeneradorReporte> _generadoresReporte;
 
 
-        public PdfReportService(IUnitOfWork uow, IConsultaServicio consSv,
+        public ReportService(IUnitOfWork uow, IConsultaServicio consSv,
              IOptions<EmpresaGeco> empresa) : base(uow)
         {
 
@@ -30,6 +31,50 @@ namespace gc.api.core.Servicios
                 { InfoReporte.R001_InfoCtaCte, new R001_InformeCuentaCorriente(uow,consSv,empresa) },
                 { InfoReporte.R002_InfoVenc, new R002_InformeVencimiento(uow,consSv) }
             };
+        }
+
+        public string GenerarReporteFormatoExcel(ReporteSolicitudDto solicitud)
+        {
+            string base64 = string.Empty;
+
+            if (_generadoresReporte.TryGetValue(solicitud.Reporte, out var generador))
+            {
+                base64 = generador.GenerarXls(solicitud);
+            }
+            else
+            {
+                StringBuilder str = new StringBuilder();
+                str.Append("No se pudo identificar el XLS a generar.");
+                foreach (var param in solicitud.Parametros)
+                {
+                    str.Append($"{param.Key}: {param.Value}");
+                }
+                throw new Exception(str.ToString());
+            }
+
+            return base64;
+        }
+
+        public string GenerarReporteFormatoTxt(ReporteSolicitudDto solicitud)
+        {
+            string base64 = string.Empty;
+
+            if (_generadoresReporte.TryGetValue(solicitud.Reporte, out var generador))
+            {
+                base64 = generador.GenerarTxt(solicitud);
+            }
+            else
+            {
+                StringBuilder str = new StringBuilder();
+                str.Append("No se pudo identificar el TXT a generar.");
+                foreach (var param in solicitud.Parametros)
+                {
+                    str.Append($"{param.Key}: {param.Value}");
+                }
+                throw new Exception(str.ToString());
+            }
+
+            return base64;
         }
 
         public string GenerateReportAsBase64(ReporteSolicitudDto solicitud)
