@@ -39,7 +39,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public IActionResult Index()
 		{
-			MetadataGrid metadata;
 			try
 			{
 				var auth = EstaAutenticado;
@@ -80,7 +79,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				model.cm_compte = string.Empty;
 				return PartialView("_listaComptesPendientes", model);
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return PartialView("_empty_view");
 			}
@@ -229,7 +228,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 					listaDescuentosFinancTemp.Add(newItem);
 					ComprobantesValorizaDescuentosFinancLista = listaDescuentosFinancTemp;
 					model = ObtenerGridCoreSmart<CompteValorizaDtosListaDto>(ComprobantesValorizaDescuentosFinancLista);
-					//TODO MARCE: Recalcular Valorizacion con el nuevo json de descuentos financ.
 				}
 
 				return PartialView("_listaDescFinanc", model);
@@ -283,7 +281,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				return Json(new { error = false, warn = false, msg = string.Empty });
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar cargar el concepto facturado." });
 			}
@@ -373,7 +371,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 							producto.ocd_boni = val;
 						}
 
-						producto.ocd_pcosto = Math.Round(CalcularPCosto(producto.ocd_plista, producto.ocd_dto1, producto.ocd_dto2, producto.ocd_dto3, producto.ocd_dto4, producto.ocd_dto_pa, producto.ocd_boni, 0, producto.rpd_cantidad), 2);
+						producto.ocd_pcosto = Math.Round(CalcularPCosto(producto.ocd_plista, producto.ocd_dto1, producto.ocd_dto2, producto.ocd_dto3, producto.ocd_dto4, producto.ocd_dto_pa, producto.ocd_boni ?? "", 0, producto.rpd_cantidad), 2);
 					}
 					else
 						return Json(new { error = true, warn = false, msg = $"No existen productos cargados en detalle RPR con identificador {pId}" });
@@ -400,7 +398,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				else
 					return Json(new { error = true, warn = false, msg = $"No existen productos cargados en detalle RPR" });
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar actualizar los datos del producto recientemente editado. Id de Producto: {pId}" });
 			}
@@ -469,13 +467,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 							producto.rpd_cantidad_compte = Convert.ToDecimal(val);
 						}
 
-						producto.rpd_pcosto = Math.Round(CalcularPCosto(producto.rpd_plista, producto.rpd_dto1, producto.rpd_dto2, producto.rpd_dto3, producto.rpd_dto4, producto.rpd_dto_pa, producto.rpd_boni, 0, producto.rpd_cantidad_compte), 2);
+						producto.rpd_pcosto = Math.Round(CalcularPCosto(producto.rpd_plista, producto.rpd_dto1, producto.rpd_dto2, producto.rpd_dto3, producto.rpd_dto4, producto.rpd_dto_pa, producto.rpd_boni ?? "", 0, producto.rpd_cantidad_compte), 2);
 					}
 					else
 						return Json(new { error = true, warn = false, msg = $"No existen productos cargados en detalle RPR con identificador {pId}" });
 
 					CalcularValorizacionDC_DP(productos);
-					ComprobantesValorizaDetalleRprLista = productos; 
+					ComprobantesValorizaDetalleRprLista = productos;
 					var prodAux = productos.Where(x => x.p_id.Equals(pId)).First();
 					return Json(new msgRes()
 					{
@@ -496,7 +494,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				else
 					return Json(new { error = true, warn = false, msg = $"No existen productos cargados en detalle RPR" });
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar actualizar los datos del producto recientemente editado. Id de Producto: {pId}" });
 			}
@@ -523,7 +521,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				else
 					return Json(new { error = true, warn = false, msg = $"Ha ocurrido un error al intentar validar el comprobante. OC: {oc_compte}" });
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar validar el comprobante. OC: {oc_compte}" });
 			}
@@ -693,7 +691,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				//TODO MARCE: Tengo que levantar los productos desde la lista de respaldo, y restaurar los valores de precio de costo, y el oc_compte
 				if (string.IsNullOrEmpty(oc_compte))
 					return PartialView("_listaDetalleRpr", model);
-				
+
 				if (idsProds == null || idsProds.Length <= 0)
 					return PartialView("_listaDetalleRpr", model);
 
@@ -776,7 +774,83 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				return Json(new { error = false, warn = false, msg = "Inicializacion correcta." });
 			}
-			catch (Exception ex)
+			catch (Exception)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar inicializar los datos en Sesion - COMPROBANTEDECOMPRA" });
+			}
+		}
+
+		/// <summary>
+		/// Método que guarda o confirma la valorización de un comprobante.
+		/// </summary>
+		/// <param name="cmCompte">Identificador del comprobante a valorizar.</param>
+		/// <param name="esConfirmacion">Indica si la operación es una confirmación (true) o un guardado (false).</param>
+		/// <returns>Un objeto JSON con el resultado de la operación.</returns>
+		[HttpPost]
+		public JsonResult GuardarValorizacion(string cmCompte, bool esConfirmacion)
+		{
+			try
+			{
+				// Armado de Request, que es común para ambos servicios
+				var compteSeleccionado = ComprobantesPendientesDeValorizarLista
+					.Where(x => x.cm_compte.Equals(cmCompte))
+					.FirstOrDefault();
+
+				if (compteSeleccionado == null)
+				{
+					return Json(new { error = true, warn = false, msg = $"Se produjo un error al intentar obtener el comprobante." });
+				}
+
+				// Cargar Detalle de Productos RPR
+				var jsonResponseRpr = JsonConvert.SerializeObject(ComprobantesValorizaDetalleRprLista, new JsonSerializerSettings());
+
+				// Cargar Detalle de Descuentos Financieros
+				var jsonResponseDtos = JsonConvert.SerializeObject(ComprobantesValorizaDescuentosFinancLista, new JsonSerializerSettings());
+
+				// Cargar Datos Valorizados
+				var reqValorizados = new CompteValorizaRequest()
+				{
+					cm_compte = compteSeleccionado.cm_compte,
+					cta_id = compteSeleccionado.cta_id,
+					dia_movi = compteSeleccionado.dia_movi,
+					tco_id = compteSeleccionado.tco_id,
+					json_detalle = jsonResponseRpr,
+					json_dtos = jsonResponseDtos,
+					usu_id = UserName,
+					guarda = true,
+					confirma = esConfirmacion,
+					dp = false,
+					dc = false,
+					adm_id = AdministracionId
+				};
+
+				var responseValorizar = _cuentaServicio.ObtenerComprobanteValorizaLista(reqValorizados, TokenCookie);
+
+				if (esConfirmacion)
+				{
+					return Json(new { error = false, warn = false, msg = "Confirmación correcta." });
+				}
+				else
+				{
+					return Json(new { error = false, warn = false, msg = "Guardado correcto." });
+				}
+			}
+			catch (Exception)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se produjo un error al intentar Guardar/Confirmar la valorización." });
+			}
+		}
+
+		[HttpPost]
+		public JsonResult ConfirmarValorizacion(string cm_compte)
+		{
+			try
+			{
+
+
+				return Json(new { error = false, warn = false, msg = "Inicializacion correcta." });
+			}
+			catch (Exception)
 			{
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar inicializar los datos en Sesion - COMPROBANTEDECOMPRA" });
 			}
@@ -791,7 +865,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					var boni = 0;
 					if (!string.IsNullOrWhiteSpace(item.ocd_boni))
-						boni = CalcularBoni(item.rpd_boni, item.rpd_cantidad_compte);
+						boni = CalcularBoni(item.rpd_boni ?? "", item.rpd_cantidad_compte);
 					var result = item.rpd_cantidad - (item.rpd_cantidad_compte + boni);
 					if (result == 0)
 						item.valorizacion_mostrar_dc = false;
@@ -910,7 +984,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				model = ObtenerGridCoreSmart<CompteValorizaListaDto>(responseValorizar);
 				return model;
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return model;
 			}

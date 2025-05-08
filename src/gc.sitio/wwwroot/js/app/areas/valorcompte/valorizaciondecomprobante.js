@@ -1022,11 +1022,70 @@ function AceptarDesdeDetalleRpr() {
 }
 
 function GuardarValorizacion() {
-	console.log("Not implemented yet");
+	AbrirMensaje("ATENCIÓN", "¿Desea guardar la valorización? ", function (e) {
+		$("#msjModal").modal("hide");
+		switch (e) {
+			case "SI": //Confirmar la cancelacion
+				AbrirWaiting("Guardando valorización...");
+				var esConfirmacion = false;
+				var cmCompte = cmCompteSelected;
+				var data = { cmCompte, esConfirmacion };
+				PostGen(data, guardarValorizacionUrl, function (obj) {
+					CerrarWaiting();
+					if (obj.error === true) {
+						AbrirMensaje("ATENCIÓN", obj.msg, function () {
+							$("#msjModal").modal("hide");
+							return true;
+						}, false, ["Aceptar"], "error!", null);
+					}
+					else {
+						ControlaMensajeSuccess("Se ha guardado la valorización de forma exitosa.");
+					}
+				});
+				break;
+			case "NO":
+				break;
+			default: //NO
+				break;
+		}
+		return true;
+
+	}, true, ["Aceptar", "Cancelar"], "question!", null);
+	
 }
 
 function ConfirmarValorizacion() {
-	console.log("Not implemented yet");
+	AbrirMensaje("ATENCIÓN", "¿Desea confirmar la valorización? ", function (e) {
+		$("#msjModal").modal("hide");
+		switch (e) {
+			case "SI": //Confirmar la cancelacion
+				AbrirWaiting();
+				var esConfirmacion = true;
+				var cmCompte = cmCompteSelected;
+				var data = { cmCompte, esConfirmacion };
+				PostGen(data, guardarValorizacionUrl, function (obj) {
+					CerrarWaiting();
+					if (obj.error === true) {
+						AbrirMensaje("ATENCIÓN", obj.msg, function () {
+							$("#msjModal").modal("hide");
+							return true;
+						}, false, ["Aceptar"], "error!", null);
+					}
+					else {
+						ControlaMensajeSuccess("Se ha confirmado la valorización de forma exitosa.");
+						CancelarValorizacion();
+					}
+				});
+				break;
+			case "NO":
+				break;
+			default: //NO
+				break;
+		}
+		return true;
+
+	}, true, ["Aceptar", "Cancelar"], "question!", null);
+	
 }
 
 function CancelarValorizacion() {
