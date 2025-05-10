@@ -68,7 +68,7 @@ function AceptarDescFinanc() {
 			return true;
 		}, false, ["Aceptar"], "error!", null);
 	}
-	if ($("#chkSobreTotal")[0].checked) {
+	else if ($("#chkSobreTotal")[0].checked) {
 		if ($("#DescFinanc_dto").inputmask('unmaskedvalue') <= 0) {
 			esValido = false;
 			AbrirMensaje("ATENCIÓN", "Debe prorcionar un valor mayor a 0.", function () {
@@ -78,12 +78,22 @@ function AceptarDescFinanc() {
 			}, false, ["Aceptar"], "error!", null);
 		}
 	}
-	else {
+	else if ($("#chkNetoFijo")[0].checked) {
 		if ($("#DescFinanc_dto_importe").inputmask('unmaskedvalue') <= 0) {
 			esValido = false;
 			AbrirMensaje("ATENCIÓN", "Debe prorcionar un valor mayor a 0.", function () {
 				$("#msjModal").modal("hide");
-				document.getElementById("DescFinanc_dto_importe").focus();
+				document.getElementById("DescFinanc_dto").focus();
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+	}
+	else {
+		if ($("#DescFinanc_dto").inputmask('unmaskedvalue') <= 0) {
+			esValido = false;
+			AbrirMensaje("ATENCIÓN", "Debe prorcionar un valor mayor a 0.", function () {
+				$("#msjModal").modal("hide");
+				document.getElementById("DescFinanc_dto").focus();
 				return true;
 			}, false, ["Aceptar"], "error!", null);
 		}
@@ -286,18 +296,33 @@ function ControlaListaCompteSelected() {
 				MostrarDatosDeCuenta(true);
 				$("#chkSobreTotal").on("click", function () {
 					ActualizarEstadoChecks_SobreTotal();
-					//ActualizarVisualizacionDeControlesABMDescFinanc();
 				});
 				$("#chkNetoFijo").on("click", function () {
 					ActualizarEstadoChecks_NetoFijo();
-					//ActualizarVisualizacionDeControlesABMDescFinanc();
 				});
 				ActualizarVisualizacionDeControlesABMDescFinanc();
 				AplicarMascarasEnInput_Section_DescFinanc();
 				ObtenerListaDetalleRpr();
-				//AgregarHandlerAGrillaDetalleRprCheckAll()
+				ValidarRespuestaDeObtencionDeValorizacion();
 			}
 		});
+	}
+}
+
+function ValidarRespuestaDeObtencionDeValorizacion() {
+	var cod = $("#codigo").val();
+	var msj = $("#mensaje").val();
+	if (cod != "0") {
+		AbrirMensaje("ATENCIÓN", msj, function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+		$("#btnGuardarValorizacion").prop("disabled", true);
+		$("#btnConfirmarValorizacion").prop("disabled", true);
+	}
+	else {
+		$("#btnGuardarValorizacion").prop("disabled", false);
+		$("#btnConfirmarValorizacion").prop("disabled", false);
 	}
 }
 
@@ -324,16 +349,22 @@ function AplicarMascarasEnInput_Section_DescFinanc() {
 
 function ActualizarEstadoChecks_SobreTotal() {
 	if ($("#chkSobreTotal")[0].checked) {
-		$("#chkNetoFijo").prop('checked', false);
-		$("#chkNetoFijo").trigger("change");
+		//$("#chkNetoFijo").prop('checked', false);
+		//$("#chkNetoFijo").trigger("change");
 		$("#divDescFinancDto").collapse("show");
 		$("#divDescFinancDtoImporte").collapse("hide");
 	}
 	else {
-		$("#chkNetoFijo").prop('checked', true);
-		$("#chkNetoFijo").trigger("change");
-		$("#divDescFinancDto").collapse("hide");
-		$("#divDescFinancDtoImporte").collapse("show");
+		//$("#chkNetoFijo").prop('checked', true);
+		//$("#chkNetoFijo").trigger("change");
+		if (!$("#chkNetoFijo").is(':checked')) {
+			$("#divDescFinancDto").collapse("show");
+			$("#divDescFinancDtoImporte").collapse("hide");
+		}
+		else {
+			$("#divDescFinancDto").collapse("hide");
+			$("#divDescFinancDtoImporte").collapse("show");
+		}
 	}
 	$("#DescFinanc_dto_importe").val(0);
 	$("#DescFinanc_dto").val(0);
@@ -343,12 +374,14 @@ function ActualizarEstadoChecks_NetoFijo() {
 	if ($("#chkNetoFijo")[0].checked) {
 		$("#chkSobreTotal").prop('checked', false);
 		$("#chkSobreTotal").trigger("change");
+		$("#chkSobreTotal").prop('disabled', true);
 		$("#divDescFinancDto").collapse("hide");
 		$("#divDescFinancDtoImporte").collapse("show");
 	}
 	else {
-		$("#chkSobreTotal").prop('checked', true);
-		$("#chkSobreTotal").trigger("change");
+		//$("#chkSobreTotal").prop('checked', true);
+		//$("#chkSobreTotal").trigger("change");
+		$("#chkSobreTotal").prop('disabled', false);
 		$("#divDescFinancDto").collapse("show");
 		$("#divDescFinancDtoImporte").collapse("hide");
 	}
@@ -833,7 +866,7 @@ function SetearCostoActual() {
 	else {
 		var ocCompte = "actual";
 		AbrirWaiting("Cargando información ...");
-		var data = { oc_compte: ocCompte, idsProds: idsProds }
+		var data = { oc_compte: ocCompte, idsProds: idsProductos }
 		PostGenHtml(data, cargarDetalleRprDesdeOcValidadaUrl, function (obj) {
 			$("#divListaDetalleRpr").html(obj);
 			$(".nav-link").prop("disabled", true);
@@ -844,10 +877,6 @@ function SetearCostoActual() {
 			addMaskInEditableCells();
 			tableUpDownArrow();
 			AgregarHandlerAGrillaDetalleRprCheckAll();
-			//setTimeout(() => {
-			//	ActualizarListaValorizaciones();
-			//	console.log("Run -> ActualizarListaValorizaciones();")
-			//}, 1000);
 			CerrarWaiting();
 		});
 	}
@@ -869,7 +898,6 @@ function SetearCostoDesdeOc() {
 			switch (e) {
 				case "SI": //Confirmar la cancelacion
 					AbrirWaiting();
-					//TODO MARCE:
 					ActualizarProductosSeleccionadosDesdeOcOriginal(oc_compte, idsProductos);
 					CerrarWaiting();
 					break;
@@ -897,10 +925,6 @@ function ActualizarProductosSeleccionadosDesdeOcOriginal(oc_compte, idsProds) {
 		addMaskInEditableCells();
 		tableUpDownArrow();
 		AgregarHandlerAGrillaDetalleRprCheckAll();
-		//setTimeout(() => {
-		//	ActualizarListaValorizaciones();
-		//	console.log("Run -> ActualizarListaValorizaciones();")
-		//}, 1000);
 	});
 }
 
@@ -944,10 +968,6 @@ function AplicarSeteoMasivo() {
 					addMaskInEditableCells();
 					tableUpDownArrow();
 					AgregarHandlerAGrillaDetalleRprCheckAll();
-					//setTimeout(() => {
-					//	ActualizarListaValorizaciones();
-					//	console.log("Run -> ActualizarListaValorizaciones();")
-					//}, 1000);
 					CerrarWaiting();
 				});
 			}
@@ -1123,10 +1143,6 @@ function CargarDesdeCopiaDeRespaldoListaRpr() {
 		addMaskInEditableCells();
 		tableUpDownArrow();
 		AgregarHandlerAGrillaDetalleRprCheckAll();
-		//setTimeout(() => {
-		//	ActualizarListaValorizaciones();
-		//	console.log("Run -> ActualizarListaValorizaciones();")
-		//}, 1000);
 		CerrarWaiting();
 	});
 }
@@ -1139,7 +1155,7 @@ function ObtenerIdsProdSeleccionadosEnDetalleRpr() {
 	inputs.forEach(function (input) {
 		if (input.checked) {
 			alMenosUno = true;
-			pIds.push(input.id.substr(0, 6));
+			pIds.push(input.id.substring(0, 6));
 		}
 	});
 	return pIds;

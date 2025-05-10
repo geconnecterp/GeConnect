@@ -142,19 +142,33 @@ namespace gc.sitio.Areas.Compras.Controllers
 				};
 				var responseValorizar = _cuentaServicio.ObtenerComprobanteValorizaLista(reqValorizados, TokenCookie);
 
-				model.GrillaValoracion = ObtenerGridCoreSmart<CompteValorizaListaDto>(responseValorizar);
-				model.GrillaDescuentosFin = ObtenerGridCoreSmart<CompteValorizaDtosListaDto>(responseDtos);
-				model.ConceptoDtoFinanc = ComboConceptoDescuentoFinanc();
-				model.DescFinanc = new CompteValorizaDtosListaDto
+				if (responseValorizar != null && responseValorizar.Count > 0) 
 				{
-					dto_sobre_total = 'S',
-					dto_sobre_total_bool = true,
-					cm_compte = compteSeleccionado.cm_compte,
-					dia_movi = compteSeleccionado.dia_movi,
-					tco_id = compteSeleccionado.tco_id
+					model.codigo = responseValorizar.First().resultado.ToString();
+					model.mensaje = responseValorizar.First().resultado_msj;
+
+					model.GrillaValoracion = ObtenerGridCoreSmart<CompteValorizaListaDto>(responseValorizar);
+					model.GrillaDescuentosFin = ObtenerGridCoreSmart<CompteValorizaDtosListaDto>(responseDtos);
+					model.ConceptoDtoFinanc = ComboConceptoDescuentoFinanc();
+					model.DescFinanc = new CompteValorizaDtosListaDto
+					{
+						dto_sobre_total = 'S',
+						dto_sobre_total_bool = true,
+						cm_compte = compteSeleccionado.cm_compte,
+						dia_movi = compteSeleccionado.dia_movi,
+						tco_id = compteSeleccionado.tco_id
+					};
+					return PartialView("_tabComprobante", model);
+				}
+
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = "Ha ocurrido un error al intentar obtener los datos de Valorización."
 				};
-				///TODO MARCE: Seguir aca
-				return PartialView("_tabComprobante", model);
+				return PartialView("_gridMensaje", response);
 			}
 			catch (Exception ex)
 			{
@@ -384,7 +398,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 						error = false,
 						warn = false,
 						msg = string.Empty,
-						costo = producto?.rpd_pcosto.ToString("N2") ?? "0",
+						costo = producto?.ocd_pcosto.ToString("N2") ?? "0",
 						valorizacion_class_dc = prodAux.valorizacion_class_dc,
 						valorizacion_class_dp = prodAux.valorizacion_class_dp,
 						valorizacion_value_dc = prodAux.valorizacion_value_dc,

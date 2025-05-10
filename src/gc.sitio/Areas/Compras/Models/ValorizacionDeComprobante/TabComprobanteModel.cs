@@ -11,5 +11,7 @@ namespace gc.sitio.Areas.Compras.Models
 		public GridCoreSmart<CompteValorizaDtosListaDto> GrillaDescuentosFin { get; set; }
 		public SelectList ConceptoDtoFinanc { get; set; }
 		public CompteValorizaDtosListaDto DescFinanc { get; set; }
+		public string codigo { get; set; } = string.Empty;
+		public string mensaje { get; set; } = string.Empty;
 	}
 }
