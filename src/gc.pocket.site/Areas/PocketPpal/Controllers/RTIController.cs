@@ -120,11 +120,15 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                     return RedirectToAction("Login", "Token", new { area = "seguridad" });
                 }
-
-                remito = RemitosPendientes.SingleOrDefault(x => x.re_compte.Equals(rm));
+                if (RemitosPendientes == null)
+                {
+                    throw new NegocioException("No se encontraron Remitos Pendientes para la Recepción de Transferencia de otra Sucursal");
+                }
+                remito = RemitosPendientes.Single(x => x.re_compte.Equals(rm));
                 if (remito == null)
                 {
                     TempData["warn"] = $"No se pudo seleccionar el Remito N° {rm}. Intente de nuevo";
+                    return RedirectToAction("Index");
                 }
 
                 if (RemitoActual == null || !RemitoActual.re_compte.Equals(rm) || RemitoActual.EsModificacion)
@@ -132,13 +136,13 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     //en el caso que haga para atras y vuelva a elegir la misma  Autorización Pendiente no se elimina nada. 
                     //si es distinto como en este caso, se inicializan las variables.
                     InicializaVariablesSessionRTI();
-                    RemitoActual = remito;
+                    RemitoActual = remito!;
                 }
                 string? volver;
                 if (esUpdate)
                 {
                     remito.EsModificacion = true;
-                    RemitoActual = remito;
+                    RemitoActual = remito!;
 
                     volver = Url.Action("ModificaDetalleUL", "rti", new { area = "pocketppal" });
                     ViewBag.AppItem = new AppItem { Nombre = $"Detalle de ULs de Remito Actual {remito.re_compte}", VolverUrl = volver ?? "#", BotonEspecial = false };
@@ -257,7 +261,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 }).ToList();
                 ProductoGenRegs = lista;
 
-                string volver = Url.Action("ResguardarRemito", "rti", new { area = "pocketppal", rm = remito.re_compte, esUpdate = true });
+                string volver = Url.Action("ResguardarRemito", "rti", new { area = "pocketppal", rm = remito.re_compte, esUpdate = true })??"#";
 
                 ViewBag.AppItem = new AppItem { Nombre = $"Detalle de ULs de {remito.re_compte}", VolverUrl = volver ?? "#", BotonEspecial = false };
                 return View(RemitoActual);

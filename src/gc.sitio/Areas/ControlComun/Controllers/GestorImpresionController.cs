@@ -139,7 +139,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                 if (response != null && response.resultado == 0)
                 {
                     // Todo fue bien
-                    return Json(new { error = false, warn = false, base64 = response.Base64 });
+                    return Json(new { error = false, warn = false, base64 = response.Base64, name = response.resultado_msj});
                 }
                 else
                 {

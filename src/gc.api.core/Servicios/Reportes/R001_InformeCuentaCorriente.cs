@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Office2016.Drawing.Command;
 using gc.api.core.Contratos.Servicios;
 using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Entidades;
@@ -23,15 +24,17 @@ namespace gc.api.core.Servicios.Reportes
         private readonly EmpresaGeco _empresaGeco;
         private readonly List<string> _titulos;
         private readonly List<string> _campos;
+        private readonly ICuentaServicio _cuentaSv;
 
         public R001_InformeCuentaCorriente(IUnitOfWork uow, IConsultaServicio consulta,
-           IOptions<EmpresaGeco> empresa) : base(uow)
+           IOptions<EmpresaGeco> empresa, ICuentaServicio consultaSv) : base(uow)
         {
             _consultaServicio = consulta;
 
             _empresaGeco = empresa.Value;
-            _titulos = new List<string> { "Fecha", "N° Mov", "Tipo", "Comprobante", "Concepto", "Debe", "Haber", "Saldo" };
-            _campos = new List<string> { "Cc_fecha", "Dia_movi", "Tco_desc", "Cm_compte", "Cc_concepto", "Cc_debe", "Cc_haber", "Cc_saldo" };
+            _titulos = new List<string> {"N° Mov", "Fecha",  "Descripcion", "Debe", "Haber", "Saldo" };
+            _campos = new List<string> {"Movimiento", "Fecha", "Descripion", "Debe", "Haber", "Saldo" };
+            _cuentaSv = consultaSv;
         }
 
         public string Generar(ReporteSolicitudDto solicitud)
@@ -53,14 +56,34 @@ namespace gc.api.core.Servicios.Reportes
                 {
                     throw new NegocioException($"No se encontraron registros de la cuenta corriente {ctaId}.");
                 }
-                #endregion
 
+                var regs= registros.Select(x => new
+                {
+                    Movimiento = string.IsNullOrEmpty(x.Dia_movi) ? "0000-00000000" : x.Dia_movi,
+                    Fecha = x.Cc_fecha,
+                    Descripion = string.IsNullOrEmpty(x.Cm_compte) ? x.Cc_concepto : $"{x.Tco_desc}-{x.Cm_compte}",
+                    Debe = x.Cc_debe,
+                    Haber = x.Cc_haber,
+                    Saldo = x.Cc_saldo
+                }).ToList();
+                //buscando datos del cliente
+                var c = _cuentaSv.GetCuentaComercialLista(ctaId, 'T');
 
+                if (c == null || c.Count == 0)
+                {
+                    throw new NegocioException($"No se encontraron datos del cliente {ctaId}.");
+                }
+                var cliente = c[0];
+                cliente.Monto = regs.Last().Saldo;
+                cliente.MontoEtiqueta = "Saldo:";
+
+                #endregion               
                 #region Scripts PDF
 
-                anchos = [10f, 10f, 20f, 30f, 10f, 10f, 10f];
+                anchos = [15f, 10f, 45f, 10f, 10f, 10f];
                 var chico = HelperPdf.FontChicoPredeterminado();
                 var normal = HelperPdf.FontNormalPredeterminado();
+                var normalBold = HelperPdf.FontNormalPredeterminado(true);
                 var titulo = HelperPdf.FontTituloPredeterminado();
                 var subtitulo = HelperPdf.FontSubtituloPredeterminado();
 
@@ -138,10 +161,16 @@ namespace gc.api.core.Servicios.Reportes
 
                 pdf.Open();
 
+                #region Datos del Cliente o Proveedor
+                tabla = HelperPdf.GeneraTabla(4, [20f, 60f, 10f, 10f], 100, 10, 10);
+                //hay que ir a buscar los datos del cliente para presentarlos en pantalla.
+                HelperPdf.CargarTablaClienteProveedor(pdf, c[0], normal, normalBold);
+                #endregion
+
                 #region Carga del Listado
 
-
-
+                HelperPdf.GeneraCabeceraLista(pdf, _titulos, anchos, normalBold);
+                HelperPdf.GenerarListadoDesdeLista(pdf, regs, _campos, anchos, chico);
 
                 #endregion
 
@@ -163,7 +192,7 @@ namespace gc.api.core.Servicios.Reportes
 
         }
 
-      
+
         public string GenerarTxt(ReporteSolicitudDto solicitud)
         {
             #region Obteniendo registros desde la base de datos
@@ -172,20 +201,23 @@ namespace gc.api.core.Servicios.Reportes
 
             if (registros == null || registros.Count == 0)
             {
-                throw new NegocioException($"No se encontraron registros de la cuenta corriente {ctaId}.");
+                throw new NegocioException($"No se encontraron registros de la {solicitud.Reporte} {ctaId}.");
             }
+            var regs = registros.Select(x => new
+            {
+                Movimiento = string.IsNullOrEmpty(x.Dia_movi) ? "0000-00000000" : x.Dia_movi,
+                Fecha = x.Cc_fecha,
+                Descripion = string.IsNullOrEmpty(x.Cm_compte) ? x.Cc_concepto : $"{x.Tco_desc}-{x.Cm_compte}",
+                Debe = x.Cc_debe,
+                Haber = x.Cc_haber,
+                Saldo = x.Cc_saldo
+            }).ToList();
             #endregion
 
-            // Convertir los datos a TXT
-            var sb = new StringBuilder();
-         
-            foreach (var item in registros)
-            {
-                sb.AppendLine(string.Join("\t", item.GetType().GetProperties().Select(p => p.GetValue(item, null))));
-            }
-
-            return ConvertirTXT2B64(sb);
+            return GeneraTXT(regs, _campos);
         }
+
+
 
         public string GenerarXls(ReporteSolicitudDto solicitud)
         {
@@ -195,48 +227,23 @@ namespace gc.api.core.Servicios.Reportes
 
             if (registros == null || registros.Count == 0)
             {
-                throw new NegocioException($"No se encontraron registros de la cuenta corriente {ctaId}.");
+                throw new NegocioException($"No se encontraron registros de la {solicitud.Reporte} {ctaId}.");
             }
+            var regs = registros.Select(x => new
+            {
+                Movimiento = string.IsNullOrEmpty(x.Dia_movi) ? "0000-00000000" : x.Dia_movi,
+                Fecha = x.Cc_fecha,
+                Descripion = string.IsNullOrEmpty(x.Cm_compte) ? x.Cc_concepto : $"{x.Tco_desc}-{x.Cm_compte}",
+                Debe = x.Cc_debe,
+                Haber = x.Cc_haber,
+                Saldo = x.Cc_saldo
+            }).ToList();
             #endregion
 
-
-            // Convertir los datos a Excel
-            using (var workbook = new XLWorkbook())
-            {
-                var worksheet = workbook.Worksheets.Add("Sheet1");
-
-
-
-                // Obtener las propiedades públicas del tipo de elemento
-                var reg = registros.First();
-                var properties = reg.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-                //carga cabecera
-                int i = 0;
-                foreach (var item in _titulos)
-                {
-                    worksheet.Cell(1, i + 1).Value = item;
-                    i++;
-                }
-
-                // Agregar datos
-                int fila = 2;
-                foreach (var item in registros)
-                {
-                    i = 0;
-                    foreach (PropertyInfo prop in properties)
-                    {
-                        var valor = prop.GetValue(item);
-                        worksheet.Cell(fila, i + 1).Value = valor != null ? valor.ToString() : string.Empty;
-                        i++;
-                    }
-
-                    fila++;
-                }
-
-                return ConvertirWorkBook2B64(workbook);
-            }
+            return GeneraFileXLS(regs, _titulos, _campos);
         }
+
+
 
         private List<ConsCtaCteDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string ctaId)
         {

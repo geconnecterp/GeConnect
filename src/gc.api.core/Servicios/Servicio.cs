@@ -17,6 +17,10 @@
     using iTextSharp.text;
     using System.Text;
     using ClosedXML.Excel;
+    using gc.infraestructura.Dtos.Consultas;
+    using System.Reflection;
+    using gc.infraestructura.Dtos.DocManager;
+    using gc.infraestructura.Dtos.Almacen;
 
     public class Servicio<T> : IServicio<T> where T : EntidadBase
     {
@@ -210,6 +214,60 @@
             }
         }
 
+        protected string GeneraFileXLS<S>(List<S> registros, List<string> _titulos, List<string> _campos) where S : class
+        {
+
+            // Convertir los datos a Excel
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("Sheet1");
+
+                // Obtener las propiedades públicas del tipo de elemento
+                var reg = registros.First();
+                var properties = reg.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+                //carga cabecera
+                int i = 0;
+                foreach (var item in _titulos)
+                {
+                    worksheet.Cell(1, i + 1).Value = item;
+                    i++;
+                }
+
+                // Agregar datos
+                int fila = 2;
+                foreach (var item in registros)
+                {
+                    i = 0;
+                    foreach (PropertyInfo prop in properties)
+                    {
+                        if (!_campos.Contains(prop.Name)) { continue; }
+
+                        var valor = prop.GetValue(item);
+                        worksheet.Cell(fila, i + 1).Value = valor != null ? valor.ToString() : string.Empty;
+                        i++;
+                    }
+
+                    fila++;
+                }
+
+                return ConvertirWorkBook2B64(workbook);
+            }
+        }
+
+        protected string GeneraTXT<S>(List<S> registros, List<string> _campos)
+        {
+            // Convertir los datos a TXT
+            var sb = new StringBuilder();
+
+            foreach (var item in registros)
+            {
+                sb.AppendLine(string.Join("\t|", item.GetType().GetProperties().Where(x => _campos.Contains(x.Name)).Select(p => p.GetValue(item, null))));
+            }
+
+            return ConvertirTXT2B64(sb);
+        }
+
         protected string ConvertirWorkBook2B64(XLWorkbook workbook)
         {
             using (var stream = new MemoryStream())
@@ -218,6 +276,20 @@
                 var bytes = stream.ToArray();
                 return Convert.ToBase64String(bytes);
             }
+        }
+
+        protected DatosCuenta CargaDatosCliente(CuentaDto cta)
+        {
+            var datos = new DatosCuenta
+            {
+                CtaId = cta.Cta_Id,
+                RazonSocial = cta.Cta_Denominacion,
+                Domicilio = cta.Cta_Domicilio,
+                CUIT = cta.Cta_Documento,
+                Contacto = $"Te: {cta.Cta_Te} - Cel: {cta.Cta_Celu}." ,
+
+            };
+            return datos;
         }
 
         //public class CustomPdfPageEventHelper : PdfPageEventHelper

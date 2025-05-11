@@ -2,7 +2,7 @@
 {
     public class DatosCabeceraDto
     {
-        public string NombreEmpresa { get; set; }= string.Empty;
+        public string NombreEmpresa { get; set; } = string.Empty;
         public string CUIT { get; set; } = string.Empty;
         public string IIBB { get; set; } = string.Empty;
         public string Direccion { get; set; } = string.Empty;
@@ -11,14 +11,20 @@
         public string Sucursal { get; set; } = string.Empty;
     }
 
-    public class DatosCuerpoDto<T>
+    public class DatosCuenta
     {
-        public string CtaId { get; set; }   = string.Empty;
+        public string CtaId { get; set; } = string.Empty;
         public string RazonSocial { get; set; } = string.Empty;
         public string Domicilio { get; set; } = string.Empty;
         public string CUIT { get; set; } = string.Empty;
         public string Contacto { get; set; } = string.Empty;
-        public List<T> Datos { get; set; }= new List<T>();
+        public decimal Saldo { get; set; }
+    }
+
+    public class DatosCuerpoDto<T> : DatosCuenta
+    {
+
+        public List<T> Datos { get; set; } = new List<T>();
         //public List<string> Titulos { get; set; } = new List<string>();
         //public List<string> Columnas { get; set; } = new List<string>();
         //public List<float> ColumnasAncho { get; set; } = new List<float>();
@@ -27,12 +33,12 @@
     public class DatosPieDto
     {
         public string Observaciones { get; set; } = string.Empty;
-        public string Usuario { get; set; } = string.Empty;     
+        public string Usuario { get; set; } = string.Empty;
     }
 
     public class PrintRequestDto<T>
     {
-        public TipoEjecucion TipoEjecucion { get; set; } 
+        public TipoEjecucion TipoEjecucion { get; set; }
         public Modulo ModuloImpresion { get; set; }
         public DatosCabeceraDto Cabecera { get; set; } = new DatosCabeceraDto();
         public DatosCuerpoDto<T> Cuerpo { get; set; } = new DatosCuerpoDto<T>();

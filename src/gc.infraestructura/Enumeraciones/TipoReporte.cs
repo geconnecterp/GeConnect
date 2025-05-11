@@ -15,5 +15,11 @@ namespace gc.infraestructura.Enumeraciones
     {
         R001_InfoCtaCte = 1,
         R002_InfoVenc = 2,
+        R003_InfoCmpte = 3,
+        R004_InfoCmpteDet=4,
+        R005_InfoOPago=5,
+        R006_InfoOPagoDet=6,
+        R007_InfoRecProv=7,
+        R008_InfoRecProvDet=8,
     }
 }

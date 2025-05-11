@@ -143,7 +143,9 @@ $(function () {
 
                     //no hacemos trigger como antes, ejecutamos el metodo aislado
                     ctrlconsultacambio();
-
+                    //esta funcion Inicializa todos los parametros posibles de reporte. Posibles porque algunos dependen del reporte padre. 
+                    //se inicializan Reporte 1,2,3,5,7
+                    inicializaArregloParametros();
                     consultaCtaCte(1); //se selecciona la cuenta la pagina a visualizar es la primera
                 }
             }
@@ -229,7 +231,14 @@ function inicializaPantallaConsulta() {
     $("#divRpProv").empty().html("<span class='text - danger'>SIN REGISTROS</span>");
     $("#divRpProvDet").empty().html("<span class='text - danger'>SIN REGISTROS</span>");
     $("#BtnLiTab01").trigger("click");
+ 
+    // Llama al evento click de #chkRel01 solo si no está ya en ejecución
+    $("#chkRel01").trigger("click");
 
+    isInitializing = false; // Restablece la bandera
+}
+
+function inicializaArregloParametros() {
     //CARGANDO PARAMETROS PARA LOS REPORTES
     userId = usuarioAuth;   //variable declarada en _layout
     let admId = administracion;
@@ -240,7 +249,7 @@ function inicializaPantallaConsulta() {
         fechaD = $("#fechaD").val();
         cargarReporteEnArre(1, { ctaId, fechaD, userId }, "Informe de Cuenta Corriente", "Observación:", admId);
     }
-    
+
     //reporte #2
     if (arrRepoParams[1] === undefined) {
         fechaD = $("#cvfechaD").val();
@@ -275,14 +284,8 @@ function inicializaPantallaConsulta() {
         fechaH = $("#rpfechaH").val();
         cargarReporteEnArre(7, { ctaId: consCta, fechaD, fechaH, userId }, "Informe de Recepción de Proveedores", "Observación:", admId)
     }
-    
+
     //reporte #8 Depende de su reporte padre
-
-    // Llama al evento click de #chkRel01 solo si no está ya en ejecución
-    $("#chkRel01").trigger("click");
-
-    isInitializing = false; // Restablece la bandera
-
 
 }
 

@@ -22,14 +22,14 @@ namespace gc.api.core.Servicios
 
 
         public ReportService(IUnitOfWork uow, IConsultaServicio consSv,
-             IOptions<EmpresaGeco> empresa) : base(uow)
+             IOptions<EmpresaGeco> empresa, ICuentaServicio ctaSv) : base(uow)
         {
 
             // Se inicializa el diccionario de generadores de reportes
             _generadoresReporte = new Dictionary<InfoReporte, IGeneradorReporte>
             {
-                { InfoReporte.R001_InfoCtaCte, new R001_InformeCuentaCorriente(uow,consSv,empresa) },
-                { InfoReporte.R002_InfoVenc, new R002_InformeVencimiento(uow,consSv) }
+                { InfoReporte.R001_InfoCtaCte, new R001_InformeCuentaCorriente(uow,consSv,empresa,ctaSv) },
+                { InfoReporte.R002_InfoVenc, new R002_InformeVencimiento(uow,consSv,empresa,ctaSv) }
             };
         }
 

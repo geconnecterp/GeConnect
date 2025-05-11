@@ -123,6 +123,7 @@
 
 
 
+using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.DocManager;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
@@ -148,7 +149,7 @@ namespace gc.infraestructura.Helpers
             return doc;
         }
 
-        public static Document GenerarInstanciaAndInit(ref PdfWriter writer,out MemoryStream mStream, HojaSize pagina = HojaSize.A4, bool esVertical = true)
+        public static Document GenerarInstanciaAndInit(ref PdfWriter writer, out MemoryStream mStream, HojaSize pagina = HojaSize.A4, bool esVertical = true)
         {
             Document doc = new Document(ObtenerHoja(pagina, esVertical), 20, 20, 15, 50);
             mStream = new MemoryStream();
@@ -242,7 +243,7 @@ namespace gc.infraestructura.Helpers
             memory = msDestino;
         }
 
-       
+
 
         /// <summary>
         /// Los estilos pueden ser BOLD = 1;
@@ -553,7 +554,7 @@ namespace gc.infraestructura.Helpers
 
         public static PdfPCell GeneraCelda(Image? logo, bool fit = true)
         {
-            if(logo == null)
+            if (logo == null)
             {
                 return new PdfPCell();
             }
@@ -720,12 +721,81 @@ namespace gc.infraestructura.Helpers
                         alig = Element.ALIGN_LEFT;
                     }
 
-                    parrafo = GeneraParrafo(valor.ToString()??"", normal, alig, 10, 10, true, BaseColor.Black);
+                    parrafo = GeneraParrafo(valor.ToString() ?? "", normal, alig, 10, 10, true, BaseColor.Black);
 
                     celda = GeneraCelda(parrafo, true, BaseColor.White, alig);
                     tabla.AddCell(celda);
                 }
             }
+            pdf.Add(tabla);
+        }
+
+        public static void GenerarListadoDesdeLista<T>(
+      Document pdf,
+      List<T> lista,
+      List<string> campos,
+      float[] anchos,
+      Font fuente,
+      bool incluirHoraEnFechas = false)
+        {
+            if (lista == null || lista.Count == 0 || campos == null || campos.Count == 0)
+                return;
+
+            var cultura = new CultureInfo("es-ES");
+            var propsDict = TypeDescriptor.GetProperties(typeof(T))
+                                          .Cast<PropertyDescriptor>()
+                                          .ToDictionary(p => p.Name, p => p, StringComparer.OrdinalIgnoreCase);
+
+            PdfPTable tabla = GeneraTabla(campos.Count, anchos, 100, 0, 10);
+
+            foreach (var item in lista)
+            {
+                foreach (var campo in campos)
+                {
+                    if (!propsDict.TryGetValue(campo, out var prop))
+                    {
+                        var celdaVacia = new PdfPCell(new Phrase(""))
+                        {
+                            Border = Rectangle.BOTTOM_BORDER,
+                            BorderColorBottom = BaseColor.Black
+                        };
+                        tabla.AddCell(celdaVacia);
+                        continue;
+                    }
+
+                    var valorObj = prop.GetValue(item);
+                    string valorTexto = string.Empty;
+                    int alineacion;
+
+                    if (valorObj is DateTime dt)
+                    {
+                        valorTexto = incluirHoraEnFechas ? dt.ToString("dd/MM/yyyy HH:mm") : dt.ToString("dd/MM/yyyy");
+                        alineacion = Element.ALIGN_CENTER;
+                    }
+                    else if (valorObj is decimal or double or float)
+                    {
+                        valorTexto = Convert.ToDecimal(valorObj).ToString("N2", cultura);
+                        alineacion = Element.ALIGN_RIGHT;
+                    }
+                    else
+                    {
+                        valorTexto = valorObj?.ToString() ?? "";
+                        alineacion = valorTexto.Length == 1 ? Element.ALIGN_CENTER : Element.ALIGN_LEFT;
+                    }
+
+                    Paragraph parrafo = GeneraParrafo(valorTexto, fuente, alineacion, 5, 5, true, BaseColor.Black);
+                    PdfPCell celda = new PdfPCell(parrafo)
+                    {
+                        Border = Rectangle.BOTTOM_BORDER,
+                        BorderColorBottom = BaseColor.Black,
+                        HorizontalAlignment = alineacion,
+                        VerticalAlignment = Element.ALIGN_MIDDLE
+                    };
+
+                    tabla.AddCell(celda);
+                }
+            }
+
             pdf.Add(tabla);
         }
 
@@ -739,20 +809,63 @@ namespace gc.infraestructura.Helpers
             return DefineFontWithStyle("Arial", 12, Font.BOLD, 0, 0, 0);
         }
 
-        public static Font FontSubtituloPredeterminado()
+        public static Font FontSubtituloPredeterminado(bool bold = false)
         {
-            return DefineFontWithStyle("Arial", 10, Font.NORMAL, 0, 0, 0);
+            return DefineFontWithStyle("Arial", 10, bold ? Font.BOLD : Font.NORMAL, 0, 0, 0);
         }
 
-        public static Font FontNormalPredeterminado()
+        public static Font FontNormalPredeterminado(bool bold = false)
         {
-            return DefineFontWithStyle("Arial", 8, Font.NORMAL, 0, 0, 0);
+            return DefineFontWithStyle("Arial", 8, bold ? Font.BOLD : Font.NORMAL, 0, 0, 0);
         }
 
-        public static Font FontChicoPredeterminado()
+        public static Font FontChicoPredeterminado(bool bold = false)
         {
-            return DefineFontWithStyle("Arial", 6, Font.NORMAL, 0, 0, 0);
+            return DefineFontWithStyle("Arial", 6, bold ? Font.BOLD : Font.NORMAL, 0, 0, 0);
         }
+
+        public static PdfPCell CeldaSinBorde(string texto, Font fuente, int alineacion)
+        {
+            var celda = HelperPdf.GeneraCelda(HelperPdf.GeneraParrafo(texto, fuente, alineacion, 5, 5), false, BaseColor.White, alineacion);
+            celda.Border = Rectangle.NO_BORDER;
+            return celda;
+        }
+
+        public static void CargarTablaClienteProveedor(Document pdf, CuentaDto cuenta, Font fuenteEtiqueta, Font fuenteValor)
+        {
+            PdfPTable tabla = GeneraTabla(4, [20f, 30f, 20f, 30f], 100, 10, 10);
+
+
+            // FILA 1
+            tabla.AddCell(CeldaSinBorde("Cta. Comercial:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+            tabla.AddCell(CeldaSinBorde(cuenta.Cta_Id, fuenteValor, Element.ALIGN_LEFT));
+            tabla.AddCell(CeldaSinBorde("CUIT:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+            tabla.AddCell(CeldaSinBorde(cuenta.Cta_Documento, fuenteValor, Element.ALIGN_LEFT));
+
+            // FILA 2
+            tabla.AddCell(CeldaSinBorde("Razón Social:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+            tabla.AddCell(CeldaSinBorde(cuenta.Cta_Denominacion, fuenteValor, Element.ALIGN_LEFT));
+            tabla.AddCell(CeldaSinBorde("Contacto:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+            tabla.AddCell(CeldaSinBorde(cuenta.Cta_Te, fuenteValor, Element.ALIGN_LEFT));
+
+            // FILA 3
+            string domicilioCompleto = $"{cuenta.Cta_Domicilio} {cuenta.Cta_Localidad} CP: {cuenta.Cta_Cpostal}";
+            tabla.AddCell(CeldaSinBorde("Domicilio:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+            tabla.AddCell(CeldaSinBorde(domicilioCompleto, fuenteValor, Element.ALIGN_LEFT));
+
+            // SALDO con signo y color si es negativo
+            string saldoFormateado = cuenta.Monto.ToString("+#,##0.00;-#,##0.00", new CultureInfo("es-AR"));
+            BaseColor colorSaldo = cuenta.Monto < 0 ? BaseColor.Red : BaseColor.Black;
+
+            var fuenteSaldo = new Font(fuenteValor);
+            fuenteSaldo.Color = colorSaldo;
+
+            tabla.AddCell(CeldaSinBorde(cuenta.MontoEtiqueta, fuenteEtiqueta, Element.ALIGN_RIGHT));
+            tabla.AddCell(CeldaSinBorde(saldoFormateado, fuenteSaldo, Element.ALIGN_RIGHT));
+
+            pdf.Add(tabla);
+        }
+
     }
 
     public enum HojaSize
