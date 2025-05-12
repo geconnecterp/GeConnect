@@ -39,7 +39,13 @@ namespace gc.infraestructura.Dtos.Almacen
         public char? Cta_Actu { get; set; }
         public char? Tipo { get; set;}
         public char? Habilitada { get; set; }
-		public string Tdoc_Desc { get; set; } = string.Empty;	
+		public string Tdoc_Desc { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Es un dato auxiliar para ser utilizado en los reportes. 
+        /// </summary>
+        public decimal Monto { get; set; }
+        public string MontoEtiqueta { get; set; } = string.Empty;
     }
 
     public partial class  CuentaABMDto : CuentaDto
@@ -124,6 +130,7 @@ namespace gc.infraestructura.Dtos.Almacen
 			set { cta_Emp_Activa = value; }
 		}
 		private bool cta_Emp_Activa;
+
 	}
 
 	public class CuentaDatoDto : Dto

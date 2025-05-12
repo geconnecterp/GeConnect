@@ -65,9 +65,11 @@ function inicializaGestorDocumental() {
 }
 
 function invocaGenerarArchivo() {
+    AbrirWaiting("Espere mientras se genera(n) el/los archivos...")
     var formato = $("input[name='rdgenera']:checked").val();
     var selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
     if (selectedNodes.length === 0) {
+        CerrarWaiting();
         AbrirMensaje("ATENCIÓN", "No hay archivos seleccionados para exportar.", function () {
             $("#msjModal").modal("hide");
             return true;
@@ -78,47 +80,86 @@ function invocaGenerarArchivo() {
     selectedNodes.forEach(function (node) {
         if (node.data ) {
             var id = node.id;
-            if (arrRepoParams[id - 1] !== undefined) { 
-            var tipo = node.data.tipo;
-            var data = {
-                formato: formato,               
-                nodoId: id,
-                moduloId: node.parent,
-                tipo: tipo
-            };
-            PostGen(data, generadorArchivoUrl, function (obj) {
-                if (obj.error === true) {
-                    AbrirMensaje("Atención!", obj.msg, function () {
+            if (arrRepoParams[id - 1] !== undefined) {
+                var data1 = arrRepoParams[id - 1];
+
+                var data2 = {
+                    formato: formato
+                };
+                //unimos ambos json
+                var data = $.extend({}, data1, data2);
+
+                PostGen(data, generadorArchivoUrl, function (obj) {
+                    CerrarWaiting();
+                    if (obj.error === true) {
+                        AbrirMensaje("Atención!", obj.msg, function () {
+                            $("#msjModal").modal("hide");
+                            return true;
+                        }, false, ["Aceptar"], "error!", null);
+                    }
+                    else if (obj.warn === true) {
+                        AbrirMensaje("Atención!", obj.msg, function () {
+                            if (obj.auth === true) {
+                                window.location.href = login;
+                            } else {
+                                $("#msjModal").modal("hide");
+                                return true;
+                            }
+                        }, false, ["Aceptar"], "error!", null);
+                    }
+                    else {
+                        var archivoBase64 = obj.base64;
+
+                        // Configura el tipo MIME según el formato
+                        var mimeType;
+                        var extension;
+                        switch (formato) {
+                            case "P":
+                                mimeType = 'application/pdf';
+                                extension = 'pdf';
+                                break;
+                            case "X":
+                                mimeType = 'application/vnd.ms-excel';
+                                extension = 'xls';
+                                break;
+                            case "T":
+                                mimeType = 'text/plain';
+                                extension = 'txt';
+                                break;
+                            default:
+                                mimeType = 'application/octet-stream';
+                                extension = 'bin';
+                        }
+
+                        var blob = base64ToBlob(archivoBase64, mimeType);
+
+                        // Genera el nombre del archivo si no viene en la respuesta
+                        var nombreArchivo = obj.name || "archivo." + extension;
+
+                        // Crea el enlace para descargar el archivo
+                        var link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = nombreArchivo;
+
+                        // Agrega el enlace al DOM, lo activa y luego lo elimina
+                        document.body.appendChild(link);
+                        link.click();
+
+                        // Buena práctica: liberar la URL del objeto
+                        setTimeout(function () {
+                            URL.revokeObjectURL(link.href);
+                            document.body.removeChild(link);
+                        }, 100);
+                    }
+                });
+            }
+            else {
+                CerrarWaiting();
+                AbrirMensaje("Atención!", "El Informe no esta disponible, aún. Ejecutelo visualmente y recien podrá realizar la descarga del mismo.",
+                    function () {
                         $("#msjModal").modal("hide");
                         return true;
                     }, false, ["Aceptar"], "error!", null);
-                }
-                else if (obj.warn === true) {
-                    AbrirMensaje("Atención!", obj.msg, function () {
-                        if (obj.auth === true) {
-                            window.location.href = login;
-                        } else {
-                            $("#msjModal").modal("hide");
-                            return true;
-                        }
-                    }, false, ["Aceptar"], "error!", null);
-                }
-                else {
-                    if (formato === "P") {
-                        var pdfWindow = window.open("");
-                        pdfWindow.document.write(
-                            "<iframe width='100%' height='100%' src='data:application/pdf;base64, " + encodeURI(obj.pdfBase64) + "'></iframe>"
-                        );
-                    } else if (formato === "X" || formato === "T") {
-                        var link = document.createElement('a');
-                        link.href = obj.fileUrl;
-                        link.download = obj.fileName;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                    }
-                }
-            });
             }
         }
     });
@@ -142,7 +183,8 @@ function presentarArchivos() {
             $("#emailTo").val(cuenta.cta_Email);
             $("#whatsappTo").val(cuenta.cta_Celu);
 
-            jsonP = $.parseJSON(obj.arbol);
+            //jsonP = $.parseJSON(obj.arbol);
+            jsonP = JSON.parse(obj.arbol);
             $("#archivosDispuestos").jstree("destroy").empty();
 
             // Inicializamos el árbol jsTree
@@ -183,6 +225,7 @@ function presentarArchivos() {
 }
 
 function imprimirArchivoSeleccionado() {
+   
     var selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
     if (selectedNodes.length === 0) {
         AbrirMensaje("ATENCIÓN", "No hay archivos seleccionados para imprimir.", function () {
@@ -191,42 +234,54 @@ function imprimirArchivoSeleccionado() {
         }, false, ["Aceptar"], "error!", null);
         return;
     }
+    else {        
+        AbrirWaiting("Espere mientras se genera el archivo para imprimir...");
+        selectedNodes.forEach(function (node) {
+            if (node.data) { //&& node.data.archivoB64
+                var id = node.id;
+                if (arrRepoParams[id - 1] !== undefined) {
+                    data = arrRepoParams[id - 1];
 
-    selectedNodes.forEach(function (node) {
-        if (node.data ) { //&& node.data.archivoB64
-            var id = node.id;
-            if (arrRepoParams[id - 1] !== undefined) {                           
-                data = arrRepoParams[id - 1];
-
-                PostGen(data, repoApiUrl, function (obj) {
-                    if (obj.error === true) {
-                        AbrirMensaje("Atención", obj.resultado_msg, function () {
-                            $("#msjModal").modal("hide");
-                            return true;
-                        }, false, ["Aceptar"], "warn!", null);
-                    }
-                    else if (obj.warn === true) {
-                        AbrirMensaje("Atención!", obj.msg, function () {
-                            if (obj.auth === true) {
-                                window.location.href = login;
-                            } else {
+                    PostGen(data, repoApiUrl, function (obj) {
+                        CerrarWaiting();
+                        if (obj.error === true) {
+                            AbrirMensaje("Atención", obj.resultado_msg, function () {
                                 $("#msjModal").modal("hide");
                                 return true;
-                            }
-                        }, false, ["Aceptar"], "error!", null);
-                    } else {
-                        var archivoBase64 = obj.base64;
-                        var blob = base64ToBlob(archivoBase64, 'application/pdf');
-                        var url = URL.createObjectURL(blob);
-                        var printWindow = window.open(url);
-                        printWindow.onload = function () {
-                            printWindow.print();
-                        };
-                    }               
-                });
+                            }, false, ["Aceptar"], "warn!", null);
+                        }
+                        else if (obj.warn === true) {
+                            AbrirMensaje("Atención!", obj.msg, function () {
+                                if (obj.auth === true) {
+                                    window.location.href = login;
+                                } else {
+                                    $("#msjModal").modal("hide");
+                                    return true;
+                                }
+                            }, false, ["Aceptar"], "error!", null);
+                        } else {
+                            var archivoBase64 = obj.base64;
+                            var blob = base64ToBlob(archivoBase64, 'application/pdf');
+                            var url = URL.createObjectURL(blob);
+                            var printWindow = window.open(url);
+                            printWindow.onload = function () {
+                                printWindow.print();
+                            };
+                        }
+                    });
+                }                
+                else {
+                    CerrarWaiting();
+
+                    AbrirMensaje("Atención!", "El Informe no esta disponible, aún. Ejecutelo visualmente y recien podrá realizar la impresión del mismo.",
+                        function () {                       
+                            $("#msjModal").modal("hide");
+                            return true;                       
+                    }, false, ["Aceptar"], "error!", null);
+                }
             }
-        }
-    });
+        });
+    }
 }
 
 function base64ToBlob(base64, mime) {

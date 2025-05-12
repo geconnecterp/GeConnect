@@ -33,7 +33,7 @@ namespace gc.api.report.Controllers
                 var base64 = _pdfReportService.GenerateReportAsBase64(request);
 
                 //devolver apiresponse entidad 
-                return Ok(new ApiResponse<RespuestaReportDto>(new RespuestaReportDto { Base64 = base64, resultado = 0, resultado_msj = string.Empty }));
+                return Ok(new ApiResponse<RespuestaReportDto>(new RespuestaReportDto { Base64 = base64, resultado = 0, resultado_msj = $"{request.Reporte.ToString()}.pdf" }));
             }
             catch (NegocioException ex)
             {
@@ -61,15 +61,15 @@ namespace gc.api.report.Controllers
                         var base64 = _pdfReportService.GenerateReportAsBase64(request);
 
                         //devolver apiresponse entidad 
-                        return Ok(new ApiResponse<RespuestaReportDto>(new RespuestaReportDto { Base64 = base64, resultado = 0, resultado_msj = string.Empty }));          
+                        return Ok(new ApiResponse<RespuestaReportDto>(new RespuestaReportDto { Base64 = base64, resultado = 0, resultado_msj = $"{request.Reporte.ToString()}.pdf" }));          
                     case "X":
                         string base64x = _pdfReportService.GenerarReporteFormatoExcel(request);
                         //devolver apiresponse entidad 
-                        return Ok(new ApiResponse<RespuestaReportDto>(new RespuestaReportDto { Base64 = base64x, resultado = 0, resultado_msj = string.Empty }));
+                        return Ok(new ApiResponse<RespuestaReportDto>(new RespuestaReportDto { Base64 = base64x, resultado = 0, resultado_msj = $"{request.Reporte.ToString()}.xls" }));
                     case "T":
                         string base64t = _pdfReportService.GenerarReporteFormatoTxt(request);
                         //devolver apiresponse entidad 
-                        return Ok(new ApiResponse<RespuestaReportDto>(new RespuestaReportDto { Base64 = base64t, resultado = 0, resultado_msj = string.Empty }));
+                        return Ok(new ApiResponse<RespuestaReportDto>(new RespuestaReportDto { Base64 = base64t, resultado = 0, resultado_msj =$"{request.Reporte.ToString()}.txt"  }));
                     default:
                         throw new NegocioException("No se ha especificado un formato correcto de archivo");
                 }

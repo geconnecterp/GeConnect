@@ -35,12 +35,12 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model.ListaDatos)
+                    @foreach (var item in Model.ListaDatos ?? Enumerable.Empty<ConsRecepcionProveedorDetalleDto>())
                     {
                         if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
                         <tr class="@clase" onclick="selectReg(this,'tbGridRpProvDet')">
-                            <td class="@Model.ObtenerClase(item.P_id)">@Model.FormatearDato(item.P_id,FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.P_id)">@Model.FormatearDato(item.P_id, FormatDato.Ninguno)</td>
                             <td class="@Model.ObtenerClase(item.P_desc)">@Model.FormatearDato(item.P_desc, FormatDato.Ninguno)</td>
                             <td class="@Model.ObtenerClase(item.Oc_compte)">@Model.FormatearDato(item.Oc_compte, FormatDato.Ninguno)</td>
                             <td class="@Model.ObtenerClase(item.Rpd_unidad_pres)">@Model.FormatearDato(item.Rpd_unidad_pres, FormatDato.Monto)</td>

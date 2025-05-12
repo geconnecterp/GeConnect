@@ -27,7 +27,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model.ListaDatos)
+                    @foreach (var item in Model.ListaDatos ?? Enumerable.Empty < ConsRecepcionProveedorDto>())
                     {
                         if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
                         <tr class="@clase" onclick="selectReg(this,'tbGridRpProv')" ondblclick="SeleccionarPeriodo(this,'tbGridRpProv')">

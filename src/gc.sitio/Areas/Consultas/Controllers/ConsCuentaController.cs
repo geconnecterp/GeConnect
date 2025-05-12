@@ -398,10 +398,10 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 //    #endregion
                 //}
 
-                string provId = CuentaComercialSeleccionada?.Prov_Id.ToString() ?? "";
+                string tipo = CuentaComercialSeleccionada?.Tipo.ToString() ?? "";
                 //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
                 grillaDatos = GenerarGrillaSmart(res.ListaEntidad, sort, _settings.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
-                grillaDatos.DatoAux01 = provId;
+                grillaDatos.DatoAux01 = tipo;
 
                 return View("_gridCmptDet", grillaDatos);
             }
@@ -665,7 +665,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
         }
 
         #region Metodos Privados
-        private string GenerarArchivoB64<T>(List<T> lista, AppReportes consulta, char? provId, string titulo)
+        private string GenerarArchivoB64<T>(List<T> lista, AppReportes consulta, char? tipo, string titulo)
         {
             MemoryStream ms = new();
             string observacion = string.Empty;
@@ -716,7 +716,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
                     break;
                 case AppReportes.CCUENTAS_COMPROBANTES_DETALLE:
                     observacion = "DETALLE DE COMPROBANTES - Documento generado por el sistema de Gestión Comercial";
-                    if (provId.Equals('P'))
+                    if (tipo.Equals('P'))
                     {
                         var cdDatos = (lista as List<ConsCompDetDto> ?? []).Select(x => new
                         {
@@ -840,7 +840,6 @@ namespace gc.sitio.Areas.Consultas.Controllers
             };
 
             _docMSv.GenerarArchivoPDF(request, out ms, titulos, anchos, datosCliente);
-
         }
 
         private async Task<CuentaDto> BuscarCuentaComercial(string ctaId, char t)

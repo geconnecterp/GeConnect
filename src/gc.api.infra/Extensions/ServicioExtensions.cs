@@ -95,8 +95,8 @@ namespace gc.api.infra.Extensions
             //De Reportes
             
             services.AddScoped<IReportService, ReportService>();
-            services.AddScoped<IGeneradorReporte, R001_InformeCuentaCorriente>();
-
+            //services.AddScoped<IGeneradorReporte, R001_InformeCuentaCorriente>();
+            services.AddLogging();
             
 
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
