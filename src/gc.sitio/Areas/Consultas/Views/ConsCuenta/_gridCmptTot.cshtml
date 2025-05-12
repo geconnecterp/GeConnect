@@ -23,13 +23,13 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model.ListaDatos)
+                    @foreach (var item in Model.ListaDatos ?? Enumerable.Empty<ConsCompTotDto>())
                     {
                         if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
                         ft += item.Cm_total;
                         nc += item.Nc_cm_total;
                         <tr class="@clase" onclick="selectReg(this,'tbGridCmpteTot')" ondblclick="SeleccionarPeriodo(this,'tbGridCmpteTot')">
-                            <td class="@Model.ObtenerClase(item.Periodo)">@Model.FormatearDato(item.Periodo,FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.Periodo)">@Model.FormatearDato(item.Periodo, FormatDato.Ninguno)</td>
                             <td class="@Model.ObtenerClase(item.Cm_neto)">@Model.FormatearDato(item.Cm_neto, FormatDato.Monto)</td>
                             <td class="@Model.ObtenerClase(item.Cm_total)">@Model.FormatearDato(item.Cm_total, FormatDato.Monto)</td>
                             <td class="@Model.ObtenerClase(item.Dif_m_ant)">@Model.FormatearDato(item.Dif_m_ant, FormatDato.Monto)</td>
@@ -40,7 +40,7 @@
                     }
                 </tbody>
             </table>
-           
+
         </div>
         <div class="row">
             <div class="col-md-12">

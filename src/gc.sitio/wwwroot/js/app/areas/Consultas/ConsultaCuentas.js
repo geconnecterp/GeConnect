@@ -479,8 +479,8 @@ function consultaRP() {
 }
 
 function consultarRPPDetalle(cmptId) {
-
-    var data = { cmptId };
+    ctaId = consCta;
+    var data = { cmptId,ctaId };
 
     userId = usuarioAuth;   //variable declarada en _layout
     let admId = administracion;

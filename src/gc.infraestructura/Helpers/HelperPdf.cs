@@ -731,12 +731,14 @@ namespace gc.infraestructura.Helpers
         }
 
         public static void GenerarListadoDesdeLista<T>(
-      Document pdf,
-      List<T> lista,
-      List<string> campos,
-      float[] anchos,
-      Font fuente,
-      bool incluirHoraEnFechas = false)
+        Document pdf,
+        List<T> lista,
+        List<string> campos,
+        float[] anchos,
+        Font fuente,
+        bool incluirHoraEnFechas = false,
+        bool agregarFilaTotal = false,
+        Dictionary<string, decimal>? totalesPorCampo = null)
         {
             if (lista == null || lista.Count == 0 || campos == null || campos.Count == 0)
                 return;
@@ -754,12 +756,7 @@ namespace gc.infraestructura.Helpers
                 {
                     if (!propsDict.TryGetValue(campo, out var prop))
                     {
-                        var celdaVacia = new PdfPCell(new Phrase(""))
-                        {
-                            Border = Rectangle.BOTTOM_BORDER,
-                            BorderColorBottom = BaseColor.Black
-                        };
-                        tabla.AddCell(celdaVacia);
+                        tabla.AddCell(new PdfPCell(new Phrase("")) { Border = Rectangle.BOTTOM_BORDER });
                         continue;
                     }
 
@@ -783,14 +780,61 @@ namespace gc.infraestructura.Helpers
                         alineacion = valorTexto.Length == 1 ? Element.ALIGN_CENTER : Element.ALIGN_LEFT;
                     }
 
-                    Paragraph parrafo = GeneraParrafo(valorTexto, fuente, alineacion, 5, 5, true, BaseColor.Black);
-                    PdfPCell celda = new PdfPCell(parrafo)
+                    var parrafo = GeneraParrafo(valorTexto, fuente, alineacion, 5, 5, true, BaseColor.Black);
+                    var celda = new PdfPCell(parrafo)
                     {
                         Border = Rectangle.BOTTOM_BORDER,
                         BorderColorBottom = BaseColor.Black,
-                        HorizontalAlignment = alineacion,
-                        VerticalAlignment = Element.ALIGN_MIDDLE
+                        HorizontalAlignment = alineacion
                     };
+                    tabla.AddCell(celda);
+                }
+            }
+
+            // Agregar fila total si corresponde
+            if (agregarFilaTotal && totalesPorCampo != null && totalesPorCampo.Count > 0)
+            {
+                var fuenteNegrita = new Font(fuente);
+                fuenteNegrita.SetStyle(Font.BOLD);
+                int idxPrimerTotal = campos.FindIndex(c => totalesPorCampo.ContainsKey(c));
+
+                for (int i = 0; i < campos.Count; i++)
+                {
+                    string campo = campos[i];
+                    PdfPCell celda;
+
+                    if (totalesPorCampo.TryGetValue(campo, out var total))
+                    {
+                        string valorFormateado = total.ToString("N2", cultura);
+                        var parrafo = GeneraParrafo(valorFormateado, fuenteNegrita, Element.ALIGN_RIGHT, 5, 5, true, BaseColor.Black);
+                        celda = new PdfPCell(parrafo)
+                        {
+                            HorizontalAlignment = Element.ALIGN_RIGHT,
+                            BackgroundColor = BaseColor.LightGray,
+                            Border = Rectangle.BOTTOM_BORDER,
+                            BorderColorBottom = BaseColor.Black
+                        };
+                    }
+                    else if (i == idxPrimerTotal - 1) // Agregar "Total" antes de último total si no hay campo a totalizar antes
+                    {
+                        var parrafo = GeneraParrafo("Total:", fuenteNegrita, Element.ALIGN_RIGHT, 5, 5, true, BaseColor.Black);
+                        celda = new PdfPCell(parrafo)
+                        {
+                            HorizontalAlignment = Element.ALIGN_RIGHT,
+                            BackgroundColor = BaseColor.LightGray,
+                            Border = Rectangle.BOTTOM_BORDER,
+                            BorderColorBottom = BaseColor.Black
+                        };
+                    }
+                    else
+                    {
+                        celda = new PdfPCell(new Phrase(""))
+                        {
+                            BackgroundColor = BaseColor.LightGray,
+                            Border = Rectangle.BOTTOM_BORDER,
+                            BorderColorBottom = BaseColor.Black
+                        };
+                    }
 
                     tabla.AddCell(celda);
                 }
@@ -798,6 +842,8 @@ namespace gc.infraestructura.Helpers
 
             pdf.Add(tabla);
         }
+
+
 
         public static HeaderFooter GenerarPie(DatosPieDto rPie, Font chico)
         {
@@ -866,6 +912,262 @@ namespace gc.infraestructura.Helpers
             pdf.Add(tabla);
         }
 
+        public static void GenerarListadoAgrupado<T>(
+                    Document pdf,
+                    List<T> lista,
+                    List<string> campos,
+                    List<string> titulos,
+                    float[] anchos,
+                    string campoGrupo,
+                    string campoGrupoDescripcion,
+                    Font fuente,
+                    Font fuenteNegrita)
+        {
+            GenerarListadoAgrupado(
+                pdf,
+                lista,
+                campos,
+                titulos,
+                anchos,
+                campoGrupo,
+                campoGrupoDescripcion,
+                fuente,
+                fuenteNegrita,
+                totalesPorCampo: null,
+                autoCalcularTotales: true,
+                camposTotalizables: null
+            );
+        }
+
+
+        public static void GenerarListadoAgrupado<T>(
+     Document pdf,
+     List<T> lista,
+     List<string> campos,
+     List<string> titulos,
+     float[] anchos,
+     string campoGrupo,
+     string campoGrupoDescripcion,
+     Font fuente,
+     Font fuenteNegrita,
+     Dictionary<string, decimal>? totalesPorCampo = null,
+     bool autoCalcularTotales = true,
+     List<string>? camposTotalizables = null)
+        {
+            if (lista == null || !lista.Any() || campos == null || campos.Count == 0) return;
+
+            var cultura = new CultureInfo("es-ES");
+            var propsDict = TypeDescriptor.GetProperties(typeof(T))
+                                          .Cast<PropertyDescriptor>()
+                                          .ToDictionary(p => p.Name, p => p, StringComparer.OrdinalIgnoreCase);
+
+            var tabla = GeneraTabla(campos.Count, anchos, 100, 0, 10);
+
+            string grupoActual = string.Empty;
+            bool alternar = false;
+
+            foreach (var item in lista)
+            {
+                string valorGrupo = propsDict[campoGrupo].GetValue(item)?.ToString() ?? "";
+                string valorGrupoDescripcion = propsDict[campoGrupoDescripcion].GetValue(item)?.ToString() ?? "";
+
+                if (!valorGrupo.Equals(grupoActual, StringComparison.OrdinalIgnoreCase))
+                {
+                    grupoActual = valorGrupo;
+
+                    PdfPCell celdaGrupo = new PdfPCell(new Phrase(valorGrupoDescripcion, fuenteNegrita))
+                    {
+                        Colspan = campos.Count,
+                        Border = Rectangle.NO_BORDER,
+                        BackgroundColor = BaseColor.LightGray,
+                        PaddingTop = 5,
+                        PaddingBottom = 5
+                    };
+                    tabla.AddCell(celdaGrupo);
+                }
+
+                foreach (var campo in campos)
+                {
+                    var prop = propsDict[campo];
+                    var valor = prop.GetValue(item);
+
+                    string texto = string.Empty;
+                    int alineacion = Element.ALIGN_LEFT;
+
+                    if (valor == null)
+                    {
+                        texto = "-";
+                    }
+                    else if (valor is DateTime dt)
+                    {
+                        texto = dt.ToString("dd/MM/yyyy");
+                        alineacion = Element.ALIGN_CENTER;
+                    }
+                    else if (valor is decimal or double or float)
+                    {
+                        texto = Convert.ToDecimal(valor).ToString("N2", cultura);
+                        alineacion = Element.ALIGN_RIGHT;
+                    }
+                    else
+                    {
+                        texto = valor.ToString()??string.Empty;
+                        alineacion = texto.Length == 1 ? Element.ALIGN_CENTER : Element.ALIGN_LEFT;
+                    }
+
+                    var parrafo = GeneraParrafo(texto, fuente, alineacion, 3, 3, true, BaseColor.Black);
+                    var celda = new PdfPCell(parrafo)
+                    {
+                        HorizontalAlignment = alineacion,
+                        Border = Rectangle.NO_BORDER,
+                        BackgroundColor = alternar ? BaseColor.White : new BaseColor(245, 245, 245)
+                    };
+
+                    tabla.AddCell(celda);
+                }
+
+                alternar = !alternar;
+            }
+
+            if (autoCalcularTotales && (totalesPorCampo == null || totalesPorCampo.Count == 0))
+            {
+                totalesPorCampo = new Dictionary<string, decimal>();
+
+                foreach (var campo in campos)
+                {
+                    if (!propsDict.ContainsKey(campo)) continue;
+
+                    if (camposTotalizables != null && !camposTotalizables.Contains(campo)) continue;
+
+                    var tipo = propsDict[campo].PropertyType;
+                    if (tipo == typeof(decimal) || tipo == typeof(double) || tipo == typeof(float))
+                    {
+                        decimal suma = lista.Sum(item =>
+                        {
+                            var val = propsDict[campo].GetValue(item);
+                            return val != null ? Convert.ToDecimal(val) : 0;
+                        });
+                        totalesPorCampo[campo] = suma;
+                    }
+                }
+            }
+
+            if (totalesPorCampo != null && totalesPorCampo.Count > 0)
+            {
+                int idxPrimerTotal = campos.FindIndex(c => totalesPorCampo.ContainsKey(c));
+
+                for (int i = 0; i < campos.Count; i++)
+                {
+                    PdfPCell celda;
+
+                    if (totalesPorCampo.TryGetValue(campos[i], out var total))
+                    {
+                        string valorFormateado = total.ToString("N2", cultura);
+                        var parrafo = GeneraParrafo(valorFormateado, fuenteNegrita, Element.ALIGN_RIGHT, 5, 5, true, BaseColor.Black);
+                        celda = new PdfPCell(parrafo)
+                        {
+                            HorizontalAlignment = Element.ALIGN_RIGHT,
+                            BackgroundColor = BaseColor.LightGray,
+                            Border = Rectangle.BOTTOM_BORDER,
+                            BorderColorBottom = BaseColor.Black
+                        };
+                    }
+                    else if (i == idxPrimerTotal - 1)
+                    {
+                        var parrafo = GeneraParrafo("Total:", fuenteNegrita, Element.ALIGN_RIGHT, 5, 5, true, BaseColor.Black);
+                        celda = new PdfPCell(parrafo)
+                        {
+                            HorizontalAlignment = Element.ALIGN_RIGHT,
+                            BackgroundColor = BaseColor.LightGray,
+                            Border = Rectangle.BOTTOM_BORDER,
+                            BorderColorBottom = BaseColor.Black
+                        };
+                    }
+                    else
+                    {
+                        celda = new PdfPCell(new Phrase(""))
+                        {
+                            BackgroundColor = BaseColor.LightGray,
+                            Border = Rectangle.BOTTOM_BORDER,
+                            BorderColorBottom = BaseColor.Black
+                        };
+                    }
+
+                    tabla.AddCell(celda);
+                }
+            }
+
+            pdf.Add(tabla);
+        }
+
+
+        public static void PresentarDatosCuentaTablaMarco(Document pdf, CuentaDto cuenta, Font fuenteEtiqueta, Font fuenteValor)
+        {
+            PdfPTable tabla = new PdfPTable(4);
+            tabla.SetWidths(new float[] { 25f, 25f, 25f, 25f });
+            tabla.WidthPercentage = 100;
+            tabla.SpacingBefore = 10;
+            tabla.SpacingAfter = 10;
+            tabla.DefaultCell.Border = Rectangle.NO_BORDER;
+
+            BaseColor grisFondo = new BaseColor(240, 240, 240);
+
+            // Fila 1
+            tabla.AddCell(CeldaEtiqueta("Proveedor:", fuenteEtiqueta, grisFondo));
+            tabla.AddCell(CeldaDato($"({cuenta.Cta_Id}) {cuenta.Cta_Denominacion}", fuenteValor));
+            tabla.AddCell(CeldaEtiqueta("Fecha Recepción:", fuenteEtiqueta, grisFondo));
+            tabla.AddCell(CeldaDato(DateTime.Today.ToString("dd/MM/yyyy"), fuenteValor));
+
+            // Fila 2
+            tabla.AddCell(CeldaEtiqueta("Comprobante:", fuenteEtiqueta, grisFondo));
+            tabla.AddCell(CeldaDato("Factura Nº 0001-00008964", fuenteValor));
+            tabla.AddCell(CeldaEtiqueta("Fecha Comprobante:", fuenteEtiqueta, grisFondo));
+            tabla.AddCell(CeldaDato("20/08/2020", fuenteValor));
+
+            // Fila 3
+            tabla.AddCell(CeldaEtiqueta("Sucursal de Descarga:", fuenteEtiqueta, grisFondo));
+            tabla.AddCell(CeldaDato("Santa Lucia", fuenteValor));
+            tabla.AddCell(CeldaEtiqueta("Depósito:", fuenteEtiqueta, grisFondo));
+            tabla.AddCell(CeldaDato("Salon de Ventas Santa L.", fuenteValor));
+
+            // Encapsular la tabla en una celda contenedora con borde
+            PdfPTable tablaContenedora = new PdfPTable(1);
+            tablaContenedora.WidthPercentage = 100;
+            var celdaContenedor = new PdfPCell(tabla)
+            {
+                Border = Rectangle.BOX,
+                Padding = 5
+            };
+            tablaContenedora.AddCell(celdaContenedor);
+
+            pdf.Add(tablaContenedora);
+        }
+
+        // Helpers
+
+        private static PdfPCell CeldaEtiqueta(string texto, Font fuente, BaseColor fondo)
+        {
+            return new PdfPCell(new Phrase(texto, fuente))
+            {
+                Border = Rectangle.NO_BORDER,
+                BackgroundColor = fondo,
+                HorizontalAlignment = Element.ALIGN_RIGHT,
+                VerticalAlignment = Element.ALIGN_MIDDLE,
+                Padding = 4
+            };
+        }
+
+        private static PdfPCell CeldaDato(string texto, Font fuente)
+        {
+            return new PdfPCell(new Phrase(texto, fuente))
+            {
+                Border = Rectangle.NO_BORDER,
+                HorizontalAlignment = Element.ALIGN_LEFT,
+                VerticalAlignment = Element.ALIGN_MIDDLE,
+                Padding = 4
+            };
+        }
+
+        
     }
 
     public enum HojaSize

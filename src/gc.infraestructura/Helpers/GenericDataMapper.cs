@@ -263,13 +263,17 @@ namespace gc.infraestructura.Helpers
         {
             if (HasColumn(dr, column, ignoreCase))
             {
-                try
+                var columnValue = dr[column]?.ToString();
+                if (!string.IsNullOrEmpty(columnValue))
                 {
-                    return Convert.ToDateTime(dr[column]);
-                }
-                catch
-                {
-                    return dr[column].ToString().ToDateFormat_dd_mm_yyyy();
+                    try
+                    {
+                        return Convert.ToDateTime(columnValue);
+                    }
+                    catch
+                    {
+                        return columnValue.ToDateFormat_dd_mm_yyyy();
+                    }
                 }
             }
             return DateTime.MinValue;
@@ -279,15 +283,16 @@ namespace gc.infraestructura.Helpers
         {
             if (HasColumn(dr, column, ignoreCase))
             {
-                if (dr[column] != null && dr[column] != DBNull.Value)
+                var columnValue = dr[column]?.ToString();
+                if (!string.IsNullOrEmpty(columnValue))
                 {
                     try
                     {
-                        return Convert.ToDateTime(dr[column]);
+                        return Convert.ToDateTime(columnValue);
                     }
                     catch
                     {
-                        return dr[column].ToString().ToDateFormat_dd_mm_yyyy();
+                        return columnValue.ToDateFormat_dd_mm_yyyy();
                     }
                 }
             }

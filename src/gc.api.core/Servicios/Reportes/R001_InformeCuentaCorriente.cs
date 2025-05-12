@@ -1,6 +1,4 @@
-﻿using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Office2016.Drawing.Command;
-using gc.api.core.Contratos.Servicios;
+﻿using gc.api.core.Contratos.Servicios;
 using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
@@ -11,9 +9,8 @@ using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Reflection;
-using System.Text;
 
 namespace gc.api.core.Servicios.Reportes
 {
@@ -25,9 +22,9 @@ namespace gc.api.core.Servicios.Reportes
         private readonly List<string> _titulos;
         private readonly List<string> _campos;
         private readonly ICuentaServicio _cuentaSv;
-
+        private readonly ILogger _logger;
         public R001_InformeCuentaCorriente(IUnitOfWork uow, IConsultaServicio consulta,
-           IOptions<EmpresaGeco> empresa, ICuentaServicio consultaSv) : base(uow)
+           IOptions<EmpresaGeco> empresa, ICuentaServicio consultaSv,ILogger logger) : base(uow)
         {
             _consultaServicio = consulta;
 
@@ -35,6 +32,7 @@ namespace gc.api.core.Servicios.Reportes
             _titulos = new List<string> {"N° Mov", "Fecha",  "Descripcion", "Debe", "Haber", "Saldo" };
             _campos = new List<string> {"Movimiento", "Fecha", "Descripion", "Debe", "Haber", "Saldo" };
             _cuentaSv = consultaSv;
+            _logger = logger;
         }
 
         public string Generar(ReporteSolicitudDto solicitud)
@@ -184,9 +182,11 @@ namespace gc.api.core.Servicios.Reportes
             {
                 throw;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 //_logger.Log(typeof(R001_InformeCuentaCorriente), Level.Error, $"Error al generar el informe de cuenta corriente: {ex.Message}", ex);
+                _logger.LogError(ex, "Error en R001");
+
                 throw new NegocioException("Se produjo un error al intentar generar el Informe de Cuenta Corriente. Para mayores datos ver el log.");
             }
 

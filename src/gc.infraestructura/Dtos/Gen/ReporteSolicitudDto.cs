@@ -1,4 +1,5 @@
-﻿using gc.infraestructura.Enumeraciones;
+﻿using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Enumeraciones;
 
 namespace gc.infraestructura.Dtos.Gen
 {
@@ -11,5 +12,6 @@ namespace gc.infraestructura.Dtos.Gen
         public string LogoPath { get; set; } = string.Empty;
         public string Administracion { get; set; } = string.Empty;
         public string Formato { get; set; } = string.Empty;
+        public CuentaDto Cuenta { get; set; } = new();
     }
 }

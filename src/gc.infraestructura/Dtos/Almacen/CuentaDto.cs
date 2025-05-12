@@ -45,7 +45,7 @@ namespace gc.infraestructura.Dtos.Almacen
         /// Es un dato auxiliar para ser utilizado en los reportes. 
         /// </summary>
         public decimal Monto { get; set; }
-        public string MontoEtiqueta { get; set; }
+        public string MontoEtiqueta { get; set; } = string.Empty;
     }
 
     public partial class  CuentaABMDto : CuentaDto

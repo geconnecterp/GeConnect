@@ -6,10 +6,8 @@ using gc.api.core.Servicios.Reportes;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Enumeraciones;
-using gc.infraestructura.Helpers;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
-using log4net.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text;
@@ -19,18 +17,25 @@ namespace gc.api.core.Servicios
     public class ReportService : Servicio<EntidadBase>, IReportService
     {
         private readonly Dictionary<InfoReporte, IGeneradorReporte> _generadoresReporte;
-
+        private readonly ILogger<ReportService> _logger;
 
         public ReportService(IUnitOfWork uow, IConsultaServicio consSv,
-             IOptions<EmpresaGeco> empresa, ICuentaServicio ctaSv) : base(uow)
+             IOptions<EmpresaGeco> empresa, ICuentaServicio ctaSv, ILogger<ReportService> logger) : base(uow)
         {
 
             // Se inicializa el diccionario de generadores de reportes
             _generadoresReporte = new Dictionary<InfoReporte, IGeneradorReporte>
             {
-                { InfoReporte.R001_InfoCtaCte, new R001_InformeCuentaCorriente(uow,consSv,empresa,ctaSv) },
-                { InfoReporte.R002_InfoVenc, new R002_InformeVencimiento(uow,consSv,empresa,ctaSv) }
+                { InfoReporte.R001_InfoCtaCte, new R001_InformeCuentaCorriente(uow,consSv,empresa,ctaSv, logger) },
+                { InfoReporte.R002_InfoVenc, new R002_InformeVencimiento(uow,consSv,empresa,ctaSv,logger) },
+                { InfoReporte.R003_InfoCmpte, new R003_InformeComprobantes(uow,consSv,empresa,ctaSv,logger) },
+                { InfoReporte.R004_InfoCmpteDet, new R004_InformeComprobanteDetalle(uow,consSv,empresa,ctaSv,logger) },
+                { InfoReporte.R005_InfoOPago, new R005_InformeOPago(uow,consSv,empresa,ctaSv,logger) },
+                { InfoReporte.R006_InfoOPagoDet, new R006_InformeOPagoDetalle(uow,consSv,empresa,ctaSv, logger) },
+                { InfoReporte.R007_InfoRecProv, new R007_InformeRecepcionProveedor(uow,consSv,empresa,ctaSv, logger) },
+                { InfoReporte.R008_InfoRecProvDet, new R008_InformeRecepcionProveedorDetalle(uow,consSv,empresa,ctaSv, logger) },
             };
+            _logger = logger;
         }
 
         public string GenerarReporteFormatoExcel(ReporteSolicitudDto solicitud)

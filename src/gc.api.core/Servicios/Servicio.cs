@@ -21,6 +21,10 @@
     using System.Reflection;
     using gc.infraestructura.Dtos.DocManager;
     using gc.infraestructura.Dtos.Almacen;
+    using gc.infraestructura.Dtos.Gen;
+    using gc.infraestructura.EntidadesComunes.Options;
+    using gc.infraestructura.Helpers;
+    using System.Globalization;
 
     public class Servicio<T> : IServicio<T> where T : EntidadBase
     {
@@ -214,42 +218,88 @@
             }
         }
 
-        protected string GeneraFileXLS<S>(List<S> registros, List<string> _titulos, List<string> _campos) where S : class
+        protected string GeneraFileXLS<S>(List<S> registros, List<string> _titulos, List<string> _campos,
+             string nombreHoja = "Datos") where S : class
         {
-
-            // Convertir los datos a Excel
             using (var workbook = new XLWorkbook())
             {
-                var worksheet = workbook.Worksheets.Add("Sheet1");
+                var worksheet = workbook.Worksheets.Add(nombreHoja);
 
-                // Obtener las propiedades públicas del tipo de elemento
+                if (registros == null || !registros.Any()) return string.Empty;
+
                 var reg = registros.First();
-                var properties = reg.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                var properties = reg.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                                     .Where(p => _campos.Contains(p.Name))
+                                     .ToList();
 
-                //carga cabecera
-                int i = 0;
-                foreach (var item in _titulos)
+                // Estilo para bordes
+                Action<IXLCell> aplicarBordes = cell =>
                 {
-                    worksheet.Cell(1, i + 1).Value = item;
-                    i++;
+                    cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                    cell.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+                };
+
+                // Cargar cabecera
+                for (int col = 0; col < _titulos.Count; col++)
+                {
+                    var cell = worksheet.Cell(1, col + 1);
+                    cell.Value = _titulos[col];
+                    cell.Style.Font.Bold = true;
+                    cell.Style.Fill.BackgroundColor = XLColor.LightGray;
+                    aplicarBordes(cell);
                 }
 
-                // Agregar datos
+                // Cargar datos
                 int fila = 2;
                 foreach (var item in registros)
                 {
-                    i = 0;
-                    foreach (PropertyInfo prop in properties)
+                    int col = 0;
+                    foreach (var prop in properties)
                     {
-                        if (!_campos.Contains(prop.Name)) { continue; }
-
                         var valor = prop.GetValue(item);
-                        worksheet.Cell(fila, i + 1).Value = valor != null ? valor.ToString() : string.Empty;
-                        i++;
+                        var cell = worksheet.Cell(fila, col + 1);
+
+                        if (valor == null)
+                        {
+                            cell.Value = "-";
+                        }
+                        else if (valor is DateTime fecha)
+                        {
+                            cell.Value = fecha;
+                            cell.Style.DateFormat.Format = "dd/MM/yy";
+                        }
+                        else if (valor is int or long or short or byte)
+                        {
+                            cell.Value = Convert.ToInt64(valor);
+                        }
+                        else if (valor is decimal or double or float)
+                        {
+                            cell.Value = Convert.ToDecimal(valor);
+                            cell.Style.NumberFormat.Format = "#,##0.00";
+                        }
+                        else if (valor is bool booleano)
+                        {
+                            cell.Value = booleano ? "Sí" : "No";
+                        }
+                        else
+                        {
+                            cell.Value = valor.ToString();
+                        }
+
+                        aplicarBordes(cell);
+                        col++;
+                    }
+
+                    // Alternar color de fondo
+                    if ((fila % 2) == 0)
+                    {
+                        worksheet.Row(fila).Style.Fill.BackgroundColor = XLColor.AliceBlue; //XLColor.FromHtml("#F5F5F5");
                     }
 
                     fila++;
                 }
+
+                worksheet.Columns().AdjustToContents();
 
                 return ConvertirWorkBook2B64(workbook);
             }
@@ -286,40 +336,108 @@
                 RazonSocial = cta.Cta_Denominacion,
                 Domicilio = cta.Cta_Domicilio,
                 CUIT = cta.Cta_Documento,
-                Contacto = $"Te: {cta.Cta_Te} - Cel: {cta.Cta_Celu}." ,
+                Contacto = $"Te: {cta.Cta_Te} - Cel: {cta.Cta_Celu}.",
 
             };
             return datos;
         }
 
-        //public class CustomPdfPageEventHelper : PdfPageEventHelper
-        //{
-        //    private readonly string _footerText;
-        //    public CustomPdfPageEventHelper(string footerText)
-        //    {
-        //        _footerText = footerText;
-        //    }
+        protected PdfPTable GeneraCabeceraPdf(ReporteSolicitudDto solicitud, Image logo, Font chico, Font titulo, EmpresaGeco _empresaGeco)
+        {
+            PdfPTable tabla = HelperPdf.GeneraTabla(4, [7f, 20f, 58f, 15f], 100, 10, 20);
 
-        //    public override void OnEndPage(PdfWriter writer, Document document)
-        //    {
-        //        PdfPTable footerTable = new PdfPTable(2);
-        //        footerTable.TotalWidth = document.PageSize.Width - document.LeftMargin - document.RightMargin;
-        //        footerTable.DefaultCell.Border = Rectangle.NO_BORDER;
+            // Columna 1: Logo
+            PdfPCell celdaLogo = HelperPdf.GeneraCelda(logo, false);
+            tabla.AddCell(celdaLogo);
 
-        //        // Add footer text
-        //        PdfPCell cell = new PdfPCell(new Phrase(_footerText, new Font(Font.HELVETICA, 8, Font.NORMAL)));
-        //        cell.Border = Rectangle.NO_BORDER;
-        //        cell.HorizontalAlignment = Element.ALIGN_LEFT;
-        //        footerTable.AddCell(cell);
+            // Columna 2: Datos apilados y título
+            PdfPTable subTabla = new PdfPTable(1);
+            subTabla.WidthPercentage = 100;
 
-        //        // Add page number
-        //        cell = new PdfPCell(new Phrase("Página " + writer.PageNumber, new Font(Font.HELVETICA, 8, Font.NORMAL)));
-        //        cell.Border = Rectangle.NO_BORDER;
-        //        cell.HorizontalAlignment = Element.ALIGN_RIGHT;
-        //        footerTable.AddCell(cell);
+            // Datos apilados
+            subTabla.AddCell(HelperPdf.CrearCeldaTexto(_empresaGeco.Nombre, chico));
+            subTabla.AddCell(HelperPdf.CrearCeldaTexto($"CUIT: {_empresaGeco.CUIT} s:{solicitud.Administracion}", chico));
+            subTabla.AddCell(HelperPdf.CrearCeldaTexto($"IIBB: {_empresaGeco.IngresosBrutos}", chico));
+            subTabla.AddCell(HelperPdf.CrearCeldaTexto($"Dirección: {_empresaGeco.Direccion}", chico));
 
-        //        footerTable.WriteSelectedRows(0, -1, document.LeftMargin, document.BottomMargin - 20, writer.DirectContent);
-        //    }
-        //}
+            PdfPCell celdaSubTabla = new PdfPCell(subTabla)
+            {
+                Border = Rectangle.NO_BORDER,
+                HorizontalAlignment = Element.ALIGN_CENTER,
+                VerticalAlignment = Element.ALIGN_MIDDLE
+            };
+            tabla.AddCell(celdaSubTabla);
+
+            // Columna 3: Título del informe
+            PdfPCell celdaTitulo = new PdfPCell(new Phrase(solicitud.Titulo, titulo))
+            {
+                Border = Rectangle.NO_BORDER,
+                HorizontalAlignment = Element.ALIGN_CENTER,
+                VerticalAlignment = Element.ALIGN_MIDDLE,
+                PaddingTop = 10f
+            };
+            tabla.AddCell(celdaTitulo);
+
+            // Columna 4: Fecha
+            string fechaHora = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+            PdfPCell celdaFechaHora = new PdfPCell(new Phrase(fechaHora, chico))
+            {
+                Border = Rectangle.NO_BORDER,
+                HorizontalAlignment = Element.ALIGN_RIGHT,
+                VerticalAlignment = Element.ALIGN_MIDDLE
+            };
+            tabla.AddCell(celdaFechaHora);
+            return tabla;
+        }
+
+        protected static PdfPCell CeldaTexto(object valor, Font fuente, BaseColor fondo, bool aplicarFormatoNumerico = true)
+        {
+            string texto = valor?.ToString() ?? "-";
+            int alineacion = Element.ALIGN_LEFT;
+            var cultura = new CultureInfo("es-ES");
+
+            if (aplicarFormatoNumerico && decimal.TryParse(texto, NumberStyles.Any, cultura, out decimal valorDecimal))
+            {
+                texto = valorDecimal.ToString("N2", cultura);
+                alineacion = Element.ALIGN_RIGHT;
+            }
+
+            var parrafo = new Paragraph(texto, fuente)
+            {
+                Alignment = alineacion
+            };
+
+            return new PdfPCell(parrafo)
+            {
+                BackgroundColor = fondo,
+                Border = Rectangle.BOX,
+                HorizontalAlignment = alineacion,
+                VerticalAlignment = Element.ALIGN_MIDDLE,
+                Padding = 4
+            };
+        }
+
+        protected static PdfPCell HeaderCell(string texto, int colspan, Font fuente, BaseColor? fondo = null)
+        {
+            var celda = new PdfPCell(new Phrase(texto, fuente))
+            {
+                Colspan = colspan,
+                HorizontalAlignment = Element.ALIGN_CENTER,
+                VerticalAlignment = Element.ALIGN_MIDDLE,
+                BackgroundColor = fondo ?? BaseColor.LightGray,
+                Border = Rectangle.BOX,
+                Padding = 5
+            };
+            return celda;
+        }
+
+        protected static PdfPCell BlankCell(int colspan)
+        {
+            return new PdfPCell(new Phrase(""))
+            {
+                Colspan = colspan,
+                Border = Rectangle.NO_BORDER
+            };
+        }
     }
 }

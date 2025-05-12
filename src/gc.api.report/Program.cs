@@ -3,6 +3,7 @@ using gc.api.infra.Extensions;
 using gc.api.infra.Filtros;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Services;
+using gc.infraestructura.EntidadesComunes.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +27,7 @@ if (!string.IsNullOrEmpty(conn))
     conn = conn.Replace(@"\\", @"\");
     builder.Services.AddDbContext<GeConnectContext>(opt => opt.UseSqlServer(conn));
 }
+builder.Services.Configure<EmpresaGeco>(builder.Configuration.GetSection("EmpresaGeco"));
 
 
 builder.Services.AddServicios();

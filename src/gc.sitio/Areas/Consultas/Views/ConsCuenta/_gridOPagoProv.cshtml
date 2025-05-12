@@ -20,7 +20,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model.ListaDatos)
+                    @foreach (var item in Model.ListaDatos ?? Enumerable.Empty<ConsOrdPagosDto>())
                     {
                         if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
                         <tr class="@clase" onclick="selectReg(this,'tbGridOpProv')" ondblclick="SeleccionarPeriodo(this,'tbGridOpProv')">

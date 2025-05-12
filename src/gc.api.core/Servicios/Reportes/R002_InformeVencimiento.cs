@@ -3,14 +3,13 @@ using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Exceptions;
-using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
-using log4net.Core;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace gc.api.core.Servicios.Reportes
@@ -23,9 +22,10 @@ namespace gc.api.core.Servicios.Reportes
         private readonly List<string> _titulos;
         private readonly List<string> _campos;
         private readonly ICuentaServicio _cuentaSv;
+        private readonly ILogger _logger;
 
         public R002_InformeVencimiento(IUnitOfWork uow, IConsultaServicio consulta,
-           IOptions<EmpresaGeco> empresa, ICuentaServicio consultaSv) : base(uow)
+           IOptions<EmpresaGeco> empresa, ICuentaServicio consultaSv, ILogger logger) : base(uow)
         {
             _consultaServicio = consulta;
 
@@ -33,6 +33,7 @@ namespace gc.api.core.Servicios.Reportes
             _titulos = new List<string> { "Descripcion", "Cuota", "Est.", "Fecha Comp.", "Fecha Vto", "Importe" };
             _campos = new List<string> { "Descripion", "Cuota", "Est", "FechaComp", "FechaVto", "Importe" };
             _cuentaSv = consultaSv;
+            _logger = logger;
         }
 
         public string Generar(ReporteSolicitudDto solicitud)
@@ -51,7 +52,7 @@ namespace gc.api.core.Servicios.Reportes
 
                 if (registros == null || registros.Count == 0)
                 {
-                    throw new NegocioException($"No se encontraron registros de la cuenta corriente {ctaId}.");
+                    throw new NegocioException($"No se encontraron registros para el Informe de Vencimientos {ctaId}.");
                 }
 
                 var regs = registros.Select(x => new
@@ -74,11 +75,6 @@ namespace gc.api.core.Servicios.Reportes
                 var cliente = c[0];
                 cliente.Monto = registros.Sum(x => x.Cv_importe);
                 cliente.MontoEtiqueta = "Total Vencim:";
-
-                
-                #endregion
-
-                #region Se define los campos que se presentarán en el reporte
 
                 #endregion
 
@@ -175,7 +171,18 @@ namespace gc.api.core.Servicios.Reportes
                 #region Carga del Listado
 
                 HelperPdf.GeneraCabeceraLista(pdf, _titulos, anchos, normalBold);
-                HelperPdf.GenerarListadoDesdeLista(pdf, regs, _campos, anchos, chico);
+                //utilizo cliente.Monto para el total previamente cargado, pero ya dejo preparado el helper para definir
+                //multiples campos con totales. Ejemplo: Debe, Haber y Saldo.
+                //var totales = new Dictionary<string, decimal>
+                //        {
+                //            { "Debe", 15420.50m },
+                //            { "Haber", 10325.30m },
+                //            { "Saldo", 5095.20m }
+                //        };
+                var totales = new Dictionary<string, decimal>{
+                    { "Importe", cliente.Monto}};
+
+                HelperPdf.GenerarListadoDesdeLista(pdf, regs, _campos, anchos, chico, false, true, totales);
 
                 #endregion
 
@@ -189,10 +196,11 @@ namespace gc.api.core.Servicios.Reportes
             {
                 throw;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                //_logger.Log(typeof(R001_InformeCuentaCorriente), Level.Error, $"Error al generar el informe de cuenta corriente: {ex.Message}", ex);
-                throw new NegocioException("Se produjo un error al intentar generar el Informe de Cuenta Corriente. Para mayores datos ver el log.");
+                _logger.LogError(ex, "Error en R002");
+
+                throw new NegocioException("Se produjo un error al intentar generar el Informe de Vencimiento de Comprobantes. Para mayores datos ver el log.");
             }
 
         }
