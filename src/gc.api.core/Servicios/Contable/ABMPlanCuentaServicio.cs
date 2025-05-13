@@ -1,5 +1,5 @@
 ﻿using gc.api.core.Constantes;
-using gc.api.core.Contratos.Servicios.ABM;
+using gc.api.core.Contratos.Servicios.Contable;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes;
@@ -15,7 +15,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace gc.api.core.Servicios.ABM
+namespace gc.api.core.Servicios.Contable
 {
     public class ABMPlanCuentaServicio : Servicio<PlanContable>, IABMPlanCuentaServicio
     {

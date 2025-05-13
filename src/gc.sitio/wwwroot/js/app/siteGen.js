@@ -10,6 +10,64 @@ var nnControlCta04 = "";
 var arrRepoParams = new Array(300);
 
 $(function () {
+
+    // Reemplaza o modifica tu código actual de manejo de dropdown-submenu
+    // Asegura que los clics en los elementos del menú no cierren el menú principal
+    $('.dropdown-menu a.dropdown-toggle').on('click', function (e) {
+        if ($(window).width() >= 992) {
+            var $subMenu = $(this).next('.dropdown-menu');
+
+            // Toggle la clase show para el submenu
+            $subMenu.toggleClass('show');
+
+            // Toggle la clase show para el item padre (para el giro del ícono)
+            $(this).parent('.dropdown-submenu').toggleClass('show');
+
+            // Oculta otros submenús al mismo nivel y quita su clase show
+            var $siblings = $(this).parent().siblings();
+            $siblings.removeClass('show');
+            $siblings.find('.dropdown-menu').removeClass('show');
+
+            // Previene cierre automático
+            e.stopPropagation();
+            e.preventDefault();
+        }
+    });
+
+    // Para dispositivos móviles
+    $('.dropdown-submenu > a').on('click', function (e) {
+        if ($(window).width() < 992) {
+            // Previene navegación si hay submenú
+            if ($(this).next('.dropdown-menu').length > 0) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                // Toggle el submenú actual
+                var submenu = $(this).next('.dropdown-menu');
+                var parent = $(this).parent();
+
+                if (submenu.is(':visible')) {
+                    submenu.hide();
+                    parent.removeClass('show');
+                } else {
+                    // Oculta otros submenús abiertos al mismo nivel y quita show
+                    var siblings = parent.siblings();
+                    siblings.removeClass('show');
+                    siblings.find('.dropdown-menu').hide();
+
+                    // Muestra este submenú y añade show
+                    submenu.show();
+                    parent.addClass('show');
+                }
+            }
+        }
+    });
+
+
+
+
+
+
     //const mainContent = $("main"); // Ajusta el selector según tu estructura HTML
 
     const modal = $("#msjModal");
@@ -96,6 +154,19 @@ $(function () {
         else {
             $("#Rel04").prop("disabled", true).val("");
             $("#Rel04List").prop("disabled", true).empty();
+        }
+    });
+
+    $("#chkRel05").on("click", function () {
+        if ($("#chkRel05").is(":checked")) {
+            $("#Rel05").prop("disabled", false);
+            $("#Rel05List").prop("disabled", false);
+            $("#Rel05").trigger("focus");
+
+        }
+        else {
+            $("#Rel05").prop("disabled", true).val("");
+            $("#Rel05List").prop("disabled", true).empty();
         }
     });
 

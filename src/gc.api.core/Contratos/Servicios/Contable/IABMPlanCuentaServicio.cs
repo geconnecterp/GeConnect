@@ -3,7 +3,7 @@ using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Contabilidad;
 
-namespace gc.api.core.Contratos.Servicios.ABM
+namespace gc.api.core.Contratos.Servicios.Contable
 {
     public interface IABMPlanCuentaServicio:IServicio<PlanContable>
     {

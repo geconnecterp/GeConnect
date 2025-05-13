@@ -10,8 +10,7 @@
     //inicialmente desactivamos el boton de detalle
     $("#btnDetalle").prop("disabled", true);
     $("#btnCancel").on("click", function () {
-        $("#btnFiltro").trigger("click");
-        $("#MenuId").prop("disabled", false);
+        window.location.href = homeMenuUrl;
     });
     $("#pagEstado").on("change", function () {
         var div = $("#divPaginacion");
@@ -58,7 +57,7 @@
 
     inicializaPantallaCtrlMenu(Grids.GridPerfil);
 
-    return true;
+    $("#chkDescr").trigger("click");
 });
 
 function buscarPerfiles(pagina) {

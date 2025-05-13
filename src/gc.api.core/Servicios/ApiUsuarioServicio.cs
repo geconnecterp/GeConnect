@@ -70,6 +70,8 @@ namespace gc.api.core.Servicios
             var sp = ConstantesGC.StoredProcedures.SP_USU_PERFILES_LISTA;
             var ps = new List<SqlParameter>();
 
+
+
             if (!string.IsNullOrEmpty(filters.Id))
             {
                 ps.Add(new SqlParameter("@id", true));
@@ -90,7 +92,17 @@ namespace gc.api.core.Servicios
                 ps.Add(new SqlParameter("@id_h", "000"));
             }
 
-            ps.Add(new SqlParameter("@registros", filters.Registros));
+            if (!string.IsNullOrEmpty(filters.Buscar))
+            {
+                ps.Add(new SqlParameter("@deno", 1));
+                ps.Add(new SqlParameter("@deno_like", filters.Buscar));
+            }
+            else
+            {
+                ps.Add(new SqlParameter("@deno", 0));
+            }
+
+                ps.Add(new SqlParameter("@registros", filters.Registros));
             ps.Add(new SqlParameter("@pagina", filters.Pagina));
             ps.Add(new SqlParameter("@ordenar", "perfil_descripcion"));
 

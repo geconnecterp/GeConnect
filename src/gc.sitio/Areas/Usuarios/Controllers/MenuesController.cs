@@ -19,7 +19,6 @@ namespace gc.sitio.Areas.Usuarios.Controllers
     public class MenuesController : ControladorUsuariosBase
     {
         private readonly AppSettings _settings;
-        private readonly ILogger<MenuesController> _logger;
         private readonly IMenuesServicio _mnSrv;
         private readonly IAbmServicio _abmSv;
 
@@ -28,7 +27,6 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             ILogger<MenuesController> logger, IMenuesServicio menuesServicio, IAbmServicio abmServicio) : base(options, accessor, logger)
 
         {
-            _logger = logger;
             _settings = options.Value;
             _mnSrv = menuesServicio;
             _abmSv = abmServicio;
@@ -113,7 +111,11 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 RespuestaGenerica<PerfilDto> per = await GetPerfil(id);
                 if (!per.Ok)
                 {
-                    throw new NegocioException(per.Mensaje);
+                    throw new NegocioException(per.Mensaje ?? "No fue posible obtener los perfiles.");
+                }
+                if (per.Entidad == null)
+                {
+                    throw new NegocioException("No se pudo obtener los datos del perfile. Salga e intentelo nuevamente.");
                 }
                 //inicializo barrados
                 UsuariosXPerfil = [];
@@ -169,7 +171,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 {
                     throw new NegocioException(per.Mensaje);
                 }
-               
+
                 UsuariosXPerfil = per.ListaEntidad;
                 grillaDatos = GenerarGrillaSmart(UsuariosXPerfil, "usu_apellidoynombre");
 
@@ -409,17 +411,17 @@ namespace gc.sitio.Areas.Usuarios.Controllers
         }
 
         /// <summary>
-        /// se asume que el menu tiene 2 niveles (Root - hijo) y por lo tanto se parseará 
-        /// no recursivamente, sino detectando hijos y definiendo para cada nivel un foreach.
+        /// Genera un menú plano a partir de un JSON con estructura jerárquica, manejando n niveles de anidamiento.
         /// </summary>
-        /// <param name="djson"></param>
-        /// <returns></returns>
+        /// <param name="json">El JSON que representa el menú jerárquico.</param>
+        /// <param name="menu_id">El identificador del menú.</param>
+        /// <param name="perfil_id">El identificador del perfil.</param>
+        /// <returns>Una lista plana de objetos MenuItemsDto.</returns>
         private List<MenuItemsDto> GeneraMenuPlano(string json, string menu_id, string perfil_id)
         {
             var menuP = new List<MenuItemsDto>();
 
             var menu = JsonConvert.DeserializeObject<List<MenuRoot>>(json);
-
 
             if (menu == null)
             {
@@ -428,20 +430,41 @@ namespace gc.sitio.Areas.Usuarios.Controllers
 
             foreach (var item in menu)
             {
-                MenuItemsDto i = ParseaItem(item, menu_id, perfil_id);
-                menuP.Add(i);
-                if (item.children.Count > 0)
-                {
-                    foreach (var child in item.children)
-                    {
-                        var c = ParseaItem(child, menu_id, perfil_id);
-                        menuP.Add(c);
-                    }
-                }
+                ProcesarNodo(item, menu_id, perfil_id, menuP);
             }
+
             return menuP;
         }
 
+        /// <summary>
+        /// Procesa un nodo del menú y sus hijos de forma recursiva, agregándolos a la lista plana.
+        /// </summary>
+        /// <param name="item">El nodo actual a procesar.</param>
+        /// <param name="menu_id">El identificador del menú.</param>
+        /// <param name="perfil_id">El identificador del perfil.</param>
+        /// <param name="menuP">La lista plana donde se agregarán los nodos procesados.</param>
+        private void ProcesarNodo(MenuRoot item, string menu_id, string perfil_id, List<MenuItemsDto> menuP)
+        {
+            // Agregar el nodo actual a la lista plana
+            menuP.Add(ParseaItem(item, menu_id, perfil_id));
+
+            // Procesar los hijos del nodo actual, si existen
+            if (item.children != null && item.children.Count > 0)
+            {
+                foreach (var child in item.children)
+                {
+                    ProcesarNodo(child, menu_id, perfil_id, menuP);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Convierte un nodo MenuRoot en un objeto MenuItemsDto.
+        /// </summary>
+        /// <param name="item">El nodo a convertir.</param>
+        /// <param name="mnId">El identificador del menú.</param>
+        /// <param name="perfil">El identificador del perfil.</param>
+        /// <returns>Un objeto MenuItemsDto.</returns>
         private static MenuItemsDto ParseaItem(MenuRoot item, string mnId, string perfil)
         {
             return new MenuItemsDto
@@ -459,7 +482,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
         private List<MenuRoot> GenerarArbolMenu(List<MenuItemsDto>? listaEntidad)
         {
             List<MenuRoot> arbol = new List<MenuRoot>();
-            foreach (var item in listaEntidad)
+            foreach (var item in listaEntidad ?? [])
             {
                 //busco si es opcion root
                 if (item.mnu_item_padre.Equals("00"))
@@ -469,11 +492,17 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 else
                 {
                     //busco cual es el padre
-                    MenuRoot rama = BuscarNodoPadre(arbol, item.mnu_item_padre);
-                    
-                    if (rama.children == null)
+                    MenuRoot? rama = BuscarNodoPadre(arbol, item.mnu_item_padre);
+                    if (rama != null)
                     {
-                        rama.children = new List<MenuRoot>();
+                        if (rama.children == null)
+                        {
+                            rama.children = new List<MenuRoot>();
+                        }
+                    }
+                    else
+                    {
+                        continue;
                     }
                     rama.children.Add(CargaItem(item));
                 }
@@ -495,7 +524,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             return arbol;
         }
 
-        private MenuRoot BuscarNodoPadre(List<MenuRoot> arbol, string mnu_item_padre)
+        private MenuRoot? BuscarNodoPadre(List<MenuRoot> arbol, string mnu_item_padre)
         {
             foreach (var nodo in arbol)
             {

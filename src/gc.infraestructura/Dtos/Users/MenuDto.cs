@@ -46,11 +46,19 @@
         public Estado state { get; set; }= new Estado();
         public MenuRootData data { get; set; } = new MenuRootData();
         public string type { get; set; } = string.Empty;
-        public string a_attr { get; set; } = string.Empty;
+        public A_attr a_attr { get; set; } = new();
         
 
     }
 
+    public class A_attr
+    {
+        public string href { get; set; } = string.Empty;
+        public string data_id { get; set; } = string.Empty;
+        public string Class { get; set; } = string.Empty;
+        public string style { get; set; } = string.Empty;
+
+    }
     public class Estado
     {
         public bool opened { get; set; } = true;
