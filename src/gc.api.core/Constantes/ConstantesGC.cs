@@ -322,6 +322,14 @@
 			public const string SP_COMPTE_VALORIZA_DTOS = "SPGECO_Compte_Valoriza_Dtos";
 			public const string SP_COMPTE_VALORIZA = "SPGECO_Compte_Valoriza";
 			public const string SP_COMPTE_VALORIZA_COSTO_OC = "SPGECO_Compte_Valoriza_Costo_OC";
-		}
-	}
+
+
+            #region Asientos
+            public const string SP_EJERCICIOS_LISTA = "SPGECO_Conta_Ejercicios";
+            public const string SP_CONTA_USU_ASIENTOS = "SPGECO_Conta_Usu_Asientos";
+            public const string SP_TIPO_ASIENTO = "SPGECO_Tipos_Asientos";
+            #endregion
+        }
+    }
+    
 }

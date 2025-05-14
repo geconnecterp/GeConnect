@@ -38,27 +38,21 @@ namespace gc.sitio.core.Servicios.Implementacion
             {
                 ApiResponse<List<ConsCompDetDto>> apiResponse;
                 HelperAPI helper = new();
-
                 HttpClient client = helper.InicializaCliente(token);
                 HttpResponseMessage response;
 
                 var link = $"{_appSettings.RutaBase}{RutaAPI}{CONS_CMTE_DET}?ctaId={ctaId}&mes={mes}&relCuit={relCuit}&userId={userId}";
-
                 response = await client.GetAsync(link);
-
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     string stringData = await response.Content.ReadAsStringAsync();
                     if (string.IsNullOrEmpty(stringData))
                     {
-
                         return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
                     }
                     apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ConsCompDetDto>>>(stringData)
                         ?? throw new NegocioException("No se pudo deserializar los datos de la Consulta Comprobantes del Mes.");
-
                     return new RespuestaGenerica<ConsCompDetDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
-
                 }
                 else
                 {
@@ -86,7 +80,6 @@ namespace gc.sitio.core.Servicios.Implementacion
             catch (Exception ex)
             {
                 _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
-
                 return new RespuestaGenerica<ConsCompDetDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener el detalle de comprobantes." };
             }
         }
