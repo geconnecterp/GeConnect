@@ -1,11 +1,13 @@
 ﻿using gc.api.core.Contratos.Servicios;
 using gc.api.core.Contratos.Servicios.ABM;
+using gc.api.core.Contratos.Servicios.Contable;
 using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Contratos.Servicios.Tipos;
 using gc.api.core.Interfaces.Datos;
 using gc.api.core.Interfaces.Servicios;
 using gc.api.core.Servicios;
 using gc.api.core.Servicios.ABM;
+using gc.api.core.Servicios.Contable;
 using gc.api.core.Servicios.Reportes;
 using gc.api.core.Servicios.Tipos;
 using gc.api.infra.Datos.Contratos;

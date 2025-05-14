@@ -1,0 +1,168 @@
+﻿@model QueryFilters
+@{
+
+}
+
+<fieldset id="fsAsiento">
+    <legend><span>Filtros de Asientos</span></legend>
+
+    <div class="row mb-1">
+        <!-- Ejercicio -->
+        <div class="col-md-6 col-sm-12">
+            <div class="input-group input-group-sm mb-1">
+                <div class="form-check form-check-inline form-switch">
+                    <input class="form-check-input" type="checkbox" id="chkEjercicio" />
+                    <label class="form-check-label" for="chkEjercicio">Ejercicio</label>
+                </div>
+            </div>
+            <div class="input-group input-group-sm">
+                <span class="input-group-text">Ejercicio</span>
+                @Html.DropDownList("Rel03", ViewBag.ListaEjercicios as SelectList, new { @class = "form-control inputEditable", @disabled = "disabled", style = "background-color:rgb(251,255,195);font-weight:900;" })
+            </div>
+        </div>
+
+        <!-- Asiento -->
+        <div class="col-md-6 col-sm-12">
+            <div class="input-group input-group-sm mb-1">
+                <div class="form-check form-check-inline form-switch">
+                    <input class="form-check-input" type="checkbox" id="chkAsiento" />
+                    <label class="form-check-label" for="chkAsiento">Asiento</label>
+                </div>
+            </div>
+            <div class="input-group input-group-sm">
+                <span class="input-group-text">Nro Mov.</span>
+                <input type="text" name="Id" class="form-control inputEditable" disabled style="background-color:rgb(251,255,195);font-weight:900;" />
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-1">
+        <!-- Usuario -->
+        <div class="col-md-6 col-sm-12">
+            <div class="input-group input-group-sm mb-1">
+                <div class="form-check form-check-inline form-switch">
+                    <input class="form-check-input" type="checkbox" id="chkUsuario" />
+                    <label class="form-check-label" for="chkUsuario">Usuario</label>
+                </div>
+            </div>
+            <div class="input-group input-group-sm">
+                <span class="input-group-text">Usuario</span>
+                @Html.DropDownList("Rel04", ViewBag.ListaUsuarios as SelectList, new { @class = "form-control inputEditable", @disabled = "disabled", style = "background-color:rgb(251,255,195);font-weight:900;" })
+            </div>
+        </div>
+
+        <!-- Tipo de Asiento -->
+        <div class="col-md-6 col-sm-12">
+            <div class="input-group input-group-sm mb-1">
+                <div class="form-check form-check-inline form-switch">
+                    <input class="form-check-input" type="checkbox" id="chkTipo" />
+                    <label class="form-check-label" for="chkTipo">Tipo de Asiento</label>
+                </div>
+            </div>
+            <div class="input-group input-group-sm">
+                <span class="input-group-text">Tipo</span>
+                @Html.DropDownList("Rel05", ViewBag.ListaTiposAsiento as SelectList, new { @class = "form-control inputEditable", @disabled = "disabled", style = "background-color:rgb(251,255,195);font-weight:900;" })
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-1">
+        <!-- Rango de Fechas -->
+        <div class="col-sm-12">
+            <div class="input-group input-group-sm mb-1">
+                <div class="form-check form-check-inline form-switch">
+                    <input class="form-check-input" type="checkbox" id="chkFechas" />
+                    <label class="form-check-label" for="chkFechas">Rango de Fechas</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text">Desde</span>
+                        <input type="date" name="FechaDesde" class="form-control inputEditable" disabled style="background-color:rgb(251,255,195);font-weight:900;" />
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text">Hasta</span>
+                        <input type="date" name="FechaHasta" class="form-control inputEditable" disabled style="background-color:rgb(251,255,195);font-weight:900;" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</fieldset>
+
+<div class="row mt-3">
+    <div class="d-flex justify-content-around">
+        <button type="button" id="btnCancel" class="btn btn-sm btn-danger"><i class="bx bx-sm bx-x-circle"></i></button>
+        <button type="button" id="btnBuscar" class="btn btn-sm btn-success"><i class="bx bx-sm bx-search"></i></button>
+    </div>
+</div>
+
+<form asp-action="Index" method="get" id="formFiltroAsiento">
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="chkEjercicio" name="chkEjercicio" checked />
+                <label class="form-check-label" for="chkEjercicio">Ejercicio</label>
+                <select asp-for="Rel03" class="form-select" asp-items="ViewBag.ListaEjercicios"></select>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="chkAsiento" name="chkAsiento" />
+                <label class="form-check-label" for="chkAsiento">Asiento</label>
+                <input type="text" class="form-control mt-1" name="Id" placeholder="Nro Mov." />
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="chkUsuario" name="chkUsuario" checked />
+                <label class="form-check-label" for="chkUsuario">Usuario</label>
+                <select class="form-select" name="Rel04" asp-items="ViewBag.ListaUsuarios"></select>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="chkTipo" name="chkTipo" checked />
+                <label class="form-check-label" for="chkTipo">Tipo de Asiento</label>
+                <select class="form-select" name="Rel05" asp-items="ViewBag.ListaTipos"></select>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="chkFecha" name="chkFecha" />
+                <label class="form-check-label" for="chkFecha">Rango Fecha</label>
+                <div class="row mt-1">
+                    <div class="col">
+                        <label>Desde</label>
+                        <input type="date" class="form-control" asp-for="FechaD" />
+                    </div>
+                    <div class="col">
+                        <label>Hasta</label>
+                        <input type="date" class="form-control" asp-for="FechaH" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row m-3">
+        <div class="d-flex justify-content-around">
+            <button type="button" id="btnCancel" class="btn btn-sm btn-danger"><i class="bx bx-sm bx-x-circle"></i></button>
+            @if (Model.Modelo != ModeloFilter.CONSULTAS)
+            {
+                <button type="button" id="btnBuscar" class="btn btn-sm btn-success"><i class="bx bx-sm bx-search"></i></button>
+            }
+        </div>
+    </div>
+    @* <div class="mt-3 text-end">
+            <button type="submit" class="btn btn-success btn-sm me-2"><i class="bx bx-search"></i> Buscar</button>
+            <button type="reset" class="btn btn-outline-secondary btn-sm"><i class="bx bx-x-circle"></i> Limpiar</button>
+        </div> *@
+</form>

@@ -24,7 +24,7 @@
                     else
                     {
                         <li>
-                            <a asp-action="@item.mnu_app_action" asp-controller="@item.mnu_app_controller" asp-area="@item.mnu_app_area" class="dropdown-item">
+                            <a asp-action="@item.mnu_app_action" asp-controller="@item.mnu_app_controller" asp-area="@item.mnu_app_area" class="dropdown-item ">
                                 @item.mnu_item_name
                             </a>
                         </li>
@@ -42,6 +42,12 @@
             <a class="nav-link active" aria-current="page" href="javascript:void(0)">@Model.Mensaje</a>
         </li>
     }
+    else @if (Model.ListaEntidad==null || Model.ListaEntidad.Count==0)
+    {
+        <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="javascript:void(0)">No se encontró el menú. </a>
+        </li>
+    }
     else
     {
         var lista = Model.ListaEntidad;
@@ -51,8 +57,7 @@
             var hasChildren = lista.Any(x => x.mnu_item_padre == mn.mnu_item);
             if (hasChildren)
             {
-                <li class="nav-item dropdown">
-                    @* Generar ID único para el botón *@
+                <li class="nav-item dropdown">                   
                     @{
                         string id = $"btn{mn.mnu_item_id}";
                     }
@@ -67,7 +72,6 @@
             else
             {
                 <li class="nav-item">
-                    @* Generar ID único para el botón *@
                     @{
                         string id = $"btn{mn.mnu_item_id}";
                     }

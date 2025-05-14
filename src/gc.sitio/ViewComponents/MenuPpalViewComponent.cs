@@ -36,16 +36,29 @@ namespace gc.sitio.ViewComponents
                     throw new Exception("No se localizó el perfil");
                 }
                 var perfil = JsonConvert.DeserializeObject<PerfilUserDto>(p);
+                if (perfil == null)
+                {
+                    throw new Exception("No se localizó el perfil");
+                }
                 var adm = _context.HttpContext?.Session.GetString("ADMID");
+                if(adm == null)
+                {
+                    throw new Exception("No se localizó la Sucursal");
+                }
                 var etiqueta = _context.HttpContext?.Session.GetString("Etiqueta");
-                var token = _context.HttpContext?.Request.Cookies[etiqueta];
+                var token = _context.HttpContext?.Request.Cookies[etiqueta ?? string.Empty];
+
+                if (token == null)
+                {
+                    throw new Exception("No se identificó el usuario. Por favor, autentiquese nuevamente"); 
+                }
 
 
                 menu = _mnSv.ObtenerMenu(perfil.perfil_id, perfil.usu_id, _appSettings.MenuId, adm, token).GetAwaiter().GetResult();
-              
 
-                    return View("Default", menu);
-                
+
+                return View("Default", menu);
+
             }
             catch (Exception)
             {

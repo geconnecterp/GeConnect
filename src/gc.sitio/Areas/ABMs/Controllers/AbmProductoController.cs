@@ -45,8 +45,6 @@ namespace gc.sitio.Areas.ABMs.Controllers
         [HttpGet]
         public IActionResult Index(bool actualizar = false)
         {
-
-
             var auth = EstaAutenticado;
             if (!auth.Item1 || auth.Item2 < DateTime.Now)
             {

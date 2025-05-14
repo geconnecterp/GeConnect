@@ -1,0 +1,85 @@
+﻿/* Estilos para menús multinivel */
+.dropdown-submenu {
+    position: relative;
+}
+
+    .dropdown-submenu > .dropdown-menu {
+        top: 0;
+        left: 100%;
+        margin-top: -6px;
+        margin-left: -1px;
+        border-radius: 0.25rem;
+    }
+
+    /* Muestra el submenú al pasar el ratón por encima */
+    .dropdown-submenu:hover > .dropdown-menu,
+    .dropdown-submenu:focus > .dropdown-menu {
+        display: block;
+    }
+
+    /* Añade una flecha indicadora para los submenús */
+    .dropdown-submenu > a:after {
+        display: block;
+        content: "";
+        float: right;
+        width: 0;
+        height: 0;
+        border-color: transparent;
+        border-style: solid;
+        border-width: 5px 0 5px 5px;
+        border-left-color: #ccc;
+        margin-top: 5px;
+        margin-right: -10px;
+    }
+
+    /* Cambia el color de la flecha al pasar el ratón */
+    .dropdown-submenu:hover > a:after {
+        border-left-color: #fff;
+    }
+
+/* Estilo para el indicador del dropdown */
+.dropdown-toggle::after {
+    transition: transform 0.25s ease;
+}
+
+/* Giro del indicador cuando está en modo dropdown-submenu */
+.dropdown-submenu > a.dropdown-toggle::after {
+    transform: rotate(-90deg); /* Rota hacia la derecha (en realidad es -90 porque el triángulo original apunta hacia abajo) */
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    margin-top: -2px;
+}
+
+/* Giro del indicador cuando está en modo dropdown principal */
+.dropdown.show > a.dropdown-toggle::after {
+    transform: rotate(180deg); /* Gira el triángulo hacia arriba */
+}
+
+/* Ajustes para dispositivos móviles */
+@media (max-width: 991px) {
+    .dropdown-submenu > .dropdown-menu {
+        left: 0;
+        margin-left: 15px;
+        top: 100%;
+        border-left: 1px solid #ccc;
+    }
+
+    .dropdown-submenu > a:after {
+        transform: rotate(90deg);
+        margin-top: 8px;
+    }
+
+    .dropdown-submenu > a.dropdown-toggle::after {
+        transform: rotate(-90deg);
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        margin-top: -2px;
+    }
+
+    /* Cuando el submenu está abierto, gira el indicador */
+    .dropdown-submenu.show > a.dropdown-toggle::after {
+        transform: rotate(0deg);
+    }
+}

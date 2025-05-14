@@ -30,6 +30,9 @@ namespace gc.infraestructura.Core.EntidadesComunes
         /// Campo especificamente para buscar una serie de registros de una relacion terciaria
         /// </summary>
         public List<ComboGenDto>? Rel03 { get; set; }
+        public List<ComboGenDto>? Rel04 { get; set; }
+        public List<ComboGenDto>? Rel05 { get; set; }
+
         public DateTime? FechaD { get; set; }
         public DateTime? FechaH { get; set; }
         /// <summary>

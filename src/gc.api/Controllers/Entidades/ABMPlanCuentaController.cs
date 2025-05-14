@@ -1,4 +1,4 @@
-﻿using gc.api.core.Contratos.Servicios.ABM;
+﻿using gc.api.core.Contratos.Servicios.Contable;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Responses;

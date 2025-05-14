@@ -269,7 +269,7 @@ namespace gc.sitio.Areas.Seguridad.Controllers
             //}
 
             //al desloguear redirecciona a HOME
-            return RedirectToAction("Index", new RouteValueDictionary(new { area = "", controller = "Home", action = "Index" }));
+            return RedirectToAction("Index", new RouteValueDictionary(new { area = "Seguridad", controller = "token", action = "login" }));
         }
 
         private async Task<List<UsuarioMenu>> ObtenerPermisosAMenuPorUsuario(string user, HttpClient cliente)
