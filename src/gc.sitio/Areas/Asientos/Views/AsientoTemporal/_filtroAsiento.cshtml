@@ -1,4 +1,4 @@
-﻿@model QueryFilters
+﻿@model QueryAsiento
 @{
 
 }
@@ -17,7 +17,7 @@
             </div>
             <div class="input-group input-group-sm">
                 <span class="input-group-text">Ejercicio</span>
-                @Html.DropDownList("Rel03", ViewBag.ListaEjercicios as SelectList, new { @class = "form-control inputEditable", @disabled = "disabled", style = "background-color:rgb(251,255,195);font-weight:900;" })
+                @Html.DropDownList("Eje_nro", ViewBag.ListaEjercicios as SelectList, new { @class = "form-control inputEditable", @disabled = "disabled", style = "background-color:rgb(251,255,195);font-weight:900;" })
             </div>
         </div>
 
@@ -25,13 +25,13 @@
         <div class="col-md-6 col-sm-12">
             <div class="input-group input-group-sm mb-1">
                 <div class="form-check form-check-inline form-switch">
-                    <input class="form-check-input" type="checkbox" id="chkAsiento" />
-                    <label class="form-check-label" for="chkAsiento">Asiento</label>
+                    <input class="form-check-input" type="checkbox" id="Mov" />
+                    <label class="form-check-label" for="Mov">Asiento</label>
                 </div>
             </div>
             <div class="input-group input-group-sm">
                 <span class="input-group-text">Nro Mov.</span>
-                <input type="text" name="Id" class="form-control inputEditable" disabled style="background-color:rgb(251,255,195);font-weight:900;" />
+                <input type="text" id="Mov_like" name="Mov_like" class="form-control inputEditable" disabled style="background-color:rgb(251,255,195);font-weight:900;" />
             </div>
         </div>
     </div>
@@ -41,13 +41,13 @@
         <div class="col-md-6 col-sm-12">
             <div class="input-group input-group-sm mb-1">
                 <div class="form-check form-check-inline form-switch">
-                    <input class="form-check-input" type="checkbox" id="chkUsuario" />
-                    <label class="form-check-label" for="chkUsuario">Usuario</label>
+                    <input class="form-check-input" type="checkbox" id="Usu" />
+                    <label class="form-check-label" for="Usu">Usuario</label>
                 </div>
             </div>
             <div class="input-group input-group-sm">
                 <span class="input-group-text">Usuario</span>
-                @Html.DropDownList("Rel04", ViewBag.ListaUsuarios as SelectList, new { @class = "form-control inputEditable", @disabled = "disabled", style = "background-color:rgb(251,255,195);font-weight:900;" })
+                @Html.DropDownList("Usu_like", ViewBag.ListaUsuarios as SelectList, new { @class = "form-control inputEditable", @disabled = "disabled", style = "background-color:rgb(251,255,195);font-weight:900;" })
             </div>
         </div>
 
@@ -55,13 +55,13 @@
         <div class="col-md-6 col-sm-12">
             <div class="input-group input-group-sm mb-1">
                 <div class="form-check form-check-inline form-switch">
-                    <input class="form-check-input" type="checkbox" id="chkTipo" />
-                    <label class="form-check-label" for="chkTipo">Tipo de Asiento</label>
+                    <input class="form-check-input" type="checkbox" id="Tipo" />
+                    <label class="form-check-label" for="Tipo">Tipo de Asiento</label>
                 </div>
             </div>
             <div class="input-group input-group-sm">
                 <span class="input-group-text">Tipo</span>
-                @Html.DropDownList("Rel05", ViewBag.ListaTiposAsiento as SelectList, new { @class = "form-control inputEditable", @disabled = "disabled", style = "background-color:rgb(251,255,195);font-weight:900;" })
+                @Html.DropDownList("Tipo_like", ViewBag.ListaTiposAsiento as SelectList, new { @class = "form-control inputEditable", @disabled = "disabled", style = "background-color:rgb(251,255,195);font-weight:900;" })
             </div>
         </div>
     </div>
@@ -71,21 +71,21 @@
         <div class="col-sm-12">
             <div class="input-group input-group-sm mb-1">
                 <div class="form-check form-check-inline form-switch">
-                    <input class="form-check-input" type="checkbox" id="chkFechas" />
-                    <label class="form-check-label" for="chkFechas">Rango de Fechas</label>
+                    <input class="form-check-input" type="checkbox" id="Rango" />
+                    <label class="form-check-label" for="Rango">Rango de Fechas</label>
                 </div>
             </div>
             <div class="row">
                 <div class="col-sm-6">
                     <div class="input-group input-group-sm">
                         <span class="input-group-text">Desde</span>
-                        <input type="date" name="FechaDesde" class="form-control inputEditable" disabled style="background-color:rgb(251,255,195);font-weight:900;" />
+                        <input type="date" name="Desde" class="form-control inputEditable" disabled style="background-color:rgb(251,255,195);font-weight:900;" />
                     </div>
                 </div>
                 <div class="col-sm-6">
                     <div class="input-group input-group-sm">
                         <span class="input-group-text">Hasta</span>
-                        <input type="date" name="FechaHasta" class="form-control inputEditable" disabled style="background-color:rgb(251,255,195);font-weight:900;" />
+                        <input type="date" name="Hasta" class="form-control inputEditable" disabled style="background-color:rgb(251,255,195);font-weight:900;" />
                     </div>
                 </div>
             </div>

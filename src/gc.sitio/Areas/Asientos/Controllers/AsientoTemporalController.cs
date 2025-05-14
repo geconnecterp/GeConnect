@@ -68,7 +68,7 @@ namespace gc.sitio.Areas.Asientos.Controllers
                 var response = await _asientoServicio.ObtenerEjercicios(TokenCookie);
                 if (response.Ok && response.ListaEntidad != null)
                 {
-                    ViewBag.EjerciciosLista = response.ListaEntidad;
+                    ViewBag.EjerciciosLista = response.ListaEntidad.OrderByDescending(x=> x.Eje_desde).ToList();
                 }
                 else
                 {
