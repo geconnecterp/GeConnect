@@ -150,22 +150,54 @@ namespace gc.sitio.Controllers
                 _context.HttpContext?.Session.SetString("ADMID", json);
             }
         }
+        //public string AdministracionId
+        //{
+        //    get
+        //    {
+
+        //        var adm = User.Claims.First(c => c.Type.Contains("AdmId")).Value ?? string.Empty;
+
+        //        if (string.IsNullOrEmpty(adm))
+        //        {
+        //            return string.Empty;
+        //        }
+        //        var parts = adm.Split('#');
+        //        _context.HttpContext?.Session.SetString("ADMID", parts[0]);
+        //        return parts[0];
+        //    }
+        //}
+
         public string AdministracionId
         {
             get
             {
-                
-                var adm = User.Claims.First(c => c.Type.Contains("AdmId")).Value ?? string.Empty;
-
-                if (string.IsNullOrEmpty(adm))
+                try
                 {
+                    // Solo intentar acceder a los claims si el usuario está autenticado
+                    if (!(User.Identity?.IsAuthenticated ?? false))
+                    {
+                        return string.Empty;
+                    }
+
+                    var admClaim = User.Claims.FirstOrDefault(c => c.Type.Contains("AdmId"));
+                    if (admClaim == null || string.IsNullOrEmpty(admClaim.Value))
+                    {
+                        return string.Empty;
+                    }
+
+                    var adm = admClaim.Value;
+                    var parts = adm.Split('#');
+                    _context.HttpContext?.Session.SetString("ADMID", parts[0]);
+                    return parts[0];
+                }
+                catch
+                {
+                    // Manejo de excepciones
                     return string.Empty;
                 }
-                var parts = adm.Split('#');
-                _context.HttpContext?.Session.SetString("ADMID", parts[0]);
-                return parts[0];
             }
         }
+
 
         public string AdministracionName
         {

@@ -169,7 +169,12 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 var per = await _mnSrv.GetPerfilUsers(id, TokenCookie);
                 if (!per.Ok)
                 {
-                    throw new NegocioException(per.Mensaje);
+                    throw new NegocioException(per.Mensaje??" Hubo algun problema por lo que no se pudo presentar la lista de usuarios por perfil. Intente de nuevo más tarde.");
+                }
+
+                if(per.ListaEntidad==null || per.ListaEntidad.Count == 0)
+                {
+                    throw new NegocioException("No se recepcionó la lista de usuarios");
                 }
 
                 UsuariosXPerfil = per.ListaEntidad;
@@ -263,13 +268,13 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                     PerfilesBuscados = [];
                     if (abm.Abm.Equals('A'))
                     {
-                        return Json(new { error = false, warn = false, msg, id = res.Entidad.resultado_id });
+                        return Json(new { error = false, warn = false, msg, id = res.Entidad?.resultado_id });
                     }
                     return Json(new { error = false, warn = false, msg });
                 }
                 else
                 {
-                    return Json(new { error = false, warn = true, msg = res.Entidad.resultado_msj, focus = res.Entidad.resultado_setfocus });
+                    return Json(new { error = false, warn = true, msg = res.Entidad?.resultado_msj, focus = res.Entidad?.resultado_setfocus });
                 }
             }
             catch (NegocioException ex)
@@ -330,10 +335,10 @@ namespace gc.sitio.Areas.Usuarios.Controllers
 
                 if (!menu.Ok)
                 {
-                    throw new NegocioException(menu.Mensaje);
+                    throw new NegocioException(menu.Mensaje ?? "No se encontró el menú del perfil.");
                 }
-
-                arbol = GenerarArbolMenu(menu.ListaEntidad);
+                var menuPlano = AdapterMenuIn(menu.ListaEntidad ?? []);
+                arbol = GenerarArbolMenu(menuPlano);
                 var jarbol = JsonConvert.SerializeObject(arbol);
 
                 return Json(new { error = false, warn = false, arbol = jarbol });
@@ -370,6 +375,10 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 }
                 //Se procede a generar estructura esperada en Base de Datos a partir del menu 
                 List<MenuItemsDto> menuPlano = GeneraMenuPlano(json, menu_id, perfil_id);
+
+                menuPlano = AdapterMenuOut(menuPlano);
+
+
                 var jsonp = JsonConvert.SerializeObject(menuPlano);
                 _logger?.LogInformation("#***************************************#");
                 _logger?.LogInformation(json);
@@ -389,13 +398,13 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 var res = await _abmSv.AbmConfirmar(abm, TokenCookie);
                 if (res.Ok)
                 {
-                    string msg = $"EL PROCESAMIENTO DE LOS PERMISO DE ACCESO AL PERFIL {perfil.perfil_descripcion} SE REALIZO SATISFACTORIAMENTE";
+                    string msg = $"EL PROCESAMIENTO DE LOS PERMISO DE ACCESO AL PERFIL {perfil?.perfil_descripcion} SE REALIZO SATISFACTORIAMENTE";
 
                     return Json(new { error = false, warn = false, msg });
                 }
                 else
                 {
-                    return Json(new { error = false, warn = true, msg = res.Entidad.resultado_msj });
+                    return Json(new { error = false, warn = true, msg = res.Entidad?.resultado_msj });
                 }
             }
             catch (NegocioException ex)
@@ -408,7 +417,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 _logger?.LogError(ex, "Error en la invocación de la API - Busqueda  Menu x Perfil");
                 return Json(new { error = true, warn = false, msg });
             }
-        }
+        }        
 
         /// <summary>
         /// Genera un menú plano a partir de un JSON con estructura jerárquica, manejando n niveles de anidamiento.
@@ -570,6 +579,91 @@ namespace gc.sitio.Areas.Usuarios.Controllers
 
             };
         }
+
+
+        /// <summary>
+        /// Procesa el menú recibido de la base de datos, verificando que si un nodo padre tiene asignado = true 
+        /// y alguno de sus hijos tiene asignado = false, el padre también debe tener asignado = false
+        /// </summary>
+        /// <param name="menuItems">La lista de elementos del menú</param>
+        /// <returns>Lista de elementos del menú con las asignaciones ajustadas</returns>
+        private List<MenuItemsDto> AdapterMenuIn(List<MenuItemsDto> menuItems)
+        {
+            // Agrupar por padres para facilitar el procesamiento
+            Dictionary<string, List<MenuItemsDto>> hijosPorPadre = menuItems
+                .Where(item => item.mnu_item_padre != "00") // Excluir nodos raíz
+                .GroupBy(item => item.mnu_item_padre)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            // Verificar recursivamente los nodos desde las raíces
+            // Un enfoque de abajo hacia arriba, comenzando con los nodos hoja
+            bool ItemsModificados;
+            do
+            {
+                ItemsModificados = false;
+
+                foreach (var item in menuItems)
+                {
+                    // Verificar si este ítem es un padre
+                    if (hijosPorPadre.TryGetValue(item.mnu_item, out var hijos))
+                    {
+                        // Si el padre está asignado pero algún hijo no, el padre debe desasignarse
+                        if (item.asignado && hijos.Any(h => !h.asignado))
+                        {
+                            item.asignado = false;
+                            ItemsModificados = true;
+                            _logger?.LogInformation($"AdapterMenuIn: Desasignando nodo padre {item.mnu_item_name} (ID:{item.mnu_item}) porque tiene hijos no asignados");
+                        }
+                    }
+                }
+            } while (ItemsModificados); // Continuar hasta que no se realicen más cambios
+
+            return menuItems;
+        }
+
+        /// <summary>
+        /// Procesa el menú antes de enviarlo al servidor, verificando que si un nodo padre tiene asignado = false
+        /// y al menos uno de sus hijos tiene asignado = true, el padre debe tener asignado = true
+        /// </summary>
+        /// <param name="menuPlano">La lista de elementos del menú</param>
+        /// <returns>Lista de elementos del menú con las asignaciones ajustadas</returns>
+        private List<MenuItemsDto> AdapterMenuOut(List<MenuItemsDto> menuPlano)
+        {
+            // Crear un diccionario para acceso rápido a los ítems por su ID
+            Dictionary<string, MenuItemsDto> itemsPorId = menuPlano.ToDictionary(item => item.mnu_item);
+
+            // Agrupar por padres para facilitar el procesamiento
+            Dictionary<string, List<MenuItemsDto>> hijosPorPadre = menuPlano
+                .Where(item => item.mnu_item_padre != "00") // Excluir nodos raíz
+                .GroupBy(item => item.mnu_item_padre)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            bool ItemsModificados;
+            do
+            {
+                ItemsModificados = false;
+
+                foreach (var padreId in hijosPorPadre.Keys)
+                {
+                    // Si encontramos el padre en nuestro diccionario
+                    if (itemsPorId.TryGetValue(padreId, out var padre))
+                    {
+                        var hijos = hijosPorPadre[padreId];
+
+                        // Si el padre no está asignado pero al menos un hijo sí lo está
+                        if (!padre.asignado && hijos.Any(h => h.asignado))
+                        {
+                            padre.asignado = true;
+                            ItemsModificados = true;
+                            _logger?.LogInformation($"AdapterMenuOut: Asignando nodo padre {padre.mnu_item_name} (ID:{padre.mnu_item}) porque tiene hijos asignados");
+                        }
+                    }
+                }
+            } while (ItemsModificados); // Continuar hasta que no se realicen más cambios
+
+            return menuPlano;
+        }
+
     }
 }
 

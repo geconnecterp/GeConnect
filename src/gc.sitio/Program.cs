@@ -3,6 +3,8 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Globalization;
 using gc.infraestructura.EntidadesComunes.Options;
+using gc.sitio.Models.Middleware;
+using gc.sitio.Models.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.AddLog4Net("log4net.config", watch: true);
@@ -63,7 +65,10 @@ builder.Services.AddSession(opt =>
     opt.Cookie.IsEssential = true;
 });
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+   //options.Filters.Add<AuthenticationCheckAttribute>();
+});
 
 builder.Services.AddMvc();
 var app = builder.Build();
@@ -94,7 +99,7 @@ app.UseAuthentication();
 //se te permite algo??? estas autorizado?
 app.UseAuthorization();
 
-
+app.UseMiddleware<AuthenticationCheckMiddleware>();
 
 
 app.UseEndpoints(endpoints => {
