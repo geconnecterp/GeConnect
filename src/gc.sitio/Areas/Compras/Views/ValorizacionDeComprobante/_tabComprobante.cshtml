@@ -13,8 +13,8 @@
 	@Html.Hidden("cm_compte", Model.DescFinanc.cm_compte)
 	@Html.Hidden("dia_movi", Model.DescFinanc.dia_movi)
 	@Html.Hidden("tco_id", Model.DescFinanc.tco_id)
-	@Html.Hidden("codigo", Model.codigo)
-	@Html.Hidden("mensaje", Model.mensaje)
+@* 	@Html.Hidden("codigo", Model.codigo)
+	@Html.Hidden("mensaje", Model.mensaje) *@
 	<div id="divListaValorizacion">
 		<div class="table-responsive table-wrapper-400-full-width" id="containerListaValorizacion">
 			<table class="table table-bordered table-hover" id="tbListaValorizacion">
@@ -29,6 +29,8 @@
 						<th style="width:5%;" class="col-header-small align-center tiny-row">Percep.</th>
 						<th style="width:5%;" class="col-header-small align-center tiny-row">Otros NG</th>
 						<th style="width:5%;" class="col-header-small align-center tiny-row">Total</th>
+						<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">resultado</th>
+						<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">resultado_msj</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -45,6 +47,8 @@
 							<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_percepciones)">@Model.GrillaValoracion.FormatearDato(item.cm_percepciones, FormatDato.Monto)</td>
 							<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_otro_ng)">@Model.GrillaValoracion.FormatearDato(item.cm_otro_ng, FormatDato.Monto)</td>
 							<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_total)">@Model.GrillaValoracion.FormatearDato(item.cm_total, FormatDato.Monto)</td>
+							<td style="display:none;">@item.resultado</td>
+							<td style="display:none;">@item.resultado_msj</td>
 						</tr>
 					}
 				</tbody>

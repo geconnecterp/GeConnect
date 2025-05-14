@@ -114,6 +114,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				};
 				//Cargar Detalle de Productos RPR
 				var responseRpr = _cuentaServicio.ObtenerComprobantesDetalleRpr(req, TokenCookie);
+				RecalcularCostos(responseRpr); //Por pedido de CR pide recalcular los costos por las dudas vengan con errores desde la DB (?)
 				CalcularValorizacionDC_DP(responseRpr);
 				ComprobantesValorizaDetalleRprListaOriginal = responseRpr; //Resguardo una copia de los valores originales para resguardar
 				ComprobantesValorizaDetalleRprLista = responseRpr;
@@ -142,7 +143,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				};
 				var responseValorizar = _cuentaServicio.ObtenerComprobanteValorizaLista(reqValorizados, TokenCookie);
 
-				if (responseValorizar != null && responseValorizar.Count > 0) 
+				if (responseValorizar != null && responseValorizar.Count > 0)
 				{
 					model.codigo = responseValorizar.First().resultado.ToString();
 					model.mensaje = responseValorizar.First().resultado_msj;
@@ -856,13 +857,18 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		[HttpPost]
-		public JsonResult ConfirmarValorizacion(string cm_compte)
+		public JsonResult VerificarErrorEnCalculoDeCostos()
 		{
 			try
 			{
+				if (ComprobantesValorizaLista == null)
+					return Json(new { error = false, warn = false, msg = "" });
+				if (ComprobantesValorizaLista.Count <= 0)
+					return Json(new { error = false, warn = false, msg = "" });
+				if (ComprobantesValorizaLista.First().resultado == 0)
+					return Json(new { error = false, warn = false, msg = "" });
 
-
-				return Json(new { error = false, warn = false, msg = "Inicializacion correcta." });
+				return Json(new { error = true, warn = false, msg = ComprobantesValorizaLista.First().resultado_msj });
 			}
 			catch (Exception)
 			{
@@ -871,15 +877,41 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		#region Métodos privados
+		private void RecalcularCostos(List<CompteValorizaDetalleRprListaDto> lista)
+		{
+			try
+			{
+				if (lista.Count > 0)
+				{
+					foreach (var item in lista)
+					{
+						Console.WriteLine($"ocd_pcosto anterior: {item.ocd_pcosto:N2}");
+						item.ocd_pcosto = CalcularPCosto(item.ocd_plista, item.ocd_dto1, item.ocd_dto2, item.ocd_dto3, item.ocd_dto4, item.ocd_dto_pa, item.ocd_boni, 0, item.rpd_cantidad);
+						Console.WriteLine($"ocd_pcosto posterior: {item.ocd_pcosto:N2}");
+						Console.WriteLine($"///////////////////////////////////////////////////////////////");
+						Console.WriteLine($"rpd_pcosto anterior: {item.rpd_pcosto:N2}");
+						item.rpd_pcosto = CalcularPCosto(item.rpd_plista, item.rpd_dto1, item.rpd_dto2, item.rpd_dto3, item.rpd_dto4, item.rpd_dto_pa, item.rpd_boni, 0, item.rpd_cantidad_compte);
+						Console.WriteLine($"rpd_pcosto posterior: {item.rpd_pcosto:N2}");
+						Console.WriteLine($"///////////////////////////////////////////////////////////////");
+					}
+				}
+			}
+			catch (Exception)
+			{
+				throw;
+			}
+
+		}
+
 		private void CalcularValorizacionDC_DP(List<CompteValorizaDetalleRprListaDto> lista)
 		{
 			if (lista.Count > 0)
 			{
 				foreach (var item in lista)
 				{
-					var boni = 0;
+					var boni = 0.00M;
 					if (!string.IsNullOrWhiteSpace(item.ocd_boni))
-						boni = CalcularBoni(item.rpd_boni ?? "", item.rpd_cantidad_compte);
+						boni = CalcularBoni2(item.rpd_boni ?? "", item.rpd_cantidad_compte);
 					var result = item.rpd_cantidad - (item.rpd_cantidad_compte + boni);
 					if (result == 0)
 						item.valorizacion_mostrar_dc = false;
@@ -920,7 +952,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 		private static decimal CalcularPCosto(decimal p_plista, decimal p_d1, decimal p_d2, decimal p_d3, decimal p_d4, decimal p_dpa, string p_boni, decimal flete, decimal cantidad = 0)
 		{
-			var boni = CalcularBoni(p_boni, cantidad);
+			var boni = CalcularBoni2(p_boni, cantidad);
 			return p_plista * ((100 - p_d1) / 100) * ((100 - p_d2) / 100) * ((100 - p_d3) / 100) * ((100 - p_d4) / 100) * ((100 - p_dpa) / 100) * boni * ((100 + flete) / 100);
 		}
 
@@ -960,6 +992,29 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return boni;
 		}
 
+		private static decimal CalcularBoni2(string val, decimal cant)
+		{
+			var boni = 1;
+			if (string.IsNullOrWhiteSpace(val))
+			{
+				return boni;
+			}
+			var arr = val.Split('/');
+			if (!int.TryParse(arr[0], out int num))
+			{
+				return boni;
+			}
+			if (!int.TryParse(arr[1], out int den))
+			{
+				return boni;
+			}
+			if (num > den)
+			{
+				return boni;
+			}
+			return Decimal.Divide(den, num);
+		}
+
 		private GridCoreSmart<CompteValorizaListaDto> ObtenerValorizacionActualizada(string cm_compte)
 		{
 			var model = new GridCoreSmart<CompteValorizaListaDto>();
@@ -992,9 +1047,14 @@ namespace gc.sitio.Areas.Compras.Controllers
 					dc = false,
 					adm_id = AdministracionId
 				};
+				Console.WriteLine($"////INICIO -> Revalorizar.....////");
 				Console.WriteLine($"Json detalle rpr: {jsonResponseRpr}");
 				Console.WriteLine($"Json desc financ.: {jsonResponseDtos}");
 				var responseValorizar = _cuentaServicio.ObtenerComprobanteValorizaLista(reqValorizados, TokenCookie);
+				ComprobantesValorizaLista = responseValorizar;
+				Console.WriteLine($"////FIN -> Revalorizar.....////");
+				Console.WriteLine($"////RESULTADO -> Revalorizar.....////");
+				Console.WriteLine($"Json revalorizacion: {JsonConvert.SerializeObject(responseValorizar, new JsonSerializerSettings())}");
 				model = ObtenerGridCoreSmart<CompteValorizaListaDto>(responseValorizar);
 				return model;
 			}

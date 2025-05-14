@@ -24,6 +24,15 @@ body {
 activable {
 }
 
+.content-editable-td-2 {
+    text-align: right !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100px;
+    border-style: inset !important;
+    border-width: medium !important;
+}
+
 .content-editable-td {
     text-align: right !important;
     padding: 0.325rem 0.30rem !important;
@@ -82,6 +91,38 @@ td.corta-linea {
 .sinbordefondo {
     background-color: transparent;
     border: 0;
+}
+
+.inputEditableNoBorder {
+    font-weight: 700;
+    border-style: hidden;
+    background: none;
+    max-width: 100px;
+    max-height:20px !important;
+}
+
+.inputEditableNoBorder-mw35 {
+    font-weight: 700;
+    border-style: hidden;
+    background: none;
+    max-width: 35px;
+    max-height: 20px !important;
+}
+
+.inputEditableNoBorder-mw50 {
+    font-weight: 700;
+    border-style: hidden;
+    background: none;
+    max-width: 50px;
+    max-height: 20px !important;
+}
+
+.inputEditableNoBorder-mw70 {
+    font-weight: 700;
+    border-style: hidden;
+    background: none;
+    max-width: 70px;
+    max-height: 20px !important;
 }
 
 .inputEditable {

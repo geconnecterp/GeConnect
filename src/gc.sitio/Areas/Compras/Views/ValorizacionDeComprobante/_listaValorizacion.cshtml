@@ -16,6 +16,8 @@
 				<th style="width:5%;" class="col-header-small align-center tiny-row">Percep.</th>
 				<th style="width:5%;" class="col-header-small align-center tiny-row">Otros NG</th>
 				<th style="width:5%;" class="col-header-small align-center tiny-row">Total</th>
+				<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">resultado</th>
+				<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">resultado_msj</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -32,6 +34,8 @@
 					<td class="@Model.ObtenerClase(item.cm_percepciones)">@Model.FormatearDato(item.cm_percepciones, FormatDato.Monto)</td>
 					<td class="@Model.ObtenerClase(item.cm_otro_ng)">@Model.FormatearDato(item.cm_otro_ng, FormatDato.Monto)</td>
 					<td class="@Model.ObtenerClase(item.cm_total)">@Model.FormatearDato(item.cm_total, FormatDato.Monto)</td>
+					<td style="display:none;">@item.resultado</td>
+					<td style="display:none;">@item.resultado_msj</td>
 				</tr>
 			}
 		</tbody>
