@@ -156,8 +156,12 @@
             public const string SP_BOX_INFO_STK = "SPGECO_BOX_Info_Stk";
             public const string SP_BOX_INFO_MOV_STK = "SPGECO_BOX_Info_Mov_Stk";
 
-            #region Cliente
-            public const string SP_CLIENTE_LISTA = "spgeco_clientes_lista";
+			#region Orden de Pago a Proveedores
+			public const string SP_OP_VALIDACIONES_PREV = "SPGECO_OP_Validaciones_Prev";
+			#endregion
+
+			#region Cliente
+			public const string SP_CLIENTE_LISTA = "spgeco_clientes_lista";
             #endregion
 
             #region Usuarios

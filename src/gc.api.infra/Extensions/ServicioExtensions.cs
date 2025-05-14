@@ -93,10 +93,10 @@ namespace gc.api.infra.Extensions
             services.AddScoped<IABMRepartidorServicio, ABMRepartidorServicio>();
             services.AddScoped<IABMPlanCuentaServicio, ABMPlanCuentaServicio>();
             services.AddScoped<ITipoDtoValorizaRprServicio, TipoDtoValorizaRprServicio>();
+			services.AddScoped<IOrdenDePagoServicio, OrdenDePagoServicio>();
+			//De Reportes
 
-            //De Reportes
-            
-            services.AddScoped<IReportService, ReportService>();
+			services.AddScoped<IReportService, ReportService>();
             //services.AddScoped<IGeneradorReporte, R001_InformeCuentaCorriente>();
             services.AddLogging();
             
