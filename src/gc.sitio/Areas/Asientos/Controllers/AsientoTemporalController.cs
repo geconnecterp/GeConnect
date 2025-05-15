@@ -1,4 +1,5 @@
-﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿using gc.api.core.Entidades;
+using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Asientos;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Helpers;
@@ -14,15 +15,21 @@ namespace gc.sitio.Areas.Asientos.Controllers
     public class AsientoTemporalController : ControladorBase
     {
         private readonly IAsientoFrontServicio _asientoServicio;
+        private readonly IAsientoTemporalServicio _asTempSv;
+        private readonly AppSettings _appSettings;
+
         private List<UsuAsientoDto> UsuariosEjercicioLista { get; set; } = [];
 
         public AsientoTemporalController(
             IOptions<AppSettings> options,
             IHttpContextAccessor contexto,
             ILogger<AsientoTemporalController> logger,
-            IAsientoFrontServicio asientoServicio) : base(options, contexto, logger)
+            IAsientoFrontServicio asientoServicio,
+            IAsientoTemporalServicio asTempSv) : base(options, contexto, logger)
         {
             _asientoServicio = asientoServicio;
+            _asTempSv = asTempSv;
+            _appSettings = options.Value;
         }
 
         public async Task<IActionResult> Index()
@@ -57,6 +64,69 @@ namespace gc.sitio.Areas.Asientos.Controllers
                 return View();
             }
         }
+
+
+        [HttpPost]
+        public async Task<IActionResult> BuscarAsientos(QueryAsiento query, string sort = "Eje_nro", string sortDir = "asc", int pag = 1)
+        {
+            try
+            {
+                // Validar el filtro recibido
+                if (query == null)
+                {
+                    return PartialView("_gridMensaje", new RespuestaGenerica<EntidadBase>
+                    {
+                        Ok = false,
+                        Mensaje = "El filtro no puede ser nulo."
+                    });
+                }
+
+                // Configurar los parámetros de paginación y ordenamiento
+                query.Sort = sort;
+                query.SortDir = sortDir;
+                query.TotalRegistros = _appSettings.NroRegistrosPagina;
+                query.Paginas = pag;
+
+                // Llamar al servicio para obtener los asientos temporales
+                var response = await _asTempSv.ObtenerAsientos(query, TokenCookie);
+
+                // Verificar si la respuesta es exitosa
+                if (!response.Ok || response.ListaEntidad == null)
+                {
+                    return PartialView("_gridMensaje", new RespuestaGenerica<EntidadBase>
+                    {
+                        Ok = false,
+                        Mensaje = response.Mensaje ?? "No se encontraron asientos temporales con los criterios especificados."
+                    });
+                }
+
+                // Generar el objeto GridCoreSmart<T>
+                var grillaDatos = GenerarGrillaSmart(
+                    response.ListaEntidad,
+                    sort,
+                    _appSettings.NroRegistrosPagina,
+                    pag,
+                    response.ListaEntidad.Count, // Total de registros
+                    (int)Math.Ceiling((double)response.ListaEntidad.Count / _appSettings.NroRegistrosPagina), // Total de páginas
+                    sortDir
+                );
+
+                // Retornar la vista parcial con los datos
+                return PartialView("_gridAsiento", grillaDatos);
+            }
+            catch (Exception ex)
+            {
+                // Registrar el error y devolver un mensaje genérico
+                _logger?.LogError(ex, "Error al buscar asientos temporales.");
+                return PartialView("_gridMensaje", new RespuestaGenerica<EntidadBase>
+                {
+                    Ok = false,
+                    Mensaje = "Ocurrió un error inesperado al buscar los asientos temporales."
+                });
+            }
+        }
+
+
 
         /// <summary>
         /// Obtiene los ejercicios contables para el combo
@@ -201,9 +271,21 @@ namespace gc.sitio.Areas.Asientos.Controllers
         [HttpGet]
         public async Task<JsonResult> CargarUsuariosEjercicio(int eje_nro)
         {
+
+            if (eje_nro <= 0)
+            {
+                return Json(new { success = false, message = "El número de ejercicio no es válido." });
+            }
+
             try
             {
                 await ObtenerUsuariosDeEjercicio(eje_nro);
+
+                if (UsuariosEjercicioLista == null || !UsuariosEjercicioLista.Any())
+                {
+                    return Json(new { success = false, message = "No se encontraron usuarios para el ejercicio especificado." });
+                }
+
                 var usuarios = UsuariosEjercicioLista.Select(u => new {
                     id = u.Usu_id,
                     text = u.Usu_apellidoynombre
@@ -214,7 +296,7 @@ namespace gc.sitio.Areas.Asientos.Controllers
             catch (Exception ex)
             {
                 _logger?.LogError(ex, $"Error al obtener usuarios del ejercicio {eje_nro}");
-                return Json(new { success = false, message = "Ocurrió un error al obtener los usuarios del ejercicio" });
+                return Json(new { success = false, message = "Ocurrió un error inesperado al obtener los usuarios del ejercicio." });
             }
         }
     }

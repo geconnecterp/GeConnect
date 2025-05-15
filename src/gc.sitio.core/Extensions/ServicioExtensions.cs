@@ -79,6 +79,7 @@ namespace gc.sitio.core.Extensions
 			services.AddScoped<IABMPlanCuentaServicio, ABMPlanCuentaServicio>();
 			services.AddScoped<ITipoDtoValorizaRprServicio, TipoDtoValorizaRprServicio>();
 			services.AddScoped<IAsientoFrontServicio, AsientoFrontServicio>();
+			services.AddScoped<IAsientoTemporalServicio, AsientoTemporalServicio>();
 
 
             return services;

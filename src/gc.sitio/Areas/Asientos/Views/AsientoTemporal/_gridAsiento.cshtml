@@ -1,0 +1,59 @@
+﻿@model GridCoreSmart<AsientoGridDto>
+
+@{
+    var alt = true;
+    string clase = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive text-nowrap table-wrapper">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridAsiento">
+                <thead class="table-dark">
+                    <tr class="header">
+                        <th class="text-sm-center" scope="col">Nro Movimiento</th>
+                        <th class="text-sm-center" scope="col">Fecha</th>
+                        <th class="text-sm-center" scope="col">Tipo</th>
+                        <th class="text-sm-center" scope="col">Descripción</th>
+                        <th class="text-sm-center" scope="col">Carga</th>
+                        <th class="text-sm-center" scope="col">Es</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.ListaDatos == null || Model.ListaDatos.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center">No se han especificado datos aún.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model.ListaDatos ?? Enumerable.Empty<AsientoGridDto>())
+                        {
+                            if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
+                            var title = item.revisable ? "OK" : "Revisar Descripción";
+                            <tr class="@clase" onclick="selectReg(this, 'tbGridAsiento')" title="@title">
+                                <td class="@Model.ObtenerClase(item.dia_movi)" style="text-align: left;">@Model.FormatearDato(item.dia_movi, FormatDato.Ninguno)</td>
+                                <td class="@Model.ObtenerClase(item.dia_fecha)">@Model.FormatearDato(item.dia_fecha, FormatDato.Fecha)</td>
+                                <td class="@Model.ObtenerClase(item.dia_tipo)">@Model.FormatearDato(item.dia_tipo, FormatDato.Ninguno)</td>
+                                <td class="@Model.ObtenerClase(item.dia_desc_asiento)">@Model.FormatearDato(item.dia_desc_asiento, FormatDato.Ninguno)</td>
+                                <td class="@Model.ObtenerClase(item.dia_fecha_sistema)">@Model.FormatearDato(item.dia_fecha_sistema, FormatDato.FechaHora)</td>
+                                <td class="@Model.ObtenerClase('c')">
+                                    @if (item.revisable)
+                                    {
+                                        <i class="bx bx-check text-success"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bx bx-x text-danger"></i>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

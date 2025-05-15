@@ -5,7 +5,6 @@ using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Dtos.Asientos;
 
 using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Logging;
 
 namespace gc.api.core.Servicios.Asientos
 {
@@ -44,5 +43,7 @@ namespace gc.api.core.Servicios.Asientos
             var lista = _repository.EjecutarLstSpExt<UsuAsientoDto>(sp, ps, true);
             return lista;
         }
+
+
     }
 }
