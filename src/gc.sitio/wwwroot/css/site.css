@@ -420,13 +420,37 @@ input[type=number] {
         border-width: 5px 0 5px 5px;
         border-left-color: #ccc;
         margin-top: 5px;
-        margin-right: -10px;
+        margin-right: -5px;
     }
 
     /* Cambia el color de la flecha al pasar el ratón */
     .dropdown-submenu:hover > a:after {
         border-left-color: #fff;
     }
+
+
+/* Estilo para el tooltip del atributo title */
+tr[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    background-color: var(--bs-dark); /* Fondo oscuro para buen contraste */
+    color: var(--bs-white); /* Texto blanco para legibilidad */
+    padding: 0.5rem 1rem;
+    border-radius: var(--bs-border-radius-sm); /* Bordes redondeados */
+    box-shadow: var(--bs-box-shadow-sm); /* Sombra para destacar */
+    font-size: 0.875rem; /* Tamaño de fuente pequeño */
+    white-space: nowrap;
+    z-index: 1000;
+    top: 100%; /* Aparece debajo de la fila */
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 0.5rem;
+    pointer-events: none;
+}
+
+tr[title]:hover {
+    position: relative; /* Necesario para posicionar el tooltip */
+}
 
 /* Ajustes para dispositivos móviles */
 @media (max-width: 991px) {

@@ -16,7 +16,6 @@ namespace gc.sitio.Areas.ABMs.Controllers.Repartidor
     public class ABMRepartidorController : ControladorRepartidorBase
     {
         private readonly AppSettings _settings;
-        private readonly ILogger<ABMRepartidorController> _logger;
         private readonly IAbmServicio _abmSv;
         private readonly IABMRepartidorServicio _abmveSv;
 
@@ -25,11 +24,10 @@ namespace gc.sitio.Areas.ABMs.Controllers.Repartidor
              IAbmServicio abmSv) : base(options, accessor, logger)
         {
             _settings = options.Value;
-            _logger = logger;
             _abmveSv = abmveSv;
             _abmSv = abmSv;
         }
-        public async Task<IActionResult> Index(bool actualizar)
+        public IActionResult Index(bool actualizar)
         {
 
             try
