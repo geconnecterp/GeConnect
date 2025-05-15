@@ -1,0 +1,32 @@
+﻿@model GridCoreSmart<OPValidacionPrevDto>
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+}
+
+<div class="table-responsive table-wrapper-400-full-width" id="containerValidacionesPrev">
+	<table class="table table-bordered table-hover" id="tbListaValidacionesPrev">
+		<thead class="table-dark">
+			<tr>
+				<th style="width:75%;" class="col-header-small align-center tiny-row">Mensaje</th>
+				<th style="width:25%;" class="col-header-small align-center tiny-row">Acción</th>
+				<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">Cancelar</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in Model.ListaDatos)
+			{
+				<tr onclick="selectListaValidacionesPrev(this)">
+					<td class="@Model.ObtenerClase(item.msj)">@Model.FormatearDato(item.msj, FormatDato.Ninguno)</td>
+					<td class="@Model.ObtenerClase(item.tipo)">@Model.FormatearDato(item.tipo, FormatDato.Monto)</td>
+					<td style="display:none;">@item.cancelar</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>
+<div class="row m-3">
+	<div class="d-flex justify-content-around">
+		<button type="button" id="btnCancelDesdeValidPrev" class="btn btn-sm btn-danger"><i class="bx bx-sm bx-x-circle"></i></button>
+		<button type="button" id="btnAceptarDesdeValidPrev" class="btn btn-sm btn-success"><i class="bx bx-sm bx-search"></i></button>
+	</div>
+</div>

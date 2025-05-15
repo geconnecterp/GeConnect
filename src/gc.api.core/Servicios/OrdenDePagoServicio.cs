@@ -28,5 +28,18 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<OPValidacionPrevDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<OPDebitoYCreditoDelProveedorDto> GetOPDebitoYCreditoDelProveedor(string cta_id, char tipo, bool excluye_notas = false)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OP_VTO;
+			var ps = new List<SqlParameter>()
+			{
+				new("@cta_id", cta_id),
+				new("@tipo", tipo),
+				new("@excluye_notas", excluye_notas)
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<OPDebitoYCreditoDelProveedorDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

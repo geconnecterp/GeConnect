@@ -1,0 +1,39 @@
+﻿@*
+    Contiene los datos de la cuenta, mas los datos de Obligaciones a cancelar, Creditos y Valores Imputados, y Diferencia
+    Tambien las vistas parciales de las diferentes grillas, y secciones.
+*@
+@{
+}
+<div class="row mt-2">
+	<div class="col-md-5">
+		<div class="input-group input-group-sm mt-1" id="divProveedorSeleccionado">
+			<span class="input-group-text fixed-lbl-for-abm-70">Cuenta: </span>
+			<input type="text" id="CtaID" class="form-control" style="max-width: 100px;text-align: right;" disabled />
+			<input type="text" id="CtaDesc" class="form-control" disabled />
+		</div>
+	</div>
+	<div class="col-md-7">
+		<div class="input-group input-group-sm mt-1">
+			<span class="input-group-text fixed-lbl-for-abm-100" title="Obligaciones a Cancelar">Obl. a Cancelar: </span>
+			<input type="text" class="form-control align-right" style="background-color: darkturquoise; color: black;" disabled />
+			<span class="input-group-text fixed-lbl-for-abm-100" title="Créditos y Valores Imputados">Cred. y Val. Imputados: </span>
+			<input type="text" class="form-control align-right" style="background-color: darkseagreen; color: black;" disabled />
+			<span class="input-group-text fixed-lbl-for-abm-100">Diferencia: </span>
+			<input type="text" class="form-control align-right" style="background-color: chocolate; color: black;" disabled />
+		</div>
+	</div>
+</div>
+<div class="row mt-2">
+	<div class="col-6">
+		<div class="row" id="divObligacionesParaAgregar">
+		</div>
+		<div class="row" id="divObligaciones">
+		</div>
+	</div>
+	<div class="col-6">
+		<div class="row" id="divCreditosParaAgregar">
+		</div>
+		<div class="row" id="divCreditos">
+		</div>
+	</div>
+</div>
