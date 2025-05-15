@@ -636,3 +636,31 @@ function cargarReporteEnArre(numeroReporte, parametros,titulo,observacion,admId)
         administracion: admId
     };
 }
+
+/**
+ * Activa o desactiva un componente (input, select, etc.) según el estado de un checkbox.
+ * Si el checkbox está marcado, habilita el componente y restaura su estilo visual.
+ * Si el checkbox está desmarcado, deshabilita el componente y aplica un estilo de fondo y negrita.
+ * @param {string} checkboxId - El ID del checkbox que controla el estado.
+ * @param {string} componentSelector - Selector jQuery del componente a activar/desactivar.
+ */
+function toggleComponent(checkboxId, componentSelector) {
+    try {
+        const isChecked = $(`#${checkboxId}`).is(':checked');
+        const $component = $(componentSelector);
+
+        if (isChecked) {
+            $component.prop('disabled', false).css({
+                'background-color': '',
+                'font-weight': 'normal'
+            });
+        } else {
+            $component.prop('disabled', true).css({
+                'background-color': 'rgb(251,255,195)',
+                'font-weight': '900'
+            });
+        }
+    } catch (error) {
+        console.error(`Error al procesar el checkbox ${checkboxId}:`, error);
+    }
+}

@@ -42,6 +42,7 @@
     <Folder Include="Areas\Usuarios\Models\" />
     <Folder Include="Models\ViewModels\" />
     <Folder Include="Views\Shared\EditorTemplates\" />
+    <Folder Include="wwwroot\archivos\" />
     <Folder Include="wwwroot\images\logo\" />
   </ItemGroup>
 
