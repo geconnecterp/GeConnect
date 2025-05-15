@@ -45,8 +45,13 @@ function InicializarPantallaDeFiltros() {
 	$("#chkRel01").prop("disabled", true);
 	$("#btnDetalle").prop("disabled", true);
 	$("#divFiltro").collapse("show");
-	$("#divLstComptesPendiente")[0].innerHTML = "";
-	document.getElementById("Rel01").focus();
+	if ($("#divLstComptesPendiente") && $("#divLstComptesPendiente")[0]) {
+		$("#divLstComptesPendiente")[0].innerHTML = "";
+	}
+	var obj = document.getElementById("Rel01");
+	if (obj) {
+		obj.focus();
+	}
 	MostrarDatosDeCuenta(false);
 
 }
