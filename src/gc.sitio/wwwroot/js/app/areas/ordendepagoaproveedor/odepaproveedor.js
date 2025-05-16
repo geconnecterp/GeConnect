@@ -32,9 +32,44 @@ function CancelDesdeValidPrev() {
 	});
 }
 
+function selectReg(x, gridId) {
+	$("#" + gridId + " tbody tr").each(function (index) {
+		$(this).removeClass("selected-row");
+		$(this).removeClass("selectedEdit-row");
+	});
+	$(x).addClass("selected-row");
+
+}
+
+function selectRegDbl(x, gridId) {
+	ControlaMensajeWarning("Method not implemented.")
+}
+
 function AceptarDesdeValidPrev() {
 	//Cargar con el backend la vista siguiente
-	ControlaMensajeWarning("Method not implemented.");
+	var cta_id = ctaIdSelected;
+	var data = { cta_id };
+	PostGenHtml(data, cargarVistaObligacionesYCreditosURL, function (obj) {
+		$("#divDetalle").html(obj);
+		//Setear los valores de la cuenta seleccionada en la vista de obligaciones y creditos
+		$("#CtaID").val(ctaIdSelected);
+		$("#CtaDesc").val(ctaDescSelected);
+		MostrarDatosDeCuenta(true);
+		CargarObligacionesOCreditos("D"); //Obligaciones
+		CargarObligacionesOCreditos("H"); //Créditos
+	});
+}
+
+function CargarObligacionesOCreditos(tipo) {
+	var data = { tipo };
+	PostGen(data, cargarObligacionesOCreditosURL, function (obj) {
+		if (tipo == "D") {
+			$("#divObligaciones").html(obj);
+		}
+		else {
+			$("#divCreditos").html(obj);
+		}
+	});
 }
 
 function InicializaPantalla() {

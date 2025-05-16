@@ -48,11 +48,11 @@ namespace gc.api.Controllers.OrdenDePago
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<OPDebitoYCreditoDelProveedorDto>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]
-		public IActionResult GetOPDebitoYCreditoDelProveedor(string cta_id, char tipo, bool excluye_notas = false)
+		public IActionResult GetOPDebitoYCreditoDelProveedor(string cta_id, char tipo, bool excluye_notas, string admId, string usuId)
 		{
 			ApiResponse<List<OPDebitoYCreditoDelProveedorDto>> response;
 			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
-			var res = _ordenDePagoServicio.GetOPDebitoYCreditoDelProveedor(cta_id, tipo, excluye_notas);
+			var res = _ordenDePagoServicio.GetOPDebitoYCreditoDelProveedor(cta_id, tipo, excluye_notas, admId, usuId);
 
 			response = new ApiResponse<List<OPDebitoYCreditoDelProveedorDto>>(res);
 

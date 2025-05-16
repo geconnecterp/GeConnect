@@ -298,6 +298,12 @@ fieldset {
     overflow: auto;
 }
 
+.table-wrapper-200-full-width {
+    max-height: 200px;
+    max-width: 100%;
+    overflow: auto;
+}
+
 .table-wrapper-200 {
     max-height: 200px;
     max-width: 98%;
@@ -607,6 +613,13 @@ tr[title]:hover {
 
 .fixed-lbl-for-abm-100 {
     width: 100px;
+    display: block;
+    float: right;
+    text-align: right;
+}
+
+.fixed-lbl-for-abm-150 {
+    width: 150px;
     display: block;
     float: right;
     text-align: right;

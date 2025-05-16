@@ -4,6 +4,28 @@
 *@
 @{
 }
+<style>
+	fieldset {
+		margin: 8px;
+		border: 1px solid silver;
+		padding: 8px;
+		border-radius: 4px;
+		max-width: 100%;
+		margin-top: 8px;
+		margin-left: 0px;
+		margin-right: 0px;
+		margin-bottom: 0px;
+	}
+
+	legend {
+		padding: 2px;
+		margin-top: -22px;
+		background: #f3f5f7 !important;
+		width: 25%;
+		text-align: center;
+		font-size: small;
+	}
+</style>
 <div class="row mt-2">
 	<div class="col-md-5">
 		<div class="input-group input-group-sm mt-1" id="divProveedorSeleccionado">
@@ -15,25 +37,31 @@
 	<div class="col-md-7">
 		<div class="input-group input-group-sm mt-1">
 			<span class="input-group-text fixed-lbl-for-abm-100" title="Obligaciones a Cancelar">Obl. a Cancelar: </span>
-			<input type="text" class="form-control align-right" style="background-color: darkturquoise; color: black;" disabled />
-			<span class="input-group-text fixed-lbl-for-abm-100" title="Créditos y Valores Imputados">Cred. y Val. Imputados: </span>
-			<input type="text" class="form-control align-right" style="background-color: darkseagreen; color: black;" disabled />
+			<input type="text" id="txtObligACancelar" class="form-control align-right" style="background-color: red; color: white;" disabled />
+			<span class="input-group-text fixed-lbl-for-abm-150" title="Créditos y Valores Imputados">Cred. y Val. Imputados: </span>
+			<input type="text" id="txtCredYValImputados" class="form-control align-right" style="background-color: dodgerblue; color: white;" disabled />
 			<span class="input-group-text fixed-lbl-for-abm-100">Diferencia: </span>
-			<input type="text" class="form-control align-right" style="background-color: chocolate; color: black;" disabled />
+			<input type="text" id="txtDiferencias" class="form-control align-right" style="background-color: forestgreen; color: white;" disabled />
 		</div>
 	</div>
 </div>
 <div class="row mt-2">
 	<div class="col-6">
-		<div class="row" id="divObligacionesParaAgregar">
-		</div>
-		<div class="row" id="divObligaciones">
-		</div>
+		<fieldset>
+			<legend>Obligaciones</legend>
+			<div class="row" id="divObligacionesParaAgregar">
+			</div>
+			<div class="row" id="divObligaciones">
+			</div>
+		</fieldset>
 	</div>
 	<div class="col-6">
-		<div class="row" id="divCreditosParaAgregar">
-		</div>
-		<div class="row" id="divCreditos">
-		</div>
+		<fieldset>
+			<legend>Créditos y Valores</legend>
+			<div class="row" id="divCreditosParaAgregar">
+			</div>
+			<div class="row" id="divCreditos">
+			</div>
+		</fieldset>
 	</div>
 </div>

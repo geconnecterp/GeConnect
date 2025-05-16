@@ -71,7 +71,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 		}
 
-		public List<OPDebitoYCreditoDelProveedorDto> GetOPDebitoYCreditoDelProveedor(string cta_id, char tipo, bool excluye_notas, string token)
+		public List<OPDebitoYCreditoDelProveedorDto> GetOPDebitoYCreditoDelProveedor(string cta_id, char tipo, bool excluye_notas, string admId, string usuId, string token)
 		{
 			ApiResponse<List<OPDebitoYCreditoDelProveedorDto>> respuesta;
 			string stringData;
@@ -80,7 +80,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 				HelperAPI helper = new();
 				HttpClient client = helper.InicializaCliente(token);
 				HttpResponseMessage response;
-				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerOPDebitoYCreditoDelProveedor}?cta_id={cta_id}&tipo={tipo}&excluye_notas={excluye_notas}";
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerOPDebitoYCreditoDelProveedor}?cta_id={cta_id}&tipo={tipo}&excluye_notas={excluye_notas}&admId={admId}&usuId={usuId}";
 				response = client.GetAsync(link).GetAwaiter().GetResult();
 				if (response.StatusCode == HttpStatusCode.OK)
 				{

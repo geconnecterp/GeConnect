@@ -29,7 +29,7 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
-		public List<OPDebitoYCreditoDelProveedorDto> GetOPDebitoYCreditoDelProveedor(string cta_id, char tipo, bool excluye_notas = false)
+		public List<OPDebitoYCreditoDelProveedorDto> GetOPDebitoYCreditoDelProveedor(string cta_id, char tipo, bool excluye_notas, string admId, string usuId)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OP_VTO;
 			var ps = new List<SqlParameter>()
