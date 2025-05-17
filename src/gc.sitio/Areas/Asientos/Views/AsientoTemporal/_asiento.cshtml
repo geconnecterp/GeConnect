@@ -1,0 +1,83 @@
+﻿@model AsientoDetalleDto
+
+<div class="card mb-4">
+    <div class="card-header py-2">
+        <div class="row align-items-center">
+            <div class="col-md-3">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text">Nº Mov</span>
+                    <input type="text" class="form-control" readonly value="@Model?.Dia_movi" />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text">Tipo Asiento</span>
+                    @Html.DropDownList("Dia_tipo", ViewBag.ListaTiposAsiento as SelectList, new { @class = "form-control", @disabled = "disabled", @value = Model?.Dia_tipo })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text">Desc</span>
+                    <input type="text" class="form-control" readonly value="@Model?.Dia_desc_asiento" />
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text">Fecha</span>
+                    <input type="text" class="form-control" readonly value="@(Model?.Dia_fecha.ToString("dd/MM/yyyy"))" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-sm table-striped table-hover mb-0" id="tbAsientoDetalle">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width: 15%">Cuenta</th>
+                        <th style="width: 20%">Desc</th>
+                        <th style="width: 40%">Concepto</th>
+                        <th style="width: 12%" class="text-end">Debe</th>
+                        <th style="width: 12%" class="text-end">Haber</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model?.Detalles != null && Model.Detalles.Any())
+                    {
+                        foreach (var detalle in Model.Detalles)
+                        {
+                            <tr class="@(detalle.Ccb_id == "11404551" ? "table-primary" : "")">
+                                <td>@detalle.Ccb_id</td>
+                                <td>@detalle.Ccb_desc</td>
+                                <td>@detalle.Dia_desc</td>
+                                <td class="text-end">@(detalle.Debe > 0 ? $"{detalle.Debe:N2}" : "0,00")</td>
+                                <td class="text-end">@(detalle.Haber > 0 ? $"{detalle.Haber:N2}" : "0,00")</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center">No hay líneas de asiento para mostrar</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot class="table-dark">
+                    <tr>
+                        <td colspan="3" class="text-end fw-bold">Totales</td>
+                        <td class="text-end fw-bold">@(Model?.TotalDebe.ToString("N2") ?? "0,00")</td>
+                        <td class="text-end fw-bold">@(Model?.TotalHaber.ToString("N2") ?? "0,00")</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer d-flex justify-content-end py-1">
+        <button class="btn btn-sm btn-secondary me-2" id="btnImprimir">
+            <i class="bx bx-printer"></i> Imprimir
+        </button>
+        <button class="btn btn-sm btn-warning" id="btnPasarContabilidad">
+            <i class="bx bx-transfer"></i> Pasar a contabilidad
+        </button>
+    </div>
+</div>

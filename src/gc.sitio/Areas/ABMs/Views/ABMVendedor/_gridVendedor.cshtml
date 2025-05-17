@@ -10,49 +10,47 @@
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
 }
 
-<div class="card">
-    <div class="card-body">
-        <div class="table-responsive text-nowrap  table-wrapper">
-            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridVendedor">
-                <thead class="table-dark">
-                    <tr class="header">
-                        <th class="text-sm-center" scope="col">Id</th>
-                        <th class="text-sm-center" scope="col">Denominación</th>
-                        <th class="text-sm-center" scope="col">Activo</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model.ListaDatos)
-                    {
-                        string block;
-                        if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
-                        if (item.ve_activo.Equals('N'))
-                        {
-                            block = "NO";
-                            color = EstadoColor.NoActivo;
-                        }
-                        else
-                        {
-                            block = "SI";
-                            color = EstadoColor.Activo;
-                        }
-                        <tr class="@clase" onclick="selectRegVendedor(this,'tbGridVendedor')">
-                            <td class="@Model.ObtenerClase('c')" style="border-left: 5px solid @color;text-align: left;">@Model.FormatearDato(item.ve_id, FormatDato.Ninguno)</td>
-                            <td class="@Model.ObtenerClase(item.ve_nombre)">@Model.FormatearDato(item.ve_nombre, FormatDato.Ninguno)</td>
-                            <td class="@Model.ObtenerClase(item.VeActivo)">@Model.FormatearDato(@block, FormatDato.BandSN)</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-        <div class="row m-3">
-            <table style="width:300px;text-align:center">
-                <tr><td colspan="3" class="text-md-center"><strong>ESTADOS</strong></td></tr>
-                <tr>
-                    <td style="background-color: @EstadoColor.Activo;color:#FFFFFF;font-weight:600;width:150px;">ACTIVO</td>
-                    <td style="background-color: @EstadoColor.NoActivo;color:#FFFFFF;font-weight:600;width:150px;">NO ACTIVO</td>
+<div class="row">
+    <div class="table-responsive text-nowrap  table-wrapper">
+        <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridVendedor">
+            <thead class="table-dark">
+                <tr class="header">
+                    <th class="text-sm-center" scope="col">Id</th>
+                    <th class="text-sm-center" scope="col">Denominación</th>
+                    <th class="text-sm-center" scope="col">Activo</th>
                 </tr>
-            </table>
-        </div>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.ListaDatos ?? Enumerable.Empty<ABMVendedorDto>())
+                {
+                    string block;
+                    if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
+                    if (item.ve_activo.Equals('N'))
+                    {
+                        block = "NO";
+                        color = EstadoColor.NoActivo;
+                    }
+                    else
+                    {
+                        block = "SI";
+                        color = EstadoColor.Activo;
+                    }
+                    <tr class="@clase" onclick="selectRegVendedor(this,'tbGridVendedor')">
+                        <td class="@Model.ObtenerClase('c')" style="border-left: 5px solid @color;text-align: left;">@Model.FormatearDato(item.ve_id, FormatDato.Ninguno)</td>
+                        <td class="@Model.ObtenerClase(item.ve_nombre)">@Model.FormatearDato(item.ve_nombre, FormatDato.Ninguno)</td>
+                        <td class="@Model.ObtenerClase(item.VeActivo)">@Model.FormatearDato(@block, FormatDato.BandSN)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="row m-3">
+        <table style="width:300px;text-align:center">
+            <tr><td colspan="3" class="text-md-center"><strong>ESTADOS</strong></td></tr>
+            <tr>
+                <td style="background-color: @EstadoColor.Activo;color:#FFFFFF;font-weight:600;width:150px;">ACTIVO</td>
+                <td style="background-color: @EstadoColor.NoActivo;color:#FFFFFF;font-weight:600;width:150px;">NO ACTIVO</td>
+            </tr>
+        </table>
     </div>
 </div>

@@ -2,6 +2,7 @@
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Asientos;
+using gc.infraestructura.Dtos.Gen;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
@@ -73,5 +74,94 @@ namespace gc.api.Controllers.Asientos
             // Devolver respuesta exitosa
             return Ok(response);
         }
+
+        /// <summary>
+        /// Pasa los asientos temporales seleccionados a contabilidad.
+        /// </summary>
+        /// <param name="asientoPasa">Datos necesarios para el traspaso de asientos.</param>
+        /// <returns>Resultado de la operación de traspaso.</returns>
+        [HttpPost("pasar-asientos-contabilidad")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public ActionResult<ApiResponse<RespuestaDto>> PasarAsientosTmpAContabilidad([FromBody] AsientoPasaDto asientoPasa)
+        {
+            // Validar parámetros de entrada
+            if (asientoPasa == null)
+            {
+                return BadRequest(new ApiResponse<string>("El objeto de traspaso no puede ser nulo."));
+            }
+
+            // Validar campos obligatorios
+            if (string.IsNullOrWhiteSpace(asientoPasa.Movi_id))
+            {
+                return BadRequest(new ApiResponse<string>("El ID del movimiento es obligatorio."));
+            }
+
+            if (string.IsNullOrWhiteSpace(asientoPasa.Usu_id))
+            {
+                return BadRequest(new ApiResponse<string>("El ID del usuario es obligatorio."));
+            }
+
+            if (string.IsNullOrWhiteSpace(asientoPasa.Adm_id))
+            {
+                return BadRequest(new ApiResponse<string>("El ID de la administración es obligatorio."));
+            }
+
+            // Llamar al servicio para realizar el traspaso
+            var resultado = _asientoTemporalServicio.PasarAsientosTmpAContabilidad(asientoPasa);
+
+            if (resultado.resultado == 1) // Suponiendo que 1 es el código de éxito
+            {
+                // Devolver respuesta exitosa con el objeto RespuestaDto completo
+                return Ok(new ApiResponse<RespuestaDto>(resultado));
+            }
+            else
+            {
+                // Devolver error con el mensaje del servicio
+                return BadRequest(new ApiResponse<string>(resultado.resultado_msj ?? "Ocurrió un error durante el traspaso de asientos."));
+            }
+
+        }
+
+        /// <summary>
+        /// Obtiene el detalle de un asiento temporal específico.
+        /// </summary>
+        /// <param name="moviId">Identificador del movimiento del asiento.</param>
+        /// <returns>Detalle del asiento temporal.</returns>
+        [HttpGet("obtener-asiento-detalle/{moviId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public ActionResult<ApiResponse<AsientoDetalleDto>> ObtenerAsientoDetalle(string moviId)
+        {
+            // Validar parámetros de entrada
+            if (string.IsNullOrWhiteSpace(moviId))
+            {
+                return BadRequest(new ApiResponse<string>("El identificador del asiento no puede estar vacío."));
+            }
+
+            //try
+            //{
+                // Llamar al servicio para obtener el detalle del asiento
+                var resultado = _asientoTemporalServicio.ObtenerAsientoDetalle(moviId);
+
+                if (resultado == null)
+                {
+                    return NotFound($"No se encontró el asiento con identificador {moviId}.");
+                }
+
+                // Devolver respuesta exitosa
+                return Ok(new ApiResponse<AsientoDetalleDto>(resultado));
+            //}
+            //catch (Exception ex)
+            //{
+            //    // Manejar excepciones
+            //    return StatusCode(StatusCodes.Status500InternalServerError,
+            //        new ApiResponse<string>($"Error al obtener el detalle del asiento: {ex.Message}"));
+            //}
+        }
+
     }
 }

@@ -53,8 +53,8 @@
     <div class="collapse" id="divDetalle" style="">
         <partial name="_n01TabsAsiento" />
     </div>
-    <div class="row">
-        @* <partial name="_gridAbmProds"  /> *@
+    
+    <div class="row">     
         <div id="divGrilla">
             <p style="background-color:gray">
                 <h5>No se han especificado datos aún.</h5>
@@ -63,7 +63,7 @@
     </div>
     <div class="row">
         <div class="offset-md-3 col-md-6">
-            <div id="divPaginacion" class="">
+            <div id="divPaginacion">
             </div>
         </div>
     </div>
@@ -72,8 +72,9 @@
 @section scripts {
     <script type="text/javascript">
         const asientoTemporal = "@filtro.EsTemporal.ToString().ToLower()";
-        var buscarAsientoUrl="@Url.Action("BuscarAsientos", "AsientoTemporal", new { area = "Asientos" })";
+        var buscarAsientosUrl="@Url.Action("BuscarAsientos", "AsientoTemporal", new { area = "Asientos" })";
         var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "AsientoTemporal", new { area = "Asientos" })";
+        var buscarAsientoUrl= "@Url.Action("buscarAsiento", "AsientoTemporal", new { area = "Asientos" })";
 
     </script>
     <script src="~/js/plugins/jquery.simplePagination.js"></script>
