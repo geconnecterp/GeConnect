@@ -179,19 +179,7 @@ function buscarVendedor(data) {
         //activar botones de acción
         activarBotones(true);
 
-        //if (EntidadEstado !== "S" && accion !== "") {
-        //    $("#BtnLiTab02").prop("disabled", true);
-        //    $("#BtnLiTab02").addClass("text-danger");
-        //    $("#BtnLiTab03").prop("disabled", true);
-        //    $("#BtnLiTab03").addClass("text-danger");
-
-        //}
-        //else {
-        //    $("#BtnLiTab02").prop("disabled", false);
-        //    $("#BtnLiTab02").removeClass("text-danger");
-        //    $("#BtnLiTab03").prop("disabled", false);
-        //    $("#BtnLiTab03").removeClass("text-danger");
-        //}
+     
 
         CerrarWaiting();
     });

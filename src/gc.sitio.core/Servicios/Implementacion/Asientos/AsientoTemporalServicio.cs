@@ -21,6 +21,8 @@ namespace gc.sitio.core.Servicios.Implementacion.Asientos
         private const string POST_OBTENER_ASIENTOS = "/obtener-asientos";
 
         private readonly AppSettings _appSettings;
+        private const string POST_PASAR_ASIENTOS = "/pasar-asientos-contabilidad";
+        private const string GET_OBTENER_ASIENTO_DETALLE = "/obtener-asiento-detalle";
 
         public AsientoTemporalServicio(IOptions<AppSettings> options, ILogger<AsientoTemporalServicio> logger) : base(options, logger, RutaAPI)
         {
@@ -97,6 +99,165 @@ namespace gc.sitio.core.Servicios.Implementacion.Asientos
             }
         }
 
+        /// <inheritdoc/>
+        public async Task<RespuestaGenerica<RespuestaDto>> PasarAsientosAContabilidad(AsientoPasaDto asientoPasa, string token)
+        {
+            try
+            {
+                ApiResponse<RespuestaDto> apiResponse;
+                HelperAPI helper = new();
+
+                // Inicializar cliente y preparar contenido
+                HttpClient client = helper.InicializaCliente(asientoPasa, token, out StringContent contentData);
+                HttpResponseMessage response;
+
+                // Construir la URL de la API
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{POST_PASAR_ASIENTOS}";
+
+                // Enviar solicitud POST
+                response = await client.PostAsync(link, contentData);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
+                    }
+
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData)
+                        ?? throw new NegocioException("No se pudo deserializar los datos de respuesta.");
+
+                    return new RespuestaGenerica<RespuestaDto>
+                    {
+                        Ok = true,
+                        Mensaje = apiResponse.Data?.resultado_msj ?? "Operación completada con éxito.",
+                        Entidad = apiResponse.Data
+                    };
+                }
+                else if (response.StatusCode == HttpStatusCode.BadRequest)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    var errorResponse = JsonConvert.DeserializeObject<ApiResponse<string>>(stringData);
+                    return new RespuestaGenerica<RespuestaDto>
+                    {
+                        Ok = false,
+                        Mensaje = errorResponse?.Data ?? "Error al procesar la solicitud."
+                    };
+                }
+                else if (response.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    return new RespuestaGenerica<RespuestaDto>
+                    {
+                        Ok = false,
+                        Mensaje = "No tiene permisos para acceder a este recurso."
+                    };
+                }
+                else
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    if (error != null && error.TypeException?.Equals(nameof(NegocioException)) == true)
+                    {
+                        return new RespuestaGenerica<RespuestaDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else if (error != null && error.TypeException?.Equals(nameof(NotFoundException)) == true)
+                    {
+                        return new RespuestaGenerica<RespuestaDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else if (error != null)
+                    {
+                        throw new Exception(error.Detail);
+                    }
+                    else
+                    {
+                        throw new Exception("Error desconocido al procesar la respuesta de la API.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+                return new RespuestaGenerica<RespuestaDto>
+                {
+                    Ok = false,
+                    Mensaje = "Algo no fue bien al intentar pasar los asientos a contabilidad."
+                };
+            }
+        }
+
+        // AsientoTemporalServicio.cs en gc.sitio.core
+        // Añade este método a la clase existente:
+
+        /// <inheritdoc/>
+        public async Task<RespuestaGenerica<AsientoDetalleDto>> ObtenerAsientoDetalle(string moviId, string token)
+        {
+            try
+            {
+                HelperAPI helper = new();
+
+                // Construcción de la URL
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_OBTENER_ASIENTO_DETALLE}/{moviId}";
+
+                // Inicializar cliente
+                HttpClient client = helper.InicializaCliente(token);
+                HttpResponseMessage response;
+
+                // Enviar solicitud GET
+                response = await client.GetAsync(link);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new() { Ok = false, Mensaje = "No se recibió una respuesta válida. Intente de nuevo más tarde." };
+                    }
+
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<AsientoDetalleDto>>(stringData)
+                        ?? throw new NegocioException("No se pudo deserializar los datos del asiento.");
+
+                    return new RespuestaGenerica<AsientoDetalleDto> { Ok = true, Mensaje = "OK", Entidad = apiResponse.Data };
+                }
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    return new RespuestaGenerica<AsientoDetalleDto> { Ok = false, Mensaje = stringData };
+                }
+                else if (response.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    return new RespuestaGenerica<AsientoDetalleDto> { Ok = false, Mensaje = "No tiene permisos para acceder a este recurso." };
+                }
+                else
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    if (error != null && error.TypeException?.Equals(nameof(NegocioException)) == true)
+                    {
+                        return new RespuestaGenerica<AsientoDetalleDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else if (error != null && error.TypeException?.Equals(nameof(NotFoundException)) == true)
+                    {
+                        return new RespuestaGenerica<AsientoDetalleDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else if (error != null)
+                    {
+                        throw new Exception(error.Detail);
+                    }
+                    else
+                    {
+                        throw new Exception("Error desconocido al procesar la respuesta de la API.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+                return new RespuestaGenerica<AsientoDetalleDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener el detalle del asiento." };
+            }
+        }
 
     }
 }

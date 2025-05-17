@@ -2555,6 +2555,22 @@ namespace gc.sitio.Controllers
             }
         }
 
+        // Método auxiliar para el controlador
+        public bool VerificarAutenticacion(out IActionResult redirectResult)
+        {
+            redirectResult = null;
+
+            var (estaAutenticado, fechaExpiracion) = EstaAutenticado;
+
+            if (!estaAutenticado || fechaExpiracion < DateTime.Now)
+            {
+                redirectResult = RedirectToAction("Login", "Token", new { area = "seguridad" });
+                return false;
+            }
+
+            return true;
+        }
+
         protected enum DiasDeLaSemana
         {
             Domingo = 1,

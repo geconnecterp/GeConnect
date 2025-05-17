@@ -6,54 +6,65 @@
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
 }
 
-<div class="card">
-    <div class="card-body">
-        <div class="table-responsive text-nowrap table-wrapper">
-            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridAsiento">
-                <thead class="table-dark">
-                    <tr class="header">
-                        <th class="text-sm-center" scope="col">Nro Movimiento</th>
-                        <th class="text-sm-center" scope="col">Fecha</th>
-                        <th class="text-sm-center" scope="col">Tipo</th>
-                        <th class="text-sm-center" scope="col">Descripción</th>
-                        <th class="text-sm-center" scope="col">Carga</th>
-                        <th class="text-sm-center" scope="col">Es</th>
+<div class="row mb-2 mt-2">
+    <div class="col-md-12 d-flex justify-content-center">
+        <!-- Botón Imprimir -->
+        <button type="button" class="btn btn-light btn-sm me-2" id="btnImprimir">
+            <i class="bx bx-printer"></i> Imprimir
+        </button>
+        <!-- Botón Pasar Conta -->
+        <button type="button" class="btn btn-warning btn-sm" id="btnPasarConta">
+            <i class="bx bx-transfer"></i> Pasar Conta
+        </button>
+    </div>
+</div>
+<div class="row">
+
+    <div class="table-responsive text-nowrap table-wrapper">
+        <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridAsiento">
+            <thead class="table-dark">
+                <tr class="header">
+                    <th class="text-sm-center" scope="col">Nro Movimiento</th>
+                    <th class="text-sm-center" scope="col">Fecha</th>
+                    <th class="text-sm-center" scope="col">Tipo</th>
+                    <th class="text-sm-center" scope="col">Descripción</th>
+                    <th class="text-sm-center" scope="col">Carga</th>
+                    <th class="text-sm-center" scope="col">Es</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.ListaDatos == null || Model.ListaDatos.Count == 0)
+                {
+                    <tr>
+                        <td colspan="6" class="text-center">No se han especificado datos aún.</td>
                     </tr>
-                </thead>
-                <tbody>
-                    @if (Model.ListaDatos == null || Model.ListaDatos.Count == 0)
+                }
+                else
+                {
+                    @foreach (var item in Model.ListaDatos ?? Enumerable.Empty<AsientoGridDto>())
                     {
-                        <tr>
-                            <td colspan="6" class="text-center">No se han especificado datos aún.</td>
+                        if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
+                        var title = item.revisable ? "Revisar Descripción" : "OK";
+                        <tr class="@clase" onclick="selectReg(this, 'tbGridAsiento')" title="@title">
+                            <td class="@Model.ObtenerClase(item.dia_movi)" style="text-align: left;">@Model.FormatearDato(item.dia_movi, FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.dia_fecha)">@Model.FormatearDato(item.dia_fecha, FormatDato.Fecha)</td>
+                            <td class="@Model.ObtenerClase(item.dia_tipo)">@Model.FormatearDato(item.dia_tipo, FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.dia_desc_asiento)">@Model.FormatearDato(item.dia_desc_asiento, FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.dia_fecha_sistema)">@Model.FormatearDato(item.dia_fecha_sistema, FormatDato.FechaHora)</td>
+                            <td class="@Model.ObtenerClase('c')">
+                                @if (!item.revisable)
+                                {
+                                    <i class="bx bx-check text-success"></i>
+                                }
+                                else
+                                {
+                                    <i class="bx bx-x text-danger"></i>
+                                }
+                            </td>
                         </tr>
                     }
-                    else
-                    {
-                        @foreach (var item in Model.ListaDatos ?? Enumerable.Empty<AsientoGridDto>())
-                        {
-                            if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
-                            var title = item.revisable ? "OK" : "Revisar Descripción";
-                            <tr class="@clase" onclick="selectReg(this, 'tbGridAsiento')" title="@title">
-                                <td class="@Model.ObtenerClase(item.dia_movi)" style="text-align: left;">@Model.FormatearDato(item.dia_movi, FormatDato.Ninguno)</td>
-                                <td class="@Model.ObtenerClase(item.dia_fecha)">@Model.FormatearDato(item.dia_fecha, FormatDato.Fecha)</td>
-                                <td class="@Model.ObtenerClase(item.dia_tipo)">@Model.FormatearDato(item.dia_tipo, FormatDato.Ninguno)</td>
-                                <td class="@Model.ObtenerClase(item.dia_desc_asiento)">@Model.FormatearDato(item.dia_desc_asiento, FormatDato.Ninguno)</td>
-                                <td class="@Model.ObtenerClase(item.dia_fecha_sistema)">@Model.FormatearDato(item.dia_fecha_sistema, FormatDato.FechaHora)</td>
-                                <td class="@Model.ObtenerClase('c')">
-                                    @if (item.revisable)
-                                    {
-                                        <i class="bx bx-check text-success"></i>
-                                    }
-                                    else
-                                    {
-                                        <i class="bx bx-x text-danger"></i>
-                                    }
-                                </td>
-                            </tr>
-                        }
-                    }
-                </tbody>
-            </table>
-        </div>
+                }
+            </tbody>
+        </table>
     </div>
 </div>

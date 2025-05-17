@@ -39,6 +39,13 @@
         toggleComponent('Rango', 'input[name="Hasta"]');
     });
 
+    $(document).on("dblclick", "#tbGridAsiento tbody tr", function () {
+        x = $(this);
+        //se resguarda el registro de la tabla
+        regSelected = x;
+        ejecutaDblClickGrid1(x);
+    });
+
     InicializaVista();
 })
 
@@ -62,6 +69,51 @@ function InicializaVista() {
 
     $("#divFiltro").collapse("show");
     $("#divDetalle").collapse("hide");
+}
+function ejecutaDblClickGrid1(x) {
+    AbrirWaiting("Espere mientras se busca el Asiento solicitado...");
+    selectAsientoDbl(x, Grids.GridAsiento);
+}
+
+function selectAsientoDbl(x, gridId) {
+    $("#" + gridId + " tbody tr").each(function (index) {
+        $(this).removeClass("selectedEdit-row");
+    });
+    $(x).addClass("selectedEdit-row");
+    var id = x.find("td:nth-child(1)").text();
+
+    switch (tabAbm) {
+        case 1:
+            //se agrega por inyection el tab con los datos del producto
+            EntidadEstado = x.find("td:nth-child(3)").text();
+            var data = { id: id };
+            EntidadSelect = id;
+            desactivarGrilla(gridId);
+            //se busca el perfil
+            buscarAsiento(data);
+            //se posiciona el registro seleccionado
+            posicionarRegOnTop(x);
+            break;
+        default:
+            return false;
+    }
+}
+
+function buscarAsiento(data) {
+    //se busca el asiento
+    PostGenHtml(data, buscarAsientoUrl, function (obj) {
+        $("#divpanel01").html(obj);
+        //se procede a buscar la grilla de barrado
+
+        $("#btnDetalle").prop("disabled", false);
+        $("#divFiltro").collapse("hide");
+        $("#divDetalle").collapse("show");
+
+        //activar botones de acción
+        activarBotones(true);
+
+        CerrarWaiting();
+    });
 }
 
 function buscarAsientos(pagina) {
@@ -102,7 +154,7 @@ function buscarAsientos(pagina) {
 
     var data = $.extend({}, data1, data2);
 
-    PostGenHtml(data, buscarAsientoUrl, function (obj) {
+    PostGenHtml(data, buscarAsientosUrl, function (obj) {
         $("#divGrilla").html(obj);
         $("#divFiltro").collapse("hide")
         PostGen({}, buscarMetadataURL, function (obj) {

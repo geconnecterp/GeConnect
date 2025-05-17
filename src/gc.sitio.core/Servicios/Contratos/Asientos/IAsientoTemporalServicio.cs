@@ -13,6 +13,17 @@ namespace gc.sitio.core.Servicios.Contratos.Asientos
         /// <param name="token">Token de autenticación.</param>
         /// <returns>Respuesta genérica con la lista de asientos temporales.</returns>
         Task<RespuestaGenerica<AsientoGridDto>> ObtenerAsientos(QueryAsiento query, string token);
+
+        /// <summary>
+        /// Envía asientos temporales a contabilidad.
+        /// </summary>
+        /// <param name="asientoPasa">Datos necesarios para el traspaso del asiento.</param>
+        /// <param name="token">Token de autenticación.</param>
+        /// <returns>Resultado de la operación de traspaso a contabilidad.</returns>
+        Task<RespuestaGenerica<RespuestaDto>> PasarAsientosAContabilidad(AsientoPasaDto asientoPasa, string token);
+
+        Task<RespuestaGenerica<AsientoDetalleDto>> ObtenerAsientoDetalle(string moviId, string token);
+
     }
 }
 

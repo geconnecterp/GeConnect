@@ -36,11 +36,9 @@ namespace gc.sitio.Areas.Asientos.Controllers
         {
             try
             {
-                var auth = EstaAutenticado;
-                if (!auth.Item1 || auth.Item2 < DateTime.Now)
-                {
-                    return RedirectToAction("Login", "Token", new { area = "seguridad" });
-                }
+                // Versión optimizada del código de autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return redirectResult;
 
                 string titulo = "Asientos Temporales";
                 ViewData["Titulo"] = titulo;
@@ -66,11 +64,16 @@ namespace gc.sitio.Areas.Asientos.Controllers
         }
 
 
+
         [HttpPost]
         public async Task<IActionResult> BuscarAsientos(QueryAsiento query, string sort = "Eje_nro", string sortDir = "asc", int pag = 1)
         {
             try
             {
+                // Versión optimizada del código de autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return redirectResult;
+
                 // Validar el filtro recibido
                 if (query == null)
                 {
@@ -126,7 +129,59 @@ namespace gc.sitio.Areas.Asientos.Controllers
             }
         }
 
+        /// <summary>
+        /// Obtiene el detalle de un asiento temporal específico
+        /// </summary>
+        /// <param name="id">Identificador del asiento (número de movimiento)</param>
+        /// <returns>Vista parcial con el detalle del asiento</returns>
+        [HttpPost]
+        public async Task<IActionResult> BuscarAsiento(string id)
+        {
+            try
+            {
 
+                // Versión optimizada del código de autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return redirectResult;
+
+                if (string.IsNullOrEmpty(id))
+                {
+                    return PartialView("_gridMensaje", new RespuestaGenerica<EntidadBase>
+                    {
+                        Ok = false,
+                        Mensaje = "El identificador del asiento no puede estar vacío."
+                    });
+                }
+
+                // Cargar los tipos de asiento para el dropdown
+                await ObtenerTiposAsiento();
+                ViewBag.ListaTiposAsiento = ComboTiposAsiento();
+
+                // Llamar al servicio para obtener el detalle del asiento
+                var response = await _asTempSv.ObtenerAsientoDetalle(id, TokenCookie);
+
+                if (!response.Ok || response.Entidad == null)
+                {
+                    return PartialView("_gridMensaje", new RespuestaGenerica<EntidadBase>
+                    {
+                        Ok = false,
+                        Mensaje = response.Mensaje ?? "No se encontró información del asiento solicitado."
+                    });
+                }
+
+                // Retornar la vista parcial con los datos
+                return PartialView("_asiento", response.Entidad);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, $"Error al obtener el detalle del asiento {id}");
+                return PartialView("_gridMensaje", new RespuestaGenerica<EntidadBase>
+                {
+                    Ok = false,
+                    Mensaje = "Ocurrió un error inesperado al obtener el detalle del asiento."
+                });
+            }
+        }
 
         /// <summary>
         /// Obtiene los ejercicios contables para el combo
@@ -299,5 +354,9 @@ namespace gc.sitio.Areas.Asientos.Controllers
                 return Json(new { success = false, message = "Ocurrió un error inesperado al obtener los usuarios del ejercicio." });
             }
         }
+
+
+       
+
     }
 }
