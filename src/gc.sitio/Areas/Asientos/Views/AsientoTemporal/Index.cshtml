@@ -6,6 +6,7 @@
 }
 @section styles {
     <link rel="stylesheet" href="~/css/simplePagination.css" />
+    <link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
 }
 
 <div class="container">
@@ -69,19 +70,30 @@
     </div>
 </div>
 
+<!--modal para presentar el plan de cuenas-->
+<partial name="~/Areas/Asientos/Views/Shared/_selectorPlanCuentas.cshtml" />
+
 @section scripts {
     <script type="text/javascript">
         const asientoTemporal = "@filtro.EsTemporal.ToString().ToLower()";
         var buscarAsientosUrl="@Url.Action("BuscarAsientos", "AsientoTemporal", new { area = "Asientos" })";
         var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "AsientoTemporal", new { area = "Asientos" })";
         var buscarAsientoUrl= "@Url.Action("buscarAsiento", "AsientoTemporal", new { area = "Asientos" })";
+        var nuevoAsientoUrl="@Url.Action("nuevoAsiento", "AsientoTemporal", new { area = "Asientos" })";
+
+            // URLs para las llamadas AJAX - Se configurarán desde la vista
+        var buscarPlanCuentasUrl = "@Url.Action("buscar", "abmplancuenta", new { area = "abms" })";
+        var buscarCuentaUrl = "@Url.Action("buscarCuenta", "abmplancuenta", new { area = "abms" })";
 
     </script>
+    <script src="~/lib/jstree/jstree.min.js"></script>
+    <script src="~/js/mask/jquery.inputmask.min.js"></script>
     <script src="~/js/plugins/jquery.simplePagination.js"></script>
 
     <script src="~/js/app/areas/abms/abmsettings.js"></script>
     <script src="~/js/app/areas/abms/abmcommons.js"></script>
 
+    <script src="~/js/app/areas/asientos/selectorCuentas.js"></script>
     <script src="~/js/app/areas/asientos/asientos.js"></script>
 
     

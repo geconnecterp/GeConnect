@@ -458,6 +458,30 @@ tr[title]:hover {
     position: relative; /* Necesario para posicionar el tooltip */
 }
 
+/*estilos para los asientos aunque se pueden usar para otra cosa tb*/
+/* Resalta los totales desbalanceados en rojo y negrita */
+.total-desbalanceado {
+    color: #d32f2f !important; /* rojo suave */
+    font-weight: bold;
+    border-bottom: 2px solid #d32f2f;
+    background-color: #fff0f0;
+}
+
+/* Resalta la celda de cuenta faltante con fondo rojo pálido y texto rojo */
+.cuenta-faltante {
+    background-color: #ffeaea !important;
+    color: #d32f2f !important;
+    font-weight: bold;
+    position: relative;
+}
+
+    /* Ajusta el icono de advertencia para que quede alineado y sutil */
+    .cuenta-faltante .bx {
+        vertical-align: middle;
+        font-size: 1.1em;
+    }
+
+
 /* Ajustes para dispositivos móviles */
 @media (max-width: 991px) {
    

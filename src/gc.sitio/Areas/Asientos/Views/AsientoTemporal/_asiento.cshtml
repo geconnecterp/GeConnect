@@ -1,5 +1,14 @@
 ﻿@model AsientoDetalleDto
-
+@{
+    var alt = true;
+    string clase = string.Empty;
+    bool desbalance = Model.TotalDebe != Model.TotalHaber;
+    string totalClass = desbalance ? "total-desbalanceado" : "fw-bold";
+    decimal diferencia = Model.TotalDebe - Model.TotalHaber;
+    decimal diferenciaAbs = Math.Abs(diferencia);
+    bool hayDiferencia = (diferenciaAbs > 0);
+    string etiquetaDif = diferencia > 0 ? "Diferencia en el DEBE" : diferencia < 0 ? "Diferencia en el HABER" : "";
+}
 <div class="card mb-4">
     <div class="card-header py-2">
         <div class="row align-items-center">
@@ -44,11 +53,20 @@
                 <tbody>
                     @if (Model?.Detalles != null && Model.Detalles.Any())
                     {
-                        foreach (var detalle in Model.Detalles)
+                        @foreach (var detalle in Model.Detalles)
                         {
-                            <tr class="@(detalle.Ccb_id == "11404551" ? "table-primary" : "")">
-                                <td>@detalle.Ccb_id</td>
-                                <td>@detalle.Ccb_desc</td>
+                            if (alt) { clase = "table-primary"; alt = false; } else { clase = ""; alt = true; }
+                            var cuentaVacia = string.IsNullOrWhiteSpace(detalle.Ccb_id);
+                            <tr class="@clase" data-index="@detalle.Dia_nro">
+                                <td class="@(cuentaVacia ? "cuenta-faltante" : "")" title="@(cuentaVacia ? "Falta definir la cuenta contable" : null)">
+                                    <div class="d-flex align-items-center">
+                                        <span class="cuenta-id">@detalle.Ccb_id</span>
+                                        <button type="button" class="btn btn-sm btn-link text-primary btn-buscar-cuenta ms-1" style="display: none">
+                                            <i class="bx bx-search"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                                <td class="cuenta-desc">@detalle.Ccb_desc</td>
                                 <td>@detalle.Dia_desc</td>
                                 <td class="text-end">@(detalle.Debe > 0 ? $"{detalle.Debe:N2}" : "0,00")</td>
                                 <td class="text-end">@(detalle.Haber > 0 ? $"{detalle.Haber:N2}" : "0,00")</td>
@@ -65,19 +83,49 @@
                 <tfoot class="table-dark">
                     <tr>
                         <td colspan="3" class="text-end fw-bold">Totales</td>
-                        <td class="text-end fw-bold">@(Model?.TotalDebe.ToString("N2") ?? "0,00")</td>
-                        <td class="text-end fw-bold">@(Model?.TotalHaber.ToString("N2") ?? "0,00")</td>
+                        <td class="text-end @totalClass">
+                            @Model?.TotalDebe.ToString("N2")
+                            @if (desbalance)
+                            {
+                                <span title="Los totales no coinciden" class="ms-1">
+                                    <i class="bx bx-error-circle"></i>
+                                </span>
+                            }
+                        </td>
+                        <td class="text-end @totalClass">
+                            @Model?.TotalHaber.ToString("N2")
+                            @if (desbalance)
+                            {
+                                <span title="Los totales no coinciden" class="ms-1">
+                                    <i class="bx bx-error-circle"></i>
+                                </span>
+                            }
+                        </td>
                     </tr>
+                    @if (hayDiferencia)
+                    {
+                        <tr>
+                            <td colspan="3" class="text-end fw-bold">@etiquetaDif</td>
+                            <td colspan="2" class="text-end @(hayDiferencia ? "bg-black text-warning fw-bold" : "")">
+                                @diferenciaAbs.ToString("N2")
+                            </td>
+                        </tr>
+                    }
                 </tfoot>
             </table>
         </div>
     </div>
-    <div class="card-footer d-flex justify-content-end py-1">
-        <button class="btn btn-sm btn-secondary me-2" id="btnImprimir">
-            <i class="bx bx-printer"></i> Imprimir
+    <div class="card-footer d-flex justify-content-between py-1">
+        <button class="btn btn-sm btn-danger" id="btnCancelarAsiento">
+            <i class="bx bx-x"></i> Cancelar
         </button>
-        <button class="btn btn-sm btn-warning" id="btnPasarContabilidad">
-            <i class="bx bx-transfer"></i> Pasar a contabilidad
-        </button>
+        <div>
+            <button class="btn btn-sm btn-secondary me-2" id="btnImprimir">
+                <i class="bx bx-printer"></i> Imprimir
+            </button>
+            <button class="btn btn-sm btn-warning" id="btnPasarContabilidad">
+                <i class="bx bx-transfer"></i> Pasar a contabilidad
+            </button>
+        </div>
     </div>
 </div>

@@ -183,6 +183,8 @@ namespace gc.sitio.Areas.Asientos.Controllers
             }
         }
 
+
+
         /// <summary>
         /// Obtiene los ejercicios contables para el combo
         /// </summary>
@@ -352,6 +354,61 @@ namespace gc.sitio.Areas.Asientos.Controllers
             {
                 _logger?.LogError(ex, $"Error al obtener usuarios del ejercicio {eje_nro}");
                 return Json(new { success = false, message = "Ocurrió un error inesperado al obtener los usuarios del ejercicio." });
+            }
+        }
+        /// <summary>
+        /// Prepara un asiento temporal vacío para crear uno nuevo
+        /// </summary>
+        /// <returns>Vista parcial con un asiento temporal vacío</returns>
+        [HttpPost]
+        public async Task<IActionResult> NuevoAsiento()
+        {
+            try
+            {
+                // Versión optimizada del código de autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return redirectResult;
+
+                // Cargar los tipos de asiento para el dropdown
+                await ObtenerTiposAsiento();
+                ViewBag.ListaTiposAsiento = ComboTiposAsiento();
+
+                // Crear un nuevo objeto AsientoDetalleDto vacío
+                var asientoVacio = new AsientoDetalleDto
+                {
+                    Dia_movi = string.Empty,
+                    Dia_fecha = DateTime.Now,
+                    Dia_tipo = string.Empty,
+                    Dia_lista = string.Empty,
+                    Dia_desc_asiento = string.Empty,
+                    TotalDebe = 0,
+                    TotalHaber = 0,
+                    Detalles = new List<AsientoLineaDto>()
+                };
+
+                // Agregar una línea en blanco por defecto
+                asientoVacio.Detalles.Add(new AsientoLineaDto
+                {
+                    Dia_movi = string.Empty,
+                    Dia_nro = 1,
+                    Ccb_id = string.Empty,
+                    Ccb_desc = string.Empty,
+                    Dia_desc = string.Empty,
+                    Debe = 0,
+                    Haber = 0
+                });
+
+                // Retornar la vista parcial con el asiento vacío
+                return PartialView("_asiento", asientoVacio);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al crear un nuevo asiento temporal");
+                return PartialView("_gridMensaje", new RespuestaGenerica<EntidadBase>
+                {
+                    Ok = false,
+                    Mensaje = "Ocurrió un error inesperado al crear un nuevo asiento."
+                });
             }
         }
 

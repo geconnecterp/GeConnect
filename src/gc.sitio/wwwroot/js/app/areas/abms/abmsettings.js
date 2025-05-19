@@ -61,7 +61,7 @@ const Grids = {
 	GridZona: 'tbGridZona',
 	GridBanco: 'tbGridBanco',
 	GridCuentaDirecta: 'tbGridCuentaDirecta',
-	GridAsiento: 'tbGridAsiento',
+	GridAsiento: 'tbGridAsiento', 
 	
 }
 
