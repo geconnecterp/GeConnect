@@ -125,7 +125,7 @@ function activarControles(act) {
         if ($("#btnAddLinea").length === 0) {
             // Añade botón para agregar líneas si no existe
             const addButton = `
-                <button id="btnAddLinea" class="btn btn-sm btn-success ms-2">
+                <button id="btnAddLinea" class="btn btn-sm btn-success m-2">
                     <i class="bx bx-plus"></i> Agregar línea
                 </button>`;
             $(".card-header").append(addButton);
@@ -179,26 +179,26 @@ function configurarEventosEdicion() {
     // Evento para agregar nueva línea
     $(document).on("click", "#btnAddLinea", function() {
         const nuevaLinea = `
-            <tr class="">
-                <td contenteditable="true">
-                    <div class="d-flex align-items-center">
-                        <span class="cuenta-id"></span>
-                        <button type="button" class="btn btn-sm btn-link text-primary btn-buscar-cuenta ms-1">
-                            <i class="bx bx-search"></i>
+                <tr class="">
+                    <td contenteditable="true">
+                        <div class="d-flex align-items-center">
+                            <span class="cuenta-id"></span>
+                            <button type="button" class="btn btn-sm btn-link text-primary btn-buscar-cuenta ms-1">
+                                <i class="bx bx-search"></i>
+                            </button>
+                        </div>
+                    </td>
+                    <td class="cuenta-desc" contenteditable="false"></td>
+                    <td class="linea-concepto" contenteditable="true"></td>
+                    <td contenteditable="true" class="text-end">0,00</td>
+                    <td contenteditable="true" class="text-end">0,00</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-danger btn-eliminar-linea">
+                            <i class="bx bx-trash"></i>
                         </button>
-                    </div>
-                </td>
-                <td contenteditable="true"></td>
-                <td contenteditable="true"></td>
-                <td contenteditable="true" class="text-end">0,00</td>
-                <td contenteditable="true" class="text-end">0,00</td>
-                <td class="text-center">
-                    <button class="btn btn-sm btn-danger btn-eliminar-linea">
-                        <i class="bx bx-trash"></i>
-                    </button>
-                </td>
-            </tr>
-        `;
+                    </td>
+                </tr>
+            `;
         $("#tbAsientoDetalle tbody").append(nuevaLinea);
         actualizarTotales();
     });
@@ -217,7 +217,10 @@ function configurarCamposEditables() {
     // Campos de importe (Debe y Haber)
     $("#tbAsientoDetalle tbody").on("focus", "td.text-end", function () {
         // Al entrar al campo, quitar formato y seleccionar todo el contenido
-        const valorLimpio = $(this).text().replace(/[$\s.]/g, "").replace(",", ".");
+        const valorLimpio = $(this).text().trim()
+            .replace(/[$\s]/g, "")       // Quitar $ y espacios
+            .replace(/\./g, "")          // Quitar todos los puntos (miles)
+            .replace(",", ".");          // Reemplazar coma por punto para procesamiento decimal
         $(this).text(valorLimpio);
 
         // Seleccionar todo el contenido
@@ -258,7 +261,7 @@ function configurarCamposEditables() {
         $(this).removeClass("editando-importe");
 
         try {
-            // Normalizar el valor (aceptar punto o coma como separador decimal)
+            // Obtener el valor actual y normalizarlo
             let valor = $(this).text().trim();
 
             // Si está vacío, usar cero
@@ -274,21 +277,23 @@ function configurarCamposEditables() {
                 valor = "0";
             }
 
-            // Convertir a número y limitar a 2 decimales
-            const numeroFormateado = parseFloat(valor).toFixed(2);
+            // Convertir a número decimal
+            const numeroDecimal = parseFloat(valor);
 
-            // Formatear con Inputmask (usando coma como separador decimal)
-            const formateado = Inputmask.format(numeroFormateado, {
-                alias: "numeric",
-                groupSeparator: ".",  // Punto como separador de miles
-                radixPoint: ",",      // Coma como separador decimal
-                digits: 2,
-                digitsOptional: false,
-                autoGroup: true,
-                prefix: "$ "          // Símbolo de moneda
-            });
+            // Formatear manualmente para asegurar el formato correcto
+            const parteEntera = Math.floor(numeroDecimal);
+            const parteDecimal = Math.round((numeroDecimal - parteEntera) * 100);
 
+            // Construir cadena con separador de miles y decimales
+            let formateado = parteEntera.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") +
+                "," + (parteDecimal < 10 ? "0" + parteDecimal : parteDecimal);
+
+            // Agregar prefijo de moneda
+            formateado = "$ " + formateado;
+
+            // Aplicar el formato
             $(this).text(formateado);
+
         } catch (e) {
             console.error("Error al formatear importe:", e);
             $(this).text("$ 0,00");   // Valor por defecto en caso de error
@@ -312,9 +317,9 @@ function actualizarTotales() {
         const celdaDebe = $(this).find("td:nth-child(4)").text().trim();
         const celdaHaber = $(this).find("td:nth-child(5)").text().trim();
 
-        // Limpiar el formato ($, espacios y puntos de miles)
-        const debeLimpio = celdaDebe.replace(/[$\s.]/g, "").replace(",", ".");
-        const haberLimpio = celdaHaber.replace(/[$\s.]/g, "").replace(",", ".");
+        // Limpiar el formato ($, espacios, puntos de miles) y convertir coma a punto para decimales
+        const debeLimpio = celdaDebe.replace(/[$\s]/g, "").replace(/\./g, "").replace(",", ".");
+        const haberLimpio = celdaHaber.replace(/[$\s]/g, "").replace(/\./g, "").replace(",", ".");
 
         // Convertir a número (decimal) - usar 0 si no es válido
         const debe = !isNaN(parseFloat(debeLimpio)) ? parseFloat(debeLimpio) : 0;
@@ -325,30 +330,28 @@ function actualizarTotales() {
         totalHaber += haber;
     });
 
-    // Formatear y mostrar los totales en el pie de tabla
-    const tdTotalDebe = $("#tbAsientoDetalle tfoot tr:first-child td:nth-child(4)");
-    const tdTotalHaber = $("#tbAsientoDetalle tfoot tr:first-child td:nth-child(5)");
+    // Formatear manualmente el total del Debe
+    let formateadoDebe = "";
+    {
+        const parteEntera = Math.floor(totalDebe);
+        const parteDecimal = Math.round((totalDebe - parteEntera) * 100);
+        formateadoDebe = "$ " + parteEntera.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") +
+            "," + (parteDecimal < 10 ? "0" + parteDecimal : parteDecimal);
+    }
 
-    // Usar toFixed para asegurar 2 decimales y luego formatear
-    tdTotalDebe.text(Inputmask.format(totalDebe.toFixed(2), {
-        alias: "numeric",
-        groupSeparator: ".",
-        radixPoint: ",",
-        digits: 2,
-        digitsOptional: false,
-        autoGroup: true,
-        prefix: "$ "
-    }));
+    // Formatear manualmente el total del Haber
+    let formateadoHaber = "";
+    {
+        const parteEntera = Math.floor(totalHaber);
+        const parteDecimal = Math.round((totalHaber - parteEntera) * 100);
+        formateadoHaber = "$ " + parteEntera.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") +
+            "," + (parteDecimal < 10 ? "0" + parteDecimal : parteDecimal);
+    }
 
-    tdTotalHaber.text(Inputmask.format(totalHaber.toFixed(2), {
-        alias: "numeric",
-        groupSeparator: ".",
-        radixPoint: ",",
-        digits: 2,
-        digitsOptional: false,
-        autoGroup: true,
-        prefix: "$ "
-    }));
+    // Actualizar los totales en el pie de tabla
+    //TENIA nth-child(4 y 5) correspondia 2 y 3 ya que la primer celda es colspan de 3 columnas
+    $("#tbAsientoDetalle tfoot tr:first-child td:nth-child(2)").text(formateadoDebe);
+    $("#tbAsientoDetalle tfoot tr:first-child td:nth-child(3)").text(formateadoHaber);
 
     // Verificar si hay diferencia y actualizar la fila de diferencia
     const diferencia = Math.abs(totalDebe - totalHaber);
@@ -357,6 +360,15 @@ function actualizarTotales() {
     // Si existe una fila de diferencia, actualizarla; si no, crearla si es necesario
     let filaDiferencia = $("#tbAsientoDetalle tfoot tr:nth-child(2)");
 
+    // Formatear manualmente la diferencia
+    let formateadoDiferencia = "";
+    {
+        const parteEntera = Math.floor(diferencia);
+        const parteDecimal = Math.round((diferencia - parteEntera) * 100);
+        formateadoDiferencia = "$ " + parteEntera.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") +
+            "," + (parteDecimal < 10 ? "0" + parteDecimal : parteDecimal);
+    }
+
     if (hayDiferencia) {
         if (filaDiferencia.length === 0) {
             // Crear la fila si no existe
@@ -364,38 +376,76 @@ function actualizarTotales() {
             filaDiferencia = $(`
                 <tr>
                     <td colspan="3" class="text-end fw-bold">${etiquetaDif}</td>
-                    <td colspan="2" class="text-end bg-black text-warning fw-bold"></td>
+                    <td colspan="2" class="text-end bg-black text-warning fw-bold">${formateadoDiferencia}</td>
                 </tr>
             `);
             $("#tbAsientoDetalle tfoot").append(filaDiferencia);
+        } else {
+            // Actualizar la fila existente
+            const etiquetaDif = totalDebe > totalHaber ? "Diferencia en el DEBE" : "Diferencia en el HABER";
+            filaDiferencia.find("td:first-child").text(etiquetaDif);
+            filaDiferencia.find("td:last-child").text(formateadoDiferencia);
         }
 
-        // Actualizar el valor de la diferencia
-        filaDiferencia.find("td:last-child").text(Inputmask.format(diferencia.toFixed(2), {
-            alias: "numeric",
-            groupSeparator: ".",
-            radixPoint: ",",
-            digits: 2,
-            digitsOptional: false,
-            autoGroup: true,
-            prefix: "$ "
-        }));
-
-        // Actualizar la etiqueta según el tipo de diferencia
-        const etiquetaDif = totalDebe > totalHaber ? "Diferencia en el DEBE" : "Diferencia en el HABER";
-        filaDiferencia.find("td:first-child").text(etiquetaDif);
-
         // Añadir clase de estilo a los totales para resaltar el desbalance
-        tdTotalDebe.addClass("total-desbalanceado");
-        tdTotalHaber.addClass("total-desbalanceado");
+        $("#tbAsientoDetalle tfoot tr:first-child td:nth-child(4), #tbAsientoDetalle tfoot tr:first-child td:nth-child(5)")
+            .addClass("total-desbalanceado");
     } else {
         // Si no hay diferencia, eliminar la fila si existe
         filaDiferencia.remove();
 
         // Quitar clases de desbalance
-        tdTotalDebe.removeClass("total-desbalanceado");
-        tdTotalHaber.removeClass("total-desbalanceado");
+        $("#tbAsientoDetalle tfoot tr:first-child td:nth-child(4), #tbAsientoDetalle tfoot tr:first-child td:nth-child(5)")
+            .removeClass("total-desbalanceado");
     }
+}
+
+/**
+ * Función para formatear decimales al cargar el asiento
+ */
+function formatearDecimalesAsiento() {
+    // Aplica formato a las celdas con valores decimales en la tabla de asientos
+    $("#tbAsientoDetalle td.text-end").each(function () {
+        const valor = $(this).text().trim();
+        if (valor !== "" && !isNaN(parseFloat(valor.replace(",", ".")))) {
+            // Convertir a número
+            const numeroDecimal = parseFloat(valor.replace(",", "."));
+
+            // Formatear manualmente
+            const parteEntera = Math.floor(numeroDecimal);
+            const parteDecimal = Math.round((numeroDecimal - parteEntera) * 100);
+
+            // Construir cadena con separador de miles y decimales
+            const formateado = "$ " + parteEntera.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") +
+                "," + (parteDecimal < 10 ? "0" + parteDecimal : parteDecimal);
+
+            $(this).text(formateado);
+        }
+    });
+
+    // También formatea los totales en el pie de tabla
+    $("tfoot td.text-end").each(function () {
+        const valor = $(this).contents().filter(function () {
+            return this.nodeType === 3; // Nodo de texto
+        }).text().trim();
+
+        if (valor !== "" && !isNaN(parseFloat(valor.replace(",", ".")))) {
+            // Convertir a número
+            const numeroDecimal = parseFloat(valor.replace(",", "."));
+
+            // Formatear manualmente
+            const parteEntera = Math.floor(numeroDecimal);
+            const parteDecimal = Math.round((numeroDecimal - parteEntera) * 100);
+
+            // Construir cadena con separador de miles y decimales
+            const formateado = "$ " + parteEntera.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") +
+                "," + (parteDecimal < 10 ? "0" + parteDecimal : parteDecimal);
+
+            $(this).contents().filter(function () {
+                return this.nodeType === 3; // Reemplaza solo el nodo de texto
+            }).replaceWith(formateado);
+        }
+    });
 }
 
 
