@@ -159,6 +159,7 @@
 			#region Orden de Pago a Proveedores
 			public const string SP_OP_VALIDACIONES_PREV = "SPGECO_OP_Validaciones_Prev";
             public const string SP_OP_VTO = "SPGECO_OP_Vto";
+            public const string SP_OP_CARGAR_SACAR = "SPGECO_OP_cargar_sacar";
 			#endregion
 
 			#region Cliente

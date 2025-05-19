@@ -2,7 +2,9 @@
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
+using gc.infraestructura.Dtos.OrdenDePago.Request;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using System;
@@ -39,6 +41,24 @@ namespace gc.api.core.Servicios
 				new("@excluye_notas", excluye_notas)
 			};
 			var listaTemp = _repository.EjecutarLstSpExt<OPDebitoYCreditoDelProveedorDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<RespuestaRelaDto> CargarSacarOPDebitoCreditoDelProveedor(CargarOSacarObligacionesOCreditosRequest r)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OP_CARGAR_SACAR;
+			var ps = new List<SqlParameter>()
+			{
+				new("@cta_id", r.cta_id),
+				new("@dia_movi", r.dia_movi),
+				new("@tco_id", r.tco_id),
+				new("@cm_compte", r.cm_compte),
+				new("@cm_compte_cuota", r.cuota),
+				new("@cv_importe", r.cv_importe),
+				new("@accion", r.accion),
+				
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RespuestaRelaDto>(sp, ps, true);
 			return listaTemp;
 		}
 	}

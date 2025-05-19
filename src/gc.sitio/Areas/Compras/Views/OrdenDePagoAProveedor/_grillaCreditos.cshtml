@@ -4,8 +4,8 @@
 }
 <style>
 	thead th {
-		position: sticky;
-		top: 0px;
+	position: sticky;
+	top: 0px;
 	}
 </style>
 <div class="table-responsive table-wrapper-200-full-width" id="containerListaCreditos">
@@ -19,20 +19,25 @@
 				<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">dia_movi</th>
 				<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">cm_compte</th>
 				<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">tco_id</th>
+				<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">cta_id</th>
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var item in Model.ListaDatos)
+			@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
 			{
-				<tr onclick="selectReg(this, 'tbListaCreditos')" ondblclick="selectRegDbl(this, 'tbListaCreditos')">
-					<td class="@Model.ObtenerClase(item.tco_desc)">@Model.FormatearDato(item.tco_desc, FormatDato.Ninguno)</td>
-					<td class="@Model.ObtenerClase(item.cm_compte_cuota)">@Model.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
-					<td class="@Model.ObtenerClase(item.cv_fecha_vto)">@Model.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
-					<td class="@Model.ObtenerClase(item.cv_importe)">@Model.FormatearDato(item.cv_importe, FormatDato.Monto)</td>
-					<td style="display:none;">@item.dia_movi</td>
-					<td style="display:none;">@item.cm_compte</td>
-					<td style="display:none;">@item.tco_id</td>
-				</tr>
+				@foreach (var item in Model.ListaDatos)
+				{
+					<tr onclick="selectReg(this, 'tbListaCreditos')" ondblclick="selectRegDbl(this, 'tbListaCreditos')">
+						<td class="@Model.ObtenerClase(item.tco_desc)">@Model.FormatearDato(item.tco_desc, FormatDato.Ninguno)</td>
+						<td class="@Model.ObtenerClase(item.cm_compte_cuota)">@Model.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
+						<td class="@Model.ObtenerClase(item.cv_fecha_vto)">@Model.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
+						<td class="@Model.ObtenerClase(item.cv_importe)">@Model.FormatearDato(item.cv_importe, FormatDato.Monto)</td>
+						<td style="display:none;">@item.dia_movi</td>
+						<td style="display:none;">@item.cm_compte</td>
+						<td style="display:none;">@item.tco_id</td>
+						<td style="display:none;">@item.cta_id</td>
+					</tr>
+				}
 			}
 		</tbody>
 	</table>

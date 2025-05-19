@@ -42,27 +42,97 @@ function selectReg(x, gridId) {
 }
 
 function selectRegDbl(x, gridId) {
-	ControlaMensajeWarning("Method not implemented.")
+	if (gridId == "tbListaObligaciones" || gridId == "tbListaCreditos") { //Agregar
+		var cuota = x.childNodes[3].innerText;
+		var dia_movi = x.childNodes[9].innerText;
+		var cm_compte = x.childNodes[11].innerText;
+		var tco_id = x.childNodes[13].innerText;
+		var cta_id = x.childNodes[15].innerText;
+		var accion = "C";
+		var origen = gridId;
+		var data = { cuota, dia_movi, cm_compte, tco_id, cta_id, accion, origen };
+		AbrirWaiting("Cargando....");
+		PostGenHtml(data, cargarOSacarObligacionesOCreditosUrl, function (obj) {
+			if (gridId == "tbListaObligaciones") {
+				$("#divObligacionesParaAgregar").html(obj);
+				ActualizarGrillaObligacionesInferior();
+				var msg = $("#MsgErrorEnCargarOSacarObligaciones").val();
+			}
+			else {
+				$("#divCreditosParaAgregar").html(obj);
+				ActualizarGrillaCreditosInferior();
+				var msg = $("#MsgErrorEnCargarOSacarCreditos").val();
+			}
+			if (msg != "") {
+				AbrirMensaje("ATENCIÓN", msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+		});
+	}
+	else { //Quitar
+		var cuota = x.childNodes[3].innerText;
+		var dia_movi = x.childNodes[11].innerText;
+		var cm_compte = x.childNodes[13].innerText;
+		var tco_id = x.childNodes[15].innerText;
+		var cta_id = x.childNodes[17].innerText;
+		var accion = "S";
+		var origen = gridId;
+		var data = { cuota, dia_movi, cm_compte, tco_id, cta_id, accion, origen };
+		PostGenHtml(data, cargarOSacarObligacionesOCreditosUrl, function (obj) {
+			if (gridId == "tbListaObligacionesParaAgregar") {
+				$("#divObligacionesParaAgregar").html(obj);
+				ActualizarGrillaObligacionesInferior();
+				var msg = $("#MsgErrorEnCargarOSacarObligaciones").val();
+			}
+			else {
+				$("#divCreditosParaAgregar").html(obj);
+				ActualizarGrillaCreditosInferior();
+				var msg = $("#MsgErrorEnCargarOSacarCreditos").val();
+			}
+			if (msg != "") {
+				AbrirMensaje("ATENCIÓN", msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+		});
+	}
+	CerrarWaiting();
+}
+
+function ActualizarGrillaObligacionesInferior() {
+}
+
+function ActualizarGrillaCreditosInferior() {
 }
 
 function AceptarDesdeValidPrev() {
-	//Cargar con el backend la vista siguiente
+	AbrirWaiting("Cargando....");
 	var cta_id = ctaIdSelected;
 	var data = { cta_id };
 	PostGenHtml(data, cargarVistaObligacionesYCreditosURL, function (obj) {
+		CerrarWaiting();
 		$("#divDetalle").html(obj);
 		//Setear los valores de la cuenta seleccionada en la vista de obligaciones y creditos
 		$("#CtaID").val(ctaIdSelected);
 		$("#CtaDesc").val(ctaDescSelected);
 		MostrarDatosDeCuenta(true);
-		CargarObligacionesOCreditos("D"); //Obligaciones
-		CargarObligacionesOCreditos("H"); //Créditos
+		setTimeout(() => {
+			CargarObligacionesOCreditos("D"); //Obligaciones
+		}, 500);
+		setTimeout(() => {
+			CargarObligacionesOCreditos("H"); //Créditos
+		}, 500);
 	});
 }
 
 function CargarObligacionesOCreditos(tipo) {
+	AbrirWaiting("Cargando....");
 	var data = { tipo };
 	PostGen(data, cargarObligacionesOCreditosURL, function (obj) {
+		CerrarWaiting();
 		if (tipo == "D") {
 			$("#divObligaciones").html(obj);
 		}

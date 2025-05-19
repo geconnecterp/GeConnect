@@ -2,7 +2,9 @@
 using gc.api.core.Contratos.Servicios;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
+using gc.infraestructura.Dtos.OrdenDePago.Request;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -56,6 +58,19 @@ namespace gc.api.Controllers.OrdenDePago
 
 			response = new ApiResponse<List<OPDebitoYCreditoDelProveedorDto>>(res);
 
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaRelaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult CargarSacarOPDebitoCreditoDelProveedor([FromBody] CargarOSacarObligacionesOCreditosRequest r)
+		{
+			ApiResponse<List<RespuestaRelaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _ordenDePagoServicio.CargarSacarOPDebitoCreditoDelProveedor(r);
+			response = new ApiResponse<List<RespuestaRelaDto>>(res);
 			return Ok(response);
 		}
 	}

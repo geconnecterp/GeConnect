@@ -20,4 +20,9 @@ namespace gc.infraestructura.Dtos.Gen
         public string Ti { get; set; } = string.Empty;
         public string Tit_id { get; set; } = string.Empty;
     }
+
+    public class RespuestaRelaDto : RespuestaDto
+    {
+        public string rela { get; set; } = string.Empty;
+	}
 }
