@@ -103,9 +103,15 @@ function selectRegDbl(x, gridId) {
 }
 
 function ActualizarGrillaObligacionesInferior() {
+	PostGenHtml({}, actualizarGrillaObligacionesInferiorUrl, function (obj) {
+		$("#divObligaciones").html(obj);
+	});
 }
 
 function ActualizarGrillaCreditosInferior() {
+	PostGenHtml({}, actualizarGrillaCreditosInferiorUrl, function (obj) {
+		$("#divCreditos").html(obj);
+	});
 }
 
 function AceptarDesdeValidPrev() {

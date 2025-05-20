@@ -28,6 +28,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private const string tabla_obligaciones_nuevos = "tbListaObligacionesParaAgregar";
 		private const string tabla_creditos_nuevos = "tbListaCreditosParaAgregar";
 
+		private const string accion_agregar = "agregar";
+		private const string accion_quitar = "quitar";
+
 		public OrdenDePagoAProveedorController(IOrdenDePagoServicio ordenDePagoServicio, ICuentaServicio cuentaServicio, ITipoGastoServicio tipoGastoServicio,
 											   IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<OrdenDePagoAProveedorController> logger) : base(options, contexto, logger)
 		{
@@ -176,11 +179,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		private List<OPDebitoYCreditoDelProveedorDto> ObtenerData(char tipo)
-		{
-			return _ordenDePagoServicio.GetOPDebitoYCreditoDelProveedor(CtaIdSelected, tipo, false, AdministracionId, UserName, TokenCookie);
-		}
-
 		[HttpPost]
 		public IActionResult CargarOSacarObligacionesOCreditos(CargarOSacarObligacionesOCreditosRequest r)
 		{
@@ -212,15 +210,16 @@ namespace gc.sitio.Areas.Compras.Controllers
 							{
 								//Lo quito de la lista que uso para cargar la grilla de obligaciones
 								var listaTemp = OPDebitoLista.Where(x => !x.cm_compte_cuota.Equals(r.cuota) && !x.dia_movi.Equals(r.dia_movi) && !x.cm_compte.Equals(r.cm_compte) && !x.tco_id.Equals(r.tco_id) && !x.cta_id.Equals(r.cta_id)).ToList();
-								Console.WriteLine(DateTime.Now.ToString());
-								//TODO MARCE: ver si conviene meter un delay para evitar el problema de la actualizacion de las listas en sesion.
-								Thread.Sleep(TimeSpan.FromMilliseconds(100));
-								Console.WriteLine(DateTime.Now.ToString());
+								DormirMetodo(100);
 								OPDebitoLista = listaTemp;
 
 								//Lo agrego a la lista que uso para cargar la grilla de obligaciones nuevas
 								OPDebitoNuevaLista.Add(item);
 								model.MsgErrorEnCargarOSacarObligaciones = "";
+								if (string.IsNullOrEmpty(respuesta.Entidad.rela.Trim())) 
+								{
+									ActualizarListasDeCreditosObligacionesParaAgregar(respuesta.Entidad.rela, OPCreditoNuevaLista, accion_agregar);
+								}
 							}
 							else
 								model.MsgErrorEnCargarOSacarObligaciones = respuesta.Entidad.resultado_msj;
@@ -255,14 +254,16 @@ namespace gc.sitio.Areas.Compras.Controllers
 							{
 								//Lo quito de la lista que uso para cargar la grilla de creditos
 								var listaTemp = OPCreditoLista.Where(x => !x.cm_compte_cuota.Equals(r.cuota) && !x.dia_movi.Equals(r.dia_movi) && !x.cm_compte.Equals(r.cm_compte) && !x.tco_id.Equals(r.tco_id) && !x.cta_id.Equals(r.cta_id)).ToList();
-								Console.WriteLine(DateTime.Now.ToString());
-								Thread.Sleep(TimeSpan.FromMilliseconds(100));
-								Console.WriteLine(DateTime.Now.ToString());
+								DormirMetodo(100);
 								//TODO MARCE: ver si conviene meter un delay para evitar el problema de la actualizacion de las listas en sesion.
 								OPCreditoLista = listaTemp;
 								//Lo agrego a la lista que uso para cargar la grilla de creditos nuevas
 								OPCreditoNuevaLista.Add(item);
 								model.MsgErrorEnCargarOSacarCreditos = "";
+								if (string.IsNullOrEmpty(respuesta.Entidad.rela.Trim()))
+								{
+									ActualizarListasDeCreditosObligacionesParaAgregar(respuesta.Entidad.rela, OPDebitoNuevaLista, accion_agregar);
+								}
 							}
 							else
 							{
@@ -300,10 +301,14 @@ namespace gc.sitio.Areas.Compras.Controllers
 								//Lo quito de la lista que uso para cargar la grilla de obligaciones nuevas
 								var listaTemp = OPDebitoNuevaLista.Where(x => !x.cm_compte_cuota.Equals(r.cuota) && !x.dia_movi.Equals(r.dia_movi) && !x.cm_compte.Equals(r.cm_compte) && !x.tco_id.Equals(r.tco_id) && !x.cta_id.Equals(r.cta_id)).ToList();
 								//TODO MARCE: ver si conviene meter un delay para evitar el problema de la actualizacion de las listas en sesion.
-								Console.WriteLine(DateTime.Now.ToString());
-								Thread.Sleep(TimeSpan.FromMilliseconds(100));
-								Console.WriteLine(DateTime.Now.ToString());
+								DormirMetodo(100);
 								OPDebitoNuevaLista = listaTemp;
+
+								//Si la respuesta contiene valor en la propiedad "rela", debo quitar los items de la lista de creditos nuevos.
+								if (string.IsNullOrEmpty(respuesta.Entidad.rela.Trim()))
+								{
+									ActualizarListasDeCreditosObligacionesParaAgregar(respuesta.Entidad.rela, OPCreditoNuevaLista, accion_quitar);
+								}
 
 								//Lo agrego a la lista de olbigaciones inferior, para eso lo busco en la lista original (Backup)
 								item = null;
@@ -312,9 +317,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 								{
 									model.MsgErrorEnCargarOSacarObligaciones = "";
 									var lista = OPDebitoLista;
-									Console.WriteLine(DateTime.Now.ToString());
-									Thread.Sleep(TimeSpan.FromMilliseconds(100));
-									Console.WriteLine(DateTime.Now.ToString());
+									DormirMetodo(100);
 									lista.Add(item);
 									OPDebitoLista = lista;
 								}
@@ -355,10 +358,14 @@ namespace gc.sitio.Areas.Compras.Controllers
 								//Lo quito de la lista que uso para cargar la grilla de obligaciones nuevas
 								var listaTemp = OPCreditoNuevaLista.Where(x => !x.cm_compte_cuota.Equals(r.cuota) && !x.dia_movi.Equals(r.dia_movi) && !x.cm_compte.Equals(r.cm_compte) && !x.tco_id.Equals(r.tco_id) && !x.cta_id.Equals(r.cta_id)).ToList();
 								//TODO MARCE: ver si conviene meter un delay para evitar el problema de la actualizacion de las listas en sesion.
-								Console.WriteLine(DateTime.Now.ToString());
-								Thread.Sleep(TimeSpan.FromMilliseconds(100));
-								Console.WriteLine(DateTime.Now.ToString());
+								DormirMetodo(100);
 								OPCreditoNuevaLista = listaTemp;
+
+								//Si la respuesta contiene valor en la propiedad "rela", debo quitar los items de la lista de creditos nuevos.
+								if (string.IsNullOrEmpty(respuesta.Entidad.rela.Trim()))
+								{
+									ActualizarListasDeCreditosObligacionesParaAgregar(respuesta.Entidad.rela, OPDebitoNuevaLista, accion_quitar);
+								}
 
 								//Lo agrego a la lista de creditos inferior, para eso lo busco en la lista original (Backup)
 								item = null;
@@ -367,9 +374,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 								{
 									model.MsgErrorEnCargarOSacarCreditos = "";
 									var lista = OPCreditoLista;
-									Console.WriteLine(DateTime.Now.ToString());
-									Thread.Sleep(TimeSpan.FromMilliseconds(100));
-									Console.WriteLine(DateTime.Now.ToString());
+									DormirMetodo(100);
 									lista.Add(item);
 									OPCreditoLista = lista;
 								}
@@ -402,7 +407,111 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		#region Métodos privados
+		public IActionResult ActualizarGrillaObligacionesInferior()
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+				return PartialView("_grillaObligaciones", ObtenerGridCoreSmart<OPDebitoYCreditoDelProveedorDto>(OPDebitoLista));
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public IActionResult ActualizarGrillaCreditosInferior()
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+				return PartialView("_grillaCreditos", ObtenerGridCoreSmart<OPDebitoYCreditoDelProveedorDto>(OPCreditoLista));
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		#region Metodos Privados
+		/// <summary>
+		/// Pausa la ejecución del método actual durante la cantidad de milisegundos especificada.
+		/// Es útil para evitar problemas de concurrencia o actualización de listas en sesión, 
+		/// especialmente cuando se realizan operaciones que requieren un pequeño retardo para garantizar la consistencia de los datos.
+		/// Además, imprime en consola la fecha y hora antes y después de la pausa.
+		/// </summary>
+		/// <param name="tiempo">Cantidad de tiempo en milisegundos que se debe pausar la ejecución.</param>
+		private void DormirMetodo(int tiempo)
+		{
+			Console.WriteLine(DateTime.Now.ToString());
+			Thread.Sleep(TimeSpan.FromMilliseconds(tiempo));
+			Console.WriteLine(DateTime.Now.ToString());
+		}
+		private List<OPDebitoYCreditoDelProveedorDto> ObtenerData(char tipo)
+		{
+			return _ordenDePagoServicio.GetOPDebitoYCreditoDelProveedor(CtaIdSelected, tipo, false, AdministracionId, UserName, TokenCookie);
+		}
+
+		/// <summary>
+		/// Actualiza la lista de créditos u obligaciones para agregar, deserializando un JSON recibido y agregando los elementos
+		/// que no existan en la lista actual. Si el elemento ya existe (según cta_id, cm_compte, dia_movi y tco_id), no se agrega.
+		/// </summary>
+		/// <param name="json">Cadena JSON que representa una lista de OPDebitoYCreditoDelProveedorDto a agregar.</param>
+		/// <param name="lista">Lista actual de OPDebitoYCreditoDelProveedorDto donde se agregarán/quitaran los nuevos elementos si no existen.</param>
+		/// <param name="accion">Lista actual de OPDebitoYCreditoDelProveedorDto donde se agregarán/quitaran los nuevos elementos si no existen.</param>
+		private void ActualizarListasDeCreditosObligacionesParaAgregar(string json, List<OPDebitoYCreditoDelProveedorDto> lista, string accion)
+		{
+			//Deserializo la respuesta
+			var listaRela = JsonConvert.DeserializeObject<List<OPDebitoYCreditoDelProveedorDto>>(json, new JsonSerializerSettings());
+			//Obtengo la lista de creditos
+			var listaCreditoObligacionNuevaTemporal = lista;
+
+			//Si hay algo en la lista deserializada
+			if (listaRela != null && listaRela.Count > 0)
+			{
+				if (accion.Equals(accion_agregar))
+				{
+					foreach (var itemRela in listaRela)
+					{
+						//Si no existe en la lista que carga la lista de créditos para agregar, lo agrego
+						if (!listaCreditoObligacionNuevaTemporal.Exists(x => x.cta_id.Equals(itemRela.cta_id) && x.cm_compte.Equals(itemRela.cm_compte) && x.dia_movi.Equals(itemRela.dia_movi) && x.tco_id.Equals(itemRela.tco_id)))
+						{
+							listaCreditoObligacionNuevaTemporal.Add(itemRela);
+						}
+					}
+				}
+				else
+				{
+					var aux = new List<OPDebitoYCreditoDelProveedorDto>();
+					//Si existe en la lista que carga la lista de créditos u obligaciones, lo quito
+					foreach (var itemRela in listaRela)
+					{
+						aux = [.. listaCreditoObligacionNuevaTemporal.Where(x => !x.cta_id.Equals(itemRela.cta_id) && !x.cm_compte.Equals(itemRela.cm_compte) && !x.dia_movi.Equals(itemRela.dia_movi) && !x.tco_id.Equals(itemRela.tco_id))];
+						listaCreditoObligacionNuevaTemporal = aux;
+					}
+				}
+			}
+			//Actualizo lista
+			lista = listaCreditoObligacionNuevaTemporal;
+		}
 		private void CargarDatosIniciales(bool actualizar)
 		{
 			if (ProveedoresLista.Count == 0 || actualizar)
