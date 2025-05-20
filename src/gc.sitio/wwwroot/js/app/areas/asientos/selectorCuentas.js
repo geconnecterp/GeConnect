@@ -249,9 +249,18 @@
 
         // Obtener datos adicionales de la cuenta si es necesario
         obtenerDatosCuenta(id, function (datos) {
-            // Actualizar la fila con los datos de la cuenta
+            // Actualizar el ID de la cuenta en la primera celda
             filaEditando.find('.cuenta-id').text(id);
-            filaEditando.find('.cuenta-desc').text(datos ? datos.ccb_desc : texto);
+
+            // Actualizar la descripción de la cuenta en la segunda celda
+            // Si no encuentra .cuenta-desc, seleccionamos la segunda celda directamente
+            const celdaDescripcion = filaEditando.find('.cuenta-desc').length > 0
+                ? filaEditando.find('.cuenta-desc')
+                : filaEditando.find('td:eq(1)');
+
+            celdaDescripcion.text(datos ? datos.ccb_desc : texto)
+                .attr('contenteditable', 'false')  // Hacerla readonly
+                .addClass('cuenta-desc');          // Asegurar que tenga la clase
 
             // Eliminar la clase de cuenta faltante si existe
             filaEditando.find('td:first-child').removeClass('cuenta-faltante');
