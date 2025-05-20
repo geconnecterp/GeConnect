@@ -28,20 +28,23 @@
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var item in Model.ListaDatos)
+			@if (Model != null && Model.ListaDatos != null)
 			{
-				if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+				@foreach (var item in Model.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
-				<tr class="@clase" onclick="selectReg(this, 'tbGridConceptoFacturado')">
-					<td style="display:none;">@item.id</td>
-					<td class="text-sm-left">@item.concepto</td>
-					<td class="text-sm-center">@item.iva_situacion</td>
-					<td class="text-sm-end">@item.iva_alicuota</td>
-					<td class="text-sm-end">@item.subtotal</td>
-					<td class="text-sm-end">@item.iva</td>
-					<td class="text-sm-end">@item.total</td>
-					<td><a class="btn btn-xs btn-outline-dark" data-interaction="@item.id" onclick="quitarConceptoFacturado(this);"> <i class="bx bxs-trash"></i></a></td> @*20*@
-				</tr>
+					<tr class="@clase" onclick="selectReg(this, 'tbGridConceptoFacturado')">
+						<td style="display:none;">@item.id</td>
+						<td class="text-sm-left">@item.concepto</td>
+						<td class="text-sm-center">@item.iva_situacion</td>
+						<td class="text-sm-end">@item.iva_alicuota</td>
+						<td class="text-sm-end">@item.subtotal</td>
+						<td class="text-sm-end">@item.iva</td>
+						<td class="text-sm-end">@item.total</td>
+						<td><a class="btn btn-xs btn-outline-dark" data-interaction="@item.id" onclick="quitarConceptoFacturado(this);"> <i class="bx bxs-trash"></i></a></td> @*20*@
+					</tr>
+				}
 			}
 		</tbody>
 	</table>

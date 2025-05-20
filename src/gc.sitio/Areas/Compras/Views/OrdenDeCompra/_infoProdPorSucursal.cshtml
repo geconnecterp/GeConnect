@@ -10,19 +10,22 @@
 				<th style="width:10%;" class="col-header-x-small align-center">Stk</th>
 				<th style="width:20%;" class="col-header-x-small align-center">Proy. Vtas. Mes</th>
 				<th style="width:20%;" class="col-header-x-small align-center">Proy. Vtas. Día</th>
-				
+
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var item in Model.ListaDatos)
+			@if (Model != null && Model.ListaDatos != null)
 			{
-				<tr onclick="selectListaInfoProdStkD(this)">
-					<td class="align-center tiny-row">@item.Adm_id</td>
-					<td class="align-left tiny-row">@item.Adm_nombre</td>
-					<td class="align-center tiny-row">@item.Ps_stk</td>
-					<td class="align-center tiny-row">@item.Proy_vtas</td>
-					<td class="align-center tiny-row">@item.Proy_vtas_dia</td>
-				</tr>
+				@foreach (var item in Model.ListaDatos)
+				{
+					<tr onclick="selectListaInfoProdStkD(this)">
+						<td class="align-center tiny-row">@item.Adm_id</td>
+						<td class="align-left tiny-row">@item.Adm_nombre</td>
+						<td class="align-center tiny-row">@item.Ps_stk</td>
+						<td class="align-center tiny-row">@item.Proy_vtas</td>
+						<td class="align-center tiny-row">@item.Proy_vtas_dia</td>
+					</tr>
+				}
 			}
 		</tbody>
 	</table>

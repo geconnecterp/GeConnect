@@ -12,14 +12,17 @@
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var item in Model.ListaDatos)
+			@if (Model != null && Model.ListaDatos != null)
 			{
-				<tr onclick="selectListaInfoProdStkD(this)">
-					<td class="align-center tiny-row">@item.Depo_id</td>
-					<td class="align-left tiny-row">@item.Depo_nombre</td>
-					<td class="align-center tiny-row">@item.Ps_stk</td>
-					<td class="align-center tiny-row">@item.Vto?.ToString("dd/MM/yyyy")</td>
-				</tr>
+				@foreach (var item in Model.ListaDatos)
+				{
+					<tr onclick="selectListaInfoProdStkD(this)">
+						<td class="align-center tiny-row">@item.Depo_id</td>
+						<td class="align-left tiny-row">@item.Depo_nombre</td>
+						<td class="align-center tiny-row">@item.Ps_stk</td>
+						<td class="align-center tiny-row">@item.Vto?.ToString("dd/MM/yyyy")</td>
+					</tr>
+				}
 			}
 		</tbody>
 	</table>

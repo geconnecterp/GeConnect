@@ -25,27 +25,30 @@
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var item in Model.ListaDatos)
+			@if (Model != null && Model.ListaDatos != null)
 			{
-				<tr onclick="selectListaProductoSustitutoRow(this)">
-					<td class="align-center tiny-row">@item.p_id</td>
-					<td class="align-left tiny-row">@item.p_desc</td>
-					<td class="align-center tiny-row">@item.p_id_prov</td>
-					<td class="align-right tiny-row">@item.pi_pendiente</td>
-					<td class="align-right tiny-row">@item.oc_pendiente</td>
-					<td class="align-right tiny-row">@item.stk</td>
-					<td class="align-right tiny-row">@item.stk_suc_transito</td>
-					<td class="align-right tiny-row">@item.stk_suc_comprometido</td>
-					<td class="align-right tiny-row">@item.p_unidad_pres</td>
-					<td class="align-center tiny-row">@item.up_desc</td>
-					<td class="align-center tiny-row">@item.pedido</td>
-					<td class="align-right tiny-row">@item.cantidad</td>
-					<td class="align-right tiny-row">@item.costo</td>
-					<td class="align-right tiny-row">@item.costo_total</td>
-					<td class="align-right tiny-row">@item.paletizado</td>
-					<td style="display:none;">@item.pg_id</td>
-					<td style="display:none;">@item.rub_id</td>
-				</tr>
+				@foreach (var item in Model.ListaDatos)
+				{
+					<tr onclick="selectListaProductoSustitutoRow(this)">
+						<td class="align-center tiny-row">@item.p_id</td>
+						<td class="align-left tiny-row">@item.p_desc</td>
+						<td class="align-center tiny-row">@item.p_id_prov</td>
+						<td class="align-right tiny-row">@item.pi_pendiente</td>
+						<td class="align-right tiny-row">@item.oc_pendiente</td>
+						<td class="align-right tiny-row">@item.stk</td>
+						<td class="align-right tiny-row">@item.stk_suc_transito</td>
+						<td class="align-right tiny-row">@item.stk_suc_comprometido</td>
+						<td class="align-right tiny-row">@item.p_unidad_pres</td>
+						<td class="align-center tiny-row">@item.up_desc</td>
+						<td class="align-center tiny-row">@item.pedido</td>
+						<td class="align-right tiny-row">@item.cantidad</td>
+						<td class="align-right tiny-row">@item.costo</td>
+						<td class="align-right tiny-row">@item.costo_total</td>
+						<td class="align-right tiny-row">@item.paletizado</td>
+						<td style="display:none;">@item.pg_id</td>
+						<td style="display:none;">@item.rub_id</td>
+					</tr>
+				}
 			}
 		</tbody>
 	</table>

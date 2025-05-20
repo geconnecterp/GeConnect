@@ -1,4 +1,5 @@
-﻿using gc.api.core.Entidades;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Gen;
@@ -155,12 +156,14 @@ namespace gc.sitio.Areas.Compras.Controllers
 				var model = ObtenerGridCoreSmart<OPDebitoYCreditoDelProveedorDto>(datos);
 				if (tipo == 'D')
 				{
+					Console.WriteLine("Entro 1");
 					OPDebitoOriginalLista = datos;
 					OPDebitoLista = datos;
 					return PartialView("_grillaObligaciones", model);
 				}
 				else
 				{
+					Console.WriteLine("Entro 2");
 					OPCreditoOriginalLista = datos;
 					OPCreditoLista = datos;
 					return PartialView("_grillaCreditos", model);
@@ -194,12 +197,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 					var model = new CargarNuevasObligacionesModel();
 					//Busco el elemento en la lista original de obligaciones
 					if (OPDebitoOriginalLista == null || OPDebitoOriginalLista.Count <= 0)
+					{
 						OPDebitoOriginalLista = ObtenerData('D');
-					
+						OPDebitoLista = ObtenerData('D');
+					}
+
 					var item = OPDebitoOriginalLista.FirstOrDefault(x => x.cm_compte_cuota.Equals(r.cuota) && x.dia_movi.Equals(r.dia_movi) && x.cm_compte.Equals(r.cm_compte) && x.tco_id.Equals(r.tco_id) && x.cta_id.Equals(r.cta_id));
 					if (item != null)
 					{
-						r.cv_importe = item.cv_importe;
+						r.cv_importe = item.cv_imputado;
 						var respuesta = _ordenDePagoServicio.CargarSacarOPDebitoCreditoDelProveedor(r, TokenCookie);
 						Console.WriteLine("Request enviado a [SPGECO_OP_cargar_sacar]:");
 						Console.WriteLine(JsonConvert.SerializeObject(r, new JsonSerializerSettings()));
@@ -214,9 +220,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 								OPDebitoLista = listaTemp;
 
 								//Lo agrego a la lista que uso para cargar la grilla de obligaciones nuevas
-								OPDebitoNuevaLista.Add(item);
+								var listaAux = new List<OPDebitoYCreditoDelProveedorDto> { item };
+								OPDebitoNuevaLista = listaAux;
 								model.MsgErrorEnCargarOSacarObligaciones = "";
-								if (string.IsNullOrEmpty(respuesta.Entidad.rela.Trim())) 
+								if (string.IsNullOrEmpty(respuesta.Entidad.rela.Trim()))
 								{
 									ActualizarListasDeCreditosObligacionesParaAgregar(respuesta.Entidad.rela, OPCreditoNuevaLista, accion_agregar);
 								}
@@ -236,14 +243,17 @@ namespace gc.sitio.Areas.Compras.Controllers
 				else if (r.origen.Equals(tabla_creditos)) //Carga desde la tabla de Créditos
 				{
 					var model = new CargarNuevosCreditosModel();
-					if (OPDebitoOriginalLista == null || OPDebitoOriginalLista.Count <= 0)
-						OPDebitoOriginalLista = ObtenerData('C');
+					if (OPCreditoOriginalLista == null || OPCreditoOriginalLista.Count <= 0)
+					{
+						OPCreditoOriginalLista = ObtenerData('C');
+						OPCreditoLista = ObtenerData('C');
+					}
 
 					//Busco el elemento en la lista original de creditos
 					var item = OPCreditoOriginalLista.FirstOrDefault(x => x.cm_compte_cuota.Equals(r.cuota) && x.dia_movi.Equals(r.dia_movi) && x.cm_compte.Equals(r.cm_compte) && x.tco_id.Equals(r.tco_id) && x.cta_id.Equals(r.cta_id));
 					if (item != null)
 					{
-						r.cv_importe = item.cv_importe;
+						r.cv_importe = item.cv_imputado;
 						var respuesta = _ordenDePagoServicio.CargarSacarOPDebitoCreditoDelProveedor(r, TokenCookie);
 						Console.WriteLine("Request enviado a [SPGECO_OP_cargar_sacar]:");
 						Console.WriteLine(JsonConvert.SerializeObject(r, new JsonSerializerSettings()));
@@ -258,7 +268,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 								//TODO MARCE: ver si conviene meter un delay para evitar el problema de la actualizacion de las listas en sesion.
 								OPCreditoLista = listaTemp;
 								//Lo agrego a la lista que uso para cargar la grilla de creditos nuevas
-								OPCreditoNuevaLista.Add(item);
+								var listaAux = new List<OPDebitoYCreditoDelProveedorDto> { item };
+								OPCreditoNuevaLista = listaAux;
 								model.MsgErrorEnCargarOSacarCreditos = "";
 								if (string.IsNullOrEmpty(respuesta.Entidad.rela.Trim()))
 								{
@@ -283,7 +294,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					var model = new CargarNuevasObligacionesModel();
 					if (OPDebitoOriginalLista == null || OPDebitoOriginalLista.Count <= 0)
+					{
 						OPDebitoOriginalLista = ObtenerData('D');
+						OPDebitoLista = ObtenerData('D');
+					}
 
 					//Busco el elemento en la lista original de obligaciones
 					var item = OPDebitoNuevaLista.FirstOrDefault(x => x.cm_compte_cuota.Equals(r.cuota) && x.dia_movi.Equals(r.dia_movi) && x.cm_compte.Equals(r.cm_compte) && x.tco_id.Equals(r.tco_id) && x.cta_id.Equals(r.cta_id));
@@ -339,8 +353,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 				else //Quitar desde la tabla de Créditos nuevos
 				{
 					var model = new CargarNuevosCreditosModel();
-					if (OPDebitoOriginalLista == null || OPDebitoOriginalLista.Count <= 0)
-						OPDebitoOriginalLista = ObtenerData('C');
+					if (OPCreditoOriginalLista == null || OPCreditoOriginalLista.Count <= 0)
+					{
+						OPCreditoOriginalLista = ObtenerData('C');
+						OPCreditoLista = ObtenerData('C');
+					}
 
 					//Busco el elemento en la lista original de obligaciones
 					var item = OPCreditoNuevaLista.FirstOrDefault(x => x.cm_compte_cuota.Equals(r.cuota) && x.dia_movi.Equals(r.dia_movi) && x.cm_compte.Equals(r.cm_compte) && x.tco_id.Equals(r.tco_id) && x.cta_id.Equals(r.cta_id));
@@ -450,6 +467,37 @@ namespace gc.sitio.Areas.Compras.Controllers
 				return PartialView("_gridMensaje", response);
 			}
 		}
+
+		public JsonResult ActualizarTotalesSuperiores()
+		{
+			try
+			{
+				//OPDebitoNuevaLista
+				var tot_ObligacionesCancelar = (decimal)0.00;
+				if (OPDebitoNuevaLista != null && OPDebitoNuevaLista.Count > 0)
+					tot_ObligacionesCancelar = OPDebitoNuevaLista.Sum(x => x.cv_importe);
+
+				//OPCreditoNuevaLista
+				var tot_CredYValImputados = (decimal)0.00;
+				if (OPCreditoNuevaLista != null && OPCreditoNuevaLista.Count > 0)
+					tot_CredYValImputados = OPCreditoNuevaLista.Sum(x => x.cv_importe);
+				var tot_Diferencia = tot_ObligacionesCancelar - tot_CredYValImputados;
+				return Json(new { error = false, warn = false, msg = string.Empty, data = new TotalesActualizados() { ObligacionesCancelar = tot_ObligacionesCancelar, CredYValImputados = tot_CredYValImputados, Diferencia = tot_Diferencia } });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar calcular los totales. {ex}" });
+			}
+		}
+
+		#region Clases
+		public class TotalesActualizados
+		{
+			public decimal ObligacionesCancelar { get; set; } = 0.00M;
+			public decimal CredYValImputados { get; set; } = 0.00M;
+			public decimal Diferencia { get; set; } = 0.00M;
+		}
+		#endregion
 
 		#region Metodos Privados
 		/// <summary>

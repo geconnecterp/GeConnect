@@ -892,7 +892,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var listaTotalesTemp = ListaTotales;
 			var listaConcFactuTemp = ListaConceptoFacturado;
 			//Sumar conceptos Gravados
-			if (listaConcFactuTemp.Exists(x => x.iva_situacion.Equals("G")))
+			if (listaConcFactuTemp.Where(y=>y.iva_situacion != null).ToList().Exists(x => x.iva_situacion.Equals("G")))
 			{
 				var items_Sum = listaConcFactuTemp.Where(x => x.iva_situacion.Equals("G")).ToList().Sum(x => x.subtotal);
 				var itemListaTotalGravado = listaTotalesTemp.Where(x => x.id.Equals("NetoGravado")).First(); //Obtengo el item que corresponde a Neto Gravado
@@ -905,7 +905,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 
 			//Sumas conceptos No Gravados
-			if (listaConcFactuTemp.Exists(x => x.iva_situacion.Equals("N")))
+			if (listaConcFactuTemp.Where(y => y.iva_situacion != null).ToList().Exists(x => x.iva_situacion.Equals("N")))
 			{
 				var items_Sum = listaConcFactuTemp.Where(x => x.iva_situacion.Equals("N")).ToList().Sum(x => x.subtotal);
 				var itemListaTotalGravado = listaTotalesTemp.Where(x => x.id.Equals("NetoNoGravado")).First(); //Obtengo el item que corresponde a Neto No Gravado
@@ -918,7 +918,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 
 			//Sumas conceptos Exentos
-			if (listaConcFactuTemp.Exists(x => x.iva_situacion.Equals("E")))
+			if (listaConcFactuTemp.Where(y => y.iva_situacion != null).ToList().Exists(x => x.iva_situacion.Equals("E")))
 			{
 				var items_Sum = listaConcFactuTemp.Where(x => x.iva_situacion.Equals("E")).ToList().Sum(x => x.subtotal);
 				var itemListaTotalGravado = listaTotalesTemp.Where(x => x.id.Equals("NetoExento")).First(); //Obtengo el item que corresponde a Neto No Gravado
@@ -930,6 +930,12 @@ namespace gc.sitio.Areas.Compras.Controllers
 				itemListaTotalGravado.Importe = 0;
 			}
 
+			if (listaConcFactuTemp.Exists(x => x.iva_situacion == null))
+			{
+				var items_Sum = listaConcFactuTemp.Where(x => x.iva_situacion == null).ToList().Sum(y => y.subtotal);
+				var itemLista = listaTotalesTemp.Where(x => x.id.Equals("total")).First(); //Obtengo el item que corresponde a Neto No Gravado
+				itemLista.Importe = items_Sum;
+			}
 			//Sumar por Alicuota de IVA
 			//Con esas sumas actualizar la grilla de totales, la unida diferencia es que hay que discriminar por Alicuotas, es decir, si tengo un concepto por 21% y otro por 27%, van a haber dos registros (uno para cada uno)
 			//Si hay dos registros que aplica 21%, agrego un solo registro para esa alicuota pero sumarizado
@@ -957,7 +963,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					}
 				}
 				var item_Total = listaTotalesTemp.Where(x => x.id.Contains("total")).First();
-				item_Total.Importe = listaTotalesTemp.Where(y => y.id.Equals("NetoNoGravado") || y.id.Equals("NetoExento") || y.id.Equals("NetoGravado") || y.id.Equals("OtrosTributos") || y.id.Contains("IVA")).Sum(x => x.Importe);
+				item_Total.Importe = listaTotalesTemp.Where(y => y.id.Equals("NetoNoGravado") || y.id.Equals("NetoExento") || y.id.Equals("NetoGravado") || y.id.Equals("OtrosTributos") || y.id.Contains("IVA") || y.id.Contains("total")).Sum(x => x.Importe);
 			}
 			ListaTotales = [.. listaTotalesTemp.OrderBy(x => x.Orden)];
 		}

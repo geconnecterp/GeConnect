@@ -19,17 +19,20 @@
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var item in Model.ListaDatos)
+			@if (Model != null && Model.ListaDatos != null)
 			{
-				<tr onclick="selectListaInfoProdIExSemanaRow(this)">
-					<td class="align-center tiny-row">@item.desde.ToString("dd/MM/yy")-@item.hasta.ToString("dd/MM/yy")</td>
-					<td class="align-center tiny-row">@item.e_compra</td>
-					<td class="align-center tiny-row">@item.e_ri</td>
-					<td class="align-center tiny-row">@item.e_otros</td>
-					<td class="align-center tiny-row">@item.s_ventas</td>
-					<td class="align-center tiny-row">@item.s_ri</td>
-					<td class="align-center tiny-row">@item.s_otros</td>
-				</tr>
+				@foreach (var item in Model.ListaDatos)
+				{
+					<tr onclick="selectListaInfoProdIExSemanaRow(this)">
+						<td class="align-center tiny-row">@item.desde.ToString("dd/MM/yy")-@item.hasta.ToString("dd/MM/yy")</td>
+						<td class="align-center tiny-row">@item.e_compra</td>
+						<td class="align-center tiny-row">@item.e_ri</td>
+						<td class="align-center tiny-row">@item.e_otros</td>
+						<td class="align-center tiny-row">@item.s_ventas</td>
+						<td class="align-center tiny-row">@item.s_ri</td>
+						<td class="align-center tiny-row">@item.s_otros</td>
+					</tr>
+				}
 			}
 		</tbody>
 	</table>

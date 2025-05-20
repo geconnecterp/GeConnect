@@ -3,8 +3,8 @@
 }
 <style>
 	thead th {
-		position: sticky;
-		top: 0px;
+	position: sticky;
+	top: 0px;
 	}
 </style>
 <div class="table-responsive table-wrapper-full-width" id="containerListaProductoOC">
@@ -35,44 +35,47 @@
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var item in Model.ListaOC.ListaDatos)
+			@if (Model != null && Model.ListaOC != null && Model.ListaOC.ListaDatos != null)
 			{
-				var nombre = "chk" + item.P_Id;
-				var nombre_Bultos = "bultos_" + item.P_Id;
-				var nombre_P_Plista = "p_plista_" + item.P_Id;
-				var nombre_P_Dto1 = "p_dto1_" + item.P_Id;
-				var nombre_P_Dto2 = "p_dto2_" + item.P_Id;
-				var nombre_P_Dto3 = "p_dto3_" + item.P_Id;
-				var nombre_P_Dto4 = "p_dto4_" + item.P_Id;
-				var nombre_P_Dto_Pa = "p_dto_pa_" + item.P_Id;
-				var nombre_P_Boni = "p_boni_" + item.P_Id;
-				<tr onclick="selectListaProductoRowOC(this)">
-					<td><input type="checkbox" name=@nombre id="@nombre" /></td> @*00*@
-					<td class="align-center tiny-row">@item.P_Id</td> @*01*@
-					<td class="align-left tiny-row" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;" title="@item.P_Desc">@item.P_Desc</td> @*02*@
-					<td class="align-center tiny-row">@item.P_Id_Prov</td> @*03*@
-					<td class="align-center tiny-row">@item.Stk_Suc</td> @*04*@
-					<td class="align-center tiny-row">@item.Stk</td> @*05*@
-					<td class="align-center tiny-row">@item.P_Unidad_Pres</td> @*06*@
-					<td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_Bultos>@item.Bultos</td> @*07*@
-					<td class="align-center tiny-row">@item.Cantidad.ToString("0.##")</td> @*08*@
-					<td class="align-right tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Plista>@item.P_Plista.ToString("0.##")</td> @*09*@
-					<td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Dto1>@item.P_Dto1.ToString("0.#")</td> @*10*@
-					<td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Dto2>@item.P_Dto2.ToString("0.#")</td> @*11*@
-					<td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Dto3>@item.P_Dto3.ToString("0.#")</td> @*12*@
-					<td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Dto4>@item.P_Dto4.ToString("0.#")</td> @*13*@
-					<td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Dto_Pa>@item.P_Dto_Pa.ToString("0.#")</td> @*14*@
-					<td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Boni>@item.P_Boni</td> @*15*@
-					<td class="align-center tiny-row">@item.Pedido_Mas_Boni</td> @*16*@
-					<td class="align-right tiny-row">@item.P_Pcosto.ToString("0.##")</td> @*17*@
-					<td class="align-right tiny-row">@item.P_Pcosto_Total.ToString("0.##")</td> @*18*@
-					<td class="align-center tiny-row">@item.Paletizado.ToString("0.##")</td> @*19*@
-					<td>
-						<a class="btn btn-xs btn-outline-dark" data-interaction="@item.P_Id" onclick="quitarProductoEnOC(this);"> 
-							<i class="bx bxs-trash" style="line-height: 1.0;font-size: 1rem;"></i>
-						</a>
-					</td> @*20*@
-				</tr>
+				@foreach (var item in Model.ListaOC.ListaDatos)
+				{
+					var nombre = "chk" + item.P_Id;
+					var nombre_Bultos = "bultos_" + item.P_Id;
+					var nombre_P_Plista = "p_plista_" + item.P_Id;
+					var nombre_P_Dto1 = "p_dto1_" + item.P_Id;
+					var nombre_P_Dto2 = "p_dto2_" + item.P_Id;
+					var nombre_P_Dto3 = "p_dto3_" + item.P_Id;
+					var nombre_P_Dto4 = "p_dto4_" + item.P_Id;
+					var nombre_P_Dto_Pa = "p_dto_pa_" + item.P_Id;
+					var nombre_P_Boni = "p_boni_" + item.P_Id;
+					<tr onclick="selectListaProductoRowOC(this)">
+						<td><input type="checkbox" name=@nombre id="@nombre" /></td> @*00*@
+						<td class="align-center tiny-row">@item.P_Id</td> @*01*@
+						<td class="align-left tiny-row" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;" title="@item.P_Desc">@item.P_Desc</td> @*02*@
+						<td class="align-center tiny-row">@item.P_Id_Prov</td> @*03*@
+						<td class="align-center tiny-row">@item.Stk_Suc</td> @*04*@
+						<td class="align-center tiny-row">@item.Stk</td> @*05*@
+						<td class="align-center tiny-row">@item.P_Unidad_Pres</td> @*06*@
+						<td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_Bultos>@item.Bultos</td> @*07*@
+						<td class="align-center tiny-row">@item.Cantidad.ToString("0.##")</td> @*08*@
+						<td class="align-right tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Plista>@item.P_Plista.ToString("0.##")</td> @*09*@
+						<td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Dto1>@item.P_Dto1.ToString("0.#")</td> @*10*@
+						<td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Dto2>@item.P_Dto2.ToString("0.#")</td> @*11*@
+						<td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Dto3>@item.P_Dto3.ToString("0.#")</td> @*12*@
+						<td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Dto4>@item.P_Dto4.ToString("0.#")</td> @*13*@
+						<td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Dto_Pa>@item.P_Dto_Pa.ToString("0.#")</td> @*14*@
+						<td class="align-center tiny-row content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id=@nombre_P_Boni>@item.P_Boni</td> @*15*@
+						<td class="align-center tiny-row">@item.Pedido_Mas_Boni</td> @*16*@
+						<td class="align-right tiny-row">@item.P_Pcosto.ToString("0.##")</td> @*17*@
+						<td class="align-right tiny-row">@item.P_Pcosto_Total.ToString("0.##")</td> @*18*@
+						<td class="align-center tiny-row">@item.Paletizado.ToString("0.##")</td> @*19*@
+						<td>
+							<a class="btn btn-xs btn-outline-dark" data-interaction="@item.P_Id" onclick="quitarProductoEnOC(this);">
+								<i class="bx bxs-trash" style="line-height: 1.0;font-size: 1rem;"></i>
+							</a>
+						</td> @*20*@
+					</tr>
+				}
 			}
 		</tbody>
 	</table>

@@ -40,7 +40,7 @@ namespace gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra
 		public DateTime? rgan_cert_vto { get; set; }
 		public decimal rgan_porc { get; set; } = 0.00M;
 		public char ctap_rib { get; set; }
-		public char rib_id { get; set; }
+		public char? rib_id { get; set; }
 		public char rib_cert { get; set; }
 		public DateTime? rib_cert_vto { get; set; }
 		public decimal rib_porc { get; set; } = 0.00M;

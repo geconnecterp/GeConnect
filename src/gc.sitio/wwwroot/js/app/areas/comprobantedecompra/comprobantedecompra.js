@@ -43,8 +43,14 @@ function InicializaPantalla() {
 		ConfirmarComprobanteDeCompra();
 	});
 	$("#btnCancel").on("click", function () {
+		//LimpiarDatosDelFiltroInicial();
+		//$("#btnFiltro").trigger("click");
+		InicializarDatosEnSesion();
+		InicializaPantalla();
 		LimpiarDatosDelFiltroInicial();
 		$("#btnFiltro").trigger("click");
+		$("#btnDetalle").trigger("click");
+		$("#divDetalle").collapse("hide");
 	});
 	$("#btnAbmCancelar").on("click", function () {
 		InicializarDatosEnSesion();
@@ -90,7 +96,7 @@ function ControlaKeyUpComptePtoVta(e) {
 }
 
 function ControlaKeyUpCompteNro(e) {
-	if (e.which == 13) {
+	if (e.which == 13 || e.which == 109) {
 		var aux = $("#Comprobante_cm_compte_pto_nro").inputmask('unmaskedvalue').padStart(8, '0');
 		$("#Comprobante_cm_compte_pto_nro").val(aux);
 		$("#Comprobante_fecha_compte").trigger("focus");
@@ -228,6 +234,9 @@ function ObtenerEncabezado() {
 	var cm_obs = $("#Comprobante_observaciones").val();
 	var cm_libro_iva = $("#Comprobante_libro_iva").val();
 	var rela_opciones = $("#listaOpciones option:selected").text();
+	if (rela_opciones == "Seleccionar...") {
+		rela_opciones = '';
+	}
 	//Estos datos los completo con los datos del BE
 	var cm_no_gravado = 0;
 	var cm_exento = 0;
@@ -726,7 +735,7 @@ function ActualizarEstadoCtaDirecta() {
 }
 
 function ActualizarEstadoCAE() {
-	if ($("#chkCtlFis").prop("checked")) {
+	if (!$("#chkCtlFis").prop("checked")) {
 		$("#Comprobante_cm_cae").prop("disabled", false);
 		$("#Comprobante_cm_cae_vto").prop("disabled", false);
 		$("#Comprobante_cm_cae_vto").trigger("focus");

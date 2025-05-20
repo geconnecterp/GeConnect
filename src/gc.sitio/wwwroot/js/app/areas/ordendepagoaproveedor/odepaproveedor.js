@@ -16,6 +16,12 @@
 	});
 });
 
+const formatter = new Intl.NumberFormat('en-US', {
+	style: 'currency',
+	currency: 'USD',
+	trailingZeroDisplay: 'stripIfInteger'
+});
+
 function CancelDesdeValidPrev() {
 	var data = {};
 	PostGen(data, cancelarDesdeGrillaDeValidacionesPreviasURL, function (obj) {
@@ -42,6 +48,7 @@ function selectReg(x, gridId) {
 }
 
 function selectRegDbl(x, gridId) {
+	$("#MsgErrorEnCargarOSacarCreditos").val("");
 	if (gridId == "tbListaObligaciones" || gridId == "tbListaCreditos") { //Agregar
 		var cuota = x.childNodes[3].innerText;
 		var dia_movi = x.childNodes[9].innerText;
@@ -56,11 +63,13 @@ function selectRegDbl(x, gridId) {
 			if (gridId == "tbListaObligaciones") {
 				$("#divObligacionesParaAgregar").html(obj);
 				ActualizarGrillaObligacionesInferior();
+				ActualizarTotalesSuperiores();
 				var msg = $("#MsgErrorEnCargarOSacarObligaciones").val();
 			}
 			else {
 				$("#divCreditosParaAgregar").html(obj);
 				ActualizarGrillaCreditosInferior();
+				ActualizarTotalesSuperiores();
 				var msg = $("#MsgErrorEnCargarOSacarCreditos").val();
 			}
 			if (msg != "") {
@@ -84,11 +93,13 @@ function selectRegDbl(x, gridId) {
 			if (gridId == "tbListaObligacionesParaAgregar") {
 				$("#divObligacionesParaAgregar").html(obj);
 				ActualizarGrillaObligacionesInferior();
+				ActualizarTotalesSuperiores();
 				var msg = $("#MsgErrorEnCargarOSacarObligaciones").val();
 			}
 			else {
 				$("#divCreditosParaAgregar").html(obj);
 				ActualizarGrillaCreditosInferior();
+				ActualizarTotalesSuperiores();
 				var msg = $("#MsgErrorEnCargarOSacarCreditos").val();
 			}
 			if (msg != "") {
@@ -102,6 +113,19 @@ function selectRegDbl(x, gridId) {
 	CerrarWaiting();
 }
 
+function ActualizarTotalesSuperiores() {
+	PostGen(data, actualizarTotalesSuperioresUrl, function (obj) {
+		if (obj.error === true) {
+			ControlaMensajeError(obj.msg);
+		}
+		else {
+			$("#txtObligACancelar").val(formatter.format(obj.data.obligacionesCancelar));
+			$("#txtCredYValImputados").val(formatter.format(obj.data.credYValImputados));
+			$("#txtDiferencias").val(formatter.format(obj.data.diferencia));
+		}
+	});
+}
+
 function ActualizarGrillaObligacionesInferior() {
 	PostGenHtml({}, actualizarGrillaObligacionesInferiorUrl, function (obj) {
 		$("#divObligaciones").html(obj);
@@ -113,6 +137,8 @@ function ActualizarGrillaCreditosInferior() {
 		$("#divCreditos").html(obj);
 	});
 }
+
+//TODO MARCE: Agregar metodos para calcular los y completar los txt superiores (Obligaciones a cancelar, Creditos y valores imputados, y Diferencias.)
 
 function AceptarDesdeValidPrev() {
 	AbrirWaiting("Cargando....");

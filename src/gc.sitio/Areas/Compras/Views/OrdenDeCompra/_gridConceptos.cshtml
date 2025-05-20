@@ -13,12 +13,15 @@
 						</tr>
 					</thead>
 					<tbody>
-						@foreach (var item in Model.ResumenGrilla.ListaDatos)
+						@if (Model != null && Model.ResumenGrilla != null && Model.ResumenGrilla.ListaDatos != null)
 						{
-							<tr>
-								<td class="align-left">@item.Concepto</td>
-								<td class="align-right font-bold">@item.Importe</td>
-							</tr>
+							@foreach (var item in Model.ResumenGrilla.ListaDatos)
+							{
+								<tr>
+									<td class="align-left">@item.Concepto</td>
+									<td class="align-right font-bold">@item.Importe</td>
+								</tr>
+							}
 						}
 					</tbody>
 				</table>

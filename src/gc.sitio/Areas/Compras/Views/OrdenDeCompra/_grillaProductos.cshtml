@@ -29,72 +29,70 @@
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var item in Model.grillaDatos.ListaDatos)
+			@if (Model != null && Model.grillaDatos != null && Model.grillaDatos.ListaDatos != null)
 			{
-				var nombre = "a" + item.p_id;
-				switch (item.p_activo)
+				@foreach (var item in Model.grillaDatos.ListaDatos)
 				{
-					case "N":
-						color = EstadoColor.NoActivo;
-						break;
-					case "D":
-						color = EstadoColor.Discontinuo;
-						break;
-					default:
-						color = EstadoColor.Activo;
-						break;
-				}
-				<tr onclick="selectListaProductoRow(this)">
-					<td class="align-center tiny-row" style="border-left: 5px solid @color;text-align: left;">@item.p_id</td>
-					<td class="align-left tiny-row" style="text-overflow:ellipsis;">@item.p_desc</td>
-					<td class="align-center tiny-row">@item.p_id_prov</td>
-					@if (item.pi_pendiente == 0)
+					var nombre = "a" + item.p_id;
+					switch (item.p_activo)
 					{
-						<td class="align-right tiny-row"></td>
+						case "N":
+							color = EstadoColor.NoActivo;
+							break;
+						case "D":
+							color = EstadoColor.Discontinuo;
+							break;
+						default:
+							color = EstadoColor.Activo;
+							break;
 					}
-					else
-					{
-						<td class="align-right tiny-row" style="font-weight:bold;">@item.pi_pendiente</td>
-					}
-					@if (item.oc_pendiente == 0)
-					{
-						<td class="align-right tiny-row"></td>
-					}
-					else
-					{
-						<td class="align-right tiny-row" style="font-weight:bold;" >@item.oc_pendiente</td>
-					}
-					<td class="align-right tiny-row">@item.stk_suc</td>
-					<td class="align-right tiny-row">@item.stk</td>
-					<td class="align-right tiny-row">@item.p_unidad_pres</td>
-					<td class="align-right tiny-row">@item.p_unidad_palet</td>
-					<td class="align-right tiny-row">@item.costo</td>
-					@if (item.p_activo == "D")
-					{
-						<td><a class="btn btn-xs btn-secondary" id=@nombre data-interaction="@item.p_id" onclick="actualizarProducto(this);" title="Producto discontinuo">
-								<i class="bx bx-cart-alt" style="line-height: 1.0;font-size: 1rem;"></i>
-							</a>
-						</td>
-					}
-					else
-					{
-						<td>
-							<a class="btn btn-xs btn-success" id=@nombre data-interaction="@item.p_id" onclick="actualizarProducto(this);">
-								<i class="bx bx-cart-alt" style="line-height: 1.0;font-size: 1rem;"></i>
-							</a>
-						</td>
-					}
+					<tr onclick="selectListaProductoRow(this)">
+						<td class="align-center tiny-row" style="border-left: 5px solid @color;text-align: left;">@item.p_id</td>
+						<td class="align-left tiny-row" style="text-overflow:ellipsis;">@item.p_desc</td>
+						<td class="align-center tiny-row">@item.p_id_prov</td>
+						@if (item.pi_pendiente == 0)
+						{
+							<td class="align-right tiny-row"></td>
+						}
+						else
+						{
+							<td class="align-right tiny-row" style="font-weight:bold;">@item.pi_pendiente</td>
+						}
+						@if (item.oc_pendiente == 0)
+						{
+							<td class="align-right tiny-row"></td>
+						}
+						else
+						{
+							<td class="align-right tiny-row" style="font-weight:bold;">@item.oc_pendiente</td>
+						}
+						<td class="align-right tiny-row">@item.stk_suc</td>
+						<td class="align-right tiny-row">@item.stk</td>
+						<td class="align-right tiny-row">@item.p_unidad_pres</td>
+						<td class="align-right tiny-row">@item.p_unidad_palet</td>
+						<td class="align-right tiny-row">@item.costo</td>
+						@if (item.p_activo == "D")
+						{
+							<td>
+								<a class="btn btn-xs btn-secondary" id=@nombre data-interaction="@item.p_id" onclick="actualizarProducto(this);" title="Producto discontinuo">
+									<i class="bx bx-cart-alt" style="line-height: 1.0;font-size: 1rem;"></i>
+								</a>
+							</td>
+						}
+						else
+						{
+							<td>
+								<a class="btn btn-xs btn-success" id=@nombre data-interaction="@item.p_id" onclick="actualizarProducto(this);">
+									<i class="bx bx-cart-alt" style="line-height: 1.0;font-size: 1rem;"></i>
+								</a>
+							</td>
+						}
 
-				</tr>
+					</tr>
+				}
 			}
 		</tbody>
 	</table>
-	@* <div class="row">
-		<div class="offset-md-3 col-md-6">
-			<div id="divPaginacion" class="">
-			</div>
-		</div>
-	</div> *@
 </div>
 <div class="row" style="padding-top:10px;">
 	<div class="row">
