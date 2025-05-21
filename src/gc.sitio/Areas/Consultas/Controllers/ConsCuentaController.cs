@@ -14,6 +14,7 @@ using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Options;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace gc.sitio.Areas.Consultas.Controllers
@@ -69,7 +70,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
                 string titulo = "Consulta de Cuentas Comerciales";
                 ViewData["Titulo"] = titulo;
-
+                _logger?.LogInformation($"Inicializando Variables {MethodBase.GetCurrentMethod()?.Name}");
                 #region INICIALIZACION DE VARIABLES DE SESSION
                 CuentaCorrienteBuscada = [];
                 VencimientosBuscados = [];
@@ -85,6 +86,8 @@ namespace gc.sitio.Areas.Consultas.Controllers
                 //Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
                 DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
 
+                _logger?.LogInformation($"Generando Arbol de Archivos del módulo. {MethodBase.GetCurrentMethod()?.Name}");
+
                 //en este mismo acto se cargan los posibles documentos
                 //que se pueden imprimir, exportar, enviar por email o whatsapp
                 ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
@@ -98,6 +101,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
             }
             catch (Exception ex)
             {
+                _logger?.LogError(ex, $"Error al cargar el Index {MethodBase.GetCurrentMethod()?.Name}");
                 TempData["error"] = ex.Message;
                 return RedirectToAction("Index", "home", new { area = "" });
 
@@ -138,8 +142,9 @@ namespace gc.sitio.Areas.Consultas.Controllers
 
             MetadataGrid metadata;
             try
-
             {
+                _logger?.LogInformation($"Por realizar busqueda {ctaId}-{fechaD}-{buscaNew}-{sort}-{sortDir}-{pag}-{MethodBase.GetCurrentMethod()?.Name}");
+
                 if (PaginaGrid == pag && !buscaNew && CuentaCorrienteBuscada.Count() > 0)
                 {
                     //es la misma pagina y hay registros, se realiza el reordenamiento de los datos.
@@ -152,11 +157,15 @@ namespace gc.sitio.Areas.Consultas.Controllers
                     PaginaGrid = pag;
                     int registros = _settings.NroRegistrosPagina;
 
+
+                    _logger?.LogInformation($"Inicializando Consulta de Cta Cte {MethodBase.GetCurrentMethod()?.Name}");
+
                     var res = await _consSv.ConsultarCuentaCorriente(ctaId, fechaD.Ticks, UserName, pag, registros, TokenCookie);
                     lista = res.Item1 ?? [];
                     MetadataGeneral = res.Item2 ?? new MetadataGrid();
                     CuentaCorrienteBuscada = lista;
 
+                    _logger?.LogInformation($"Inicializando los datos de la Cuenta Comercial {MethodBase.GetCurrentMethod()?.Name}");
 
                     #region Consulta de Cuenta comercial
                     var cuenta = await _cuentaServicio.ObtenerListaCuentaComercial(ctaId, 'T', TokenCookie);
@@ -167,12 +176,19 @@ namespace gc.sitio.Areas.Consultas.Controllers
                     CuentaComercialSeleccionada = cuenta.First();
 
                     #region Obtener datos de la cuenta
+                _logger?.LogInformation($"Se Obtiene los Datos de la Cuenta.{MethodBase.GetCurrentMethod()?.Name}");
+
                     var datosCta = await _cuentaServicio.ObtenerCuentaDatos(ctaId,'D', TokenCookie);
                     if (datosCta == null || datosCta.Count == 0)
                     {
-                        throw new NegocioException("No se encontraron los datos de la cuenta. Verifique conexión.");
+                       _logger?.LogWarning("No se encontraron los datos de la cuenta. Verifique conexión.");
+                        CuentaComercialDatosSeleccionada = new();
                     }
-                    CuentaComercialDatosSeleccionada = datosCta.FirstOrDefault();
+                    else
+                    {
+                        CuentaComercialDatosSeleccionada = datosCta.FirstOrDefault();
+                    }
+                        
                     #endregion
 
                     #endregion
@@ -198,6 +214,8 @@ namespace gc.sitio.Areas.Consultas.Controllers
             }
             catch (NegocioException ex)
             {
+                _logger?.LogWarning(ex,$" Hubo una excepcion {MethodBase.GetCurrentMethod()?.Name}");
+
                 response.Mensaje = ex.Message;
                 response.Ok = false;
                 response.EsWarn = true;
