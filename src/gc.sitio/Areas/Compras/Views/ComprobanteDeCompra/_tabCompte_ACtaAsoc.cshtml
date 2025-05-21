@@ -6,9 +6,9 @@
 		<thead class="table-dark">
 			<tr class="header">
 				<th><input name="select_all" value="1" type="checkbox"></th>
-				<th class="col-header-small align-center">N°</th>
-				<th class="col-header-small align-left">Tipo Compte</th>
-				<th class="col-header-small align-left">Importe</th>
+				<th class="col-header-small align-center" title="Factura Valorizada">Fact. Valor.</th>
+				<th class="col-header-small align-center">Tipo y Nota N°</th>
+				<th class="col-header-small align-center">Importe</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -20,10 +20,11 @@
 					<tr onclick="selectListaRprAsociado(this)">
 						<td><input type="checkbox" name=@nombre id="@nombre" /></td> @*00*@
 						<td class="align-center">@item.cm_compte</td>
-						<td class="align-left">@item.tco_desc_rp</td>
+						<td class="align-left">@item.tco_desc_rp @item.cm_compte_rp</td>
 						<td class="align-right">@item.cm_total</td>
 						<td style="display:none;">@item.tco_id</td>
 						<td style="display:none;">@item.cm_compte_rp</td>
+						<td style="display:none;">@item.tco_id_rp</td>
 					</tr>
 				}
 			}

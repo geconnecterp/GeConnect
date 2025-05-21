@@ -23,36 +23,36 @@
 				</div>
 				@if (Model.EsGravado)
 				{
-					<div class="col-2 input-group-sm" style="float:left;margin-right:5px;">
+					<div class="col-2 input-group-sm" style="float:left;margin-right:5px;max-width: 120px;">
 						<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">Situación: </span>
 						@Html.DropDownListFor(m => m.ConceptoFacturado.iva_situacion, sit, "Seleccionar...", new { @id = "listaIvaSit", @class = "form-control activable inputEditable" })
 					</div>
-					<div class="col-2 input-group-sm" style="float:left;margin-right:5px;">
+					<div class="col-1 input-group-sm" style="float:left;margin-right:5px;">
 						<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">Alicuota: </span>
 						@Html.DropDownListFor(m => m.ConceptoFacturado.iva_alicuota, ali, "Seleccionar...", new { @id = "listaIvaAli", @class = "form-control activable inputEditable" })
 					</div>
 				}
-				<div class="col-1 input-group-sm" style="float:left;margin-right:5px;">
+				<div class="col-2 input-group-sm" style="float:left;margin-right:5px;">
 					<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">Subtotal: </span>
 					<input type="text" asp-for="ConceptoFacturado.subtotal" class="form-control activable inputEditable" />
 				</div>
 				@if (Model.EsGravado)
 				{
-					<div class="col-1 input-group-sm" style="float:left;margin-right:5px;">
+					<div class="col-2 input-group-sm" style="float:left;margin-right:5px;">
 						<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">IVA: </span>
 						<input type="text" asp-for="ConceptoFacturado.iva" class="form-control activable inputEditable" />
 					</div>
 				}
-				<div class="col-1 input-group-sm" style="float:left;margin-right:5px;">
-					<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">Subtotal+IVA: </span>
-					<input type="text" asp-for="ConceptoFacturado.total" class="form-control activable" disabled/>
+				<div class="col-2 input-group-sm" style="float:left;margin-right:5px;">
+					<span class="fixed-lbl-for-abm-100" style="float: left;text-align:right;">Subtotal+IVA: </span>
+					<input type="text" asp-for="ConceptoFacturado.total" style="text-align:end;" class="form-control activable" disabled/>
 				</div>
 			</div>
 		</div>
 	</div>
 </div>
 <div class="modal-footer">
-	<button type="button" class="btn btn-primary" onclick="AgregarConceptoFacturado();">Agregar</button>
+	<button type="button" class="btn btn-primary" onclick="AgregarConceptoFacturado();" id="btnAgregar">Agregar</button>
 	<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
 		Cerrar
 	</button>

@@ -4,8 +4,8 @@
 }
 <style>
 	thead th {
-		position: sticky;
-		top: 0px;
+	position: sticky;
+	top: 0px;
 	}
 </style>
 <div class="row">
@@ -26,19 +26,22 @@
 					</tr>
 				</thead>
 				<tbody>
-					@foreach (var item in Model.GrillaOC.ListaDatos)
+					@if (Model != null && Model.GrillaOC != null && Model.GrillaOC.ListaDatos != null)
 					{
-						<tr onclick="selectListaOCRow(this)">
-							<td class="align-center tiny-row">@item.oc_compte</td>
-							<td class="align-left tiny-row">@item.cta_denominacion</td>
-							<td class="align-center tiny-row">@item.oc_fecha</td>
-							<td class="align-center tiny-row">@item.adm_nombre</td>
-							<td class="align-center tiny-row">@item.oce_desc</td>
-							<td class="align-center tiny-row">@item.usu_apellidoynombre</td>
-							<td class="align-center tiny-row">@item.oc_total</td>
-							<td style="display:none;">@item.oce_id</td>
-							<td style="display:none;">@item.adm_id</td>
-						</tr>
+						@foreach (var item in Model.GrillaOC.ListaDatos)
+						{
+							<tr onclick="selectListaOCRow(this)">
+								<td class="align-center tiny-row">@item.oc_compte</td>
+								<td class="align-left tiny-row">@item.cta_denominacion</td>
+								<td class="align-center tiny-row">@item.oc_fecha</td>
+								<td class="align-center tiny-row">@item.adm_nombre</td>
+								<td class="align-center tiny-row">@item.oce_desc</td>
+								<td class="align-center tiny-row">@item.usu_apellidoynombre</td>
+								<td class="align-center tiny-row">@item.oc_total</td>
+								<td style="display:none;">@item.oce_id</td>
+								<td style="display:none;">@item.adm_id</td>
+							</tr>
+						}
 					}
 				</tbody>
 			</table>

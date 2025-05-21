@@ -68,7 +68,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				{
 					return [];
 				}
-				return JsonConvert.DeserializeObject<List<ABMClienteSearchDto>>(json);
+				return JsonConvert.DeserializeObject<List<ABMClienteSearchDto>>(json) ?? [];
 			}
 			set
 			{
@@ -86,7 +86,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				{
 					return new MetadataGrid();
 				}
-				return JsonConvert.DeserializeObject<MetadataGrid>(txt); ;
+				return JsonConvert.DeserializeObject<MetadataGrid>(txt) ;
 			}
 			set
 			{

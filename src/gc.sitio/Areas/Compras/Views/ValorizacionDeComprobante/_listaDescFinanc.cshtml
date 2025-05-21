@@ -21,37 +21,40 @@
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var item in Model.ListaDatos)
+			@if (Model != null && Model.ListaDatos != null)
 			{
-				var nombre1 = "chkNetoFijo" + item.cm_compte;
-				var nombre2 = "chkDtoTot" + item.cm_compte;
-				<tr onclick="selectListaDescFinanc(this)" class="sortme">
-					<td style="display:none;">@item.item</td>
-					@if (item.dto_fijo_bool)
-					{
-						<td class="@Model.ObtenerClase(item.dto_fijo_bool)"><input type="checkbox" class="chkNetoFijo" name=@nombre1 id="@nombre1" checked disabled /></td>
-					}
-					else
-					{
-						<td class="@Model.ObtenerClase(item.dto_fijo_bool)"><input type="checkbox" class="chkNetoFijo" name=@nombre1 id="@nombre1" disabled /></td>
-					}
-					@if (item.dto_sobre_total_bool)
-					{
-						<td class="@Model.ObtenerClase(item.dto_sobre_total_bool)"><input type="checkbox" class="chkDtoTot" name=@nombre2 id="@nombre2" checked disabled /></td>
-					}
-					else
-					{
-						<td class="@Model.ObtenerClase(item.dto_sobre_total_bool)"><input type="checkbox" class="chkDtoTot" name=@nombre2 id="@nombre2" disabled /></td>
-					}
-					<td class="@Model.ObtenerClase(item.dtoc_desc)">@Model.FormatearDato(item.dtoc_desc, FormatDato.Ninguno)</td>
-					<td class="@Model.ObtenerClase(item.dto)">@Model.FormatearDato(item.dto, FormatDato.Monto)</td>
-					<td class="@Model.ObtenerClase(item.dto_importe)">@Model.FormatearDato(item.dto_importe, FormatDato.Monto)</td>
-					<td><a class="btn btn-xs btn-outline-dark" data-interaction="@item.item" onclick="quitarDescFinanc(this);"> <i class="bx bxs-trash"></i></a></td> @*20*@
-					<td style="display:none;">@item.cm_compte</td>
-					<td style="display:none;">@item.dia_movi</td>
-					<td style="display:none;">@item.tco_id</td>
-					<td style="display:none;">@item.dtoc_id</td>
-				</tr>
+				@foreach (var item in Model.ListaDatos)
+				{
+					var nombre1 = "chkNetoFijo" + item.cm_compte;
+					var nombre2 = "chkDtoTot" + item.cm_compte;
+					<tr onclick="selectListaDescFinanc(this)" class="sortme">
+						<td style="display:none;">@item.item</td>
+						@if (item.dto_fijo_bool)
+						{
+							<td class="@Model.ObtenerClase(item.dto_fijo_bool)"><input type="checkbox" class="chkNetoFijo" name=@nombre1 id="@nombre1" checked disabled /></td>
+						}
+						else
+						{
+							<td class="@Model.ObtenerClase(item.dto_fijo_bool)"><input type="checkbox" class="chkNetoFijo" name=@nombre1 id="@nombre1" disabled /></td>
+						}
+						@if (item.dto_sobre_total_bool)
+						{
+							<td class="@Model.ObtenerClase(item.dto_sobre_total_bool)"><input type="checkbox" class="chkDtoTot" name=@nombre2 id="@nombre2" checked disabled /></td>
+						}
+						else
+						{
+							<td class="@Model.ObtenerClase(item.dto_sobre_total_bool)"><input type="checkbox" class="chkDtoTot" name=@nombre2 id="@nombre2" disabled /></td>
+						}
+						<td class="@Model.ObtenerClase(item.dtoc_desc)">@Model.FormatearDato(item.dtoc_desc, FormatDato.Ninguno)</td>
+						<td class="@Model.ObtenerClase(item.dto)">@Model.FormatearDato(item.dto, FormatDato.Monto)</td>
+						<td class="@Model.ObtenerClase(item.dto_importe)">@Model.FormatearDato(item.dto_importe, FormatDato.Monto)</td>
+						<td><a class="btn btn-xs btn-outline-dark" data-interaction="@item.item" onclick="quitarDescFinanc(this);"> <i class="bx bxs-trash"></i></a></td> @*20*@
+						<td style="display:none;">@item.cm_compte</td>
+						<td style="display:none;">@item.dia_movi</td>
+						<td style="display:none;">@item.tco_id</td>
+						<td style="display:none;">@item.dtoc_id</td>
+					</tr>
+				}
 			}
 		</tbody>
 	</table>

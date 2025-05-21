@@ -59,7 +59,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public IActionResult Index()
 		{
-			MetadataGrid metadata;
+			//MetadataGrid metadata;
 			try
 			{
 				var auth = EstaAutenticado;
@@ -292,7 +292,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				//ListaOtrosTributos ??= [];
 				var importe = 0.00M;
 				//Si existe, actualizo el valor indicado en el parametro id (campo)
-				if (ListaOtrosTributos.Exists(x => x.ins_id.Equals(idOtroTributoSeleccionado)))
+				if (ListaOtrosTributos != null && ListaOtrosTributos.Exists(x => x.ins_id.Equals(idOtroTributoSeleccionado)))
 				{
 					var listaTempo = ListaOtrosTributos;
 					if (id.Contains("base_imp"))
@@ -302,7 +302,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 							if (x.ins_id.Equals(idOtroTributoSeleccionado))
 							{
 								x.base_imp = val;
-								x.importe = Math.Round(((x.base_imp * x.alicuota) / 100) + x.base_imp, 2);
+								//x.importe = Math.Round(((x.base_imp * x.alicuota) / 100) + x.base_imp, 2);
+								x.importe = Math.Round(((x.base_imp * x.alicuota) / 100), 2);
 							}
 						});
 					}
@@ -313,7 +314,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 							if (x.ins_id.Equals(idOtroTributoSeleccionado))
 							{
 								x.alicuota = val;
-								x.importe = Math.Round(((x.base_imp * x.alicuota) / 100) + x.base_imp, 2);
+								//x.importe = Math.Round(((x.base_imp * x.alicuota) / 100) + x.base_imp, 2);
+								x.importe = Math.Round(((x.base_imp * x.alicuota) / 100), 2);
 							}
 						});
 					}
@@ -334,7 +336,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				return Json(new { error = false, warn = false, msg = string.Empty, data = new { insId = idOtroTributoSeleccionado, importe } });
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar cargar el concepto facturado." });
 			}
@@ -358,7 +360,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					InicializarGrillaTotales();
 					if (ListaOtrosTributos != null && ListaOtrosTributos.Count > 0)
 						ActualizarItemEnGrillaTotales("OtrosTributos", ListaOtrosTributos.Sum(x => x.importe));
-					model = ObtenerGridCoreSmart<OrdenDeCompraConceptoDto>(ListaTotales);
+					model = ObtenerGridCoreSmart<OrdenDeCompraConceptoDto>(ListaTotales ?? []);
 				}
 				return PartialView("_tabCompte_Totales", model);
 			}
@@ -520,7 +522,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				return Json(new { error = false, warn = false, msg = "Inicializacion correcta." });
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar inicializar los datos en Sesion - COMPROBANTEDECOMPRA" });
 			}
@@ -610,7 +612,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				return Json(new { error = false, warn = false, msg = string.Empty });
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar cargar el concepto facturado." });
 			}
@@ -731,7 +733,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				return Json(new { error = false, warn = false, msg = string.Empty });
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar cargar el tributo." });
 			}
@@ -793,7 +795,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				else
 					json_asociaciones = "{}";
 
-					CompletarEncabezadoConTotales(request.encabezado);
+				CompletarEncabezadoConTotales(request.encabezado);
 				//json_encabezado = JsonConvert.SerializeObject(request.encabezado, new JsonSerializerSettings());
 				json_encabezado = JsonConvert.SerializeObject(request.encabezado, new JsonSerializerSettings());
 				var listaAux = ListaConceptoFacturado;
@@ -805,7 +807,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				json_concepto = JsonConvert.SerializeObject(ListaConceptoFacturado, new JsonSerializerSettings());
 				if (ListaOtrosTributos == null || ListaOtrosTributos.Count <= 0)
 					InicializarListaOtrosTributos(request.encabezado.tco_id);
-				json_otros = ObtenerJsonOtrosTributos(ListaOtrosTributos);
+				json_otros = ObtenerJsonOtrosTributos(ListaOtrosTributos ?? []);
 				var req = new CompteCargaConfirmaRequest
 				{
 					cta_id = request.cta_id,
@@ -824,7 +826,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				return AnalizarRespuesta(respuesta, "El Comprobante de Compra se Confirmo con Éxito");
 				//return Json(new { error = false, warn = false, msg = "" });
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar confirmar los datos del comprobante de compra" });
 			}
@@ -898,50 +900,72 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var listaTotalesTemp = ListaTotales;
 			var listaConcFactuTemp = ListaConceptoFacturado;
 			//Sumar conceptos Gravados
-			if (listaConcFactuTemp.Where(y=>y.iva_situacion != null).ToList().Exists(x => x.iva_situacion.Equals("G")))
+			if (listaConcFactuTemp.Where(y => y.iva_situacion != null).ToList().Exists(x => x.iva_situacion.Equals("G")))
 			{
-				var items_Sum = listaConcFactuTemp.Where(y => y.iva_situacion != null).ToList().Where(x => x.iva_situacion.Equals("G")).ToList().Sum(x => x.subtotal);
-				var itemListaTotalGravado = listaTotalesTemp.Where(x => x.id.Equals("NetoGravado")).First(); //Obtengo el item que corresponde a Neto Gravado
-				itemListaTotalGravado.Importe = items_Sum;
+				if (listaTotalesTemp != null)
+				{
+					var items_Sum = listaConcFactuTemp.Where(y => y.iva_situacion != null).ToList().Where(x => x.iva_situacion.Equals("G")).ToList().Sum(x => x.subtotal);
+					var itemListaTotalGravado = listaTotalesTemp.Where(x => x.id.Equals("NetoGravado")).First(); //Obtengo el item que corresponde a Neto Gravado
+					itemListaTotalGravado.Importe = items_Sum;
+				}
 			}
 			else
 			{
-				var itemListaTotalGravado = listaTotalesTemp.Where(x => x.id.Equals("NetoGravado")).First(); //Obtengo el item que corresponde a Neto Gravado
-				itemListaTotalGravado.Importe = 0;
+				if (listaTotalesTemp != null)
+				{
+					var itemListaTotalGravado = listaTotalesTemp.Where(x => x.id.Equals("NetoGravado")).First(); //Obtengo el item que corresponde a Neto Gravado
+					itemListaTotalGravado.Importe = 0;
+				}
 			}
 
 			//Sumas conceptos No Gravados
 			if (listaConcFactuTemp.Where(y => y.iva_situacion != null).ToList().Exists(x => x.iva_situacion.Equals("N")))
 			{
-				var items_Sum = listaConcFactuTemp.Where(y => y.iva_situacion != null).ToList().Where(x => x.iva_situacion.Equals("N")).ToList().Sum(x => x.subtotal);
-				var itemListaTotalGravado = listaTotalesTemp.Where(x => x.id.Equals("NetoNoGravado")).First(); //Obtengo el item que corresponde a Neto No Gravado
-				itemListaTotalGravado.Importe = items_Sum;
+				if (listaTotalesTemp != null)
+				{
+					var items_Sum = listaConcFactuTemp.Where(y => y.iva_situacion != null).ToList().Where(x => x.iva_situacion.Equals("N")).ToList().Sum(x => x.subtotal);
+					var itemListaTotalGravado = listaTotalesTemp.Where(x => x.id.Equals("NetoNoGravado")).First(); //Obtengo el item que corresponde a Neto No Gravado
+					itemListaTotalGravado.Importe = items_Sum;
+				}
 			}
 			else
 			{
-				var itemListaTotalGravado = listaTotalesTemp.Where(x => x.id.Equals("NetoNoGravado")).First(); //Obtengo el item que corresponde a Neto Gravado
-				itemListaTotalGravado.Importe = 0;
+				if (listaTotalesTemp != null)
+				{
+					var itemListaTotalGravado = listaTotalesTemp.Where(x => x.id.Equals("NetoNoGravado")).First(); //Obtengo el item que corresponde a Neto Gravado
+					itemListaTotalGravado.Importe = 0;
+				}
 			}
 
 			//Sumas conceptos Exentos
 			if (listaConcFactuTemp.Where(y => y.iva_situacion != null).ToList().Exists(x => x.iva_situacion.Equals("E")))
 			{
-				var items_Sum = listaConcFactuTemp.Where(y => y.iva_situacion != null).ToList().Where(x => x.iva_situacion.Equals("E")).ToList().Sum(x => x.subtotal);
-				var itemListaTotalGravado = listaTotalesTemp.Where(x => x.id.Equals("NetoExento")).First(); //Obtengo el item que corresponde a Neto No Gravado
-				itemListaTotalGravado.Importe = items_Sum;
+				if (listaTotalesTemp != null)
+				{
+					var items_Sum = listaConcFactuTemp.Where(y => y.iva_situacion != null).ToList().Where(x => x.iva_situacion.Equals("E")).ToList().Sum(x => x.subtotal);
+					var itemListaTotalGravado = listaTotalesTemp.Where(x => x.id.Equals("NetoExento")).First(); //Obtengo el item que corresponde a Neto No Gravado
+					itemListaTotalGravado.Importe = items_Sum;
+				}
 			}
 			else
 			{
-				var itemListaTotalGravado = listaTotalesTemp.Where(x => x.id.Equals("NetoExento")).First(); //Obtengo el item que corresponde a Neto Gravado
-				itemListaTotalGravado.Importe = 0;
+				if (listaTotalesTemp != null)
+				{
+					var itemListaTotalGravado = listaTotalesTemp.Where(x => x.id.Equals("NetoExento")).First(); //Obtengo el item que corresponde a Neto Gravado
+					itemListaTotalGravado.Importe = 0;
+				}
 			}
 
 			if (listaConcFactuTemp.Exists(x => x.iva_situacion == null))
 			{
-				var items_Sum = listaConcFactuTemp.Where(x => x.iva_situacion == null).ToList().Sum(y => y.subtotal);
-				var itemLista = listaTotalesTemp.Where(x => x.id.Equals("NetoNoGravado")).First(); //Obtengo el item que corresponde a Neto No Gravado
-				itemLista.Importe += items_Sum;
+				if (listaTotalesTemp != null)
+				{
+					var items_Sum = listaConcFactuTemp.Where(x => x.iva_situacion == null).ToList().Sum(y => y.subtotal);
+					var itemLista = listaTotalesTemp.Where(x => x.id.Equals("NetoNoGravado")).First(); //Obtengo el item que corresponde a Neto No Gravado
+					itemLista.Importe += items_Sum;
+				}
 			}
+			listaTotalesTemp ??= [];
 			//Sumar por Alicuota de IVA
 			//Con esas sumas actualizar la grilla de totales, la unida diferencia es que hay que discriminar por Alicuotas, es decir, si tengo un concepto por 21% y otro por 27%, van a haber dos registros (uno para cada uno)
 			//Si hay dos registros que aplica 21%, agrego un solo registro para esa alicuota pero sumarizado
@@ -978,11 +1002,12 @@ namespace gc.sitio.Areas.Compras.Controllers
 			if (ListaTotales == null || ListaTotales.Count <= 0)
 				InicializarGrillaTotales();
 			var listaTotalesTemp = ListaTotales;
+			listaTotalesTemp ??= [];
 			var importeTotalParaLista = ListaOtrosTributos.Sum(x => x.importe);
 			var item = listaTotalesTemp.Where(x => x.id.Equals("OtrosTributos")).First();
 			item.Importe = importeTotalParaLista;
 			var item_Total = listaTotalesTemp.Where(x => x.id.Contains("total")).First();
-			item_Total.Importe = listaTotalesTemp.Where(y => y.id.Equals("NetoNoGravado") || y.id.Equals("NetoExento") || y.id.Equals("NetoGravado") || y.id.Equals("OtrosTributos")).Sum(x => x.Importe);
+			item_Total.Importe = listaTotalesTemp.Where(y => y.id != null && !y.id.Equals("total")).Sum(x => x.Importe);
 			ListaTotales = listaTotalesTemp;
 		}
 		private void ActualizarItemEnGrillaTotales(string id, decimal val)
@@ -1097,7 +1122,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			FLETE,
 			[Description("Pago Anticipado")]
 			PAGO_ANTICIPADO,
-			[Description("Notas a Cuenta Asociadas")]
+			[Description("Nota a Cuenta Asociada")]
 			NOTAS_A_CUENTA_ASOCIADAS
 		}
 

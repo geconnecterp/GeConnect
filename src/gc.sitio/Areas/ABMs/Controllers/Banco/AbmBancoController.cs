@@ -4,7 +4,6 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.ABM;
-using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
 using gc.sitio.Areas.ABMs.Models;
 using gc.sitio.core.Servicios.Contratos;
@@ -45,9 +44,10 @@ namespace gc.sitio.Areas.ABMs.Controllers.Banco
 			_abmServicio = abmServicio;
 		}
 		[HttpGet]
-		public async Task<IActionResult> Index(bool actualizar = false)
+		//public async Task<IActionResult> Index(bool actualizar = false)
+		public IActionResult Index(bool actualizar = false)
 		{
-			MetadataGrid metadata;
+			//MetadataGrid metadata;
 
 			var auth = EstaAutenticado;
 			if (!auth.Item1 || auth.Item2 < DateTime.Now)
@@ -112,7 +112,8 @@ namespace gc.sitio.Areas.ABMs.Controllers.Banco
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> BuscarBanco(string ctafId)
+		//public async Task<IActionResult> BuscarBanco(string ctafId)
+		public IActionResult BuscarBanco(string ctafId)
 		{
 			RespuestaGenerica<EntidadBase> response = new();
 			try
@@ -147,7 +148,8 @@ namespace gc.sitio.Areas.ABMs.Controllers.Banco
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> NuevoBanco()
+		//public async Task<IActionResult> NuevoBanco()
+		public IActionResult NuevoBanco()
 		{
 			RespuestaGenerica<EntidadBase> response = new();
 			try
@@ -197,7 +199,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Banco
 				else
 					return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return Json(new { error = true, msg = "Ha ocurrido un error al intentar actualizar la información." });
 			}

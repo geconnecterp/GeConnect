@@ -43,7 +43,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 		public IActionResult Index()
 		{
-			MetadataGrid metadata;
+			//MetadataGrid metadata;
 			try
 			{
 				var auth = EstaAutenticado;
@@ -78,7 +78,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public async Task<IActionResult> BuscarProductos(NCPICargarListaDeProductos2Request request)
+		//public async Task<IActionResult> BuscarProductos(NCPICargarListaDeProductos2Request request)
+		public IActionResult BuscarProductos(NCPICargarListaDeProductos2Request request)
 		{
 			MetadataGrid metadata;
 			GridCoreSmart<ProductoNCPIDto> grillaDatos;
@@ -125,7 +126,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public async Task<IActionResult> BuscarProductosTabOC(string ctaId, string ocCompte)
+		//public async Task<IActionResult> BuscarProductosTabOC(string ctaId, string ocCompte)
+		public IActionResult BuscarProductosTabOC(string ctaId, string ocCompte)
 		{
 			ProductoParaOcModel model = new();
 			GridCoreSmart<ProductoParaOcDto> grillaDatos;
@@ -328,7 +330,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				else
 					return Json(new { error = true, warn = false, msg = $"No existen productos cargados en la OC" });
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar actualizar los datos del producto recientemente editado. Id de Producto: {pId}" });
 			}
@@ -500,7 +502,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				var respuesta = _productoServicio.ConfirmarOrdenDeCompra(request, TokenCookie).Result;
 				return AnalizarRespuesta(respuesta, "La Orden de Compra se Confirmo con Éxito");
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar confirmar los datos de la orden de compra" });
 			}
@@ -521,7 +523,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				//return Json(new msgRes() { error = false, warn = false, msg = string.Empty, data = new TopeOC() { oc_limite_semanal = tope.oc_limite_semanal + Convert.ToDecimal(0.01), oc_emitidas = tope.oc_emitidas, oc_tope = tope.oc_tope } });
 				return Json(new msgRes() { error = false, warn = false, msg = string.Empty, data = new TopeOC() { oc_limite_semanal = tope.oc_limite_semanal, oc_emitidas = tope.oc_emitidas, oc_tope = tope.oc_tope } });
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar obtener los topes de OC. AdmId: {AdministracionId}" });
 			}
@@ -538,7 +540,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				
 				return Json(new { error = false, warn = false, msg = "Inicializacion correcta." });
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar inicializar los datos en Sesion - ORDENDECOMPRA" });
 			}
@@ -554,7 +556,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				CargarProveedoresFamiliaLista(ctaId, _cuentaServicio);
 				return Json(new { error = false, warn = false, msg = string.Empty });
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar obtener los datos de la familia de productos del proveedor: {ctaId}" });
 			}
@@ -570,7 +572,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				CargarOrdenesDeCompraLista(ctaId, _productoServicio);
 				return Json(new { error = false, warn = false, msg = string.Empty });
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar obtener los datos de las OC del proveedor: {ctaId}" });
 			}
@@ -592,7 +594,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					model.oc_compte = string.Empty;
 				return PartialView("_listaOcPendientes", model);
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return PartialView("_empty_view");
 			}
@@ -612,6 +614,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				BuscarFamiliaDesdeProveedorSeleccionado(CtaIdSelected);
 			}
+			ProveedorFamiliaLista ??= [];
 			var rub = ProveedorFamiliaLista.Where(x => x.pg_desc.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
 			var rubros = rub.Select(x => new ComboGenDto { Id = x.pg_id, Descripcion = x.pg_lista });
 			return Json(rubros);

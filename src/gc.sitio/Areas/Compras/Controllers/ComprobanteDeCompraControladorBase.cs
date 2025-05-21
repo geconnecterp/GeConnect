@@ -27,7 +27,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					return new List<ConceptoFacturadoDto>();
 				}
-				return JsonConvert.DeserializeObject<List<ConceptoFacturadoDto>>(txt); ;
+				return JsonConvert.DeserializeObject<List<ConceptoFacturadoDto>>(txt) ?? [];
 			}
 			set
 			{
@@ -46,7 +46,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					return new List<OtroTributoDto>();
 				}
-				return JsonConvert.DeserializeObject<List<OtroTributoDto>>(txt); ;
+				return JsonConvert.DeserializeObject<List<OtroTributoDto>>(txt) ?? [];
 			}
 			set
 			{
@@ -65,7 +65,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					return new List<OrdenDeCompraConceptoDto>();
 				}
-				return JsonConvert.DeserializeObject<List<OrdenDeCompraConceptoDto>>(txt); ;
+				return JsonConvert.DeserializeObject<List<OrdenDeCompraConceptoDto>>(txt) ?? [];
 			}
 			set
 			{
@@ -84,7 +84,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					return new List<RprAsociadosDto>();
 				}
-				return JsonConvert.DeserializeObject<List<RprAsociadosDto>>(txt); ;
+				return JsonConvert.DeserializeObject<List<RprAsociadosDto>>(txt) ?? [];
 			}
 			set
 			{
@@ -103,7 +103,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					return new List<NotasACuenta>();
 				}
-				return JsonConvert.DeserializeObject<List<NotasACuenta>>(txt); ;
+				return JsonConvert.DeserializeObject<List<NotasACuenta>>(txt) ?? [];
 			}
 			set
 			{
@@ -122,7 +122,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					return string.Empty;
 				}
-				return JsonConvert.DeserializeObject<string>(txt); ;
+				return JsonConvert.DeserializeObject<string>(txt) ?? string.Empty;
 			}
 			set
 			{

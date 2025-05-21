@@ -49,9 +49,10 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Index(bool actualizar = false)
+		//public async Task<IActionResult> Index(bool actualizar = false)
+		public IActionResult Index(bool actualizar = false)
 		{
-			MetadataGrid metadata;
+			//MetadataGrid metadata;
 
 			var auth = EstaAutenticado;
 			if (!auth.Item1 || auth.Item2 < DateTime.Now)
@@ -132,7 +133,8 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> BuscarMedioDePago(string insId)
+		//public async Task<IActionResult> BuscarMedioDePago(string insId)
+		public IActionResult BuscarMedioDePago(string insId)
 		{
 			RespuestaGenerica<EntidadBase> response = new();
 			try
@@ -167,7 +169,8 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> BuscarOpcionesCuotas(string insId)
+		//public async Task<IActionResult> BuscarOpcionesCuotas(string insId)
+		public IActionResult BuscarOpcionesCuotas(string insId)
 		{
 			RespuestaGenerica<EntidadBase> response = new();
 			try
@@ -196,7 +199,8 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> BuscarOpcionCuota(string insId, int cuota)
+		//public async Task<IActionResult> BuscarOpcionCuota(string insId, int cuota)
+		public IActionResult BuscarOpcionCuota(string insId, int cuota)
 		{
 			RespuestaGenerica<EntidadBase> response = new();
 			try
@@ -224,7 +228,8 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> BuscarCuentasFinYContable(string insId)
+		//public async Task<IActionResult> BuscarCuentasFinYContable(string insId)
+		public IActionResult BuscarCuentasFinYContable(string insId)
 		{
 			RespuestaGenerica<EntidadBase> response = new();
 			try
@@ -257,7 +262,8 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> BuscarCuentaFinYContable(string ctafId)
+		//public async Task<IActionResult> BuscarCuentaFinYContable(string ctafId)
+		public IActionResult BuscarCuentaFinYContable(string ctafId)
 		{
 			RespuestaGenerica<EntidadBase> response = new();
 			try
@@ -289,7 +295,8 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> BuscarPos(string insId)
+		//public async Task<IActionResult> BuscarPos(string insId)
+		public IActionResult BuscarPos(string insId)
 		{
 			RespuestaGenerica<EntidadBase> response = new();
 			try
@@ -321,7 +328,8 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> NuevoMedioDePago()
+		//public async Task<IActionResult> NuevoMedioDePago()
+		public IActionResult NuevoMedioDePago()
 		{
 			RespuestaGenerica<EntidadBase> response = new();
 			try
@@ -349,7 +357,8 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> NuevaOpcionCuota(string insId)
+		//public async Task<IActionResult> NuevaOpcionCuota(string insId)
+		public IActionResult NuevaOpcionCuota(string insId)
 		{
 			RespuestaGenerica<EntidadBase> response = new();
 			try
@@ -373,7 +382,8 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> NuevaCuentaFinYContable()
+		//public async Task<IActionResult> NuevaCuentaFinYContable()
+		public IActionResult NuevaCuentaFinYContable()
 		{
 			RespuestaGenerica<EntidadBase> response = new();
 			try
@@ -401,7 +411,8 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> NuevaPos()
+		//public async Task<IActionResult> NuevaPos()
+		public IActionResult NuevaPos()
 		{
 			RespuestaGenerica<EntidadBase> response = new();
 			try
@@ -472,7 +483,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 				else
 					return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return Json(new { error = true, msg = "Ha ocurrido un error al intentar actualizar la información." });
 			}
@@ -500,7 +511,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 				else
 					return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return Json(new { error = true, msg = "Ha ocurrido un error al intentar actualizar la información." });
 			}
@@ -528,7 +539,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 				else
 					return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return Json(new { error = true, msg = "Ha ocurrido un error al intentar actualizar la información." });
 			}
@@ -556,7 +567,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 				else
 					return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return Json(new { error = true, msg = "Ha ocurrido un error al intentar actualizar la información." });
 			}

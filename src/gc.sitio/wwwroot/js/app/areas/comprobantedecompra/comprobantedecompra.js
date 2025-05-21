@@ -80,6 +80,10 @@ function InicializaPantalla() {
 	$(document).on("change", "#Comprobante_fecha_compte", ControlaFechaCompteSeleccionada);
 	$(document).on("keyup", "#Comprobante_cm_compte_pto_vta", ControlaKeyUpComptePtoVta);
 	$(document).on("keyup", "#Comprobante_cm_compte_pto_nro", ControlaKeyUpCompteNro);
+	$(document).on("keyup", "#ConceptoFacturado_concepto", ControlaKeyUpConceptoFacturado_concepto);
+	$(document).on("keyup", "#ConceptoFacturado_subtotal", ControlaKeyUpConceptoFacturado_subtotal);
+	$(document).on("keyup", "#ConceptoFacturado_iva", ControlaKeyUpConceptoFacturado_iva);
+	//
 
 	$(".inputEditable").on("keypress", analizaEnterInput);
 	document.getElementById("Rel01").focus();
@@ -87,8 +91,26 @@ function InicializaPantalla() {
 	return true;
 }
 
+function ControlaKeyUpConceptoFacturado_iva(e) {
+	if (e.which == 13 || e.which == 109) {
+		$("#btnAgregar").trigger("focus");
+	}
+}
+
+function ControlaKeyUpConceptoFacturado_subtotal(e) {
+	if (e.which == 13 || e.which == 109) {
+		$("#ConceptoFacturado_iva").trigger("focus");
+	}
+}
+
+function ControlaKeyUpConceptoFacturado_concepto(e) {
+	if (e.which == 13 || e.which == 109) {
+		$("#listaIvaSit").trigger("focus");
+	}
+}
+
 function ControlaKeyUpComptePtoVta(e) {
-	if (e.which == 13 || e.which==109) {
+	if (e.which == 13 || e.which == 109) {
 		var aux = $("#Comprobante_cm_compte_pto_vta").inputmask('unmaskedvalue').padStart(4, '0');
 		$("#Comprobante_cm_compte_pto_vta").val(aux);
 		$("#Comprobante_cm_compte_pto_nro").trigger("focus");
@@ -200,14 +222,17 @@ function ObtenerAsociaciones() {
 		inputs.forEach(function (input) {
 			if (input.checked) {
 				alMenosUno = true;
-				pIds.push(input.id.substr(3, 16));
+				if (input.parentNode && input.parentNode.parentNode && input.parentNode.parentNode.childNodes && input.parentNode.parentNode.childNodes.length > 0) {
+					asociaciones.push({ tco_id: input.parentNode.parentNode.childNodes[13].innerText, cm_compte_rp: input.parentNode.parentNode.childNodes[11].innerText });
+				}
+				//pIds.push(input.id.substr(3, 16));
 			}
 		});
-		if (pIds.length > 0) {
-			for (var i = 0; i < pIds.length; i++) {
-				asociaciones.push({ tco_id: pIds[i].substr(13, 16), cm_compte_rp: pIds[i].substr(0, 13) });
-			}
-		}
+		//if (pIds.length > 0) {
+		//	for (var i = 0; i < pIds.length; i++) {
+		//		asociaciones.push({ tco_id: pIds[i].substr(13, 16), cm_compte_rp: pIds[i].substr(0, 13) });
+		//	}
+		//}
 	}
 	return asociaciones;
 }
@@ -973,6 +998,8 @@ function addInCellLostFocusHandler() {
 			var valor = $("#" + this.id).inputmask('unmaskedvalue');
 		}
 		if (actualiza) {
+			console.log("data-interaction:" + $(this).attr("data-interaction"));
+			idOtroTributoSeleccionadoFocusOut = $(this).attr("data-interaction");
 			ActualizarOtroTributo(this.id, valor);
 		}
 	});
@@ -993,7 +1020,8 @@ function ActualizarOtroTributo(id, val) {
 			//Actualizar valores en la grilla
 			$("#tbGridOtroTributo").find('tr').each(function (i, el) {
 				var td = $(this).find('td');
-				if (td.length > 0 && td[0].innerText !== undefined && td[0].innerText === idOtroTributoSeleccionado) {
+				if (td.length > 0 && td[0].innerText !== undefined && td[0].innerText === idOtroTributoSeleccionado && idOtroTributoSeleccionado == idOtroTributoSeleccionadoFocusOut) {
+					console.log("idOtroTributoSeleccionado: " + idOtroTributoSeleccionado);
 					$("#" + td[4].id).val(formatter.format(obj.data.importe));
 				}
 			});

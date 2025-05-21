@@ -26,7 +26,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					return new List<OrdenDeCompraConsultaDto>();
 				}
-				return JsonConvert.DeserializeObject<List<OrdenDeCompraConsultaDto>>(txt); ;
+				return JsonConvert.DeserializeObject<List<OrdenDeCompraConsultaDto>>(txt) ?? [];
 			}
 			set
 			{

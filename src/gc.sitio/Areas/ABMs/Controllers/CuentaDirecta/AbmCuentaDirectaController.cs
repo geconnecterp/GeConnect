@@ -40,9 +40,10 @@ namespace gc.sitio.Areas.ABMs.Controllers.CuentaDirecta
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Index(bool actualizar = false)
+		//public async Task<IActionResult> Index(bool actualizar = false)
+		public IActionResult Index(bool actualizar = false)
         {
-			MetadataGrid metadata;
+			//MetadataGrid metadata;
 
 			var auth = EstaAutenticado;
 			if (!auth.Item1 || auth.Item2 < DateTime.Now)
@@ -112,7 +113,8 @@ namespace gc.sitio.Areas.ABMs.Controllers.CuentaDirecta
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> BuscarCuentaDirecta(string ctagId, string tcgId)
+		//public async Task<IActionResult> BuscarCuentaDirecta(string ctagId, string tcgId)
+		public IActionResult BuscarCuentaDirecta(string ctagId, string tcgId)
 		{
 			RespuestaGenerica<EntidadBase> response = new();
 			try
@@ -145,7 +147,8 @@ namespace gc.sitio.Areas.ABMs.Controllers.CuentaDirecta
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> NuevaCuentaDirecta()
+		//public async Task<IActionResult> NuevaCuentaDirecta()
+		public IActionResult NuevaCuentaDirecta()
 		{
 			RespuestaGenerica<EntidadBase> response = new();
 			try
@@ -206,7 +209,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.CuentaDirecta
 				else
 					return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return Json(new { error = true, msg = "Ha ocurrido un error al intentar actualizar la información." });
 			}

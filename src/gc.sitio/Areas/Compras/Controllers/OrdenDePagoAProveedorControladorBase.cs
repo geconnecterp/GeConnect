@@ -27,7 +27,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					return string.Empty;
 				}
-				return JsonConvert.DeserializeObject<string>(txt); ;
+				return JsonConvert.DeserializeObject<string>(txt) ?? string.Empty;
 			}
 			set
 			{

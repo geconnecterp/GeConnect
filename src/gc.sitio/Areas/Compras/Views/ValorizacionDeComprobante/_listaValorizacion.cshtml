@@ -21,22 +21,25 @@
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var item in Model.ListaDatos)
+			@if (Model != null && Model.ListaDatos != null)
 			{
-				var nombre = "chk" + item.cm_compte;
-				<tr onclick="selectListaValorizacion(this)">
-					<td class="@Model.ObtenerClase(item.cm_compte_obs)">@Model.FormatearDato(item.cm_compte_obs, FormatDato.Ninguno)</td>
-					<td class="@Model.ObtenerClase(item.cm_no_gravado)">@Model.FormatearDato(item.cm_no_gravado, FormatDato.Monto)</td>
-					<td class="@Model.ObtenerClase(item.cm_exento)">@Model.FormatearDato(item.cm_exento, FormatDato.Monto)</td>
-					<td class="@Model.ObtenerClase(item.cm_gravado)">@Model.FormatearDato(item.cm_gravado, FormatDato.Monto)</td>
-					<td class="@Model.ObtenerClase(item.cm_iva)">@Model.FormatearDato(item.cm_iva, FormatDato.Monto)</td>
-					<td class="@Model.ObtenerClase(item.cm_ii)">@Model.FormatearDato(item.cm_ii, FormatDato.Monto)</td>
-					<td class="@Model.ObtenerClase(item.cm_percepciones)">@Model.FormatearDato(item.cm_percepciones, FormatDato.Monto)</td>
-					<td class="@Model.ObtenerClase(item.cm_otro_ng)">@Model.FormatearDato(item.cm_otro_ng, FormatDato.Monto)</td>
-					<td class="@Model.ObtenerClase(item.cm_total)">@Model.FormatearDato(item.cm_total, FormatDato.Monto)</td>
-					<td style="display:none;">@item.resultado</td>
-					<td style="display:none;">@item.resultado_msj</td>
-				</tr>
+				@foreach (var item in Model.ListaDatos)
+				{
+					var nombre = "chk" + item.cm_compte;
+					<tr onclick="selectListaValorizacion(this)">
+						<td class="@Model.ObtenerClase(item.cm_compte_obs)">@Model.FormatearDato(item.cm_compte_obs, FormatDato.Ninguno)</td>
+						<td class="@Model.ObtenerClase(item.cm_no_gravado)">@Model.FormatearDato(item.cm_no_gravado, FormatDato.Monto)</td>
+						<td class="@Model.ObtenerClase(item.cm_exento)">@Model.FormatearDato(item.cm_exento, FormatDato.Monto)</td>
+						<td class="@Model.ObtenerClase(item.cm_gravado)">@Model.FormatearDato(item.cm_gravado, FormatDato.Monto)</td>
+						<td class="@Model.ObtenerClase(item.cm_iva)">@Model.FormatearDato(item.cm_iva, FormatDato.Monto)</td>
+						<td class="@Model.ObtenerClase(item.cm_ii)">@Model.FormatearDato(item.cm_ii, FormatDato.Monto)</td>
+						<td class="@Model.ObtenerClase(item.cm_percepciones)">@Model.FormatearDato(item.cm_percepciones, FormatDato.Monto)</td>
+						<td class="@Model.ObtenerClase(item.cm_otro_ng)">@Model.FormatearDato(item.cm_otro_ng, FormatDato.Monto)</td>
+						<td class="@Model.ObtenerClase(item.cm_total)">@Model.FormatearDato(item.cm_total, FormatDato.Monto)</td>
+						<td style="display:none;">@item.resultado</td>
+						<td style="display:none;">@item.resultado_msj</td>
+					</tr>
+				}
 			}
 		</tbody>
 	</table>

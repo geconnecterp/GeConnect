@@ -29,7 +29,10 @@ namespace gc.sitio.Areas.ABMs.Controllers.Zona
             _abmveSv = abmveSv;
             _abmSv = abmSv;
         }
-        public async Task<IActionResult> Index(bool actualizar)
+
+		//public async Task<IActionResult> Index(bool actualizar)
+
+		public IActionResult Index(bool actualizar)
         {
 
             try

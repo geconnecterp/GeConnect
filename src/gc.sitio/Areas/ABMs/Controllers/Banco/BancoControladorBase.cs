@@ -5,7 +5,6 @@ using gc.sitio.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using static gc.sitio.Areas.ABMs.Controllers.MedioDePago.MedioDePagoControladorBase;
 
 namespace gc.sitio.Areas.ABMs.Controllers.Banco
 {

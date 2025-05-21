@@ -27,27 +27,30 @@
 				</tr>
 			</thead>
 			<tbody>
-				@foreach (var item in Model.GrillaDetalle.ListaDatos)
+				@if (Model != null && Model.GrillaDetalle != null && Model.GrillaDetalle.ListaDatos != null)
 				{
-					<tr onclick="selectListaOCDetalleRow(this)">
-						<td class="align-center tiny-row">@item.p_id</td>
-						<td class="align-left tiny-row">@item.p_desc</td>
-						<td class="align-center tiny-row">@item.p_id_prov</td>
-						<td class="align-center tiny-row">@item.ocd_unidad_pres</td>
-						<td class="align-right tiny-row">@item.ocd_plista</td>
-						<td class="align-center tiny-row">@item.ocd_dto1</td>
-						<td class="align-center tiny-row">@item.ocd_dto2</td>
-						<td class="align-center tiny-row">@item.ocd_dto3</td>
-						<td class="align-center tiny-row">@item.ocd_dto4</td>
-						<td class="align-center tiny-row">@item.ocd_dto_pa</td>
-						<td class="align-center tiny-row">@item.ocd_bultos</td>
-						<td class="align-center tiny-row">@item.ocd_unidad_x_bulto</td>
-						<td class="align-center tiny-row">@item.ocd_boni</td>
-						<td class="align-center tiny-row">@item.ocd_cantidad</td>
-						<td class="align-right tiny-row">@item.ocd_pcosto</td>
-						<td class="align-right tiny-row">@item.ocd_pcosto</td>
-						<td class="align-right tiny-row">@item.ocd_pcosto_tot</td>
-					</tr>
+					@foreach (var item in Model.GrillaDetalle.ListaDatos)
+					{
+						<tr onclick="selectListaOCDetalleRow(this)">
+							<td class="align-center tiny-row">@item.p_id</td>
+							<td class="align-left tiny-row">@item.p_desc</td>
+							<td class="align-center tiny-row">@item.p_id_prov</td>
+							<td class="align-center tiny-row">@item.ocd_unidad_pres</td>
+							<td class="align-right tiny-row">@item.ocd_plista</td>
+							<td class="align-center tiny-row">@item.ocd_dto1</td>
+							<td class="align-center tiny-row">@item.ocd_dto2</td>
+							<td class="align-center tiny-row">@item.ocd_dto3</td>
+							<td class="align-center tiny-row">@item.ocd_dto4</td>
+							<td class="align-center tiny-row">@item.ocd_dto_pa</td>
+							<td class="align-center tiny-row">@item.ocd_bultos</td>
+							<td class="align-center tiny-row">@item.ocd_unidad_x_bulto</td>
+							<td class="align-center tiny-row">@item.ocd_boni</td>
+							<td class="align-center tiny-row">@item.ocd_cantidad</td>
+							<td class="align-right tiny-row">@item.ocd_pcosto</td>
+							<td class="align-right tiny-row">@item.ocd_pcosto</td>
+							<td class="align-right tiny-row">@item.ocd_pcosto_tot</td>
+						</tr>
+					}
 				}
 			</tbody>
 		</table>
@@ -59,7 +62,7 @@
 			<div class="input-group input-group-sm">
 				<span class="input-group-text fixed-lbl-for-abm-70">Entrega</span>
 				@Html.TextBoxFor(t => t.FechaEntrega, "{0:yyyy-MM-dd}", new { disabled = "disabled", type = "date", @class = "form-control activable" })
-				<input type="text" asp-for="SucursalEntrega" class="form-control activable inputEditable" disabled/>
+				<input type="text" asp-for="SucursalEntrega" class="form-control activable inputEditable" disabled />
 			</div>
 		</div>
 		<div class="row mt-1">
@@ -79,7 +82,7 @@
 		<div class="row mt-1">
 			<div class="input-group input-group-sm">
 				<span class="input-group-text fixed-lbl-for-abm-10">Observaciones:</span>
-				<input type="text" asp-for="Observaciones" class="form-control activable inputEditable" disabled/>
+				<input type="text" asp-for="Observaciones" class="form-control activable inputEditable" disabled />
 			</div>
 		</div>
 	</div>
@@ -110,12 +113,15 @@
 								</tr>
 							</thead>
 							<tbody>
-								@foreach (var item in Model.ResumenGrilla.ListaDatos)
+								@if (Model != null && Model.ResumenGrilla != null && Model.ResumenGrilla.ListaDatos != null)
 								{
-									<tr>
-										<td class="align-left">@item.Concepto</td>
-										<td class="align-right font-bold">@item.Importe</td>
-									</tr>
+									@foreach (var item in Model.ResumenGrilla.ListaDatos)
+									{
+										<tr>
+											<td class="align-left">@item.Concepto</td>
+											<td class="align-right font-bold">@item.Importe</td>
+										</tr>
+									}
 								}
 							</tbody>
 						</table>
