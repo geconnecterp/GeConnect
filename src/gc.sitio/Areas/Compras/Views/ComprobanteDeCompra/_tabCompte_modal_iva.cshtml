@@ -5,8 +5,8 @@
 }
 <style>
 	input, label {
-		display: block;
-		float: left;
+	display: block;
+	float: left;
 	}
 </style>
 <div class="modal-header">
@@ -36,10 +36,13 @@
 					<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">Subtotal: </span>
 					<input type="text" asp-for="ConceptoFacturado.subtotal" class="form-control activable inputEditable" />
 				</div>
-				<div class="col-1 input-group-sm" style="float:left;margin-right:5px;">
-					<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">IVA: </span>
-					<input type="text" asp-for="ConceptoFacturado.iva" class="form-control activable inputEditable" />
-				</div>
+				@if (Model.EsGravado)
+				{
+					<div class="col-1 input-group-sm" style="float:left;margin-right:5px;">
+						<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">IVA: </span>
+						<input type="text" asp-for="ConceptoFacturado.iva" class="form-control activable inputEditable" />
+					</div>
+				}
 				<div class="col-1 input-group-sm" style="float:left;margin-right:5px;">
 					<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">Subtotal+IVA: </span>
 					<input type="text" asp-for="ConceptoFacturado.total" class="form-control activable" disabled/>
