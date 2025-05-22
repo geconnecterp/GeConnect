@@ -15,12 +15,14 @@
         var div = $("#divPaginacion");
         presentaPaginacion(div);
     });
-
-    $(document).on("click", "#btnCancelarAsiento", function () {
-        // Oculta el panel del asiento
-        $("#divpanel01").empty(); // O usa .hide() si prefieres
-        InicializaVistaAsientos();
+    $("#btnCancel").on("click", function () {
+        window.location.href = homeAsientosUrl;
     });
+    //$(document).on("click", "#btnCancelarAsiento", function () {
+    //    // Oculta el panel del asiento
+    //    $("#divpanel01").empty(); // O usa .hide() si prefieres
+    //    InicializaVistaAsientos();
+    //});
 
     //**** EVENTOS PARA CONTROLAR LOS BOTONES DE OPERACION
     $("#btnAbmNuevo").on("click", ejecutarAlta);
@@ -112,29 +114,37 @@ function activarControles(act) {
     // Se invierte el valor porque 'disabled=true' significa desactivar
     // y queremos que act=true signifique habilitar controles
     const disabled = !act;
-    
+
     // Header del asiento
     $("#Dia_tipo").prop("disabled", disabled);
     // El campo dia_movi (Nº Mov) siempre debe estar en modo solo lectura
     // ya que es la PK generada por la base de datos
     $(".card-header input.form-control:not(:first)").prop("readonly", disabled);
-    
+
     // Añadir/eliminar líneas y botones operativos
     if (act) {
         // Si estamos activando los controles, añadimos botones de edición
         if ($("#btnAddLinea").length === 0) {
             // Añade botón para agregar líneas si no existe
-            const addButton = `
-                <button id="btnAddLinea" class="btn btn-sm btn-success m-2">
-                    <i class="bx bx-plus"></i> Agregar línea
-                </button>`;
-            $(".card-header").append(addButton);
+            //const addButton = `
+            //    <button id="btnAddLinea" class="btn btn-sm btn-success m-2">
+            //        <i class="bx bx-plus"></i> Agregar línea
+            //    </button>`;
+            //$(".card-header").append(addButton);
 
             // Si es nuevo o modificación, permitir editar líneas del asiento
             $("#tbAsientoDetalle thead tr").append(`<th style="width: 5%">Acciones</th>`);
+
+            // Añadir un botón + en la primera celda de la última columna del thead
+            $("#tbAsientoDetalle thead th:last-child").html(`
+                <button id="btnAddLinea" class="btn btn-sm btn-success float-end" title="Nueva Linea">
+                    <i class="bx bx-plus"></i>
+                </button>
+            `);
+
             $("#tbAsientoDetalle tbody tr").append(`
                 <td class="text-center">
-                    <button class="btn btn-sm btn-danger btn-eliminar-linea">
+                    <button class="btn btn-sm btn-danger btn-eliminar-linea" title="Eliminar Linea">
                         <i class="bx bx-trash"></i>
                     </button>
                 </td>
@@ -143,15 +153,15 @@ function activarControles(act) {
             // Mostrar botones de búsqueda de cuenta
             $("#tbAsientoDetalle tbody .btn-buscar-cuenta").show();
 
-            
+
             // Agrega funcionalidad a los nuevos botones
             configurarEventosEdicion();
         }
-        
+
         // Habilitar edición de datos de líneas
         $("#tbAsientoDetalle tbody").addClass("editable-grid");
         $("#tbAsientoDetalle tbody td:not(:last-child)").attr("contenteditable", true);
-        
+
         // Configurar máscaras y validaciones para campos editables
         configurarCamposEditables();
     } else {
@@ -167,7 +177,7 @@ function activarControles(act) {
         // Ocultar botones de búsqueda de cuenta
         $("#tbAsientoDetalle tbody .btn-buscar-cuenta").hide();
     }
-    
+
     // Control de botones de acción del footer
     $("#btnPasarContabilidad, #btnImprimir").prop("disabled", act); // Se deshabilitan al editar
 }
@@ -177,7 +187,7 @@ function activarControles(act) {
  */
 function configurarEventosEdicion() {
     // Evento para agregar nueva línea
-    $(document).on("click", "#btnAddLinea", function() {
+    $(document).on("click", "#btnAddLinea", function () {
         const nuevaLinea = `
                 <tr class="">
                     <td contenteditable="true">
@@ -202,9 +212,9 @@ function configurarEventosEdicion() {
         $("#tbAsientoDetalle tbody").append(nuevaLinea);
         actualizarTotales();
     });
-    
+
     // Evento para eliminar línea
-    $(document).on("click", ".btn-eliminar-linea", function() {
+    $(document).on("click", ".btn-eliminar-linea", function () {
         $(this).closest("tr").remove();
         actualizarTotales();
     });
@@ -224,29 +234,41 @@ function configurarCamposEditables() {
         $(this).text(valorLimpio);
 
         // Seleccionar todo el contenido
-        document.execCommand('selectAll', false, null);
+        // En lugar de:
+        // document.execCommand('selectAll', false, null);
+
+        // Usar este enfoque moderno:
+        // Seleccionar todo el contenido
+        const range = document.createRange();
+        range.selectNodeContents(this);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
 
         // Agregar una clase para identificar que está siendo editado
         $(this).addClass("editando-importe");
     });
 
-    // Permitir solo entrada numérica y punto/coma decimal
-    $("#tbAsientoDetalle tbody").on("keypress", "td.text-end", function (e) {
-        // Permitir: números, punto, coma y teclas de control
-        const charCode = (e.which) ? e.which : e.keyCode;
 
-        // Permitir backspace, tab, enter, etc.
-        if (e.ctrlKey || e.altKey || e.metaKey || charCode < 32) {
+    // En lugar de:
+    // const charCode = (e.which) ? e.which : e.keyCode;
+
+    // Usar e.key para el manejo moderno de teclas:
+    $("#tbAsientoDetalle tbody").on("keypress", "td.text-end", function (e) {
+        // Permitir teclas de control (flechas, backspace, etc.)
+        if (e.ctrlKey || e.altKey || e.metaKey) {
             return true;
         }
 
         // Permitir números (0-9)
-        if (charCode >= 48 && charCode <= 57) {
+        if (/^[0-9]$/.test(e.key)) {
             return true;
         }
 
         // Permitir punto o coma (solo uno)
-        if ((charCode === 44 || charCode === 46) && $(this).text().indexOf('.') === -1 && $(this).text().indexOf(',') === -1) {
+        if ((e.key === ',' || e.key === '.') &&
+            $(this).text().indexOf('.') === -1 &&
+            $(this).text().indexOf(',') === -1) {
             return true;
         }
 
@@ -254,6 +276,31 @@ function configurarCamposEditables() {
         e.preventDefault();
         return false;
     });
+
+    //// Permitir solo entrada numérica y punto/coma decimal
+    //$("#tbAsientoDetalle tbody").on("keypress", "td.text-end", function (e) {
+    //    // Permitir: números, punto, coma y teclas de control
+    //    const charCode = (e.which) ? e.which : e.keyCode;
+
+    //    // Permitir backspace, tab, enter, etc.
+    //    if (e.ctrlKey || e.altKey || e.metaKey || charCode < 32) {
+    //        return true;
+    //    }
+
+    //    // Permitir números (0-9)
+    //    if (charCode >= 48 && charCode <= 57) {
+    //        return true;
+    //    }
+
+    //    // Permitir punto o coma (solo uno)
+    //    if ((charCode === 44 || charCode === 46) && $(this).text().indexOf('.') === -1 && $(this).text().indexOf(',') === -1) {
+    //        return true;
+    //    }
+
+    //    // Bloquear cualquier otra entrada
+    //    e.preventDefault();
+    //    return false;
+    //});
 
     // Al perder el foco, formatear el número
     $("#tbAsientoDetalle tbody").on("blur", "td.text-end", function () {
@@ -330,26 +377,18 @@ function actualizarTotales() {
         totalHaber += haber;
     });
 
-    // Formatear manualmente el total del Debe
-    let formateadoDebe = "";
-    {
-        const parteEntera = Math.floor(totalDebe);
-        const parteDecimal = Math.round((totalDebe - parteEntera) * 100);
-        formateadoDebe = "$ " + parteEntera.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") +
-            "," + (parteDecimal < 10 ? "0" + parteDecimal : parteDecimal);
-    }
+    // Formatear los totales usando Intl.NumberFormat
+    const formatoMoneda = new Intl.NumberFormat('es-AR', {
+        style: 'currency',
+        currency: 'ARS',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
 
-    // Formatear manualmente el total del Haber
-    let formateadoHaber = "";
-    {
-        const parteEntera = Math.floor(totalHaber);
-        const parteDecimal = Math.round((totalHaber - parteEntera) * 100);
-        formateadoHaber = "$ " + parteEntera.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") +
-            "," + (parteDecimal < 10 ? "0" + parteDecimal : parteDecimal);
-    }
+    const formateadoDebe = formatoMoneda.format(totalDebe);
+    const formateadoHaber = formatoMoneda.format(totalHaber);
 
     // Actualizar los totales en el pie de tabla
-    //TENIA nth-child(4 y 5) correspondia 2 y 3 ya que la primer celda es colspan de 3 columnas
     $("#tbAsientoDetalle tfoot tr:first-child td:nth-child(2)").text(formateadoDebe);
     $("#tbAsientoDetalle tfoot tr:first-child td:nth-child(3)").text(formateadoHaber);
 
@@ -359,15 +398,7 @@ function actualizarTotales() {
 
     // Si existe una fila de diferencia, actualizarla; si no, crearla si es necesario
     let filaDiferencia = $("#tbAsientoDetalle tfoot tr:nth-child(2)");
-
-    // Formatear manualmente la diferencia
-    let formateadoDiferencia = "";
-    {
-        const parteEntera = Math.floor(diferencia);
-        const parteDecimal = Math.round((diferencia - parteEntera) * 100);
-        formateadoDiferencia = "$ " + parteEntera.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") +
-            "," + (parteDecimal < 10 ? "0" + parteDecimal : parteDecimal);
-    }
+    const formateadoDiferencia = formatoMoneda.format(diferencia);
 
     if (hayDiferencia) {
         if (filaDiferencia.length === 0) {
@@ -403,94 +434,227 @@ function actualizarTotales() {
 /**
  * Función para formatear decimales al cargar el asiento
  */
+// Modificación a la función formatearDecimalesAsiento() para hacerla más robusta
 function formatearDecimalesAsiento() {
-    // Aplica formato a las celdas con valores decimales en la tabla de asientos
-    $("#tbAsientoDetalle td.text-end").each(function () {
+    // Agrega este log temporal para verificar los valores que recibe la función
+    console.log("Valores originales en formatearDecimalesAsiento:",
+        $("#tbAsientoDetalle td.text-end").map(function () {
+            return $(this).text().trim();
+        }).get());
+
+    // Aplica formato a las celdas con valores decimales que NO han sido formateadas aún
+    $("#tbAsientoDetalle td.text-end:not([data-formatting-done='true'])").each(function () {
         const valor = $(this).text().trim();
-        if (valor !== "" && !isNaN(parseFloat(valor.replace(",", ".")))) {
-            // Convertir a número
-            const numeroDecimal = parseFloat(valor.replace(",", "."));
+        if (valor !== "") {
+            try {
+                // Primero limpia el valor eliminando formato actual
+                const valorLimpio = valor
+                    .replace(/[$\s]/g, "")       // Quitar $ y espacios
+                    .replace(/\./g, "")          // Quitar puntos de miles
+                    .replace(",", ".");          // Reemplazar coma decimal por punto
 
-            // Formatear manualmente
-            const parteEntera = Math.floor(numeroDecimal);
-            const parteDecimal = Math.round((numeroDecimal - parteEntera) * 100);
+                // Convertir a número - si no es válido, usar 0
+                const numeroDecimal = !isNaN(parseFloat(valorLimpio)) ? parseFloat(valorLimpio) : 0;
 
-            // Construir cadena con separador de miles y decimales
-            const formateado = "$ " + parteEntera.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") +
-                "," + (parteDecimal < 10 ? "0" + parteDecimal : parteDecimal);
+                // Usar Intl.NumberFormat para formato consistente
+                const formateado = new Intl.NumberFormat('es-AR', {
+                    style: 'currency',
+                    currency: 'ARS',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }).format(numeroDecimal);
 
-            $(this).text(formateado);
+                // Aplicar el formato
+                $(this).text(formateado);
+
+                // Marcar como formateado
+                $(this).attr("data-formatting-done", "true");
+            } catch (e) {
+                console.error("Error al formatear:", valor, e);
+                $(this).text("$ 0,00");
+            }
         }
     });
 
-    // También formatea los totales en el pie de tabla
-    $("tfoot td.text-end").each(function () {
+    // Similar para los totales en el pie de tabla 
+    $("tfoot td.text-end:not([data-formatting-done='true'])").each(function () {
         const valor = $(this).contents().filter(function () {
             return this.nodeType === 3; // Nodo de texto
         }).text().trim();
 
-        if (valor !== "" && !isNaN(parseFloat(valor.replace(",", ".")))) {
-            // Convertir a número
-            const numeroDecimal = parseFloat(valor.replace(",", "."));
+        if (valor !== "") {
+            try {
+                // Primero limpia el valor eliminando formato actual
+                const valorLimpio = valor
+                    .replace(/[$\s]/g, "")       // Quitar $ y espacios
+                    .replace(/\./g, "")          // Quitar puntos de miles
+                    .replace(",", ".");          // Reemplazar coma decimal por punto
 
-            // Formatear manualmente
-            const parteEntera = Math.floor(numeroDecimal);
-            const parteDecimal = Math.round((numeroDecimal - parteEntera) * 100);
+                // Convertir a número - si no es válido, usar 0
+                const numeroDecimal = !isNaN(parseFloat(valorLimpio)) ? parseFloat(valorLimpio) : 0;
 
-            // Construir cadena con separador de miles y decimales
-            const formateado = "$ " + parteEntera.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") +
-                "," + (parteDecimal < 10 ? "0" + parteDecimal : parteDecimal);
+                // Usar Intl.NumberFormat para formato consistente
+                const formateado = new Intl.NumberFormat('es-AR', {
+                    style: 'currency',
+                    currency: 'ARS',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }).format(numeroDecimal);
 
-            $(this).contents().filter(function () {
-                return this.nodeType === 3; // Reemplaza solo el nodo de texto
-            }).replaceWith(formateado);
+                // Aplicar el formato - reemplazando solo el nodo de texto
+                $(this).contents().filter(function () {
+                    return this.nodeType === 3;
+                }).replaceWith(formateado);
+
+                // Marcar como formateado
+                $(this).attr("data-formatting-done", "true");
+            } catch (e) {
+                console.error("Error al formatear:", valor, e);
+                $(this).contents().filter(function () {
+                    return this.nodeType === 3;
+                }).replaceWith("$ 0,00");
+            }
         }
     });
 }
-
 
 function confirmarOperacionAsiento() {
 
 }
 
 
-//*** FIN */
-function InicializaVistaAsientos() {
+/**
+ * Inicializa la vista de asientos y configura los componentes
+ * @param {any} e - Evento opcional
+ */
+function InicializaVistaAsientos(e) {
+    // Si NO es la primera ejecución y no hay acción pendiente, limpiar y regresar
+    if (!primerArranque && accion === "") {
+        // Oculta el panel del asiento
+        $("#divpanel01").empty();
 
-    // Inicialización: Deshabilitar componentes si los checkboxes no están marcados
+        // Configuración de componentes
+        configurarComponentesIniciales();
+
+        // Mostrar el filtro si no hay datos en la grilla
+        mostrarFiltroSiNecesario();
+
+        // Configurar botones y grilla
+        accionBotones(AbmAction.CANCEL, "", true); // Usar tercer parámetro para mantener el botón cancelar
+        removerSeleccion();
+        activarGrilla(Grids.GridAsiento);
+
+        CerrarWaiting();
+        return; // Importante: salir de la función para evitar recursión
+    }
+
+    // Primera ejecución o acción pendiente
+    primerArranque = false; // Marcar que ya no es la primera ejecución
+
+    // Configuración de componentes
+    configurarComponentesIniciales();
+
+    // Mostrar el filtro si no hay datos en la grilla
+    mostrarFiltroSiNecesario();
+
+    // Configurar botones y grilla
+    accionBotones(AbmAction.CANCEL, "", true); // Usar tercer parámetro para mantener el botón cancelar
+    removerSeleccion();
+    activarGrilla(Grids.GridAsiento);
+
+    CerrarWaiting();
+}
+
+/**
+ * Configura los componentes iniciales de la vista
+ */
+function configurarComponentesIniciales() {
+    // Configurar checkbox de ejercicio según el modo
     if (typeof asientoTemporal !== 'undefined' && asientoTemporal === true) {
-        // Si está en modo temporal, no ejecutary desactivar el checkbox
         $('#chkEjercicio').prop('checked', true).prop('disabled', true);
         $("#Eje_nro").prop("disabled", true);
-    }
-    else {
+    } else {
         toggleComponent('chkEjercicio', '#Eje_nro');
     }
 
+    // Configurar otros componentes
     toggleComponent('Movi', '#Movi_like');
     toggleComponent('Usu', '#Usu_like');
     toggleComponent('Tipo', '#Tipo_like');
     toggleComponent('Rango', 'input[name="Desde"]');
     toggleComponent('Rango', 'input[name="Hasta"]');
+}
 
-    grilla = Grids.GridAsiento;
-
+/**
+ * Muestra el filtro si la grilla no tiene datos
+ */
+function mostrarFiltroSiNecesario() {
     if ($("#divDetalle").is(":visible")) {
         $("#divDetalle").collapse("hide");
     }
-    nng = "#" + grilla;
-    tb = $(nng + " tbody tr");
+
+    var nng = "#" + Grids.GridAsiento;
+    var tb = $(nng + " tbody tr");
     if (tb.length === 0) {
         $("#divFiltro").collapse("show");
     }
-    accionBotones(AbmAction.CANCEL);
-    $("#" + grilla + " tbody tr").each(function (index) {
+}
+
+/**
+ * Remueve la selección de todos los registros de la grilla
+ */
+function removerSeleccion() {
+    $("#" + Grids.GridAsiento + " tbody tr").each(function (index) {
         $(this).removeClass("selectedEdit-row");
     });
-
-    activarGrilla(grilla);
-    CerrarWaiting();
 }
+
+//function InicializaVistaAsientos(e) {
+//    if (accion === "" && primerArranque === false) {
+//        // Oculta el panel del asiento
+//        $("#divpanel01").empty(); // O usa .hide() si prefieres
+//        InicializaVistaAsientos();
+//    }
+//    else {
+//        //variable que me permite diferenciar el arranque de la ejecucion normal.
+//        primerArranque = false;
+//        // Inicialización: Deshabilitar componentes si los checkboxes no están marcados
+//        if (typeof asientoTemporal !== 'undefined' && asientoTemporal === true) {
+//            // Si está en modo temporal, no ejecutary desactivar el checkbox
+//            $('#chkEjercicio').prop('checked', true).prop('disabled', true);
+//            $("#Eje_nro").prop("disabled", true);
+//        }
+//        else {
+//            toggleComponent('chkEjercicio', '#Eje_nro');
+//        }
+
+//        toggleComponent('Movi', '#Movi_like');
+//        toggleComponent('Usu', '#Usu_like');
+//        toggleComponent('Tipo', '#Tipo_like');
+//        toggleComponent('Rango', 'input[name="Desde"]');
+//        toggleComponent('Rango', 'input[name="Hasta"]');
+
+//        grilla = Grids.GridAsiento;
+
+//        if ($("#divDetalle").is(":visible")) {
+//            $("#divDetalle").collapse("hide");
+//        }
+//        nng = "#" + grilla;
+//        tb = $(nng + " tbody tr");
+//        if (tb.length === 0) {
+//            $("#divFiltro").collapse("show");
+//        }
+//        /** permito con el true final dejar que el boton cancelar este siempre visible */
+//        accionBotones(AbmAction.CANCEL,"",true);
+
+//        $("#" + grilla + " tbody tr").each(function (index) {
+//            $(this).removeClass("selectedEdit-row");
+//        });
+
+//        activarGrilla(grilla);
+//        CerrarWaiting();
+//    }
+//}
 function ejecutaDblClickGrid1(x) {
     AbrirWaiting("Espere mientras se busca el Asiento solicitado...");
     selectAsientoDbl(x, Grids.GridAsiento);
@@ -520,6 +684,9 @@ function buscarAsiento(data) {
     PostGenHtml(data, buscarAsientoUrl, function (obj) {
         $("#divpanel01").html(obj);
 
+        // Marcar los elementos para evitar doble formateo
+        $("#tbAsientoDetalle td.text-end").attr("data-formatting-done", "true");
+
         // Aplica formato a los decimales
         formatearDecimalesAsiento();
 
@@ -534,7 +701,8 @@ function buscarAsiento(data) {
     });
 }
 
-function buscarAsientos(pagina) {
+
+function buscarAsientos(pag) {
     AbrirWaiting();
     //desactivamos los botones de acción
     activarBotones2(false);
@@ -622,43 +790,43 @@ function toggleComponent(checkboxId, componentSelector) {
     }
 }
 
-function formatearDecimalesAsiento() {
-    // Aplica formato a las celdas con valores decimales en la tabla de asientos
-    $("#tbAsientoDetalle td.text-end").each(function () {
-        const valor = $(this).text().trim();
-        if (valor !== "" && !isNaN(parseFloat(valor.replace(",", ".")))) {
-            const formateado = Inputmask.format(valor, {
-                alias: "numeric",
-                groupSeparator: ".",
-                radixPoint: ",",
-                digits: 2,
-                digitsOptional: false,
-                autoGroup: true,
-                prefix: "$ " // Agregamos el signo peso argentino con un espacio
-            });
-            $(this).text(formateado);
-        }
-    });
+//function formatearDecimalesAsiento() {
+//    // Aplica formato a las celdas con valores decimales en la tabla de asientos
+//    $("#tbAsientoDetalle td.text-end").each(function () {
+//        const valor = $(this).text().trim();
+//        if (valor !== "" && !isNaN(parseFloat(valor.replace(",", ".")))) {
+//            const formateado = Inputmask.format(valor, {
+//                alias: "numeric",
+//                groupSeparator: ".",
+//                radixPoint: ",",
+//                digits: 2,
+//                digitsOptional: false,
+//                autoGroup: true,
+//                prefix: "$ " // Agregamos el signo peso argentino con un espacio
+//            });
+//            $(this).text(formateado);
+//        }
+//    });
 
-    // También formatea los totales en el pie de tabla
-    $("tfoot td.text-end").each(function () {
-        const valor = $(this).contents().filter(function () {
-            return this.nodeType === 3; // Nodo de texto
-        }).text().trim();
+//    // También formatea los totales en el pie de tabla
+//    $("tfoot td.text-end").each(function () {
+//        const valor = $(this).contents().filter(function () {
+//            return this.nodeType === 3; // Nodo de texto
+//        }).text().trim();
 
-        if (valor !== "" && !isNaN(parseFloat(valor.replace(",", ".")))) {
-            const formateado = Inputmask.format(valor, {
-                alias: "numeric",
-                groupSeparator: ".",
-                radixPoint: ",",
-                digits: 2,
-                digitsOptional: false,
-                autoGroup: true,
-                prefix: "$ " // Agregamos el signo peso argentino con un espacio
-            });
-            $(this).contents().filter(function () {
-                return this.nodeType === 3; // Reemplaza solo el nodo de texto
-            }).replaceWith(formateado);
-        }
-    });
-}
+//        if (valor !== "" && !isNaN(parseFloat(valor.replace(",", ".")))) {
+//            const formateado = Inputmask.format(valor, {
+//                alias: "numeric",
+//                groupSeparator: ".",
+//                radixPoint: ",",
+//                digits: 2,
+//                digitsOptional: false,
+//                autoGroup: true,
+//                prefix: "$ " // Agregamos el signo peso argentino con un espacio
+//            });
+//            $(this).contents().filter(function () {
+//                return this.nodeType === 3; // Reemplaza solo el nodo de texto
+//            }).replaceWith(formateado);
+//        }
+//    });
+//}

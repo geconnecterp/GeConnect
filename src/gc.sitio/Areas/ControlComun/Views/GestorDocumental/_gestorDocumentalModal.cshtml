@@ -1,0 +1,247 @@
+﻿@model gc.infraestructura.ViewModels.DocumentManagerViewModel
+
+<div class="modal fade" id="gestorDocumentalModal" tabindex="-1" aria-labelledby="gestorDocumentalModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="gestorDocumentalModalLabel">
+                    <i class="bx bx-file me-2"></i>Gestor Documental - @Model.Titulo
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <!-- Árbol de documentos (1/3) -->
+                    <div class="col-md-4 border-end">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">Documentos Disponibles</h6>
+                            </div>
+                            <div class="card-body p-2">
+                                <!-- Contenedor del árbol SIN clases Bootstrap de layout -->
+                                <div id="docsTreeContainer" style="max-height: 500px; overflow:auto;">
+                                    <!-- Aquí se cargará el árbol jsTree -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pestañas de acciones (2/3) -->
+                    <div class="col-md-8">
+                        <ul class="nav nav-tabs" id="docActionTabs" role="tablist">
+                            @if (Model.ShowPrintOption)
+                            {
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="print-tab" data-bs-toggle="tab" data-bs-target="#print-tab-pane"
+                                            type="button" role="tab" aria-controls="print-tab-pane" aria-selected="true">
+                                        <i class="bx bx-printer me-1"></i>Imprimir
+                                    </button>
+                                </li>
+                            }
+                            @if (Model.ShowExportOption)
+                            {
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link @(!Model.ShowPrintOption ? "active" : "")" id="export-tab" data-bs-toggle="tab"
+                                            data-bs-target="#export-tab-pane" type="button" role="tab"
+                                            aria-controls="export-tab-pane" aria-selected="@(!Model.ShowPrintOption)">
+                                        <i class="bx bx-export me-1"></i>Exportar
+                                    </button>
+                                </li>
+                            }
+                            @if (Model.ShowEmailOption)
+                            {
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link @(!Model.ShowPrintOption && !Model.ShowExportOption ? "active" : "")"
+                                            id="email-tab" data-bs-toggle="tab" data-bs-target="#email-tab-pane"
+                                            type="button" role="tab" aria-controls="email-tab-pane"
+                                            aria-selected="@(!Model.ShowPrintOption && !Model.ShowExportOption)">
+                                        <i class="bx bx-envelope me-1"></i>Email
+                                    </button>
+                                </li>
+                            }
+                            @if (Model.ShowWhatsAppOption)
+                            {
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link @(!Model.ShowPrintOption && !Model.ShowExportOption && !Model.ShowEmailOption ? "active" : "")"
+                                            id="whatsapp-tab" data-bs-toggle="tab" data-bs-target="#whatsapp-tab-pane"
+                                            type="button" role="tab" aria-controls="whatsapp-tab-pane"
+                                            aria-selected="@(!Model.ShowPrintOption && !Model.ShowExportOption && !Model.ShowEmailOption)">
+                                        <i class="bx bxl-whatsapp me-1"></i>WhatsApp
+                                    </button>
+                                </li>
+                            }
+                        </ul>
+
+                        <div class="tab-content pt-3" id="docActionTabsContent">
+                            <!-- Pestaña de Impresión -->
+                            @if (Model.ShowPrintOption)
+                            {
+                                <div class="tab-pane fade show active" id="print-tab-pane" role="tabpanel" aria-labelledby="print-tab" tabindex="0">
+                                    <div class="alert alert-info">
+                                        <i class="bx bx-info-circle me-2"></i>Seleccione los documentos que desea imprimir en el panel izquierdo y haga clic en "Imprimir Seleccionados"
+                                    </div>
+                                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                        <button type="button" id="btnPrintDocs" class="btn btn-primary doc-action-btn" disabled>
+                                            <i class="bx bx-printer me-1"></i>Imprimir Seleccionados
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                            <!-- Pestaña de Exportación -->
+                            @if (Model.ShowExportOption)
+                            {
+                                <div class="tab-pane fade @(!Model.ShowPrintOption ? "show active" : "")" id="export-tab-pane" role="tabpanel" aria-labelledby="export-tab" tabindex="0">
+                                    <div class="alert alert-info">
+                                        <i class="bx bx-info-circle me-2"></i>Seleccione los documentos que desea exportar y el formato deseado
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Formato de exportación:</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="exportFormat" id="formatPDF" value="P" checked>
+                                            <label class="form-check-label" for="formatPDF">
+                                                <i class="bx bxs-file-pdf me-1 text-danger"></i>PDF
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="exportFormat" id="formatExcel" value="X">
+                                            <label class="form-check-label" for="formatExcel">
+                                                <i class="bx bxs-file-excel me-1 text-success"></i>Excel
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="exportFormat" id="formatTXT" value="T">
+                                            <label class="form-check-label" for="formatTXT">
+                                                <i class="bx bxs-file-txt me-1 text-secondary"></i>Texto Plano
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                        <button type="button" id="btnExportDocs" class="btn btn-success doc-action-btn" disabled>
+                                            <i class="bx bx-export me-1"></i>Exportar Seleccionados
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                            <!-- Pestaña de Email -->
+                            @if (Model.ShowEmailOption)
+                            {
+                                <div class="tab-pane fade @(!Model.ShowPrintOption && !Model.ShowExportOption ? "show active" : "")" id="email-tab-pane" role="tabpanel" aria-labelledby="email-tab" tabindex="0">
+                                    <div class="alert alert-info">
+                                        <i class="bx bx-info-circle me-2"></i>Complete los datos para enviar los documentos seleccionados por correo electrónico
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="emailTo" class="form-label">Para:</label>
+                                        <input type="email" class="form-control" id="emailTo" placeholder="destinatario@ejemplo.com">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="emailSubject" class="form-label">Asunto:</label>
+                                        <input type="text" class="form-control" id="emailSubject" placeholder="Documentos solicitados">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="emailBody" class="form-label">Mensaje:</label>
+                                        <textarea class="form-control" id="emailBody" rows="4" placeholder="Adjunto los documentos solicitados..."></textarea>
+                                    </div>
+                                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                        <button type="button" id="btnSendEmail" class="btn btn-info doc-action-btn" disabled>
+                                            <i class="bx bx-envelope me-1"></i>Enviar Email
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                            <!-- Pestaña de WhatsApp -->
+                            @if (Model.ShowWhatsAppOption)
+                            {
+                                <div class="tab-pane fade @(!Model.ShowPrintOption && !Model.ShowExportOption && !Model.ShowEmailOption ? "show active" : "")" id="whatsapp-tab-pane" role="tabpanel" aria-labelledby="whatsapp-tab" tabindex="0">
+                                    <div class="alert alert-info">
+                                        <i class="bx bx-info-circle me-2"></i>Complete los datos para enviar los documentos seleccionados por WhatsApp
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="whatsappTo" class="form-label">Número de teléfono:</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">+</span>
+                                            <input type="text" class="form-control" id="whatsappTo" placeholder="549XXXXXXXXXX">
+                                        </div>
+                                        <div class="form-text">Incluya el código de país (ej: 549 para Argentina)</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="whatsappMessage" class="form-label">Mensaje:</label>
+                                        <textarea class="form-control" id="whatsappMessage" rows="4" placeholder="Adjunto los documentos solicitados..."></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="adjuntarArchivos" checked>
+                                            <label class="form-check-label" for="adjuntarArchivos">
+                                                Adjuntar documentos seleccionados
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                        <button type="button" id="btnSendWhatsApp" class="btn btn-success doc-action-btn" disabled>
+                                            <i class="bx bxl-whatsapp me-1"></i>Enviar WhatsApp
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* <style>
+    /* --- AISLAMIENTO Y CORRECCIÓN DE ESTILOS JSTREE EN EL MODAL --- */
+    #docsTreeContainer .jstree-checkbox {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        margin-right: 4px;
+        background: none !important;
+    }
+
+    #docsTreeContainer .jstree-anchor {
+        background: none !important;
+        color: #212529 !important;
+        text-decoration: none !important;
+        border-radius: 2px !important;
+    }
+
+    #docsTreeContainer .jstree-wholerow-hovered,
+    #docsTreeContainer .jstree-wholerow-clicked {
+        background: #e3f2fd !important;
+        color: #212529 !important;
+    }
+
+    #docsTreeContainer .jstree-default .jstree-clicked {
+        background: #bbdefb !important;
+        color: #212529 !important;
+    }
+
+    #docsTreeContainer .jstree-anchor:active,
+    #docsTreeContainer .jstree-anchor:focus {
+        background: #e3f2fd !important;
+        color: #212529 !important;
+        outline: none !important;
+    }
+    /* Resetear estilos heredados de Bootstrap o globales solo dentro del árbol */
+    #docsTreeContainer ul,
+    #docsTreeContainer li,
+    #docsTreeContainer a,
+    #docsTreeContainer i {
+        all: unset;
+        all: initial;
+        box-sizing: border-box;
+    }
+
+    #docsTreeContainer .jstree-anchor,
+    #docsTreeContainer .jstree-checkbox {
+        all: unset;
+        all: initial;
+        box-sizing: border-box;
+    }
+</style>
+ *@

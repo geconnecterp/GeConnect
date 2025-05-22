@@ -34,7 +34,7 @@ namespace gc.api.core.Servicios.Asientos
 
         public List<UsuAsientoDto> ObtenerUsuariosDeEjercicio(int eje_nro)
         {
-            var sp = ConstantesGC.StoredProcedures.SP_TIPO_ASIENTO;
+            var sp = ConstantesGC.StoredProcedures.SP_CONTA_USU_ASIENTOS;
             var ps = new List<SqlParameter>()
             {
                 new SqlParameter("@eje_nro", eje_nro)

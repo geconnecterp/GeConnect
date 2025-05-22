@@ -8,21 +8,9 @@
 @section styles {
     <link rel="stylesheet" href="~/css/simplePagination.css" />
     <link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+    }
 
-    <style>
-        .autocomplete-tipo-p {
-            background-color: #fff8dc !important; /* dorado suave */
-        }
 
-        .autocomplete-tipo-c {
-            background-color: #dceeff !important; /* azul suave */
-        }
-
-        .autocomplete-tipo-default {
-            background-color: #ffffff; /* blanco por defecto */
-        }
-    </style>
-}
 
 <div class="container">
     <input type="text" id="IdSelected" style="display:none;" />
@@ -55,7 +43,8 @@
     </div>
 </div>
 
-<div id="modalGestorDocumental" style="display:none;"></div>
+@* <div id="gestorDocumentalContainer"></div> *@
+<div id="modalGestorDocumental"></div>
 
 
 @section scripts {
@@ -65,9 +54,9 @@
         // Bandera para evitar recursión infinita
         let isInitializing = false;
         var modeloDato= "@filtro.Modelo";
-       
 
-        
+
+
         //esta variable es para usarla en Js. El (sub) es para usarlo aca nomas
         nnControlCta01 = "@(sub)";
 
@@ -101,6 +90,14 @@
         var initConsultaUrl =  "@Url.Action("index", "ConsCuenta", new { area = "Consultas" })";
 
 
+          // Nuevas URLs para el gestor documental
+        var obtenerModalGestorUrl = "@Url.Action("ObtenerModalGestor", "GestorDocumentos", new { area = "ControlComun" })";
+        var obtenerArbolDocumentosUrl = "@Url.Action("ObtenerArbolDocumentos", "GestorDocumentos", new { area = "ControlComun" })";
+        var imprimirDocumentosUrl = "@Url.Action("ImprimirDocumentos", "GestorDocumentos", new { area = "ControlComun" })";
+        var exportarDocumentosUrl = "@Url.Action("ExportarDocumentos", "GestorDocumentos", new { area = "ControlComun" })";
+        var enviarEmailUrl = "@Url.Action("EnviarEmail", "GestorDocumentos", new { area = "ControlComun" })";
+        var enviarWhatsAppUrl = "@Url.Action("EnviarWhatsApp", "GestorDocumentos", new { area = "ControlComun" })";
+
     </script>
     <script src="~/lib/jstree/jstree.min.js"></script>
 
@@ -109,7 +106,9 @@
     <!--variables Globales y Enums Globales-->
     <script src="~/js/app/areas/abms/abmsettings.js"></script>
 
-    <script src="~/js/app/areas/docmngr/docmanager.js"></script>
+    <!-- Incluir el nuevo script del gestor documental -->
+@*     <script src="~/js/app/areas/docmngr/gestorDocumental.js"></script> *@
+     <script src="~/js/app/areas/docmngr/docmanager.js"></script>
 
     <script src="~/js/app/areas/consultas/ConsultaCuentas.js"></script>
     <script src="~/js/app/areas/consultas/ConsultaCuentaRules.js"></script>

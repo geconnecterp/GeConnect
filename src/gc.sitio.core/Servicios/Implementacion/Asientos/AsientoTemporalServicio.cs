@@ -30,7 +30,7 @@ namespace gc.sitio.core.Servicios.Implementacion.Asientos
         }
 
         /// <inheritdoc/>
-        public async Task<RespuestaGenerica<AsientoGridDto>> ObtenerAsientos(QueryAsiento query, string token)
+        public async Task<(List<AsientoGridDto>,MetadataGrid)> ObtenerAsientos(QueryAsiento query, string token)
         {
             try
             {
@@ -52,22 +52,34 @@ namespace gc.sitio.core.Servicios.Implementacion.Asientos
                     string stringData = await response.Content.ReadAsStringAsync();
                     if (string.IsNullOrEmpty(stringData))
                     {
-                        return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
+                        throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde." );
                     }
 
                     apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AsientoGridDto>>>(stringData)
                         ?? throw new NegocioException("No se pudo deserializar los datos de asientos temporales.");
 
-                    return new RespuestaGenerica<AsientoGridDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
-                }
-                if(response.StatusCode == HttpStatusCode.NotFound)
+                    return (apiResponse.Data ?? [],apiResponse.Meta??new());
+                }else
+                if (response.StatusCode == HttpStatusCode.NotFound)
                 {
                     string stringData = await response.Content.ReadAsStringAsync();
-                    return new RespuestaGenerica<AsientoGridDto> { Ok = false, Mensaje = stringData };
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    if (error != null && error.TypeException?.Equals(nameof(NegocioException)) == true)
+                    {
+                        throw new NegocioException(error.Detail ?? "Hubo un problema en la recepcion de los asientos");
+                    }
+                    else if (error != null && error.TypeException?.Equals(nameof(NotFoundException)) == true)
+                    {
+                        throw new NegocioException(error.Detail ?? "Hubo un problema en la recepcion de los asientos");
+                    }
+                    else
+                    {
+                        throw new Exception(error?.Detail);
+                    }
                 }
                 else if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
-                    return new RespuestaGenerica<AsientoGridDto> { Ok = false, Mensaje = "No tiene permisos para acceder a este recurso." };
+                    throw new NegocioException("No tiene permisos para acceder a este recurso.");
                 }
                 else
                 {
@@ -76,26 +88,22 @@ namespace gc.sitio.core.Servicios.Implementacion.Asientos
                     var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
                     if (error != null && error.TypeException?.Equals(nameof(NegocioException)) == true)
                     {
-                        return new RespuestaGenerica<AsientoGridDto> { Ok = false, Mensaje = error.Detail };
+                        throw new NegocioException(error.Detail ?? "Hubo un problema en la recepcion de los asientos");
                     }
                     else if (error != null && error.TypeException?.Equals(nameof(NotFoundException)) == true)
                     {
-                        return new RespuestaGenerica<AsientoGridDto> { Ok = false, Mensaje = error.Detail };
-                    }
-                    else if (error != null)
-                    {
-                        throw new Exception(error.Detail);
+                        throw new NegocioException(error.Detail ?? "Hubo un problema en la recepcion de los asientos");
                     }
                     else
                     {
-                        throw new Exception("Error desconocido al procesar la respuesta de la API.");
+                        throw new Exception(error?.Detail);
                     }
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
-                return new RespuestaGenerica<AsientoGridDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener los asientos temporales." };
+                throw new NegocioException("Algo no fue bien al intentar obtener los asientos temporales." );
             }
         }
 

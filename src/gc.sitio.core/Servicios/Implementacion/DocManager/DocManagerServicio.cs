@@ -39,46 +39,51 @@ namespace gc.sitio.core.Servicios.Implementacion.DocManager
             _docManager = options1.Value;
         }
 
-        public List<MenuRoot> GeneraArbolArchivos(AppModulo modulo)
+        public List<MenuRootModal> GeneraArbolArchivos(AppModulo modulo)
         {
             List<Reporte> reportes = modulo.Reportes;
-            List<MenuRoot> arbol = new List<MenuRoot>();
-            MenuRoot root = new MenuRoot
+            List<MenuRootModal> arbol = new List<MenuRootModal>();
+            MenuRootModal root = new MenuRootModal
             {
                 id = modulo.Id,
                 text = "Archivos",
                 icon = "bx bx-file",
-                state = new Estado { disabled = false, opened = true, selected = false },
-                children = new List<MenuRoot>()
+                state = new Estado { disabled = false, opened = true, selected = false},
+                children = new List<MenuRootModal>()
             };
-            ;
+
             foreach (var rep in reportes)
             {
                 int contador = 0;
                 foreach (var arch in rep.Titulos)
                 {
-                    root.children.Add(CargaArchivo(rep.Id, arch, contador));
+                    var nodo = CargaArchivo(rep.Id, arch, contador);
+                    // Asegurarnos de que el nodo tiene las propiedades correctas para mostrar el checkbox
+                    if (nodo.state == null)
+                    {
+                        nodo.state = new Estado { disabled = false, opened = false, selected = false };
+                    }
+                    root.children.Add(nodo);
                     contador++;
                 }
-
             }
             arbol.Add(root);
             return arbol;
         }
 
-        private MenuRoot CargaArchivo(int idm, string titulo, int orden)
+        private MenuRootModal CargaArchivo(int idm, string titulo, int orden)
         {
             //hay qeu tener en cuenta que si llegan a ser mas archivos en el mismo 
             //reporte, se deberia agregar un nuevo tipo de seleccion para el titulo del archivo.
 
             var id = idm.ToString(); // $"{idm}{orden + 1}";
 
-            var archivo = new MenuRoot
+            var archivo = new MenuRootModal
             {
                 id = id,
                 text = titulo,
                 state = new Estado { disabled = false, opened = true, selected = false },
-                data = new MenuRootData { archivoB64 = string.Empty }
+                data = new MenuRootData { archivoB64 = string.Empty, asignado = false }
             };
 
             return archivo;
@@ -90,9 +95,9 @@ namespace gc.sitio.core.Servicios.Implementacion.DocManager
         /// <typeparam name="T">tipo de dato a utilizar</typeparam>
         /// <param name="request"></param>
         /// <returns></returns>
-        public void GenerarArchivoPDF<T>(PrintRequestDto<T> request, out MemoryStream ms, List<string> titulos, float[] anchos,bool datosCliente)
+        public void GenerarArchivoPDF<T>(PrintRequestDto<T> request, out MemoryStream ms, List<string> titulos, float[] anchos, bool datosCliente)
         {
-            PdfWriter? writer=null;
+            PdfWriter? writer = null;
             Document pdf;
             ms = new MemoryStream();
             try
@@ -135,13 +140,13 @@ namespace gc.sitio.core.Servicios.Implementacion.DocManager
                     var tablaEnc = HelperPdf.GeneraTabla(4, [20f, 40f, 20f, 20f], 100, 10, 20);
                     HelperPdf.CargarDatosCliente(pdf, request.Cuerpo, subtitulo, tablaEnc);
                 }
-                
-                        //List<string> titulos = new List<string> { "Descripcion", "Cuota", "Est.", "Fecha Comp.", "Fecha Vto", "Importe" };
-                        //float[] anchos = [50f, 10f, 10f, 10f, 10f, 10f];
-                        HelperPdf.GeneraCabeceraLista(pdf, titulos, anchos, normal);
 
-                        HelperPdf.GenerarListadoDatos(pdf, request.Cuerpo, anchos, normal);
-                
+                //List<string> titulos = new List<string> { "Descripcion", "Cuota", "Est.", "Fecha Comp.", "Fecha Vto", "Importe" };
+                //float[] anchos = [50f, 10f, 10f, 10f, 10f, 10f];
+                HelperPdf.GeneraCabeceraLista(pdf, titulos, anchos, normal);
+
+                HelperPdf.GenerarListadoDatos(pdf, request.Cuerpo, anchos, normal);
+
 
                 #endregion
                 //var parrafo = HelperPdf.GeneraParrafo("Texto Prueba", normal, Element.ALIGN_JUSTIFIED, 10, 10);
@@ -149,7 +154,7 @@ namespace gc.sitio.core.Servicios.Implementacion.DocManager
                 pdf.Close();
 
             }
-            catch (Exception )
+            catch (Exception)
             {
 
                 throw;
@@ -192,7 +197,7 @@ namespace gc.sitio.core.Servicios.Implementacion.DocManager
             try
             {
                 HelperAPI helper = new();
-                HttpClient client = helper.InicializaCliente(reporteSolicitud,token,out StringContent content);
+                HttpClient client = helper.InicializaCliente(reporteSolicitud, token, out StringContent content);
                 HttpResponseMessage response;
                 var link = $"{_docManager.ApiReporteUrl}{RutaAPI}{RutaGenerar}";
                 response = await client.PostAsync(link, content);
@@ -271,6 +276,6 @@ namespace gc.sitio.core.Servicios.Implementacion.DocManager
                 _logger.LogError(ex, "Error al intentar obtener el Informe de Cta Cte.");
                 throw;
             }
-        }      
+        }
     }
 }
