@@ -222,6 +222,7 @@ function PostGen(data, path, retorno, fxError, datatype) {
         "url": path,
         "type": "POST",
         "data": data,
+        /*contentType: "application/json",*/
         "success": retorno,
         //beforeSend: function () { Bloquear();},
         error: fxError
@@ -633,7 +634,9 @@ function cargarReporteEnArre(numeroReporte, parametros,titulo,observacion,admId)
         parametros: parametros,
         titulo: titulo,
         observacion: observacion,
-        administracion: admId
+        administracion: admId,
+        logoPath: "",
+        formato: ""
     };
 }
 

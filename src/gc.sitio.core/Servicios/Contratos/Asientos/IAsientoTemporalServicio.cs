@@ -1,4 +1,5 @@
-﻿using gc.infraestructura.Core.Responses;
+﻿using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Asientos;
 using gc.infraestructura.Dtos.Gen;
 
@@ -12,7 +13,7 @@ namespace gc.sitio.core.Servicios.Contratos.Asientos
         /// <param name="query">Filtros para la consulta de asientos.</param>
         /// <param name="token">Token de autenticación.</param>
         /// <returns>Respuesta genérica con la lista de asientos temporales.</returns>
-        Task<RespuestaGenerica<AsientoGridDto>> ObtenerAsientos(QueryAsiento query, string token);
+        Task<(List<AsientoGridDto>, MetadataGrid)> ObtenerAsientos(QueryAsiento query, string token);
 
         /// <summary>
         /// Envía asientos temporales a contabilidad.

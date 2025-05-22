@@ -15,12 +15,14 @@
         var div = $("#divPaginacion");
         presentaPaginacion(div);
     });
-
-    $(document).on("click", "#btnCancelarAsiento", function () {
-        // Oculta el panel del asiento
-        $("#divpanel01").empty(); // O usa .hide() si prefieres
-        InicializaVistaAsientos();
+    $("#btnCancel").on("click", function () {
+        window.location.href = homeAsientosUrl;
     });
+    //$(document).on("click", "#btnCancelarAsiento", function () {
+    //    // Oculta el panel del asiento
+    //    $("#divpanel01").empty(); // O usa .hide() si prefieres
+    //    InicializaVistaAsientos();
+    //});
 
     //**** EVENTOS PARA CONTROLAR LOS BOTONES DE OPERACION
     $("#btnAbmNuevo").on("click", ejecutarAlta);
@@ -112,13 +114,13 @@ function activarControles(act) {
     // Se invierte el valor porque 'disabled=true' significa desactivar
     // y queremos que act=true signifique habilitar controles
     const disabled = !act;
-    
+
     // Header del asiento
     $("#Dia_tipo").prop("disabled", disabled);
     // El campo dia_movi (Nº Mov) siempre debe estar en modo solo lectura
     // ya que es la PK generada por la base de datos
     $(".card-header input.form-control:not(:first)").prop("readonly", disabled);
-    
+
     // Añadir/eliminar líneas y botones operativos
     if (act) {
         // Si estamos activando los controles, añadimos botones de edición
@@ -143,15 +145,15 @@ function activarControles(act) {
             // Mostrar botones de búsqueda de cuenta
             $("#tbAsientoDetalle tbody .btn-buscar-cuenta").show();
 
-            
+
             // Agrega funcionalidad a los nuevos botones
             configurarEventosEdicion();
         }
-        
+
         // Habilitar edición de datos de líneas
         $("#tbAsientoDetalle tbody").addClass("editable-grid");
         $("#tbAsientoDetalle tbody td:not(:last-child)").attr("contenteditable", true);
-        
+
         // Configurar máscaras y validaciones para campos editables
         configurarCamposEditables();
     } else {
@@ -167,7 +169,7 @@ function activarControles(act) {
         // Ocultar botones de búsqueda de cuenta
         $("#tbAsientoDetalle tbody .btn-buscar-cuenta").hide();
     }
-    
+
     // Control de botones de acción del footer
     $("#btnPasarContabilidad, #btnImprimir").prop("disabled", act); // Se deshabilitan al editar
 }
@@ -177,7 +179,7 @@ function activarControles(act) {
  */
 function configurarEventosEdicion() {
     // Evento para agregar nueva línea
-    $(document).on("click", "#btnAddLinea", function() {
+    $(document).on("click", "#btnAddLinea", function () {
         const nuevaLinea = `
                 <tr class="">
                     <td contenteditable="true">
@@ -202,9 +204,9 @@ function configurarEventosEdicion() {
         $("#tbAsientoDetalle tbody").append(nuevaLinea);
         actualizarTotales();
     });
-    
+
     // Evento para eliminar línea
-    $(document).on("click", ".btn-eliminar-linea", function() {
+    $(document).on("click", ".btn-eliminar-linea", function () {
         $(this).closest("tr").remove();
         actualizarTotales();
     });
@@ -454,43 +456,138 @@ function confirmarOperacionAsiento() {
 }
 
 
-//*** FIN */
-function InicializaVistaAsientos() {
+/**
+ * Inicializa la vista de asientos y configura los componentes
+ * @param {any} e - Evento opcional
+ */
+function InicializaVistaAsientos(e) {
+    // Si NO es la primera ejecución y no hay acción pendiente, limpiar y regresar
+    if (!primerArranque && accion === "") {
+        // Oculta el panel del asiento
+        $("#divpanel01").empty();
 
-    // Inicialización: Deshabilitar componentes si los checkboxes no están marcados
+        // Configuración de componentes
+        configurarComponentesIniciales();
+
+        // Mostrar el filtro si no hay datos en la grilla
+        mostrarFiltroSiNecesario();
+
+        // Configurar botones y grilla
+        accionBotones(AbmAction.CANCEL, "", true); // Usar tercer parámetro para mantener el botón cancelar
+        removerSeleccion();
+        activarGrilla(Grids.GridAsiento);
+
+        CerrarWaiting();
+        return; // Importante: salir de la función para evitar recursión
+    }
+
+    // Primera ejecución o acción pendiente
+    primerArranque = false; // Marcar que ya no es la primera ejecución
+
+    // Configuración de componentes
+    configurarComponentesIniciales();
+
+    // Mostrar el filtro si no hay datos en la grilla
+    mostrarFiltroSiNecesario();
+
+    // Configurar botones y grilla
+    accionBotones(AbmAction.CANCEL, "", true); // Usar tercer parámetro para mantener el botón cancelar
+    removerSeleccion();
+    activarGrilla(Grids.GridAsiento);
+
+    CerrarWaiting();
+}
+
+/**
+ * Configura los componentes iniciales de la vista
+ */
+function configurarComponentesIniciales() {
+    // Configurar checkbox de ejercicio según el modo
     if (typeof asientoTemporal !== 'undefined' && asientoTemporal === true) {
-        // Si está en modo temporal, no ejecutary desactivar el checkbox
         $('#chkEjercicio').prop('checked', true).prop('disabled', true);
         $("#Eje_nro").prop("disabled", true);
-    }
-    else {
+    } else {
         toggleComponent('chkEjercicio', '#Eje_nro');
     }
 
+    // Configurar otros componentes
     toggleComponent('Movi', '#Movi_like');
     toggleComponent('Usu', '#Usu_like');
     toggleComponent('Tipo', '#Tipo_like');
     toggleComponent('Rango', 'input[name="Desde"]');
     toggleComponent('Rango', 'input[name="Hasta"]');
+}
 
-    grilla = Grids.GridAsiento;
-
+/**
+ * Muestra el filtro si la grilla no tiene datos
+ */
+function mostrarFiltroSiNecesario() {
     if ($("#divDetalle").is(":visible")) {
         $("#divDetalle").collapse("hide");
     }
-    nng = "#" + grilla;
-    tb = $(nng + " tbody tr");
+
+    var nng = "#" + Grids.GridAsiento;
+    var tb = $(nng + " tbody tr");
     if (tb.length === 0) {
         $("#divFiltro").collapse("show");
     }
-    accionBotones(AbmAction.CANCEL);
-    $("#" + grilla + " tbody tr").each(function (index) {
+}
+
+/**
+ * Remueve la selección de todos los registros de la grilla
+ */
+function removerSeleccion() {
+    $("#" + Grids.GridAsiento + " tbody tr").each(function (index) {
         $(this).removeClass("selectedEdit-row");
     });
-
-    activarGrilla(grilla);
-    CerrarWaiting();
 }
+
+//function InicializaVistaAsientos(e) {
+//    if (accion === "" && primerArranque === false) {
+//        // Oculta el panel del asiento
+//        $("#divpanel01").empty(); // O usa .hide() si prefieres
+//        InicializaVistaAsientos();
+//    }
+//    else {
+//        //variable que me permite diferenciar el arranque de la ejecucion normal.
+//        primerArranque = false;
+//        // Inicialización: Deshabilitar componentes si los checkboxes no están marcados
+//        if (typeof asientoTemporal !== 'undefined' && asientoTemporal === true) {
+//            // Si está en modo temporal, no ejecutary desactivar el checkbox
+//            $('#chkEjercicio').prop('checked', true).prop('disabled', true);
+//            $("#Eje_nro").prop("disabled", true);
+//        }
+//        else {
+//            toggleComponent('chkEjercicio', '#Eje_nro');
+//        }
+
+//        toggleComponent('Movi', '#Movi_like');
+//        toggleComponent('Usu', '#Usu_like');
+//        toggleComponent('Tipo', '#Tipo_like');
+//        toggleComponent('Rango', 'input[name="Desde"]');
+//        toggleComponent('Rango', 'input[name="Hasta"]');
+
+//        grilla = Grids.GridAsiento;
+
+//        if ($("#divDetalle").is(":visible")) {
+//            $("#divDetalle").collapse("hide");
+//        }
+//        nng = "#" + grilla;
+//        tb = $(nng + " tbody tr");
+//        if (tb.length === 0) {
+//            $("#divFiltro").collapse("show");
+//        }
+//        /** permito con el true final dejar que el boton cancelar este siempre visible */
+//        accionBotones(AbmAction.CANCEL,"",true);
+
+//        $("#" + grilla + " tbody tr").each(function (index) {
+//            $(this).removeClass("selectedEdit-row");
+//        });
+
+//        activarGrilla(grilla);
+//        CerrarWaiting();
+//    }
+//}
 function ejecutaDblClickGrid1(x) {
     AbrirWaiting("Espere mientras se busca el Asiento solicitado...");
     selectAsientoDbl(x, Grids.GridAsiento);
@@ -534,7 +631,7 @@ function buscarAsiento(data) {
     });
 }
 
-function buscarAsientos(pagina) {
+function buscarAsientos(pag) {
     AbrirWaiting();
     //desactivamos los botones de acción
     activarBotones2(false);

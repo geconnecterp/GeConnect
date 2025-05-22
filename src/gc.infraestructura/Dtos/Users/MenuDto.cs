@@ -46,9 +46,17 @@
         public Estado state { get; set; }= new Estado();
         public MenuRootData data { get; set; } = new MenuRootData();
         public string type { get; set; } = string.Empty;
-        public A_attr a_attr { get; set; } = new();
-        
+        public A_attr a_attr { get; set; } = new();        
+    }
 
+    public class MenuRootModal
+    {
+        public string id { get; set; } = string.Empty;
+        public string text { get; set; } = string.Empty;
+        public string icon { get; set; } = string.Empty;
+        public List<MenuRootModal> children { get; set; } = [];
+        public Estado state { get; set; } = new Estado();
+        public MenuRootData data { get; set; } = new MenuRootData();
     }
 
     public class A_attr
@@ -64,6 +72,7 @@
         public bool opened { get; set; } = true;
         public bool disabled { get; set; } = false;
         public bool selected { get; set; } = false;
+       // public bool checkbox_disabled { get; set; }
     }
 
     public class MenuRootData

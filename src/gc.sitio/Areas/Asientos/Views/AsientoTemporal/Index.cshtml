@@ -2,17 +2,18 @@
 @{
     Layout = "~/views/shared/_Layout.cshtml";
 
-    var filtro = new QueryAsiento() { Modelo = ModeloFilter.ASIENTO_TEMPORAL, EsTemporal =true};
+    var filtro = new QueryAsiento() { Modelo = ModeloFilter.ASIENTO_TEMPORAL, EsTemporal = true };
 }
 @section styles {
     <link rel="stylesheet" href="~/css/simplePagination.css" />
     <link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+ 
 }
 
 <div class="container">
     <input type="text" id="IdSelected" style="display:none;" />
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-4 col-sm-6">
             <div class="d-flex justify-content-sm-around">
                 <button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
                     <i class="bx bx-filter bx-xs"></i>
@@ -22,60 +23,76 @@
                 </button>
             </div>
         </div>
-        <div class="col-md-2">
+        <div class="col-md-2 col-sm-6">
             <div class="d-flex justify-content-sm-center">
                 <button id="btnAbmAceptar" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Aceptar" disabled>
                     <i class="bx bx-check-circle bx-xs"></i>
                 </button>
 
-                <button id="btnAbmCancelar" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar" disabled>
+                <button id="btnAbmCancelar" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar">
                     <i class="bx bx-x-circle bx-xs"></i>
                 </button>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-2 col-sm-6">
             <div class="d-flex justify-content-sm-center">
-                <button id="btnAbmNuevo" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Alta" disabled>
+                <!-- Botón Imprimir -->
+                <button type="button" class="btn btn-light btn-sm mt-1 me-1" id="btnImprimir" title="Imprimir">
+                    <i class="bx bx-printer"></i>
+                </button>
+                <!-- Botón Pasar Conta -->
+                <button type="button" class="btn btn-warning btn-sm mt-1 me-1" id="btnPasarConta" title="Pasar a Contabilidad">
+                    <i class="bx bx-transfer"></i>
+                </button>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-6">
+            <div class="d-flex justify-content-sm-center">
+
+                <button id="btnAbmNuevo" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Alta Asiento" disabled>
                     <i class="bx bx-check-circle bx-xs"></i>
                 </button>
-                <button id="btnAbmModif" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Editar" disabled>
+                <button id="btnAbmModif" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Editar Asiento" disabled>
                     <i class="bx bx-edit-alt bx-xs"></i>
                 </button>
-                <button id="btnAbmElimi" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Eliminar/Discontinuar" disabled>
+                <button id="btnAbmElimi" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Dar de baja el asiento" disabled>
                     <i class="bx bx-x-circle bx-xs"></i>
                 </button>
-            </div>
-        </div>
-    </div>
-    <div class="collapse" id="divFiltro" style="">
-        <partial name="_filtroAsiento" model="filtro" />
-        @Html.Hidden("pagEstado", false)
-    </div>
-    <div class="collapse" id="divDetalle" style="">
-        <partial name="_n01TabsAsiento" />
-    </div>
-    
-    <div class="row">     
-        <div id="divGrilla">
-            <p style="background-color:gray">
-                <h5>No se han especificado datos aún.</h5>
-            </p>
-        </div>
-    </div>
-    <div class="row">
-        <div class="offset-md-3 col-md-6">
-            <div id="divPaginacion">
             </div>
         </div>
     </div>
 </div>
+<div class="collapse" id="divFiltro" style="">
+    <partial name="_filtroAsiento" model="filtro" />
+    @Html.Hidden("pagEstado", false)
+</div>
+<div class="collapse" id="divDetalle" style="">
+    <partial name="_n01TabsAsiento" />
+</div>
+
+<div class="row">
+    <div id="divGrilla">
+        <p style="background-color:gray">
+            <h5>No se han especificado datos aún.</h5>
+        </p>
+    </div>
+</div>
+<div class="row">
+    <div class="offset-md-3 col-md-6">
+        <div id="divPaginacion">
+        </div>
+    </div>
+</div>
+
 
 <!--modal para presentar el plan de cuenas-->
 <partial name="~/Areas/Asientos/Views/Shared/_selectorPlanCuentas.cshtml" />
 
 @section scripts {
     <script type="text/javascript">
-        const asientoTemporal = "@filtro.EsTemporal.ToString().ToLower()";
+        const asientoTemporal = "@filtro.EsTemporal.ToString().ToLower()"==="true";
+        var primerArranque = true;
+        var homeAsientosUrl = "@Url.Action("index", "AsientoTemporal", new { area = "Asientos" })";
         var buscarAsientosUrl="@Url.Action("BuscarAsientos", "AsientoTemporal", new { area = "Asientos" })";
         var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "AsientoTemporal", new { area = "Asientos" })";
         var buscarAsientoUrl= "@Url.Action("buscarAsiento", "AsientoTemporal", new { area = "Asientos" })";
@@ -96,5 +113,5 @@
     <script src="~/js/app/areas/asientos/selectorCuentas.js"></script>
     <script src="~/js/app/areas/asientos/asientos.js"></script>
 
-    
+
 }
