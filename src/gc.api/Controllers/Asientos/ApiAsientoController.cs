@@ -70,9 +70,9 @@ namespace gc.api.Controllers.Asientos
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public ActionResult<List<UsuAsientoDto>> ObtenerUsuariosDeEjercicio(int eje_nro)
         {
-            if (eje_nro <= 0)
+            if (eje_nro < 0)
             {
-                return BadRequest("El número de ejercicio debe ser mayor a cero");
+                return BadRequest("El número de ejercicio debe ser mayor o igual a cero");
             }
 
             try

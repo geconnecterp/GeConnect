@@ -93,24 +93,17 @@ namespace gc.sitio.Areas.Asientos.Controllers
                 // Llamar al servicio para obtener los asientos temporales
                 var response = await _asTempSv.ObtenerAsientos(query, TokenCookie);
 
-                // Verificar si la respuesta es exitosa
-                if (!response.Ok || response.ListaEntidad == null)
-                {
-                    return PartialView("_gridMensaje", new RespuestaGenerica<EntidadBase>
-                    {
-                        Ok = false,
-                        Mensaje = response.Mensaje ?? "No se encontraron asientos temporales con los criterios especificados."
-                    });
-                }
+                var lista = response.Item1;
+                MetadataGeneral = response.Item2;
 
                 // Generar el objeto GridCoreSmart<T>
                 var grillaDatos = GenerarGrillaSmart(
-                    response.ListaEntidad,
+                    lista,
                     sort,
                     _appSettings.NroRegistrosPagina,
                     pag,
-                    response.ListaEntidad.Count, // Total de registros
-                    (int)Math.Ceiling((double)response.ListaEntidad.Count / _appSettings.NroRegistrosPagina), // Total de páginas
+                    lista.Count, // Total de registros
+                    (int)Math.Ceiling((double)lista.Count / _appSettings.NroRegistrosPagina), // Total de páginas
                     sortDir
                 );
 

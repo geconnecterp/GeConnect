@@ -1852,16 +1852,16 @@ namespace gc.sitio.Controllers
             }
         }
 
-        public List<MenuRoot> ArchivosCargadosModulo
+        public List<MenuRootModal> ArchivosCargadosModulo
         {
             get
             {
                 var json = _context.HttpContext?.Session.GetString("ArchivosCargadosModulo") ?? string.Empty;
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
-                    return new List<MenuRoot>();
+                    return new List<MenuRootModal>();
                 }
-                return JsonConvert.DeserializeObject<List<MenuRoot>>(json) ?? [];
+                return JsonConvert.DeserializeObject<List<MenuRootModal>>(json) ?? [];
             }
             set
             {

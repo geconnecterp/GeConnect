@@ -82,6 +82,7 @@ const Tabs = {
 	TabPos: 'btnTabPos',
 	TabBanco: 'btnTabBanco',
 	TabCuentaDirecta: 'btnTabCuentaDirecta',
+	TabAsiento: 'btnTabAsiento',
 }
 
 const ModImpresion = {

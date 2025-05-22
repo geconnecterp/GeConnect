@@ -181,7 +181,7 @@ function selectVendedorDbl(x, gridId) {
 }
 
 
-function buscarVendedores(pagina) {
+function buscarVendedores(pag) {
     AbrirWaiting();
     //desactivamos los botones de acción
     activarBotones2(false);
