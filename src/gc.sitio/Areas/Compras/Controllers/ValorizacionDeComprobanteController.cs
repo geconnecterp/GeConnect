@@ -302,7 +302,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public IActionResult ActualizarValorizacion(string cm_compte)
+		public IActionResult ActualizarValorizacion(string cm_compte, bool dif_precio, bool dif_cantidad)
 		{
 			var model = new GridCoreSmart<CompteValorizaListaDto>();
 			try
@@ -312,7 +312,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 				}
-				model = ObtenerValorizacionActualizada(cm_compte);
+				model = ObtenerValorizacionActualizada(cm_compte, dif_precio, dif_cantidad);
 				return PartialView("_listaValorizacion", model);
 			}
 			catch (Exception ex)
@@ -800,9 +800,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 		/// </summary>
 		/// <param name="cmCompte">Identificador del comprobante a valorizar.</param>
 		/// <param name="esConfirmacion">Indica si la operación es una confirmación (true) o un guardado (false).</param>
+		/// <param name="dif_cantidad">Indica si se debe considerar la diferencia de cantidad.</param>
+		/// <param name="dif_precio">Indica si se debe considerar la diferencia de precio.</param>
 		/// <returns>Un objeto JSON con el resultado de la operación.</returns>
 		[HttpPost]
-		public JsonResult GuardarValorizacion(string cmCompte, bool esConfirmacion)
+		public JsonResult GuardarValorizacion(string cmCompte, bool esConfirmacion, bool dif_precio = false, bool dif_cantidad = false)
 		{
 			try
 			{
@@ -834,8 +836,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 					usu_id = UserName,
 					guarda = true,
 					confirma = esConfirmacion,
-					dp = false,
-					dc = false,
+					dp = dif_precio,
+					dc = dif_cantidad,
 					adm_id = AdministracionId
 				};
 
@@ -1015,7 +1017,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return Decimal.Divide(den, num);
 		}
 
-		private GridCoreSmart<CompteValorizaListaDto> ObtenerValorizacionActualizada(string cm_compte)
+		private GridCoreSmart<CompteValorizaListaDto> ObtenerValorizacionActualizada(string cm_compte, bool dif_precio = false, bool dif_cantidad = false)
 		{
 			var model = new GridCoreSmart<CompteValorizaListaDto>();
 			try
@@ -1043,8 +1045,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 					usu_id = UserName,
 					guarda = false,
 					confirma = false,
-					dp = false,
-					dc = false,
+					dp = dif_precio,
+					dc = dif_cantidad,
 					adm_id = AdministracionId
 				};
 				Console.WriteLine($"////INICIO -> Revalorizar.....////");

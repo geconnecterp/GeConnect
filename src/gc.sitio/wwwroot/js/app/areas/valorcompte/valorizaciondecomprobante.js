@@ -231,7 +231,9 @@ function ActualizarOrdenDeDescFinancEnBackEnd() {
 
 function ActualizarListaValorizaciones() {
 	var cm_compte = $("#cm_compte").val();
-	var data = { cm_compte }
+	var dif_precio = $("#chkDifPrecio")[0].checked;
+	var dif_cantidad = $("#chkDifCantidad")[0].checked;
+	var data = { cm_compte, dif_precio, dif_cantidad }
 	PostGenHtml(data, actualizarValorizacionURL, function (obj) {
 		$("#divListaValorizacion").html(obj);
 		AddEventListenerToGrid("tbListaValorizacion");
@@ -1124,7 +1126,9 @@ function GuardarValorizacion() {
 				AbrirWaiting("Guardando valorización...");
 				var esConfirmacion = false;
 				var cmCompte = cmCompteSelected;
-				var data = { cmCompte, esConfirmacion };
+				var dif_precio = $("#chkDifPrecio")[0].checked;
+				var dif_cantidad = $("#chkDifCantidad")[0].checked;
+				var data = { cmCompte, esConfirmacion, dif_precio, dif_cantidad };
 				PostGen(data, guardarValorizacionUrl, function (obj) {
 					CerrarWaiting();
 					if (obj.error === true) {
@@ -1157,7 +1161,9 @@ function ConfirmarValorizacion() {
 				AbrirWaiting();
 				var esConfirmacion = true;
 				var cmCompte = cmCompteSelected;
-				var data = { cmCompte, esConfirmacion };
+				var dif_precio = $("#chkDifPrecio")[0].checked;
+				var dif_cantidad = $("#chkDifCantidad")[0].checked;
+				var data = { cmCompte, esConfirmacion, dif_precio, dif_cantidad };
 				PostGen(data, guardarValorizacionUrl, function (obj) {
 					CerrarWaiting();
 					if (obj.error === true) {
