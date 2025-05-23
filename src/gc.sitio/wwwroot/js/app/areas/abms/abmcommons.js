@@ -24,15 +24,17 @@ function activarBotones(activar, dejarCancelar = false) {
         $("#btnAbmElimi").prop("disabled", true);
 
         $("#btnAbmAceptar").prop("disabled", true);
-        if (!dejarCancelar) {
-            $("#btnAbmCancelar").prop("disabled", true);
-            $("#btnAbmCancelar").hide();
-        }
-        else {
-            $("#btnAbmCancelar").prop("disabled", false);
-            $("#btnAbmCancelar").show();
-        }
+       
         $("#btnAbmAceptar").hide();
+    }
+
+    if (!dejarCancelar) {
+        $("#btnAbmCancelar").prop("disabled", true);
+        $("#btnAbmCancelar").hide();
+    }
+    else {
+        $("#btnAbmCancelar").prop("disabled", false);
+        $("#btnAbmCancelar").show();
     }
 }
 
@@ -304,7 +306,7 @@ function NuevaFormaDePago() {
             $(".activable").prop("disabled", false);
             desactivarGrilla(Grids.GridFP);
             accionBotones(AbmAction.ALTA, tabActiva);
-            $("#listaFP").focus();
+            $("#listaFP").trigger("focus");
             CerrarWaiting();
         }, function (obj) {
             ControlaMensajeError(obj.message);
@@ -330,7 +332,7 @@ function NuevoContacto() {
             $(".activable").prop("disabled", false);
             desactivarGrilla(Grids.GridOC);
             accionBotones(AbmAction.ALTA, tabActiva);
-            $("#OtroContacto_Cta_Nombre").focus();
+            $("#OtroContacto_Cta_Nombre").trigger("focus");
             CerrarWaiting();
         }, function (obj) {
             ControlaMensajeError(obj.message);
@@ -356,7 +358,7 @@ function NuevaNota() {
             $(".activable").prop("disabled", false);
             desactivarGrilla(Grids.GridNota);
             accionBotones(AbmAction.ALTA, tabActiva);
-            $("#Nota_Usu_Id").focus();
+            $("#Nota_Usu_Id").trigger("focus");
             CerrarWaiting();
         }, function (obj) {
             ControlaMensajeError(obj.message);
@@ -382,7 +384,7 @@ function NuevaObservacion() {
             $(".activable").prop("disabled", false);
             desactivarGrilla(Grids.GridObs);
             accionBotones(AbmAction.ALTA, tabActiva);
-            $("#listaTipoObs").focus();
+            $("#listaTipoObs").trigger("focus");
             CerrarWaiting();
         }, function (obj) {
             ControlaMensajeError(obj.message);
@@ -549,7 +551,7 @@ function ModificaFormaDePago(tabAct, mainGrid) {
         $("#listaFP").prop("disabled", true);
         desactivarGrilla(Grids.GridFP);
         desactivarGrilla(mainGrid);
-        $("#FormaDePago_Fp_Dias").focus();
+        $("#FormaDePago_Fp_Dias").trigger("focus");
     }
 }
 
@@ -571,7 +573,7 @@ function ModificaContacto(tabAct, mainGrid) {
         desactivarGrilla(Grids.GridOC);
         desactivarGrilla(mainGrid);
         $("#OtroContacto_Cta_Nombre").prop("disabled", true);
-        $("#OtroContacto_Cta_Celu").focus();
+        $("#OtroContacto_Cta_Celu").trigger("focus");
     }
 }
 
@@ -592,7 +594,7 @@ function ModificaNota(tabAct, mainGrid) {
         $("#Nota_Usu_Id").prop("disabled", true);
         desactivarGrilla(Grids.GridNota);
         desactivarGrilla(mainGrid);
-        $("#Nota_Nota").focus();
+        $("#Nota_Nota").trigger("focus");
     }
 }
 
@@ -613,7 +615,7 @@ function ModificaObservacion(tabAct, mainGrid) {
         $("#listaTipoObs").prop("disabled", true);
         desactivarGrilla(Grids.GridObs);
         desactivarGrilla(mainGrid);
-        $("#Observacion_Cta_Obs").focus();
+        $("#Observacion_Cta_Obs").trigger("focus");
     }
 }
 
@@ -1470,7 +1472,7 @@ function Guardar() {
                         var contenedor = ObtenerModuloEjecutado(destinoDeOperacion);
                         var objeto = contenedor + obj.setFocus;
                         var value = $("[name='" + objeto + "']");
-                        value.focus();
+                        value.trigger("focus");
                     }
                     return true;
                 }, false, ["Aceptar"], "error!", null);

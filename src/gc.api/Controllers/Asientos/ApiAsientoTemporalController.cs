@@ -84,7 +84,7 @@ namespace gc.api.Controllers.Asientos
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult<ApiResponse<RespuestaDto>> PasarAsientosTmpAContabilidad([FromBody] AsientoPasaDto asientoPasa)
+        public ActionResult<ApiResponse<List<RespuestaDto>>> PasarAsientosTmpAContabilidad([FromBody] AsientoPasaDto asientoPasa)
         {
             // Validar parámetros de entrada
             if (asientoPasa == null)
@@ -93,7 +93,7 @@ namespace gc.api.Controllers.Asientos
             }
 
             // Validar campos obligatorios
-            if (string.IsNullOrWhiteSpace(asientoPasa.Movi_id))
+            if (string.IsNullOrWhiteSpace(asientoPasa.JsonDiaMovi))
             {
                 return BadRequest(new ApiResponse<string>("El ID del movimiento es obligatorio."));
             }
@@ -111,16 +111,9 @@ namespace gc.api.Controllers.Asientos
             // Llamar al servicio para realizar el traspaso
             var resultado = _asientoTemporalServicio.PasarAsientosTmpAContabilidad(asientoPasa);
 
-            if (resultado.resultado == 1) // Suponiendo que 1 es el código de éxito
-            {
-                // Devolver respuesta exitosa con el objeto RespuestaDto completo
-                return Ok(new ApiResponse<RespuestaDto>(resultado));
-            }
-            else
-            {
-                // Devolver error con el mensaje del servicio
-                return BadRequest(new ApiResponse<string>(resultado.resultado_msj ?? "Ocurrió un error durante el traspaso de asientos."));
-            }
+            // Devolver respuesta exitosa con el objeto RespuestaDto completo
+            return Ok(new ApiResponse<List<RespuestaDto>>(resultado));
+
 
         }
 
@@ -144,16 +137,16 @@ namespace gc.api.Controllers.Asientos
 
             //try
             //{
-                // Llamar al servicio para obtener el detalle del asiento
-                var resultado = _asientoTemporalServicio.ObtenerAsientoDetalle(moviId);
+            // Llamar al servicio para obtener el detalle del asiento
+            var resultado = _asientoTemporalServicio.ObtenerAsientoDetalle(moviId);
 
-                if (resultado == null)
-                {
-                    return NotFound($"No se encontró el asiento con identificador {moviId}.");
-                }
+            if (resultado == null)
+            {
+                return NotFound($"No se encontró el asiento con identificador {moviId}.");
+            }
 
-                // Devolver respuesta exitosa
-                return Ok(new ApiResponse<AsientoDetalleDto>(resultado));
+            // Devolver respuesta exitosa
+            return Ok(new ApiResponse<AsientoDetalleDto>(resultado));
             //}
             //catch (Exception ex)
             //{

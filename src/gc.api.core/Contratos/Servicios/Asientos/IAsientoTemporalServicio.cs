@@ -21,7 +21,7 @@ namespace gc.api.core.Contratos.Servicios.Asientos
         /// </summary>
         /// <param name="asientoPasa">Datos necesarios para el traspaso de asientos.</param>
         /// <returns>Resultado de la operación de traspaso.</returns>
-        RespuestaDto PasarAsientosTmpAContabilidad(AsientoPasaDto asientoPasa);
+        List<RespuestaDto> PasarAsientosTmpAContabilidad(AsientoPasaDto asientoPasa);
 
         /// <summary>
         /// Obtiene el detalle de un asiento temporal específico.
