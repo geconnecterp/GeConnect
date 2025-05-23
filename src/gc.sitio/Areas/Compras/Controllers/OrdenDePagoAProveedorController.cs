@@ -215,13 +215,24 @@ namespace gc.sitio.Areas.Compras.Controllers
 							if (respuesta.Entidad.resultado == 0)
 							{
 								//Lo quito de la lista que uso para cargar la grilla de obligaciones
-								var listaTemp = OPDebitoLista.Where(x => !x.cm_compte_cuota.Equals(r.cuota) && !x.dia_movi.Equals(r.dia_movi) && !x.cm_compte.Equals(r.cm_compte) && !x.tco_id.Equals(r.tco_id) && !x.cta_id.Equals(r.cta_id)).ToList();
+								var listaTemp = OPDebitoLista.Where(x => !x.dia_movi.Equals(r.dia_movi) && !x.cm_compte.Equals(r.cm_compte)).ToList();
 								DormirMetodo(100);
 								OPDebitoLista = listaTemp;
 
 								//Lo agrego a la lista que uso para cargar la grilla de obligaciones nuevas
-								var listaAux = new List<OPDebitoYCreditoDelProveedorDto> { item };
-								OPDebitoNuevaLista = listaAux;
+								var listaAux = new List<OPDebitoYCreditoDelProveedorDto>();
+								if (OPDebitoNuevaLista != null && OPDebitoNuevaLista.Count >= 0)
+								{
+									listaAux = OPDebitoNuevaLista;
+									listaAux.Add(item);
+									OPDebitoNuevaLista = listaAux;
+								}
+								else
+								{
+									listaAux = [item];
+									OPDebitoNuevaLista = listaAux;
+								}
+
 								model.MsgErrorEnCargarOSacarObligaciones = "";
 								if (string.IsNullOrEmpty(respuesta.Entidad.rela.Trim()))
 								{
@@ -229,7 +240,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 								}
 							}
 							else
-								model.MsgErrorEnCargarOSacarObligaciones = respuesta.Entidad.resultado_msj;
+							{
+								model.MsgErrorEnCargarOSacarObligaciones = string.IsNullOrEmpty(respuesta.Entidad.resultado_msj) ? $"No se puede agregar el item, error desconocido. ({respuesta.Entidad.resultado})" : respuesta.Entidad.resultado_msj;
+							}
 						}
 						else
 							model.MsgErrorEnCargarOSacarObligaciones = "Se ha producido un error al intentar generar la transacción de Obligaciones.";
@@ -263,13 +276,24 @@ namespace gc.sitio.Areas.Compras.Controllers
 							if (respuesta.Entidad.resultado == 0)
 							{
 								//Lo quito de la lista que uso para cargar la grilla de creditos
-								var listaTemp = OPCreditoLista.Where(x => !x.cm_compte_cuota.Equals(r.cuota) && !x.dia_movi.Equals(r.dia_movi) && !x.cm_compte.Equals(r.cm_compte) && !x.tco_id.Equals(r.tco_id) && !x.cta_id.Equals(r.cta_id)).ToList();
+								var listaTemp = OPCreditoLista.Where(x => !x.dia_movi.Equals(r.dia_movi) && !x.cm_compte.Equals(r.cm_compte)).ToList();
 								DormirMetodo(100);
-								//TODO MARCE: ver si conviene meter un delay para evitar el problema de la actualizacion de las listas en sesion.
 								OPCreditoLista = listaTemp;
+
 								//Lo agrego a la lista que uso para cargar la grilla de creditos nuevas
-								var listaAux = new List<OPDebitoYCreditoDelProveedorDto> { item };
-								OPCreditoNuevaLista = listaAux;
+								var listaAux = new List<OPDebitoYCreditoDelProveedorDto>();
+								if (OPCreditoNuevaLista != null && OPCreditoNuevaLista.Count >= 0)
+								{
+									listaAux = OPCreditoNuevaLista;
+									listaAux.Add(item);
+									OPCreditoNuevaLista = listaAux;
+								}
+								else 
+								{
+									listaAux = [item];
+									OPCreditoNuevaLista = listaAux;
+								}
+
 								model.MsgErrorEnCargarOSacarCreditos = "";
 								if (string.IsNullOrEmpty(respuesta.Entidad.rela.Trim()))
 								{
@@ -278,7 +302,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 							}
 							else
 							{
-								model.MsgErrorEnCargarOSacarCreditos = respuesta.Entidad.resultado_msj;
+								model.MsgErrorEnCargarOSacarCreditos = string.IsNullOrEmpty(respuesta.Entidad.resultado_msj) ? $"No se puede agregar el item, error desconocido. ({respuesta.Entidad.resultado})" : respuesta.Entidad.resultado_msj;
 							}
 						}
 						else
@@ -313,8 +337,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 							if (respuesta.Entidad.resultado == 0)
 							{
 								//Lo quito de la lista que uso para cargar la grilla de obligaciones nuevas
-								var listaTemp = OPDebitoNuevaLista.Where(x => !x.cm_compte_cuota.Equals(r.cuota) && !x.dia_movi.Equals(r.dia_movi) && !x.cm_compte.Equals(r.cm_compte) && !x.tco_id.Equals(r.tco_id) && !x.cta_id.Equals(r.cta_id)).ToList();
-								//TODO MARCE: ver si conviene meter un delay para evitar el problema de la actualizacion de las listas en sesion.
+								var listaTemp = OPDebitoNuevaLista.Where(x => !x.dia_movi.Equals(r.dia_movi) && !x.cm_compte.Equals(r.cm_compte)).ToList();
 								DormirMetodo(100);
 								OPDebitoNuevaLista = listaTemp;
 
@@ -339,7 +362,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 									model.MsgErrorEnCargarOSacarObligaciones = "Se ha producido un error al intentar restaurar la lista de Obligaciones.";
 							}
 							else
-								model.MsgErrorEnCargarOSacarObligaciones = respuesta.Entidad.resultado_msj;
+								model.MsgErrorEnCargarOSacarObligaciones = string.IsNullOrEmpty(respuesta.Entidad.resultado_msj) ? $"No se puede agregar el item, error desconocido. ({respuesta.Entidad.resultado})" : respuesta.Entidad.resultado_msj;
 						}
 						else
 							model.MsgErrorEnCargarOSacarObligaciones = "Se ha producido un error al intentar generar la transacción de Obligaciones.";
@@ -373,8 +396,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 							if (respuesta.Entidad.resultado == 0)
 							{
 								//Lo quito de la lista que uso para cargar la grilla de obligaciones nuevas
-								var listaTemp = OPCreditoNuevaLista.Where(x => !x.cm_compte_cuota.Equals(r.cuota) && !x.dia_movi.Equals(r.dia_movi) && !x.cm_compte.Equals(r.cm_compte) && !x.tco_id.Equals(r.tco_id) && !x.cta_id.Equals(r.cta_id)).ToList();
-								//TODO MARCE: ver si conviene meter un delay para evitar el problema de la actualizacion de las listas en sesion.
+								var listaTemp = OPCreditoNuevaLista.Where(x => !x.dia_movi.Equals(r.dia_movi) && !x.cm_compte.Equals(r.cm_compte)).ToList();
 								DormirMetodo(100);
 								OPCreditoNuevaLista = listaTemp;
 
@@ -399,7 +421,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 									model.MsgErrorEnCargarOSacarCreditos = "Se ha producido un error al intentar restaurar la lista de Créditos.";
 							}
 							else
-								model.MsgErrorEnCargarOSacarCreditos = respuesta.Entidad.resultado_msj;
+								model.MsgErrorEnCargarOSacarCreditos = string.IsNullOrEmpty(respuesta.Entidad.resultado_msj) ? $"No se puede agregar el item, error desconocido. ({respuesta.Entidad.resultado})" : respuesta.Entidad.resultado_msj;
 						}
 						else
 							model.MsgErrorEnCargarOSacarCreditos = "Se ha producido un error al intentar generar la transacción de Créditos.";
