@@ -157,6 +157,7 @@ function AceptarDesdeValidPrev() {
 		setTimeout(() => {
 			CargarObligacionesOCreditos("H"); //Créditos
 		}, 500);
+		$("#btnAbmCancelar").prop("disabled", false);
 	});
 }
 
@@ -188,9 +189,39 @@ function InicializaPantalla() {
 	$("#Rel01").focus();
 	$("#lbRel01").text("Proveedor");
 	$("#btnDetalle").prop("disabled", true);
+	$("#btnAbmCancelar").on("click", function () {
+		InicializarDatosEnSesion();
+		InicializaPantalla();
+		LimpiarDatosDelFiltroInicial();
+		$("#btnFiltro").trigger("click");
+		$("#btnDetalle").trigger("click");
+		$("#divDetalle").collapse("hide");
+	});
+	$("#btnAbmCancelar").prop("disabled", true);
 	ctaIdSelected = "";
 	MostrarDatosDeCuenta(false);
 	$("#divFiltro").collapse("show")
+}
+
+function InicializarDatosEnSesion() {
+	PostGen({}, inicializarDatosEnSesionURL, function (obj) {
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			console.log(obj.msg);
+		}
+	});
+}
+
+function LimpiarDatosDelFiltroInicial() {
+	$("input#Rel01").val("");
+	$("#Rel01Item").val("");
+	$("#Rel01List").empty();
+	$("#listaComptesPend").empty();
 }
 
 function MostrarDatosDeCuenta(mostrar) {

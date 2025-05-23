@@ -490,6 +490,28 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
+		[HttpPost]
+		public JsonResult InicializarDatosEnSesion()
+		{
+			try
+			{
+				CtaIdSelected = "";
+				OPValidacionPrevLista = [];
+				OPDebitoLista = [];
+				OPDebitoOriginalLista = [];
+				OPDebitoNuevaLista = [];
+				OPCreditoLista = [];
+				OPCreditoOriginalLista = [];
+				OPCreditoNuevaLista = [];
+
+				return Json(new { error = false, warn = false, msg = "Inicializacion correcta." });
+			}
+			catch (Exception)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar inicializar los datos en Sesion - ORDENDECOMPRA" });
+			}
+		}
+
 		#region Clases
 		public class TotalesActualizados
 		{

@@ -24,33 +24,22 @@
 				</button>
 			</div>
 		</div>
+		<div class="col-md-2">
+			<div class="d-flex justify-content-sm-center">
+				<button id="btnAbmAceptar" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Aceptar" disabled>
+					<i class="bx bx-check-circle bx-xs"></i>
+				</button>
+				<button id="btnAbmCancelar" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar" disabled>
+					<i class="bx bx-x-circle bx-xs"></i>
+				</button>
+			</div>
+		</div>
 	</div>
 	<div class="collapse" id="divFiltro" style="">
 		<partial name="_filtroBase" model="filtro" />
 		@Html.Hidden("pagEstado", false);
 	</div>
 	<div class="collapse" id="divDetalle" style="">
-		@* <div class="row mt-2">
-			<div class="col-md-5">
-				<div class="input-group input-group-sm mt-1" id="divProveedorSeleccionado">
-					<span class="input-group-text fixed-lbl-for-abm-70">Cuenta: </span>
-					<input type="text" id="CtaID" class="form-control" style="max-width: 100px;text-align: right;" disabled />
-					<input type="text" id="CtaDesc" class="form-control" disabled />
-				</div>
-			</div>
-			<div class="col-md-7">
-				<div class="input-group input-group-sm mt-1">
-					<span class="input-group-text fixed-lbl-for-abm-100" title="Obligaciones a Cancelar">Obl. a Cancelar: </span>
-					<input type="text" class="form-control align-right" style="background-color: darkturquoise; color: black;" disabled />
-					<span class="input-group-text fixed-lbl-for-abm-100" title="Créditos y Valores Imputados">Cred. y Val. Imputados: </span>
-					<input type="text" class="form-control align-right" style="background-color: darkseagreen; color: black;" disabled />
-					<span class="input-group-text fixed-lbl-for-abm-100">Diferencia: </span>
-					<input type="text" class="form-control align-right" style="background-color: chocolate; color: black;" disabled />
-				</div>
-			</div>
-		</div>
-		<div class="mt-2" id="divOrdenDePago">
-		</div> *@
 	</div>
 </div>
 
@@ -66,6 +55,7 @@
 		var actualizarGrillaObligacionesInferiorUrl = "@Url.Action("ActualizarGrillaObligacionesInferior", "ordendepagoaproveedor", new { area = "Compras" })";
 		var actualizarGrillaCreditosInferiorUrl = "@Url.Action("ActualizarGrillaCreditosInferior", "ordendepagoaproveedor", new { area = "Compras" })";
 		var actualizarTotalesSuperioresUrl = "@Url.Action("ActualizarTotalesSuperiores", "ordendepagoaproveedor", new { area = "Compras" })";
+		var inicializarDatosEnSesionURL = "@Url.Action("InicializarDatosEnSesion", "ordendepagoaproveedor", new { area = "Compras" })";
 
 	</script>
 	<script src="~/js/app/areas/ordendepagoaproveedor/odepaproveedor.js"></script>
