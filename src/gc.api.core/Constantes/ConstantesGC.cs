@@ -160,6 +160,8 @@
 			public const string SP_OP_VALIDACIONES_PREV = "SPGECO_OP_Validaciones_Prev";
             public const string SP_OP_VTO = "SPGECO_OP_Vto";
             public const string SP_OP_CARGAR_SACAR = "SPGECO_OP_cargar_sacar";
+			public const string SP_OP_RETENCIONES = "SPGECO_OP_Retenciones";
+			public const string SP_OP_VALORES = "SPGECO_OP_Valores";
 			#endregion
 
 			#region Cliente

@@ -534,6 +534,48 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
+		[HttpPost]
+		public IActionResult CargarRetencionesDesdeObligYCredSeleccionados()
+		{
+			var model = new GridCoreSmart<RetencionesDesdeObligYCredDto>();
+			try
+			{
+				return PartialView("_grillaRetenciones", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public IActionResult CargarValoresDesdeObligYCredSeleccionados()
+		{
+			var model = new GridCoreSmart<RetencionesDesdeObligYCredDto>();
+			try
+			{
+				return PartialView("_grillaValores", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
 		#region Clases
 		public class TotalesActualizados
 		{

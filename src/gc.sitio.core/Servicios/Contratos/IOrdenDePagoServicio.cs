@@ -9,5 +9,7 @@ namespace gc.sitio.core.Servicios.Contratos
 		List<OPValidacionPrevDto> GetOPValidacionesPrev(string cta_id, string token);
 		List<OPDebitoYCreditoDelProveedorDto> GetOPDebitoYCreditoDelProveedor(string cta_id, char tipo, bool excluye_notas, string admId, string usuId, string token);
 		RespuestaGenerica<RespuestaRelaDto> CargarSacarOPDebitoCreditoDelProveedor(CargarOSacarObligacionesOCreditosRequest r, string token);
+		List<RetencionesDesdeObligYCredDto> CargarRetencionesDesdeObligYCredSeleccionados(CargarRetencionesDesdeObligYCredSeleccionadosRequest r, string token);
+		List<ValoresDesdeObligYCredDto> CargarValoresDesdeObligYCredSeleccionados(CargarValoresDesdeObligYCredSeleccionadosRequest r, string token);
 	}
 }

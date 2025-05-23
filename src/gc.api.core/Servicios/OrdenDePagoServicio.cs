@@ -61,5 +61,43 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<RespuestaRelaDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		/// <summary>
+		/// Carga las retenciones desde las obligaciones y creditos seleccionados
+		/// </summary>
+		/// <param name="r">CargarRetencionesDesdeObligYCredSeleccionadosRequest</param>
+		/// <returns>Lista de objetos RetencionesDesdeObligYCredDto</returns>
+		public List<RetencionesDesdeObligYCredDto> CargarRetencionesDesdeObligYCredSeleccionados(CargarRetencionesDesdeObligYCredSeleccionadosRequest r)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OP_RETENCIONES;
+			var ps = new List<SqlParameter>()
+			{
+				new("@cta_id", r.cta_id),
+				new("@json_d", r.json_d),
+				new("@json_h", r.json_h),
+
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RetencionesDesdeObligYCredDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		/// <summary>
+		/// Carga los valores desde las obligaciones y creditos seleccionados
+		/// </summary>
+		/// <param name="r"></param>
+		/// <returns>Lista de objetos ValoresDesdeObligYCredDto</returns>
+		public List<ValoresDesdeObligYCredDto> CargarValoresDesdeObligYCredSeleccionados(CargarValoresDesdeObligYCredSeleccionadosRequest r)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OP_VALORES;
+			var ps = new List<SqlParameter>()
+			{
+				new("@cta_id", r.cta_id),
+				new("@json_d", r.json_d),
+				new("@json_h", r.json_h),
+
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<ValoresDesdeObligYCredDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

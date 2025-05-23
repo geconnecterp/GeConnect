@@ -73,5 +73,31 @@ namespace gc.api.Controllers.OrdenDePago
 			response = new ApiResponse<List<RespuestaRelaDto>>(res);
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RetencionesDesdeObligYCredDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult CargarRetencionesDesdeObligYCredSeleccionados([FromBody] CargarRetencionesDesdeObligYCredSeleccionadosRequest r)
+		{
+			ApiResponse<List<RetencionesDesdeObligYCredDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _ordenDePagoServicio.CargarRetencionesDesdeObligYCredSeleccionados(r);
+			response = new ApiResponse<List<RetencionesDesdeObligYCredDto>>(res);
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ValoresDesdeObligYCredDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult CargarValoresDesdeObligYCredSeleccionados([FromBody] CargarValoresDesdeObligYCredSeleccionadosRequest r)
+		{
+			ApiResponse<List<ValoresDesdeObligYCredDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _ordenDePagoServicio.CargarValoresDesdeObligYCredSeleccionados(r);
+			response = new ApiResponse<List<ValoresDesdeObligYCredDto>>(res);
+			return Ok(response);
+		}
 	}
 }

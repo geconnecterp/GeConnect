@@ -3,6 +3,7 @@ using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
 using gc.infraestructura.Dtos.OrdenDePago.Request;
@@ -25,6 +26,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string ObtenerOPValidacionesPrev = "/GetOPValidacionesPrev";
 		private const string ObtenerOPDebitoYCreditoDelProveedor = "/GetOPDebitoYCreditoDelProveedor";
 		private const string AgregarQuitarOPDebitoCreditoDelProveedor = "/CargarSacarOPDebitoCreditoDelProveedor";
+		private const string ObtenerRetencionesDesdeObligYCredSeleccionados = "/CargarRetencionesDesdeObligYCredSeleccionados";
+		private const string ObtenerValoresDesdeObligYCredSeleccionados = "/CargarValoresDesdeObligYCredSeleccionados";
 		private readonly AppSettings _appSettings;
 		public OrdenDePagoServicio(IOptions<AppSettings> options, ILogger<OrdenDePagoServicio> logger) : base(options, logger, RutaAPI)
 		{
@@ -143,6 +146,68 @@ namespace gc.sitio.core.Servicios.Implementacion
 			else
 			{
 				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public List<RetencionesDesdeObligYCredDto> CargarRetencionesDesdeObligYCredSeleccionados(CargarRetencionesDesdeObligYCredSeleccionadosRequest r, string token)
+		{
+			ApiResponse<List<RetencionesDesdeObligYCredDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(r, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerRetencionesDesdeObligYCredSeleccionados}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().Result;
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros cta_id:{r.cta_id}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RetencionesDesdeObligYCredDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().Result;
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public List<ValoresDesdeObligYCredDto> CargarValoresDesdeObligYCredSeleccionados(CargarValoresDesdeObligYCredSeleccionadosRequest r, string token)
+		{
+			ApiResponse<List<ValoresDesdeObligYCredDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(r, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerValoresDesdeObligYCredSeleccionados}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().Result;
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros cta_id:{r.cta_id}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ValoresDesdeObligYCredDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().Result;
 				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
 				return new();
 			}

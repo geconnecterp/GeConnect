@@ -1,6 +1,8 @@
 ﻿$(function () {
 	$(document).on("click", "#btnCancelDesdeValidPrev", CancelDesdeValidPrev);
 	$(document).on("click", "#btnAceptarDesdeValidPrev", AceptarDesdeValidPrev);
+	$(document).on("click", "#btnSiguiente1", btnSiguiente1Validar);
+	//
 	InicializaPantalla();
 	$("#btnBuscar").on("click", function () {
 		if (ctaIdSelected == "") {
@@ -15,6 +17,26 @@
 		}
 	});
 });
+
+function btnSiguiente1Validar() {
+	if ($("#tbListaObligacionesParaAgregar tbody tr").length < $("#tbListaCreditosParaAgregar tbody tr").length) {
+		AbrirMensaje("ATENCIÓN", "Deben existir mas elementos de Obligaciones/Débitos que créditos.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "warn!", null);
+	}
+	//Validar que el total de obligaciones o débitos sea mayor o igual que el de los créditos
+	else if ($("#tbListaObligacionesParaAgregar tbody tr").length > $("#tbListaCreditosParaAgregar tbody tr").length) {
+		//TODO MARCE: seguir aca
+	}
+	else {
+		//Si no existen obligaciones, debe suponer que es un “Pago Anticipado”, en ese caso debe advertirlo en el paso siguiente 
+		//(tampoco deben existir créditos por defecto debería funcionar la validación anterior)
+		if ($("#tbListaObligacionesParaAgregar tbody tr").length == 0 && $("#tbListaCreditosParaAgregar tbody tr").length == 0) {
+			//TODO MARCE: seguir aca
+		}
+	}
+}
 
 const formatter = new Intl.NumberFormat('en-US', {
 	style: 'currency',
