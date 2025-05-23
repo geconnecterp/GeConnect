@@ -8,6 +8,7 @@ using gc.sitio.core.Servicios.Contratos.Asientos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 namespace gc.sitio.Areas.Asientos.Controllers
 {
@@ -52,7 +53,7 @@ namespace gc.sitio.Areas.Asientos.Controllers
                 ViewBag.ListaEjercicios = ComboEjercicios();
                 ViewBag.ListaTiposAsiento = ComboTiposAsiento();
                 ViewBag.ListaUsuarios = ComboUsuariosEjercicio();
-
+                
                 return View();
             }
             catch (Exception ex)
@@ -63,6 +64,75 @@ namespace gc.sitio.Areas.Asientos.Controllers
             }
         }
 
+        /// <summary>
+        /// Pasa los asientos temporales seleccionados a contabilidad definitiva
+        /// </summary>
+        /// <param name="asientosIds">Array con los IDs de los asientos a pasar</param>
+        /// <returns>Resultado de la operación</returns>
+        [HttpPost]
+        public async Task<JsonResult> PasarAContabilidad(string[] asientosIds)
+        {
+            try
+            {
+                // Verificar autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                {
+                    return Json(new { error = true, auth = true, msg = "Su sesión ha caducado. Por favor, inicie sesión nuevamente." });
+                }
+
+                // Validar que existan asientos seleccionados
+                if (asientosIds == null || !asientosIds.Any())
+                {
+                    return Json(new { error = true, msg = "Debe seleccionar al menos un asiento para pasar a contabilidad." });
+                }
+
+                var asientoPasa = new AsientoPasaDto
+                {
+                    JsonDiaMovi = JsonConvert.SerializeObject(asientosIds), 
+                    Usu_id = UserName, // Usuario actual
+                    Adm_id = AdministracionId // Administración actual
+                };
+
+                // Llamar al servicio para realizar el traspaso
+                var response = await _asTempSv.PasarAsientosAContabilidad(asientoPasa, TokenCookie);
+
+                if (!response.Ok || response.Entidad == null)
+                {
+                    return Json(new
+                    {
+                        error = true,
+                        msg = response.Mensaje ?? "Error al pasar los asientos a contabilidad."
+                    });
+                }
+
+                // Si el proceso fue exitoso
+                if (response.Entidad.resultado == 0)
+                {
+                    return Json(new
+                    {
+                        error = false,
+                        msg = "Los asientos seleccionados han sido pasados a contabilidad con éxito."
+                    });
+                }
+                else
+                {
+                    return Json(new
+                    {
+                        error = true,
+                        msg = response.Entidad.resultado_msj ?? "Error al procesar la solicitud."
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al pasar asientos a contabilidad");
+                return Json(new
+                {
+                    error = true,
+                    msg = "Se produjo un error al procesar la solicitud: " + ex.Message
+                });
+            }
+        }
 
 
         [HttpPost]

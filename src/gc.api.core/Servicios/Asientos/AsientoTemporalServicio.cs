@@ -5,6 +5,8 @@ using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Dtos.Asientos;
 using gc.infraestructura.Dtos.Gen;
 using Microsoft.Data.SqlClient;
+using Newtonsoft.Json;
+using System.Data;
 
 namespace gc.api.core.Servicios.Asientos
 {
@@ -38,31 +40,115 @@ namespace gc.api.core.Servicios.Asientos
             return _repository.EjecutarLstSpExt<AsientoGridDto>(sp, ps, true);
         }
 
-        public RespuestaDto PasarAsientosTmpAContabilidad(AsientoPasaDto asientoPasa)
+        /// <summary>
+        /// Pasa varios asientos temporales a contabilidad definitiva
+        /// </summary>
+        /// <param name="asientoPasa">Datos necesarios para el traspaso de asientos</param>
+        /// <returns>Lista de resultados de la operación para cada asiento</returns>
+        public List<RespuestaDto> PasarAsientosTmpAContabilidad(AsientoPasaDto asientoPasa)
         {
-            var sp = ConstantesGC.StoredProcedures.SP_ASIENTO_TMP_PASA;
-            var ps = new List<SqlParameter>
+            List<RespuestaDto> resultados = new List<RespuestaDto>();
+
+            try
+            {
+                var sp = ConstantesGC.StoredProcedures.SP_ASIENTO_TMP_PASA;
+
+                // Validación básica
+                if (asientoPasa == null || string.IsNullOrEmpty(asientoPasa.JsonDiaMovi))
                 {
-                    new SqlParameter("@movi_id", asientoPasa.Movi_id),
+                    resultados.Add(new RespuestaDto
+                    {
+                        resultado = -1,
+                        resultado_msj = "No se recibieron asientos para procesar"
+                    });
+                    return resultados;
+                }
+
+                // Deserializar el JSON a un array de IDs de asientos
+                string[] asientosIds = JsonConvert.DeserializeObject<string[]>(asientoPasa.JsonDiaMovi);
+
+                if (asientosIds == null || asientosIds.Length == 0)
+                {
+                    resultados.Add(new RespuestaDto
+                    {
+                        resultado = -1,
+                        resultado_msj = "No se encontraron asientos válidos en los datos proporcionados"
+                    });
+                    return resultados;
+                }
+
+                // parametros del sp
+                var ps = new List<SqlParameter>
+                {
+                    new SqlParameter("@movi_id", ""),
                     new SqlParameter("@usu_id", asientoPasa.Usu_id),
                     new SqlParameter("@adm_id", asientoPasa.Adm_id)
                 };
-            // Ejecutar el procedimiento almacenado y devolver la respuesta
-            var res = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
-            if (res != null && res.Count > 0)
-            {
-                return res.FirstOrDefault();
+
+                // Iterar a través de los IDs y procesar cada asiento
+                foreach (string moviId in asientosIds)
+                {
+                    try
+                    {
+                        var parametro = ps.FirstOrDefault(ps => ps.ParameterName == "@movi_id");
+                        if (parametro != null)
+                        {
+                            ps.Remove(parametro);
+                        }
+                        ps.Add(new SqlParameter("@dia_movi", moviId));
+
+                        // Ejecutar el procedimiento almacenado y devolver la respuesta
+                        var res = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+
+                        if(res == null || res.Count == 0)
+                        {
+                            resultados.Add(new RespuestaDto
+                            {
+                                resultado = -1,
+                                resultado_id = moviId,
+                                resultado_msj = $"No se obtuvo respuesta del procedimiento almacenado para el asiento {moviId}"
+                            });
+                            continue;
+                        }
+                        var result = res.First();
+                        var respuesta = new RespuestaDto
+                        {
+                            resultado = result.resultado,
+                            resultado_id = moviId, // Guardamos el ID del asiento procesado
+                            resultado_msj = result.resultado_msj
+                        };
+
+                        // Agregar la respuesta a la lista de resultados
+                        resultados.Add(respuesta);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Si ocurre un error durante el procesamiento de un asiento, 
+                        // lo registramos y continuamos con el siguiente                      
+
+                        resultados.Add(new RespuestaDto
+                        {
+                            resultado = -1,
+                            resultado_id = moviId,
+                            resultado_msj = $"Error al procesar el asiento {moviId}: {ex.Message}"
+                        });
+                    }
+                }
+
+                return resultados;
             }
-            else
-            {
-                return new RespuestaDto
+            catch (Exception ex)
+            {              
+                resultados.Add(new RespuestaDto
                 {
                     resultado = -1,
-                    resultado_msj = "No se obtuvo respuesta del procedimiento almacenado."
-                };
+                    resultado_msj = $"Error general al procesar los asientos: {ex.Message}"
+                });
+
+                return resultados;
             }
         }
-
+  
         public AsientoDetalleDto ObtenerAsientoDetalle(string moviId)
         {
             if (string.IsNullOrWhiteSpace(moviId))

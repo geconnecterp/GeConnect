@@ -33,7 +33,7 @@
                     {
                         if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
                         var title = item.revisable ? "Revisar Descripción" : "OK";
-                        <tr class="@clase" onclick="selectReg(this, 'tbGridAsiento')" title="@title">
+                        <tr class="@clase" title="@title"> @* onclick="selectReg(this, 'tbGridAsiento')" *@
                             <td class="@Model.ObtenerClase(item.dia_movi)" style="text-align: left;">@Model.FormatearDato(item.dia_movi, FormatDato.Ninguno)</td>
                             <td class="@Model.ObtenerClase(item.dia_fecha)">@Model.FormatearDato(item.dia_fecha, FormatDato.Fecha)</td>
                             <td class="@Model.ObtenerClase(item.dia_tipo)">@Model.FormatearDato(item.dia_tipo, FormatDato.Ninguno)</td>
@@ -54,5 +54,23 @@
                 }
             </tbody>
         </table>
+    </div>
+    <div class="offset-md-3 col-md-6">
+        <div id="divPaginacion">
+        </div>
+    </div>
+   
+</div>
+<div class="row">
+    <div class="offset-md-3 col-md-6">
+        <div id="divPaginacion">
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="alert alert-info small mb-2">
+        <i class="bx bx-info-circle"></i>
+        Haga clic en un asiento para seleccionarlo. Use Ctrl+Clic para seleccionar múltiples asientos.
+        Doble clic para ver los detalles de un asiento.
     </div>
 </div>

@@ -7,7 +7,18 @@
 @section styles {
     <link rel="stylesheet" href="~/css/simplePagination.css" />
     <link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
- 
+    <!-- Agregar esto al <head> de la página o en un archivo CSS si no existe ya -->
+    <style>
+        #tbGridAsiento tbody tr.selectedEdit-row {
+            background-color: #e7f3ff !important;
+            box-shadow: inset 0 0 0 1px #0d6efd;
+            font-weight: bold;
+        }
+
+        #tbGridAsiento tbody tr {
+            cursor: pointer;
+        }
+    </style>
 }
 
 <div class="container">
@@ -77,12 +88,7 @@
         </p>
     </div>
 </div>
-<div class="row">
-    <div class="offset-md-3 col-md-6">
-        <div id="divPaginacion">
-        </div>
-    </div>
-</div>
+
 
 
 <!--modal para presentar el plan de cuenas-->
@@ -97,6 +103,7 @@
         var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "AsientoTemporal", new { area = "Asientos" })";
         var buscarAsientoUrl= "@Url.Action("buscarAsiento", "AsientoTemporal", new { area = "Asientos" })";
         var nuevoAsientoUrl="@Url.Action("nuevoAsiento", "AsientoTemporal", new { area = "Asientos" })";
+        var pasarAContabilidadUrl = '@Url.Action("PasarAContabilidad", "AsientoTemporal", new { area = "Asientos" })';
 
             // URLs para las llamadas AJAX - Se configurarán desde la vista
         var buscarPlanCuentasUrl = "@Url.Action("buscar", "abmplancuenta", new { area = "abms" })";
