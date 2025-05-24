@@ -70,7 +70,7 @@ namespace gc.sitio.Areas.Asientos.Controllers
         /// <param name="asientosIds">Array con los IDs de los asientos a pasar</param>
         /// <returns>Resultado de la operación</returns>
         [HttpPost]
-        public async Task<JsonResult> PasarAContabilidad(string[] asientosIds)
+        public async Task<JsonResult> PasarAContabilidad([FromBody] List<string> asientosIds)
         {
             try
             {
@@ -96,7 +96,7 @@ namespace gc.sitio.Areas.Asientos.Controllers
                 // Llamar al servicio para realizar el traspaso
                 var response = await _asTempSv.PasarAsientosAContabilidad(asientoPasa, TokenCookie);
 
-                if (!response.Ok || response.Entidad == null)
+                if (!response.Ok || response.ListaEntidad == null)
                 {
                     return Json(new
                     {
@@ -105,22 +105,71 @@ namespace gc.sitio.Areas.Asientos.Controllers
                     });
                 }
 
-                // Si el proceso fue exitoso
-                if (response.Entidad.resultado == 0)
+                // Analizar los resultados de cada asiento
+                var resultados = response.ListaEntidad;
+                var asientosExitosos = resultados.Count(r => r.resultado == 0);
+                var asientosConError = resultados.Where(r => r.resultado != 0).ToList();
+
+                // Todos los asientos fueron procesados exitosamente
+                if (asientosConError.Count == 0)
                 {
                     return Json(new
                     {
                         error = false,
-                        msg = "Los asientos seleccionados han sido pasados a contabilidad con éxito."
+                        msg = $"Los {asientosExitosos} asiento(s) seleccionado(s) han sido pasados a contabilidad con éxito."
                     });
                 }
-                else
+                // Algunos asientos fueron procesados exitosamente, otros con error
+                else if (asientosExitosos > 0)
                 {
+                    // Preparar los detalles de error para enviarlos al cliente
+                    var detallesError = asientosConError.Select(r => new {
+                        asientoId = r.resultado_id,
+                        mensaje = r.resultado_msj
+                    }).ToList();
+
                     return Json(new
                     {
                         error = true,
-                        msg = response.Entidad.resultado_msj ?? "Error al procesar la solicitud."
+                        parcial = true,  // Indica que hay asientos procesados correctamente
+                        exitosos = asientosExitosos,
+                        fallidos = asientosConError.Count,
+                        msg = $"Se procesaron {asientosExitosos} asiento(s) correctamente, pero {asientosConError.Count} asiento(s) presentaron errores.",
+                        detalles = detallesError
                     });
+                }
+                // Todos los asientos presentaron errores
+                else
+                {
+                    // Si son pocos errores, se pueden mostrar directamente
+                    if (asientosConError.Count <= 3)
+                    {
+                        var mensajesError = string.Join("<br>", asientosConError.Select(r =>
+                            $"Asiento {r.resultado_id}: {r.resultado_msj}"));
+
+                        return Json(new
+                        {
+                            error = true,
+                            msg = $"No se pudo procesar ningún asiento. Errores:<br>{mensajesError}"
+                        });
+                    }
+                    // Si son muchos errores, enviar solo el conteo y detalles para posible reporte
+                    else
+                    {
+                        var detallesError = asientosConError.Select(r => new {
+                            asientoId = r.resultado_id,
+                            mensaje = r.resultado_msj
+                        }).ToList();
+
+                        return Json(new
+                        {
+                            error = true,
+                            muchos = true, // Indica que hay muchos errores para mostrar
+                            fallidos = asientosConError.Count,
+                            msg = $"No se pudo procesar ningún asiento. Se encontraron {asientosConError.Count} errores.",
+                            detalles = detallesError
+                        });
+                    }
                 }
             }
             catch (Exception ex)
