@@ -78,29 +78,24 @@ namespace gc.api.core.Servicios.Asientos
                 }
 
                 // parametros del sp
-                var ps = new List<SqlParameter>
-                {
-                    new SqlParameter("@movi_id", ""),
-                    new SqlParameter("@usu_id", asientoPasa.Usu_id),
-                    new SqlParameter("@adm_id", asientoPasa.Adm_id)
-                };
+
 
                 // Iterar a través de los IDs y procesar cada asiento
                 foreach (string moviId in asientosIds)
                 {
                     try
                     {
-                        var parametro = ps.FirstOrDefault(ps => ps.ParameterName == "@movi_id");
-                        if (parametro != null)
-                        {
-                            ps.Remove(parametro);
-                        }
-                        ps.Add(new SqlParameter("@dia_movi", moviId));
+                        var ps = new List<SqlParameter>{
+                                new SqlParameter("@eje_nro", asientoPasa.Eje_nro),
+                                new SqlParameter("@dia_movi", moviId),
+                                new SqlParameter("@usu_id", asientoPasa.Usu_id),
+                                new SqlParameter("@adm_id", asientoPasa.Adm_id)
+                        };
 
                         // Ejecutar el procedimiento almacenado y devolver la respuesta
                         var res = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 
-                        if(res == null || res.Count == 0)
+                        if (res == null || res.Count == 0)
                         {
                             resultados.Add(new RespuestaDto
                             {
@@ -138,7 +133,7 @@ namespace gc.api.core.Servicios.Asientos
                 return resultados;
             }
             catch (Exception ex)
-            {              
+            {
                 resultados.Add(new RespuestaDto
                 {
                     resultado = -1,
@@ -148,7 +143,7 @@ namespace gc.api.core.Servicios.Asientos
                 return resultados;
             }
         }
-  
+
         public AsientoDetalleDto ObtenerAsientoDetalle(string moviId)
         {
             if (string.IsNullOrWhiteSpace(moviId))

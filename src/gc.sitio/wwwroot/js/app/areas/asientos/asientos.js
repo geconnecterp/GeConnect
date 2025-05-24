@@ -1,6 +1,8 @@
 ﻿// Al cargar, establecer variables para control de selección
 let filaClicDoble = null; // Fila seleccionada con doble clic (detalle)
 let filasSeleccionadas = []; // Filas seleccionadas para operaciones batch
+// Agregar estas variables al inicio para controlar los checkboxes
+let checkboxesVisibles = false;
 
 // Función para actualizar el mensaje informativo
 function actualizarMensajeSeleccion() {
@@ -104,7 +106,13 @@ function buscarAsientos(pag) {
     });
 }
 
-
+// Mostrar los checkboxes después de la primera selección con Ctrl+click
+function mostrarCheckboxes() {
+    if (!checkboxesVisibles) {
+        $(".checkbox-column").show();
+        checkboxesVisibles = true;
+    }
+}
 
 $(function () {
     // Agregar estilos CSS para diferencias visuales claras
@@ -133,6 +141,27 @@ $(function () {
         #tbGridAsiento tbody tr {
             cursor: pointer;
         }
+
+         /* Estilos para los checkboxes */
+        .checkbox-column {
+            width: 40px;
+            text-align: center;
+        }
+        
+        .form-check-input {
+            cursor: pointer;
+        }
+        
+        /* Estilo para checkboxes deshabilitados */
+        .form-check-input:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        /* Cambiar el color del fondo de las filas con checkboxes marcados */
+        #tbGridAsiento tbody tr:has(.asiento-checkbox:checked) {
+            background-color: #e7f3ff !important;
+        }
     `)
         .appendTo("head");
 
@@ -142,7 +171,7 @@ $(function () {
     $(document).off("dblclick", "#tbGridAsiento tbody tr");
 
 
-   
+
 
     // Modificar la función buscarAsientos para inicializar selección
     buscarAsientos = function (pag) {
@@ -169,11 +198,18 @@ $(function () {
     $("#btnCancel").on("click", function () {
         window.location.href = homeAsientosUrl;
     });
-    //$(document).on("click", "#btnCancelarAsiento", function () {
-    //    // Oculta el panel del asiento
-    //    $("#divpanel01").empty(); // O usa .hide() si prefieres
-    //    InicializaVistaAsientos();
-    //});
+
+    // Agregar botón de cancelar selección junto al botón de pasar a contabilidad
+    $("#btnPasarConta").after(`
+    <button type="button" class="btn btn-outline-secondary btn-sm mt-1 me-1" id="btnCancelarSeleccion" style="display:none;" title="Cancelar selección">
+        <i class="bx bx-x"></i>
+    </button>`);
+
+    // Evento para el botón de cancelar selección
+    $(document).on("click", "#btnCancelarSeleccion", function () {
+        limpiarSeleccionAsientos();
+        $(this).hide(); // Ocultar el botón después de usarlo
+    });
 
     //**** EVENTOS PARA CONTROLAR LOS BOTONES DE OPERACION
     $("#btnAbmNuevo").on("click", ejecutarAlta);
@@ -204,47 +240,6 @@ $(function () {
         );
     });
 
-
-    //// Evento para el botón "Pasar a contabilidad"
-    //$(document).on("click", "#btnPasarConta", function () {
-    //    // Verificamos si hay registros seleccionados
-    //    let asientosSeleccionados = [];
-
-    //    // Obtener los IDs de los registros seleccionados
-    //    $("#tbGridAsiento tbody tr.selectedEdit-row").each(function () {
-    //        const id = $(this).find("td:first-child").text();
-    //        if (id) {
-    //            asientosSeleccionados.push(id);
-    //        }
-    //    });
-
-    //    // Si no hay registros seleccionados, mostrar mensaje
-    //    if (asientosSeleccionados.length === 0) {
-    //        AbrirMensaje("ATENCIÓN", "Debe seleccionar al menos un asiento para pasar a contabilidad.", function () {
-    //            $("#msjModal").modal("hide");
-    //            return true;
-    //        }, false, ["Aceptar"], "warn!", null);
-    //        return;
-    //    }
-
-    //    // Confirmar la acción
-    //    AbrirMensaje(
-    //        "CONFIRMACIÓN",
-    //        "¿Está seguro que desea pasar los asientos temporales seleccionados a la contabilidad definitiva?",
-    //        function (resp) {
-    //            if (resp === "SI") {
-    //                ejecutarPaseAContabilidad(asientosSeleccionados);
-    //            }
-    //            $("#msjModal").modal("hide");
-    //            return true;
-    //        },
-    //        true, // Mostrar botones SI/NO
-    //        ["SI", "NO"],
-    //        "warn!",
-    //        null
-    //    );
-    //});
-
     // Eventos para activar/desactivar componentes
     $('#chkEjercicio').on('change', function () {
         if (typeof asientoTemporal !== 'undefined' && asientoTemporal === true) {
@@ -273,18 +268,24 @@ $(function () {
     });
 
     // Agregar manejo de clic simple en filas para selección múltiple
+    // Modificar el manejador del clic para mostrar checkboxes cuando se usa Ctrl+click
     $(document).on("click", "#tbGridAsiento tbody tr", function (e) {
         const $this = $(this);
-        const id = $this.find("td:first-child").text().trim();
+        const id = $this.find("td:nth-child(2)").text().trim(); // Ajustado por la nueva columna
+        const esRevisable = $this.attr("data-revisable") === "true";
 
         // Si es doble clic, no hacer nada (el evento dblclick lo manejará)
         if (e.detail === 2) return;
+
+        // Si es con Ctrl o Cmd, mostrar checkboxes
+        if (e.ctrlKey || e.metaKey) {
+            mostrarCheckboxes();
+        }
 
         // Prevenir la propagación del evento
         e.stopPropagation();
 
         // Limpiar estilo de selección de doble clic (firebrick) de todas las filas
-        // (mantiene solo el estilo de selección simple/múltiple)
         $("#tbGridAsiento tbody tr").removeClass("selectedEdit-row");
 
         // Selección simple vs. múltiple
@@ -294,48 +295,140 @@ $(function () {
                 // Si ya estaba en selección múltiple, quitar
                 $this.removeClass("selected-multiple");
 
+                // Desmarcar el checkbox correspondiente
+                $(`#check_${id}`).prop("checked", false);
+
                 // Eliminar de la lista de seleccionados
                 filasSeleccionadas = filasSeleccionadas.filter(item => item !== id);
             } else {
-                // Si no estaba seleccionada, seleccionar como múltiple
-                $this.addClass("selected-multiple");
+                // Si no estaba seleccionada y no es revisable, seleccionar como múltiple
+                if (!esRevisable) {
+                    $this.addClass("selected-multiple");
 
-                // Agregar a la lista si no existe
-                if (!filasSeleccionadas.includes(id)) {
-                    filasSeleccionadas.push(id);
+                    // Marcar el checkbox correspondiente
+                    $(`#check_${id}`).prop("checked", true);
+
+                    // Agregar a la lista si no existe
+                    if (!filasSeleccionadas.includes(id)) {
+                        filasSeleccionadas.push(id);
+                    }
                 }
             }
         } else {
             // Selección simple (clic)
             // Quitar selección múltiple de todas las filas
             $("#tbGridAsiento tbody tr").removeClass("selected-multiple");
+
+            // Desmarcar todos los checkboxes
+            $(".asiento-checkbox").prop("checked", false);
+
             filasSeleccionadas = [];
 
-            // Aplicar selección simple solo a esta fila
-            $this.addClass("selected-simple");
-            $("#tbGridAsiento tbody tr").not($this).removeClass("selected-simple");
+            // Si no es revisable, seleccionar
+            if (!esRevisable) {
+                // Aplicar selección simple solo a esta fila
+                $this.addClass("selected-simple");
+                $("#tbGridAsiento tbody tr").not($this).removeClass("selected-simple");
 
-            // Agregar a la lista de seleccionados
-            filasSeleccionadas = [id];
+                // Marcar solo el checkbox correspondiente
+                $(`#check_${id}`).prop("checked", true);
+
+                // Agregar a la lista de seleccionados
+                filasSeleccionadas = [id];
+            }
         }
 
-        // Actualizar el contador y habilitar/deshabilitar el botón
+        /// Modificar la actualización del contador para mostrar/ocultar el botón de cancelar selección
+        // En todas las funciones donde se actualiza filasSeleccionadas:
         const haySeleccionados = filasSeleccionadas.length > 0;
         $("#btnPasarConta").prop("disabled", !haySeleccionados);
+        $("#btnCancelarSeleccion").toggle(haySeleccionados); // Mostrar/ocultar botón según haya selecciones
 
         // Actualizar mensaje informativo
         $("#selected-count").text(filasSeleccionadas.length);
     });
 
-    // Doble clic sigue mostrando el detalle (mantenemos la funcionalidad existente)
-    // Pero modificamos para que no elimine otras selecciones
-    //$(document).on("dblclick", "#tbGridAsiento tbody tr", function (e) {
-    //    e.stopPropagation(); // Evitar que se propague y active el evento click
-    //    x = $(this);
-    //    //se resguarda el registro de la tabla
-    //    regSelected = x;
-    //    ejecutaDblClickGrid1(x);
-    //});
+    // Evento para el checkbox "selectAll"
+    $(document).on("change", "#selectAllAsientos", function () {
+        const isChecked = $(this).prop("checked");
+
+        // Limpiar todas las selecciones existentes
+        $("#tbGridAsiento tbody tr").removeClass("selected-multiple selected-simple");
+        filasSeleccionadas = [];
+
+        // Marcar/desmarcar todos los checkboxes (excepto los deshabilitados)
+        $(".asiento-checkbox:not(:disabled)").prop("checked", isChecked);
+
+        if (isChecked) {
+            // Recopilar todos los IDs seleccionados de los checkboxes marcados
+            $(".asiento-checkbox:checked").each(function () {
+                const id = $(this).val();
+                if (id && !filasSeleccionadas.includes(id)) {
+                    filasSeleccionadas.push(id);
+                }
+            });
+
+            // Seleccionar todas las filas correspondientes
+            $("#tbGridAsiento tbody tr").each(function () {
+                const $row = $(this);
+                const id = $row.find("td:nth-child(2)").text().trim();
+
+                if (filasSeleccionadas.includes(id)) {
+                    $row.addClass("selected-multiple");
+                }
+            });
+        }
+
+        // Actualizar estado del botón
+        const haySeleccionados = filasSeleccionadas.length > 0;
+        $("#btnPasarConta").prop("disabled", !haySeleccionados);
+
+        // Actualizar contador
+        $("#selected-count").text(filasSeleccionadas.length);
+
+        console.log("IDs seleccionados:", filasSeleccionadas); // Debug para verificar
+    });
+
+    // Evento para los checkboxes individuales
+    $(document).on("change", ".asiento-checkbox", function (e) {
+        e.stopPropagation(); // Evitar que se propague al tr
+
+        const $checkbox = $(this);
+        const id = $checkbox.val();
+        const isChecked = $checkbox.prop("checked");
+        const $row = $checkbox.closest("tr");
+
+        if (isChecked) {
+            // Seleccionar la fila
+            $row.addClass("selected-multiple").removeClass("selected-simple");
+
+            // Agregar a la lista de seleccionados
+            if (!filasSeleccionadas.includes(id)) {
+                filasSeleccionadas.push(id);
+            }
+        } else {
+            // Deseleccionar la fila
+            $row.removeClass("selected-multiple selected-simple");
+
+            // Quitar de la lista de seleccionados
+            filasSeleccionadas = filasSeleccionadas.filter(item => item !== id);
+
+            // Desmarcar el checkbox "selectAll" si alguno se desmarca
+            $("#selectAllAsientos").prop("checked", false);
+        }
+
+        // Verificar si todos los checkboxes no deshabilitados están marcados
+        const todosSeleccionados = $(".asiento-checkbox:not(:disabled)").length ===
+            $(".asiento-checkbox:not(:disabled):checked").length;
+        $("#selectAllAsientos").prop("checked", todosSeleccionados);
+
+        // Actualizar estado del botón
+        const haySeleccionados = filasSeleccionadas.length > 0;
+        $("#btnPasarConta").prop("disabled", !haySeleccionados);
+
+        // Actualizar contador
+        $("#selected-count").text(filasSeleccionadas.length);
+    });
 
     // Manejo de doble clic para ver detalle
     $(document).on("dblclick", "#tbGridAsiento tbody tr", function (e) {
@@ -413,13 +506,67 @@ function ejecutarPaseAContabilidad() {
             CerrarWaiting();
 
             if (obj.error === true) {
-                // Error en la operación
-                AbrirMensaje("ERROR", obj.msg || "Ocurrió un error al pasar los asientos a contabilidad.", function () {
-                    $("#msjModal").modal("hide");
-                    return true;
-                }, false, ["Aceptar"], "error!", null);
+                // Caso 1: Algunos asientos procesados correctamente, otros con error
+                if (obj.parcial === true) {
+                    let mensaje = obj.msg;
+
+                    // Mostrar mensaje principal
+                    AbrirMensaje("ATENCIÓN", mensaje, function () {
+                        // Si hay pocos errores, mostrar detalles en un segundo mensaje
+                        if (obj.fallidos <= 5) {
+                            let detalles = "<ul>";
+                            obj.detalles.forEach(function (detalle) {
+                                detalles += `<li>Asiento ${detalle.asientoId}: ${detalle.mensaje}</li>`;
+                            });
+                            detalles += "</ul>";
+
+                            AbrirMensaje("DETALLES DE ERRORES", detalles, function () {
+                                $("#msjModal").modal("hide");
+                                // Refrescar la lista de asientos
+                                $("#divpanel01").empty();
+                                buscarAsientos(1);
+                                return true;
+                            }, false, ["Aceptar"], "error!", null);
+                        }
+                        // Si hay muchos errores, ofrecer generar un reporte
+                        else {
+                            const generarReporte = confirm("¿Desea generar un reporte con el detalle de los errores?");
+                            if (generarReporte) {
+                                generarReporteErrores(obj.detalles);
+                            }
+
+                            // Refrescar la lista de asientos
+                            $("#divpanel01").empty();
+                            buscarAsientos(1);
+                        }
+                        $("#msjModal").modal("hide");
+                        return true;
+                    }, false, ["Aceptar"], "warn!", null);
+                }
+                // Caso 2: Muchos errores (todos los asientos fallaron)
+                else if (obj.muchos === true) {
+                    let mensaje = obj.msg + "\n¿Desea ver el detalle de los errores?";
+
+                    AbrirMensaje("ERROR", mensaje, function (resp) {
+                        if (resp === "SI") {
+                            generarReporteErrores(obj.detalles);
+                        }
+                        $("#msjModal").modal("hide");
+                        // Refrescar la lista de asientos
+                        $("#divpanel01").empty();
+                        buscarAsientos(1);
+                        return true;
+                    }, true, ["SI", "NO"], "error!", null);
+                }
+                // Caso 3: Error general o pocos errores
+                else {
+                    AbrirMensaje("ERROR", obj.msg || "Ocurrió un error al pasar los asientos a contabilidad.", function () {
+                        $("#msjModal").modal("hide");
+                        return true;
+                    }, false, ["Aceptar"], "error!", null);
+                }
             } else {
-                // Operación exitosa
+                // Caso 4: Operación completamente exitosa
                 AbrirMensaje("ÉXITO", obj.msg || "Los asientos han sido pasados a contabilidad correctamente.", function () {
                     $("#msjModal").modal("hide");
                     // Refrescar la lista de asientos después de un pase exitoso
@@ -437,6 +584,52 @@ function ejecutarPaseAContabilidad() {
             }, false, ["Aceptar"], "error!", null);
         }
     });
+}
+
+/**
+ * Función para generar un reporte con los errores
+ * Esta función es un placeholder - necesitarás implementarla según tus necesidades
+ */
+function generarReporteErrores(detalles) {
+    // Para una implementación inicial, podemos abrir una ventana con los detalles
+    let contenido = "<h3>Detalle de Errores</h3><table class='table table-striped'>";
+    contenido += "<thead><tr><th>Asiento</th><th>Mensaje de Error</th></tr></thead><tbody>";
+
+    detalles.forEach(function (detalle) {
+        contenido += `<tr><td>${detalle.asientoId}</td><td>${detalle.mensaje}</td></tr>`;
+    });
+
+    contenido += "</tbody></table>";
+
+    // Crear una ventana emergente con el contenido HTML
+    const ventana = window.open("", "_blank", "width=800,height=600");
+    ventana.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Reporte de Errores</title>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+            <style>
+                body { padding: 20px; }
+                h3 { margin-bottom: 20px; }
+                .table { width: 100%; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                ${contenido}
+                <div class="mt-4">
+                    <button class="btn btn-primary" onclick="window.print()">Imprimir</button>
+                    <button class="btn btn-secondary" onclick="window.close()">Cerrar</button>
+                </div>
+            </div>
+        </body>
+        </html>
+    `);
+
+    // En una implementación más avanzada, podrías llamar a un endpoint del controlador
+    // que genere un PDF y lo descargue o abra en una nueva pestaña
+    // window.open('/Asientos/AsientoTemporal/GenerarReporteErrores?ids=' + JSON.stringify(detalles), '_blank');
 }
 
 /**
@@ -864,6 +1057,9 @@ function InicializaVistaAsientos(e) {
         // Oculta el panel del asiento
         $("#divpanel01").empty();
 
+        // Limpiar selecciones y ocultar checkboxes
+        limpiarSeleccionAsientos();
+
         // Configuración de componentes
         configurarComponentesIniciales();
 
@@ -882,6 +1078,9 @@ function InicializaVistaAsientos(e) {
     // Primera ejecución o acción pendiente
     primerArranque = false; // Marcar que ya no es la primera ejecución
 
+    // Limpiar selecciones y ocultar checkboxes
+    limpiarSeleccionAsientos();
+
     // Configuración de componentes
     configurarComponentesIniciales();
 
@@ -894,6 +1093,32 @@ function InicializaVistaAsientos(e) {
     activarGrilla(Grids.GridAsiento);
 
     CerrarWaiting();
+}
+
+/**
+ * Limpia todas las selecciones de asientos y oculta los checkboxes
+ */
+function limpiarSeleccionAsientos() {
+    // Limpiar las variables de selección
+    filaClicDoble = null;
+    filasSeleccionadas = [];
+
+    // Quitar todas las clases de selección
+    $("#tbGridAsiento tbody tr").removeClass("selected-simple selected-multiple selectedEdit-row");
+
+    // Desmarcar todos los checkboxes
+    $(".asiento-checkbox").prop("checked", false);
+    $("#selectAllAsientos").prop("checked", false);
+
+    // Ocultar los checkboxes
+    $(".checkbox-column").hide();
+    checkboxesVisibles = false;
+
+    // Deshabilitar botón de pasar a contabilidad
+    $("#btnPasarConta").prop("disabled", true);
+
+    // Actualizar contador de seleccionados
+    $("#selected-count").text("0");
 }
 
 /**
@@ -1003,10 +1228,10 @@ function selectAsientoDbl(x, gridId) {
         $(x).addClass("selectedEdit-row");
     }
 
-    var id = x.find("td:nth-child(1)").text();
+    var id = x.find("td:nth-child(2)").text().trim();
 
     //se agrega por inyection el tab con los datos del producto
-    EntidadEstado = x.find("td:nth-child(3)").text();
+    EntidadEstado = x.find("td:nth-child(4)").text().trim();
     var data = { id: id };
     EntidadSelect = id;
     desactivarGrilla(gridId);
