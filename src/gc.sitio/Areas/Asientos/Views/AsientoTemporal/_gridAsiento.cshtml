@@ -13,7 +13,7 @@
             <thead class="table-dark">
                 <tr class="header">
                     <!-- Nueva columna para el check general -->
-                    <th class="text-sm-center checkbox-column" scope="col" style="display:none;">
+                    <th class="text-sm-center checkbox-column" scope="col">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" id="selectAllAsientos">
                             <label class="form-check-label" for="selectAllAsientos"></label>
@@ -43,7 +43,7 @@
                         <tr class="@clase" title="@title" data-id="@item.dia_movi" data-revisable="@item.revisable.ToString().ToLower()">
                             @* onclick="selectReg(this, 'tbGridAsiento')" *@
                             <!-- Nueva celda para el checkbox de selección -->
-                            <td class="text-center checkbox-column" style="display:none;">
+                            <td class="text-center checkbox-column">
                                 <div class="form-check">
                                     <input class="form-check-input asiento-checkbox" type="checkbox"
                                            id="check_@item.dia_movi" value="@item.dia_movi"

@@ -1,9 +1,13 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Core.Helpers;
+using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Asientos;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Helpers;
 using gc.sitio.Controllers;
+using gc.sitio.core.Servicios.Contratos.ABM;
 using gc.sitio.core.Servicios.Contratos.Asientos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -17,6 +21,8 @@ namespace gc.sitio.Areas.Asientos.Controllers
     {
         private readonly IAsientoFrontServicio _asientoServicio;
         private readonly IAsientoTemporalServicio _asTempSv;
+        private readonly IAbmServicio _abmSv;
+
         private readonly AppSettings _appSettings;
 
         private List<UsuAsientoDto> UsuariosEjercicioLista { get; set; } = [];
@@ -26,11 +32,14 @@ namespace gc.sitio.Areas.Asientos.Controllers
             IHttpContextAccessor contexto,
             ILogger<AsientoTemporalController> logger,
             IAsientoFrontServicio asientoServicio,
-            IAsientoTemporalServicio asTempSv) : base(options, contexto, logger)
+            IAsientoTemporalServicio asTempSv,
+            IAbmServicio abm
+            ) : base(options, contexto, logger)
         {
             _asientoServicio = asientoServicio;
             _asTempSv = asTempSv;
             _appSettings = options.Value;
+            _abmSv = abm;
         }
 
         public async Task<IActionResult> Index()
@@ -279,7 +288,7 @@ namespace gc.sitio.Areas.Asientos.Controllers
                         Ok = false,
                         Mensaje = response.Mensaje ?? "No se encontró información del asiento solicitado."
                     });
-                }
+                }                
 
                 // Retornar la vista parcial con los datos
                 return PartialView("_asiento", response.Entidad);
@@ -295,7 +304,111 @@ namespace gc.sitio.Areas.Asientos.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<JsonResult> ConfirmarAsientoTemporal([FromBody] AsientoAccionDto datos)
+        {
+            try
+            {
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+                }
 
+                var asiento = datos.asiento;
+                var accion = datos.accion;
+
+                asiento = HelperGen.PasarAMayusculas(asiento);
+
+                var asientoPlano = ConvertirAsientoAPlano(asiento);
+
+                //prod.P_Obs = prod.P_Obs.ToUpper();
+                AbmGenDto abm = new AbmGenDto()
+                {
+                    Json = JsonConvert.SerializeObject(asientoPlano),
+                    Objeto = "asientotmp",
+                    Administracion = AdministracionId,
+                    Usuario = UserName,
+                    Abm = accion
+                };
+
+                var res = await _abmSv.AbmConfirmar(abm, TokenCookie);
+                if (res.Ok)
+                {
+                    string msg;
+                    switch (accion)
+                    {
+                        case 'A':
+                            msg = $"EL ALTA DEL ASIENTO SE PROCESO SATISFACTORIAMENTE";
+                            break;
+                        case 'M':
+                            msg = $"LA MODIFICIACION DEL ASIENTO SE REALIZO SATISFACTORIAMENTE";
+                            break;
+                        default:
+                            msg = $"LA BAJA DEL ASIENTO SE REALIZO SATISFACTORIAMENTE";
+                            break;
+                    }
+                    VendedoresLista = [];
+
+                    if (abm.Abm.Equals('A') && res.Entidad != null)
+                    {
+                        return Json(new { error = false, warn = false, msg, id = res.Entidad.resultado_id });
+                    }
+                    return Json(new { error = false, warn = false, msg });
+                }
+                else
+                {
+                    if (res.Entidad != null)
+                    {
+                        return Json(new { error = false, warn = true, msg = res.Entidad.resultado_msj, focus = res.Entidad.resultado_setfocus });
+                    }
+                    else
+                    {
+                        return Json(new { error = false, warn = true, msg = "Hubo un problema al intentar confirmar al vendedor." });
+                    }
+                }
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+        }
+
+        private List<AsientoPlanoDto> ConvertirAsientoAPlano(AsientoDetalleDto asiento)
+        {
+
+            var asientosPlanos = new List<AsientoPlanoDto>();
+
+            foreach (var linea in asiento.Detalles)
+            {
+                var asientoPlano = new AsientoPlanoDto
+                {
+                    dia_movi = asiento.Dia_movi,
+                    dia_fecha = asiento.Dia_fecha,
+                    dia_tipo = asiento.Dia_tipo,
+                    dia_lista = asiento.Dia_lista,
+                    dia_desc_asiento = asiento.Dia_desc_asiento,
+                    dia_nro = linea.Dia_nro,
+                    ccb_id = linea.Ccb_id,
+                    ccb_desc = linea.Ccb_desc,
+                    dia_desc = linea.Dia_desc,
+                    debe = linea.Debe,
+                    haber = linea.Haber
+                };
+
+                asientosPlanos.Add(asientoPlano);
+            }
+
+            return asientosPlanos;
+        }
 
         /// <summary>
         /// Obtiene los ejercicios contables para el combo

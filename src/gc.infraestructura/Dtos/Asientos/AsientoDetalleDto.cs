@@ -41,4 +41,10 @@
         public decimal debe { get; set; }
         public decimal haber { get; set; }
     }
+
+    public class AsientoAccionDto
+    {
+        public AsientoDetalleDto asiento { get; set; } = new();
+        public char accion { get; set; }
+    }
 }
