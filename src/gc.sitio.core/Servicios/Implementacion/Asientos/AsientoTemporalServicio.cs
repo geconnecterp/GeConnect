@@ -112,7 +112,7 @@ namespace gc.sitio.core.Servicios.Implementacion.Asientos
         {
             try
             {
-                ApiResponse<RespuestaDto> apiResponse;
+                ApiResponse<List<RespuestaDto>> apiResponse;
                 HelperAPI helper = new();
 
                 // Inicializar cliente y preparar contenido
@@ -133,14 +133,14 @@ namespace gc.sitio.core.Servicios.Implementacion.Asientos
                         return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
                     }
 
-                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData)
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaDto>>>(stringData)
                         ?? throw new NegocioException("No se pudo deserializar los datos de respuesta.");
 
                     return new RespuestaGenerica<RespuestaDto>
                     {
                         Ok = true,
-                        Mensaje = apiResponse.Data?.resultado_msj ?? "Operación completada con éxito.",
-                        Entidad = apiResponse.Data
+                        //Mensaje = apiResponse.Data?.resultado_msj ?? "Operación completada con éxito.",
+                        ListaEntidad = apiResponse.Data
                     };
                 }
                 else if (response.StatusCode == HttpStatusCode.BadRequest)

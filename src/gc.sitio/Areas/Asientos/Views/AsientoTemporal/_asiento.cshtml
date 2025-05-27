@@ -68,8 +68,10 @@
                                 </td>
                                 <td class="cuenta-desc">@detalle.Ccb_desc</td>
                                 <td>@detalle.Dia_desc</td>
-                                <td class="text-end">@(detalle.Debe > 0 ? $"{detalle.Debe:N2}" : "0,00")</td>
-                                <td class="text-end">@(detalle.Haber > 0 ? $"{detalle.Haber:N2}" : "0,00")</td>
+                                @* Usar el formato con punto decimal *@
+                                <td class="text-end">@(detalle.Debe > 0 ? string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:#,##0.00}", detalle.Debe) : "0.00")</td>
+                                <td class="text-end">@(detalle.Haber > 0 ? string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:#,##0.00}", detalle.Haber) : "0.00")</td>
+
                             </tr>
                         }
                     }

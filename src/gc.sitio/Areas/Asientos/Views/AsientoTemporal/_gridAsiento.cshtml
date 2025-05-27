@@ -12,6 +12,13 @@
         <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridAsiento">
             <thead class="table-dark">
                 <tr class="header">
+                    <!-- Nueva columna para el check general -->
+                    <th class="text-sm-center checkbox-column" scope="col">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="selectAllAsientos">
+                            <label class="form-check-label" for="selectAllAsientos"></label>
+                        </div>
+                    </th>
                     <th class="text-sm-center" scope="col">Nro Movimiento</th>
                     <th class="text-sm-center" scope="col">Fecha</th>
                     <th class="text-sm-center" scope="col">Tipo</th>
@@ -24,7 +31,7 @@
                 @if (Model.ListaDatos == null || Model.ListaDatos.Count == 0)
                 {
                     <tr>
-                        <td colspan="6" class="text-center">No se han especificado datos aún.</td>
+                        <td colspan="7" class="text-center">No se han especificado datos aún.</td>
                     </tr>
                 }
                 else
@@ -33,7 +40,17 @@
                     {
                         if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
                         var title = item.revisable ? "Revisar Descripción" : "OK";
-                        <tr class="@clase" title="@title"> @* onclick="selectReg(this, 'tbGridAsiento')" *@
+                        <tr class="@clase" title="@title" data-id="@item.dia_movi" data-revisable="@item.revisable.ToString().ToLower()">
+                            @* onclick="selectReg(this, 'tbGridAsiento')" *@
+                            <!-- Nueva celda para el checkbox de selección -->
+                            <td class="text-center checkbox-column">
+                                <div class="form-check">
+                                    <input class="form-check-input asiento-checkbox" type="checkbox"
+                                           id="check_@item.dia_movi" value="@item.dia_movi"
+                                    @(item.revisable ? "disabled" : "")>
+                                    <label class="form-check-label" for="check_@item.dia_movi"></label>
+                                </div>
+                            </td>
                             <td class="@Model.ObtenerClase(item.dia_movi)" style="text-align: left;">@Model.FormatearDato(item.dia_movi, FormatDato.Ninguno)</td>
                             <td class="@Model.ObtenerClase(item.dia_fecha)">@Model.FormatearDato(item.dia_fecha, FormatDato.Fecha)</td>
                             <td class="@Model.ObtenerClase(item.dia_tipo)">@Model.FormatearDato(item.dia_tipo, FormatDato.Ninguno)</td>
@@ -54,12 +71,7 @@
                 }
             </tbody>
         </table>
-    </div>
-    <div class="offset-md-3 col-md-6">
-        <div id="divPaginacion">
-        </div>
-    </div>
-   
+    </div>   
 </div>
 <div class="row">
     <div class="offset-md-3 col-md-6">

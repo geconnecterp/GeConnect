@@ -104,8 +104,6 @@ function buscarAsientos(pag) {
     });
 }
 
-
-
 $(function () {
     // Agregar estilos CSS para diferencias visuales claras
     $("<style>")
@@ -133,6 +131,27 @@ $(function () {
         #tbGridAsiento tbody tr {
             cursor: pointer;
         }
+
+         /* Estilos para los checkboxes */
+        .checkbox-column {
+            width: 40px;
+            text-align: center;
+        }
+        
+        .form-check-input {
+            cursor: pointer;
+        }
+        
+        /* Estilo para checkboxes deshabilitados */
+        .form-check-input:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        /* Cambiar el color del fondo de las filas con checkboxes marcados */
+        #tbGridAsiento tbody tr:has(.asiento-checkbox:checked) {
+            background-color: #e7f3ff !important;
+        }
     `)
         .appendTo("head");
 
@@ -142,7 +161,7 @@ $(function () {
     $(document).off("dblclick", "#tbGridAsiento tbody tr");
 
 
-   
+
 
     // Modificar la función buscarAsientos para inicializar selección
     buscarAsientos = function (pag) {
@@ -169,16 +188,11 @@ $(function () {
     $("#btnCancel").on("click", function () {
         window.location.href = homeAsientosUrl;
     });
-    //$(document).on("click", "#btnCancelarAsiento", function () {
-    //    // Oculta el panel del asiento
-    //    $("#divpanel01").empty(); // O usa .hide() si prefieres
-    //    InicializaVistaAsientos();
-    //});
 
     //**** EVENTOS PARA CONTROLAR LOS BOTONES DE OPERACION
-    $("#btnAbmNuevo").on("click", ejecutarAlta);
-    $("#btnAbmModif").on("click", ejecutarModificacion);
-    $("#btnAbmElimi").on("click", ejecutarBaja);
+    $("#btnAbmNuevo").on("click", ejecutarAltaAsientoTemp);
+    $("#btnAbmModif").on("click", ejecutarModificacionAsientoTemp);
+    $("#btnAbmElimi").on("click", ejecutarBajaAsientoTemp);
 
     $("#btnAbmCancelar").on("click", InicializaVistaAsientos);
     $("#btnAbmAceptar").on("click", confirmarOperacionAsiento);
@@ -203,47 +217,6 @@ $(function () {
             null
         );
     });
-
-
-    //// Evento para el botón "Pasar a contabilidad"
-    //$(document).on("click", "#btnPasarConta", function () {
-    //    // Verificamos si hay registros seleccionados
-    //    let asientosSeleccionados = [];
-
-    //    // Obtener los IDs de los registros seleccionados
-    //    $("#tbGridAsiento tbody tr.selectedEdit-row").each(function () {
-    //        const id = $(this).find("td:first-child").text();
-    //        if (id) {
-    //            asientosSeleccionados.push(id);
-    //        }
-    //    });
-
-    //    // Si no hay registros seleccionados, mostrar mensaje
-    //    if (asientosSeleccionados.length === 0) {
-    //        AbrirMensaje("ATENCIÓN", "Debe seleccionar al menos un asiento para pasar a contabilidad.", function () {
-    //            $("#msjModal").modal("hide");
-    //            return true;
-    //        }, false, ["Aceptar"], "warn!", null);
-    //        return;
-    //    }
-
-    //    // Confirmar la acción
-    //    AbrirMensaje(
-    //        "CONFIRMACIÓN",
-    //        "¿Está seguro que desea pasar los asientos temporales seleccionados a la contabilidad definitiva?",
-    //        function (resp) {
-    //            if (resp === "SI") {
-    //                ejecutarPaseAContabilidad(asientosSeleccionados);
-    //            }
-    //            $("#msjModal").modal("hide");
-    //            return true;
-    //        },
-    //        true, // Mostrar botones SI/NO
-    //        ["SI", "NO"],
-    //        "warn!",
-    //        null
-    //    );
-    //});
 
     // Eventos para activar/desactivar componentes
     $('#chkEjercicio').on('change', function () {
@@ -273,69 +246,168 @@ $(function () {
     });
 
     // Agregar manejo de clic simple en filas para selección múltiple
-    $(document).on("click", "#tbGridAsiento tbody tr", function (e) {
-        const $this = $(this);
-        const id = $this.find("td:first-child").text().trim();
+    // Modificar el manejador del clic para mostrar checkboxes cuando se usa Ctrl+click
+    // Agregar manejo de clic simple en filas para selección múltiple - SOLUCIÓN CORREGIDA
+$(document).on("click", "#tbGridAsiento tbody tr", function (e) {
+    // Si se hace clic en un checkbox o en su contenedor, no hacer nada aquí
+    if ($(e.target).is('.asiento-checkbox') || $(e.target).closest('.form-check').length > 0) {
+        return;
+    }
+    
+    const $this = $(this);
+    const id = $this.find("td:nth-child(2)").text().trim(); // Ajustado por la nueva columna
+    const esRevisable = $this.attr("data-revisable") === "true";
 
-        // Si es doble clic, no hacer nada (el evento dblclick lo manejará)
-        if (e.detail === 2) return;
+    // Si es doble clic, no hacer nada (el evento dblclick lo manejará)
+    if (e.detail === 2) return;
 
-        // Prevenir la propagación del evento
-        e.stopPropagation();
+    // Prevenir la propagación del evento
+    e.stopPropagation();
 
-        // Limpiar estilo de selección de doble clic (firebrick) de todas las filas
-        // (mantiene solo el estilo de selección simple/múltiple)
-        $("#tbGridAsiento tbody tr").removeClass("selectedEdit-row");
+    // Limpiar estilo de selección de doble clic (firebrick) de todas las filas
+    $("#tbGridAsiento tbody tr").removeClass("selectedEdit-row");
 
-        // Selección simple vs. múltiple
-        if (e.ctrlKey || e.metaKey) {
-            // Selección múltiple (Ctrl+clic)
-            if ($this.hasClass("selected-multiple")) {
-                // Si ya estaba en selección múltiple, quitar
-                $this.removeClass("selected-multiple");
+    // Selección simple vs. múltiple
+    if (e.ctrlKey || e.metaKey) {
+        // Selección múltiple (Ctrl+clic)
+        if ($this.hasClass("selected-multiple")) {
+            // Si ya estaba en selección múltiple, quitar
+            $this.removeClass("selected-multiple");
 
-                // Eliminar de la lista de seleccionados
-                filasSeleccionadas = filasSeleccionadas.filter(item => item !== id);
-            } else {
-                // Si no estaba seleccionada, seleccionar como múltiple
+            // Desmarcar el checkbox correspondiente
+            $(`#check_${id}`).prop("checked", false);
+
+            // Eliminar de la lista de seleccionados
+            filasSeleccionadas = filasSeleccionadas.filter(item => item !== id);
+        } else {
+            // Si no estaba seleccionada y no es revisable, seleccionar como múltiple
+            if (!esRevisable) {
                 $this.addClass("selected-multiple");
+
+                // Marcar el checkbox correspondiente
+                $(`#check_${id}`).prop("checked", true);
 
                 // Agregar a la lista si no existe
                 if (!filasSeleccionadas.includes(id)) {
                     filasSeleccionadas.push(id);
                 }
             }
-        } else {
-            // Selección simple (clic)
-            // Quitar selección múltiple de todas las filas
-            $("#tbGridAsiento tbody tr").removeClass("selected-multiple");
-            filasSeleccionadas = [];
+        }
+    } else {
+        // Selección simple (clic)
+        // Quitar selección múltiple de todas las filas
+        $("#tbGridAsiento tbody tr").removeClass("selected-multiple");
 
+        // Desmarcar todos los checkboxes
+        $(".asiento-checkbox").prop("checked", false);
+
+        filasSeleccionadas = [];
+
+        // Si no es revisable, seleccionar
+        if (!esRevisable) {
             // Aplicar selección simple solo a esta fila
             $this.addClass("selected-simple");
             $("#tbGridAsiento tbody tr").not($this).removeClass("selected-simple");
 
+            // Marcar solo el checkbox correspondiente
+            $(`#check_${id}`).prop("checked", true);
+
             // Agregar a la lista de seleccionados
             filasSeleccionadas = [id];
         }
+    }
 
-        // Actualizar el contador y habilitar/deshabilitar el botón
+    // Actualizar estado del botón
+    const haySeleccionados = filasSeleccionadas.length > 0;
+    $("#btnPasarConta").prop("disabled", !haySeleccionados);
+
+    // Actualizar mensaje informativo
+    $("#selected-count").text(filasSeleccionadas.length);
+});
+
+
+    // Evento para el checkbox "selectAll"
+    $(document).on("change", "#selectAllAsientos", function () {
+        const isChecked = $(this).prop("checked");
+
+        // Limpiar todas las selecciones existentes
+        $("#tbGridAsiento tbody tr").removeClass("selected-multiple selected-simple");
+        filasSeleccionadas = [];
+
+        // Marcar/desmarcar todos los checkboxes (excepto los deshabilitados)
+        $(".asiento-checkbox:not(:disabled)").prop("checked", isChecked);
+
+        if (isChecked) {
+            // Recopilar todos los IDs seleccionados de los checkboxes marcados
+            $(".asiento-checkbox:checked").each(function () {
+                const id = $(this).val();
+                if (id && !filasSeleccionadas.includes(id)) {
+                    filasSeleccionadas.push(id);
+                }
+            });
+
+            // Seleccionar todas las filas correspondientes
+            $("#tbGridAsiento tbody tr").each(function () {
+                const $row = $(this);
+                const id = $row.find("td:nth-child(2)").text().trim();
+
+                if (filasSeleccionadas.includes(id)) {
+                    $row.addClass("selected-multiple");
+                }
+            });
+        }
+
+        // Actualizar estado del botón
         const haySeleccionados = filasSeleccionadas.length > 0;
         $("#btnPasarConta").prop("disabled", !haySeleccionados);
 
-        // Actualizar mensaje informativo
+        // Actualizar contador
         $("#selected-count").text(filasSeleccionadas.length);
+
+        console.log("IDs seleccionados:", filasSeleccionadas); // Debug para verificar
     });
 
-    // Doble clic sigue mostrando el detalle (mantenemos la funcionalidad existente)
-    // Pero modificamos para que no elimine otras selecciones
-    //$(document).on("dblclick", "#tbGridAsiento tbody tr", function (e) {
-    //    e.stopPropagation(); // Evitar que se propague y active el evento click
-    //    x = $(this);
-    //    //se resguarda el registro de la tabla
-    //    regSelected = x;
-    //    ejecutaDblClickGrid1(x);
-    //});
+    // Evento para los checkboxes individuales - SOLUCIÓN
+    $(document).on("click", ".asiento-checkbox", function (e) {
+        e.stopPropagation(); // Evitar que se propague al tr
+        //e.preventDefault(); // Evitar el comportamiento predeterminado del checkbox
+
+        const $checkbox = $(this);
+        const id = $checkbox.val();
+        const isChecked = $checkbox.prop("checked"); // Obtenemos el estado DESPUÉS del clic
+        const $row = $checkbox.closest("tr");
+
+        if (isChecked) {
+            // Seleccionar la fila
+            $row.addClass("selected-multiple").removeClass("selected-simple");
+
+            // Agregar a la lista de seleccionados
+            if (!filasSeleccionadas.includes(id)) {
+                filasSeleccionadas.push(id);
+            }
+        } else {
+            // Deseleccionar la fila
+            $row.removeClass("selected-multiple selected-simple");
+
+            // Quitar de la lista de seleccionados
+            filasSeleccionadas = filasSeleccionadas.filter(item => item !== id);
+
+            // Desmarcar el checkbox "selectAll" si alguno se desmarca
+            $("#selectAllAsientos").prop("checked", false);
+        }
+
+        // Verificar si todos los checkboxes no deshabilitados están marcados
+        const todosSeleccionados = $(".asiento-checkbox:not(:disabled)").length ===
+            $(".asiento-checkbox:not(:disabled):checked").length;
+        $("#selectAllAsientos").prop("checked", todosSeleccionados);
+
+        // Actualizar estado del botón
+        const haySeleccionados = filasSeleccionadas.length > 0;
+        $("#btnPasarConta").prop("disabled", !haySeleccionados);
+
+        // Actualizar contador
+        $("#selected-count").text(filasSeleccionadas.length);
+    });
 
     // Manejo de doble clic para ver detalle
     $(document).on("dblclick", "#tbGridAsiento tbody tr", function (e) {
@@ -358,8 +430,9 @@ $(function () {
 })
 
 //***FUNCIONES DE OPERACION***/
-function ejecutarAlta() {
+function ejecutarAltaAsientoTemp() {
     AbrirWaiting("Espere, se blanquea el ASIENTO...");
+    accion = AbmAction.ALTA;
     var data = {};
     PostGenHtml(data, nuevoAsientoUrl, function (obj) {
         $("#divpanel01").html(obj);
@@ -368,22 +441,24 @@ function ejecutarAlta() {
         $("#divFiltro").collapse("hide");
         $("#divDetalle").collapse("show");
 
-        accionBotones(AbmAction.ALTA);
+        accionBotones(accion);
         activarControles(true);
 
         CerrarWaiting();
     });
 }
 
-function ejecutarModificacion() {
+function ejecutarModificacionAsientoTemp() {
+    accion = AbmAction.MODIFICACION;
     $("#divFiltro").collapse("hide");
-    accionBotones(AbmAction.MODIFICACION);
+    accionBotones(accion);
     activarControles(true);
 }
 
-function ejecutarBaja() {
+function ejecutarBajaAsientoTemp() {
+    accion = AbmAction.BAJA;
     $("#divFiltro").collapse("hide");
-    accionBotones(AbmAction.BAJA);
+    accionBotones(accion);
 }
 
 
@@ -413,13 +488,67 @@ function ejecutarPaseAContabilidad() {
             CerrarWaiting();
 
             if (obj.error === true) {
-                // Error en la operación
-                AbrirMensaje("ERROR", obj.msg || "Ocurrió un error al pasar los asientos a contabilidad.", function () {
-                    $("#msjModal").modal("hide");
-                    return true;
-                }, false, ["Aceptar"], "error!", null);
+                // Caso 1: Algunos asientos procesados correctamente, otros con error
+                if (obj.parcial === true) {
+                    let mensaje = obj.msg;
+
+                    // Mostrar mensaje principal
+                    AbrirMensaje("ATENCIÓN", mensaje, function () {
+                        // Si hay pocos errores, mostrar detalles en un segundo mensaje
+                        if (obj.fallidos <= 5) {
+                            let detalles = "<ul>";
+                            obj.detalles.forEach(function (detalle) {
+                                detalles += `<li>Asiento ${detalle.asientoId}: ${detalle.mensaje}</li>`;
+                            });
+                            detalles += "</ul>";
+
+                            AbrirMensaje("DETALLES DE ERRORES", detalles, function () {
+                                $("#msjModal").modal("hide");
+                                // Refrescar la lista de asientos
+                                $("#divpanel01").empty();
+                                buscarAsientos(1);
+                                return true;
+                            }, false, ["Aceptar"], "error!", null);
+                        }
+                        // Si hay muchos errores, ofrecer generar un reporte
+                        else {
+                            const generarReporte = confirm("¿Desea generar un reporte con el detalle de los errores?");
+                            if (generarReporte) {
+                                generarReporteErrores(obj.detalles);
+                            }
+
+                            // Refrescar la lista de asientos
+                            $("#divpanel01").empty();
+                            buscarAsientos(1);
+                        }
+                        $("#msjModal").modal("hide");
+                        return true;
+                    }, false, ["Aceptar"], "warn!", null);
+                }
+                // Caso 2: Muchos errores (todos los asientos fallaron)
+                else if (obj.muchos === true) {
+                    let mensaje = obj.msg + "\n¿Desea ver el detalle de los errores?";
+
+                    AbrirMensaje("ERROR", mensaje, function (resp) {
+                        if (resp === "SI") {
+                            generarReporteErrores(obj.detalles);
+                        }
+                        $("#msjModal").modal("hide");
+                        // Refrescar la lista de asientos
+                        $("#divpanel01").empty();
+                        buscarAsientos(1);
+                        return true;
+                    }, true, ["SI", "NO"], "error!", null);
+                }
+                // Caso 3: Error general o pocos errores
+                else {
+                    AbrirMensaje("ERROR", obj.msg || "Ocurrió un error al pasar los asientos a contabilidad.", function () {
+                        $("#msjModal").modal("hide");
+                        return true;
+                    }, false, ["Aceptar"], "error!", null);
+                }
             } else {
-                // Operación exitosa
+                // Caso 4: Operación completamente exitosa
                 AbrirMensaje("ÉXITO", obj.msg || "Los asientos han sido pasados a contabilidad correctamente.", function () {
                     $("#msjModal").modal("hide");
                     // Refrescar la lista de asientos después de un pase exitoso
@@ -437,6 +566,52 @@ function ejecutarPaseAContabilidad() {
             }, false, ["Aceptar"], "error!", null);
         }
     });
+}
+
+/**
+ * Función para generar un reporte con los errores
+ * Esta función es un placeholder - necesitarás implementarla según tus necesidades
+ */
+function generarReporteErrores(detalles) {
+    // Para una implementación inicial, podemos abrir una ventana con los detalles
+    let contenido = "<h3>Detalle de Errores</h3><table class='table table-striped'>";
+    contenido += "<thead><tr><th>Asiento</th><th>Mensaje de Error</th></tr></thead><tbody>";
+
+    detalles.forEach(function (detalle) {
+        contenido += `<tr><td>${detalle.asientoId}</td><td>${detalle.mensaje}</td></tr>`;
+    });
+
+    contenido += "</tbody></table>";
+
+    // Crear una ventana emergente con el contenido HTML
+    const ventana = window.open("", "_blank", "width=800,height=600");
+    ventana.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Reporte de Errores</title>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+            <style>
+                body { padding: 20px; }
+                h3 { margin-bottom: 20px; }
+                .table { width: 100%; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                ${contenido}
+                <div class="mt-4">
+                    <button class="btn btn-primary" onclick="window.print()">Imprimir</button>
+                    <button class="btn btn-secondary" onclick="window.close()">Cerrar</button>
+                </div>
+            </div>
+        </body>
+        </html>
+    `);
+
+    // En una implementación más avanzada, podrías llamar a un endpoint del controlador
+    // que genere un PDF y lo descargue o abra en una nueva pestaña
+    // window.open('/Asientos/AsientoTemporal/GenerarReporteErrores?ids=' + JSON.stringify(detalles), '_blank');
 }
 
 /**
@@ -557,34 +732,46 @@ function configurarEventosEdicion() {
 function configurarCamposEditables() {
     // Campos de importe (Debe y Haber)
     $("#tbAsientoDetalle tbody").on("focus", "td.text-end", function () {
-        // Al entrar al campo, quitar formato y seleccionar todo el contenido
-        const valorLimpio = $(this).text().trim()
-            .replace(/[$\s]/g, "")       // Quitar $ y espacios
-            .replace(/\./g, "")          // Quitar todos los puntos (miles)
-            .replace(",", ".");          // Reemplazar coma por punto para procesamiento decimal
-        $(this).text(valorLimpio);
+        // Al entrar al campo, quitar formato pero mantener el punto decimal
+        const valorOriginal = $(this).text().trim();
 
-        // Seleccionar todo el contenido
-        // En lugar de:
-        // document.execCommand('selectAll', false, null);
+        try {
+            // Quitar símbolo de moneda, espacios y comas (separadores de miles)
+            let valorLimpio = valorOriginal.replace(/[$\s,]/g, "");
 
-        // Usar este enfoque moderno:
-        // Seleccionar todo el contenido
-        const range = document.createRange();
-        range.selectNodeContents(this);
-        const selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(range);
+            // Si está vacío, poner 0
+            if (!valorLimpio || valorLimpio === "") {
+                valorLimpio = "0";
+            }
 
-        // Agregar una clase para identificar que está siendo editado
-        $(this).addClass("editando-importe");
+            // Aplicar el valor limpio
+            $(this).text(valorLimpio);
+
+            // Seleccionar todo el contenido
+            const range = document.createRange();
+            range.selectNodeContents(this);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            // Agregar clase para identificar que está siendo editado
+            $(this).addClass("editando-importe");
+        } catch (e) {
+            console.error("Error al limpiar el formato:", e);
+            $(this).text("0");
+
+            // Seleccionar todo el contenido
+            const range = document.createRange();
+            range.selectNodeContents(this);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            $(this).addClass("editando-importe");
+        }
     });
 
-
-    // En lugar de:
-    // const charCode = (e.which) ? e.which : e.keyCode;
-
-    // Usar e.key para el manejo moderno de teclas:
+    // Control de teclas permitidas: sólo números y un punto decimal
     $("#tbAsientoDetalle tbody").on("keypress", "td.text-end", function (e) {
         // Permitir teclas de control (flechas, backspace, etc.)
         if (e.ctrlKey || e.altKey || e.metaKey) {
@@ -596,11 +783,15 @@ function configurarCamposEditables() {
             return true;
         }
 
-        // Permitir punto o coma (solo uno)
-        if ((e.key === ',' || e.key === '.') &&
-            $(this).text().indexOf('.') === -1 &&
-            $(this).text().indexOf(',') === -1) {
+        // Permitir punto decimal (solo uno)
+        if (e.key === '.' && $(this).text().indexOf('.') === -1) {
             return true;
+        }
+
+        // Si es coma, ignorarla (no queremos comas en la edición)
+        if (e.key === ',') {
+            e.preventDefault();
+            return false;
         }
 
         // Bloquear cualquier otra entrada
@@ -608,38 +799,13 @@ function configurarCamposEditables() {
         return false;
     });
 
-    //// Permitir solo entrada numérica y punto/coma decimal
-    //$("#tbAsientoDetalle tbody").on("keypress", "td.text-end", function (e) {
-    //    // Permitir: números, punto, coma y teclas de control
-    //    const charCode = (e.which) ? e.which : e.keyCode;
-
-    //    // Permitir backspace, tab, enter, etc.
-    //    if (e.ctrlKey || e.altKey || e.metaKey || charCode < 32) {
-    //        return true;
-    //    }
-
-    //    // Permitir números (0-9)
-    //    if (charCode >= 48 && charCode <= 57) {
-    //        return true;
-    //    }
-
-    //    // Permitir punto o coma (solo uno)
-    //    if ((charCode === 44 || charCode === 46) && $(this).text().indexOf('.') === -1 && $(this).text().indexOf(',') === -1) {
-    //        return true;
-    //    }
-
-    //    // Bloquear cualquier otra entrada
-    //    e.preventDefault();
-    //    return false;
-    //});
-
     // Al perder el foco, formatear el número
     $("#tbAsientoDetalle tbody").on("blur", "td.text-end", function () {
         // Remover la clase de edición
         $(this).removeClass("editando-importe");
 
         try {
-            // Obtener el valor actual y normalizarlo
+            // Obtener el valor actual
             let valor = $(this).text().trim();
 
             // Si está vacío, usar cero
@@ -647,40 +813,29 @@ function configurarCamposEditables() {
                 valor = "0";
             }
 
-            // Convertir coma a punto para el procesamiento
-            valor = valor.replace(",", ".");
+            // Asegurar que sea un número válido
+            const numeroDecimal = !isNaN(parseFloat(valor)) ? parseFloat(valor) : 0;
 
-            // Verificar que sea un número válido
-            if (isNaN(parseFloat(valor))) {
-                valor = "0";
-            }
-
-            // Convertir a número decimal
-            const numeroDecimal = parseFloat(valor);
-
-            // Formatear manualmente para asegurar el formato correcto
-            const parteEntera = Math.floor(numeroDecimal);
-            const parteDecimal = Math.round((numeroDecimal - parteEntera) * 100);
-
-            // Construir cadena con separador de miles y decimales
-            let formateado = parteEntera.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") +
-                "," + (parteDecimal < 10 ? "0" + parteDecimal : parteDecimal);
-
-            // Agregar prefijo de moneda
-            formateado = "$ " + formateado;
+            // Formatear con NumberFormat para consistencia (usando InvariantCulture - punto decimal)
+            const formateado = numeroDecimal.toLocaleString('en-US', {
+                style: 'currency',
+                currency: 'USD', // No importa la moneda, solo el formato
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).replace('$', '$ '); // Ajustar el símbolo de moneda
 
             // Aplicar el formato
             $(this).text(formateado);
-
         } catch (e) {
             console.error("Error al formatear importe:", e);
-            $(this).text("$ 0,00");   // Valor por defecto en caso de error
+            $(this).text("$ 0.00"); // Valor por defecto en caso de error
         }
 
         // Actualizar totales
         actualizarTotales();
     });
 }
+
 
 /**
  * Actualiza los totales del asiento
@@ -695,9 +850,9 @@ function actualizarTotales() {
         const celdaDebe = $(this).find("td:nth-child(4)").text().trim();
         const celdaHaber = $(this).find("td:nth-child(5)").text().trim();
 
-        // Limpiar el formato ($, espacios, puntos de miles) y convertir coma a punto para decimales
-        const debeLimpio = celdaDebe.replace(/[$\s]/g, "").replace(/\./g, "").replace(",", ".");
-        const haberLimpio = celdaHaber.replace(/[$\s]/g, "").replace(/\./g, "").replace(",", ".");
+        // Limpiar el formato ($, espacios, comas de miles) y mantener el punto decimal
+        const debeLimpio = celdaDebe.replace(/[$\s,]/g, "");
+        const haberLimpio = celdaHaber.replace(/[$\s,]/g, "");
 
         // Convertir a número (decimal) - usar 0 si no es válido
         const debe = !isNaN(parseFloat(debeLimpio)) ? parseFloat(debeLimpio) : 0;
@@ -708,16 +863,20 @@ function actualizarTotales() {
         totalHaber += haber;
     });
 
-    // Formatear los totales usando Intl.NumberFormat
-    const formatoMoneda = new Intl.NumberFormat('es-AR', {
+    // Formatear los totales usando toLocaleString con formato en-US (punto decimal)
+    const formateadoDebe = totalDebe.toLocaleString('en-US', {
         style: 'currency',
-        currency: 'ARS',
+        currency: 'USD',
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
-    });
+    }).replace('$', '$ ');
 
-    const formateadoDebe = formatoMoneda.format(totalDebe);
-    const formateadoHaber = formatoMoneda.format(totalHaber);
+    const formateadoHaber = totalHaber.toLocaleString('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).replace('$', '$ ');
 
     // Actualizar los totales en el pie de tabla
     $("#tbAsientoDetalle tfoot tr:first-child td:nth-child(2)").text(formateadoDebe);
@@ -729,7 +888,13 @@ function actualizarTotales() {
 
     // Si existe una fila de diferencia, actualizarla; si no, crearla si es necesario
     let filaDiferencia = $("#tbAsientoDetalle tfoot tr:nth-child(2)");
-    const formateadoDiferencia = formatoMoneda.format(diferencia);
+
+    const formateadoDiferencia = diferencia.toLocaleString('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).replace('$', '$ ');
 
     if (hayDiferencia) {
         if (filaDiferencia.length === 0) {
@@ -762,38 +927,30 @@ function actualizarTotales() {
     }
 }
 
+
 /**
  * Función para formatear decimales al cargar el asiento
  */
-// Modificación a la función formatearDecimalesAsiento() para hacerla más robusta
 function formatearDecimalesAsiento() {
-    // Agrega este log temporal para verificar los valores que recibe la función
-    console.log("Valores originales en formatearDecimalesAsiento:",
-        $("#tbAsientoDetalle td.text-end").map(function () {
-            return $(this).text().trim();
-        }).get());
-
     // Aplica formato a las celdas con valores decimales que NO han sido formateadas aún
     $("#tbAsientoDetalle td.text-end:not([data-formatting-done='true'])").each(function () {
         const valor = $(this).text().trim();
         if (valor !== "") {
             try {
-                // Primero limpia el valor eliminando formato actual
+                // Limpiar el valor eliminando formato actual (pero manteniendo el punto decimal)
                 const valorLimpio = valor
-                    .replace(/[$\s]/g, "")       // Quitar $ y espacios
-                    .replace(/\./g, "")          // Quitar puntos de miles
-                    .replace(",", ".");          // Reemplazar coma decimal por punto
+                    .replace(/[$\s,]/g, ""); // Quitar $ y espacios y comas
 
                 // Convertir a número - si no es válido, usar 0
                 const numeroDecimal = !isNaN(parseFloat(valorLimpio)) ? parseFloat(valorLimpio) : 0;
 
-                // Usar Intl.NumberFormat para formato consistente
-                const formateado = new Intl.NumberFormat('es-AR', {
+                // Usar toLocaleString para formato consistente (punto decimal)
+                const formateado = numeroDecimal.toLocaleString('en-US', {
                     style: 'currency',
-                    currency: 'ARS',
+                    currency: 'USD',
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2
-                }).format(numeroDecimal);
+                }).replace('$', '$ ');
 
                 // Aplicar el formato
                 $(this).text(formateado);
@@ -802,7 +959,7 @@ function formatearDecimalesAsiento() {
                 $(this).attr("data-formatting-done", "true");
             } catch (e) {
                 console.error("Error al formatear:", valor, e);
-                $(this).text("$ 0,00");
+                $(this).text("$ 0.00");
             }
         }
     });
@@ -815,22 +972,20 @@ function formatearDecimalesAsiento() {
 
         if (valor !== "") {
             try {
-                // Primero limpia el valor eliminando formato actual
+                // Limpiar el valor eliminando formato actual (pero manteniendo el punto decimal)
                 const valorLimpio = valor
-                    .replace(/[$\s]/g, "")       // Quitar $ y espacios
-                    .replace(/\./g, "")          // Quitar puntos de miles
-                    .replace(",", ".");          // Reemplazar coma decimal por punto
+                    .replace(/[$\s,]/g, ""); // Quitar $ y espacios y comas
 
                 // Convertir a número - si no es válido, usar 0
                 const numeroDecimal = !isNaN(parseFloat(valorLimpio)) ? parseFloat(valorLimpio) : 0;
 
-                // Usar Intl.NumberFormat para formato consistente
-                const formateado = new Intl.NumberFormat('es-AR', {
+                // Usar toLocaleString para formato consistente (punto decimal)
+                const formateado = numeroDecimal.toLocaleString('en-US', {
                     style: 'currency',
-                    currency: 'ARS',
+                    currency: 'USD',
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2
-                }).format(numeroDecimal);
+                }).replace('$', '$ ');
 
                 // Aplicar el formato - reemplazando solo el nodo de texto
                 $(this).contents().filter(function () {
@@ -843,15 +998,362 @@ function formatearDecimalesAsiento() {
                 console.error("Error al formatear:", valor, e);
                 $(this).contents().filter(function () {
                     return this.nodeType === 3;
-                }).replaceWith("$ 0,00");
+                }).replaceWith("$ 0.00");
             }
         }
     });
 }
 
-function confirmarOperacionAsiento() {
 
+/**
+ * Confirma la operación de ABM del asiento (Alta, Baja, Modificación)
+ */
+function confirmarOperacionAsiento() {
+    AbrirWaiting("Procesando operación de asiento...");
+
+    // Recopilamos los datos del asiento según la estructura requerida
+    const asientoData = recopilarDatosAsiento();
+
+    // Validamos los datos básicos del asiento
+    if (!validarAsiento(asientoData)) {
+        CerrarWaiting();
+        return;
+    }
+
+    // Construimos el objeto que coincide con AsientoAccionDto
+    const datos = {
+        asiento: asientoData,  // El objeto del asiento
+        accion: accion         // La acción (por ejemplo, 'A', 'M', 'B')
+    };
+
+
+    // Hacemos la llamada al servicio
+    $.ajax({
+        url: confirmarAsientoTemporalUrl,
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(datos),  // Enviamos el objeto completo
+        success: function (obj) {
+            CerrarWaiting();
+
+            if (obj.error === true) {
+                // Error grave del sistema
+                AbrirMensaje("ERROR", obj.msg || "Ocurrió un error al procesar el asiento.", function () {
+                    $("#msjModal").modal("hide");
+                }, false, ["Aceptar"], "error!", null);
+            } else if (obj.warn === true) {
+                // Advertencia de validación o similar
+                AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                    // Si es un problema de autenticación, redirigir al login
+                    if (obj.auth === true) {
+                        window.location.href = loginUrl;
+                    } else {
+                        $("#msjModal").modal("hide");
+
+                        // Si hay un campo específico que necesita foco, establecerlo
+                        if (obj.focus) {
+                            $(`#${obj.focus}`).focus();
+                        }
+                    }
+                }, false, ["Continuar"], "warn!", null);
+            } else {
+                // Operación exitosa
+                let mensajeExito = "";
+                switch (accion) {
+                    case AbmAction.ALTA:
+                        mensajeExito = "El asiento se ha creado exitosamente.";
+                        break;
+                    case AbmAction.MODIFICACION:
+                        mensajeExito = "El asiento se ha modificado exitosamente.";
+                        break;
+                    case AbmAction.BAJA:
+                        mensajeExito = "El asiento se ha eliminado exitosamente.";
+                        break;
+                }
+
+                AbrirMensaje("OPERACIÓN EXITOSA", obj.msg || mensajeExito, function () {
+                    // Después de confirmar, reinicializar la vista
+                    $("#msjModal").modal("hide");
+
+                    // Actualizar la grilla según la acción realizada
+                    if (accion === AbmAction.ALTA) {
+                        // Si es un alta, guardamos el ID devuelto
+                        if (obj.id) {
+                            EntidadSelect = obj.id;
+                        }
+
+                        // Refrescar los datos, buscar el nuevo asiento
+                        limpiarSeleccionAsientos();
+                        buscarAsientos(1);
+                    } else if (accion === AbmAction.BAJA) {
+                        // Si es una baja, limpiamos el ID seleccionado
+                        EntidadSelect = "";
+
+                        // Refrescar la grilla completa
+                        limpiarSeleccionAsientos();
+                        buscarAsientos(1);
+                    } else {
+                        // Para modificación, mantenemos el ID y refrescamos
+                        var data = { id: EntidadSelect };
+                        buscarAsiento(data);
+                    }
+
+                    // Reiniciar la acción
+                    accion = "";
+
+                }, false, ["Aceptar"], "success", null);
+            }
+        },
+        error: function (xhr, status, error) {
+            CerrarWaiting();
+            AbrirMensaje("ERROR", "Error al procesar la operación: " + error, function () {
+                $("#msjModal").modal("hide");
+            }, false, ["Aceptar"], "error!", null);
+        }
+    });
 }
+
+/**
+ * Recopila los datos del asiento desde el formulario
+ * @returns {Object} Objeto con los datos del asiento
+ */
+function recopilarDatosAsiento() {
+    // Primero intentamos obtener el ID del asiento de varias formas posibles
+    // 1. Del atributo data
+    let dia_movi = $("#tbAsientoDetalle").data("dia_movi");
+
+    // 2. Si no está en el atributo data, buscar en el campo de entrada en el encabezado
+    if (!dia_movi) {
+        dia_movi = $(".card-header input.form-control").first().val();
+    }
+
+    // 3. Si seguimos sin tenerlo y estamos en modo modificación, usar EntidadSelect
+    if ((!dia_movi || dia_movi === "") && accion === AbmAction.MODIFICACION && EntidadSelect) {
+        dia_movi = EntidadSelect;
+    }
+
+    // Si aún así no lo tenemos, usar cadena vacía
+    dia_movi = dia_movi || "";
+
+    console.log("ID del asiento (dia_movi):", dia_movi); // Log para depuración
+
+    // Datos del encabezado del asiento
+    const dia_fecha = obtenerFechaFormateada($("#tbAsientoDetalle").data("dia_fecha")) || new Date().toISOString();
+    const dia_tipo = $("#Dia_tipo").val() || "";
+    const dia_lista = $("#Dia_tipo option:selected").text() || "";
+    const dia_desc_asiento = $(".card-header input.form-control").eq(2).val() || "";
+
+    // Recopilamos las líneas de detalle
+    const detalles = [];
+    let totalDebe = 0;
+    let totalHaber = 0;
+
+    $("#tbAsientoDetalle tbody tr").each(function (index) {
+        const $row = $(this);
+
+        // Si es una fila informativa (sin cuenta), la saltamos
+        if ($row.find("td").length < 5) {
+            return;
+        }
+
+        // Extraer valores de la fila
+        const ccb_id = $row.find(".cuenta-id").text().trim();
+        const ccb_desc = $row.find(".cuenta-desc").text().trim();
+        const dia_desc = $row.find("td:nth-child(3)").text().trim();
+
+        // Procesar valores monetarios
+        let debe = $row.find("td:nth-child(4)").text().trim();
+        let haber = $row.find("td:nth-child(5)").text().trim();
+
+        // Convertir moneda a valor numérico
+        debe = convertirMonedaANumero(debe);
+        haber = convertirMonedaANumero(haber);
+
+        // Actualizar totales
+        totalDebe += debe;
+        totalHaber += haber;
+
+        // Agregar línea al array
+        detalles.push({
+            Dia_movi: dia_movi,
+            Dia_nro: index + 1,
+            Ccb_id: ccb_id,
+            Ccb_desc: ccb_desc,
+            Dia_desc: dia_desc,
+            Debe: debe,
+            Haber: haber
+        });
+    });
+
+    // Retornar el objeto completo
+    return {
+        Dia_movi: dia_movi,
+        Dia_fecha: dia_fecha,
+        Dia_tipo: dia_tipo,
+        Dia_lista: dia_lista,
+        Dia_desc_asiento: dia_desc_asiento,
+        TotalDebe: totalDebe,
+        TotalHaber: totalHaber,
+        Detalles: detalles
+    };
+}
+
+
+/**
+ * Valida los datos básicos del asiento
+ * @param {Object} asiento - Datos del asiento a validar
+ * @returns {boolean} True si los datos son válidos, false si no
+ */
+function validarAsiento(asiento) {
+    // Validar tipo de asiento
+    if (!asiento.Dia_tipo) {
+        AbrirMensaje("VALIDACIÓN", "Debe seleccionar un tipo de asiento.", function () {
+            $("#msjModal").modal("hide");
+            $("#Dia_tipo").trigger("focus");
+        }, false, ["Aceptar"], "warn!", null);
+        return false;
+    }
+
+    // Validar descripción
+    if (!asiento.Dia_desc_asiento) {
+        AbrirMensaje("VALIDACIÓN", "Debe ingresar una descripción para el asiento.", function () {
+            $("#msjModal").modal("hide");
+            $(".card-header input.form-control").eq(2).trigger("focus");
+        }, false, ["Aceptar"], "warn!", null);
+        return false;
+    }
+
+    // Validar que haya al menos una línea
+    if (asiento.Detalles.length <= 1) {
+        AbrirMensaje("VALIDACIÓN", "El asiento debe tener al menos dos líneas de detalle.", function () {
+            $("#msjModal").modal("hide");
+        }, false, ["Aceptar"], "warn!", null);
+        return false;
+    }
+
+    // Validar que todas las líneas tengan cuenta asignada
+    for (let i = 0; i < asiento.Detalles.length; i++) {
+        const linea = asiento.Detalles[i];
+        if (!linea.Ccb_id) {
+            AbrirMensaje("VALIDACIÓN", `La línea ${i + 1} debe tener una cuenta contable asignada.`, function () {
+                $("#msjModal").modal("hide");
+                // Intentar dar foco a la fila correspondiente
+                $("#tbAsientoDetalle tbody tr").eq(i).find(".cuenta-id").trigger("focus");
+            }, false, ["Aceptar"], "warn!", null);
+            return false;
+        }
+    }
+
+    // Validar que haya al menos una cuenta con importe en el DEBE y otra en el HABER
+    let tieneDebe = false;
+    let tieneHaber = false;
+
+    // Recorrer todas las líneas para comprobar si hay valores en DEBE y HABER
+    for (let i = 0; i < asiento.Detalles.length; i++) {
+        const linea = asiento.Detalles[i];
+        if (linea.Debe > 0) {
+            tieneDebe = true;
+        }
+        if (linea.Haber > 0) {
+            tieneHaber = true;
+        }
+
+        // Si ya encontramos ambos, podemos salir del bucle
+        if (tieneDebe && tieneHaber) {
+            break;
+        }
+    }
+
+    // Verificar que exista al menos una cuenta en el DEBE
+    if (!tieneDebe) {
+        AbrirMensaje("VALIDACIÓN", "El asiento debe tener al menos una cuenta con importe en el DEBE.", function () {
+            $("#msjModal").modal("hide");
+        }, false, ["Aceptar"], "warn!", null);
+        return false;
+    }
+
+    // Verificar que exista al menos una cuenta en el HABER
+    if (!tieneHaber) {
+        AbrirMensaje("VALIDACIÓN", "El asiento debe tener al menos una cuenta con importe en el HABER.", function () {
+            $("#msjModal").modal("hide");
+        }, false, ["Aceptar"], "warn!", null);
+        return false;
+    }
+
+    // Validar que los totales cuadren
+    if (Math.abs(asiento.TotalDebe - asiento.TotalHaber) > 0.01) {
+        AbrirMensaje("VALIDACIÓN", "El Saldo no es igual a 0. Verifique importes de Debe y Haber para detectar que valor es incorrecto.", function () {
+            $("#msjModal").modal("hide");
+        }, false, ["Aceptar"], "warn!", null);
+        return false;
+    }
+
+    return true;
+}
+
+
+/**
+ * Convierte un string con formato de moneda a un número decimal
+ * @param {string} moneda - String con formato de moneda (ej: "$ 1.234,56" o "1.234.56")
+ * @returns {number} Valor numérico (ej: 1234.56)
+ */
+function convertirMonedaANumero(moneda) {
+    if (!moneda || moneda === "0.00" || moneda === "0") {
+        return 0;
+    }
+
+    try {
+        // Eliminar símbolo de moneda, espacios y comas (separadores de miles)
+        let valor = moneda.replace(/[$\s,]/g, "");
+
+        // Convertir a número
+        const numero = parseFloat(valor);
+
+        // Devolver 0 si no es un número válido
+        return isNaN(numero) ? 0 : numero;
+    } catch (e) {
+        console.error("Error al convertir moneda a número:", e, moneda);
+        return 0;
+    }
+}
+
+/**
+ * Convierte una fecha al formato esperado por el servidor (ISO string)
+ * @param {string|Date} fecha - Fecha a formatear
+ * @returns {string} Fecha en formato ISO (YYYY-MM-DDTHH:mm:ss.sssZ)
+ */
+function obtenerFechaFormateada(fecha) {
+    if (!fecha) {
+        return new Date().toISOString();
+    }
+
+    // Si es un string en formato dd/mm/yyyy, convertirlo a Date
+    if (typeof fecha === "string" && fecha.includes("/")) {
+        const partes = fecha.split("/");
+        if (partes.length === 3) {
+            const fechaObj = new Date(
+                parseInt(partes[2]), // año
+                parseInt(partes[1]) - 1, // mes (0-11)
+                parseInt(partes[0]) // día
+            );
+            return fechaObj.toISOString();
+        }
+    }
+
+    // Si ya es un objeto Date, convertirlo a ISO string
+    if (fecha instanceof Date) {
+        return fecha.toISOString();
+    }
+
+    // Si es otro formato, intentar crear un Date y convertirlo
+    try {
+        return new Date(fecha).toISOString();
+    } catch (e) {
+        console.error("Error al formatear fecha:", e);
+        return new Date().toISOString();
+    }
+}
+
 
 
 /**
@@ -863,6 +1365,9 @@ function InicializaVistaAsientos(e) {
     if (!primerArranque && accion === "") {
         // Oculta el panel del asiento
         $("#divpanel01").empty();
+
+        // Limpiar selecciones y ocultar checkboxes
+        limpiarSeleccionAsientos();
 
         // Configuración de componentes
         configurarComponentesIniciales();
@@ -882,6 +1387,9 @@ function InicializaVistaAsientos(e) {
     // Primera ejecución o acción pendiente
     primerArranque = false; // Marcar que ya no es la primera ejecución
 
+    // Limpiar selecciones y ocultar checkboxes
+    limpiarSeleccionAsientos();
+
     // Configuración de componentes
     configurarComponentesIniciales();
 
@@ -894,6 +1402,28 @@ function InicializaVistaAsientos(e) {
     activarGrilla(Grids.GridAsiento);
 
     CerrarWaiting();
+}
+
+/**
+ * Limpia todas las selecciones de asientos y oculta los checkboxes
+ */
+function limpiarSeleccionAsientos() {
+    // Limpiar las variables de selección
+    filaClicDoble = null;
+    filasSeleccionadas = [];
+
+    // Quitar todas las clases de selección
+    $("#tbGridAsiento tbody tr").removeClass("selected-simple selected-multiple selectedEdit-row");
+
+    // Desmarcar todos los checkboxes
+    $(".asiento-checkbox").prop("checked", false);
+    $("#selectAllAsientos").prop("checked", false);
+
+    // Deshabilitar botón de pasar a contabilidad
+    $("#btnPasarConta").prop("disabled", true);
+
+    // Actualizar contador de seleccionados
+    $("#selected-count").text("0");
 }
 
 /**
@@ -1003,10 +1533,10 @@ function selectAsientoDbl(x, gridId) {
         $(x).addClass("selectedEdit-row");
     }
 
-    var id = x.find("td:nth-child(1)").text();
+    var id = x.find("td:nth-child(2)").text().trim();
 
     //se agrega por inyection el tab con los datos del producto
-    EntidadEstado = x.find("td:nth-child(3)").text();
+    EntidadEstado = x.find("td:nth-child(4)").text().trim();
     var data = { id: id };
     EntidadSelect = id;
     desactivarGrilla(gridId);

@@ -5,9 +5,6 @@ using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Users;
-using gc.sitio.Areas.Usuarios.Controllers;
-using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos.ABM;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -19,7 +16,6 @@ namespace gc.sitio.Areas.ABMs.Controllers.Vendedor
     public class ABMVendedorController : ControladorVendedorBase
     {
         private readonly AppSettings _settings;
-        private readonly ILogger<ABMVendedorController> _logger;
         private readonly IAbmServicio _abmSv;
         private readonly IABMVendedorServicio _abmveSv;
 
@@ -28,11 +24,10 @@ namespace gc.sitio.Areas.ABMs.Controllers.Vendedor
              IAbmServicio abmSv) : base(options, accessor, logger)
         {
             _settings = options.Value;
-            _logger = logger;
             _abmveSv = abmveSv;
             _abmSv = abmSv;
         }
-        public async Task<IActionResult> Index(bool actualizar)
+        public IActionResult Index(bool actualizar)
         {
 
             try
@@ -116,7 +111,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Vendedor
             try
             {
                 var ve = await _abmveSv.ObtenerVendedorPorId(id, TokenCookie);
-                if (ve == null || !ve.Ok)
+                if (ve == null || !ve.Ok || ve.Entidad == null)
                 {
                     if (ve == null)
                     {
@@ -124,7 +119,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Vendedor
                     }
                     else
                     {
-                        throw new NegocioException(ve.Mensaje);
+                        throw new NegocioException(ve.Mensaje ?? "No se recepcionó el usuario buscado.");
                     }
                 }
                 VendedorSeleccionado = ve.Entidad;
@@ -158,8 +153,8 @@ namespace gc.sitio.Areas.ABMs.Controllers.Vendedor
             RespuestaGenerica<EntidadBase> response = new();
             try
             {
-                var ve = new ABMVendedorDatoDto() { ve_activo='S'};
-                    
+                var ve = new ABMVendedorDatoDto() { ve_activo = 'S' };
+
                 VendedorSeleccionado = ve;
 
                 return View("_n02panel01Vendedor", ve);
@@ -216,7 +211,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Vendedor
                     }
                     VendedoresLista = [];
 
-                    if (abm.Abm.Equals('A'))
+                    if (abm.Abm.Equals('A') && res.Entidad!=null)
                     {
                         return Json(new { error = false, warn = false, msg, id = res.Entidad.resultado_id });
                     }
@@ -224,7 +219,14 @@ namespace gc.sitio.Areas.ABMs.Controllers.Vendedor
                 }
                 else
                 {
-                    return Json(new { error = false, warn = true, msg = res.Entidad.resultado_msj, focus = res.Entidad.resultado_setfocus });
+                    if (res.Entidad != null)
+                    {
+                        return Json(new { error = false, warn = true, msg = res.Entidad.resultado_msj, focus = res.Entidad.resultado_setfocus });
+                    }
+                    else
+                    {
+                        return Json(new { error = false, warn = true, msg = "Hubo un problema al intentar confirmar al vendedor."});
+                    }
                 }
             }
             catch (NegocioException ex)
