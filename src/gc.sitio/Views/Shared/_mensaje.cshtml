@@ -1,5 +1,30 @@
 ﻿<!-- Modal -->
 <div class="modal" id="msjModal" tabindex="-1" aria-labelledby="msjTitulo" data-keyboard="false" data-backdrop="static"
+     style="z-index: 999999;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <!-- Encabezado del mensaje -->
+            <div id="msjHeader" class="modal-header">
+                <span id="msjIcono" class="" style="margin-top: -2px; margin-right: 5px;"></span>
+                <h5 id="msjTitulo">¡Atención!</h5>
+                <button type="button" class="close" onclick="AceptarMensaje('NO');" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <!-- Contenido del mensaje -->
+            <div id="msjContenido" class="modal-body">
+            </div>
+            <!-- Botones del mensaje -->
+            <div class="modal-footer">
+                <button id="btnMensajeAceptar" type="button" class="btn btn-primary">Aceptar</button>
+                <button id="btnMensajeAlternativa" type="button" class="btn btn-info">Otro</button>
+                <button id="btnMensajeCancelar" type="button" class="btn btn-secondary" data-dismiss="modal" onclick="CerrarMensaje('NO');">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* <div class="modal" id="msjModal" tabindex="-1" aria-labelledby="msjTitulo" data-keyboard="false" data-backdrop="static"
         style="z-index: 999999;">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -19,4 +44,4 @@
             </div>
         </div>
     </div>
-</div>
+</div> *@
