@@ -512,10 +512,13 @@ function ejecutarPaseAContabilidad() {
                         }
                         // Si hay muchos errores, ofrecer generar un reporte
                         else {
-                            const generarReporte = confirm("¿Desea generar un reporte con el detalle de los errores?");
-                            if (generarReporte) {
-                                generarReporteErrores(obj.detalles);
-                            }
+                            // Por:
+                            AbrirMensaje("CONFIRMACIÓN", "¿Desea generar un informe PDF con el detalle de los errores?", function (resp) {
+                                if (resp === "SI") {
+                                    generarReporteErrores(obj.detalles);
+                                }
+                                $("#msjModal").modal("hide");
+                            }, true, ["SI", "NO"], "warn!", null);
 
                             // Refrescar la lista de asientos
                             $("#divpanel01").empty();
@@ -572,47 +575,157 @@ function ejecutarPaseAContabilidad() {
  * Función para generar un reporte con los errores
  * Esta función es un placeholder - necesitarás implementarla según tus necesidades
  */
+//function generarReporteErrores(detalles) {
+//    // Para una implementación inicial, podemos abrir una ventana con los detalles
+//    let contenido = "<h3>Detalle de Errores</h3><table class='table table-striped'>";
+//    contenido += "<thead><tr><th>Asiento</th><th>Mensaje de Error</th></tr></thead><tbody>";
+
+//    detalles.forEach(function (detalle) {
+//        contenido += `<tr><td>${detalle.asientoId}</td><td>${detalle.mensaje}</td></tr>`;
+//    });
+
+//    contenido += "</tbody></table>";
+
+//    // Crear una ventana emergente con el contenido HTML
+//    const ventana = window.open("", "_blank", "width=800,height=600");
+//    ventana.document.write(`
+//        <!DOCTYPE html>
+//        <html>
+//        <head>
+//            <title>Reporte de Errores</title>
+//            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+//            <style>
+//                body { padding: 20px; }
+//                h3 { margin-bottom: 20px; }
+//                .table { width: 100%; }
+//            </style>
+//        </head>
+//        <body>
+//            <div class="container">
+//                ${contenido}
+//                <div class="mt-4">
+//                    <button class="btn btn-primary" onclick="window.print()">Imprimir</button>
+//                    <button class="btn btn-secondary" onclick="window.close()">Cerrar</button>
+//                </div>
+//            </div>
+//        </body>
+//        </html>
+//    `);
+
+//    // En una implementación más avanzada, podrías llamar a un endpoint del controlador
+//    // que genere un PDF y lo descargue o abra en una nueva pestaña
+//    // window.open('/Asientos/AsientoTemporal/GenerarReporteErrores?ids=' + JSON.stringify(detalles), '_blank');
+//}
+
+/**
+ * Genera un informe PDF con los detalles de errores al enviar asientos a contabilidad
+ * @param {Array} detalles - Lista de objetos con los detalles de los errores
+ */
 function generarReporteErrores(detalles) {
-    // Para una implementación inicial, podemos abrir una ventana con los detalles
-    let contenido = "<h3>Detalle de Errores</h3><table class='table table-striped'>";
-    contenido += "<thead><tr><th>Asiento</th><th>Mensaje de Error</th></tr></thead><tbody>";
+    if (!detalles || detalles.length === 0) {
+        AbrirMensaje("ATENCIÓN", "No hay errores para generar el informe.", function () {
+            $("#msjModal").modal("hide");
+        }, false, ["Aceptar"], "warn!", null);
+        return;
+    }
 
-    detalles.forEach(function (detalle) {
-        contenido += `<tr><td>${detalle.asientoId}</td><td>${detalle.mensaje}</td></tr>`;
+    // Mostrar indicador de espera
+    AbrirWaiting("Generando informe de errores...");
+
+    // Convertir los detalles a JSON para pasarlo como parámetro
+    const erroresJson = JSON.stringify(detalles);
+
+    // Preparar el objeto de solicitud para el informe
+    const reporteSolicitud = {
+        Reporte: 9, // InfoReporte.R009_InfoErrAsTemp
+        Parametros: {
+            "errores": erroresJson,
+            "fecha": new Date().toISOString()
+        },
+        Titulo: "Informe de Errores en Asientos Temporales",
+        Observacion: "Detalle de errores al pasar asientos temporales a contabilidad",        
+        Formato: "P" // P = PDF
+    };
+
+    // Realizar la solicitud al servidor
+    $.ajax({
+        url: gestorImpresionUrl,
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(reporteSolicitud),
+        success: function (response) {
+            CerrarWaiting();
+
+            if (response.error) {
+                AbrirMensaje("ERROR", response.msg || "Error al generar el informe", function () {
+                    $("#msjModal").modal("hide");
+                }, false, ["Aceptar"], "error!", null);
+                return;
+            }
+
+            if (response.warn) {
+                AbrirMensaje("ADVERTENCIA", response.msg, function () {
+                    if (response.auth) {
+                        window.location.href = loginUrl; // Redirigir al login si es necesario
+                    }
+                    $("#msjModal").modal("hide");
+                }, false, ["Aceptar"], "warn!", null);
+                return;
+            }
+
+            // Si todo salió bien, mostrar el PDF
+            const pdfData = response.base64;
+            const fileName = response.name || "errores_asientos.pdf";
+
+            // Crear un objeto Blob con los datos del PDF
+            const blob = b64toBlob(pdfData, "application/pdf");
+
+            // Crear una URL para el Blob
+            const url = URL.createObjectURL(blob);
+
+            // Abrir el PDF en una nueva ventana/pestaña
+            window.open(url, "_blank");
+        },
+        error: function (xhr, status, error) {
+            CerrarWaiting();
+            AbrirMensaje("ERROR", "Error al generar el informe: " + error, function () {
+                $("#msjModal").modal("hide");
+            }, false, ["Aceptar"], "error!", null);
+        }
     });
-
-    contenido += "</tbody></table>";
-
-    // Crear una ventana emergente con el contenido HTML
-    const ventana = window.open("", "_blank", "width=800,height=600");
-    ventana.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Reporte de Errores</title>
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
-            <style>
-                body { padding: 20px; }
-                h3 { margin-bottom: 20px; }
-                .table { width: 100%; }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                ${contenido}
-                <div class="mt-4">
-                    <button class="btn btn-primary" onclick="window.print()">Imprimir</button>
-                    <button class="btn btn-secondary" onclick="window.close()">Cerrar</button>
-                </div>
-            </div>
-        </body>
-        </html>
-    `);
-
-    // En una implementación más avanzada, podrías llamar a un endpoint del controlador
-    // que genere un PDF y lo descargue o abra en una nueva pestaña
-    // window.open('/Asientos/AsientoTemporal/GenerarReporteErrores?ids=' + JSON.stringify(detalles), '_blank');
 }
+
+/**
+ * Convierte un string Base64 a un objeto Blob
+ * @param {string} b64Data - Datos en formato Base64
+ * @param {string} contentType - Tipo de contenido MIME
+ * @param {number} sliceSize - Tamaño de las porciones de datos (opcional)
+ * @returns {Blob} - Objeto Blob con los datos
+ */
+function b64toBlob(b64Data, contentType, sliceSize) {
+    contentType = contentType || "";
+    sliceSize = sliceSize || 512;
+
+    const byteCharacters = atob(b64Data);
+    const byteArrays = [];
+
+    for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+        const slice = byteCharacters.slice(offset, offset + sliceSize);
+
+        const byteNumbers = new Array(slice.length);
+        for (let i = 0; i < slice.length; i++) {
+            byteNumbers[i] = slice.charCodeAt(i);
+        }
+
+        const byteArray = new Uint8Array(byteNumbers);
+        byteArrays.push(byteArray);
+    }
+
+    return new Blob(byteArrays, { type: contentType });
+}
+
+
+
 
 /**
  * Activa o desactiva los controles del asiento según el modo (alta/modificación/baja)
@@ -1026,7 +1139,6 @@ function confirmarOperacionAsiento() {
         accion: accion         // La acción (por ejemplo, 'A', 'M', 'B')
     };
 
-
     // Hacemos la llamada al servicio
     $.ajax({
         url: confirmarAsientoTemporalUrl,
@@ -1037,20 +1149,17 @@ function confirmarOperacionAsiento() {
             CerrarWaiting();
 
             if (obj.error === true) {
-                // Error grave del sistema
+                // Mostrar mensaje de error
                 AbrirMensaje("ERROR", obj.msg || "Ocurrió un error al procesar el asiento.", function () {
                     $("#msjModal").modal("hide");
                 }, false, ["Aceptar"], "error!", null);
             } else if (obj.warn === true) {
-                // Advertencia de validación o similar
+                // Mostrar advertencia
                 AbrirMensaje("ATENCIÓN", obj.msg, function () {
-                    // Si es un problema de autenticación, redirigir al login
                     if (obj.auth === true) {
-                        window.location.href = loginUrl;
+                        window.location.href = loginUrl; // Redirigir al login si es necesario
                     } else {
                         $("#msjModal").modal("hide");
-
-                        // Si hay un campo específico que necesita foco, establecerlo
                         if (obj.focus) {
                             $(`#${obj.focus}`).focus();
                         }
@@ -1058,50 +1167,12 @@ function confirmarOperacionAsiento() {
                 }, false, ["Continuar"], "warn!", null);
             } else {
                 // Operación exitosa
-                let mensajeExito = "";
-                switch (accion) {
-                    case AbmAction.ALTA:
-                        mensajeExito = "El asiento se ha creado exitosamente.";
-                        break;
-                    case AbmAction.MODIFICACION:
-                        mensajeExito = "El asiento se ha modificado exitosamente.";
-                        break;
-                    case AbmAction.BAJA:
-                        mensajeExito = "El asiento se ha eliminado exitosamente.";
-                        break;
-                }
-
-                AbrirMensaje("OPERACIÓN EXITOSA", obj.msg || mensajeExito, function () {
-                    // Después de confirmar, reinicializar la vista
+                AbrirMensaje("ÉXITO", obj.msg || "Operación realizada con éxito.", function () {
                     $("#msjModal").modal("hide");
-
-                    // Actualizar la grilla según la acción realizada
-                    if (accion === AbmAction.ALTA) {
-                        // Si es un alta, guardamos el ID devuelto
-                        if (obj.id) {
-                            EntidadSelect = obj.id;
-                        }
-
-                        // Refrescar los datos, buscar el nuevo asiento
-                        limpiarSeleccionAsientos();
-                        buscarAsientos(1);
-                    } else if (accion === AbmAction.BAJA) {
-                        // Si es una baja, limpiamos el ID seleccionado
-                        EntidadSelect = "";
-
-                        // Refrescar la grilla completa
-                        limpiarSeleccionAsientos();
-                        buscarAsientos(1);
-                    } else {
-                        // Para modificación, mantenemos el ID y refrescamos
-                        var data = { id: EntidadSelect };
-                        buscarAsiento(data);
-                    }
-
-                    // Reiniciar la acción
-                    accion = "";
-
-                }, false, ["Aceptar"], "success", null);
+                    InicializaVistaAsientos(); // Cierra el panel de edición y limpia la vista
+                    // Refrescar la grilla
+                    buscarAsientos(1); // Llama a la función que recarga la grilla
+                }, false, ["Aceptar"], "succ!", null);
             }
         },
         error: function (xhr, status, error) {
@@ -1112,6 +1183,7 @@ function confirmarOperacionAsiento() {
         }
     });
 }
+
 
 /**
  * Recopila los datos del asiento desde el formulario
@@ -1629,43 +1701,3 @@ function toggleComponent(checkboxId, componentSelector) {
     }
 }
 
-//function formatearDecimalesAsiento() {
-//    // Aplica formato a las celdas con valores decimales en la tabla de asientos
-//    $("#tbAsientoDetalle td.text-end").each(function () {
-//        const valor = $(this).text().trim();
-//        if (valor !== "" && !isNaN(parseFloat(valor.replace(",", ".")))) {
-//            const formateado = Inputmask.format(valor, {
-//                alias: "numeric",
-//                groupSeparator: ".",
-//                radixPoint: ",",
-//                digits: 2,
-//                digitsOptional: false,
-//                autoGroup: true,
-//                prefix: "$ " // Agregamos el signo peso argentino con un espacio
-//            });
-//            $(this).text(formateado);
-//        }
-//    });
-
-//    // También formatea los totales en el pie de tabla
-//    $("tfoot td.text-end").each(function () {
-//        const valor = $(this).contents().filter(function () {
-//            return this.nodeType === 3; // Nodo de texto
-//        }).text().trim();
-
-//        if (valor !== "" && !isNaN(parseFloat(valor.replace(",", ".")))) {
-//            const formateado = Inputmask.format(valor, {
-//                alias: "numeric",
-//                groupSeparator: ".",
-//                radixPoint: ",",
-//                digits: 2,
-//                digitsOptional: false,
-//                autoGroup: true,
-//                prefix: "$ " // Agregamos el signo peso argentino con un espacio
-//            });
-//            $(this).contents().filter(function () {
-//                return this.nodeType === 3; // Reemplaza solo el nodo de texto
-//            }).replaceWith(formateado);
-//        }
-//    });
-//}

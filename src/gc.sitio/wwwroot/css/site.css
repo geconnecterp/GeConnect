@@ -481,6 +481,30 @@ tr[title]:hover {
         font-size: 1.1em;
     }
 
+/* Estilo para mensajes informativos */
+.modal-header.info {
+    background-color: #d9edf7; /* Azul claro */
+    color: #31708f; /* Azul oscuro */
+}
+
+/* Estilo para mensajes exitosos */
+.modal-header.success {
+    background-color: #dff0d8; /* Verde claro */
+    color: #3c763d; /* Verde oscuro */
+}
+
+/* Estilo para mensajes de advertencia */
+.modal-header.warn {
+    background-color: #fcf8e3; /* Amarillo claro */
+    color: #8a6d3b; /* Marrón oscuro */
+}
+
+/* Estilo para mensajes de error */
+.modal-header.error {
+    background-color: #f2dede; /* Rojo claro */
+    color: #a94442; /* Rojo oscuro */
+}
+
 
 /* Ajustes para dispositivos móviles */
 @media (max-width: 991px) {

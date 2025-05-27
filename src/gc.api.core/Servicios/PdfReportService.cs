@@ -34,6 +34,7 @@ namespace gc.api.core.Servicios
                 { InfoReporte.R006_InfoOPagoDet, new R006_InformeOPagoDetalle(uow,consSv,empresa,ctaSv, logger) },
                 { InfoReporte.R007_InfoRecProv, new R007_InformeRecepcionProveedor(uow,consSv,empresa,ctaSv, logger) },
                 { InfoReporte.R008_InfoRecProvDet, new R008_InformeRecepcionProveedorDetalle(uow,consSv,empresa,ctaSv, logger) },
+                { InfoReporte.R009_InfoErrAsTemp, new R009_InformeCuentaCorriente(uow,consSv,empresa,ctaSv, logger) },
             };
             _logger = logger;
         }

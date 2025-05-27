@@ -270,6 +270,7 @@ function AceptarMensaje(Value) {
 
 var FunctionCallback = null;
 var FunctionCallBackExportar = null;
+
 function AbrirMensaje(Titulo, Mensaje, CallBack, EsConfirmacion, Botones, Tipo, CallBackExportar) {
     if (EsConfirmacion) {
         if (Botones.length > 2) {
@@ -321,28 +322,34 @@ function AbrirMensaje(Titulo, Mensaje, CallBack, EsConfirmacion, Botones, Tipo, 
     }
     //$('#msjModal').fadeIn(0);
     $("#msjIcono").html("");
+    // Aplicar clases según el tipo de mensaje
     switch (Tipo) {
         case "info!":
             $("#msjTitulo").prop("class", "text-info");
             $("#msjIcono").html('<i class="bx bx-md bx-spin bx-info-circle text-info"></i>');
+            $("#msjHeader").addClass("info"); // Agregar clase al encabezado
             break;
         case "warn!":
             $("#msjTitulo").prop("class", "text-warning");
             $("#msjIcono").html('<i class="bx bx-md bx-spin bx-error text-warning"></i>');
+            $("#msjHeader").addClass("warn"); // Agregar clase al encabezado
             break;
         case "error!":
             $("#msjTitulo").prop("class", "text-danger");
             $("#msjIcono").html('<i class="bx bx-md bx-spin bx-hand text-danger"></i>');
+            $("#msjHeader").addClass("error"); // Agregar clase al encabezado
             break;
         case "succ!":
             $("#msjTitulo").prop("class", "text-success");
             $("#msjIcono").html('<i class="bx bx-md bx-spin bx-check text-success"></i>');
+            $("#msjHeader").addClass("success"); // Agregar clase al encabezado (nota: usamos "success", no "succ")
             break;
         default:
             $("#msjIcono").prop("class", "");
             $("#msjIcono").html('');
             break;
     }
+
     $("#btnMensajeExportar").hide();
     if (CallBackExportar != null) {
         FunctionCallBackExportar = CallBackExportar;
@@ -353,6 +360,91 @@ function AbrirMensaje(Titulo, Mensaje, CallBack, EsConfirmacion, Botones, Tipo, 
 
     $('#msjModal').modal('show');
 }
+
+
+//function AbrirMensaje(Titulo, Mensaje, CallBack, EsConfirmacion, Botones, Tipo, CallBackExportar) {
+//    if (EsConfirmacion) {
+//        if (Botones.length > 2) {
+//            $("#btnMensajeAceptar").show();
+//            $("#btnMensajeAlternativa").show();
+//            $("#btnMensajeCancelar").show();
+//        }
+//        else {
+//            $("#btnMensajeAceptar").show();
+//            $("#btnMensajeAlternativa").hide();
+//            $("#btnMensajeCancelar").show();
+//        }
+
+//    } else {
+//        $("#btnMensajeAceptar").show();
+//        $("#btnMensajeAlternativa").hide();
+//        $("#btnMensajeCancelar").hide();
+//    }
+//    if (Mensaje != null) {
+//        $('#msjContenido').html(Mensaje);
+//    } else {
+//        $('#msjContenido').html('Error inesperado, intente de nuevo en unos minutos...');
+//    }
+//    if (Titulo != null) {
+//        $('#msjTitulo').text(Titulo);
+//    } else {
+//        $('#msjTitulo').text('¡Atención!');
+//    }
+//    FunctionCallback = CallBack;
+//    if (Botones != null) {
+//        if (Botones.length == 1) {
+//            $("#btnMensajeAceptar").text(Botones[0]);
+//        }
+//        if (Botones.length == 2) {
+//            $("#btnMensajeAceptar").text(Botones[0]);
+//            $("#btnMensajeCancelar").text(Botones[1]);
+//        }
+//        else {
+//            $("#btnMensajeAceptar").text(Botones[0]);
+//            $("#btnMensajeAlternativa").text(Botones[1]);
+//            $("#btnMensajeCancelar").text(Botones[2]);
+//        }
+//        if (Botones.length == 0) {
+//            $("#btnMensajeCancelar").text("Cancelar");
+//        }
+//    } else {
+//        $("#btnMensajeAceptar").text("Aceptar");
+//        $("#btnMensajeCancelar").text("Cancelar");
+//    }
+//    //$('#msjModal').fadeIn(0);
+//    $("#msjIcono").html("");
+//    switch (Tipo) {
+//        case "info!":
+//            $("#msjTitulo").prop("class", "text-info");
+//            $("#msjIcono").html('<i class="bx bx-md bx-spin bx-info-circle text-info"></i>');
+//            break;
+//        case "warn!":
+//            $("#msjTitulo").prop("class", "text-warning");
+//            $("#msjIcono").html('<i class="bx bx-md bx-spin bx-error text-warning"></i>');
+//            break;
+//        case "error!":
+//            $("#msjTitulo").prop("class", "text-danger");
+//            $("#msjIcono").html('<i class="bx bx-md bx-spin bx-hand text-danger"></i>');
+//            break;
+//        case "succ!":
+//            $("#msjTitulo").prop("class", "text-success");
+//            $("#msjIcono").html('<i class="bx bx-md bx-spin bx-check text-success"></i>');
+//            break;
+//        default:
+//            $("#msjIcono").prop("class", "");
+//            $("#msjIcono").html('');
+//            break;
+//    }
+//    $("#btnMensajeExportar").hide();
+//    if (CallBackExportar != null) {
+//        FunctionCallBackExportar = CallBackExportar;
+//        $("#btnMensajeExportar").show();
+//        $("#btnMensajeAceptar").hide();
+//        $("#btnMensajeCancelar").show();
+//    }
+
+//    $('#msjModal').modal('show');
+//}
 
 //codigo generico para autocomplete 01
 $("#Rel01").autocomplete({
