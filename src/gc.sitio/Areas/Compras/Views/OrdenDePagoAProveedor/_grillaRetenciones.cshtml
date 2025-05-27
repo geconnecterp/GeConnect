@@ -1,5 +1,26 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model GridCoreSmart<RetencionesDesdeObligYCredDto>
+@using static gc.infraestructura.Helpers.GridHelper
 @{
 }
+<div class="table-responsive table-wrapper-100-full" id="containerRetenciones_Paso2">
+	<table class="table table-bordered table-hover" id="tbListaRetenciones_Paso2">
+		<thead class="table-dark">
+			<tr>
+				<th style="width:75%;" class="col-header-small align-center tiny-row">Retenciones</th>
+				<th style="width:25%;" class="col-header-small align-center tiny-row">Importes</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
+			{
+				@foreach (var item in Model.ListaDatos)
+				{
+					<tr onclick="selectReg(this, 'tbListaRetenciones_Paso2')" ondblclick="selectRegDbl(this, 'tbListaRetenciones_Paso2')">
+						<td class="@Model.ObtenerClase(item.concepto_retencion)">@Model.FormatearDato(item.concepto_retencion, FormatDato.Ninguno)</td>
+						<td class="@Model.ObtenerClase(item.retencion)">@Model.FormatearDato(item.retencion, FormatDato.Monto)</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>

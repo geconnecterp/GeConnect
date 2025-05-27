@@ -1,5 +1,35 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model GridCoreSmart<ValoresDesdeObligYCredDto>
+@using static gc.infraestructura.Helpers.GridHelper
 @{
 }
+<div class="row">
+	<div class="col-1">
+		<button id="btnAgregarConceptoFacturado" class="btn btn-success btn-sm mt-2 me-1" type="button" title="Agregar">
+			<i class="bx bx-plus bx-xs"></i>
+		</button>
+	</div>
+	<div class="col-11 mt-2 table-responsive table-wrapper-100-full" id="containerValores_Paso2" style="padding-right: 0px;">
+		<table class="table table-bordered table-hover" id="tbListaValores_Paso2">
+			<thead class="table-dark">
+				<tr>
+					<th style="width:50%;" class="col-header-small align-center tiny-row">Cuenta Financiera</th>
+					<th style="width:25%;" class="col-header-small align-center tiny-row">Valor</th>
+					<th style="width:25%;" class="col-header-small align-center tiny-row">Importe</th>
+				</tr>
+			</thead>
+			<tbody>
+				@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
+				{
+					@foreach (var item in Model.ListaDatos)
+					{
+						<tr onclick="selectReg(this, 'tbListaValores_Paso2')" ondblclick="selectRegDbl(this, 'tbListaValores_Paso2')">
+							<td class="@Model.ObtenerClase(item.ctaf_denominacion)">@Model.FormatearDato(item.ctaf_denominacion, FormatDato.Ninguno)</td>
+							<td class="@Model.ObtenerClase(item.concepto_valor)">@Model.FormatearDato(item.concepto_valor, FormatDato.Monto)</td>
+							<td class="@Model.ObtenerClase(item.op_importe)">@Model.FormatearDato(item.op_importe, FormatDato.Monto)</td>
+						</tr>
+					}
+				}
+			</tbody>
+		</table>
+	</div>
+</div>

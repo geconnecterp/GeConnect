@@ -2,6 +2,7 @@
 	$(document).on("click", "#btnCancelDesdeValidPrev", CancelDesdeValidPrev);
 	$(document).on("click", "#btnAceptarDesdeValidPrev", AceptarDesdeValidPrev);
 	$(document).on("click", "#btnSiguiente1", btnSiguiente1Validar);
+	$(document).on("click", "#btnAnterior2", btnAnterior2Validar);
 	//
 	InicializaPantalla();
 	$("#btnBuscar").on("click", function () {
@@ -18,6 +19,24 @@
 	});
 });
 
+//Me muevo al paso1
+function btnAnterior2Validar() {
+	AbrirWaiting("Cargando....");
+	var data = {};
+	PostGenHtml(data, cargarVistaObligacionesYCreditosPaso1Url, function (obj) {
+		$("#divDetalle").html(obj);
+		//Setear los valores de la cuenta seleccionada en la vista de obligaciones y creditos
+		$("#CtaID").val(ctaIdSelected);
+		$("#CtaDesc").val(ctaDescSelected);
+		MostrarDatosDeCuenta(true);
+		ActualizarTotalesSuperiores();
+		RestaurarGrillasInferioresParaPaso1();
+		EvaluarBotonesWizzard();
+		CerrarWaiting();
+	});
+}
+
+//Me muevo al paso2
 function btnSiguiente1Validar() {
 	if ($("#tbListaObligacionesParaAgregar tbody tr").length < $("#tbListaCreditosParaAgregar tbody tr").length) {
 		AbrirMensaje("ATENCIÓN", "Deben existir mas elementos de Obligaciones/Débitos que créditos.", function () {
@@ -26,8 +45,20 @@ function btnSiguiente1Validar() {
 		}, false, ["Aceptar"], "warn!", null);
 	}
 	//Validar que el total de obligaciones o débitos sea mayor o igual que el de los créditos
-	else if ($("#tbListaObligacionesParaAgregar tbody tr").length > $("#tbListaCreditosParaAgregar tbody tr").length) {
-		//TODO MARCE: seguir aca
+	else if ($("#tbListaObligacionesParaAgregar tbody tr").length >= $("#tbListaCreditosParaAgregar tbody tr").length) {
+		AbrirWaiting("Cargando....");
+		var data = {};
+		PostGenHtml(data, cargarVistaObligacionesYCreditosPaso2Url, function (obj) {
+			$("#divDetalle").html(obj);
+			//Setear los valores de la cuenta seleccionada en la vista de obligaciones y creditos
+			$("#CtaID").val(ctaIdSelected);
+			$("#CtaDesc").val(ctaDescSelected);
+			MostrarDatosDeCuenta(true);
+			ActualizarTotalesSuperiores();
+			cargarRetencionesDesdeObligYCredSeleccionados();
+			cargarValoresDesdeObligYCredSeleccionados();
+			CerrarWaiting();
+		});
 	}
 	else {
 		//Si no existen obligaciones, debe suponer que es un “Pago Anticipado”, en ese caso debe advertirlo en el paso siguiente 
@@ -36,6 +67,20 @@ function btnSiguiente1Validar() {
 			//TODO MARCE: seguir aca
 		}
 	}
+}
+
+function cargarRetencionesDesdeObligYCredSeleccionados() {
+	var data = {};
+	PostGenHtml(data, cargarRetencionesDesdeObligYCredSeleccionadosUrl, function (obj) {
+		$("#divRetenciones").html(obj);
+	});
+}
+
+function cargarValoresDesdeObligYCredSeleccionados() {
+	var data = {};
+	PostGenHtml(data, cargarValoresDesdeObligYCredSeleccionadosUrl, function (obj) {
+		$("#divValores").html(obj);
+	});
 }
 
 const formatter = new Intl.NumberFormat('en-US', {
@@ -94,12 +139,14 @@ function selectRegDbl(x, gridId) {
 				ActualizarTotalesSuperiores();
 				var msg = $("#MsgErrorEnCargarOSacarCreditos").val();
 			}
+			CerrarWaiting();
 			if (msg != "") {
 				AbrirMensaje("ATENCIÓN", msg, function () {
 					$("#msjModal").modal("hide");
 					return true;
 				}, false, ["Aceptar"], "error!", null);
 			}
+			EvaluarBotonesWizzard();
 		});
 	}
 	else { //Quitar
@@ -111,6 +158,7 @@ function selectRegDbl(x, gridId) {
 		var accion = "S";
 		var origen = gridId;
 		var data = { cuota, dia_movi, cm_compte, tco_id, cta_id, accion, origen };
+		AbrirWaiting("Cargando....");
 		PostGenHtml(data, cargarOSacarObligacionesOCreditosUrl, function (obj) {
 			if (gridId == "tbListaObligacionesParaAgregar") {
 				$("#divObligacionesParaAgregar").html(obj);
@@ -124,6 +172,7 @@ function selectRegDbl(x, gridId) {
 				ActualizarTotalesSuperiores();
 				var msg = $("#MsgErrorEnCargarOSacarCreditos").val();
 			}
+			CerrarWaiting();
 			if (msg != "") {
 				AbrirMensaje("ATENCIÓN", msg, function () {
 					$("#msjModal").modal("hide");
@@ -133,6 +182,15 @@ function selectRegDbl(x, gridId) {
 		});
 	}
 	CerrarWaiting();
+}
+
+function EvaluarBotonesWizzard() {
+	if ($("#tbListaObligacionesParaAgregar tbody tr").length >= $("#tbListaCreditosParaAgregar tbody tr").length) {
+		$("#btnSiguiente1").prop("disabled", false);
+	}
+	else {
+		$("#btnSiguiente1").prop("disabled", true);
+	}
 }
 
 function ActualizarTotalesSuperiores() {
@@ -159,8 +217,6 @@ function ActualizarGrillaCreditosInferior() {
 		$("#divCreditos").html(obj);
 	});
 }
-
-//TODO MARCE: Agregar metodos para calcular los y completar los txt superiores (Obligaciones a cancelar, Creditos y valores imputados, y Diferencias.)
 
 function AceptarDesdeValidPrev() {
 	AbrirWaiting("Cargando....");
@@ -321,4 +377,13 @@ function ValidarProveedor() {
 			$("#divDetalle").collapse("show");
 		}
 	});
+}
+
+function RestaurarGrillasInferioresParaPaso1() {
+	setTimeout(() => {
+		CargarObligacionesOCreditos("D"); //Obligaciones
+	}, 500);
+	setTimeout(() => {
+		CargarObligacionesOCreditos("H"); //Créditos
+	}, 500);
 }

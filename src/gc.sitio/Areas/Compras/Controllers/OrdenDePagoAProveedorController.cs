@@ -110,6 +110,14 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
+		/// <summary>
+		/// Carga la vista parcial que permite seleccionar obligaciones y créditos para un proveedor específico.
+		/// Inicializa los modelos y listas necesarias para la selección, y prepara la interfaz para el usuario.
+		/// </summary>
+		/// <param name="cta_id">Identificador de la cuenta del proveedor.</param>
+		/// <returns>
+		/// Una vista parcial con el modelo de selección de obligaciones y créditos, o un mensaje de error si ocurre una excepción.
+		/// </returns>
 		[HttpPost]
 		public IActionResult CargarVistaObligacionesYCreditos(string cta_id)
 		{
@@ -128,7 +136,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				CtaIdSelected = cta_id;
 				OPDebitoNuevaLista = [];
 				OPCreditoNuevaLista = [];
-				return PartialView("_vistaObligacionesYCreditos", model);
+				return PartialView("_vistaObligYCred_paso1", model);
 			}
 			catch (Exception ex)
 			{
@@ -258,8 +266,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 					var model = new CargarNuevosCreditosModel();
 					if (OPCreditoOriginalLista == null || OPCreditoOriginalLista.Count <= 0)
 					{
-						OPCreditoOriginalLista = ObtenerData('C');
-						OPCreditoLista = ObtenerData('C');
+						OPCreditoOriginalLista = ObtenerData('H');
+						OPCreditoLista = ObtenerData('H');
 					}
 
 					//Busco el elemento en la lista original de creditos
@@ -378,8 +386,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 					var model = new CargarNuevosCreditosModel();
 					if (OPCreditoOriginalLista == null || OPCreditoOriginalLista.Count <= 0)
 					{
-						OPCreditoOriginalLista = ObtenerData('C');
-						OPCreditoLista = ObtenerData('C');
+						OPCreditoOriginalLista = ObtenerData('H');
+						OPCreditoLista = ObtenerData('H');
 					}
 
 					//Busco el elemento en la lista original de obligaciones
@@ -535,11 +543,82 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		[HttpPost]
+		public IActionResult CargarVistaObligacionesYCreditosPaso1()
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+				var model = new CargarObligacionesOCreditosModel
+				{
+					ctaDir = "",
+					listaCtaDir = ComboTipoGasto(),
+					GrillaCreditosNueva = ObtenerGridCoreSmart<OPDebitoYCreditoDelProveedorDto>(OPCreditoNuevaLista),
+					GrillaObligacionesNuevas = ObtenerGridCoreSmart<OPDebitoYCreditoDelProveedorDto>(OPDebitoNuevaLista)
+				};
+				return PartialView("_vistaObligYCred_paso1", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public IActionResult CargarVistaObligacionesYCreditosPaso2()
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+				var model = new CargarObligacionesOCreditosPaso2Model
+				{
+					GrillaCreditosNueva = ObtenerGridCoreSmart<OPDebitoYCreditoDelProveedorDto>(OPCreditoNuevaLista),
+					GrillaObligacionesNuevas = ObtenerGridCoreSmart<OPDebitoYCreditoDelProveedorDto>(OPDebitoNuevaLista),
+					GrillaRetenciones = new GridCoreSmart<RetencionesDesdeObligYCredDto>(),
+					GrillaValores = new GridCoreSmart<ValoresDesdeObligYCredDto>(),
+					GrillaMedioDePago = new GridCoreSmart<MedioDePago>()
+				};
+				return PartialView("_vistaObligYCred_paso2", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
 		public IActionResult CargarRetencionesDesdeObligYCredSeleccionados()
 		{
 			var model = new GridCoreSmart<RetencionesDesdeObligYCredDto>();
 			try
 			{
+				var cta_id = CtaIdSelected;
+				var json_debitos = JsonConvert.SerializeObject(OPDebitoNuevaLista, new JsonSerializerSettings()); 
+				var json_creditos = JsonConvert.SerializeObject(OPCreditoNuevaLista, new JsonSerializerSettings());
+				var response = _ordenDePagoServicio.CargarRetencionesDesdeObligYCredSeleccionados(new CargarRetencionesDesdeObligYCredSeleccionadosRequest
+				{
+					cta_id = cta_id,
+					json_d = json_debitos,
+					json_h = json_creditos
+				}, TokenCookie);
+				model = ObtenerGridCoreSmart<RetencionesDesdeObligYCredDto>(response);
 				return PartialView("_grillaRetenciones", model);
 			}
 			catch (Exception ex)
@@ -558,9 +637,19 @@ namespace gc.sitio.Areas.Compras.Controllers
 		[HttpPost]
 		public IActionResult CargarValoresDesdeObligYCredSeleccionados()
 		{
-			var model = new GridCoreSmart<RetencionesDesdeObligYCredDto>();
+			var model = new GridCoreSmart<ValoresDesdeObligYCredDto>();
 			try
 			{
+				var cta_id = CtaIdSelected;
+				var json_debitos = JsonConvert.SerializeObject(OPDebitoNuevaLista, new JsonSerializerSettings());
+				var json_creditos = JsonConvert.SerializeObject(OPCreditoNuevaLista, new JsonSerializerSettings());
+				var response = _ordenDePagoServicio.CargarValoresDesdeObligYCredSeleccionados(new CargarValoresDesdeObligYCredSeleccionadosRequest
+				{
+					cta_id = cta_id,
+					json_d = json_debitos,
+					json_h = json_creditos
+				}, TokenCookie);
+				model = ObtenerGridCoreSmart<ValoresDesdeObligYCredDto>(response);
 				return PartialView("_grillaValores", model);
 			}
 			catch (Exception ex)
