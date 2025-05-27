@@ -54,9 +54,11 @@ function btnSiguiente1Validar() {
 			$("#CtaID").val(ctaIdSelected);
 			$("#CtaDesc").val(ctaDescSelected);
 			MostrarDatosDeCuenta(true);
-			ActualizarTotalesSuperiores();
-			cargarRetencionesDesdeObligYCredSeleccionados();
-			cargarValoresDesdeObligYCredSeleccionados();
+			CargarRetencionesDesdeObligYCredSeleccionados();
+			CargarValoresDesdeObligYCredSeleccionados();
+			setTimeout(() => {
+				ActualizarTotalesSuperiores();
+			}, 500);
 			CerrarWaiting();
 		});
 	}
@@ -69,14 +71,14 @@ function btnSiguiente1Validar() {
 	}
 }
 
-function cargarRetencionesDesdeObligYCredSeleccionados() {
+function CargarRetencionesDesdeObligYCredSeleccionados() {
 	var data = {};
 	PostGenHtml(data, cargarRetencionesDesdeObligYCredSeleccionadosUrl, function (obj) {
 		$("#divRetenciones").html(obj);
 	});
 }
 
-function cargarValoresDesdeObligYCredSeleccionados() {
+function CargarValoresDesdeObligYCredSeleccionados() {
 	var data = {};
 	PostGenHtml(data, cargarValoresDesdeObligYCredSeleccionadosUrl, function (obj) {
 		$("#divValores").html(obj);
@@ -179,6 +181,7 @@ function selectRegDbl(x, gridId) {
 					return true;
 				}, false, ["Aceptar"], "error!", null);
 			}
+			EvaluarBotonesWizzard();
 		});
 	}
 	CerrarWaiting();
@@ -186,6 +189,9 @@ function selectRegDbl(x, gridId) {
 
 function EvaluarBotonesWizzard() {
 	if ($("#tbListaObligacionesParaAgregar tbody tr").length >= $("#tbListaCreditosParaAgregar tbody tr").length) {
+		$("#btnSiguiente1").prop("disabled", false);
+	}
+	else if ($("#tbListaObligacionesParaAgregar tbody tr").length == 0 && $("#tbListaCreditosParaAgregar tbody tr").length == 0) {
 		$("#btnSiguiente1").prop("disabled", false);
 	}
 	else {

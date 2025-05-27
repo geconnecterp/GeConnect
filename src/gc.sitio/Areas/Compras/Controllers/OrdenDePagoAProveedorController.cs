@@ -296,7 +296,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 									listaAux.Add(item);
 									OPCreditoNuevaLista = listaAux;
 								}
-								else 
+								else
 								{
 									listaAux = [item];
 									OPCreditoNuevaLista = listaAux;
@@ -510,7 +510,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 				//OPCreditoNuevaLista
 				var tot_CredYValImputados = (decimal)0.00;
 				if (OPCreditoNuevaLista != null && OPCreditoNuevaLista.Count > 0)
-					tot_CredYValImputados = OPCreditoNuevaLista.Sum(x => x.cv_importe);
+					tot_CredYValImputados += OPCreditoNuevaLista.Sum(x => x.cv_importe);
+				if (OPRetencionesDesdeObligYCredLista != null && OPRetencionesDesdeObligYCredLista.Count > 0)
+					tot_CredYValImputados += OPRetencionesDesdeObligYCredLista.Sum(x => x.retencion);
+				if (OPValoresDesdeObligYCredLista != null && OPValoresDesdeObligYCredLista.Count > 0)
+					tot_CredYValImputados += OPValoresDesdeObligYCredLista.Sum(x => x.op_importe);
 				var tot_Diferencia = tot_ObligacionesCancelar - tot_CredYValImputados;
 				return Json(new { error = false, warn = false, msg = string.Empty, data = new TotalesActualizados() { ObligacionesCancelar = tot_ObligacionesCancelar, CredYValImputados = tot_CredYValImputados, Diferencia = tot_Diferencia } });
 			}
@@ -533,6 +537,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 				OPCreditoLista = [];
 				OPCreditoOriginalLista = [];
 				OPCreditoNuevaLista = [];
+				OPRetencionesDesdeObligYCredLista = [];
+				OPValoresDesdeObligYCredLista = [];
 
 				return Json(new { error = false, warn = false, msg = "Inicializacion correcta." });
 			}
@@ -586,7 +592,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 					GrillaObligacionesNuevas = ObtenerGridCoreSmart<OPDebitoYCreditoDelProveedorDto>(OPDebitoNuevaLista),
 					GrillaRetenciones = new GridCoreSmart<RetencionesDesdeObligYCredDto>(),
 					GrillaValores = new GridCoreSmart<ValoresDesdeObligYCredDto>(),
-					GrillaMedioDePago = new GridCoreSmart<MedioDePago>()
+					GrillaMedioDePago = new GridCoreSmart<MedioDePago>(),
+					EsPagoAnticipado = OPDebitoNuevaLista.Count == 0
 				};
 				return PartialView("_vistaObligYCred_paso2", model);
 			}
@@ -610,7 +617,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			try
 			{
 				var cta_id = CtaIdSelected;
-				var json_debitos = JsonConvert.SerializeObject(OPDebitoNuevaLista, new JsonSerializerSettings()); 
+				var json_debitos = JsonConvert.SerializeObject(OPDebitoNuevaLista, new JsonSerializerSettings());
 				var json_creditos = JsonConvert.SerializeObject(OPCreditoNuevaLista, new JsonSerializerSettings());
 				var response = _ordenDePagoServicio.CargarRetencionesDesdeObligYCredSeleccionados(new CargarRetencionesDesdeObligYCredSeleccionadosRequest
 				{
@@ -619,6 +626,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					json_h = json_creditos
 				}, TokenCookie);
 				model = ObtenerGridCoreSmart<RetencionesDesdeObligYCredDto>(response);
+				OPRetencionesDesdeObligYCredLista = response;
 				return PartialView("_grillaRetenciones", model);
 			}
 			catch (Exception ex)

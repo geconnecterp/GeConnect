@@ -162,5 +162,41 @@ namespace gc.sitio.Areas.Compras.Controllers
 				_context.HttpContext?.Session.SetString("OPCreditoNuevaLista", json);
 			}
 		}
+
+		public List<RetencionesDesdeObligYCredDto> OPRetencionesDesdeObligYCredLista
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("OPRetencionesDesdeObligYCredLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<RetencionesDesdeObligYCredDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("OPRetencionesDesdeObligYCredLista", json);
+			}
+		}
+
+		public List<ValoresDesdeObligYCredDto> OPValoresDesdeObligYCredLista
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("OPValoresDesdeObligYCredLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<ValoresDesdeObligYCredDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("OPValoresDesdeObligYCredLista", json);
+			}
+		}
 	}
 }

@@ -4,24 +4,24 @@
 }
 <style>
 	fieldset {
-		margin: 8px;
-		border: 1px solid silver;
-		padding: 8px;
-		border-radius: 4px;
-		max-width: 100%;
-		margin-top: 8px;
-		margin-left: 0px;
-		margin-right: 0px;
-		margin-bottom: 0px;
+	margin: 8px;
+	border: 1px solid silver;
+	padding: 8px;
+	border-radius: 4px;
+	max-width: 100%;
+	margin-top: 8px;
+	margin-left: 0px;
+	margin-right: 0px;
+	margin-bottom: 0px;
 	}
 
 	legend {
-		padding: 2px;
-		margin-top: -22px;
-		background: #f3f5f7 !important;
-		width: 25%;
-		text-align: center;
-		font-size: small;
+	padding: 2px;
+	margin-top: -22px;
+	background: #f3f5f7 !important;
+	width: 25%;
+	text-align: center;
+	font-size: small;
 	}
 </style>
 <div class="row mt-2">
@@ -99,6 +99,15 @@
 			</div>
 			<div class="row" id="divSeccionPagos">
 				<div>
+					@if (Model.EsPagoAnticipado)
+					{
+						<div class="row mt-1 mb-1">
+							<div class="input-group input-group-sm">
+								<span class="input-group-text fixed-lbl-for-abm-100">Pago Anticipado:</span>
+								<input type="text" id="txtPagoAnticipado" class="form-control activable inputEditable" />
+							</div>
+						</div>
+					}
 					<div class="row mt-1 mb-1">
 						<div class="input-group input-group-sm">
 							<span class="input-group-text fixed-lbl-for-abm-100">Observaciones:</span>
