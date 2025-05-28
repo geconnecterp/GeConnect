@@ -198,6 +198,10 @@ $(function () {
     $("#btnAbmAceptar").on("click", confirmarOperacionAsiento);
     //****FIN BOTONES DE OPERACION*/
 
+    // Evento para el botón Imprimir
+    $(document).on("click", "#btnImprimir", imprimirAsiento);
+
+
     // Evento para el botón "Pasar a contabilidad"
     $(document).on("click", "#btnPasarConta", function () {
         // Confirmar la acción
@@ -475,15 +479,33 @@ function ejecutarPaseAContabilidad() {
         return;
     }
 
+    // Obtener el número de ejercicio seleccionado
+    const eje_nro = parseInt($("#Eje_nro").val()) || 0;
+
+    // Validar que se haya seleccionado un ejercicio
+    if (eje_nro <= 0) {
+        AbrirMensaje("ATENCIÓN", "Debe seleccionar un ejercicio contable válido para realizar el pase a contabilidad.", function () {
+            $("#msjModal").modal("hide");
+            return true;
+        }, false, ["Aceptar"], "warn!", null);
+        return;
+    }
+
     // Mostrar indicador de espera
     AbrirWaiting("Procesando el pase a contabilidad...");
+
+    // Construimos el objeto que coincide con AsientoAccionDto
+    const datos = {
+        asientosIds: filasSeleccionadas,  // El objeto del asiento
+        eje_nro: eje_nro         // La acción (por ejemplo, 'A', 'M', 'B')
+    };
 
     // Llamar al servicio con los IDs seleccionados
     $.ajax({
         url: pasarAContabilidadUrl,
         type: "POST",
         contentType: "application/json",
-        data: JSON.stringify(filasSeleccionadas),
+        data: JSON.stringify(datos),
         success: function (obj) {
             CerrarWaiting();
 
@@ -495,7 +517,7 @@ function ejecutarPaseAContabilidad() {
                     // Mostrar mensaje principal
                     AbrirMensaje("ATENCIÓN", mensaje, function () {
                         // Si hay pocos errores, mostrar detalles en un segundo mensaje
-                        if (obj.fallidos <= 5) {
+                        if (obj.fallidos <= 3) {
                             let detalles = "<ul>";
                             obj.detalles.forEach(function (detalle) {
                                 detalles += `<li>Asiento ${detalle.asientoId}: ${detalle.mensaje}</li>`;
@@ -513,9 +535,9 @@ function ejecutarPaseAContabilidad() {
                         // Si hay muchos errores, ofrecer generar un reporte
                         else {
                             // Por:
-                            AbrirMensaje("CONFIRMACIÓN", "¿Desea generar un informe PDF con el detalle de los errores?", function (resp) {
+                            AbrirMensaje("CONFIRMACIÓN", "¿Desea ver el detalle de los errores?", function (resp) {
                                 if (resp === "SI") {
-                                    generarReporteErrores(obj.detalles);
+                                    presentarReporteErrores(obj.detalles);
                                 }
                                 $("#msjModal").modal("hide");
                             }, true, ["SI", "NO"], "warn!", null);
@@ -534,7 +556,8 @@ function ejecutarPaseAContabilidad() {
 
                     AbrirMensaje("ERROR", mensaje, function (resp) {
                         if (resp === "SI") {
-                            generarReporteErrores(obj.detalles);
+                            //generarReporteErrores(obj.detalles);
+                            presentarReporteErrores(obj.detalles);
                         }
                         $("#msjModal").modal("hide");
                         // Refrescar la lista de asientos
@@ -572,50 +595,57 @@ function ejecutarPaseAContabilidad() {
 }
 
 /**
- * Función para generar un reporte con los errores
+ * Función para presentar un reporte con los errores en html
  * Esta función es un placeholder - necesitarás implementarla según tus necesidades
  */
-//function generarReporteErrores(detalles) {
-//    // Para una implementación inicial, podemos abrir una ventana con los detalles
-//    let contenido = "<h3>Detalle de Errores</h3><table class='table table-striped'>";
-//    contenido += "<thead><tr><th>Asiento</th><th>Mensaje de Error</th></tr></thead><tbody>";
+function presentarReporteErrores(detalles) {
+    if (!detalles || detalles.length === 0) {
+        AbrirMensaje("ATENCIÓN", "No hay errores para mostrar.", function () {
+            $("#msjModal").modal("hide");
+        }, false, ["Aceptar"], "warn!", null);
+        return;
+    }
 
-//    detalles.forEach(function (detalle) {
-//        contenido += `<tr><td>${detalle.asientoId}</td><td>${detalle.mensaje}</td></tr>`;
-//    });
+    // Para una implementación inicial, podemos abrir una ventana con los detalles
+    let contenido = "<h3>Detalle de Errores</h3><table class='table table-striped'>";
+    contenido += "<thead><tr><th>Asiento</th><th>Mensaje de Error</th></tr></thead><tbody>";
 
-//    contenido += "</tbody></table>";
+    detalles.forEach(function (detalle) {
+        contenido += `<tr><td>${detalle.asientoId}</td><td>${detalle.mensaje}</td></tr>`;
+    });
 
-//    // Crear una ventana emergente con el contenido HTML
-//    const ventana = window.open("", "_blank", "width=800,height=600");
-//    ventana.document.write(`
-//        <!DOCTYPE html>
-//        <html>
-//        <head>
-//            <title>Reporte de Errores</title>
-//            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
-//            <style>
-//                body { padding: 20px; }
-//                h3 { margin-bottom: 20px; }
-//                .table { width: 100%; }
-//            </style>
-//        </head>
-//        <body>
-//            <div class="container">
-//                ${contenido}
-//                <div class="mt-4">
-//                    <button class="btn btn-primary" onclick="window.print()">Imprimir</button>
-//                    <button class="btn btn-secondary" onclick="window.close()">Cerrar</button>
-//                </div>
-//            </div>
-//        </body>
-//        </html>
-//    `);
+    contenido += "</tbody></table>";
 
-//    // En una implementación más avanzada, podrías llamar a un endpoint del controlador
-//    // que genere un PDF y lo descargue o abra en una nueva pestaña
-//    // window.open('/Asientos/AsientoTemporal/GenerarReporteErrores?ids=' + JSON.stringify(detalles), '_blank');
-//}
+    // Crear una ventana emergente con el contenido HTML
+    const ventana = window.open("", "_blank", "width=800,height=600");
+    ventana.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Reporte de Errores</title>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+            <style>
+                body { padding: 20px; }
+                h3 { margin-bottom: 20px; }
+                .table { width: 100%; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                ${contenido}
+                <div class="mt-4">
+                    <button class="btn btn-primary" onclick="window.print()">Imprimir</button>
+                    <button class="btn btn-secondary" onclick="window.close()">Cerrar</button>
+                </div>
+            </div>
+        </body>
+        </html>
+    `);
+
+    // En una implementación más avanzada, podrías llamar a un endpoint del controlador
+    // que genere un PDF y lo descargue o abra en una nueva pestaña
+    // window.open('/Asientos/AsientoTemporal/GenerarReporteErrores?ids=' + JSON.stringify(detalles), '_blank');
+}
 
 /**
  * Genera un informe PDF con los detalles de errores al enviar asientos a contabilidad
@@ -1194,9 +1224,9 @@ function recopilarDatosAsiento() {
     // 1. Del atributo data
     let dia_movi = $("#tbAsientoDetalle").data("dia_movi");
 
-    // 2. Si no está en el atributo data, buscar en el campo de entrada en el encabezado
+    // 2. Si no está en el atributo data, buscar en el campo específico
     if (!dia_movi) {
-        dia_movi = $(".card-header input.form-control").first().val();
+        dia_movi = $("#Dia_movi").val() || $("input#Dia_movi").val() || $("input[name='Dia_movi']").val();
     }
 
     // 3. Si seguimos sin tenerlo y estamos en modo modificación, usar EntidadSelect
@@ -1207,13 +1237,49 @@ function recopilarDatosAsiento() {
     // Si aún así no lo tenemos, usar cadena vacía
     dia_movi = dia_movi || "";
 
-    console.log("ID del asiento (dia_movi):", dia_movi); // Log para depuración
-
-    // Datos del encabezado del asiento
-    const dia_fecha = obtenerFechaFormateada($("#tbAsientoDetalle").data("dia_fecha")) || new Date().toISOString();
+    // Tipo de asiento (código)
     const dia_tipo = $("#Dia_tipo").val() || "";
+
+    // Descripción del tipo de asiento (texto)
     const dia_lista = $("#Dia_tipo option:selected").text() || "";
-    const dia_desc_asiento = $(".card-header input.form-control").eq(2).val() || "";
+
+    // Descripción del asiento - ahora usando el ID específico
+    let dia_desc_asiento = "";
+
+    // Intentar diferentes selectores para asegurar que encontramos el campo
+    if ($("#Dia_desc_asiento").length > 0) {
+        dia_desc_asiento = $("#Dia_desc_asiento").val();
+    } else if ($("input[name='Dia_desc_asiento']").length > 0) {
+        dia_desc_asiento = $("input[name='Dia_desc_asiento']").val();
+    } else if ($(".card-header input.form-control").length >= 3) {
+        // Fallback a método anterior si no encontramos por ID o nombre
+        dia_desc_asiento = $(".card-header input.form-control").eq(2).val();
+    }
+
+    // Fecha del asiento - usando el ID específico
+    let dia_fecha_val = "";
+    if ($("#Dia_fecha").length > 0) {
+        dia_fecha_val = $("#Dia_fecha").val();
+    } else if ($("input[name='Dia_fecha']").length > 0) {
+        dia_fecha_val = $("input[name='Dia_fecha']").val();
+    } else {
+        dia_fecha_val = $("#tbAsientoDetalle").data("dia_fecha");
+    }
+
+    const dia_fecha = obtenerFechaFormateada(dia_fecha_val || new Date());
+
+    // Log para depuración
+    console.log("Valores obtenidos:", {
+        dia_movi,
+        dia_fecha_val,
+        dia_fecha,
+        dia_tipo,
+        dia_lista,
+        dia_desc_asiento,
+        "desc_selector": $("#Dia_desc_asiento").length > 0 ? "#Dia_desc_asiento" :
+            $("input[name='Dia_desc_asiento']").length > 0 ? "input[name='Dia_desc_asiento']" :
+                ".card-header input.form-control eq(2)"
+    });
 
     // Recopilamos las líneas de detalle
     const detalles = [];
@@ -1269,6 +1335,7 @@ function recopilarDatosAsiento() {
         Detalles: detalles
     };
 }
+
 
 
 /**
@@ -1505,7 +1572,7 @@ function configurarComponentesIniciales() {
     // Configurar checkbox de ejercicio según el modo
     if (typeof asientoTemporal !== 'undefined' && asientoTemporal === true) {
         $('#chkEjercicio').prop('checked', true).prop('disabled', true);
-        $("#Eje_nro").prop("disabled", true);
+        $("#Eje_nro").prop("disabled", false);
     } else {
         toggleComponent('chkEjercicio', '#Eje_nro');
     }
@@ -1701,3 +1768,116 @@ function toggleComponent(checkboxId, componentSelector) {
     }
 }
 
+/**
+ * Maneja la impresión de asientos
+ */
+function imprimirAsiento() {
+    // Caso 1: Si hay un asiento abierto (seleccionado con doble clic)
+    if (filaClicDoble !== null) {
+        // Obtener el ID del asiento abierto
+        const asientoId = EntidadSelect;
+        if (asientoId) {
+            generarReporteAsiento(asientoId);
+            return;
+        }
+    }
+
+    // Caso 2: Si hay asientos seleccionados en la grilla
+    if (filasSeleccionadas.length === 1) {
+        // Hay un solo asiento seleccionado, obtener su ID
+        const asientoId = filasSeleccionadas[0];
+        generarReporteAsiento(asientoId);
+    } else if (filasSeleccionadas.length > 1) {
+        // Hay múltiples asientos seleccionados
+        AbrirMensaje(
+            "ATENCIÓN",
+            "Hay múltiples asientos seleccionados. Por favor, deseleccione todos y seleccione solo uno para imprimir.",
+            function () {
+                $("#msjModal").modal("hide");
+            },
+            false,
+            ["Aceptar"],
+            "warn!",
+            null
+        );
+    } else {
+        // No hay ningún asiento seleccionado
+        AbrirMensaje(
+            "ATENCIÓN",
+            "No hay ningún asiento seleccionado para imprimir. Por favor, seleccione uno.",
+            function () {
+                $("#msjModal").modal("hide");
+            },
+            false,
+            ["Aceptar"],
+            "warn!",
+            null
+        );
+    }
+}
+
+/**
+ * Genera el reporte PDF de un asiento específico
+ * @param {string} asientoId - ID del asiento a imprimir (dia_movi)
+ */
+function generarReporteAsiento(asientoId) {
+    // Mostrar indicador de espera
+    AbrirWaiting("Generando informe del asiento...");
+
+    // Preparar el objeto de solicitud para el informe
+    const reporteSolicitud = {
+        Reporte: 9, 
+        Parametros: {
+            "dia_movi": asientoId
+        },
+        Titulo: "Informe de Asiento Temporal",
+        Observacion: "Detalle del asiento temporal",
+        Formato: "P" // P = PDF
+    };
+
+    // Realizar la solicitud al servidor
+    $.ajax({
+        url: gestorImpresionUrl,
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(reporteSolicitud),
+        success: function (response) {
+            CerrarWaiting();
+
+            if (response.error) {
+                AbrirMensaje("ERROR", response.msg || "Error al generar el informe", function () {
+                    $("#msjModal").modal("hide");
+                }, false, ["Aceptar"], "error!", null);
+                return;
+            }
+
+            if (response.warn) {
+                AbrirMensaje("ADVERTENCIA", response.msg, function () {
+                    if (response.auth) {
+                        window.location.href = loginUrl; // Redirigir al login si es necesario
+                    }
+                    $("#msjModal").modal("hide");
+                }, false, ["Aceptar"], "warn!", null);
+                return;
+            }
+
+            // Si todo salió bien, mostrar el PDF
+            const pdfData = response.base64;
+
+            // Crear un objeto Blob con los datos del PDF
+            const blob = b64toBlob(pdfData, "application/pdf");
+
+            // Crear una URL para el Blob
+            const url = URL.createObjectURL(blob);
+
+            // Abrir el PDF en una nueva ventana/pestaña
+            window.open(url, "_blank");
+        },
+        error: function (xhr, status, error) {
+            CerrarWaiting();
+            AbrirMensaje("ERROR", "Error al generar el informe: " + error, function () {
+                $("#msjModal").modal("hide");
+            }, false, ["Aceptar"], "error!", null);
+        }
+    });
+}

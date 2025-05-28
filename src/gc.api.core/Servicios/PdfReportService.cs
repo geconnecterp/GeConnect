@@ -1,4 +1,5 @@
 ﻿using gc.api.core.Contratos.Servicios;
+using gc.api.core.Contratos.Servicios.Asientos;
 using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
@@ -19,7 +20,7 @@ namespace gc.api.core.Servicios
         private readonly Dictionary<InfoReporte, IGeneradorReporte> _generadoresReporte;
         private readonly ILogger<ReportService> _logger;
 
-        public ReportService(IUnitOfWork uow, IConsultaServicio consSv,
+        public ReportService(IUnitOfWork uow, IConsultaServicio consSv,IAsientoTemporalServicio asiento,
              IOptions<EmpresaGeco> empresa, ICuentaServicio ctaSv, ILogger<ReportService> logger) : base(uow)
         {
 
@@ -34,7 +35,7 @@ namespace gc.api.core.Servicios
                 { InfoReporte.R006_InfoOPagoDet, new R006_InformeOPagoDetalle(uow,consSv,empresa,ctaSv, logger) },
                 { InfoReporte.R007_InfoRecProv, new R007_InformeRecepcionProveedor(uow,consSv,empresa,ctaSv, logger) },
                 { InfoReporte.R008_InfoRecProvDet, new R008_InformeRecepcionProveedorDetalle(uow,consSv,empresa,ctaSv, logger) },
-                { InfoReporte.R009_InfoErrAsTemp, new R009_InformeCuentaCorriente(uow,consSv,empresa,ctaSv, logger) },
+                { InfoReporte.R009_InfoErrAsTemp, new R009_InformeCuentaCorriente(uow,asiento,empresa,ctaSv, logger) },
             };
             _logger = logger;
         }

@@ -79,7 +79,7 @@ namespace gc.sitio.Areas.Asientos.Controllers
         /// <param name="asientosIds">Array con los IDs de los asientos a pasar</param>
         /// <returns>Resultado de la operación</returns>
         [HttpPost]
-        public async Task<JsonResult> PasarAContabilidad([FromBody] List<string> asientosIds)
+        public async Task<JsonResult> PasarAContabilidad([FromBody] PaseAContabilidadDto datos) // List<string> asientosIds, int eje_nro
         {
             try
             {
@@ -90,14 +90,15 @@ namespace gc.sitio.Areas.Asientos.Controllers
                 }
 
                 // Validar que existan asientos seleccionados
-                if (asientosIds == null || !asientosIds.Any())
+                if (datos.asientosIds == null || !datos.asientosIds.Any())
                 {
                     return Json(new { error = true, msg = "Debe seleccionar al menos un asiento para pasar a contabilidad." });
                 }
 
                 var asientoPasa = new AsientoPasaDto
                 {
-                    JsonDiaMovi = JsonConvert.SerializeObject(asientosIds), 
+                    Eje_nro = datos.eje_nro,
+                    JsonDiaMovi = JsonConvert.SerializeObject(datos.asientosIds), 
                     Usu_id = UserName, // Usuario actual
                     Adm_id = AdministracionId // Administración actual
                 };
