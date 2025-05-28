@@ -200,7 +200,8 @@ $(function () {
 
     // Evento para el botón Imprimir
     $(document).on("click", "#btnImprimir", imprimirAsiento);
-
+    // Usar mousedown en lugar de click para evitar conflictos con el collapse
+    $("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle);
 
     // Evento para el botón "Pasar a contabilidad"
     $(document).on("click", "#btnPasarConta", function () {
@@ -1880,4 +1881,50 @@ function generarReporteAsiento(asientoId) {
             }, false, ["Aceptar"], "error!", null);
         }
     });
+}
+
+/**
+ * Analiza el estado del botón Detalle y realiza las acciones correspondientes
+ * Si hay un asiento abierto, lo cierra y limpia el panel
+ * @returns {boolean} - Siempre devuelve true para permitir que el evento continúe
+ */
+function analizaEstadoBtnDetalle() {
+    // Verificar si hay un asiento abierto (panel de detalle visible)
+    if ($("#divDetalle").is(":visible") && $("#divpanel01").children().length > 0) {
+        // Hay un asiento abierto, limpiarlo y cerrar el panel
+        limpiarAsientoAbierto();
+    }
+
+    // Permitir que el evento siga propagándose (para que funcione el collapse)
+    return true;
+}
+
+/**
+ * Limpia el asiento abierto actualmente y restablece la interfaz
+ */
+function limpiarAsientoAbierto() {
+    // Vaciar el panel que contiene el asiento
+    $("#divpanel01").empty();
+
+    // Restablecer variables de control
+    filaClicDoble = null;
+    EntidadSelect = "";
+    EntidadEstado = "";
+
+    InicializaVistaAsientos();
+
+
+    //// Cerrar el panel de detalle y mostrar el de filtro
+    //$("#divDetalle").collapse("hide");
+    //$("#divFiltro").collapse("show");
+
+    //// Reactivar la grilla si estaba desactivada
+    //activarGrilla(Grids.GridAsiento);
+
+    //// Quitar selección visual en la grilla
+    //removerSeleccion();
+
+    //// Actualizar estado de los botones
+    //$("#btnDetalle").prop("disabled", true);
+    //activarBotones2(false);
 }

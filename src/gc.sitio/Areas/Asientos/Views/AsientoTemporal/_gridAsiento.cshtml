@@ -39,7 +39,7 @@
                     @foreach (var item in Model.ListaDatos ?? Enumerable.Empty<AsientoGridDto>())
                     {
                         if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
-                        var title = item.revisable ? "Revisar Descripción" : "OK";
+                        var title = item.revisable ? item.revisable_desc : "OK";
                         <tr class="@clase" title="@title" data-id="@item.dia_movi" data-revisable="@item.revisable.ToString().ToLower()">
                             @* onclick="selectReg(this, 'tbGridAsiento')" *@
                             <!-- Nueva celda para el checkbox de selección -->
@@ -77,12 +77,5 @@
     <div class="offset-md-3 col-md-6">
         <div id="divPaginacion">
         </div>
-    </div>
-</div>
-<div class="row">
-    <div class="alert alert-info small mb-2">
-        <i class="bx bx-info-circle"></i>
-        Haga clic en un asiento para seleccionarlo. Use Ctrl+Clic para seleccionar múltiples asientos.
-        Doble clic para ver los detalles de un asiento.
     </div>
 </div>

@@ -166,7 +166,7 @@ namespace gc.api.core.Servicios.Reportes
                 tabla.AddCell(HelperPdf.CeldaSinBorde(asiento.Dia_fecha.ToShortDateString(), subtitulo, Element.ALIGN_LEFT));
                 //fila 2
                 tabla.AddCell(HelperPdf.CeldaSinBorde("Tipo Asiento:", subtitulo, Element.ALIGN_RIGHT));
-                tabla.AddCell(HelperPdf.CeldaSinBorde(asiento.Dia_tipo, subtitulo, Element.ALIGN_LEFT));
+                tabla.AddCell(HelperPdf.CeldaSinBorde(asiento.Dia_lista, subtitulo, Element.ALIGN_LEFT));
                 // fila 3
                 tabla.AddCell(HelperPdf.CeldaSinBorde("Descripción:", subtitulo, Element.ALIGN_RIGHT));
                 tabla.AddCell(HelperPdf.CeldaSinBorde(asiento.Dia_desc_asiento, subtitulo, Element.ALIGN_LEFT));
