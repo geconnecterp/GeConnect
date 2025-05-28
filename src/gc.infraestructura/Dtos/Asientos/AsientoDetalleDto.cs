@@ -47,4 +47,10 @@
         public AsientoDetalleDto asiento { get; set; } = new();
         public char accion { get; set; }
     }
+
+    public class PaseAContabilidadDto
+    {
+        public List<string> asientosIds { get; set; } = new();
+        public int eje_nro { get; set; }
+    }
 }

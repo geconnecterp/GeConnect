@@ -70,7 +70,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
         }
 
         [HttpPost]
-        public async Task<JsonResult> ObtenerPdfDesdeAPI(ReporteSolicitudDto reporteSolicitud)
+        public async Task<JsonResult> ObtenerPdfDesdeAPI([FromBody] ReporteSolicitudDto reporteSolicitud)
         {
             try
             {

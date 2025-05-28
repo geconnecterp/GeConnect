@@ -27,13 +27,13 @@
             <div class="col-md-3">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text">Desc</span>
-                    <input type="text" class="form-control" readonly value="@Model?.Dia_desc_asiento" />
+                    <input type="text" class="form-control" id="Dia_desc_asiento" readonly value="@Model?.Dia_desc_asiento" />
                 </div>
             </div>
             <div class="col-md-2">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text">Fecha</span>
-                    <input type="text" class="form-control" readonly value="@(Model?.Dia_fecha.ToString("dd/MM/yyyy"))" />
+                    <input type="text" class="form-control" id="Dia_fecha" readonly value="@(Model?.Dia_fecha.ToString("dd/MM/yyyy"))" />
                 </div>
             </div>
         </div>
