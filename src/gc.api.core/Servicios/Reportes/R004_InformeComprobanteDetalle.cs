@@ -101,8 +101,15 @@ namespace gc.api.core.Servicios.Reportes
                 // Agregar el evento de pie de página
                 writer.PageEvent = new CustomPdfPageEventHelper(solicitud.Observacion);
 
-                var logo = HelperPdf.CargaLogo(solicitud.LogoPath, 20, pdf.PageSize.Height - 10, 20);
-
+                Image? logo;
+                if (!string.IsNullOrEmpty(solicitud.LogoPath))
+                {
+                    logo = HelperPdf.CargaLogo(solicitud.LogoPath, 20, pdf.PageSize.Height - 10, 20);
+                }
+                else
+                {
+                    logo = null;
+                }
                 #endregion
                 //****=============================****/
                 //****  CAMBIAR ANCHOS DE COLUMNAS ****

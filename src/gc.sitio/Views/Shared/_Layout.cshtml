@@ -58,7 +58,6 @@
     <script src="~/js/mask/jquery.mask.min.js"></script>
     <script src="~/js/mask/jquery.inputmask.min.js"></script>
     <script src="~/js/ui-popover.js"></script>
-    @await RenderSectionAsync("Scripts", required: false)
     <script type="text/javascript">
         var MensajeErrorTempData = '@TempData["error"]';
         var MensajeInfoTempData = '@TempData["info"]';
@@ -66,7 +65,7 @@
         var MensajeSuccessTempData = '@TempData["succ"]';
         var MensajeBlock = "<h3><i class='bx bx-loader-circle bx-spin'></i> Por favor, espere...</h3>";
 
-        var home = "@Url.Action("index","home",new{area=""})";
+        var home = "@Url.Action("index", "home", new { area = "" })";
         var login = "@Url.Action("Login", "Token", new { area = "seguridad" })";
         var cambiaMenu = "@Url.Action("CambiarPerfilUsuario", "token", new { area = "Seguridad" })"
     </script>
@@ -76,6 +75,8 @@
                 administracion = "@adm";
         });
     </script>
+    @await RenderSectionAsync("Scripts", required: false)
+    
 
 </body>
 </html>

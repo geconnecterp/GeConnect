@@ -1,0 +1,56 @@
+﻿@using static gc.infraestructura.Constantes.Constantes
+@model QueryFilters
+
+<input type="text" id="IdSelected" style="display:none;" />
+<div class="row mb-2">
+    <div class="col-md-4 col-sm-6">
+        <div class="d-flex justify-content-sm-around">
+            <button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
+                <i class="bx bx-filter"></i>
+            </button>
+            <button class="btn btn-primary btn-sm mt-1 me-1" type="button" id="btnDetalle" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle">
+                <i class="bx bxs-arrow-down-stroke"></i>
+            </button>
+        </div>
+    </div>
+    <div class="col-md-2 col-sm-6">
+        <div class="d-flex justify-content-sm-center">
+            <button id="btnAbmAceptar" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Aceptar" disabled>
+                <i class="bx bx-check-circle"></i>
+            </button>
+
+            <button id="btnAbmCancelar" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar">
+                <i class="bx bx-x-circle"></i>
+            </button>
+        </div>
+    </div>
+    @if (Model.Modelo == ModeloFilter.ASIENTO_TEMPORAL)
+    {
+        <div class="col-md-2 col-sm-6">
+            <div class="d-flex justify-content-sm-center">
+                <!-- Botón Imprimir -->
+                <button type="button" class="btn btn-light btn-sm mt-1 me-1" id="btnImprimir" title="Imprimir">
+                    <i class="bx bx-printer"></i>
+                </button>
+                <!-- Botón Pasar Conta -->
+                <button type="button" class="btn btn-warning btn-sm mt-1 me-1" id="btnPasarConta" title="Pasar a Contabilidad">
+                    <i class="bx bx-swap-horizontal"></i>
+                </button>
+            </div>
+        </div>
+    }
+    <div class="col-md-4 col-sm-6">
+        <div class="d-flex justify-content-sm-center">
+
+            <button id="btnAbmNuevo" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Alta Asiento" disabled>
+                <i class="bx bx-file-plus"></i>
+            </button>
+            <button id="btnAbmModif" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Editar Asiento" disabled>
+                <i class="bx bx-edit-alt"></i>
+            </button>
+            <button id="btnAbmElimi" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Dar de baja el asiento" disabled>
+                <i class="bx bx-trash"></i>
+            </button>
+        </div>
+    </div>
+</div>

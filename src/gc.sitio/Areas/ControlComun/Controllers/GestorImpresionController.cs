@@ -2,6 +2,7 @@
 using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos.DocManager;
@@ -34,6 +35,8 @@ namespace gc.sitio.Areas.ControlComun.Controllers
             _docMSv = docManager;
             _env = env;
         }
+
+
 
         [HttpPost]
         public IActionResult OrquestadorDeModulos(string modulo, params string[] parametros)
@@ -139,7 +142,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                 if (response != null && response.resultado == 0)
                 {
                     // Todo fue bien
-                    return Json(new { error = false, warn = false, base64 = response.Base64, name = response.resultado_msj});
+                    return Json(new { error = false, warn = false, base64 = response.Base64, name = response.resultado_msj });
                 }
                 else
                 {
@@ -174,13 +177,12 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 
                 var arbol = ArchivosCargadosModulo;
                 var jarbol = JsonConvert.SerializeObject(arbol);
-
-                if (CuentaComercialDatosSeleccionada == null)
+                CuentaDatoDto cuenta = new();
+                if (CuentaComercialDatosSeleccionada != null)
                 {
-
+                    cuenta = CuentaComercialDatosSeleccionada;
                 }
 
-                var cuenta = CuentaComercialDatosSeleccionada;
                 return Json(new { error = false, warn = false, arbol = jarbol, cuenta });
 
             }

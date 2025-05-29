@@ -2,7 +2,8 @@
 {
     public enum AppModulos
     {
-        CCUENTAS
+        CCUENTAS,
+        ASTEMP
     }
 
     public enum AppReportes
