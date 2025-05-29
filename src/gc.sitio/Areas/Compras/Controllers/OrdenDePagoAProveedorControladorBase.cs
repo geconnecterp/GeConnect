@@ -181,22 +181,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public List<ValoresDesdeObligYCredDto> OPValoresDesdeObligYCredLista
-		{
-			get
-			{
-				var json = _context.HttpContext?.Session.GetString("OPValoresDesdeObligYCredLista");
-				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
-				{
-					return [];
-				}
-				return JsonConvert.DeserializeObject<List<ValoresDesdeObligYCredDto>>(json) ?? [];
-			}
-			set
-			{
-				var json = JsonConvert.SerializeObject(value);
-				_context.HttpContext?.Session.SetString("OPValoresDesdeObligYCredLista", json);
-			}
-		}
+		
 	}
 }

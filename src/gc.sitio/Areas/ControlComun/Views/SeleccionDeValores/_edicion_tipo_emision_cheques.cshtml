@@ -1,0 +1,40 @@
+﻿@model EdicionTipoEmisionChequesModel
+@{
+}
+<div class="col-md-4">
+</div>
+<div class="col-md-4">
+	@Html.HiddenFor(x => x.ctaf_id)
+	@Html.HiddenFor(x => x.ctaf_denominacion)
+	@Html.HiddenFor(x => x.ban_razon_social)
+	<div class="row mt-1">
+		<div class="input-group input-group-sm">
+			<span class="input-group-text fixed-lbl-for-abm-100">Nro. Cheque:</span>
+			<input type="text" id="txtNroCheque" asp-for="NroCheque" class="form-control activable" />
+			<div class="form-check form-check-inline form-switch mb-2">
+				<input class="form-check-input activable" type="checkbox" asp-for="Automatico" value="" id="chkCtlFis">
+				<label class="form-check-label" for="chkCtlFis"> Automático.</label>
+			</div>
+		</div>
+	</div>
+	<div class="row mt-1">
+		<div class="input-group input-group-sm">
+			<span class="input-group-text fixed-lbl-for-abm-100">Fecha: </span>
+			@Html.TextBoxFor(x=>x.Fecha, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeFechaCompte(this);" })
+		</div>
+	</div>
+	<div class="row mt-1">
+		<div class="input-group input-group-sm">
+			<span class="input-group-text fixed-lbl-for-abm-100">A Nombre de:</span>
+			<input type="text" asp-for="ANombreDe" class="form-control activable inputEditable" />
+		</div>
+	</div>
+	<div class="row mt-1">
+		<div class="input-group input-group-sm">
+			<span class="input-group-text fixed-lbl-for-abm-100">Importe:</span>
+			<input type="text" asp-for="Importe" class="form-control activable inputEditable" />
+		</div>
+	</div>
+</div>
+<div class="col-md-4">
+</div>

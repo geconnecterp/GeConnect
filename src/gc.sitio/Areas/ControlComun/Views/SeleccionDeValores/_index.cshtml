@@ -2,17 +2,23 @@
 @using static gc.infraestructura.Helpers.GridHelper
 @{
 }
+<style>
+	thead th {
+		position: sticky;
+		top: 0px;
+	}
+</style>
 <div class="modal fade" id="seleccionDeValoresModal" style="display: block;height: 530px;padding-left: 0px;" tabindex="-1" aria-labelledby="seleccionDeValoresModalLabel" aria-hidden="true" data-bs-backdrop="static">
 	<div class="modal-dialog modal-lg" style="height: 500px;max-height: 500px;">
 		<div class="modal-content" style="height: 500px;max-height: 500px;">
-			<div class="modal-header">
+			<div class="modal-header padding-5">
 				<h5 class="modal-title" id="seleccionDeValoresModalLabel">Selección de Valores</h5>
 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 			</div>
-			<div class="modal-body">
+			<div class="modal-body padding-5">
 				<div class="row">
-					<div class="col-4">
-						<div class="col-11 mt-2 table-responsive table-wrapper-100-full" id="containerTipoCuentaFin" style="padding-right: 0px;">
+					<div class="col-4" style="padding-right: 0px;">
+						<div class="col-11 table-responsive table-wrapper-200-full" id="containerTipoCuentaFin" style="padding-right: 0px;">
 							<table class="table table-bordered table-hover" id="tbTipoCuentaFin">
 								<thead class="table-dark">
 									<tr>
@@ -26,7 +32,7 @@
 										@foreach (var item in Model.GrillaTipoCuentaFin.ListaDatos)
 										{
 											<tr onclick="seleccionarTipoFin(this)">
-												<td class="@Model.GrillaTipoCuentaFin.ObtenerClase(item.tcf_desc)">@Model.GrillaTipoCuentaFin.FormatearDato(item.tcf_desc, FormatDato.Ninguno)</td>
+												<td class="@Model.GrillaTipoCuentaFin.ObtenerClase(item.tcf_desc) tiny-row">@Model.GrillaTipoCuentaFin.FormatearDato(item.tcf_desc, FormatDato.Ninguno)</td>
 												<td style="display:none;">@item.tcf_id</td>
 											</tr>
 										}
@@ -35,8 +41,8 @@
 							</table>
 						</div>
 					</div>
-					<div class="col-8">
-						<div class="col-11 mt-2 table-responsive table-wrapper-100-full" id="containerFinanciero" style="padding-right: 0px;">
+					<div class="col-8" id="divFinancieros" style="padding: 0px;">
+						<div class="col-11 table-responsive table-wrapper-200-full" id="containerFinanciero" style="padding-right: 0px;">
 							<table class="table table-bordered table-hover" id="tbFinanciero">
 								<thead class="table-dark">
 									<tr>
@@ -64,10 +70,11 @@
 						</div>
 					</div>
 				</div>
-				<div class="row">
+				<div class="row mt-2" id="divSeccionEditable">
 				</div>
 			</div>
-			<div class="modal-footer">
+			<div class="modal-footer padding-5">
+				<button type="button" class="btn btn-success" id="btnAceptarAgregarValor">Aceptar</button>
 				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
 			</div>
 		</div>

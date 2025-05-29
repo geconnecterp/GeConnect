@@ -1,0 +1,36 @@
+﻿@model EdicionTipoValoresDeTercerosEnCarteraModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+}
+<div class="col-md-12">
+	@Html.HiddenFor(x => x.ctaf_id)
+	@Html.HiddenFor(x => x.ctaf_denominacion)
+	@Html.HiddenFor(x => x.ban_razon_social)
+	<div class="table-responsive table-wrapper-200-full" id="containerValoresEnCartera" style="padding-right: 0px;">
+		<table class="table table-bordered table-hover" id="tbValoresEnCartera">
+			<thead class="table-dark">
+				<tr>
+					<th style="width:20%;" class="col-header-small align-center tiny-row">Fecha</th>
+					<th style="width:40%;" class="col-header-small align-center tiny-row">Banco</th>
+					<th style="width:20%;" class="col-header-small align-center tiny-row">Nro. Cheque</th>
+					<th style="width:20%;" class="col-header-small align-center tiny-row">Saldo</th>
+				</tr>
+			</thead>
+			<tbody>
+				@if (Model != null && Model != null && Model.GrillaValoresEnCartera.ListaDatos != null && Model.GrillaValoresEnCartera.ListaDatos.Count > 0)
+				{
+					@foreach (var item in Model.GrillaValoresEnCartera.ListaDatos)
+					{
+						@* <tr onclick="selectReg(this, 'tbFinanciero')" ondblclick="selectRegDbl(this, 'tbFinanciero')"> *@
+						<tr onclick="seleccionarValoresEnCartera(this)">
+							<td class="@Model.GrillaValoresEnCartera.ObtenerClase(item.Fecha) tiny-row">@Model.GrillaValoresEnCartera.FormatearDato(item.Fecha, FormatDato.Fecha)</td>
+							<td class="@Model.GrillaValoresEnCartera.ObtenerClase(item.Banco) tiny-row">@Model.GrillaValoresEnCartera.FormatearDato(item.Banco, FormatDato.Ninguno)</td>
+							<td class="@Model.GrillaValoresEnCartera.ObtenerClase(item.NroCheque) tiny-row">@Model.GrillaValoresEnCartera.FormatearDato(item.NroCheque, FormatDato.Ninguno)</td>
+							<td class="@Model.GrillaValoresEnCartera.ObtenerClase(item.Importe) tiny-row">@Model.GrillaValoresEnCartera.FormatearDato(item.Importe, FormatDato.Monto)</td>
+						</tr>
+					}
+				}
+			</tbody>
+		</table>
+	</div>
+</div>

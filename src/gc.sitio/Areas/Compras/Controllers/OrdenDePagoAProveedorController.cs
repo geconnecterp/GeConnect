@@ -657,6 +657,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					json_d = json_debitos,
 					json_h = json_creditos
 				}, TokenCookie);
+				OPValoresDesdeObligYCredLista = response;
 				model = ObtenerGridCoreSmart<ValoresDesdeObligYCredDto>(response);
 				return PartialView("_grillaValores", model);
 			}

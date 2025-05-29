@@ -22,7 +22,12 @@
 
 //Abro modal de seleccion de valores
 function btnAgregarValorValidar() {
-	invocarModalDeSeleccionDeValores();
+	var app = "OPP";
+	var importe = 0;
+	var valor_a_nombre_de = "";
+	var valores = [];
+	var data = { app, importe, valor_a_nombre_de, valores };
+	invocarModalDeSeleccionDeValores(data);
 }
 
 //Me muevo al paso1

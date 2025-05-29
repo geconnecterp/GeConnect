@@ -12,6 +12,7 @@ using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.OrdenDePago.Dtos;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Dtos.Users;
 using gc.infraestructura.EntidadesComunes;
@@ -2588,5 +2589,23 @@ namespace gc.sitio.Controllers
             B = 2,
             M = 3
         }
-    }
+
+		public List<ValoresDesdeObligYCredDto> OPValoresDesdeObligYCredLista
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("OPValoresDesdeObligYCredLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<ValoresDesdeObligYCredDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("OPValoresDesdeObligYCredLista", json);
+			}
+		}
+	}
 }

@@ -702,3 +702,7 @@ input, select, textarea, button, checkbox, radio {
     --bs-card-spacer-y: 0.5rem !important;
     --bs-card-spacer-x: 0.5rem !important;
 }
+
+.padding-5 {
+    padding: 5px;
+}

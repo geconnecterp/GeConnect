@@ -1,16 +1,16 @@
 ﻿
 namespace gc.infraestructura.Dtos
 {
-    public class FinancieroDto : Dto
-    {
-        public string ctaf_id { get; set; } = string.Empty;
-        public string ctaf_denominacion { get; set; } = string.Empty;
-        public string ctaf_lista { get; set; } = string.Empty;
-        public string ctaf_activo { get; set; } = string.Empty;
+	public class FinancieroDto : Dto
+	{
+		public string ctaf_id { get; set; } = string.Empty;
+		public string ctaf_denominacion { get; set; } = string.Empty;
+		public string ctaf_lista { get; set; } = string.Empty;
+		public string ctaf_activo { get; set; } = string.Empty;
 	}
 
-    public class FinancieroListaDto : FinancieroDto
-    {
+	public class FinancieroListaDto : FinancieroDto
+	{
 		public string Ctaf_Estado { get; set; } = string.Empty;
 		public string Ctaf_Estado_Des { get; set; } = string.Empty;
 		public decimal? Ctaf_Saldo { get; set; } = 0.000M;
@@ -34,10 +34,10 @@ namespace gc.infraestructura.Dtos
 		public string ins_id { get; set; } = string.Empty;
 		public string ban_razon_social { get; set; } = string.Empty;
 		public string ban_cuenta_nro { get; set; } = string.Empty;
-		public int ban_che_desde { get; set; }
-		public int ban_che_hasta { get; set; }
-		public int ban_che_nro { get; set; }
+		public int? ban_che_desde { get; set; }
+		public int? ban_che_hasta { get; set; }
+		public int? ban_che_nro { get; set; }
 		public string mon_codigo { get; set; } = string.Empty;
-		public char tcb_id { get; set; }
+		public string tcb_id { get; set; } = string.Empty;
 	}
 }
