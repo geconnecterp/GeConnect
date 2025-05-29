@@ -23,7 +23,7 @@ function inicializarSeleccionAsientos() {
     filasSeleccionadas = [];
 
     // Agregar mensaje de selección
-    actualizarMensajeSeleccion();
+    //actualizarMensajeSeleccion();
 
     // Deshabilitar botón inicialmente
     $("#btnPasarConta").prop("disabled", true);
@@ -44,16 +44,19 @@ function buscarAsientos(pag) {
     // Obtenemos los valores de los campos del filtro
     var data1 = {
         Eje_nro: $("#Eje_nro").val(), // Ejercicio
-        Movi: $("#Movi").is(":checked"), // bit Movimiento
+        Movi: $("#Movi").is(":checked").toString(), // bit Movimiento
         Movi_like: $("#Movi_like").val(), // Nro Movimiento
-        Usu: $("#Usu").is(":checked"), // bit Usuario
+        Usu: $("#Usu").is(":checked").toString(), // bit Usuario
         Usu_like: $("#Usu_like").val(), // Usuario
-        Tipo: $("#Tipo").is(":checked"), // bit Tipo
+        Tipo: $("#Tipo").is(":checked").toString(), // bit Tipo
         Tipo_like: $("#Tipo_like").val(), // Tipo de Asiento
-        Rango: $("#Rango").is(":checked"), // bit Rango
+        Rango: $("#Rango").is(":checked").toString(), // bit Rango
         Desde: $("input[name='Desde']").val(), // Fecha Desde
         Hasta: $("input[name='Hasta']").val() // Fecha Hasta
     };
+    //let admId = administracion;
+    //agregando los parametros de la busqueda realizada
+    cargarReporteEnArre(9, data1, "Informe de Asientos Solicitados.", "Obseración:", "")
 
     var buscaNew = JSON.stringify(dataBak) != JSON.stringify(data1)
 
@@ -253,82 +256,82 @@ $(function () {
     // Agregar manejo de clic simple en filas para selección múltiple
     // Modificar el manejador del clic para mostrar checkboxes cuando se usa Ctrl+click
     // Agregar manejo de clic simple en filas para selección múltiple - SOLUCIÓN CORREGIDA
-$(document).on("click", "#tbGridAsiento tbody tr", function (e) {
-    // Si se hace clic en un checkbox o en su contenedor, no hacer nada aquí
-    if ($(e.target).is('.asiento-checkbox') || $(e.target).closest('.form-check').length > 0) {
-        return;
-    }
-    
-    const $this = $(this);
-    const id = $this.find("td:nth-child(2)").text().trim(); // Ajustado por la nueva columna
-    const esRevisable = $this.attr("data-revisable") === "true";
+    $(document).on("click", "#tbGridAsiento tbody tr", function (e) {
+        // Si se hace clic en un checkbox o en su contenedor, no hacer nada aquí
+        if ($(e.target).is('.asiento-checkbox') || $(e.target).closest('.form-check').length > 0) {
+            return;
+        }
 
-    // Si es doble clic, no hacer nada (el evento dblclick lo manejará)
-    if (e.detail === 2) return;
+        const $this = $(this);
+        const id = $this.find("td:nth-child(2)").text().trim(); // Ajustado por la nueva columna
+        const esRevisable = $this.attr("data-revisable") === "true";
 
-    // Prevenir la propagación del evento
-    e.stopPropagation();
+        // Si es doble clic, no hacer nada (el evento dblclick lo manejará)
+        if (e.detail === 2) return;
 
-    // Limpiar estilo de selección de doble clic (firebrick) de todas las filas
-    $("#tbGridAsiento tbody tr").removeClass("selectedEdit-row");
+        // Prevenir la propagación del evento
+        e.stopPropagation();
 
-    // Selección simple vs. múltiple
-    if (e.ctrlKey || e.metaKey) {
-        // Selección múltiple (Ctrl+clic)
-        if ($this.hasClass("selected-multiple")) {
-            // Si ya estaba en selección múltiple, quitar
-            $this.removeClass("selected-multiple");
+        // Limpiar estilo de selección de doble clic (firebrick) de todas las filas
+        $("#tbGridAsiento tbody tr").removeClass("selectedEdit-row");
 
-            // Desmarcar el checkbox correspondiente
-            $(`#check_${id}`).prop("checked", false);
+        // Selección simple vs. múltiple
+        if (e.ctrlKey || e.metaKey) {
+            // Selección múltiple (Ctrl+clic)
+            if ($this.hasClass("selected-multiple")) {
+                // Si ya estaba en selección múltiple, quitar
+                $this.removeClass("selected-multiple");
 
-            // Eliminar de la lista de seleccionados
-            filasSeleccionadas = filasSeleccionadas.filter(item => item !== id);
-        } else {
-            // Si no estaba seleccionada y no es revisable, seleccionar como múltiple
-            if (!esRevisable) {
-                $this.addClass("selected-multiple");
+                // Desmarcar el checkbox correspondiente
+                $(`#check_${id}`).prop("checked", false);
 
-                // Marcar el checkbox correspondiente
-                $(`#check_${id}`).prop("checked", true);
+                // Eliminar de la lista de seleccionados
+                filasSeleccionadas = filasSeleccionadas.filter(item => item !== id);
+            } else {
+                // Si no estaba seleccionada y no es revisable, seleccionar como múltiple
+                if (!esRevisable) {
+                    $this.addClass("selected-multiple");
 
-                // Agregar a la lista si no existe
-                if (!filasSeleccionadas.includes(id)) {
-                    filasSeleccionadas.push(id);
+                    // Marcar el checkbox correspondiente
+                    $(`#check_${id}`).prop("checked", true);
+
+                    // Agregar a la lista si no existe
+                    if (!filasSeleccionadas.includes(id)) {
+                        filasSeleccionadas.push(id);
+                    }
                 }
             }
+        } else {
+            // Selección simple (clic)
+            // Quitar selección múltiple de todas las filas
+            $("#tbGridAsiento tbody tr").removeClass("selected-multiple");
+
+            // Desmarcar todos los checkboxes
+            $(".asiento-checkbox").prop("checked", false);
+
+            filasSeleccionadas = [];
+
+            // Si no es revisable, seleccionar
+            if (!esRevisable) {
+                // Aplicar selección simple solo a esta fila
+                $this.addClass("selected-simple");
+                $("#tbGridAsiento tbody tr").not($this).removeClass("selected-simple");
+
+                // Marcar solo el checkbox correspondiente
+                $(`#check_${id}`).prop("checked", true);
+
+                // Agregar a la lista de seleccionados
+                filasSeleccionadas = [id];
+            }
         }
-    } else {
-        // Selección simple (clic)
-        // Quitar selección múltiple de todas las filas
-        $("#tbGridAsiento tbody tr").removeClass("selected-multiple");
 
-        // Desmarcar todos los checkboxes
-        $(".asiento-checkbox").prop("checked", false);
+        // Actualizar estado del botón
+        const haySeleccionados = filasSeleccionadas.length > 0;
+        $("#btnPasarConta").prop("disabled", !haySeleccionados);
 
-        filasSeleccionadas = [];
-
-        // Si no es revisable, seleccionar
-        if (!esRevisable) {
-            // Aplicar selección simple solo a esta fila
-            $this.addClass("selected-simple");
-            $("#tbGridAsiento tbody tr").not($this).removeClass("selected-simple");
-
-            // Marcar solo el checkbox correspondiente
-            $(`#check_${id}`).prop("checked", true);
-
-            // Agregar a la lista de seleccionados
-            filasSeleccionadas = [id];
-        }
-    }
-
-    // Actualizar estado del botón
-    const haySeleccionados = filasSeleccionadas.length > 0;
-    $("#btnPasarConta").prop("disabled", !haySeleccionados);
-
-    // Actualizar mensaje informativo
-    $("#selected-count").text(filasSeleccionadas.length);
-});
+        // Actualizar mensaje informativo
+        $("#selected-count").text(filasSeleccionadas.length);
+    });
 
 
     // Evento para el checkbox "selectAll"
@@ -428,7 +431,7 @@ $(document).on("click", "#tbGridAsiento tbody tr", function (e) {
         filaClicDoble = $this;
 
         // Llamar a la función existente de detalle
-        ejecutaDblClickGrid1($this);
+        ejecutaDblClickGridAsiento($this);
     });
 
     InicializaVistaAsientos();
@@ -674,7 +677,7 @@ function generarReporteErrores(detalles) {
             "fecha": new Date().toISOString()
         },
         Titulo: "Informe de Errores en Asientos Temporales",
-        Observacion: "Detalle de errores al pasar asientos temporales a contabilidad",        
+        Observacion: "Detalle de errores al pasar asientos temporales a contabilidad",
         Formato: "P" // P = PDF
     };
 
@@ -726,34 +729,7 @@ function generarReporteErrores(detalles) {
     });
 }
 
-/**
- * Convierte un string Base64 a un objeto Blob
- * @param {string} b64Data - Datos en formato Base64
- * @param {string} contentType - Tipo de contenido MIME
- * @param {number} sliceSize - Tamaño de las porciones de datos (opcional)
- * @returns {Blob} - Objeto Blob con los datos
- */
-function b64toBlob(b64Data, contentType, sliceSize) {
-    contentType = contentType || "";
-    sliceSize = sliceSize || 512;
 
-    const byteCharacters = atob(b64Data);
-    const byteArrays = [];
-
-    for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
-        const slice = byteCharacters.slice(offset, offset + sliceSize);
-
-        const byteNumbers = new Array(slice.length);
-        for (let i = 0; i < slice.length; i++) {
-            byteNumbers[i] = slice.charCodeAt(i);
-        }
-
-        const byteArray = new Uint8Array(byteNumbers);
-        byteArrays.push(byteArray);
-    }
-
-    return new Blob(byteArrays, { type: contentType });
-}
 
 
 
@@ -1541,6 +1517,33 @@ function InicializaVistaAsientos(e) {
     removerSeleccion();
     activarGrilla(Grids.GridAsiento);
 
+    //resguardo los parametros para el reporte #9 = i-1
+    // Obtenemos los valores de los campos del filtro
+    let i = 9;
+    let admId = administracion;
+    if (arrRepoParams[i - 1] === undefined) {
+        var data1 = {
+            Eje_nro: $("#Eje_nro").val(), // Ejercicio
+            Movi: $("#Movi").is(":checked").toString(), // bit Movimiento
+            Movi_like: $("#Movi_like").val(), // Nro Movimiento
+            Usu: $("#Usu").is(":checked").toString(), // bit Usuario
+            Usu_like: $("#Usu_like").val(), // Usuario
+            Tipo: $("#Tipo").is(":checked").toString(), // bit Tipo
+            Tipo_like: $("#Tipo_like").val(), // Tipo de Asiento
+            Rango: $("#Rango").is(":checked").toString(), // bit Rango
+            Desde: $("input[name='Desde']").val(), // Fecha Desde
+            Hasta: $("input[name='Hasta']").val() // Fecha Hasta
+        };
+        //let admId = administracion;
+        //agregando los parametros de la busqueda realizada
+        cargarReporteEnArre(9, data1, "Informe de Asientos Solicitados.", "Obseración:", administracion)
+    }
+    i++;
+    //reseteo los parametros del detalle de asiento (reporte #10)
+    if (arrRepoParams[i - 1] !== undefined) {
+        ReporteResetCeldaEnArre(i);
+    }
+
     CerrarWaiting();
 }
 
@@ -1656,7 +1659,7 @@ function removerSeleccion() {
 //        CerrarWaiting();
 //    }
 //}
-function ejecutaDblClickGrid1(x) {
+function ejecutaDblClickGridAsiento(x) {
     AbrirWaiting("Espere mientras se busca el Asiento solicitado...");
     selectAsientoDbl(x, Grids.GridAsiento);
 }
@@ -1674,6 +1677,14 @@ function selectAsientoDbl(x, gridId) {
     }
 
     var id = x.find("td:nth-child(2)").text().trim();
+
+    //reporte #10
+    //impresion del asiento
+    let i = 10;
+    if (arrRepoParams[i - 1] === undefined) {
+        let data = { "dia_movi": id };
+        cargarReporteEnArre(10, data, "Detalle de Asiento Movimiento N°: " + id, "", administracion);
+    }
 
     //se agrega por inyection el tab con los datos del producto
     EntidadEstado = x.find("td:nth-child(4)").text().trim();
@@ -1721,7 +1732,7 @@ function buscarAsiento(data) {
         $("#divDetalle").collapse("show");
 
         //activar botones de acción
-        activarBotones(true, true);//vamos a dejar el boton cancelar
+        activarBotones(true);//vamos a dejar el boton cancelar
 
         CerrarWaiting();
     });
@@ -1773,49 +1784,53 @@ function toggleComponent(checkboxId, componentSelector) {
  * Maneja la impresión de asientos
  */
 function imprimirAsiento() {
-    // Caso 1: Si hay un asiento abierto (seleccionado con doble clic)
-    if (filaClicDoble !== null) {
-        // Obtener el ID del asiento abierto
-        const asientoId = EntidadSelect;
-        if (asientoId) {
-            generarReporteAsiento(asientoId);
-            return;
-        }
-    }
-
-    // Caso 2: Si hay asientos seleccionados en la grilla
-    if (filasSeleccionadas.length === 1) {
-        // Hay un solo asiento seleccionado, obtener su ID
-        const asientoId = filasSeleccionadas[0];
-        generarReporteAsiento(asientoId);
-    } else if (filasSeleccionadas.length > 1) {
-        // Hay múltiples asientos seleccionados
-        AbrirMensaje(
-            "ATENCIÓN",
-            "Hay múltiples asientos seleccionados. Por favor, deseleccione todos y seleccione solo uno para imprimir.",
-            function () {
-                $("#msjModal").modal("hide");
-            },
-            false,
-            ["Aceptar"],
-            "warn!",
-            null
-        );
-    } else {
-        // No hay ningún asiento seleccionado
-        AbrirMensaje(
-            "ATENCIÓN",
-            "No hay ningún asiento seleccionado para imprimir. Por favor, seleccione uno.",
-            function () {
-                $("#msjModal").modal("hide");
-            },
-            false,
-            ["Aceptar"],
-            "warn!",
-            null
-        );
-    }
+    let data = { modulo: "", parametros: [] }
+    invocacionGestorDoc(data);
 }
+//function imprimirAsiento() {
+//    // Caso 1: Si hay un asiento abierto (seleccionado con doble clic)
+//    if (filaClicDoble !== null) {
+//        // Obtener el ID del asiento abierto
+//        const asientoId = EntidadSelect;
+//        if (asientoId) {
+//            generarReporteAsiento(asientoId);
+//            return;
+//        }
+//    }
+
+//    // Caso 2: Si hay asientos seleccionados en la grilla
+//    if (filasSeleccionadas.length === 1) {
+//        // Hay un solo asiento seleccionado, obtener su ID
+//        const asientoId = filasSeleccionadas[0];
+//        generarReporteAsiento(asientoId);
+//    } else if (filasSeleccionadas.length > 1) {
+//        // Hay múltiples asientos seleccionados
+//        AbrirMensaje(
+//            "ATENCIÓN",
+//            "Hay múltiples asientos seleccionados. Por favor, deseleccione todos y seleccione solo uno para imprimir.",
+//            function () {
+//                $("#msjModal").modal("hide");
+//            },
+//            false,
+//            ["Aceptar"],
+//            "warn!",
+//            null
+//        );
+//    } else {
+//        // No hay ningún asiento seleccionado
+//        AbrirMensaje(
+//            "ATENCIÓN",
+//            "No hay ningún asiento seleccionado para imprimir. Por favor, seleccione uno.",
+//            function () {
+//                $("#msjModal").modal("hide");
+//            },
+//            false,
+//            ["Aceptar"],
+//            "warn!",
+//            null
+//        );
+//    }
+//}
 
 /**
  * Genera el reporte PDF de un asiento específico
@@ -1827,7 +1842,7 @@ function generarReporteAsiento(asientoId) {
 
     // Preparar el objeto de solicitud para el informe
     const reporteSolicitud = {
-        Reporte: 9, 
+        Reporte: 9,
         Parametros: {
             "dia_movi": asientoId
         },

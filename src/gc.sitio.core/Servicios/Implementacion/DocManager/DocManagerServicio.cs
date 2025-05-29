@@ -211,14 +211,14 @@ namespace gc.sitio.core.Servicios.Implementacion.DocManager
                     }
                     else
                     {
-                        throw new Exception("No se logro obtener la respuesta de la API con el reporte de Cuenta Corriente. Verifique.");
+                        throw new Exception("No se logro obtener la respuesta de la API de reportes. Verifique.");
                     }
                     return respuesta.Data;
                 }
                 else
                 {
                     stringData = await response.Content.ReadAsStringAsync();
-                    string msg = "Hubo un error al intentar obtener el Informe de Cta Cte";
+                    string msg = "Hubo un error al intentar obtener el Informe desde la Api de Reportes.";
                     _logger.LogError($"{msg} {stringData}");
                     throw new NegocioException(msg);
                 }
@@ -229,7 +229,7 @@ namespace gc.sitio.core.Servicios.Implementacion.DocManager
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al intentar obtener el Informe de Cta Cte.");
+                _logger.LogError(ex, "Hubo un error al intentar obtener el Informe desde la Api de Reportes.");
                 throw;
             }
         }

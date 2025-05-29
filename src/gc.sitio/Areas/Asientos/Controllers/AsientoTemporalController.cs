@@ -1,14 +1,19 @@
-﻿using gc.api.core.Entidades;
+﻿using DocumentFormat.OpenXml.Drawing;
+using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Asientos;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Enumeraciones;
 using gc.infraestructura.Helpers;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos.ABM;
 using gc.sitio.core.Servicios.Contratos.Asientos;
+using gc.sitio.core.Servicios.Contratos.DocManager;
+using IronSoftware.DOM;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
@@ -19,27 +24,36 @@ namespace gc.sitio.Areas.Asientos.Controllers
     [Area("Asientos")]
     public class AsientoTemporalController : ControladorBase
     {
+        private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
+        private AppModulo _modulo; //tengo el AppModulo que corresponde a la consulta de cuentas
+        private string APP_MODULO = AppModulos.ASTEMP.ToString();
+
         private readonly IAsientoFrontServicio _asientoServicio;
         private readonly IAsientoTemporalServicio _asTempSv;
         private readonly IAbmServicio _abmSv;
+        private readonly IDocManagerServicio _docMSv;
 
         private readonly AppSettings _appSettings;
 
         private List<UsuAsientoDto> UsuariosEjercicioLista { get; set; } = [];
 
         public AsientoTemporalController(
-            IOptions<AppSettings> options,
+            IOptions<AppSettings> options, IOptions<DocsManager> docsManager,
             IHttpContextAccessor contexto,
             ILogger<AsientoTemporalController> logger,
             IAsientoFrontServicio asientoServicio,
             IAsientoTemporalServicio asTempSv,
-            IAbmServicio abm
+            IAbmServicio abm,
+            IDocManagerServicio docManager
             ) : base(options, contexto, logger)
         {
             _asientoServicio = asientoServicio;
             _asTempSv = asTempSv;
             _appSettings = options.Value;
             _abmSv = abm;
+            _docsManager = docsManager.Value;
+            _modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO);
+            _docMSv = docManager;
         }
 
         public async Task<IActionResult> Index()
@@ -52,6 +66,15 @@ namespace gc.sitio.Areas.Asientos.Controllers
 
                 string titulo = "Asientos Temporales";
                 ViewData["Titulo"] = titulo;
+
+                #region Gestor Impresion - Inicializacion de variables
+                //Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
+                DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
+                // en este mismo acto se cargan los posibles documentos
+                //que se pueden imprimir, exportar, enviar por email o whatsapp
+                ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
+
+                #endregion
 
                 // Obtenemos los datos para los combos
                 await ObtenerEjerciciosContables();

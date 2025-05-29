@@ -21,7 +21,7 @@ namespace gc.infraestructura.Enumeraciones
         R006_InfoOPagoDet=6,
         R007_InfoRecProv=7,
         R008_InfoRecProvDet=8,
-        R009_InfoErrAsTemp = 9,
-        R010_InfoAsTemp = 10,
+        R009_InfoAsientos = 9,
+        R010_InfoDetalleAsiento = 10,
     }
 }

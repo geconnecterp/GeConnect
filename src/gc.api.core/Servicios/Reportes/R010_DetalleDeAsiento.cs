@@ -18,7 +18,7 @@ using Newtonsoft.Json;
 
 namespace gc.api.core.Servicios.Reportes
 {
-    public class R009_InformeCuentaCorriente : Servicio<EntidadBase>, IGeneradorReporte
+    public class R010_DetalleDeAsiento : Servicio<EntidadBase>, IGeneradorReporte
     {
         private readonly IAsientoTemporalServicio _asTempSv;
 
@@ -27,7 +27,7 @@ namespace gc.api.core.Servicios.Reportes
         private readonly List<string> _campos;
         private readonly ICuentaServicio _cuentaSv;
         private readonly ILogger _logger;
-        public R009_InformeCuentaCorriente(IUnitOfWork uow, IAsientoTemporalServicio atempsv,
+        public R010_DetalleDeAsiento(IUnitOfWork uow, IAsientoTemporalServicio atempsv,
            IOptions<EmpresaGeco> empresa, ICuentaServicio consultaSv, ILogger logger) : base(uow)
         {
             _asTempSv = atempsv;
