@@ -97,49 +97,7 @@ namespace gc.api.core.Servicios.Reportes
 
                 #region Generación de Cabecera               
 
-                PdfPTable tabla = HelperPdf.GeneraTabla(4, [10f, 20f, 50f, 20f], 100, 10, 20);
-
-                // Columna 1: Logo
-                PdfPCell celdaLogo = HelperPdf.GeneraCelda(logo, false);
-                tabla.AddCell(celdaLogo);
-
-                // Columna 2: Datos apilados y título
-                PdfPTable subTabla = new PdfPTable(1);
-                subTabla.WidthPercentage = 100;
-
-                // Datos apilados
-                subTabla.AddCell(HelperPdf.CrearCeldaTexto(_empresaGeco.Nombre, chico));
-                subTabla.AddCell(HelperPdf.CrearCeldaTexto($"CUIT: {_empresaGeco.CUIT} s:{solicitud.Administracion}", chico));
-                subTabla.AddCell(HelperPdf.CrearCeldaTexto($"IIBB: {_empresaGeco.IngresosBrutos}", chico));
-                subTabla.AddCell(HelperPdf.CrearCeldaTexto($"Dirección: {_empresaGeco.Direccion}", chico));
-
-                PdfPCell celdaSubTabla = new PdfPCell(subTabla)
-                {
-                    Border = Rectangle.NO_BORDER,
-                    HorizontalAlignment = Element.ALIGN_CENTER,
-                    VerticalAlignment = Element.ALIGN_MIDDLE
-                };
-                tabla.AddCell(celdaSubTabla);
-
-                // Columna 3: Título del informe
-                PdfPCell celdaTitulo = new PdfPCell(new Phrase(solicitud.Titulo, titulo))
-                {
-                    Border = Rectangle.NO_BORDER,
-                    HorizontalAlignment = Element.ALIGN_CENTER,
-                    VerticalAlignment = Element.ALIGN_MIDDLE,
-                    PaddingTop = 10f
-                };
-                tabla.AddCell(celdaTitulo);
-
-                // Columna 4: Fecha
-                string fechaHora = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
-                PdfPCell celdaFechaHora = new PdfPCell(new Phrase(fechaHora, chico))
-                {
-                    Border = Rectangle.NO_BORDER,
-                    HorizontalAlignment = Element.ALIGN_RIGHT,
-                    VerticalAlignment = Element.ALIGN_MIDDLE
-                };
-                tabla.AddCell(celdaFechaHora);
+                PdfPTable tabla = GeneraCabeceraPdf(solicitud, logo, chico, titulo, _empresaGeco);
 
                 // Convertir la tabla en un Phrase
                 Phrase phrase = new Phrase();

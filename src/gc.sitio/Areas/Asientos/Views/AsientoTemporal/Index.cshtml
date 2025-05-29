@@ -3,6 +3,7 @@
     Layout = "~/views/shared/_Layout.cshtml";
 
     var filtro = new QueryAsiento() { Modelo = ModeloFilter.ASIENTO_TEMPORAL, EsTemporal = true };
+    var filtro2 = new QueryFilters() { Modelo = ModeloFilter.ASIENTO_TEMPORAL };
 }
 @section styles {
     <link rel="stylesheet" href="~/css/simplePagination.css" />
@@ -22,56 +23,7 @@
 }
 
 <div class="container">
-    <input type="text" id="IdSelected" style="display:none;" />
-    <div class="row">
-        <div class="col-md-4 col-sm-6">
-            <div class="d-flex justify-content-sm-around">
-                <button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
-                    <i class="bx bx-filter"></i>
-                </button>
-                <button class="btn btn-primary btn-sm mt-1 me-1" type="button" id="btnDetalle" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle">
-                    <i class="bx bxs-arrow-down-stroke"></i>
-                </button>
-            </div>
-        </div>
-        <div class="col-md-2 col-sm-6">
-            <div class="d-flex justify-content-sm-center">
-                <button id="btnAbmAceptar" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Aceptar" disabled>
-                    <i class="bx bx-check-circle"></i>
-                </button>
-
-                <button id="btnAbmCancelar" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar">
-                    <i class="bx bx-x-circle"></i>
-                </button>
-            </div>
-        </div>
-        <div class="col-md-2 col-sm-6">
-            <div class="d-flex justify-content-sm-center">
-                <!-- Botón Imprimir -->
-                <button type="button" class="btn btn-light btn-sm mt-1 me-1" id="btnImprimir" title="Imprimir">
-                    <i class="bx bx-printer"></i>
-                </button>
-                <!-- Botón Pasar Conta -->
-                <button type="button" class="btn btn-warning btn-sm mt-1 me-1" id="btnPasarConta" title="Pasar a Contabilidad">
-                    <i class="bx bx-swap-horizontal"></i>
-                </button>
-            </div>
-        </div>
-        <div class="col-md-4 col-sm-6">
-            <div class="d-flex justify-content-sm-center">
-
-                <button id="btnAbmNuevo" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Alta Asiento" disabled>
-                    <i class="bx bx-file-plus"></i>
-                </button>
-                <button id="btnAbmModif" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Editar Asiento" disabled>
-                    <i class="bx bx-edit-alt"></i>
-                </button>
-                <button id="btnAbmElimi" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Dar de baja el asiento" disabled>
-                    <i class="bx bx-trash"></i>
-                </button>
-            </div>
-        </div>
-    </div>
+    <partial name="_botonera" model="filtro2" />
 </div>
 <div class="collapse" id="divFiltro" style="">
     <partial name="_filtroAsiento" model="filtro" />
@@ -83,11 +35,12 @@
 
 <div class="row">
     <div id="divGrilla">
-        <p style="background-color:gray">
+        @* <p style="background-color:gray">
             <h5>No se han especificado datos aún.</h5>
-        </p>
+        </p> *@
     </div>
 </div>
+<div id="modalGestorDocumental"></div>
 
 
 
@@ -107,7 +60,12 @@
         var confirmarAsientoTemporalUrl = '@Url.Action("ConfirmarAsientoTemporal", "AsientoTemporal", new { area = "Asientos" })';
 
         //gestor de impresion
-        var gestorImpresionUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+       // var gestorImpresionUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+        var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+        var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
+        var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
+        var enviarEmailUrl =  "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
+        var enviarWhatsAppUrl =  "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
 
             // URLs para las llamadas AJAX - Se configurarán desde la vista
         var buscarPlanCuentasUrl = "@Url.Action("buscar", "abmplancuenta", new { area = "abms" })";
@@ -118,8 +76,11 @@
     <script src="~/js/mask/jquery.inputmask.min.js"></script>
     <script src="~/js/plugins/jquery.simplePagination.js"></script>
 
+    <script src="~/js/app/areas/docmngr/docmanager.js"></script>
+
     <script src="~/js/app/areas/abms/abmsettings.js"></script>
     <script src="~/js/app/areas/abms/abmcommons.js"></script>
+
 
     <script src="~/js/app/areas/asientos/selectorCuentas.js"></script>
     <script src="~/js/app/areas/asientos/asientos.js"></script>

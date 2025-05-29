@@ -208,15 +208,15 @@ $(function () {
 //}
 
 function PostGenHtml(data, path, retorno) {
-    PostGen(data, path, retorno, fnError, "HTML");
+    PostGen1(data, path, retorno, fnError, "HTML");
 }
 function PostGenHtml(data, path, retorno, fxError) {
-    PostGen(data, path, retorno, fxError, "HTML");
+    PostGen1(data, path, retorno, fxError, "HTML");
 }
-function PostGen(data, path, retorno) {
-    PostGen(data, path, retorno, fnError, "json");
-}
-function PostGen(data, path, retorno, fxError, datatype) {
+//function PostGen(data, path, retorno) {
+//    PostGen(data, path, retorno, fnError, "json");
+//}
+function PostGen1(data, path, retorno, fxError, datatype) {
     $.ajax({
         "dataType": datatype,
         "url": path,
@@ -228,6 +228,85 @@ function PostGen(data, path, retorno, fxError, datatype) {
         error: fxError
     });
 }
+
+/**
+ * Realiza una solicitud POST al servidor con datos JSON
+ * @param {Object|string} data - Datos a enviar
+ * @param {string} url - URL del endpoint
+ * @param {Function} success - Función de callback para respuesta exitosa
+ * @param {Function} error - Función de callback para error (opcional)
+ */
+function PostGen(data, url, success, error) {
+    // Verificar el tipo de datos
+    let dataToSend;
+    let contentType;
+
+    // Si data es ya una cadena y parece JSON
+    if (typeof data === 'string' &&
+        ((data.startsWith('{') && data.endsWith('}')) ||
+            (data.startsWith('[') && data.endsWith(']')))) {
+        dataToSend = data;
+        contentType = "application/json";
+    }
+    // Si data es un objeto
+    else if (typeof data === 'object' && data !== null) {
+        // Verificar si es FormData (para envío de archivos)
+        if (data instanceof FormData) {
+            dataToSend = data;
+            // No establecer contentType para FormData (el navegador lo hará automáticamente)
+            contentType = undefined;
+        } else {
+            // Es un objeto JavaScript normal, convertirlo a JSON string
+            dataToSend = JSON.stringify(data);
+            contentType = "application/json";
+        }
+    }
+    // Cualquier otro tipo de datos
+    else {
+        dataToSend = data;
+        // Usar el contentType por defecto de jQuery para POST
+        contentType = "application/x-www-form-urlencoded; charset=UTF-8";
+    }
+
+    // Configurar la solicitud AJAX
+    const ajaxConfig = {
+        url: url,
+        type: "POST",
+        data: dataToSend,
+        success: function (response) {
+            if (typeof success === 'function') {
+                success(response);
+            }
+        },
+        error: function (xhr, status, errorThrown) {
+            console.error("Error en solicitud AJAX:", {
+                url: url,
+                status: status,
+                error: errorThrown,
+                response: xhr.responseText
+            });
+
+            if (typeof error === 'function') {
+                error({
+                    status: xhr.status,
+                    statusText: xhr.statusText,
+                    message: errorThrown || "Error en la solicitud",
+                    responseText: xhr.responseText
+                });
+            }
+        }
+    };
+
+    // Agregar contentType solo si está definido
+    if (contentType !== undefined) {
+        ajaxConfig.contentType = contentType;
+    }
+
+    // Realizar la solicitud
+    $.ajax(ajaxConfig);
+}
+
+
 
 function fnError(jqXHR) {
     //alert(jqXHR);
@@ -732,6 +811,17 @@ function cargarReporteEnArre(numeroReporte, parametros,titulo,observacion,admId)
     };
 }
 
+function ReporteResetCeldaEnArre(numeroReporte) {
+    if (numeroReporte - 1 < 0 || numeroReporte - 1 >= arrRepoParams.length) {
+        let msg = "El número de reporte está fuera de rango (0-" + arrRepoParams.length + "). Verifique la identificación del Reporte. El mismo no se ha reseteado. ";
+        ControlaMensajeWarning(msg);
+        console.error("Número de reporte fuera de rango (0-299).");
+        return;
+    }
+
+    arrRepoParams[numeroReporte - 1] = undefined;
+}
+
 /**
  * Activa o desactiva un componente (input, select, etc.) según el estado de un checkbox.
  * Si el checkbox está marcado, habilita el componente y restaura su estilo visual.
@@ -758,4 +848,33 @@ function toggleComponent(checkboxId, componentSelector) {
     } catch (error) {
         console.error(`Error al procesar el checkbox ${checkboxId}:`, error);
     }
+}
+
+/**
+* Convierte un string Base64 a un objeto Blob
+* @param {string} b64Data - Datos en formato Base64
+* @param {string} contentType - Tipo de contenido MIME
+* @param {number} sliceSize - Tamaño de las porciones de datos (opcional)
+* @returns {Blob} - Objeto Blob con los datos
+*/
+function b64toBlob(b64Data, contentType, sliceSize) {
+    contentType = contentType || "";
+    sliceSize = sliceSize || 512;
+
+    const byteCharacters = atob(b64Data);
+    const byteArrays = [];
+
+    for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+        const slice = byteCharacters.slice(offset, offset + sliceSize);
+
+        const byteNumbers = new Array(slice.length);
+        for (let i = 0; i < slice.length; i++) {
+            byteNumbers[i] = slice.charCodeAt(i);
+        }
+
+        const byteArray = new Uint8Array(byteNumbers);
+        byteArrays.push(byteArray);
+    }
+
+    return new Blob(byteArrays, { type: contentType });
 }

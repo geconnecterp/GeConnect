@@ -731,14 +731,17 @@ namespace gc.infraestructura.Helpers
         }
 
         public static void GenerarListadoDesdeLista<T>(
-        Document pdf,
-        List<T> lista,
-        List<string> campos,
-        float[] anchos,
-        Font fuente,
-        bool incluirHoraEnFechas = false,
-        bool agregarFilaTotal = false,
-        Dictionary<string, decimal>? totalesPorCampo = null)
+    Document pdf,
+    List<T> lista,
+    List<string> campos,
+    float[] anchos,
+    Font fuente,
+    bool incluirHoraEnFechas = false,
+    bool agregarFilaTotal = false,
+    Dictionary<string, decimal>? totalesPorCampo = null,
+    bool formatearBooleanos = false,
+    BooleanDisplayFormat formatoBooleano = BooleanDisplayFormat.SiNo,
+    bool valorExitoEsTrue = true)
         {
             if (lista == null || lista.Count == 0 || campos == null || campos.Count == 0)
                 return;
@@ -763,8 +766,35 @@ namespace gc.infraestructura.Helpers
                     var valorObj = prop.GetValue(item);
                     string valorTexto = string.Empty;
                     int alineacion;
+                    BaseColor? colorTexto = null;
 
-                    if (valorObj is DateTime dt)
+                    // Detectar y formatear valores booleanos
+                    if (formatearBooleanos && valorObj is bool valorBooleano)
+                    {
+                        bool representaExito = (valorBooleano && valorExitoEsTrue) || (!valorBooleano && !valorExitoEsTrue);
+
+                        switch (formatoBooleano)
+                        {
+                            case BooleanDisplayFormat.SiNo:
+                                valorTexto = representaExito ? "SI" : "NO";
+                                break;
+                            case BooleanDisplayFormat.XOk:
+                                valorTexto = representaExito ? "OK" : "X";
+                                break;
+                            case BooleanDisplayFormat.CheckX:
+                                // Usamos símbolos Unicode para check (✓) y X (✗)
+                                valorTexto = representaExito ? "✓" : "✗";
+                                break;
+                            case BooleanDisplayFormat.TrueFalse:
+                                valorTexto = valorBooleano ? "True" : "False";
+                                break;
+                        }
+
+                        // Asignar colores según el valor (verde para éxito, rojo para error)
+                        colorTexto = representaExito ? new BaseColor(0, 128, 0) : BaseColor.Red; // Verde o Rojo
+                        alineacion = Element.ALIGN_CENTER;
+                    }
+                    else if (valorObj is DateTime dt)
                     {
                         valorTexto = incluirHoraEnFechas ? dt.ToString("dd/MM/yyyy HH:mm") : dt.ToString("dd/MM/yyyy");
                         alineacion = Element.ALIGN_CENTER;
@@ -780,7 +810,7 @@ namespace gc.infraestructura.Helpers
                         alineacion = valorTexto.Length == 1 ? Element.ALIGN_CENTER : Element.ALIGN_LEFT;
                     }
 
-                    var parrafo = GeneraParrafo(valorTexto, fuente, alineacion, 5, 5, true, BaseColor.Black);
+                    var parrafo = GeneraParrafo(valorTexto, fuente, alineacion, 5, 5, colorTexto != null, colorTexto ?? BaseColor.Black);
                     var celda = new PdfPCell(parrafo)
                     {
                         Border = Rectangle.BOTTOM_BORDER,
@@ -791,7 +821,7 @@ namespace gc.infraestructura.Helpers
                 }
             }
 
-            // Agregar fila total si corresponde
+            // Agregar fila total si corresponde (código existente sin cambios)
             if (agregarFilaTotal && totalesPorCampo != null && totalesPorCampo.Count > 0)
             {
                 var fuenteNegrita = new Font(fuente);
@@ -841,6 +871,15 @@ namespace gc.infraestructura.Helpers
             }
 
             pdf.Add(tabla);
+        }
+
+        // Enumeración para definir los formatos de visualización de booleanos
+        public enum BooleanDisplayFormat
+        {
+            SiNo,     // Muestra "SI" o "NO"
+            XOk,      // Muestra "OK" o "X"
+            CheckX,   // Muestra símbolos de check (✓) y X (✗)
+            TrueFalse // Muestra "True" o "False" (por defecto)
         }
 
 

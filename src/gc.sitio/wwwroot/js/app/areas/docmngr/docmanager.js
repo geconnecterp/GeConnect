@@ -227,6 +227,13 @@ function presentarArchivos() {
 function imprimirArchivoSeleccionado() {
    
     var selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
+
+    // Filtrar para eliminar el nodo raíz (que típicamente tiene parent = "#" o parent = null)
+    selectedNodes = selectedNodes.filter(function (node) {
+        return node.parent !== "#" && node.parent !== null;
+    });
+
+
     if (selectedNodes.length === 0) {
         AbrirMensaje("ATENCIÓN", "No hay archivos seleccionados para imprimir.", function () {
             $("#msjModal").modal("hide");
@@ -242,7 +249,18 @@ function imprimirArchivoSeleccionado() {
                 if (arrRepoParams[id - 1] !== undefined) {
                     data = arrRepoParams[id - 1];
 
-                    PostGen(data, repoApiUrl, function (obj) {
+                    // Crear objeto de solicitud con nombres de propiedades que coincidan con el modelo C#
+                    const solicitudReporte = {
+                        Reporte: data.reporte,  // Con mayúscula para coincidir con C#
+                        Parametros: data.parametros,  // Con mayúscula
+                        Titulo: data.titulo,  // Con mayúscula
+                        Observacion: data.observacion || "",  // Con mayúscula
+                        Formato: "P",  // Con mayúscula (PDF)
+                        LogoPath: "",  // Con mayúscula
+                        Administracion : data.administracion || administracion
+                    };
+
+                    PostGen(JSON.stringify(solicitudReporte), repoApiUrl, function (obj) {
                         CerrarWaiting();
                         if (obj.error === true) {
                             AbrirMensaje("Atención", obj.resultado_msg, function () {
@@ -261,7 +279,7 @@ function imprimirArchivoSeleccionado() {
                             }, false, ["Aceptar"], "error!", null);
                         } else {
                             var archivoBase64 = obj.base64;
-                            var blob = base64ToBlob(archivoBase64, 'application/pdf');
+                            var blob = b64toBlob(archivoBase64, 'application/pdf');
                             var url = URL.createObjectURL(blob);
                             var printWindow = window.open(url);
                             printWindow.onload = function () {
