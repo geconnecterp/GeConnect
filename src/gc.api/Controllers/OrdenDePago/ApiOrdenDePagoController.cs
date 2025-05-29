@@ -2,6 +2,7 @@
 using gc.api.core.Contratos.Servicios;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
 using gc.infraestructura.Dtos.OrdenDePago.Request;

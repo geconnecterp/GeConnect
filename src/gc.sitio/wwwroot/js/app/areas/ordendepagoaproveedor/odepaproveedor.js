@@ -3,7 +3,8 @@
 	$(document).on("click", "#btnAceptarDesdeValidPrev", AceptarDesdeValidPrev);
 	$(document).on("click", "#btnSiguiente1", btnSiguiente1Validar);
 	$(document).on("click", "#btnAnterior2", btnAnterior2Validar);
-	//
+	$(document).on("click", "#btnAgregarValor", btnAgregarValorValidar);
+	//btnAgregarValor
 	InicializaPantalla();
 	$("#btnBuscar").on("click", function () {
 		if (ctaIdSelected == "") {
@@ -18,6 +19,11 @@
 		}
 	});
 });
+
+//Abro modal de seleccion de valores
+function btnAgregarValorValidar() {
+	invocarModalDeSeleccionDeValores();
+}
 
 //Me muevo al paso1
 function btnAnterior2Validar() {
@@ -113,7 +119,6 @@ function selectReg(x, gridId) {
 		$(this).removeClass("selectedEdit-row");
 	});
 	$(x).addClass("selected-row");
-
 }
 
 function selectRegDbl(x, gridId) {

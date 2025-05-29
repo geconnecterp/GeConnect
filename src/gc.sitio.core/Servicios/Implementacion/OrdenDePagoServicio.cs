@@ -28,6 +28,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string AgregarQuitarOPDebitoCreditoDelProveedor = "/CargarSacarOPDebitoCreditoDelProveedor";
 		private const string ObtenerRetencionesDesdeObligYCredSeleccionados = "/CargarRetencionesDesdeObligYCredSeleccionados";
 		private const string ObtenerValoresDesdeObligYCredSeleccionados = "/CargarValoresDesdeObligYCredSeleccionados";
+		private const string ObtenerCuentaFinParaSeleccionDeValores = "/CargarCuentaFinParaSeleccionDeValores";
 		private readonly AppSettings _appSettings;
 		public OrdenDePagoServicio(IOptions<AppSettings> options, ILogger<OrdenDePagoServicio> logger) : base(options, logger, RutaAPI)
 		{

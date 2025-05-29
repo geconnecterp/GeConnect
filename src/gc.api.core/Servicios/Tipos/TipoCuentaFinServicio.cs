@@ -31,5 +31,21 @@ namespace gc.api.core.Servicios
 					#endregion
 				}).ToList();
 		}
+
+		/// <summary>
+		/// Carga las cuentas financieras para la selección de valores en la orden de pago.
+		/// </summary>
+		/// <param name="app"></param>
+		/// <returns>Lista de cuentas financieras</returns>
+		public List<TipoCuentaFinDto> GetTipoCuentaFinParaSeleccionDeValores(string app)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OP_SV_TCF;
+			var ps = new List<SqlParameter>()
+			{
+				new("@app", app),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<TipoCuentaFinDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

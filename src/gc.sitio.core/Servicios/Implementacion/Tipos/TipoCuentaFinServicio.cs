@@ -15,10 +15,48 @@ namespace gc.sitio.core.Servicios.Implementacion
 	{
 		private const string RutaAPI = "/api/tiposvs";
 		private const string ObtenerTiposCuentaFin = "/GetTiposCuentaFinLista";
+		private const string ObtenerTipoCuentaFinParaSeleccionDeValores = "/GetTipoCuentaFinParaSeleccionDeValores";
 		private readonly AppSettings _appSettings;
 		public TipoCuentaFinServicio(IOptions<AppSettings> options, ILogger<AdministracionServicio> logger) : base(options, logger)
 		{
 			_appSettings = options.Value;
+		}
+
+		public List<TipoCuentaFinDto> GetTipoCuentaFinParaSeleccionDeValores(string app, string token)
+		{
+			try
+			{
+				ApiResponse<List<TipoCuentaFinDto>> apiResponse;
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerTipoCuentaFinParaSeleccionDeValores}?app={app}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						_logger.LogWarning($"La API no devolvió dato alguno. Sin parámetros de busqueda");
+						return [];
+					}
+					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<TipoCuentaFinDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+					return apiResponse.Data;
+				}
+				else
+				{
+					string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+					return [];
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogWarning($"Algo no fue bien. Error interno {ex.Message}");
+				return [];
+			}
 		}
 
 		public List<TipoCuentaFinDto> ObtenerTipoCuentaFin(string token)

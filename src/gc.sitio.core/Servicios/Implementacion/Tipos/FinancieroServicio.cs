@@ -18,6 +18,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string ObtenerFinancierosRelaPorTipoCfLista = "/GetFinancierosRelaPorTipoCfLista";
 		private const string ObtenerFinancierosEstados = "/GetFinancierosEstados";
 		private const string ObtenerPlanContableCuenta = "/GetPlanContableCuentaLista";
+		private const string ObtenerFinancieroDesdeTipoParaSeleccionDeValores = "/GetFinancieroDesdeTipoParaSeleccionDeValores";
 		private readonly AppSettings _appSettings;
 		public FinancieroServicio(IOptions<AppSettings> options, ILogger<AdministracionServicio> logger) : base(options, logger)
 		{
@@ -172,6 +173,41 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 		}
 
+		public List<FinancieroDesdeSeleccionDeTipoDto> GetFinancieroDesdeTipoParaSeleccionDeValores(string tcf_id, string token)
+		{
+			try
+			{
+				ApiResponse<List<FinancieroDesdeSeleccionDeTipoDto>> apiResponse;
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
 
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerFinancieroDesdeTipoParaSeleccionDeValores}?tcf_id={tcf_id}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						_logger.LogWarning($"La API no devolvió dato alguno. Sin parámetros de busqueda");
+						return [];
+					}
+					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<FinancieroDesdeSeleccionDeTipoDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+					return apiResponse.Data;
+				}
+				else
+				{
+					string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+					return [];
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogWarning($"Algo no fue bien. Error interno {ex.Message}");
+				return [];
+			}
+		}
 	}
 }

@@ -116,6 +116,30 @@ namespace gc.api.Controllers.Codigos
 
 		[HttpGet]
 		[Route("[action]")]
+		public IActionResult GetTipoCuentaFinParaSeleccionDeValores(string app)
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			List<TipoCuentaFinDto> condAfip = _tipoCuentaFinServicio.GetTipoCuentaFinParaSeleccionDeValores(app);
+			var lista = _mapper.Map<List<TipoCuentaFinDto>>(condAfip);
+
+			var response = new ApiResponse<List<TipoCuentaFinDto>>(lista);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult GetFinancieroDesdeTipoParaSeleccionDeValores(string tcf_id)
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			List<FinancieroDesdeSeleccionDeTipoDto> condAfip = _financieroServicio.GetFinancieroDesdeTipoParaSeleccionDeValores(tcf_id);
+			var lista = _mapper.Map<List<FinancieroDesdeSeleccionDeTipoDto>>(condAfip);
+
+			var response = new ApiResponse<List<FinancieroDesdeSeleccionDeTipoDto>>(lista);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
 		public IActionResult GetCondicionesAfipLista()
 		{
 			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");

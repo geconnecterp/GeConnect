@@ -74,5 +74,16 @@ namespace gc.api.core.Servicios
 					#endregion
 				}).ToList();
 		}
+
+		public List<FinancieroDesdeSeleccionDeTipoDto> GetFinancieroDesdeTipoParaSeleccionDeValores(string tcf_id)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OP_SV_CTAF;
+			var ps = new List<SqlParameter>()
+			{
+				new("@tcf_id",tcf_id)
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<FinancieroDesdeSeleccionDeTipoDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

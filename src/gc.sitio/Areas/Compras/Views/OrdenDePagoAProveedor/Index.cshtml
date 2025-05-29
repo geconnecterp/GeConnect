@@ -43,6 +43,8 @@
 	</div>
 </div>
 
+<div id="modalSeleccionValores"></div>
+
 @section scripts {
 	<script type="text/javascript">
 		var ctaIdSelected = "";
@@ -61,6 +63,9 @@
 		var cargarRetencionesDesdeObligYCredSeleccionadosUrl = "@Url.Action("CargarRetencionesDesdeObligYCredSeleccionados", "ordendepagoaproveedor", new { area = "Compras" })";
 		var cargarValoresDesdeObligYCredSeleccionadosUrl = "@Url.Action("CargarValoresDesdeObligYCredSeleccionados", "ordendepagoaproveedor", new { area = "Compras" })";
 
+		var abrirComponenteDeSeleccionDeValoresUrl = "@Url.Action("AbrirComponente", "selecciondevalores", new { area = "ControlComun" })";
+
 	</script>
+	<script src="~/js/app/controlcomun/selecciondevalores.js"></script>
 	<script src="~/js/app/areas/ordendepagoaproveedor/odepaproveedor.js"></script>
 }

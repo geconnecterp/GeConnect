@@ -1,0 +1,33 @@
+﻿@using gc.infraestructura.Dtos;
+@using gc.infraestructura.Dtos.Gen;
+@using static gc.infraestructura.Helpers.GridHelper
+@model GridCoreSmart<FinancieroDesdeSeleccionDeTipoDto>
+@{
+}
+<div class="col-11 mt-2 table-responsive table-wrapper-100-full" id="containerFinanciero" style="padding-right: 0px;">
+	<table class="table table-bordered table-hover" id="tbFinanciero">
+		<thead class="table-dark">
+			<tr>
+				<th style="width:80%;" class="col-header-small align-center tiny-row">Cuenta Financiera</th>
+				<th style="width:20%;" class="col-header-small align-center tiny-row">Saldo</th>
+				<th style="width:0%; display:none;">ctaf_id</th>
+				<th style="width:0%; display:none;">ins_id</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model != null && Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
+			{
+				@foreach (var item in Model.ListaDatos)
+				{
+					@* <tr onclick="selectReg(this, 'tbFinanciero')" ondblclick="selectRegDbl(this, 'tbFinanciero')"> *@
+					<tr onclick="seleccionarFinanciero(this)">
+						<td class="@Model.ObtenerClase(item.ctaf_denominacion)">@Model.FormatearDato(item.ctaf_denominacion, FormatDato.Ninguno)</td>
+						<td class="@Model.ObtenerClase(item.ctaf_saldo)">@Model.FormatearDato(item.ctaf_saldo, FormatDato.Monto)</td>
+						<td style="display:none;">@item.ctaf_id</td>
+						<td style="display:none;">@item.ins_id</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>

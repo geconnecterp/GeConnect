@@ -1,4 +1,5 @@
-﻿using gc.infraestructura.Dtos.Gen;
+﻿using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
 using gc.infraestructura.Dtos.OrdenDePago.Request;
 

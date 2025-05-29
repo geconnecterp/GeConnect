@@ -162,6 +162,8 @@
             public const string SP_OP_CARGAR_SACAR = "SPGECO_OP_cargar_sacar";
 			public const string SP_OP_RETENCIONES = "SPGECO_OP_Retenciones";
 			public const string SP_OP_VALORES = "SPGECO_OP_Valores";
+            public const string SP_OP_SV_TCF = "SPGECO_OP_SV_tcf";
+			public const string SP_OP_SV_CTAF = "SPGECO_OP_SV_Ctaf";
 			#endregion
 
 			#region Cliente

@@ -1,0 +1,75 @@
+﻿@model gc.infraestructura.ViewModels.SeleccionDeValoresViewModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+}
+<div class="modal fade" id="seleccionDeValoresModal" style="display: block;height: 530px;padding-left: 0px;" tabindex="-1" aria-labelledby="seleccionDeValoresModalLabel" aria-hidden="true" data-bs-backdrop="static">
+	<div class="modal-dialog modal-lg" style="height: 500px;max-height: 500px;">
+		<div class="modal-content" style="height: 500px;max-height: 500px;">
+			<div class="modal-header">
+				<h5 class="modal-title" id="seleccionDeValoresModalLabel">Selección de Valores</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<div class="row">
+					<div class="col-4">
+						<div class="col-11 mt-2 table-responsive table-wrapper-100-full" id="containerTipoCuentaFin" style="padding-right: 0px;">
+							<table class="table table-bordered table-hover" id="tbTipoCuentaFin">
+								<thead class="table-dark">
+									<tr>
+										<th style="width:50%;" class="col-header-small align-center tiny-row">Tipo de Cuenta</th>
+										<th style="width:0%; display:none;">tcf_id</th>
+									</tr>
+								</thead>
+								<tbody>
+									@if (Model != null && Model.GrillaTipoCuentaFin != null && Model.GrillaTipoCuentaFin.ListaDatos != null && Model.GrillaTipoCuentaFin.ListaDatos.Count > 0)
+									{
+										@foreach (var item in Model.GrillaTipoCuentaFin.ListaDatos)
+										{
+											<tr onclick="seleccionarTipoFin(this)">
+												<td class="@Model.GrillaTipoCuentaFin.ObtenerClase(item.tcf_desc)">@Model.GrillaTipoCuentaFin.FormatearDato(item.tcf_desc, FormatDato.Ninguno)</td>
+												<td style="display:none;">@item.tcf_id</td>
+											</tr>
+										}
+									}
+								</tbody>
+							</table>
+						</div>
+					</div>
+					<div class="col-8">
+						<div class="col-11 mt-2 table-responsive table-wrapper-100-full" id="containerFinanciero" style="padding-right: 0px;">
+							<table class="table table-bordered table-hover" id="tbFinanciero">
+								<thead class="table-dark">
+									<tr>
+										<th style="width:80%;" class="col-header-small align-center tiny-row">Cuenta Financiera</th>
+										<th style="width:20%;" class="col-header-small align-center tiny-row">Saldo</th>
+										<th style="width:0%; display:none;">ctaf_id</th>
+										<th style="width:0%; display:none;">ins_id</th>
+									</tr>
+								</thead>
+								<tbody>
+									@if (Model != null && Model.GrillaFin != null && Model.GrillaFin.ListaDatos != null && Model.GrillaFin.ListaDatos.Count > 0)
+									{
+										@foreach (var item in Model.GrillaFin.ListaDatos)
+										{
+											<tr onclick="seleccionarFinanciero(this)">
+												<td class="@Model.GrillaFin.ObtenerClase(item.ctaf_denominacion)">@Model.GrillaFin.FormatearDato(item.ctaf_denominacion, FormatDato.Ninguno)</td>
+												<td class="@Model.GrillaFin.ObtenerClase(item.ctaf_saldo)">@Model.GrillaFin.FormatearDato(item.ctaf_saldo, FormatDato.Monto)</td>
+												<td style="display:none;">@item.ctaf_id</td>
+												<td style="display:none;">@item.ins_id</td>
+											</tr>
+										}
+									}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+			</div>
+		</div>
+	</div>
+</div>
