@@ -2,7 +2,9 @@
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.EntidadesComunes.Options;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace gc.api.report.Controllers
 {
@@ -13,12 +15,15 @@ namespace gc.api.report.Controllers
         private readonly IReportService _pdfReportService;
         private readonly ILogger<ReportesController> _logger;
         private readonly IWebHostEnvironment _env;
+        private readonly EmpresaGeco _empresaGeco;
 
-        public ReportesController(IReportService pdfReportService, ILogger<ReportesController> logger, IWebHostEnvironment env)
+        public ReportesController(IReportService pdfReportService, ILogger<ReportesController> logger,
+            IWebHostEnvironment env,IOptions<EmpresaGeco> emp)
         {
             _pdfReportService = pdfReportService;
             _logger = logger;
             _env = env;
+            _empresaGeco = emp.Value;
         }
 
         [HttpPost("generate")]
@@ -28,7 +33,7 @@ namespace gc.api.report.Controllers
 
             try
             {
-                string logoPath = Path.Combine(_env.ContentRootPath, "img", "gc.png");
+                string logoPath = Path.Combine(_env.ContentRootPath, "img", _empresaGeco.Logo);
                 request.LogoPath = logoPath;
                 var base64 = _pdfReportService.GenerateReportAsBase64(request);
 

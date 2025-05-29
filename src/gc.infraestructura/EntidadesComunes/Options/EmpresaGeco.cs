@@ -11,12 +11,13 @@
         public string RazonSocial { get; set; } = string.Empty;
         public string CUIT { get; set; } = string.Empty;
         public string IngresosBrutos { get; set; } = string.Empty;
-        public string InicioActividades { get; set; } = string.Empty;
+        public DateTime InicioActividades { get; set; } 
+        public string Responsabilidad { get; set; } = string.Empty;
         public string CondicionIVA { get; set; } = string.Empty;
         public string CodigoPostal { get; set; } = string.Empty;
         public string Localidad { get; set; } = string.Empty;
         public string Provincia { get; set; } = string.Empty;
-        public string Pais { get; set; } = string.Empty;    
-
+        public string Pais { get; set; } = string.Empty;
+        
     }
 }

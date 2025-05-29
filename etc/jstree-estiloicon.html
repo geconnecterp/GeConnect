@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Demo Plan de Cuentas - jsTree + Boxicons</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/themes/default/style.min.css" />
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        .jstree-anchor.tipo-m {
+            font-weight: bold;
+        }
+        .jstree-anchor.cuenta-activo {
+            color: #2a9d8f;
+        }
+        .jstree-anchor.cuenta-pasivo {
+            color: #e76f51;
+        }
+        .jstree-anchor.cuenta-patrimonio {
+            color: #6a4c93;
+        }
+        .jstree-anchor.cuenta-ingresos {
+            color: #f4a261;
+        }
+        .jstree-anchor.cuenta-egresos {
+            color: #264653;
+        }
+    </style>
+</head>
+<body>
+    <h2>Demo Plan de Cuentas Contable</h2>
+    <div id="divpanel01"></div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/jstree.min.js"></script>
+    <script>
+        const jsonP = [
+            {
+                text: "ACTIVO",
+                data: { tipo: "S", cuenta: "activo" },
+                children: [
+                    {
+                        text: "Caja y Bancos",
+                        data: { tipo: "S", cuenta: "activo" },
+                        children: [
+                            {
+                                text: "Caja General",
+                                data: { tipo: "M", cuenta: "activo" },
+                                children: []
+                            },
+                            {
+                                text: "Banco Nación",
+                                data: { tipo: "M", cuenta: "activo" },
+                                children: []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                text: "PASIVO",
+                data: { tipo: "S", cuenta: "pasivo" },
+                children: [
+                    {
+                        text: "Proveedores",
+                        data: { tipo: "M", cuenta: "pasivo" },
+                        children: []
+                    }
+                ]
+            },
+            {
+                text: "INGRESOS",
+                data: { tipo: "S", cuenta: "ingresos" },
+                children: [
+                    {
+                        text: "Ventas",
+                        data: { tipo: "M", cuenta: "ingresos" },
+                        children: []
+                    }
+                ]
+            }
+        ];
+
+        function procesarNodos(nodos) {
+            nodos.forEach(nodo => {
+                const tipo = nodo.data?.tipo;
+                const cuenta = nodo.data?.cuenta?.toLowerCase();
+
+                nodo.type = cuenta || "default";
+
+                nodo.a_attr = nodo.a_attr || {};
+                let clases = [];
+
+                if (tipo === "M") clases.push("tipo-m");
+                if (cuenta) clases.push("cuenta-" + cuenta);
+
+                nodo.a_attr.class = clases.join(" ");
+
+                if (nodo.children && nodo.children.length > 0) {
+                    procesarNodos(nodo.children);
+                }
+            });
+        }
+
+        procesarNodos(jsonP);
+
+        $(function () {
+            $('#divpanel01').jstree({
+                'core': {
+                    'data': jsonP
+                },
+                'types': {
+                    'activo': { 'icon': 'bx bx-wallet' },
+                    'pasivo': { 'icon': 'bx bx-trending-down' },
+                    'patrimonio': { 'icon': 'bx bx-building-house' },
+                    'ingresos': { 'icon': 'bx bx-dollar-circle' },
+                    'egresos': { 'icon': 'bx bx-money-withdraw' },
+                    'default': { 'icon': 'bx bx-folder' }
+                },
+                'plugins': ['types']
+            });
+        });
+    </script>
+</body>
+</html>

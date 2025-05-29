@@ -1,9 +1,11 @@
 ﻿using DocumentFormat.OpenXml.Office2013.Drawing.ChartStyle;
 using gc.api.core.Contratos.Servicios;
+using gc.api.core.Contratos.Servicios.Asientos;
 using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Dtos.Asientos;
 using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
@@ -18,21 +20,21 @@ namespace gc.api.core.Servicios.Reportes
 {
     public class R009_InformeCuentaCorriente : Servicio<EntidadBase>, IGeneradorReporte
     {
-        private readonly IConsultaServicio _consultaServicio;
+        private readonly IAsientoTemporalServicio _asTempSv;
 
         private readonly EmpresaGeco _empresaGeco;
         private readonly List<string> _titulos;
         private readonly List<string> _campos;
         private readonly ICuentaServicio _cuentaSv;
         private readonly ILogger _logger;
-        public R009_InformeCuentaCorriente(IUnitOfWork uow, IConsultaServicio consulta,
+        public R009_InformeCuentaCorriente(IUnitOfWork uow, IAsientoTemporalServicio atempsv,
            IOptions<EmpresaGeco> empresa, ICuentaServicio consultaSv, ILogger logger) : base(uow)
         {
-            _consultaServicio = consulta;
+            _asTempSv = atempsv;
 
             _empresaGeco = empresa.Value;
-            _titulos = new List<string> { "Dia Movi", "Descripcion" };
-            _campos = new List<string> { "resultado_id", "resultado_msj" };
+            _titulos = new List<string> { "Cuenta", "Descr.Cuenta", "Concepto", "Debe", "Haber" };
+            _campos = new List<string> { "Ccb_id", "Ccb_desc", "Dia_desc", "Debe", "Haber" };
             _cuentaSv = consultaSv;
             _logger = logger;
         }
@@ -41,7 +43,7 @@ namespace gc.api.core.Servicios.Reportes
         {
 
             float[] anchos;
-
+            string ctaId = "";
             PdfWriter? writer = null;
             Document pdf;
             try
@@ -50,17 +52,17 @@ namespace gc.api.core.Servicios.Reportes
 
                 #region Obteniendo registros desde la base de datos
 
-                List<RespuestaDto> regErr = ObtenerDatos(solicitud, out string ctaId);
+                AsientoDetalleDto asiento = ObtenerDatos(solicitud, out ctaId);
 
-                if (regErr == null || regErr.Count == 0)
+                if (asiento == null || asiento.Detalles.Count == 0)
                 {
                     throw new NegocioException($"No se encontraron registros de la cuenta corriente {ctaId}.");
                 }
 
-                #endregion               
+                #endregion
                 #region Scripts PDF
 
-                anchos = [30f, 70f];
+                anchos = [10f, 30f, 30f, 15f, 15f];
                 var chico = HelperPdf.FontChicoPredeterminado();
                 var normal = HelperPdf.FontNormalPredeterminado();
                 var normalBold = HelperPdf.FontNormalPredeterminado(true);
@@ -72,11 +74,14 @@ namespace gc.api.core.Servicios.Reportes
 
                 // Agregar el evento de pie de página
                 writer.PageEvent = new CustomPdfPageEventHelper(solicitud.Observacion);
-
-                Image? logo = null;
-                if (solicitud.LogoPath != null)
+                Image? logo;
+                if (!string.IsNullOrEmpty(solicitud.LogoPath))
                 {
                     logo = HelperPdf.CargaLogo(solicitud.LogoPath, 20, pdf.PageSize.Height - 10, 20);
+                }
+                else
+                {
+                    logo = null;
                 }
 
                 #endregion
@@ -87,20 +92,34 @@ namespace gc.api.core.Servicios.Reportes
 
                 // Columna 1: Logo
                 PdfPCell celdaLogo;
-                if (logo != null)
+                if (logo == null)
                 {
-                    celdaLogo = HelperPdf.GeneraCelda(logo, false);
+                    celdaLogo = new PdfPCell(new Paragraph("CA", titulo));
                 }
                 else
                 {
-                    celdaLogo = new PdfPCell(new Paragraph(""));
-
+                    celdaLogo = HelperPdf.GeneraCelda(logo, false);
                 }
                 tabla.AddCell(celdaLogo);
 
                 // Columna 2: Datos apilados y título
+                PdfPTable subTabla = new PdfPTable(1);
+                subTabla.WidthPercentage = 100;
 
-                tabla.AddCell(new Paragraph(""));
+                // Datos apilados
+                subTabla.AddCell(HelperPdf.CrearCeldaTexto(_empresaGeco.Nombre, chico));
+                subTabla.AddCell(HelperPdf.CrearCeldaTexto($"{_empresaGeco.Responsabilidad} Ini.Act:{_empresaGeco.InicioActividades.ToShortDateString()}", chico));
+                subTabla.AddCell(HelperPdf.CrearCeldaTexto($"CUIT: {_empresaGeco.CUIT} IB:{_empresaGeco.IngresosBrutos}", chico));
+                subTabla.AddCell(HelperPdf.CrearCeldaTexto($"{_empresaGeco.Direccion}, {_empresaGeco.Localidad}", chico));
+
+                PdfPCell celdaSubTabla = new PdfPCell(subTabla)
+                {
+                    Border = Rectangle.NO_BORDER,
+                    HorizontalAlignment = Element.ALIGN_CENTER,
+                    VerticalAlignment = Element.ALIGN_MIDDLE
+                };
+                tabla.AddCell(celdaSubTabla);
+
                 // Columna 3: Título del informe
                 PdfPCell celdaTitulo = new PdfPCell(new Phrase(solicitud.Titulo, titulo))
                 {
@@ -139,10 +158,33 @@ namespace gc.api.core.Servicios.Reportes
 
                 pdf.Open();
 
+
+                tabla = HelperPdf.GeneraTabla(2, [20f, 80f], 100, 10, 10);
+                #region Cabecera Info de Asiento
+                //fila 1
+                tabla.AddCell(HelperPdf.CeldaSinBorde("Fecha:", subtitulo, Element.ALIGN_RIGHT));
+                tabla.AddCell(HelperPdf.CeldaSinBorde(asiento.Dia_fecha.ToShortDateString(), subtitulo, Element.ALIGN_LEFT));
+                //fila 2
+                tabla.AddCell(HelperPdf.CeldaSinBorde("Tipo Asiento:", subtitulo, Element.ALIGN_RIGHT));
+                tabla.AddCell(HelperPdf.CeldaSinBorde(asiento.Dia_lista, subtitulo, Element.ALIGN_LEFT));
+                // fila 3
+                tabla.AddCell(HelperPdf.CeldaSinBorde("Descripción:", subtitulo, Element.ALIGN_RIGHT));
+                tabla.AddCell(HelperPdf.CeldaSinBorde(asiento.Dia_desc_asiento, subtitulo, Element.ALIGN_LEFT));
+
+                pdf.Add(tabla);
+                #endregion
+
+
                 #region Carga del Listado
 
                 HelperPdf.GeneraCabeceraLista(pdf, _titulos, anchos, normalBold);
-                HelperPdf.GenerarListadoDesdeLista(pdf, regErr, _campos, anchos, chico);
+
+                var totales = new Dictionary<string, decimal>{
+                    { "Debe", asiento.TotalDebe},
+                    {"Haber",asiento.TotalHaber }
+                    };
+
+                HelperPdf.GenerarListadoDesdeLista(pdf, asiento.Detalles, _campos, anchos, chico,false,true,totales);
 
                 #endregion
 
@@ -159,9 +201,9 @@ namespace gc.api.core.Servicios.Reportes
             catch (Exception ex)
             {
                 //_logger.Log(typeof(R001_InformeCuentaCorriente), Level.Error, $"Error al generar el informe de cuenta corriente: {ex.Message}", ex);
-                _logger.LogError(ex, "Error en R009");
+                _logger.LogError(ex, "Error en R001");
 
-                throw new NegocioException("Se produjo un error al intentar generar el Informe de Errores al confirmar a la Contabilidad Definitiva. Para mayores datos ver el log.");
+                throw new NegocioException($"Se produjo un error al intentar generar la Impresión del Asiento {ctaId}. Para mayores datos ver el log.");
             }
 
         }
@@ -169,63 +211,26 @@ namespace gc.api.core.Servicios.Reportes
 
         public string GenerarTxt(ReporteSolicitudDto solicitud)
         {
-            #region Obteniendo registros desde la base de datos
-            string ctaId;
-            List<RespuestaDto> registros = ObtenerDatos(solicitud, out ctaId);
-
-            if (registros == null || registros.Count == 0)
-            {
-                throw new NegocioException($"No se encontraron registros de la {solicitud.Reporte} {ctaId}.");
-            }
-
-            #endregion
-
-            return GeneraTXT(registros, _campos);
+            throw new NotImplementedException("La exportación a TXT no se implementará.");
         }
 
 
 
         public string GenerarXls(ReporteSolicitudDto solicitud)
         {
-            #region Obteniendo registros desde la base de datos
-            string ctaId;
-            List<RespuestaDto> registros = ObtenerDatos(solicitud, out ctaId);
+            throw new NotImplementedException("La exportación a XLS no se implementará.");
 
-            if (registros == null || registros.Count == 0)
-            {
-                throw new NegocioException($"No se encontraron registros de la {solicitud.Reporte} {ctaId}.");
-            }
-
-            #endregion
-
-            return GeneraFileXLS(registros, _titulos, _campos);
         }
 
 
 
-        private List<RespuestaDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string ctaId)
+        private AsientoDetalleDto ObtenerDatos(ReporteSolicitudDto solicitud, out string ctaId)
         {
-
-            //Se obtienen los parámetros del reporte
-            //Se obtiene la cuenta del cliente (ctaId) y la fecha desde (fechaD)
             ctaId = "";
-            DateTime fecha;
-            var fechaStr = solicitud.Parametros.GetValueOrDefault("fecha", "").ToString();
-
-            if (string.IsNullOrEmpty(fechaStr) || !DateTime.TryParse(fechaStr, out fecha))
-            {
-                throw new NegocioException("La fecha desde es inválida.");
-            }
-
-            fecha = fechaStr.ToDateTime();
-
             //Se obtiene el id del usuario (userId) y se asignan los valores de pag y reg
-            string jsonErr = solicitud.Parametros.GetValueOrDefault("errores", "").ToString() ?? "";
-            var resultados = JsonConvert.DeserializeObject<List<RespuestaDto>>(jsonErr);
-
-            return resultados;
+            string dia_movi = solicitud.Parametros.GetValueOrDefault("dia_movi", "").ToString() ?? "";
+            ctaId = dia_movi;
+            return _asTempSv.ObtenerAsientoDetalle(dia_movi);
         }
-
-
     }
 }
