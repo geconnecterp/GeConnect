@@ -27,4 +27,18 @@ namespace gc.infraestructura.Dtos.Asientos
         public int Total_registros { get; set; }
         public int Total_paginas { get; set; }
     }
+
+    public class AsientoDefGridDto : AsientoDefDto
+    {
+        public int Total_registros { get; set; }
+        public int Total_paginas { get; set; }
+    }
+
+    public class AsientoDefDto : AsientoDto
+    {
+        public int eje_nro { get; set; }
+        public string eje_desde { get; set; } = string.Empty;
+        public string eje_hasta { get; set; } = string.Empty;
+        
+    }
 }

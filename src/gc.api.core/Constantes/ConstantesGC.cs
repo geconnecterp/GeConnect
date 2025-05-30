@@ -339,9 +339,13 @@
             public const string SP_EJERCICIOS_LISTA = "SPGECO_Conta_Ejercicios";
             public const string SP_CONTA_USU_ASIENTOS = "SPGECO_Conta_Usu_Asientos";
             public const string SP_TIPO_ASIENTO = "SPGECO_Tipos_Asientos";
-            public const string SP_CONTA_ASIENTO_TMP = "SPGECO_Conta_Asiento_TMP_Lista";
+            public const string SP_CONTA_ASIENTOS_TMP = "SPGECO_Conta_Asiento_TMP_Lista";
             public const string SP_ASIENTO_TMP_PASA = "SPGECO_Conta_Asiento_TMP_Pasa";
             public const string SP_ASIENTO_TMP_DETALLE = "SPGECO_Conta_Asiento_TMP_Datos";
+
+            public const string SP_CONTA_ASIENTOS_DEF = "SPGECO_Conta_Asiento_DEF_Lista";
+            public const string SP_ASIENTO_DEF_DETALLE = "SPGECO_Conta_Asiento_DEF_Datos";
+
             #endregion
         }
     }
