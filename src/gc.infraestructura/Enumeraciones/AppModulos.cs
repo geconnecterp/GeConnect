@@ -2,8 +2,9 @@
 {
     public enum AppModulos
     {
-        CCUENTAS,
-        ASTEMP
+        CCUENTAS, //CONSULTA DE CUENTAS COMERCIALES
+        ASTEMP, //ASIENTOS TEMPORALES
+        ASDEF, //ASIENTOS DEFINITIVOS
     }
 
     public enum AppReportes
