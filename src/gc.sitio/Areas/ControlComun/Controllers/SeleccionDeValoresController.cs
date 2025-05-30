@@ -214,6 +214,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 					default:
 						return new Resultado() { Exito = false, Mensaje = "Variable no configurada." };
 				}
+				return new Resultado() { Exito = false, Mensaje = "Objeto origen vacío." };
 			}
 			catch (Exception)
 			{
