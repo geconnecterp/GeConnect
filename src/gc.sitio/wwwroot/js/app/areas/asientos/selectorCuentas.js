@@ -187,7 +187,7 @@
                     "icon": "bx bx-dollar-circle"
                 },
                 "egresos": {
-                    "icon": "bx bx-money-withdraw"
+                    "icon": "bx bx-print-dollar"
                 },
                 "default": {
                     "icon": "bx bx-folder"

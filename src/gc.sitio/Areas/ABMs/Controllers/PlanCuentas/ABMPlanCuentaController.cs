@@ -103,7 +103,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.PlanCuenta
         }
 
         [HttpPost]
-        public async Task<JsonResult> BuscarCuenta(string id)
+        public async Task<JsonResult> BuscarCuenta([FromBody] RequestId req)
         {
             RespuestaGenerica<EntidadBase> response = new();
 
@@ -115,7 +115,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.PlanCuenta
                     return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
                 }
 
-                var cta = await _pcuentaSv.ObtenerCuentaPorId(id, TokenCookie);
+                var cta = await _pcuentaSv.ObtenerCuentaPorId(req.Id, TokenCookie);
 
                 if (!cta.Ok )
                 {
