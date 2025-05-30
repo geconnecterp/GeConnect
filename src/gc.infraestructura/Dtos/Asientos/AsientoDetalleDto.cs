@@ -1,5 +1,9 @@
 ﻿namespace gc.infraestructura.Dtos.Asientos
 {
+    public class AsientoDefDetalleDto:AsientoDetalleDto
+    {
+        public int eje_nro { get; set; }
+    }
     public class AsientoDetalleDto
     {
         public string Dia_movi { get; set; } = string.Empty;
@@ -40,6 +44,10 @@
         public string dia_desc { get; set; } = string.Empty;
         public decimal debe { get; set; }
         public decimal haber { get; set; }
+    }
+     public class AsientoDefPlanoDto : AsientoPlanoDto
+    {
+        public int eje_nro { get; set; }
     }
 
     public class AsientoAccionDto

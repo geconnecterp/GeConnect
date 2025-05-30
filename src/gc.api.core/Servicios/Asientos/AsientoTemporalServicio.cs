@@ -18,7 +18,7 @@ namespace gc.api.core.Servicios.Asientos
 
         public List<AsientoGridDto> ObtenerAsientos(QueryAsiento query)
         {
-            var sp = ConstantesGC.StoredProcedures.SP_CONTA_ASIENTO_TMP;
+            var sp = ConstantesGC.StoredProcedures.SP_CONTA_ASIENTOS_TMP;
             var ps = new List<SqlParameter>();
 
             // Evaluar y agregar parámetros al procedimiento almacenado
