@@ -246,21 +246,21 @@ function AceptarDesdeValidPrev() {
 		$("#CtaDesc").val(ctaDescSelected);
 		MostrarDatosDeCuenta(true);
 		setTimeout(() => {
-			CargarObligacionesOCreditos("D"); //Obligaciones
+			CargarObligacionesOCreditos("Obligaciones"); //Obligaciones
 		}, 500);
 		setTimeout(() => {
-			CargarObligacionesOCreditos("H"); //Créditos
+			CargarObligacionesOCreditos("Creditos"); //Créditos
 		}, 500);
 		$("#btnAbmCancelar").prop("disabled", false);
 	});
 }
 
-function CargarObligacionesOCreditos(tipo) {
+function CargarObligacionesOCreditos(tipo_carga) {
 	AbrirWaiting("Cargando....");
-	var data = { tipo };
-	PostGen(data, cargarObligacionesOCreditosURL, function (obj) {
+	var data = { tipo_carga };
+	PostGenHtml(data, cargarObligacionesOCreditosURL, function (obj) {
 		CerrarWaiting();
-		if (tipo == "D") {
+		if (tipo_carga == "Obligaciones") {
 			$("#divObligaciones").html(obj);
 		}
 		else {

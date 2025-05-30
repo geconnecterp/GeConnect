@@ -7,13 +7,22 @@
 	@Html.HiddenFor(x => x.ctaf_denominacion)
 	@Html.HiddenFor(x => x.ban_razon_social)
 	<div class="table-responsive table-wrapper-200-full" id="containerValoresEnCartera" style="padding-right: 0px;">
-		<table class="table table-bordered table-hover" id="tbValoresEnCartera">
+		<table class="table table-bordered table-hover" id="tbValoresEnCartera" disabled>
 			<thead class="table-dark">
 				<tr>
-					<th style="width:20%;" class="col-header-small align-center tiny-row">Fecha</th>
-					<th style="width:40%;" class="col-header-small align-center tiny-row">Banco</th>
+					<th style="width:20%;" class="col-header-small align-center tiny-row">Fecha Valor</th>
+					<th style="width:40%;" class="col-header-small align-center tiny-row">Banco Carga</th>
+					<th style="width:20%;" class="col-header-small align-center tiny-row">Banco</th>
 					<th style="width:20%;" class="col-header-small align-center tiny-row">Nro. Cheque</th>
-					<th style="width:20%;" class="col-header-small align-center tiny-row">Saldo</th>
+					<th style="width:20%;" class="col-header-small align-center tiny-row">Importe</th>
+					<th style="width:1%;"><input name="select_all" value="1" type="checkbox"></th>
+					<th style="width:0%; display:none;">ins_dato1_desc</th>
+					<th style="width:0%; display:none;">ins_dato2_desc</th>
+					<th style="width:0%; display:none;">fc_dato3_valor</th>
+					<th style="width:0%; display:none;">ins_dato3_desc</th>
+					<th style="width:0%; display:none;">fc_compte</th>
+					<th style="width:0%; display:none;">fc_item</th>
+					<th style="width:0%; display:none;">dia_movi</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -21,12 +30,21 @@
 				{
 					@foreach (var item in Model.GrillaValoresEnCartera.ListaDatos)
 					{
-						@* <tr onclick="selectReg(this, 'tbFinanciero')" ondblclick="selectRegDbl(this, 'tbFinanciero')"> *@
+						var nombre = "chk" + item.fc_dato2_valor;
 						<tr onclick="seleccionarValoresEnCartera(this)">
-							<td class="@Model.GrillaValoresEnCartera.ObtenerClase(item.Fecha) tiny-row">@Model.GrillaValoresEnCartera.FormatearDato(item.Fecha, FormatDato.Fecha)</td>
-							<td class="@Model.GrillaValoresEnCartera.ObtenerClase(item.Banco) tiny-row">@Model.GrillaValoresEnCartera.FormatearDato(item.Banco, FormatDato.Ninguno)</td>
-							<td class="@Model.GrillaValoresEnCartera.ObtenerClase(item.NroCheque) tiny-row">@Model.GrillaValoresEnCartera.FormatearDato(item.NroCheque, FormatDato.Ninguno)</td>
-							<td class="@Model.GrillaValoresEnCartera.ObtenerClase(item.Importe) tiny-row">@Model.GrillaValoresEnCartera.FormatearDato(item.Importe, FormatDato.Monto)</td>
+							<td class="@Model.GrillaValoresEnCartera.ObtenerClase(item.fc_fecha_valor) tiny-row">@Model.GrillaValoresEnCartera.FormatearDato(item.fc_fecha_valor, FormatDato.Fecha)</td>
+							<td class="@Model.GrillaValoresEnCartera.ObtenerClase(item.fc_fecha) tiny-row">@Model.GrillaValoresEnCartera.FormatearDato(item.fc_fecha, FormatDato.Fecha)</td>
+							<td class="@Model.GrillaValoresEnCartera.ObtenerClase(item.fc_dato1_valor) tiny-row">@Model.GrillaValoresEnCartera.FormatearDato(item.fc_dato1_valor, FormatDato.Ninguno)</td>
+							<td class="@Model.GrillaValoresEnCartera.ObtenerClase(item.fc_dato2_valor) tiny-row">@Model.GrillaValoresEnCartera.FormatearDato(item.fc_dato2_valor, FormatDato.Ninguno)</td>
+							<td class="@Model.GrillaValoresEnCartera.ObtenerClase(item.fc_importe) tiny-row">@Model.GrillaValoresEnCartera.FormatearDato(item.fc_importe, FormatDato.Monto)</td>
+							<td><input type="checkbox" name=@nombre /></td>
+							<td style="display:none;">@item.ins_dato1_desc</td>
+							<td style="display:none;">@item.ins_dato2_desc</td>
+							<td style="display:none;">@item.fc_dato3_valor</td>
+							<td style="display:none;">@item.ins_dato3_desc</td>
+							<td style="display:none;">@item.fc_compte</td>
+							<td style="display:none;">@item.fc_item</td>
+							<td style="display:none;">@item.dia_movi</td>
 						</tr>
 					}
 				}

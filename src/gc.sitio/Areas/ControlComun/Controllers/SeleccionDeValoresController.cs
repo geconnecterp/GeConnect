@@ -101,6 +101,38 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 		}
 
 		[HttpPost]
+		public IActionResult CargarGrillaFinancieroCarteraEnSeleccionDeValores(string ctaf_id, string cta_id)
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			try
+			{
+				var model = new EdicionTipoValoresDeTercerosEnCarteraModel();
+				var finCarLista = _financieroServicio.GetFinancieroCarteraParaSeleccionDeValores(ctaf_id, cta_id, TokenCookie);
+				model.GrillaValoresEnCartera = ObtenerGridCoreSmart<FinancieroCarteraDto>(finCarLista);
+				return View("~/areas/ControlComun/views/SeleccionDeValores/_edicion_tipo_terceros_en_cartera.cshtml", model);
+			}
+			catch (NegocioException ex)
+			{
+				response.Mensaje = ex.Message;
+				response.Ok = false;
+				response.EsWarn = true;
+				response.EsError = false;
+				return PartialView("_gridMensaje", response);
+			}
+			catch (Exception ex)
+			{
+
+				string msg = "Error en la obtención de la configuración para el Gestor Documental.";
+				_logger?.LogError(ex, msg);
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
 		public IActionResult CargarSeccionEdicionEnSeleccionDeValores(string tcf_id)
 		{
 			RespuestaGenerica<EntidadBase> response = new();
@@ -114,7 +146,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 					case "CH":
 						var modelCH = new EdicionTipoValoresDeTercerosEnCarteraModel()
 						{
-							GrillaValoresEnCartera = new GridCoreSmart<ValoresEnCarteraDto>()
+							GrillaValoresEnCartera = new GridCoreSmart<FinancieroCarteraDto>()
 						};
 						return View("~/areas/ControlComun/views/SeleccionDeValores/_edicion_tipo_terceros_en_cartera.cshtml", modelCH);
 					case "EC":
@@ -159,8 +191,8 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 			try
 			{
 				var resultado = ValidarItemParaAgregarAColeccion(req);
-				response.Ok = true;
-				response.Mensaje = "Valor cargado correctamente.";
+				response.Ok = resultado.Exito;
+				response.Mensaje = resultado.Mensaje;
 				return Json(response);
 			}
 			catch (NegocioException ex)
@@ -200,27 +232,128 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 				{
 					case "BA": //Transferencias Bancarias 
 						var objBA = (EdicionTipoTransferenciaBancariaModel)req.Data;
-
+						newItem = ObtenerItem(objBA);
 						break;
 					case "CH": //Valores de Terceros en Cartera 
-						var objCH = (EdicionTipoValoresDeTercerosEnCarteraModel)req.Data;
+						var objCH = (FinancieroCarteraModel)req.Data;
+						newItem = ObtenerItem(objCH);
 						break;
 					case "EC": //Emisión de Cheques 
 						var objEC = (EdicionTipoEmisionChequesModel)req.Data;
+						newItem = ObtenerItem(objEC);
 						break;
 					case "EF": //Efectivos o Cajas 
 						var objEF = (EdicionTipoEfectivoCajasModel)req.Data;
+						newItem = ObtenerItem(objEF);
 						break;
 					default:
 						return new Resultado() { Exito = false, Mensaje = "Variable no configurada." };
 				}
-				return new Resultado() { Exito = false, Mensaje = "Objeto origen vacío." };
+				var listaTemp = OPValoresDesdeObligYCredLista;
+				listaTemp.Add(newItem);
+				OPValoresDesdeObligYCredLista = listaTemp;
+				return new Resultado() { Exito = true, Mensaje = "Valores agregados con éxito." };
 			}
 			catch (Exception)
 			{
 				return new Resultado() { Exito = false, Mensaje = "Ha ocurrido un error al intentar validar y agregar el valor a la colección." };
 			}
 
+		}
+
+		private ValoresDesdeObligYCredDto ObtenerItem(FinancieroCarteraModel source)
+		{
+			var ret = new ValoresDesdeObligYCredDto
+			{
+				tcf_id = "CH",
+				ctaf_id = source.ctaf_id,
+				ctaf_denominacion = source.ctaf_denominacion,
+				op_dato1_valor = source.fc_dato1_valor ?? " ",
+				op_dato1_desc = source.ins_dato1_desc ?? " ",
+				op_dato2_valor = source.fc_dato2_valor ?? " ",
+				op_dato2_desc = source.ins_dato2_desc ?? " ",
+				op_dato3_valor = source.fc_dato3_valor ?? " ",
+				op_dato3_desc = source.ins_dato3_desc ?? " ",
+				op_importe = source.fc_importe,
+				op_fecha_valor = source.fc_fecha_valor,
+				fc_compte = source.fc_compte,
+				fc_item = source.fc_item,
+				fc_dia_movi = source.dia_movi,
+				fc_cta_id = source.cta_id ?? string.Empty,
+			};
+			ObtenerConceptoValor(ret);
+			return ret;
+		}
+
+		private ValoresDesdeObligYCredDto ObtenerItem(EdicionTipoEfectivoCajasModel source)
+		{
+			var ret = new ValoresDesdeObligYCredDto
+			{
+				tcf_id = "EF",
+				ctaf_id = source.ctaf_id,
+				ctaf_denominacion = source.ctaf_denominacion,
+				op_dato1_valor = source.ban_razon_social,
+				op_dato1_desc = " ",
+				op_dato2_valor = " ",
+				op_dato2_desc = " ",
+				op_dato3_valor = " ",
+				op_dato3_desc = " ",
+				op_importe = source.Importe,
+			};
+			ObtenerConceptoValor(ret);
+			return ret;
+		}
+
+		private ValoresDesdeObligYCredDto ObtenerItem(EdicionTipoEmisionChequesModel source)
+		{
+			var ret = new ValoresDesdeObligYCredDto
+			{
+				tcf_id = "EC",
+				ctaf_id = source.ctaf_id,
+				ctaf_denominacion = source.ctaf_denominacion,
+				automatico = source.Automatico ? 'S' : 'N',
+				op_dato1_valor = source.ban_razon_social,
+				op_dato1_desc = "Banco",
+				op_dato2_valor = source.NroCheque,
+				op_dato2_desc = "N° Cheque",
+				op_dato3_valor = " ",
+				op_dato3_desc = " ",
+				op_importe = source.Importe,
+				op_fecha_valor = source.Fecha,
+				concepto_valor = source.ANombreDe
+			};
+			ObtenerConceptoValor(ret);
+			return ret;
+		}
+
+		private ValoresDesdeObligYCredDto ObtenerItem(EdicionTipoTransferenciaBancariaModel source)
+		{
+			var ret = new ValoresDesdeObligYCredDto
+			{
+				tcf_id = "BA",
+				ctaf_id = source.ctaf_id,
+				ctaf_denominacion = source.ctaf_denominacion,
+				op_dato1_valor = source.ban_razon_social,
+				op_dato1_desc = "Banco",
+				op_dato2_valor = source.NroTransferencia,
+				op_dato2_desc = "N° Transferencia",
+				op_dato3_valor = " ",
+				op_dato3_desc = " ",
+				op_importe = source.Importe,
+				op_fecha_valor = source.Fecha,
+				concepto_valor = string.Empty
+			};
+			ObtenerConceptoValor(ret);
+			return ret;
+		}
+
+		private void ObtenerConceptoValor(ValoresDesdeObligYCredDto source)
+		{
+			var dato1_valor = string.IsNullOrWhiteSpace(source.op_dato1_valor) && string.IsNullOrWhiteSpace(source.op_dato1_desc) ? string.Empty : source.op_dato1_valor;
+			var dato2_valor = string.IsNullOrWhiteSpace(source.op_dato2_valor) && string.IsNullOrWhiteSpace(source.op_dato2_desc) ? string.Empty : $"{source.op_dato2_desc}:{source.op_dato2_valor}";
+			var dato3_valor = string.IsNullOrWhiteSpace(source.op_dato3_valor) && string.IsNullOrWhiteSpace(source.op_dato3_desc) ? string.Empty : $"{source.op_dato3_desc}:{source.op_dato3_valor}";
+			var dato_fecha = source.op_fecha_valor != null ? $"Fecha Val.:{source.op_fecha_valor.Value:dd/MM/yyyy}" : string.Empty;
+			source.concepto_valor = $"{dato1_valor} {dato2_valor} {dato3_valor} {dato_fecha}";
 		}
 		#endregion
 

@@ -27,7 +27,7 @@
 				@foreach (var item in Model.ListaDatos)
 				{
 					@* <tr onclick="selectReg(this, 'tbFinanciero')" ondblclick="selectRegDbl(this, 'tbFinanciero')"> *@
-					<tr onclick="seleccionarFinanciero(this)">
+					<tr onclick="seleccionarFinanciero(this)" ondblclick="seleccionarFinancieroDbl(this)">
 						<td class="@Model.ObtenerClase(item.ctaf_denominacion) tiny-row">@Model.FormatearDato(item.ctaf_denominacion, FormatDato.Ninguno)</td>
 						<td class="@Model.ObtenerClase(item.ctaf_saldo) tiny-row">@Model.FormatearDato(item.ctaf_saldo, FormatDato.Monto)</td>
 						<td style="display:none;">@item.ctaf_id</td>

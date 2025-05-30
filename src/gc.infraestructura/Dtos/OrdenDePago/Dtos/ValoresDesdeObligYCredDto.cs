@@ -15,7 +15,7 @@ namespace gc.infraestructura.Dtos.OrdenDePago.Dtos
 		public string op_dato3_valor { get; set; } = string.Empty;
 		public string op_dato3_desc { get; set; } = string.Empty;
 		public decimal op_importe { get; set; } = 0.00M;
-		public DateTime op_fecha_valor { get; set; }
+		public DateTime? op_fecha_valor { get; set; }
 		public string fc_compte { get; set; } = string.Empty;
 		public int fc_item { get; set; }
 		public string fc_dia_movi { get; set; } = string.Empty;

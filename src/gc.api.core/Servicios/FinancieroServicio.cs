@@ -85,5 +85,17 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<FinancieroDesdeSeleccionDeTipoDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<FinancieroCarteraDto> GetFinancieroCarteraParaSeleccionDeValores(string ctaf_id, string cta_id)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OP_SV_CARTERA;
+			var ps = new List<SqlParameter>()
+			{
+				new("@ctaf_id",ctaf_id),
+				new("@cta_id",cta_id)
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<FinancieroCarteraDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

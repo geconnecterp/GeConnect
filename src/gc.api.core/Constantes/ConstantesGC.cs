@@ -164,6 +164,7 @@
 			public const string SP_OP_VALORES = "SPGECO_OP_Valores";
             public const string SP_OP_SV_TCF = "SPGECO_OP_SV_tcf";
 			public const string SP_OP_SV_CTAF = "SPGECO_OP_SV_Ctaf";
+			public const string SP_OP_SV_CARTERA = "SPGECO_OP_SV_Cartera";
 			#endregion
 
 			#region Cliente

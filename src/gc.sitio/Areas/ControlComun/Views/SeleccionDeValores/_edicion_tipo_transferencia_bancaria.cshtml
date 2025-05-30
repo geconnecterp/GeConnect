@@ -10,25 +10,25 @@
 	<div class="row mt-1">
 		<div class="input-group input-group-sm">
 			<span class="input-group-text fixed-lbl-for-abm-100">Nro. Transf.:</span>
-			<input type="text" id="txtNroCheque" asp-for="NroTransferencia" class="form-control activable" />
+			<input type="text" id="txtNroTransferencia" asp-for="NroTransferencia" class="form-control activable inputEditable" disabled />
 		</div>
 	</div>
 	<div class="row mt-1">
 		<div class="input-group input-group-sm">
 			<span class="input-group-text fixed-lbl-for-abm-100">Fecha: </span>
-			@Html.TextBoxFor(x => x.Fecha, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeFecha(this);" })
+			@Html.TextBoxFor(x => x.Fecha, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeFecha(this);", disabled = "disabled" })
 		</div>
 	</div>
 	<div class="row mt-1">
 		<div class="input-group input-group-sm">
 			<span class="input-group-text fixed-lbl-for-abm-70">Concepto:</span>
-			<input type="text" asp-for="Concepto" class="form-control activable inputEditable" />
+			<input type="text" asp-for="Concepto" class="form-control activable inputEditable" disabled />
 		</div>
 	</div>
 	<div class="row mt-1">
 		<div class="input-group input-group-sm">
 			<span class="input-group-text fixed-lbl-for-abm-70">Importe:</span>
-			<input type="text" asp-for="Importe" class="form-control activable inputEditable" />
+			<input type="text" asp-for="Importe" class="form-control activable inputEditable" disabled />
 		</div>
 	</div>
 </div>

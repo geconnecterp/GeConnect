@@ -152,13 +152,19 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		[HttpPost]
-		public IActionResult CargarObligacionesOCreditos(char tipo)
+		public IActionResult CargarObligacionesOCreditos(string tipo_carga)
 		{
 			try
 			{
 				var auth = EstaAutenticado;
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				char tipo;
+				if (tipo_carga.Equals("Obligaciones"))
+					tipo = 'D'; // Obligaciones
+				else
+					tipo = 'H'; // Créditos
 
 				var datos = _ordenDePagoServicio.GetOPDebitoYCreditoDelProveedor(CtaIdSelected, tipo, false, AdministracionId, UserName, TokenCookie);
 				var model = ObtenerGridCoreSmart<OPDebitoYCreditoDelProveedorDto>(datos);

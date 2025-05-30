@@ -10,9 +10,9 @@
 	<div class="row mt-1">
 		<div class="input-group input-group-sm">
 			<span class="input-group-text fixed-lbl-for-abm-100">Nro. Cheque:</span>
-			<input type="text" id="txtNroCheque" asp-for="NroCheque" class="form-control activable" />
+			<input type="text" id="txtNroCheque" asp-for="NroCheque" class="form-control activable inputEditable" disabled />
 			<div class="form-check form-check-inline form-switch mb-2">
-				<input class="form-check-input activable" type="checkbox" asp-for="Automatico" value="" id="chkCtlFis">
+				<input class="form-check-input activable" type="checkbox" asp-for="Automatico" value="" id="chkCtlFis" disabled>
 				<label class="form-check-label" for="chkCtlFis"> Automático.</label>
 			</div>
 		</div>
@@ -20,19 +20,19 @@
 	<div class="row mt-1">
 		<div class="input-group input-group-sm">
 			<span class="input-group-text fixed-lbl-for-abm-100">Fecha: </span>
-			@Html.TextBoxFor(x=>x.Fecha, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeFechaCompte(this);" })
+			@Html.TextBoxFor(x => x.Fecha, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeFechaCompte(this);", disabled = "disabled" })
 		</div>
 	</div>
 	<div class="row mt-1">
 		<div class="input-group input-group-sm">
 			<span class="input-group-text fixed-lbl-for-abm-100">A Nombre de:</span>
-			<input type="text" asp-for="ANombreDe" class="form-control activable inputEditable" />
+			<input type="text" asp-for="ANombreDe" class="form-control activable inputEditable" disabled />
 		</div>
 	</div>
 	<div class="row mt-1">
 		<div class="input-group input-group-sm">
 			<span class="input-group-text fixed-lbl-for-abm-100">Importe:</span>
-			<input type="text" asp-for="Importe" class="form-control activable inputEditable" />
+			<input type="text" asp-for="Importe" class="form-control activable inputEditable" disabled />
 		</div>
 	</div>
 </div>
