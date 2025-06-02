@@ -462,7 +462,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		}
 
 		[HttpPost]
-		public JsonResult DataOpsMedioDePago(MPAbmValidationModel mp, string destinoDeOperacion, char tipoDeOperacion)
+		public JsonResult DataOpsMedioDePago([FromBody] MPAbmValidationModel mp, string destinoDeOperacion, char tipoDeOperacion)
 		{
 			try
 			{
@@ -490,7 +490,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		}
 
 		[HttpPost]
-		public JsonResult DataOpsOpcionesCuota(MPOpcionCuotaAbmValidationModel oc, string destinoDeOperacion, char tipoDeOperacion)
+		public JsonResult DataOpsOpcionesCuota([FromBody] MPOpcionCuotaAbmValidationModel oc, string destinoDeOperacion, char tipoDeOperacion)
 		{
 			try
 			{
@@ -518,7 +518,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		}
 
 		[HttpPost]
-		public JsonResult DataOpsCuentaFinYContable(MPCuentaFinYContableAbmValidationModel cc, string destinoDeOperacion, char tipoDeOperacion)
+		public JsonResult DataOpsCuentaFinYContable(	[FromBody] MPCuentaFinYContableAbmValidationModel cc, string destinoDeOperacion, char tipoDeOperacion)
 		{
 			try
 			{
@@ -546,7 +546,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.MedioDePago
 		}
 
 		[HttpPost]
-		public JsonResult DataOpsPos(MPPosAbmValidationModel pos, string destinoDeOperacion, char tipoDeOperacion)
+		public JsonResult DataOpsPos([FromBody] MPPosAbmValidationModel pos, string destinoDeOperacion, char tipoDeOperacion)
 		{
 			try
 			{

@@ -160,7 +160,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		}
 
 		[HttpPost]
-		public JsonResult DataOpsSector(SectorAbmValidationModel sector, string destinoDeOperacion, char tipoDeOperacion)
+		public JsonResult DataOpsSector([FromBody]SectorAbmValidationModel sector, string destinoDeOperacion, char tipoDeOperacion)
 		{
 			try
 			{

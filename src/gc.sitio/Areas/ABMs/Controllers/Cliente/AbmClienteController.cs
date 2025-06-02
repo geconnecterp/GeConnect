@@ -566,7 +566,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
         /// <param name="tipoDeOperacion"></param>
         /// <returns></returns>
         [HttpPost]
-        public JsonResult DataOpsCliente(CuentaAbmValidationModel cuenta, string destinoDeOperacion, char tipoDeOperacion)
+        public JsonResult DataOpsCliente([FromBody] CuentaAbmValidationModel cuenta, string destinoDeOperacion, char tipoDeOperacion)
         {
             try
             {
@@ -651,7 +651,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
         /// <param name="tipoDeOperacion"></param>
         /// <returns></returns>
         [HttpPost]
-        public JsonResult DataOpsFormaDePago(FormaDePagoAbmValidationModel fp, string destinoDeOperacion, char tipoDeOperacion)
+        public JsonResult DataOpsFormaDePago([FromBody] FormaDePagoAbmValidationModel fp, string destinoDeOperacion, char tipoDeOperacion)
         {
             try
             {
@@ -718,7 +718,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
         /// <param name="tipoDeOperacion"></param>
         /// <returns></returns>
         [HttpPost]
-        public JsonResult DataOpsOtrosContactos(OtroContactoAbmValidationModel oc, string destinoDeOperacion, char tipoDeOperacion)
+        public JsonResult DataOpsOtrosContactos([FromBody] OtroContactoAbmValidationModel oc, string destinoDeOperacion, char tipoDeOperacion)
         {
             try
             {
@@ -786,7 +786,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
         /// <param name="tipoDeOperacion"></param>
         /// <returns></returns>
         [HttpPost]
-        public JsonResult DataOpsNotas(NotaAbmValidationModel no, string destinoDeOperacion, char tipoDeOperacion)
+        public JsonResult DataOpsNotas([FromBody] NotaAbmValidationModel no, string destinoDeOperacion, char tipoDeOperacion)
         {
             try
             {
@@ -855,7 +855,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
         /// <param name="tipoDeOperacion"></param>
         /// <returns></returns>
         [HttpPost]
-        public JsonResult DataOpsObservaciones(ObservacionAbmValidationModel obs, string destinoDeOperacion, char tipoDeOperacion)
+        public JsonResult DataOpsObservaciones([FromBody] ObservacionAbmValidationModel obs, string destinoDeOperacion, char tipoDeOperacion)
         {
             try
             {

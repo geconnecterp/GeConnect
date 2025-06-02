@@ -1462,7 +1462,22 @@ function Guardar() {
             default:
         }
         var data = ObtenerDatosParaJson(destinoDeOperacion, tipoDeOperacion);
-        PostGen(data, url, function (obj) {
+
+        // Separar modelo y parámetros extra
+        var modelo = { ...data };
+        var params = {};
+        ['destinoDeOperacion', 'tipoDeOperacion'].forEach(function (key) {
+            if (key in modelo) {
+                params[key] = modelo[key];
+                delete modelo[key];
+            }
+        });
+
+        var queryString = Object.keys(params).length > 0
+            ? '?' + $.param(params)
+            : '';
+
+        PostGen(modelo, url + queryString, function (obj) {
             if (obj.error === true) {
                 AbrirMensaje("ATENCIÓN", obj.msg, function () {
                     $("#msjModal").modal("hide");
