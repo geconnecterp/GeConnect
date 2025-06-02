@@ -421,7 +421,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
         }
 
         [HttpPost]
-        public async Task<JsonResult> ConfirmarAbmProducto(ProductoDto prod, char accion)
+        public async Task<JsonResult> ConfirmarAbmProducto([FromBody] ProductoDto prod, char accion)
         {
             try
             {

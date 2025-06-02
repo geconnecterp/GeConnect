@@ -606,7 +606,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		/// <param name="tipoDeOperacion"></param>
 		/// <returns></returns>
 		[HttpPost]
-		public JsonResult DataOpsProveedor(ProveedorAbmValidationModel proveedor, string destinoDeOperacion, char tipoDeOperacion)
+		public JsonResult DataOpsProveedor([FromBody] ProveedorAbmValidationModel proveedor, string destinoDeOperacion, char tipoDeOperacion)
 		{
 			try
 			{
@@ -687,7 +687,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		/// <param name="tipoDeOperacion"></param>
 		/// <returns></returns>
 		[HttpPost]
-		public JsonResult DataOpsProveedorFamilia(ProveedorFamiliaAbmValidationModel familia, string destinoDeOperacion, char tipoDeOperacion)
+		public JsonResult DataOpsProveedorFamilia([FromBody] ProveedorFamiliaAbmValidationModel familia, string destinoDeOperacion, char tipoDeOperacion)
 		{
 			try
 			{

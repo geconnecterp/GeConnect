@@ -339,15 +339,19 @@ function activarControles(act) {
 function confirmarOperacionAbmProducto() {
     AbrirWaiting("Completando proceso...");
     var data = {};
+    let act = "";
     switch (tabAbm) {
         case 1:
             data = confirmarDatosTab01();
+            act = accion;
             break;
         case 2:
             data = confirmarDatosTab02();
+            act = accion02
             break;
         case 3:
             data = confirmarDatosTab03();
+            act = accion03;
             break;
         default:
             return false;
@@ -365,7 +369,7 @@ function confirmarOperacionAbmProducto() {
             break;
         default:
     }
-    PostGen(data, urlabm, function (obj) {
+    PostGen(data, urlabm +"?accion="+act, function (obj) {
         if (obj.error === true) {
             CerrarWaiting();
             AbrirMensaje("ALGO NO SALIO BIEN!", obj.msg, function () {

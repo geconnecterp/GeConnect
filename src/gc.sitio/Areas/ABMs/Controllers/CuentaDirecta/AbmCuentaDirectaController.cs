@@ -188,7 +188,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.CuentaDirecta
 		}
 
 		[HttpPost]
-		public JsonResult DataOpsCuentaDirecta(CuentaDirectaAbmValidationModel cd, string destinoDeOperacion, char tipoDeOperacion)
+		public JsonResult DataOpsCuentaDirecta([FromBody] CuentaDirectaAbmValidationModel cd, string destinoDeOperacion, char tipoDeOperacion)
 		{
 			try
 			{

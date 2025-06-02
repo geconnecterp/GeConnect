@@ -178,7 +178,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Banco
 		}
 
 		[HttpPost]
-		public JsonResult DataOpsBanco(BancoAbmValidationModel banco, string destinoDeOperacion, char tipoDeOperacion)
+		public JsonResult DataOpsBanco([FromBody]BancoAbmValidationModel banco, string destinoDeOperacion, char tipoDeOperacion)
 		{
 			try
 			{
