@@ -8,6 +8,6 @@ namespace gc.infraestructura.Dtos.Gen
 {
     public class RequestId
     {
-        public string Id { get; set; } = string.Empty;
+        public string Dato { get; set; } = string.Empty;
     }
 }

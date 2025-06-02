@@ -65,7 +65,8 @@ namespace gc.infraestructura.Constantes
             public const string PLAN_CUENTA = "PLAN_CUENTA";
 			public const string VALORIZACION_COMPROBANTE = "VALORIZACION_COMPROBANTE";
             public const string ASIENTO_TEMPORAL = "ASIENTO_TEMPORAL";
-			public const string ORDEN_DE_PAGO_A_PROVEEDORES = "ORDEN_DE_PAGO_A_PROVEEDORES";
+            public const string ASIENTO_DEFINITIVO = "ASIENTO_DEFINITIVO";
+            public const string ORDEN_DE_PAGO_A_PROVEEDORES = "ORDEN_DE_PAGO_A_PROVEEDORES";
 		}
     }
 }

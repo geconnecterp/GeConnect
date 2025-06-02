@@ -197,8 +197,6 @@ namespace gc.sitio.core.Servicios.Implementacion.Asientos
 
         // AsientoTemporalServicio.cs en gc.sitio.core
         // Añade este método a la clase existente:
-
-        /// <inheritdoc/>
         public async Task<RespuestaGenerica<AsientoDetalleDto>> ObtenerAsientoDetalle(string moviId, string token)
         {
             try
@@ -266,7 +264,6 @@ namespace gc.sitio.core.Servicios.Implementacion.Asientos
                 return new RespuestaGenerica<AsientoDetalleDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener el detalle del asiento." };
             }
         }
-
     }
 }
 

@@ -80,6 +80,7 @@ namespace gc.sitio.core.Extensions
 			services.AddScoped<ITipoDtoValorizaRprServicio, TipoDtoValorizaRprServicio>();
 			services.AddScoped<IAsientoFrontServicio, AsientoFrontServicio>();
 			services.AddScoped<IAsientoTemporalServicio, AsientoTemporalServicio>();
+			services.AddScoped<IAsientoDefinitivoServicio, AsientoDefinitivoServicio>();
 
 			services.AddScoped<IOrdenDePagoServicio, OrdenDePagoServicio>();
 

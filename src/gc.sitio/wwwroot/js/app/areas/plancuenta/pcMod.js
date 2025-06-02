@@ -182,7 +182,7 @@ function buscarPlanCuenta(pagina) {
                 console.log("Nodo seleccionado con ID:", nodoId);
                
                 // Realizamos la llamada AJAX con PostGen
-                var requestData = { id: nodoId };
+                var requestData = { dato: nodoId };
                 
                 AbrirWaiting("Buscando datos de la cuenta...");
                 PostGen(requestData, buscarCuentaUrl, function (obj) {
