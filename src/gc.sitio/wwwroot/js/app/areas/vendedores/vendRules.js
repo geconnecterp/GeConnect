@@ -189,7 +189,7 @@ function buscarVendedor(data) {
 
 function confirmarOperacionAbmVendedor() {
     AbrirWaiting("Completando proceso...");
-    var data = {};
+    let data = {};
     switch (tabAbm) {
         case 1:
             data = confirmarDatosTab01();
@@ -204,8 +204,9 @@ function confirmarOperacionAbmVendedor() {
             break;
         
         default:
-    }
-    PostGen(data, urlabm, function (obj) {
+    }   
+
+    PostGen(data, urlabm + "?accion="+accion, function (obj) {
         if (obj.error === true) {
             CerrarWaiting();
             AbrirMensaje("ALGO NO SALIO BIEN!", obj.msg, function () {
@@ -324,6 +325,6 @@ function confirmarDatosTab01() {
     var ve_mail = $("#ve_mail").val();
     var ve_celu = $("#ve_celu").val();
 
-    var data = { ve_id, ve_activo, ve_nombre, ve_comision, ve_mail, ve_celu,accion };
+    var data = { ve_id, ve_activo, ve_nombre, ve_comision, ve_mail, ve_celu};
     return data;
 }

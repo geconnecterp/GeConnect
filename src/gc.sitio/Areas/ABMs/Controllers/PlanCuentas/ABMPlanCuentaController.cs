@@ -115,7 +115,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.PlanCuenta
                     return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
                 }
 
-                var cta = await _pcuentaSv.ObtenerCuentaPorId(req.Id, TokenCookie);
+                var cta = await _pcuentaSv.ObtenerCuentaPorId(req.Dato, TokenCookie);
 
                 if (!cta.Ok )
                 {

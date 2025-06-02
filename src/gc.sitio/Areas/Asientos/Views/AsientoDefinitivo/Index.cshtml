@@ -1,0 +1,88 @@
+﻿@using gc.infraestructura.Dtos.Asientos
+@{
+    Layout = "~/views/shared/_Layout.cshtml";
+
+    var filtro = new QueryAsiento() { Modelo = ModeloFilter.ASIENTO_DEFINITIVO, EsTemporal = true };
+    var filtro2 = new QueryFilters() { Modelo = ModeloFilter.ASIENTO_DEFINITIVO };
+}
+@section styles {
+    <link rel="stylesheet" href="~/css/simplePagination.css" />
+    <link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+    <!-- Agregar esto al <head> de la página o en un archivo CSS si no existe ya -->
+    <style>
+        #tbGridAsiento tbody tr.selectedEdit-row {
+            background-color: #e7f3ff !important;
+            box-shadow: inset 0 0 0 1px #0d6efd;
+            font-weight: bold;
+        }
+
+        #tbGridAsiento tbody tr {
+            cursor: pointer;
+        }
+    </style>
+}
+
+<div class="container">
+    <partial name="_botonera" model="filtro2" />
+</div>
+<div class="collapse" id="divFiltro" style="">
+    <partial name="_filtroAsiento" model="filtro" />
+    @Html.Hidden("pagEstado", false)
+</div>
+<div class="collapse" id="divDetalle" style="">
+    <partial name="_n01TabsAsiento" />
+</div>
+
+<div class="row">
+    <div id="divGrilla">
+        @* <p style="background-color:gray">
+            <h5>No se han especificado datos aún.</h5>
+        </p> *@
+    </div>
+</div>
+<div id="modalGestorDocumental"></div>
+
+
+
+<!--modal para presentar el plan de cuenas-->
+<partial name="~/Areas/Asientos/Views/Shared/_selectorPlanCuentas.cshtml" />
+
+@section scripts {
+    <script type="text/javascript">
+        const asientoTemporal = "@filtro.EsTemporal.ToString().ToLower()"==="true";
+        var primerArranque = true;
+         var homeAsientosUrl = "@Url.Action("index", "AsientoDefinitivo", new { area = "Asientos" })";
+         var buscarAsientosUrl="@Url.Action("BuscarAsientos", "AsientoDefinitivo", new { area = "Asientos" })";
+         var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "AsientoDefinitivo", new { area = "Asientos" })";
+         var buscarAsientoUrl= "@Url.Action("buscarAsiento", "AsientoDefinitivo", new { area = "Asientos" })";
+         var nuevoAsientoUrl="@Url.Action("nuevoAsiento", "AsientoDefinitivo", new { area = "Asientos" })";
+         var confirmarAsientoTemporalUrl = '@Url.Action("ConfirmarAsientoTemporal", "AsientoDefinitivo", new { area = "Asientos" })';
+
+        //gestor de impresion
+       // var gestorImpresionUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+        var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+        var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
+        var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
+        var enviarEmailUrl =  "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
+        var enviarWhatsAppUrl =  "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
+
+            // URLs para las llamadas AJAX - Se configurarán desde la vista
+        var buscarPlanCuentasUrl = "@Url.Action("buscar", "abmplancuenta", new { area = "abms" })";
+        var buscarCuentaUrl = "@Url.Action("buscarCuenta", "abmplancuenta", new { area = "abms" })";
+
+    </script>
+    <script src="~/lib/jstree/jstree.min.js"></script>
+    <script src="~/js/mask/jquery.inputmask.min.js"></script>
+    <script src="~/js/plugins/jquery.simplePagination.js"></script>
+
+    <script src="~/js/app/areas/docmngr/docmanager.js"></script>
+
+    <script src="~/js/app/areas/abms/abmsettings.js"></script>
+    <script src="~/js/app/areas/abms/abmcommons.js"></script>
+
+
+    <script src="~/js/app/areas/asientos/selectorCuentas.js"></script>
+    <script src="~/js/app/areas/asientos/asientosdef.js"></script>
+
+
+}

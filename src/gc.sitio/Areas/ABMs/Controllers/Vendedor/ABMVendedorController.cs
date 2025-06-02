@@ -172,7 +172,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.Vendedor
         }
 
         [HttpPost]
-        public async Task<JsonResult> ConfirmarAbmVendedor(ABMVendedorDatoDto ve, char accion)
+        public async Task<JsonResult> ConfirmarAbmVendedor([FromBody] ABMVendedorDatoDto ve, char accion)
         {
             try
             {

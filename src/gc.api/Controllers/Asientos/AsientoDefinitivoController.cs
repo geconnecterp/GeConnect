@@ -95,7 +95,8 @@ namespace gc.api.Controllers.Asientos
         /// </summary>
         /// <param name="id">Identificador del asiento</param>
         /// <returns>Detalle del asiento definitivo</returns>
-        [HttpGet("{id}")]
+        /// 
+        [HttpGet( "{id}", Name = "/obtener-asiento-detalle")]
         public ActionResult<AsientoDefDetalleDto> ObtenerAsientoDetalle(string id)
         {
             if (string.IsNullOrWhiteSpace(id))

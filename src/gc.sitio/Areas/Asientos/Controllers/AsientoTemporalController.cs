@@ -22,7 +22,7 @@ using Newtonsoft.Json;
 namespace gc.sitio.Areas.Asientos.Controllers
 {
     [Area("Asientos")]
-    public class AsientoTemporalController : ControladorBase
+    public class AsientoTemporalController : AsientoBase
     {
         private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
         private AppModulo _modulo; //tengo el AppModulo que corresponde a la consulta de cuentas
@@ -35,7 +35,6 @@ namespace gc.sitio.Areas.Asientos.Controllers
 
         private readonly AppSettings _appSettings;
 
-        private List<UsuAsientoDto> UsuariosEjercicioLista { get; set; } = [];
 
         public AsientoTemporalController(
             IOptions<AppSettings> options, IOptions<DocsManager> docsManager,
@@ -509,67 +508,7 @@ namespace gc.sitio.Areas.Asientos.Controllers
             }
         }
 
-        /// <summary>
-        /// Genera el combo de ejercicios contables
-        /// </summary>
-        protected SelectList ComboEjercicios()
-        {
-            if (ViewBag.EjerciciosLista != null)
-            {
-                var lista = ViewBag.EjerciciosLista as List<EjercicioDto>;
-                if (lista != null)
-                {
-                    return HelperMvc<ComboGenDto>.ListaGenerica(
-                        lista.Select(e => new ComboGenDto
-                        {
-                            Id = e.Eje_nro,
-                            Descripcion = e.Eje_lista
-                        })
-                    );
-                }
-            }
-            return HelperMvc<ComboGenDto>.ListaGenerica(new List<ComboGenDto>());
-        }
-
-        /// <summary>
-        /// Genera el combo de tipos de asiento
-        /// </summary>
-        protected SelectList ComboTiposAsiento()
-        {
-            if (ViewBag.TiposAsientoLista != null)
-            {
-                var lista = ViewBag.TiposAsientoLista as List<TipoAsientoDto>;
-                if (lista != null)
-                {
-                    return HelperMvc<ComboGenDto>.ListaGenerica(
-                        lista.Select(t => new ComboGenDto
-                        {
-                            Id = t.Dia_tipo,
-                            Descripcion = t.Dia_lista
-                        })
-                    );
-                }
-            }
-            return HelperMvc<ComboGenDto>.ListaGenerica(new List<ComboGenDto>());
-        }
-
-        /// <summary>
-        /// Genera el combo de usuarios de ejercicio
-        /// </summary>
-        protected SelectList ComboUsuariosEjercicio()
-        {
-            if (UsuariosEjercicioLista != null && UsuariosEjercicioLista.Any())
-            {
-                return HelperMvc<ComboGenDto>.ListaGenerica(
-                    UsuariosEjercicioLista.Select(u => new ComboGenDto
-                    {
-                        Id = u.Usu_id,
-                        Descripcion = u.Usu_apellidoynombre
-                    })
-                );
-            }
-            return HelperMvc<ComboGenDto>.ListaGenerica(new List<ComboGenDto>());
-        }
+        
 
         /// <summary>
         /// Método AJAX para obtener los usuarios de un ejercicio específico
