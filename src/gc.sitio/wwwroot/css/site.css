@@ -509,6 +509,126 @@ tr[title]:hover {
     color: #a94442; /* Rojo oscuro */
 }
 
+/*****
+    Modulo de asientos
+ */
+/* Estilos para el indicador de usuario seleccionado */
+.usuario-seleccionado-badge {
+    display: flex;
+    align-items: center;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 0.25rem 0.75rem;
+    margin-left: 0.5rem;
+    font-size: 0.85rem;
+    color: #495057;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+    .usuario-seleccionado-badge i {
+        margin-right: 0.5rem;
+        color: #6c757d;
+    }
+
+/* Distinción para Asientos Definitivos */
+.modulo-definitivo {
+    --modulo-color: #2c3e50;
+    --modulo-accent: #3498db;
+    --modulo-light: #e8f4fc;
+    --modulo-badge: #e8f4fc;
+    --modulo-badge-text: #2c3e50;
+    --modulo-badge-border: #3498db;
+}
+
+/* Distinción para Asientos Temporales */
+.modulo-temporal {
+    --modulo-color: #27ae60;
+    --modulo-accent: #2ecc71;
+    --modulo-light: #eafaf1;
+    --modulo-badge: #eafaf1;
+    --modulo-badge-text: #27ae60;
+    --modulo-badge-border: #2ecc71;
+}
+
+/* Estilos comunes para aplicar el tema de color del módulo */
+.modulo-header {
+    border-bottom: 3px solid var(--modulo-color);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+}
+
+    .modulo-header h2 {
+        color: var(--modulo-color);
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+    }
+
+        .modulo-header h2 i {
+            margin-right: 0.5rem;
+        }
+
+.modulo-badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    margin-left: 0.75rem;
+    background-color: var(--modulo-badge);
+    color: var(--modulo-badge-text);
+    border: 1px solid var(--modulo-badge-border);
+    font-weight: bold;
+}
+
+.modulo-btn {
+    background-color: var(--modulo-color);
+    border-color: var(--modulo-color);
+    color: white;
+}
+
+    .modulo-btn:hover {
+        background-color: var(--modulo-accent);
+        border-color: var(--modulo-accent);
+        color: white;
+    }
+
+.modulo-table thead {
+    background-color: var(--modulo-color);
+    color: white;
+}
+
+.modulo-form .form-control:focus,
+.modulo-form .form-select:focus {
+    border-color: var(--modulo-accent);
+    box-shadow: 0 0 0 0.25rem rgba(var(--modulo-accent-rgb), 0.25);
+}
+
+/* Borde sutil para el filtro */
+.filtro-container {
+    border-left: 4px solid var(--modulo-color);
+    padding-left: 0.75rem;
+    background-color: var(--modulo-light);
+    border-radius: 0 4px 4px 0;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Estilos para las filas seleccionadas en las tablas */
+.modulo-definitivo .selectedEdit-row > td {
+    background-color: rgba(52, 152, 219, 0.2) !important;
+    border-left: 4px solid #3498db !important;
+    color: #2c3e50 !important;
+}
+
+.modulo-temporal .selectedEdit-row > td {
+    background-color: rgba(46, 204, 113, 0.2) !important;
+    border-left: 4px solid #2ecc71 !important;
+    color: #27ae60 !important;
+}
 
 /* Ajustes para dispositivos móviles */
 @media (max-width: 991px) {

@@ -405,33 +405,7 @@ namespace gc.sitio.Areas.Asientos.Controllers
             }
         }
 
-        private List<AsientoPlanoDto> ConvertirAsientoAPlano(AsientoDetalleDto asiento)
-        {
-
-            var asientosPlanos = new List<AsientoPlanoDto>();
-
-            foreach (var linea in asiento.Detalles)
-            {
-                var asientoPlano = new AsientoPlanoDto
-                {
-                    dia_movi = asiento.Dia_movi,
-                    dia_fecha = asiento.Dia_fecha,
-                    dia_tipo = asiento.Dia_tipo,
-                    dia_lista = asiento.Dia_lista,
-                    dia_desc_asiento = asiento.Dia_desc_asiento,
-                    dia_nro = linea.Dia_nro,
-                    ccb_id = linea.Ccb_id,
-                    ccb_desc = linea.Ccb_desc,
-                    dia_desc = linea.Dia_desc,
-                    debe = linea.Debe,
-                    haber = linea.Haber
-                };
-
-                asientosPlanos.Add(asientoPlano);
-            }
-
-            return asientosPlanos;
-        }
+       
 
         /// <summary>
         /// Obtiene los ejercicios contables para el combo

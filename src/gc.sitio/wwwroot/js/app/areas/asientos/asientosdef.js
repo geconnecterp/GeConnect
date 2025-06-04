@@ -16,6 +16,28 @@ function actualizarMensajeSeleccion() {
     }
 }
 
+// Agregar manejo de tooltips para estados de asientos después de cargar la grilla
+function inicializarTooltipsEstados() {
+    // Seleccionar todas las celdas de estado que tengan el estado "revisar" != 0
+    $("#tbGridAsiento tbody tr[data-revisable='true'] td:last-child").each(function () {
+        const $celda = $(this);
+        const mensaje = $celda.attr("data-revisar-desc") || "Este asiento requiere revisión";
+
+        // Configurar tooltip de Bootstrap
+        $celda.attr({
+            "data-bs-toggle": "tooltip",
+            "data-bs-placement": "left",
+            "title": mensaje
+        });
+
+        // Inicializar tooltip
+        new bootstrap.Tooltip($celda);
+
+        // Cambiar estilo visual para llamar la atención
+        $celda.addClass("text-danger fw-bold");
+    });
+}
+
 // Llamar a esta función después de cargar la grilla
 function inicializarSeleccionAsientos() {
     // Limpiar variables
@@ -30,13 +52,21 @@ function inicializarSeleccionAsientos() {
 
     // Actualizar contador
     $("#selected-count").text("0");
+
+    // Inicializar tooltips para estados de revisión
+    setTimeout(inicializarTooltipsEstados, 50);
 }
 
 // Guardar la referencia original de la función
-const buscarAsientosOriginal = buscarAsientos;
+const buscarAsientoDefsOriginal = buscarAsientosDefs;
 
 // Redefinir la función para incluir la inicialización de selección
-function buscarAsientos(pag) {
+function buscarAsientosDefs(pag) {
+    // Validar campos obligatorios antes de proceder
+    if (!validarCamposObligatoriosBusqueda()) {
+        return; // Detener la ejecución si la validación falla
+    }
+
     AbrirWaiting();
     //desactivamos los botones de acción
     activarBotones2(false);
@@ -56,7 +86,7 @@ function buscarAsientos(pag) {
     };
     //let admId = administracion;
     //agregando los parametros de la busqueda realizada
-    cargarReporteEnArre(9, data1, "Informe de Asientos Solicitados.", "Obseración:", "")
+    cargarReporteEnArre(11, data1, "Informe de Asientos Solicitados.", "Obseración:", "")
 
     var buscaNew = JSON.stringify(dataBak) != JSON.stringify(data1)
 
@@ -77,7 +107,7 @@ function buscarAsientos(pag) {
 
     var data = $.extend({}, data1, data2);
 
-    PostGenHtml(data, buscarAsientosUrl, function (obj) {
+    PostGenHtml(data, buscarAsientoDefsUrl, function (obj) {
         $("#divGrilla").html(obj);
         $("#divFiltro").collapse("hide")
 
@@ -107,7 +137,69 @@ function buscarAsientos(pag) {
     });
 }
 
+/**
+ * Valida que los campos obligatorios para la búsqueda de asientos definitivos estén completos
+ * @returns {boolean} True si todos los campos obligatorios están completos, false en caso contrario
+ */
+// Función para validar que los dropdowns obligatorios tengan valores seleccionados
+function validarCamposObligatoriosBusqueda() {
+    let camposFaltantes = [];
+
+    // Validar ejercicio
+    if (!$("#Eje_nro").val()) {
+        camposFaltantes.push("Ejercicio");
+    }
+
+    // Validar usuario
+    if (!$("#Usu_like").val()) {
+        camposFaltantes.push("Usuario");
+    }
+
+    // Validar tipo de asiento
+    if (!$("#Tipo_like").val()) {
+        camposFaltantes.push("Tipo de Asiento");
+    }
+
+    // Si faltan campos, mostrar mensaje y devolver false
+    if (camposFaltantes.length > 0) {
+        AbrirMensaje(
+            "ATENCIÓN",
+            "Para realizar la búsqueda debe seleccionar valores para: " + camposFaltantes.join(", "),
+            function () {
+                $("#msjModal").modal("hide");
+                return true;
+            },
+            false,
+            ["Aceptar"],
+            "warn!",
+            null
+        );
+        return false;
+    }
+
+    return true;
+}
+
+// Script para configurar los controles de filtro en asientos definitivos
+function configurarFiltrosAsientoDefinitivo() {
+    // 1. Forzar selección y deshabilitación de checkboxes obligatorios
+    $('#chkEjercicio, #Usu, #Tipo').prop('checked', true).prop('disabled', true);
+
+    // 2. Habilitar los dropdowns asociados
+    $('#Eje_nro, #Usu_like, #Tipo_like').prop('disabled', false);
+
+    // 3. Prevenir clics en los checkboxes
+    $('#chkEjercicio, #Usu, #Tipo').on('click', function (e) {
+        e.preventDefault();
+        return false;
+    });
+
+    console.log('Configuración de filtros para asientos definitivos aplicada');
+}
+
+
 $(function () {
+
     // Agregar estilos CSS para diferencias visuales claras
     $("<style>")
         .prop("type", "text/css")
@@ -164,26 +256,55 @@ $(function () {
     $(document).off("dblclick", "#tbGridAsiento tbody tr");
 
 
+    // Llamar a la función de configuración
+    configurarFiltrosAsientoDefinitivo();
 
-
-    // Modificar la función buscarAsientos para inicializar selección
-    buscarAsientos = function (pag) {
-        buscarAsientosOriginal(pag);
+    // Modificar la función buscarAsientoDefs para inicializar selección
+    buscarAsientosDefs = function (pag) {
+        buscarAsientoDefsOriginal(pag);
         // Agregar un pequeño retraso para asegurar que la grilla ya está cargada
         setTimeout(inicializarSeleccionAsientos, 100);
     };
 
-    $("#btnBuscar").on("click", function () {
+    // Modificar evento del botón buscar para incluir validación
+    const originalBtnBuscarClick = $("#btnBuscar").attr('onclick');
+    $("#btnBuscar").off('click').on('click', function () {
+        // Validar que los dropdowns obligatorios tengan valores seleccionados
+        if (!validarCamposObligatoriosBusqueda()) {
+            return false;
+        }
 
-        //es nueva la busqueda no resguardamos la busqueda anterior. es util para paginado
-        $("#divpanel01").empty();
-        dataBak = "";
-        //es una busqueda por filtro. siempre sera pagina 1
-        pagina = 1;
-        buscarAsientos(pagina);
+        // Si hay un manejador previo, ejecutarlo
+        if (typeof originalBtnBuscarClick === 'function') {
+            return originalBtnBuscarClick.apply(this, arguments);
+        } else {
+            // Comportamiento predeterminado
+            $("#divpanel01").empty();
+            dataBak = "";
+            pagina = 1;
+            buscarAsientosDefs(pagina);
+        }
     });
+
+    //$("#btnBuscar").on("click", function () {
+    //    // Validar campos obligatorios antes de realizar la búsqueda
+    //    if (!validarCamposObligatoriosBusqueda()) {
+    //        return false;
+    //    }
+
+    //    // Eliminar lo que había en el panel de detalle
+    //    $("#divpanel01").empty();
+
+    //    // Limpiar datos anteriores
+    //    dataBak = "";
+
+    //    // Es una búsqueda por filtro, siempre será página 1
+    //    pagina = 1;
+
+    //    buscarAsientoDefs(pagina);
+    //});
     //callback para que funcione la paginación
-    funcCallBack = buscarAsientos;
+    funcCallBack = buscarAsientosDefs;
     $("#pagEstado").on("change", function () {
         var div = $("#divPaginacion");
         presentaPaginacion(div);
@@ -193,12 +314,15 @@ $(function () {
     });
 
     //**** EVENTOS PARA CONTROLAR LOS BOTONES DE OPERACION
-    $("#btnAbmNuevo").on("click", ejecutarAltaAsientoTemp);
-    $("#btnAbmModif").on("click", ejecutarModificacionAsientoTemp);
-    $("#btnAbmElimi").on("click", ejecutarBajaAsientoTemp);
+    // $("#btnAbmNuevo").on("click", ejecutarAltaAsientoTemp);
+    // Modificar eventos para botones según las restricciones de asientos definitivos
+    $("#btnAbmNuevo").hide(); // Ocultar el botón de nuevo asiento
+
+    $("#btnAbmModif").on("click", ejecutarModificacionAsientoDef);
+    $("#btnAbmElimi").on("click", ejecutarAnulacionAsientoDef);
 
     $("#btnAbmCancelar").on("click", InicializaVistaAsientos);
-    $("#btnAbmAceptar").on("click", confirmarOperacionAsiento);
+    $("#btnAbmAceptar").on("click", confirmarOperacionAsientoDef);
     //****FIN BOTONES DE OPERACION*/
 
     // Evento para el botón Imprimir
@@ -206,35 +330,51 @@ $(function () {
     // Usar mousedown en lugar de click para evitar conflictos con el collapse
     $("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle);
 
-    // Evento para el botón "Pasar a contabilidad"
-    $(document).on("click", "#btnPasarConta", function () {
-        // Confirmar la acción
-        AbrirMensaje(
-            "CONFIRMACIÓN",
-            `¿Está seguro que desea pasar ${filasSeleccionadas.length} asiento(s) temporal(es) seleccionado(s) a la contabilidad definitiva?`,
-            function (resp) {
-                if (resp === "SI") {
-                    ejecutarPaseAContabilidad();
-                }
-                $("#msjModal").modal("hide");
-                return true;
-            },
-            true, // Mostrar botones SI/NO
-            ["SI", "NO"],
-            "warn!",
-            null
-        );
-    });
+    // Forzar que el ejercicio siempre esté seleccionado en asientos definitivos
+    $('#chkEjercicio').prop('checked', true).prop('disabled', true);
+    $('#Eje_nro').prop('disabled', false);
 
-    // Eventos para activar/desactivar componentes
-    $('#chkEjercicio').on('change', function () {
-        if (typeof asientoTemporal !== 'undefined' && asientoTemporal === true) {
-            // Si está en modo temporal, no ejecutar y desactivar el checkbox
-            //$('#chkEjercicio').prop('checked', false).prop('disabled', true);
+    $('#Usu').prop('checked', true).prop('disabled', true);
+    $('#Usu_like').prop('disabled', false);
+
+    $('#Tipo').prop('checked', true).prop('disabled', true);
+    $('#Tipo_like').prop('disabled', false);
+
+    // Modificar el comportamiento de toggleComponent para los campos obligatorios
+    const originalToggleComponent = window.toggleComponent;
+    window.toggleComponent = function (checkboxId, componentSelector) {
+        // Si es alguno de los campos obligatorios, siempre debe estar seleccionado y habilitado
+        if (checkboxId === 'chkEjercicio' || checkboxId === 'Usu' || checkboxId === 'Tipo') {
+            $(`#${checkboxId}`).prop("checked", true);
+            $(componentSelector).prop("disabled", false);
             return;
         }
-        toggleComponent('chkEjercicio', '#Eje_nro');
+
+        // Para otros componentes, utilizar la función original
+        if (typeof originalToggleComponent === 'function') {
+            originalToggleComponent(checkboxId, componentSelector);
+        } else {
+            // Implementación por defecto
+            const isChecked = $(`#${checkboxId}`).is(':checked');
+            $(componentSelector).prop('disabled', !isChecked);
+        }
+    };
+
+    // Deshabilitar eventos click en los checkboxes obligatorios
+    $('#chkEjercicio, #Usu, #Tipo').on('click', function (e) {
+        e.preventDefault();
+        return false;
     });
+
+    //// Eventos para activar/desactivar componentes
+    //$('#chkEjercicio').on('change', function () {
+    //    if (typeof asientoTemporal !== 'undefined' && asientoTemporal === true) {
+    //        // Si está en modo temporal, no ejecutar y desactivar el checkbox
+    //        //$('#chkEjercicio').prop('checked', false).prop('disabled', true);
+    //        return;
+    //    }
+    //    toggleComponent('chkEjercicio', '#Eje_nro');
+    //});
 
     $('#Movi').on('change', function () {
         toggleComponent('Movi', '#Movi_like');
@@ -456,147 +596,320 @@ function ejecutarAltaAsientoTemp() {
     });
 }
 
-function ejecutarModificacionAsientoTemp() {
-    accion = AbmAction.MODIFICACION;
-    $("#divFiltro").collapse("hide");
-    accionBotones(accion);
-    activarControles(true);
-}
+/**
+ * Ejecuta la modificación de un asiento definitivo, verificando primero los permisos
+ */
+function ejecutarModificacionAsientoDef() {
+    // Verificar que haya un asiento seleccionado
+    if (!EntidadSelect) {
+        AbrirMensaje("ATENCIÓN", "Debe seleccionar un asiento definitivo para modificar.", function () {
+            $("#msjModal").modal("hide");
+        }, false, ["Aceptar"], "warn!", null);
+        return;
+    }
 
-function ejecutarBajaAsientoTemp() {
-    accion = AbmAction.BAJA;
-    $("#divFiltro").collapse("hide");
-    accionBotones(accion);
-}
+    // Mostrar indicador de espera mientras verificamos permisos
+    AbrirWaiting("Verificando permisos de modificación...");
 
+    // Verificar si el asiento es modificable (fecha dentro del período permitido)
+    try {
+        // Obtener la fecha del asiento del DOM
+        const fechaStr = $("#Dia_fecha").val();
+        if (!fechaStr) {
+            CerrarWaiting();
+            ControlaMensajeError("No se pudo obtener la fecha del asiento para verificar permisos");
+            return;
+        }
+
+        // Intentar parsear la fecha en varios formatos
+        let fechaAsiento;
+
+        // Verificar si la fecha viene en formato DD/MM/YYYY
+        if (fechaStr.includes('/')) {
+            const partes = fechaStr.split('/');
+            if (partes.length === 3) {
+                fechaAsiento = new Date(
+                    parseInt(partes[2]), // año
+                    parseInt(partes[1]) - 1, // mes (0-11)
+                    parseInt(partes[0]) // día
+                );
+            }
+        }
+        // Si no tiene formato DD/MM/YYYY o el parsing falló, intentar con el constructor normal
+        if (!fechaAsiento || isNaN(fechaAsiento.getTime())) {
+            fechaAsiento = new Date(fechaStr);
+        }
+
+        // Verificar si la fecha es válida antes de continuar
+        if (isNaN(fechaAsiento.getTime())) {
+            CerrarWaiting();
+            ControlaMensajeError("Fecha de asiento inválida: " + fechaStr);
+            return;
+        }
+
+        // Ejercicio seleccionado
+        const ejercicioId = $("#Eje_nro").val() || "0";
+
+        // Crear objeto para enviar al servidor
+        const data = {
+            eje_nro: ejercicioId,
+            dia_fecha: fechaAsiento.toISOString()
+        };
+
+        // Verificar permisos en el servidor
+        $.ajax({
+            url: verificarFechaModificacionUrl,
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(data),
+            success: function (response) {
+                CerrarWaiting();
+
+                if (response.permitido === false) {
+                    // No se permite modificar por fecha
+                    AbrirMensaje(
+                        "ATENCIÓN",
+                        response.mensaje || "Este asiento no puede ser modificado porque su fecha ha superado la fecha de control del ejercicio.",
+                        function () {
+                            $("#msjModal").modal("hide");
+                        },
+                        false,
+                        ["Aceptar"],
+                        "warn!",
+                        null
+                    );
+                } else {
+                    // Se permite modificar - proceder con la modificación
+                    accion = AbmAction.MODIFICACION;
+                    $("#divFiltro").collapse("hide");
+                    accionBotones(accion);
+                    activarControles(true);
+                }
+            },
+            error: function (xhr, status, error) {
+                CerrarWaiting();
+                // Por defecto, mostrar un mensaje de error pero permitir continuar
+                AbrirMensaje(
+                    "ADVERTENCIA",
+                    "No se pudo verificar si el asiento es modificable. ¿Desea continuar de todos modos?",
+                    function (resp) {
+                        if (resp === "SI") {
+                            accion = AbmAction.MODIFICACION;
+                            $("#divFiltro").collapse("hide");
+                            accionBotones(accion);
+                            activarControles(true);
+                        }
+                        $("#msjModal").modal("hide");
+                    },
+                    true, // Mostrar botones SI/NO
+                    ["SI", "NO"],
+                    "warn!",
+                    null
+                );
+            }
+        });
+    } catch (error) {
+        CerrarWaiting();
+        ControlaMensajeError("Error al verificar permisos: " + error);
+    }
+}
 
 /**
- * Ejecuta el pase del asiento temporal a contabilidad definitiva
+ * Ejecuta la anulación de un asiento definitivo, verificando primero los permisos
  */
-function ejecutarPaseAContabilidad() {
-    // Verificar si hay asientos seleccionados
-    if (filasSeleccionadas.length === 0) {
-        AbrirMensaje("ATENCIÓN", "Debe seleccionar al menos un asiento para pasar a contabilidad.", function () {
+function ejecutarAnulacionAsientoDef() {
+    // Verificar que haya un asiento seleccionado
+    if (!EntidadSelect) {
+        AbrirMensaje("ATENCIÓN", "Debe seleccionar un asiento definitivo para anular.", function () {
             $("#msjModal").modal("hide");
-            return true;
         }, false, ["Aceptar"], "warn!", null);
         return;
     }
 
-    // Obtener el número de ejercicio seleccionado
-    const eje_nro = parseInt($("#Eje_nro").val()) || 0;
+    // Mostrar indicador de espera mientras verificamos permisos
+    AbrirWaiting("Verificando permisos de anulación...");
 
-    // Validar que se haya seleccionado un ejercicio
-    if (eje_nro <= 0) {
-        AbrirMensaje("ATENCIÓN", "Debe seleccionar un ejercicio contable válido para realizar el pase a contabilidad.", function () {
-            $("#msjModal").modal("hide");
-            return true;
-        }, false, ["Aceptar"], "warn!", null);
-        return;
-    }
-
-    // Mostrar indicador de espera
-    AbrirWaiting("Procesando el pase a contabilidad...");
-
-    // Construimos el objeto que coincide con AsientoAccionDto
-    const datos = {
-        asientosIds: filasSeleccionadas,  // El objeto del asiento
-        eje_nro: eje_nro         // La acción (por ejemplo, 'A', 'M', 'B')
-    };
-
-    // Llamar al servicio con los IDs seleccionados
-    $.ajax({
-        url: pasarAContabilidadUrl,
-        type: "POST",
-        contentType: "application/json",
-        data: JSON.stringify(datos),
-        success: function (obj) {
+    // Verificar si el asiento es anulable (misma lógica que para modificación)
+    try {
+        // Obtener la fecha del asiento del DOM
+        const fechaStr = $("#Dia_fecha").val();
+        if (!fechaStr) {
             CerrarWaiting();
-
-            if (obj.error === true) {
-                // Caso 1: Algunos asientos procesados correctamente, otros con error
-                if (obj.parcial === true) {
-                    let mensaje = obj.msg;
-
-                    // Mostrar mensaje principal
-                    AbrirMensaje("ATENCIÓN", mensaje, function () {
-                        // Si hay pocos errores, mostrar detalles en un segundo mensaje
-                        if (obj.fallidos <= 3) {
-                            let detalles = "<ul>";
-                            obj.detalles.forEach(function (detalle) {
-                                detalles += `<li>Asiento ${detalle.asientoId}: ${detalle.mensaje}</li>`;
-                            });
-                            detalles += "</ul>";
-
-                            AbrirMensaje("DETALLES DE ERRORES", detalles, function () {
-                                $("#msjModal").modal("hide");
-                                // Refrescar la lista de asientos
-                                $("#divpanel01").empty();
-                                buscarAsientos(1);
-                                return true;
-                            }, false, ["Aceptar"], "error!", null);
-                        }
-                        // Si hay muchos errores, ofrecer generar un reporte
-                        else {
-                            // Por:
-                            AbrirMensaje("CONFIRMACIÓN", "¿Desea ver el detalle de los errores?", function (resp) {
-                                if (resp === "SI") {
-                                    presentarReporteErrores(obj.detalles);
-                                }
-                                $("#msjModal").modal("hide");
-                            }, true, ["SI", "NO"], "warn!", null);
-
-                            // Refrescar la lista de asientos
-                            $("#divpanel01").empty();
-                            buscarAsientos(1);
-                        }
-                        $("#msjModal").modal("hide");
-                        return true;
-                    }, false, ["Aceptar"], "warn!", null);
-                }
-                // Caso 2: Muchos errores (todos los asientos fallaron)
-                else if (obj.muchos === true) {
-                    let mensaje = obj.msg + "\n¿Desea ver el detalle de los errores?";
-
-                    AbrirMensaje("ERROR", mensaje, function (resp) {
-                        if (resp === "SI") {
-                            //generarReporteErrores(obj.detalles);
-                            presentarReporteErrores(obj.detalles);
-                        }
-                        $("#msjModal").modal("hide");
-                        // Refrescar la lista de asientos
-                        $("#divpanel01").empty();
-                        buscarAsientos(1);
-                        return true;
-                    }, true, ["SI", "NO"], "error!", null);
-                }
-                // Caso 3: Error general o pocos errores
-                else {
-                    AbrirMensaje("ERROR", obj.msg || "Ocurrió un error al pasar los asientos a contabilidad.", function () {
-                        $("#msjModal").modal("hide");
-                        return true;
-                    }, false, ["Aceptar"], "error!", null);
-                }
-            } else {
-                // Caso 4: Operación completamente exitosa
-                AbrirMensaje("ÉXITO", obj.msg || "Los asientos han sido pasados a contabilidad correctamente.", function () {
-                    $("#msjModal").modal("hide");
-                    // Refrescar la lista de asientos después de un pase exitoso
-                    $("#divpanel01").empty();
-                    buscarAsientos(1);
-                    return true;
-                }, false, ["Aceptar"], "success", null);
-            }
-        },
-        error: function (xhr, status, error) {
-            CerrarWaiting();
-            AbrirMensaje("ERROR", "Error al pasar los asientos a contabilidad: " + error, function () {
-                $("#msjModal").modal("hide");
-                return true;
-            }, false, ["Aceptar"], "error!", null);
+            ControlaMensajeError("No se pudo obtener la fecha del asiento para verificar permisos");
+            return;
         }
-    });
+
+        // Intentar parsear la fecha en varios formatos
+        let fechaAsiento;
+
+        // Verificar si la fecha viene en formato DD/MM/YYYY
+        if (fechaStr.includes('/')) {
+            const partes = fechaStr.split('/');
+            if (partes.length === 3) {
+                fechaAsiento = new Date(
+                    parseInt(partes[2]), // año
+                    parseInt(partes[1]) - 1, // mes (0-11)
+                    parseInt(partes[0]) // día
+                );
+            }
+        }
+        // Si no tiene formato DD/MM/YYYY o el parsing falló, intentar con el constructor normal
+        if (!fechaAsiento || isNaN(fechaAsiento.getTime())) {
+            fechaAsiento = new Date(fechaStr);
+        }
+
+        // Verificar si la fecha es válida antes de continuar
+        if (isNaN(fechaAsiento.getTime())) {
+            CerrarWaiting();
+            ControlaMensajeError("Fecha de asiento inválida: " + fechaStr);
+            return;
+        }
+
+        // Ejercicio seleccionado
+        const ejercicioId = $("#Eje_nro").val() || "0";
+
+        // Crear objeto para enviar al servidor
+        const data = {
+            eje_nro: ejercicioId,
+            dia_fecha: fechaAsiento.toISOString()
+        };
+
+        // Verificar permisos en el servidor
+        $.ajax({
+            url: verificarFechaModificacionUrl, // Misma URL que para modificación
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(data),
+            success: function (response) {
+                CerrarWaiting();
+
+                if (response.permitido === false) {
+                    // No se permite anular por fecha
+                    AbrirMensaje(
+                        "ATENCIÓN",
+                        response.mensaje || "Este asiento no puede ser anulado porque su fecha ha superado la fecha de control del ejercicio.",
+                        function () {
+                            $("#msjModal").modal("hide");
+                        },
+                        false,
+                        ["Aceptar"],
+                        "warn!",
+                        null
+                    );
+                } else {
+                    // Se permite anular - confirmar la anulación
+                    AbrirMensaje(
+                        "CONFIRMACIÓN",
+                        "¿Está seguro que desea anular el asiento definitivo seleccionado?<br>Esta acción no se puede deshacer.",
+                        function (resp) {
+                            if (resp === "SI") {
+                                accion = AbmAction.BAJA;
+                                $("#divFiltro").collapse("hide");
+                                accionBotones(accion);
+
+                                // No activar controles para edición en caso de anulación
+                                activarControles(false);
+                            }
+                            $("#msjModal").modal("hide");
+                        },
+                        true, // Mostrar botones SI/NO
+                        ["SI", "NO"],
+                        "warn!",
+                        null
+                    );
+                }
+            },
+            error: function (xhr, status, error) {
+                CerrarWaiting();
+                // Por defecto, mostrar un mensaje de error pero permitir continuar
+                AbrirMensaje(
+                    "ADVERTENCIA",
+                    "No se pudo verificar si el asiento es anulable. ¿Desea continuar de todos modos?",
+                    function (resp) {
+                        if (resp === "SI") {
+                            // Confirmar la anulación
+                            AbrirMensaje(
+                                "CONFIRMACIÓN",
+                                "¿Está seguro que desea anular el asiento definitivo seleccionado?<br>Esta acción no se puede deshacer.",
+                                function (resp2) {
+                                    if (resp2 === "SI") {
+                                        accion = AbmAction.BAJA;
+                                        $("#divFiltro").collapse("hide");
+                                        accionBotones(accion);
+                                        activarControles(false);
+                                    }
+                                    $("#msjModal").modal("hide");
+                                },
+                                true, // Mostrar botones SI/NO
+                                ["SI", "NO"],
+                                "warn!",
+                                null
+                            );
+                        }
+                        $("#msjModal").modal("hide");
+                    },
+                    true, // Mostrar botones SI/NO
+                    ["SI", "NO"],
+                    "warn!",
+                    null
+                );
+            }
+        });
+    } catch (error) {
+        CerrarWaiting();
+        ControlaMensajeError("Error al verificar permisos: " + error);
+    }
 }
+
+//function ejecutarModificacionAsientoDef() {
+//    // Verificar que haya un asiento seleccionado
+//    if (!EntidadSelect) {
+//        AbrirMensaje("ATENCIÓN", "Debe seleccionar un asiento definitivo para modificar.", function () {
+//            $("#msjModal").modal("hide");
+//        }, false, ["Aceptar"], "warn!", null);
+//        return;
+//    }
+
+//    // Verificar si el asiento es modificable (fecha dentro del período permitido)
+//    // Esta validación podría hacerse en el servidor, pero es buena práctica también hacerla en el cliente
+//    // Implementación pendiente según reglas específicas
+
+//    accion = AbmAction.MODIFICACION;
+//    $("#divFiltro").collapse("hide");
+//    accionBotones(accion);
+//    activarControles(true);
+//}
+
+//function ejecutarAnulacionAsientoDef() {
+//    // Verificar que haya un asiento seleccionado
+//    if (!EntidadSelect) {
+//        AbrirMensaje("ATENCIÓN", "Debe seleccionar un asiento definitivo para anular.", function () {
+//            $("#msjModal").modal("hide");
+//        }, false, ["Aceptar"], "warn!", null);
+//        return;
+//    }
+
+//    // Confirmar la anulación
+//    AbrirMensaje(
+//        "CONFIRMACIÓN",
+//        "¿Está seguro que desea anular el asiento definitivo seleccionado?<br>Esta acción no se puede deshacer.",
+//        function (resp) {
+//            if (resp === "SI") {
+//                accion = AbmAction.BAJA;
+//                $("#divFiltro").collapse("hide");
+//                accionBotones(accion);
+
+//                // No activar controles para edición en caso de anulación
+//                activarControles(false);
+//            }
+//            $("#msjModal").modal("hide");
+//        },
+//        true, // Mostrar botones SI/NO
+//        ["SI", "NO"],
+//        "warn!",
+//        null
+//    );
+//}
 
 /**
  * Función para presentar un reporte con los errores en html
@@ -741,7 +1054,16 @@ function generarReporteErrores(detalles) {
 function activarControles(act) {
     // Inicializar selector de cuentas si se están activando los controles
     if (act && typeof selectorCuentas !== 'undefined') {
-        selectorCuentas.inicializar(buscarPlanCuentasUrl, buscarCuentaUrl);
+        try {
+            // Asegurarse de que las URLs están definidas
+            if (typeof buscarPlanCuentasUrl === 'undefined' || typeof buscarCuentaUrl === 'undefined') {
+                console.error("Las URLs para el selector de cuentas no están definidas");
+            } else {
+                selectorCuentas.inicializar(buscarPlanCuentasUrl, buscarCuentaUrl);
+            }
+        } catch (e) {
+            console.error("Error al inicializar el selector de cuentas:", e);
+        }
     }
 
     // Se invierte el valor porque 'disabled=true' significa desactivar
@@ -756,6 +1078,10 @@ function activarControles(act) {
 
     // Añadir/eliminar líneas y botones operativos
     if (act) {
+        // Eliminar manejadores de eventos existentes
+        $(document).off("click", "#btnAddLinea");
+        $(document).off("click", ".btn-eliminar-linea");
+
         // Si estamos activando los controles, añadimos botones de edición
         if ($("#btnAddLinea").length === 0) {
             // Si es nuevo o modificación, permitir editar líneas del asiento
@@ -778,43 +1104,11 @@ function activarControles(act) {
 
             // Mostrar botones de búsqueda de cuenta
             $("#tbAsientoDetalle tbody .btn-buscar-cuenta").show();
-
-
-            // Agrega funcionalidad a los nuevos botones
-            configurarEventosEdicion();
         }
 
-        // Habilitar edición de datos de líneas
-        $("#tbAsientoDetalle tbody").addClass("editable-grid");
-        $("#tbAsientoDetalle tbody td:not(:last-child)").attr("contenteditable", true);
-
-        // Configurar máscaras y validaciones para campos editables
-        configurarCamposEditables();
-    } else {
-        // Si desactivamos, quitamos los controles de edición
-        $("#tbAsientoDetalle thead th:last-child").remove();
-        $("#tbAsientoDetalle tbody tr td:last-child").remove();
-        $("#btnAddLinea").remove();
-
-        // Deshabilitar edición
-        $("#tbAsientoDetalle tbody").removeClass("editable-grid");
-        $("#tbAsientoDetalle tbody td").removeAttr("contenteditable");
-
-        // Ocultar botones de búsqueda de cuenta
-        $("#tbAsientoDetalle tbody .btn-buscar-cuenta").hide();
-    }
-
-    // Control de botones de acción del footer
-    $("#btnPasarContabilidad, #btnImprimir").prop("disabled", act); // Se deshabilitan al editar
-}
-
-/**
- * Configura los eventos para los botones de edición
- */
-function configurarEventosEdicion() {
-    // Evento para agregar nueva línea
-    $(document).on("click", "#btnAddLinea", function () {
-        const nuevaLinea = `
+        // Adjuntar eventos con delegación, pero asegurándose de que no haya duplicados
+        $(document).on("click", "#btnAddLinea", function (e) {
+            const nuevaLinea = `
                 <tr class="">
                     <td contenteditable="true">
                         <div class="d-flex align-items-center">
@@ -835,16 +1129,92 @@ function configurarEventosEdicion() {
                     </td>
                 </tr>
             `;
-        $("#tbAsientoDetalle tbody").append(nuevaLinea);
-        actualizarTotales();
-    });
+            $("#tbAsientoDetalle tbody").append(nuevaLinea);
+            actualizarTotales();
+        });
 
-    // Evento para eliminar línea
-    $(document).on("click", ".btn-eliminar-linea", function () {
-        $(this).closest("tr").remove();
-        actualizarTotales();
-    });
+        $(document).on("click", ".btn-eliminar-linea", function () {
+            $(this).closest("tr").remove();
+            actualizarTotales();
+        });
+
+        // Habilitar edición de datos de líneas
+        $("#tbAsientoDetalle tbody").addClass("editable-grid");
+        $("#tbAsientoDetalle tbody td:not(:last-child)").attr("contenteditable", true);
+
+        // Configurar máscaras y validaciones para campos editables
+        configurarCamposEditables();
+    } else {
+        // Si desactivamos, quitamos los controles de edición
+        $("#tbAsientoDetalle thead th:last-child").remove();
+        $("#tbAsientoDetalle tbody tr td:last-child").remove();
+        $("#btnAddLinea").remove();
+
+        // También eliminar los manejadores de eventos
+        $(document).off("click", "#btnAddLinea");
+        $(document).off("click", ".btn-eliminar-linea");
+
+        // Deshabilitar edición
+        $("#tbAsientoDetalle tbody").removeClass("editable-grid");
+        $("#tbAsientoDetalle tbody td").removeAttr("contenteditable");
+
+        // Ocultar botones de búsqueda de cuenta
+        $("#tbAsientoDetalle tbody .btn-buscar-cuenta").hide();
+    }
+
+    // Control de botones de acción del footer
+    $("#btnPasarContabilidad, #btnImprimir").prop("disabled", act); // Se deshabilitan al editar
 }
+
+/**
+ * Configura los eventos para los botones de edición
+ */
+//function configurarEventosEdicion() {
+//    // Primero, eliminar los manejadores de eventos existentes para evitar duplicación
+//    $(document).off("click", "#btnAddLinea");
+//    $(document).off("click", ".btn-eliminar-linea");
+
+//    // Evento para agregar nueva línea
+//    $(document).on("click", "#btnAddLinea", function () {
+//        // Prevenir comportamiento predeterminado y propagación
+//        e.preventDefault();
+//        e.stopPropagation();
+
+//        const nuevaLinea = `
+//                <tr class="">
+//                    <td contenteditable="true">
+//                        <div class="d-flex align-items-center">
+//                            <span class="cuenta-id"></span>
+//                            <button type="button" class="btn btn-sm btn-link text-primary btn-buscar-cuenta ms-1">
+//                                <i class="bx bx-search"></i>
+//                            </button>
+//                        </div>
+//                    </td>
+//                    <td class="cuenta-desc" contenteditable="false"></td>
+//                    <td class="linea-concepto" contenteditable="true"></td>
+//                    <td contenteditable="true" class="text-end">0,00</td>
+//                    <td contenteditable="true" class="text-end">0,00</td>
+//                    <td class="text-center">
+//                        <button class="btn btn-sm btn-danger btn-eliminar-linea">
+//                            <i class="bx bx-trash"></i>
+//                        </button>
+//                    </td>
+//                </tr>
+//            `;
+//        $("#tbAsientoDetalle tbody").append(nuevaLinea);
+//        actualizarTotales();
+//    });
+
+//    // Evento para eliminar línea
+//    $(document).on("click", ".btn-eliminar-linea", function () {
+//        // Prevenir comportamiento predeterminado y propagación
+//        e.preventDefault();
+//        e.stopPropagation();
+
+//        $(this).closest("tr").remove();
+//        actualizarTotales();
+//    });
+//}
 
 /**
  * Configura los campos editables con máscaras y validaciones
@@ -1128,277 +1498,217 @@ function formatearDecimalesAsiento() {
 /**
  * Confirma la operación de ABM del asiento (Alta, Baja, Modificación)
  */
-function confirmarOperacionAsiento() {
-    AbrirWaiting("Procesando operación de asiento...");
+function confirmarOperacionAsientoDef() {
+    AbrirWaiting("Procesando operación de asiento definitivo...");
+    try {
+        // Recopilamos los datos del asiento según la estructura requerida
+        const asientoData = recopilarDatosAsientoDef();
 
-    // Recopilamos los datos del asiento según la estructura requerida
-    const asientoData = recopilarDatosAsiento();
-
-    // Validamos los datos básicos del asiento
-    if (!validarAsiento(asientoData)) {
-        CerrarWaiting();
-        return;
-    }
-
-    // Construimos el objeto que coincide con AsientoAccionDto
-    const datos = {
-        asiento: asientoData,  // El objeto del asiento
-        accion: accion         // La acción (por ejemplo, 'A', 'M', 'B')
-    };
-
-    // Hacemos la llamada al servicio
-    $.ajax({
-        url: confirmarAsientoTemporalUrl,
-        type: "POST",
-        contentType: "application/json",
-        data: JSON.stringify(datos),  // Enviamos el objeto completo
-        success: function (obj) {
+        // Validar los datos básicos del asiento
+        if (!validarAsientoDef(asientoData.Detalles)) {
             CerrarWaiting();
-
-            if (obj.error === true) {
-                // Mostrar mensaje de error
-                AbrirMensaje("ERROR", obj.msg || "Ocurrió un error al procesar el asiento.", function () {
-                    $("#msjModal").modal("hide");
-                }, false, ["Aceptar"], "error!", null);
-            } else if (obj.warn === true) {
-                // Mostrar advertencia
-                AbrirMensaje("ATENCIÓN", obj.msg, function () {
-                    if (obj.auth === true) {
-                        window.location.href = loginUrl; // Redirigir al login si es necesario
-                    } else {
-                        $("#msjModal").modal("hide");
-                        if (obj.focus) {
-                            $(`#${obj.focus}`).focus();
-                        }
-                    }
-                }, false, ["Continuar"], "warn!", null);
-            } else {
-                // Operación exitosa
-                AbrirMensaje("ÉXITO", obj.msg || "Operación realizada con éxito.", function () {
-                    $("#msjModal").modal("hide");
-                    InicializaVistaAsientos(); // Cierra el panel de edición y limpia la vista
-                    // Refrescar la grilla
-                    buscarAsientos(1); // Llama a la función que recarga la grilla
-                }, false, ["Aceptar"], "succ!", null);
-            }
-        },
-        error: function (xhr, status, error) {
-            CerrarWaiting();
-            AbrirMensaje("ERROR", "Error al procesar la operación: " + error, function () {
-                $("#msjModal").modal("hide");
-            }, false, ["Aceptar"], "error!", null);
-        }
-    });
-}
-
-
-/**
- * Recopila los datos del asiento desde el formulario
- * @returns {Object} Objeto con los datos del asiento
- */
-function recopilarDatosAsiento() {
-    // Primero intentamos obtener el ID del asiento de varias formas posibles
-    // 1. Del atributo data
-    let dia_movi = $("#tbAsientoDetalle").data("dia_movi");
-
-    // 2. Si no está en el atributo data, buscar en el campo específico
-    if (!dia_movi) {
-        dia_movi = $("#Dia_movi").val() || $("input#Dia_movi").val() || $("input[name='Dia_movi']").val();
-    }
-
-    // 3. Si seguimos sin tenerlo y estamos en modo modificación, usar EntidadSelect
-    if ((!dia_movi || dia_movi === "") && accion === AbmAction.MODIFICACION && EntidadSelect) {
-        dia_movi = EntidadSelect;
-    }
-
-    // Si aún así no lo tenemos, usar cadena vacía
-    dia_movi = dia_movi || "";
-
-    // Tipo de asiento (código)
-    const dia_tipo = $("#Dia_tipo").val() || "";
-
-    // Descripción del tipo de asiento (texto)
-    const dia_lista = $("#Dia_tipo option:selected").text() || "";
-
-    // Descripción del asiento - ahora usando el ID específico
-    let dia_desc_asiento = "";
-
-    // Intentar diferentes selectores para asegurar que encontramos el campo
-    if ($("#Dia_desc_asiento").length > 0) {
-        dia_desc_asiento = $("#Dia_desc_asiento").val();
-    } else if ($("input[name='Dia_desc_asiento']").length > 0) {
-        dia_desc_asiento = $("input[name='Dia_desc_asiento']").val();
-    } else if ($(".card-header input.form-control").length >= 3) {
-        // Fallback a método anterior si no encontramos por ID o nombre
-        dia_desc_asiento = $(".card-header input.form-control").eq(2).val();
-    }
-
-    // Fecha del asiento - usando el ID específico
-    let dia_fecha_val = "";
-    if ($("#Dia_fecha").length > 0) {
-        dia_fecha_val = $("#Dia_fecha").val();
-    } else if ($("input[name='Dia_fecha']").length > 0) {
-        dia_fecha_val = $("input[name='Dia_fecha']").val();
-    } else {
-        dia_fecha_val = $("#tbAsientoDetalle").data("dia_fecha");
-    }
-
-    const dia_fecha = obtenerFechaFormateada(dia_fecha_val || new Date());
-
-    // Log para depuración
-    console.log("Valores obtenidos:", {
-        dia_movi,
-        dia_fecha_val,
-        dia_fecha,
-        dia_tipo,
-        dia_lista,
-        dia_desc_asiento,
-        "desc_selector": $("#Dia_desc_asiento").length > 0 ? "#Dia_desc_asiento" :
-            $("input[name='Dia_desc_asiento']").length > 0 ? "input[name='Dia_desc_asiento']" :
-                ".card-header input.form-control eq(2)"
-    });
-
-    // Recopilamos las líneas de detalle
-    const detalles = [];
-    let totalDebe = 0;
-    let totalHaber = 0;
-
-    $("#tbAsientoDetalle tbody tr").each(function (index) {
-        const $row = $(this);
-
-        // Si es una fila informativa (sin cuenta), la saltamos
-        if ($row.find("td").length < 5) {
             return;
         }
 
-        // Extraer valores de la fila
-        const ccb_id = $row.find(".cuenta-id").text().trim();
-        const ccb_desc = $row.find(".cuenta-desc").text().trim();
-        const dia_desc = $row.find("td:nth-child(3)").text().trim();
+        // Construir el objeto AsientoAccionDto
+        const datos = {
+            asiento: asientoData,
+            accion: accion.toString().charAt(0) // Asegurar que sea un solo carácter
+        };
 
-        // Procesar valores monetarios
-        let debe = $row.find("td:nth-child(4)").text().trim();
-        let haber = $row.find("td:nth-child(5)").text().trim();
+        console.log("Datos a enviar:", JSON.stringify(datos));
 
-        // Convertir moneda a valor numérico
-        debe = convertirMonedaANumero(debe);
-        haber = convertirMonedaANumero(haber);
+        // Hacemos la llamada al servicio
+        $.ajax({
+            url: confirmarAsientoDefinitivoUrl,
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(datos),
+            success: function (obj) {
+                CerrarWaiting();
 
-        // Actualizar totales
-        totalDebe += debe;
-        totalHaber += haber;
-
-        // Agregar línea al array
-        detalles.push({
-            Dia_movi: dia_movi,
-            Dia_nro: index + 1,
-            Ccb_id: ccb_id,
-            Ccb_desc: ccb_desc,
-            Dia_desc: dia_desc,
-            Debe: debe,
-            Haber: haber
+                if (obj.error === true) {
+                    // Mostrar mensaje de error
+                    AbrirMensaje("ERROR", obj.msg || "Ocurrió un error al procesar el asiento Definitivo.", function () {
+                        $("#msjModal").modal("hide");
+                    }, false, ["Aceptar"], "error!", null);
+                } else if (obj.warn === true) {
+                    // Mostrar advertencia
+                    AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                        if (obj.auth === true) {
+                            window.location.href = loginUrl; // Redirigir al login si es necesario
+                        } else {
+                            $("#msjModal").modal("hide");
+                            if (obj.focus) {
+                                $(`#${obj.focus}`).focus();
+                            }
+                        }
+                    }, false, ["Continuar"], "warn!", null);
+                } else {
+                    // Operación exitosa
+                    AbrirMensaje("ÉXITO", obj.msg || "Operación realizada con éxito.", function () {
+                        $("#msjModal").modal("hide");
+                        InicializaVistaAsientos(); // Cierra el panel de edición y limpia la vista
+                        // Refrescar la grilla
+                        buscarAsientosDefs(1); // Llama a la función que recarga la grilla
+                    }, false, ["Aceptar"], "succ!", null);
+                }
+            },
+            error: function (xhr, status, error) {
+                CerrarWaiting();
+                console.error("Error al confirmar asiento:", error);
+                console.error("Respuesta del servidor:", xhr.responseText);
+                AbrirMensaje("ERROR", "Error al procesar la operación: " + error, function () {
+                    $("#msjModal").modal("hide");
+                }, false, ["Aceptar"], "error!", null);
+            }
         });
-    });
+    } catch (error) {
+        CerrarWaiting();
+        console.error("Error al preparar datos del asiento:", error);
+        AbrirMensaje("ERROR", "Ocurrió un error al procesar los datos del asiento: " + error.message, function () {
+            $("#msjModal").modal("hide");
+        }, false, ["Aceptar"], "error!", null);
+    }
 
-    // Retornar el objeto completo
-    return {
-        Dia_movi: dia_movi,
-        Dia_fecha: dia_fecha,
-        Dia_tipo: dia_tipo,
-        Dia_lista: dia_lista,
-        Dia_desc_asiento: dia_desc_asiento,
-        TotalDebe: totalDebe,
-        TotalHaber: totalHaber,
-        Detalles: detalles
-    };
 }
 
 
+/**
+ * Recopila los datos del asiento definitivo desde el formulario
+ * @returns {Object} Objeto AsientoDetalleDto con los datos del asiento
+ */
+function recopilarDatosAsientoDef() {
+    // Obtener valores comunes a todas las líneas
+    const ejercicioId = parseInt($("#Eje_nro").val()) || 0;
+    const asientoId = EntidadSelect || "";
+    const descripcion = $("#Dia_desc_asiento").val() || "";
+
+    // Procesar la fecha correctamente
+    const fechaStr = $("#Dia_fecha").val() || "";
+    let fecha;
+
+    try {
+        // Intentar detectar el formato de la fecha
+        if (fechaStr.includes('/')) {
+            // Formato DD/MM/YYYY
+            const partes = fechaStr.split('/');
+            if (partes.length === 3) {
+                fecha = new Date(
+                    parseInt(partes[2]), // año
+                    parseInt(partes[1]) - 1, // mes (0-11)
+                    parseInt(partes[0]) // día
+                );
+            }
+        } else {
+            // Intentar con el constructor normal
+            fecha = new Date(fechaStr);
+        }
+
+        // Verificar que la fecha sea válida
+        if (isNaN(fecha.getTime())) {
+            console.warn("Fecha inválida, usando fecha actual:", fechaStr);
+            fecha = new Date(); // Usar fecha actual como fallback
+        }
+    } catch (e) {
+        console.error("Error al procesar la fecha:", e);
+        fecha = new Date(); // Usar fecha actual como fallback
+    }
+
+    const tipoAsiento = $("#Dia_tipo").val() || "";
+    const listaAsiento = $("#Dia_lista").val() || "";
+
+    // Array para almacenar las líneas del asiento
+    const lineasDetalle = [];
+
+    // Variables para calcular totales
+    let totalDebe = 0;
+    let totalHaber = 0;
+
+    // Recopilar datos de cada fila
+    $("#tbAsientoDetalle tbody tr").each(function (index) {
+        const $fila = $(this);
+
+        // Obtener los valores de cada celda
+        const cuentaId = $fila.find(".cuenta-id").text().trim();
+        const cuentaDesc = $fila.find(".cuenta-desc").text().trim();
+        const descripcionLinea = $fila.find("td:nth-child(3)").text().trim();
+
+        // Calcular el importe
+        const debeStr = $fila.find("td:nth-child(4)").text().trim();
+        const haberStr = $fila.find("td:nth-child(5)").text().trim();
+        const debe = convertirMonedaANumero(debeStr);
+        const haber = convertirMonedaANumero(haberStr);
+
+        // Acumular totales
+        totalDebe += debe;
+        totalHaber += haber;
+
+        // Crear objeto de línea según AsientoLineaDto
+        const linea = {
+            "Dia_movi": asientoId,
+            "Dia_nro": index + 1,
+            "Ccb_id": cuentaId,
+            "Ccb_desc": cuentaDesc,
+            "Dia_desc": descripcionLinea,
+            "Debe": debe,
+            "Haber": haber
+        };
+
+        // Agregar la línea al array de detalles
+        lineasDetalle.push(linea);
+    });
+
+    // Construir el objeto AsientoDetalleDto completo
+    const asientoDetalle = {
+        "eje_nro": ejercicioId,
+        "Dia_movi": asientoId,
+        "Dia_fecha": fecha.toISOString(), // Usar formato ISO para la fecha
+        "Dia_tipo": tipoAsiento,
+        "Dia_lista": listaAsiento,
+        "Dia_desc_asiento": descripcion,
+        "TotalDebe": totalDebe,
+        "TotalHaber": totalHaber,
+        "Detalles": lineasDetalle
+    };
+
+    return asientoDetalle;
+}
+
 
 /**
- * Valida los datos básicos del asiento
- * @param {Object} asiento - Datos del asiento a validar
- * @returns {boolean} True si los datos son válidos, false si no
+ * Valida los datos del asiento definitivo antes de enviarlos al servidor
+ * @param {Array} lineasAsiento - Array de objetos que representan las líneas del asiento
+ * @returns {boolean} True si los datos son válidos, false en caso contrario
  */
-function validarAsiento(asiento) {
-    // Validar tipo de asiento
-    if (!asiento.Dia_tipo) {
-        AbrirMensaje("VALIDACIÓN", "Debe seleccionar un tipo de asiento.", function () {
-            $("#msjModal").modal("hide");
-            $("#Dia_tipo").trigger("focus");
-        }, false, ["Aceptar"], "warn!", null);
-        return false;
-    }
-
-    // Validar descripción
-    if (!asiento.Dia_desc_asiento) {
-        AbrirMensaje("VALIDACIÓN", "Debe ingresar una descripción para el asiento.", function () {
-            $("#msjModal").modal("hide");
-            $(".card-header input.form-control").eq(2).trigger("focus");
-        }, false, ["Aceptar"], "warn!", null);
-        return false;
-    }
-
-    // Validar que haya al menos una línea
-    if (asiento.Detalles.length <= 1) {
-        AbrirMensaje("VALIDACIÓN", "El asiento debe tener al menos dos líneas de detalle.", function () {
+function validarAsientoDef(lineasAsiento) {
+    // Validar que haya al menos dos líneas
+    if (!lineasAsiento || lineasAsiento.length < 2) {
+        AbrirMensaje("VALIDACIÓN", "El asiento debe tener al menos dos líneas (débito y crédito).", function () {
             $("#msjModal").modal("hide");
         }, false, ["Aceptar"], "warn!", null);
         return false;
     }
 
-    // Validar que todas las líneas tengan cuenta asignada
-    for (let i = 0; i < asiento.Detalles.length; i++) {
-        const linea = asiento.Detalles[i];
-        if (!linea.Ccb_id) {
+    // Validar que cada línea tenga una cuenta asignada
+    for (let i = 0; i < lineasAsiento.length; i++) {
+        if (!lineasAsiento[i].Ccb_id) {
             AbrirMensaje("VALIDACIÓN", `La línea ${i + 1} debe tener una cuenta contable asignada.`, function () {
                 $("#msjModal").modal("hide");
-                // Intentar dar foco a la fila correspondiente
-                $("#tbAsientoDetalle tbody tr").eq(i).find(".cuenta-id").trigger("focus");
             }, false, ["Aceptar"], "warn!", null);
             return false;
         }
     }
 
-    // Validar que haya al menos una cuenta con importe en el DEBE y otra en el HABER
-    let tieneDebe = false;
-    let tieneHaber = false;
-
-    // Recorrer todas las líneas para comprobar si hay valores en DEBE y HABER
-    for (let i = 0; i < asiento.Detalles.length; i++) {
-        const linea = asiento.Detalles[i];
-        if (linea.Debe > 0) {
-            tieneDebe = true;
-        }
-        if (linea.Haber > 0) {
-            tieneHaber = true;
-        }
-
-        // Si ya encontramos ambos, podemos salir del bucle
-        if (tieneDebe && tieneHaber) {
-            break;
-        }
+    // Calcular saldo total
+    let saldoTotal = 0;
+    for (let i = 0; i < lineasAsiento.length; i++) {
+        saldoTotal += (lineasAsiento[i].Debe - lineasAsiento[i].Haber);
     }
 
-    // Verificar que exista al menos una cuenta en el DEBE
-    if (!tieneDebe) {
-        AbrirMensaje("VALIDACIÓN", "El asiento debe tener al menos una cuenta con importe en el DEBE.", function () {
-            $("#msjModal").modal("hide");
-        }, false, ["Aceptar"], "warn!", null);
-        return false;
-    }
-
-    // Verificar que exista al menos una cuenta en el HABER
-    if (!tieneHaber) {
-        AbrirMensaje("VALIDACIÓN", "El asiento debe tener al menos una cuenta con importe en el HABER.", function () {
-            $("#msjModal").modal("hide");
-        }, false, ["Aceptar"], "warn!", null);
-        return false;
-    }
-
-    // Validar que los totales cuadren
-    if (Math.abs(asiento.TotalDebe - asiento.TotalHaber) > 0.01) {
-        AbrirMensaje("VALIDACIÓN", "El Saldo no es igual a 0. Verifique importes de Debe y Haber para detectar que valor es incorrecto.", function () {
+    // Validar que el saldo sea cero (con margen de error para decimales)
+    if (Math.abs(saldoTotal) > 0.01) {
+        AbrirMensaje("VALIDACIÓN", "El saldo del asiento debe ser cero. Revise los importes de débito y crédito.", function () {
             $("#msjModal").modal("hide");
         }, false, ["Aceptar"], "warn!", null);
         return false;
@@ -1443,32 +1753,48 @@ function obtenerFechaFormateada(fecha) {
         return new Date().toISOString();
     }
 
-    // Si es un string en formato dd/mm/yyyy, convertirlo a Date
-    if (typeof fecha === "string" && fecha.includes("/")) {
-        const partes = fecha.split("/");
-        if (partes.length === 3) {
-            const fechaObj = new Date(
-                parseInt(partes[2]), // año
-                parseInt(partes[1]) - 1, // mes (0-11)
-                parseInt(partes[0]) // día
-            );
-            return fechaObj.toISOString();
-        }
-    }
-
-    // Si ya es un objeto Date, convertirlo a ISO string
-    if (fecha instanceof Date) {
-        return fecha.toISOString();
-    }
-
-    // Si es otro formato, intentar crear un Date y convertirlo
     try {
-        return new Date(fecha).toISOString();
+        // Si es un string en formato dd/mm/yyyy, convertirlo a Date
+        if (typeof fecha === "string" && fecha.includes("/")) {
+            const partes = fecha.split("/");
+            if (partes.length === 3) {
+                const fechaObj = new Date(
+                    parseInt(partes[2]), // año
+                    parseInt(partes[1]) - 1, // mes (0-11)
+                    parseInt(partes[0]) // día
+                );
+
+                // Verificar que la fecha sea válida
+                if (!isNaN(fechaObj.getTime())) {
+                    return fechaObj.toISOString();
+                }
+            }
+        }
+
+        // Si ya es un objeto Date, verificar que sea válido antes de convertirlo
+        if (fecha instanceof Date) {
+            if (!isNaN(fecha.getTime())) {
+                return fecha.toISOString();
+            } else {
+                console.warn("Fecha inválida, usando fecha actual");
+                return new Date().toISOString();
+            }
+        }
+
+        // Si es otro formato, intentar crear un Date y convertirlo
+        const nuevaFecha = new Date(fecha);
+        if (!isNaN(nuevaFecha.getTime())) {
+            return nuevaFecha.toISOString();
+        } else {
+            console.warn("No se pudo parsear la fecha, usando fecha actual:", fecha);
+            return new Date().toISOString();
+        }
     } catch (e) {
-        console.error("Error al formatear fecha:", e);
-        return new Date().toISOString();
+        console.error("Error al formatear fecha:", e, fecha);
+        return new Date().toISOString(); // Devolver fecha actual en caso de error
     }
 }
+
 
 
 
@@ -1613,52 +1939,6 @@ function removerSeleccion() {
     });
 }
 
-//function InicializaVistaAsientos(e) {
-//    if (accion === "" && primerArranque === false) {
-//        // Oculta el panel del asiento
-//        $("#divpanel01").empty(); // O usa .hide() si prefieres
-//        InicializaVistaAsientos();
-//    }
-//    else {
-//        //variable que me permite diferenciar el arranque de la ejecucion normal.
-//        primerArranque = false;
-//        // Inicialización: Deshabilitar componentes si los checkboxes no están marcados
-//        if (typeof asientoTemporal !== 'undefined' && asientoTemporal === true) {
-//            // Si está en modo temporal, no ejecutary desactivar el checkbox
-//            $('#chkEjercicio').prop('checked', true).prop('disabled', true);
-//            $("#Eje_nro").prop("disabled", true);
-//        }
-//        else {
-//            toggleComponent('chkEjercicio', '#Eje_nro');
-//        }
-
-//        toggleComponent('Movi', '#Movi_like');
-//        toggleComponent('Usu', '#Usu_like');
-//        toggleComponent('Tipo', '#Tipo_like');
-//        toggleComponent('Rango', 'input[name="Desde"]');
-//        toggleComponent('Rango', 'input[name="Hasta"]');
-
-//        grilla = Grids.GridAsiento;
-
-//        if ($("#divDetalle").is(":visible")) {
-//            $("#divDetalle").collapse("hide");
-//        }
-//        nng = "#" + grilla;
-//        tb = $(nng + " tbody tr");
-//        if (tb.length === 0) {
-//            $("#divFiltro").collapse("show");
-//        }
-//        /** permito con el true final dejar que el boton cancelar este siempre visible */
-//        accionBotones(AbmAction.CANCEL,"",true);
-
-//        $("#" + grilla + " tbody tr").each(function (index) {
-//            $(this).removeClass("selectedEdit-row");
-//        });
-
-//        activarGrilla(grilla);
-//        CerrarWaiting();
-//    }
-//}
 function ejecutaDblClickGridAsiento(x) {
     AbrirWaiting("Espere mientras se busca el Asiento solicitado...");
     selectAsientoDbl(x, Grids.GridAsiento);
@@ -1692,7 +1972,7 @@ function selectAsientoDbl(x, gridId) {
     EntidadSelect = id;
     desactivarGrilla(gridId);
     //se busca el perfil
-    buscarAsiento(data);
+    buscarAsientoDef(data);
     //se posiciona el registro seleccionado
     posicionarRegOnTop(x);
 }
@@ -1710,15 +1990,15 @@ function selectAsientoDbl(x, gridId) {
 //    EntidadSelect = id;
 //    desactivarGrilla(gridId);
 //    //se busca el perfil
-//    buscarAsiento(data);
+//    buscarAsientoDef(data);
 //    //se posiciona el registro seleccionado
 //    posicionarRegOnTop(x);
 
 //}
 
-function buscarAsiento(data) {
-    //se busca el asiento
-    PostGenHtml(data, buscarAsientoUrl, function (obj) {
+function buscarAsientoDef(data) {
+    //se busca el asiento definitivo
+    PostGenHtml(data, buscarAsientoDefUrl, function (obj) {
         $("#divpanel01").html(obj);
 
         // Marcar los elementos para evitar doble formateo
@@ -1731,11 +2011,84 @@ function buscarAsiento(data) {
         $("#divFiltro").collapse("hide");
         $("#divDetalle").collapse("show");
 
-        //activar botones de acción
-        activarBotones(true);//vamos a dejar el boton cancelar
+        //activar botones de acción para asientos definitivos (solo modificar y anular)
+        $("#btnAbmNuevo").hide(); // Ocultar botón nuevo
+        $("#btnAbmModif").show().prop("disabled", false);
+        $("#btnAbmElimi").show().prop("disabled", false);        
 
         CerrarWaiting();
     });
+}
+
+/**
+ * Verifica si el asiento definitivo puede ser modificado basado en su fecha
+ * y la fecha de control del ejercicio
+ */
+function verificarPermisosModificacionAsiento() {
+    try {
+        // Obtener la fecha del asiento y convertirla a formato adecuado
+        const fechaStr = $("#Dia_fecha").val();
+        if (!fechaStr) return;
+
+        // Convertir formato DD/MM/YYYY a objeto Date
+        let fechaAsiento;
+        if (fechaStr.includes('/')) {
+            const partes = fechaStr.split('/');
+            if (partes.length === 3) {
+                fechaAsiento = new Date(
+                    parseInt(partes[2]), // año
+                    parseInt(partes[1]) - 1, // mes (0-11)
+                    parseInt(partes[0]) // día
+                );
+            }
+        } else {
+            fechaAsiento = new Date(fechaStr);
+        }
+
+        // Verificar que la fecha sea válida
+        if (isNaN(fechaAsiento.getTime())) {
+            console.warn("Fecha inválida:", fechaStr);
+            return;
+        }
+
+        // Continuar con la verificación usando la fecha correcta
+        const ejercicioId = $("#Eje_nro").val() || "0";
+
+        const data = {
+            eje_nro: ejercicioId,
+            dia_fecha: fechaAsiento.toISOString()
+        };
+
+        $.ajax({
+            url: verificarFechaModificacionUrl, // Esta URL debe definirse en la vista
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(data),
+            success: function (response) {
+                if (response.permitido === false) {
+                    // No se permite modificar por fecha
+                    $("#btnAbmModif").prop("disabled", true);
+
+                    // Agregar mensaje informativo
+                    if ($("#fecha-advertencia").length === 0) {
+                        const mensaje = `
+                        <div id="fecha-advertencia" class="alert alert-warning mb-2 py-1 small">
+                            <i class="bx bx-info-circle"></i> 
+                            ${response.mensaje || "Este asiento no puede ser modificado porque su fecha ha superado la fecha de control del ejercicio."}
+                        </div>
+                    `;
+                        $("#divpanel01").prepend(mensaje);
+                    }
+                }
+            },
+            error: function () {
+                // Por defecto, permitir modificación si no podemos verificar
+                console.warn("No se pudo verificar la validez de la fecha para modificación");
+            }
+        });
+    } catch (error) {
+        ControlaMensajeError("Hubo un problema en la verificación de permisos:" + error);
+    }
 }
 
 // Agregar un mensaje informativo al inicio de la grilla
@@ -1758,27 +2111,27 @@ function agregarMensajeSeleccion() {
 
 
 
-// Función genérica para habilitar/deshabilitar componentes
-function toggleComponent(checkboxId, componentSelector) {
-    try {
-        const isChecked = $(`#${checkboxId}`).is(':checked');
-        const $component = $(componentSelector);
+//// Función genérica para habilitar/deshabilitar componentes
+//function toggleComponent(checkboxId, componentSelector) {
+//    try {
+//        const isChecked = $(`#${checkboxId}`).is(':checked');
+//        const $component = $(componentSelector);
 
-        if (isChecked) {
-            $component.prop('disabled', false).css({
-                'background-color': '',
-                'font-weight': 'normal'
-            });
-        } else {
-            $component.prop('disabled', true).css({
-                'background-color': 'rgb(251,255,195)',
-                'font-weight': '900'
-            });
-        }
-    } catch (error) {
-        console.error(`Error al procesar el checkbox ${checkboxId}:`, error);
-    }
-}
+//        if (isChecked) {
+//            $component.prop('disabled', false).css({
+//                'background-color': '',
+//                'font-weight': 'normal'
+//            });
+//        } else {
+//            $component.prop('disabled', true).css({
+//                'background-color': 'rgb(251,255,195)',
+//                'font-weight': '900'
+//            });
+//        }
+//    } catch (error) {
+//        console.error(`Error al procesar el checkbox ${checkboxId}:`, error);
+//    }
+//}
 
 /**
  * Maneja la impresión de asientos
