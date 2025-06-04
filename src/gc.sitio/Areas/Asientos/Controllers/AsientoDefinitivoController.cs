@@ -268,7 +268,7 @@ namespace gc.sitio.Areas.Asientos.Controllers
                 // Llamar al servicio para verificar si la fecha es válida para modificación
                 //var resultado = await _asDefSv.VerificarFechaModificacion(data.eje_nro, data.dia_fecha, TokenCookie);
 
-                if(ejer.Eje_desde> data.dia_fecha || ejer.Eje_hasta < data.dia_fecha)
+                if(ejer.Eje_ctl< data.dia_fecha)
                 {
                     return Json(new
                     {

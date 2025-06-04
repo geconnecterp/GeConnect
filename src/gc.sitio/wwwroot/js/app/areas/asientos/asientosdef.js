@@ -134,6 +134,7 @@ function buscarAsientosDefs(pag) {
     }, function (obj) {
         ControlaMensajeError(obj.message);
         CerrarWaiting();
+
     });
 }
 
