@@ -23,6 +23,7 @@
 					<th style="width:0%; display:none;">fc_compte</th>
 					<th style="width:0%; display:none;">fc_item</th>
 					<th style="width:0%; display:none;">dia_movi</th>
+					<th style="width:0%; display:none;">fc_fecha_valor</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -31,7 +32,7 @@
 					@foreach (var item in Model.GrillaValoresEnCartera.ListaDatos)
 					{
 						var nombre = "chk" + item.fc_dato2_valor;
-						<tr onclick="seleccionarValoresEnCartera(this)">
+						<tr onclick="seleccionarValoresEnCartera(this)" title="@item.concepto_valor">
 							<td class="@Model.GrillaValoresEnCartera.ObtenerClase(item.fc_fecha_valor) tiny-row">@Model.GrillaValoresEnCartera.FormatearDato(item.fc_fecha_valor, FormatDato.Fecha)</td>
 							<td class="@Model.GrillaValoresEnCartera.ObtenerClase(item.fc_fecha) tiny-row">@Model.GrillaValoresEnCartera.FormatearDato(item.fc_fecha, FormatDato.Fecha)</td>
 							<td class="@Model.GrillaValoresEnCartera.ObtenerClase(item.fc_dato1_valor) tiny-row">@Model.GrillaValoresEnCartera.FormatearDato(item.fc_dato1_valor, FormatDato.Ninguno)</td>
@@ -45,6 +46,7 @@
 							<td style="display:none;">@item.fc_compte</td>
 							<td style="display:none;">@item.fc_item</td>
 							<td style="display:none;">@item.dia_movi</td>
+							<td style="display:none;">@item.fc_fecha_valor.Value.ToString("yyyy-MM-dd")</td>
 						</tr>
 					}
 				}

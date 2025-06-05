@@ -703,7 +703,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 
-				//TODO MARCE: Tengo que levantar los productos desde la lista de respaldo, y restaurar los valores de precio de costo, y el oc_compte
 				if (string.IsNullOrEmpty(oc_compte))
 					return PartialView("_listaDetalleRpr", model);
 

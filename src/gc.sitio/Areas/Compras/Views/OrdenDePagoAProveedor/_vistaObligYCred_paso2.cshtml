@@ -91,7 +91,7 @@
 						<button id="btnAnterior2" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Anterior">
 							<i class="bx bx-arrow-to-left-stroke bx-xs"></i>
 						</button>
-						<button id="btnConfirmar2" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Confirmar" disabled>
+						<button id="btnConfirmar2" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Confirmar">
 							<i class="bx bx-file-plus"></i>
 						</button>
 					</div>
@@ -215,9 +215,10 @@
 					<table class="table table-bordered table-hover" id="tbListaValores_Paso2">
 						<thead class="table-dark">
 							<tr>
-								<th style="width:50%;" class="col-header-small align-center tiny-row">Cuenta Financiera</th>
-								<th style="width:25%;" class="col-header-small align-center tiny-row">Valor</th>
-								<th style="width:25%;" class="col-header-small align-center tiny-row">Importe</th>
+								<th style="width:40%;" class="col-header-small align-center tiny-row">Cuenta Financiera</th>
+								<th style="width:50%;" class="col-header-small align-center tiny-row">Valor</th>
+								<th style="width:10%;" class="col-header-small align-center tiny-row">Importe</th>
+								<th style="width:0%; display:none;">orden</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -229,6 +230,7 @@
 										<td class="@Model.GrillaValores.ObtenerClase(item.ctaf_denominacion)">@Model.GrillaValores.FormatearDato(item.ctaf_denominacion, FormatDato.Ninguno)</td>
 										<td class="@Model.GrillaValores.ObtenerClase(item.concepto_valor)">@Model.GrillaValores.FormatearDato(item.concepto_valor, FormatDato.Monto)</td>
 										<td class="@Model.GrillaValores.ObtenerClase(item.op_importe)">@Model.GrillaValores.FormatearDato(item.op_importe, FormatDato.Monto)</td>
+										<td style="display:none;">@item.orden</td>
 									</tr>
 								}
 							}

@@ -13,6 +13,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OfficeOpenXml.FormulaParsing.Excel.Functions;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace gc.sitio.Areas.Compras.Controllers
 {
@@ -663,8 +664,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 					json_d = json_debitos,
 					json_h = json_creditos
 				}, TokenCookie);
-				OPValoresDesdeObligYCredLista = response;
-				model = ObtenerGridCoreSmart<ValoresDesdeObligYCredDto>(response);
+				var listaAux = OPValoresDesdeObligYCredLista;
+				listaAux.AddRange(response);
+				RecalcularOrden(listaAux);
+				OPValoresDesdeObligYCredLista = listaAux;
+				model = ObtenerGridCoreSmart<ValoresDesdeObligYCredDto>(OPValoresDesdeObligYCredLista);
 				return PartialView("_grillaValores", model);
 			}
 			catch (Exception ex)
@@ -680,7 +684,131 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
+		[HttpPost]
+		public IActionResult ActualizarGrillaValores(int orden)
+		{
+			var model = new GridCoreSmart<ValoresDesdeObligYCredDto>();
+			try
+			{
+				if (orden > 0)
+				{
+					var listaAux = OPValoresDesdeObligYCredLista;
+					listaAux = [.. listaAux.Where(x => x.orden != orden)];
+					OPValoresDesdeObligYCredLista = listaAux;
+				}
+				model = ObtenerGridCoreSmart<ValoresDesdeObligYCredDto>(OPValoresDesdeObligYCredLista);
+				return PartialView("_grillaValores", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public IActionResult ValidarAntesDeConfirmar()
+		{
+			try
+			{
+				//Validar que las obligaciones o débitos sean mayores a cero y su total de imputación sea igual al total de créditos + retenciones + valores. 
+				if (OPDebitoNuevaLista != null && OPDebitoNuevaLista.Count > 0 && OPDebitoNuevaLista.Sum(x => x.cv_importe) > 0)
+				{
+					var total_h = ObtenerTotalImputacionCreditos();
+					if (total_h != OPDebitoNuevaLista.Sum(x => x.cv_importe))
+					{
+						return Json(new { error = true, warn = false, msg = "Las Obligaciones (Débitos) deben ser igual a la suma de Créditos + Retenciones + Valores." });
+					}
+				}
+				//Salvo, que sea un pago anticipado, en este caso las obligaciones, créditos y retenciones deben ser iguales a cero y los valores emitidos mayores a cero.
+				if (OPDebitoNuevaLista != null && OPDebitoNuevaLista.Count == 0)
+				{
+					if (OPCreditoNuevaLista != null && OPCreditoNuevaLista.Count > 0)
+					{
+						return Json(new { error = true, warn = false, msg = "Para generar un pago anticipado, los Créditos deben ser 0." });
+					}
+					if (OPRetencionesDesdeObligYCredLista != null && OPRetencionesDesdeObligYCredLista.Count > 0)
+					{
+						return Json(new { error = true, warn = false, msg = "Para generar un pago anticipado, las retenciones deben ser 0." });
+					}
+					if (OPValoresDesdeObligYCredLista != null && OPValoresDesdeObligYCredLista.Count <= 0)
+					{
+						return Json(new { error = true, warn = false, msg = "Para generar un pago anticipado, debe especificar un Valor." });
+					}
+				}
+				return Json(new { error = false, warn = false, msg = "" });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar hacer las validaciones previas a la cofirmación. {ex}" });
+			}
+		}
+
+		[HttpPost]
+		public JsonResult ConfirmarOPaProveedor([FromBody] ConfirmarOPaProveedorRequest req)
+		{
+			try
+			{
+				if (req == null)
+					return Json(new { error = true, warn = false, msg = $"Request vacío, por favor revise." });
+
+				req.cta_id = CtaIdSelected;
+				req.adm_id = AdministracionId;
+				req.usu_id = UserName;
+				req.json_d = JsonConvert.SerializeObject(OPDebitoNuevaLista, new JsonSerializerSettings());
+				req.json_h = JsonConvert.SerializeObject(OPCreditoNuevaLista, new JsonSerializerSettings());
+				req.json_r = JsonConvert.SerializeObject(OPRetencionesDesdeObligYCredLista, new JsonSerializerSettings());
+				req.json_v = JsonConvert.SerializeObject(OPValoresDesdeObligYCredLista, new JsonSerializerSettings());
+
+				Console.WriteLine("Request enviado a [SPGECO_OP_Confirmar]:");
+				Console.WriteLine("op_desc:");
+				Console.WriteLine(req.op_desc);
+				Console.WriteLine("opt_id:");
+				Console.WriteLine(req.opt_id);
+				Console.WriteLine("cta_id:");
+				Console.WriteLine(CtaIdSelected);
+				Console.WriteLine("adm_id:");
+				Console.WriteLine(AdministracionId);
+				Console.WriteLine("usu_id:");
+				Console.WriteLine(UserName);
+				Console.WriteLine("json_d:");
+				Console.WriteLine(JsonConvert.SerializeObject(OPDebitoNuevaLista, new JsonSerializerSettings()));
+				Console.WriteLine("json_h:");
+				Console.WriteLine(JsonConvert.SerializeObject(OPCreditoNuevaLista, new JsonSerializerSettings()));
+				Console.WriteLine("json_r:");
+				Console.WriteLine(JsonConvert.SerializeObject(OPRetencionesDesdeObligYCredLista, new JsonSerializerSettings()));
+				Console.WriteLine("json_v:");
+				Console.WriteLine(JsonConvert.SerializeObject(OPValoresDesdeObligYCredLista, new JsonSerializerSettings()));
+				var respuesta = _ordenDePagoServicio.ConfirmarOrdenDePagoAProveedor(req, TokenCookie);
+				return AnalizarRespuesta(respuesta, "La Orden de Compra se Confirmo con Éxito");
+				//return Json(new { error = false, warn = false, msg = "La Orden de Compra se Confirmo con Éxito" });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al confirmar la Orden de Pago a Proveedor. {ex}" });
+			}
+		}
+
 		#region Clases
+		private void RecalcularOrden(List<ValoresDesdeObligYCredDto> lista)
+		{
+			if (lista != null && lista.Count > 0)
+			{
+				var index = 0;
+				foreach (var item in lista)
+				{
+					index++;
+					item.orden = index;
+				}
+			}
+		}
+
 		public class TotalesActualizados
 		{
 			public decimal ObligacionesCancelar { get; set; } = 0.00M;
@@ -690,6 +818,27 @@ namespace gc.sitio.Areas.Compras.Controllers
 		#endregion
 
 		#region Metodos Privados
+		private decimal ObtenerTotalImputacionCreditos()
+		{
+			try
+			{
+				var tot_CredYValImputados = (decimal)0.00;
+				if (OPCreditoNuevaLista != null && OPCreditoNuevaLista.Count > 0)
+					tot_CredYValImputados += OPCreditoNuevaLista.Sum(x => x.cv_importe);
+				if (OPRetencionesDesdeObligYCredLista != null && OPRetencionesDesdeObligYCredLista.Count > 0)
+					tot_CredYValImputados += OPRetencionesDesdeObligYCredLista.Sum(x => x.retencion);
+				if (OPValoresDesdeObligYCredLista != null && OPValoresDesdeObligYCredLista.Count > 0)
+					tot_CredYValImputados += OPValoresDesdeObligYCredLista.Sum(x => x.op_importe);
+				return tot_CredYValImputados;
+			}
+			catch (Exception)
+			{
+				return 0.00M;
+			}
+
+		}
+
+
 		/// <summary>
 		/// Pausa la ejecución del método actual durante la cantidad de milisegundos especificada.
 		/// Es útil para evitar problemas de concurrencia o actualización de listas en sesión, 

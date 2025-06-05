@@ -4,7 +4,8 @@
 	$(document).on("click", "#btnSiguiente1", btnSiguiente1Validar);
 	$(document).on("click", "#btnAnterior2", btnAnterior2Validar);
 	$(document).on("click", "#btnAgregarValor", btnAgregarValorValidar);
-	//btnAgregarValor
+	$(document).on("click", "#btnConfirmar2", btnConfirmar2Validar);
+	//
 	InicializaPantalla();
 	$("#btnBuscar").on("click", function () {
 		if (ctaIdSelected == "") {
@@ -18,10 +19,65 @@
 			ValidarProveedor();
 		}
 	});
+	$("#UpdateValores").on("change", function () {
+		if ($(this).val() == 'true') {
+			CargarValoresDesdeObligYCredSeleccionados();
+			$("#txtObservaciones").prop("disabled", false);
+		}
+	});
 });
+
+function btnConfirmar2Validar() {
+	ValidarPrevioAConfirmar();
+}
+
+function ValidarPrevioAConfirmar() {
+	var data = {};
+	PostGen(data, validarAntesDeConfirmarUrl, function (obj) {
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return false;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			AbrirMensaje("ATENCIÓN", "¿Confirma la generación de la Orden de Pago a Proveedor?", function (e) {
+				$("#msjModal").modal("hide");
+				switch (e) {
+					case "SI": //Confirmar
+						var op_desc = $("#txtObservaciones").val();
+						var opt_id = " ";
+						var data = { op_desc, opt_id };
+						PostGen(data, confirmarOPaProveedorUrl, function (obj) {
+							if (obj.error === true) {
+								AbrirMensaje("ATENCIÓN", obj.msg, function () {
+									$("#msjModal").modal("hide");
+									return true;
+								}, false, ["Aceptar"], "error!", null);
+							}
+							else {
+								AbrirMensaje("ATENCIÓN", obj.msg, function () {
+									$("#msjModal").modal("hide");
+									$("#btnAbmCancelar").trigger("click");
+									return true;
+								}, false, ["Aceptar"], "succ!", null);
+							}
+						});
+						break;
+					case "NO":
+						break;
+					default:
+						break;
+				}
+				return true;
+			}, true, ["Aceptar", "Cancelar"], "warn!", null);
+		}
+	});
+}
 
 //Abro modal de seleccion de valores
 function btnAgregarValorValidar() {
+	//TODO MARCE: Ver de donde saco los datos "importe" y "valor_a_nombre_de"
 	var app = "OPP";
 	var importe = 0;
 	var valor_a_nombre_de = "";
@@ -41,7 +97,8 @@ function btnAnterior2Validar() {
 		$("#CtaDesc").val(ctaDescSelected);
 		MostrarDatosDeCuenta(true);
 		ActualizarTotalesSuperiores();
-		RestaurarGrillasInferioresParaPaso1();
+		ActualizarGrillaObligacionesInferior();
+		ActualizarGrillaCreditosInferior();
 		EvaluarBotonesWizzard();
 		CerrarWaiting();
 	});
@@ -49,37 +106,28 @@ function btnAnterior2Validar() {
 
 //Me muevo al paso2
 function btnSiguiente1Validar() {
-	if ($("#tbListaObligacionesParaAgregar tbody tr").length < $("#tbListaCreditosParaAgregar tbody tr").length) {
-		AbrirMensaje("ATENCIÓN", "Deben existir mas elementos de Obligaciones/Débitos que créditos.", function () {
-			$("#msjModal").modal("hide");
-			return true;
-		}, false, ["Aceptar"], "warn!", null);
+	var esPagoAnticipado = false;
+	if ($("#tbListaObligacionesParaAgregar tbody tr").length == 0 && $("#tbListaCreditosParaAgregar tbody tr").length == 0) {
+		esPagoAnticipado = true;
 	}
-	//Validar que el total de obligaciones o débitos sea mayor o igual que el de los créditos
-	else if ($("#tbListaObligacionesParaAgregar tbody tr").length >= $("#tbListaCreditosParaAgregar tbody tr").length) {
-		AbrirWaiting("Cargando....");
-		var data = {};
-		PostGenHtml(data, cargarVistaObligacionesYCreditosPaso2Url, function (obj) {
-			$("#divDetalle").html(obj);
-			//Setear los valores de la cuenta seleccionada en la vista de obligaciones y creditos
-			$("#CtaID").val(ctaIdSelected);
-			$("#CtaDesc").val(ctaDescSelected);
-			MostrarDatosDeCuenta(true);
-			CargarRetencionesDesdeObligYCredSeleccionados();
-			CargarValoresDesdeObligYCredSeleccionados();
-			setTimeout(() => {
-				ActualizarTotalesSuperiores();
-			}, 500);
-			CerrarWaiting();
-		});
-	}
-	else {
-		//Si no existen obligaciones, debe suponer que es un “Pago Anticipado”, en ese caso debe advertirlo en el paso siguiente 
-		//(tampoco deben existir créditos por defecto debería funcionar la validación anterior)
-		if ($("#tbListaObligacionesParaAgregar tbody tr").length == 0 && $("#tbListaCreditosParaAgregar tbody tr").length == 0) {
-			//TODO MARCE: seguir aca
+	AbrirWaiting("Cargando....");
+	var data = {};
+	PostGenHtml(data, cargarVistaObligacionesYCreditosPaso2Url, function (obj) {
+		$("#divDetalle").html(obj);
+		//Setear los valores de la cuenta seleccionada en la vista de obligaciones y creditos
+		$("#CtaID").val(ctaIdSelected);
+		$("#CtaDesc").val(ctaDescSelected);
+		MostrarDatosDeCuenta(true);
+		CargarRetencionesDesdeObligYCredSeleccionados();
+		CargarValoresDesdeObligYCredSeleccionados();
+		setTimeout(() => {
+			ActualizarTotalesSuperiores();
+		}, 500);
+		CerrarWaiting();
+		if (esPagoAnticipado) {
+			ControlaMensajeInfo("Es Pago Anticipado.");
 		}
-	}
+	});
 }
 
 function CargarRetencionesDesdeObligYCredSeleccionados() {
@@ -93,6 +141,7 @@ function CargarValoresDesdeObligYCredSeleccionados() {
 	var data = {};
 	PostGenHtml(data, cargarValoresDesdeObligYCredSeleccionadosUrl, function (obj) {
 		$("#divValores").html(obj);
+		ActualizarTotalesSuperiores();
 	});
 }
 
@@ -197,6 +246,14 @@ function selectRegDbl(x, gridId) {
 	CerrarWaiting();
 }
 
+function selectRegDblGrillaValores(x) {
+	var orden = x.childNodes[7].innerText;
+	var data = { orden };
+	PostGenHtml(data, actualizarGrillaValoresUrl, function (obj) {
+		$("#divValores").html(obj);
+	});
+}
+
 function EvaluarBotonesWizzard() {
 	if ($("#tbListaObligacionesParaAgregar tbody tr").length >= $("#tbListaCreditosParaAgregar tbody tr").length) {
 		$("#btnSiguiente1").prop("disabled", false);
@@ -205,7 +262,7 @@ function EvaluarBotonesWizzard() {
 		$("#btnSiguiente1").prop("disabled", false);
 	}
 	else {
-		$("#btnSiguiente1").prop("disabled", true);
+		$("#btnSiguiente1").prop("disabled", false);
 	}
 }
 
@@ -397,9 +454,58 @@ function ValidarProveedor() {
 
 function RestaurarGrillasInferioresParaPaso1() {
 	setTimeout(() => {
-		CargarObligacionesOCreditos("D"); //Obligaciones
+		CargarObligacionesOCreditos("Obligaciones"); //Obligaciones
 	}, 500);
 	setTimeout(() => {
-		CargarObligacionesOCreditos("H"); //Créditos
+		CargarObligacionesOCreditos("Creditos"); //Créditos
 	}, 500);
 }
+
+
+
+
+/*
+Backup
+function btnSiguiente1Validar() {
+	if ($("#tbListaObligacionesParaAgregar tbody tr").length < $("#tbListaCreditosParaAgregar tbody tr").length) {
+		AbrirMensaje("ATENCIÓN", "Deben existir mas elementos de Obligaciones/Débitos que Créditos.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "warn!", null);
+	}
+	//Validar que el total de obligaciones o débitos sea mayor o igual que el de los créditos
+	else
+	if ($("#tbListaObligacionesParaAgregar tbody tr").length >= $("#tbListaCreditosParaAgregar tbody tr").length) {
+		var esPagoAnticipado = false;
+		if ($("#tbListaObligacionesParaAgregar tbody tr").length == 0 && $("#tbListaCreditosParaAgregar tbody tr").length == 0) {
+			esPagoAnticipado = true;
+		}
+		AbrirWaiting("Cargando....");
+		var data = {};
+		PostGenHtml(data, cargarVistaObligacionesYCreditosPaso2Url, function (obj) {
+			$("#divDetalle").html(obj);
+			//Setear los valores de la cuenta seleccionada en la vista de obligaciones y creditos
+			$("#CtaID").val(ctaIdSelected);
+			$("#CtaDesc").val(ctaDescSelected);
+			MostrarDatosDeCuenta(true);
+			CargarRetencionesDesdeObligYCredSeleccionados();
+			CargarValoresDesdeObligYCredSeleccionados();
+			setTimeout(() => {
+				ActualizarTotalesSuperiores();
+			}, 500);
+			CerrarWaiting();
+			if (esPagoAnticipado) {
+				ControlaMensajeInfo("Es Pago Anticipado.");
+			}
+		});
+	}
+	else {
+		//Si no existen obligaciones, debe suponer que es un “Pago Anticipado”, en ese caso debe advertirlo en el paso siguiente 
+		//(tampoco deben existir créditos por defecto debería funcionar la validación anterior)
+		if ($("#tbListaObligacionesParaAgregar tbody tr").length == 0 && $("#tbListaCreditosParaAgregar tbody tr").length == 0) {
+			//Dejo este espacio por las dudas que deba dejar alguna validación previa en el caso de Pago Anticipado
+		}
+	}
+}
+
+*/

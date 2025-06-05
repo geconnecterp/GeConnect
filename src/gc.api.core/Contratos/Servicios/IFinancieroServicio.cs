@@ -10,6 +10,6 @@ namespace gc.api.core.Contratos.Servicios
         List<FinancieroEstadoDto> GetFinancieroEstados();
         List<PlanContableDto> GetPlanContableCuentaLista();
         List<FinancieroDesdeSeleccionDeTipoDto> GetFinancieroDesdeTipoParaSeleccionDeValores(string tcf_id);
-        List<FinancieroCarteraDto> GetFinancieroCarteraParaSeleccionDeValores(string ctaf_id, string cta_id);
+        List<FinancieroCarteraDto> GetFinancieroCarteraParaSeleccionDeValores(string ctaf_id);
 	}
 }

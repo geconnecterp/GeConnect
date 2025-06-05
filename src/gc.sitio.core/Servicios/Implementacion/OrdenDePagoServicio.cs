@@ -29,6 +29,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string ObtenerRetencionesDesdeObligYCredSeleccionados = "/CargarRetencionesDesdeObligYCredSeleccionados";
 		private const string ObtenerValoresDesdeObligYCredSeleccionados = "/CargarValoresDesdeObligYCredSeleccionados";
 		private const string ObtenerCuentaFinParaSeleccionDeValores = "/CargarCuentaFinParaSeleccionDeValores";
+		private const string GuardarOrdenDePagoAProveedor = "/ConfirmarOrdenDePagoAProveedor";
 		private readonly AppSettings _appSettings;
 		public OrdenDePagoServicio(IOptions<AppSettings> options, ILogger<OrdenDePagoServicio> logger) : base(options, logger, RutaAPI)
 		{
@@ -201,10 +202,41 @@ namespace gc.sitio.core.Servicios.Implementacion
 				if (string.IsNullOrEmpty(stringData))
 				{
 					_logger.LogWarning($"La API devolvió error. Parametros cta_id:{r.cta_id}");
-					return new();
+					return [];
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ValoresDesdeObligYCredDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
 				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().Result;
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return [];
+			}
+		}
+
+		public RespuestaGenerica<RespuestaDto> ConfirmarOrdenDePagoAProveedor(ConfirmarOPaProveedorRequest r, string token)
+		{
+			ApiResponse<RespuestaDto> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(r, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{GuardarOrdenDePagoAProveedor}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().Result;
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros cta_id:{r.cta_id}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return new RespuestaGenerica<RespuestaDto>() { Entidad = apiResponse.Data };
 			}
 			else
 			{

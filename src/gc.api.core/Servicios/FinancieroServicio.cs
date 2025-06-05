@@ -3,6 +3,8 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.OrdenDePago.Request;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 
@@ -86,13 +88,12 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
-		public List<FinancieroCarteraDto> GetFinancieroCarteraParaSeleccionDeValores(string ctaf_id, string cta_id)
+		public List<FinancieroCarteraDto> GetFinancieroCarteraParaSeleccionDeValores(string ctaf_id)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OP_SV_CARTERA;
 			var ps = new List<SqlParameter>()
 			{
 				new("@ctaf_id",ctaf_id),
-				new("@cta_id",cta_id)
 			};
 			var listaTemp = _repository.EjecutarLstSpExt<FinancieroCarteraDto>(sp, ps, true);
 			return listaTemp;

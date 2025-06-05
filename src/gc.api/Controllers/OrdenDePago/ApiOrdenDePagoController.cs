@@ -100,5 +100,18 @@ namespace gc.api.Controllers.OrdenDePago
 			response = new ApiResponse<List<ValoresDesdeObligYCredDto>>(res);
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ConfirmarOrdenDePagoAProveedor([FromBody] ConfirmarOPaProveedorRequest r)
+		{
+			ApiResponse<RespuestaDto> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _ordenDePagoServicio.ConfirmarOrdenDePagoAProveedor(r);
+			response = new ApiResponse<RespuestaDto>(res.First());
+			return Ok(response);
+		}
 	}
 }
