@@ -144,15 +144,22 @@ namespace gc.api.core.Servicios.Asientos
             }
         }
 
-        public AsientoDetalleDto ObtenerAsientoDetalle(string moviId)
+        public AsientoDetalleDto ObtenerAsientoDetalle(string moviId, bool esReporte = false)
         {
             if (string.IsNullOrWhiteSpace(moviId))
             {
                 return null;
             }
 
-            var sp = ConstantesGC.StoredProcedures.SP_ASIENTO_TMP_DETALLE;// "spgeco_conta_asiento_tmp_datos"; // Usar el SP que mencionaste
-
+            string sp;
+            if (esReporte)
+            {
+                sp = ConstantesGC.StoredProcedures.SP_ASIENTO_DETALLE_REPO; 
+            }
+            else
+            {
+                sp = ConstantesGC.StoredProcedures.SP_ASIENTO_TMP_DETALLE;// "spgeco_conta_asiento_tmp_datos"; // Usar el SP que mencionaste
+            }
             var ps = new List<SqlParameter>
                 {
                     new SqlParameter("@dia_movi", moviId)
@@ -170,6 +177,10 @@ namespace gc.api.core.Servicios.Asientos
             var primerRegistro = resultados.First();
             var asientoDetalle = new AsientoDetalleDto()
             {
+                esTemporal = primerRegistro.temporal,
+                usu_id = primerRegistro.usu_id,
+                usu_apellidoynombre = primerRegistro.usu_apellidoynombre,
+                eje_nro = primerRegistro.eje_nro,
                 Dia_movi = primerRegistro.dia_movi,
                 Dia_fecha = primerRegistro.dia_fecha,
                 Dia_tipo = primerRegistro.dia_tipo,
@@ -179,6 +190,7 @@ namespace gc.api.core.Servicios.Asientos
                 TotalDebe = 0,
                 TotalHaber = 0
             };
+
 
             // Agregar cada registro como una línea de detalle
             foreach (var registro in resultados)

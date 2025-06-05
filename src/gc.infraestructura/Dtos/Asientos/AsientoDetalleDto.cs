@@ -2,6 +2,9 @@
 {  
     public class AsientoDetalleDto
     {
+        public bool? esTemporal{ get; set; }
+        public string usu_id { get; set; } = string.Empty;
+        public string usu_apellidoynombre { get; set; } = string.Empty;
         public int eje_nro { get; set; } = 0;
         public string Dia_movi { get; set; } = string.Empty;
         public DateTime Dia_fecha { get; set; }
@@ -30,12 +33,17 @@
 
     public class AsientoPlanoDto
     {
+        public bool temporal { get; set; }
         public int eje_nro { get; set; } = 0;
         public string dia_movi { get; set; } = string.Empty;
         public DateTime dia_fecha { get; set; }
         public string dia_tipo { get; set; } = string.Empty;
         public string dia_lista { get; set; } = string.Empty;
         public string dia_desc_asiento { get; set; } = string.Empty;
+        public string usu_id { get; set; } = string.Empty;
+        public string usu_apellidoynombre { get; set; } = string.Empty;
+        public char dia_anulado { get; set; }
+        public string dia_compte { get; set; } = string.Empty;
         public int dia_nro { get; set; }
         public string ccb_id { get; set; } = string.Empty;
         public string ccb_desc { get; set; } = string.Empty;
@@ -45,7 +53,6 @@
     }
      public class AsientoDefPlanoDto : AsientoPlanoDto
     {
-        public int eje_nro { get; set; }
     }
 
     public class AsientoAccionDto

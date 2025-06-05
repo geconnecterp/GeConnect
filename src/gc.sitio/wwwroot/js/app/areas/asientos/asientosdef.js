@@ -194,6 +194,135 @@ function configurarFiltrosAsientoDefinitivo() {
         e.preventDefault();
         return false;
     });
+    // Actualizar el nombre del usuario seleccionado en la botonera
+    $('#Usu_like').on('change', function () {
+        var usuarioSeleccionado = $(this).find('option:selected').text();
+        $('#nombreUsuarioSeleccionado').text('Usuario: ' + usuarioSeleccionado);
+        $('#usuarioSeleccionadoLabel').removeClass('bg-secondary').addClass('bg-primary');
+    });
+
+    // Inicializar con el valor actual (si hay uno seleccionado)
+    if ($('#Usu_like').val()) {
+        var usuarioActual = $('#Usu_like').find('option:selected').text();
+        $('#nombreUsuarioSeleccionado').text('Usuario: ' + usuarioActual);
+        $('#usuarioSeleccionadoLabel').removeClass('bg-secondary').addClass('bg-primary');
+    }
+
+    // Detectar cambio en el ejercicio y actualizar la lista de usuarios
+    $('#Eje_nro').on('change', function () {
+        const ejercicioId = $(this).val();
+        if (!ejercicioId) return;
+
+        // Desactivar los botones de búsqueda y cancelar
+        const $btnBuscar = $("#btnBuscar");
+        const $btnCancel = $("#btnCancel");
+        $btnBuscar.prop('disabled', true);
+        $btnCancel.prop('disabled', true);
+
+        // Mostrar indicador de carga
+        const $usuarioSelect = $('#Usu_like');
+        const valorActual = $usuarioSelect.val();
+        $usuarioSelect.prop('disabled', true).html('<option value="">Cargando usuarios...</option>');
+
+        // Actualizar etiqueta en la botonera
+        $('#nombreUsuarioSeleccionado').text('Usuario: Cargando...');
+        $('#usuarioSeleccionadoLabel').removeClass('bg-primary').addClass('bg-secondary');
+
+        // Agregar un spinner junto al dropdown para indicar carga
+        if ($('#spinner-usuarios').length === 0) {
+            $usuarioSelect.after(`
+                <div id="spinner-usuarios" class="dots-spinner ms-2">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+            `);
+        } else {
+            $('#spinner-usuarios').show();
+        }
+
+
+
+        // Realizar petición AJAX para obtener los usuarios del ejercicio seleccionado
+        $.ajax({
+            url: obtenerUsuariosEjercicioUrl, // URL definida en la vista Index
+            type: 'GET',
+            data: { ejercicioId: ejercicioId },
+            success: function (data) {
+                // Limpiar el select
+                $usuarioSelect.empty();
+
+                // Agregar opción por defecto
+                $usuarioSelect.append('<option value="">Seleccione usuario</option>');
+
+                // Agregar opciones con los usuarios recibidos
+                $.each(data, function (index, item) {
+                    $usuarioSelect.append(`<option value="${item.id}">${item.descripcion}</option>`);
+                });
+
+                // Restaurar valor seleccionado si existe en la nueva lista
+                if (valorActual && $usuarioSelect.find(`option[value="${valorActual}"]`).length > 0) {
+                    $usuarioSelect.val(valorActual);
+                    const usuarioTexto = $usuarioSelect.find('option:selected').text();
+                    $('#nombreUsuarioSeleccionado').text('Usuario: ' + usuarioTexto);
+                    $('#usuarioSeleccionadoLabel').removeClass('bg-secondary').addClass('bg-primary');
+                } else {
+                    // Si el valor anterior no existe en la nueva lista, limpiar la selección
+                    $usuarioSelect.val('');
+                    $('#nombreUsuarioSeleccionado').text('Usuario: Sin seleccionar');
+                    $('#usuarioSeleccionadoLabel').removeClass('bg-primary').addClass('bg-secondary');
+                }
+
+                // Habilitar el select y los botones
+                $usuarioSelect.prop('disabled', false);
+                $btnBuscar.prop('disabled', false);
+                $btnCancel.prop('disabled', false);
+
+                // Ocultar el spinner
+                $('#spinner-usuarios').hide();
+            },
+            error: function (xhr, status, error) {
+                console.error('Error al obtener usuarios:', error);
+
+                // Restaurar el select con mensaje de error
+                $usuarioSelect.html('<option value="">Error al cargar usuarios</option>');
+                $usuarioSelect.prop('disabled', false);
+
+                // Habilitar los botones
+                $btnBuscar.prop('disabled', false);
+                $btnCancel.prop('disabled', false);
+
+                // Ocultar el spinner
+                $('#spinner-usuarios').hide();
+
+                // Actualizar etiqueta en la botonera
+                $('#nombreUsuarioSeleccionado').text('Usuario: Error al cargar');
+                $('#usuarioSeleccionadoLabel').removeClass('bg-primary').addClass('bg-danger');
+
+                // Mostrar mensaje de error
+                AbrirMensaje(
+                    "ERROR",
+                    "No se pudieron cargar los usuarios para el ejercicio seleccionado: " + error,
+                    function () {
+                        $("#msjModal").modal("hide");
+                    },
+                    false,
+                    ["Aceptar"],
+                    "error!",
+                    null
+                );
+            },
+            complete: function () {
+                // Asegurar que siempre se habiliten los botones y se oculte el spinner
+                // incluso si hay errores no capturados
+                $btnBuscar.prop('disabled', false);
+                $btnCancel.prop('disabled', false);
+                $('#spinner-usuarios').hide();
+            }
+        });
+    });
+
 
     console.log('Configuración de filtros para asientos definitivos aplicada');
 }
@@ -248,6 +377,57 @@ $(function () {
         #tbGridAsiento tbody tr:has(.asiento-checkbox:checked) {
             background-color: #e7f3ff !important;
         }
+
+        /* AGREGAR AQUÍ LOS NUEVOS ESTILOS PARA EL SPINNER */
+        /* Spinner de puntos giratorio */
+        .dots-spinner {
+            display: inline-block;
+            position: relative;
+            width: 20px;
+            height: 20px;
+        }
+    
+        .dots-spinner div {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background-color: #0d6efd;
+            border-radius: 50%;
+            animation: dots-spinner 1.2s linear infinite;
+        }
+    
+        .dots-spinner div:nth-child(1) {
+            top: 0;
+            left: 7px;
+            animation-delay: 0s;
+        }
+    
+        .dots-spinner div:nth-child(2) {
+            top: 5px;
+            left: 14px;
+            animation-delay: -0.1s;
+        }
+    
+        .dots-spinner div:nth-child(3) {
+            top: 14px;
+            left: 7px;
+            animation-delay: -0.2s;
+        }
+    
+        .dots-spinner div:nth-child(4) {
+            top: 5px;
+            left: 0;
+            animation-delay: -0.3s;
+        }
+    
+        @keyframes dots-spinner {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.2;
+            }
+        }
     `)
         .appendTo("head");
 
@@ -286,24 +466,7 @@ $(function () {
             buscarAsientosDefs(pagina);
         }
     });
-
-    //$("#btnBuscar").on("click", function () {
-    //    // Validar campos obligatorios antes de realizar la búsqueda
-    //    if (!validarCamposObligatoriosBusqueda()) {
-    //        return false;
-    //    }
-
-    //    // Eliminar lo que había en el panel de detalle
-    //    $("#divpanel01").empty();
-
-    //    // Limpiar datos anteriores
-    //    dataBak = "";
-
-    //    // Es una búsqueda por filtro, siempre será página 1
-    //    pagina = 1;
-
-    //    buscarAsientoDefs(pagina);
-    //});
+    
     //callback para que funcione la paginación
     funcCallBack = buscarAsientosDefs;
     $("#pagEstado").on("change", function () {
@@ -862,56 +1025,6 @@ function ejecutarAnulacionAsientoDef() {
     }
 }
 
-//function ejecutarModificacionAsientoDef() {
-//    // Verificar que haya un asiento seleccionado
-//    if (!EntidadSelect) {
-//        AbrirMensaje("ATENCIÓN", "Debe seleccionar un asiento definitivo para modificar.", function () {
-//            $("#msjModal").modal("hide");
-//        }, false, ["Aceptar"], "warn!", null);
-//        return;
-//    }
-
-//    // Verificar si el asiento es modificable (fecha dentro del período permitido)
-//    // Esta validación podría hacerse en el servidor, pero es buena práctica también hacerla en el cliente
-//    // Implementación pendiente según reglas específicas
-
-//    accion = AbmAction.MODIFICACION;
-//    $("#divFiltro").collapse("hide");
-//    accionBotones(accion);
-//    activarControles(true);
-//}
-
-//function ejecutarAnulacionAsientoDef() {
-//    // Verificar que haya un asiento seleccionado
-//    if (!EntidadSelect) {
-//        AbrirMensaje("ATENCIÓN", "Debe seleccionar un asiento definitivo para anular.", function () {
-//            $("#msjModal").modal("hide");
-//        }, false, ["Aceptar"], "warn!", null);
-//        return;
-//    }
-
-//    // Confirmar la anulación
-//    AbrirMensaje(
-//        "CONFIRMACIÓN",
-//        "¿Está seguro que desea anular el asiento definitivo seleccionado?<br>Esta acción no se puede deshacer.",
-//        function (resp) {
-//            if (resp === "SI") {
-//                accion = AbmAction.BAJA;
-//                $("#divFiltro").collapse("hide");
-//                accionBotones(accion);
-
-//                // No activar controles para edición en caso de anulación
-//                activarControles(false);
-//            }
-//            $("#msjModal").modal("hide");
-//        },
-//        true, // Mostrar botones SI/NO
-//        ["SI", "NO"],
-//        "warn!",
-//        null
-//    );
-//}
-
 /**
  * Función para presentar un reporte con los errores en html
  * Esta función es un placeholder - necesitarás implementarla según tus necesidades
@@ -1042,11 +1155,6 @@ function generarReporteErrores(detalles) {
         }
     });
 }
-
-
-
-
-
 
 /**
  * Activa o desactiva los controles del asiento según el modo (alta/modificación/baja)

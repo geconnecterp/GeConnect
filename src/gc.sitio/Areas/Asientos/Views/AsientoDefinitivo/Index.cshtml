@@ -2,7 +2,7 @@
 @{
     Layout = "~/views/shared/_Layout.cshtml";
 
-    var filtro = new QueryAsiento() { Modelo = ModeloFilter.ASIENTO_DEFINITIVO, EsTemporal = true };
+    var filtro = new QueryAsiento() { Modelo = ModeloFilter.ASIENTO_DEFINITIVO, EsTemporal = false };
     var filtro2 = new QueryFilters() { Modelo = ModeloFilter.ASIENTO_DEFINITIVO };
 }
 @section styles {
@@ -58,6 +58,8 @@
          var nuevoAsientoUrl="@Url.Action("nuevoAsiento", "AsientoDefinitivo", new { area = "Asientos" })";
          var confirmarAsientoDefinitivoUrl = '@Url.Action("ConfirmarAsientoDefinitivo", "AsientoDefinitivo", new { area = "Asientos" })';
         const verificarFechaModificacionUrl = '@Url.Action("VerificarFechaModificacion", "AsientoDefinitivo", new { area = "Asientos" })';
+        //para actualizar datos del combo de usuarios.
+        const obtenerUsuariosEjercicioUrl = '@Url.Action("ObtenerUsuariosEjercicio", "AsientoDefinitivo", new { area = "Asientos" })';
          //gestor de impresion
          // var gestorImpresionUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
          var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';

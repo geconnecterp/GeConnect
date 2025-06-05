@@ -372,5 +372,28 @@ namespace gc.sitio.Areas.Asientos.Controllers
                 return Json(new { error = true, warn = false, msg = ex.Message });
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> ObtenerUsuariosEjercicio(int ejercicioId)
+        {
+            try
+            {
+                // Verificar autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return redirectResult;
+
+                // Obtener los usuarios del ejercicio
+                await ObtenerUsuariosDeEjercicio(ejercicioId, _asientoServicio);
+
+                // Devolver la lista en formato JSON para select2
+                return Json(ComboUsuariosEjercicio().Items);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, $"Error al obtener usuarios del ejercicio {ejercicioId}");
+                return StatusCode(500, "Error interno al obtener usuarios del ejercicio");
+            }
+        }
+
     }
 }

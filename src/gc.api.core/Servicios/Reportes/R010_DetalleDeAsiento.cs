@@ -59,6 +59,12 @@ namespace gc.api.core.Servicios.Reportes
                     throw new NegocioException($"No se encontraron registros de la cuenta corriente {ctaId}.");
                 }
 
+                #region Defino el titulo del reporte
+                string tipo = asiento.esTemporal.HasValue && asiento.esTemporal.Value ? "Temporal" : "Definitivo";
+                string tituloRepo = $"Detalle de Asiento {tipo}\r\nMovimiento N°: {asiento.Dia_movi}\r\nUsuario: {asiento.usu_apellidoynombre} ";
+                solicitud.Titulo = tituloRepo;
+                #endregion
+
                 #endregion
                 #region Scripts PDF
 
@@ -73,7 +79,9 @@ namespace gc.api.core.Servicios.Reportes
                 pdf = HelperPdf.GenerarInstanciaAndInit(ref writer, out ms, HojaSize.A4, true);
 
                 // Agregar el evento de pie de página
-                writer.PageEvent = new CustomPdfPageEventHelper(solicitud.Observacion);
+                HelperPdf.ConfigurarPieDePaginaPersonalizado(writer, solicitud.Observacion);
+                
+               // writer.PageEvent = new CustomPdfPageEventHelper(solicitud.Observacion);
                 Image? logo;
                 if (!string.IsNullOrEmpty(solicitud.LogoPath))
                 {
@@ -230,7 +238,7 @@ namespace gc.api.core.Servicios.Reportes
             //Se obtiene el id del usuario (userId) y se asignan los valores de pag y reg
             string dia_movi = solicitud.Parametros.GetValueOrDefault("dia_movi", "").ToString() ?? "";
             ctaId = dia_movi;
-            return _asTempSv.ObtenerAsientoDetalle(dia_movi);
+            return _asTempSv.ObtenerAsientoDetalle(dia_movi,true);
         }
     }
 }
