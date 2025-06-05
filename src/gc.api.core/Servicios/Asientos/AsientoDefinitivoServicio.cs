@@ -14,7 +14,7 @@ namespace gc.api.core.Servicios.Asientos
         {
             
         }
-        public AsientoDefDetalleDto ObtenerAsientoDetalle(string moviId)
+        public AsientoDetalleDto ObtenerAsientoDetalle(string moviId)
         {
             if (string.IsNullOrWhiteSpace(moviId))
             {
@@ -38,7 +38,7 @@ namespace gc.api.core.Servicios.Asientos
 
             // Crear el objeto AsientoDetalleDto a partir del primer registro
             var primerRegistro = resultados.First();
-            var asientoDetalle = new AsientoDefDetalleDto()
+            var asientoDetalle = new AsientoDetalleDto()
             {
                 
                 Dia_movi = primerRegistro.dia_movi,
@@ -96,6 +96,11 @@ namespace gc.api.core.Servicios.Asientos
 
             // Ejecutar el procedimiento almacenado y devolver los resultados
             return _repository.EjecutarLstSpExt<AsientoDefGridDto>(sp, ps, true);
+        }
+
+        public bool VerificarFechaModificacion(int eje_nro, DateTime dia_fecha)
+        {
+            throw new NotImplementedException();
         }
     }
 }

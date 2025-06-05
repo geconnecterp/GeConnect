@@ -15,6 +15,6 @@ namespace gc.sitio.core.Servicios.Contratos.Asientos
         Task<(List<AsientoGridDto>, MetadataGrid)> ObtenerAsientos(QueryAsiento query, string token);
         
         Task<RespuestaGenerica<AsientoDetalleDto>> ObtenerAsientoDetalle(string moviId, string token);
-
+       
     }
 }

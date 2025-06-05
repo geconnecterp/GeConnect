@@ -21,6 +21,7 @@ namespace gc.api.core.Contratos.Servicios.Asientos
         /// </summary>
         /// <param name="moviId">Identificador del movimiento del asiento.</param>
         /// <returns>Detalle del asiento definitivo.</returns>
-        AsientoDefDetalleDto ObtenerAsientoDetalle(string moviId);
+        AsientoDetalleDto ObtenerAsientoDetalle(string moviId);
+        bool VerificarFechaModificacion(int eje_nro, DateTime dia_fecha);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using gc.api.core.Contratos.Servicios.Asientos;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Asientos;
 using Microsoft.AspNetCore.Http;
@@ -10,6 +11,7 @@ using Newtonsoft.Json;
 
 namespace gc.api.Controllers.Asientos
 {
+    [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
     public class AsientoDefinitivoController : ControllerBase
@@ -66,7 +68,7 @@ namespace gc.api.Controllers.Asientos
             }
             else
             {
-                return NotFound("No se encontraron asientos definitivos.");
+                return NotFound($"No se encontraron asientos definitivos para el usuario {query.Usu_like}.");
             }
 
             // Presentar en el header información básica sobre la paginación
@@ -96,8 +98,9 @@ namespace gc.api.Controllers.Asientos
         /// <param name="id">Identificador del asiento</param>
         /// <returns>Detalle del asiento definitivo</returns>
         /// 
-        [HttpGet( "{id}", Name = "/obtener-asiento-detalle")]
-        public ActionResult<AsientoDefDetalleDto> ObtenerAsientoDetalle(string id)
+        [HttpGet]
+        [Route("[action]")]
+        public ActionResult<AsientoDetalleDto> ObtenerAsientoDetalle(string id)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
@@ -115,7 +118,9 @@ namespace gc.api.Controllers.Asientos
             }
 
             // Devolver respuesta exitosa
-            return Ok(new ApiResponse<AsientoDefDetalleDto>(resultado));
+            return Ok(new ApiResponse<AsientoDetalleDto>(resultado));
         }
+
+        
     }
 }

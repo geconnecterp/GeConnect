@@ -1206,7 +1206,19 @@ namespace gc.infraestructura.Helpers
             };
         }
 
-        
+        public static void ConfigurarPieDePaginaPersonalizado(PdfWriter writer, string textoPersonalizado = "")
+        {
+            CustomPdfPageEventHelper evento = new CustomPdfPageEventHelper(textoPersonalizado);
+            writer.PageEvent = evento;
+        }
+        public static void ConfigurarPieDePaginaPersonalizado(PdfWriter writer, string textoPersonalizado = "", float margenInferior = 15)
+        {
+            CustomPdfPageEventHelper evento = new CustomPdfPageEventHelper(textoPersonalizado)
+            {
+                MargenInferior = margenInferior
+            };
+            writer.PageEvent = evento;
+        }
     }
 
     public enum HojaSize
@@ -1217,30 +1229,106 @@ namespace gc.infraestructura.Helpers
     public class CustomPdfPageEventHelper : PdfPageEventHelper
     {
         private readonly string _footerText;
+        // Variable para almacenar el número total de páginas
+        private PdfTemplate _totalPages;
+        private BaseFont _baseFont;
+        // Propiedad configurable para el margen inferior
+        public float MargenInferior { get; set; } = 15;
+
         public CustomPdfPageEventHelper(string footerText)
         {
             _footerText = footerText;
         }
 
+        public override void OnOpenDocument(PdfWriter writer, Document document)
+        {
+            try
+            {
+                // Crear una plantilla más pequeña, solo para el número
+                _totalPages = writer.DirectContent.CreateTemplate(20, 15);
+                _baseFont = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
+            }
+            catch (Exception)
+            {
+                _baseFont = BaseFont.CreateFont();
+            }
+        }
+
         public override void OnEndPage(PdfWriter writer, Document document)
         {
-            PdfPTable footerTable = new PdfPTable(2);
-            footerTable.TotalWidth = document.PageSize.Width - document.LeftMargin - document.RightMargin;
+            PdfContentByte cb = writer.DirectContent;
+            float pageWidth = document.PageSize.Width;
+
+            // Calcular posición Y para el pie de página (más espacio desde el borde inferior)
+            float footerY = document.BottomMargin - 15;
+
+            // Dibujar línea horizontal en la parte superior del pie de página
+            cb.SetLineWidth(0.5f);
+            cb.MoveTo(document.LeftMargin, footerY + 15);
+            cb.LineTo(pageWidth - document.RightMargin, footerY + 15);
+            cb.Stroke();
+
+            // Crear fuente para el pie de página
+            Font footerFont = new Font(_baseFont, 8, Font.NORMAL);
+
+            // Crear la tabla de pie de página con distribución adecuada
+            PdfPTable footerTable = new PdfPTable(3);
+            footerTable.TotalWidth = pageWidth - document.LeftMargin - document.RightMargin;
+            footerTable.SetWidths(new float[] { 40f, 20f, 40f }); // Proporciones ajustadas
             footerTable.DefaultCell.Border = Rectangle.NO_BORDER;
 
-            // Add footer text
-            PdfPCell cell = new PdfPCell(new Phrase(_footerText, new Font(Font.HELVETICA, 8, Font.NORMAL)));
-            cell.Border = Rectangle.NO_BORDER;
-            cell.HorizontalAlignment = Element.ALIGN_LEFT;
-            footerTable.AddCell(cell);
+            // Celda 1: Fecha de impresión (izquierda)
+            string currentDate = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+            PdfPCell dateCell = new PdfPCell(new Phrase($"Fecha de Impresión: {currentDate}", footerFont))
+            {
+                Border = Rectangle.NO_BORDER,
+                HorizontalAlignment = Element.ALIGN_LEFT,
+                PaddingTop = 3
+            };
+            footerTable.AddCell(dateCell);
 
-            // Add page number
-            cell = new PdfPCell(new Phrase("Página " + writer.PageNumber, new Font(Font.HELVETICA, 8, Font.NORMAL)));
-            cell.Border = Rectangle.NO_BORDER;
-            cell.HorizontalAlignment = Element.ALIGN_RIGHT;
-            footerTable.AddCell(cell);
+            // Celda 2: Texto personalizado (centro)
+            PdfPCell textCell = new PdfPCell(new Phrase(_footerText, footerFont))
+            {
+                Border = Rectangle.NO_BORDER,
+                HorizontalAlignment = Element.ALIGN_CENTER,
+                PaddingTop = 3
+            };
+            footerTable.AddCell(textCell);
 
-            footerTable.WriteSelectedRows(0, -1, document.LeftMargin, document.BottomMargin - 20, writer.DirectContent);
+            // Celda 3: Número de página con 'de X' incluido en la celda (derecha)
+            // Esta es la clave del cambio: incluimos el texto completo en la celda
+            Phrase pageNumberPhrase = new Phrase($"Página {writer.PageNumber} de ", footerFont);
+
+            // Dejar espacio para el número total que se insertará después
+            PdfPCell pageNumberCell = new PdfPCell(pageNumberPhrase)
+            {
+                Border = Rectangle.NO_BORDER,
+                HorizontalAlignment = Element.ALIGN_RIGHT,
+                PaddingTop = 3
+            };
+            footerTable.AddCell(pageNumberCell);
+
+            // Dibujar la tabla del pie de página
+            footerTable.WriteSelectedRows(0, -1, document.LeftMargin, footerY + 3, cb);
+
+            // Calcular la posición exacta para el número total de páginas
+            // Esto es crucial para que aparezca justo después del texto "Página X de "
+            float textSize = _baseFont.GetWidthPoint($"Página {writer.PageNumber} de ", 8);
+            float xPosition = document.Right - document.RightMargin - 25; // Ajuste fino
+
+            // Colocar el template para el número total de páginas
+            cb.AddTemplate(_totalPages, xPosition, footerY + 3);            
+        }
+
+        public override void OnCloseDocument(PdfWriter writer, Document document)
+        {
+            // Completar el placeholder con el número total de páginas cuando se cierra el documento
+            _totalPages.BeginText();
+            _totalPages.SetFontAndSize(_baseFont, 8);
+            _totalPages.SetTextMatrix(0, 0);
+            _totalPages.ShowText(writer.PageNumber.ToString());
+            _totalPages.EndText();
         }
     }
 }

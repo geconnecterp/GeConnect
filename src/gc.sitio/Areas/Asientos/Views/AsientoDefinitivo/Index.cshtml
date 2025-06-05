@@ -2,7 +2,7 @@
 @{
     Layout = "~/views/shared/_Layout.cshtml";
 
-    var filtro = new QueryAsiento() { Modelo = ModeloFilter.ASIENTO_DEFINITIVO, EsTemporal = true };
+    var filtro = new QueryAsiento() { Modelo = ModeloFilter.ASIENTO_DEFINITIVO, EsTemporal = false };
     var filtro2 = new QueryFilters() { Modelo = ModeloFilter.ASIENTO_DEFINITIVO };
 }
 @section styles {
@@ -49,26 +49,27 @@
 
 @section scripts {
     <script type="text/javascript">
-        const asientoTemporal = "@filtro.EsTemporal.ToString().ToLower()"==="true";
-        var primerArranque = true;
+         const asientoTemporal = "@filtro.EsTemporal.ToString().ToLower()"==="true";
+         var primerArranque = true;
          var homeAsientosUrl = "@Url.Action("index", "AsientoDefinitivo", new { area = "Asientos" })";
-         var buscarAsientosUrl="@Url.Action("BuscarAsientos", "AsientoDefinitivo", new { area = "Asientos" })";
+         var buscarAsientoDefsUrl ="@Url.Action("BuscarAsientos", "AsientoDefinitivo", new { area = "Asientos" })";
          var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "AsientoDefinitivo", new { area = "Asientos" })";
-         var buscarAsientoUrl= "@Url.Action("buscarAsiento", "AsientoDefinitivo", new { area = "Asientos" })";
+         var buscarAsientoDefUrl= "@Url.Action("buscarAsiento", "AsientoDefinitivo", new { area = "Asientos" })";
          var nuevoAsientoUrl="@Url.Action("nuevoAsiento", "AsientoDefinitivo", new { area = "Asientos" })";
-         var confirmarAsientoTemporalUrl = '@Url.Action("ConfirmarAsientoTemporal", "AsientoDefinitivo", new { area = "Asientos" })';
-
-        //gestor de impresion
-       // var gestorImpresionUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
-        var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
-        var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
-        var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
-        var enviarEmailUrl =  "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
-        var enviarWhatsAppUrl =  "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
-
-            // URLs para las llamadas AJAX - Se configurarán desde la vista
-        var buscarPlanCuentasUrl = "@Url.Action("buscar", "abmplancuenta", new { area = "abms" })";
-        var buscarCuentaUrl = "@Url.Action("buscarCuenta", "abmplancuenta", new { area = "abms" })";
+         var confirmarAsientoDefinitivoUrl = '@Url.Action("ConfirmarAsientoDefinitivo", "AsientoDefinitivo", new { area = "Asientos" })';
+        const verificarFechaModificacionUrl = '@Url.Action("VerificarFechaModificacion", "AsientoDefinitivo", new { area = "Asientos" })';
+        //para actualizar datos del combo de usuarios.
+        const obtenerUsuariosEjercicioUrl = '@Url.Action("ObtenerUsuariosEjercicio", "AsientoDefinitivo", new { area = "Asientos" })';
+         //gestor de impresion
+         // var gestorImpresionUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+         var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+         var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
+         var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
+         var enviarEmailUrl =  "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
+         var enviarWhatsAppUrl =  "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
+         // URLs para las llamadas AJAX - Se configurarán desde la vista
+         var buscarPlanCuentasUrl = "@Url.Action("buscar", "abmplancuenta", new { area = "abms" })";
+         var buscarCuentaUrl = "@Url.Action("buscarCuenta", "abmplancuenta", new { area = "abms" })";
 
     </script>
     <script src="~/lib/jstree/jstree.min.js"></script>

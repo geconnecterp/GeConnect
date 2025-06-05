@@ -17,6 +17,7 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Net.WebRequestMethods;
 
 namespace gc.sitio.core.Servicios.Implementacion.Asientos
 {
@@ -27,7 +28,7 @@ namespace gc.sitio.core.Servicios.Implementacion.Asientos
 
         private readonly AppSettings _appSettings;
         
-        private const string GET_OBTENER_ASIENTO_DETALLE = "/obtener-asiento-detalle";
+        private const string GET_OBTENER_ASIENTO_DETALLE = "/ObtenerAsientoDetalle";
 
         public AsientoDefinitivoServicio(IOptions<AppSettings> options, ILogger<AsientoTemporalServicio> logger) : base(options, logger, RutaAPI)
         {
@@ -41,7 +42,7 @@ namespace gc.sitio.core.Servicios.Implementacion.Asientos
                 HelperAPI helper = new();
 
                 // Construcción de la URL
-                var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_OBTENER_ASIENTO_DETALLE}/{moviId}";
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_OBTENER_ASIENTO_DETALLE}?id={moviId}";
 
                 // Inicializar cliente
                 HttpClient client = helper.InicializaCliente(token);
@@ -136,18 +137,14 @@ namespace gc.sitio.core.Servicios.Implementacion.Asientos
                 if (response.StatusCode == HttpStatusCode.NotFound)
                 {
                     string stringData = await response.Content.ReadAsStringAsync();
-                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
-                    if (error != null && error.TypeException?.Equals(nameof(NegocioException)) == true)
+                    var error = JsonConvert.DeserializeObject<string>(stringData);
+                    if (error != null )
                     {
-                        throw new NegocioException(error.Detail ?? "Hubo un problema en la recepcion de los asientos");
-                    }
-                    else if (error != null && error.TypeException?.Equals(nameof(NotFoundException)) == true)
-                    {
-                        throw new NegocioException(error.Detail ?? "Hubo un problema en la recepcion de los asientos");
-                    }
+                        throw new NegocioException(error ?? "Hubo un problema en la recepcion de los asientos");
+                    }                    
                     else
                     {
-                        throw new Exception(error?.Detail);
+                        throw new Exception("Hubo un problema en la recepcion de los asientos");
                     }
                 }
                 else if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -173,11 +170,18 @@ namespace gc.sitio.core.Servicios.Implementacion.Asientos
                     }
                 }
             }
+            catch (NegocioException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
                 throw new NegocioException("Algo no fue bien al intentar obtener los asientos temporales.");
             }
         }
+
+       
+
     }
 }

@@ -1,4 +1,5 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos.Administracion;
 using gc.infraestructura.Dtos.Asientos;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Helpers;
@@ -6,14 +7,30 @@ using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos.Asientos;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 namespace gc.sitio.Areas.Asientos.Controllers
 {
     public class AsientoBase:ControladorBase
     {
-
+        protected List<EjercicioDto> Ejercicios {
+            get
+            {
+                string json = _context.HttpContext?.Session.GetString("Ejercicios") ?? string.Empty;
+                if (string.IsNullOrEmpty(json))
+                {
+                    return new();
+                }
+                return JsonConvert.DeserializeObject<List<EjercicioDto>>(json) ?? [];
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session.SetString("Ejercicios", json);
+            }
+        }
         protected List<UsuAsientoDto> UsuariosEjercicioLista { get; set; } = [];
-
+        protected int EjercicioSeleccionado { get; set; } = 0;
 
         public AsientoBase(IOptions<AppSettings> options,IHttpContextAccessor contexto,ILogger logger ):base(options,contexto,logger)
         {
@@ -30,7 +47,13 @@ namespace gc.sitio.Areas.Asientos.Controllers
                 var response = await _asientoServicio.ObtenerEjercicios(TokenCookie);
                 if (response.Ok && response.ListaEntidad != null)
                 {
-                    ViewBag.EjerciciosLista = response.ListaEntidad.OrderByDescending(x => x.Eje_desde).ToList();
+                    var lsta = response.ListaEntidad.OrderByDescending(x => x.Eje_desde).ToList();
+                    Ejercicios = lsta;
+                    if (response.ListaEntidad.Count > 0)
+                    {
+                        EjercicioSeleccionado = lsta.First().Eje_nro.ToInt();
+                    }
+                    ViewBag.EjerciciosLista = lsta;
                 }
                 else
                 {
@@ -157,5 +180,34 @@ namespace gc.sitio.Areas.Asientos.Controllers
             return HelperMvc<ComboGenDto>.ListaGenerica(new List<ComboGenDto>());
         }
 
+
+        protected List<AsientoPlanoDto> ConvertirAsientoAPlano(AsientoDetalleDto asiento)
+        {
+
+            var asientosPlanos = new List<AsientoPlanoDto>();
+
+            foreach (var linea in asiento.Detalles)
+            {
+                var asientoPlano = new AsientoPlanoDto
+                {
+                    eje_nro = asiento.eje_nro,
+                    dia_movi = asiento.Dia_movi,
+                    dia_fecha = asiento.Dia_fecha,
+                    dia_tipo = asiento.Dia_tipo,
+                    dia_lista = asiento.Dia_lista,
+                    dia_desc_asiento = asiento.Dia_desc_asiento,
+                    dia_nro = linea.Dia_nro,
+                    ccb_id = linea.Ccb_id,
+                    ccb_desc = linea.Ccb_desc,
+                    dia_desc = linea.Dia_desc,
+                    debe = linea.Debe,
+                    haber = linea.Haber
+                };
+
+                asientosPlanos.Add(asientoPlano);
+            }
+
+            return asientosPlanos;
+        }
     }
 }

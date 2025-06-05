@@ -1,6 +1,7 @@
 ﻿@model QueryAsiento
 @{
-
+    bool esAsientoDefinitivo = ViewBag.EsAsientoDefinitivo ?? false;
+    string moduloClass = esAsientoDefinitivo ? "modulo-definitivo" : "modulo-temporal";
 }
 
 <fieldset id="fsAsiento">
@@ -11,13 +12,19 @@
         <div class="col-md-6 col-sm-12">
             <div class="input-group input-group-sm mb-1">
                 <div class="form-check form-check-inline form-switch">
-                    <input class="form-check-input" type="checkbox" id="chkEjercicio"/>
+                    <input class="form-check-input" type="checkbox" id="chkEjercicio" @(esAsientoDefinitivo ? "checked disabled" : "") />
                     <label class="form-check-label" for="chkEjercicio">Ejercicio</label>
                 </div>
             </div>
             <div class="input-group input-group-sm">
                 <span class="input-group-text">Ejercicio</span>
-                @Html.DropDownList("Eje_nro", ViewBag.ListaEjercicios as SelectList, new { @class = "form-control inputEditable", @disabled = "disabled", style = "background-color:rgb(251,255,195);font-weight:900;" })
+                @Html.DropDownList("Eje_nro", ViewBag.ListaEjercicios as SelectList,
+                         new
+                         {
+                             @class = "form-control inputEditable",
+                             @disabled = esAsientoDefinitivo ? null : "disabled",
+                             style = "background-color:rgb(251,255,195);font-weight:900;"
+                         })
             </div>
         </div>
 
@@ -41,27 +48,40 @@
         <div class="col-md-6 col-sm-12">
             <div class="input-group input-group-sm mb-1">
                 <div class="form-check form-check-inline form-switch">
-                    <input class="form-check-input" type="checkbox" id="Usu" />
+                    <input class="form-check-input" type="checkbox" id="Usu" @(esAsientoDefinitivo ? "checked disabled" : "") />
                     <label class="form-check-label" for="Usu">Usuario</label>
                 </div>
             </div>
             <div class="input-group input-group-sm">
                 <span class="input-group-text">Usuario</span>
-                @Html.DropDownList("Usu_like", ViewBag.ListaUsuarios as SelectList, new { @class = "form-control inputEditable", @disabled = "disabled", style = "background-color:rgb(251,255,195);font-weight:900;" })
+                @Html.DropDownList("Usu_like", ViewBag.ListaUsuarios as SelectList,
+                         new
+                         {
+                             @class = "form-control inputEditable",
+                             @disabled = esAsientoDefinitivo ? null : "disabled",
+                             style = "background-color:rgb(251,255,195);font-weight:900;"
+                         })
             </div>
+
         </div>
 
         <!-- Tipo de Asiento -->
         <div class="col-md-6 col-sm-12">
             <div class="input-group input-group-sm mb-1">
                 <div class="form-check form-check-inline form-switch">
-                    <input class="form-check-input" type="checkbox" id="Tipo" />
+                    <input class="form-check-input" type="checkbox" id="Tipo" @(esAsientoDefinitivo ? "checked disabled" : "") />
                     <label class="form-check-label" for="Tipo">Tipo de Asiento</label>
                 </div>
             </div>
             <div class="input-group input-group-sm">
                 <span class="input-group-text">Tipo</span>
-                @Html.DropDownList("Tipo_like", ViewBag.ListaTiposAsiento as SelectList, new { @class = "form-control inputEditable", @disabled = "disabled", style = "background-color:rgb(251,255,195);font-weight:900;" })
+                @Html.DropDownList("Tipo_like", ViewBag.ListaTiposAsiento as SelectList,
+                         new
+                         {
+                             @class = "form-control inputEditable",
+                             @disabled = esAsientoDefinitivo ? null : "disabled",
+                             style = "background-color:rgb(251,255,195);font-weight:900;"
+                         })
             </div>
         </div>
     </div>

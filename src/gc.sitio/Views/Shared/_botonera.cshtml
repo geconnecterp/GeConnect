@@ -3,7 +3,7 @@
 
 <input type="text" id="IdSelected" style="display:none;" />
 <div class="row mb-2">
-    <div class="col-md-4 col-sm-6">
+    <div class="col-md-2 col-sm-6">
         <div class="d-flex justify-content-sm-around">
             <button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
                 <i class="bx bx-filter"></i>
@@ -24,7 +24,7 @@
             </button>
         </div>
     </div>
-    @if (Model.Modelo == ModeloFilter.ASIENTO_TEMPORAL)
+    @if (Model.Modelo == ModeloFilter.ASIENTO_TEMPORAL || Model.Modelo == ModeloFilter.ASIENTO_DEFINITIVO)
     {
         <div class="col-md-2 col-sm-6">
             <div class="d-flex justify-content-sm-center">
@@ -32,10 +32,13 @@
                 <button type="button" class="btn btn-light btn-sm mt-1 me-1" id="btnImprimir" title="Imprimir">
                     <i class="bx bx-printer"></i>
                 </button>
-                <!-- Botón Pasar Conta -->
-                <button type="button" class="btn btn-warning btn-sm mt-1 me-1" id="btnPasarConta" title="Pasar a Contabilidad">
-                    <i class="bx bx-swap-horizontal"></i>
-                </button>
+                @if (Model.Modelo == ModeloFilter.ASIENTO_TEMPORAL)
+                {
+                    <!-- Botón Pasar Conta -->
+                    <button type="button" class="btn btn-warning btn-sm mt-1 me-1" id="btnPasarConta" title="Pasar a Contabilidad">
+                        <i class="bx bx-swap-horizontal"></i>
+                    </button>
+                }
             </div>
         </div>
     }
@@ -51,6 +54,16 @@
             <button id="btnAbmElimi" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Dar de baja el asiento" disabled>
                 <i class="bx bx-trash"></i>
             </button>
+            @if (Model.Modelo == ModeloFilter.ASIENTO_DEFINITIVO)
+            {
+                <div class="text-center ms-2">
+                    <span class="badge bg-secondary rounded-pill px-3 py-2" id="usuarioSeleccionadoLabel">
+                        <i class="bx bx-user me-1"></i>
+                        <span id="nombreUsuarioSeleccionado">Usuario: Sin seleccionar</span>
+                    </span>
+                </div>
+            }
+
         </div>
     </div>
 </div>

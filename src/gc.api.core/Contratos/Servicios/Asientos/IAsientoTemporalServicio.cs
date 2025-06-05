@@ -28,6 +28,6 @@ namespace gc.api.core.Contratos.Servicios.Asientos
         /// </summary>
         /// <param name="moviId">Identificador del movimiento del asiento.</param>
         /// <returns>Detalle del asiento temporal.</returns>
-        AsientoDetalleDto ObtenerAsientoDetalle(string moviId);
+        AsientoDetalleDto ObtenerAsientoDetalle(string moviId, bool esReporte = false);
     }
 }
