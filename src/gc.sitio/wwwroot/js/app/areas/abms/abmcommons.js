@@ -1382,7 +1382,7 @@ function btnSubmitClick() {
     }
 }
 
-<<function Guardar() {
+function Guardar() {
     if (validarCampos()) {
         var url = "";
         var gridParaActualizar = "";

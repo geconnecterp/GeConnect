@@ -1011,7 +1011,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             return "";
         }
 
-        private string ValidarJsonAntesDeGuardar(CuentaAbmValidationModel cuenta, char abm)
+        private string ValidarJsonAntesDeGuardar([FromBody] CuentaAbmValidationModel cuenta, char abm)
         {
             var abmString = abm.ToString();
             if (abmString == Abm.A.ToString() || abmString == Abm.M.ToString())
