@@ -7,6 +7,7 @@ using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
+using gc.sitio.Areas.Compras.Models.RecepcionDeProveedores.Request;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
@@ -494,7 +495,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				Leyenda = $"Carga de Detalle de Comprobante RP Proveedor ({CuentaComercialSeleccionada?.Cta_Id}) {CuentaComercialSeleccionada?.Cta_Denominacion}"
 			};
-			if (RPRComptesDeRPRegs == null && !string.IsNullOrWhiteSpace(rp ?? string.Empty))
+			if ((RPRComptesDeRPRegs == null || RPRComptesDeRPRegs.Count <= 0) && !string.IsNullOrWhiteSpace(rp ?? string.Empty))
 			{
 				ReCargarRPRComptesDeRPRegs(rp ?? string.Empty);
 			}
@@ -554,12 +555,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 			if (!string.IsNullOrWhiteSpace(oc_compte))
 			{
 				//Estoy buscando y cargando los productos de una OC seleccionada, siempre y cuando no hayan sido cargados los items de esa OC
+				var listaProdSeleccionados = listaProd.Split('#');
 				var detalleDeOC = await _cuentaServicio.ObtenerDetalleDeOC(oc_compte, TokenCookie);
-				if (detalleDeOC != null && detalleDeOC.Count > 0 && !RPRDetalleDeProductosEnRP.Exists(x => x.oc_compte == oc_compte))
+				//if (detalleDeOC != null && detalleDeOC.Count > 0 && !RPRDetalleDeProductosEnRP.Exists(x => x.oc_compte == oc_compte))
+				if (detalleDeOC != null && detalleDeOC.Count > 0)
 				{
 					ElementoEditado = true;
 					lista = RPRDetalleDeProductosEnRP;
-					var listaProdSeleccionados = listaProd.Split('#');
 					foreach (var item in detalleDeOC)
 					{
 						if (!listaProdSeleccionados.Contains(item.p_id))
@@ -730,25 +732,26 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public JsonResult GuardarDetalleDeComprobanteRP(bool guardado, bool generar, string listaProd, bool ponerEnCurso = false, string ulCantidad = "", string fechaTurno = "", string depoId = "", string nota = "")
+		//public JsonResult GuardarDetalleDeComprobanteRP(bool guardado, bool generar, string listaProd, bool ponerEnCurso = false, string ulCantidad = "", string fechaTurno = "", string depoId = "", string nota = "")
+		public JsonResult GuardarDetalleDeComprobanteRP([FromBody] GuardarDetalleDeComprobanteRpRequest r)
 		{
 			try
 			{
-				if (guardado) //Guardo el detalle de productos del compte en la variable de sesion
+				if (r.guardado) //Guardo el detalle de productos del compte en la variable de sesion
 				{
 					if (JsonDeRP == null)
 						JsonDeRP = new();
 
 					//Nuevo RP -> lo agrego de pechardi, porque evalúo generar? Porque si es true no tengo que agregar nada, tengo que guardar
-					if (!generar)
+					if (!r.generar)
 					{
 						//Actualizo las ubicaciones de los productos
 						//listaProd es un string que viene de la forma EJ: 081672@1#030329@2
 						//IdDeProducto@Ubicacion
 						string[] arr = [];
 						Dictionary<string, string> keyValuePairs = [];
-						if (!string.IsNullOrWhiteSpace(listaProd))
-							arr = listaProd.Split('#');
+						if (!string.IsNullOrWhiteSpace(r.listaProd))
+							arr = r.listaProd.Split('#');
 
 						if (arr.Length > 0)
 						{
@@ -806,7 +809,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 						}
 						JsonDeRP = listaTemp;
 					}
-					if (generar)
+					if (r.generar)
 					{
 						if (JsonDeRP.encabezado.Count == 0 && RPRAutorizacionSeleccionada != null)
 						{
@@ -820,11 +823,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 						var aux = JsonDeRP;
 						foreach (var item in aux.encabezado)
 						{
-							item.Ul_cantidad = ulCantidad;
-							item.Depo_id = depoId;
-							item.Nota = nota;
-							item.Turno = fechaTurno;
-							item.Rpe_id = ponerEnCurso ? "C" : "P";
+							item.Ul_cantidad =r.ulCantidad;
+							item.Depo_id = r.depoId;
+							item.Nota = r.nota;
+							item.Turno = r.fechaTurno;
+							item.Rpe_id = r.ponerEnCurso ? "C" : "P";
 							foreach (var itemComp in item.Comprobantes)
 							{
 								var arrStr = itemComp.Cm_importe.Split('.');
@@ -924,31 +927,27 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public JsonResult BuscarCuentaComercial(string cuenta, char tipo, string vista)
+		public JsonResult BuscarCuentaComercial([FromBody] BuscarCuentaComercialRequest request)
 		{
-			List<CuentaDto> Lista = new();
+			List<CuentaDto> Lista = [];
 			try
 			{
-				if (string.IsNullOrEmpty(cuenta) || string.IsNullOrWhiteSpace(cuenta))
-				{
+				if (request == null)
+					throw new NegocioException("Request nulo");
+
+				if (string.IsNullOrEmpty(request.cuenta) || string.IsNullOrWhiteSpace(request.cuenta))
 					throw new NegocioException("Debe enviar codigo de cuenta");
-				}
+
 				if (CuentaComercialSeleccionada == null)
-				{
-					Lista = BuscarCuentaComercial(cuenta, tipo).Result;
-				}
-				else if (CuentaComercialSeleccionada.Cta_Id != cuenta)
-				{
-					Lista = BuscarCuentaComercial(cuenta, tipo).Result;
-				}
+					Lista = BuscarCuentaComercial(request.cuenta, request.tipo).Result;
+				else if (CuentaComercialSeleccionada.Cta_Id != request.cuenta)
+					Lista = BuscarCuentaComercial(request.cuenta, request.tipo).Result;
 				else
-				{
 					Lista.Add(CuentaComercialSeleccionada);
-				}
+
 				if (Lista.Count == 0)
-				{
 					throw new NegocioException("No se obtuvierion resultados");
-				}
+
 				if (Lista.Count == 1)
 				{
 					CuentaComercialSeleccionada = Lista[0];
@@ -962,7 +961,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger?.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} cuenta: {cuenta} tipo: {tipo}");
+				_logger?.LogError(ex, $"Hubo error en {this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} cuenta: {request.cuenta} tipo: {request.tipo}");
 				return Json(new { error = true, msg = "Algo no fue bien al buscar la cuenta comercial, intente nuevamente mas tarde." });
 			}
 		}

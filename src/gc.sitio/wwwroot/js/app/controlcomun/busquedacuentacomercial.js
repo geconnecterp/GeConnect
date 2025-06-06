@@ -451,7 +451,10 @@ function comptesDeRPGrid(tipo, tipoDescripcion, nroComprobante, fecha, importe, 
 	PostGenHtml(data, CargarComptesDeRPUrl, function (obj) {
 		$("#divComptesDeRPGrid").html(obj);
 		AddEventListenerToComptesGrid();
-		SelecccionarPrimerRegistro("tbComptesDeRP")
+		console.log("comptesDeRPGrid");
+		setTimeout(() => {
+			SelecccionarPrimerRegistro("tbComptesDeRP")
+		}, 250);
 		CerrarWaiting();
 		return true;
 	}, function (obj) {
@@ -640,6 +643,7 @@ function CargarComboTiposComptes(cuenta) {
 	var datos = { cuenta };
 	PostGenHtml(datos, buscarTiposComptesUrl, function (obj) {
 		$("#divTiposComptes").html(obj);
+		console.log("CargarComboTiposComptes");
 		CerrarWaiting();
 		return true
 	})
@@ -650,6 +654,7 @@ function selectCompteDeRPRow(x) {
 	$("#txtNroCompte").val(x.cells[2].innerText.trim());
 	$("#txtMonto").val(x.cells[4].innerText.trim());
 	$("#tco_id").val(x.cells[0].innerText.trim());
+	$("#tco_id").trigger("change");
 	$("#idTipoCompteDeRPSelected").val(x.cells[0].innerText.trim());
 	$("#nroCompteDeRPSelected").val(x.cells[2].innerText.trim());
 	$("#fechaCompteDeRPSelected").val(x.cells[3].innerText.trim());

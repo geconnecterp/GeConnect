@@ -14,10 +14,10 @@
 		</div>
 		<div class="demo-inline-spacing" style="float:right;margin-top: 20px;margin-right: 55px;">
 			<a asp-action="NuevaAut" asp-controller="Compra" asp-area="Compras" class="btn btn-primary fixed-width-150" id="btnNuevaAut">
-				<span class="tf-icons bx bx-plus-circle me-1"></span>Nuevo Aut.
+				<span class="bx bx-plus-circle me-1"></span>Nuevo Aut.
 			</a>
-			<a href="#" id="btnModificarAut" class="btn btn-secondary fixed-width-150"><span class="tf-icons bx bx-edit me-1">Mod. Aut.</span></a>
-			<a href="#" id="btnVer" class="btn btn-success fixed-width-150"><span class="tf-icons bx bxs-binoculars me-1">Ver</span></a>
+			<a href="#" id="btnModificarAut" class="btn btn-secondary fixed-width-150"><span class="bx bx-edit me-1">Mod. Aut.</span></a>
+			<a href="#" id="btnVer" class="btn btn-success fixed-width-150"><span class="bx bx-binocular me-1">Ver</span></a>
 		</div>
 	</row>
 	<div class="card-body">
@@ -26,6 +26,7 @@
 				<thead class="table-dark">
 					<tr>
 						<th class="align-center">N° Auto</th>
+						<th class="align-center">ID</th>
 						<th class="align-center">Cuenta</th>
 						<th class="align-center">Turno</th>
 						<th class="align-center">Nota</th>
@@ -41,6 +42,7 @@
 					{
 						<tr onclick="selectRPRow(this)">
 							<td class="align-center">@item.Rp</td>
+							<td class="align-center">@item.Cta_id</td>
 							<td class="align-left">@item.Cta_denominacion</td>
 							<td class="align-center">@item.Fecha?.ToString("dd/MM/yyyy hh:mm")</td>
 							<td class="align-left">@item.Nota</td>
