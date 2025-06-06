@@ -114,7 +114,8 @@ function AceptarDescFinanc() {
 		var dto_importe = $("#DescFinanc_dto_importe").inputmask('unmaskedvalue');
 		var dtoc_id = $("#listaConcDescFinanc").val();
 		var dtoc_desc = $("#listaConcDescFinanc option:selected").text();
-		var data = { cm_compte, dia_movi, dto_fijo, dto_sobre_total, tco_id, dto, dto_importe, dtoc_id, dtoc_desc }
+		var dto_obs = $("#DescFinanc_dto_obs").val();
+		var data = { cm_compte, dia_movi, dto_fijo, dto_sobre_total, tco_id, dto, dto_importe, dtoc_id, dtoc_desc, dto_obs }
 		PostGenHtml(data, agregarDescFinancURL, function (obj) {
 			$("#divDescFinanc").html(obj);
 			AddEventListenerToGrid("tbListaDescFinanc");
@@ -243,6 +244,7 @@ function ActualizarListaValorizaciones() {
 
 function LimpiarCamposEnDescFinanc() {
 	$("#listaConcDescFinanc").val("");
+	$("#DescFinanc_dto_obs").val("");
 	$("#DescFinanc_dto").val(0);
 	$("#DescFinanc_dto_importe").val(0);
 	ActualizarEstadoChecks_SobreTotal();

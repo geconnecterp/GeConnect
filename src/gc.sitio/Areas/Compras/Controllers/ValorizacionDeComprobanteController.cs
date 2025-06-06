@@ -9,6 +9,7 @@ using gc.infraestructura.Dtos.Almacen.Tr.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Compras.Models;
+using gc.sitio.Areas.Compras.Models.ValorizacionDeComprobante.Request;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -68,13 +69,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		[HttpPost]
-		public IActionResult CargarComprobantesDelProveedorSeleccionado(string ctaId)
+		public IActionResult CargarComprobantesDelProveedorSeleccionado([FromBody] CargarComprobantesDelProveedorSeleccionadoRequest r)
 		{
 			var model = new ListaComptePendienteDeValorizarModel();
 			try
 			{
-				CtaIdSelected = ctaId;
-				CargarComprobantesDelProveedor(ctaId, _cuentaServicio);
+				CtaIdSelected = r.ctaId;
+				CargarComprobantesDelProveedor(r.ctaId, _cuentaServicio);
 				model.LstComptePendiente = ComboComptesPendientes();
 				model.cm_compte = string.Empty;
 				return PartialView("_listaComptesPendientes", model);
@@ -211,6 +212,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
+		[HttpPost]
 		public IActionResult AgregarDescFinanc(CompteValorizarAgregarDescFinanRequest request)
 		{
 			var model = new GridCoreSmart<CompteValorizaDtosListaDto>();
@@ -231,7 +233,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 						dtoc_id = request.dtoc_id,
 						dtoc_desc = request.dtoc_desc,
 						dto_fijo_bool = request.dto_fijo,
-						dto_sobre_total_bool = request.dto_sobre_total
+						dto_sobre_total_bool = request.dto_sobre_total,
+						dto_obs = request.dto_obs
 					};
 					var listaDescuentosFinancTemp = ComprobantesValorizaDescuentosFinancLista;
 					var maxIdx = 0;
@@ -260,15 +263,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public JsonResult ActualizarOrdenDescFinanc(List<CompteValorizarAgregarDescFinanRequest> listaDesFinanc)
+		public JsonResult ActualizarOrdenDescFinanc([FromBody] ActualizarOrdenDescFinancRequest r)
 		{
 			try
 			{
-				if (listaDesFinanc == null || listaDesFinanc.Count <= 0)
+				if (r.listaDesFinanc == null || r.listaDesFinanc.Count <= 0)
 					return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar actualizar Lista de Desc. Financieros. Lista vacía." });
 
 				var listaDescFinancTemporal = new List<CompteValorizaDtosListaDto>();
-				foreach (var item in listaDesFinanc)
+				foreach (var item in r.listaDesFinanc)
 				{
 					var newItem = new CompteValorizaDtosListaDto
 					{
@@ -337,7 +340,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		/// <param name="val">Valor correspondiente al campo editado</param>
 		/// <returns></returns>
 		[HttpPost]
-		public JsonResult ActualizarProdEnRprSeccionPrecio(string pId, string field, string val)
+		public JsonResult ActualizarProdEnRprSeccionPrecio([FromBody] ActualizarProdEnRprSeccionPrecioRequest r)
 		{
 			List<CompteValorizaDetalleRprListaDto> productos = [];
 			try
@@ -348,52 +351,52 @@ namespace gc.sitio.Areas.Compras.Controllers
 				}
 				if (productos.Count > 0)
 				{
-					var producto = productos.FirstOrDefault(x => x.p_id == pId);
+					var producto = productos.FirstOrDefault(x => x.p_id == r.pId);
 					if (producto != null)
 					{
-						if (field.Contains("ocd_dto1"))
+						if (r.field.Contains("ocd_dto1"))
 						{
-							val = val.Replace(",", ".");
-							producto.ocd_dto1 = Convert.ToDecimal(val);
+							r.val = r.val.Replace(",", ".");
+							producto.ocd_dto1 = Convert.ToDecimal(r.val);
 						}
-						else if (field.Contains("ocd_dto2"))
+						else if (r.field.Contains("ocd_dto2"))
 						{
-							val = val.Replace(",", ".");
-							producto.ocd_dto2 = Convert.ToDecimal(val);
+							r.val = r.val.Replace(",", ".");
+							producto.ocd_dto2 = Convert.ToDecimal(r.val);
 						}
-						else if (field.Contains("ocd_dto3"))
+						else if (r.field.Contains("ocd_dto3"))
 						{
-							val = val.Replace(",", ".");
-							producto.ocd_dto3 = Convert.ToDecimal(val);
+							r.val = r.val.Replace(",", ".");
+							producto.ocd_dto3 = Convert.ToDecimal(r.val);
 						}
-						else if (field.Contains("ocd_dto4"))
+						else if (r.field.Contains("ocd_dto4"))
 						{
-							val = val.Replace(",", ".");
-							producto.ocd_dto4 = Convert.ToDecimal(val);
+							r.val = r.val.Replace(",", ".");
+							producto.ocd_dto4 = Convert.ToDecimal(r.val);
 						}
-						else if (field.Contains("ocd_dto_pa"))
+						else if (r.field.Contains("ocd_dto_pa"))
 						{
-							val = val.Replace(",", ".");
-							producto.ocd_dto_pa = Convert.ToDecimal(val);
+							r.val = r.val.Replace(",", ".");
+							producto.ocd_dto_pa = Convert.ToDecimal(r.val);
 						}
-						else if (field.Contains("ocd_plista"))
+						else if (r.field.Contains("ocd_plista"))
 						{
-							val = val.Replace(",", ".");
-							producto.ocd_plista = Convert.ToDecimal(val);
+							r.val = r.val.Replace(",", ".");
+							producto.ocd_plista = Convert.ToDecimal(r.val);
 						}
-						else if (field.Contains("ocd_boni"))
+						else if (r.field.Contains("ocd_boni"))
 						{
-							producto.ocd_boni = val;
+							producto.ocd_boni = r.val;
 						}
 
 						producto.ocd_pcosto = Math.Round(CalcularPCosto(producto.ocd_plista, producto.ocd_dto1, producto.ocd_dto2, producto.ocd_dto3, producto.ocd_dto4, producto.ocd_dto_pa, producto.ocd_boni ?? "", 0, producto.rpd_cantidad), 2);
 					}
 					else
-						return Json(new { error = true, warn = false, msg = $"No existen productos cargados en detalle RPR con identificador {pId}" });
+						return Json(new { error = true, warn = false, msg = $"No existen productos cargados en detalle RPR con identificador {r.pId}" });
 
 					CalcularValorizacionDC_DP(productos);
 					ComprobantesValorizaDetalleRprLista = productos; //Actualizo la lista en memoria
-					var prodAux = productos.Where(x => x.p_id.Equals(pId)).First();
+					var prodAux = productos.Where(x => x.p_id.Equals(r.pId)).First();
 					return Json(new msgRes()
 					{
 						error = false,
@@ -415,7 +418,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception)
 			{
-				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar actualizar los datos del producto recientemente editado. Id de Producto: {pId}" });
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar actualizar los datos del producto recientemente editado. Id de Producto: {r.pId}" });
 			}
 		}
 
@@ -428,7 +431,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		/// <param name="val">Valor correspondiente al campo editado</param>
 		/// <returns></returns>
 		[HttpPost]
-		public JsonResult ActualizarProdEnRprSeccionFactura(string pId, string field, string val)
+		public JsonResult ActualizarProdEnRprSeccionFactura([FromBody] ActualizarProdEnRprSeccionFacturaRequest r)
 		{
 			List<CompteValorizaDetalleRprListaDto> productos = [];
 			try
@@ -439,57 +442,57 @@ namespace gc.sitio.Areas.Compras.Controllers
 				}
 				if (productos.Count > 0)
 				{
-					var producto = productos.FirstOrDefault(x => x.p_id == pId);
+					var producto = productos.FirstOrDefault(x => x.p_id == r.pId);
 					if (producto != null)
 					{
-						if (field.Contains("rpd_dto1"))
+						if (r.field.Contains("rpd_dto1"))
 						{
-							val = val.Replace(",", ".");
-							producto.rpd_dto1 = Convert.ToDecimal(val);
+							r.val = r.val.Replace(",", ".");
+							producto.rpd_dto1 = Convert.ToDecimal(r.val);
 						}
-						else if (field.Contains("rpd_dto2"))
+						else if (r.field.Contains("rpd_dto2"))
 						{
-							val = val.Replace(",", ".");
-							producto.rpd_dto2 = Convert.ToDecimal(val);
+							r.val = r.val.Replace(",", ".");
+							producto.rpd_dto2 = Convert.ToDecimal(r.val);
 						}
-						else if (field.Contains("rpd_dto3"))
+						else if (r.field.Contains("rpd_dto3"))
 						{
-							val = val.Replace(",", ".");
-							producto.rpd_dto3 = Convert.ToDecimal(val);
+							r.val = r.val.Replace(",", ".");
+							producto.rpd_dto3 = Convert.ToDecimal(r.val);
 						}
-						else if (field.Contains("rpd_dto4"))
+						else if (r.field.Contains("rpd_dto4"))
 						{
-							val = val.Replace(",", ".");
-							producto.rpd_dto4 = Convert.ToDecimal(val);
+							r.val = r.val.Replace(",", ".");
+							producto.rpd_dto4 = Convert.ToDecimal(r.val);
 						}
-						else if (field.Contains("rpd_dto_pa"))
+						else if (r.field.Contains("rpd_dto_pa"))
 						{
-							val = val.Replace(",", ".");
-							producto.rpd_dto_pa = Convert.ToDecimal(val);
+							r.val = r.val.Replace(",", ".");
+							producto.rpd_dto_pa = Convert.ToDecimal(r.val);
 						}
-						else if (field.Contains("rpd_plista"))
+						else if (r.field.Contains("rpd_plista"))
 						{
-							val = val.Replace(",", ".");
-							producto.rpd_plista = Convert.ToDecimal(val);
+							r.val = r.val.Replace(",", ".");
+							producto.rpd_plista = Convert.ToDecimal(r.val);
 						}
-						else if (field.Contains("rpd_boni"))
+						else if (r.field.Contains("rpd_boni"))
 						{
-							producto.rpd_boni = val;
+							producto.rpd_boni = r.val;
 						}
-						else if (field.Contains("rpd_cantidad_compte"))
+						else if (r.field.Contains("rpd_cantidad_compte"))
 						{
-							val = val.Replace(",", ".");
-							producto.rpd_cantidad_compte = Convert.ToDecimal(val);
+							r.val = r.val.Replace(",", ".");
+							producto.rpd_cantidad_compte = Convert.ToDecimal(r.val);
 						}
 
 						producto.rpd_pcosto = Math.Round(CalcularPCosto(producto.rpd_plista, producto.rpd_dto1, producto.rpd_dto2, producto.rpd_dto3, producto.rpd_dto4, producto.rpd_dto_pa, producto.rpd_boni ?? "", 0, producto.rpd_cantidad_compte), 2);
 					}
 					else
-						return Json(new { error = true, warn = false, msg = $"No existen productos cargados en detalle RPR con identificador {pId}" });
+						return Json(new { error = true, warn = false, msg = $"No existen productos cargados en detalle RPR con identificador {r.pId}" });
 
 					CalcularValorizacionDC_DP(productos);
 					ComprobantesValorizaDetalleRprLista = productos;
-					var prodAux = productos.Where(x => x.p_id.Equals(pId)).First();
+					var prodAux = productos.Where(x => x.p_id.Equals(r.pId)).First();
 					return Json(new msgRes()
 					{
 						error = false,
@@ -511,17 +514,16 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception)
 			{
-				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar actualizar los datos del producto recientemente editado. Id de Producto: {pId}" });
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar actualizar los datos del producto recientemente editado. Id de Producto: {r.pId}" });
 			}
 		}
 
 		[HttpPost]
-		public JsonResult OCValidar(string oc_compte, string cta_id)
+		public JsonResult OCValidar([FromBody] OCValidarRequest r)
 		{
 			try
 			{
-				var req = new OCValidarRequest() { oc_compte = oc_compte, cta_id = cta_id };
-				var res = _productoServicio.OCValidar(req, TokenCookie);
+				var res = _productoServicio.OCValidar(r, TokenCookie);
 				if (res != null)
 				{
 					var objRes = res.Result;
@@ -534,11 +536,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 					return Json(new { error = false, warn = false, msg = string.Empty });
 				}
 				else
-					return Json(new { error = true, warn = false, msg = $"Ha ocurrido un error al intentar validar el comprobante. OC: {oc_compte}" });
+					return Json(new { error = true, warn = false, msg = $"Ha ocurrido un error al intentar validar el comprobante. OC: {r.oc_compte}" });
 			}
 			catch (Exception)
 			{
-				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar validar el comprobante. OC: {oc_compte}" });
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar validar el comprobante. OC: {r.oc_compte}" });
 			}
 		}
 

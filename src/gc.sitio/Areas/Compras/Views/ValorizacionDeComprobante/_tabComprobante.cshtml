@@ -5,8 +5,8 @@
 }
 <style>
 	thead th {
-	position: sticky;
-	top: 0px;
+		position: sticky;
+		top: 0px;
 	}
 </style>
 <div class="row" style="padding-top: 10px;">
@@ -154,6 +154,12 @@
 					<span class="input-group-text fixed-lbl-for-abm-100">Neto Fijo:</span>
 					<input type="text" asp-for="DescFinanc.dto_importe" class="form-control activable inputEditable" />
 				</div>
+			</div>
+		</div>
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-100">Obs.:</span>
+				<input type="text" asp-for="DescFinanc.dto_obs" maxlength="40" class="form-control activable inputEditable" />
 			</div>
 		</div>
 		<div class="row mt-1">

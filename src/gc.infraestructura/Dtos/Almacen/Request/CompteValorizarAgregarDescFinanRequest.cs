@@ -13,5 +13,6 @@ namespace gc.infraestructura.Dtos.Almacen.Request
 		public char dtoc_id { get; set; }
 		public string dtoc_desc { get; set; } = string.Empty;
 		public int item { get; set; } = 0;
+		public string dto_obs { get; set; } = string.Empty;
 	}
 }

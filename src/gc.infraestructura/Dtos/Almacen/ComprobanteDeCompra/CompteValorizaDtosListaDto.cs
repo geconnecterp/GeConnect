@@ -12,9 +12,9 @@ namespace gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra
 		public char dto_fijo { get; set; } = 'N';
 		public char dto_sobre_total { get; set; } = 'N';
 		public char dtoc_id { get; set; }
+		public string dto_obs { get; set; } = string.Empty;
 		public string dtoc_desc { get; set; } = string.Empty;
-		//public bool dto_fijo_bool { get; set; } = false;
-		//public bool dto_sobre_total_bool { get; set; } = false;
+
 		private bool _dto_fijo_bool;
 
 		public bool dto_fijo_bool
