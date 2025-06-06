@@ -208,15 +208,15 @@ $(function () {
 //}
 
 function PostGenHtml(data, path, retorno) {
-    PostGen1(data, path, retorno, fnError, "HTML");
+    PostGen(data, path, retorno, fnError, "HTML");
 }
 function PostGenHtml(data, path, retorno, fxError) {
-    PostGen1(data, path, retorno, fxError, "HTML");
+    PostGen(data, path, retorno, fxError, "HTML");
 }
 //function PostGen(data, path, retorno) {
 //    PostGen(data, path, retorno, fnError, "json");
 //}
-function PostGen1(data, path, retorno, fxError, datatype) {
+function PostGen(data, path, retorno, fxError, datatype) {
     $.ajax({
         "dataType": datatype,
         "url": path,
@@ -236,7 +236,7 @@ function PostGen1(data, path, retorno, fxError, datatype) {
  * @param {Function} success - Función de callback para respuesta exitosa
  * @param {Function} error - Función de callback para error (opcional)
  */
-function PostGen(data, url, success, error) {
+function PostGen2(data, url, success, error) {
     // Verificar el tipo de datos
     let dataToSend;
     let contentType;

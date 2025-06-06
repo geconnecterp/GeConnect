@@ -1382,7 +1382,7 @@ function btnSubmitClick() {
     }
 }
 
-function Guardar() {
+<<function Guardar() {
     if (validarCampos()) {
         var url = "";
         var gridParaActualizar = "";
@@ -1477,7 +1477,7 @@ function Guardar() {
             ? '?' + $.param(params)
             : '';
 
-        PostGen(modelo, url + queryString, function (obj) {
+        PostGen2(modelo, url + queryString, function (obj) {
             if (obj.error === true) {
                 AbrirMensaje("ATENCIÓN", obj.msg, function () {
                     $("#msjModal").modal("hide");
