@@ -26,8 +26,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private readonly ICuentaServicio _cuentaServicio;
 		private readonly IProductoServicio _productoServicio;
 		private readonly ITipoDtoValorizaRprServicio _tipoDtoValorizaRprServicio;
-		private const string valorizacion_class_blue = "badge bg-label-info me-1";
-		private const string valorizacion_class_red = "badge bg-label-danger me-1";
+		private const string valorizacion_class_blue = "badge bg-label-info-strong me-1";
+		private const string valorizacion_class_red = "badge bg-label-danger-strong me-1";
 
 		public ValorizacionDeComprobanteController(ICuentaServicio cuentaServicio, ITipoDtoValorizaRprServicio tipoDtoValorizaRprServicio, IProductoServicio productoServicio,
 												   IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger<ValorizacionDeComprobanteController> logger) : base(options, accessor, logger)
@@ -69,7 +69,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		[HttpPost]
-		public IActionResult CargarComprobantesDelProveedorSeleccionado([FromBody] CargarComprobantesDelProveedorSeleccionadoRequest r)
+		public IActionResult CargarComprobantesDelProveedorSeleccionado(CargarComprobantesDelProveedorSeleccionadoRequest r)
 		{
 			var model = new ListaComptePendienteDeValorizarModel();
 			try
@@ -263,7 +263,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public JsonResult ActualizarOrdenDescFinanc([FromBody] ActualizarOrdenDescFinancRequest r)
+		public JsonResult ActualizarOrdenDescFinanc(ActualizarOrdenDescFinancRequest r)
 		{
 			try
 			{
@@ -340,7 +340,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		/// <param name="val">Valor correspondiente al campo editado</param>
 		/// <returns></returns>
 		[HttpPost]
-		public JsonResult ActualizarProdEnRprSeccionPrecio([FromBody] ActualizarProdEnRprSeccionPrecioRequest r)
+		public JsonResult ActualizarProdEnRprSeccionPrecio(ActualizarProdEnRprSeccionPrecioRequest r)
 		{
 			List<CompteValorizaDetalleRprListaDto> productos = [];
 			try
@@ -431,7 +431,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		/// <param name="val">Valor correspondiente al campo editado</param>
 		/// <returns></returns>
 		[HttpPost]
-		public JsonResult ActualizarProdEnRprSeccionFactura([FromBody] ActualizarProdEnRprSeccionFacturaRequest r)
+		public JsonResult ActualizarProdEnRprSeccionFactura(ActualizarProdEnRprSeccionFacturaRequest r)
 		{
 			List<CompteValorizaDetalleRprListaDto> productos = [];
 			try
@@ -519,7 +519,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		[HttpPost]
-		public JsonResult OCValidar([FromBody] OCValidarRequest r)
+		public JsonResult OCValidar(OCValidarRequest r)
 		{
 			try
 			{
@@ -550,10 +550,12 @@ namespace gc.sitio.Areas.Compras.Controllers
 		/// </summary>
 		/// <param name="oc_compte"></param>
 		/// <param name="idsProds"></param>
+		/// <param name="aplica_oc"> Aplica los cambios en los productos del lado de OC</param>
+		/// <param name="aplica_fac"> Aplicao los cambios en los productos del lado de Factura</param>
 		/// <returns>Retorna la vista parcial con los productos actualizados, en base a la oc_compte proporcionada</returns>
 		[HttpPost]
 
-		public IActionResult CargarDetalleRprDesdeOcValidada(string oc_compte, string[] idsProds)
+		public IActionResult CargarDetalleRprDesdeOcValidada(string oc_compte, string[] idsProds, bool aplica_oc, bool aplica_fac)
 		{
 			var model = new TabDetalleRprModel();
 			try
@@ -567,27 +569,48 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				if (idsProds == null || idsProds.Length <= 0)
 					return PartialView("_listaDetalleRpr", model);
-				///TODO Marce: Obtener los datos con los valores que vienen como parametros
-				///			   Con esos datos, reemplazar los productos en el detalle
 				var listaProdTemporal = ComprobantesValorizaDetalleRprLista;
 				var listaIdsProds = idsProds.ToList();
+				var resProdOc = new List<CompteValorizaCostoPorProductoDto>();
 				foreach (var item in listaIdsProds)
 				{
-					var resProdOc = _cuentaServicio.ObtenerComprobanteValorizaCostoOC(new CompteValorizaCostoOcRequest() { oc_compte = oc_compte, p_id = item }, TokenCookie);
+					var prod = listaProdTemporal.FirstOrDefault(x => x.p_id == item);
+					
+					if (oc_compte.Equals("relacionada"))
+						resProdOc = _cuentaServicio.ObtenerComprobanteValorizaCostoOC(new CompteValorizaCostoOcRequest() { oc_compte = prod?.oc_compte, p_id = item }, TokenCookie);
+					else
+						resProdOc = _cuentaServicio.ObtenerComprobanteValorizaCostoOC(new CompteValorizaCostoOcRequest() { oc_compte = oc_compte, p_id = item }, TokenCookie);
+
 					if (resProdOc != null && resProdOc.Count > 0)
 					{
-						var prod = listaProdTemporal.FirstOrDefault(x => x.p_id == item);
 						if (prod != null)
 						{
-							prod.ocd_plista = resProdOc.First().ocd_plista;
-							prod.ocd_dto1 = resProdOc.First().ocd_dto1;
-							prod.ocd_dto2 = resProdOc.First().ocd_dto2;
-							prod.ocd_dto3 = resProdOc.First().ocd_dto3;
-							prod.ocd_dto4 = resProdOc.First().ocd_dto4;
-							prod.ocd_dto_pa = resProdOc.First().ocd_dto_pa;
-							prod.ocd_boni = resProdOc.First().ocd_boni;
-							prod.rpd_pcosto = resProdOc.First().ocd_pcosto;
-							prod.oc_compte = oc_compte;
+							var elemento = resProdOc.First();
+							if (aplica_oc)
+							{
+								prod.ocd_plista = elemento.ocd_plista; //Esperar confirmación sobre si actualizo este valor tambien, o solo el costo
+								prod.ocd_dto1 = elemento.ocd_dto1; //Esperar confirmación sobre si actualizo este valor tambien, o solo el costo
+								prod.ocd_dto2 = elemento.ocd_dto2; //Esperar confirmación sobre si actualizo este valor tambien, o solo el costo
+								prod.ocd_dto3 = elemento.ocd_dto3; //Esperar confirmación sobre si actualizo este valor tambien, o solo el costo
+								prod.ocd_dto4 = elemento.ocd_dto4; //Esperar confirmación sobre si actualizo este valor tambien, o solo el costo
+								prod.ocd_dto_pa = elemento.ocd_dto_pa; //Esperar confirmación sobre si actualizo este valor tambien, o solo el costo
+								prod.ocd_boni = elemento.ocd_boni; //Esperar confirmación sobre si actualizo este valor tambien, o solo el costo
+																   //prod.rpd_pcosto = resProdOc.First().ocd_pcosto;
+								prod.rpd_pcosto = CalcularPCosto(elemento.ocd_plista, elemento.ocd_dto1, elemento.ocd_dto2, elemento.ocd_dto3, elemento.ocd_dto4, elemento.ocd_dto_pa, elemento.ocd_boni, 0, prod.rpd_cantidad);
+								prod.oc_compte = oc_compte;
+							}
+							if (aplica_fac)
+							{
+								prod.rpd_plista = resProdOc.First().ocd_plista; //Esperar confirmación sobre si actualizo este valor tambien, o solo el costo
+								prod.rpd_dto1 = resProdOc.First().ocd_dto1; //Esperar confirmación sobre si actualizo este valor tambien, o solo el costo
+								prod.rpd_dto2 = resProdOc.First().ocd_dto2; //Esperar confirmación sobre si actualizo este valor tambien, o solo el costo
+								prod.rpd_dto3 = resProdOc.First().ocd_dto3; //Esperar confirmación sobre si actualizo este valor tambien, o solo el costo
+								prod.rpd_dto4 = resProdOc.First().ocd_dto4; //Esperar confirmación sobre si actualizo este valor tambien, o solo el costo
+								prod.rpd_dto_pa = resProdOc.First().ocd_dto_pa; //Esperar confirmación sobre si actualizo este valor tambien, o solo el costo
+								prod.rpd_boni = resProdOc.First().ocd_boni; //Esperar confirmación sobre si actualizo este valor tambien, o solo el costo
+																			//prod.rpd_pcosto = resProdOc.First().ocd_pcosto; 
+								prod.rpd_pcosto = CalcularPCosto(elemento.ocd_plista, elemento.ocd_dto1, elemento.ocd_dto2, elemento.ocd_dto3, elemento.ocd_dto4, elemento.ocd_dto_pa, elemento.ocd_boni, 0, prod.rpd_cantidad);
+							}
 						}
 					}
 				}
@@ -933,7 +956,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 						}
 					}
 
-					var result2 = item.ocd_pcosto - item.rpd_pcosto;
+					var result2 = Math.Round(item.ocd_pcosto, 2) - Math.Round(item.rpd_pcosto, 2);
 					if (result2 == 0)
 						item.valorizacion_mostrar_dp = false;
 					else
