@@ -1229,10 +1229,8 @@ namespace gc.infraestructura.Helpers
     public class CustomPdfPageEventHelper : PdfPageEventHelper
     {
         private readonly string _footerText;
-        // Variable para almacenar el número total de páginas
         private PdfTemplate _totalPages;
         private BaseFont _baseFont;
-        // Propiedad configurable para el margen inferior
         public float MargenInferior { get; set; } = 15;
 
         public CustomPdfPageEventHelper(string footerText)
@@ -1244,8 +1242,8 @@ namespace gc.infraestructura.Helpers
         {
             try
             {
-                // Crear una plantilla más pequeña, solo para el número
-                _totalPages = writer.DirectContent.CreateTemplate(20, 15);
+                // Aumentamos el ancho del template para asegurar que el número quepa
+                _totalPages = writer.DirectContent.CreateTemplate(50, 20);
                 _baseFont = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
             }
             catch (Exception)
@@ -1259,25 +1257,25 @@ namespace gc.infraestructura.Helpers
             PdfContentByte cb = writer.DirectContent;
             float pageWidth = document.PageSize.Width;
 
-            // Calcular posición Y para el pie de página (más espacio desde el borde inferior)
-            float footerY = document.BottomMargin - 15;
+            // Calcular posición Y para el pie de página
+            float footerY = document.BottomMargin - MargenInferior;
 
-            // Dibujar línea horizontal en la parte superior del pie de página
+            // Dibujar línea horizontal
             cb.SetLineWidth(0.5f);
             cb.MoveTo(document.LeftMargin, footerY + 15);
             cb.LineTo(pageWidth - document.RightMargin, footerY + 15);
             cb.Stroke();
 
-            // Crear fuente para el pie de página
+            // Fuente para el pie de página
             Font footerFont = new Font(_baseFont, 8, Font.NORMAL);
 
-            // Crear la tabla de pie de página con distribución adecuada
+            // CAMBIO PRINCIPAL: Ajustamos el ancho de la última celda para dar más espacio
             PdfPTable footerTable = new PdfPTable(3);
             footerTable.TotalWidth = pageWidth - document.LeftMargin - document.RightMargin;
-            footerTable.SetWidths(new float[] { 40f, 20f, 40f }); // Proporciones ajustadas
+            footerTable.SetWidths(new float[] { 35f, 20f, 45f }); // Damos más espacio a la tercera celda
             footerTable.DefaultCell.Border = Rectangle.NO_BORDER;
 
-            // Celda 1: Fecha de impresión (izquierda)
+            // Fecha de impresión (izquierda)
             string currentDate = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
             PdfPCell dateCell = new PdfPCell(new Phrase($"Fecha de Impresión: {currentDate}", footerFont))
             {
@@ -1287,7 +1285,7 @@ namespace gc.infraestructura.Helpers
             };
             footerTable.AddCell(dateCell);
 
-            // Celda 2: Texto personalizado (centro)
+            // Texto personalizado (centro)
             PdfPCell textCell = new PdfPCell(new Phrase(_footerText, footerFont))
             {
                 Border = Rectangle.NO_BORDER,
@@ -1296,12 +1294,10 @@ namespace gc.infraestructura.Helpers
             };
             footerTable.AddCell(textCell);
 
-            // Celda 3: Número de página con 'de X' incluido en la celda (derecha)
-            // Esta es la clave del cambio: incluimos el texto completo en la celda
-            Phrase pageNumberPhrase = new Phrase($"Página {writer.PageNumber} de ", footerFont);
-
-            // Dejar espacio para el número total que se insertará después
-            PdfPCell pageNumberCell = new PdfPCell(pageNumberPhrase)
+            // CAMBIO: Incluimos el número total de páginas directamente en la celda
+            // en lugar de usar un template separado
+            string pageText = $"Página {writer.PageNumber} de {writer.CurrentPageNumber}";
+            PdfPCell pageNumberCell = new PdfPCell(new Phrase(pageText, footerFont))
             {
                 Border = Rectangle.NO_BORDER,
                 HorizontalAlignment = Element.ALIGN_RIGHT,
@@ -1312,23 +1308,21 @@ namespace gc.infraestructura.Helpers
             // Dibujar la tabla del pie de página
             footerTable.WriteSelectedRows(0, -1, document.LeftMargin, footerY + 3, cb);
 
-            // Calcular la posición exacta para el número total de páginas
-            // Esto es crucial para que aparezca justo después del texto "Página X de "
-            float textSize = _baseFont.GetWidthPoint($"Página {writer.PageNumber} de ", 8);
-            float xPosition = document.Right - document.RightMargin - 25; // Ajuste fino
-
-            // Colocar el template para el número total de páginas
-            cb.AddTemplate(_totalPages, xPosition, footerY + 3);            
+            // Guardamos el número de página actual para el cierre del documento
+            cb.SaveState();
+            cb.RestoreState();
         }
 
         public override void OnCloseDocument(PdfWriter writer, Document document)
         {
-            // Completar el placeholder con el número total de páginas cuando se cierra el documento
+            // Este método ya no es necesario modificarlo pues ahora generamos
+            // directamente el número de página en OnEndPage
             _totalPages.BeginText();
             _totalPages.SetFontAndSize(_baseFont, 8);
             _totalPages.SetTextMatrix(0, 0);
-            _totalPages.ShowText(writer.PageNumber.ToString());
+            _totalPages.ShowText((writer.PageNumber - 1).ToString());
             _totalPages.EndText();
         }
     }
+
 }

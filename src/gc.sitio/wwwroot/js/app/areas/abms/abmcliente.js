@@ -438,10 +438,10 @@ function ObtenerDatosDeClienteParaJson(destinoDeOperacion, tipoDeOperacion) {
 	var cta_emp_ctaf = $("#listaFinancieros option:selected").text();
 	var cta_actu_fecha = null;
 	var cta_actu = null;
-	var ctac_tope_credito = $("#Cliente_Ctac_Tope_Credito").val();
-	var ctac_tope_credito_dia = $("#Cliente_Ctac_Tope_Credito_Dia").val();
-	var ctac_dto_operacion = $("#Cliente_Ctac_Dto_Operacion").val();
-	var ctac_dto_operacion_dia = $("#Cliente_Ctac_Dto_Operacion_Dia").val();
+	var ctac_tope_credito =parseFloat($("#Cliente_Ctac_Tope_Credito").val())||0.00;
+	var ctac_tope_credito_dia = parseFloat($("#Cliente_Ctac_Tope_Credito_Dia").val())||0.00;
+	var ctac_dto_operacion = parseFloat($("#Cliente_Ctac_Dto_Operacion").val())||0;
+	var ctac_dto_operacion_dia = parseFloat($("#Cliente_Ctac_Dto_Operacion_Dia").val())||0;
 	var piva_cert = "N";
 	var pib_cert = "N";
 	if ($("#listaAfip option:selected").val() !== "05" && $("#listaAfip option:selected").val() !== "02") {
@@ -469,7 +469,7 @@ function ObtenerDatosDeClienteParaJson(destinoDeOperacion, tipoDeOperacion) {
 	var ctac_habilitada = "N";
 	if ($("#chkCtaActiva")[0].checked)
 		ctac_habilitada = "S";
-	var ctac_ptos_vtas = $("#Cliente_Ctac_Ptos_Vtas").val();
+	var ctac_ptos_vtas = parseInt($("#Cliente_Ctac_Ptos_Vtas").val())||0;
 	var ctac_negocio_inicio = null;
 	var lp_id = $("#Cliente_Lp_Id").val();
 	var lp_desc = $("#Cliente_Lp_Id option:selected").text();

@@ -1463,21 +1463,18 @@ function Guardar() {
         }
         var data = ObtenerDatosParaJson(destinoDeOperacion, tipoDeOperacion);
 
-        // Separar modelo y parámetros extra
-        var modelo = { ...data };
-        var params = {};
-        ['destinoDeOperacion', 'tipoDeOperacion'].forEach(function (key) {
-            if (key in modelo) {
-                params[key] = modelo[key];
-                delete modelo[key];
-            }
-        });
+        //// Separar modelo y parámetros extra        
+        //var params = {
+        //    destinoDeOperacion: data.destinoDeOperacion,
+        //    tipoDeOperacion: data.tipoDeOperacion
+        //};
+        //delete data.destinoDeOperacion;
+        //delete data.tipoDeOperacion;
+        //var queryString = '?' + $.param(params);
 
-        var queryString = Object.keys(params).length > 0
-            ? '?' + $.param(params)
-            : '';
+        //var modelo = { ...data };
 
-        PostGen2(modelo, url + queryString, function (obj) {
+        PostGen(data, url, function (obj) {
             if (obj.error === true) {
                 AbrirMensaje("ATENCIÓN", obj.msg, function () {
                     $("#msjModal").modal("hide");

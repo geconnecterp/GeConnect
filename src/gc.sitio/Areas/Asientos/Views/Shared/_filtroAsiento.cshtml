@@ -12,7 +12,7 @@
         <div class="col-md-6 col-sm-12">
             <div class="input-group input-group-sm mb-1">
                 <div class="form-check form-check-inline form-switch">
-                    <input class="form-check-input" type="checkbox" id="chkEjercicio" @(esAsientoDefinitivo ? "checked disabled" : "") />
+                    <input class="form-check-input" type="checkbox" id="chkEjercicio"  checked disabled />
                     <label class="form-check-label" for="chkEjercicio">Ejercicio</label>
                 </div>
             </div>
@@ -21,8 +21,7 @@
                 @Html.DropDownList("Eje_nro", ViewBag.ListaEjercicios as SelectList,
                          new
                          {
-                             @class = "form-control inputEditable",
-                             @disabled = esAsientoDefinitivo ? null : "disabled",
+                             @class = "form-control inputEditable",                             
                              style = "background-color:rgb(251,255,195);font-weight:900;"
                          })
             </div>
@@ -48,17 +47,17 @@
         <div class="col-md-6 col-sm-12">
             <div class="input-group input-group-sm mb-1">
                 <div class="form-check form-check-inline form-switch">
-                    <input class="form-check-input" type="checkbox" id="Usu" @(esAsientoDefinitivo ? "checked disabled" : "") />
+                    <input class="form-check-input" type="checkbox" id="Usu" />
                     <label class="form-check-label" for="Usu">Usuario</label>
                 </div>
             </div>
             <div class="input-group input-group-sm">
                 <span class="input-group-text">Usuario</span>
-                @Html.DropDownList("Usu_like", ViewBag.ListaUsuarios as SelectList,
+                @Html.DropDownList("Usu_like", ViewBag.ListaUsuarios as SelectList,"Seleccionar...",
                          new
                          {
                              @class = "form-control inputEditable",
-                             @disabled = esAsientoDefinitivo ? null : "disabled",
+                             @disabled = "disabled",
                              style = "background-color:rgb(251,255,195);font-weight:900;"
                          })
             </div>
@@ -69,17 +68,17 @@
         <div class="col-md-6 col-sm-12">
             <div class="input-group input-group-sm mb-1">
                 <div class="form-check form-check-inline form-switch">
-                    <input class="form-check-input" type="checkbox" id="Tipo" @(esAsientoDefinitivo ? "checked disabled" : "") />
+                    <input class="form-check-input" type="checkbox" id="Tipo" />
                     <label class="form-check-label" for="Tipo">Tipo de Asiento</label>
                 </div>
             </div>
             <div class="input-group input-group-sm">
                 <span class="input-group-text">Tipo</span>
-                @Html.DropDownList("Tipo_like", ViewBag.ListaTiposAsiento as SelectList,
+                @Html.DropDownList("Tipo_like", ViewBag.ListaTiposAsiento as SelectList, "Seleccionar...",
                          new
                          {
                              @class = "form-control inputEditable",
-                             @disabled = esAsientoDefinitivo ? null : "disabled",
+                             @disabled = "disabled",
                              style = "background-color:rgb(251,255,195);font-weight:900;"
                          })
             </div>
