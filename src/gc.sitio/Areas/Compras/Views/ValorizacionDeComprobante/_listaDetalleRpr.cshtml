@@ -101,16 +101,16 @@
 						@*16*@<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_dto4) content-editable-td inputEditable"><input type="text" class="inputEditableNoBorder-mw35 text-align-right" id="@nombre_rpd_dto4" onfocusin="focusOnInput(this);" onkeyup="keyUpFromEditableCell(this);" value="@item.rpd_dto4.ToString().Replace('.', ',')" /></td>
 						@*17  <td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_dto_pa) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_rpd_dto_pa">@item.rpd_dto_pa.ToString().Replace('.', ',')</td>*@
 						@*17*@<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_dto_pa) content-editable-td inputEditable"><input type="text" class="inputEditableNoBorder-mw35 text-align-right" id="@nombre_rpd_dto_pa" onfocusin="focusOnInput(this);" onkeyup="keyUpFromEditableCell(this);" value="@item.rpd_dto_pa.ToString().Replace('.', ',')" /></td>
-						@*18*@<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_boni) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_rpd_boni">@Model.GrillaDetalleRpr.FormatearDato(item.rpd_boni, FormatDato.Monto)</td>
+						@*18*@<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_boni) content-editable-td inputEditable"><input type="text" class="inputEditableNoBorder-mw50" id="@nombre_rpd_boni" onfocusin="focusOnInput(this);" onkeyup="keyUpFromEditableCell(this);" value="@Model.GrillaDetalleRpr.FormatearDato(item.rpd_boni, FormatDato.Monto)" /></td>
 						@*19*@<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_pcosto)">@Model.GrillaDetalleRpr.FormatearDato(item.rpd_pcosto, FormatDato.Monto)</td>
 						@*20*@
 						@if (item.nc_genera_bool)
 						{
-							<td style="padding: 0; text-align-last: center;"><input type="checkbox" class="chkNetoFijo" name=@nombre_check_nc_genera id="@nombre_check_nc_genera" checked /></td>
+							<td style="padding: 0; text-align-last: center;"><input type="checkbox" class="chkNcGenera" name=@nombre_check_nc_genera id="chkNcGenera" onchange="onChangeChkNcGenera(this);" checked /></td>
 						}
 						else
 						{
-							<td style="padding: 0; text-align-last: center;"><input type="checkbox" class="chkNetoFijo" name=@nombre_check_nc_genera id="@nombre_check_nc_genera" /></td>
+							<td style="padding: 0; text-align-last: center;"><input type="checkbox" class="chkNcGenera" name=@nombre_check_nc_genera id="chkNcGenera" onchange="onChangeChkNcGenera(this);" /></td>
 						}
 						@*20 <td style="padding: 0; text-align-last: center;"><input type="checkbox" name=@nombre_check_nc_genera id="@nombre_check_nc_genera" /></td>*@
 						@*21  <td class="@Model.GrillaDetalleRpr.ObtenerClase(item.rpd_cantidad_compte) content-editable-td inputEditable" contenteditable='true' onfocusin="focusOnTd(this);" onkeyup="keyUpFromEditableCell(this);" id="@nombre_rpd_cantidad_compte">@item.rpd_cantidad_compte.ToString().Replace('.', ',')</td>*@

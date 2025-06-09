@@ -27,7 +27,7 @@
 	$(document).on("keyup", "#txtDto4", ControlaKeyUpTxtDto4);
 	$(document).on("keyup", "#txtDpa", ControlaKeyUpTxtDpa);
 	$(document).on("keyup", "#txtBoni", ControlaKeyUpTxtBoni);
-	//
+
 	$(document).on("mouseup", "#tbListaDescFinanc tbody tr", function (e) {
 		setTimeout(() => {
 			RecalcularItemValue()
@@ -80,7 +80,6 @@ function ControlaKeyUpTxtBoni(e) {
 }
 
 function moveColumn(table, sourceIndex, targetIndex) {
-	//console.log("Move Col " + sourceIndex + " to " + targetIndex);
 	var body = $("tbody", table);
 	$("tr", body).each(function (i, row) {
 		$("td", row).eq(sourceIndex).insertAfter($("td", row).eq(targetIndex - 1));
@@ -282,15 +281,32 @@ function ActualizarOrdenDeDescFinancEnBackEnd() {
 }
 
 function ActualizarListaValorizaciones() {
+	AbrirWaiting("");
 	var cm_compte = $("#cm_compte").val();
 	var dif_precio = $("#chkDifPrecio")[0].checked;
 	var dif_cantidad = $("#chkDifCantidad")[0].checked;
-	var data = { cm_compte, dif_precio, dif_cantidad }
+	var idsProductos = ObtenerIdsProdSeleccionadosEnDetalleRpr();
+	var checks = ObtenerCheckDeLosProductos();
+	var data = { cm_compte, dif_precio, dif_cantidad, checks }
 	PostGenHtml(data, actualizarValorizacionURL, function (obj) {
 		$("#divListaValorizacion").html(obj);
 		AddEventListenerToGrid("tbListaValorizacion");
 		ValidarRespuestaDeObtencionDeValorizacion();
+
+		$("#btnTabComprobantes").trigger("click");
+		CerrarWaiting("");
 	});
+}
+
+function ObtenerCheckDeLosProductos() {
+	var lista = [];
+	$("#tbListaDetalleRpr").find('tr').each(function (i, el) {
+		var td = $(this).find('td');
+		if (td.length > 0 && td[1].innerText !== undefined) {
+			lista.push({ id: td[1].innerText.substring(0, 6), check: td[20].childNodes[0].checked });
+		}
+	});
+	return lista;
 }
 
 function LimpiarCamposEnDescFinanc() {
@@ -339,38 +355,40 @@ function AddEventListenerToGrid(tabla) {
 
 function inCellInputEditable() {
 	$("#tbListaDetalleRpr").on('focusout', 'input', function (e) {
-		var actualiza = true;
-		if (cellValueTemp == $("#" + this.id).val())
-			actualiza = false;
-		else {
-			if (this.id.includes("_plista") || this.id.includes("_rpd_cantidad_compte") || this.id.includes("_dto1") || this.id.includes("_dto2") || this.id.includes("_dto3") || this.id.includes("_dto4") || this.id.includes("_dto_pa")) {
-				var valor = $("#" + this.id).inputmask('unmaskedvalue');
-				if (valor == "") { //Backspace + Enter
-					valor = "0";
-					$("#" + this.id).val("0");
-				}
-			}
-			else if (this.id.includes("_boni")) {
-				var spl = this.innerText.split("/");
-				if (spl.length === 2) {
-					var num1 = Number(spl[0]);
-					var num2 = Number(spl[1]);
-					if (num1 > num2) {
-						$("#" + this.id).val("");
-						$("#" + this.id).text("");
-						actualiza = false;
+		if (this.id) {
+			var actualiza = true;
+			if (cellValueTemp == $("#" + this.id).val())
+				actualiza = false;
+			else {
+				if (this.id.includes("_plista") || this.id.includes("_rpd_cantidad_compte") || this.id.includes("_dto1") || this.id.includes("_dto2") || this.id.includes("_dto3") || this.id.includes("_dto4") || this.id.includes("_dto_pa")) {
+					var valor = $("#" + this.id).inputmask('unmaskedvalue');
+					if (valor == "") { //Backspace + Enter
+						valor = "0";
+						$("#" + this.id).val("0");
 					}
-					var valor = this.innerText;
 				}
-				else
-					actualiza = false;
+				else if (this.id.includes("_boni")) {
+					var spl = $(this).val().split("/");
+					if (spl.length === 2) {
+						var num1 = Number(spl[0]);
+						var num2 = Number(spl[1]);
+						if (num1 > num2) {
+							$("#" + this.id).val("");
+							$("#" + this.id).text("");
+							actualiza = false;
+						}
+						var valor = $(this).val();
+					}
+					else
+						actualiza = false;
+				}
 			}
-		}
-		if (actualiza) {
-			if (this.id.includes("_ocd_"))
-				ActualizarProductoEnDetalleRprSeccionPrecio(this.id, valor);
-			else
-				ActualizarProductoEnDetalleRprSeccionFactura(this.id, valor);
+			if (actualiza) {
+				if (this.id.includes("_ocd_"))
+					ActualizarProductoEnDetalleRprSeccionPrecio(this.id, valor);
+				else
+					ActualizarProductoEnDetalleRprSeccionFactura(this.id, valor);
+			}
 		}
 	});
 }
@@ -690,7 +708,6 @@ function keyUpFromEditableCell(x) {
 			var p_id = arr_p_id[0];
 			var next = p_id + "_ocd_dto1";
 			document.getElementById(next).focus();
-			//$("#" + next).focus();
 			return true;
 		}
 		if (id.includes("ocd_dto1")) {
@@ -797,64 +814,80 @@ function keyUpFromEditableCell(x) {
 var keysAceptadas = [8, 37, 39, 46, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 110, 190];
 function addInCellKeyDownHandler() {
 	$("#tbListaDetalleRpr").on('keydown', 'td[contenteditable]', function (e) {
-		if (isNaN(String.fromCharCode(e.which)) && !(keysAceptadas.indexOf(e.which) != -1) && !(e.shiftKey && (e.which == 37 || e.which == 39))) { e.preventDefault(); }
+		if (e) {
+			if (isNaN(String.fromCharCode(e.which)) && !(keysAceptadas.indexOf(e.which) != -1) && !(e.shiftKey && (e.which == 37 || e.which == 39))) { e.preventDefault(); }
+		}
 	});
 }
 
 function addInCellGotFocusHandler() {
 	$("#tbListaDetalleRpr").on('focusin', 'td[contenteditable]', function (e) {
-		cellValueTemp = $("#" + this.id).text();
-		if (e.target) {
-			pIdEnOcSeleccionado = e.target.parentNode.cells[1].innerText;
-			cellIndexTemp = e.target.cellIndex;
+		if (e) {
+			cellValueTemp = $("#" + this.id).text();
+			if (e.target) {
+				pIdEnOcSeleccionado = e.target.parentNode.cells[1].innerText;
+				cellIndexTemp = e.target.cellIndex;
+			}
 		}
 	});
 }
 
 function addInCellInputGotFocusHandler() {
 	$("#tbListaDetalleRpr").on('focusin', 'input', function (e) {
-		cellValueTemp = $("#" + this.id).val();
-		$(this).select();
-		if (e.target) {
-			pIdEnOcSeleccionado = e.target.parentNode.parentNode.cells[1].innerText;
-			cellIndexTemp = e.target.parentNode.cellIndex;
+		if (e) {
+			cellValueTemp = $("#" + this.id).val();
+			$(this).select();
+			if (e.target) {
+				pIdEnOcSeleccionado = e.target.parentNode.parentNode.cells[1].innerText;
+				cellIndexTemp = e.target.parentNode.cellIndex;
+			}
 		}
 	});
 }
 
+function onChangeChkNcGenera(x) {
+	if (x) {
+		$(".nav-link").prop("disabled", true);
+	}
+	else
+		event.preventDefault;
+}
+
 function addInCellLostFocusHandler() {
 	$("#tbListaDetalleRpr").on('focusout', 'td[contenteditable]', function (e) {
-		var actualiza = true;
-		if (cellValueTemp == $("#" + this.id).text())
-			actualiza = false;
-		else {
-			if (this.id.includes("_dto1") || this.id.includes("_dto2") || this.id.includes("_dto3") || this.id.includes("_dto4") || this.id.includes("_dto_pa")) {
-				var valor = this.innerText;
-			}
-			else if (this.id.includes("_plista") || this.id.includes("_rpd_cantidad_compte")) {
-				var valor = $("#" + this.id).inputmask('unmaskedvalue');
-			}
-			else if (this.id.includes("_boni")) {
-				var spl = this.innerText.split("/");
-				if (spl.length === 2) {
-					var num1 = Number(spl[0]);
-					var num2 = Number(spl[1]);
-					if (num1 > num2) {
-						$("#" + this.id).val("");
-						$("#" + this.id).text("");
-						actualiza = false;
-					}
+		if (this.id) {
+			var actualiza = true;
+			if (cellValueTemp == $("#" + this.id).text())
+				actualiza = false;
+			else {
+				if (this.id.includes("_dto1") || this.id.includes("_dto2") || this.id.includes("_dto3") || this.id.includes("_dto4") || this.id.includes("_dto_pa")) {
 					var valor = this.innerText;
 				}
-				else
-					actualiza = false;
+				else if (this.id.includes("_plista") || this.id.includes("_rpd_cantidad_compte")) {
+					var valor = $("#" + this.id).inputmask('unmaskedvalue');
+				}
+				else if (this.id.includes("_boni")) {
+					var spl = this.innerText.split("/");
+					if (spl.length === 2) {
+						var num1 = Number(spl[0]);
+						var num2 = Number(spl[1]);
+						if (num1 > num2) {
+							$("#" + this.id).val("");
+							$("#" + this.id).text("");
+							actualiza = false;
+						}
+						var valor = this.innerText;
+					}
+					else
+						actualiza = false;
+				}
 			}
-		}
-		if (actualiza) {
-			if (this.id.includes("_ocd_"))
-				ActualizarProductoEnDetalleRprSeccionPrecio(this.id, valor);
-			else
-				ActualizarProductoEnDetalleRprSeccionFactura(this.id, valor);
+			if (actualiza) {
+				if (this.id.includes("_ocd_"))
+					ActualizarProductoEnDetalleRprSeccionPrecio(this.id, valor);
+				else
+					ActualizarProductoEnDetalleRprSeccionFactura(this.id, valor);
+			}
 		}
 	});
 }
@@ -947,72 +980,6 @@ function ActualizarProductoEnDetalleRprSeccionFactura(field, val) {
 	});
 }
 
-//function ValidarOC() {
-//	var idsProductos = ObtenerIdsProdSeleccionadosEnDetalleRpr();
-//	var oc_compte = $("#txtOC").val();
-//	if (idsProductos.length == 0) {
-//		AbrirMensaje("ATENCIÓN", "Debe al menos seleccionar un producto", function () {
-//			$("#msjModal").modal("hide");
-//			document.getElementById("tbListaDetalleRpr").focus();
-//			return true;
-//		}, false, ["Aceptar"], "error!", null);
-//	}
-//	else if (oc_compte == "") {
-//		AbrirMensaje("ATENCIÓN", "Debe indicar un valor válido de OC", function () {
-//			$("#msjModal").modal("hide");
-//			document.getElementById("txtOC").focus();
-//			return true;
-//		}, false, ["Aceptar"], "error!", null);
-//	}
-//	else {
-//		var cta_id = $("#CtaID").val()
-//		var data = { oc_compte, cta_id };
-//		PostGen(data, validarOcURL, function (obj) {
-//			if (obj.error === true) {
-//				AbrirMensaje("ATENCIÓN", obj.msg, function () {
-//					$("#msjModal").modal("hide");
-//					return true;
-//				}, false, ["Aceptar"], "error!", null);
-//			}
-//			else {
-//				//Si me devuelve ok, actualizo los valores de los productos
-//				CargarDetalleRprDesdeOcValidada(oc_compte, idsProductos);
-//			}
-//		});
-//	}
-//}
-
-
-
-//function SetearCostoActual() {
-//	var idsProductos = ObtenerIdsProdSeleccionadosEnDetalleRpr();
-//	if (idsProductos.length == 0) {
-//		AbrirMensaje("ATENCIÓN", "Debe al menos seleccionar un producto", function () {
-//			$("#msjModal").modal("hide");
-//			document.getElementById("tbListaDetalleRpr").focus();
-//			return true;
-//		}, false, ["Aceptar"], "error!", null);
-//	}
-//	else {
-//		var ocCompte = "actual";
-//		AbrirWaiting("Cargando información ...");
-//		var data = { oc_compte: ocCompte, idsProds: idsProductos }
-//		PostGenHtml(data, cargarDetalleRprDesdeOcValidadaUrl, function (obj) {
-//			$("#divListaDetalleRpr").html(obj);
-//			$(".nav-link").prop("disabled", true);
-//			AddEventListenerToGrid("tbListaDetalleRpr");
-//			addInCellKeyDownHandler();
-//			addInCellGotFocusHandler();
-//			addInCellInputGotFocusHandler();
-//			addInCellLostFocusHandler();
-//			addMaskInEditableCells();
-//			tableUpDownArrow();
-//			AgregarHandlerAGrillaDetalleRprCheckAll();
-//			CerrarWaiting();
-//		});
-//	}
-//}
-
 function SetearCostoDesdeOc() {
 	var idsProductos = ObtenerIdsProdSeleccionadosEnDetalleRpr();
 	if (idsProductos.length == 0) {
@@ -1061,10 +1028,12 @@ function ActualizarProductosSeleccionadosDesdeOcOriginal(oc_compte, idsProds) {
 }
 
 function AplicarSeteoMasivo() {
+	var sigue = true;
 	var aplica_Precio_oc = $("#chkPrecio_oc")[0].checked;
 	var aplica_Precio_fac = $("#chkPrecio_fac")[0].checked;
 	var idsProductos = ObtenerIdsProdSeleccionadosEnDetalleRpr();
 	if (idsProductos.length == 0) {
+		sigue = false;
 		AbrirMensaje("ATENCIÓN", "Debe al menos seleccionar un producto", function () {
 			$("#msjModal").modal("hide");
 			document.getElementById("tbListaDetalleRpr").focus();
@@ -1072,6 +1041,7 @@ function AplicarSeteoMasivo() {
 		}, false, ["Aceptar"], "error!", null);
 	}
 	else if (optSelected == "") {
+		sigue = false;
 		AbrirMensaje("ATENCIÓN", "Debe al menos seleccionar una opción de seteo masivo", function () {
 			$("#msjModal").modal("hide");
 			document.getElementById("tbListaDetalleRpr").focus();
@@ -1079,6 +1049,7 @@ function AplicarSeteoMasivo() {
 		}, false, ["Aceptar"], "error!", null);
 	}
 	else if (!aplica_Precio_oc && !aplica_Precio_fac) {
+		sigue = false;
 		AbrirMensaje("ATENCIÓN", "Debe al menos indicar si aplica a precio o factura", function () {
 			$("#msjModal").modal("hide");
 			document.getElementById("chkPrecio_oc").focus();
@@ -1087,6 +1058,7 @@ function AplicarSeteoMasivo() {
 	}
 	else if (optSelected == "opcion1") {//Costos de Otra OC
 		if ($("#txtOC").val() == "") {
+			sigue = false;
 			AbrirMensaje("ATENCIÓN", "Debe indicar el número de OC para validar", function () {
 				$("#msjModal").modal("hide");
 				document.getElementById("txtOC").focus();
@@ -1103,54 +1075,75 @@ function AplicarSeteoMasivo() {
 		var pLista = $("#txtPLista").inputmask('unmaskedvalue');
 		var boni = $("#txtBoni").val();
 		if (dto1 == 0 && dto2 == 0 && dto3 == 0 && dto4 == 0 && dtodpa == 0 && pLista == 0 && boni == "") {
+			sigue = false;
 			AbrirMensaje("ATENCIÓN", "Debe al menos indicar un valor distinto de 0, o indicar un valor válido para bonificación en el caso que se requiera.", function () {
 				$("#msjModal").modal("hide");
-				document.getElementById("txtDto1").focus();
+				document.getElementById("txtPLista").focus();
 				return true;
 			}, false, ["Aceptar"], "error!", null);
 		}
 	}
-	else {
+	if (sigue) {
 
 		//Pasaron las validaciones, depende de la opcion seleccionada (radioButton) y de los destinos a aplicar los cambios, es lo que voy a hacer
 		switch (optSelected) {
 			case "opcion1": //Costos de Otra OC
-				ValidarOC(true);
+				ValidarOC(false);
 				break;
 			case "opcion2":
-				ValidarOC(false);
+				ValidarOC(true);
 				break;
 			case "opcion3": //Costo sistema, envío "actual" como cm_compte
 				SetearCostoActual();
 				break;
 			case "opcion4":
+				SetearCostosEspecificos(idsProductos);
 				break;
 			default:
 				break;
 		}
-		AbrirWaiting("Aplicando cambios masivos ...");
-		//Armar request
-		var data = { dto1, dto2, dto3, dto4, dtodpa, boni, idsProductos, seccion };
-		PostGenHtml(data, cargarActualizacionPorSeteoMasivoUrl, function (obj) {
-			$("#divListaDetalleRpr").html(obj);
-			$(".nav-link").prop("disabled", true);
-			AddEventListenerToGrid("tbListaDetalleRpr");
-			limpiarValoresDeSeteoMasivo();
-			addInCellKeyDownHandler();
-			addInCellGotFocusHandler();
-			addInCellInputGotFocusHandler();
-			addInCellLostFocusHandler();
-			addMaskInEditableCells();
-			tableUpDownArrow();
-			AgregarHandlerAGrillaDetalleRprCheckAll();
-			CerrarWaiting();
-		});
+
 	}
+}
+function SetearCostosEspecificos(idsProductos) {
+	var aplica_oc = $("#chkPrecio_oc")[0].checked;
+	var aplica_fac = $("#chkPrecio_fac")[0].checked;
+	var plista = $("#txtPLista").inputmask('unmaskedvalue');
+	var dto1 = $("#txtDto1").inputmask('unmaskedvalue');
+	var dto2 = $("#txtDto2").inputmask('unmaskedvalue');
+	var dto3 = $("#txtDto3").inputmask('unmaskedvalue');
+	var dto4 = $("#txtDto4").inputmask('unmaskedvalue');
+	var dtodpa = $("#txtDpa").inputmask('unmaskedvalue');
+	var boni = $("#txtBoni").val();
+	var plista_bool = $("#chkPLista")[0].checked;
+	var dto1_bool = $("#chkDto1")[0].checked;
+	var dto2_bool = $("#chkDto2")[0].checked;
+	var dto3_bool = $("#chkDto3")[0].checked;
+	var dto4_bool = $("#chkDto4")[0].checked;
+	var dtoPa_bool = $("#chkDpa")[0].checked;
+	var boni_bool = $("#chkBoni")[0].checked;
+	AbrirWaiting("Aplicando cambios masivos ...");
+	//Armar request
+	var data = { plista, dto1, dto2, dto3, dto4, dtodpa, boni, idsProductos, aplica_oc, aplica_fac, plista_bool, dto1_bool, dto2_bool, dto3_bool, dto4_bool, dtoPa_bool, boni_bool };
+	PostGenHtml(data, cargarActualizacionPorSeteoMasivoUrl, function (obj) {
+		$("#divListaDetalleRpr").html(obj);
+		$(".nav-link").prop("disabled", true);
+		AddEventListenerToGrid("tbListaDetalleRpr");
+		limpiarValoresDeSeteoMasivo();
+		addInCellKeyDownHandler();
+		addInCellGotFocusHandler();
+		addInCellInputGotFocusHandler();
+		addInCellLostFocusHandler();
+		addMaskInEditableCells();
+		tableUpDownArrow();
+		AgregarHandlerAGrillaDetalleRprCheckAll();
+		CerrarWaiting();
+	});
 }
 
 function ValidarOC(esRelacionada) {
-	var aplica_Precio_oc = $("#chkPrecio_oc")[0].checked;
-	var aplica_Precio_fac = $("#chkPrecio_fac")[0].checked;
+	var aplica_oc = $("#chkPrecio_oc")[0].checked;
+	var aplica_fac = $("#chkPrecio_fac")[0].checked;
 	var idsProductos = ObtenerIdsProdSeleccionadosEnDetalleRpr();
 	var cta_id = $("#CtaID").val()
 	if (!esRelacionada) {
@@ -1165,13 +1158,13 @@ function ValidarOC(esRelacionada) {
 			}
 			else {
 				//Si me devuelve ok, actualizo los valores de los productos
-				CargarDetalleRprDesdeOcValidada(oc_compte, idsProductos, aplica_Precio_oc, aplica_Precio_fac);
+				CargarDetalleRprDesdeOcValidada(oc_compte, idsProductos, aplica_oc, aplica_fac);
 			}
 		});
 	}
 	else {
 		var oc_compte = "relacionada";
-		CargarDetalleRprDesdeOcValidada(oc_compte, idsProductos, aplica_Precio_oc, aplica_Precio_fac);
+		CargarDetalleRprDesdeOcValidada(oc_compte, idsProductos, aplica_oc, aplica_fac);
 	}
 }
 
@@ -1200,9 +1193,11 @@ function CargarDetalleRprDesdeOcValidada(ocCompte, idsProds, aplica_oc, aplica_f
 
 function SetearCostoActual() {
 	var idsProductos = ObtenerIdsProdSeleccionadosEnDetalleRpr();
+	var aplica_oc = $("#chkPrecio_oc")[0].checked;
+	var aplica_fac = $("#chkPrecio_fac")[0].checked;
 	var ocCompte = "actual";
 	AbrirWaiting("Cargando información ...");
-	var data = { oc_compte: ocCompte, idsProds: idsProductos }
+	var data = { oc_compte: ocCompte, idsProds: idsProductos, aplica_oc, aplica_fac }
 	PostGenHtml(data, cargarDetalleRprDesdeOcValidadaUrl, function (obj) {
 		$("#divListaDetalleRpr").html(obj);
 		$(".nav-link").prop("disabled", true);
@@ -1225,6 +1220,21 @@ function limpiarValoresDeSeteoMasivo() {
 	$("#txtDto4").val("");
 	$("#txtDpa").val("");
 	$("#txtBoni").val("");
+	$("#txtPLista").val("");
+	$("#chkPLista").prop('checked', false);
+	$("#chkPLista").trigger("change");
+	$("#chkDto1").prop('checked', false);
+	$("#chkDto1").trigger("change");
+	$("#chkDto2").prop('checked', false);
+	$("#chkDto2").trigger("change");
+	$("#chkDto3").prop('checked', false);
+	$("#chkDto3").trigger("change");
+	$("#chkDto4").prop('checked', false);
+	$("#chkDto4").trigger("change");
+	$("#chkDpa").prop('checked', false);
+	$("#chkDpa").trigger("change");
+	$("#chkBoni").prop('checked', false);
+	$("#chkBoni").trigger("change");
 }
 
 function CancelarDesdeDetalleRpr() {
@@ -1259,7 +1269,7 @@ function AceptarDesdeDetalleRpr() {
 					$(".nav-link").prop("disabled", false);
 					setTimeout(() => {
 						ActualizarListaValorizaciones();
-					}, 1000);
+					}, 500);
 
 					CerrarWaiting();
 					break;
@@ -1540,8 +1550,7 @@ function addMaskInEditableCells() {
 				getMaskForDiscountType("#" + td[6].childNodes[0].id);//p_dto3
 				getMaskForDiscountType("#" + td[7].childNodes[0].id);//p_dto4
 				getMaskForDiscountType("#" + td[8].childNodes[0].id);//p_dto_pa
-				//getMaskForBonificationType("#" + td[9].childNodes[0].id);//p_boni
-				$("#" + td[9].id).mask("000/000", { reverse: false });//p_boni
+				$("#" + td[9].childNodes[0].id).mask("000/000", { reverse: false });//p_boni
 
 				getMaskForMoneyType("#" + td[12].childNodes[0].id); //_plista
 				getMaskForDiscountType("#" + td[13].childNodes[0].id);//_dto1
@@ -1549,7 +1558,7 @@ function addMaskInEditableCells() {
 				getMaskForDiscountType("#" + td[15].childNodes[0].id);//p_dto3
 				getMaskForDiscountType("#" + td[16].childNodes[0].id);//p_dto4
 				getMaskForDiscountType("#" + td[17].childNodes[0].id);//p_dto_pa
-				$("#" + td[18].id).mask("000/000", { reverse: false });//p_boni
+				$("#" + td[18].childNodes[0].id).mask("000/000", { reverse: false });//p_boni
 				getMaskForMoneyType("#" + td[21].childNodes[0].id);//p_dto_pa
 			}
 		});
