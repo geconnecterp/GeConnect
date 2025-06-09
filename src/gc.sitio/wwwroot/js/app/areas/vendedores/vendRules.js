@@ -206,7 +206,7 @@ function confirmarOperacionAbmVendedor() {
         default:
     }   
 
-    PostGen(data, urlabm + "?accion="+accion, function (obj) {
+    PostGen2(data, urlabm + "?accion="+accion, function (obj) {
         if (obj.error === true) {
             CerrarWaiting();
             AbrirMensaje("ALGO NO SALIO BIEN!", obj.msg, function () {

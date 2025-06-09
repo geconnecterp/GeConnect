@@ -77,13 +77,14 @@ function buscarAsientosDefs(pag) {
         Movi: $("#Movi").is(":checked").toString(), // bit Movimiento
         Movi_like: $("#Movi_like").val(), // Nro Movimiento
         Usu: $("#Usu").is(":checked").toString(), // bit Usuario
-        Usu_like: $("#Usu_like").val(), // Usuario
+        Usu_like: $("#Usu").is(":checked") ? $("#Usu_like").val() : "", // Usuario (solo si está seleccionado)
         Tipo: $("#Tipo").is(":checked").toString(), // bit Tipo
-        Tipo_like: $("#Tipo_like").val(), // Tipo de Asiento
+        Tipo_like: $("#Tipo").is(":checked") ? $("#Tipo_like").val() : "", // Tipo de Asiento (solo si está seleccionado)
         Rango: $("#Rango").is(":checked").toString(), // bit Rango
         Desde: $("input[name='Desde']").val(), // Fecha Desde
         Hasta: $("input[name='Hasta']").val() // Fecha Hasta
     };
+
     //let admId = administracion;
     //agregando los parametros de la busqueda realizada
     cargarReporteEnArre(11, data1, "Informe de Asientos Solicitados.", "Obseración:", "")
@@ -142,22 +143,21 @@ function buscarAsientosDefs(pag) {
  * Valida que los campos obligatorios para la búsqueda de asientos definitivos estén completos
  * @returns {boolean} True si todos los campos obligatorios están completos, false en caso contrario
  */
-// Función para validar que los dropdowns obligatorios tengan valores seleccionados
 function validarCamposObligatoriosBusqueda() {
     let camposFaltantes = [];
 
-    // Validar ejercicio
+    // Validar ejercicio (siempre obligatorio)
     if (!$("#Eje_nro").val()) {
         camposFaltantes.push("Ejercicio");
     }
 
-    // Validar usuario
-    if (!$("#Usu_like").val()) {
+    // Validar usuario solo si su checkbox está seleccionado
+    if ($("#Usu").is(":checked") && !$("#Usu_like").val()) {
         camposFaltantes.push("Usuario");
     }
 
-    // Validar tipo de asiento
-    if (!$("#Tipo_like").val()) {
+    // Validar tipo de asiento solo si su checkbox está seleccionado
+    if ($("#Tipo").is(":checked") && !$("#Tipo_like").val()) {
         camposFaltantes.push("Tipo de Asiento");
     }
 
@@ -181,34 +181,54 @@ function validarCamposObligatoriosBusqueda() {
     return true;
 }
 
+
+// Script para configurar los controles de filtro en asientos definitivos
+// Script para configurar los controles de filtro en asientos definitivos
 // Script para configurar los controles de filtro en asientos definitivos
 function configurarFiltrosAsientoDefinitivo() {
-    // 1. Forzar selección y deshabilitación de checkboxes obligatorios
-    $('#chkEjercicio, #Usu, #Tipo').prop('checked', true).prop('disabled', true);
+    // Primero desconectamos eventos anteriores para evitar duplicaciones
+    $('#Eje_nro').off('change');
+    $('#Usu').off('change');
+    $('#Tipo').off('change');
+    $('#Usu_like').off('change');
 
-    // 2. Habilitar los dropdowns asociados
-    $('#Eje_nro, #Usu_like, #Tipo_like').prop('disabled', false);
+    // 1. Forzar selección y deshabilitación SOLO del checkbox de ejercicio
+    $('#chkEjercicio').prop('checked', true).prop('disabled', true);
 
-    // 3. Prevenir clics en los checkboxes
-    $('#chkEjercicio, #Usu, #Tipo').on('click', function (e) {
+    // 2. Los checkboxes de Usuario y Tipo deben poder habilitarse/deshabilitarse
+    $('#Usu, #Tipo').prop('checked', false).prop('disabled', false);
+
+    // 3. Habilitar el dropdown de ejercicio (siempre habilitado)
+    $('#Eje_nro').prop('disabled', false);
+
+    // 4. Los dropdowns de Usuario y Tipo estarán deshabilitados inicialmente
+    $('#Usu_like, #Tipo_like').prop('disabled', true);
+
+    // 5. Prevenir clics solo en el checkbox de ejercicio
+    $('#chkEjercicio').off('click').on('click', function (e) {
         e.preventDefault();
         return false;
     });
-    // Actualizar el nombre del usuario seleccionado en la botonera
-    $('#Usu_like').on('change', function () {
-        var usuarioSeleccionado = $(this).find('option:selected').text();
-        $('#nombreUsuarioSeleccionado').text('Usuario: ' + usuarioSeleccionado);
-        $('#usuarioSeleccionadoLabel').removeClass('bg-secondary').addClass('bg-primary');
+
+    // 6. Configurar eventos para los checkboxes de Usuario y Tipo
+    $('#Usu').on('change', function () {
+        const isChecked = $(this).prop('checked');
+        $('#Usu_like').prop('disabled', !isChecked);
+
+        // Si se desmarca el checkbox, limpiar la selección y el label
+        if (!isChecked && $('#nombreUsuarioSeleccionado').length) {
+            $('#Usu_like').val('');
+            $('#nombreUsuarioSeleccionado').text('Usuario: Sin seleccionar');
+            $('#usuarioSeleccionadoLabel').removeClass('bg-primary').addClass('bg-secondary');
+        }
     });
 
-    // Inicializar con el valor actual (si hay uno seleccionado)
-    if ($('#Usu_like').val()) {
-        var usuarioActual = $('#Usu_like').find('option:selected').text();
-        $('#nombreUsuarioSeleccionado').text('Usuario: ' + usuarioActual);
-        $('#usuarioSeleccionadoLabel').removeClass('bg-secondary').addClass('bg-primary');
-    }
+    $('#Tipo').on('change', function () {
+        const isChecked = $(this).prop('checked');
+        $('#Tipo_like').prop('disabled', !isChecked);
+    });
 
-    // Detectar cambio en el ejercicio y actualizar la lista de usuarios
+    // 7. IMPORTANTE: Conectar nuevamente el evento change del ejercicio
     $('#Eje_nro').on('change', function () {
         const ejercicioId = $(this).val();
         if (!ejercicioId) return;
@@ -225,8 +245,10 @@ function configurarFiltrosAsientoDefinitivo() {
         $usuarioSelect.prop('disabled', true).html('<option value="">Cargando usuarios...</option>');
 
         // Actualizar etiqueta en la botonera
-        $('#nombreUsuarioSeleccionado').text('Usuario: Cargando...');
-        $('#usuarioSeleccionadoLabel').removeClass('bg-primary').addClass('bg-secondary');
+        if ($('#nombreUsuarioSeleccionado').length) {
+            $('#nombreUsuarioSeleccionado').text('Usuario: Cargando...');
+            $('#usuarioSeleccionadoLabel').removeClass('bg-primary').addClass('bg-secondary');
+        }
 
         // Agregar un spinner junto al dropdown para indicar carga
         if ($('#spinner-usuarios').length === 0) {
@@ -241,8 +263,6 @@ function configurarFiltrosAsientoDefinitivo() {
         } else {
             $('#spinner-usuarios').show();
         }
-
-
 
         // Realizar petición AJAX para obtener los usuarios del ejercicio seleccionado
         $.ajax({
@@ -265,17 +285,22 @@ function configurarFiltrosAsientoDefinitivo() {
                 if (valorActual && $usuarioSelect.find(`option[value="${valorActual}"]`).length > 0) {
                     $usuarioSelect.val(valorActual);
                     const usuarioTexto = $usuarioSelect.find('option:selected').text();
-                    $('#nombreUsuarioSeleccionado').text('Usuario: ' + usuarioTexto);
-                    $('#usuarioSeleccionadoLabel').removeClass('bg-secondary').addClass('bg-primary');
+                    if ($('#nombreUsuarioSeleccionado').length) {
+                        $('#nombreUsuarioSeleccionado').text('Usuario: ' + usuarioTexto);
+                        $('#usuarioSeleccionadoLabel').removeClass('bg-secondary').addClass('bg-primary');
+                    }
                 } else {
                     // Si el valor anterior no existe en la nueva lista, limpiar la selección
                     $usuarioSelect.val('');
-                    $('#nombreUsuarioSeleccionado').text('Usuario: Sin seleccionar');
-                    $('#usuarioSeleccionadoLabel').removeClass('bg-primary').addClass('bg-secondary');
+                    if ($('#nombreUsuarioSeleccionado').length) {
+                        $('#nombreUsuarioSeleccionado').text('Usuario: Sin seleccionar');
+                        $('#usuarioSeleccionadoLabel').removeClass('bg-primary').addClass('bg-secondary');
+                    }
                 }
 
                 // Habilitar el select y los botones
-                $usuarioSelect.prop('disabled', false);
+                const isUsuarioChecked = $('#Usu').is(':checked');
+                $usuarioSelect.prop('disabled', !isUsuarioChecked);
                 $btnBuscar.prop('disabled', false);
                 $btnCancel.prop('disabled', false);
 
@@ -287,7 +312,8 @@ function configurarFiltrosAsientoDefinitivo() {
 
                 // Restaurar el select con mensaje de error
                 $usuarioSelect.html('<option value="">Error al cargar usuarios</option>');
-                $usuarioSelect.prop('disabled', false);
+                const isUsuarioChecked = $('#Usu').is(':checked');
+                $usuarioSelect.prop('disabled', !isUsuarioChecked);
 
                 // Habilitar los botones
                 $btnBuscar.prop('disabled', false);
@@ -297,8 +323,10 @@ function configurarFiltrosAsientoDefinitivo() {
                 $('#spinner-usuarios').hide();
 
                 // Actualizar etiqueta en la botonera
-                $('#nombreUsuarioSeleccionado').text('Usuario: Error al cargar');
-                $('#usuarioSeleccionadoLabel').removeClass('bg-primary').addClass('bg-danger');
+                if ($('#nombreUsuarioSeleccionado').length) {
+                    $('#nombreUsuarioSeleccionado').text('Usuario: Error al cargar');
+                    $('#usuarioSeleccionadoLabel').removeClass('bg-primary').addClass('bg-danger');
+                }
 
                 // Mostrar mensaje de error
                 AbrirMensaje(
@@ -323,6 +351,39 @@ function configurarFiltrosAsientoDefinitivo() {
         });
     });
 
+    // 8. CORREGIDO: Evento change para el dropdown de usuarios
+    $('#Usu_like').on('change', function () {
+        // Obtener el valor y texto del usuario seleccionado
+        const usuarioId = $(this).val();
+        const usuarioTexto = usuarioId ? $(this).find('option:selected').text() : 'Sin seleccionar';
+
+        // Verificar si existe el elemento donde mostrar el nombre
+        if ($('#nombreUsuarioSeleccionado').length) {
+            $('#nombreUsuarioSeleccionado').text('Usuario: ' + usuarioTexto);
+
+            // Actualizar clases del contenedor según haya selección o no
+            if (usuarioId) {
+                $('#usuarioSeleccionadoLabel')
+                    .removeClass('bg-secondary bg-danger')
+                    .addClass('bg-primary');
+            } else {
+                $('#usuarioSeleccionadoLabel')
+                    .removeClass('bg-primary bg-danger')
+                    .addClass('bg-secondary');
+            }
+        }
+
+        // Validar el campo si es obligatorio (cuando el checkbox está marcado)
+        if ($('#Usu').is(':checked')) {
+            const tieneValorValido = usuarioId !== null && usuarioId !== "";
+            // Si no hay valor válido y es obligatorio, mostrar indicador visual
+            if (!tieneValorValido) {
+                $(this).addClass('is-invalid');
+            } else {
+                $(this).removeClass('is-invalid');
+            }
+        }
+    });
 
     console.log('Configuración de filtros para asientos definitivos aplicada');
 }
@@ -494,38 +555,32 @@ $(function () {
     // Usar mousedown en lugar de click para evitar conflictos con el collapse
     $("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle);
 
-    // Forzar que el ejercicio siempre esté seleccionado en asientos definitivos
+    // Forzar que SOLO el ejercicio esté seleccionado y deshabilitado
     $('#chkEjercicio').prop('checked', true).prop('disabled', true);
     $('#Eje_nro').prop('disabled', false);
 
-    $('#Usu').prop('checked', true).prop('disabled', true);
-    $('#Usu_like').prop('disabled', false);
-
-    $('#Tipo').prop('checked', true).prop('disabled', true);
-    $('#Tipo_like').prop('disabled', false);
+    // Los checkboxes de Usuario y Tipo deben poder habilitarse/deshabilitarse
+    $('#Usu, #Tipo').prop('checked', false).prop('disabled', false);
+    $('#Usu_like, #Tipo_like').prop('disabled', true);
 
     // Modificar el comportamiento de toggleComponent para los campos obligatorios
     const originalToggleComponent = window.toggleComponent;
     window.toggleComponent = function (checkboxId, componentSelector) {
-        // Si es alguno de los campos obligatorios, siempre debe estar seleccionado y habilitado
-        if (checkboxId === 'chkEjercicio' || checkboxId === 'Usu' || checkboxId === 'Tipo') {
+        // Solo Ejercicio debe estar siempre seleccionado y habilitado
+        if (checkboxId === 'chkEjercicio') {
             $(`#${checkboxId}`).prop("checked", true);
             $(componentSelector).prop("disabled", false);
             return;
         }
 
-        // Para otros componentes, utilizar la función original
-        if (typeof originalToggleComponent === 'function') {
-            originalToggleComponent(checkboxId, componentSelector);
-        } else {
-            // Implementación por defecto
-            const isChecked = $(`#${checkboxId}`).is(':checked');
-            $(componentSelector).prop('disabled', !isChecked);
-        }
+        // Para otros componentes, aplicar la lógica normal
+        const isChecked = $(`#${checkboxId}`).is(':checked');
+        $(componentSelector).prop('disabled', !isChecked);
     };
 
-    // Deshabilitar eventos click en los checkboxes obligatorios
-    $('#chkEjercicio, #Usu, #Tipo').on('click', function (e) {
+
+    // Deshabilitar eventos click solo en el checkbox de ejercicio
+    $('#chkEjercicio').on('click', function (e) {
         e.preventDefault();
         return false;
     });
@@ -761,7 +816,7 @@ function ejecutarAltaAsientoTemp() {
 }
 
 /**
- * Ejecuta la modificación de un asiento definitivo, verificando primero los permisos
+ * Ejecuta la modificación de un asiento definitivo, sin control de fecha
  */
 function ejecutarModificacionAsientoDef() {
     // Verificar que haya un asiento seleccionado
@@ -772,110 +827,11 @@ function ejecutarModificacionAsientoDef() {
         return;
     }
 
-    // Mostrar indicador de espera mientras verificamos permisos
-    AbrirWaiting("Verificando permisos de modificación...");
-
-    // Verificar si el asiento es modificable (fecha dentro del período permitido)
-    try {
-        // Obtener la fecha del asiento del DOM
-        const fechaStr = $("#Dia_fecha").val();
-        if (!fechaStr) {
-            CerrarWaiting();
-            ControlaMensajeError("No se pudo obtener la fecha del asiento para verificar permisos");
-            return;
-        }
-
-        // Intentar parsear la fecha en varios formatos
-        let fechaAsiento;
-
-        // Verificar si la fecha viene en formato DD/MM/YYYY
-        if (fechaStr.includes('/')) {
-            const partes = fechaStr.split('/');
-            if (partes.length === 3) {
-                fechaAsiento = new Date(
-                    parseInt(partes[2]), // año
-                    parseInt(partes[1]) - 1, // mes (0-11)
-                    parseInt(partes[0]) // día
-                );
-            }
-        }
-        // Si no tiene formato DD/MM/YYYY o el parsing falló, intentar con el constructor normal
-        if (!fechaAsiento || isNaN(fechaAsiento.getTime())) {
-            fechaAsiento = new Date(fechaStr);
-        }
-
-        // Verificar si la fecha es válida antes de continuar
-        if (isNaN(fechaAsiento.getTime())) {
-            CerrarWaiting();
-            ControlaMensajeError("Fecha de asiento inválida: " + fechaStr);
-            return;
-        }
-
-        // Ejercicio seleccionado
-        const ejercicioId = $("#Eje_nro").val() || "0";
-
-        // Crear objeto para enviar al servidor
-        const data = {
-            eje_nro: ejercicioId,
-            dia_fecha: fechaAsiento.toISOString()
-        };
-
-        // Verificar permisos en el servidor
-        $.ajax({
-            url: verificarFechaModificacionUrl,
-            type: "POST",
-            contentType: "application/json",
-            data: JSON.stringify(data),
-            success: function (response) {
-                CerrarWaiting();
-
-                if (response.permitido === false) {
-                    // No se permite modificar por fecha
-                    AbrirMensaje(
-                        "ATENCIÓN",
-                        response.mensaje || "Este asiento no puede ser modificado porque su fecha ha superado la fecha de control del ejercicio.",
-                        function () {
-                            $("#msjModal").modal("hide");
-                        },
-                        false,
-                        ["Aceptar"],
-                        "warn!",
-                        null
-                    );
-                } else {
-                    // Se permite modificar - proceder con la modificación
-                    accion = AbmAction.MODIFICACION;
-                    $("#divFiltro").collapse("hide");
-                    accionBotones(accion);
-                    activarControles(true);
-                }
-            },
-            error: function (xhr, status, error) {
-                CerrarWaiting();
-                // Por defecto, mostrar un mensaje de error pero permitir continuar
-                AbrirMensaje(
-                    "ADVERTENCIA",
-                    "No se pudo verificar si el asiento es modificable. ¿Desea continuar de todos modos?",
-                    function (resp) {
-                        if (resp === "SI") {
-                            accion = AbmAction.MODIFICACION;
-                            $("#divFiltro").collapse("hide");
-                            accionBotones(accion);
-                            activarControles(true);
-                        }
-                        $("#msjModal").modal("hide");
-                    },
-                    true, // Mostrar botones SI/NO
-                    ["SI", "NO"],
-                    "warn!",
-                    null
-                );
-            }
-        });
-    } catch (error) {
-        CerrarWaiting();
-        ControlaMensajeError("Error al verificar permisos: " + error);
-    }
+    // Proceder directamente con la modificación sin verificar la fecha
+    accion = AbmAction.MODIFICACION;
+    $("#divFiltro").collapse("hide");
+    accionBotones(accion);
+    activarControles(true);
 }
 
 /**
@@ -1920,16 +1876,18 @@ function InicializaVistaAsientos(e) {
         // Limpiar selecciones y ocultar checkboxes
         limpiarSeleccionAsientos();
 
-        // Configuración de componentes
-        configurarComponentesIniciales();
+        // Volver a aplicar la configuración de los filtros
+        configurarFiltrosAsientoDefinitivo();
 
         // Mostrar el filtro si no hay datos en la grilla
         mostrarFiltroSiNecesario();
 
         // Configurar botones y grilla
-        accionBotones(AbmAction.CANCEL); // Usar tercer parámetro para mantener el botón cancelar
+        accionBotones(AbmAction.CANCEL);
         removerSeleccion();
         activarGrilla(Grids.GridAsiento);
+
+        inicializaParametrosReporteAsientoDef();
 
         CerrarWaiting();
         return; // Importante: salir de la función para evitar recursión
@@ -1941,17 +1899,23 @@ function InicializaVistaAsientos(e) {
     // Limpiar selecciones y ocultar checkboxes
     limpiarSeleccionAsientos();
 
-    // Configuración de componentes
-    configurarComponentesIniciales();
+    // Aplicar la configuración correcta de los filtros
+    configurarFiltrosAsientoDefinitivo();
 
     // Mostrar el filtro si no hay datos en la grilla
     mostrarFiltroSiNecesario();
 
     // Configurar botones y grilla
-    accionBotones(AbmAction.CANCEL); // Usar tercer parámetro para mantener el botón cancelar
+    accionBotones(AbmAction.CANCEL);
     removerSeleccion();
     activarGrilla(Grids.GridAsiento);
 
+    inicializaParametrosReporteAsientoDef();
+
+    CerrarWaiting();
+}
+
+function inicializaParametrosReporteAsientoDef() {
     //resguardo los parametros para el reporte #9 = i-1
     // Obtenemos los valores de los campos del filtro
     let i = 9;
@@ -1979,7 +1943,6 @@ function InicializaVistaAsientos(e) {
         ReporteResetCeldaEnArre(i);
     }
 
-    CerrarWaiting();
 }
 
 /**

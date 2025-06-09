@@ -1,6 +1,7 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.ABM;
@@ -566,7 +567,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
         /// <param name="tipoDeOperacion"></param>
         /// <returns></returns>
         [HttpPost]
-        public JsonResult DataOpsCliente([FromBody] CuentaAbmValidationModel cuenta, string destinoDeOperacion, char tipoDeOperacion)
+        public JsonResult DataOpsCliente(CuentaAbmValidationModel cuenta, string destinoDeOperacion, char tipoDeOperacion)
         {
             try
             {
@@ -575,7 +576,10 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 {
                     return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
                 }
-
+                if (cuenta == null)
+                {
+                    throw new NegocioException("No se recepcionaron los datos confirmados para operar.");
+                }
                 var respuestaDeValidacion = ValidarJsonAntesDeGuardar(cuenta, tipoDeOperacion);
                 if (respuestaDeValidacion == "")
                 {
@@ -586,6 +590,10 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 }
                 else
                     return Json(new { error = true, warn = false, msg = respuestaDeValidacion, codigo = 1, setFocus = string.Empty });
+            }
+            catch(NegocioException ex)
+            {
+                return Json(new { error = true, msg = ex.Message});
             }
             catch 
             {
@@ -1011,7 +1019,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             return "";
         }
 
-        private string ValidarJsonAntesDeGuardar(CuentaAbmValidationModel cuenta, char abm)
+        private string ValidarJsonAntesDeGuardar([FromBody] CuentaAbmValidationModel cuenta, char abm)
         {
             var abmString = abm.ToString();
             if (abmString == Abm.A.ToString() || abmString == Abm.M.ToString())

@@ -123,9 +123,13 @@ namespace gc.api.core.Servicios.Reportes
                 var subtitulo = HelperPdf.FontSubtituloPredeterminado();
 
                 #region Generación de Cabecera               
-                PdfPTable tabla = GeneraCabeceraPdf(solicitud, logo, chico, titulo, _empresaGeco);
-                Phrase phrase = new Phrase();
-                phrase.Add(tabla);
+                //PdfPTable tabla = GeneraCabeceraPdf(solicitud, logo, chico, titulo, _empresaGeco);
+                //Phrase phrase = new Phrase();
+                //phrase.Add(tabla);
+                PdfPTable tabla;
+                Phrase phrase;
+                CargarCabecera(solicitud, chico, titulo, logo, _empresaGeco, out tabla, out phrase);
+
 
                 // Crear el HeaderFooter con el Phrase que contiene la tabla
                 HeaderFooter header = new HeaderFooter(phrase, false)

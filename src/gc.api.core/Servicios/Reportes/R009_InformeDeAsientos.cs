@@ -203,18 +203,18 @@ namespace gc.api.core.Servicios.Reportes
 
             var Eje_nro = solicitud.Parametros.GetValueOrDefault("Eje_nro", "");
             var Movi = solicitud.Parametros.GetValueOrDefault("Movi", "").ToBoolean();
-            var Movi_like = solicitud.Parametros.GetValueOrDefault("Movi_like", "").ToString() ?? "";
+            var Movi_like = solicitud.Parametros.GetValueOrDefault("Movi_like", "") ?? "";
             var Usu = solicitud.Parametros.GetValueOrDefault("Usu", "").ToBoolean();
-            var Usu_like = solicitud.Parametros.GetValueOrDefault("Usu_like", "").ToString() ?? "";
+            var Usu_like = solicitud.Parametros.GetValueOrDefault("Usu_like", "") ?? "";
             var Tipo = solicitud.Parametros.GetValueOrDefault("Tipo", "").ToBoolean();
-            var Tipo_like = solicitud.Parametros.GetValueOrDefault("Tipo_like", "").ToString() ?? "";
+            var Tipo_like = solicitud.Parametros.GetValueOrDefault("Tipo_like", "") ?? "";
             var Rango = solicitud.Parametros.GetValueOrDefault("Rango", "").ToBoolean();
             var Desde = solicitud.Parametros.GetValueOrDefault("Desde", "").ToDateTime();
             var Hasta = solicitud.Parametros.GetValueOrDefault("Hasta", "").ToDateTime();
 
 
             //Se obtiene el id del usuario (userId) y se asignan los valores de pag y reg
-            string dia_movi = solicitud.Parametros.GetValueOrDefault("dia_movi", "").ToString() ?? "";
+            string dia_movi = solicitud.Parametros.GetValueOrDefault("dia_movi", "") ?? "";
             id = Movi_like;
             return _asTempSv.ObtenerAsientos(new QueryAsiento
             {

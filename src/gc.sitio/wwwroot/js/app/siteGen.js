@@ -230,62 +230,61 @@ function PostGen(data, path, retorno, fxError, datatype) {
 }
 
 /**
- * Realiza una solicitud POST al servidor con datos JSON
- * @param {Object|string} data - Datos a enviar
- * @param {string} url - URL del endpoint
- * @param {Function} success - Función de callback para respuesta exitosa
- * @param {Function} error - Función de callback para error (opcional)
+ * Realiza una solicitud POST al servidor con datos JSON o FormData.
+ * @param {Object|string|FormData} data - Datos a enviar (objeto JS, string JSON o FormData).
+ * @param {string} url - URL del endpoint.
+ * @param {Function} success - Callback para respuesta exitosa.
+ * @param {Function} error - Callback para error (opcional).
  */
 function PostGen2(data, url, success, error) {
-    // Verificar el tipo de datos
     let dataToSend;
     let contentType;
+    let processData = true;
 
-    // Si data es ya una cadena y parece JSON
-    if (typeof data === 'string' &&
-        ((data.startsWith('{') && data.endsWith('}')) ||
-            (data.startsWith('[') && data.endsWith(']')))) {
+    // Si es FormData (para archivos)
+    if (typeof FormData !== "undefined" && data instanceof FormData) {
+        dataToSend = data;
+        contentType = false; // Deja que el navegador lo maneje
+        processData = false;
+    }
+    // Si es string y parece JSON
+    else if (typeof data === "string" &&
+        ((data.trim().startsWith('{') && data.trim().endsWith('}')) ||
+            (data.trim().startsWith('[') && data.trim().endsWith(']')))) {
         dataToSend = data;
         contentType = "application/json";
     }
-    // Si data es un objeto
-    else if (typeof data === 'object' && data !== null) {
-        // Verificar si es FormData (para envío de archivos)
-        if (data instanceof FormData) {
-            dataToSend = data;
-            // No establecer contentType para FormData (el navegador lo hará automáticamente)
-            contentType = undefined;
-        } else {
-            // Es un objeto JavaScript normal, convertirlo a JSON string
-            dataToSend = JSON.stringify(data);
-            contentType = "application/json";
-        }
+    // Si es objeto JS normal
+    else if (typeof data === "object" && data !== null) {
+        dataToSend = JSON.stringify(data);
+        contentType = "application/json";
     }
-    // Cualquier otro tipo de datos
+    // Cualquier otro tipo (fallback)
     else {
         dataToSend = data;
-        // Usar el contentType por defecto de jQuery para POST
         contentType = "application/x-www-form-urlencoded; charset=UTF-8";
     }
 
-    // Configurar la solicitud AJAX
-    const ajaxConfig = {
+    $.ajax({
         url: url,
         type: "POST",
         data: dataToSend,
+        contentType: contentType,
+        processData: processData,
         success: function (response) {
             if (typeof success === 'function') {
                 success(response);
             }
         },
         error: function (xhr, status, errorThrown) {
-            console.error("Error en solicitud AJAX:", {
-                url: url,
-                status: status,
-                error: errorThrown,
-                response: xhr.responseText
-            });
-
+            if (window.console) {
+                console.error("Error en solicitud AJAX:", {
+                    url: url,
+                    status: status,
+                    error: errorThrown,
+                    response: xhr.responseText
+                });
+            }
             if (typeof error === 'function') {
                 error({
                     status: xhr.status,
@@ -295,18 +294,8 @@ function PostGen2(data, url, success, error) {
                 });
             }
         }
-    };
-
-    // Agregar contentType solo si está definido
-    if (contentType !== undefined) {
-        ajaxConfig.contentType = contentType;
-    }
-
-    // Realizar la solicitud
-    $.ajax(ajaxConfig);
+    });
 }
-
-
 
 function fnError(jqXHR) {
     //alert(jqXHR);
