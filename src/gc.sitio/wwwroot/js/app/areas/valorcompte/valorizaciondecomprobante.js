@@ -15,6 +15,8 @@
 	$(document).on("click", "#btnCancelarDesdeDetalleRpr", CancelarDesdeDetalleRpr);
 	$(document).on("click", "#btnCostoOC", SetearCostoDesdeOc);
 	$(document).on("click", "#btnAceptarDesdeDetalleRpr", AceptarDesdeDetalleRpr);
+	$(document).on("click", "#btnCancel", btnCancelClick);
+	//
 
 	$(document).on("click", "#btnGuardarValorizacion", GuardarValorizacion);
 	$(document).on("click", "#btnConfirmarValorizacion", ConfirmarValorizacion);
@@ -36,6 +38,10 @@
 
 	InicializarPantallaDeFiltros();
 });
+
+function btnCancelClick() {
+	CancelarValorizacion();
+}
 
 function ControlaKeyUpTxtPLista(e) {
 	if (e.which == 13 || e.which == 109) {
@@ -258,7 +264,8 @@ function ActualizarOrdenDeDescFinancEnBackEnd() {
 			var dtoc_id = td[10].innerText;
 			var dtoc_desc = td[3].innerText;
 			var item = td[0].innerText;
-			var item_data = { cm_compte, dia_movi, dto_fijo, dto_sobre_total, tco_id, dto, dto_importe, dtoc_id, dtoc_desc, item };
+			var dto_obs = td[11].innerText;
+			var item_data = { cm_compte, dia_movi, dto_fijo, dto_sobre_total, tco_id, dto, dto_importe, dtoc_id, dtoc_desc, item, dto_obs };
 			listaDesFinanc.push(item_data);
 		}
 	});
@@ -1137,6 +1144,7 @@ function SetearCostosEspecificos(idsProductos) {
 		addMaskInEditableCells();
 		tableUpDownArrow();
 		AgregarHandlerAGrillaDetalleRprCheckAll();
+		limpiarValoresDeSeteoMasivo();
 		CerrarWaiting();
 	});
 }
@@ -1187,6 +1195,7 @@ function CargarDetalleRprDesdeOcValidada(ocCompte, idsProds, aplica_oc, aplica_f
 		addMaskInEditableCells();
 		tableUpDownArrow();
 		AgregarHandlerAGrillaDetalleRprCheckAll();
+		limpiarValoresDeSeteoMasivo();
 		CerrarWaiting();
 	});
 }
@@ -1209,6 +1218,7 @@ function SetearCostoActual() {
 		addMaskInEditableCells();
 		tableUpDownArrow();
 		AgregarHandlerAGrillaDetalleRprCheckAll();
+		limpiarValoresDeSeteoMasivo();
 		CerrarWaiting();
 	});
 }
@@ -1246,7 +1256,7 @@ function CancelarDesdeDetalleRpr() {
 				$(".nav-link").prop("disabled", false);
 				//Restaurar valores originales
 				CargarDesdeCopiaDeRespaldoListaRpr();
-
+				$("#btnTabComprobantes").trigger("click");
 				CerrarWaiting();
 				break;
 			case "NO":
@@ -1402,6 +1412,7 @@ function CargarDesdeCopiaDeRespaldoListaRpr() {
 		tableUpDownArrow();
 		AgregarHandlerAGrillaDetalleRprCheckAll();
 		addMaskInEditableCells();
+		inCellInputEditable();
 		CerrarWaiting();
 	});
 }

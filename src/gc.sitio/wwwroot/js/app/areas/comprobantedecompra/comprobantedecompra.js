@@ -11,8 +11,10 @@ const IvaSituacion = {
 const formatter = new Intl.NumberFormat('de-DE', {
 	//style: 'currency',
 	//currency: 'USD',
-
-	trailingZeroDisplay: 'stripIfInteger'
+	minimumFractionDigits: 2,
+	maximumFractionDigits: 2
+	//,
+	//trailingZeroDisplay: 'stripIfInteger'
 });
 
 function InicializaPantalla() {
@@ -368,6 +370,20 @@ function AbrirModalConceptoFacturado() {
 			document.getElementById("ConceptoFacturado_concepto").focus();
 		}, 500);
 		$("#ConceptoFacturado_concepto").trigger("focus");
+
+		//var input = document.getElementById("btnAgregar");
+		//input.addEventListener("keypress", function (event) {
+		//	if (event.key === "Enter") {
+		//		AgregarConceptoFacturado();
+		//	}
+		//});
+		document.getElementById("btnAgregar").addEventListener("keyup", function (event) {
+			if (event.keyCode === 13) {
+				// Check if Enter key is pressed
+				AgregarConceptoFacturado();
+				// Trigger button click
+			}
+		});
 		CerrarWaiting();
 		return true
 	});
@@ -526,6 +542,7 @@ function LimpiarCamposEnModalCargaIva() {
 	$("#ConceptoFacturado_subtotal").val("");
 	$("#ConceptoFacturado_iva").val("");
 	$("#ConceptoFacturado_total").val("");
+	$("#ConceptoFacturado_concepto").trigger("focus");
 }
 
 function LimpiarCamposEnModalCargaOT() {
@@ -542,7 +559,9 @@ function FormatearValores(grilla, idx) {
 		if (td.length > 0) {
 			for (var i = 0; i < idx.length; i++) {
 				if (td[idx[i]].innerText !== undefined) {
+					console.log(td[idx[i]].innerText);
 					td[idx[i]].innerText = formatter.format(td[idx[i]].innerText);
+					console.log(td[idx[i]].innerText);
 				}
 			}
 		}
@@ -672,6 +691,7 @@ function CargarGrillaTotales() {
 	var data = {};
 	PostGenHtml(data, cargarGrillaTotalesUrl, function (obj) {
 		$("#divTotales").html(obj);
+		FormatearValores(tbGridTotales, [1]);
 		return true
 	});
 }

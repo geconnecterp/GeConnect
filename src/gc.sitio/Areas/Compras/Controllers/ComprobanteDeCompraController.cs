@@ -145,7 +145,25 @@ namespace gc.sitio.Areas.Compras.Controllers
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 				}
 				if (ListaConceptoFacturado != null && ListaConceptoFacturado.Count >= 0)
+				{
+					//var newLista = new List<ConceptoFacturadoDto>();
+					//foreach (var item in ListaConceptoFacturado)
+					//{
+					//	newLista.Add(new ConceptoFacturadoDto()
+					//	{
+					//		cantidad = item.cantidad,
+					//		concepto = item.concepto,
+					//		id = item.id,
+					//		iva = Math.Round(item.iva, 2),
+					//		iva_alicuota = Math.Round(item.iva_alicuota, 2),
+					//		iva_situacion = item.iva_situacion,
+					//		subtotal = Math.Round(item.subtotal),
+					//		total = Math.Round(item.total, 2)
+					//	});
+					//}
+					//model = ObtenerGridCoreSmart<ConceptoFacturadoDto>(newLista);
 					model = ObtenerGridCoreSmart<ConceptoFacturadoDto>(ListaConceptoFacturado);
+				}
 				else
 					model = ObtenerGridCoreSmart<ConceptoFacturadoDto>([]);
 				return PartialView("_tabCompte_ConFactu", model);
@@ -602,7 +620,17 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (ListaConceptoFacturado.Count != 0)
 					maxId = ListaConceptoFacturado.Max(x => x.id);
 				maxId++;
-				var newItem = new ConceptoFacturadoDto() { id = maxId, concepto = concepto, cantidad = 1, iva = iva, iva_alicuota = ali, iva_situacion = sit, subtotal = subt, total = tot };
+				var newItem = new ConceptoFacturadoDto()
+				{
+					id = maxId,
+					concepto = concepto,
+					cantidad = 1,
+					iva = Math.Round(iva, 2),
+					iva_alicuota = Math.Round(ali, 2),
+					iva_situacion = sit,
+					subtotal = Math.Round(subt, 2),
+					total = Math.Round(tot, 2)
+				};
 				var listaTemp = new List<ConceptoFacturadoDto>();
 				listaTemp = ListaConceptoFacturado;
 				listaTemp.Add(newItem);
@@ -636,9 +664,21 @@ namespace gc.sitio.Areas.Compras.Controllers
 					return PartialView("_tabCompte_ConFactu", model);
 				}
 				var listaTemp = ListaConceptoFacturado;
+				var itemTemp = listaTemp.Where(x => x.id.Equals(id)).First(); //Lo mantengo para buscarlo y quitarlo de la lista de totales
 				listaTemp = [.. listaTemp.Where(x => !x.id.Equals(id))];
 				ListaConceptoFacturado = listaTemp;
 				model = ObtenerGridCoreSmart<ConceptoFacturadoDto>(ListaConceptoFacturado);
+
+				//Busco el item de la lista de totales para quitarlo
+				if (ListaTotales != null && ListaTotales.Count > 0)
+				{
+					if (ListaTotales.Any(x => x.Concepto.Contains(itemTemp.iva_alicuota.ToString())))
+					{
+						var lista22 = ListaTotales.Where(x => !x.Concepto.Contains(itemTemp.iva_alicuota.ToString())).ToList();
+						ListaTotales = lista22;
+					}
+
+				}
 
 				ActualizarGrillaTotales_ConceptosFacturados();
 

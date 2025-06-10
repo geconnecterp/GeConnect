@@ -22,5 +22,19 @@ namespace gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra
 		public decimal iva { get; set; } = 0.00M;
 		[DataMember]
 		public decimal total { get; set; } = 0.00M;
+
+		public string getStringFormat(decimal val)
+		{
+			var _ret = "";
+			var aux1 = val.ToString("0.00").Split('.');
+			if (aux1.Length == 1)
+				return aux1 + ",00";
+			else
+			{
+				if (aux1[1].Length == 1)
+					return aux1 + "0";
+			}
+			return val.ToString("0.00");
+		}
 	}
 }

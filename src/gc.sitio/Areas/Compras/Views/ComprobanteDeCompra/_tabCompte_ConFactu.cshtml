@@ -1,4 +1,5 @@
 ﻿@model GridCoreSmart<ConceptoFacturadoDto>
+@using static gc.infraestructura.Helpers.GridHelper
 @{
 	var alt = true;
 	string clase = string.Empty;
@@ -33,15 +34,15 @@
 				@foreach (var item in Model.ListaDatos)
 				{
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-
+					
 					<tr class="@clase" onclick="selectReg(this, 'tbGridConceptoFacturado')">
 						<td style="display:none;">@item.id</td>
-						<td class="text-sm-left">@item.concepto</td>
+						<td class="text-sm-left">@item.concepto.ToUpper()</td>
 						<td class="text-sm-center">@item.iva_situacion</td>
-						<td class="text-sm-end">@item.iva_alicuota</td>
-						<td class="text-sm-end">@item.subtotal</td>
-						<td class="text-sm-end">@item.iva</td>
-						<td class="text-sm-end">@item.total</td>
+						<td class="text-sm-end">@item.iva_alicuota.ToString().Replace('.',',')</td>
+						<td class="text-sm-end">@item.getStringFormat(item.subtotal)</td>
+						<td class="text-sm-end">@item.iva.ToString("0.00")</td>
+						<td class="text-sm-end">@item.total.ToString("0.00")</td>
 						<td><a class="btn btn-xs btn-outline-dark" data-interaction="@item.id" onclick="quitarConceptoFacturado(this);"> <i class="bx bxs-trash"></i></a></td> @*20*@
 					</tr>
 				}

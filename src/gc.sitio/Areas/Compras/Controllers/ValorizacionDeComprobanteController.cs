@@ -133,8 +133,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 					usu_id = UserName,
 					guarda = false,
 					confirma = false,
-					dp = false,
-					dc = false,
+					dp = true,
+					dc = true,
 					adm_id = AdministracionId
 				};
 				var responseValorizar = _cuentaServicio.ObtenerComprobanteValorizaLista(reqValorizados, TokenCookie);
@@ -281,7 +281,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 						dto_sobre_total = item.dto_sobre_total ? 'S' : 'N',
 						dto_sobre_total_bool = item.dto_sobre_total,
 						item = item.item,
-						tco_id = item.tco_id
+						tco_id = item.tco_id,
+						dto_obs = item.dto_obs
 					};
 					listaDescFinancTemporal.Add(newItem);
 				}
@@ -946,9 +947,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 				foreach (var item in lista)
 				{
 					var boni = 0.00M;
-					if (!string.IsNullOrWhiteSpace(item.rpd_boni))
-						boni = CalcularBoni2(item.rpd_boni ?? "", item.rpd_cantidad_compte);
-					var result = item.rpd_cantidad - (item.rpd_cantidad_compte + boni);
+					//if (!string.IsNullOrWhiteSpace(item.rpd_boni))
+					//	boni = CalcularBoni2(item.rpd_boni ?? "", item.rpd_cantidad_compte);
+					var result = item.rpd_cantidad - item.rpd_cantidad_compte;
 					if (result == 0)
 						item.valorizacion_mostrar_dc = false;
 					else
@@ -1045,11 +1046,12 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				return boni;
 			}
-			if (num > den)
-			{
-				return boni;
-			}
-			return Decimal.Divide(den, num);
+			//if (num > den)
+			//{
+			//	return boni;
+			//}
+			//return Decimal.Divide(den, num);
+			return Decimal.Divide(num, den);
 		}
 
 		private GridCoreSmart<CompteValorizaListaDto> ObtenerValorizacionActualizada(string cm_compte, List<Checks> checks, bool dif_precio = false, bool dif_cantidad = false)
