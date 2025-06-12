@@ -351,6 +351,10 @@
             public const string SP_ASIENTO_DETALLE_REPO = "SPGECO_Conta_Asiento_Repo";
 
             #endregion
+
+            #region MyRegion
+            public const string SP_LIBRO_MAYOR_LISTA = "SPGECO_Conta_Libro_Mayor";
+            #endregion
         }
     }
     

@@ -9,6 +9,7 @@ using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
+using gc.infraestructura.Dtos.Asientos;
 using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
@@ -19,6 +20,7 @@ using gc.infraestructura.EntidadesComunes;
 using gc.infraestructura.Helpers;
 using gc.infraestructura.ViewModels;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Contratos.Asientos;
 using gc.sitio.core.Servicios.Contratos.Users;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -2540,7 +2542,6 @@ namespace gc.sitio.Controllers
                 var valor = JsonConvert.SerializeObject(value);
                 _context.HttpContext?.Session.SetString("MetadataGeneral", valor);
             }
-
         }
 
         [HttpPost]
@@ -2607,5 +2608,92 @@ namespace gc.sitio.Controllers
 				_context.HttpContext?.Session.SetString("OPValoresDesdeObligYCredLista", json);
 			}
 		}
-	}
+
+        protected List<EjercicioDto> Ejercicios
+        {
+            get
+            {
+                string json = _context.HttpContext?.Session.GetString("Ejercicios") ?? string.Empty;
+                if (string.IsNullOrEmpty(json))
+                {
+                    return new();
+                }
+                return JsonConvert.DeserializeObject<List<EjercicioDto>>(json) ?? [];
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session.SetString("Ejercicios", json);
+            }
+        }
+        protected int EjercicioSeleccionado
+        {
+            get
+            {
+                var txt = _context.HttpContext?.Session.GetString("EjercicioSeleccionado") ?? string.Empty;
+                if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
+                {
+                    return 0;
+                }
+                return txt.ToInt();
+            }
+            set
+            {
+                var valor = value.ToString();
+                _context.HttpContext?.Session.SetString("EjercicioSeleccionado", valor);
+            }
+        }
+        /// <summary>
+        /// Obtiene los ejercicios contables para el combo
+        /// </summary>
+        protected async Task ObtenerEjerciciosContables(IAsientoFrontServicio _asientoServicio)
+        {
+            try
+            {
+                var response = await _asientoServicio.ObtenerEjercicios(TokenCookie);
+                if (response.Ok && response.ListaEntidad != null)
+                {
+                    var lsta = response.ListaEntidad.OrderByDescending(x => x.Eje_desde).ToList();
+                    Ejercicios = lsta;
+                    if (response.ListaEntidad.Count > 0)
+                    {
+                        EjercicioSeleccionado = lsta.First().Eje_nro.ToInt();
+                    }
+                    ViewBag.EjerciciosLista = lsta;
+                }
+                else
+                {
+                    ViewBag.EjerciciosLista = new List<EjercicioDto>();
+                    _logger?.LogWarning($"No se pudieron obtener los ejercicios contables: {response.Mensaje}");
+                }
+            }
+            catch (Exception ex)
+            {
+                ViewBag.EjerciciosLista = new List<EjercicioDto>();
+                _logger?.LogError(ex, "Error al obtener ejercicios contables");
+            }
+        }
+
+        /// <summary>
+        /// Genera el combo de ejercicios contables
+        /// </summary>
+        protected SelectList ComboEjercicios()
+        {
+            if (ViewBag.EjerciciosLista != null)
+            {
+                var lista = ViewBag.EjerciciosLista as List<EjercicioDto>;
+                if (lista != null)
+                {
+                    return HelperMvc<ComboGenDto>.ListaGenerica(
+                        lista.Select(e => new ComboGenDto
+                        {
+                            Id = e.Eje_nro,
+                            Descripcion = e.Eje_lista
+                        })
+                    );
+                }
+            }
+            return HelperMvc<ComboGenDto>.ListaGenerica(new List<ComboGenDto>());
+        }
+    }
 }

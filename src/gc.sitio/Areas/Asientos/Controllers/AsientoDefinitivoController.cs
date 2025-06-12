@@ -53,8 +53,6 @@ namespace gc.sitio.Areas.Asientos.Controllers
         {
             try
             {
-
-
                 // Versión optimizada del código de autenticación
                 if (!VerificarAutenticacion(out IActionResult redirectResult))
                     return redirectResult;

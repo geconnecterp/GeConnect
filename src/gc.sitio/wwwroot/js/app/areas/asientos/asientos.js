@@ -467,6 +467,8 @@ function ejecutarBajaAsientoTemp() {
     accion = AbmAction.BAJA;
     $("#divFiltro").collapse("hide");
     accionBotones(accion);
+    // Desactivar explícitamente el botón de impresión
+    $("#btnImprimir").prop("disabled", true);
 }
 
 
@@ -790,6 +792,7 @@ function activarControles(act) {
 
         // Configurar máscaras y validaciones para campos editables
         configurarCamposEditables();
+        $("#btnImprimir").prop("disabled", true);
     } else {
         // Si desactivamos, quitamos los controles de edición
         $("#tbAsientoDetalle thead th:last-child").remove();
@@ -802,10 +805,11 @@ function activarControles(act) {
 
         // Ocultar botones de búsqueda de cuenta
         $("#tbAsientoDetalle tbody .btn-buscar-cuenta").hide();
+        $("#btnImprimir").prop("disabled", false);
     }
 
     // Control de botones de acción del footer
-    $("#btnPasarContabilidad, #btnImprimir").prop("disabled", act); // Se deshabilitan al editar
+    $("#btnPasarContabilidad").prop("disabled", act); // Se deshabilitan al editar
 }
 
 /**
@@ -1176,6 +1180,9 @@ function confirmarOperacionAsiento() {
                 // Operación exitosa
                 AbrirMensaje("ÉXITO", obj.msg || "Operación realizada con éxito.", function () {
                     $("#msjModal").modal("hide");
+                    // EXPLÍCITAMENTE reactivar el botón antes de inicializar la vista
+                    activarControles(false); // Esto reactiva el botón de impresión
+
                     InicializaVistaAsientos(); // Cierra el panel de edición y limpia la vista
                     // Refrescar la grilla
                     buscarAsientos(1); // Llama a la función que recarga la grilla
@@ -1496,6 +1503,9 @@ function InicializaVistaAsientos(e) {
         removerSeleccion();
         activarGrilla(Grids.GridAsiento);
 
+        // CORRECCIÓN: Asegurar que el botón de imprimir esté habilitado
+        $("#btnImprimir").prop("disabled", false);
+
         CerrarWaiting();
         return; // Importante: salir de la función para evitar recursión
     }
@@ -1516,7 +1526,8 @@ function InicializaVistaAsientos(e) {
     accionBotones(AbmAction.CANCEL); // Usar tercer parámetro para mantener el botón cancelar
     removerSeleccion();
     activarGrilla(Grids.GridAsiento);
-
+    // CORRECCIÓN: Asegurar que el botón de imprimir esté habilitado
+    $("#btnImprimir").prop("disabled", false);
     //resguardo los parametros para el reporte #9 = i-1
     // Obtenemos los valores de los campos del filtro
     let i = 9;

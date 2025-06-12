@@ -2,6 +2,7 @@
 using gc.api.core.Contratos.Servicios.ABM;
 using gc.api.core.Contratos.Servicios.Asientos;
 using gc.api.core.Contratos.Servicios.Contable;
+using gc.api.core.Contratos.Servicios.Libros;
 using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Contratos.Servicios.Tipos;
 using gc.api.core.Interfaces.Datos;
@@ -10,6 +11,7 @@ using gc.api.core.Servicios;
 using gc.api.core.Servicios.ABM;
 using gc.api.core.Servicios.Asientos;
 using gc.api.core.Servicios.Contable;
+using gc.api.core.Servicios.Libros;
 using gc.api.core.Servicios.Reportes;
 using gc.api.core.Servicios.Tipos;
 using gc.api.infra.Datos.Contratos;
@@ -96,9 +98,14 @@ namespace gc.api.infra.Extensions
             services.AddScoped<IABMRepartidorServicio, ABMRepartidorServicio>();
             services.AddScoped<IABMPlanCuentaServicio, ABMPlanCuentaServicio>();
             services.AddScoped<ITipoDtoValorizaRprServicio, TipoDtoValorizaRprServicio>();
+            /// Servicios de Asientos
             services.AddScoped<IAsientoServicio, AsientoServicio>();
             services.AddScoped<IAsientoTemporalServicio, AsientoTemporalServicio>();
             services.AddScoped<IAsientoDefinitivoServicio, AsientoDefinitivoServicio>();
+
+            /// Servicios de Libros
+            services.AddScoped<IApiLMayorServicio, ApiLMayorServicio>();
+
             //De Reportes
 
             services.AddScoped<IReportService, ReportService>();

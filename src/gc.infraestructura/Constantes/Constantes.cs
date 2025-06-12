@@ -67,6 +67,7 @@ namespace gc.infraestructura.Constantes
             public const string ASIENTO_TEMPORAL = "ASIENTO_TEMPORAL";
             public const string ASIENTO_DEFINITIVO = "ASIENTO_DEFINITIVO";
             public const string ORDEN_DE_PAGO_A_PROVEEDORES = "ORDEN_DE_PAGO_A_PROVEEDORES";
-		}
+            public const string LIBRO_MAYOR = "LIBRO_MAYOR";
+        }
     }
 }

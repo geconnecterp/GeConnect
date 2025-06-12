@@ -1,0 +1,97 @@
+﻿<!-- Modal para seleccionar cuenta contable -->
+<div class="modal fade" id="modalCuentas" tabindex="-1" aria-labelledby="modalCuentasLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalCuentasLabel">
+                    <i class="bx bx-list-ul me-1"></i>Seleccionar Cuenta Contable
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3">
+                <div class="mb-3">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" id="cuentaModalFilter" placeholder="Buscar cuenta...">
+                        <button class="btn btn-outline-primary" type="button" id="btnBuscarCuentaModal">
+                            <i class="bx bx-search me-1"></i>Buscar
+                        </button>
+                    </div>
+                    <small class="form-text text-muted">Ingrese texto para filtrar cuentas</small>
+                </div>
+                <div id="cuentasTree" class="border rounded p-2" style="height: 350px; overflow: auto;"></div>
+                <div class="mt-2 small">
+                    <div class="d-flex flex-wrap text-muted">
+                        <span class="me-2 d-flex align-items-center">
+                            <i class="bx bx-wallet text-success me-1"></i> Activo
+                        </span>
+                        <span class="me-2 d-flex align-items-center">
+                            <i class="bx bx-trending-down text-danger me-1"></i> Pasivo
+                        </span>
+                        <span class="me-2 d-flex align-items-center">
+                            <i class="bx bx-building-house text-purple me-1"></i> Patrimonio
+                        </span>
+                        <span class="me-2 d-flex align-items-center">
+                            <i class="bx bx-dollar-circle text-warning me-1"></i> Ingresos
+                        </span>
+                        <span class="me-2 d-flex align-items-center">
+                            <i class="bx bx-print-dollar text-info me-1"></i> Egresos
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-top bg-light">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="bx bx-x me-1"></i>Cerrar
+                </button>
+                <button type="button" class="btn btn-sm btn-primary" id="btnSeleccionarCuenta" data-bs-dismiss="modal">
+                    <i class="bx bx-check me-1"></i>Seleccionar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilos para el árbol de cuentas */
+    .jstree-anchor.tipo-m {
+        font-weight: bold;
+    }
+
+    .jstree-anchor.cuenta-activo {
+        color: #28a745; /* verde */
+    }
+
+    .jstree-anchor.cuenta-pasivo {
+        color: #dc3545; /* rojo */
+    }
+
+    .jstree-anchor.cuenta-patrimonio {
+        color: #6f42c1; /* violeta */
+    }
+
+    .jstree-anchor.cuenta-ingresos {
+        color: #fd7e14; /* naranja */
+    }
+
+    .jstree-anchor.cuenta-egresos {
+        color: #17a2b8; /* cian */
+    }
+
+    /* Estilos adicionales para mejorar la visualización del árbol */
+    #cuentasTree .jstree-wholerow-hovered {
+        background: rgba(33, 150, 243, 0.1);
+    }
+
+    #cuentasTree .jstree-wholerow-clicked {
+        background: rgba(33, 150, 243, 0.2);
+    }
+
+    #cuentasTree .jstree-icon {
+        color: #666;
+    }
+
+    #modalCuentas .modal-body {
+        padding-bottom: 0;
+    }
+</style>
+
