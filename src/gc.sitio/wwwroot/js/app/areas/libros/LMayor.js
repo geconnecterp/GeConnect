@@ -85,24 +85,31 @@ function configurarBotones() {
 
     // Botones de cambio de tab
     $('.nav-tabs .nav-link').on('click', function () {
-        // Limpiar el panel de resultados al cambiar de tab
-        $("#divResultados").empty();
-
-        // Actualizar tipo de reporte según la tab seleccionada
+        // Obtener el id de la pestaña seleccionada
         const tabId = $(this).attr('id');
 
+        // Actualizar tipo de reporte según la tab seleccionada
         switch (tabId) {
             case 'tabMayor':
                 tipoReporteActual = TipoReporte.MAYOR;
                 break;
             case 'tabMayorDiario':
                 tipoReporteActual = TipoReporte.MAYOR_DIARIO;
+                // Cargar los datos de Mayor por Día si aún no se han cargado
+                if ($("#divLMAcum").text().includes("SIN REGISTROS") && Object.keys(mayorDataBak).length > 0) {
+                    buscarMayorDiario();
+                }
                 break;
             case 'tabDiario':
                 tipoReporteActual = TipoReporte.DIARIO;
+                // Cargar los datos de Libro Diario si aún no se han cargado
+                if ($("#divAsientosCta").text().includes("SIN REGISTROS") && Object.keys(mayorDataBak).length > 0) {
+                    buscarLibroDiario();
+                }
                 break;
         }
     });
+
 
     // Botón de búsqueda
     $("#btnBuscar").on("click", function () {
@@ -114,11 +121,11 @@ function configurarBotones() {
         // Es una nueva búsqueda, no resguardamos la búsqueda anterior
         mayorDataBak = {};
 
+        // Limpiar todos los contenedores de resultados según la pestaña activa
+        const tabActiva = $('.nav-tabs .active').attr('id');
+
         // Es una búsqueda por filtro, siempre será página 1
         pagina = 1;
-
-        // Determinar tipo de reporte según las tabs activas
-        const tabActiva = $('.nav-tabs .active').attr('id');
 
         switch (tabActiva) {
             case 'tabMayor':
@@ -139,6 +146,7 @@ function configurarBotones() {
         }
     });
 
+
     // Botón de cancelar
     $("#btnCancel").on("click", function () {
         window.location.href = homeLMayorUrl;
@@ -151,9 +159,7 @@ function configurarBotones() {
 
     // Botones de cambio de tab
     $('.nav-tabs .nav-link').on('click', function () {
-        // Limpiar el panel de resultados al cambiar de tab
-        $("#divResultados").empty();
-
+       
         // Actualizar tipo de reporte según la tab seleccionada
         const tabId = $(this).attr('id');
 
@@ -182,20 +188,51 @@ function buscarMayorDiario() {
 
     // Ocultamos filtro inmediatamente
     $("#divFiltro").collapse("hide");
+    $("#divDetalle").collapse("show");
 
     // Realizar petición GET a la acción LMAcumuladoXDia
     $.ajax({
         url: obtenerMayorDiarioUrl,
         type: "GET",
         success: function (obj) {
-            // Mostramos el resultado en el div correspondiente
-            $("#divResultados").html(obj);
+            // Mostramos el resultado en el div correspondiente de Mayor Diario
+            $("#divLMAcum").html(obj);
 
-            // Mostramos el panel de resultados
-            $("#divDetalle").collapse("show");
+            // Agregar después de $("#divLMAcum").html(obj); en buscarMayorDiario
+            setTimeout(function () {
+                console.log("Comprobando tabla en #divLMAcum:");
+                console.log("Tabla encontrada:", $("#divLMAcum table").length > 0);
+                console.log("ID de la tabla:", $("#divLMAcum table").attr("id") || "No tiene ID");
+                console.log("Filas en la tabla:", $("#divLMAcum table tbody tr").length);
+
+                // Agregar ID si no lo tiene
+                if ($("#divLMAcum table").length > 0 && !$("#divLMAcum table").attr("id")) {
+                    $("#divLMAcum table").attr("id", "tbMayorDiario");
+                    console.log("ID 'tbMayorDiario' añadido a la tabla");
+                }
+
+                // Verificar que las filas tengan el atributo data-fecha
+                $("#divLMAcum table tbody tr").each(function (index) {
+                    const tieneDataFecha = $(this).attr("data-fecha") !== undefined;
+                    const contenidoPrimeraCelda = $(this).find("td:first").text().trim();
+                    console.log(`Fila ${index}: data-fecha=${tieneDataFecha}, primera celda='${contenidoPrimeraCelda}'`);
+                });
+            }, 500);
+
+
+            // Limpiamos el detalle hasta que se seleccione un día
+            $("#divLMAcumDet").html(`
+                <div class="alert alert-info">
+                    <i class="bx bx-info-circle me-1"></i>
+                    Seleccione una fecha para ver el detalle del día.
+                </div>
+            `);
 
             // Habilitamos botón de impresión
             $("#btnImprimir").prop("disabled", false);
+
+            // Reinicializar eventos
+            reinicializarEventosMayorDiario();
 
             CerrarWaiting();
         },
@@ -207,13 +244,25 @@ function buscarMayorDiario() {
     });
 }
 
+
+function reinicializarEventosMayorDiario() {
+    // Remover eventos antiguos (opcional pero recomendable)
+    $(document).off("dblclick", "#divLMAcum table tbody tr");
+
+    // Volver a registrar el evento de doble clic
+    $(document).on("dblclick", "#divLMAcum table tbody tr", function (e) {
+        e.stopPropagation();
+
+        // [resto del código del evento]
+    });
+}
 /**
  * Carga el detalle de un día específico desde el servidor
  * @param {string} fecha - Fecha en formato DD/MM/YYYY
  */
 function cargarDetalleDia(fecha) {
     if (!fecha) {
-        $("#detalleDia").html(`
+        $("#divLMAcumDet").html(`
             <div class="alert alert-warning">
                 <i class="bx bx-error-circle me-1"></i>
                 Fecha no especificada.
@@ -223,7 +272,7 @@ function cargarDetalleDia(fecha) {
     }
 
     // Mostrar indicador de carga
-    $("#detalleDia").html(`
+    $("#divLMAcumDet").html(`
         <div class="text-center p-3">
             <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Cargando...</span>
@@ -238,10 +287,10 @@ function cargarDetalleDia(fecha) {
         type: "GET",
         data: { fecha: fecha },
         success: function (obj) {
-            $("#detalleDia").html(obj);
+            $("#divLMAcumDet").html(obj);
         },
         error: function (xhr, status, error) {
-            $("#detalleDia").html(`
+            $("#divLMAcumDet").html(`
                 <div class="alert alert-danger">
                     <i class="bx bx-error-circle me-1"></i>
                     Error al cargar el detalle: ${error}
@@ -251,9 +300,12 @@ function cargarDetalleDia(fecha) {
     });
 }
 
+
+
 // Actualizar o agregar los eventos necesarios en configurarEventosTablas()
+// Añadir al método configurarEventosTablas()
 function configurarEventosTablas() {
-    // [Mantener eventos existentes]
+    // [Código existente]
 
     // Evento de clic simple para selección visual en la tabla Mayor Diario
     $(document).on("click", "#tbMayorDiario tbody tr", function (e) {
@@ -273,29 +325,62 @@ function configurarEventosTablas() {
         $(this).addClass("selected-simple");
     });
 
-    // Evento de doble clic en filas de la tabla Mayor Diario
-    $(document).on("dblclick", "#tbMayorDiario tbody tr", function (e) {
+    // Evento para los botones de ver detalle
+    $(document).on("click", "#divLMAcum .ver-detalle", function (e) {
         e.stopPropagation();
+
+        // Obtener la fecha del botón
+        const fecha = $(this).data("fecha");
+
+        // Aplicar estilo a la fila
+        $("#divLMAcum table tbody tr").removeClass("selectedEdit-row");
+        $(this).closest("tr").addClass("selectedEdit-row");
+
+        // Cargar detalle del día
+        if (fecha) {
+            cargarDetalleDia(fecha);
+        }
+    });
+
+    // Modifica el evento de doble clic para #tbMayorDiario 
+    $(document).on("dblclick", "#divLMAcum table tbody tr", function (e) {
+        e.stopPropagation();
+
+        console.log("Doble clic detectado en fila de tabla");
 
         // Ignorar filas de saldo anterior y totales
         if ($(this).hasClass("saldo-anterior") ||
             $(this).hasClass("saldo-actual") ||
             $(this).hasClass("table-info")) {
+            console.log("Fila ignorada por ser saldo o total");
             return;
         }
 
         // Remover selección previa
-        $("#tbMayorDiario tbody tr").removeClass("selectedEdit-row");
+        $("#divLMAcum table tbody tr").removeClass("selectedEdit-row");
 
         // Aplicar estilo "bordo" (selectedEdit-row) a esta fila
         $(this).addClass("selectedEdit-row");
 
-        // Obtener la fecha del día seleccionado
-        const fecha = $(this).attr("data-fecha");
+        // Intenta obtener la fecha del atributo data-fecha
+        let fecha = $(this).attr("data-fecha");
+
+        // Si no existe, intenta obtenerla de la primera celda
+        if (!fecha) {
+            fecha = $(this).find("td:first").text().trim();
+            console.log("Fecha obtenida de la celda:", fecha);
+        }
+
+        console.log("Fecha para cargar detalle:", fecha);
 
         // Cargar detalle del día
-        cargarDetalleDia(fecha);
+        if (fecha) {
+            cargarDetalleDia(fecha);
+        } else {
+            console.error("No se pudo determinar la fecha de la fila");
+        }
     });
+
 
     // Evento de doble clic en filas del detalle para ver asiento completo
     $(document).on("dblclick", "#tbDetalleDia tbody tr", function (e) {
@@ -309,6 +394,7 @@ function configurarEventosTablas() {
         }
     });
 }
+
 
 
 // Agregar esta función en inicializarComponentes() o similar
@@ -344,53 +430,38 @@ function aplicarEstilosSelector() {
 function inicializarComponentes() {
     // Agregar estilos CSS para diferencias visuales
     $("<style>")
-        .prop("type", "text/css")
-        .html(`
-            /* Estilo para selección simple (un clic) */
-            #tbMayor tbody tr.selected-simple,
+            .prop("type", "text/css")
+            .html(`
+            /* Estilo para selección simple en Mayor Diario */
             #tbMayorDiario tbody tr.selected-simple {
-                background-color: lightgray !important;
-                color: black !important;
+                background-color: #f0f0f0 !important;
             }
-            
-            /* Estilo para fila con detalle abierto (doble clic) */
-            #tbMayor tbody tr.selectedEdit-row,
+        
+            /* Estilo para selección con doble clic (estilo bordo) */
             #tbMayorDiario tbody tr.selectedEdit-row {
-                background-color: #e7f3ff !important;
-                box-shadow: inset 0 0 0 1px #0d6efd;
+                background-color: firebrick !important;
+                color: white !important;
                 font-weight: bold;
             }
-            
-            /* Asegurar que todas las filas tengan cursor de puntero */
-            #tbMayor tbody tr,
-            #tbMayorDiario tbody tr,
-            #tbDiario tbody tr {
-                cursor: pointer;
-            }
-            
-            /* Estilos para totales y saldos */
-            .saldo-anterior {
+        
+            /* Estilos para saldo anterior y actual */
+            .saldo-anterior, .saldo-actual {
+                background-color: #f8f9fa !important;
                 font-weight: bold;
-                background-color: #f8f9fa;
             }
-            
+        
             .saldo-actual {
-                font-weight: bold;
-                background-color: #e9ecef;
+                background-color: #e9ecef !important;
             }
-            
-            /* Estilo para cabecera de asiento en diario */
-            .header-asiento {
-                background-color: #e7f3ff;
-                font-weight: bold;
-            }
-            
-            /* Estilo para líneas de detalle en diario */
-            .detalle-asiento {
-                padding-left: 20px;
+        
+            /* Hacer que las tablas tengan filas con cursor pointer */
+            #tbMayorDiario tbody tr, 
+            #tbDetalleDia tbody tr {
+                cursor: pointer;
             }
         `)
         .appendTo("head");
+
 
     // Asegurarse de que los estilos se apliquen después de abrir el modal
     $("#modalCuentas").on("shown.bs.modal", function () {
@@ -642,43 +713,6 @@ function procesarNodosArbol(nodos) {
     });
 }
 
-///**
-// * Configura los botones de acción
-// */
-//function configurarBotones() {
-//    // MANTENER: Validar campos obligatorios
-//    if (!validarCamposObligatorios()) {
-//        return;
-//    }
-
-//    // MANTENER: Es una nueva búsqueda, no resguardamos la búsqueda anterior
-//    mayorDataBak = {};
-
-//    // MANTENER: Es una búsqueda por filtro, siempre será página 1
-//    pagina = 1;
-
-//    // MANTENER: Determinar tipo de reporte según las tabs activas
-//    const tabActiva = $('.nav-tabs .active').attr('id');
-
-//    // MANTENER: Switch para determinar qué tipo de búsqueda realizar
-//    switch (tabActiva) {
-//        case 'tabMayor':
-//            tipoReporteActual = TipoReporte.MAYOR;
-//            buscarLibroMayor();
-//            break;
-//        case 'tabMayorDiario':
-//            tipoReporteActual = TipoReporte.MAYOR_DIARIO;
-//            buscarMayorDiario();
-//            break;
-//        case 'tabDiario':
-//            tipoReporteActual = TipoReporte.DIARIO;
-//            buscarLibroDiario();
-//            break;
-//        default:
-//            tipoReporteActual = TipoReporte.MAYOR;
-//            buscarLibroMayor();
-//    }
-//};
 
 
 /**
@@ -1436,3 +1470,31 @@ function toggleComponent(checkboxId, componentSelector) {
         console.error(`Error al procesar el checkbox ${checkboxId}:`, error);
     }
 }
+
+// Función para pruebas de depuración
+function probarDetalleManual(fecha) {
+    console.log("Probando carga de detalle para fecha:", fecha);
+    cargarDetalleDia(fecha);
+}
+
+// Agregar un botón de prueba al contenedor principal
+$(function () {
+    setTimeout(function () {
+        if ($("#testButton").length === 0) {
+            $("#divLMAcumDet").append(`
+                <div class="mt-3">
+                    <button id="testButton" class="btn btn-sm btn-info">
+                        Probar Detalle (última fecha)
+                    </button>
+                </div>
+            `);
+
+            // Evento para probar manualmente
+            $("#testButton").on("click", function () {
+                const ultimaFila = $("#tbMayorDiario tbody tr").not(".saldo-anterior, .saldo-actual, .table-info").last();
+                const fecha = ultimaFila.attr("data-fecha");
+                probarDetalleManual(fecha);
+            });
+        }
+    }, 2000);
+});

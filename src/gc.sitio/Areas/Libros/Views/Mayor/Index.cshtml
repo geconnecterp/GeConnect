@@ -52,7 +52,7 @@
         var obtenerEjerciciosUrl = "@Url.Action("ObtenerEjercicios", "Mayor", new { area = "Libros" })";
         var obtenerCuentasContablesUrl = "@Url.Action("ObtenerCuentasContables", "Mayor", new { area = "Libros" })";
         var obtenerLibroMayorUrl = "@Url.Action("ObtenerLibroMayor", "Mayor", new { area = "Libros" })";
-        
+
         var obtenerMayorDiarioUrl = '@Url.Action("LMAcumuladoXDia", "Mayor", new { area = "Libros" })';
         var obtenerDetalleDiarioUrl = '@Url.Action("LMAcumuladoXDiaDetalle", "Mayor", new { area = "Libros" })';
 
@@ -67,6 +67,9 @@
         var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
         var enviarEmailUrl = "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
         var enviarWhatsAppUrl = "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
+
+        console.log("URL Mayor Diario:", obtenerMayorDiarioUrl);
+        console.log("URL Detalle Diario:", obtenerDetalleDiarioUrl);
     </script>
     <script src="~/lib/jstree/jstree.min.js"></script>
     <script src="~/js/mask/jquery.inputmask.min.js"></script>

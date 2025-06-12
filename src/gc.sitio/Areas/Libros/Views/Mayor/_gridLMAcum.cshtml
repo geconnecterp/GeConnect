@@ -1,15 +1,18 @@
 ﻿@model GridCoreSmart<LMayorAcumuladoDiaDto>
 
-<div class="row">
-    <div class="col-md-5">
+<div class="card">
+    <div class="card-header bg-light">
+        <h6 class="mb-0">Mayor por Día</h6>
+    </div>
+    <div class="card-body p-0">
         <div class="table-responsive">
-            <table id="tbMayorDiario" class="table table-sm mb-0 table-hover">
+            <table id="tbMayorDiario" class="table table-sm table-hover mb-0">
                 <thead class="table-dark">
                     <tr>
-                        <th scope="col">Fecha</th>
-                        <th scope="col" class="text-end">Debe</th>
-                        <th scope="col" class="text-end">Haber</th>
-                        <th scope="col" class="text-end">Saldo</th>
+                        <th>Fecha</th>
+                        <th class="text-end">Debe</th>
+                        <th class="text-end">Haber</th>
+                        <th class="text-end">Saldo</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -31,8 +34,13 @@
 
                         foreach (var item in Model.ListaDatos)
                         {
-                            <tr data-fecha="@item.fecha_str">
-                                <td>@item.fecha_str</td>
+                            <tr data-fecha="@item.fecha_str" class="fila-datos">
+                                <td>@item.fecha_str
+                                    <button type="button" class="btn btn-sm btn-link p-0 ms-2 ver-detalle"
+                                            data-fecha="@item.fecha_str" title="Ver detalle">
+                                        <i class="bx bx-search-alt"></i>
+                                    </button>
+                                </td>
                                 <td class="text-end">@Model.FormatearDato(item.total_debe, FormatDato.Monto)</td>
                                 <td class="text-end">@Model.FormatearDato(item.total_haber, FormatDato.Monto)</td>
                                 <td class="text-end">@Model.FormatearDato(item.saldo_final, FormatDato.Monto)</td>
@@ -58,22 +66,15 @@
                 </tbody>
             </table>
         </div>
-        <div class="mt-2">
-            <p class="small text-muted">
-                <i class="bx bx-info-circle"></i>
-                Haga doble clic en una fecha para ver el detalle del día.
+        <div class="p-2">
+            <p class="small text-muted mb-0">
+                <i class="bx bx-info-circle"></i> 
+                Doble clic en una fecha para ver el detalle.
             </p>
         </div>
     </div>
-    <div class="col-md-7">
-        <div id="detalleDia">
-            <div class="alert alert-info">
-                <i class="bx bx-info-circle"></i>
-                Seleccione una fecha para ver el detalle del día.
-            </div>
-        </div>
-    </div>
 </div>
+
 
 <style>
     /* Estilo para filas seleccionadas con click simple */
