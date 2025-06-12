@@ -1023,8 +1023,13 @@ function btnCancelClick() {
     tipoDeOperacion = AbmAction.CANCEL;
     $(".nav-link").prop("disabled", false);
     $(".activable").prop("disabled", true);
+    // NUEVO: Reactivar botón de impresión explícitamente
+    $("#btnImprimir").prop("disabled", false);
     var tabActiva = $('.nav-tabs .active')[0].id;
+    // EXPLÍCITAMENTE reactivar el botón antes de otras operaciones
+    activarControles(false); 
     accionBotones(AbmAction.CANCEL, tabActiva);
+    
     switch (tabActiva) {
         case Tabs.TabCliente:
             if ($("#divDetalle").is(":visible")) {

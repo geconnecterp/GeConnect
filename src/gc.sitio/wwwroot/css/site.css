@@ -826,3 +826,19 @@ input, select, textarea, button, checkbox, radio {
 .padding-5 {
     padding: 5px;
 }
+
+.bg-label-danger-strong {
+    background-color: #ff2603 !important;
+    color: #ffffff !important;
+    font-weight: bolder;
+}
+
+.bg-label-info-strong {
+    background-color: #1d55f9 !important;
+    color: #ffffff !important;
+    font-weight: bolder;
+}
+
+.text-align-right {
+    text-align: right !important;
+}
