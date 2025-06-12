@@ -733,7 +733,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		//public JsonResult GuardarDetalleDeComprobanteRP(bool guardado, bool generar, string listaProd, bool ponerEnCurso = false, string ulCantidad = "", string fechaTurno = "", string depoId = "", string nota = "")
-		public JsonResult GuardarDetalleDeComprobanteRP([FromBody] GuardarDetalleDeComprobanteRpRequest r)
+		public JsonResult GuardarDetalleDeComprobanteRP(GuardarDetalleDeComprobanteRpRequest r)
 		{
 			try
 			{
@@ -927,7 +927,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public JsonResult BuscarCuentaComercial([FromBody] BuscarCuentaComercialRequest request)
+		public JsonResult BuscarCuentaComercial(BuscarCuentaComercialRequest request)
 		{
 			List<CuentaDto> Lista = [];
 			try

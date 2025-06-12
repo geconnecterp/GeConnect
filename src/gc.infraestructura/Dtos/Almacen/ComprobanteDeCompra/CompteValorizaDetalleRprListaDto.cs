@@ -43,6 +43,7 @@ namespace gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra
 		public decimal nc_pcosto_difp { get; set; } = 0.000M;
 		public decimal nc_cantidad_difc { get; set; } = 0.000M;
 		public decimal nc_pcosto_difc { get; set; } = 0.000M;
+		public char nc_genera { get; set; }
 		public bool valorizacion_mostrar_dc { get; set; } = false;
 		public bool valorizacion_mostrar_dp { get; set; } = false;
 		public string valorizacion_class_dc { get; set; } = string.Empty;
@@ -65,6 +66,14 @@ namespace gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra
 		public object Clone()
 		{
 			return (CompteValorizaDetalleRprListaDto)MemberwiseClone();
+		}
+
+		private bool _nc_genera_bool;
+
+		public bool nc_genera_bool
+		{
+			get { return nc_genera == 'N' ? false : true; }
+			set { _nc_genera_bool = value; }
 		}
 	}
 }

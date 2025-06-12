@@ -1,11 +1,7 @@
-﻿using DocumentFormat.OpenXml.Spreadsheet;
-using gc.api.core.Entidades;
-using gc.infraestructura.Core.EntidadesComunes;
+﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
-using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra;
 using gc.infraestructura.Dtos.Almacen.Request;
-using gc.infraestructura.Dtos.Almacen.Tr.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Compras.Models;
@@ -15,7 +11,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using Org.BouncyCastle.Ocsp;
 
 namespace gc.sitio.Areas.Compras.Controllers
 {
@@ -26,8 +21,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private readonly ICuentaServicio _cuentaServicio;
 		private readonly IProductoServicio _productoServicio;
 		private readonly ITipoDtoValorizaRprServicio _tipoDtoValorizaRprServicio;
-		private const string valorizacion_class_blue = "badge bg-label-info me-1";
-		private const string valorizacion_class_red = "badge bg-label-danger me-1";
+		private const string valorizacion_class_blue = "badge bg-label-info-strong me-1";
+		private const string valorizacion_class_red = "badge bg-label-danger-strong me-1";
 
 		public ValorizacionDeComprobanteController(ICuentaServicio cuentaServicio, ITipoDtoValorizaRprServicio tipoDtoValorizaRprServicio, IProductoServicio productoServicio,
 												   IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger<ValorizacionDeComprobanteController> logger) : base(options, accessor, logger)
@@ -69,7 +64,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		[HttpPost]
-		public IActionResult CargarComprobantesDelProveedorSeleccionado([FromBody] CargarComprobantesDelProveedorSeleccionadoRequest r)
+		public IActionResult CargarComprobantesDelProveedorSeleccionado(CargarComprobantesDelProveedorSeleccionadoRequest r)
 		{
 			var model = new ListaComptePendienteDeValorizarModel();
 			try
@@ -263,7 +258,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public JsonResult ActualizarOrdenDescFinanc([FromBody] ActualizarOrdenDescFinancRequest r)
+		public JsonResult ActualizarOrdenDescFinanc(ActualizarOrdenDescFinancRequest r)
 		{
 			try
 			{
@@ -305,7 +300,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public IActionResult ActualizarValorizacion(string cm_compte, bool dif_precio, bool dif_cantidad)
+		public IActionResult ActualizarValorizacion(string cm_compte, bool dif_precio, bool dif_cantidad, List<Checks> checks)
 		{
 			var model = new GridCoreSmart<CompteValorizaListaDto>();
 			try
@@ -315,7 +310,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 				}
-				model = ObtenerValorizacionActualizada(cm_compte, dif_precio, dif_cantidad);
+				model = ObtenerValorizacionActualizada(cm_compte, checks, dif_precio, dif_cantidad);
 				return PartialView("_listaValorizacion", model);
 			}
 			catch (Exception ex)
@@ -340,7 +335,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		/// <param name="val">Valor correspondiente al campo editado</param>
 		/// <returns></returns>
 		[HttpPost]
-		public JsonResult ActualizarProdEnRprSeccionPrecio([FromBody] ActualizarProdEnRprSeccionPrecioRequest r)
+		public JsonResult ActualizarProdEnRprSeccionPrecio(ActualizarProdEnRprSeccionPrecioRequest r)
 		{
 			List<CompteValorizaDetalleRprListaDto> productos = [];
 			try
@@ -431,7 +426,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		/// <param name="val">Valor correspondiente al campo editado</param>
 		/// <returns></returns>
 		[HttpPost]
-		public JsonResult ActualizarProdEnRprSeccionFactura([FromBody] ActualizarProdEnRprSeccionFacturaRequest r)
+		public JsonResult ActualizarProdEnRprSeccionFactura(ActualizarProdEnRprSeccionFacturaRequest r)
 		{
 			List<CompteValorizaDetalleRprListaDto> productos = [];
 			try
@@ -519,7 +514,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		[HttpPost]
-		public JsonResult OCValidar([FromBody] OCValidarRequest r)
+		public JsonResult OCValidar(OCValidarRequest r)
 		{
 			try
 			{
@@ -550,10 +545,12 @@ namespace gc.sitio.Areas.Compras.Controllers
 		/// </summary>
 		/// <param name="oc_compte"></param>
 		/// <param name="idsProds"></param>
+		/// <param name="aplica_oc"> Aplica los cambios en los productos del lado de OC</param>
+		/// <param name="aplica_fac"> Aplicao los cambios en los productos del lado de Factura</param>
 		/// <returns>Retorna la vista parcial con los productos actualizados, en base a la oc_compte proporcionada</returns>
 		[HttpPost]
 
-		public IActionResult CargarDetalleRprDesdeOcValidada(string oc_compte, string[] idsProds)
+		public IActionResult CargarDetalleRprDesdeOcValidada(string oc_compte, string[] idsProds, bool aplica_oc, bool aplica_fac)
 		{
 			var model = new TabDetalleRprModel();
 			try
@@ -567,27 +564,47 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				if (idsProds == null || idsProds.Length <= 0)
 					return PartialView("_listaDetalleRpr", model);
-				///TODO Marce: Obtener los datos con los valores que vienen como parametros
-				///			   Con esos datos, reemplazar los productos en el detalle
 				var listaProdTemporal = ComprobantesValorizaDetalleRprLista;
 				var listaIdsProds = idsProds.ToList();
+				var resProdOc = new List<CompteValorizaCostoPorProductoDto>();
 				foreach (var item in listaIdsProds)
 				{
-					var resProdOc = _cuentaServicio.ObtenerComprobanteValorizaCostoOC(new CompteValorizaCostoOcRequest() { oc_compte = oc_compte, p_id = item }, TokenCookie);
+					var prod = listaProdTemporal.FirstOrDefault(x => x.p_id == item);
+					
+					if (oc_compte.Equals("relacionada"))
+						resProdOc = _cuentaServicio.ObtenerComprobanteValorizaCostoOC(new CompteValorizaCostoOcRequest() { oc_compte = prod?.oc_compte, p_id = item }, TokenCookie);
+					else
+						resProdOc = _cuentaServicio.ObtenerComprobanteValorizaCostoOC(new CompteValorizaCostoOcRequest() { oc_compte = oc_compte, p_id = item }, TokenCookie);
+
 					if (resProdOc != null && resProdOc.Count > 0)
 					{
-						var prod = listaProdTemporal.FirstOrDefault(x => x.p_id == item);
 						if (prod != null)
 						{
-							prod.ocd_plista = resProdOc.First().ocd_plista;
-							prod.ocd_dto1 = resProdOc.First().ocd_dto1;
-							prod.ocd_dto2 = resProdOc.First().ocd_dto2;
-							prod.ocd_dto3 = resProdOc.First().ocd_dto3;
-							prod.ocd_dto4 = resProdOc.First().ocd_dto4;
-							prod.ocd_dto_pa = resProdOc.First().ocd_dto_pa;
-							prod.ocd_boni = resProdOc.First().ocd_boni;
-							prod.rpd_pcosto = resProdOc.First().ocd_pcosto;
-							prod.oc_compte = oc_compte;
+							var elemento = resProdOc.First();
+							if (aplica_oc)
+							{
+								prod.ocd_plista = elemento.ocd_plista; 
+								prod.ocd_dto1 = elemento.ocd_dto1; 
+								prod.ocd_dto2 = elemento.ocd_dto2; 
+								prod.ocd_dto3 = elemento.ocd_dto3; 
+								prod.ocd_dto4 = elemento.ocd_dto4; 
+								prod.ocd_dto_pa = elemento.ocd_dto_pa; 
+								prod.ocd_boni = elemento.ocd_boni; 
+								prod.rpd_pcosto = CalcularPCosto(elemento.ocd_plista, elemento.ocd_dto1, elemento.ocd_dto2, elemento.ocd_dto3, elemento.ocd_dto4, elemento.ocd_dto_pa, elemento.ocd_boni, 0, prod.rpd_cantidad);
+								if (!oc_compte.Equals("relacionada") && !oc_compte.Equals("actual"))
+									prod.oc_compte = oc_compte;
+							}
+							if (aplica_fac)
+							{
+								prod.rpd_plista = resProdOc.First().ocd_plista; 
+								prod.rpd_dto1 = resProdOc.First().ocd_dto1; 
+								prod.rpd_dto2 = resProdOc.First().ocd_dto2; 
+								prod.rpd_dto3 = resProdOc.First().ocd_dto3; 
+								prod.rpd_dto4 = resProdOc.First().ocd_dto4; 
+								prod.rpd_dto_pa = resProdOc.First().ocd_dto_pa; 
+								prod.rpd_boni = resProdOc.First().ocd_boni; 
+								prod.rpd_pcosto = CalcularPCosto(elemento.ocd_plista, elemento.ocd_dto1, elemento.ocd_dto2, elemento.ocd_dto3, elemento.ocd_dto4, elemento.ocd_dto_pa, elemento.ocd_boni, 0, prod.rpd_cantidad);
+							}
 						}
 					}
 				}
@@ -628,24 +645,40 @@ namespace gc.sitio.Areas.Compras.Controllers
 					var prod = listaProdTemporal.FirstOrDefault(x => x.p_id == item);
 					if (prod != null)
 					{
-						if (request.seccion.Equals(1))  //Precio
+						if (request.aplica_oc)  //Precio
 						{
-							prod.ocd_dto1 = request.dto1;
-							prod.ocd_dto2 = request.dto2;
-							prod.ocd_dto3 = request.dto3;
-							prod.ocd_dto4 = request.dto4;
-							prod.ocd_dto_pa = request.dtodpa;
-							prod.ocd_boni = request.boni;
+							if (request.plista_bool)
+								prod.ocd_plista = request.plista;
+							if (request.dto1_bool)
+								prod.ocd_dto1 = request.dto1;
+							if (request.dto2_bool)
+								prod.ocd_dto2 = request.dto2;
+							if (request.dto3_bool)
+								prod.ocd_dto3 = request.dto3;
+							if (request.dto4_bool)
+								prod.ocd_dto4 = request.dto4;
+							if (request.dtoPa_bool)
+								prod.ocd_dto_pa = request.dtodpa;
+							if (request.boni_bool)
+								prod.ocd_boni = request.boni;
 							prod.ocd_pcosto = Math.Round(CalcularPCosto(prod.ocd_plista, prod.ocd_dto1, prod.ocd_dto2, prod.ocd_dto3, prod.ocd_dto4, prod.ocd_dto_pa, prod.ocd_boni, 0, prod.rpd_cantidad), 2);
 						}
-						else //Factura
+						if (request.aplica_fac) //Factura
 						{
-							prod.rpd_dto1 = request.dto1;
-							prod.rpd_dto2 = request.dto2;
-							prod.rpd_dto3 = request.dto3;
-							prod.rpd_dto4 = request.dto4;
-							prod.rpd_dto_pa = request.dtodpa;
-							prod.rpd_boni = request.boni;
+							if (request.plista_bool)
+								prod.rpd_plista = request.plista;
+							if (request.dto1_bool)
+								prod.rpd_dto1 = request.dto1;
+							if (request.dto2_bool)
+								prod.rpd_dto2 = request.dto2;
+							if (request.dto3_bool)
+								prod.rpd_dto3 = request.dto3;
+							if (request.dto4_bool)
+								prod.rpd_dto4 = request.dto4;
+							if (request.dtoPa_bool)
+								prod.rpd_dto_pa = request.dtodpa;
+							if (request.boni_bool)
+								prod.rpd_boni = request.boni;
 							prod.rpd_pcosto = Math.Round(CalcularPCosto(prod.rpd_plista, prod.rpd_dto1, prod.rpd_dto2, prod.rpd_dto3, prod.rpd_dto4, prod.rpd_dto_pa, prod.rpd_boni, 0, prod.rpd_cantidad_compte), 2);
 						}
 					}
@@ -913,7 +946,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				foreach (var item in lista)
 				{
 					var boni = 0.00M;
-					if (!string.IsNullOrWhiteSpace(item.ocd_boni))
+					if (!string.IsNullOrWhiteSpace(item.rpd_boni))
 						boni = CalcularBoni2(item.rpd_boni ?? "", item.rpd_cantidad_compte);
 					var result = item.rpd_cantidad - (item.rpd_cantidad_compte + boni);
 					if (result == 0)
@@ -933,7 +966,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 						}
 					}
 
-					var result2 = item.ocd_pcosto - item.rpd_pcosto;
+					var result2 = Math.Round(item.ocd_pcosto, 2) - Math.Round(item.rpd_pcosto, 2);
 					if (result2 == 0)
 						item.valorizacion_mostrar_dp = false;
 					else
@@ -955,8 +988,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 		private static decimal CalcularPCosto(decimal p_plista, decimal p_d1, decimal p_d2, decimal p_d3, decimal p_d4, decimal p_dpa, string p_boni, decimal flete, decimal cantidad = 0)
 		{
-			var boni = CalcularBoni2(p_boni, cantidad);
-			return p_plista * ((100 - p_d1) / 100) * ((100 - p_d2) / 100) * ((100 - p_d3) / 100) * ((100 - p_d4) / 100) * ((100 - p_dpa) / 100) * boni * ((100 + flete) / 100);
+			var boni = CalcularBoni(p_boni, cantidad);
+			var boni2 = CalcularBoni2(p_boni, cantidad);
+			return p_plista * ((100 - p_d1) / 100) * ((100 - p_d2) / 100) * ((100 - p_d3) / 100) * ((100 - p_d4) / 100) * ((100 - p_dpa) / 100) * boni2 * ((100 + flete) / 100);
 		}
 
 		/// <summary>
@@ -987,7 +1021,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			var res = den - num; //En la bonificacion viene NNN/MMM donde sería "cada NNN, lleva MMM", siendo MMM mayor a NNN. La diferencia es el valor adicional que se suma al pedido.
 			var multiplo = cant / num;
-			if (multiplo > 0)
+			if (multiplo > 1)
 			{
 				boni = (res * (int)multiplo);
 			}
@@ -1018,7 +1052,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return Decimal.Divide(den, num);
 		}
 
-		private GridCoreSmart<CompteValorizaListaDto> ObtenerValorizacionActualizada(string cm_compte, bool dif_precio = false, bool dif_cantidad = false)
+		private GridCoreSmart<CompteValorizaListaDto> ObtenerValorizacionActualizada(string cm_compte, List<Checks> checks, bool dif_precio = false, bool dif_cantidad = false)
 		{
 			var model = new GridCoreSmart<CompteValorizaListaDto>();
 			try
@@ -1028,7 +1062,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (compteSeleccionado == null)
 					return model;
 
-				//Cargar Detalle de Productos RPR
+				//Cargar Detalle de Productos RPR TODO MARCE: Probar esto
+				var listaAux = ComprobantesValorizaDetalleRprLista;
+				foreach (var item in listaAux)
+				{
+					item.nc_genera = checks.Where(x => x.id.Equals(item.p_id)).Select(x => x.check).FirstOrDefault() ? 'S' : 'N';
+				}
+				ComprobantesValorizaDetalleRprLista = listaAux;
 				var jsonResponseRpr = JsonConvert.SerializeObject(ComprobantesValorizaDetalleRprLista, new JsonSerializerSettings());
 
 				//Cargar Detalle de Descuentos Financieros
@@ -1106,6 +1146,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 		#endregion
 
 		#region Clases Locales
+		public class Checks()
+		{
+			public string id { get; set; }
+			public bool check { get; set; }
+		}
 		private class msgRes()
 		{
 			public bool error { get; set; }
