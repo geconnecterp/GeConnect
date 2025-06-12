@@ -89,6 +89,15 @@ function InicializaPantalla() {
 
 	$(".inputEditable").on("keypress", analizaEnterInput);
 	document.getElementById("Rel01").focus();
+
+	$('select').focus(
+		function () {
+			$(this).parent('div').css('border-style', 'solid');
+		}).blur(
+			function () {
+				$(this).parent('div').css('border-style', 'dashed');
+			});
+
 	CerrarWaiting();
 	return true;
 }

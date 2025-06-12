@@ -23,11 +23,11 @@
 				</div>
 				@if (Model.EsGravado)
 				{
-					<div class="col-2 input-group-sm" style="float:left;margin-right:5px;max-width: 120px;">
+					<div class="col-2 input-group-sm wrapper" style="float:left;margin-right:5px;max-width: 120px;">
 						<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">Situación: </span>
 						@Html.DropDownListFor(m => m.ConceptoFacturado.iva_situacion, sit, "Seleccionar...", new { @id = "listaIvaSit", @class = "form-control activable inputEditable" })
 					</div>
-					<div class="col-1 input-group-sm" style="float:left;margin-right:5px;">
+					<div class="col-1 input-group-sm wrapper" style="float:left;margin-right:5px;">
 						<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">Alicuota: </span>
 						@Html.DropDownListFor(m => m.ConceptoFacturado.iva_alicuota, ali, "Seleccionar...", new { @id = "listaIvaAli", @class = "form-control activable inputEditable" })
 					</div>

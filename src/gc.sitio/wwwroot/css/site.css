@@ -102,7 +102,7 @@ td.corta-linea {
     border-style: hidden;
     background: none;
     max-width: 100px;
-    max-height:20px !important;
+    max-height: 20px !important;
 }
 
 .inputEditableNoBorder-mw35 {
@@ -632,12 +632,10 @@ tr[title]:hover {
 
 /* Ajustes para dispositivos móviles */
 @media (max-width: 991px) {
-   
 }
 
 /* Para dispositivos móviles */
 @media (max-width: 991px) {
-
 }
 
 /* ============ desktop view ============ */
@@ -841,4 +839,24 @@ input, select, textarea, button, checkbox, radio {
 
 .text-align-right {
     text-align: right !important;
+}
+
+.styled-1 select:focus {
+    box-shadow: 0 0 3pt 2pt #719ECE;
+}
+
+.wrapper {
+    position: relative;
+}
+
+.wrapper select {
+    display: block;
+}
+
+.wrapper select:focus {
+    color: blue;
+}
+
+.wrapper select:focus + label {
+    color: blue;
 }
