@@ -133,6 +133,9 @@ function configurarBotones() {
         // Limpiar todos los contenedores de resultados según la pestaña activa
         const tabActiva = $('.nav-tabs .active').attr('id');
 
+        //desactivamos el boton tab de Libro Diario
+        $("#tabDiario").prop("disabled", true).addClass("text-danger");
+
         // Es una búsqueda por filtro, siempre será página 1
         pagina = 1;
 
@@ -166,22 +169,99 @@ function configurarBotones() {
         imprimirReporte();
     });
 
-    // Botones de cambio de tab
-    $('.nav-tabs .nav-link').on('click', function () {
+    //// Botones de cambio de tab
+    //$('.nav-tabs .nav-link').on('click', function () {
        
-        // Actualizar tipo de reporte según la tab seleccionada
-        const tabId = $(this).attr('id');
+    //    // Actualizar tipo de reporte según la tab seleccionada
+    //    const tabId = $(this).attr('id');
 
-        switch (tabId) {
-            case 'tabMayor':
-                tipoReporteActual = TipoReporte.MAYOR;
-                break;
-            case 'tabMayorDiario':
-                tipoReporteActual = TipoReporte.MAYOR_DIARIO;
-                break;
-            case 'tabDiario':
-                tipoReporteActual = TipoReporte.DIARIO;
-                break;
+    //    switch (tabId) {
+    //        case 'tabMayor':
+    //            tipoReporteActual = TipoReporte.MAYOR;
+    //            break;
+    //        case 'tabMayorDiario':
+    //            tipoReporteActual = TipoReporte.MAYOR_DIARIO;
+    //            break;
+    //        case 'tabDiario':
+    //            tipoReporteActual = TipoReporte.DIARIO;
+    //            break;
+    //    }
+    //});
+}
+
+/**
+ * Busca y muestra el Libro Diario con los asientos del Mayor por día
+ */
+function buscarLibroDiario() {
+    AbrirWaiting("Consultando Libro díario con los asientos del Mayor por día...");
+
+    // Desactivamos los botones de acción temporalmente
+    $("#btnImprimir").prop("disabled", true);
+
+    // Ocultar filtro y mostrar el panel de detalles
+    $("#divFiltro").collapse("hide");
+    $("#divDetalle").collapse("show");
+
+    // Obtener los movimientos (dia_movi) de la tabla de detalle del día
+    let movimientos = [];
+
+    // Obtener todos los movimientos de la tabla de detalle del día
+    $("#tbDetalleDia tbody tr").each(function () {
+        const dia_movi = $(this).attr("data-dia-movi");
+        if (dia_movi && !movimientos.includes(dia_movi)) {
+            movimientos.push(dia_movi);
+        }
+    });
+
+    // Si no hay movimientos, mostrar mensaje
+    if (movimientos.length === 0) {
+        $("#divAsientosCta").html(`
+            <div class="alert alert-warning">
+                <i class="bx bx-error-circle me-1"></i>
+                No hay movimientos seleccionados para mostrar en el Libro Diario.
+            </div>
+        `);
+        CerrarWaiting();
+        return;
+    }
+
+    // Obtener los valores de los campos del filtro
+    const params = obtenerParametrosBusqueda();
+
+    // Preparar datos para la petición
+    const data = {
+        Eje_nro: params.eje_nro,
+        Periodo: params.rango,
+        Desde: params.desde ? new Date(parseFechaES(params.desde)) : new Date(),
+        Hasta: params.hasta ? new Date(parseFechaES(params.hasta)) : new Date(),
+        Movimientos: movimientos.join(','),
+        ConTemporales: params.incluirTemporales,
+        Pag: 1,
+        Orden: ""
+    };
+
+    // Realizar petición POST para obtener los asientos del Libro Diario
+    $.ajax({
+        url: obtenerAsientosLibroDiarioUrl,
+        type: "POST",
+        data: data,
+        success: function (obj) {
+            // Mostrar resultados en el div correspondiente
+            $("#divAsientosCta").html(obj);
+
+            // Habilitar botón de impresión
+            $("#btnImprimir").prop("disabled", false);
+
+            CerrarWaiting();
+        },
+        error: function (xhr, status, error) {
+            $("#divAsientosCta").html(`
+                <div class="alert alert-danger">
+                    <i class="bx bx-error-circle me-1"></i>
+                    Error al consultar Libro Diario: ${error}
+                </div>
+            `);
+            CerrarWaiting();
         }
     });
 }
@@ -340,7 +420,7 @@ function cargarDetalleDia(fecha) {
             <p class="mt-2">Cargando detalle del día ${fecha}...</p>
         </div>
     `);
-
+    AbrirWaiting("Espere mientras se carga el detalle de asientos a observar.");
     // Realizar petición GET
     $.ajax({
         url: obtenerDetalleDiarioUrl,
@@ -348,6 +428,8 @@ function cargarDetalleDia(fecha) {
         data: { fecha: fecha },
         success: function (obj) {
             $("#divLMAcumDet").html(obj);
+            $("#tabDiario").prop("disabled", false).removeClass("text-danger");
+            CerrarWaiting();
         },
         error: function (xhr, status, error) {
             $("#divLMAcumDet").html(`
@@ -356,6 +438,7 @@ function cargarDetalleDia(fecha) {
                     Error al cargar el detalle: ${error}
                 </div>
             `);
+            CerrarWaiting();
         }
     });
 }
@@ -383,14 +466,7 @@ function configurarEventosTablas() {
     $(document).on("dblclick", "#tbDiario tbody tr", function (e) {
         e.stopPropagation();
 
-        // Obtener el ID del asiento (dia_movi)
-        const asientoId = $(this).attr("data-dia-movi");
-
-        // Si es un encabezado de asiento (tiene dia_movi)
-        if (asientoId) {
-            // Abrir detalle del asiento
-            abrirDetalleAsiento(asientoId);
-        }
+       
     });
 
     // Evento de doble clic en filas del detalle para ver asiento completo
@@ -826,18 +902,11 @@ function configurarEventosTablas() {
     //});
 
     // Evento de doble clic en filas del Libro Diario para ver el asiento completo
-    $(document).on("dblclick", "#tbDiario tbody tr", function (e) {
-        e.stopPropagation();
+    //$(document).on("dblclick", "#tbDiario tbody tr", function (e) {
+    //    e.stopPropagation();
 
-        // Obtener el ID del asiento (dia_movi)
-        const asientoId = $(this).attr("data-dia-movi");
-
-        // Si es un encabezado de asiento (tiene dia_movi)
-        if (asientoId) {
-            // Abrir detalle del asiento
-            abrirDetalleAsiento(asientoId);
-        }
-    });
+        
+    //});
 }
 
 /**

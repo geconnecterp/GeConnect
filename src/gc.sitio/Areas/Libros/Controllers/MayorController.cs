@@ -408,17 +408,7 @@ namespace gc.sitio.Areas.Libros.Controllers
                     });
                 }
 
-                //if (string.IsNullOrEmpty(query.ccb_id))
-                //{
-                //    return PartialView("_gridMensaje", new RespuestaGenerica<EntidadBase>
-                //    {
-                //        Ok = false,
-                //        Mensaje = "Debe seleccionar una cuenta contable válida."
-                //    });
-                //}
-
-                // Configurar los parámetros de paginación y ordenamiento
-                
+               
                 query.Regs= _appSettings.NroRegistrosPagina;
         
 
