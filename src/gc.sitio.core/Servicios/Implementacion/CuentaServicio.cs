@@ -34,7 +34,7 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string ObtenerCuentaParaABM = "/GetCuentaParaABM";
         private const string ObtenerCuentaFormaDePago = "/GetCuentaFormaDePago";
         private const string ObtenerCuentaContactos = "/GetCuentaContactos";
-        private const string ObtenerCuentaObs = "/GetCuentaObs";
+        private const string ObtenerCuentaObsLista = "/GetCuentaObsLista";
         private const string ObtenerCuentaNota = "/GetCuentaNota";
         private const string ObtenerFormaDePagoPorCuentaYFP = "/GetFormaDePagoPorCuentaYFP";
         private const string ObtenerCuentaContactosPorCuentaYTC = "/GetCuentaContactosPorCuentaYTC";
@@ -53,8 +53,9 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string ObtenerCompteValorizaLista = "/GetCompteValorizaLista";
 		private const string ObtenerCompteValorizaCostoOC = "/GetCompteValorizaCostoOC";
 		private const string GetCuentaDatos = "/GetCuentaDatos";
-        //
-        private readonly AppSettings _appSettings;
+		private const string GetCuentaObs = "/GetCuentaObs";
+		//
+		private readonly AppSettings _appSettings;
         public CuentaServicio(IOptions<AppSettings> options, ILogger<CuentaServicio> logger) : base(options, logger)
         {
             _appSettings = options.Value;
@@ -136,7 +137,45 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-        public async Task<List<RPROrdenDeCompraDto>> ObtenerListaOCxCuenta(string cta_id, string token)
+		public List<CuentaObsDto> ObtenerCuentaObs(string cta_id, char to_id, string token)
+		{
+			try
+			{
+				ApiResponse<List<CuentaObsDto>> apiResponse;
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{GetCuentaObs}?cta_id={cta_id}&to_id={to_id}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						_logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda cta_id:{cta_id}-to_id:{to_id}");
+						return [];
+					}
+					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<CuentaObsDto>>>(stringData)
+						?? throw new Exception("Error al deserializar la respuesta de la API.");
+					return apiResponse.Data;
+				}
+				else
+				{
+					string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+					return [];
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogWarning($"Algo no fue bien. Error interno {ex.Message}");
+				return [];
+			}
+		}
+
+		public async Task<List<RPROrdenDeCompraDto>> ObtenerListaOCxCuenta(string cta_id, string token)
         {
             try
             {
@@ -513,7 +552,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-        public List<CuentaObsDto> GetCuentaObs(string cta_id, string token)
+        public List<CuentaObsDto> GetCuentaObsLista(string cta_id, string token)
         {
             ApiResponse<List<CuentaObsDto>> respuesta;
             string stringData;
@@ -522,7 +561,7 @@ namespace gc.sitio.core.Servicios.Implementacion
                 HelperAPI helper = new();
                 HttpClient client = helper.InicializaCliente(token);
                 HttpResponseMessage response;
-                var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerCuentaObs}?cta_id={cta_id}";
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerCuentaObsLista}?cta_id={cta_id}";
                 response = client.GetAsync(link).GetAwaiter().GetResult();
                 if (response.StatusCode == HttpStatusCode.OK)
                 {

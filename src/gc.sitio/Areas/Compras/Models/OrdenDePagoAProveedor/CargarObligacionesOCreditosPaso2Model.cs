@@ -6,6 +6,7 @@ namespace gc.sitio.Areas.Compras.Models.OrdenDePagoAProveedor
 	public class CargarObligacionesOCreditosPaso2Model
 	{
 		public bool EsPagoAnticipado { get; set; } = false;
+		public string CuentaObs { get; set; } = string.Empty;
 		public GridCoreSmart<OPDebitoYCreditoDelProveedorDto> GrillaObligacionesNuevas { get; set; }
 		public GridCoreSmart<OPDebitoYCreditoDelProveedorDto> GrillaCreditosNueva { get; set; }
 		public GridCoreSmart<RetencionesDesdeObligYCredDto> GrillaRetenciones { get; set; }

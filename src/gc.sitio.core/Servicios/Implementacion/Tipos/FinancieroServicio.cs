@@ -174,7 +174,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 		}
 
-		public List<FinancieroDesdeSeleccionDeTipoDto> GetFinancieroDesdeTipoParaSeleccionDeValores(string tcf_id, string token)
+		public List<FinancieroDesdeSeleccionDeTipoDto> GetFinancieroDesdeTipoParaSeleccionDeValores(string tcf_id, string adm_id, string token)
 		{
 			try
 			{
@@ -183,7 +183,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 				HttpClient client = helper.InicializaCliente(token);
 				HttpResponseMessage response;
 
-				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerFinancieroDesdeTipoParaSeleccionDeValores}?tcf_id={tcf_id}";
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerFinancieroDesdeTipoParaSeleccionDeValores}?tcf_id={tcf_id}&adm_id={adm_id}";
 				response = client.GetAsync(link).GetAwaiter().GetResult();
 
 				if (response.StatusCode == HttpStatusCode.OK)

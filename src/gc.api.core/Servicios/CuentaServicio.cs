@@ -292,9 +292,22 @@ namespace gc.api.core.Servicios
                 return res;
         }
 
+		public List<CuentaObsDto> GetCuentaObs(string cta_id, char to_id)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_CUENTA_OBS_DATO;
+			var ps = new List<SqlParameter>()
+			{
+					new("@cta_id", cta_id),
+					new("@to_id", to_id)
+			};
+			var res = _repository.EjecutarLstSpExt<CuentaObsDto>(sp, ps, true);
+			if (res.Count == 0)
+				return [];
+			else
+				return res;
+		}
 
-
-        public List<RPROrdenDeCompraDto> GetOCporCuenta(string cta_id)
+		public List<RPROrdenDeCompraDto> GetOCporCuenta(string cta_id)
         {
             var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_OC;
             var ps = new List<SqlParameter>()

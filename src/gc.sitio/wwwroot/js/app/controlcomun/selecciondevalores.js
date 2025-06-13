@@ -265,12 +265,13 @@ function LimpiarDatosEnSeccionEdicion(dataType) {
 }
 
 function btnCancelarAgregarValorValidar() {
-	activarGrilla("tbFinanciero");
-	activarGrilla("tbTipoCuentaFin");
-	$(".activable").prop("disabled", true);
-	$("#btnCancelarAgregarValor").hide();
-	$("#divSeccionEditable").html("");
-	$("#btnAceptarAgregarValor").prop("disabled", true);
+	//activarGrilla("tbFinanciero");
+	//activarGrilla("tbTipoCuentaFin");
+	LimpiarDatosEnSeccionEdicion(tcf_id_selected);
+	//$(".activable").prop("disabled", true);
+	//$("#btnCancelarAgregarValor").hide();
+	//$("#divSeccionEditable").html("");
+	//$("#btnAceptarAgregarValor").prop("disabled", true);
 }
 /*
 p:
@@ -346,8 +347,8 @@ function onChangeFecha(x) {
 }
 
 function seleccionarFinancieroDbl(x) {
-	desactivarGrilla("tbFinanciero");
-	desactivarGrilla("tbTipoCuentaFin");
+	//desactivarGrilla("tbFinanciero");
+	//desactivarGrilla("tbTipoCuentaFin");
 	$("#btnCancelarAgregarValor").show();
 	$(".activable").prop("disabled", false);
 	ctaf_id = x.cells[2].innerText.trim();

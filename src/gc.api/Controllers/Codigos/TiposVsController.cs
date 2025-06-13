@@ -128,10 +128,10 @@ namespace gc.api.Controllers.Codigos
 
 		[HttpGet]
 		[Route("[action]")]
-		public IActionResult GetFinancieroDesdeTipoParaSeleccionDeValores(string tcf_id)
+		public IActionResult GetFinancieroDesdeTipoParaSeleccionDeValores(string tcf_id, string adm_id)
 		{
 			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
-			List<FinancieroDesdeSeleccionDeTipoDto> condAfip = _financieroServicio.GetFinancieroDesdeTipoParaSeleccionDeValores(tcf_id);
+			List<FinancieroDesdeSeleccionDeTipoDto> condAfip = _financieroServicio.GetFinancieroDesdeTipoParaSeleccionDeValores(tcf_id, adm_id);
 			var lista = _mapper.Map<List<FinancieroDesdeSeleccionDeTipoDto>>(condAfip);
 
 			var response = new ApiResponse<List<FinancieroDesdeSeleccionDeTipoDto>>(lista);

@@ -122,7 +122,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
 				var cfp = _cuentaServicio.GetCuentaFormaDePago(ctaId, TokenCookie);
 				var ccon = _cuentaServicio.GetCuentaContactos(ctaId, TokenCookie);
-				var cobs = _cuentaServicio.GetCuentaObs(ctaId, TokenCookie);
+				var cobs = _cuentaServicio.GetCuentaObsLista(ctaId, TokenCookie);
 				var cnota = _cuentaServicio.GetCuentaNota(ctaId, TokenCookie);
 
 				var proveedorModel = new ProveedorAbmModel()
@@ -440,7 +440,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				if (string.IsNullOrEmpty(ctaId))
 					return PartialView("~/Areas/ABMs/Views/AbmCliente/_tabDatosObs", new CuentaABMObservacionesModel());
 
-				var cob = _cuentaServicio.GetCuentaObs(ctaId, TokenCookie);
+				var cob = _cuentaServicio.GetCuentaObsLista(ctaId, TokenCookie);
 				if (cob == null)
 					return PartialView("~/Areas/ABMs/Views/AbmCliente/_tabDatosObs", new CuentaABMObservacionesModel());
 

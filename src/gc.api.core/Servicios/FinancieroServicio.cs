@@ -77,12 +77,13 @@ namespace gc.api.core.Servicios
 				}).ToList();
 		}
 
-		public List<FinancieroDesdeSeleccionDeTipoDto> GetFinancieroDesdeTipoParaSeleccionDeValores(string tcf_id)
+		public List<FinancieroDesdeSeleccionDeTipoDto> GetFinancieroDesdeTipoParaSeleccionDeValores(string tcf_id, string adm_id)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OP_SV_CTAF;
 			var ps = new List<SqlParameter>()
 			{
-				new("@tcf_id",tcf_id)
+				new("@tcf_id",tcf_id),
+				new("@adm_id",adm_id)
 			};
 			var listaTemp = _repository.EjecutarLstSpExt<FinancieroDesdeSeleccionDeTipoDto>(sp, ps, true);
 			return listaTemp;

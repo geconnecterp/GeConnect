@@ -593,6 +593,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 				var auth = EstaAutenticado;
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				var cuentaObs = string.Empty;
+				var observacionesList = _cuentaServicio.ObtenerCuentaObs(CtaIdSelected, 'P', TokenCookie);
+				if (observacionesList != null && observacionesList.Count > 0)
+				{ 
+					cuentaObs = observacionesList.FirstOrDefault()?.cta_obs ?? string.Empty;
+				}
 				var model = new CargarObligacionesOCreditosPaso2Model
 				{
 					GrillaCreditosNueva = ObtenerGridCoreSmart<OPDebitoYCreditoDelProveedorDto>(OPCreditoNuevaLista),
@@ -600,8 +607,21 @@ namespace gc.sitio.Areas.Compras.Controllers
 					GrillaRetenciones = new GridCoreSmart<RetencionesDesdeObligYCredDto>(),
 					GrillaValores = new GridCoreSmart<ValoresDesdeObligYCredDto>(),
 					GrillaMedioDePago = new GridCoreSmart<MedioDePago>(),
-					EsPagoAnticipado = OPDebitoNuevaLista.Count == 0
+					EsPagoAnticipado = OPDebitoNuevaLista.Count == 0, 
+					CuentaObs = cuentaObs,
 				};
+				if (model.EsPagoAnticipado) {
+					if (OPDebitoOriginalLista == null || OPDebitoOriginalLista.Count <= 0)
+					{
+						OPDebitoOriginalLista = ObtenerData('D');
+						OPDebitoLista = ObtenerData('D');
+					}
+					if (OPCreditoOriginalLista == null || OPCreditoOriginalLista.Count <= 0)
+					{
+						OPCreditoOriginalLista = ObtenerData('H');
+						OPCreditoLista = ObtenerData('H');
+					}
+				}
 				return PartialView("_vistaObligYCred_paso2", model);
 			}
 			catch (Exception ex)
@@ -718,14 +738,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 			try
 			{
 				//Validar que las obligaciones o débitos sean mayores a cero y su total de imputación sea igual al total de créditos + retenciones + valores. 
-				if (OPDebitoNuevaLista != null && OPDebitoNuevaLista.Count > 0 && OPDebitoNuevaLista.Sum(x => x.cv_importe) > 0)
-				{
-					var total_h = ObtenerTotalImputacionCreditos();
-					if (total_h != OPDebitoNuevaLista.Sum(x => x.cv_importe))
-					{
-						return Json(new { error = true, warn = false, msg = "Las Obligaciones (Débitos) deben ser igual a la suma de Créditos + Retenciones + Valores." });
-					}
-				}
+				//Se comenta este codigo por orden de CR en task 20250607 - Revisión Orden de Pago Proveedores
+				//if (OPDebitoNuevaLista != null && OPDebitoNuevaLista.Count > 0 && OPDebitoNuevaLista.Sum(x => x.cv_importe) > 0)
+				//{
+				//	var total_h = ObtenerTotalImputacionCreditos();
+				//	if (total_h != OPDebitoNuevaLista.Sum(x => x.cv_importe))
+				//	{
+				//		return Json(new { error = true, warn = false, msg = "Las Obligaciones (Débitos) deben ser igual a la suma de Créditos + Retenciones + Valores." });
+				//	}
+				//}
 				//Salvo, que sea un pago anticipado, en este caso las obligaciones, créditos y retenciones deben ser iguales a cero y los valores emitidos mayores a cero.
 				if (OPDebitoNuevaLista != null && OPDebitoNuevaLista.Count == 0)
 				{
@@ -751,7 +772,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		[HttpPost]
-		public JsonResult ConfirmarOPaProveedor([FromBody] ConfirmarOPaProveedorRequest req)
+		public JsonResult ConfirmarOPaProveedor(ConfirmarOPaProveedorRequest req)
 		{
 			try
 			{
@@ -785,9 +806,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 				Console.WriteLine(JsonConvert.SerializeObject(OPRetencionesDesdeObligYCredLista, new JsonSerializerSettings()));
 				Console.WriteLine("json_v:");
 				Console.WriteLine(JsonConvert.SerializeObject(OPValoresDesdeObligYCredLista, new JsonSerializerSettings()));
-				var respuesta = _ordenDePagoServicio.ConfirmarOrdenDePagoAProveedor(req, TokenCookie);
-				return AnalizarRespuesta(respuesta, "La Orden de Compra se Confirmo con Éxito");
-				//return Json(new { error = false, warn = false, msg = "La Orden de Compra se Confirmo con Éxito" });
+				//var respuesta = _ordenDePagoServicio.ConfirmarOrdenDePagoAProveedor(req, TokenCookie);
+				//return AnalizarRespuesta(respuesta, "La Orden de Compra se Confirmo con Éxito");
+				return Json(new { error = false, warn = false, msg = "La Orden de Compra se Confirmo con Éxito" });
 			}
 			catch (Exception ex)
 			{

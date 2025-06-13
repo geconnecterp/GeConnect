@@ -22,8 +22,16 @@
 	$("#UpdateValores").on("change", function () {
 		if ($(this).val() == 'true') {
 			CargarValoresDesdeObligYCredSeleccionados();
-			$("#txtObservaciones").prop("disabled", false);
+			$("#CuentaObs").prop("disabled", false);
 		}
+	});
+	$("#btnCancel").on("click", function () {
+		InicializarDatosEnSesion();
+		InicializaPantalla();
+		LimpiarDatosDelFiltroInicial();
+		$("#btnFiltro").trigger("click");
+		$("#btnDetalle").trigger("click");
+		$("#divDetalle").collapse("hide");
 	});
 });
 
@@ -45,9 +53,9 @@ function ValidarPrevioAConfirmar() {
 				$("#msjModal").modal("hide");
 				switch (e) {
 					case "SI": //Confirmar
-						var op_desc = $("#txtObservaciones").val();
+						var cta_obs = $("#CuentaObs").val();
 						var opt_id = " ";
-						var data = { op_desc, opt_id };
+						var data = { cta_obs, opt_id };
 						PostGen(data, confirmarOPaProveedorUrl, function (obj) {
 							if (obj.error === true) {
 								AbrirMensaje("ATENCIÓN", obj.msg, function () {
@@ -251,6 +259,8 @@ function selectRegDblGrillaValores(x) {
 	var data = { orden };
 	PostGenHtml(data, actualizarGrillaValoresUrl, function (obj) {
 		$("#divValores").html(obj);
+		//Actualizar totales
+		ActualizarTotalesSuperiores();
 	});
 }
 
@@ -264,6 +274,7 @@ function EvaluarBotonesWizzard() {
 	else {
 		$("#btnSiguiente1").prop("disabled", false);
 	}
+
 }
 
 function ActualizarTotalesSuperiores() {
@@ -309,7 +320,24 @@ function AceptarDesdeValidPrev() {
 			CargarObligacionesOCreditos("Creditos"); //Créditos
 		}, 500);
 		$("#btnAbmCancelar").prop("disabled", false);
+		$("#btnAbmCancelar").on("click", function () {
+			InicializarDatosEnSesion();
+			InicializaPantalla();
+			LimpiarDatosDelFiltroInicial();
+			$("#btnFiltro").trigger("click");
+			$("#btnDetalle").trigger("click");
+			$("#divDetalle").collapse("hide");
+		});
 	});
+}
+
+function btnAbmCancelar_click() {
+	InicializarDatosEnSesion();
+	InicializaPantalla();
+	LimpiarDatosDelFiltroInicial();
+	$("#btnFiltro").trigger("click");
+	$("#btnDetalle").trigger("click");
+	$("#divDetalle").collapse("hide");
 }
 
 function CargarObligacionesOCreditos(tipo_carga) {
@@ -352,6 +380,7 @@ function InicializaPantalla() {
 	ctaIdSelected = "";
 	MostrarDatosDeCuenta(false);
 	$("#divFiltro").collapse("show")
+	$("#divDetalle").collapse("hide");
 }
 
 function InicializarDatosEnSesion() {
@@ -431,6 +460,7 @@ function ValidarProveedor() {
 
 			$("#divFiltro").collapse("hide");
 			$("#divDetalle").collapse("show");
+			$("#btnAceptarDesdeValidPrev").trigger("click");
 		}
 		else {
 			//Si hay al menos un registro con 'true' en la tercer columna, no permito continuar

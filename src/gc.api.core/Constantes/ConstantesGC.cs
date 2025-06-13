@@ -86,8 +86,9 @@
 
             public const string SP_CUENTA_BUSQUEDA = "dbo.spgeco_c_busqueda_lista";
             public const string SP_CUENTA_DATO = "SPGECO_C_Contacto_Datos";
+			public const string SP_CUENTA_OBS_DATO = "SPGECO_C_Obs_Datos";
 
-            public const string SP_TR_AUTORIZACIONES_PENDIENTES = "SPGECO_TR_Pendientes";
+			public const string SP_TR_AUTORIZACIONES_PENDIENTES = "SPGECO_TR_Pendientes";
             public const string SP_TR_Lista_BOX = "SPGECO_TR_Lista_BOX";
             public const string SP_TR_Lista_Rubros = "SPGECO_TR_Lista_Rubros";
             public const string SP_TR_Lista_Productos = "SPGECO_TR_Lista_Productos";

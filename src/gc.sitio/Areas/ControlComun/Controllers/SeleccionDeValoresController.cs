@@ -77,7 +77,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 			RespuestaGenerica<EntidadBase> response = new();
 			try
 			{
-				var finLista = _financieroServicio.GetFinancieroDesdeTipoParaSeleccionDeValores(tcf_id, TokenCookie);
+				var finLista = _financieroServicio.GetFinancieroDesdeTipoParaSeleccionDeValores(tcf_id, AdministracionId, TokenCookie);
 				var model = ObtenerGridCoreSmart<FinancieroDesdeSeleccionDeTipoDto>(finLista);
 				return View("~/areas/ControlComun/views/SeleccionDeValores/_grillaFinancieros.cshtml", model);
 			}
@@ -218,7 +218,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 		//}
 
 		[HttpPost]
-		public JsonResult AgregarItemAColeccionDeValores([FromBody] AgregarItemModel req)
+		public JsonResult AgregarItemAColeccionDeValores(AgregarItemModel req)
 		{
 			RespuestaGenerica<EntidadBase> response = new();
 			try

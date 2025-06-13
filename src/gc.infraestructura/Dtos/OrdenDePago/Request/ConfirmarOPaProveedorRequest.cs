@@ -8,6 +8,7 @@ namespace gc.infraestructura.Dtos.OrdenDePago.Request
 		public string adm_id { get; set; } = string.Empty;
 		public string opt_id { get; set; } = string.Empty;
 		public string op_desc { get; set; } = string.Empty;
+		public string cta_obs { get; set; } = string.Empty;
 		public string json_d { get; set; } = string.Empty;
 		public string json_h { get; set; } = string.Empty;
 		public string json_r { get; set; } = string.Empty;

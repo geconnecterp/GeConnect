@@ -1117,9 +1117,12 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				var itemCount = 1;
 				var ctaid = CuentaComercialSeleccionada.Cta_Id;
+				var ope = TipoAltaRP.AGREGA.ToString();
+				if (RPRAutorizacionSeleccionada != null && !string.IsNullOrEmpty(RPRAutorizacionSeleccionada.Rp))
+					ope = TipoAltaRP.MODIFICA.ToString();
 				JsonEncabezadoDeRPDto encabezado = new()
 				{
-					Ope = RPRAutorizacionSeleccionada == null ? TipoAltaRP.AGREGA.ToString() : TipoAltaRP.MODIFICA.ToString(),
+					Ope = ope,
 					Rp = RPRAutorizacionSeleccionada == null ? "" : RPRAutorizacionSeleccionada.Rp,
 					Cta_id = ctaid,
 					Usu_id = UserName,

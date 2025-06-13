@@ -108,7 +108,22 @@ namespace gc.api.Controllers.Almacen
             return Ok(response);
         }
 
-        [HttpGet]
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaObsDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetCuentaObs(string cta_id, char to_id)
+		{
+			ApiResponse<List<CuentaObsDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _cuentasSv.GetCuentaObs(cta_id, to_id);
+
+			response = new ApiResponse<List<CuentaObsDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaDto>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]
@@ -202,7 +217,7 @@ namespace gc.api.Controllers.Almacen
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaObsDto>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]
-		public IActionResult GetCuentaObs(string cta_id)
+		public IActionResult GetCuentaObsLista(string cta_id)
 		{
 			ApiResponse<List<CuentaObsDto>> response;
 			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");

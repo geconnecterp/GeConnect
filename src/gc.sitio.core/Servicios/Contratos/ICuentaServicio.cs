@@ -16,7 +16,7 @@ namespace gc.sitio.core.Servicios.Contratos
 		List<CuentaABMDto> GetCuentaParaABM(string ctaId, string token);
         List<CuentaFPDto> GetCuentaFormaDePago(string ctaId, string token);
         List<CuentaContactoDto> GetCuentaContactos(string cta_id, string token);
-		List<CuentaObsDto> GetCuentaObs(string cta_id, string token);
+		List<CuentaObsDto> GetCuentaObsLista(string cta_id, string token);
 		List<CuentaNotaDto> GetCuentaNota(string cta_id, string token);
 		List<CuentaFPDto> GetFormaDePagoPorCuentaYFP(string cta_id, string fp_id, string token);
         List<CuentaContactoDto> GetCuentContactosporCuentaYTC(string cta_id, string tc_id, string token);
@@ -35,6 +35,7 @@ namespace gc.sitio.core.Servicios.Contratos
         List<CompteValorizaListaDto> ObtenerComprobanteValorizaLista(CompteValorizaRequest request, string token);
         List<CompteValorizaCostoPorProductoDto> ObtenerComprobanteValorizaCostoOC(CompteValorizaCostoOcRequest request, string token);
 		Task<List<CuentaDatoDto>> ObtenerCuentaDatos(string cta, char tipo, string token);
+		List<CuentaObsDto> ObtenerCuentaObs(string cta_id, char to_id, string token);
 
-    }
+	}
 }
