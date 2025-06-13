@@ -1,0 +1,108 @@
+﻿<div class="card card-golden">
+    <div class="card-header mb-2">
+        <h5 class="mb-0">Filtros para Libro Mayor</h5>
+    </div>
+    <div class="card-body">
+        <!-- Contenido existente con mejoras de estilo -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="form-check form-switch me-3">
+                        <input class="form-check-input" type="checkbox" id="chkEjercicio" checked disabled>
+                        <label class="form-check-label fw-medium" for="chkEjercicio">Ejercicio</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="chkIncluirTemp">
+                        <label class="form-check-label fw-medium" for="chkIncluirTemp">Incluir asientos temporales</label>
+                    </div>
+                </div>
+                @Html.DropDownList("Eje_nro", ViewBag.ListaEjercicios as SelectList,
+                         new
+                         {
+                             @class = "form-control inputEditable",
+                             style = "background-color:rgb(251,255,195);font-weight:900;"
+                         })
+
+                <input type="hidden" id="incluirTemporales" value="false" />
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="chkCuenta" checked disabled>
+                    <label class="form-check-label fw-medium" for="chkCuenta">Cuenta contable</label>
+                </div>
+                <div class="input-group input-group-sm mb-2">
+                    <input type="text" id="cuentaFilter" class="form-control" placeholder="Seleccione una cuenta..." readonly>
+                    <button class="btn btn-outline-success" type="button" data-bs-toggle="modal" data-bs-target="#modalCuentas">
+                        <i class="bx bx-search"></i>
+                    </button>
+                </div>
+                <div id="cuentaSeleccionada" class="border rounded p-2 bg-light small">
+                    <span id="cuentaSeleccionadaTexto">Ninguna cuenta seleccionada</span>
+                </div>
+                <input type="hidden" id="cuentaId" value="" />
+                <input type="hidden" id="cuentaDesc" value="" />
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="Rango">
+                    <label class="form-check-label fw-medium" for="Rango">Rango de fechas</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="fechaDesde" class="form-label small text-muted">Desde</label>
+                    <input type="text" class="form-control form-control-sm datepicker" name="Desde" id="fechaDesde" placeholder="DD/MM/YYYY" disabled>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="fechaHasta" class="form-label small text-muted">Hasta</label>
+                    <input type="text" class="form-control form-control-sm datepicker" name="Hasta" id="fechaHasta" placeholder="DD/MM/YYYY" disabled>
+                </div>
+            </div>
+        </div>
+    </div>
+   @*  <div class="card-footer bg-white border-top d-flex justify-content-end">
+        <button type="button" id="btnBuscar" class="btn btn-sm btn-primary me-2">
+            <i class="bx bx-search-alt me-1"></i>Buscar
+        </button>
+        <button type="button" id="btnCancel" class="btn btn-sm btn-outline-secondary">
+            <i class="bx bx-x me-1"></i>Cancelar
+        </button>
+    </div> *@
+</div>
+<div class="row mt-3">
+    <div class="d-flex justify-content-around">
+        <button type="button" id="btnCancel" class="btn btn-sm btn-danger"><i class="bx bx-sm bx-x-circle"></i></button>
+        <button type="button" id="btnBuscar" class="btn btn-sm btn-success"><i class="bx bx-sm bx-search"></i></button>
+    </div>
+</div>
+
+<!-- Modal para seleccionar cuenta contable -->
+<div class="modal fade" id="modalCuentas" tabindex="-1" aria-labelledby="modalCuentasLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCuentasLabel">Seleccionar Cuenta Contable</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <input type="text" class="form-control" id="cuentaModalFilter" placeholder="Buscar cuenta...">
+                </div>
+                <div id="cuentasTree"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" id="btnSeleccionarCuenta" data-bs-dismiss="modal">Seleccionar</button>
+            </div>
+        </div>
+    </div>
+</div>
