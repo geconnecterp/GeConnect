@@ -12,6 +12,7 @@ using gc.sitio.core.Servicios.Contratos.ABM;
 using gc.sitio.core.Servicios.Contratos.Asientos;
 using gc.sitio.core.Servicios.Contratos.DocManager;
 using gc.sitio.core.Servicios.Contratos.Libros;
+using gc.sitio.core.Servicios.Implementacion.Libros;
 using log4net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -31,6 +32,7 @@ namespace gc.sitio.Areas.Libros.Controllers
         private readonly ILibroMayorServicio _libroMayorServicio;
         private readonly IDocManagerServicio _docMSv;
         private readonly IABMPlanCuentaServicio _pcuentaSv;
+        private readonly ILibroDiarioServicio _ldiarioServicio;
 
         public MayorController(
               IOptions<AppSettings> options, IOptions<DocsManager> docsManager,
@@ -39,7 +41,8 @@ namespace gc.sitio.Areas.Libros.Controllers
               IAsientoFrontServicio asientoServicio,
               ILibroMayorServicio libroMayorServicio,
               IDocManagerServicio docManager,
-              IABMPlanCuentaServicio cuentaServicio
+              IABMPlanCuentaServicio cuentaServicio,
+              ILibroDiarioServicio libroDiarioServicio
             ) : base(options, contexto, logger)
         {
             _asientoServicio = asientoServicio;
@@ -49,6 +52,7 @@ namespace gc.sitio.Areas.Libros.Controllers
             _modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO);
             _docMSv = docManager;
             _pcuentaSv = cuentaServicio;
+            _ldiarioServicio = libroDiarioServicio; 
         }
         public async Task<IActionResult> Index()
         {
@@ -373,6 +377,100 @@ namespace gc.sitio.Areas.Libros.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> ObtenerAsientosLibroDiario(LDiarioRequest query)
+        {
+            RespuestaGenerica<EntidadBase> response = new();
 
+            try
+            {
+                // Verificar autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return redirectResult;
+
+                // Validar el filtro recibido
+                if (query == null)
+                {
+                    return PartialView("_gridMensaje", new RespuestaGenerica<EntidadBase>
+                    {
+                        Ok = false,
+                        Mensaje = "El filtro no puede ser nulo."
+                    });
+                }
+
+                // Validar parámetros obligatorios
+                if (query.Eje_nro <= 0)
+                {
+                    return PartialView("_gridMensaje", new RespuestaGenerica<EntidadBase>
+                    {
+                        Ok = false,
+                        Mensaje = "Debe seleccionar un ejercicio contable válido."
+                    });
+                }
+
+                //if (string.IsNullOrEmpty(query.ccb_id))
+                //{
+                //    return PartialView("_gridMensaje", new RespuestaGenerica<EntidadBase>
+                //    {
+                //        Ok = false,
+                //        Mensaje = "Debe seleccionar una cuenta contable válida."
+                //    });
+                //}
+
+                // Configurar los parámetros de paginación y ordenamiento
+                
+                query.Regs= _appSettings.NroRegistrosPagina;
+        
+
+                // Llamar al servicio para obtener el libro mayor
+                var res = await _ldiarioServicio.ObtenerAsientosLibroDiario(query, Token);
+
+                if (res.Item1.Count == 0)
+                {
+                    throw new NegocioException($"No se encontraron registros para los movimientos seleccionados.");
+                }
+
+                LibroDiario = res.Item1; // Asignar la lista de Libro Mayor
+                var lista = res.Item1.OrderBy(x => x.Dia_movi).ToList();
+                MetadataGeneral = res.Item2;
+
+                // Crear el grid para la vista
+                var grid = GenerarGrillaSmart(
+                    lista,
+                    "dia_movi",
+                    _appSettings.NroRegistrosPagina,
+                    query.Pag,
+                    lista.Count,
+                     (int)Math.Ceiling((double)lista.Count / _appSettings.NroRegistrosPagina), // Total de páginas
+                    string.Empty 
+                );
+                
+                return PartialView("_gridLibroDiario", grid);
+            }
+            catch (NegocioException ex)
+            {
+                _logger?.LogError(ex, ex.Message);
+
+                string msg = ex.Message;
+                _logger?.LogError(ex, msg);
+                response.Mensaje = msg;
+                response.Ok = false;
+                response.EsWarn = true;
+                response.EsError = false;
+                return PartialView("_gridMensaje", response);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al obtener libro mayor: {Mensaje}", ex.Message);
+
+                string msg = "Error al obtener libro mayor";
+                _logger?.LogError(ex, msg);
+                response.Mensaje = msg;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
+            }
+        }
     }
 }

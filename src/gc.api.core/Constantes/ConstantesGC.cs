@@ -349,6 +349,7 @@
             public const string SP_CONTA_ASIENTOS_DEF = "SPGECO_Conta_Asiento_DEF_Lista";
             public const string SP_ASIENTO_DEF_DETALLE = "SPGECO_Conta_Asiento_DEF_Datos";
             public const string SP_ASIENTO_DETALLE_REPO = "SPGECO_Conta_Asiento_Repo";
+            public const string SP_ASIENTO_LIBRO_DIARIO = "SPGECO_Conta_Libro_Diario";
 
             #endregion
 

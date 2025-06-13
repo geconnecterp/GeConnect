@@ -11,120 +11,132 @@
     decimal subTotalDebe = 0;
     decimal subTotalHaber = 0;
 }
-<div class="row">
-    <div class="col-md-8 col-sm-6"><strong>@leyend</strong></div>
-    <div class="col-md-4 col-sm-6">
-        <div class="d-flex justify-content-sm-end">
-            <!-- Botón Imprimir -->
-            <button type="button" class="btn btn-light btn-sm mt-1 me-1" id="btnImprimir" title="Imprimir">
-                <i class="bx bx-printer"></i>
-            </button>           
+
+<div class="grid-golden">
+    <div class="grid-golden-header">
+        <div class="row align-items-center">
+            <div class="col-md-8 col-sm-6">
+                <h5 class="mb-0">
+                    <i class="bx bx-book-open me-2"></i>
+                    <strong>@leyend</strong>
+                </h5>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="d-flex justify-content-sm-end">
+                    <!-- Botón Imprimir -->
+                    <button type="button" class="btn btn-golden btn-sm mt-1 me-1" id="btnImprimir" title="Imprimir">
+                        <i class="bx bx-printer"></i>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
-</div>
-<div class="row">
-    <div class="table-responsive text-nowrap table-wrapper">
-        <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbMayor">
-            <thead class="table-dark">
-                <tr class="header">
-                    <th class="text-sm-center" scope="col">Fecha</th>
-                    <th class="text-sm-center" scope="col">Nº Movimiento</th>
-                    <th class="text-sm-center" scope="col">Concepto</th>
-                    <th class="text-sm-center text-end" scope="col">Debe</th>
-                    <th class="text-sm-center text-end" scope="col">Haber</th>
-                    <th class="text-sm-center text-end" scope="col">Saldo</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (Model.ListaDatos == null || Model.ListaDatos.Count == 0)
-                {
-                    <tr>
-                        <td colspan="6" class="text-center">No se han encontrado movimientos para los criterios especificados.</td>
+
+    <div class="grid-golden-body">
+        <div class="table-responsive text-nowrap table-wrapper">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbMayor">
+                <thead>
+                    <tr class="header">
+                        <th class="text-sm-center" scope="col">Fecha</th>
+                        <th class="text-sm-center" scope="col">Nº Movimiento</th>
+                        <th class="text-sm-center" scope="col">Concepto</th>
+                        <th class="text-sm-center text-end" scope="col">Debe</th>
+                        <th class="text-sm-center text-end" scope="col">Haber</th>
+                        <th class="text-sm-center text-end" scope="col">Saldo</th>
                     </tr>
-                }
-                else
-                {
-                    // Fila para el saldo anterior
-                    <tr class="saldo-anterior">
-                        <td colspan="3">Saldo Anterior</td>
-                        <td class="text-end"></td>
-                        <td class="text-end"></td>
-                        <td class="text-end">@(Model.ListaDatos.First().Saldo_inicial.ToString("N2") ?? "0.00")</td>
-                    </tr>
-                    decimal totalDebe = 0;
-                    decimal totalHaber = 0;
-                    // Filas de datos
-                    @foreach (var item in Model.ListaDatos)
+                </thead>
+                <tbody>
+                    @if (Model.ListaDatos == null || Model.ListaDatos.Count == 0)
                     {
-                        if (fechaActual == null || item.Dia_fecha.Date != fechaActual.Value.Date)
-                        {
-                            // Si es una nueva fecha, mostrar subtotales de la fecha anterior
-                            if (fechaActual != null)
-                            {
-                                <tr class="group-footer">
-                                    <td colspan="3">Subtotal del día @fechaActual.Value.ToString("dd/MM/yyyy")</td>
-                                    <td class="text-end fw-bold">@Model.FormatearDato(subTotalDebe, FormatDato.Monto)</td>
-                                    <td class="text-end fw-bold">@Model.FormatearDato(subTotalHaber, FormatDato.Monto)</td>
-                                    <td class="text-end"></td>
-                                </tr>
-                            }
-                            // Insertar encabezado del nuevo grupo
-                            fechaActual = item.Dia_fecha;
-                            subTotalDebe = 0;
-                            subTotalHaber = 0;
-
-                            <tr class="group-header">
-                                <td colspan="6" class="fw-bold ps-2">
-                                    <i class="bx bx-calendar me-1"></i>
-                                    @fechaActual.Value.ToString("dddd, dd 'de' MMMM 'de' yyyy")
-                                </td>
-                            </tr>
-                        }
-                        // Actualizar subtotales
-                        subTotalDebe += item.Dia_debe;
-                        subTotalHaber += item.Dia_haber ;
-                        totalDebe += item.Dia_debe;
-                        totalHaber += item.Dia_haber;
-
-                        if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
-                        <tr class="@clase" data-dia-movi="@item.Dia_movi">
-                            <td class="@Model.ObtenerClase(item.Dia_fecha)">@Model.FormatearDato(item.Dia_fecha, FormatDato.Fecha)</td>
-                            <td class="@Model.ObtenerClase(item.Dia_movi)" style="text-align: left;">@Model.FormatearDato(item.Dia_movi, FormatDato.Ninguno)</td>
-                            <td class="@Model.ObtenerClase(item.Dia_desc_asiento)">@Model.FormatearDato(item.Dia_desc_asiento, FormatDato.Ninguno)</td>
-                            <td class="@Model.ObtenerClase(item.Dia_debe) text-end">@Model.FormatearDato(item.Dia_debe, FormatDato.Monto)</td>
-                            <td class="@Model.ObtenerClase(item.Dia_haber) text-end">@Model.FormatearDato(item.Dia_haber, FormatDato.Monto)</td>
-                            <td class="@Model.ObtenerClase(item.Dia_saldo) text-end">@Model.FormatearDato(item.Dia_saldo, FormatDato.Monto)</td>
+                        <tr>
+                            <td colspan="6" class="text-center">No se han encontrado movimientos para los criterios especificados.</td>
                         </tr>
                     }
-
-                    // Insertar pie del último grupo
-                    if (fechaActual != null)
+                    else
                     {
-                        <tr class="group-footer">
-                            <td colspan="3">Subtotal del día @fechaActual.Value.ToString("dd/MM/yyyy")</td>
-                            <td class="text-end fw-bold">@Model.FormatearDato(subTotalDebe, FormatDato.Monto)</td>
-                            <td class="text-end fw-bold">@Model.FormatearDato(subTotalHaber, FormatDato.Monto)</td>
+                        // Fila para el saldo anterior
+                        <tr class="saldo-anterior">
+                            <td colspan="3">Saldo Anterior</td>
+                            <td class="text-end"></td>
+                            <td class="text-end"></td>
+                            <td class="text-end">@(Model.ListaDatos.First().Saldo_inicial.ToString("N2") ?? "0.00")</td>
+                        </tr>
+                        decimal totalDebe = 0;
+                        decimal totalHaber = 0;
+                        // Filas de datos
+                        @foreach (var item in Model.ListaDatos)
+                        {
+                            if (fechaActual == null || item.Dia_fecha.Date != fechaActual.Value.Date)
+                            {
+                                // Si es una nueva fecha, mostrar subtotales de la fecha anterior
+                                if (fechaActual != null)
+                                {
+                                    <tr class="group-footer">
+                                        <td colspan="3">Subtotal del día @fechaActual.Value.ToString("dd/MM/yyyy")</td>
+                                        <td class="text-end fw-bold">@Model.FormatearDato(subTotalDebe, FormatDato.Monto)</td>
+                                        <td class="text-end fw-bold">@Model.FormatearDato(subTotalHaber, FormatDato.Monto)</td>
+                                        <td class="text-end"></td>
+                                    </tr>
+                                }
+                                // Insertar encabezado del nuevo grupo
+                                fechaActual = item.Dia_fecha;
+                                subTotalDebe = 0;
+                                subTotalHaber = 0;
+
+                                <tr class="group-header">
+                                    <td colspan="6" class="fw-bold ps-2">
+                                        <i class="bx bx-calendar me-1"></i>
+                                        @fechaActual.Value.ToString("dddd, dd 'de' MMMM 'de' yyyy")
+                                    </td>
+                                </tr>
+                            }
+                            // Actualizar subtotales
+                            subTotalDebe += item.Dia_debe;
+                            subTotalHaber += item.Dia_haber;
+                            totalDebe += item.Dia_debe;
+                            totalHaber += item.Dia_haber;
+
+                            if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
+                            <tr class="@clase" data-dia-movi="@item.Dia_movi">
+                                <td class="@Model.ObtenerClase(item.Dia_fecha)">@Model.FormatearDato(item.Dia_fecha, FormatDato.Fecha)</td>
+                                <td class="@Model.ObtenerClase(item.Dia_movi)" style="text-align: left;">@Model.FormatearDato(item.Dia_movi, FormatDato.Ninguno)</td>
+                                <td class="@Model.ObtenerClase(item.Dia_desc_asiento)">@Model.FormatearDato(item.Dia_desc_asiento, FormatDato.Ninguno)</td>
+                                <td class="@Model.ObtenerClase(item.Dia_debe) text-end">@Model.FormatearDato(item.Dia_debe, FormatDato.Monto)</td>
+                                <td class="@Model.ObtenerClase(item.Dia_haber) text-end">@Model.FormatearDato(item.Dia_haber, FormatDato.Monto)</td>
+                                <td class="@Model.ObtenerClase(item.Dia_saldo) text-end">@Model.FormatearDato(item.Dia_saldo, FormatDato.Monto)</td>
+                            </tr>
+                        }
+
+                        // Insertar pie del último grupo
+                        if (fechaActual != null)
+                        {
+                            <tr class="group-footer">
+                                <td colspan="3">Subtotal del día @fechaActual.Value.ToString("dd/MM/yyyy")</td>
+                                <td class="text-end fw-bold">@Model.FormatearDato(subTotalDebe, FormatDato.Monto)</td>
+                                <td class="text-end fw-bold">@Model.FormatearDato(subTotalHaber, FormatDato.Monto)</td>
+                                <td class="text-end"></td>
+                            </tr>
+                        }
+
+                        // Insertar total general
+                        <tr class="total-general">
+                            <td colspan="3">Total General</td>
+                            <td class="text-end fw-bold">@Model.FormatearDato(totalDebe, FormatDato.Monto)</td>
+                            <td class="text-end fw-bold">@Model.FormatearDato(totalHaber, FormatDato.Monto)</td>
                             <td class="text-end"></td>
                         </tr>
                     }
-
-                    // Insertar total general
-                    <tr class="total-general">
-                        <td colspan="3">Total General</td>
-                        <td class="text-end fw-bold">@Model.FormatearDato(totalDebe, FormatDato.Monto)</td>
-                        <td class="text-end fw-bold">@Model.FormatearDato(totalHaber, FormatDato.Monto)</td>
-                        <td class="text-end"></td>
-                    </tr>
-
-                   
-                }
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
-<div class="row">
-    <div class="offset-md-3 col-md-6">
-        <div id="divPaginacion">
+
+    <div class="grid-golden-footer">
+        <div class="row">
+            <div class="offset-md-3 col-md-6">
+                <div id="divPaginacion">
+                </div>
+            </div>
         </div>
     </div>
 </div>

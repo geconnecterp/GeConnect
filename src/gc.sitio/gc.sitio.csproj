@@ -40,7 +40,6 @@
     <Folder Include="Areas\Libros\Controllers\" />
     <Folder Include="Areas\Libros\Data\" />
     <Folder Include="Areas\Libros\Models\" />
-    <Folder Include="Areas\Libros\Views\" />
     <Folder Include="Areas\Seguridad\Data\" />
     <Folder Include="Areas\Seguridad\Models\" />
     <Folder Include="Areas\Usuarios\Data\" />

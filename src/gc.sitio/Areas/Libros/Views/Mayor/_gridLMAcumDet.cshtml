@@ -1,17 +1,21 @@
-﻿@model GridCoreSmart<LMayorRegDto>
+﻿@model GridCoreSmart<LMayorRegListaDto>
 
-<div class="card">
-    <div class="card-header bg-primary text-white">
-        <h6 class="mb-0">
-            <i class="bx bx-calendar-event me-1"></i>
-            Detalle del día @ViewBag.FechaSeleccionada
-        </h6>
+<div class="card card-golden">
+    <div class="card-header">
+        <div class="row align-items-md-center">
+            <div class="col-md-8 col-sm-6">
+                <h6 class="mb-0">
+                    <i class="bx bx-calendar-event me-1"></i>
+                    Detalle del día @ViewBag.FechaSeleccionada
+                </h6>
+            </div>            
+        </div>                
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table id="tbDetalleDia" class="table table-sm table-hover mb-0">
-                <thead class="table-dark">
-                    <tr>
+            <table id="tbDetalleDia" class="table table-sm table-hover mb-0 table-golden">
+                <thead>
+                    <tr class="header">
                         <th>Nº Movimiento</th>
                         <th>Concepto</th>
                         <th class="text-end">Debe</th>
@@ -30,7 +34,7 @@
                     {
                         foreach (var item in Model.ListaDatos)
                         {
-                            <tr data-dia-movi="@item.Dia_movi">
+                            <tr data-dia-movi="@item.Dia_movi" onclick="selectReg(this,'tbDetalleDia')">
                                 <td>@item.Dia_movi</td>
                                 <td>@item.Dia_desc</td>
                                 <td class="text-end">@Model.FormatearDato(item.Dia_debe, FormatDato.Monto)</td>
@@ -40,7 +44,7 @@
                         }
 
                         // Mostrar totales al final
-                        <tr class="table-info">
+                        <tr class="total-general">
                             <td colspan="2" class="fw-bold">Totales del día:</td>
                             <td class="text-end fw-bold">@Model.FormatearDato(Model.ListaDatos.Sum(x => x.Dia_debe), FormatDato.Monto)</td>
                             <td class="text-end fw-bold">@Model.FormatearDato(Model.ListaDatos.Sum(x => x.Dia_haber), FormatDato.Monto)</td>
@@ -51,10 +55,11 @@
             </table>
         </div>
     </div>
-    <div class="card-footer bg-light">
+    <div class="card-footer">
         <p class="small text-muted mb-0">
             <i class="bx bx-bulb"></i>
             Doble clic en una fila para ver el detalle completo del asiento.
         </p>
     </div>
 </div>
+

@@ -32,5 +32,23 @@ namespace gc.sitio.Areas.Libros.Controllers
                 _context.HttpContext?.Session.SetString("LibroMayor", json);
             }
         }
+
+        public List<AsientoDetalleLDDto> LibroDiario
+        {
+            get
+            {
+                string json = _context.HttpContext?.Session.GetString("LibroDiario") ?? string.Empty;
+                if (string.IsNullOrEmpty(json))
+                {
+                    return new();
+                }
+                return JsonConvert.DeserializeObject<List<AsientoDetalleLDDto>>(json) ?? [];
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session.SetString("LibroDiario", json);
+            }
+        }
     }
 }
