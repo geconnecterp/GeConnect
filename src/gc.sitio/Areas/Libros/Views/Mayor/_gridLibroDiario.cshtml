@@ -1,0 +1,122 @@
+﻿@model GridCoreSmart<AsientoDetalleLDDto>
+@using gc.infraestructura.Dtos.Asientos
+
+<div class="grid-golden">
+    <div class="grid-golden-header">
+        <div class="row align-items-center">
+            <div class="col-md-8 col-sm-6">
+                <h5 class="mb-0">
+                    <i class="bx bx-book me-2"></i>
+                    <strong>Libro Diario</strong>
+                </h5>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="d-flex justify-content-sm-end">
+                    <button type="button" class="btn btn-golden btn-sm mt-1 me-1" id="btnImprimir" title="Imprimir">
+                        <i class="bx bx-printer"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid-golden-body">
+        @if (Model.ListaDatos == null || Model.ListaDatos.Count == 0)
+        {
+            <div class="alert alert-info">No se han encontrado asientos para los criterios especificados.</div>
+        }
+        else
+        {
+            decimal totalGeneralDebe = 0;
+            decimal totalGeneralHaber = 0;
+            int counter = 0;
+
+            @foreach (var asiento in Model.ListaDatos)
+            {
+                counter++;
+                <div class="card mb-3">
+                    <div class="card-header p-2 bg-light">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <strong>Fecha de Asiento:</strong> @asiento.Dia_fecha.ToString("dd/MM/yyyy")
+                                <strong>Movimiento Nº:</strong> @asiento.Dia_movi
+                            </div>
+                        </div>
+                        <div>
+                            <strong>Descripción Asiento:</strong> @asiento.Dia_desc_asiento
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped mb-0 table-golden">
+                                <thead>
+                                    <tr>
+                                        <th>Cuenta</th>
+                                        <th>Descripción Cuenta</th>
+                                        <th>Concepto</th>
+                                        <th class="text-end">Debe</th>
+                                        <th class="text-end">Haber</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        decimal totalDebe = 0;
+                                        decimal totalHaber = 0;
+                                    }
+
+                                    @if (asiento.Detalles != null && asiento.Detalles.Any())
+                                    {
+                                        @foreach (var detalle in asiento.Detalles)
+                                        {
+                                            totalDebe += detalle.Debe;
+                                            totalHaber += detalle.Haber;
+                                            totalGeneralDebe += detalle.Debe;
+                                            totalGeneralHaber += detalle.Haber;
+
+                                            <tr>
+                                                <td>@detalle.Ccb_id</td>
+                                                <td>@detalle.Ccb_desc</td>
+                                                <td>@detalle.Dia_desc</td>
+                                                <td class="text-end">@(detalle.Debe > 0 ? detalle.Debe.ToString("N2") : "0.00")</td>
+                                                <td class="text-end">@(detalle.Haber > 0 ? detalle.Haber.ToString("N2") : "0.00")</td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr class="table-secondary">
+                                        <td colspan="3" class="text-end"><strong>Saldo:</strong></td>
+                                        <td class="text-end"><strong>@totalDebe.ToString("N2")</strong></td>
+                                        <td class="text-end"><strong>@totalHaber.ToString("N2")</strong></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div class="card">
+                <div class="card-body p-2">
+                    <div class="d-flex justify-content-between">
+                        <strong>Saldo:</strong>
+                        <div>
+                            <span class="me-5"><strong>@totalGeneralDebe.ToString("N2")</strong></span>
+                            <span><strong>@totalGeneralHaber.ToString("N2")</strong></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="grid-golden-footer">
+        <div class="row">
+            <div class="offset-md-3 col-md-6">
+                <div id="divPaginacion">
+                    <!-- Aquí se agregará la paginación si es necesario -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

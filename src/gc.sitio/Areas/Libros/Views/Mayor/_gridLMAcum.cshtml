@@ -1,0 +1,105 @@
+﻿@model GridCoreSmart<LMayorAcumuladoDiaDto>
+
+<div class="card card-golden">
+    <div class="card-header mb-2">
+        <div class="row align-items-md-center">
+            <div class="col-md-8 col-sm-6">
+                <h6 class="mb-0">
+                    <i class="bx bx-calendar me-1"></i>
+                    Mayor por Día
+                </h6>
+            </div>
+        </div>
+        
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="tbMayorDiario" class="table table-sm table-hover mb-0 table-golden">
+                <thead>
+                    <tr class="header">
+                        <th>Fecha</th>
+                        <th class="text-end">Debe</th>
+                        <th class="text-end">Haber</th>
+                        <th class="text-end">Saldo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.ListaDatos == null || Model.ListaDatos.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center">No se han encontrado movimientos.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        // Saldo anterior
+                        <tr class="saldo-anterior">
+                            <td>Saldo Anterior</td>
+                            <td class="text-end"></td>
+                            <td class="text-end"></td>
+                            <td class="text-end">@Model.FormatearDato(Model.ListaDatos.FirstOrDefault()?.saldo_anterior ?? 0, FormatDato.Monto)</td>
+                        </tr>
+
+                        foreach (var item in Model.ListaDatos)
+                        {
+                            <tr data-fecha="@item.fecha_str" class="fila-datos">
+                                <td>@item.fecha_str                                   
+                                </td>
+                                <td class="text-end">@Model.FormatearDato(item.total_debe, FormatDato.Monto)</td>
+                                <td class="text-end">@Model.FormatearDato(item.total_haber, FormatDato.Monto)</td>
+                                <td class="text-end">@Model.FormatearDato(item.saldo_final, FormatDato.Monto)</td>
+                            </tr>
+                        }
+
+                        // Totales
+                        <tr class="table-info">
+                            <td class="fw-bold">Totales</td>
+                            <td class="text-end fw-bold">@Model.FormatearDato(Model.ListaDatos.Sum(x => x.total_debe), FormatDato.Monto)</td>
+                            <td class="text-end fw-bold">@Model.FormatearDato(Model.ListaDatos.Sum(x => x.total_haber), FormatDato.Monto)</td>
+                            <td></td>
+                        </tr>
+
+                        // Saldo actual
+                        <tr class="total-general">
+                            <td>Saldo Actual</td>
+                            <td class="text-end"></td>
+                            <td class="text-end"></td>
+                            <td class="text-end">@Model.FormatearDato(Model.ListaDatos.LastOrDefault()?.saldo_final ?? 0, FormatDato.Monto)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        <p class="small text-muted mb-0">
+            <i class="bx bx-info-circle"></i>
+            Doble clic en una fecha para ver el detalle del día.
+        </p>
+    </div>
+</div>
+
+
+<style>
+    /* Estilo para filas seleccionadas con click simple */
+    #tbMayorDiario tbody tr.selected-simple {
+        background-color: #f0f0f0 !important;
+    }
+
+    /* Estilo para filas seleccionadas con doble click (estilo bordo) */
+    #tbMayorDiario tbody tr.selectedEdit-row {
+        background-color: firebrick !important;
+        color: white !important;
+        font-weight: bold;
+    }
+
+    /* Estilos para saldo anterior y actual */
+    .saldo-anterior, .saldo-actual {
+        background-color: #f8f9fa !important;
+        font-weight: bold;
+    }
+
+    .saldo-actual {
+        background-color: #e9ecef !important;
+    }
+</style>

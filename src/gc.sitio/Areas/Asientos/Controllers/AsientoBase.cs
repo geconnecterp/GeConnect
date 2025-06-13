@@ -13,61 +13,16 @@ namespace gc.sitio.Areas.Asientos.Controllers
 {
     public class AsientoBase:ControladorBase
     {
-        protected List<EjercicioDto> Ejercicios {
-            get
-            {
-                string json = _context.HttpContext?.Session.GetString("Ejercicios") ?? string.Empty;
-                if (string.IsNullOrEmpty(json))
-                {
-                    return new();
-                }
-                return JsonConvert.DeserializeObject<List<EjercicioDto>>(json) ?? [];
-            }
-            set
-            {
-                var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext?.Session.SetString("Ejercicios", json);
-            }
-        }
+       
         protected List<UsuAsientoDto> UsuariosEjercicioLista { get; set; } = [];
-        protected int EjercicioSeleccionado { get; set; } = 0;
+        
 
         public AsientoBase(IOptions<AppSettings> options,IHttpContextAccessor contexto,ILogger logger ):base(options,contexto,logger)
         {
             
         }
 
-        /// <summary>
-        /// Obtiene los ejercicios contables para el combo
-        /// </summary>
-        protected async Task ObtenerEjerciciosContables(IAsientoFrontServicio _asientoServicio)
-        {
-            try
-            {
-                var response = await _asientoServicio.ObtenerEjercicios(TokenCookie);
-                if (response.Ok && response.ListaEntidad != null)
-                {
-                    var lsta = response.ListaEntidad.OrderByDescending(x => x.Eje_desde).ToList();
-                    Ejercicios = lsta;
-                    if (response.ListaEntidad.Count > 0)
-                    {
-                        EjercicioSeleccionado = lsta.First().Eje_nro.ToInt();
-                    }
-                    ViewBag.EjerciciosLista = lsta;
-                }
-                else
-                {
-                    ViewBag.EjerciciosLista = new List<EjercicioDto>();
-                    _logger?.LogWarning($"No se pudieron obtener los ejercicios contables: {response.Mensaje}");
-                }
-            }
-            catch (Exception ex)
-            {
-                ViewBag.EjerciciosLista = new List<EjercicioDto>();
-                _logger?.LogError(ex, "Error al obtener ejercicios contables");
-            }
-        }
-
+       
         /// <summary>
         /// Obtiene los tipos de asiento para el combo
         /// </summary>
@@ -118,27 +73,7 @@ namespace gc.sitio.Areas.Asientos.Controllers
             }
         }
 
-        /// <summary>
-        /// Genera el combo de ejercicios contables
-        /// </summary>
-        protected SelectList ComboEjercicios()
-        {
-            if (ViewBag.EjerciciosLista != null)
-            {
-                var lista = ViewBag.EjerciciosLista as List<EjercicioDto>;
-                if (lista != null)
-                {
-                    return HelperMvc<ComboGenDto>.ListaGenerica(
-                        lista.Select(e => new ComboGenDto
-                        {
-                            Id = e.Eje_nro,
-                            Descripcion = e.Eje_lista
-                        })
-                    );
-                }
-            }
-            return HelperMvc<ComboGenDto>.ListaGenerica(new List<ComboGenDto>());
-        }
+        
 
         /// <summary>
         /// Genera el combo de tipos de asiento

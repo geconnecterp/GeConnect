@@ -28,6 +28,479 @@ body {
 activable {
 }
 
+/* ESTILO GOLDEN PARA MODALES*/
+/* Estilos para modales con tema dorado */
+.modal-golden {
+    z-index: 9999;
+}
+
+    .modal-golden .modal-content {
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .modal-golden .modal-header {
+        background: linear-gradient(135deg, #b8860b 0%, #daa520 100%);
+        color: #333;
+        border-bottom: none;
+        border-radius: 8px 8px 0 0;
+        padding: 15px 20px;
+    }
+
+    .modal-golden .modal-title {
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        color: #333;
+        text-shadow: 0 1px 1px rgba(255,255,255,0.3);
+    }
+
+        .modal-golden .modal-title i {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+    .modal-golden .btn-close {
+        color: #333;
+        opacity: 0.8;
+        transition: opacity 0.2s;
+    }
+
+        .modal-golden .btn-close:hover {
+            opacity: 1;
+        }
+
+    .modal-golden .modal-body {
+        padding: 20px;
+        background-color: #f8f9fa;
+    }
+
+    .modal-golden .modal-footer {
+        background-color: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+        padding: 15px 20px;
+        border-radius: 0 0 8px 8px;
+    }
+
+/* Botones estilo dorado */
+.btn-golden {
+    background-color: #b8860b;
+    border-color: #daa520;
+    color: #fff;
+}
+
+    .btn-golden:hover,
+    .btn-golden:focus {
+        background-color: #daa520;
+        border-color: #b8860b;
+        color: #fff;
+    }
+
+/* Estilos para componentes dentro de modales dorados */
+.modal-golden .form-control:focus {
+    border-color: #b8860b;
+    box-shadow: 0 0 0 0.2rem rgba(184, 134, 11, 0.25);
+}
+
+.modal-golden .nav-tabs .nav-link.active {
+    color: #b8860b;
+    border-bottom: 3px solid #b8860b;
+}
+
+.modal-golden .nav-tabs .nav-link:hover {
+    background-color: rgba(184, 134, 11, 0.1);
+}
+
+/* Contenedor de árbol con estilo dorado */
+.tree-container-golden {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 10px;
+    background-color: white;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Estilos para jstree en tema dorado */
+.jstree-golden .jstree-clicked {
+    background-color: #faf5e6 !important;
+    box-shadow: inset 0 0 1px #b8860b !important;
+    border-radius: 3px !important;
+}
+
+.jstree-golden .jstree-wholerow-hovered {
+    background: rgba(184, 134, 11, 0.1);
+}
+
+.jstree-golden .jstree-wholerow-clicked {
+    background: rgba(184, 134, 11, 0.2);
+}
+
+.jstree-golden .jstree-anchor {
+    padding-right: 10px !important;
+    line-height: 28px !important;
+    height: 28px !important;
+}
+
+/* Etiquetas y encabezados en modales dorados */
+.modal-golden h5,
+.modal-golden .h5,
+.modal-golden label.section-title {
+    color: #b8860b;
+    font-weight: 600;
+}
+
+.modal-golden label {
+    color: #495057;
+    font-weight: 500;
+}
+
+/* FIN ESTILO GOLDEN PARA MODAL*/
+
+/* ESTILO GOLDE PARA CARD */
+/* ====== Estilos para Cards con tema dorado ====== */
+.card-golden {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+    /* Encabezado con gradiente dorado */
+    .card-golden .card-header {
+        background: linear-gradient(135deg, #b8860b 0%, #daa520 100%);
+        color: #333;
+        border-bottom: none;
+        padding: 12px 16px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+    }
+
+        /* Iconos en el encabezado */
+        .card-golden .card-header i {
+            margin-right: 8px;
+            font-size: 1.1em;
+        }
+
+        /* Título del card */
+        .card-golden .card-header h5,
+        .card-golden .card-header h6 {
+            margin-bottom: 0;
+            font-weight: 600;
+            color: #333;
+            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.3);
+        }
+
+    /* Cuerpo del card */
+    .card-golden .card-body {
+        padding: 15px;
+        background-color: #fff;
+    }
+
+    /* Footer del card */
+    .card-golden .card-footer {
+        background-color: #faf5e6;
+        border-top: 1px solid #f5e7c1;
+        padding: 10px 16px;
+    }
+
+/* Variante con encabezado más sutil */
+.card-golden-subtle .card-header {
+    background: #faf5e6;
+    border-bottom: 2px solid #daa520;
+    color: #b8860b;
+}
+
+/* Variante con borde en lugar de sombra */
+.card-golden-bordered {
+    border: 1px solid #daa520;
+    box-shadow: none;
+}
+
+/* Variante con borde izquierdo destacado */
+.card-golden-accent {
+    border-left: 4px solid #b8860b;
+    border-radius: 0 8px 8px 0;
+}
+
+/* Estilos para tablas dentro de cards dorados */
+.card-golden .table thead th {
+    border-bottom-color: #daa520;
+    background-color: rgba(184, 134, 11, 0.05);
+}
+
+.card-golden .table-hover tbody tr:hover {
+    background-color: rgba(184, 134, 11, 0.03);
+}
+
+/* Variante con fondo completo para el encabezado */
+.card-golden-full .card-header {
+    background-color: #b8860b;
+    background-image: none;
+    color: #fff;
+    text-shadow: none;
+}
+
+    .card-golden-full .card-header h5,
+    .card-golden-full .card-header h6 {
+        color: #fff;
+        text-shadow: none;
+    }
+
+/* Estilos para badge y elementos destacados dentro de cards dorados */
+.card-golden .badge-golden {
+    background-color: #b8860b;
+    color: #fff;
+}
+
+/* Líneas divisorias con color dorado */
+.card-golden hr {
+    border-color: rgba(184, 134, 11, 0.2);
+}
+
+/* Variante oscura con texto claro */
+.card-golden-dark .card-header {
+    background: linear-gradient(135deg, #8b6508 0%, #b8860b 100%);
+    color: #fff;
+}
+
+    .card-golden-dark .card-header h5,
+    .card-golden-dark .card-header h6 {
+        color: #fff;
+        text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+    }
+
+/* FIN ESTILO GOLDEN PARA CARD*/
+
+/* ESTILO GOLDEN PARA GRID Y TABLA*/
+/* ====== Estilos para Grids con tema dorado ====== */
+.grid-golden {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    overflow: hidden;
+    background-color: #fff;
+}
+
+.grid-golden-header {
+    background: linear-gradient(135deg, #b8860b 0%, #daa520 100%);
+    color: #333;
+    padding: 12px 16px;
+    border-radius: 8px 8px 0 0;
+}
+
+    .grid-golden-header h5 {
+        color: #333;
+        font-weight: 600;
+        text-shadow: 0 1px 1px rgba(255, 255, 255, 0.3);
+    }
+
+    .grid-golden-header i {
+        font-size: 1.2em;
+    }
+
+.grid-golden-body {
+    padding: 0;
+    background-color: #fff;
+}
+
+.grid-golden-footer {
+    background-color: #faf5e6;
+    border-top: 1px solid #f5e7c1;
+    padding: 10px 16px;
+    border-radius: 0 0 8px 8px;
+}
+
+/* Estilos para tablas dentro de grid dorado */
+.table-golden {
+    border-collapse: collapse;
+    margin-bottom: 0;
+}
+
+    .table-golden thead {
+        background: linear-gradient(to bottom, #b8860b, #daa520);
+        color: #fff;
+    }
+
+    .table-golden th {
+        border-bottom: none;
+        font-weight: 600;
+        vertical-align: middle;
+        padding: 10px 8px;
+    }
+
+    .table-golden tbody tr:nth-child(odd) {
+        background-color: rgba(184, 134, 11, 0.03);
+    }
+
+    .table-golden tbody tr:hover {
+        background-color: rgba(184, 134, 11, 0.08);
+    }
+
+    /* Estilos para grupos y totales */
+    .table-golden .group-header {
+        background-color: #faf5e6;
+        color: #b8860b;
+        font-weight: bold;
+        border-top: 1px solid #f5e7c1;
+        border-bottom: 1px solid #f5e7c1;
+    }
+
+    .table-golden .group-footer {
+        background-color: #f8f6ef;
+        color: #8b6914;
+        border-top: 1px dashed #f0e4c3;
+        border-bottom: 1px dashed #f0e4c3;
+    }
+
+    .table-golden .total-general {
+        background-color: #f0e4c3;
+        color: #8b6914;
+        font-weight: bold;
+        border-top: 2px solid #daa520;
+    }
+
+    .table-golden .saldo-anterior {
+        background-color: #faf8f0;
+        font-style: italic;
+        color: #8b6914;
+        border-bottom: 1px dashed #f0e4c3;
+    }
+
+    /* Estilos alternos para filas */
+    .table-golden .alt {
+        background-color: rgba(218, 165, 32, 0.03);
+    }
+
+    /* Estilos para ordenación en columnas */
+    .table-golden th.sortable {
+        cursor: pointer;
+        position: relative;
+    }
+
+        .table-golden th.sortable:after {
+            content: '\25B4';
+            position: absolute;
+            right: 8px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .table-golden th.sortable.sorted-asc:after {
+            content: '\25B4';
+            color: white;
+        }
+
+        .table-golden th.sortable.sorted-desc:after {
+            content: '\25BE';
+            color: white;
+        }
+
+    /* Estilos específicos para importes financieros */
+    .table-golden .importe-positivo {
+        color: #28a745;
+    }
+
+    .table-golden .importe-negativo {
+        color: #dc3545;
+    }
+
+    .table-golden .importe-cero {
+        color: #6c757d;
+    }
+
+/* FIN ESTILO GOLDEN PARA GRID Y TABLA*/
+/* ESTILO GOLDEN PARA FILTROS */
+/* ====== Estilos para Filtros con tema dorado ====== */
+.filter-golden {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    overflow: hidden;
+    background-color: #fff;
+}
+
+.filter-golden-header {
+    background: linear-gradient(135deg, #b8860b 0%, #daa520 100%);
+    color: #333;
+    padding: 12px 16px;
+    border-radius: 8px 8px 0 0;
+}
+
+    .filter-golden-header h5 {
+        color: #333;
+        font-weight: 600;
+        margin-bottom: 0;
+        text-shadow: 0 1px 1px rgba(255, 255, 255, 0.3);
+        display: flex;
+        align-items: center;
+    }
+
+.filter-golden-body {
+    padding: 16px;
+    background-color: #fff;
+}
+
+.filter-golden-footer {
+    background-color: #faf5e6;
+    border-top: 1px solid #f5e7c1;
+    padding: 16px;
+    border-radius: 0 0 8px 8px;
+}
+
+/* Secciones de filtro individuales */
+.filter-section {
+    margin-bottom: 15px;
+    background-color: #fefcf7;
+    border-radius: 6px;
+    border: 1px solid #f5e7c1;
+}
+
+.filter-section-header {
+    background-color: #faf5e6;
+    padding: 8px 12px;
+    border-bottom: 1px solid #f5e7c1;
+    border-radius: 6px 6px 0 0;
+}
+
+.filter-section-body {
+    padding: 12px;
+}
+
+/* Estilo para form switches */
+.filter-golden .form-check-input:checked {
+    background-color: #b8860b;
+    border-color: #b8860b;
+}
+
+/* Estilos para los controles de formulario */
+.filter-golden .input-group-text {
+    background-color: #faf5e6;
+    border-color: #f5e7c1;
+    color: #8b6914;
+}
+
+.filter-golden .form-control:focus,
+.filter-golden .form-select:focus {
+    border-color: #daa520;
+    box-shadow: 0 0 0 0.2rem rgba(184, 134, 11, 0.25);
+}
+
+/* Estilo para inputs deshabilitados con fondos específicos */
+.filter-golden .golden-disabled {
+    background-color: #faf5e6 !important;
+    border-color: #f5e7c1 !important;
+    color: #b8860b !important;
+    opacity: 0.7;
+    font-style: italic;
+}
+
+/* FIN ESTILO */
 .content-editable-td-2 {
     text-align: right !important;
     padding: 0 !important;

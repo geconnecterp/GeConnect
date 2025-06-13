@@ -1,4 +1,5 @@
-﻿@model QueryAsiento
+﻿
+@model QueryAsiento
 @{
     bool esAsientoDefinitivo = ViewBag.EsAsientoDefinitivo ?? false;
     string moduloClass = esAsientoDefinitivo ? "modulo-definitivo" : "modulo-temporal";
@@ -19,74 +20,79 @@
             <div class="input-group input-group-sm">
                 <span class="input-group-text">Ejercicio</span>
                 @Html.DropDownList("Eje_nro", ViewBag.ListaEjercicios as SelectList,
-                         new
-                         {
-                             @class = "form-control inputEditable",                             
-                             style = "background-color:rgb(251,255,195);font-weight:900;"
-                         })
+                                           new
+                                           {
+                                               @class = "form-control inputEditable",                             
+                                               style = "background-color:rgb(251,255,195);font-weight:900;"
+                                           })
             </div>
         </div>
-
-        <!-- Asiento -->
-        <div class="col-md-6 col-sm-12">
-            <div class="input-group input-group-sm mb-1">
-                <div class="form-check form-check-inline form-switch">
-                    <input class="form-check-input" type="checkbox" id="Movi" />
-                    <label class="form-check-label" for="Movi">Asiento</label>
+        @if (Model.Modelo != ModeloFilter.LIBRO_MAYOR)
+        {
+            <!-- Asiento -->
+            <div class="col-md-6 col-sm-12">
+                <div class="input-group input-group-sm mb-1">
+                    <div class="form-check form-check-inline form-switch">
+                        <input class="form-check-input" type="checkbox" id="Movi" />
+                        <label class="form-check-label" for="Movi">Asiento</label>
+                    </div>
+                </div>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text">Nro Mov.</span>
+                    <input type="text" id="Movi_like" name="Mov_like" class="form-control inputEditable" disabled style="background-color:rgb(251,255,195);font-weight:900;" />
                 </div>
             </div>
-            <div class="input-group input-group-sm">
-                <span class="input-group-text">Nro Mov.</span>
-                <input type="text" id="Movi_like" name="Mov_like" class="form-control inputEditable" disabled style="background-color:rgb(251,255,195);font-weight:900;" />
-            </div>
-        </div>
+        }
     </div>
+    @if (Model.Modelo != ModeloFilter.LIBRO_MAYOR)
+    {
+        <div class="row mb-1">
+            <!-- Usuario -->
+            <div class="col-md-6 col-sm-12">
+                <div class="input-group input-group-sm mb-1">
+                    <div class="form-check form-check-inline form-switch">
+                        <input class="form-check-input" type="checkbox" id="Usu" />
+                        <label class="form-check-label" for="Usu">Usuario</label>
+                    </div>
+                </div>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text">Usuario</span>
+                    @Html.DropDownList("Usu_like", ViewBag.ListaUsuarios as SelectList,"Seleccionar...",
+                                      new
+                                      {
+                                          @class = "form-control inputEditable",
+                                          @disabled = "disabled",
+                                          style = "background-color:rgb(251,255,195);font-weight:900;"
+                                      })
+                </div>
 
-    <div class="row mb-1">
-        <!-- Usuario -->
-        <div class="col-md-6 col-sm-12">
-            <div class="input-group input-group-sm mb-1">
-                <div class="form-check form-check-inline form-switch">
-                    <input class="form-check-input" type="checkbox" id="Usu" />
-                    <label class="form-check-label" for="Usu">Usuario</label>
+            </div>
+
+            <!-- Tipo de Asiento -->
+            <div class="col-md-6 col-sm-12">
+                <div class="input-group input-group-sm mb-1">
+                    <div class="form-check form-check-inline form-switch">
+                        <input class="form-check-input" type="checkbox" id="Tipo" />
+                        <label class="form-check-label" for="Tipo">Tipo de Asiento</label>
+                    </div>
+                </div>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text">Tipo</span>
+                    @Html.DropDownList("Tipo_like", ViewBag.ListaTiposAsiento as SelectList, "Seleccionar...",
+                                      new
+                                      {
+                                          @class = "form-control inputEditable",
+                                          @disabled = "disabled",
+                                          style = "background-color:rgb(251,255,195);font-weight:900;"
+                                      })
                 </div>
             </div>
-            <div class="input-group input-group-sm">
-                <span class="input-group-text">Usuario</span>
-                @Html.DropDownList("Usu_like", ViewBag.ListaUsuarios as SelectList,"Seleccionar...",
-                         new
-                         {
-                             @class = "form-control inputEditable",
-                             @disabled = "disabled",
-                             style = "background-color:rgb(251,255,195);font-weight:900;"
-                         })
-            </div>
-
         </div>
-
-        <!-- Tipo de Asiento -->
-        <div class="col-md-6 col-sm-12">
-            <div class="input-group input-group-sm mb-1">
-                <div class="form-check form-check-inline form-switch">
-                    <input class="form-check-input" type="checkbox" id="Tipo" />
-                    <label class="form-check-label" for="Tipo">Tipo de Asiento</label>
-                </div>
-            </div>
-            <div class="input-group input-group-sm">
-                <span class="input-group-text">Tipo</span>
-                @Html.DropDownList("Tipo_like", ViewBag.ListaTiposAsiento as SelectList, "Seleccionar...",
-                         new
-                         {
-                             @class = "form-control inputEditable",
-                             @disabled = "disabled",
-                             style = "background-color:rgb(251,255,195);font-weight:900;"
-                         })
-            </div>
-        </div>
-    </div>
-
-    <div class="row mb-1">
-        <!-- Rango de Fechas -->
+    }
+    @if (Model.Modelo != ModeloFilter.LIBRO_MAYOR)
+    {
+        <div class="row mb-1">
+            <!-- Rango de Fechas -->
         <div class="col-sm-12">
             <div class="input-group input-group-sm mb-1">
                 <div class="form-check form-check-inline form-switch">
@@ -110,6 +116,7 @@
             </div>
         </div>
     </div>
+    }
 </fieldset>
 
 <div class="row mt-3">

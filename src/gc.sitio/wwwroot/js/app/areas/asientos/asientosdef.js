@@ -837,6 +837,9 @@ function ejecutarModificacionAsientoDef() {
 /**
  * Ejecuta la anulación de un asiento definitivo, verificando primero los permisos
  */
+/**
+ * Ejecuta la anulación de un asiento definitivo sin verificar la fecha
+ */
 function ejecutarAnulacionAsientoDef() {
     // Verificar que haya un asiento seleccionado
     if (!EntidadSelect) {
@@ -846,139 +849,26 @@ function ejecutarAnulacionAsientoDef() {
         return;
     }
 
-    // Mostrar indicador de espera mientras verificamos permisos
-    AbrirWaiting("Verificando permisos de anulación...");
+    // Se elimina la validación de fecha y se muestra directamente el diálogo de confirmación
+    AbrirMensaje(
+        "CONFIRMACIÓN",
+        "¿Está seguro que desea anular el asiento definitivo seleccionado?<br>Esta acción no se puede deshacer.",
+        function (resp) {
+            if (resp === "SI") {
+                accion = AbmAction.BAJA;
+                $("#divFiltro").collapse("hide");
+                accionBotones(accion);
 
-    // Verificar si el asiento es anulable (misma lógica que para modificación)
-    try {
-        // Obtener la fecha del asiento del DOM
-        const fechaStr = $("#Dia_fecha").val();
-        if (!fechaStr) {
-            CerrarWaiting();
-            ControlaMensajeError("No se pudo obtener la fecha del asiento para verificar permisos");
-            return;
-        }
-
-        // Intentar parsear la fecha en varios formatos
-        let fechaAsiento;
-
-        // Verificar si la fecha viene en formato DD/MM/YYYY
-        if (fechaStr.includes('/')) {
-            const partes = fechaStr.split('/');
-            if (partes.length === 3) {
-                fechaAsiento = new Date(
-                    parseInt(partes[2]), // año
-                    parseInt(partes[1]) - 1, // mes (0-11)
-                    parseInt(partes[0]) // día
-                );
+                // Desactivar explícitamente el botón de impresión
+                $("#btnImprimir").prop("disabled", true);
             }
-        }
-        // Si no tiene formato DD/MM/YYYY o el parsing falló, intentar con el constructor normal
-        if (!fechaAsiento || isNaN(fechaAsiento.getTime())) {
-            fechaAsiento = new Date(fechaStr);
-        }
-
-        // Verificar si la fecha es válida antes de continuar
-        if (isNaN(fechaAsiento.getTime())) {
-            CerrarWaiting();
-            ControlaMensajeError("Fecha de asiento inválida: " + fechaStr);
-            return;
-        }
-
-        // Ejercicio seleccionado
-        const ejercicioId = $("#Eje_nro").val() || "0";
-
-        // Crear objeto para enviar al servidor
-        const data = {
-            eje_nro: ejercicioId,
-            dia_fecha: fechaAsiento.toISOString()
-        };
-
-        // Verificar permisos en el servidor
-        $.ajax({
-            url: verificarFechaModificacionUrl, // Misma URL que para modificación
-            type: "POST",
-            contentType: "application/json",
-            data: JSON.stringify(data),
-            success: function (response) {
-                CerrarWaiting();
-
-                if (response.permitido === false) {
-                    // No se permite anular por fecha
-                    AbrirMensaje(
-                        "ATENCIÓN",
-                        response.mensaje || "Este asiento no puede ser anulado porque su fecha ha superado la fecha de control del ejercicio.",
-                        function () {
-                            $("#msjModal").modal("hide");
-                        },
-                        false,
-                        ["Aceptar"],
-                        "warn!",
-                        null
-                    );
-                } else {
-                    // Se permite anular - confirmar la anulación
-                    AbrirMensaje(
-                        "CONFIRMACIÓN",
-                        "¿Está seguro que desea anular el asiento definitivo seleccionado?<br>Esta acción no se puede deshacer.",
-                        function (resp) {
-                            if (resp === "SI") {
-                                accion = AbmAction.BAJA;
-                                $("#divFiltro").collapse("hide");
-                                accionBotones(accion);
-
-                                // No activar controles para edición en caso de anulación
-                                activarControles(false);
-                            }
-                            $("#msjModal").modal("hide");
-                        },
-                        true, // Mostrar botones SI/NO
-                        ["SI", "NO"],
-                        "warn!",
-                        null
-                    );
-                }
-            },
-            error: function (xhr, status, error) {
-                CerrarWaiting();
-                // Por defecto, mostrar un mensaje de error pero permitir continuar
-                AbrirMensaje(
-                    "ADVERTENCIA",
-                    "No se pudo verificar si el asiento es anulable. ¿Desea continuar de todos modos?",
-                    function (resp) {
-                        if (resp === "SI") {
-                            // Confirmar la anulación
-                            AbrirMensaje(
-                                "CONFIRMACIÓN",
-                                "¿Está seguro que desea anular el asiento definitivo seleccionado?<br>Esta acción no se puede deshacer.",
-                                function (resp2) {
-                                    if (resp2 === "SI") {
-                                        accion = AbmAction.BAJA;
-                                        $("#divFiltro").collapse("hide");
-                                        accionBotones(accion);
-                                        activarControles(false);
-                                    }
-                                    $("#msjModal").modal("hide");
-                                },
-                                true, // Mostrar botones SI/NO
-                                ["SI", "NO"],
-                                "warn!",
-                                null
-                            );
-                        }
-                        $("#msjModal").modal("hide");
-                    },
-                    true, // Mostrar botones SI/NO
-                    ["SI", "NO"],
-                    "warn!",
-                    null
-                );
-            }
-        });
-    } catch (error) {
-        CerrarWaiting();
-        ControlaMensajeError("Error al verificar permisos: " + error);
-    }
+            $("#msjModal").modal("hide");
+        },
+        true, // Mostrar botones SI/NO
+        ["SI", "NO"],
+        "warn!",
+        null
+    );
 }
 
 /**
@@ -1209,6 +1099,8 @@ function activarControles(act) {
 
         // Configurar máscaras y validaciones para campos editables
         configurarCamposEditables();
+        // LÓGICA CORREGIDA: Desactivar botón de impresión durante la edición
+        $("#btnImprimir").prop("disabled", true);
     } else {
         // Si desactivamos, quitamos los controles de edición
         $("#tbAsientoDetalle thead th:last-child").remove();
@@ -1225,6 +1117,8 @@ function activarControles(act) {
 
         // Ocultar botones de búsqueda de cuenta
         $("#tbAsientoDetalle tbody .btn-buscar-cuenta").hide();
+        // LÓGICA CORREGIDA: Activar botón de impresión al salir de modo edición
+        $("#btnImprimir").prop("disabled", false);
     }
 
     // Control de botones de acción del footer
@@ -1613,6 +1507,8 @@ function confirmarOperacionAsientoDef() {
                     // Operación exitosa
                     AbrirMensaje("ÉXITO", obj.msg || "Operación realizada con éxito.", function () {
                         $("#msjModal").modal("hide");
+                        // EXPLÍCITAMENTE reactivar el botón antes de inicializar la vista
+                        activarControles(false); // Esto reactiva el botón de impresión
                         InicializaVistaAsientos(); // Cierra el panel de edición y limpia la vista
                         // Refrescar la grilla
                         buscarAsientosDefs(1); // Llama a la función que recarga la grilla
@@ -1860,9 +1756,6 @@ function obtenerFechaFormateada(fecha) {
     }
 }
 
-
-
-
 /**
  * Inicializa la vista de asientos y configura los componentes
  * @param {any} e - Evento opcional
@@ -1886,6 +1779,8 @@ function InicializaVistaAsientos(e) {
         accionBotones(AbmAction.CANCEL);
         removerSeleccion();
         activarGrilla(Grids.GridAsiento);
+        // CORRECCIÓN: Asegurar que el botón de imprimir esté habilitado
+        $("#btnImprimir").prop("disabled", false);
 
         inicializaParametrosReporteAsientoDef();
 
@@ -1909,6 +1804,8 @@ function InicializaVistaAsientos(e) {
     accionBotones(AbmAction.CANCEL);
     removerSeleccion();
     activarGrilla(Grids.GridAsiento);
+    // CORRECCIÓN: Asegurar que el botón de imprimir esté habilitado
+    $("#btnImprimir").prop("disabled", false);
 
     inicializaParametrosReporteAsientoDef();
 

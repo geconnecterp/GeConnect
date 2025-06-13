@@ -20,6 +20,12 @@
         public List<AsientoLineaDto> Detalles { get; set; } = new List<AsientoLineaDto>();
     }
 
+    public class AsientoDetalleLDDto:AsientoDetalleDto
+    {
+        public int Total_registros { get; set; }
+        public int Total_paginas { get; set; }
+    }
+
     public class AsientoLineaDto
     {
         public string Dia_movi { get; set; } = string.Empty;
@@ -67,5 +73,30 @@
     {
         public List<string> asientosIds { get; set; } = new();
         public int eje_nro { get; set; }
+    }
+
+    public class AsientoPlanoLibroDiarioDto
+    {
+        public int Total_registros { get; set; }
+        public int Total_paginas { get; set; }
+        public int eje_nro { get; set; } = 0;
+        public string dia_movi { get; set; } = string.Empty;
+        public DateTime dia_fecha { get; set; }
+        public string dia_tipo { get; set; } = string.Empty;
+        public string dia_lista { get; set; } = string.Empty;
+        public string dia_desc_asiento { get; set; } = string.Empty;
+        public string usu_id { get; set; } = string.Empty;
+        public string usu_apellidoynombre { get; set; } = string.Empty;
+        public char dia_anulado { get; set; }
+        public int dia_nro { get; set; }
+        public string ccb_id { get; set; } = string.Empty;
+        public string ccb_desc { get; set; } = string.Empty;
+        public string dia_desc { get; set; } = string.Empty;
+        public string dia_compte { get; set; } = string.Empty;
+        public decimal debe { get; set; }
+        public decimal haber { get; set; }
+        public bool temporal { get; set; }
+        public decimal dia_debe { get; set; }
+        public decimal dia_haber { get; set; }
     }
 }

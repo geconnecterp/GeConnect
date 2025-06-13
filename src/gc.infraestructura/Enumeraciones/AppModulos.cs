@@ -5,6 +5,7 @@
         CCUENTAS, //CONSULTA DE CUENTAS COMERCIALES
         ASTEMP, //ASIENTOS TEMPORALES
         ASDEF, //ASIENTOS DEFINITIVOS
+        LMAYOR, //LIBRO MAYOR
     }
 
     public enum AppReportes
