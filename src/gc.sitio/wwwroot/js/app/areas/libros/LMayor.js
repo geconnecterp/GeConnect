@@ -88,7 +88,7 @@ function configurarBotones() {
     });
 
     // Botón de imprimir
-    $("#btnImprimir").on("click", function () {
+    $(document).on("click", ".btnImprimir", function () {
         imprimirReporte();
     });
 
@@ -239,6 +239,8 @@ function buscarLibroDiario() {
         Pag: 1,
         Orden: ""
     };
+    // Guardamos parámetros para el reporte
+    cargarReporteEnArre(13, data, "Libro Diario de cuenta", "Cuenta: " + data.ccb_desc, "");
 
     // Realizar petición POST para obtener los asientos del Libro Diario
     $.ajax({
@@ -278,7 +280,8 @@ function buscarMayorDiario() {
     // Ocultamos filtro inmediatamente
     $("#divFiltro").collapse("hide");
     $("#divDetalle").collapse("show");
-
+    //#12 //cargo los mismo parametros para el reporte #12 (12-1)
+    arrRepoParams[12 - 1] = arrRepoParams[11 - 1];
     // Realizar petición GET a la acción LMAcumuladoXDia
     $.ajax({
         url: obtenerMayorDiarioUrl,
@@ -421,6 +424,18 @@ function cargarDetalleDia(fecha) {
         </div>
     `);
     AbrirWaiting("Espere mientras se carga el detalle de asientos a observar.");
+
+    //aca debo cargar la fecha como un parametro mas entre los resguardados en el arreglo #12
+    var data = arrRepoParams[11]; //es el puntero del reporte 12 - 1
+
+    //agrego el parametro en data y lo debo volver a cargar en arrRepoParam[11]
+
+    data.parametros["rango"] = true;
+    data.parametros["desde"] = fecha;
+    data.parametros["hasta"] = fecha;
+
+    arrRepoParams[11] = data;
+
     // Realizar petición GET
     $.ajax({
         url: obtenerDetalleDiarioUrl,
@@ -801,7 +816,7 @@ function cargarArbolCuentasLMayor() {
             let jsonP = $.parseJSON(obj.arbol);
 
             // Procesamiento del árbol para asignar íconos y clases
-            procesarNodosArbol(jsonP);
+            procesarNodosArbolCuentas(jsonP);
 
             // Inicializar jsTree
             $('#cuentasTree').jstree({
@@ -840,7 +855,7 @@ function cargarArbolCuentasLMayor() {
  * Procesa los nodos del árbol para asignarles clases e íconos
  * @param {Array} nodos - Lista de nodos del árbol
  */
-function procesarNodosArbol(nodos) {
+function procesarNodosArbolCuentas(nodos) {
     nodos.forEach(nodo => {
         const tipo = nodo.data?.tipo;
         const cuenta = nodo.data?.cuenta?.toLowerCase();
@@ -859,7 +874,7 @@ function procesarNodosArbol(nodos) {
 
         // Procesar hijos recursivamente
         if (nodo.children && nodo.children.length > 0) {
-            procesarNodosArbol(nodo.children);
+            procesarNodosArbolCuentas(nodo.children);
         }
     });
 }
