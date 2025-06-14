@@ -5,119 +5,124 @@
     string moduloClass = esAsientoDefinitivo ? "modulo-definitivo" : "modulo-temporal";
 }
 
-<fieldset id="fsAsiento">
-    <legend><span>Filtros de Asientos</span></legend>
-
-    <div class="row mb-1">
-        <!-- Ejercicio -->
-        <div class="col-md-6 col-sm-12">
-            <div class="input-group input-group-sm mb-1">
-                <div class="form-check form-check-inline form-switch">
-                    <input class="form-check-input" type="checkbox" id="chkEjercicio"  checked disabled />
-                    <label class="form-check-label" for="chkEjercicio">Ejercicio</label>
-                </div>
-            </div>
-            <div class="input-group input-group-sm">
-                <span class="input-group-text">Ejercicio</span>
-                @Html.DropDownList("Eje_nro", ViewBag.ListaEjercicios as SelectList,
-                                           new
-                                           {
-                                               @class = "form-control inputEditable",                             
-                                               style = "background-color:rgb(251,255,195);font-weight:900;"
-                                           })
-            </div>
-        </div>
-        @if (Model.Modelo != ModeloFilter.LIBRO_MAYOR)
-        {
-            <!-- Asiento -->
+<div class="card card-golden">
+    <div class="card-header mb-2">
+        <h5 class="mb-0">Filtros de Asientos</h5>
+    </div>
+    <div class="card-body">
+        <div class="row mb-1">
+            <!-- Ejercicio -->
             <div class="col-md-6 col-sm-12">
                 <div class="input-group input-group-sm mb-1">
                     <div class="form-check form-check-inline form-switch">
-                        <input class="form-check-input" type="checkbox" id="Movi" />
-                        <label class="form-check-label" for="Movi">Asiento</label>
+                        <input class="form-check-input" type="checkbox" id="chkEjercicio" checked disabled />
+                        <label class="form-check-label" for="chkEjercicio">Ejercicio</label>
                     </div>
                 </div>
                 <div class="input-group input-group-sm">
-                    <span class="input-group-text">Nro Mov.</span>
-                    <input type="text" id="Movi_like" name="Mov_like" class="form-control inputEditable" disabled style="background-color:rgb(251,255,195);font-weight:900;" />
+                    <span class="input-group-text">Ejercicio</span>
+                    @Html.DropDownList("Eje_nro", ViewBag.ListaEjercicios as SelectList,
+                             new
+                             {
+                                 @class = "form-control inputEditable",
+                                 style = "background-color:rgb(251,255,195);font-weight:900;"
+                             })
+                </div>
+            </div>
+            @if (Model.Modelo != ModeloFilter.LIBRO_MAYOR)
+            {
+                <!-- Asiento -->
+                <div class="col-md-6 col-sm-12">
+                    <div class="input-group input-group-sm mb-1">
+                        <div class="form-check form-check-inline form-switch">
+                            <input class="form-check-input" type="checkbox" id="Movi" />
+                            <label class="form-check-label" for="Movi">Asiento</label>
+                        </div>
+                    </div>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text">Nro Mov.</span>
+                        <input type="text" id="Movi_like" name="Mov_like" class="form-control inputEditable" disabled style="background-color:rgb(251,255,195);font-weight:900;" />
+                    </div>
+                </div>
+            }
+        </div>
+        @if (Model.Modelo != ModeloFilter.LIBRO_MAYOR)
+        {
+            <div class="row mb-1">
+                <!-- Usuario -->
+                <div class="col-md-6 col-sm-12">
+                    <div class="input-group input-group-sm mb-1">
+                        <div class="form-check form-check-inline form-switch">
+                            <input class="form-check-input" type="checkbox" id="Usu" />
+                            <label class="form-check-label" for="Usu">Usuario</label>
+                        </div>
+                    </div>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text">Usuario</span>
+                        @Html.DropDownList("Usu_like", ViewBag.ListaUsuarios as SelectList, "Seleccionar...",
+                                 new
+                                 {
+                                     @class = "form-control inputEditable",
+                                     @disabled = "disabled",
+                                     style = "background-color:rgb(251,255,195);font-weight:900;"
+                                 })
+                    </div>
+
+                </div>
+
+                <!-- Tipo de Asiento -->
+                <div class="col-md-6 col-sm-12">
+                    <div class="input-group input-group-sm mb-1">
+                        <div class="form-check form-check-inline form-switch">
+                            <input class="form-check-input" type="checkbox" id="Tipo" />
+                            <label class="form-check-label" for="Tipo">Tipo de Asiento</label>
+                        </div>
+                    </div>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text">Tipo</span>
+                        @Html.DropDownList("Tipo_like", ViewBag.ListaTiposAsiento as SelectList, "Seleccionar...",
+                                 new
+                                 {
+                                     @class = "form-control inputEditable",
+                                     @disabled = "disabled",
+                                     style = "background-color:rgb(251,255,195);font-weight:900;"
+                                 })
+                    </div>
+                </div>
+            </div>
+        }
+        @if (Model.Modelo != ModeloFilter.LIBRO_MAYOR)
+        {
+            <div class="row mb-1">
+                <!-- Rango de Fechas -->
+                <div class="col-sm-12">
+                    <div class="input-group input-group-sm mb-1">
+                        <div class="form-check form-check-inline form-switch">
+                            <input class="form-check-input" type="checkbox" id="Rango" />
+                            <label class="form-check-label" for="Rango">Rango de Fechas</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text">Desde</span>
+                                <input type="date" name="Desde" class="form-control inputEditable" disabled style="background-color:rgb(251,255,195);font-weight:900;" />
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text">Hasta</span>
+                                <input type="date" name="Hasta" class="form-control inputEditable" disabled style="background-color:rgb(251,255,195);font-weight:900;" />
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         }
     </div>
-    @if (Model.Modelo != ModeloFilter.LIBRO_MAYOR)
-    {
-        <div class="row mb-1">
-            <!-- Usuario -->
-            <div class="col-md-6 col-sm-12">
-                <div class="input-group input-group-sm mb-1">
-                    <div class="form-check form-check-inline form-switch">
-                        <input class="form-check-input" type="checkbox" id="Usu" />
-                        <label class="form-check-label" for="Usu">Usuario</label>
-                    </div>
-                </div>
-                <div class="input-group input-group-sm">
-                    <span class="input-group-text">Usuario</span>
-                    @Html.DropDownList("Usu_like", ViewBag.ListaUsuarios as SelectList,"Seleccionar...",
-                                      new
-                                      {
-                                          @class = "form-control inputEditable",
-                                          @disabled = "disabled",
-                                          style = "background-color:rgb(251,255,195);font-weight:900;"
-                                      })
-                </div>
 
-            </div>
-
-            <!-- Tipo de Asiento -->
-            <div class="col-md-6 col-sm-12">
-                <div class="input-group input-group-sm mb-1">
-                    <div class="form-check form-check-inline form-switch">
-                        <input class="form-check-input" type="checkbox" id="Tipo" />
-                        <label class="form-check-label" for="Tipo">Tipo de Asiento</label>
-                    </div>
-                </div>
-                <div class="input-group input-group-sm">
-                    <span class="input-group-text">Tipo</span>
-                    @Html.DropDownList("Tipo_like", ViewBag.ListaTiposAsiento as SelectList, "Seleccionar...",
-                                      new
-                                      {
-                                          @class = "form-control inputEditable",
-                                          @disabled = "disabled",
-                                          style = "background-color:rgb(251,255,195);font-weight:900;"
-                                      })
-                </div>
-            </div>
-        </div>
-    }
-    @if (Model.Modelo != ModeloFilter.LIBRO_MAYOR)
-    {
-        <div class="row mb-1">
-            <!-- Rango de Fechas -->
-        <div class="col-sm-12">
-            <div class="input-group input-group-sm mb-1">
-                <div class="form-check form-check-inline form-switch">
-                    <input class="form-check-input" type="checkbox" id="Rango" />
-                    <label class="form-check-label" for="Rango">Rango de Fechas</label>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-sm-6">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text">Desde</span>
-                        <input type="date" name="Desde" class="form-control inputEditable" disabled style="background-color:rgb(251,255,195);font-weight:900;" />
-                    </div>
-                </div>
-                <div class="col-sm-6">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text">Hasta</span>
-                        <input type="date" name="Hasta" class="form-control inputEditable" disabled style="background-color:rgb(251,255,195);font-weight:900;" />
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    }
-</fieldset>
+ 
+</div>
 
 <div class="row mt-3">
     <div class="d-flex justify-content-around">

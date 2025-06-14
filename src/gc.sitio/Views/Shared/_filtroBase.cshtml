@@ -1,307 +1,316 @@
 ﻿@using static gc.infraestructura.Constantes.Constantes
 @model QueryFilters
 @{
-	var titulo = Model.TituloLeyend;
+    var titulo = Model.TituloLeyend;
 }
 @* <form id="frmFiltro" asp-action="index" asp-controller="abmproducto" asp-area="abms" method="get"> *@
-@if (Model.Rel01 != null && Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA))
-{
-	<div class="row  mb-1 mt-1">
-		<div class=" col-md-6 col-sm-12">
-			<div class="input-group input-group-sm">
-				<div class="form-check form-check-inline form-switch mb-2">
-					<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkRel01" />
-					<label class="form-check-label" for="chkRel01" id="lbRel01"></label>
-				</div>
-			</div>
-			<div class="input-group  input-group-sm">
-				<span class="input-group-text">Nombre</span>
-				<input type="text" class="form-control inputEditable" name="Rel01" id="Rel01" disabled />
-				@Html.Hidden("Rel01Item")
-			</div>
-		</div>
-		<div class=" col-sm-6" id="divLstOcPendiente">
-		</div>
-	</div>
-}
 
-<fieldset id="fs">
-	<legend>
-		<span id="tituloLegend"></span>
-	</legend>
-	@*AGREGAR SECCION FECHA*@
-	@if (Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA))
-	{
-		<div class=" col-sm-8">
-			<div class="row">
-				<div class="input-group input-group-sm">
-					<div class="form-check form-check-inline form-switch mb-2">
-						<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkDesdeHasta" />
-						<label class="form-check-label" for="chkDesdeHasta" id="lbChkDesdeHasta"></label>
-					</div>
-				</div>
-				<div class=" col-sm-6">
-					<div class="input-group input-group-sm">
-						<span class="input-group-text" id="lbIdDesde">Desde:</span>
-						<input type="date" class="form-control inputEditable" asp-for="Date1" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />
-					</div>
-				</div>
-				<div class=" col-sm-6">
-					<div class="input-group input-group-sm">
-						<span class="input-group-text" id="lbIdHasta">Hasta:</span>
-						<input type="date" class="form-control inputEditable" asp-for="Date2" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />
-					</div>
-				</div>
-			</div>
-		</div>
-	}
-	@if (!Model.Modelo.Equals(ModeloFilter.CONSULTAS) && !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA) && !Model.Modelo.Equals(ModeloFilter.COMPROBANTE_DE_COMPRA) && !Model.Modelo.Equals(ModeloFilter.VALORIZACION_COMPROBANTE) && !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_A_PROVEEDORES))
-	{
-		<div class="row  mb-1 mt-1">
-			<div class=" col-md-4 col-sm-12">
-				<div class="input-group input-group-sm">
-					<div class="form-check form-check-inline form-switch mb-2">
-						<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkDescr" />
-						<label class="form-check-label" for="chkDescr" id="lbChkDescr"></label>
-					</div>
-				</div>
-				<div class="input-group input-group-sm">
-					<span class="input-group-text" id="lbDescr">Descr:</span>
-					<input type="text" class="form-control inputEditable" asp-for="Buscar" placeholder="Ingresar descripción a buscar" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />
-				</div>
-			</div>
-			<div class=" col-sm-8">
-				<div class="row">
-					<div class="input-group input-group-sm">
-						<div class="form-check form-check-inline form-switch mb-2">
-							<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkDesdeHasta" />
-							<label class="form-check-label" for="chkDesdeHasta" id="lbChkDesdeHasta"></label>
-						</div>
-					</div>
-					<div class=" col-sm-6">
-						<div class="input-group input-group-sm">
-							<span class="input-group-text" id="lbIdDesde">Id Desde:</span>
-							<input type="text" class="form-control inputEditable" asp-for="Id" placeholder="Ingresar Id a buscar" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />
-						</div>
-					</div>
-					<div class=" col-sm-6">
-						<div class="input-group input-group-sm">
-							<span class="input-group-text" id="lbIdHasta">Id Hasta:</span>
-							<input type="text" class="form-control inputEditable" asp-for="Id2" placeholder="Ingresar otro Id (no obligatorio)" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	}
-	@if (Model.Modelo.Equals(ModeloFilter.PLAN_CUENTA))
-	{
-		var list = new List<ComboGenDto> {
-	new ComboGenDto { Id = "%", Descripcion = "TODOS" },
-	new ComboGenDto { Id = "1", Descripcion = "ACTIVO" },
-	new ComboGenDto { Id = "2", Descripcion = "PASIVO" },
-	new ComboGenDto { Id = "3", Descripcion = "PATRIMONIO" },
-	new ComboGenDto { Id = "4", Descripcion = "INGRESOS" },
-	new ComboGenDto { Id = "5", Descripcion = "EGRESOS" },
-	};
-		var tipo = new SelectList(list, "Id", "Descripcion");
-		<div class="row">
-			<div class="col-sm-2">
-				<div class="input-group input-group-sm">
-					<div class="form-check form-check-inline form-switch mb-2">
-						<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkTipo" checked />
-						<label class="form-check-label" for="chkTipo" id="lbTipo"></label>
-					</div>
-				</div>
-			</div>
-		</div>
-		<div class="row">
-			<div class=" col-sm-4">
-				<div class="input-group input-group-sm">
-					<span class="input-group-text">Activo</span>
-					@Html.DropDownListFor(x => x.Tipo, @tipo, new { @class = "form-control", style = "width:50px;" })
-				</div>
-			</div>
-		</div>
-	}
-	<!---------------------------BUSQUEDA DE PROVEEDORES------------------------------------>
-	@if (Model.Rel01 != null && !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA) && !Model.Modelo.Equals(ModeloFilter.VALORIZACION_COMPROBANTE))
-	{
-		<div class="row">
-			<div class="col-sm-6">
-				<div class="input-group input-group-sm">
-					<div class="form-check form-check-inline form-switch mb-2">
-						<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkRel01" />
-						<label class="form-check-label" for="chkRel01" id="lbRel01"></label>
-					</div>
-				</div>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col-sm-6">
-				<div class="input-group  input-group-sm">
-					<span class="input-group-text">Nombre</span>
-					<input type="text" class="form-control inputEditable" name="Rel01" id="Rel01" disabled />
-					@Html.Hidden("Rel01Item")
-				</div>
-			</div>
-			<div class="col-sm-6">
-				@Html.ListBox("Rel01List", null, new { @class = "form-control", @disabled = "disabled" })
-				@* @Html.ListBoxFor(p => p.Rel01, Model.Rel01.Select(X => new SelectListItem { Text = X.Descripcion, Value = X.Id }), new { @class = "form-control", @disabled = "disabled" }) *@
-			</div>
-		</div>
-	}
-	@if (Model.Rel01 != null && (Model.Modelo.Equals(ModeloFilter.VALORIZACION_COMPROBANTE)))
-	{
-		<div class="row  mb-1 mt-1">
-			<div class=" col-md-6 col-sm-12">
-				<div class="input-group input-group-sm">
-					<div class="form-check form-check-inline form-switch mb-2">
-						<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkRel01" />
-						<label class="form-check-label" for="chkRel01" id="lbRel01"></label>
-					</div>
-				</div>
-				<div class="input-group  input-group-sm">
-					<span class="input-group-text">Nombre</span>
-					<input type="text" class="form-control inputEditable" name="Rel01" id="Rel01" disabled />
-					@Html.Hidden("Rel01Item")
-				</div>
-			</div>
-			<div class=" col-sm-6" id="divLstComptesPendiente">
-			</div>
-		</div>
-	}
-	<!---------------------------FIN BUSQUEDA DE PROVEEDORES------------------------------------>
-	<!---------------------------BUSQUEDA DE RUBROS------------------------------------>
-	@if (Model.Rel03 != null)
-	{
-		<div class="row">
-			<div class="col-sm-6">
-				<div class="input-group input-group-sm">
-					<div class="form-check form-check-inline form-switch mb-2">
-						<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkRel03" />
-						<label class="form-check-label" for="chkRel03" id="lbRel03"></label>
-					</div>
-				</div>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col-sm-6">
-				<div class="input-group input-group-sm">
-					<span class="input-group-text" id="lbNombreRel03">Nombre</span>
-					<input type="text" class="form-control inputEditable" name="Rel03" id="Rel03" disabled />
-					@Html.Hidden("Rel03Item")
-				</div>
-			</div>
-			<div class="col-sm-6">
-				@Html.ListBox("Rel03List", null, new { @class = "form-control", @disabled = "disabled" })
-			</div>
-		</div>
-	}
-	<!---------------------------FIN BUSQUEDA DE RUBROS------------------------------------>
-	<!---------------------------BUSQUEDA DE RUBROS------------------------------------>
-	@if (Model.Rel02 != null)
-	{
-		<div class="row">
-			<div class="col-sm-6">
-				<div class="input-group input-group-sm">
-					<div class="form-check form-check-inline form-switch mb-2">
-						<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkRel02" />
-						<label class="form-check-label" for="chkRel02" id="lbRel02"></label>
-					</div>
-				</div>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col-sm-6">
-				<div class="input-group input-group-sm">
-					<span class="input-group-text" id="lbNombreRel02">Nombre</span>
-					<input type="text" class="form-control inputEditable" name="Rel02" id="Rel02" disabled />
-					@Html.Hidden("Rel02Item")
-				</div>
-			</div>
-			<div class="col-sm-6">
-				@Html.ListBox("Rel02List", null, new { @class = "form-control", @disabled = "disabled" })
-			</div>
-		</div>
-	}
-	<!---------------------------FIN BUSQUEDA DE RUBROS------------------------------------>
-	@if (Model.Modelo.Equals(ModeloFilter.NECESIDADES_COMPRA) || Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA))
-	{
-		<div class=" col-sm-12">
-			<div class="row">
-				@if (Model.Opt1 != null)
-				{
-					<div class=" col-sm-2">
-						<div class="input-group input-group-sm">
-							<div class="form-check form-check-inline form-switch mb-2">
-								<input class="form-check-input" type="checkbox" name="chk01" id="chk01" />
-								<label class="form-check-label" for="chk01" id="lbchk01"></label>
-							</div>
-						</div>
-					</div>
-				}
-				@if (Model.Opt2 != null)
-				{
-					<div class=" col-sm-2">
-						<div class="input-group input-group-sm">
-							<div class="form-check form-check-inline form-switch mb-2">
-								<input class="form-check-input" type="checkbox" name="chk02" id="chk02" />
-								<label class="form-check-label" for="chk02" id="lbchk02"></label>
-							</div>
-						</div>
-					</div>
-				}
-				@if (Model.Opt3 != null)
-				{
-					<div class=" col-sm-2">
-						<div class="input-group input-group-sm">
-							<div class="form-check form-check-inline form-switch mb-2">
-								<input class="form-check-input" type="checkbox" name="chk03" id="chk03" />
-								<label class="form-check-label" for="chk03" id="lbchk03"></label>
-							</div>
-						</div>
-					</div>
-				}
-				@if (Model.Opt4 != null)
-				{
-					<div class=" col-sm-2">
-						<div class="input-group input-group-sm">
-							<div class="form-check form-check-inline form-switch mb-2">
-								<input class="form-check-input" type="checkbox" name="chk04" id="chk04" />
-								<label class="form-check-label" for="chk04" id="lbchk04"></label>
-							</div>
-						</div>
-					</div>
-				}
-				@if (Model.Opt5 != null)
-				{
-					<div class=" col-sm-2">
-						<div class="input-group input-group-sm">
-							<div class="form-check form-check-inline form-switch mb-2">
-								<input class="form-check-input" type="checkbox" name="chk05" id="chk05" />
-								<label class="form-check-label" for="chk05" id="lbchk05"></label>
-							</div>
-						</div>
-					</div>
-				}
-			</div>
-		</div>
 
-		@if (Model.Opt1 != null)
-		{
-		}
-	}
-</fieldset>
+<div class="card card-golden">
+    <div class="card-header mb-2">
+        <h5 class="mb-0" id="tituloLegend">Filtros </h5>
+    </div>
+    <div class="card-body">
+
+        @if (Model.Rel01 != null && Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA))
+        {
+            <div class="row  mb-1 mt-1">
+                <div class=" col-md-6 col-sm-12">
+                    <div class="input-group input-group-sm">
+                        <div class="form-check form-check-inline form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkRel01" />
+                            <label class="form-check-label" for="chkRel01" id="lbRel01"></label>
+                        </div>
+                    </div>
+                    <div class="input-group  input-group-sm">
+                        <span class="input-group-text">Nombre</span>
+                        <input type="text" class="form-control inputEditable" name="Rel01" id="Rel01" disabled />
+                        @Html.Hidden("Rel01Item")
+                    </div>
+                </div>
+                <div class=" col-sm-6" id="divLstOcPendiente">
+                </div>
+            </div>
+        }
+
+
+        @*AGREGAR SECCION FECHA*@
+
+        @if (Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA))
+        {
+            <div class=" col-sm-8">
+                <div class="row">
+                    <div class="input-group input-group-sm">
+                        <div class="form-check form-check-inline form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkDesdeHasta" />
+                            <label class="form-check-label" for="chkDesdeHasta" id="lbChkDesdeHasta"></label>
+                        </div>
+                    </div>
+                    <div class=" col-sm-6">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text" id="lbIdDesde">Desde:</span>
+                            <input type="date" class="form-control inputEditable" asp-for="Date1" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />
+                        </div>
+                    </div>
+                    <div class=" col-sm-6">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text" id="lbIdHasta">Hasta:</span>
+                            <input type="date" class="form-control inputEditable" asp-for="Date2" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        @if (!Model.Modelo.Equals(ModeloFilter.CONSULTAS) && !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA) && !Model.Modelo.Equals(ModeloFilter.COMPROBANTE_DE_COMPRA) && !Model.Modelo.Equals(ModeloFilter.VALORIZACION_COMPROBANTE) && !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_A_PROVEEDORES))
+        {
+            <div class="row  mb-1 mt-1">
+                <div class=" col-md-4 col-sm-12">
+                    <div class="input-group input-group-sm">
+                        <div class="form-check form-check-inline form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkDescr" />
+                            <label class="form-check-label" for="chkDescr" id="lbChkDescr"></label>
+                        </div>
+                    </div>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text" id="lbDescr">Descr:</span>
+                        <input type="text" class="form-control inputEditable" asp-for="Buscar" placeholder="Ingresar descripción a buscar" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />
+                    </div>
+                </div>
+                <div class=" col-sm-8">
+                    <div class="row">
+                        <div class="input-group input-group-sm">
+                            <div class="form-check form-check-inline form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkDesdeHasta" />
+                                <label class="form-check-label" for="chkDesdeHasta" id="lbChkDesdeHasta"></label>
+                            </div>
+                        </div>
+                        <div class=" col-sm-6">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text" id="lbIdDesde">Id Desde:</span>
+                                <input type="text" class="form-control inputEditable" asp-for="Id" placeholder="Ingresar Id a buscar" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />
+                            </div>
+                        </div>
+                        <div class=" col-sm-6">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text" id="lbIdHasta">Id Hasta:</span>
+                                <input type="text" class="form-control inputEditable" asp-for="Id2" placeholder="Ingresar otro Id (no obligatorio)" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        @if (Model.Modelo.Equals(ModeloFilter.PLAN_CUENTA))
+        {
+            var list = new List<ComboGenDto> {
+        new ComboGenDto { Id = "%", Descripcion = "TODOS" },
+        new ComboGenDto { Id = "1", Descripcion = "ACTIVO" },
+        new ComboGenDto { Id = "2", Descripcion = "PASIVO" },
+        new ComboGenDto { Id = "3", Descripcion = "PATRIMONIO" },
+        new ComboGenDto { Id = "4", Descripcion = "INGRESOS" },
+        new ComboGenDto { Id = "5", Descripcion = "EGRESOS" },
+        };
+            var tipo = new SelectList(list, "Id", "Descripcion");
+            <div class="row">
+                <div class="col-sm-2">
+                    <div class="input-group input-group-sm">
+                        <div class="form-check form-check-inline form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkTipo" checked />
+                            <label class="form-check-label" for="chkTipo" id="lbTipo"></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class=" col-sm-4">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text">Activo</span>
+                        @Html.DropDownListFor(x => x.Tipo, @tipo, new { @class = "form-control", style = "width:50px;" })
+                    </div>
+                </div>
+            </div>
+        }
+        <!---------------------------BUSQUEDA DE PROVEEDORES------------------------------------>
+        @if (Model.Rel01 != null && !Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA) && !Model.Modelo.Equals(ModeloFilter.VALORIZACION_COMPROBANTE))
+        {
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="input-group input-group-sm">
+                        <div class="form-check form-check-inline form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkRel01" />
+                            <label class="form-check-label" for="chkRel01" id="lbRel01"></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="input-group  input-group-sm">
+                        <span class="input-group-text">Nombre</span>
+                        <input type="text" class="form-control inputEditable" name="Rel01" id="Rel01" disabled />
+                        @Html.Hidden("Rel01Item")
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    @Html.ListBox("Rel01List", null, new { @class = "form-control", @disabled = "disabled" })
+                    @* @Html.ListBoxFor(p => p.Rel01, Model.Rel01.Select(X => new SelectListItem { Text = X.Descripcion, Value = X.Id }), new { @class = "form-control", @disabled = "disabled" }) *@
+                </div>
+            </div>
+        }
+        @if (Model.Rel01 != null && (Model.Modelo.Equals(ModeloFilter.VALORIZACION_COMPROBANTE)))
+        {
+            <div class="row  mb-1 mt-1">
+                <div class=" col-md-6 col-sm-12">
+                    <div class="input-group input-group-sm">
+                        <div class="form-check form-check-inline form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkRel01" />
+                            <label class="form-check-label" for="chkRel01" id="lbRel01"></label>
+                        </div>
+                    </div>
+                    <div class="input-group  input-group-sm">
+                        <span class="input-group-text">Nombre</span>
+                        <input type="text" class="form-control inputEditable" name="Rel01" id="Rel01" disabled />
+                        @Html.Hidden("Rel01Item")
+                    </div>
+                </div>
+                <div class=" col-sm-6" id="divLstComptesPendiente">
+                </div>
+            </div>
+        }
+        <!---------------------------FIN BUSQUEDA DE PROVEEDORES------------------------------------>
+        <!---------------------------BUSQUEDA DE RUBROS------------------------------------>
+        @if (Model.Rel03 != null)
+        {
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="input-group input-group-sm">
+                        <div class="form-check form-check-inline form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkRel03" />
+                            <label class="form-check-label" for="chkRel03" id="lbRel03"></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text" id="lbNombreRel03">Nombre</span>
+                        <input type="text" class="form-control inputEditable" name="Rel03" id="Rel03" disabled />
+                        @Html.Hidden("Rel03Item")
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    @Html.ListBox("Rel03List", null, new { @class = "form-control", @disabled = "disabled" })
+                </div>
+            </div>
+        }
+        <!---------------------------FIN BUSQUEDA DE RUBROS------------------------------------>
+        <!---------------------------BUSQUEDA DE RUBROS------------------------------------>
+        @if (Model.Rel02 != null)
+        {
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="input-group input-group-sm">
+                        <div class="form-check form-check-inline form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkRel02" />
+                            <label class="form-check-label" for="chkRel02" id="lbRel02"></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text" id="lbNombreRel02">Nombre</span>
+                        <input type="text" class="form-control inputEditable" name="Rel02" id="Rel02" disabled />
+                        @Html.Hidden("Rel02Item")
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    @Html.ListBox("Rel02List", null, new { @class = "form-control", @disabled = "disabled" })
+                </div>
+            </div>
+        }
+        <!---------------------------FIN BUSQUEDA DE RUBROS------------------------------------>
+        @if (Model.Modelo.Equals(ModeloFilter.NECESIDADES_COMPRA) || Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA))
+        {
+            <div class=" col-sm-12">
+                <div class="row">
+                    @if (Model.Opt1 != null)
+                    {
+                        <div class=" col-sm-2">
+                            <div class="input-group input-group-sm">
+                                <div class="form-check form-check-inline form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" name="chk01" id="chk01" />
+                                    <label class="form-check-label" for="chk01" id="lbchk01"></label>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @if (Model.Opt2 != null)
+                    {
+                        <div class=" col-sm-2">
+                            <div class="input-group input-group-sm">
+                                <div class="form-check form-check-inline form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" name="chk02" id="chk02" />
+                                    <label class="form-check-label" for="chk02" id="lbchk02"></label>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @if (Model.Opt3 != null)
+                    {
+                        <div class=" col-sm-2">
+                            <div class="input-group input-group-sm">
+                                <div class="form-check form-check-inline form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" name="chk03" id="chk03" />
+                                    <label class="form-check-label" for="chk03" id="lbchk03"></label>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @if (Model.Opt4 != null)
+                    {
+                        <div class=" col-sm-2">
+                            <div class="input-group input-group-sm">
+                                <div class="form-check form-check-inline form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" name="chk04" id="chk04" />
+                                    <label class="form-check-label" for="chk04" id="lbchk04"></label>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @if (Model.Opt5 != null)
+                    {
+                        <div class=" col-sm-2">
+                            <div class="input-group input-group-sm">
+                                <div class="form-check form-check-inline form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" name="chk05" id="chk05" />
+                                    <label class="form-check-label" for="chk05" id="lbchk05"></label>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @if (Model.Opt1 != null)
+            {
+            }
+        }
+
+
+    </div>
+</div>
 
 <div class="row m-3">
-	<div class="d-flex justify-content-around">
-		<button type="button" id="btnCancel" class="btn btn-sm btn-danger"><i class="bx bx-sm bx-x-circle"></i></button>
-		@if (Model.Modelo != ModeloFilter.CONSULTAS)
-		{
-			<button type="button" id="btnBuscar" class="btn btn-sm btn-success"><i class="bx bx-sm bx-search"></i></button>
-		}
-	</div>
+    <div class="d-flex justify-content-around">
+        <button type="button" id="btnCancel" class="btn btn-sm btn-danger"><i class="bx bx-sm bx-x-circle"></i></button>
+        @if (Model.Modelo != ModeloFilter.CONSULTAS)
+        {
+            <button type="button" id="btnBuscar" class="btn btn-sm btn-success"><i class="bx bx-sm bx-search"></i></button>
+        }
+    </div>
 </div>
 @* </form> *@
 
