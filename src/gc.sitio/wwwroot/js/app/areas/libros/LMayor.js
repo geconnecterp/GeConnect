@@ -240,7 +240,7 @@ function buscarLibroDiario() {
         Orden: ""
     };
     // Guardamos parámetros para el reporte
-    cargarReporteEnArre(13, data, "Libro Diario de cuenta", "Cuenta: " + data.ccb_desc, "");
+    cargarReporteEnArre(13, data, "Libro Diario de cuenta", "", "");
 
     // Realizar petición POST para obtener los asientos del Libro Diario
     $.ajax({
@@ -280,8 +280,7 @@ function buscarMayorDiario() {
     // Ocultamos filtro inmediatamente
     $("#divFiltro").collapse("hide");
     $("#divDetalle").collapse("show");
-    //#12 //cargo los mismo parametros para el reporte #12 (12-1)
-    arrRepoParams[12 - 1] = arrRepoParams[11 - 1];
+    
     // Realizar petición GET a la acción LMAcumuladoXDia
     $.ajax({
         url: obtenerMayorDiarioUrl,
@@ -425,6 +424,8 @@ function cargarDetalleDia(fecha) {
     `);
     AbrirWaiting("Espere mientras se carga el detalle de asientos a observar.");
 
+    //copio parametros del reporte 11 al reporte 12
+    arrRepoParams[12 - 1] = arrRepoParams[11 - 1]; //pongo explicitamente 11-1 y no 10 para recordar que es el reporte 11 y 12 
     //aca debo cargar la fecha como un parametro mas entre los resguardados en el arreglo #12
     var data = arrRepoParams[11]; //es el puntero del reporte 12 - 1
 
@@ -433,8 +434,11 @@ function cargarDetalleDia(fecha) {
     data.parametros["rango"] = true;
     data.parametros["desde"] = fecha;
     data.parametros["hasta"] = fecha;
+    data.reporte = 12; //especificamos el reporte como 12 ya que lo copiamos del reporte 11
 
     arrRepoParams[11] = data;
+
+    limpiarLibroDiario();
 
     // Realizar petición GET
     $.ajax({
@@ -1141,6 +1145,7 @@ function obtenerParametrosBusqueda() {
         eje_nro: $("#Eje_nro").val(),
         ccb_id: $("#cuentaId").val(),
         ccb_desc: $("#cuentaDesc").val(),
+        subTitulo: `Cuenta: ${$("#cuentaId").val()} ${$("#cuentaDesc").val()}`,
         incluirTemporales: $("#chkIncluirTemp").is(":checked"),
         rango: $("#Rango").is(":checked"),
         desde: $("#Rango").is(":checked") ? $("input[name='Desde']").val() : null,
@@ -1554,7 +1559,7 @@ function imprimirReporte() {
 
     // Obtener los parámetros base del formulario
     const params = obtenerParametrosBusqueda();
-
+    let subTitulo = `Cuenta: ${params.ccb_desc}`;
     switch (tipoReporteActual) {
         case TipoReporte.MAYOR:
             modulo = "LibroMayor";
@@ -1569,7 +1574,9 @@ function imprimirReporte() {
                 saldoActual: saldoActual
             };
             titulo = "Libro Mayor";
-            observacion = `Cuenta: ${params.ccb_desc}`;
+            subTitulo = `Cuenta: ${params.ccb_desc}`;
+            observacion = ``;
+            arrRepoParams[11 - 1].subTitulo = subTitulo;
             break;
 
         case TipoReporte.MAYOR_DIARIO:
@@ -1585,7 +1592,10 @@ function imprimirReporte() {
                 saldoActual: saldoActual
             };
             titulo = "Mayor Diario";
-            observacion = `Cuenta: ${params.ccb_desc}`;
+            subTitulo = `Cuenta: ${params.ccb_desc}`;
+            observacion = ``;
+            arrRepoParams[12 - 1].subTitulo = subTitulo;
+
             break;
 
         case TipoReporte.DIARIO:
@@ -1598,7 +1608,9 @@ function imprimirReporte() {
                 movimientos: obtenerMovimientosSeleccionados()
             };
             titulo = "Libro Diario";
-            observacion = "Movimientos seleccionados";
+            subTitulo = `Cuenta: ${params.ccb_desc}`;
+            observacion = "Movimientos seleccionados marcados con X son Temporales.";
+            arrRepoParams[13 - 1].subTitulo = subTitulo;
             break;
     }
 
@@ -1607,6 +1619,7 @@ function imprimirReporte() {
         modulo: modulo,
         parametros: parametros,
         titulo: titulo,
+        subTitulo: subTitulo,
         observacion: observacion
     };
 

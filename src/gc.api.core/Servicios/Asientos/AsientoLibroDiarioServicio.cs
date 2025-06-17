@@ -107,7 +107,7 @@ namespace gc.api.core.Servicios.Asientos
                 asientoDetalle.TotalDebe += linea.Debe;
                 asientoDetalle.TotalHaber += linea.Haber;
             }
-
+            asientos.Add(asientoDetalle);
             return asientos;
         }
     }
