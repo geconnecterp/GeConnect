@@ -41,6 +41,7 @@ $(function () {
 function analizaEstadoBtnDetalleLMayor() {
     if ($("#divDetalle").is(":visible")) {
         // Hay un asiento abierto, limpiarlo y cerrar el panel
+        mayorDataBak = {};
         limpiarLibroMayor();
         limpiarMayorXDia();
         limpiarLibroDiario();
@@ -66,7 +67,7 @@ function limpiarMayorXDia() {
 
 function limpiarLibroDiario() {
     $("#divAsientosCta").empty().html('<span class="text - danger">SIN REGISTROS</span>')
-    
+    $("#tabDiario").prop("disabled", true).addClass("text-danger");
 }
 
 /**
@@ -232,8 +233,8 @@ function buscarLibroDiario() {
     const data = {
         Eje_nro: params.eje_nro,
         Periodo: params.rango,
-        Desde: params.desde ? new Date(parseFechaES(params.desde)) : new Date(),
-        Hasta: params.hasta ? new Date(parseFechaES(params.hasta)) : new Date(),
+        Desde: params.desde,// ? new Date(parseFechaES(params.desde)) : new Date(),
+        Hasta: params.hasta,// ? new Date(parseFechaES(params.hasta)) : new Date(),
         Movimientos: movimientos.join(','),
         ConTemporales: params.incluirTemporales,
         Pag: 1,
@@ -594,13 +595,31 @@ function inicializarComponentes() {
         });
     }
 
-    // Configurar datepickers para fechas
+    // Configurar datepickers para fechas con localización explícita
+    $.fn.datepicker.dates['es'] = {
+        days: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
+        daysShort: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
+        daysMin: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
+        months: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
+        monthsShort: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
+        today: "Hoy",
+        clear: "Borrar",
+        format: "dd/mm/yyyy",
+        titleFormat: "MM yyyy",
+        weekStart: 1
+    };
+
     $('.datepicker').datepicker({
         format: 'dd/mm/yyyy',
         autoclose: true,
         language: 'es',
-        todayHighlight: true
+        todayHighlight: true,
+        orientation: 'bottom'
     });
+
+    // Forzar la localización regional para las fechas
+    $.datepicker.setDefaults($.datepicker.regional["es"]);
+
 }
 
 /**
@@ -1075,7 +1094,7 @@ function buscarLibroMayor(pag = 1) {
     cargarReporteEnArre(11, data1, "Libro Mayor", "Cuenta: " + data1.ccb_desc, "");
 
     // Verificar si cambió la búsqueda o solo la página
-    var buscaNew = JSON.stringify(mayorDataBak) != JSON.stringify(data1);
+    var buscaNew = JSON.stringify(mayorDataBak) !== JSON.stringify(data1);
 
     if (buscaNew === false) {
         // Son iguales las condiciones, solo cambia de página
@@ -1095,6 +1114,9 @@ function buscarLibroMayor(pag = 1) {
 
     // Combinamos todos los parámetros
     var data = $.extend({}, data1, data2);
+
+    limpiarMayorXDia();
+    limpiarLibroDiario();
 
     // Realizamos la petición al servidor
     PostGenHtml(data, obtenerLibroMayorUrl, function (obj) {

@@ -508,6 +508,74 @@ activable {
 }
 
 /* FIN ESTILO */
+/* ESTILO GOLDEN PARA DATEPICKER */
+/* Estilo Golden para bootstrap-datepicker */
+.datepicker-dropdown {
+    background-color: #fff8dc;
+    border: 1px solid #f5e7c1;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    padding: 0.5rem;
+    font-family: inherit;
+}
+
+/* Cabecera con degradado dorado */
+.datepicker-days .datepicker-switch,
+.datepicker-days .prev,
+.datepicker-days .next {
+    background: linear-gradient(135deg, #b8860b 0%, #daa520 100%);
+    color: #333;
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 4px;
+    margin: 2px;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.3);
+}
+
+.datepicker table tr td,
+.datepicker table tr th {
+    color: #333;
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 0.4rem;
+}
+
+    /* Día seleccionado */
+    .datepicker table tr td.active,
+    .datepicker table tr td.active:hover {
+        background-color: #b8860b !important;
+        color: #fff !important;
+        border-radius: 0.25rem;
+    }
+
+    /* Hover */
+    .datepicker table tr td.day:hover {
+        background-color: #f5e7c1;
+        border-radius: 0.25rem;
+    }
+
+    /* Hoy resaltado */
+    .datepicker table tr td.today {
+        background-color: #fff3cd;
+        border: 1px solid #daa520;
+        border-radius: 0.25rem;
+        font-weight: bold;
+    }
+
+    /* Deshabilitados */
+    .datepicker table tr td.disabled {
+        color: #d6c9a0;
+        pointer-events: none;
+    }
+
+/* Flechas navegación */
+.datepicker .prev:hover,
+.datepicker .next:hover {
+    background-color: #f5e7c1;
+    border-radius: 50%;
+}
+
+/* FIN ESTILO GOLDE PARA DATEPICKER*/
 .content-editable-td-2 {
     text-align: right !important;
     padding: 0 !important;
@@ -920,27 +988,31 @@ input[type=number] {
 
 
 /* Estilo para el tooltip del atributo title */
-tr[title]:hover::after {
+/*tr[title]:hover::after {
     content: attr(title);
-    position: absolute;
-    background-color: var(--bs-dark); /* Fondo oscuro para buen contraste */
-    color: var(--bs-white); /* Texto blanco para legibilidad */
+    position: fixed;
+    background-color: var(--bs-dark);
+    color: var(--bs-white);
     padding: 0.5rem 1rem;
-    border-radius: var(--bs-border-radius-sm); /* Bordes redondeados */
-    box-shadow: var(--bs-box-shadow-sm); /* Sombra para destacar */
-    font-size: 0.875rem; /* Tamaño de fuente pequeño */
+    border-radius: var(--bs-border-radius-sm);
+    box-shadow: var(--bs-box-shadow-sm);
+    font-size: 0.875rem;
     white-space: nowrap;
+    max-width: 80vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
     z-index: 1000;
-    top: 100%; /* Aparece debajo de la fila */
-    left: 50%;
-    transform: translateX(-50%);
-    margin-top: 0.5rem;
+    transform: translate(-50%, 0);
     pointer-events: none;
+    opacity: 0.95;
+    visibility: visible;
+    transition: opacity 0.2s;
 }
 
 tr[title]:hover {
-    position: relative; /* Necesario para posicionar el tooltip */
-}
+    position: relative;
+}*/
+
 
 /*estilos para los asientos aunque se pueden usar para otra cosa tb*/
 /* Resalta los totales desbalanceados en rojo y negrita */

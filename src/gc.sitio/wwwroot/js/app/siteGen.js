@@ -11,6 +11,119 @@ var arrRepoParams = new Array(300);
 
 $(function () {
 
+    // Remover tooltips anteriores para evitar duplicados
+    $("#golden-tooltip").remove();
+
+    // Crear el elemento tooltip con estilo golden
+    $("body").append('<div id="golden-tooltip" class="tooltip-golden"></div>');
+
+    // Añadir estilos específicos si no están ya definidos en el CSS
+    if (!$("style#golden-tooltip-styles").length) {
+        $("head").append(`
+            <style id="golden-tooltip-styles">
+                .tooltip-golden {
+                    position: absolute;
+                    display: none;
+                    background: linear-gradient(135deg, #b8860b 0%, #daa520 100%);
+                    color: #333;
+                    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.3);
+                    padding: 0.5rem 1rem;
+                    border-radius: 0.25rem;
+                    font-size: 0.875rem;
+                    font-weight: 600;
+                    white-space: nowrap;
+                    max-width: 80vw;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    z-index: 9999;
+                    pointer-events: none;
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+                    border: 1px solid #f5e7c1;
+                }
+                
+                .tooltip-golden::after {
+                    content: '';
+                    position: absolute;
+                    top: 100%;
+                    left: 50%;
+                    margin-left: -8px;
+                    width: 0;
+                    height: 0;
+                    border-left: 8px solid transparent;
+                    border-right: 8px solid transparent;
+                    border-top: 8px solid #daa520;
+                }
+            </style>
+        `);
+    }
+
+    // Variable para almacenar la instancia de Popper
+    let popperInstance = null;
+
+    // Manejadores de eventos para filas con atributo title
+    $(document).on({
+        mouseenter: function () {
+            const title = $(this).attr('title');
+            if (!title) return;
+
+            // Guardar y eliminar el atributo title para evitar el tooltip nativo
+            $(this).data('original-title', title);
+            $(this).attr('title', '');
+
+            // Mostrar nuestro tooltip personalizado con el contenido
+            const tooltip = $("#golden-tooltip");
+            tooltip.text(title).show();
+
+            // Crear instancia de Popper para posicionar el tooltip
+            popperInstance = Popper.createPopper(this, tooltip[0], {
+                placement: 'top',
+                modifiers: [
+                    {
+                        name: 'offset',
+                        options: {
+                            offset: [0, 8],
+                        },
+                    },
+                    {
+                        name: 'preventOverflow',
+                        options: {
+                            boundary: document.body,
+                            padding: 10
+                        }
+                    },
+                    {
+                        name: 'flip',
+                        options: {
+                            fallbackPlacements: ['bottom', 'right', 'left'],
+                            padding: 10
+                        }
+                    }
+                ]
+            });
+        },
+        mouseleave: function () {
+            // Restaurar el atributo title original
+            const originalTitle = $(this).data('original-title');
+            if (originalTitle) {
+                $(this).attr('title', originalTitle);
+            }
+
+            // Ocultar el tooltip
+            $("#golden-tooltip").hide();
+
+            // Destruir instancia de Popper para liberar recursos
+            if (popperInstance) {
+                popperInstance.destroy();
+                popperInstance = null;
+            }
+        }
+    }, 'tr[title]');
+
+    // Desactivar el handler anterior
+    $(document).off('mousemove.tooltip');
+
+    /** FIN CODIGO TOOLTIP */
+
     // Reemplaza o modifica tu código actual de manejo de dropdown-submenu
     // Asegura que los clics en los elementos del menú no cierren el menú principal
     $('.dropdown-menu a.dropdown-toggle').on('click', function (e) {
@@ -781,15 +894,15 @@ function hayRegistrosEnTabla(grid) {
  * @param {string} observacion - Observación del reporte.
  * @param {number} admId - ID de la Sucursal.
  */
-function cargarReporteEnArre(numeroReporte, parametros,titulo,observacion,admId) {
+function cargarReporteEnArre(numeroReporte, parametros, titulo, observacion, admId) {
     if (numeroReporte - 1 < 0 || numeroReporte - 1 >= arrRepoParams.length) {
-        let msg = "El número de reporte está fuera de rango (0-" + arrRepoParams.length+"). Verifique la identificación del Reporte. El mismo no se ha resguardado. ";
+        let msg = "El número de reporte está fuera de rango (0-" + arrRepoParams.length + "). Verifique la identificación del Reporte. El mismo no se ha resguardado. ";
         ControlaMensajeWarning(msg);
         console.error("Número de reporte fuera de rango (0-299).");
         return;
     }
 
-    arrRepoParams[numeroReporte -1] = {
+    arrRepoParams[numeroReporte - 1] = {
         reporte: numeroReporte,
         parametros: parametros,
         titulo: titulo,

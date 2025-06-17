@@ -144,7 +144,7 @@ namespace gc.sitio.Areas.Libros.Controllers
         /// <param name="query">Parámetros de filtro</param>
         /// <returns>Vista parcial con el grid o mensaje de error</returns>
         [HttpPost]
-        public async Task<IActionResult> ObtenerLibroMayor(LMayorFiltroDto query, string sort = "Eje_nro", string sortDir = "asc", int pag = 1)
+        public async Task<IActionResult> ObtenerLibroMayor(LMayorFiltroDto query, string sort = "Eje_nro", string sortDir = "asc", int pagina = 1)
         {
             RespuestaGenerica<EntidadBase> response = new();
 
@@ -187,7 +187,7 @@ namespace gc.sitio.Areas.Libros.Controllers
                 query.Sort = sort;
                 query.SortDir = sortDir;
                 query.Registros = _appSettings.NroRegistrosPagina;
-                query.Pagina = pag;
+                query.Pagina = pagina;
 
                 // Llamar al servicio para obtener el libro mayor
                 var res = await _libroMayorServicio.ObtenerLibroMayor(query, Token);
@@ -206,7 +206,7 @@ namespace gc.sitio.Areas.Libros.Controllers
                     lista,
                     query.Sort,
                     _appSettings.NroRegistrosPagina,
-                    pag,
+                    pagina,
                     lista.Count,
                      (int)Math.Ceiling((double)lista.Count / _appSettings.NroRegistrosPagina), // Total de páginas
                     query.SortDir
