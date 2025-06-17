@@ -806,9 +806,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 				Console.WriteLine(JsonConvert.SerializeObject(OPRetencionesDesdeObligYCredLista, new JsonSerializerSettings()));
 				Console.WriteLine("json_v:");
 				Console.WriteLine(JsonConvert.SerializeObject(OPValoresDesdeObligYCredLista, new JsonSerializerSettings()));
-				//var respuesta = _ordenDePagoServicio.ConfirmarOrdenDePagoAProveedor(req, TokenCookie);
-				//return AnalizarRespuesta(respuesta, "La Orden de Compra se Confirmo con Éxito");
-				return Json(new { error = false, warn = false, msg = "La Orden de Compra se Confirmo con Éxito" });
+				var respuesta = _ordenDePagoServicio.ConfirmarOrdenDePagoAProveedor(req, TokenCookie);
+				return AnalizarRespuesta(respuesta, "La Orden de Compra se Confirmo con Éxito");
+				//return Json(new { error = false, warn = false, msg = "La Orden de Compra se Confirmo con Éxito" });
 			}
 			catch (Exception ex)
 			{
