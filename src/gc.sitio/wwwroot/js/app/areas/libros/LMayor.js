@@ -594,13 +594,31 @@ function inicializarComponentes() {
         });
     }
 
-    // Configurar datepickers para fechas
+    // Configurar datepickers para fechas con localización explícita
+    $.fn.datepicker.dates['es'] = {
+        days: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
+        daysShort: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
+        daysMin: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
+        months: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
+        monthsShort: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
+        today: "Hoy",
+        clear: "Borrar",
+        format: "dd/mm/yyyy",
+        titleFormat: "MM yyyy",
+        weekStart: 1
+    };
+
     $('.datepicker').datepicker({
         format: 'dd/mm/yyyy',
         autoclose: true,
         language: 'es',
-        todayHighlight: true
+        todayHighlight: true,
+        orientation: 'bottom'
     });
+
+    // Forzar la localización regional para las fechas
+    $.datepicker.setDefaults($.datepicker.regional["es"]);
+
 }
 
 /**
