@@ -41,6 +41,7 @@ $(function () {
 function analizaEstadoBtnDetalleLMayor() {
     if ($("#divDetalle").is(":visible")) {
         // Hay un asiento abierto, limpiarlo y cerrar el panel
+        mayorDataBak = {};
         limpiarLibroMayor();
         limpiarMayorXDia();
         limpiarLibroDiario();
@@ -66,7 +67,7 @@ function limpiarMayorXDia() {
 
 function limpiarLibroDiario() {
     $("#divAsientosCta").empty().html('<span class="text - danger">SIN REGISTROS</span>')
-    
+    $("#tabDiario").prop("disabled", true).addClass("text-danger");
 }
 
 /**
