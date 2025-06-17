@@ -76,6 +76,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 
+				var aux = this.InicializarDatosEnSesion();
 				var res = _ordenDePagoServicio.GetOPValidacionesPrev(cta_id, TokenCookie);
 				OPValidacionPrevLista = res;
 				var model = ObtenerGridCoreSmart<OPValidacionPrevDto>(res);
@@ -135,9 +136,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 				CtaIdSelected = cta_id;
 				OPDebitoNuevaLista = [];
 				OPCreditoNuevaLista = [];
-				var aNombreDe=_cuentaServicio.GetFormaDePagoPorCuentaYFP(CtaIdSelected, "H", TokenCookie).First();
-				if (aNombreDe != null && !string.IsNullOrEmpty(aNombreDe.cta_valores_a_nombre))
-					model.valoresANombreDe = aNombreDe.cta_valores_a_nombre;
+				var auxANombreDe = _cuentaServicio.GetFormaDePagoPorCuentaYFP(CtaIdSelected, "H", TokenCookie);
+				if (auxANombreDe != null && auxANombreDe.Count > 0 && !string.IsNullOrEmpty(auxANombreDe.First().cta_valores_a_nombre))
+					model.valoresANombreDe = auxANombreDe.First().cta_valores_a_nombre;
 				else
 				{
 					var nombreAux = _proveedorServicio.GetProveedorParaABM(cta_id, TokenCookie);
@@ -604,7 +605,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				var cuentaObs = string.Empty;
 				var observacionesList = _cuentaServicio.ObtenerCuentaObs(CtaIdSelected, 'P', TokenCookie);
 				if (observacionesList != null && observacionesList.Count > 0)
-				{ 
+				{
 					cuentaObs = observacionesList.FirstOrDefault()?.cta_obs ?? string.Empty;
 				}
 				var model = new CargarObligacionesOCreditosPaso2Model
@@ -614,10 +615,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 					GrillaRetenciones = new GridCoreSmart<RetencionesDesdeObligYCredDto>(),
 					GrillaValores = new GridCoreSmart<ValoresDesdeObligYCredDto>(),
 					GrillaMedioDePago = new GridCoreSmart<MedioDePago>(),
-					EsPagoAnticipado = OPDebitoNuevaLista.Count == 0, 
+					EsPagoAnticipado = OPDebitoNuevaLista.Count == 0,
 					CuentaObs = cuentaObs,
 				};
-				if (model.EsPagoAnticipado) {
+				if (model.EsPagoAnticipado)
+				{
 					if (OPDebitoOriginalLista == null || OPDebitoOriginalLista.Count <= 0)
 					{
 						OPDebitoOriginalLista = ObtenerData('D');

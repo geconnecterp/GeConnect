@@ -70,7 +70,8 @@ function ValidarPrevioAConfirmar() {
 							else {
 								AbrirMensaje("ATENCIÓN", obj.msg, function () {
 									$("#msjModal").modal("hide");
-									$("#btnAbmCancelar").trigger("click");
+									//$("#btnAbmCancelar").trigger("click");
+									btnAbmCancelar_click();
 									return true;
 								}, false, ["Aceptar"], "succ!", null);
 							}
@@ -343,6 +344,15 @@ function btnAbmCancelar_click() {
 	$("#btnFiltro").trigger("click");
 	$("#btnDetalle").trigger("click");
 	$("#divDetalle").collapse("hide");
+
+	/*
+			InicializarDatosEnSesion();
+		InicializaPantalla();
+		LimpiarDatosDelFiltroInicial();
+		$("#btnFiltro").trigger("click");
+		$("#btnDetalle").trigger("click");
+		$("#divDetalle").collapse("hide");
+	*/
 }
 
 function CargarObligacionesOCreditos(tipo_carga) {
