@@ -288,8 +288,6 @@ function invocacionGestorDoc(data) {
             //antes de abrir el modal, se cargará el arbol de archivos
             presentarArchivos();
 
-        
-
             $("#modalGestorDocumental").show();
 
             $("#docmgrmodal").modal("show");
@@ -593,7 +591,8 @@ function imprimirArchivoSeleccionado() {
                     const solicitudReporte = {
                         Reporte: data.reporte,  // Con mayúscula para coincidir con C#
                         Parametros: data.parametros,  // Con mayúscula
-                        Titulo: data.titulo,  // Con mayúscula
+                        Titulo: node.text,  // Con mayúscula
+                        SubTitulo: data.subTitulo,
                         Observacion: data.observacion || "",  // Con mayúscula
                         Formato: "P",  // Con mayúscula (PDF)
                         LogoPath: "",  // Con mayúscula
