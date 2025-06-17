@@ -1141,9 +1141,10 @@ function SetearCostosEspecificos(idsProductos) {
 		addInCellGotFocusHandler();
 		addInCellInputGotFocusHandler();
 		addInCellLostFocusHandler();
-		addMaskInEditableCells();
 		tableUpDownArrow();
 		AgregarHandlerAGrillaDetalleRprCheckAll();
+		addMaskInEditableCells();
+		inCellInputEditable();
 		limpiarValoresDeSeteoMasivo();
 		CerrarWaiting();
 	});
@@ -1192,10 +1193,11 @@ function CargarDetalleRprDesdeOcValidada(ocCompte, idsProds, aplica_oc, aplica_f
 		addInCellGotFocusHandler();
 		addInCellInputGotFocusHandler();
 		addInCellLostFocusHandler();
-		addMaskInEditableCells();
 		tableUpDownArrow();
 		AgregarHandlerAGrillaDetalleRprCheckAll();
+		addMaskInEditableCells();
 		limpiarValoresDeSeteoMasivo();
+		inCellInputEditable();
 		CerrarWaiting();
 	});
 }
@@ -1215,9 +1217,10 @@ function SetearCostoActual() {
 		addInCellGotFocusHandler();
 		addInCellInputGotFocusHandler();
 		addInCellLostFocusHandler();
-		addMaskInEditableCells();
 		tableUpDownArrow();
 		AgregarHandlerAGrillaDetalleRprCheckAll();
+		addMaskInEditableCells();
+		inCellInputEditable();
 		limpiarValoresDeSeteoMasivo();
 		CerrarWaiting();
 	});
@@ -1392,9 +1395,6 @@ function InicializarDatosEnSesion() {
 				$("#msjModal").modal("hide");
 				return true;
 			}, false, ["Aceptar"], "error!", null);
-		}
-		else {
-			//console.log(obj.msg);
 		}
 	});
 }

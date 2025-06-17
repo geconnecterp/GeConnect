@@ -54,7 +54,11 @@ function ValidarPrevioAConfirmar() {
 				switch (e) {
 					case "SI": //Confirmar
 						var cta_obs = $("#CuentaObs").val();
-						var opt_id = " ";
+						var opt_id = "";
+						if (esPagoAnticipado)
+							opt_id = "PA";
+						else
+							opt_id = "PP";
 						var data = { cta_obs, opt_id };
 						PostGen(data, confirmarOPaProveedorUrl, function (obj) {
 							if (obj.error === true) {
@@ -114,7 +118,7 @@ function btnAnterior2Validar() {
 
 //Me muevo al paso2
 function btnSiguiente1Validar() {
-	var esPagoAnticipado = false;
+	esPagoAnticipado = false;
 	if ($("#tbListaObligacionesParaAgregar tbody tr").length == 0 && $("#tbListaCreditosParaAgregar tbody tr").length == 0) {
 		esPagoAnticipado = true;
 	}
@@ -391,9 +395,6 @@ function InicializarDatosEnSesion() {
 				return true;
 			}, false, ["Aceptar"], "error!", null);
 		}
-		else {
-			console.log(obj.msg);
-		}
 	});
 }
 
@@ -490,52 +491,3 @@ function RestaurarGrillasInferioresParaPaso1() {
 		CargarObligacionesOCreditos("Creditos"); //Créditos
 	}, 500);
 }
-
-
-
-
-/*
-Backup
-function btnSiguiente1Validar() {
-	if ($("#tbListaObligacionesParaAgregar tbody tr").length < $("#tbListaCreditosParaAgregar tbody tr").length) {
-		AbrirMensaje("ATENCIÓN", "Deben existir mas elementos de Obligaciones/Débitos que Créditos.", function () {
-			$("#msjModal").modal("hide");
-			return true;
-		}, false, ["Aceptar"], "warn!", null);
-	}
-	//Validar que el total de obligaciones o débitos sea mayor o igual que el de los créditos
-	else
-	if ($("#tbListaObligacionesParaAgregar tbody tr").length >= $("#tbListaCreditosParaAgregar tbody tr").length) {
-		var esPagoAnticipado = false;
-		if ($("#tbListaObligacionesParaAgregar tbody tr").length == 0 && $("#tbListaCreditosParaAgregar tbody tr").length == 0) {
-			esPagoAnticipado = true;
-		}
-		AbrirWaiting("Cargando....");
-		var data = {};
-		PostGenHtml(data, cargarVistaObligacionesYCreditosPaso2Url, function (obj) {
-			$("#divDetalle").html(obj);
-			//Setear los valores de la cuenta seleccionada en la vista de obligaciones y creditos
-			$("#CtaID").val(ctaIdSelected);
-			$("#CtaDesc").val(ctaDescSelected);
-			MostrarDatosDeCuenta(true);
-			CargarRetencionesDesdeObligYCredSeleccionados();
-			CargarValoresDesdeObligYCredSeleccionados();
-			setTimeout(() => {
-				ActualizarTotalesSuperiores();
-			}, 500);
-			CerrarWaiting();
-			if (esPagoAnticipado) {
-				ControlaMensajeInfo("Es Pago Anticipado.");
-			}
-		});
-	}
-	else {
-		//Si no existen obligaciones, debe suponer que es un “Pago Anticipado”, en ese caso debe advertirlo en el paso siguiente 
-		//(tampoco deben existir créditos por defecto debería funcionar la validación anterior)
-		if ($("#tbListaObligacionesParaAgregar tbody tr").length == 0 && $("#tbListaCreditosParaAgregar tbody tr").length == 0) {
-			//Dejo este espacio por las dudas que deba dejar alguna validación previa en el caso de Pago Anticipado
-		}
-	}
-}
-
-*/

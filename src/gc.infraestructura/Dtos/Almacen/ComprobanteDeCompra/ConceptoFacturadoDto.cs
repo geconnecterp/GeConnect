@@ -1,6 +1,4 @@
-﻿
-using Newtonsoft.Json;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 
 namespace gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra
 {

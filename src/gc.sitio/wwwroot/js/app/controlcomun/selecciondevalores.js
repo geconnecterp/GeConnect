@@ -18,7 +18,9 @@ $(function () {
 	$(document).on("click", "#btnAceptarAgregarValor", btnAceptarAgregarValorValidar);
 	$(document).on("click", "#btnCancelarAgregarValor", btnCancelarAgregarValorValidar);
 	$(document).on("keyup", "#txtNroTransferencia", ControlaKeyUpNroTransferencia);
+	$(document).on("focusout", "#txtNroTransferencia", ControlaFocusOutNroTransferencia);
 	$(document).on("keyup", "#txtNroCheque", ControlaKeyUpNroCheque);
+	$(document).on("focusout", "#txtNroCheque", ControlaFocusOutNroCheque);
 	$(document).on("click", "#chkAutomatico", ControlachkAutomatico);
 	$(document).on("keyup", "#Fecha", ControlaKeyUpFecha);
 	$(document).on("keyup", "#Concepto", ControlaKeyUpConcepto);
@@ -26,6 +28,18 @@ $(function () {
 	$(document).on("keyup", "#Importe", ControlaKeyUpImporte);
 	//
 });
+
+function ControlaFocusOutNroTransferencia() {
+	var aux = $("#txtNroTransferencia").inputmask('unmaskedvalue').padStart(10, '0');
+	$("#txtNroTransferencia").val(aux);
+	$("#Fecha").trigger("focus");
+}
+
+function ControlaFocusOutNroCheque() {
+	var aux = $("#txtNroCheque").inputmask('unmaskedvalue').padStart(6, '0');
+	$("#txtNroCheque").val(aux);
+	$("#Fecha").trigger("focus");
+}
 
 function ControlaKeyUpImporte(e) {
 	if (e.which == 13 || e.which == 109) {
@@ -94,7 +108,6 @@ function btnAceptarAgregarValorValidar() {
 			case "BA"://Transferencias
 				var newItem = new ObjValor(ctaf_id, ctaf_denominacion, tcf_id_selected, " ", " ", ban_razon_social, "Banco", $("#txtNroTransferencia").inputmask('unmaskedvalue'), "N° Transferencia", " ", " ", $("#Importe").inputmask('unmaskedvalue'), $("#Fecha").val(),
 					" ", 0, " ", " ", " ", " ", 0, " ");
-				//AgregarValorValidar(newItem, tcf_id_selected);
 				listaObjValor.push(newItem);
 				break;
 			case "EC"://Emision de cheques
@@ -104,13 +117,11 @@ function btnAceptarAgregarValorValidar() {
 
 				var newItem = new ObjValor(ctaf_id, ctaf_denominacion, tcf_id_selected, " ", automatico, ban_razon_social, "Banco", $("#txtNroCheque").inputmask('unmaskedvalue'), "N° Cheque", " ", " ", $("#Importe").inputmask('unmaskedvalue'), $("#Fecha").val(),
 					" ", 0, " ", " ", $("#ANombreDe").val(), " ", 0, " ");
-				//AgregarValorValidar(newItem, tcf_id_selected);
 				listaObjValor.push(newItem);
 				break;
 			case "EF": //Efectivo
 				var newItem = new ObjValor(ctaf_id, ctaf_denominacion, tcf_id_selected, " ", " ", " ", " ", " ", " ", " ", " ", $("#Importe").inputmask('unmaskedvalue'), $("#Fecha").val(),
 					" ", 0, " ", " ", " ", " ", 0, " ");
-				//AgregarValorValidar(newItem, tcf_id_selected);
 				listaObjValor.push(newItem);
 				break;
 			case "CH": //Cartera
@@ -120,7 +131,6 @@ function btnAceptarAgregarValorValidar() {
 						if (td.eq(5)[0].children[0].checked) {
 							var newItem = new ObjValor(ctaf_id, ctaf_denominacion, tcf_id_selected, " ", " ", td.eq(2).text(), td.eq(6).text(), td.eq(3).text(), td.eq(7).text(), td.eq(8).text(), td.eq(9).text(), td.eq(4).text().replace(',', ''), td.eq(13).text(),
 								td.eq(10).text(), td.eq(11).text(), td.eq(12).text(), $("#CtaID").val(), " ", " ", 0, " ");
-							//AgregarValorValidar(newItem, tcf_id_selected);
 							listaObjValor.push(newItem);
 						}
 					}
@@ -221,23 +231,6 @@ function AgregarValorValidar(dataObjectArray, dataType) {
 	});
 }
 
-//function AgregarValorValidar(dataObject, dataType) {
-//	var DataObject = dataObject;
-//	var DataType = dataType;
-//	var data = { DataObject, DataType };
-//	PostGen(data, agregarItemAColeccionDeValoresUrl, function (obj) {
-//		if (obj.error === true) {
-//			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-//				$("#msjModal").modal("hide");
-//				return true;
-//			}, false, ["Aceptar"], "error!", null);
-//		}
-//		else {
-//			LimpiarDatosEnSeccionEdicion(dataType);
-//		}
-//	});
-//}
-
 function LimpiarDatosEnSeccionEdicion(dataType) {
 	switch (dataType) {
 		case "BA"://Transferencias
@@ -265,13 +258,7 @@ function LimpiarDatosEnSeccionEdicion(dataType) {
 }
 
 function btnCancelarAgregarValorValidar() {
-	//activarGrilla("tbFinanciero");
-	//activarGrilla("tbTipoCuentaFin");
 	LimpiarDatosEnSeccionEdicion(tcf_id_selected);
-	//$(".activable").prop("disabled", true);
-	//$("#btnCancelarAgregarValor").hide();
-	//$("#divSeccionEditable").html("");
-	//$("#btnAceptarAgregarValor").prop("disabled", true);
 }
 /*
 p:
@@ -347,8 +334,6 @@ function onChangeFecha(x) {
 }
 
 function seleccionarFinancieroDbl(x) {
-	//desactivarGrilla("tbFinanciero");
-	//desactivarGrilla("tbTipoCuentaFin");
 	$("#btnCancelarAgregarValor").show();
 	$(".activable").prop("disabled", false);
 	ctaf_id = x.cells[2].innerText.trim();
@@ -377,7 +362,6 @@ function seleccionarFinanciero(x) {
 	if (tcf_id_selected == "CH") {
 		ctaf_id = x.cells[2].innerText.trim();
 		var data = { ctaf_id };
-		console.log(data);
 		PostGenHtml(data, cargarGrillaFinancieroCarteraEnSeleccionDeValoresUrl, function (obj) {
 			$("#divSeccionEditable").html(obj);
 			if ($("#tbValoresEnCartera tbody tr").length <= 0) {

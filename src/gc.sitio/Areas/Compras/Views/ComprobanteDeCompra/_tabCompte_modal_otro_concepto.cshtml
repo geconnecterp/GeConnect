@@ -17,19 +17,19 @@
 		<div class="col-md-12">
 			<div class="input-group input-group-sm">
 				<div class="col-4 input-group-sm wrapper" style="float:left;margin-right:5px;">
-					<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">Situación: </span>
+					<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">Concepto: </span>
 					@Html.DropDownListFor(m => m.OtroTributo.ins_id, otra, "Seleccionar...", new { @id = "listaOtroTrib", @class = "form-control activable inputEditable" })
 				</div>
 				<div class="col-1 input-group-sm" style="float:left;margin-right:5px;">
-					<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">Subtotal: </span>
+					<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">Base: </span>
 					<input type="text" asp-for="OtroTributo.base_imp" class="form-control activable inputEditable" />
 				</div>
 				<div class="col-1 input-group-sm" style="float:left;margin-right:5px;">
-					<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">IVA: </span>
+					<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">ALI: </span>
 					<input type="text" asp-for="OtroTributo.alicuota" class="form-control activable inputEditable" />
 				</div>
 				<div class="col-1 input-group-sm" style="float:left;margin-right:5px;">
-					<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">Subtotal+IVA: </span>
+					<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">Importe: </span>
 					<input type="text" asp-for="OtroTributo.importe" class="form-control activable" disabled style="text-align:right;"/>
 				</div>
 			</div>

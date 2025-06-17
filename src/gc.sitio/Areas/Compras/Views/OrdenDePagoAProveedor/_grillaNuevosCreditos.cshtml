@@ -13,8 +13,8 @@
 	<table class="table table-bordered table-hover" id="tbListaCreditosParaAgregar">
 		<thead class="table-dark">
 			<tr>
-				<th style="width:55%;" class="col-header-small align-center tiny-row">Comprobante</th>
-				<th style="width:15%;" class="col-header-small align-center tiny-row">Cuota</th>
+				<th style="width:50%;" class="col-header-small align-center tiny-row">Comprobante</th>
+				<th style="width:5%;" class="col-header-small align-center tiny-row">Cuota</th>
 				<th style="width:15%;" class="col-header-small align-center tiny-row">Vencimiento</th>
 				<th style="width:15%;" class="col-header-small align-center tiny-row">Importe</th>
 				<th style="width:15%;" class="col-header-small align-center tiny-row">Imputado</th>
@@ -30,7 +30,7 @@
 				@foreach (var item in Model.GrillaCreditosNueva.ListaDatos)
 				{
 					<tr onclick="selectReg(this, 'tbListaCreditosParaAgregar')" ondblclick="selectRegDbl(this, 'tbListaCreditosParaAgregar')">
-						<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.tco_desc)">@Model.GrillaCreditosNueva.FormatearDato(item.tco_desc, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.concepto)">@Model.GrillaCreditosNueva.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
 						<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cm_compte_cuota)">@Model.GrillaCreditosNueva.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
 						<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cv_fecha_vto)">@Model.GrillaCreditosNueva.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
 						<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cv_importe)">@Model.GrillaCreditosNueva.FormatearDato(item.cv_importe, FormatDato.Monto)</td>

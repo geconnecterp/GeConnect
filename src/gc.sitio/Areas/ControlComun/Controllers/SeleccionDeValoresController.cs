@@ -1,6 +1,4 @@
-﻿using DocumentFormat.OpenXml.Drawing;
-using DocumentFormat.OpenXml.Spreadsheet;
-using gc.api.core.Entidades;
+﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos;
@@ -13,7 +11,6 @@ using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Org.BouncyCastle.Ocsp;
 
 namespace gc.sitio.Areas.ControlComun.Controllers
 {
@@ -186,37 +183,6 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 			}
 		}
 
-		//[HttpPost]
-		//public JsonResult AgregarItemsAColeccionDeValores([FromBody] List<AgregarItemModel> req)
-		//{
-		//	RespuestaGenerica<EntidadBase> response = new();
-		//	try
-		//	{
-		//		var resultado = ValidarItemParaAgregarAColeccion(req);
-		//		response.Ok = resultado.Exito;
-		//		response.Mensaje = resultado.Mensaje;
-		//		return Json(response);
-		//	}
-		//	catch (NegocioException ex)
-		//	{
-		//		response.Mensaje = ex.Message;
-		//		response.Ok = false;
-		//		response.EsWarn = true;
-		//		response.EsError = false;
-		//		return Json(response);
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		string msg = "Error al devolver el valor cargado.";
-		//		_logger?.LogError(ex, msg);
-		//		response.Mensaje = msg;
-		//		response.Ok = false;
-		//		response.EsWarn = false;
-		//		response.EsError = true;
-		//		return Json(response);
-		//	}
-		//}
-
 		[HttpPost]
 		public JsonResult AgregarItemAColeccionDeValores(AgregarItemModel req)
 		{
@@ -282,37 +248,6 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 			}
 		}
 
-		//private Resultado ValidarItemParaAgregarAColeccion(AgregarItemModel req)
-		//{
-		//	try
-		//	{
-		//		if (req == null)
-		//			return new Resultado() { Exito = false, Mensaje = "Request vacío." };
-		//		if (string.IsNullOrEmpty(req.DataType))
-		//			return new Resultado() { Exito = false, Mensaje = "No se ha especificado el tipo." };
-		//		if (req.DataObject == null)
-		//			return new Resultado() { Exito = false, Mensaje = "Objeto origen vacío." };
-		//		if (!NoExisteElItem(req))
-		//			return new Resultado() { Exito = false, Mensaje = "El elemento que esta intentando agregar ya existe." };
-
-
-		//		var newItem = new ValoresDesdeObligYCredDto();
-		//		var objAux = req.DataObject;
-		//		ObtenerConceptoValor(objAux);
-		//		newItem = objAux;
-
-		//		var listaTemp = OPValoresDesdeObligYCredLista;
-		//		listaTemp.Add(newItem);
-		//		OPValoresDesdeObligYCredLista = listaTemp;
-		//		return new Resultado() { Exito = true, Mensaje = "Valores agregados con éxito." };
-		//	}
-		//	catch (Exception)
-		//	{
-		//		return new Resultado() { Exito = false, Mensaje = "Ha ocurrido un error al intentar validar y agregar el valor a la colección." };
-		//	}
-
-		//}
-
 		private bool NoExisteElItem(AgregarItemModel req)
 		{
 			var result = true;
@@ -375,120 +310,6 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 			}
 			return result;
 		}
-
-		//private bool NoExisteElItem(AgregarItemModel req)
-		//{
-		//	var result = true;
-		//	switch (req.DataType)
-		//	{
-		//		case "BA": //Transferencias Bancarias 
-		//				   //Controlo que el numero de la transferencia y la entidad no esten ya cargadas.
-		//			if (OPValoresDesdeObligYCredLista.Any(x => x.op_dato2_valor.Equals(req.DataObject.op_dato2_valor) && x.ctaf_id.Equals(req.DataObject.ctaf_id)))
-		//				return false;
-		//			break;
-		//		case "CH": //Valores de Terceros en Cartera 
-
-		//			break;
-		//		case "EC": //Emisión de Cheques 
-		//			if (req.DataObject.automatico.Equals('N')) //Si es manual, controlar que el numero de cheque y la entidad no esten cargados ya
-		//			{
-		//				if (OPValoresDesdeObligYCredLista.Any(x => x.op_dato2_valor.Equals(req.DataObject.op_dato2_valor) && x.ctaf_id.Equals(req.DataObject.ctaf_id)))
-		//					return false;
-		//			}
-		//			break;
-		//		case "EF": //Efectivos o Cajas 
-		//			break;
-		//		default:
-		//			break;
-		//	}
-		//	return result;
-		//}
-
-		//private ValoresDesdeObligYCredDto ObtenerItem(FinancieroCarteraModel source)
-		//{
-		//	var ret = new ValoresDesdeObligYCredDto
-		//	{
-		//		tcf_id = "CH",
-		//		ctaf_id = source.ctaf_id,
-		//		ctaf_denominacion = source.ctaf_denominacion,
-		//		op_dato1_valor = source.fc_dato1_valor ?? " ",
-		//		op_dato1_desc = source.ins_dato1_desc ?? " ",
-		//		op_dato2_valor = source.fc_dato2_valor ?? " ",
-		//		op_dato2_desc = source.ins_dato2_desc ?? " ",
-		//		op_dato3_valor = source.fc_dato3_valor ?? " ",
-		//		op_dato3_desc = source.ins_dato3_desc ?? " ",
-		//		op_importe = source.fc_importe,
-		//		op_fecha_valor = source.fc_fecha_valor,
-		//		fc_compte = source.fc_compte,
-		//		fc_item = source.fc_item,
-		//		fc_dia_movi = source.dia_movi,
-		//		fc_cta_id = source.cta_id ?? string.Empty,
-		//	};
-		//	ObtenerConceptoValor(ret);
-		//	return ret;
-		//}
-
-		//private ValoresDesdeObligYCredDto ObtenerItem(EdicionTipoEfectivoCajasModel source)
-		//{
-		//	var ret = new ValoresDesdeObligYCredDto
-		//	{
-		//		tcf_id = "EF",
-		//		ctaf_id = source.ctaf_id,
-		//		ctaf_denominacion = source.ctaf_denominacion,
-		//		op_dato1_valor = source.ban_razon_social,
-		//		op_dato1_desc = " ",
-		//		op_dato2_valor = " ",
-		//		op_dato2_desc = " ",
-		//		op_dato3_valor = " ",
-		//		op_dato3_desc = " ",
-		//		op_importe = source.Importe,
-		//	};
-		//	ObtenerConceptoValor(ret);
-		//	return ret;
-		//}
-
-		//private ValoresDesdeObligYCredDto ObtenerItem(EdicionTipoEmisionChequesModel source)
-		//{
-		//	var ret = new ValoresDesdeObligYCredDto
-		//	{
-		//		tcf_id = "EC",
-		//		ctaf_id = source.ctaf_id,
-		//		ctaf_denominacion = source.ctaf_denominacion,
-		//		automatico = source.Automatico ? 'S' : 'N',
-		//		op_dato1_valor = source.ban_razon_social,
-		//		op_dato1_desc = "Banco",
-		//		op_dato2_valor = source.NroCheque,
-		//		op_dato2_desc = "N° Cheque",
-		//		op_dato3_valor = " ",
-		//		op_dato3_desc = " ",
-		//		op_importe = source.Importe,
-		//		op_fecha_valor = source.Fecha,
-		//		concepto_valor = source.ANombreDe
-		//	};
-		//	ObtenerConceptoValor(ret);
-		//	return ret;
-		//}
-
-		//private ValoresDesdeObligYCredDto ObtenerItem(EdicionTipoTransferenciaBancariaModel source)
-		//{
-		//	var ret = new ValoresDesdeObligYCredDto
-		//	{
-		//		tcf_id = "BA",
-		//		ctaf_id = source.ctaf_id,
-		//		ctaf_denominacion = source.ctaf_denominacion,
-		//		op_dato1_valor = source.ban_razon_social,
-		//		op_dato1_desc = "Banco",
-		//		op_dato2_valor = source.NroTransferencia,
-		//		op_dato2_desc = "N° Transferencia",
-		//		op_dato3_valor = " ",
-		//		op_dato3_desc = " ",
-		//		op_importe = source.Importe,
-		//		op_fecha_valor = source.Fecha,
-		//		concepto_valor = string.Empty
-		//	};
-		//	ObtenerConceptoValor(ret);
-		//	return ret;
-		//}
 
 		private void ObtenerConceptoValor(ValoresDesdeObligYCredDto source)
 		{

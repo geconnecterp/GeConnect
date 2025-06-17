@@ -9,12 +9,8 @@ const IvaSituacion = {
 }
 
 const formatter = new Intl.NumberFormat('de-DE', {
-	//style: 'currency',
-	//currency: 'USD',
 	minimumFractionDigits: 2,
 	maximumFractionDigits: 2
-	//,
-	//trailingZeroDisplay: 'stripIfInteger'
 });
 
 function InicializaPantalla() {
@@ -45,8 +41,6 @@ function InicializaPantalla() {
 		ConfirmarComprobanteDeCompra();
 	});
 	$("#btnCancel").on("click", function () {
-		//LimpiarDatosDelFiltroInicial();
-		//$("#btnFiltro").trigger("click");
 		InicializarDatosEnSesion();
 		InicializaPantalla();
 		LimpiarDatosDelFiltroInicial();
@@ -84,8 +78,12 @@ function InicializaPantalla() {
 	$(document).on("keyup", "#Comprobante_cm_compte_pto_nro", ControlaKeyUpCompteNro);
 	$(document).on("keyup", "#ConceptoFacturado_concepto", ControlaKeyUpConceptoFacturado_concepto);
 	$(document).on("keyup", "#ConceptoFacturado_subtotal", ControlaKeyUpConceptoFacturado_subtotal);
+	$(document).on("focusin", "#ConceptoFacturado_subtotal", ControlaGotFocusConceptoFacturado_subtotal);
 	$(document).on("keyup", "#ConceptoFacturado_iva", ControlaKeyUpConceptoFacturado_iva);
-	//
+	$(document).on("focusin", "#ConceptoFacturado_iva", ControlaGotFocusConceptoFacturado_iva);
+	$(document).on("focusin", "#OtroTributo_base_imp", ControlaGotFocusOtroTributo_base_imp);
+	$(document).on("focusin", "#OtroTributo_alicuota", ControlaGotFocusOtroTributo_alicuota);
+	$(document).on("keyup", "#OtroTributo_base_imp", ControlaKeyUpOtroTributo_base_imp);
 
 	$(".inputEditable").on("keypress", analizaEnterInput);
 	document.getElementById("Rel01").focus();
@@ -100,6 +98,27 @@ function InicializaPantalla() {
 
 	CerrarWaiting();
 	return true;
+}
+
+function ControlaGotFocusOtroTributo_alicuota(x) {
+	x.target.select()
+}
+function ControlaGotFocusOtroTributo_base_imp(x) {
+	x.target.select()
+}
+
+function ControlaGotFocusConceptoFacturado_iva(x) {
+	x.target.select()
+}
+
+function ControlaGotFocusConceptoFacturado_subtotal(x) {
+	x.target.select()
+}
+
+function ControlaKeyUpOtroTributo_base_imp(e) {
+	if (e.which == 13 || e.which == 109) {
+		$("#OtroTributo_alicuota").trigger("focus");
+	}
 }
 
 function ControlaKeyUpConceptoFacturado_iva(e) {
@@ -177,7 +196,6 @@ function ConfirmarComprobanteDeCompra() {
 							}, false, ["Aceptar"], "error!", null);
 						}
 						else {
-							console.log(obj.msg);
 							// MOstrar mensaje
 							AbrirMensaje("ATENCIÓN", obj.msg, function () {
 								$("#msjModal").modal("hide");
@@ -236,14 +254,8 @@ function ObtenerAsociaciones() {
 				if (input.parentNode && input.parentNode.parentNode && input.parentNode.parentNode.childNodes && input.parentNode.parentNode.childNodes.length > 0) {
 					asociaciones.push({ tco_id: input.parentNode.parentNode.childNodes[13].innerText, cm_compte_rp: input.parentNode.parentNode.childNodes[11].innerText });
 				}
-				//pIds.push(input.id.substr(3, 16));
 			}
 		});
-		//if (pIds.length > 0) {
-		//	for (var i = 0; i < pIds.length; i++) {
-		//		asociaciones.push({ tco_id: pIds[i].substr(13, 16), cm_compte_rp: pIds[i].substr(0, 13) });
-		//	}
-		//}
 	}
 	return asociaciones;
 }
@@ -295,9 +307,6 @@ function InicializarDatosEnSesion() {
 				$("#msjModal").modal("hide");
 				return true;
 			}, false, ["Aceptar"], "error!", null);
-		}
-		else {
-			console.log(obj.msg);
 		}
 	});
 }
@@ -380,17 +389,9 @@ function AbrirModalConceptoFacturado() {
 		}, 500);
 		$("#ConceptoFacturado_concepto").trigger("focus");
 
-		//var input = document.getElementById("btnAgregar");
-		//input.addEventListener("keypress", function (event) {
-		//	if (event.key === "Enter") {
-		//		AgregarConceptoFacturado();
-		//	}
-		//});
 		document.getElementById("btnAgregar").addEventListener("keyup", function (event) {
 			if (event.keyCode === 13) {
-				// Check if Enter key is pressed
 				AgregarConceptoFacturado();
-				// Trigger button click
 			}
 		});
 		CerrarWaiting();
@@ -568,9 +569,7 @@ function FormatearValores(grilla, idx) {
 		if (td.length > 0) {
 			for (var i = 0; i < idx.length; i++) {
 				if (td[idx[i]].innerText !== undefined) {
-					console.log(td[idx[i]].innerText);
 					td[idx[i]].innerText = formatter.format(td[idx[i]].innerText);
-					console.log(td[idx[i]].innerText);
 				}
 			}
 		}
@@ -762,7 +761,8 @@ function quitarOtroTributo(e) {
 		addInCellGotFocusHandler();
 		addInCellEditHandler();
 		addInCellLostFocusHandler();
-		FormatearValores(tbGridOtroTributo, [4]);
+		FormatearValores(tbGridOtroTributo, [2,3,4]);
+		addMaskInEditableCells();
 		CargarGrillaTotales();
 	});
 }
@@ -1027,7 +1027,6 @@ function addInCellLostFocusHandler() {
 			var valor = $("#" + this.id).inputmask('unmaskedvalue');
 		}
 		if (actualiza) {
-			console.log("data-interaction:" + $(this).attr("data-interaction"));
 			idOtroTributoSeleccionadoFocusOut = $(this).attr("data-interaction");
 			ActualizarOtroTributo(this.id, valor);
 		}
@@ -1050,7 +1049,6 @@ function ActualizarOtroTributo(id, val) {
 			$("#tbGridOtroTributo").find('tr').each(function (i, el) {
 				var td = $(this).find('td');
 				if (td.length > 0 && td[0].innerText !== undefined && td[0].innerText === idOtroTributoSeleccionado && idOtroTributoSeleccionado == idOtroTributoSeleccionadoFocusOut) {
-					console.log("idOtroTributoSeleccionado: " + idOtroTributoSeleccionado);
 					$("#" + td[4].id).val(formatter.format(obj.data.importe));
 				}
 			});

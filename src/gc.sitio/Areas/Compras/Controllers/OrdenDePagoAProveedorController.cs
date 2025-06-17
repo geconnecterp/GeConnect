@@ -1,7 +1,5 @@
-﻿using DocumentFormat.OpenXml.Spreadsheet;
-using gc.api.core.Entidades;
+﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
-using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
 using gc.infraestructura.Dtos.OrdenDePago.Request;
@@ -11,9 +9,6 @@ using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using OfficeOpenXml.FormulaParsing.Excel.Functions;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
 
 namespace gc.sitio.Areas.Compras.Controllers
 {
@@ -808,7 +803,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 				Console.WriteLine(JsonConvert.SerializeObject(OPValoresDesdeObligYCredLista, new JsonSerializerSettings()));
 				var respuesta = _ordenDePagoServicio.ConfirmarOrdenDePagoAProveedor(req, TokenCookie);
 				return AnalizarRespuesta(respuesta, "La Orden de Compra se Confirmo con Éxito");
-				//return Json(new { error = false, warn = false, msg = "La Orden de Compra se Confirmo con Éxito" });
 			}
 			catch (Exception ex)
 			{

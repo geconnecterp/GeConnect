@@ -152,7 +152,7 @@
 	<div class="row">
 		<div class="col-9">
 			<div class="row mt-3">
-				<fieldset>
+				<fieldset style="height: 120px;">
 					<legend></legend>
 					<form class="opciones" id="radioSection">
 						<label><input type="radio" name="opcion" value="opcion1"> Costos de Otra OC</label>
@@ -166,43 +166,36 @@
 								<input class="form-check-input activable" type="checkbox" value="" id="chkPLista">
 								<label class="form-check-label" for="chkPLista" style="font-size: smaller;">PLista</label>
 							</div>
-							@* <span class="input-group-text fixed-lbl-for-abm-50">PLista: </span> *@
 							<input type="text" id="txtPLista" class="form-control" style="text-align: right;" />
 							<div class="form-check form-check-inline form-switch" style="margin: 0px;">
 								<input class="form-check-input activable" type="checkbox" value="" id="chkDto1">
 								<label class="form-check-label" for="chkDto1" style="font-size: smaller;">Dto1</label>
 							</div>
-							@* <span class="input-group-text fixed-lbl-for-abm-50">Dto1: </span> *@
 							<input type="text" id="txtDto1" class="form-control" style="text-align: right;" min="0.1" max="50" />
 							<div class="form-check form-check-inline form-switch" style="margin: 0px;">
 								<input class="form-check-input activable" type="checkbox" value="" id="chkDto2">
 								<label class="form-check-label" for="chkDto2" style="font-size: smaller;">Dto2</label>
 							</div>
-							@* <span class="input-group-text fixed-lbl-for-abm-50">Dto2: </span> *@
 							<input type="text" id="txtDto2" class="form-control" style="text-align: right;" min="0.1" max="50" />
 							<div class="form-check form-check-inline form-switch" style="margin: 0px;">
 								<input class="form-check-input activable" type="checkbox" value="" id="chkDto3">
 								<label class="form-check-label" for="chkDto3" style="font-size: smaller;">Dto3</label>
 							</div>
-							@* <span class="input-group-text fixed-lbl-for-abm-50">Dto3: </span> *@
 							<input type="text" id="txtDto3" class="form-control" style="text-align: right;" min="0.1" max="50" />
 							<div class="form-check form-check-inline form-switch" style="margin: 0px;">
 								<input class="form-check-input activable" type="checkbox" value="" id="chkDto4">
 								<label class="form-check-label" for="chkDto4" style="font-size: smaller;">Dto4</label>
 							</div>
-							@* <span class="input-group-text fixed-lbl-for-abm-50">Dto4: </span> *@
 							<input type="text" id="txtDto4" class="form-control" style="text-align: right;" min="0.1" max="50" />
 							<div class="form-check form-check-inline form-switch" style="margin: 0px;">
 								<input class="form-check-input activable" type="checkbox" value="" id="chkDpa">
 								<label class="form-check-label" for="chkDpa" style="font-size: smaller;">DPA</label>
 							</div>
-							@* <span class="input-group-text fixed-lbl-for-abm-50">DPA: </span> *@
 							<input type="text" id="txtDpa" class="form-control" style="text-align: right;" min="0.1" max="50" />
 							<div class="form-check form-check-inline form-switch" style="margin: 0px;">
 								<input class="form-check-input activable" type="checkbox" value="" id="chkBoni">
 								<label class="form-check-label" for="chkBoni" style="font-size: smaller;">Boni</label>
 							</div>
-							@* <span class="input-group-text fixed-lbl-for-abm-50">Boni: </span> *@
 							<input type="text" id="txtBoni" class="form-control" style="text-align: right;" min="0.1" max="50" />
 						</div>
 					</div>
@@ -214,8 +207,6 @@
 					</div>
 					<div id="sectionDestinoDeAplicacion" class="mt-2">
 						<div class="input-group input-group-sm mt-1 opciones">
-							@* <label><input type="checkbox" name="chkPrecio_oc"> Aplicar en Precio de OC</label>
-							<label><input type="checkbox" name="chkPrecio_fac"> Aplicar en Factura</label> *@
 							<div class="input-group input-group-sm" style="padding-right: 0px;">
 								<div class="form-check form-check-inline form-switch mb-2">
 									<input class="form-check-input activable" type="checkbox" value="" id="chkPrecio_oc" checked>
@@ -236,7 +227,7 @@
 		</div>
 		<div class="col-3">
 			<div class="row mt-3">
-				<fieldset>
+				<fieldset style="height: 120px;">
 					<legend></legend>
 					<div class="row mt-1">
 						<div class="input-group input-group-sm" style="padding-right: 0px;">
@@ -267,89 +258,4 @@
 			</div>
 		</div>
 	</div>
-	@* <div class="row" style="visibility:collapse;">
-		<div class="col-md-6">
-			<div class="row">
-				<div class="col-md-4">
-					<div class="row mt-1">
-						<div class="input-group input-group-sm" style="padding-right:0px;">
-							<span class="input-group-text fixed-lbl-for-abm-30">OC:</span>
-							<input type="text" class="form-control activable inputEditable" id="txtOC" />
-							<button id="btnAplicarOC" class="btn btn-primary btn-sm" type="button" title="Aplicar descuento">
-								<i class="bx bx-file-plus"></i>
-							</button>
-						</div>
-					</div>
-				</div>
-				<div class="col-md-4">
-					<div class="row mt-1">
-						<div class="input-group input-group-sm" style="padding-right: 0px;padding-left: 25px;">
-							<button type="button" class="btn btn-primary fixed-width-100" style="margin-left:5px;" id="btnCostoOC">
-								<span>Costo OC</span>
-							</button>
-							<button type="button" class="btn btn-primary fixed-width-100" style="margin-left:5px;" id="btnCostoActual">
-								<span>Costo Actual</span>
-							</button>
-						</div>
-					</div>
-				</div>
-				<div class="col-md-4">
-					<div class="row mt-1" style="width: 250px;">
-						<div class="input-group input-group-sm" style="padding-right: 0px;padding-left: 0px;">
-							<div class="form-check form-check-inline form-switch mb-2">
-								<input class="form-check-input activable" type="checkbox" value="" id="chkDifPrecio" checked>
-								<label class="form-check-label" for="chkDifPrecio" style="font-size: smaller;"> Dif Precio</label>
-							</div>
-							<div class="form-check form-check-inline form-switch mb-2">
-								<input class="form-check-input activable" type="checkbox" value="" id="chkDifCantidad" checked>
-								<label class="form-check-label" for="chkDifCantidad" style="font-size: smaller;"> Dif Cantidad</label>
-							</div>
-						</div>
-					</div>
-					<div class="row mt-1">
-						<div class="input-group input-group-sm" style="padding-right: 0px;padding-left: 0px;">
-							<div class="d-flex justify-content-sm-center">
-								<button id="btnAceptarDesdeDetalleRpr" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Aceptar">
-									<i class="bx bx-file-plus"></i>
-								</button>
-
-								<button id="btnCancelarDesdeDetalleRpr" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar">
-									<i class="bx bx-x-circle bx-xs"></i>
-								</button>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-		<div class="col-md-6">
-			<div class="row col-6">
-				<div class="btn-group" role="group" aria-label="Basic radio toggle button group">
-					<input type="radio" class="btn-check radioBtnClass" name="btnradio" id="btnradio1" checked value="1">
-					<label class="btn btn-outline-primary" for="btnradio1" style="max-height: 25px;">Aplica a OC</label>
-					<input type="radio" class="btn-check radioBtnClass" name="btnradio" id="btnradio2" value="2">
-					<label class="btn btn-outline-primary" for="btnradio2" style="max-height: 25px;">Aplica a Factura</label>
-				</div>
-			</div>
-			<div class="row">
-				<div class="input-group input-group-sm mt-1">
-					<span class="input-group-text fixed-lbl-for-abm-50">Dto1: </span>
-					<input type="text" id="txtDto1" class="form-control" style="text-align: right;" min="0.1" max="50" />
-					<span class="input-group-text fixed-lbl-for-abm-50">Dto2: </span>
-					<input type="text" id="txtDto2" class="form-control" style="text-align: right;" min="0.1" max="50" />
-					<span class="input-group-text fixed-lbl-for-abm-50">Dto3: </span>
-					<input type="text" id="txtDto3" class="form-control" style="text-align: right;" min="0.1" max="50" />
-					<span class="input-group-text fixed-lbl-for-abm-50">Dto4: </span>
-					<input type="text" id="txtDto4" class="form-control" style="text-align: right;" min="0.1" max="50" />
-					<span class="input-group-text fixed-lbl-for-abm-50">DPA: </span>
-					<input type="text" id="txtDpa" class="form-control" style="text-align: right;" min="0.1" max="50" />
-					<span class="input-group-text fixed-lbl-for-abm-50">Boni: </span>
-					<input type="text" id="txtBoni" class="form-control" style="text-align: right;" min="0.1" max="50" />
-					<button id="btnAplicarSeteoMasivo" class="btn btn-dark btn-sm" style="margin-left:5px;margin-right: 5px;" type="button" title="Aplicar">
-						<i class="bx bx-file-plus"></i>
-					</button>
-				</div>
-			</div>
-		</div>
-	</div> *@
 </div>

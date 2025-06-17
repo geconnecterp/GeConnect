@@ -1,8 +1,6 @@
 ﻿using AutoMapper;
 using gc.api.core.Contratos.Servicios;
 using gc.api.core.Contratos.Servicios.Tipos;
-using gc.api.core.Entidades;
-using gc.api.core.Servicios;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;

@@ -591,7 +591,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 								prod.ocd_dto4 = elemento.ocd_dto4; 
 								prod.ocd_dto_pa = elemento.ocd_dto_pa; 
 								prod.ocd_boni = elemento.ocd_boni; 
-								prod.rpd_pcosto = CalcularPCosto(elemento.ocd_plista, elemento.ocd_dto1, elemento.ocd_dto2, elemento.ocd_dto3, elemento.ocd_dto4, elemento.ocd_dto_pa, elemento.ocd_boni, 0, prod.rpd_cantidad);
+								prod.ocd_pcosto = CalcularPCosto(elemento.ocd_plista, elemento.ocd_dto1, elemento.ocd_dto2, elemento.ocd_dto3, elemento.ocd_dto4, elemento.ocd_dto_pa, elemento.ocd_boni, 0, prod.rpd_cantidad);
 								if (!oc_compte.Equals("relacionada") && !oc_compte.Equals("actual"))
 									prod.oc_compte = oc_compte;
 							}
