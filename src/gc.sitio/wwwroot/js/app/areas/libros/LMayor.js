@@ -233,8 +233,8 @@ function buscarLibroDiario() {
     const data = {
         Eje_nro: params.eje_nro,
         Periodo: params.rango,
-        Desde: params.desde ? new Date(parseFechaES(params.desde)) : new Date(),
-        Hasta: params.hasta ? new Date(parseFechaES(params.hasta)) : new Date(),
+        Desde: params.desde,// ? new Date(parseFechaES(params.desde)) : new Date(),
+        Hasta: params.hasta,// ? new Date(parseFechaES(params.hasta)) : new Date(),
         Movimientos: movimientos.join(','),
         ConTemporales: params.incluirTemporales,
         Pag: 1,
@@ -1094,7 +1094,7 @@ function buscarLibroMayor(pag = 1) {
     cargarReporteEnArre(11, data1, "Libro Mayor", "Cuenta: " + data1.ccb_desc, "");
 
     // Verificar si cambió la búsqueda o solo la página
-    var buscaNew = JSON.stringify(mayorDataBak) != JSON.stringify(data1);
+    var buscaNew = JSON.stringify(mayorDataBak) !== JSON.stringify(data1);
 
     if (buscaNew === false) {
         // Son iguales las condiciones, solo cambia de página
@@ -1114,6 +1114,9 @@ function buscarLibroMayor(pag = 1) {
 
     // Combinamos todos los parámetros
     var data = $.extend({}, data1, data2);
+
+    limpiarMayorXDia();
+    limpiarLibroDiario();
 
     // Realizamos la petición al servidor
     PostGenHtml(data, obtenerLibroMayorUrl, function (obj) {
