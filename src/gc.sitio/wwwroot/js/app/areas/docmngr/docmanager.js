@@ -288,8 +288,6 @@ function invocacionGestorDoc(data) {
             //antes de abrir el modal, se cargará el arbol de archivos
             presentarArchivos();
 
-        
-
             $("#modalGestorDocumental").show();
 
             $("#docmgrmodal").modal("show");
@@ -527,9 +525,19 @@ function procesarNodosArbol(nodos) {
         if (nodo.id && !isNaN(parseInt(nodo.id)) && nodo.parent !== "#") {
             const reporteId = parseInt(nodo.id);
 
-            // Verificar si el reporte tiene parámetros guardados
-            if (arrRepoParams[reporteId - 1] === null || arrRepoParams[reporteId - 1] === undefined) {
-                // No hay parámetros guardados, deshabilitar el nodo
+            // Verificar si el reporte tiene parámetros guardados - MODIFICACIÓN: verificación más genérica
+            if (typeof arrRepoParams === 'undefined' ||
+                reporteId <= 0 ||
+                reporteId > arrRepoParams.length ||
+                arrRepoParams[reporteId - 1] === null ||
+                arrRepoParams[reporteId - 1] === undefined ||
+                // Verificar que tiene los campos mínimos necesarios
+                (arrRepoParams[reporteId - 1] && (
+                    !arrRepoParams[reporteId - 1].parametros ||
+                    Object.keys(arrRepoParams[reporteId - 1].parametros).length === 0
+                ))
+            ) {
+                // No hay parámetros guardados o son insuficientes, deshabilitar el nodo
                 nodo.state = nodo.state || {};
                 nodo.state.disabled = true;
 
@@ -583,7 +591,8 @@ function imprimirArchivoSeleccionado() {
                     const solicitudReporte = {
                         Reporte: data.reporte,  // Con mayúscula para coincidir con C#
                         Parametros: data.parametros,  // Con mayúscula
-                        Titulo: data.titulo,  // Con mayúscula
+                        Titulo: node.text,  // Con mayúscula
+                        SubTitulo: data.subTitulo,
                         Observacion: data.observacion || "",  // Con mayúscula
                         Formato: "P",  // Con mayúscula (PDF)
                         LogoPath: "",  // Con mayúscula

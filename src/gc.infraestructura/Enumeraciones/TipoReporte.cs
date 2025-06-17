@@ -23,5 +23,8 @@ namespace gc.infraestructura.Enumeraciones
         R008_InfoRecProvDet=8,
         R009_InfoAsientos = 9,
         R010_InfoDetalleAsiento = 10,
+        R011_LibroMayorContable = 11,
+        R012_ResumenLibroMayorContable = 12,
+        R013_LibroDiarioXCuenta = 13,
     }
 }

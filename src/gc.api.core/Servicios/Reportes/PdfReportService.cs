@@ -1,9 +1,9 @@
 ﻿using gc.api.core.Contratos.Servicios;
 using gc.api.core.Contratos.Servicios.Asientos;
+using gc.api.core.Contratos.Servicios.Libros;
 using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
-using gc.api.core.Servicios.Reportes;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Enumeraciones;
@@ -13,14 +13,17 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text;
 
-namespace gc.api.core.Servicios
+namespace gc.api.core.Servicios.Reportes
 {
     public class ReportService : Servicio<EntidadBase>, IReportService
     {
         private readonly Dictionary<InfoReporte, IGeneradorReporte> _generadoresReporte;
         private readonly ILogger<ReportService> _logger;
 
-        public ReportService(IUnitOfWork uow, IConsultaServicio consSv,IAsientoTemporalServicio asiento,
+        public ReportService(IUnitOfWork uow, IConsultaServicio consSv,
+            IAsientoTemporalServicio asiento,
+            IApiLMayorServicio apiLMayor,
+            IAsientoLibroDiarioServicio ldSv,
              IOptions<EmpresaGeco> empresa, ICuentaServicio ctaSv, ILogger<ReportService> logger) : base(uow)
         {
 
@@ -37,6 +40,9 @@ namespace gc.api.core.Servicios
                 { InfoReporte.R008_InfoRecProvDet, new R008_InformeRecepcionProveedorDetalle(uow,consSv,empresa,ctaSv, logger) },
                 { InfoReporte.R009_InfoAsientos, new R009_InformeDeAsientos(uow,asiento,empresa,ctaSv, logger) },
                 { InfoReporte.R010_InfoDetalleAsiento, new R010_DetalleDeAsiento(uow,asiento,empresa,ctaSv, logger) },
+                { InfoReporte.R011_LibroMayorContable, new R011_LibroMayorContable(uow,apiLMayor,empresa,ctaSv, logger) },
+                { InfoReporte.R012_ResumenLibroMayorContable, new R012_ResumenLibroMayorContable(uow,apiLMayor,empresa,ctaSv, logger) },
+                { InfoReporte.R013_LibroDiarioXCuenta, new R013_LibroDiarioXCuenta(uow,ldSv,empresa,ctaSv, logger) },
             };
             _logger = logger;
         }
