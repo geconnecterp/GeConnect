@@ -16,6 +16,15 @@
         "themes/default-dark/throbber.gif",
         "jstree.min.js"
       ]
+    },
+    {
+      "library": "bootstrap-datepicker@1.10.0",
+      "destination": "wwwroot/lib/bootstrap-datepicker/",
+      "files": [
+        "js/bootstrap-datepicker.min.js",
+        "css/bootstrap-datepicker3.min.css",
+        "css/bootstrap-datepicker.min.css"
+      ]
     }
   ]
 }
