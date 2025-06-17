@@ -92,7 +92,7 @@ function btnAgregarValorValidar() {
 	//TODO MARCE: Ver de donde saco los datos "importe" y "valor_a_nombre_de"
 	var app = "OPP";
 	var importe = 0;
-	var valor_a_nombre_de = "";
+	var valor_a_nombre_de = valorANombreDe;
 	var valores = [];
 	var data = { app, importe, valor_a_nombre_de, valores };
 	invocarModalDeSeleccionDeValores(data);
@@ -332,6 +332,7 @@ function AceptarDesdeValidPrev() {
 			$("#btnDetalle").trigger("click");
 			$("#divDetalle").collapse("hide");
 		});
+		valorANombreDe = $("#valoresANombreDe").val();
 	});
 }
 

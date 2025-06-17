@@ -28,7 +28,7 @@
 				@foreach (var item in Model.ListaDatos)
 				{
 					<tr onclick="selectReg(this, 'tbListaObligaciones')" ondblclick="selectRegDbl(this, 'tbListaObligaciones')">
-						<td class="@Model.ObtenerClase(item.tco_desc)">@Model.FormatearDato(item.tco_desc, FormatDato.Ninguno)</td>
+						<td class="@Model.ObtenerClase(item.concepto)">@Model.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
 						<td class="@Model.ObtenerClase(item.cm_compte_cuota)">@Model.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
 						<td class="@Model.ObtenerClase(item.cv_fecha_vto)">@Model.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
 						<td class="@Model.ObtenerClase(item.cv_importe)">@Model.FormatearDato(item.cv_importe, FormatDato.Monto)</td>

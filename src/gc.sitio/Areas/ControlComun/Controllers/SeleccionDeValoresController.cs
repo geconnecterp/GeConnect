@@ -11,6 +11,7 @@ using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 namespace gc.sitio.Areas.ControlComun.Controllers
 {
@@ -20,13 +21,34 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 		private readonly AppSettings _setting;
 		private readonly ITipoCuentaFinServicio _tipoCuentaFinServicio;
 		private readonly IFinancieroServicio _financieroServicio;
+		private readonly ICuentaServicio _cuentaServicio;
 
 		public SeleccionDeValoresController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<SeleccionDeValoresController> logger,
-											ITipoCuentaFinServicio tipoCuentaFinServicio, IFinancieroServicio financieroServicio) : base(options, contexto, logger)
+											ICuentaServicio cuentaServicio,ITipoCuentaFinServicio tipoCuentaFinServicio, IFinancieroServicio financieroServicio) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
 			_tipoCuentaFinServicio = tipoCuentaFinServicio;
 			_financieroServicio = financieroServicio;
+			_cuentaServicio = cuentaServicio;
+		}
+
+		public string CtaValoresANombre
+		{
+			get
+			{
+				var txt = _context.HttpContext?.Session.GetString("CtaValoresANombre");
+				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
+				{
+					return string.Empty;
+				}
+				return JsonConvert.DeserializeObject<string>(txt) ?? string.Empty;
+			}
+			set
+			{
+				var valor = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("CtaValoresANombre", valor);
+			}
+
 		}
 
 		public IActionResult Index()
@@ -40,6 +62,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 			RespuestaGenerica<EntidadBase> response = new();
 			try
 			{
+				CtaValoresANombre = req.valor_a_nombre_de;
 				var tipoCuentaFinLista = _tipoCuentaFinServicio.GetTipoCuentaFinParaSeleccionDeValores(req.app, TokenCookie);
 				var model = new SeleccionDeValoresViewModel()
 				{
@@ -149,7 +172,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 						};
 						return View("~/areas/ControlComun/views/SeleccionDeValores/_edicion_tipo_terceros_en_cartera.cshtml", modelCH);
 					case "EC":
-						var modelEC = new EdicionTipoEmisionChequesModel();
+						var modelEC = new EdicionTipoEmisionChequesModel() { ANombreDe = CtaValoresANombre };
 						return View("~/areas/ControlComun/views/SeleccionDeValores/_edicion_tipo_emision_cheques.cshtml", modelEC);
 					case "EF":
 						var modelEF = new EdicionTipoEfectivoCajasModel();

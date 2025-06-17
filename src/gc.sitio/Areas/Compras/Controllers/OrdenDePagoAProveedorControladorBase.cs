@@ -37,6 +37,25 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		}
 
+		public string CtaValoresANombre
+		{
+			get
+			{
+				var txt = _context.HttpContext?.Session.GetString("CtaValoresANombre");
+				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
+				{
+					return string.Empty;
+				}
+				return JsonConvert.DeserializeObject<string>(txt) ?? string.Empty;
+			}
+			set
+			{
+				var valor = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("CtaValoresANombre", valor);
+			}
+
+		}
+
 		public List<OPValidacionPrevDto> OPValidacionPrevLista
 		{
 			get

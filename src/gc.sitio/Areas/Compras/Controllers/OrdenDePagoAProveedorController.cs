@@ -19,6 +19,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private readonly ICuentaServicio _cuentaServicio;
 		private readonly IOrdenDePagoServicio _ordenDePagoServicio;
 		private readonly ITipoGastoServicio _tipoGastoServicio;
+		private readonly IProveedorServicio _proveedorServicio;
 
 		private const string tabla_obligaciones = "tbListaObligaciones";
 		private const string tabla_creditos = "tbListaCreditos";
@@ -28,13 +29,14 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private const string accion_agregar = "agregar";
 		private const string accion_quitar = "quitar";
 
-		public OrdenDePagoAProveedorController(IOrdenDePagoServicio ordenDePagoServicio, ICuentaServicio cuentaServicio, ITipoGastoServicio tipoGastoServicio,
+		public OrdenDePagoAProveedorController(IOrdenDePagoServicio ordenDePagoServicio, ICuentaServicio cuentaServicio, ITipoGastoServicio tipoGastoServicio, IProveedorServicio proveedorServicio,
 											   IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<OrdenDePagoAProveedorController> logger) : base(options, contexto, logger)
 		{
 			_settings = options.Value;
 			_cuentaServicio = cuentaServicio;
 			_ordenDePagoServicio = ordenDePagoServicio;
 			_tipoGastoServicio = tipoGastoServicio;
+			_proveedorServicio = proveedorServicio;
 		}
 
 		public IActionResult Index()
@@ -77,6 +79,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				var res = _ordenDePagoServicio.GetOPValidacionesPrev(cta_id, TokenCookie);
 				OPValidacionPrevLista = res;
 				var model = ObtenerGridCoreSmart<OPValidacionPrevDto>(res);
+
 				return PartialView("_grillaValidacionesPrev", model);
 			}
 			catch (Exception ex)
@@ -132,6 +135,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 				CtaIdSelected = cta_id;
 				OPDebitoNuevaLista = [];
 				OPCreditoNuevaLista = [];
+				var aNombreDe=_cuentaServicio.GetFormaDePagoPorCuentaYFP(CtaIdSelected, "H", TokenCookie).First();
+				if (aNombreDe != null && !string.IsNullOrEmpty(aNombreDe.cta_valores_a_nombre))
+					model.valoresANombreDe = aNombreDe.cta_valores_a_nombre;
+				else
+				{
+					var nombreAux = _proveedorServicio.GetProveedorParaABM(cta_id, TokenCookie);
+					if (nombreAux != null && nombreAux.Count > 0 && !string.IsNullOrEmpty(nombreAux.First().Cta_Denominacion))
+						model.valoresANombreDe = nombreAux.First().Cta_Denominacion;
+				}
 				return PartialView("_vistaObligYCred_paso1", model);
 			}
 			catch (Exception ex)
