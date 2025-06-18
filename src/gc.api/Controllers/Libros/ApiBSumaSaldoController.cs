@@ -11,16 +11,16 @@ namespace gc.api.Controllers.Libros
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class ApiSumaSaldoController : ControllerBase
+    public class ApiBSumaSaldoController : ControllerBase
     {
         private readonly IApiSumaSaldoServicio _bssSv;
         private readonly AppSettings _appSettings;
-        private readonly ILogger<ApiSumaSaldoController> _logger;
+        private readonly ILogger<ApiBSumaSaldoController> _logger;
 
-        public ApiSumaSaldoController(
+        public ApiBSumaSaldoController(
             IApiSumaSaldoServicio bssSv,
             IOptions<AppSettings> appSettings,
-            ILogger<ApiSumaSaldoController> logger)
+            ILogger<ApiBSumaSaldoController> logger)
         {
             _bssSv = bssSv;
             _appSettings = appSettings.Value;

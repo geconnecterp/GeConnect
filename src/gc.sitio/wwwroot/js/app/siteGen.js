@@ -866,6 +866,14 @@ function formatoFechaYMD(pFecha) {
     return f.getFullYear() + '-' + month + '-' + day;
 }
 
+function formatoFecha_ddMMyyyy(pFecha) {
+    var f = new Date(pFecha);
+    var month = ('0' + (f.getMonth() + 1)).slice(-2); // Asegura que el mes siempre tenga dos dígitos
+    var day = ('0' + f.getDate()).slice(-2); // Asegura que el día siempre tenga dos dígitos
+    return day + "/" + month + "/" + f.getFullYear();
+ 
+}
+
 function restarFecha(pFecha, diasRestar) {
     var fecha = new Date(pFecha);
     fecha.setDate(fecha.getDate() - diasRestar);
@@ -980,3 +988,65 @@ function b64toBlob(b64Data, contentType, sliceSize) {
 
     return new Blob(byteArrays, { type: contentType });
 }
+
+/**
+ * Valida que la fecha Desde no sea mayor a la fecha Hasta
+ */
+function validarRangoFechas() {
+    // Remover mensaje de error previo
+    $("#fechaError").remove();
+
+    const fechaDesde = $("input[name='Desde']").val();
+    const fechaHasta = $("input[name='Hasta']").val();
+
+    // Solo validar si ambas fechas tienen valor
+    if (fechaDesde && fechaHasta) {
+        const desde = parseFechaES(fechaDesde);
+        const hasta = parseFechaES(fechaHasta);
+
+        if (desde && hasta && desde > hasta) {
+            // Agregar mensaje de error después del campo Hasta
+            $("input[name='Hasta']").parent().after(
+                `<div id="fechaError" class="text-danger small mt-1">
+                    <i class="bx bx-error-circle"></i> 
+                    La fecha Desde no puede ser mayor a la fecha Hasta
+                </div>`
+            );
+
+            // Cambiar estilo de los campos de fecha para indicar error
+            $("input[name='Desde'], input[name='Hasta']").addClass("is-invalid");
+        } else {
+            // Quitar estilo de error si las fechas son válidas
+            $("input[name='Desde'], input[name='Hasta']").removeClass("is-invalid");
+        }
+    }
+}
+
+/**
+ * Parsea una fecha en formato DD/MM/YYYY a objeto Date
+ * @param {string} fechaStr - Fecha en formato DD/MM/YYYY
+ * @returns {Date|null} Objeto Date o null si el formato es inválido
+ */
+function parseFechaES(fechaStr) {
+    if (!fechaStr) return null;
+
+    // Diferentes formatos posibles (DD/MM/YYYY o YYYY-MM-DD)
+    let fecha;
+
+    if (fechaStr.includes('/')) {
+        // Formato DD/MM/YYYY
+        const partes = fechaStr.split('/');
+        if (partes.length !== 3) return null;
+
+        fecha = new Date(parseInt(partes[2]), parseInt(partes[1]) - 1, parseInt(partes[0]));
+    } else if (fechaStr.includes('-')) {
+        // Formato YYYY-MM-DD
+        fecha = new Date(fechaStr);
+    } else {
+        return null;
+    }
+
+    // Verificar si la fecha es válida
+    return isNaN(fecha.getTime()) ? null : fecha;
+}
+

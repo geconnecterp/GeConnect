@@ -50,5 +50,6 @@ namespace gc.sitio.Areas.Libros.Controllers
                 _context.HttpContext?.Session.SetString("LibroDiario", json);
             }
         }
+
     }
 }
