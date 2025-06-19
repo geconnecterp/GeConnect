@@ -106,7 +106,7 @@ namespace gc.api.infra.Extensions
             /// Servicios de Libros
             services.AddScoped<IApiLMayorServicio, ApiLMayorServicio>();
             services.AddScoped<IAsientoLibroDiarioServicio, AsientoLibroDiarioServicio>();
-            
+            services.AddScoped<IApiSumaSaldoServicio, ApiSumaSaldoServicio>();
             //De Reportes
 
             services.AddScoped<IReportService, ReportService>();

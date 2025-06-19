@@ -9,7 +9,7 @@ namespace gc.infraestructura.EntidadesComunes
     /// <summary>
     /// Filtro para la búsqueda del Libro Mayor
     /// </summary>
-    public class LMayorFiltroDto
+    public class LibroFiltroDto
     {
         public int eje_nro { get; set; }
         public string ccb_id { get; set; } = string.Empty;

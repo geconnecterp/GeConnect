@@ -1,12 +1,11 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes;
-using gc.infraestructura.Dtos.Asientos;
 using gc.infraestructura.Dtos.Libros;
 using gc.infraestructura.EntidadesComunes;
 
 namespace gc.sitio.core.Servicios.Contratos.Libros
 {
-    public interface ILibroMayorServicio
+    public interface IBSSServicio
     {
-        Task<(List<LMayorRegListaDto>, MetadataGrid)> ObtenerLibroMayor(LibroFiltroDto query, string token);
+        Task<(List<BSumaSaldoRegDto>,MetadataGrid)> ObtenerBalanceSumaSaldos(LibroFiltroDto request, string token);        
     }
 }

@@ -1,8 +1,8 @@
 ﻿@{
     Layout = "~/views/shared/_Layout.cshtml";
 
-    var filtro = new QueryAsiento() { Modelo = ModeloFilter.LIBRO_MAYOR };
-    var filtro2 = new QueryFilters() { Modelo = ModeloFilter.LIBRO_MAYOR };
+    var filtro = new QueryAsiento() { Modelo = ModeloFilter.BSS };
+    var filtro2 = new QueryFilters() { Modelo = ModeloFilter.BSS };
 }
 @section styles {
     <link rel="stylesheet" href="~/css/simplePagination.css" />
@@ -32,7 +32,7 @@
     @Html.Hidden("pagEstado", false)
 </div>
 <div class="collapse" id="divDetalle">
-    <partial name="_n01TabsLMayor" />
+    <partial name="_n01TabsBss" />
 </div>
 
 <div class="row">
@@ -42,23 +42,12 @@
 </div>
 <div id="modalGestorDocumental"></div>
 
-<!-- Modal para seleccionar cuenta contable -->
-<partial name="~/Areas/Libros/Views/Mayor/_selectorCuentas.cshtml" />
-
 @section scripts {
     <script type="text/javascript">
         var primerArranque = true;
-        var homeLMayorUrl = "@Url.Action("index", "Mayor", new { area = "Libros" })";
-        var obtenerEjerciciosUrl = "@Url.Action("ObtenerEjercicios", "Mayor", new { area = "Libros" })";
-        var obtenerCuentasContablesUrl = "@Url.Action("ObtenerCuentasContables", "Mayor", new { area = "Libros" })";
-        var obtenerLibroMayorUrl = "@Url.Action("ObtenerLibroMayor", "Mayor", new { area = "Libros" })";
-
-        var obtenerMayorDiarioUrl = '@Url.Action("LMAcumuladoXDia", "Mayor", new { area = "Libros" })';
-        var obtenerDetalleDiarioUrl = '@Url.Action("LMAcumuladoXDiaDetalle", "Mayor", new { area = "Libros" })';
-        var obtenerAsientosLibroDiarioUrl = '@Url.Action("ObtenerAsientosLibroDiario", "Mayor", new { area = "Libros" })'
-
-        var buscarAsientoDefUrl = "@Url.Action("BuscarAsiento", "AsientoDefinitivo", new { area = "Asientos" })";
-        var buscarPlanCuentasUrl = '@Url.Action("Buscar", "ABMPlanCuenta", new { area = "ABMs" })';
+        var homeBSSUrl = "@Url.Action("index", "bss", new { area = "Libros" })";
+        var obtenerEjerciciosUrl = "@Url.Action("ObtenerEjercicios", "bss", new { area = "Libros" })";
+        var obtenerBSSUrl = "@Url.Action("obtenerBSS", "bss", new { area = "Libros" })";
 
         var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "Mayor", new { area = "Libros" })";
 
@@ -69,9 +58,8 @@
         var enviarEmailUrl = "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
         var enviarWhatsAppUrl = "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
 
-        console.log("URL Mayor Diario:", obtenerMayorDiarioUrl);
-        console.log("URL Detalle Diario:", obtenerDetalleDiarioUrl);
     </script>
+
     <script src="~/lib/jstree/jstree.min.js"></script>
     <script src="~/js/mask/jquery.inputmask.min.js"></script>
     <script src="~/js/plugins/jquery.simplePagination.js"></script>
@@ -79,5 +67,5 @@
     <script src="~/js/app/areas/docmngr/docmanager.js"></script>
     <script src="~/js/app/areas/abms/abmsettings.js"></script>
     <script src="~/js/app/areas/abms/abmcommons.js"></script>
-    <script src="~/js/app/areas/libros/LMayor.js"></script>
+    <script src="~/js/app/areas/libros/bss.js"></script>
 }

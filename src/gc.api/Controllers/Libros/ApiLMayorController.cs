@@ -40,7 +40,7 @@ namespace gc.api.Controllers.Libros
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult<ApiResponse<List<LMayorRegListaDto>>> ObtenerLibroMayor([FromBody] LMayorFiltroDto query)
+        public ActionResult<ApiResponse<List<LMayorRegListaDto>>> ObtenerLibroMayor([FromBody] LibroFiltroDto query)
         {
             // Validar parámetros de entrada
             if (query == null)

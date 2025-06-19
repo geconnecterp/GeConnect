@@ -5,7 +5,8 @@
         CCUENTAS, //CONSULTA DE CUENTAS COMERCIALES
         ASTEMP, //ASIENTOS TEMPORALES
         ASDEF, //ASIENTOS DEFINITIVOS
-        LMAYOR, //LIBRO MAYOR
+        LMAYOR, //LIBRO MAYOR,
+        BSS, //BALANCE SUMA SALDOS
     }
 
     public enum AppReportes

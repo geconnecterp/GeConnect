@@ -1,4 +1,8 @@
-﻿<div class="card card-golden">
+﻿@model QueryAsiento
+@{
+    string etiqueta = Model.Modelo == ModeloFilter.BSS ? "Fechas Asiento" : "Rango de Fechas";
+}
+<div class="card card-golden">
     <div class="card-header mb-2">
         <h5 class="mb-0">Filtros para Libro Mayor</h5>
     </div>
@@ -17,17 +21,18 @@
                     </div>
                 </div>
                 @Html.DropDownList("Eje_nro", ViewBag.ListaEjercicios as SelectList,
-                         new
-                         {
-                             @class = "form-control inputEditable",
-                             style = "background-color:rgb(251,255,195);font-weight:900;"
-                         })
+                                  new
+                                  {
+                                      @class = "form-control inputEditable",
+                                      style = "background-color:rgb(251,255,195);font-weight:900;"
+                                  })
 
                 <input type="hidden" id="incluirTemporales" value="false" />
             </div>
-
-            <div class="col-md-6">
-                <div class="form-check form-switch mb-2">
+            @if (Model.Modelo == ModeloFilter.LIBRO_MAYOR)
+            {
+                <div class="col-md-6">
+                    <div class="form-check form-switch mb-2">
                     <input class="form-check-input" type="checkbox" id="chkCuenta" checked disabled>
                     <label class="form-check-label fw-medium" for="chkCuenta">Cuenta contable</label>
                 </div>
@@ -43,13 +48,14 @@
                 <input type="hidden" id="cuentaId" value="" />
                 <input type="hidden" id="cuentaDesc" value="" />
             </div>
+            }
         </div>
 
         <div class="row mb-3">
             <div class="col-md-12">
                 <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" id="Rango">
-                    <label class="form-check-label fw-medium" for="Rango">Rango de fechas</label>
+                    <label class="form-check-label fw-medium" for="Rango">@etiqueta</label>
                 </div>
             </div>
         </div>
