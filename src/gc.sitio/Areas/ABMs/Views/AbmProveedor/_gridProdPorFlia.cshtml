@@ -3,30 +3,33 @@
 }
 <style>
 	thead th {
-		position: sticky;
-		top: 0px;
+	position: sticky;
+	top: 0px;
 	}
 </style>
 <div class="card">
-	<div class="card-body">
+	<div class="card-body" style="padding:5px;">
 		<div class="table-responsive text-nowrap table-wrapper-200-full">
 			<table class="table table-sm mb-0 table-hover" id="tbProductosPorFamilia">
 				<thead class="table-dark">
 					<tr class="header">
 						<th><input name="select_all" value="1" type="checkbox"></th>
-						<th class="col-header-small align-center">ID</th>
-						<th class="col-header-small align-center">Descripción</th>
+						<th class="col-header-small align-center" style="width:15%;">ID</th>
+						<th class="col-header-small align-center" style="width:85%;">Descripción</th>
 					</tr>
 				</thead>
 				<tbody>
-					@foreach (var item in Model.ProductosPorFamilia.ListaDatos)
+					@if (Model != null && Model.ProductosPorFamilia != null && Model.ProductosPorFamilia.ListaDatos != null)
 					{
-						var nombre = "chk" + item.P_id;
-						<tr>
-							<td><input type="checkbox" name=@nombre /></td>
-							<td class="align-center">@item.P_id</td>
-							<td class="align-left">@item.P_desc</td>
-						</tr>
+						@foreach (var item in Model.ProductosPorFamilia.ListaDatos)
+						{
+							var nombre = "chk" + item.P_id;
+							<tr>
+								<td><input type="checkbox" name=@nombre /></td>
+								<td class="align-center">@item.P_id</td>
+								<td class="align-left">@item.P_desc</td>
+							</tr>
+						}
 					}
 				</tbody>
 			</table>

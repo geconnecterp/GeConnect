@@ -27,19 +27,19 @@
 						<partial name="~/areas/controlcomun/views/cuentacomercial/_ctrBuscarCC.cshtml" />
 					</div>
 					<div class="col-4" style="text-align: right;">
-						<button type="button" class="btn btn-success" style="margin-left:5px;" id="btnAceptarAutoRP">
-							<span class="tf-icons bx bx-check-circle">Aceptar</span>
+						<button type="button" class="btn btn-success" id="btnAceptarAutoRP" title="Aceptar">
+							<span class="bx bx-check-circle"></span>
 						</button>
-						<button type="button" class="btn btn-danger" style="margin-left:5px;" id="btnEliminarAutoRP">
-							<span class="tf-icons bx bx-trash">Eliminar</span>
+						<button type="button" class="btn btn-danger" id="btnEliminarAutoRP" title="Eliminar">
+							<span class="bx bx-trash"></span>
 						</button>
-						<button type="button" class="btn btn-primary" style="margin-left:5px;" id="btnRegresarASelAuto">
-							<span class="tf-icons bx bx-left-arrow-circle">Regresar</span>
+						<button type="button" class="btn btn-primary" id="btnRegresarASelAuto" title="Regresar">
+							<span class="bx bx-skip-previous"></span>
 						</button>
 					</div>
 				</div>
 				<div id="sectionNuevaAutorizacionRP">
-					<fieldset>
+					<fieldset style="margin-left: 0px;margin-right: 0px;">
 						<legend>
 							<h5>Comprobantes de RP</h5>
 						</legend>
@@ -54,7 +54,7 @@
 									<span class="input-group-text">Fecha: </span>
 									<input type="date" id="dtpFechCompte" class="form-control" />
 									<span class="input-group-text">Monto: </span>
-									<input type="text" id="txtMonto" class="form-control" />
+									<input type="text" id="txtMonto" class="form-control" style="text-align:end;"/>
 									<button type="button" class="btn btn-icon btn-success" style="margin-left:5px;" id="btnNuevoCompteDeRP">
 										<span class="tf-icons bx bx-plus-circle"></span>
 									</button>
@@ -68,7 +68,7 @@
 						<div id="divComptesDeRPGrid" style="padding-top: 10px;">
 						</div>
 					</fieldset>
-					<fieldset>
+					<fieldset style="margin-left: 0px;margin-right: 0px;">
 						<legend>
 							<h5>Autorización</h5>
 						</legend>

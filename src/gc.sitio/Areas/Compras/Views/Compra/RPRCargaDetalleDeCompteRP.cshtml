@@ -33,11 +33,11 @@
 					<span>@Model.Leyenda</span>
 				</div>
 				<div class="col-4" style="text-align: right;padding-right: 30px;">
-					<button type="button" class="btn btn-success" style="margin-left:5px;" id="btnAceptarComprobanteRP">
-						<span class="tf-icons bx bx-check-circle">Aceptar</span>
+					<button type="button" class="btn btn-success" style="margin-left:5px;" id="btnAceptarComprobanteRP" title="Aceptar">
+						<span class="bx bx-check-circle"></span>
 					</button>
-					<button type="button" class="btn btn-primary" style="margin-left:5px;" id="btnRegresarDesdeComprobanteRP">
-						<span class="tf-icons bx bx-left-arrow-circle">Regresar</span>
+					<button type="button" class="btn btn-primary" style="margin-left:5px;" id="btnRegresarDesdeComprobanteRP" title="Regresar">
+						<span class="bx bx-skip-previous"></span>
 					</button>
 				</div>
 				
@@ -54,7 +54,7 @@
 				<span class="input-group-text">Fecha: </span>
 				<input type="text" id="txtFechaEnComprobanteRP" class="form-control" readonly asp-for="@Model.CompteSeleccionado.Fecha" />
 				<span class="input-group-text">Monto: </span>
-				<input type="text" id="txtMontoEnComprobanteRP" class="form-control" readonly asp-for="@Model.CompteSeleccionado.Importe" />
+				<input type="text" id="txtMontoEnComprobanteRP" class="form-control" readonly asp-for="@Model.CompteSeleccionado.Importe" style="text-align:end;"/>
 			</div>
 		</div>
 	</row>
@@ -84,17 +84,27 @@
 								</div>
 							</div>
 							<div class="row" style="padding-top: 10px;">
-								<div class="input-group">
-									<button type="button" class="btn btn-icon btn-success fixed-width" style="margin-left:5px;" id="btnAddProdEnComprobanteRP">
-										<span class="tf-icons bx bx-plus-circle"></span>
+								@* <div class="input-group"> *@
+								<div class="col-4" style="text-align: left;padding-right: 30px;padding-left:9px;">
+									<button type="button" class="btn btn-success" style="margin-left:5px;" id="btnAddProdEnComprobanteRP" title="Agregar producto manual">
+										<span class="bx bx-plus-circle"></span>
 									</button>
-									<button type="button" class="btn btn-icon btn-danger fixed-width" style="margin-left:5px;" id="btnDelProdEnComprobanteRP">
-										<span class="tf-icons bx bx-trash"></span>
-									</button>
-									<button type="button" class="btn btn-success fixed-width" style="margin-left:5px;" id="btnAddOCProdEnComprobanteRP">
-										<span class="tf-icons bx bx-plus-circle"> OC</span>
+@* 									<button type="button" class="btn btn-icon btn-danger fixed-width" style="margin-left:5px;" id="btnDelProdEnComprobanteRP">
+										<span class="bx bx-trash"></span>
+									</button> *@
+									<button type="button" class="btn btn-success" style="margin-left:5px;" id="btnAddOCProdEnComprobanteRP" title="Agregar productos desde OC">
+										<span class="bx bx-plus-circle"></span>
 									</button>
 								</div>
+
+@* 								<div class="col-4" style="text-align: right;padding-right: 30px;">
+									<button type="button" class="btn btn-success" style="margin-left:5px;" id="btnAceptarComprobanteRP" title="Aceptar">
+										<span class="bx bx-check-circle"></span>
+									</button>
+									<button type="button" class="btn btn-primary" style="margin-left:5px;" id="btnRegresarDesdeComprobanteRP" title="Regresar">
+										<span class="bx bx-skip-previous"></span>
+									</button>
+								</div> *@
 							</div>
 						</div>
 						<div id="divDetalleDeProductos" style="padding-top:10px;">

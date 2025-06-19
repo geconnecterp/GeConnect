@@ -59,7 +59,34 @@
 	var grilla = document.getElementById("tbComptesDeRP");
 	if (grilla !== undefined && grilla !== null)
 		AddEventListenerToComptesGrid();
+
+	AplicarFormato();
 });
+
+const formatter = new Intl.NumberFormat('de-DE', {
+	minimumFractionDigits: 2,
+	maximumFractionDigits: 2
+});
+
+function AplicarFormato() {
+	//txtMonto
+	getMaskForMoneyType("#txtMonto");
+}
+
+function getMaskForMoneyType(selector) {
+	$(selector).inputmask({
+		alias: 'numeric',
+		groupSeparator: '.',
+		radixPoint: ',',
+		digits: 2,
+		digitsOptional: false,
+		allowMinus: false,
+		prefix: '',
+		suffix: '',
+		rightAlign: true,
+		unmaskAsNumber: true
+	});
+}
 
 function AddEventListenerToComptesGrid() {
 	var grilla = document.getElementById("tbComptesDeRP");
@@ -652,7 +679,7 @@ function CargarComboTiposComptes(cuenta) {
 
 function selectCompteDeRPRow(x) {
 	$("#txtNroCompte").val(x.cells[2].innerText.trim());
-	$("#txtMonto").val(x.cells[4].innerText.trim());
+	$("#txtMonto").val(x.cells[4].innerText.trim().replace(".",","));
 	$("#tco_id").val(x.cells[0].innerText.trim());
 	$("#tco_id").trigger("change");
 	$("#idTipoCompteDeRPSelected").val(x.cells[0].innerText.trim());

@@ -53,6 +53,7 @@
 	return true;
 });
 
+function activarControles(band) { }
 function SeteaIDClienteSelected() {
 	$("#IdSelected").val($("#Cliente_Cta_Id").val());
 }

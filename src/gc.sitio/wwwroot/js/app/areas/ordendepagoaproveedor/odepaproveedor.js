@@ -204,12 +204,16 @@ function selectRegDbl(x, gridId) {
 			if (gridId == "tbListaObligaciones") {
 				$("#divObligacionesParaAgregar").html(obj);
 				ActualizarGrillaObligacionesInferior();
+				ActualizarGrillaCreditosSuperior();
+				ActualizarGrillaCreditosInferior();
 				ActualizarTotalesSuperiores();
 				var msg = $("#MsgErrorEnCargarOSacarObligaciones").val();
 			}
 			else {
 				$("#divCreditosParaAgregar").html(obj);
 				ActualizarGrillaCreditosInferior();
+				ActualizarGrillaObligacionesSuperior();
+				ActualizarGrillaObligacionesInferior();
 				ActualizarTotalesSuperiores();
 				var msg = $("#MsgErrorEnCargarOSacarCreditos").val();
 			}
@@ -237,12 +241,16 @@ function selectRegDbl(x, gridId) {
 			if (gridId == "tbListaObligacionesParaAgregar") {
 				$("#divObligacionesParaAgregar").html(obj);
 				ActualizarGrillaObligacionesInferior();
+				ActualizarGrillaCreditosSuperior();
+				ActualizarGrillaCreditosInferior();
 				ActualizarTotalesSuperiores();
 				var msg = $("#MsgErrorEnCargarOSacarObligaciones").val();
 			}
 			else {
 				$("#divCreditosParaAgregar").html(obj);
 				ActualizarGrillaCreditosInferior();
+				ActualizarGrillaObligacionesSuperior();
+				ActualizarGrillaObligacionesInferior();
 				ActualizarTotalesSuperiores();
 				var msg = $("#MsgErrorEnCargarOSacarCreditos").val();
 			}
@@ -295,9 +303,21 @@ function ActualizarTotalesSuperiores() {
 	});
 }
 
+function ActualizarGrillaObligacionesSuperior() {
+	PostGenHtml({}, actualizarGrillaObligacionesSuperiorUrl, function (obj) {
+		$("#divObligacionesParaAgregar").html(obj);
+	});
+}
+
 function ActualizarGrillaObligacionesInferior() {
 	PostGenHtml({}, actualizarGrillaObligacionesInferiorUrl, function (obj) {
 		$("#divObligaciones").html(obj);
+	});
+}
+
+function ActualizarGrillaCreditosSuperior() {
+	PostGenHtml({}, actualizarGrillaCreditosSuperiorUrl, function (obj) {
+		$("#divCreditosParaAgregar").html(obj);
 	});
 }
 
@@ -312,18 +332,17 @@ function AceptarDesdeValidPrev() {
 	var cta_id = ctaIdSelected;
 	var data = { cta_id };
 	PostGenHtml(data, cargarVistaObligacionesYCreditosURL, function (obj) {
-		CerrarWaiting();
 		$("#divDetalle").html(obj);
 		//Setear los valores de la cuenta seleccionada en la vista de obligaciones y creditos
 		$("#CtaID").val(ctaIdSelected);
 		$("#CtaDesc").val(ctaDescSelected);
 		MostrarDatosDeCuenta(true);
 		setTimeout(() => {
-			CargarObligacionesOCreditos("Obligaciones"); //Obligaciones
-		}, 500);
-		setTimeout(() => {
 			CargarObligacionesOCreditos("Creditos"); //Créditos
 		}, 500);
+		setTimeout(() => {
+			CargarObligacionesOCreditos("Obligaciones"); //Obligaciones
+		}, 1000);
 		$("#btnAbmCancelar").prop("disabled", false);
 		$("#btnAbmCancelar").on("click", function () {
 			InicializarDatosEnSesion();
@@ -334,6 +353,7 @@ function AceptarDesdeValidPrev() {
 			$("#divDetalle").collapse("hide");
 		});
 		valorANombreDe = $("#valoresANombreDe").val();
+		CerrarWaiting();
 	});
 }
 

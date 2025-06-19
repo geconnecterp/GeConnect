@@ -146,6 +146,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				//Cargar conteos x UL
 				var conteosxul = await _productoServicio.RPRxUL(rp ?? string.Empty, TokenCookie);
 				model.ConteosxUL = conteosxul;
+				ViewData["Titulo"] = "Ver RPR Autorización";
 				return PartialView("RPRVerAutorizacion", model);
 			}
 			catch (Exception ex)
@@ -418,6 +419,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					{
 						Fecha = RPRAutorizacionSeleccionada.Fecha?.ToString("yyyy-MM-dd") ?? string.Empty,
 						Importe = RPRAutorizacionSeleccionada.Cm_importe.ToString(),
+						Importe2 = RPRAutorizacionSeleccionada.Cm_importe,
 						NroComprobante = RPRAutorizacionSeleccionada.Cm_compte,
 						Tipo = RPRAutorizacionSeleccionada.Tco_id,
 						TipoDescripcion = RPRAutorizacionSeleccionada.Tco_desc
@@ -825,23 +827,23 @@ namespace gc.sitio.Areas.Compras.Controllers
 							item.Nota = r.nota;
 							item.Turno = r.fechaTurno;
 							item.Rpe_id = r.ponerEnCurso ? "C" : "P";
-							foreach (var itemComp in item.Comprobantes)
-							{
-								var arrStr = itemComp.Cm_importe.Split('.');
-								if (arrStr.Length > 0)
-								{
-									for (int i = 0; i < arrStr.Length; i++)
-									{
-										arrStr[i] = arrStr[i].Replace(',', '.'); //reemplazo la coma por el punto como separador de decimales
-									}
-									itemComp.Cm_importe = String.Join("", arrStr);
-								}
-								else
-								{
-									itemComp.Cm_importe = itemComp.Cm_importe.Replace(',', '.'); //reemplazo la coma por el punto como separador de decimales
+							//foreach (var itemComp in item.Comprobantes)
+							//{
+							//	var arrStr = itemComp.Cm_importe.Split('.');
+							//	if (arrStr.Length > 0)
+							//	{
+							//		for (int i = 0; i < arrStr.Length; i++)
+							//		{
+							//			arrStr[i] = arrStr[i].Replace(',', '.'); //reemplazo la coma por el punto como separador de decimales
+							//		}
+							//		itemComp.Cm_importe = String.Join("", arrStr);
+							//	}
+							//	else
+							//	{
+							//		itemComp.Cm_importe = itemComp.Cm_importe.Replace(',', '.'); //reemplazo la coma por el punto como separador de decimales
 
-								}
-							}
+							//	}
+							//}
 						}
 						JsonDeRP = aux;
 						var resultado = CargarNuevoComprobante();
@@ -1237,6 +1239,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 						{
 							Fecha = Convert.ToDateTime(comprobante.Cm_fecha).ToString("dd/MM/yyyy"),
 							Importe = comprobante.Cm_importe,
+							Importe2 = Convert.ToDecimal(comprobante.Cm_importe),
 							NroComprobante = comprobante.Cm_compte,
 							Rp = item.Rp,
 							Tipo = comprobante.Tco_id,

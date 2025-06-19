@@ -10,12 +10,11 @@
 			</legend>
 			<div class="input-group input-group-sm">
 				<span class="input-group-text fixed-lbl-for-abm-70">Familia: </span>
-				@* @Html.DropDownListFor(m => Model.Pg_Id, combo, "Seleccionar...", new { @id = "listaFamilia", @class = "form-control activable" }) *@
 				@Html.DropDownListFor(m => Model.Pg_Id, combo, new { @id = "listaFamilia", @class = "form-control activable" })
 				<span class="input-group-text fixed-lbl-for-abm-130">Familia a Reasignar: </span>
 				@Html.DropDownListFor(m => Model.Pg_Id, combo, "Seleccionar...", new { @id = "listaFamiliaAReasignar", @class = "form-control activable" })
-				<button id="btnAbmAceptar" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Aceptar" onclick="btnSubmitClick();">
-					<i class="bx bx-file-plus"></i>
+				<button id="btnAbmAceptar" class="btn btn-success btn-sm" type="button" title="Aceptar" onclick="btnSubmitClick();">
+					<i class="bx bx-check-circle"></i>
 				</button>
 			</div>
 			<div id="divGridProductosPorFamilia">
@@ -24,19 +23,22 @@
 						<thead class="table-dark">
 							<tr class="header">
 								<th><input name="select_all" value="1" type="checkbox"></th>
-								<th class="col-header-small align-center">ID</th>
-								<th class="col-header-small align-center">Descripción</th>
+								<th class="col-header-small align-center" style="width:15%;">ID</th>
+								<th class="col-header-small align-center" style="width:85%;">Descripción</th>
 							</tr>
 						</thead>
 						<tbody>
-							@foreach (var item in Model.ProductosPorFamilia.ListaDatos)
+							@if (Model != null && Model.ProductosPorFamilia != null && Model.ProductosPorFamilia.ListaDatos != null)
 							{
-								var nombre = "chk" + item.P_Id;
-								<tr>
-									<td><input type="checkbox" name=@nombre /></td>
-									<td class="align-left">@item.P_Id</td>
-									<td class="align-center">@item.P_Desc</td>
-								</tr>
+								@foreach (var item in Model.ProductosPorFamilia.ListaDatos)
+								{
+									var nombre = "chk" + item.P_Id;
+									<tr>
+										<td><input type="checkbox" name=@nombre /></td>
+										<td class="align-left">@item.P_Id</td>
+										<td class="align-center">@item.P_Desc</td>
+									</tr>
+								}
 							}
 						</tbody>
 					</table>

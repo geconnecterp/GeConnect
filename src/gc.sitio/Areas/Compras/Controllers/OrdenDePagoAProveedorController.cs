@@ -238,7 +238,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 							if (respuesta.Entidad.resultado == 0)
 							{
 								//Lo quito de la lista que uso para cargar la grilla de obligaciones
-								var listaTemp = OPDebitoLista.Where(x => !x.dia_movi.Equals(r.dia_movi) && !x.cm_compte.Equals(r.cm_compte)).ToList();
+								var listaTemp = new List<OPDebitoYCreditoDelProveedorDto>();
+								foreach (var itemDebito in OPDebitoLista)
+								{
+									if (itemDebito.dia_movi.Equals(r.dia_movi) && itemDebito.cm_compte.Equals(r.cm_compte) && itemDebito.cm_compte_cuota.Equals(r.cuota) && itemDebito.tco_id.Equals(r.tco_id))
+										continue;
+									listaTemp.Add(itemDebito);
+								}
 								DormirMetodo(100);
 								OPDebitoLista = listaTemp;
 
@@ -257,9 +263,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 								}
 
 								model.MsgErrorEnCargarOSacarObligaciones = "";
-								if (string.IsNullOrEmpty(respuesta.Entidad.rela.Trim()))
+								if (!string.IsNullOrEmpty(respuesta.Entidad.rela.Trim()))
 								{
-									ActualizarListasDeCreditosObligacionesParaAgregar(respuesta.Entidad.rela, OPCreditoNuevaLista, accion_agregar);
+									var listaAux2 = OPCreditoNuevaLista;
+									ActualizarListasDeCreditosObligacionesParaAgregar(respuesta.Entidad.rela, listaAux2, accion_agregar, true);
+									OPCreditoNuevaLista = listaAux2;
 								}
 							}
 							else
@@ -298,8 +306,14 @@ namespace gc.sitio.Areas.Compras.Controllers
 						{
 							if (respuesta.Entidad.resultado == 0)
 							{
-								//Lo quito de la lista que uso para cargar la grilla de creditos
-								var listaTemp = OPCreditoLista.Where(x => !x.dia_movi.Equals(r.dia_movi) && !x.cm_compte.Equals(r.cm_compte)).ToList();
+								//Lo quito de la lista que uso para cargar la grilla de obligaciones
+								var listaTemp = new List<OPDebitoYCreditoDelProveedorDto>();
+								foreach (var itemCredito in OPCreditoLista)
+								{
+									if (itemCredito.dia_movi.Equals(r.dia_movi) && itemCredito.cm_compte.Equals(r.cm_compte) && itemCredito.cm_compte_cuota.Equals(r.cuota) && itemCredito.tco_id.Equals(r.tco_id))
+										continue;
+									listaTemp.Add(itemCredito);
+								}
 								DormirMetodo(100);
 								OPCreditoLista = listaTemp;
 
@@ -318,9 +332,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 								}
 
 								model.MsgErrorEnCargarOSacarCreditos = "";
-								if (string.IsNullOrEmpty(respuesta.Entidad.rela.Trim()))
+								if (!string.IsNullOrEmpty(respuesta.Entidad.rela.Trim()))
 								{
-									ActualizarListasDeCreditosObligacionesParaAgregar(respuesta.Entidad.rela, OPDebitoNuevaLista, accion_agregar);
+									var listaAux2 = OPDebitoNuevaLista;
+									ActualizarListasDeCreditosObligacionesParaAgregar(respuesta.Entidad.rela, listaAux2, accion_agregar, false);
+									OPDebitoNuevaLista = listaAux2;
 								}
 							}
 							else
@@ -365,9 +381,18 @@ namespace gc.sitio.Areas.Compras.Controllers
 								OPDebitoNuevaLista = listaTemp;
 
 								//Si la respuesta contiene valor en la propiedad "rela", debo quitar los items de la lista de creditos nuevos.
-								if (string.IsNullOrEmpty(respuesta.Entidad.rela.Trim()))
+								if (!string.IsNullOrEmpty(respuesta.Entidad.rela.Trim()))
 								{
-									ActualizarListasDeCreditosObligacionesParaAgregar(respuesta.Entidad.rela, OPCreditoNuevaLista, accion_quitar);
+									var listaAux2 = OPCreditoNuevaLista;
+									ActualizarListasDeCreditosObligacionesParaAgregar(respuesta.Entidad.rela, listaAux2, accion_quitar, true);
+									//OPCreditoNuevaLista = listaAux2;
+
+									//Si estos items de la propiedad rela ya existian en la lista original de Créditos, debo agregarlos como forma de restauración.
+									if (OPCreditoOriginalLista == null || OPCreditoOriginalLista.Count <= 0)
+									{
+										OPCreditoOriginalLista = ObtenerData('H');
+									}
+									OPCreditoLista = ActualizarListasDeCreditosObligaciones(respuesta.Entidad.rela, OPCreditoOriginalLista, OPCreditoLista);
 								}
 
 								//Lo agrego a la lista de olbigaciones inferior, para eso lo busco en la lista original (Backup)
@@ -424,9 +449,18 @@ namespace gc.sitio.Areas.Compras.Controllers
 								OPCreditoNuevaLista = listaTemp;
 
 								//Si la respuesta contiene valor en la propiedad "rela", debo quitar los items de la lista de creditos nuevos.
-								if (string.IsNullOrEmpty(respuesta.Entidad.rela.Trim()))
+								if (!string.IsNullOrEmpty(respuesta.Entidad.rela.Trim()))
 								{
-									ActualizarListasDeCreditosObligacionesParaAgregar(respuesta.Entidad.rela, OPDebitoNuevaLista, accion_quitar);
+									var listaAux2 = OPDebitoNuevaLista;
+									ActualizarListasDeCreditosObligacionesParaAgregar(respuesta.Entidad.rela, listaAux2, accion_quitar, false);
+									//OPDebitoNuevaLista = listaAux2;
+
+									//Si estos items de la propiedad rela ya existian en la lista original de Débitos, debo agregarlos como forma de restauración.
+									if (OPDebitoOriginalLista == null || OPDebitoOriginalLista.Count <= 0)
+									{
+										OPDebitoOriginalLista = ObtenerData('D');
+									}
+									OPDebitoLista = ActualizarListasDeCreditosObligaciones(respuesta.Entidad.rela, OPDebitoOriginalLista, OPDebitoLista);
 								}
 
 								//Lo agrego a la lista de creditos inferior, para eso lo busco en la lista original (Backup)
@@ -499,6 +533,58 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 				return PartialView("_grillaCreditos", ObtenerGridCoreSmart<OPDebitoYCreditoDelProveedorDto>(OPCreditoLista));
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public IActionResult ActualizarGrillaCreditosSuperior()
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+				var model = new CargarNuevosCreditosModel
+				{
+					GrillaCreditosNueva = ObtenerGridCoreSmart<OPDebitoYCreditoDelProveedorDto>(OPCreditoNuevaLista)
+				};
+				return PartialView("_grillaNuevosCreditos", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public IActionResult ActualizarGrillaObligacionesSuperior()
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+				var model = new CargarNuevasObligacionesModel
+				{
+					GrillaObligacionesNuevas = ObtenerGridCoreSmart<OPDebitoYCreditoDelProveedorDto>(OPDebitoNuevaLista)
+				};
+				return PartialView("_grillaNuevosObligaciones", model);
 			}
 			catch (Exception ex)
 			{
@@ -886,6 +972,29 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return _ordenDePagoServicio.GetOPDebitoYCreditoDelProveedor(CtaIdSelected, tipo, false, AdministracionId, UserName, TokenCookie);
 		}
 
+		private List<OPDebitoYCreditoDelProveedorDto> ActualizarListasDeCreditosObligaciones(string json, List<OPDebitoYCreditoDelProveedorDto> listaOriginal, List<OPDebitoYCreditoDelProveedorDto> lista)
+		{
+			//Deserializo la respuesta
+			var listaRela = JsonConvert.DeserializeObject<List<OPDebitoYCreditoDelProveedorDto>>(json, new JsonSerializerSettings());
+			var listaOriginalAux = listaOriginal;
+			var listaAux = lista;
+
+			if (listaRela != null && listaRela.Count > 0)
+			{
+				foreach (var itemRela in listaRela)
+				{
+					var existeEnListaOriginal = listaOriginalAux.Exists(x => x.cta_id.Equals(itemRela.cta_id) && x.cm_compte.Equals(itemRela.cm_compte) && x.dia_movi.Equals(itemRela.dia_movi) && x.tco_id.Equals(itemRela.tco_id));
+					var noExisteEnLista = !listaAux.Exists(x => x.cta_id.Equals(itemRela.cta_id) && x.cm_compte.Equals(itemRela.cm_compte) && x.dia_movi.Equals(itemRela.dia_movi) && x.tco_id.Equals(itemRela.tco_id));
+					if (existeEnListaOriginal && noExisteEnLista)
+					{
+						listaAux.Add(itemRela);
+					}
+				}
+				lista = listaAux;
+			}
+			return listaAux;
+		}
+
 		/// <summary>
 		/// Actualiza la lista de créditos u obligaciones para agregar, deserializando un JSON recibido y agregando los elementos
 		/// que no existan en la lista actual. Si el elemento ya existe (según cta_id, cm_compte, dia_movi y tco_id), no se agrega.
@@ -893,7 +1002,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		/// <param name="json">Cadena JSON que representa una lista de OPDebitoYCreditoDelProveedorDto a agregar.</param>
 		/// <param name="lista">Lista actual de OPDebitoYCreditoDelProveedorDto donde se agregarán/quitaran los nuevos elementos si no existen.</param>
 		/// <param name="accion">Lista actual de OPDebitoYCreditoDelProveedorDto donde se agregarán/quitaran los nuevos elementos si no existen.</param>
-		private void ActualizarListasDeCreditosObligacionesParaAgregar(string json, List<OPDebitoYCreditoDelProveedorDto> lista, string accion)
+		private void ActualizarListasDeCreditosObligacionesParaAgregar(string json, List<OPDebitoYCreditoDelProveedorDto> lista, string accion, bool esCredito = false)
 		{
 			//Deserializo la respuesta
 			var listaRela = JsonConvert.DeserializeObject<List<OPDebitoYCreditoDelProveedorDto>>(json, new JsonSerializerSettings());
@@ -907,10 +1016,52 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					foreach (var itemRela in listaRela)
 					{
-						//Si no existe en la lista que carga la lista de créditos para agregar, lo agrego
-						if (!listaCreditoObligacionNuevaTemporal.Exists(x => x.cta_id.Equals(itemRela.cta_id) && x.cm_compte.Equals(itemRela.cm_compte) && x.dia_movi.Equals(itemRela.dia_movi) && x.tco_id.Equals(itemRela.tco_id)))
+						//Si no existe en la lista que carga la lista de créditos/débitos para agregar, y existen en la grilla inferior, lo agrego
+						var noExisteEnListaNueva = !listaCreditoObligacionNuevaTemporal.Exists(x => x.cta_id.Equals(itemRela.cta_id) && x.cm_compte.Equals(itemRela.cm_compte) && x.dia_movi.Equals(itemRela.dia_movi) && x.tco_id.Equals(itemRela.tco_id));
+						var existe = false;
+						if (esCredito)
+						{
+							if (OPCreditoLista == null || OPCreditoLista.Count <= 0)
+							{
+								OPCreditoNuevaLista = ObtenerData('H');
+								OPCreditoLista = ObtenerData('H');
+							}
+							existe = OPCreditoLista.Exists(x => x.cta_id.Equals(itemRela.cta_id) && x.cm_compte.Equals(itemRela.cm_compte) && x.dia_movi.Equals(itemRela.dia_movi) && x.tco_id.Equals(itemRela.tco_id));
+						}
+						else
+						{
+							if (OPDebitoLista == null || OPDebitoLista.Count <= 0)
+							{
+								OPDebitoOriginalLista = ObtenerData('D');
+								OPDebitoLista = ObtenerData('D');
+							}
+							existe = OPDebitoLista.Exists(x => x.cta_id.Equals(itemRela.cta_id) && x.cm_compte.Equals(itemRela.cm_compte) && x.dia_movi.Equals(itemRela.dia_movi) && x.tco_id.Equals(itemRela.tco_id));
+						}
+						if (noExisteEnListaNueva && existe)
 						{
 							listaCreditoObligacionNuevaTemporal.Add(itemRela);
+							var listaAux = new List<OPDebitoYCreditoDelProveedorDto>();
+							//Si existe, lo quito de la lista de Creditos existentes
+							if (esCredito)
+							{
+								foreach (var item in OPCreditoLista)
+								{
+									if (item.cm_compte == itemRela.cm_compte && item.dia_movi == itemRela.dia_movi && item.tco_id == itemRela.tco_id)
+										continue;
+									listaAux.Add(item);
+								}
+								OPCreditoLista = listaAux;
+							}
+							else//Si existe, lo quito de la lista de Obligaciones existentes
+							{
+								foreach (var item in OPDebitoLista)
+								{
+									if (item.cm_compte == itemRela.cm_compte && item.dia_movi == itemRela.dia_movi && item.tco_id == itemRela.tco_id)
+										continue;
+									listaAux.Add(item);
+								}
+								OPDebitoLista = listaAux;
+							}
 						}
 					}
 				}
@@ -918,11 +1069,17 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					var aux = new List<OPDebitoYCreditoDelProveedorDto>();
 					//Si existe en la lista que carga la lista de créditos u obligaciones, lo quito
-					foreach (var itemRela in listaRela)
+					foreach (var item in listaCreditoObligacionNuevaTemporal)
 					{
-						aux = [.. listaCreditoObligacionNuevaTemporal.Where(x => !x.cta_id.Equals(itemRela.cta_id) && !x.cm_compte.Equals(itemRela.cm_compte) && !x.dia_movi.Equals(itemRela.dia_movi) && !x.tco_id.Equals(itemRela.tco_id))];
-						listaCreditoObligacionNuevaTemporal = aux;
+						if (listaRela.Exists(x => x.cta_id.Equals(item.cta_id) && x.cm_compte.Equals(item.cm_compte) && x.dia_movi.Equals(item.dia_movi) && x.tco_id.Equals(item.tco_id)))
+							continue;
+						aux.Add(item);
 					}
+					if (esCredito)
+						OPCreditoNuevaLista = aux;
+					else
+						OPDebitoNuevaLista = aux;
+					listaCreditoObligacionNuevaTemporal = aux;
 				}
 			}
 			//Actualizo lista

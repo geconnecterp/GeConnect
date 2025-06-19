@@ -32,7 +32,18 @@
 	$(".mytable > tbody").sortable({
 		items: "> tr.sortme"
 	});
+
+	AplicarFormato();
 });
+
+const formatter = new Intl.NumberFormat('de-DE', {
+	minimumFractionDigits: 2,
+	maximumFractionDigits: 2
+});
+
+function AplicarFormato() {
+	$("#txtMontoEnComprobanteRP").val(formatter.format($("#txtMontoEnComprobanteRP").val()));
+}
 
 function analizaInputUP(x) {
 	if (x.which == "13") {
@@ -145,6 +156,12 @@ function selectDetalleDeProdRow(x) {
 	else {
 		p_id_selected = "";
 	}
+}
+
+function quitarProductoDelDetalle(x) {
+	var id = $(x).attr("data-interaction");
+	p_id_selected = id;
+	DelProdEnComprobanteRP();
 }
 
 function DelProdEnComprobanteRP() {

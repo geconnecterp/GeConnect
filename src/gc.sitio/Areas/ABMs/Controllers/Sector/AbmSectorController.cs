@@ -525,7 +525,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				lista.Add(new ProdNuevoRubro() { rub_id = rubroDest, p_id = ids[i] });
 			}
 			var jsonstring = JsonConvert.SerializeObject(lista, new JsonSerializerSettings());
-			var respuesta = _abmServicio.AbmConfirmar(ObtenerRequestParaABM('A', "rubro_reasigna", jsonstring, AdministracionId, UserName), TokenCookie).Result;
+			var respuesta = _abmServicio.AbmConfirmar(ObtenerRequestParaABM('A', "rubros", jsonstring, AdministracionId, UserName), TokenCookie).Result;
 			return AnalizarRespuesta(respuesta);
 		}
 		#endregion

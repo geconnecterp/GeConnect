@@ -6,15 +6,16 @@
 	<table class="drageable-table table table-bordered table-hover" id="tbDetalleDeProd">
 		<thead class="table-dark">
 			<tr class="header">
-				<th scope="col" class="table-fontsize align-center col-header-x-small" style="width:10%;">ID</th>
-				<th scope="col" class="table-fontsize align-center col-header-x-small" style="width:20%">Descripción</th>
+				<th scope="col" class="table-fontsize align-center col-header-x-small" style="width:5%;">ID</th>
+				<th scope="col" class="table-fontsize align-center col-header-x-small" style="width:45%">Descripción</th>
 				<th scope="col" class="table-fontsize align-center col-header-x-small" style="width:10%">ID Prov</th>
 				<th scope="col" class="table-fontsize align-center col-header-x-small" style="width:10%">OC</th>
-				<th scope="col" class="table-fontsize align-center col-header-x-small" style="width:10%">UP</th>
-				<th scope="col" class="table-fontsize align-center col-header-x-small" style="width:10%">Btos</th>
-				<th scope="col" class="table-fontsize align-center col-header-x-small" style="width:15%">Unidades</th>
-				<th scope="col" class="table-fontsize align-center col-header-x-small" style="width:15%">Cantidad</th>
+				<th scope="col" class="table-fontsize align-center col-header-x-small" style="width:5%">UP</th>
+				<th scope="col" class="table-fontsize align-center col-header-x-small" style="width:5%">Btos</th>
+				<th scope="col" class="table-fontsize align-center col-header-x-small" style="width:10%">Unidades</th>
+				<th scope="col" class="table-fontsize align-center col-header-x-small" style="width:10%">Cantidad</th>
 				<th style="width:0%; display:none;">Item</th>
+				<th style="width:0.1%;" class="col-header-small align-center tiny-row"></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -32,6 +33,7 @@
 					<td class="table-fontsize align-right tiny-row">@resUnidad</td>
 					<td class="table-fontsize align-right tiny-row">@resCantidad</td>
 					<td style="display:none;">@item.Item</td>
+					<td style="padding-left:2px;padding-right:2px;"><a class="btn btn-xs btn-outline-dark" data-interaction="@item.P_id" onclick="quitarProductoDelDetalle(this);" title="Eliminar producto (@item.P_id)"> <i class="bx bxs-trash"></i></a></td>
 				</tr>
 			}
 		</tbody>
