@@ -80,7 +80,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
         }
 
         [HttpGet]
-        public IActionResult Index(bool actualizar = false)
+        public IActionResult Index()
         {
 
             var auth = EstaAutenticado;
@@ -89,7 +89,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 return RedirectToAction("Login", "Token", new { area = "seguridad" });
             }
 
-            CargarDatosIniciales(actualizar);
+            CargarDatosIniciales(true);
 
             var listR02 = new List<ComboGenDto>();
             ViewBag.Rel02List = HelperMvc<ComboGenDto>.ListaGenerica(listR02);
@@ -399,6 +399,11 @@ namespace gc.sitio.Areas.ABMs.Controllers
                     return PartialView("_tabDatosNota", new CuentaABMNotaModel());
 
                 var cno = _cuentaServicio.GetCuentaNota(ctaId, TokenCookie);
+                if (cno != null && cno.Count > 0)
+                {
+                    cno.ForEach(x => x.usu_id_logueado = UserName);
+                    cno.ForEach(x => x.puedo_editar = (x.usu_id == x.usu_id_logueado));
+				}
                 var FPModel = new CuentaABMNotaModel()
                 {
                     CuentaNotas = ObtenerGridCoreSmart<CuentaNotaDto>(cno),
@@ -432,6 +437,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 {
                     Nota = ObtenerNotaModel(cno.First())
                 };
+                model.Nota.Puedo_Editar = (model.Nota.Usu_Id == UserName);
                 return PartialView("_tabDatosNotaSelected", model);
 
             }
@@ -794,7 +800,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
         /// <param name="tipoDeOperacion"></param>
         /// <returns></returns>
         [HttpPost]
-        public JsonResult DataOpsNotas([FromBody] NotaAbmValidationModel no, string destinoDeOperacion, char tipoDeOperacion)
+        public JsonResult DataOpsNotas(NotaAbmValidationModel no, string destinoDeOperacion, char tipoDeOperacion)
         {
             try
             {
@@ -806,6 +812,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
                 var fecha = DateTime.UtcNow;
                 no.fecha = fecha.ToString("yyyy-MM-dd HH:mm:ss");
+                no.usu_id = UserName;
                 //Paso textos a mayusculas
                 no = HelperGen.PasarAMayusculas(no);
                 //Valido reglas de negocio, algunas ya se han validado en el front, pero es necsearia una re-validación para evitar introducir valores erróneos
@@ -863,7 +870,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
         /// <param name="tipoDeOperacion"></param>
         /// <returns></returns>
         [HttpPost]
-        public JsonResult DataOpsObservaciones([FromBody] ObservacionAbmValidationModel obs, string destinoDeOperacion, char tipoDeOperacion)
+        public JsonResult DataOpsObservaciones(ObservacionAbmValidationModel obs, string destinoDeOperacion, char tipoDeOperacion)
         {
             try
             {
@@ -1206,10 +1213,10 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 ObtenerListaDeRepartidores(_repartidorServicio);
 
             if (TipoContactoLista.Count == 0 || actualizar)
-                ObtenerTipoContacto(_tipoContactoServicio, "P");
+                ObtenerTipoContacto(_tipoContactoServicio, "C");
 
             if (TipoObservacionesLista.Count == 0 || actualizar)
-                ObtenerTipoObservaciones(_tipoObsServicio, "P");
+                ObtenerTipoObservaciones(_tipoObsServicio, "C");
         }
         #endregion
     }

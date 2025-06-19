@@ -80,17 +80,15 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Index(bool actualizar = false)
+		public async Task<IActionResult> Index()
 		{
-			MetadataGrid metadata;
-
 			var auth = EstaAutenticado;
 			if (!auth.Item1 || auth.Item2 < DateTime.Now)
 			{
 				return RedirectToAction("Login", "Token", new { area = "seguridad" });
 			}
 
-			CargarDatosIniciales(actualizar);
+			CargarDatosIniciales(true);
 
 			var listR01 = new List<ComboGenDto>();
 			ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);

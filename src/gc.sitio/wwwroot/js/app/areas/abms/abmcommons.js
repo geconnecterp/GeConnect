@@ -307,6 +307,7 @@ function NuevaFormaDePago() {
             desactivarGrilla(Grids.GridFP);
             accionBotones(AbmAction.ALTA, tabActiva);
             $("#listaFP").trigger("focus");
+            controlaValorFP();
             CerrarWaiting();
         }, function (obj) {
             ControlaMensajeError(obj.message);
@@ -641,6 +642,8 @@ function PuedoModificar(tabAct) {
                 mensaje = "Solo se pueden modificar notas para cuentas activas.";
             if ($("#IdSelected").val() == "")
                 mensaje = "Debe seleccionar una nota para modificar.";
+            if ($("#Puedo_Editar").val() == "False")
+                mensaje = "Solo se pueden editar Nota del usuario logueado.";
             break;
         case Tabs.TabObservaciones:
             if (!$("#chkCtaActiva").is(":checked"))
@@ -945,7 +948,12 @@ function btnBajaClick() {
             $("#msjModal").modal("hide");
             return false;
         }, false, ["Aceptar"], "error!", null);
-
+    }
+    else if (tabActiva == Tabs.TabNotas && $("#Puedo_Editar").val() == "False") {
+        AbrirMensaje("ATENCIÓN", "Solo se pueden eliminar Notas del usuario logueado.", function () {
+            $("#msjModal").modal("hide");
+            return false;
+        }, false, ["Aceptar"], "error!", null);
     }
     else {
         var tabActiva = $('.nav-tabs .active')[0].id;

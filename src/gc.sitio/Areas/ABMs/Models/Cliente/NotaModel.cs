@@ -8,5 +8,6 @@
         public string Usu_Lista { get; set; } = string.Empty;
         public DateTime Fecha { get; set; }
         public string Nota { get; set; } = string.Empty;
-    }
+        public bool Puedo_Editar { get; set; } = false;
+	}
 }

@@ -2,12 +2,13 @@
 @{
 }
 <div class="row" style="padding-top: 10px;">
-	<div class="row mt-1">
+	@Html.Hidden("Puedo_Editar", Model.Nota.Puedo_Editar)
+@* 	<div class="row mt-1">
 		<div class="input-group input-group-sm">
-			<span class="input-group-text fixed-lbl-for-abm-70">Usuario: </span>
-			<input type="text" asp-for="Nota.Usu_Id" class="form-control activable" />
+			<span class="input-group-text fixed-lbl-for-abm-70" style="visibility:collapse;">Usuario: </span>
+			<input type="text" asp-for="Nota.Usu_Id" class="form-control activable" style="visibility:collapse;" />
 		</div>
-	</div>
+	</div> *@
 	<div class="row mt-1">
 		<div class="input-group input-group-sm">
 			<span class="input-group-text fixed-lbl-for-abm-70">Nota: </span>

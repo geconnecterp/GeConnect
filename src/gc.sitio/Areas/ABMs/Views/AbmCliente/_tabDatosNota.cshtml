@@ -14,6 +14,8 @@
 									<th class="col-header-small align-center">Usuario</th>
 									<th class="col-header-small align-center">Fecha</th>
 									<th style="width:0%; display:none;">usu_id</th>
+									<th style="width:0%; display:none;">usu_id_logueado</th>
+									<th style="width:0%; display:none;">puedo_editar</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -22,8 +24,10 @@
 									<tr onclick="selectRegCli(this, 'tbClienteNotas')" ondblclick="selectRegDbl(this, 'tbClienteNotas')">
 										<td class="align-left">@item.nota</td>
 										<td class="align-left">@item.usu_apellidoynombre</td>
-										<td class="align-left">@item.fecha.ToString("dd/MM/yyyy")</td>
+										<td class="align-center">@item.fecha.ToString("dd/MM/yyyy")</td>
 										<td style="display:none;">@item.usu_id</td>
+										<td style="display:none;">@item.usu_id_logueado</td>
+										<td style="display:none;">@item.puedo_editar</td>
 									</tr>
 								}
 							</tbody>
@@ -34,12 +38,12 @@
 		</div>
 		<div id="divDatosDeNotaSelected">
 			<div class="row" style="padding-top: 10px;">
-				<div class="row mt-1">
+@* 				<div class="row mt-1">
 					<div class="input-group input-group-sm">
 						<span class="input-group-text fixed-lbl-for-abm-70">Usuario: </span>
 						<input type="text" asp-for="Nota.Usu_Id" class="form-control activable" />
 					</div>
-				</div>
+				</div> *@
 				<div class="row mt-1">
 					<div class="input-group input-group-sm">
 						<span class="input-group-text fixed-lbl-for-abm-70">Nota: </span>

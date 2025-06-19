@@ -70,19 +70,22 @@ function analizaEstadoBtnDetalle() {
 function controlaValorFP() {
 	if ($("#listaFP option:selected").val() === "B" || $("#listaFP option:selected").val() === "I") {
 		$("#listaTipoCueBco").prop("disabled", false);
-		$("#FormaDePago_cta_bco_cuenta_nro").prop("disabled", false);
-		$("#FormaDePago_cta_bco_cuenta_cbu").prop("disabled", false);
+		$("#FormaDePago_Cta_Bco_Cuenta_Nro").prop("disabled", false);
+		$("#FormaDePago_Cta_Bco_Cuenta_Cbu").prop("disabled", false);
 	}
 	else {
 		$("#listaTipoCueBco").prop("disabled", true);
-		$("#FormaDePago_cta_bco_cuenta_nro").prop("disabled", true);
-		$("#FormaDePago_cta_bco_cuenta_cbu").prop("disabled", true);
+		$("#FormaDePago_Cta_Bco_Cuenta_Nro").val("");
+		$("#FormaDePago_Cta_Bco_Cuenta_Nro").prop("disabled", true);
+		$("#FormaDePago_Cta_Bco_Cuenta_Cbu").val("");
+		$("#FormaDePago_Cta_Bco_Cuenta_Cbu").prop("disabled", true);
 	}
 	if ($("#listaFP option:selected").val() === "H") {
-		$("#FormaDePago_cta_valores_a_nombre").prop("disabled", false);
+		$("#FormaDePago_Cta_Valores_A_Nombre").prop("disabled", false);
 	}
 	else {
-		$("#FormaDePago_cta_valores_a_nombre").prop("disabled", true);
+		$("#FormaDePago_Cta_Valores_A_Nombre").val("");
+		$("#FormaDePago_Cta_Valores_A_Nombre").prop("disabled", true);
 	}
 }
 
