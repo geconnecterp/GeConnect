@@ -2,6 +2,7 @@
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Libros;
+using gc.infraestructura.EntidadesComunes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -27,11 +28,11 @@ namespace gc.api.Controllers.Libros
             _logger = logger;
         }
 
-        [HttpPost("obtener-balance-suma-saldos")]
+        [HttpPost("obtener-balanceSS")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult<ApiResponse<List<BSumaSaldoRegDto>>> ObtenerBalanceSumaSaldos([FromBody] BSSRequestDto request)
+        public ActionResult<ApiResponse<List<BSumaSaldoRegDto>>> ObtenerBalanceSumaSaldos([FromBody] LibroFiltroDto request)
         {
             if (request == null)
             {

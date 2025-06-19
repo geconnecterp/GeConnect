@@ -15,6 +15,24 @@ namespace gc.sitio.Areas.Libros.Controllers
             
         }
 
+        public List<BSumaSaldoRegDto> BalanceSS
+        {
+            get
+            {
+                string json = _context.HttpContext?.Session.GetString("BalanceSS") ?? string.Empty;
+                if (string.IsNullOrEmpty(json))
+                {
+                    return new();
+                }
+                return JsonConvert.DeserializeObject<List<BSumaSaldoRegDto>>(json) ?? [];
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session.SetString("BalanceSS", json);
+            }
+        }
+
         public List<LMayorRegListaDto> LibroMayor
         {
             get

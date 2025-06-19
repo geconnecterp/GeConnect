@@ -7,6 +7,6 @@ namespace gc.sitio.core.Servicios.Contratos.Libros
 {
     public interface ILibroMayorServicio
     {
-        Task<(List<LMayorRegListaDto>, MetadataGrid)> ObtenerLibroMayor(LMayorFiltroDto query, string token);
+        Task<(List<LMayorRegListaDto>, MetadataGrid)> ObtenerLibroMayor(LibroFiltroDto query, string token);
     }
 }

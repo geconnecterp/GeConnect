@@ -141,7 +141,7 @@ namespace gc.sitio.Areas.Libros.Controllers
         /// <param name="query">Parámetros de filtro</param>
         /// <returns>Vista parcial con el grid o mensaje de error</returns>
         [HttpPost]
-        public async Task<IActionResult> ObtenerLibroMayor(LMayorFiltroDto query, string sort = "Eje_nro", string sortDir = "asc", int pagina = 1)
+        public async Task<IActionResult> ObtenerLibroMayor(LibroFiltroDto query, string sort = "Eje_nro", string sortDir = "asc", int pagina = 1)
         {
             RespuestaGenerica<EntidadBase> response = new();
 

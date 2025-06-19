@@ -6,6 +6,7 @@ using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Asientos;
 using gc.infraestructura.Dtos.Libros;
+using gc.infraestructura.EntidadesComunes;
 using gc.sitio.core.Servicios.Contratos.Libros;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -23,15 +24,15 @@ namespace gc.sitio.core.Servicios.Implementacion.Libros
 {
     public class BSSServicio : Servicio<Dto>, IBSSServicio
     {
-        private const string RutaAPI = "/api/apibsumasaldo";
-        private const string POST_OBTENER_ASIENTOS_LIBRO_DIARIO = "/obtener-balance-suma-saldo";
+        private const string RutaAPI = "/api/ApiBSumaSaldo";
+        private const string POST_OBTENER_BALANCE_SS = "/obtener-balanceSS";
         private readonly AppSettings _appSettings;
         public BSSServicio(IOptions<AppSettings> options, 
             ILogger<LibroDiarioServicio> logger) : base(options, logger, RutaAPI)
         {
             _appSettings = options.Value;
         }
-        public async Task<(List<BSumaSaldoRegDto>, MetadataGrid)> ObtenerBalanceSumaSaldos(BSSRequestDto request, string token)
+        public async Task<(List<BSumaSaldoRegDto>, MetadataGrid)> ObtenerBalanceSumaSaldos(LibroFiltroDto request, string token)
         {
                     var msg = "Hubo un problema en la recepcion del BSS";
             try
@@ -44,7 +45,7 @@ namespace gc.sitio.core.Servicios.Implementacion.Libros
                 HttpResponseMessage response;
 
                 // Construir la URL de la API
-                var link = $"{_appSettings.RutaBase}{RutaAPI}{POST_OBTENER_ASIENTOS_LIBRO_DIARIO}";
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{POST_OBTENER_BALANCE_SS}";
 
                 // Enviar solicitud POST
                 response = await client.PostAsync(link, contentData);

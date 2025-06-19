@@ -1,11 +1,16 @@
-﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿using gc.api.core.Entidades;
+using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Asientos;
+using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.EntidadesComunes;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Enumeraciones;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos.Asientos;
 using gc.sitio.core.Servicios.Contratos.DocManager;
 using gc.sitio.core.Servicios.Contratos.Libros;
+using gc.sitio.core.Servicios.Implementacion.Libros;
 using log4net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -122,6 +127,102 @@ namespace gc.sitio.Areas.Libros.Controllers
             {
                 _logger?.LogError(ex, "Error al obtener ejercicios contables");
                 return Json(new { error = true, msg = "Error al obtener ejercicios contables: " + ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Obtiene los datos del BALANCE de SS según los filtros especificados
+        /// </summary>
+        /// <param name="query">Parámetros de filtro</param>
+        /// <returns>Vista parcial con el grid o mensaje de error</returns>
+        [HttpPost]
+        public async Task<IActionResult> ObtenerBSS(LibroFiltroDto query, string sort = "Eje_nro", string sortDir = "asc", int pagina = 1)
+        {
+            RespuestaGenerica<EntidadBase> response = new();
+
+            try
+            {
+                // Verificar autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return redirectResult;
+
+                // Validar el filtro recibido
+                if (query == null)
+                {
+                    return PartialView("_gridMensaje", new RespuestaGenerica<EntidadBase>
+                    {
+                        Ok = false,
+                        Mensaje = "El filtro no puede ser nulo."
+                    });
+                }
+
+                // Validar parámetros obligatorios
+                if (query.eje_nro <= 0)
+                {
+                    return PartialView("_gridMensaje", new RespuestaGenerica<EntidadBase>
+                    {
+                        Ok = false,
+                        Mensaje = "Debe seleccionar un ejercicio contable válido."
+                    });
+                }
+
+
+                // Configurar los parámetros de paginación y ordenamiento
+                query.Sort = sort;
+                query.SortDir = sortDir;
+                query.Registros = _appSettings.NroRegistrosPagina;
+                query.Pagina = pagina;
+
+                // Llamar al servicio para obtener el libro mayor
+                var res = await _bssServicio.ObtenerBalanceSumaSaldos(query, Token);
+
+                if (res.Item1.Count == 0)
+                {
+                    throw new NegocioException($"No se encontraron registros para el Balance de Sumas y Saldos en el Ejercicio {query.eje_nro}");
+                }
+
+                BalanceSS = res.Item1; // Asignar la lista de Libro Mayor
+                var lista = res.Item1.OrderBy(x => x.Ccb_id).ToList();
+                MetadataGeneral = res.Item2;
+
+                // Crear el grid para la vista
+                var grid = GenerarGrillaSmart(
+                    lista,
+                    query.Sort,
+                    _appSettings.NroRegistrosPagina,
+                    pagina,
+                    lista.Count,
+                     (int)Math.Ceiling((double)lista.Count / _appSettings.NroRegistrosPagina), // Total de páginas
+                    query.SortDir
+                );
+                string leyenda = $"Ejercicio {query.eje_nro} - Desde {query.desde.ToShortDateString()} al {query.hasta.ToShortDateString()} - Balance de Sumas y Saldos";
+               
+                ViewBag.Leyenda = $"{leyenda}";
+                return PartialView("_gridBalanceSS", grid);
+            }
+            catch (NegocioException ex)
+            {
+                _logger?.LogError(ex, ex.Message);
+
+                string msg = ex.Message;
+                _logger?.LogError(ex, msg);
+                response.Mensaje = msg;
+                response.Ok = false;
+                response.EsWarn = true;
+                response.EsError = false;
+                return PartialView("_gridMensaje", response);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al obtener el Balance SS: {Mensaje}", ex.Message);
+
+                string msg = "Error al obtener el Balance de SS";
+                _logger?.LogError(ex, msg);
+                response.Mensaje = msg;
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
             }
         }
     }

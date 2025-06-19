@@ -27,7 +27,7 @@ namespace gc.sitio.core.Servicios.Implementacion.Libros
 
         // Aquí puedes implementar los métodos específicos del servicio de Libro Mayor
         // Ejemplo: ObtenerLibroMayor, CrearLibroMayor, etc.
-        public async Task<(List<LMayorRegListaDto>, MetadataGrid)> ObtenerLibroMayor(LMayorFiltroDto query, string token)
+        public async Task<(List<LMayorRegListaDto>, MetadataGrid)> ObtenerLibroMayor(LibroFiltroDto query, string token)
         {
             try
             {

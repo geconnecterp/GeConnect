@@ -1,4 +1,7 @@
-﻿let bssDataBak = {}; // Respaldo de datos de búsqueda previa
+﻿// Variables de control global
+let saldoAnterior = 0;
+let saldoActual = 0;
+let bssDataBak = {};
 
 $(function () {
     inicializarComponentesBss();
@@ -6,7 +9,7 @@ $(function () {
     configurarBotonesBss();
 
     configurarFiltrosBss();
-
+    inicializarRangoUltimoMes();
     // Inicializar vista
     inicializarVistaBss();
 });
@@ -22,25 +25,25 @@ function configurarFiltrosBss() {
         return false;
     });
 
-    // Evento de cambio para ejercicio contable
-    $('#Eje_nro').on('change', function () {
-        const ejercicioId = $(this).val();
-        if (!ejercicioId) return;
-    });
-
     // Evento para checkbox de incluir asientos temporales
     $('#chkIncluirTemp').on('change', function () {
         const isChecked = $(this).prop('checked');
         $('#incluirTemporales').val(isChecked ? "true" : "false");
     });
 
-    // Inicializar el rango de fechas al último mes
-    inicializarRangoUltimoMes();
+    // Evento para checkbox de rango de fechas
+    $('#Rango').on('change', function () {
+        const isChecked = $(this).prop('checked');
+        $('input[name="Desde"], input[name="Hasta"]').prop('disabled', !isChecked);
 
-    // Asegurarse que la validación de fechas se ejecute después de inicializar
-    if ($("#Rango").is(":checked")) {
-        validarRangoFechas();
-    }
+        // Limpiar mensajes de error al desactivar el rango
+        if (!isChecked) {
+            $("#fechaError").remove();
+        } else {
+            // Validar fechas al activar el rango (si ambas tienen valor)
+            validarRangoFechas();
+        }
+    });
 
     // Eventos para validación de fechas
     $('input[name="Desde"], input[name="Hasta"]').on('change', function () {
@@ -85,16 +88,16 @@ function inicializarComponentesBss() {
         orientation: 'bottom'
     });
 
-    // Inicializar el rango de fechas al último mes
-    // Esta función debe ejecutarse DESPUÉS de inicializar los datepickers
-    setTimeout(inicializarRangoUltimoMes, 100);
+    //// Inicializar el rango de fechas al último mes
+    //// Esta función debe ejecutarse DESPUÉS de inicializar los datepickers
+    //setTimeout(inicializarRangoUltimoMes, 100);
 
-    // Asegurarse que la validación de fechas se ejecute después de inicializar
-    setTimeout(function () {
-        if ($("#Rango").is(":checked")) {
-            validarRangoFechas();
-        }
-    }, 200);
+    //// Asegurarse que la validación de fechas se ejecute después de inicializar
+    //setTimeout(function () {
+    //    if ($("#Rango").is(":checked")) {
+    //        validarRangoFechas();
+    //    }
+    //}, 200);
 
     // Forzar la localización regional para las fechas
     $.datepicker.setDefaults($.datepicker.regional["es"]);
@@ -105,7 +108,24 @@ function inicializarComponentesBss() {
 function configurarBotonesBss() {
     // Botón de cancelar
     $("#btnCancel").on("click", function () {
-        window.location.href = homeLMayorUrl;
+        window.location.href = homeBSSUrl;
+    });
+
+    // Botón de búsqueda
+    $("#btnBuscar").on("click", function () {
+        // Validar campos obligatorios
+        if (!validarCamposObligatorios()) {
+            return;
+        }
+
+        // Es una nueva búsqueda, no resguardamos la búsqueda anterior
+        mayorDataBak = {};   
+
+        // Es una búsqueda por filtro, siempre será página 1
+        pagina = 1;
+
+        // Realizar búsqueda
+        buscarBSS();
     });
 
     // Usar mousedown en lugar de click para evitar conflictos con el collapse
@@ -120,55 +140,13 @@ function configurarBotonesBss() {
     $(document).on("click", ".btnImprimir", function () {
         imprimirBSS();
     });
-
-    // Botón de búsqueda
-    $("#btnBuscar").on("click", function () {
-        // Validar campos obligatorios
-        if (!validarCamposObligatorios()) {
-            return;
-        }
-
-        // Es una nueva búsqueda, no resguardamos la búsqueda anterior
-        mayorDataBak = {};
-
-        //// Limpiar todos los contenedores de resultados según la pestaña activa
-        //const tabActiva = $('.nav-tabs .active').attr('id');
-
-        ////desactivamos el boton tab de Libro Diario
-        //$("#tabDiario").prop("disabled", true).addClass("text-danger");
-
-        // Es una búsqueda por filtro, siempre será página 1
-        pagina = 1;
-
-        //switch (tabActiva) {
-        //    case 'tabMayor':
-        //        tipoReporteActual = TipoReporte.MAYOR;
-        //        buscarLibroMayor();
-        //        break;
-        //    case 'tabMayorDiario':
-        //        tipoReporteActual = TipoReporte.MAYOR_DIARIO;
-        //        buscarMayorDiario();
-        //        break;
-        //    case 'tabDiario':
-        //        tipoReporteActual = TipoReporte.DIARIO;
-        //        buscarLibroDiario();
-        //        break;
-        //    default:
-        //        tipoReporteActual = TipoReporte.MAYOR;
-        //        buscarLibroMayor();
-        //}
-        buscarBSS();
-    });
 }
 
 function analizaEstadoBtnDetalleBss() {
     if ($("#divDetalle").is(":visible")) {
         // HAY QUE LIMPIAR 
         bssDataBak = {};
-        limpiarBss();
-        //limpiarLibroMayor();
-        //limpiarMayorXDia();
-        //limpiarLibroDiario();
+        limpiarBss();     
     }
 }
 
@@ -279,38 +257,37 @@ function buscarBSS(pag = 1) {
     });
 }
 
+
 /**
  * Obtiene los parámetros para la búsqueda
  * @returns {Object} Objeto con los parámetros para la búsqueda
  */
 function obtenerParametrosBusquedaBss() {
-    let eje = $("#Eje_nro").val();
     return {
-        eje_nro: eje,        
+        eje_nro: $("#Eje_nro").val(),
         incluirTemporales: $("#chkIncluirTemp").is(":checked"),
         rango: $("#Rango").is(":checked"),
         desde: $("#Rango").is(":checked") ? $("input[name='Desde']").val() : null,
-        hasta: $("#Rango").is(":checked") ? $("input[name='Hasta']").val() : null,
-        subTitulo: `Ejercicio ${eje}`
+        hasta: $("#Rango").is(":checked") ? $("input[name='Hasta']").val() : null
     };
 }
 
 function imprimirBSS() {
-    // Determinar parámetros según el tipo de reporte actual
-    let modulo, parametros, titulo, observacion, subTitulo;
+    // Obtener los parámetros base del formulario
+    const params = obtenerParametrosBusquedaBss();
 
-    const params = {}; // obtenerParametrosBusqueda();
-    subTitulo = "A definir"; // `Cuenta: ${params.ccb_desc}`;
-    titulo = "bss";
-    modulo = "bss";
-    observacion = "";
-    //levanta parametros del filtro para invocar al GestorDoc
+    // Preparar datos para el gestor de impresión
     const data = {
-        modulo: modulo,
-        parametros: parametros,
-        titulo: titulo,
-        subTitulo: subTitulo,
-        observacion: observacion
+        modulo: "BalanceSS",
+        parametros: {
+            eje_nro: params.eje_nro,
+            desde: params.desde,
+            hasta: params.hasta,
+            incluirTemporales: params.incluirTemporales
+        },
+        titulo: "Balance de Sumas y Saldos",
+        subTitulo: `Ejercicio: ${$("#Eje_nro option:selected").text()}`,
+        observacion: ""
     };
 
     // Invocar gestor documental
@@ -352,4 +329,73 @@ function inicializarRangoUltimoMes() {
     // Es importante hacer esto DESPUÉS de establecer los valores en los inputs
     $('input[name="Desde"]').datepicker('update', desdeFormateado);
     $('input[name="Hasta"]').datepicker('update', hastaFormateado);
+}
+
+/**
+* Valida los campos obligatorios antes de realizar una búsqueda
+* @returns {boolean} True si todos los campos obligatorios están completos
+*/
+function validarCamposObligatorios() {
+    let camposFaltantes = [];
+    let mensajesError = [];
+
+    // Validar ejercicio (siempre obligatorio)
+    if (!$("#Eje_nro").val()) {
+        camposFaltantes.push("Ejercicio contable");
+    }
+
+    // Validar rango de fechas si está habilitado
+    if ($("#Rango").is(":checked")) {
+        const fechaDesde = $("input[name='Desde']").val();
+        const fechaHasta = $("input[name='Hasta']").val();
+
+        if (!fechaDesde) {
+            camposFaltantes.push("Fecha desde");
+        }
+
+        if (!fechaHasta) {
+            camposFaltantes.push("Fecha hasta");
+        }
+
+        // Si ambas fechas están presentes, validar que Desde no sea mayor a Hasta
+        if (fechaDesde && fechaHasta) {
+            // Convertir las fechas a objetos Date para comparación
+            const desde = parseFechaES(fechaDesde);
+            const hasta = parseFechaES(fechaHasta);
+
+            if (desde && hasta && desde > hasta) {
+                mensajesError.push("La fecha Desde no puede ser mayor a la fecha Hasta");
+            }
+        }
+    }
+
+    // Si faltan campos o hay errores de validación, mostrar mensaje y devolver false
+    if (camposFaltantes.length > 0 || mensajesError.length > 0) {
+        let mensaje = "";
+
+        if (camposFaltantes.length > 0) {
+            mensaje += "Para realizar la búsqueda debe seleccionar valores para: " + camposFaltantes.join(", ");
+        }
+
+        if (mensajesError.length > 0) {
+            if (mensaje) mensaje += "<br><br>";
+            mensaje += mensajesError.join("<br>");
+        }
+
+        AbrirMensaje(
+            "ATENCIÓN",
+            mensaje,
+            function () {
+                $("#msjModal").modal("hide");
+                return true;
+            },
+            false,
+            ["Aceptar"],
+            "warn!",
+            null
+        );
+        return false;
+    }
+
+    return true;
 }
