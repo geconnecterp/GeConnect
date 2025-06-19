@@ -200,12 +200,15 @@
 								</tr>
 							</thead>
 							<tbody>
-								@foreach (var item in Model.CuentaFormasDePago.ListaDatos)
+								@if (Model != null && Model.CuentaFormasDePago != null && Model.CuentaFormasDePago.ListaDatos != null)
 								{
-									<tr>
-										<td class="align-left">@item.fp_desc</td>
-										<td class="align-center">@item.fp_dias</td>
-									</tr>
+									@foreach (var item in Model.CuentaFormasDePago.ListaDatos)
+									{
+										<tr>
+											<td class="align-left">@item.fp_desc</td>
+											<td class="align-center">@item.fp_dias</td>
+										</tr>
+									}
 								}
 							</tbody>
 						</table>
@@ -228,15 +231,18 @@
 								</tr>
 							</thead>
 							<tbody>
-								@foreach (var item in Model.CuentaContactos.ListaDatos)
+								@if (Model != null && Model.CuentaContactos != null && Model.CuentaContactos.ListaDatos != null)
 								{
-									<tr>
-										<td class="align-left">@item.cta_nombre</td>
-										<td class="align-left">@item.tc_desc</td>
-										<td class="align-left">@item.cta_email</td>
-										<td class="align-left">@item.cta_celu</td>
-										<td class="align-left">@item.cta_te</td>
-									</tr>
+									@foreach (var item in Model.CuentaContactos.ListaDatos)
+									{
+										<tr>
+											<td class="align-left">@item.cta_nombre</td>
+											<td class="align-left">@item.tc_desc</td>
+											<td class="align-left">@item.cta_email</td>
+											<td class="align-left">@item.cta_celu</td>
+											<td class="align-left">@item.cta_te</td>
+										</tr>
+									}
 								}
 							</tbody>
 						</table>
@@ -256,12 +262,15 @@
 								</tr>
 							</thead>
 							<tbody>
-								@foreach (var item in Model.CuentaObs.ListaDatos)
+								@if (Model != null && Model.CuentaObs != null && Model.CuentaObs.ListaDatos != null)
 								{
-									<tr>
-										<td class="align-left">@item.cta_obs</td>
-										<td class="align-left">@item.to_desc</td>
-									</tr>
+									@foreach (var item in Model.CuentaObs.ListaDatos)
+									{
+										<tr>
+											<td class="align-left">@item.cta_obs</td>
+											<td class="align-left">@item.to_desc</td>
+										</tr>
+									}
 								}
 							</tbody>
 						</table>
@@ -282,13 +291,16 @@
 								</tr>
 							</thead>
 							<tbody>
-								@foreach (var item in Model.CuentaNota.ListaDatos)
+								@if (Model != null && Model.CuentaNota != null && Model.CuentaNota.ListaDatos != null)
 								{
-									<tr>
-										<td class="align-left">@item.nota</td>
-										<td class="align-left">@item.usu_apellidoynombre</td>
-										<td class="align-left">@item.fecha.ToString("dd/MM/yyyy")</td>
-									</tr>
+									@foreach (var item in Model.CuentaNota.ListaDatos)
+									{
+										<tr>
+											<td class="align-left">@item.nota</td>
+											<td class="align-left">@item.usu_apellidoynombre</td>
+											<td class="align-left">@item.fecha.ToString("dd/MM/yyyy")</td>
+										</tr>
+									}
 								}
 							</tbody>
 						</table>

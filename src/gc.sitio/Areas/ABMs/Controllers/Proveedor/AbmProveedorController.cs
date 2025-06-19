@@ -604,7 +604,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		/// <param name="tipoDeOperacion"></param>
 		/// <returns></returns>
 		[HttpPost]
-		public JsonResult DataOpsProveedor([FromBody] ProveedorAbmValidationModel proveedor, string destinoDeOperacion, char tipoDeOperacion)
+		public JsonResult DataOpsProveedor(ProveedorAbmValidationModel proveedor, string destinoDeOperacion, char tipoDeOperacion)
 		{
 			try
 			{

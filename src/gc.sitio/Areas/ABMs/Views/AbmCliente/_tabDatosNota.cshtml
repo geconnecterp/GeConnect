@@ -19,16 +19,19 @@
 								</tr>
 							</thead>
 							<tbody>
-								@foreach (var item in Model.CuentaNotas.ListaDatos)
+								@if (Model != null && Model.CuentaNotas != null && Model.CuentaNotas.ListaDatos != null)
 								{
-									<tr onclick="selectRegCli(this, 'tbClienteNotas')" ondblclick="selectRegDbl(this, 'tbClienteNotas')">
-										<td class="align-left">@item.nota</td>
-										<td class="align-left">@item.usu_apellidoynombre</td>
-										<td class="align-center">@item.fecha.ToString("dd/MM/yyyy")</td>
-										<td style="display:none;">@item.usu_id</td>
-										<td style="display:none;">@item.usu_id_logueado</td>
-										<td style="display:none;">@item.puedo_editar</td>
-									</tr>
+									@foreach (var item in Model.CuentaNotas.ListaDatos)
+									{
+										<tr onclick="selectRegCli(this, 'tbClienteNotas')" ondblclick="selectRegDbl(this, 'tbClienteNotas')">
+											<td class="align-left">@item.nota</td>
+											<td class="align-left">@item.usu_apellidoynombre</td>
+											<td class="align-center">@item.fecha.ToString("dd/MM/yyyy")</td>
+											<td style="display:none;">@item.usu_id</td>
+											<td style="display:none;">@item.usu_id_logueado</td>
+											<td style="display:none;">@item.puedo_editar</td>
+										</tr>
+									}
 								}
 							</tbody>
 						</table>

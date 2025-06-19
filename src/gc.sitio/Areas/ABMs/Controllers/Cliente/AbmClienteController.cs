@@ -665,7 +665,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
         /// <param name="tipoDeOperacion"></param>
         /// <returns></returns>
         [HttpPost]
-        public JsonResult DataOpsFormaDePago([FromBody] FormaDePagoAbmValidationModel fp, string destinoDeOperacion, char tipoDeOperacion)
+        public JsonResult DataOpsFormaDePago(FormaDePagoAbmValidationModel fp, string destinoDeOperacion, char tipoDeOperacion)
         {
             try
             {

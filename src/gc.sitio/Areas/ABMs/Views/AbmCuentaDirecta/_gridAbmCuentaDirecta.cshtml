@@ -7,8 +7,8 @@
 }
 <style>
     thead th {
-        position: sticky;
-        top: 0px;
+    position: sticky;
+    top: 0px;
     }
 </style>
 <div class="card">
@@ -24,16 +24,19 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model.ListaDatos)
+                    @if (Model != null && Model.ListaDatos != null)
                     {
-                        if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+                        @foreach (var item in Model.ListaDatos)
+                        {
+                            if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
-                        <tr class="@clase" onclick="selectReg(this, 'tbGridCuentaDirecta')">
-                            <td class="text-sm-center">@item.Ctag_Id</td>
-                            <td class="text-sm-start">@item.Ctag_Denominacion.ToUpper()</td>
-                            <td class="text-sm-start">@item.Tcg_Desc.ToUpper()</td>
-                            <td style="display:none;">@item.Tcg_Id</td>
-                        </tr>
+                            <tr class="@clase" onclick="selectReg(this, 'tbGridCuentaDirecta')">
+                                <td class="text-sm-center">@item.Ctag_Id</td>
+                                <td class="text-sm-start">@item.Ctag_Denominacion.ToUpper()</td>
+                                <td class="text-sm-start">@item.Tcg_Desc.ToUpper()</td>
+                                <td style="display:none;">@item.Tcg_Id</td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>

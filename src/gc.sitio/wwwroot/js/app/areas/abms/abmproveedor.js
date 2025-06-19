@@ -6,6 +6,7 @@
 
 	$(document).on("change", "#listaAfip", controlaValorAfip);
 	$(document).on("change", "#listaProvi", controlaValorProvi);
+	$(document).on("change", "#listaFP", controlaValorFP);
 
 	$(document).on("dblclick", "#" + Grids.GridProveedor + " tbody tr", function () {
 		x = $(this);
@@ -51,6 +52,8 @@
 	funcCallBack = buscarProveedores;
 	return true;
 });
+
+function activarControles(band) { }
 
 function NuevoProveedor() {
 	var data = {};
@@ -435,6 +438,28 @@ function BuscarProveedor(ctaId) {
 		ControlaMensajeError(obj.message);
 		CerrarWaiting();
 	});
+}
+
+function controlaValorFP() {
+	if ($("#listaFP option:selected").val() === "B" || $("#listaFP option:selected").val() === "I") {
+		$("#listaTipoCueBco").prop("disabled", false);
+		$("#FormaDePago_Cta_Bco_Cuenta_Nro").prop("disabled", false);
+		$("#FormaDePago_Cta_Bco_Cuenta_Cbu").prop("disabled", false);
+	}
+	else {
+		$("#listaTipoCueBco").prop("disabled", true);
+		$("#FormaDePago_Cta_Bco_Cuenta_Nro").val("");
+		$("#FormaDePago_Cta_Bco_Cuenta_Nro").prop("disabled", true);
+		$("#FormaDePago_Cta_Bco_Cuenta_Cbu").val("");
+		$("#FormaDePago_Cta_Bco_Cuenta_Cbu").prop("disabled", true);
+	}
+	if ($("#listaFP option:selected").val() === "H") {
+		$("#FormaDePago_Cta_Valores_A_Nombre").prop("disabled", false);
+	}
+	else {
+		$("#FormaDePago_Cta_Valores_A_Nombre").val("");
+		$("#FormaDePago_Cta_Valores_A_Nombre").prop("disabled", true);
+	}
 }
 
 function ObtenerDatosDeProveedorFamiliaParaJson(destinoDeOperacion, tipoDeOperacion) {

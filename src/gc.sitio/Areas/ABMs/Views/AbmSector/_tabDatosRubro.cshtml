@@ -17,13 +17,16 @@
 								</tr>
 							</thead>
 							<tbody>
-								@foreach (var item in Model.SectorRubro.ListaDatos)
+								@if (Model != null && Model.SectorRubro != null && Model.SectorRubro.ListaDatos != null)
 								{
-									<tr onclick="selectRegCli(this, 'tbRubroEnTab')" ondblclick="selectRegDbl(this, 'tbRubroEnTab')">
-										<td class="align-left">@item.Rub_Id</td>
-										<td class="align-left">@item.Rub_Desc</td>
-										<td style="display:none;">@item.Rubg_Id</td>
-									</tr>
+									@foreach (var item in Model.SectorRubro.ListaDatos)
+									{
+										<tr onclick="selectRegCli(this, 'tbRubroEnTab')" ondblclick="selectRegDbl(this, 'tbRubroEnTab')">
+											<td class="align-left">@item.Rub_Id</td>
+											<td class="align-left">@item.Rub_Desc</td>
+											<td style="display:none;">@item.Rubg_Id</td>
+										</tr>
+									}
 								}
 							</tbody>
 						</table>

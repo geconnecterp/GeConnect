@@ -22,15 +22,18 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model.ListaDatos)
-                    {
-                        if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					@if (Model != null && Model.ListaDatos != null)
+					{
+                        @foreach (var item in Model.ListaDatos)
+                        {
+                            if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
-                        <tr class="@clase" onclick="selectReg(this, 'tbGridSector')">
-                            <td class="text-sm-center">@item.sec_id</td>
-                            <td class="text-sm-start">@item.sec_desc.ToUpper()</td>
-                        </tr>
-                    }
+                            <tr class="@clase" onclick="selectReg(this, 'tbGridSector')">
+                                <td class="text-sm-center">@item.sec_id</td>
+                                <td class="text-sm-start">@item.sec_desc.ToUpper()</td>
+                            </tr>
+                        }
+					}
                 </tbody>
             </table>
         </div>

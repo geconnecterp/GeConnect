@@ -19,14 +19,17 @@
 					</tr>
 				</thead>
 				<tbody>
-					@foreach (var item in Model.ProductosPorRubro.ListaDatos)
+					@if (Model != null && Model.ProductosPorRubro != null && Model.ProductosPorRubro.ListaDatos != null)
 					{
-						var nombre = "chk" + item.P_id;
-						<tr>
-							<td><input type="checkbox" name=@nombre /></td>
-							<td class="align-center">@item.P_id</td>
-							<td class="align-left">@item.P_desc</td>
-						</tr>
+						@foreach (var item in Model.ProductosPorRubro.ListaDatos)
+						{
+							var nombre = "chk" + item.P_id;
+							<tr>
+								<td><input type="checkbox" name=@nombre /></td>
+								<td class="align-center">@item.P_id</td>
+								<td class="align-left">@item.P_desc</td>
+							</tr>
+						}
 					}
 				</tbody>
 			</table>

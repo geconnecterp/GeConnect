@@ -16,13 +16,16 @@
 								</tr>
 							</thead>
 							<tbody>
-								@foreach (var item in Model.ListaOpcionesCuota.ListaDatos)
+								@if (Model != null && Model.ListaOpcionesCuota != null && Model.ListaOpcionesCuota.ListaDatos != null)
 								{
-									<tr onclick="selectRegCli(this, 'tbOpcionesCuotas')" ondblclick="selectRegDbl(this, 'tbOpcionesCuotas')">
-										<td class="align-left">@item.Cuota</td>
-										<td class="align-left">@item.Recargo</td>
-										<td style="display:none;">@item.Ins_Id</td>
-									</tr>
+									@foreach (var item in Model.ListaOpcionesCuota.ListaDatos)
+									{
+										<tr onclick="selectRegCli(this, 'tbOpcionesCuotas')" ondblclick="selectRegDbl(this, 'tbOpcionesCuotas')">
+											<td class="align-left">@item.Cuota</td>
+											<td class="align-left">@item.Recargo</td>
+											<td style="display:none;">@item.Ins_Id</td>
+										</tr>
+									}
 								}
 							</tbody>
 						</table>

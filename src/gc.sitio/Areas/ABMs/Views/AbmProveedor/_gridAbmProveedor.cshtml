@@ -17,29 +17,29 @@
 			<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridProveedor">
 				<thead class="table-dark">
 					<tr class="header">
-						<th scope="col">@nameof(dataMod.cta_id)</th>
-						<th scope="col">@nameof(dataMod.cta_denominacion)</th>
-						<th scope="col">@nameof(dataMod.tdoc_desc)</th>
-						<th scope="col">@nameof(dataMod.cta_documento)</th>
-						<th scope="col">@nameof(dataMod.cta_domicilio)</th>
+						<th scope="col" class="align-center">ID</th>
+						<th scope="col" class="align-center">Denominación</th>
+						<th scope="col" class="align-center">Doc. Tipo</th>
+						<th scope="col" class="align-center">Doc. Nro.</th>
+						<th scope="col" class="align-center">Domicilio</th>
 					</tr>
 				</thead>
 				<tbody>
-					@foreach (var item in Model.ListaDatos)
+					@if (Model != null && Model.ListaDatos != null)
 					{
-						if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+						@foreach (var item in Model.ListaDatos)
+						{
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
-						<tr class="@clase" onclick="selectReg(this, 'tbGridProveedor')" 
-						@* ondblclick="selectRegDbl(this, 'tbGridProveedor')" *@
-						>
-							<td class="text-sm-center">@item.cta_id</td>
-							<td class="text-sm-start">@item.cta_denominacion</td>
-							<td class="text-sm-end">@item.tdoc_desc</td>
-							<td class="text-sm-start">@item.cta_documento</td>
-							<td class="text-sm-start">@item.cta_domicilio</td>
-						</tr>
+							<tr class="@clase" onclick="selectReg(this, 'tbGridProveedor')">
+								<td class="text-sm-center">@item.cta_id</td>
+								<td class="text-sm-start">@item.cta_denominacion</td>
+								<td class="text-sm-end">@item.tdoc_desc</td>
+								<td class="text-sm-start">@item.cta_documento</td>
+								<td class="text-sm-start">@item.cta_domicilio</td>
+							</tr>
+						}
 					}
-
 				</tbody>
 			</table>
 		</div>
