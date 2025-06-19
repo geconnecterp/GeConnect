@@ -37,7 +37,6 @@
     <Folder Include="Areas\Consultas\Data\" />
     <Folder Include="Areas\Consultas\Models\" />
     <Folder Include="Areas\ControlComun\Data\" />
-    <Folder Include="Areas\Libros\Controllers\" />
     <Folder Include="Areas\Libros\Data\" />
     <Folder Include="Areas\Libros\Models\" />
     <Folder Include="Areas\Seguridad\Data\" />

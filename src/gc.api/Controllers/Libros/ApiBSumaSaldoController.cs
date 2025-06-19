@@ -2,6 +2,7 @@
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Libros;
+using gc.infraestructura.EntidadesComunes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -11,27 +12,27 @@ namespace gc.api.Controllers.Libros
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class ApiSumaSaldoController : ControllerBase
+    public class ApiBSumaSaldoController : ControllerBase
     {
         private readonly IApiSumaSaldoServicio _bssSv;
         private readonly AppSettings _appSettings;
-        private readonly ILogger<ApiSumaSaldoController> _logger;
+        private readonly ILogger<ApiBSumaSaldoController> _logger;
 
-        public ApiSumaSaldoController(
+        public ApiBSumaSaldoController(
             IApiSumaSaldoServicio bssSv,
             IOptions<AppSettings> appSettings,
-            ILogger<ApiSumaSaldoController> logger)
+            ILogger<ApiBSumaSaldoController> logger)
         {
             _bssSv = bssSv;
             _appSettings = appSettings.Value;
             _logger = logger;
         }
 
-        [HttpPost("obtener-balance-suma-saldos")]
+        [HttpPost("obtener-balanceSS")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult<ApiResponse<List<BSumaSaldoRegDto>>> ObtenerBalanceSumaSaldos([FromBody] BSSRequestDto request)
+        public ActionResult<ApiResponse<List<BSumaSaldoRegDto>>> ObtenerBalanceSumaSaldos([FromBody] LibroFiltroDto request)
         {
             if (request == null)
             {
