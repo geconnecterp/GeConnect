@@ -376,7 +376,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 							if (respuesta.Entidad.resultado == 0)
 							{
 								//Lo quito de la lista que uso para cargar la grilla de obligaciones nuevas
-								var listaTemp = OPDebitoNuevaLista.Where(x => !x.dia_movi.Equals(r.dia_movi) && !x.cm_compte.Equals(r.cm_compte)).ToList();
+								var listaTemp = new List<OPDebitoYCreditoDelProveedorDto>();
+								foreach (var itemDebito in OPDebitoNuevaLista)
+								{
+									if (itemDebito.dia_movi.Equals(r.dia_movi) && itemDebito.cm_compte.Equals(r.cm_compte) && itemDebito.cm_compte_cuota.Equals(r.cuota) && itemDebito.tco_id.Equals(r.tco_id))
+										continue;
+									listaTemp.Add(itemDebito);
+								}
 								DormirMetodo(100);
 								OPDebitoNuevaLista = listaTemp;
 
@@ -444,7 +450,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 							if (respuesta.Entidad.resultado == 0)
 							{
 								//Lo quito de la lista que uso para cargar la grilla de obligaciones nuevas
-								var listaTemp = OPCreditoNuevaLista.Where(x => !x.dia_movi.Equals(r.dia_movi) && !x.cm_compte.Equals(r.cm_compte)).ToList();
+								var listaTemp = new List<OPDebitoYCreditoDelProveedorDto>();
+								foreach (var itemCredito in OPCreditoNuevaLista)
+								{
+									if (itemCredito.dia_movi.Equals(r.dia_movi) && itemCredito.cm_compte.Equals(r.cm_compte) && itemCredito.cm_compte_cuota.Equals(r.cuota) && itemCredito.tco_id.Equals(r.tco_id))
+										continue;
+									listaTemp.Add(itemCredito);
+								}
 								DormirMetodo(100);
 								OPCreditoNuevaLista = listaTemp;
 
