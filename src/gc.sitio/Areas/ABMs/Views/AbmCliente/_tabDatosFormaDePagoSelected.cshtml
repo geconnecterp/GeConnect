@@ -24,19 +24,19 @@
 		<div class="input-group input-group-sm">
 			<span class="input-group-text fixed-lbl-for-abm-70">Cta: </span>
 			@Html.DropDownListFor(m => Model.FormaDePago.Tcb_Id, tipoCueBco, "Seleccionar...", new { @id = "listaTipoCueBco", @class = "form-control activable" })
-			<span class="input-group-text fixed-lbl-for-abm-70">N°: </span>
+			<span id="Cta_Bco_Cuenta_Nro_Lbl" class="input-group-text fixed-lbl-for-abm-70">N°: </span>
 			<input type="text" asp-for="FormaDePago.Cta_Bco_Cuenta_Nro" class="form-control activable" />
 		</div>
 	</div>
 	<div class="row mt-1">
 		<div class="input-group input-group-sm">
-			<span class="input-group-text fixed-lbl-for-abm-70">CBU: </span>
+			<span id="Cta_Bco_Cuenta_Cbu_Lbl" class="input-group-text fixed-lbl-for-abm-70">CBU: </span>
 			<input type="text" asp-for="FormaDePago.Cta_Bco_Cuenta_Cbu" class="form-control activable" />
 		</div>
 	</div>
 	<div class="row mt-1">
 		<div class="input-group input-group-sm">
-			<span class="input-group-text fixed-lbl-for-abm-70">Valores a: </span>
+			<span id="Cta_Valores_A_Nombre_Lbl" class="input-group-text fixed-lbl-for-abm-70">Valores a: </span>
 			<input type="text" asp-for="FormaDePago.Cta_Valores_A_Nombre" class="form-control activable" />
 		</div>
 	</div>

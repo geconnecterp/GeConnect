@@ -71,21 +71,33 @@ function controlaValorFP() {
 	if ($("#listaFP option:selected").val() === "B" || $("#listaFP option:selected").val() === "I") {
 		$("#listaTipoCueBco").prop("disabled", false);
 		$("#FormaDePago_Cta_Bco_Cuenta_Nro").prop("disabled", false);
+		$("#FormaDePago_Cta_Bco_Cuenta_Nro").show();
+		$("#Cta_Bco_Cuenta_Nro_Lbl").show();
 		$("#FormaDePago_Cta_Bco_Cuenta_Cbu").prop("disabled", false);
+		$("#FormaDePago_Cta_Bco_Cuenta_Cbu").show();
+		$("#Cta_Bco_Cuenta_Cbu_Lbl").show();
 	}
 	else {
 		$("#listaTipoCueBco").prop("disabled", true);
 		$("#FormaDePago_Cta_Bco_Cuenta_Nro").val("");
 		$("#FormaDePago_Cta_Bco_Cuenta_Nro").prop("disabled", true);
+		$("#FormaDePago_Cta_Bco_Cuenta_Nro").hide();
+		$("#Cta_Bco_Cuenta_Nro_Lbl").hide();
 		$("#FormaDePago_Cta_Bco_Cuenta_Cbu").val("");
 		$("#FormaDePago_Cta_Bco_Cuenta_Cbu").prop("disabled", true);
+		$("#FormaDePago_Cta_Bco_Cuenta_Cbu").hide();
+		$("#Cta_Bco_Cuenta_Cbu_Lbl").hide();
 	}
 	if ($("#listaFP option:selected").val() === "H") {
 		$("#FormaDePago_Cta_Valores_A_Nombre").prop("disabled", false);
+		$("#FormaDePago_Cta_Valores_A_Nombre").show();
+		$("#Cta_Valores_A_Nombre_Lbl").show();
 	}
 	else {
 		$("#FormaDePago_Cta_Valores_A_Nombre").val("");
 		$("#FormaDePago_Cta_Valores_A_Nombre").prop("disabled", true);
+		$("#FormaDePago_Cta_Valores_A_Nombre").hide();
+		$("#Cta_Valores_A_Nombre_Lbl").hide();
 	}
 }
 
