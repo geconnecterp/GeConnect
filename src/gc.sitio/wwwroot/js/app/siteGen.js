@@ -1022,6 +1022,36 @@ function validarRangoFechas() {
     }
 }
 
+function validarRangoFechasC() {
+    // Remover mensaje de error previo
+    $("#fechaError").remove();
+
+    const fechaDesde = $("input[name='DesdeFC']").val();
+    const fechaHasta = $("input[name='HastaFC']").val();
+
+    // Solo validar si ambas fechas tienen valor
+    if (fechaDesde && fechaHasta) {
+        const desde = parseFechaES(fechaDesde);
+        const hasta = parseFechaES(fechaHasta);
+
+        if (desde && hasta && desde > hasta) {
+            // Agregar mensaje de error después del campo Hasta
+            $("input[name='HastaFC']").parent().after(
+                `<div id="fechaError" class="text-danger small mt-1">
+                    <i class="bx bx-error-circle"></i> 
+                    La fecha Desde no puede ser mayor a la fecha Hasta
+                </div>`
+            );
+
+            // Cambiar estilo de los campos de fecha para indicar error
+            $("input[name='DesdeFC'], input[name='HastaFC']").addClass("is-invalid");
+        } else {
+            // Quitar estilo de error si las fechas son válidas
+            $("input[name='DesdeFC'], input[name='HastaFC']").removeClass("is-invalid");
+        }
+    }
+}
+
 /**
  * Parsea una fecha en formato DD/MM/YYYY a objeto Date
  * @param {string} fechaStr - Fecha en formato DD/MM/YYYY

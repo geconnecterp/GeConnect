@@ -8,5 +8,6 @@ namespace gc.sitio.core.Servicios.Contratos.Libros
     public interface ILibroDiarioServicio
     {
         Task<(List<AsientoDetalleLDDto>, MetadataGrid)> ObtenerAsientosLibroDiario(LDiarioRequest query, string token);
+        Task<(List<LibroDiarioResumen>, MetadataGrid)> ObtenerAsientosLibroDiarioResumen(LDiarioRequest query, string token);
     }
 }

@@ -26,6 +26,19 @@
         public int Total_paginas { get; set; }
     }
 
+    public class LibroDiarioResumen
+    {
+        public int Total_registros { get; set; }
+        public int Total_paginas { get; set; }
+        public string Dia_tipo { get; set; } = string.Empty;
+        public string Dia_lista { get; set; } = string.Empty;
+        public string Ccb_id { get; set; } = string.Empty;
+        public string Ccb_desc { get; set; } = string.Empty;
+        public decimal dia_debe { get; set; }
+        public decimal dia_haber { get; set; }
+        public bool temporal { get; set; }
+    }
+
     public class AsientoLineaDto
     {
         public string Dia_movi { get; set; } = string.Empty;

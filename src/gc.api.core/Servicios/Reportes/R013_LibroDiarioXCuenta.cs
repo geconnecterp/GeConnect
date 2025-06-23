@@ -1,6 +1,5 @@
 ﻿using DocumentFormat.OpenXml.Office2013.Drawing.ChartStyle;
 using gc.api.core.Contratos.Servicios;
-using gc.api.core.Contratos.Servicios.Asientos;
 using gc.api.core.Contratos.Servicios.Libros;
 using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Entidades;
@@ -23,7 +22,7 @@ namespace gc.api.core.Servicios.Reportes
 {
     public class R013_LibroDiarioXCuenta : Servicio<EntidadBase>, IGeneradorReporte
     {
-        private readonly IAsientoLibroDiarioServicio _lDiarioSv;
+        private readonly IApiLDiarioServicio _lDiarioSv;
 
         private readonly EmpresaGeco _empresaGeco;
         private readonly List<string> _titulos;
@@ -31,7 +30,7 @@ namespace gc.api.core.Servicios.Reportes
         private readonly ICuentaServicio _cuentaSv;
         private readonly ILogger _logger;
         public R013_LibroDiarioXCuenta(IUnitOfWork uow,
-            IAsientoLibroDiarioServicio ldSv,
+            IApiLDiarioServicio ldSv,
            IOptions<EmpresaGeco> empresa, ICuentaServicio consultaSv, ILogger logger) : base(uow)
         {
             _lDiarioSv = ldSv;
@@ -340,12 +339,15 @@ namespace gc.api.core.Servicios.Reportes
         private List<AsientoDetalleLDDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string id)
         {
 
-            var eje_nro = solicitud.Parametros.GetValueOrDefault("Eje_nro", "");
-            var movimientos = solicitud.Parametros.GetValueOrDefault("Movimientos", "");
-            var incluirTemporales = solicitud.Parametros.GetValueOrDefault("ConTemporales", "").ToBoolean();
-            var rango = solicitud.Parametros.GetValueOrDefault("Periodo", "").ToBoolean();
-            var desde = solicitud.Parametros.GetValueOrDefault("Desde", "").ToDateTime();
-            var hasta = solicitud.Parametros.GetValueOrDefault("Hasta", "").ToDateTime();
+            var eje_nro = solicitud.Parametros.GetValueOrDefault("eje_nro", "");
+            var movimientos = solicitud.Parametros.GetValueOrDefault("movimientos", "");
+            var ConTemporales = solicitud.Parametros.GetValueOrDefault("conTemporales", "").ToBoolean();
+            var rango = solicitud.Parametros.GetValueOrDefault("rango", "").ToBoolean();
+            var desde = solicitud.Parametros.GetValueOrDefault("desde", "").ToDateTime();
+            var hasta = solicitud.Parametros.GetValueOrDefault("hasta", "").ToDateTime();
+            var hasCarga = solicitud.Parametros.GetValueOrDefault("rangoFC", "").ToBoolean();
+            var cDesde = solicitud.Parametros.GetValueOrDefault("desdeFC", "").ToDateTime();
+            var cHasta = solicitud.Parametros.GetValueOrDefault("hastaFC", "").ToDateTime();
 
 
 
@@ -353,7 +355,8 @@ namespace gc.api.core.Servicios.Reportes
             //string dia_movi = solicitud.Parametros.GetValueOrDefault("dia_movi", "") ?? "";
             id = eje_nro;
             return _lDiarioSv.ObtenerAsientoLibroDiario(eje_nro.ToInt(),rango, desde, hasta,
-                movimientos, incluirTemporales, 99999, 1, "");
+                hasCarga, cDesde, cHasta,
+                movimientos, ConTemporales, 99999, 1, "");
         }
     }
 }

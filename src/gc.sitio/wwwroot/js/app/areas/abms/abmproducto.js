@@ -120,7 +120,7 @@
     $("#btnDetalle").prop("disabled", true);
 
     $("#btnCancel").on("click", function () {
-        $("#btnFiltro").trigger("click");
+        window.location.href = homeProductoUrl;
     });
     $("#pagEstado").on("change", function () {
         var div = $("#divPaginacion");

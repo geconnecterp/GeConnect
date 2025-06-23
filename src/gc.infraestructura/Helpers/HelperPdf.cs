@@ -1294,33 +1294,38 @@ namespace gc.infraestructura.Helpers
             };
             footerTable.AddCell(textCell);
 
-            // CAMBIO: Incluimos el número total de páginas directamente en la celda
-            // en lugar de usar un template separado
-            string pageText = $"Página {writer.PageNumber} de {writer.CurrentPageNumber}";
-            PdfPCell pageNumberCell = new PdfPCell(new Phrase(pageText, footerFont))
+            // Combinar texto estático con el número de página actual y un template para el total
+            PdfPCell pageNumberCell = new PdfPCell()
             {
                 Border = Rectangle.NO_BORDER,
                 HorizontalAlignment = Element.ALIGN_RIGHT,
                 PaddingTop = 3
             };
+
+            // Añadir el texto fijo y el número de página actual
+            Phrase pagePhrase = new Phrase($"Página {writer.PageNumber} de ", footerFont);
+
+            // Añadir el template para el número total de páginas
+            pagePhrase.Add(new Chunk(Image.GetInstance(_totalPages), 0, 0, true));
+
+            pageNumberCell.Phrase = pagePhrase;
             footerTable.AddCell(pageNumberCell);
 
             // Dibujar la tabla del pie de página
             footerTable.WriteSelectedRows(0, -1, document.LeftMargin, footerY + 3, cb);
 
-            // Guardamos el número de página actual para el cierre del documento
-            cb.SaveState();
-            cb.RestoreState();
+            //// Guardamos el número de página actual para el cierre del documento
+            //cb.SaveState();
+            //cb.RestoreState();
         }
 
         public override void OnCloseDocument(PdfWriter writer, Document document)
         {
-            // Este método ya no es necesario modificarlo pues ahora generamos
-            // directamente el número de página en OnEndPage
+            // Escribir el número total de páginas en el template
             _totalPages.BeginText();
             _totalPages.SetFontAndSize(_baseFont, 8);
             _totalPages.SetTextMatrix(0, 0);
-            _totalPages.ShowText((writer.PageNumber - 1).ToString());
+            _totalPages.ShowText(writer.PageNumber.ToString());
             _totalPages.EndText();
         }
     }

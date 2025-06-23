@@ -16,10 +16,11 @@ using System.Reflection;
 
 namespace gc.sitio.core.Servicios.Implementacion.Libros
 {
-    public class LibroDiarioServicio: Servicio<Dto>, ILibroDiarioServicio
+    public class LibroDiarioServicio : Servicio<Dto>, ILibroDiarioServicio
     {
         private const string RutaAPI = "/api/apildiario";
         private const string POST_OBTENER_ASIENTOS_LIBRO_DIARIO = "/obtener-asientos-ldiario";
+        private const string POST_OBTENER_ASIENTOS_LIBRO_DIARIO_RESUMEN = "/obtener-asientos-ldiario-resumen";
         private readonly AppSettings _appSettings;
         public LibroDiarioServicio(IOptions<AppSettings> options, ILogger<LibroDiarioServicio> logger) : base(options, logger, RutaAPI)
         {
@@ -54,6 +55,84 @@ namespace gc.sitio.core.Servicios.Implementacion.Libros
                     }
 
                     apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AsientoDetalleLDDto>>>(stringData)
+                        ?? throw new NegocioException("No se pudo deserializar el libro mayor.");
+
+                    return (apiResponse.Data ?? [], apiResponse.Meta ?? new());
+                }
+                else
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    var error = JsonConvert.DeserializeObject<string>(stringData);
+                    if (error != null)
+                    {
+                        throw new NegocioException(error ?? "Hubo un problema en la recepcion del libro mayor");
+                    }
+                    else
+                    {
+                        throw new Exception("Hubo un problema en la recepcion del libro mayor");
+                    }
+                }
+                else if (response.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    throw new NegocioException("No tiene permisos para acceder a este recurso.");
+                }
+                else
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    if (error != null && error.TypeException?.Equals(nameof(NegocioException)) == true)
+                    {
+                        throw new NegocioException(error.Detail ?? "Hubo un problema en la recepcion del libro mayor");
+                    }
+                    else if (error != null && error.TypeException?.Equals(nameof(NotFoundException)) == true)
+                    {
+                        throw new NegocioException(error.Detail ?? "Hubo un problema en la recepcion del libro mayor");
+                    }
+                    else
+                    {
+                        throw new Exception(error?.Detail);
+                    }
+                }
+            }
+            catch (NegocioException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+                throw new NegocioException("Algo no fue bien al intentar obtener los asientos temporales.");
+            }
+        }
+
+        public async Task<(List<LibroDiarioResumen>, MetadataGrid)> ObtenerAsientosLibroDiarioResumen(LDiarioRequest query, string token)
+        {
+            try
+            {
+                ApiResponse<List<LibroDiarioResumen>> apiResponse;
+                HelperAPI helper = new();
+
+                // Inicializar cliente y preparar contenido
+                HttpClient client = helper.InicializaCliente(query, token, out StringContent contentData);
+                HttpResponseMessage response;
+
+                // Construir la URL de la API
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{POST_OBTENER_ASIENTOS_LIBRO_DIARIO_RESUMEN}";
+
+                // Enviar solicitud POST
+                response = await client.PostAsync(link, contentData);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde.");
+                    }
+
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<LibroDiarioResumen>>>(stringData)
                         ?? throw new NegocioException("No se pudo deserializar el libro mayor.");
 
                     return (apiResponse.Data ?? [], apiResponse.Meta ?? new());
