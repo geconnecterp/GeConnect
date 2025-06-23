@@ -7,6 +7,7 @@
         ASDEF, //ASIENTOS DEFINITIVOS
         LMAYOR, //LIBRO MAYOR,
         BSS, //BALANCE SUMA SALDOS
+        LDIARIO, //LIBRO DIARIO
     }
 
     public enum AppReportes

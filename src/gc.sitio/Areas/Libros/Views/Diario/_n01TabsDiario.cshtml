@@ -1,0 +1,34 @@
+﻿<div class="container-fluid">
+    <div class="card mb-4">
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="tabDiario" data-bs-toggle="tab" data-bs-target="#diarioTab" type="button" role="tab" aria-controls="mayorTab" aria-selected="true">Asientos</button>
+                </li>     
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="tabDiarioResumen" data-bs-toggle="tab" data-bs-target="#diarioResumenTab" type="button" role="tab" aria-controls="mayorDiarioTab" aria-selected="false">Resumen</button>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="diarioTab" role="tabpanel" aria-labelledby="tabDiario">
+                    <!-- Contenido para BSS -->                    
+                    <div id="divLD" class="row mt-2">
+                        <!-- Aquí se cargarán registros del bss -->
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="diarioResumenTab" role="tabpanel" aria-labelledby="tabDiarioResumen">
+                    <!-- Contenido para Mayor por Día -->
+                    <div id="divpanel02">
+                        <div class="row">
+                            <div class="col-md-4" id="divDiarioResumen">
+                                <span class="text-danger">SIN REGISTROS</span>
+                            </div>                           
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

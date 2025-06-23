@@ -69,6 +69,7 @@ namespace gc.infraestructura.Constantes
             public const string ORDEN_DE_PAGO_A_PROVEEDORES = "ORDEN_DE_PAGO_A_PROVEEDORES";
             public const string LIBRO_MAYOR = "LIBRO_MAYOR";
             public const string BSS = "BALANCE_SUMA_SALDOS";
+            public const string LDIARIO = "LIBRO_DIARIO";
         }
     }
 }

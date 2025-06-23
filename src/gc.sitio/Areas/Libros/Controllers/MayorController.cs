@@ -407,6 +407,7 @@ namespace gc.sitio.Areas.Libros.Controllers
 
                
                 query.Regs= _appSettings.NroRegistrosPagina;
+                query.Pagina = 1;
         
 
                 // Llamar al servicio para obtener el libro mayor
@@ -426,7 +427,7 @@ namespace gc.sitio.Areas.Libros.Controllers
                     lista,
                     "dia_movi",
                     _appSettings.NroRegistrosPagina,
-                    query.Pag,
+                    query.Pagina,
                     lista.Count,
                      (int)Math.Ceiling((double)lista.Count / _appSettings.NroRegistrosPagina), // Total de páginas
                     string.Empty 

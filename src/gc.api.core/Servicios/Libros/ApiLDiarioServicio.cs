@@ -1,6 +1,6 @@
 ﻿using DocumentFormat.OpenXml.Office2013.Word;
 using gc.api.core.Constantes;
-using gc.api.core.Contratos.Servicios.Asientos;
+using gc.api.core.Contratos.Servicios.Libros;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Dtos.Asientos;
@@ -11,11 +11,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace gc.api.core.Servicios.Asientos
+namespace gc.api.core.Servicios.Libros
 {
-    public class AsientoLibroDiarioServicio : Servicio<EntidadBase>, IAsientoLibroDiarioServicio
+    public class ApiLDiarioServicio : Servicio<EntidadBase>, IApiLDiarioServicio
     {
-        public AsientoLibroDiarioServicio(IUnitOfWork uow) : base(uow)
+        public ApiLDiarioServicio(IUnitOfWork uow) : base(uow)
         {
 
         }
@@ -25,13 +25,15 @@ namespace gc.api.core.Servicios.Asientos
             bool periodo,
             DateTime desde,
             DateTime hasta,
+            bool hasCarga,
+            DateTime Cdesde,
+            DateTime Chasta,
             string movimientos,
             bool conTemporales,
             int regs,
             int pag,
             string orden)
         {
-            string movi = string.Empty;
             var sp = ConstantesGC.StoredProcedures.SP_ASIENTO_LIBRO_DIARIO;// "spgeco_conta_asiento_tmp_datos"; // Usar el SP que mencionaste
 
             var ps = new List<SqlParameter>();
@@ -44,7 +46,14 @@ namespace gc.api.core.Servicios.Asientos
                 ps.Add(new SqlParameter("@fa_hasta", hasta));
             }
 
-            ps.Add(new SqlParameter("@movi", true));
+            ps.Add(new SqlParameter("@fc", hasCarga));
+            if (hasCarga)
+            {
+                ps.Add(new SqlParameter("@fc_desde", Cdesde));
+                ps.Add(new SqlParameter("@fc_hasta", Chasta));
+            }
+            bool movi = !string.IsNullOrEmpty(movimientos);  //si movimientos es null o vacío, movi será false
+            ps.Add(new SqlParameter("@movi", movi));
             ps.Add(new SqlParameter("@movi_like", movimientos));
             ps.Add(new SqlParameter("@incluye_tmp", conTemporales));
             ps.Add(new SqlParameter("@registros", regs));
@@ -62,18 +71,20 @@ namespace gc.api.core.Servicios.Asientos
 
             List<AsientoDetalleLDDto> asientos = [];
             AsientoDetalleLDDto asientoDetalle = new();
+            string moviId = string.Empty;
+
             // Agregar cada registro como una línea de detalle
             foreach (var registro in resultados)
             {
-                if (!movi.Equals(registro.dia_movi))
+                if (!moviId.Equals(registro.dia_movi))
                 {
                     //la primera vez la variable movi sera empty por lo que 
                     //no ingresará en el "if"
-                    if (!string.IsNullOrEmpty(movi))
+                    if (!string.IsNullOrEmpty(moviId))
                     {
                         asientos.Add(asientoDetalle);
                     }
-                    movi = registro.dia_movi;
+                    moviId = registro.dia_movi;
 
                     // Crear el objeto AsientoDetalleDto a partir del primer registro
                     asientoDetalle = new AsientoDetalleLDDto()
@@ -109,6 +120,42 @@ namespace gc.api.core.Servicios.Asientos
             }
             asientos.Add(asientoDetalle);
             return asientos;
+        }
+
+        public List<LibroDiarioResumen> ObtenerAsientoLibroDiarioResumen(int eje_nro, bool periodo, DateTime desde, DateTime hasta, bool hasCarga, DateTime Cdesde, DateTime Chasta, string movimientos, bool conTemporales, int regs, int pag, string orden)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_ASIENTO_LIBRO_DIARIO;// "spgeco_conta_asiento_tmp_datos"; // Usar el SP que mencionaste
+
+            var ps = new List<SqlParameter>();
+
+            ps.Add(new SqlParameter("@eje_nro", eje_nro));
+            ps.Add(new SqlParameter("@fa", periodo));
+            if (periodo)
+            {
+                ps.Add(new SqlParameter("@fa_desde", desde));
+                ps.Add(new SqlParameter("@fa_hasta", hasta));
+            }
+
+            ps.Add(new SqlParameter("@fc", hasCarga));
+            if (hasCarga)
+            {
+                ps.Add(new SqlParameter("@fc_desde", Cdesde));
+                ps.Add(new SqlParameter("@fc_hasta", Chasta));
+            }
+            bool movi = !string.IsNullOrEmpty(movimientos);  //si movimientos es null o vacío, movi será false
+            ps.Add(new SqlParameter("@movi", movi));
+            ps.Add(new SqlParameter("@movi_like", movimientos));
+            ps.Add(new SqlParameter("@incluye_tmp", conTemporales));
+            ps.Add(new SqlParameter("@registros", regs));
+            ps.Add(new SqlParameter("@pagina", pag));
+            ps.Add(new SqlParameter("@ordenar", orden));
+
+
+            // Ejecutar el procedimiento almacenado
+            var resultados = _repository.EjecutarLstSpExt<LibroDiarioResumen>(sp, ps, true);
+
+            
+            return resultados;
         }
     }
 }
