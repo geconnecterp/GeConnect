@@ -869,7 +869,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 				ObtenerTipoRetIB(_tipoRetIbServicio);
 
 			if (FormaDePagoLista.Count == 0 || actualizar)
-				ObtenerFormasDePago(_formaDePagoServicio);
+				ObtenerFormasDePago(_formaDePagoServicio, "P");
 
 			if (ProvinciaLista.Count == 0 || actualizar)
 				ObtenerProvincias(_provinciaServicio);

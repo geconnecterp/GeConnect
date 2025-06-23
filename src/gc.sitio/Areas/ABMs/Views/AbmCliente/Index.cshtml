@@ -10,7 +10,8 @@
 
 <div class="container">
 	<input type="text" id="IdSelected" style="display:none;" />
-	<div class="row">
+	<partial name="_botonera" model="filtro" />
+	@* <div class="row">
 		<div class="col-md-6">
 			<div class="d-flex justify-content-sm-around">
 				<button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
@@ -46,7 +47,7 @@
 				</button>
 			</div>
 		</div>
-	</div>
+	</div> *@
 
 	<div class="collapse" id="divFiltro" style="">
 		<partial name="_filtroBase" model="filtro" />

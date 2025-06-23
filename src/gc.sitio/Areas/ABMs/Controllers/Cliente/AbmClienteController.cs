@@ -1186,7 +1186,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 ObtenerCondicionesIB(_condicionIBServicio);
 
             if (FormaDePagoLista.Count == 0 || actualizar)
-                ObtenerFormasDePago(_formaDePagoServicio);
+                ObtenerFormasDePago(_formaDePagoServicio, "C");
 
             if (ProvinciaLista.Count == 0 || actualizar)
                 ObtenerProvincias(_provinciaServicio);

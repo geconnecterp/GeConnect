@@ -2111,9 +2111,9 @@ namespace gc.sitio.Controllers
             ProvinciaLista = _provin.GetProvinciaLista(TokenCookie);
         }
 
-        protected void ObtenerFormasDePago(IFormaDePagoServicio _formPago)
+        protected void ObtenerFormasDePago(IFormaDePagoServicio _formPago, string tipo)
         {
-            FormaDePagoLista = _formPago.GetFormaDePagoLista(TokenCookie, "C");
+            FormaDePagoLista = _formPago.GetFormaDePagoLista(TokenCookie, tipo);
         }
 
         protected void ObtenerTiposDeCanal(ITipoCanalServicio _tipoCanal)
