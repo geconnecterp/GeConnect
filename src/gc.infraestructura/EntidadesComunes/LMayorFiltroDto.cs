@@ -17,7 +17,10 @@ namespace gc.infraestructura.EntidadesComunes
         public bool incluirTemporales { get; set; }
         public bool rango { get; set; }
         public DateTime desde { get; set; }
-        public DateTime hasta { get; set; } 
+        public DateTime hasta { get; set; }
+        public bool rangoFC { get; set; }
+        public DateTime desdeFC { get; set; }
+        public DateTime hastaFC { get; set; }
         public int Pagina { get; set; } = 1;
         public int Registros { get; set; } 
         public string Sort { get; set; } = "dia_fecha"; // Campo de ordenación

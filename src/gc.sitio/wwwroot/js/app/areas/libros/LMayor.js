@@ -230,16 +230,11 @@ function buscarLibroDiario() {
     const params = obtenerParametrosBusqueda();
 
     // Preparar datos para la petición
-    const data = {
-        Eje_nro: params.eje_nro,
-        Periodo: params.rango,
-        Desde: params.desde,// ? new Date(parseFechaES(params.desde)) : new Date(),
-        Hasta: params.hasta,// ? new Date(parseFechaES(params.hasta)) : new Date(),
-        Movimientos: movimientos.join(','),
-        ConTemporales: params.incluirTemporales,
-        Pag: 1,
-        Orden: ""
+    const data2 = {       
+        movimientos: movimientos.join(','),       
     };
+
+    let data = $.extend({}, params, data2);
     // Guardamos parámetros para el reporte
     cargarReporteEnArre(13, data, "Libro Diario de cuenta", "", "");
 
@@ -1109,10 +1104,13 @@ function obtenerParametrosBusqueda() {
         ccb_id: $("#cuentaId").val(),
         ccb_desc: $("#cuentaDesc").val(),
         subTitulo: `Cuenta: ${$("#cuentaId").val()} ${$("#cuentaDesc").val()}`,
-        incluirTemporales: $("#chkIncluirTemp").is(":checked"),
+        conTemporales: $("#chkIncluirTemp").is(":checked"),
         rango: $("#Rango").is(":checked"),
         desde: $("#Rango").is(":checked") ? $("input[name='Desde']").val() : null,
-        hasta: $("#Rango").is(":checked") ? $("input[name='Hasta']").val() : null
+        hasta: $("#Rango").is(":checked") ? $("input[name='Hasta']").val() : null,
+        rangoFC: false,
+        desdeFC: '',
+        hastaFC: ''
     };
 }
 

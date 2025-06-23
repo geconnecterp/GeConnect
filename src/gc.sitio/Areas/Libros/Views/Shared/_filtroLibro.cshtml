@@ -1,6 +1,6 @@
 ﻿@model QueryAsiento
 @{
-    string etiqueta = Model.Modelo == ModeloFilter.BSS ? "Fechas Asiento" : "Rango de Fechas";
+    string etiqueta = (Model.Modelo == ModeloFilter.BSS || Model.Modelo == ModeloFilter.LDIARIO) ? "Fechas Asiento" : "Rango de Fechas";
 }
 <div class="card card-golden">
     <div class="card-header mb-2">
@@ -21,11 +21,11 @@
                     </div>
                 </div>
                 @Html.DropDownList("Eje_nro", ViewBag.ListaEjercicios as SelectList,
-                                  new
-                                  {
-                                      @class = "form-control inputEditable",
-                                      style = "background-color:rgb(251,255,195);font-weight:900;"
-                                  })
+                                           new
+                                           {
+                                               @class = "form-control inputEditable",
+                                               style = "background-color:rgb(251,255,195);font-weight:900;"
+                                           })
 
                 <input type="hidden" id="incluirTemporales" value="false" />
             </div>
@@ -33,21 +33,21 @@
             {
                 <div class="col-md-6">
                     <div class="form-check form-switch mb-2">
-                    <input class="form-check-input" type="checkbox" id="chkCuenta" checked disabled>
-                    <label class="form-check-label fw-medium" for="chkCuenta">Cuenta contable</label>
+                        <input class="form-check-input" type="checkbox" id="chkCuenta" checked disabled>
+                        <label class="form-check-label fw-medium" for="chkCuenta">Cuenta contable</label>
+                    </div>
+                    <div class="input-group input-group-sm mb-2">
+                        <input type="text" id="cuentaFilter" class="form-control" placeholder="Seleccione una cuenta..." readonly>
+                        <button class="btn btn-outline-success" type="button" data-bs-toggle="modal" data-bs-target="#modalCuentas">
+                            <i class="bx bx-search"></i>
+                        </button>
+                    </div>
+                    <div id="cuentaSeleccionada" class="border rounded p-2 bg-light small">
+                        <span id="cuentaSeleccionadaTexto">Ninguna cuenta seleccionada</span>
+                    </div>
+                    <input type="hidden" id="cuentaId" value="" />
+                    <input type="hidden" id="cuentaDesc" value="" />
                 </div>
-                <div class="input-group input-group-sm mb-2">
-                    <input type="text" id="cuentaFilter" class="form-control" placeholder="Seleccione una cuenta..." readonly>
-                    <button class="btn btn-outline-success" type="button" data-bs-toggle="modal" data-bs-target="#modalCuentas">
-                        <i class="bx bx-search"></i>
-                    </button>
-                </div>
-                <div id="cuentaSeleccionada" class="border rounded p-2 bg-light small">
-                    <span id="cuentaSeleccionadaTexto">Ninguna cuenta seleccionada</span>
-                </div>
-                <input type="hidden" id="cuentaId" value="" />
-                <input type="hidden" id="cuentaDesc" value="" />
-            </div>
             }
         </div>
 
@@ -65,11 +65,11 @@
                 <div class="mb-3">
                     <label for="fechaDesde" class="form-label small text-muted">Desde</label>
                     <input type="text" class="form-control form-control-sm datepicker" 
-                           name="Desde" id="fechaDesde" 
-                           placeholder="DD/MM/YYYY"
-                           data-date-format="dd/MM/yyyy"
-                           data-date-language="es" 
-                           disabled>
+                    name="Desde" id="fechaDesde" 
+                    placeholder="DD/MM/YYYY"
+                    data-date-format="dd/MM/yyyy"
+                    data-date-language="es" 
+                    disabled>
                 </div>
             </div>
             <div class="col-md-6">
@@ -84,6 +84,42 @@
                 </div>
             </div>
         </div>
+        @if (Model.Modelo == ModeloFilter.LDIARIO)
+        {
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="RangoFC">
+                        <label class="form-check-label fw-medium" for="Rango">Fecha Carga</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="fechaDesde" class="form-label small text-muted">Desde</label>
+                        <input type="text" class="form-control form-control-sm datepicker"
+                               name="DesdeFC" id="fechaDesdeFC"
+                               placeholder="DD/MM/YYYY"
+                               data-date-format="dd/MM/yyyy"
+                               data-date-language="es"
+                               disabled>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="fechaHasta" class="form-label small text-muted">Hasta</label>
+                        <input type="text" class="form-control form-control-sm datepicker"
+                               name="HastaFC" id="fechaHastaFC"
+                               placeholder="DD/MM/YYYY"
+                               data-date-format="dd/MM/yyyy"
+                               data-date-language="es"
+                               disabled>
+                    </div>
+                </div>
+            </div>
+        }
     </div>
    @*  <div class="card-footer bg-white border-top d-flex justify-content-end">
         <button type="button" id="btnBuscar" class="btn btn-sm btn-primary me-2">

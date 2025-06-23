@@ -23,7 +23,7 @@ namespace gc.api.core.Servicios.Reportes
         public ReportService(IUnitOfWork uow, IConsultaServicio consSv,
             IAsientoTemporalServicio asiento,
             IApiLMayorServicio apiLMayor,
-            IAsientoLibroDiarioServicio ldSv,
+            IApiLDiarioServicio ldSv,
             IApiSumaSaldoServicio apiBSS,
              IOptions<EmpresaGeco> empresa, ICuentaServicio ctaSv, ILogger<ReportService> logger) : base(uow)
         {

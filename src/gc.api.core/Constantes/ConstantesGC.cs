@@ -1,4 +1,8 @@
-﻿namespace gc.api.core.Constantes
+﻿using DocumentFormat.OpenXml.Drawing.Diagrams;
+using gc.infraestructura.Dtos.Almacen.Request;
+using System.Diagnostics;
+
+namespace gc.api.core.Constantes
 {
     public static class ConstantesGC
     {
@@ -351,6 +355,7 @@
             public const string SP_ASIENTO_DEF_DETALLE = "SPGECO_Conta_Asiento_DEF_Datos";
             public const string SP_ASIENTO_DETALLE_REPO = "SPGECO_Conta_Asiento_Repo";
             public const string SP_ASIENTO_LIBRO_DIARIO = "SPGECO_Conta_Libro_Diario";
+            public const string SP_ASIENTO_LIBRO_DIARIO_RESUMEN = "SPGECO_Conta_Libro_Diario_Resumen";            
 
             #endregion
 
