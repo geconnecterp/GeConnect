@@ -10,6 +10,7 @@ using gc.sitio.Areas.ControlComun.Models.SeleccionDeValores.Request;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
@@ -51,6 +52,25 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 
 		}
 
+		public decimal ImporteSaldo
+		{
+			get
+			{
+				var txt = _context.HttpContext?.Session.GetString("ImporteSaldo");
+				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
+				{
+					return 0;
+				}
+				return JsonConvert.DeserializeObject<decimal>(txt);
+			}
+			set
+			{
+				var valor = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ImporteSaldo", valor);
+			}
+
+		}
+
 		public IActionResult Index()
 		{
 			return View();
@@ -63,6 +83,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 			try
 			{
 				CtaValoresANombre = req.valor_a_nombre_de;
+				ImporteSaldo = req.importe;
 				var tipoCuentaFinLista = _tipoCuentaFinServicio.GetTipoCuentaFinParaSeleccionDeValores(req.app, TokenCookie);
 				var model = new SeleccionDeValoresViewModel()
 				{
@@ -163,7 +184,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 				switch (tcf_id)
 				{
 					case "BA":
-						var modelBA = new EdicionTipoTransferenciaBancariaModel();
+						var modelBA = new EdicionTipoTransferenciaBancariaModel() { Importe = ImporteSaldo, ImporteS = ImporteSaldo.ToString().Replace('.', ',') };
 						return View("~/areas/ControlComun/views/SeleccionDeValores/_edicion_tipo_transferencia_bancaria.cshtml", modelBA);
 					case "CH":
 						var modelCH = new EdicionTipoValoresDeTercerosEnCarteraModel()
@@ -172,10 +193,10 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 						};
 						return View("~/areas/ControlComun/views/SeleccionDeValores/_edicion_tipo_terceros_en_cartera.cshtml", modelCH);
 					case "EC":
-						var modelEC = new EdicionTipoEmisionChequesModel() { ANombreDe = CtaValoresANombre };
+						var modelEC = new EdicionTipoEmisionChequesModel() { ANombreDe = CtaValoresANombre, Importe = ImporteSaldo, ImporteS = ImporteSaldo.ToString().Replace('.', ',') };
 						return View("~/areas/ControlComun/views/SeleccionDeValores/_edicion_tipo_emision_cheques.cshtml", modelEC);
 					case "EF":
-						var modelEF = new EdicionTipoEfectivoCajasModel();
+						var modelEF = new EdicionTipoEfectivoCajasModel() { Importe = ImporteSaldo, ImporteS = ImporteSaldo.ToString().Replace('.', ',') };
 						return View("~/areas/ControlComun/views/SeleccionDeValores/_edicion_tipo_efectivo_cajas.cshtml", modelEF);
 					default:
 						response.Mensaje = "Variante de Tipo no configurada!";

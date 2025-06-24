@@ -16,8 +16,8 @@
 			@foreach (var item in Model.ListaDatos)
 			{
 				<tr onclick="selectListaValidacionesPrev(this)">
-					<td class="@Model.ObtenerClase(item.msj)">@Model.FormatearDato(item.msj, FormatDato.Ninguno)</td>
-					<td class="@Model.ObtenerClase(item.tipo)">@Model.FormatearDato(item.tipo, FormatDato.Monto)</td>
+					<td class="@Model.ObtenerClase(item.msj) cell-fit-content">@Model.FormatearDato(item.msj, FormatDato.Ninguno)</td>
+					<td class="@Model.ObtenerClase(item.tipo) cell-fit-content">@Model.FormatearDato(item.tipo, FormatDato.Monto)</td>
 					<td style="display:none;">@item.cancelar</td>
 				</tr>
 			}

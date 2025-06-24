@@ -9,15 +9,15 @@
 	}
 </style>
 @Html.Hidden("MsgErrorEnCargarOSacarObligaciones", Model.MsgErrorEnCargarOSacarObligaciones)
-<div class="table-responsive table-wrapper-200-full-width" id="containerListaObligacionesParaAgregar">
+<div class="table-responsive table-wrapper-200" id="containerListaObligacionesParaAgregar">
 	<table class="table table-bordered table-hover" id="tbListaObligacionesParaAgregar">
-		<thead class="table-dark">
+		<thead style="background: darkred;">
 			<tr>
-				<th style="width:50%;" class="col-header-small align-center tiny-row">Comprobante</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Cuota</th>
-				<th style="width:15%;" class="col-header-small align-center tiny-row">Vencimiento</th>
-				<th style="width:15%;" class="col-header-small align-center tiny-row">Importe</th>
-				<th style="width:15%;" class="col-header-small align-center tiny-row">Imputado</th>
+				<th style="width:60%;" class="col-header-small align-center tiny-row">Comprobante</th>
+				<th style="width:10%;" class="col-header-small align-center tiny-row">Cuota</th>
+				<th style="width:10%;" class="col-header-small align-center tiny-row">Vencimiento</th>
+				<th style="width:10%;" class="col-header-small align-center tiny-row">Importe</th>
+				<th style="width:10%;" class="col-header-small align-center tiny-row">Imputado</th>
 				<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">dia_movi</th>
 				<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">cm_compte</th>
 				<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">tco_id</th>
@@ -30,11 +30,11 @@
 				@foreach (var item in Model.GrillaObligacionesNuevas.ListaDatos)
 				{
 					<tr onclick="selectReg(this, 'tbListaObligacionesParaAgregar')" ondblclick="selectRegDbl(this, 'tbListaObligacionesParaAgregar')">
-						<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.concepto)">@Model.GrillaObligacionesNuevas.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cm_compte_cuota)">@Model.GrillaObligacionesNuevas.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cv_fecha_vto)">@Model.GrillaObligacionesNuevas.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
-						<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cv_importe)">@Model.GrillaObligacionesNuevas.FormatearDato(item.cv_importe, FormatDato.Monto)</td>
-						<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cv_imputado)">@Model.GrillaObligacionesNuevas.FormatearDato(item.cv_imputado, FormatDato.Monto)</td>
+						<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.concepto) cell-fit-content">@Model.GrillaObligacionesNuevas.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cm_compte_cuota) cell-fit-content">@Model.GrillaObligacionesNuevas.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cv_fecha_vto) cell-fit-content">@Model.GrillaObligacionesNuevas.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
+						<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cv_importe) cell-fit-content">@Model.GrillaObligacionesNuevas.FormatearDato(item.cv_importe, FormatDato.Monto)</td>
+						<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cv_imputado) cell-fit-content">@Model.GrillaObligacionesNuevas.FormatearDato(item.cv_imputado, FormatDato.Monto)</td>
 						<td style="display:none;">@item.dia_movi</td>
 						<td style="display:none;">@item.cm_compte</td>
 						<td style="display:none;">@item.tco_id</td>

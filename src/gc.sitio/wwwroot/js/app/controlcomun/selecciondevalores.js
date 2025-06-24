@@ -106,7 +106,7 @@ function btnAceptarAgregarValorValidar() {
 		var listaObjValor = [];
 		switch (tcf_id_selected) {
 			case "BA"://Transferencias
-				var newItem = new ObjValor(ctaf_id, ctaf_denominacion, tcf_id_selected, " ", " ", ban_razon_social, "Banco", $("#txtNroTransferencia").inputmask('unmaskedvalue'), "N° Transferencia", " ", " ", $("#Importe").inputmask('unmaskedvalue'), $("#Fecha").val(),
+				var newItem = new ObjValor(ctaf_id, ctaf_denominacion, tcf_id_selected, " ", " ", ban_razon_social, "Banco", $("#txtNroTransferencia").inputmask('unmaskedvalue'), "N° Transferencia", " ", " ", $("#ImporteS").inputmask('unmaskedvalue'), $("#Fecha").val(),
 					" ", 0, " ", " ", " ", " ", 0, " ");
 				listaObjValor.push(newItem);
 				break;
@@ -115,12 +115,12 @@ function btnAceptarAgregarValorValidar() {
 				if ($("#chkAutomatico")[0].checked)
 					automatico = "S";
 
-				var newItem = new ObjValor(ctaf_id, ctaf_denominacion, tcf_id_selected, " ", automatico, ban_razon_social, "Banco", $("#txtNroCheque").inputmask('unmaskedvalue'), "N° Cheque", " ", " ", $("#Importe").inputmask('unmaskedvalue'), $("#Fecha").val(),
+				var newItem = new ObjValor(ctaf_id, ctaf_denominacion, tcf_id_selected, " ", automatico, ban_razon_social, "Banco", $("#txtNroCheque").inputmask('unmaskedvalue'), "N° Cheque", " ", " ", $("#ImporteS").inputmask('unmaskedvalue'), $("#Fecha").val(),
 					" ", 0, " ", " ", $("#ANombreDe").val(), " ", 0, " ");
 				listaObjValor.push(newItem);
 				break;
 			case "EF": //Efectivo
-				var newItem = new ObjValor(ctaf_id, ctaf_denominacion, tcf_id_selected, " ", " ", " ", " ", " ", " ", " ", " ", $("#Importe").inputmask('unmaskedvalue'), $("#Fecha").val(),
+				var newItem = new ObjValor(ctaf_id, ctaf_denominacion, tcf_id_selected, " ", " ", " ", " ", " ", " ", " ", " ", $("#ImporteS").inputmask('unmaskedvalue'), $("#Fecha").val(),
 					" ", 0, " ", " ", " ", " ", 0, " ");
 				listaObjValor.push(newItem);
 				break;
@@ -251,7 +251,7 @@ function LimpiarDatosEnSeccionEdicion(dataType) {
 			break;
 		case "EF": //Efectivo
 			$("#Importe").val(0);
-			document.getElementById("Importe").focus();
+			document.getElementById("ImporteS").focus();
 			break;
 		default:
 	}
@@ -306,8 +306,8 @@ function seleccionarTipoFin(x) {
 				$("#Fecha").attr('min', min.format('yyyy-MM-DD'));
 				$("#Fecha").attr('max', max.format('yyyy-MM-DD'));
 				$("#Fecha").val(now);
-				getMaskForMoneyType("#Importe");
-				$("#Importe").val(importe);
+				/*$("#Importe").val(importe);*/
+				getMaskForMoneyType("#ImporteS");
 				break;
 			case "EC"://Emision de cheques
 				$("#txtNroCheque").inputmask("999999");
@@ -317,13 +317,13 @@ function seleccionarTipoFin(x) {
 				$("#Fecha").attr('min', min.format('yyyy-MM-DD'));
 				$("#Fecha").attr('max', max.format('yyyy-MM-DD'));
 				$("#Fecha").val(now);
-				getMaskForMoneyType("#Importe");
+				getMaskForMoneyType("#ImporteS");
 				$("#ANombreDe").val(valor_a_nombre_de);
-				$("#Importe").val(importe);
+				/*$("#Importe").val(importe);*/
 				break;
 			case "EF": //Efectivo
-				getMaskForMoneyType("#Importe");
-				$("#Importe").val(importe);
+				getMaskForMoneyType("#ImporteS");
+				/*$("#Importe").val(importe);*/
 				break;
 			default:
 		}
@@ -352,7 +352,7 @@ function DarFocoEnBaseAlaSeleccion() {
 			document.getElementById("txtNroCheque").focus();
 			break;
 		case "EF": //Efectivo
-			document.getElementById("Importe").focus();
+			document.getElementById("ImporteS").focus();
 			break;
 		default:
 	}

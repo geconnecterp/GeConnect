@@ -237,10 +237,16 @@ namespace gc.api.core.Constantes
             public const string SP_CONS_RECEPCIONES_PROV = "SPGECO_C_RP";
             public const string SP_CONS_RECEPCIONES_PROV_DET = "SPGECO_C_RP_d";
 
-            #endregion
+			#endregion
 
-            #region ABM
-            public const string SP_ABM_P_LISTA = "SPGECO_ABM_P_Lista";
+			#region Certificados
+			public const string SP_C_CERT_RETEN_GA = "SPGECO_C_Cert_Reten_GA";
+			public const string SP_C_CERT_RETEN_IB = "SPGECO_C_Cert_Reten_IB";
+			public const string SP_C_CERT_RETEN_IVA = "SPGECO_C_Cert_Reten_IVA";
+			#endregion
+
+			#region ABM
+			public const string SP_ABM_P_LISTA = "SPGECO_ABM_P_Lista";
             public const string SP_ABM_P_DATOS = "SPGECO_ABM_P_Datos";
             
             public const string SP_ABM_CLI_LISTA = "SPGECO_ABM_Cli_Lista";

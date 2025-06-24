@@ -1,4 +1,5 @@
-﻿using gc.infraestructura.Dtos.Gen;
+﻿using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
 
 namespace gc.sitio.Areas.Compras.Models.OrdenDePagoAProveedor
@@ -11,7 +12,7 @@ namespace gc.sitio.Areas.Compras.Models.OrdenDePagoAProveedor
 		public GridCoreSmart<OPDebitoYCreditoDelProveedorDto> GrillaCreditosNueva { get; set; }
 		public GridCoreSmart<RetencionesDesdeObligYCredDto> GrillaRetenciones { get; set; }
 		public GridCoreSmart<ValoresDesdeObligYCredDto> GrillaValores { get; set; }
-		public GridCoreSmart<MedioDePago> GrillaMedioDePago { get; set; }
+		public GridCoreSmart<FormaDePagoDto> GrillaMedioDePago { get; set; }
 	}
 
 	//Clase temporal hasta definir que sorcho llevar la grilla de medios de pago

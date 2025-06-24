@@ -7,5 +7,6 @@
 		public DateTime Fecha { get; set; } = DateTime.Now;
 		public string ANombreDe { get; set; } = string.Empty;
 		public decimal Importe { get; set; } = 0.00M;
+		public string ImporteS { get; set; } = string.Empty;
 	}
 }

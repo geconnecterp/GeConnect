@@ -13,6 +13,7 @@
 	margin-left: 0px;
 	margin-right: 0px;
 	margin-bottom: 0px;
+	height: 500px;
 	}
 
 	legend {
@@ -35,7 +36,7 @@
 	<div class="col-md-7">
 		<div class="input-group input-group-sm mt-1">
 			<span class="input-group-text fixed-lbl-for-abm-100" title="Obligaciones a Cancelar">Obl. a Cancelar: </span>
-			<input type="text" id="txtObligACancelar" class="form-control align-right" style="background-color: red; color: white;" value="0" disabled />
+			<input type="text" id="txtObligACancelar" class="form-control align-right" style="background-color: darkred; color: white;" value="0" disabled />
 			<span class="input-group-text fixed-lbl-for-abm-150" title="Créditos y Valores Imputados">Cred. y Val. Imputados: </span>
 			<input type="text" id="txtCredYValImputados" class="form-control align-right" style="background-color: dodgerblue; color: white;" value="0" disabled />
 			<span class="input-group-text fixed-lbl-for-abm-100">Diferencia: </span>
@@ -44,13 +45,13 @@
 	</div>
 </div>
 <div class="row mt-2">
-	<div class="col-6">
+	<div class="col-6" style="height: 500px;">
 		<fieldset>
 			<legend>Obligaciones</legend>
-			<div class="row" id="divObligacionesParaAgregar">
-				<div class="table-responsive table-wrapper-200-full-width" id="containerListaObligacionesParaAgregar_Paso2">
+			<div class="row" id="divObligacionesParaAgregar" style="height: 200px;">
+				<div class="table-responsive table-wrapper-200" id="containerListaObligacionesParaAgregar_Paso2">
 					<table class="table table-bordered table-hover" id="tbListaObligacionesParaAgregar_Paso2">
-						<thead class="table-dark">
+						<thead style="background: darkred;">
 							<tr>
 								<th style="width:50%;" class="col-header-small align-center tiny-row">Comprobante</th>
 								<th style="width:5%;" class="col-header-small align-center tiny-row">Cuota</th>
@@ -69,11 +70,11 @@
 								@foreach (var item in Model.GrillaObligacionesNuevas.ListaDatos)
 								{
 									<tr onclick="selectReg(this, 'tbListaObligacionesParaAgregar_Paso2')" ondblclick="selectRegDbl(this, 'tbListaObligacionesParaAgregar_Paso2')">
-										<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.concepto)">@Model.GrillaObligacionesNuevas.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
-										<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cm_compte_cuota)">@Model.GrillaObligacionesNuevas.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
-										<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cv_fecha_vto)">@Model.GrillaObligacionesNuevas.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
-										<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cv_importe)">@Model.GrillaObligacionesNuevas.FormatearDato(item.cv_importe, FormatDato.Monto)</td>
-										<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cv_imputado)">@Model.GrillaObligacionesNuevas.FormatearDato(item.cv_imputado, FormatDato.Monto)</td>
+										<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.concepto) cell-fit-content">@Model.GrillaObligacionesNuevas.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
+										<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cm_compte_cuota) cell-fit-content">@Model.GrillaObligacionesNuevas.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
+										<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cv_fecha_vto) cell-fit-content">@Model.GrillaObligacionesNuevas.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
+										<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cv_importe) cell-fit-content">@Model.GrillaObligacionesNuevas.FormatearDato(item.cv_importe, FormatDato.Monto)</td>
+										<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cv_imputado) cell-fit-content">@Model.GrillaObligacionesNuevas.FormatearDato(item.cv_imputado, FormatDato.Monto)</td>
 										<td style="display:none;">@item.dia_movi</td>
 										<td style="display:none;">@item.cm_compte</td>
 										<td style="display:none;">@item.tco_id</td>
@@ -100,61 +101,97 @@
 					</div>
 				</div>
 			</div>
-			<div class="row" id="divSeccionPagos">
-				<div>
+			<div class="row" id="divSeccionPagos" style="height: 230px;padding-left: 15px;">
+				<div style="padding-left: 0px;">
 					@if (Model.EsPagoAnticipado)
 					{
 						<div class="row mt-1 mb-1">
-							<div class="input-group input-group-sm">
+							<div class="input-group input-group-sm" style="padding-left:15px;padding-right: 12px;">
 								<span class="input-group-text fixed-lbl-for-abm-100">Pago Anticipado:</span>
 								<input type="text" id="txtPagoAnticipado" class="form-control activable inputEditable" />
 							</div>
 						</div>
+						<fieldset style="height: 185px; width: 100%;margin-top: 15px;">
+							<legend>Referencias de Pago</legend>
+							<div class="row mt-1 mb-1">
+								<div class="input-group input-group-sm">
+									<span class="input-group-text fixed-lbl-for-abm-100">Obs. de Pago:</span>
+									<input type="text" asp-for="CuentaObs" class="form-control activable inputEditable" />
+								</div>
+							</div>
+							<div class="row" id="divSeccionPagosGrilla" style="height: 150px;">
+								<div class="col-12 table-responsive table-wrapper-125" id="containerSeccionPagosGrilla_Paso2" style="padding-right: 0px;">
+									<table class="table table-bordered table-hover" id="tbListaMedioDePago_Paso2">
+										<thead class="table-dark">
+											<tr>
+												<th style="width:100%;" class="col-header-small align-center tiny-row">Medios de Pagos</th>
+												<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">fp_id</th>
+											</tr>
+										</thead>
+										<tbody>
+											@if (Model.GrillaMedioDePago != null && Model.GrillaMedioDePago.ListaDatos != null && Model.GrillaMedioDePago.ListaDatos.Count > 0)
+											{
+												@foreach (var item in Model.GrillaMedioDePago.ListaDatos)
+												{
+													<tr onclick="selectReg(this, 'tbListaMedioDePago_Paso2')" ondblclick="selectRegDbl(this, 'tbListaMedioDePago_Paso2')">
+														<td class="@Model.GrillaMedioDePago.ObtenerClase(item.fp_lista) cell-fit-content">@Model.GrillaMedioDePago.FormatearDato(item.fp_lista, FormatDato.Ninguno)</td>
+														<td style="display:none;">@item.fp_id</td>
+													</tr>
+												}
+											}
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</fieldset>
 					}
-					<div class="row mt-1 mb-1">
-						<div class="input-group input-group-sm">
-							<span class="input-group-text fixed-lbl-for-abm-100">Observaciones:</span>
-							<input type="text" asp-for="CuentaObs" class="form-control activable inputEditable" />
-						</div>
-					</div>
-				</div>
-				<div class="row" id="divSeccionPagosGrilla">
-					<div class="col-1">
-						<button id="btnAgregarConceptoFacturado" class="btn btn-success btn-sm" type="button" title="Agregar">
-							<i class="bx bx-plus bx-xs"></i>
-						</button>
-					</div>
-					<div class="col-11 table-responsive table-wrapper-100-full" id="containerSeccionPagosGrilla_Paso2" style="padding-right: 0px;">
-						<table class="table table-bordered table-hover" id="tbListaMedioDePago_Paso2">
-							<thead class="table-dark">
-								<tr>
-									<th style="width:100%;" class="col-header-small align-center tiny-row">Medios de Pagos</th>
-								</tr>
-							</thead>
-							<tbody>
-								@if (Model.GrillaMedioDePago != null && Model.GrillaMedioDePago.ListaDatos != null && Model.GrillaMedioDePago.ListaDatos.Count > 0)
-								{
-									@foreach (var item in Model.GrillaMedioDePago.ListaDatos)
-									{
-										<tr onclick="selectReg(this, 'tbListaMedioDePago_Paso2')" ondblclick="selectRegDbl(this, 'tbListaMedioDePago_Paso2')">
-											<td class="@Model.GrillaMedioDePago.ObtenerClase(item.medioDePagoNombre)">@Model.GrillaMedioDePago.FormatearDato(item.medioDePagoNombre, FormatDato.Ninguno)</td>
-										</tr>
-									}
-								}
-							</tbody>
-						</table>
-					</div>
+					else
+					{
+						<fieldset style="height: 225px; width: 99%;">
+							<legend>Referencias de Pago</legend>
+							<div class="row mt-1 mb-1">
+								<div class="input-group input-group-sm">
+									<span class="input-group-text fixed-lbl-for-abm-100">Obs. de Pago:</span>
+									<input type="text" asp-for="CuentaObs" class="form-control activable inputEditable" />
+								</div>
+							</div>
+							<div class="row" id="divSeccionPagosGrilla" style="height: 150px;">
+								<div class="col-12 table-responsive table-wrapper-170" id="containerSeccionPagosGrilla_Paso2" style="padding-right: 0px;">
+									<table class="table table-bordered table-hover" id="tbListaMedioDePago_Paso2">
+										<thead class="table-dark">
+											<tr>
+												<th style="width:100%;" class="col-header-small align-center tiny-row">Medios de Pagos</th>
+												<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">fp_id</th>
+											</tr>
+										</thead>
+										<tbody>
+											@if (Model.GrillaMedioDePago != null && Model.GrillaMedioDePago.ListaDatos != null && Model.GrillaMedioDePago.ListaDatos.Count > 0)
+											{
+												@foreach (var item in Model.GrillaMedioDePago.ListaDatos)
+												{
+													<tr onclick="selectReg(this, 'tbListaMedioDePago_Paso2')" ondblclick="selectRegDbl(this, 'tbListaMedioDePago_Paso2')">
+														<td class="@Model.GrillaMedioDePago.ObtenerClase(item.fp_lista) cell-fit-content">@Model.GrillaMedioDePago.FormatearDato(item.fp_lista, FormatDato.Ninguno)</td>
+														<td style="display:none;">@item.fp_id</td>
+													</tr>
+												}
+											}
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</fieldset>
+					}
 				</div>
 			</div>
 		</fieldset>
 	</div>
-	<div class="col-6">
+	<div class="col-6" style="height: 500px;">
 		<fieldset>
 			<legend>Créditos y Valores</legend>
-			<div class="row" id="divCreditosParaAgregar">
-				<div class="table-responsive table-wrapper-200-full-width" id="containerListaCreditosParaAgregar_Paso2">
+			<div class="row" id="divCreditosParaAgregar" style="height: 200px;">
+				<div class="table-responsive table-wrapper-200" id="containerListaCreditosParaAgregar_Paso2">
 					<table class="table table-bordered table-hover" id="tbListaCreditosParaAgregar_Paso2">
-						<thead class="table-dark">
+						<thead style="background: dodgerblue;">
 							<tr>
 								<th style="width:50%;" class="col-header-small align-center tiny-row">Comprobante</th>
 								<th style="width:5%;" class="col-header-small align-center tiny-row">Cuota</th>
@@ -173,11 +210,11 @@
 								@foreach (var item in Model.GrillaCreditosNueva.ListaDatos)
 								{
 									<tr onclick="selectReg(this, 'tbListaCreditosParaAgregar_Paso2')" ondblclick="selectRegDbl(this, 'tbListaCreditosParaAgregar_Paso2')">
-										<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.concepto)">@Model.GrillaCreditosNueva.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
-										<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cm_compte_cuota)">@Model.GrillaCreditosNueva.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
-										<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cv_fecha_vto)">@Model.GrillaCreditosNueva.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
-										<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cv_importe)">@Model.GrillaCreditosNueva.FormatearDato(item.cv_importe, FormatDato.Monto)</td>
-										<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cv_imputado)">@Model.GrillaCreditosNueva.FormatearDato(item.cv_imputado, FormatDato.Monto)</td>
+										<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.concepto) cell-fit-content">@Model.GrillaCreditosNueva.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
+										<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cm_compte_cuota) cell-fit-content">@Model.GrillaCreditosNueva.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
+										<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cv_fecha_vto) cell-fit-content">@Model.GrillaCreditosNueva.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
+										<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cv_importe) cell-fit-content">@Model.GrillaCreditosNueva.FormatearDato(item.cv_importe, FormatDato.Monto)</td>
+										<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cv_imputado) cell-fit-content">@Model.GrillaCreditosNueva.FormatearDato(item.cv_imputado, FormatDato.Monto)</td>
 										<td style="display:none;">@item.dia_movi</td>
 										<td style="display:none;">@item.cm_compte</td>
 										<td style="display:none;">@item.tco_id</td>
@@ -189,10 +226,10 @@
 					</table>
 				</div>
 			</div>
-			<div class="row" id="divRetenciones">
-				<div class="table-responsive table-wrapper-100-full" id="containerRetenciones_Paso2">
+			<div class="row mt-2" id="divRetenciones">
+				<div class="table-responsive table-wrapper-100" id="containerRetenciones_Paso2">
 					<table class="table table-bordered table-hover" id="tbListaRetenciones_Paso2">
-						<thead class="table-dark">
+						<thead style="background: dodgerblue;">
 							<tr>
 								<th style="width:75%;" class="col-header-small align-center tiny-row">Retenciones</th>
 								<th style="width:25%;" class="col-header-small align-center tiny-row">Importes</th>
@@ -204,8 +241,8 @@
 								@foreach (var item in Model.GrillaRetenciones.ListaDatos)
 								{
 									<tr onclick="selectReg(this, 'tbListaRetenciones_Paso2')" ondblclick="selectRegDbl(this, 'tbListaRetenciones_Paso2')">
-										<td class="@Model.GrillaRetenciones.ObtenerClase(item.concepto_retencion)">@Model.GrillaRetenciones.FormatearDato(item.concepto_retencion, FormatDato.Ninguno)</td>
-										<td class="@Model.GrillaRetenciones.ObtenerClase(item.retencion)">@Model.GrillaRetenciones.FormatearDato(item.retencion, FormatDato.Monto)</td>
+										<td class="@Model.GrillaRetenciones.ObtenerClase(item.concepto_retencion) cell-fit-content">@Model.GrillaRetenciones.FormatearDato(item.concepto_retencion, FormatDato.Ninguno)</td>
+										<td class="@Model.GrillaRetenciones.ObtenerClase(item.retencion) cell-fit-content">@Model.GrillaRetenciones.FormatearDato(item.retencion, FormatDato.Monto)</td>
 									</tr>
 								}
 							}
@@ -213,10 +250,10 @@
 					</table>
 				</div>
 			</div>
-			<div class="row" id="divValores">
-				<div class="table-responsive table-wrapper-100-full" id="containerValores_Paso2">
+			<div class="row" id="divValores" style="height: 100px;">
+				<div class="table-responsive table-wrapper-100" id="containerValores_Paso2">
 					<table class="table table-bordered table-hover" id="tbListaValores_Paso2">
-						<thead class="table-dark">
+						<thead style="background: dodgerblue;">
 							<tr>
 								<th style="width:40%;" class="col-header-small align-center tiny-row">Cuenta Financiera</th>
 								<th style="width:50%;" class="col-header-small align-center tiny-row">Valor</th>
@@ -230,9 +267,9 @@
 								@foreach (var item in Model.GrillaValores.ListaDatos)
 								{
 									<tr onclick="selectReg(this, 'tbListaValores_Paso2')" ondblclick="selectRegDbl(this, 'tbListaValores_Paso2')">
-										<td class="@Model.GrillaValores.ObtenerClase(item.ctaf_denominacion)">@Model.GrillaValores.FormatearDato(item.ctaf_denominacion, FormatDato.Ninguno)</td>
-										<td class="@Model.GrillaValores.ObtenerClase(item.concepto_valor)">@Model.GrillaValores.FormatearDato(item.concepto_valor, FormatDato.Monto)</td>
-										<td class="@Model.GrillaValores.ObtenerClase(item.op_importe)">@Model.GrillaValores.FormatearDato(item.op_importe, FormatDato.Monto)</td>
+										<td class="@Model.GrillaValores.ObtenerClase(item.ctaf_denominacion) cell-fit-content">@Model.GrillaValores.FormatearDato(item.ctaf_denominacion, FormatDato.Ninguno)</td>
+										<td class="@Model.GrillaValores.ObtenerClase(item.concepto_valor) cell-fit-content">@Model.GrillaValores.FormatearDato(item.concepto_valor, FormatDato.Monto)</td>
+										<td class="@Model.GrillaValores.ObtenerClase(item.op_importe) cell-fit-content">@Model.GrillaValores.FormatearDato(item.op_importe, FormatDato.Monto)</td>
 										<td style="display:none;">@item.orden</td>
 									</tr>
 								}

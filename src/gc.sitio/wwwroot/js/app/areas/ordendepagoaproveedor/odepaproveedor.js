@@ -68,9 +68,10 @@ function ValidarPrevioAConfirmar() {
 								}, false, ["Aceptar"], "error!", null);
 							}
 							else {
+								console.log(obj.id);
 								AbrirMensaje("ATENCIÓN", obj.msg, function () {
 									$("#msjModal").modal("hide");
-									//$("#btnAbmCancelar").trigger("click");
+									console.log(obj.id); //Tomar este valor para imprimir.
 									btnAbmCancelar_click();
 									return true;
 								}, false, ["Aceptar"], "succ!", null);
@@ -92,7 +93,13 @@ function ValidarPrevioAConfirmar() {
 function btnAgregarValorValidar() {
 	//TODO MARCE: Ver de donde saco los datos "importe" y "valor_a_nombre_de"
 	var app = "OPP";
-	var importe = 0;
+	var saldo = $("#txtDiferencias").val();
+	saldo = saldo.replaceAll(".", "");
+	saldo = saldo.replace(",", ".");
+	var saldoN = Number(saldo);
+	var importe = 0
+	if (saldoN != NaN && saldoN >0)
+		importe = saldoN;
 	var valor_a_nombre_de = valorANombreDe;
 	var valores = [];
 	var data = { app, importe, valor_a_nombre_de, valores };
@@ -158,10 +165,9 @@ function CargarValoresDesdeObligYCredSeleccionados() {
 	});
 }
 
-const formatter = new Intl.NumberFormat('en-US', {
-	style: 'currency',
-	currency: 'USD',
-	trailingZeroDisplay: 'stripIfInteger'
+const formatter = new Intl.NumberFormat('de-DE', {
+	minimumFractionDigits: 2,
+	maximumFractionDigits: 2
 });
 
 function CancelDesdeValidPrev() {

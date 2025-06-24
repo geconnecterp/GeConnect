@@ -125,7 +125,23 @@ namespace gc.infraestructura.Dtos.Consultas
         public string Concepto { get; set; } = string.Empty;
     }
 
-    public class ConsRecepcionProveedorDto : ConsultasDto
+    public class ConsOrdPagoDetExtendDto : ConsOrdPagosDetDto
+    {
+        public string Opt_id { get; set; } = string.Empty;
+		public string Opt_desc { get; set; } = string.Empty;
+		public string Usu_id { get; set; } = string.Empty;
+		public string Usu_apellidoynombre { get; set; } = string.Empty;
+        public decimal Op_importe { get; set; } = 0.00M;
+		public DateTime Op_fecha { get; set; }
+        public string Op_concepto { get; set; } = string.Empty;
+        public string Cta_id { get; set; } = string.Empty;
+        public string Cta_denominacion { get; set; } = string.Empty;
+        public string Op_anulada { get; set; } = string.Empty;
+		public string Op_impreso { get; set; } = string.Empty;
+        public string Cm_compte { get; set; } = string.Empty;
+	}
+
+	public class ConsRecepcionProveedorDto : ConsultasDto
     {
         public string Rp_compte { get; set; } = string.Empty;
         public string Cta_id { get; set; } = string.Empty;

@@ -2,9 +2,9 @@
 @using static gc.infraestructura.Helpers.GridHelper
 @{
 }
-<div class="table-responsive table-wrapper-100-full" id="containerRetenciones_Paso2">
+<div class="table-responsive table-wrapper-100" id="containerRetenciones_Paso2">
 	<table class="table table-bordered table-hover" id="tbListaRetenciones_Paso2">
-		<thead class="table-dark">
+		<thead style="background: dodgerblue;">
 			<tr>
 				<th style="width:75%;" class="col-header-small align-center tiny-row">Retenciones</th>
 				<th style="width:25%;" class="col-header-small align-center tiny-row">Importes</th>
@@ -16,8 +16,8 @@
 				@foreach (var item in Model.ListaDatos)
 				{
 					<tr onclick="selectReg(this, 'tbListaRetenciones_Paso2')" ondblclick="selectRegDbl(this, 'tbListaRetenciones_Paso2')">
-						<td class="@Model.ObtenerClase(item.concepto_retencion)">@Model.FormatearDato(item.concepto_retencion, FormatDato.Ninguno)</td>
-						<td class="@Model.ObtenerClase(item.retencion)">@Model.FormatearDato(item.retencion, FormatDato.Monto)</td>
+						<td class="@Model.ObtenerClase(item.concepto_retencion) cell-fit-content">@Model.FormatearDato(item.concepto_retencion, FormatDato.Ninguno)</td>
+						<td class="@Model.ObtenerClase(item.retencion) cell-fit-content">@Model.FormatearDato(item.retencion, FormatDato.Monto)</td>
 					</tr>
 				}
 			}

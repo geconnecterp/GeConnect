@@ -1,5 +1,6 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
 using gc.infraestructura.Dtos.OrdenDePago.Request;
@@ -20,6 +21,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private readonly IOrdenDePagoServicio _ordenDePagoServicio;
 		private readonly ITipoGastoServicio _tipoGastoServicio;
 		private readonly IProveedorServicio _proveedorServicio;
+		private readonly IFormaDePagoServicio _formaDePagoServicio;
 
 		private const string tabla_obligaciones = "tbListaObligaciones";
 		private const string tabla_creditos = "tbListaCreditos";
@@ -30,13 +32,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private const string accion_quitar = "quitar";
 
 		public OrdenDePagoAProveedorController(IOrdenDePagoServicio ordenDePagoServicio, ICuentaServicio cuentaServicio, ITipoGastoServicio tipoGastoServicio, IProveedorServicio proveedorServicio,
-											   IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<OrdenDePagoAProveedorController> logger) : base(options, contexto, logger)
+											   IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<OrdenDePagoAProveedorController> logger, 
+											   IFormaDePagoServicio formaDePagoServicio) : base(options, contexto, logger)
 		{
 			_settings = options.Value;
 			_cuentaServicio = cuentaServicio;
 			_ordenDePagoServicio = ordenDePagoServicio;
 			_tipoGastoServicio = tipoGastoServicio;
 			_proveedorServicio = proveedorServicio;
+			_formaDePagoServicio = formaDePagoServicio;
 		}
 
 		public IActionResult Index()
@@ -706,13 +710,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					cuentaObs = observacionesList.FirstOrDefault()?.cta_obs ?? string.Empty;
 				}
+				ObtenerFormasDePago(_formaDePagoServicio, "P");
+				var listaAux = FormaDePagoLista;
 				var model = new CargarObligacionesOCreditosPaso2Model
 				{
 					GrillaCreditosNueva = ObtenerGridCoreSmart<OPDebitoYCreditoDelProveedorDto>(OPCreditoNuevaLista),
 					GrillaObligacionesNuevas = ObtenerGridCoreSmart<OPDebitoYCreditoDelProveedorDto>(OPDebitoNuevaLista),
 					GrillaRetenciones = new GridCoreSmart<RetencionesDesdeObligYCredDto>(),
 					GrillaValores = new GridCoreSmart<ValoresDesdeObligYCredDto>(),
-					GrillaMedioDePago = new GridCoreSmart<MedioDePago>(),
+					GrillaMedioDePago = ObtenerGridCoreSmart<FormaDePagoDto>(FormaDePagoLista),
 					EsPagoAnticipado = OPDebitoNuevaLista.Count == 0,
 					CuentaObs = cuentaObs,
 				};

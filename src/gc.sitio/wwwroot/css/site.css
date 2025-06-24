@@ -862,6 +862,12 @@ fieldset {
     overflow: auto;
 }
 
+.table-wrapper-230 {
+    max-height: 230px;
+    max-width: 98%;
+    overflow: auto;
+}
+
 .table-wrapper-100-full {
     max-height: 100px;
     max-width: 100%;
@@ -876,6 +882,30 @@ fieldset {
 
 .table-wrapper-100 {
     max-height: 100px;
+    max-width: 98%;
+    overflow: auto;
+}
+
+.table-wrapper-170 {
+    max-height: 170px;
+    max-width: 98%;
+    overflow: auto;
+}
+
+.table-wrapper-150 {
+    max-height: 150px;
+    max-width: 98%;
+    overflow: auto;
+}
+
+.table-wrapper-125 {
+    max-height: 125px;
+    max-width: 98%;
+    overflow: auto;
+}
+
+.table-wrapper-180 {
+    max-height: 180px;
     max-width: 98%;
     overflow: auto;
 }
@@ -1411,4 +1441,9 @@ input, select, textarea, button, checkbox, radio {
 
 .wrapper select:focus + label {
     color: blue;
+}
+
+.cell-fit-content {
+    padding-left: 5px !important;
+    padding-right: 5px !important;
 }

@@ -124,5 +124,47 @@ namespace gc.api.core.Servicios
             List<ConsRecepcionProveedorDetalleDto> res = _repository.EjecutarLstSpExt<ConsRecepcionProveedorDetalleDto>(sp, ps, true);
             return res;
         }
-    }
+
+        public List<ConsOrdPagoDetExtendDto> ConsultaOrdenDePagoProveedor(string op_compte)
+        {
+			var sp = ConstantesGC.StoredProcedures.SP_CONS_OPAGO_PROVEEDORES_DET;
+			var ps = new List<SqlParameter>() {
+				new("@op_compte",op_compte),
+			};
+
+			List<ConsOrdPagoDetExtendDto> res = _repository.EjecutarLstSpExt<ConsOrdPagoDetExtendDto>(sp, ps, true);
+			return res;
+		}
+
+		public List<CertRetenGananDto> ConsultaCertRetenGA(string op_compte)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_C_CERT_RETEN_GA;
+			var ps = new List<SqlParameter>() {
+				new("@op_compte",op_compte),
+			};
+
+			List<CertRetenGananDto> res = _repository.EjecutarLstSpExt<CertRetenGananDto>(sp, ps, true);
+			return res;
+		}
+		public List<CertRetenIBDto> ConsultaCertRetenIB(string op_compte)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_C_CERT_RETEN_IB;
+			var ps = new List<SqlParameter>() {
+				new("@op_compte",op_compte),
+			};
+
+			List<CertRetenIBDto> res = _repository.EjecutarLstSpExt<CertRetenIBDto>(sp, ps, true);
+			return res;
+		}
+		public List<CertRetenIVADto> ConsultaCertRetenIVA(string op_compte)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_C_CERT_RETEN_IVA;
+			var ps = new List<SqlParameter>() {
+				new("@op_compte",op_compte),
+			};
+
+			List<CertRetenIVADto> res = _repository.EjecutarLstSpExt<CertRetenIVADto>(sp, ps, true);
+			return res;
+		}
+	}
 }

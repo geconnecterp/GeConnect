@@ -8,14 +8,14 @@
 	top: 0px;
 	}
 </style>
-<div class="table-responsive table-wrapper-200-full-width" id="containerListaObligaciones">
+<div class="table-responsive table-wrapper-230" id="containerListaObligaciones" style="padding-right:0px;">
 	<table class="table table-bordered table-hover" id="tbListaObligaciones">
-		<thead class="table-dark">
+		<thead style="background: darkred;">
 			<tr>
-				<th style="width:55%;" class="col-header-small align-center tiny-row">Comprobante</th>
-				<th style="width:15%;" class="col-header-small align-center tiny-row">Cuota</th>
-				<th style="width:15%;" class="col-header-small align-center tiny-row">Vencimiento</th>
-				<th style="width:15%;" class="col-header-small align-center tiny-row">Importe</th>
+				<th style="width:70%;" class="col-header-small align-center tiny-row">Comprobante</th>
+				<th style="width:10%;" class="col-header-small align-center tiny-row">Cuota</th>
+				<th style="width:10%;" class="col-header-small align-center tiny-row">Vencimiento</th>
+				<th style="width:10%;" class="col-header-small align-center tiny-row">Importe</th>
 				<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">dia_movi</th>
 				<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">cm_compte</th>
 				<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">tco_id</th>
@@ -28,10 +28,10 @@
 				@foreach (var item in Model.ListaDatos)
 				{
 					<tr onclick="selectReg(this, 'tbListaObligaciones')" ondblclick="selectRegDbl(this, 'tbListaObligaciones')">
-						<td class="@Model.ObtenerClase(item.concepto)">@Model.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
-						<td class="@Model.ObtenerClase(item.cm_compte_cuota)">@Model.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
-						<td class="@Model.ObtenerClase(item.cv_fecha_vto)">@Model.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
-						<td class="@Model.ObtenerClase(item.cv_importe)">@Model.FormatearDato(item.cv_importe, FormatDato.Monto)</td>
+						<td class="@Model.ObtenerClase(item.concepto) cell-fit-content">@Model.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
+						<td class="@Model.ObtenerClase(item.cm_compte_cuota) cell-fit-content">@Model.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
+						<td class="@Model.ObtenerClase(item.cv_fecha_vto) cell-fit-content">@Model.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
+						<td class="@Model.ObtenerClase(item.cv_importe) cell-fit-content">@Model.FormatearDato(item.cv_importe, FormatDato.Monto)</td>
 						<td style="display:none;">@item.dia_movi</td>
 						<td style="display:none;">@item.cm_compte</td>
 						<td style="display:none;">@item.tco_id</td>

@@ -4,5 +4,6 @@
 	public class EdicionTipoEfectivoCajasModel : EdicionTipoModel
 	{
 		public decimal Importe { get; set; } = 0.00M;
+		public string ImporteS { get; set; } = string.Empty;
 	}
 }
