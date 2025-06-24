@@ -8,11 +8,11 @@
 }
 
 
-    <style>
-        .asiento-temporal {
-            border-left: 4px solid #ff3e1d !important; /* Borde rojo a la izquierda */
-        }
-    </style>
+<style>
+    .asiento-temporal {
+    border-left: 4px solid #ff3e1d !important; /* Borde rojo a la izquierda */
+    }
+</style>
 
 
 <div class="grid-golden">
@@ -81,11 +81,12 @@
                             // Mostrar encabezado para nuevo tipo o periodo
                             if (nuevoEncabezado)
                             {
+                                var nnTipo = $"{item.Dia_tipo} - {item.Dia_lista}";
                                 <tr class="table-secondary">
                                     <td colspan="4" class="border-0">
                                         <div class="d-flex justify-content-between my-2">
                                             <div>
-                                                <strong>Tipo de Asiento:</strong> @item.Dia_tipo
+                                                <strong>Tipo de Asiento:</strong> @nnTipo 
                                             </div>
                                             @* <div>
                                                 <strong>Año/Mes:</strong> @periodoActual

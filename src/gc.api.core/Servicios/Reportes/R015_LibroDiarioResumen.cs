@@ -236,7 +236,8 @@ namespace gc.api.core.Servicios.Reportes
                     totalHaber = 0;
 
                     // Agregar encabezado para el nuevo grupo
-                    Paragraph tipoHeader = new Paragraph($"Tipo de Asiento: {item.Dia_tipo}", normalBold);
+                    var nnTipo = $"{item.Dia_tipo} - {item.Dia_lista}";
+                    Paragraph tipoHeader = new Paragraph($"Tipo de Asiento: {nnTipo}", normalBold);
                     tipoHeader.SpacingBefore = 10f;
                     tipoHeader.SpacingAfter = 5f;
                     pdf.Add(tipoHeader);
