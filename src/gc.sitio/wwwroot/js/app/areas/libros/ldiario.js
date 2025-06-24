@@ -279,6 +279,7 @@ function obtenerParametrosBusquedaLD() {
 function limpiarLD() {
     // Vaciar el panel que contiene el asiento
     $("#divLD").empty();
+    $("#divDiarioResumen").empty().html('<span class="text - danger">SIN REGISTROS</span>')
 
     // Restablecer variables de control
     filaClicDoble = null;
@@ -408,7 +409,56 @@ function configurarBotonesLd() {
     $(document).on("click", ".btnImprimir", function () {
         imprimirLD();
     });
+
+    // Manejar el clic en la pestaña Diario
+    $("#tabDiarioResumen").on("click", function () {
+        // Verificar si hay parámetros guardados para el informe
+        if ($("#divDiarioResumen").text().includes("SIN REGISTROS") && Object.keys(arrRepoParams[13 - 1]).length > 0) {
+            if (arrRepoParams[12] && arrRepoParams[12].parametros) {   
+                let parametrs = arrRepoParams[12].parametros;
+                cargarReporteEnArre(15, parametrs, "Libro Diario Resumen", "", administracion);
+
+                cargarResumenLibroDiario(arrRepoParams[12].parametros);
+            } else {
+                // Si no hay parámetros guardados, mostrar mensaje
+                AbrirMensaje("Atención", "No hay parámetros definidos para generar el informe. Por favor, configure los filtros primero.",
+                    function () { $("#msjModal").modal("hide"); },
+                    false, ["Aceptar"], "warn!", null);
+            }
+        }
+    });
 }
+
+
+// Función para cargar el resumen del libro diario
+function cargarResumenLibroDiario(parametros) {
+    AbrirWaiting("Cargando resumen del Libro Diario...");
+
+    PostGenHtml(parametros, obtenerLDUResumenrl+"?pagina="+pagina, function (response) {
+        // Insertar la respuesta en el contenedor adecuado
+        $("#divDiarioResumen").html(response);
+
+        // Si hay un elemento de paginación, configurarlo
+        if ($("#divPaginacion1").length) {
+            totalRegs = parametros.totalRegistros || 0;
+            pagRegs = parametros.regs || 10;
+            pagina = parametros.pagina || 1;
+            funcCallBack = function (num) {
+                parametros.pagina = num;
+                cargarResumenLibroDiario(parametros);
+            };
+            presentaPaginacion($("#divPaginacion1"));
+        }
+
+        CerrarWaiting();
+    }, function (error) {
+        CerrarWaiting();
+        AbrirMensaje("Error", "Ocurrió un error al cargar el resumen del Libro Diario. Por favor, intente nuevamente.",
+            function () { $("#msjModal").modal("hide"); },
+            false, ["Aceptar"], "error!", null);
+    });
+}
+
 
 function imprimirLD() {
     // Obtener los parámetros base del formulario

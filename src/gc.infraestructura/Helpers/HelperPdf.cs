@@ -1325,7 +1325,7 @@ namespace gc.infraestructura.Helpers
             _totalPages.BeginText();
             _totalPages.SetFontAndSize(_baseFont, 8);
             _totalPages.SetTextMatrix(0, 0);
-            _totalPages.ShowText(writer.PageNumber.ToString());
+            _totalPages.ShowText((writer.PageNumber-1).ToString());
             _totalPages.EndText();
         }
     }

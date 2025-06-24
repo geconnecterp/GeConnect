@@ -1,4 +1,5 @@
-﻿using gc.infraestructura.Helpers;
+﻿using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Helpers;
 using Microsoft.AspNetCore.Http.Extensions;
 using X.PagedList;
 using static gc.infraestructura.Helpers.GridHelper;
@@ -45,6 +46,8 @@ namespace gc.infraestructura.Dtos.Gen
         public string Sort { get; set; } = "Id";
         public string SortDir { get; set; } = "ASC";
         public string DatoAux01 { get; set; } = string.Empty;
+
+        public MetadataGrid? MetadataGeneral { get; set; }
 
         public Func<object?, string> ObtenerClase => GridHelper.ObtenerClaseAlineacion;
         public Func<object?, FormatDato, string> FormatearDato => GridHelper.FormatearDato;

@@ -99,7 +99,8 @@ namespace gc.api.core.Servicios.Libros
                         Detalles = new List<AsientoLineaDto>(),
                         TotalDebe = 0,
                         TotalHaber = 0,
-                        eje_nro = registro.eje_nro
+                        eje_nro = registro.eje_nro,
+                        esTemporal = registro.temporal
                     };
                 }
 
@@ -124,7 +125,7 @@ namespace gc.api.core.Servicios.Libros
 
         public List<LibroDiarioResumen> ObtenerAsientoLibroDiarioResumen(int eje_nro, bool periodo, DateTime desde, DateTime hasta, bool hasCarga, DateTime Cdesde, DateTime Chasta, string movimientos, bool conTemporales, int regs, int pag, string orden)
         {
-            var sp = ConstantesGC.StoredProcedures.SP_ASIENTO_LIBRO_DIARIO;// "spgeco_conta_asiento_tmp_datos"; // Usar el SP que mencionaste
+            var sp = ConstantesGC.StoredProcedures.SP_ASIENTO_LIBRO_DIARIO_RESUMEN;// "spgeco_conta_asiento_tmp_datos"; // Usar el SP que mencionaste
 
             var ps = new List<SqlParameter>();
 

@@ -1,6 +1,15 @@
 ﻿@model GridCoreSmart<AsientoDetalleLDDto>
 @using gc.infraestructura.Dtos.Asientos
 
+
+    <style>
+        .asiento-temporal {
+            border-left: 4px solid #ff3e1d !important; /* Borde rojo a la izquierda */
+        }
+    </style>
+
+
+
 <div class="grid-golden">
     <div class="grid-golden-header">
         <div class="row align-items-center">
@@ -73,7 +82,7 @@
                                             totalGeneralDebe += detalle.Debe;
                                             totalGeneralHaber += detalle.Haber;
 
-                                            <tr>
+                                            <tr class="@(asiento.esTemporal == true ? "asiento-temporal" : "")">
                                                 <td>@detalle.Ccb_id</td>
                                                 <td>@detalle.Ccb_desc</td>
                                                 <td>@detalle.Dia_desc</td>
@@ -109,7 +118,7 @@
             </div>
         }
     </div>
-
+    
     <div class="grid-golden-footer">
         <div class="row">
             <div class="offset-md-3 col-md-6">
@@ -117,6 +126,9 @@
                     <!-- Aquí se agregará la paginación si es necesario -->
                 </div>
             </div>
+        </div>
+        <div class="row">
+            <table><tr class="asiento-temporal"><td>ASIENTO TEMPORAL</td></tr></table>
         </div>
     </div>
 </div>
