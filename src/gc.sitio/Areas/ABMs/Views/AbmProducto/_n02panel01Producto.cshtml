@@ -9,38 +9,26 @@
 
 <div class="row">
     <div class="col-md-7">
-@*         @Html.HiddenFor(x=>x.p_alta)
-        @Html.HiddenFor(x => x.usu_id_alta)
-        @Html.HiddenFor(x => x.p_modi)
-        @Html.HiddenFor(x => x.usu_id_modi) *@
+
         @Html.HiddenFor(x => x.p_balanza_id)
-       @*  @Html.HiddenFor(x => x.p_id_barrado_ean)
-        @Html.HiddenFor(x => x.p_unidad_pres_ean)
-        @Html.HiddenFor(x => x.p_unidad_x_bulto_ean)
-        @Html.HiddenFor(x => x.p_bulto_x_piso_ean)
-        @Html.HiddenFor(x => x.p_piso_x_pallet_ean)
-        @Html.HiddenFor(x => x.p_id_barrado_dun)
-        @Html.HiddenFor(x => x.p_unidad_pres_dun)
-        @Html.HiddenFor(x => x.p_unidad_x_bulto_dun)
-        @Html.HiddenFor(x => x.p_bulto_x_piso_dun)
-        @Html.HiddenFor(x => x.p_piso_x_pallet_dun) *@
+
         @Html.HiddenFor(x => x.p_actu)
 
-        
+
         <!--Linea 01-->
         <div class="row mt-1">
             <div class="col-sm-6">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text" style="width:50px;">ID </span>
                     <input type="text" asp-for="p_id" class="form-control" disabled style="width:50px;margin-right:20px;" />
-                    <span class="input-group-text">Activo</span>
-                    @Html.DropDownListFor(x => x.p_activo, listAct, "Sel.", new { @class = "form-control", style = "width:50px;", disabled = "disabled" })                  
+                    <span class="input-group-text">Estado</span>
+                    @Html.DropDownListFor(x => x.p_activo, listAct, "Sel.", new { @class = "form-control", style = "width:50px;", disabled = "disabled" })
                 </div>
             </div>
-            <div class="col-sm-6">
+            <div class="col-sm-4">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text">Un.Med: </span>
-                    @Html.DropDownListFor(x => x.up_id, null, "Selecciona...", new { @class = "form-control", disabled = "disabled"  })
+                    @Html.DropDownListFor(x => x.up_id, null, "Selecciona...", new { @class = "form-control", disabled = "disabled" })
                 </div>
             </div>
         </div>
@@ -52,18 +40,29 @@
                     <input type="text" asp-for="p_m_marca" class="form-control inputEditable" disabled />
                 </div>
             </div>
-            <div class="col-sm-6">
+            <div class="col-sm-2">
                 <div class="input-group input-group-sm">
                     <div class="form-check form-check-inline form-switch mb-2">
-                        <input class="form-check-input" type="checkbox" asp-for="PBalanza" disabled/>
+                        <input class="form-check-input" type="checkbox" asp-for="PBalanza" disabled />
                         <label class="form-check-label" for="pBalanza">Balanza</label>
                     </div>
-                    <span class="input-group-text">Días Vto </span>
-                    <input type="number" min="0" class="form-control" asp-for="p_balanza_dvto" disabled />
-                    <span class="input-group-text">Peso </span>
-                    <input type="number" min="0" class="form-control inputEditable" asp-for="p_peso" disabled/>
                 </div>
             </div>
+
+            <div class="col-sm-2">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text">Días Vto </span>
+                    <input type="number" min="0" class="form-control inputEditable_r" asp-for="p_balanza_dvto" disabled />
+                </div>
+            </div>
+
+            <div class="col-sm-2">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text">Peso </span>
+                    <input type="number" min="0" class="form-control inputEditable_r" asp-for="p_peso" disabled />
+                </div>
+            </div>
+
         </div>
         <!--Linea 03-->
         <div class="row mt-1">
@@ -73,17 +72,22 @@
                     <input type="text" asp-for="p_m_desc" class="form-control inputEditable" disabled />
                 </div>
             </div>
-            <div class="col-sm-6">
+            <div class="col-sm-2">
                 <div class="input-group input-group-sm">
                     <div class="form-check form-check-inline form-switch mb-2">
                         <input class="form-check-input" type="checkbox" asp-for="PConVto" disabled />
                         <label class="form-check-label" for="pConVto">Vto Stk</label>
                     </div>
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <div class="input-group input-group-sm">
                     <span class="input-group-text">Días Vto </span>
-                    <input type="number" min="0" class="form-control inputEditable" asp-for="p_con_vto_min" disabled />
+                    <input type="number" min="0" class="form-control inputEditable_r" asp-for="p_con_vto_min" disabled />
                 </div>
             </div>
         </div>
+
         <!--Linea 04-->
         <div class="row mt-1">
             <div class="col-sm-6">
@@ -95,7 +99,7 @@
             <div class="col-sm-6">
                 <div class="input-group input-group-sm">
                     <div class="form-check form-check-inline form-switch mb-2">
-                        <input class="form-check-input" type="checkbox" asp-for="PAltaRotacion" disabled/>
+                        <input class="form-check-input" type="checkbox" asp-for="PAltaRotacion" disabled />
                         <label class="form-check-label" for="pAltaRot">Alta Rotación</label>
                     </div>
                 </div>
@@ -109,13 +113,15 @@
                     <input type="text" asp-for="p_id_prov" class="form-control inputEditable" style="width:50px;" disabled />
                 </div>
             </div>
-            <div class="col-sm-6">
+            <div class="col-sm-3">
                 <div class="form-check form-check-inline form-switch mb-2">
-                    <input class="form-check-input " type="checkbox" asp-for="PMatPri" disabled/>
+                    <input class="form-check-input " type="checkbox" asp-for="PMatPri" disabled />
                     <label class="form-check-label" for="pMatPri">Materia Prima</label>
                 </div>
+            </div>
+            <div class="col-sm-3">
                 <div class="form-check form-check-inline form-switch mb-2">
-                    <input class="form-check-input" type="checkbox" asp-for="PElaboracion" disabled/>
+                    <input class="form-check-input" type="checkbox" asp-for="PElaboracion" disabled />
                     <label class="form-check-label" for="pElabora">Elaboración Propia</label>
                 </div>
             </div>
@@ -129,16 +135,19 @@
                     @Html.HiddenFor(x => x.cta_id)
                 </div>
             </div>
-            <div class="col-sm-6">
+            <div class="col-sm-3">
                 <div class="form-check form-check-inline form-switch mb-2">
                     <input class="form-check-input" type="checkbox" asp-for="AdmMayExcluye" disabled />
                     <label class="form-check-label" for="admMayExcl" id="lbRel01">Excluye Minorista</label>
                 </div>
+            </div>
+            <div class="col-sm-3">
                 <div class="form-check form-check-inline form-switch mb-2">
                     <input class="form-check-input" type="checkbox" asp-for="AdmMinExcluye" disabled />
                     <label class="form-check-label" for="admMinExcl" id="lbRel01">Excluye Mayorista</label>
                 </div>
             </div>
+
         </div>
         <!--Linea 07-->
         <div class="row mt-1">
@@ -148,13 +157,15 @@
                     @Html.DropDownListFor(x => x.pg_id, null, "Seleccionar...", new { @class = "form-control", disabled = "disabled" })
                 </div>
             </div>
-            <div class="col-sm-6">
+            <div class="col-sm-3">
                 <div class="form-check form-check-inline form-switch mb-2">
                     <input class="form-check-input" type="checkbox" asp-for="PiAutoExluye" disabled />
                     <label class="form-check-label" for="piAutoExcl">Excluye PI Auto</label>
                 </div>
+            </div>
+            <div class="col-sm-3">
                 <div class="form-check form-check-inline form-switch mb-2">
-                    <input class="form-check-input" type="checkbox" asp-for="OcAutoExluye" disabled/>
+                    <input class="form-check-input" type="checkbox" asp-for="OcAutoExluye" disabled />
                     <label class="form-check-label" for="pNoSe">Excluye OC Auto</label>
                 </div>
             </div>
@@ -168,13 +179,22 @@
                     @Html.HiddenFor(x => x.rub_id)
                 </div>
             </div>
-            <div class="col-sm-6">
+            <div class="col-sm-2">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text" style="width:50px;">IVA</span>
-                    @Html.DropDownListFor(x => x.iva_situacion, null, "Selecciona...", new { @class = "form-control", disabled="disabled"})
-
+                    @Html.DropDownListFor(x => x.iva_situacion, null, "Selecciona...", new { @class = "form-control", disabled = "disabled" })
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <div class="input-group input-group-sm">
                     <span class="input-group-text" style="width:50px;">Ali.IVA</span>
-                    @Html.DropDownListFor(x => x.iva_alicuota, null, "Selecciona...", new { @class = "form-control", disabled = "disabled" })
+                    @Html.DropDownListFor(x => x.iva_alicuota, null, "Selecciona...", new { @class = "form-control align-center", disabled = "disabled" })
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text" style="width:50px;">II:</span>
+                    <input type="number" min="0" max="50" asp-for="in_alicuota" class="form-control inputEditable_r" disabled style="width:50px;" />
                 </div>
             </div>
         </div>
@@ -186,12 +206,7 @@
                     @Html.DropDownListFor(x => x.lp_id_default, null, "Selecciona...", new { @class = "form-control", disabled = "disabled" })
                 </div>
             </div>
-            <div class="col-sm-6">
-                <div class="input-group input-group-sm">
-                    <span class="input-group-text" style="width:50px;">II:</span>
-                    <input type="number" min="0" max="50" asp-for="in_alicuota" class="form-control inputEditable" disabled style="width:50px;" />
-                </div>
-            </div>
+            
         </div>
         <!--Linea 10-->
         <div class="row mt-1">
@@ -204,13 +219,13 @@
             <div class="col-sm-6">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text" style="width:50px;">UxP</span>
-                    <input type="text" asp-for="p_unidad_pres_ean" class="form-control inputEditable barr" disabled />
+                    <input type="text" asp-for="p_unidad_pres_ean" class="form-control inputEditable_r barr" disabled />
                     <span class="input-group-text" style="width:50px;">UxB</span>
-                    <input type="text" asp-for="p_unidad_x_bulto_ean" class="form-control inputEditable barr" disabled />
+                    <input type="text" asp-for="p_unidad_x_bulto_ean" class="form-control inputEditable_r barr" disabled />
                     <span class="input-group-text" style="width:50px;">BxP</span>
-                    <input type="text" asp-for="p_bulto_x_piso_ean" class="form-control inputEditable barr" disabled />
+                    <input type="text" asp-for="p_bulto_x_piso_ean" class="form-control inputEditable_r barr" disabled />
                     <span class="input-group-text" style="width:50px;">PxP</span>
-                    <input type="text" asp-for="p_piso_x_pallet_ean" class="form-control inputEditable barr" disabled />
+                    <input type="text" asp-for="p_piso_x_pallet_ean" class="form-control inputEditable_r barr" disabled />
                 </div>
             </div>
         </div>
@@ -225,13 +240,13 @@
             <div class="col-sm-6">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text" style="width:50px;">UxP</span>
-                    <input type="text" asp-for="p_unidad_pres_dun" class="form-control inputEditable barr" disabled />
+                    <input type="text" asp-for="p_unidad_pres_dun" class="form-control inputEditable_r barr" disabled />
                     <span class="input-group-text" style="width:50px;">UxB</span>
-                    <input type="text" asp-for="p_unidad_x_bulto_dun" class="form-control inputEditable barr" disabled />
+                    <input type="text" asp-for="p_unidad_x_bulto_dun" class="form-control inputEditable_r barr" disabled />
                     <span class="input-group-text" style="width:50px;">BxP</span>
-                    <input type="text" asp-for="p_bulto_x_piso_dun" class="form-control inputEditable barr" disabled />
+                    <input type="text" asp-for="p_bulto_x_piso_dun" class="form-control inputEditable_r barr" disabled />
                     <span class="input-group-text" style="width:50px;">PxP</span>
-                    <input type="text" asp-for="p_piso_x_pallet_dun" class="form-control inputEditable barr" disabled />
+                    <input type="text" asp-for="p_piso_x_pallet_dun" class="form-control inputEditable_r barr" disabled />
                 </div>
             </div>
         </div>

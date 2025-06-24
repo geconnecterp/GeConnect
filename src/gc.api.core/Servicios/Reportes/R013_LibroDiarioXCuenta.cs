@@ -207,7 +207,22 @@ namespace gc.api.core.Servicios.Reportes
                             filaAlterna = !filaAlterna;
 
                             // Columna Cuenta
-                            var celdaCuenta = new PdfPCell(new Phrase(detalle.Ccb_id, normal));
+                            //var celdaCuenta = new PdfPCell(new Phrase(detalle.Ccb_id, normal));
+                            PdfPCell celdaCuenta;
+                            if (asiento.esTemporal == true)
+                            {
+                                // Para asientos temporales, agregar la "X" al inicio
+                                Paragraph cuentaParrafo = new Paragraph();
+                                Font redFont = new Font(normal);
+                                redFont.Color = BaseColor.Red;
+                                cuentaParrafo.Add(new Chunk("X ", redFont));
+                                cuentaParrafo.Add(new Chunk(detalle.Ccb_id, normal));
+                                celdaCuenta = new PdfPCell(cuentaParrafo);
+                            }
+                            else
+                            {
+                                celdaCuenta = new PdfPCell(new Phrase(detalle.Ccb_id, normal));
+                            }
                             celdaCuenta.BackgroundColor = colorFondo;
                             celdaCuenta.HorizontalAlignment = Element.ALIGN_LEFT;
                             celdaCuenta.Padding = 5;
