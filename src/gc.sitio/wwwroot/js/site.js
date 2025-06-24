@@ -178,3 +178,58 @@ function ControlaMensajeWarning(mensaje, unlock = false) {
         $.unblockUI();
     }
 }
+
+
+// Agregar al final de site.js o en un archivo específico para manejo de AJAX
+
+// Interceptor para peticiones AJAX que verifica si la sesión ha expirado
+$(document).ajaxError(function (event, jqXHR, ajaxSettings, thrownError) {
+    // Verificar si el error es por sesión expirada (código 440)
+    if (jqXHR.status === 440) {
+        // Mostrar mensaje al usuario
+        AbrirMensaje(
+            "Sesión expirada",
+            "Su sesión ha expirado. Será redirigido a la página de inicio de sesión.",
+            function () {
+                // Redirigir al login
+                window.location.href = "/seguridad/Token/Login";
+            },
+            false,
+            ["Aceptar"],
+            "warn!",
+            null
+        );
+
+        // Evitar que se procesen otros manejadores de error
+        return false;
+    }
+});
+
+//// Para peticiones fetch modernas (opcional, si usas fetch en lugar de jQuery)
+//const originalFetch = window.fetch;
+//window.fetch = async function (input, init) {
+//    const response = await originalFetch(input, init);
+
+//    if (response.status === 440) {
+//        const responseData = await response.json();
+
+//        // Mostrar mensaje al usuario
+//        AbrirMensaje(
+//            "Sesión expirada",
+//            responseData.msg || "Su sesión ha expirado. Será redirigido a la página de inicio de sesión.",
+//            function () {
+//                // Redirigir al login
+//                window.location.href = "/seguridad/Token/Login";
+//            },
+//            false,
+//            ["Aceptar"],
+//            "warn!",
+//            null
+//        );
+
+//        // Crear una promesa rechazada para que los manejadores catch puedan procesarla
+//        return Promise.reject(new Error("Sesión expirada"));
+//    }
+
+//    return response;
+//};

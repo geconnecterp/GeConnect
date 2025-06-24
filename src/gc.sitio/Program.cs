@@ -99,6 +99,8 @@ app.UseAuthentication();
 //se te permite algo??? estas autorizado?
 app.UseAuthorization();
 
+// En Program.cs, después de app.UseAuthentication() y app.UseAuthorization()
+app.UseSessionExpirationCheck(); // Agregar antes de app.UseMiddleware<AuthenticationCheckMiddleware>();
 app.UseMiddleware<AuthenticationCheckMiddleware>();
 
 

@@ -193,7 +193,7 @@ function buscarBSS(pag = 1) {
     var data1 = obtenerParametrosBusquedaBss();
 
     // Guardamos parámetros para el reporte
-    cargarReporteEnArre(14, data1, "Balance de Sumas y Saldos", "", "");
+    cargarReporteEnArre(14, data1, "Balance de Sumas y Saldos", "", administracion);
     // Verificar si cambió la búsqueda o solo la página
     var buscaNew = JSON.stringify(bssDataBak) !== JSON.stringify(data1);
 

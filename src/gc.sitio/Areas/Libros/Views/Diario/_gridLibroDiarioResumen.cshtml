@@ -1,0 +1,161 @@
+﻿@model GridCoreSmart<LibroDiarioResumen>
+
+@{
+    var currentTipo = string.Empty;
+    var currentPeriodo = string.Empty;
+    decimal totalDebe = 0;
+    decimal totalHaber = 0;
+}
+
+
+    <style>
+        .asiento-temporal {
+            border-left: 4px solid #ff3e1d !important; /* Borde rojo a la izquierda */
+        }
+    </style>
+
+
+<div class="grid-golden">
+    <div class="grid-golden-header">
+        <h5></h5>
+        <div class="row align-items-center">
+            <div class="col-md-8 col-sm-6">
+                <h5 class="mb-0">
+                    <i class="bx bx-calendar-event me-1"></i>
+                    <strong>@ViewBag.Leyenda</strong>
+                </h5>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="d-flex justify-content-sm-end">
+                    <!-- Botón Imprimir -->
+                    <button type="button" class="btn btn-golden btn-sm mt-1 me-1 btnImprimir" title="Imprimir">
+                        <i class="bx bx-printer"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="grid-golden-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover table-golden" id="tblLibroDiarioResumen">
+                <thead>
+                    <tr>
+                        <th class="col-header-small align-center" style="width:10%;">Cuenta</th>
+                        <th class="col-header-small align-center" style="width:40%;">Descripción Cuenta</th>
+                        <th class="col-header-small align-center" style="width:25%;">Debe</th>
+                        <th class="col-header-small align-center" style="width:25%;">Haber</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model?.ListaDatos != null && Model.ListaDatos.Count() > 0)
+                    {
+                        var tipoCounter = 0;
+                        foreach (var item in Model.ListaDatos)
+                        {
+                            // Verificar cambio de tipo de asiento o periodo para mostrar encabezado
+                            //string periodoActual = $"{item.Anio_mes?.Substring(0, 4)} - {item.Anio_mes?.Substring(5, 2)}";
+                            string tipoActual = item.Dia_tipo;
+                            bool nuevoEncabezado = false;
+
+                            if (tipoActual != currentTipo @* || periodoActual != currentPeriodo *@)
+                            {
+                                // Si hay un tipo anterior, mostrar el total del grupo antes de iniciar uno nuevo
+                                if (!string.IsNullOrEmpty(currentTipo) && tipoCounter > 0)
+                                {
+                                    <tr class="bg-light fw-bold">
+                                        <td colspan="2" class="text-end">Total:</td>
+                                        <td class="text-end">@totalDebe.ToString("N2")</td>
+                                        <td class="text-end">@totalHaber.ToString("N2")</td>
+                                    </tr>
+                                }
+
+                                // Actualizar variables y reiniciar totales
+                                currentTipo = tipoActual;
+                                //currentPeriodo = periodoActual;
+                                totalDebe = 0;
+                                totalHaber = 0;
+                                tipoCounter = 0;
+                                nuevoEncabezado = true;
+                            }
+
+                            // Mostrar encabezado para nuevo tipo o periodo
+                            if (nuevoEncabezado)
+                            {
+                                <tr class="table-secondary">
+                                    <td colspan="4" class="border-0">
+                                        <div class="d-flex justify-content-between my-2">
+                                            <div>
+                                                <strong>Tipo de Asiento:</strong> @item.Dia_tipo
+                                            </div>
+                                            @* <div>
+                                                <strong>Año/Mes:</strong> @periodoActual
+                                            </div> *@
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+
+                            // Mostrar fila de datos
+                            <tr class="@(item.temporal == true ? "asiento-temporal" : "")">
+                                <td>@item.Ccb_id</td>
+                                <td>@item.Ccb_desc</td>
+                                <td class="text-end">@(item.dia_debe > 0 ? item.dia_debe.ToString("N2") : "0.00")</td>
+                                <td class="text-end">@(item.dia_haber > 0 ? item.dia_haber.ToString("N2") : "0.00")</td>
+                            </tr>
+
+                            // Actualizar totales
+                            totalDebe += item.dia_debe;
+                            totalHaber += item.dia_haber;
+                            tipoCounter++;
+                        }
+
+                        // Mostrar el último total después de procesar todos los registros
+                        if (tipoCounter > 0)
+                        {
+                            <tr class="bg-light fw-bold">
+                                <td colspan="2" class="text-end">Total:</td>
+                                <td class="text-end">@totalDebe.ToString("N2")</td>
+                                <td class="text-end">@totalHaber.ToString("N2")</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center">No hay registros para mostrar.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="grid-golden-footer">
+        @if (Model?.ListaDatos != null && Model.ListaDatos.Count() > 0 && Model.CantidadPaginas > 1)
+        {
+            <div class="row">
+                <div class="col-md-6">
+                    <div id="divPaginacion1" class="pagination-container"></div>
+                </div>
+                <div class="col-md-6 text-end">
+                    <span>Total de registros: @Model.MetadataGeneral?.TotalCount</span>
+                </div>
+            </div>
+        }
+        <div class="row">
+            <table><tr class="asiento-temporal"><td>ASIENTO TEMPORAL</td></tr></table>
+        </div>
+    </div>
+</div>
+
+@if (Model?.ListaDatos != null && Model.ListaDatos.Count() > 0 && Model.CantidadPaginas > 1)
+{
+    <script>
+        $(function () {
+            // Configuración de paginación
+            var paginacionDiv = $('#divPaginacion1');
+            if (paginacionDiv.length) {
+                presentaPaginacion(paginacionDiv);
+            }
+        });
+    </script>
+}

@@ -249,7 +249,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 {
                     throw new NegocioException("No se recepcionaron los limites de stock.");
                 }
-                else if (!lim.Ok || !string.IsNullOrEmpty(lim.Mensaje))
+                else if (!lim.Ok || !string.IsNullOrEmpty(lim.Mensaje) && !lim.Mensaje.Equals("OK",StringComparison.InvariantCultureIgnoreCase))
                 {
                     throw new NegocioException(lim.Mensaje ?? "Error desconocido al obtener los límites de stock.");
                 }
