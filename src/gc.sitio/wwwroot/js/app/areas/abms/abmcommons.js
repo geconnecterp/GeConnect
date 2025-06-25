@@ -1114,19 +1114,28 @@ function btnCancelClick() {
 			LimpiarCampos(tabActiva);
 			$("#Nota_Usu_Apellidoynombre").prop("disabled", false);
 			activarGrilla(Grids.GridNota);
-			activarGrilla(Grids.GridCliente);
+			if ($("#" + Grids.GridCliente).length > 0)
+				activarGrilla(Grids.GridCliente);
+			else
+				activarGrilla(Grids.GridProveedor);
 			selectReg(regSelected, Grids.GridNota);
 			break;
 		case Tabs.TabObservaciones:
 			LimpiarCampos(tabActiva);
 			activarGrilla(Grids.GridObs);
-			activarGrilla(Grids.GridCliente);
+			if ($("#" + Grids.GridCliente).length > 0)
+				activarGrilla(Grids.GridCliente);
+			else
+				activarGrilla(Grids.GridProveedor);
 			selectReg(regSelected, Grids.GridObs);
 			break;
 		case Tabs.TabOtrosContactos:
 			LimpiarCampos(tabActiva);
 			activarGrilla(Grids.GridOC);
-			activarGrilla(Grids.GridCliente);
+			if ($("#" + Grids.GridCliente).length > 0)
+				activarGrilla(Grids.GridCliente);
+			else
+				activarGrilla(Grids.GridProveedor);
 			selectReg(regSelected, Grids.GridOC);
 			$("#OtroContacto_Cta_Nombre").prop("disabled", false);
 			$("#listaTC").prop("disabled", false);

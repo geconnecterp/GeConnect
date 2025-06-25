@@ -169,7 +169,7 @@ function selectRepartidorDbl(x, gridId) {
             EntidadEstado = x.find("td:nth-child(3)").text();
             var data = { id: id };
             EntidadSelect = id;
-            desactivarGrilla(gridId);
+            //desactivarGrilla(gridId);
             //se busca el perfil
             buscarRepartidor(data);           
             //se posiciona el registro seleccionado

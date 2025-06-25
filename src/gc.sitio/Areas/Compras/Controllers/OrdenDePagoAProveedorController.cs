@@ -1,6 +1,7 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
 using gc.infraestructura.Dtos.OrdenDePago.Request;
@@ -32,7 +33,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private const string accion_quitar = "quitar";
 
 		public OrdenDePagoAProveedorController(IOrdenDePagoServicio ordenDePagoServicio, ICuentaServicio cuentaServicio, ITipoGastoServicio tipoGastoServicio, IProveedorServicio proveedorServicio,
-											   IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<OrdenDePagoAProveedorController> logger, 
+											   IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<OrdenDePagoAProveedorController> logger,
 											   IFormaDePagoServicio formaDePagoServicio) : base(options, contexto, logger)
 		{
 			_settings = options.Value;
@@ -710,16 +711,17 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					cuentaObs = observacionesList.FirstOrDefault()?.cta_obs ?? string.Empty;
 				}
-				ObtenerFormasDePago(_formaDePagoServicio, "P");
-				var listaAux = FormaDePagoLista;
+				var cfp = _cuentaServicio.GetCuentaFormaDePago(CtaIdSelected, TokenCookie);
+				//var cfp2 = new List<CuentaFPDto>();
 				var model = new CargarObligacionesOCreditosPaso2Model
 				{
 					GrillaCreditosNueva = ObtenerGridCoreSmart<OPDebitoYCreditoDelProveedorDto>(OPCreditoNuevaLista),
 					GrillaObligacionesNuevas = ObtenerGridCoreSmart<OPDebitoYCreditoDelProveedorDto>(OPDebitoNuevaLista),
 					GrillaRetenciones = new GridCoreSmart<RetencionesDesdeObligYCredDto>(),
 					GrillaValores = new GridCoreSmart<ValoresDesdeObligYCredDto>(),
-					GrillaMedioDePago = ObtenerGridCoreSmart<FormaDePagoDto>(FormaDePagoLista),
+					GrillaMedioDePago = ObtenerGridCoreSmart<CuentaFPDto>(cfp),
 					EsPagoAnticipado = OPDebitoNuevaLista.Count == 0,
+					TieneMediosDePagos = cfp.Count > 0,
 					CuentaObs = cuentaObs,
 				};
 				if (model.EsPagoAnticipado)

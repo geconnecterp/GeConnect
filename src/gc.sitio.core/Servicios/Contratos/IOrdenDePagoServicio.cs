@@ -1,4 +1,5 @@
-﻿using gc.infraestructura.Dtos.Gen;
+﻿using gc.infraestructura.Dtos.Consultas;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
 using gc.infraestructura.Dtos.OrdenDePago.Request;
 
@@ -12,5 +13,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		List<RetencionesDesdeObligYCredDto> CargarRetencionesDesdeObligYCredSeleccionados(CargarRetencionesDesdeObligYCredSeleccionadosRequest r, string token);
 		List<ValoresDesdeObligYCredDto> CargarValoresDesdeObligYCredSeleccionados(CargarValoresDesdeObligYCredSeleccionadosRequest r, string token);
 		RespuestaGenerica<RespuestaDto> ConfirmarOrdenDePagoAProveedor(ConfirmarOPaProveedorRequest r, string token);
+		List<ConsOrdPagoDetExtendDto> ConsultaOrdPagoDetExtend(string op_compte, string token);
 	}
 }

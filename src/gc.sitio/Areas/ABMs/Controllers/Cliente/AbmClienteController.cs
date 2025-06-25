@@ -732,7 +732,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
         /// <param name="tipoDeOperacion"></param>
         /// <returns></returns>
         [HttpPost]
-        public JsonResult DataOpsOtrosContactos([FromBody] OtroContactoAbmValidationModel oc, string destinoDeOperacion, char tipoDeOperacion)
+        public JsonResult DataOpsOtrosContactos(OtroContactoAbmValidationModel oc, string destinoDeOperacion, char tipoDeOperacion)
         {
             try
             {
@@ -1026,7 +1026,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
             return "";
         }
 
-        private string ValidarJsonAntesDeGuardar([FromBody] CuentaAbmValidationModel cuenta, char abm)
+        private string ValidarJsonAntesDeGuardar(CuentaAbmValidationModel cuenta, char abm)
         {
             var abmString = abm.ToString();
             if (abmString == Abm.A.ToString() || abmString == Abm.M.ToString())

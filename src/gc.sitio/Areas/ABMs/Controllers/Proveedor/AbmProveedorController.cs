@@ -685,7 +685,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 		/// <param name="tipoDeOperacion"></param>
 		/// <returns></returns>
 		[HttpPost]
-		public JsonResult DataOpsProveedorFamilia([FromBody] ProveedorFamiliaAbmValidationModel familia, string destinoDeOperacion, char tipoDeOperacion)
+		public JsonResult DataOpsProveedorFamilia(ProveedorFamiliaAbmValidationModel familia, string destinoDeOperacion, char tipoDeOperacion)
 		{
 			try
 			{
@@ -767,7 +767,11 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			var model = new ReasignacionModel();
 
 			if (string.IsNullOrEmpty(ctaId))
+			{
+				model.FamiliaProductos = HelperMvc<ComboGenDto>.ListaGenerica([]);
+				model.ProductosPorFamilia = ObtenerGridCoreSmart<InfoProductoFamiliaDto>([]);
 				return PartialView("_seccionReasignacion", model);
+			}
 
 			var familia = _cuentaServicio.ObtenerProveedoresABMFamiliaLista(ctaId, TokenCookie);
 			if (familia == null)

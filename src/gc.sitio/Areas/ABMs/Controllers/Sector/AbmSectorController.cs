@@ -471,7 +471,12 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			var model = new ReasignacionRubroModel();
 
 			if (string.IsNullOrEmpty(secId))
+			{
+				model.RubroProductos = ComboFamiliaDeProductos([], false);
+				model.RubroProductosAReasignar = ComboFamiliaDeProductos([], false);
+				model.ProductosPorRubro = ObtenerGridCoreSmart<InfoProductoRubroDto>([]);
 				return PartialView("_seccionReasignacion", model);
+			}
 
 			var familia = _sectorServicio.GetRubroParaABM(secId, TokenCookie);
 			if (familia == null)
@@ -480,7 +485,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 			model.RubroProductos = ComboFamiliaDeProductos(familia, true);
 			familia = _sectorServicio.GetRubroParaABM("%", TokenCookie);
 			if (familia == null)
-				model.RubroProductosAReasignar = ComboFamiliaDeProductos([], true);
+				model.RubroProductosAReasignar = ComboFamiliaDeProductos([], false);
 			else
 				model.RubroProductosAReasignar = ComboFamiliaDeProductos(familia, true);
 			model.ProductosPorRubro = ObtenerGridCoreSmart<InfoProductoRubroDto>([]);

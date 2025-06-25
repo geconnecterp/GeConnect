@@ -4,6 +4,7 @@ using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra;
+using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
 using gc.infraestructura.Dtos.OrdenDePago.Request;
@@ -28,8 +29,9 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string AgregarQuitarOPDebitoCreditoDelProveedor = "/CargarSacarOPDebitoCreditoDelProveedor";
 		private const string ObtenerRetencionesDesdeObligYCredSeleccionados = "/CargarRetencionesDesdeObligYCredSeleccionados";
 		private const string ObtenerValoresDesdeObligYCredSeleccionados = "/CargarValoresDesdeObligYCredSeleccionados";
-		private const string ObtenerCuentaFinParaSeleccionDeValores = "/CargarCuentaFinParaSeleccionDeValores";
+		//private const string ObtenerCuentaFinParaSeleccionDeValores = "/CargarCuentaFinParaSeleccionDeValores";
 		private const string GuardarOrdenDePagoAProveedor = "/ConfirmarOrdenDePagoAProveedor";
+		private const string ConsOrdPagoDetExtend = "/ConsultaOrdPagoDetExtend";
 		private readonly AppSettings _appSettings;
 		public OrdenDePagoServicio(IOptions<AppSettings> options, ILogger<OrdenDePagoServicio> logger) : base(options, logger, RutaAPI)
 		{
@@ -243,6 +245,49 @@ namespace gc.sitio.core.Servicios.Implementacion
 				string stringData = response.Content.ReadAsStringAsync().Result;
 				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
 				return new();
+			}
+		}
+
+		public List<ConsOrdPagoDetExtendDto> ConsultaOrdPagoDetExtend(string op_compte, string token)
+		{
+			ApiResponse<List<ConsOrdPagoDetExtendDto>> respuesta;
+			string stringData;
+			try
+			{
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{ConsOrdPagoDetExtend}?op_compte={op_compte}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (!string.IsNullOrEmpty(stringData))
+					{
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<ConsOrdPagoDetExtendDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+					}
+					else
+					{
+						throw new Exception("No se logro obtener la respuesta de la API consulta de orden de pago a proveedor. Verifique.");
+					}
+					return respuesta.Data;
+				}
+				else
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogError($"Error al intentar obtener consulta de orden de pago a proveedor: {stringData}");
+					throw new NegocioException("Hubo un error al intentar obtener consulta de orden de pago a proveedor");
+				}
+
+			}
+			catch (NegocioException)
+			{
+				throw;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar obtener los datos de consulta de orden de pago a proveedor.");
+				throw;
 			}
 		}
 	}

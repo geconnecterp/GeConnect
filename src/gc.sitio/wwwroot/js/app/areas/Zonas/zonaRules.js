@@ -16,6 +16,7 @@ function ejecutarBaja() {
         case 1:
             $("#divFiltro").collapse("hide");
             accionBotones(AbmAction.BAJA);
+            desactivarGrilla(Grids.GridZona);
             break;
        
         default:
@@ -27,6 +28,7 @@ function ejecutarModificacion() {
     $("#divFiltro").collapse("hide");
     accionBotones(AbmAction.MODIFICACION);
     activarControles(true);
+    desactivarGrilla(Grids.GridZona);
     //switch (tabAbm) {
     //    case 2:
     //        activarArbol("#divPerfiles", "#", true)
@@ -62,6 +64,7 @@ function ejecutarAlta() {
 
                 accionBotones(AbmAction.ALTA);
                 activarControles(true);
+                desactivarGrilla(Grids.GridZona);
 
                 CerrarWaiting();
             });

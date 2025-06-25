@@ -20,6 +20,10 @@
 		buscarSectores(pagina);
 	});
 
+	$("#btnCancel").on("click", function () {
+		InicializaPantalla();
+	});
+
 	InicializaPantalla();
 	funcCallBack = buscarSectores;
 	return true;
@@ -77,6 +81,21 @@ function btnSubmitClick() {
 	});
 }
 
+function selectReg(x, gridId) {
+	$("#" + gridId + " tbody tr").each(function (index) {
+		$(this).removeClass("selected-row");
+		$(this).removeClass("selectedEdit-row");
+	});
+	$(x).addClass("selected-row");
+	LimpiarSeleccion();
+}
+
+function LimpiarSeleccion() {
+	BuscarProductosPorRubro("");
+	$("#btnDetalle").prop("disabled", true);
+	$("#divDetalle").collapse("hide");
+}
+
 function CargarProductosPorRubroSeleccionado(secId, rubroSelected) {
 	AbrirWaiting("Aguarde unos instantes mientras buscamos los productos del rubro seleccionado...");
 	var data = { secId, rubroSelected };
@@ -97,6 +116,21 @@ function InicializaPantalla() {
 		$("#divFiltro").collapse("show")
 	}
 
+	$("#divDetalle").collapse("hide");
+	$("#divGrilla").html(`<p style="background-color: gray"><h5> No se han especificado datos aún.</h5 ></p >`);
+	$("#divPaginacion").collapse("hide");
+	$("#divPaginacion").addClass("collapse");
+
+	$("#chkDescr").prop('checked', false);
+	$("#chkDescr").trigger("change");
+	$("#Buscar").val("");
+	$("#Buscar").prop("disabled", true);
+	$("#chkDesdeHasta").prop('checked', false);
+	$("#chkDesdeHasta").trigger("change");
+	$("#Id").val("");
+	$("#Id").prop("disabled", true);
+	$("#Id2").val("");
+	$("#Id2").prop("disabled", true);
 
 	$("#lbChkDescr").text("Denominación");
 	$("#lbDescr").html("Desc");
@@ -105,6 +139,7 @@ function InicializaPantalla() {
 
 	$("#IdSelected").val("");
 	$(".activable").prop("disabled", true);
+	$("#btnDetalle").prop("disabled", true);
 	activarBotones(false);
 	CerrarWaiting();
 	return true;
@@ -212,7 +247,7 @@ function AgregarHandlerAGrillaProdPorRubro() {
 function analizaEstadoBtnDetalle() {
 	var res = $("#divDetalle").hasClass("show");
 	if (res === true) {
-		selectRegProv(regSelected, Grids.GridSector);
+		selectReg(regSelected, Grids.GridSector);
 	}
 	return true;
 
@@ -288,6 +323,8 @@ function buscarSectores(pag, esBaja = false) {
 
 				$("#pagEstado").val(true).trigger("change");
 				$(".activable").prop("disabled", true);
+				$("#divGrilla").removeClass("collapse");
+				$("#divPaginacion").removeClass("collapse");
 			}
 
 		});

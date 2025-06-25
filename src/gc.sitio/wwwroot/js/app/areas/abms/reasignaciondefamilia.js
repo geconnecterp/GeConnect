@@ -19,6 +19,10 @@
 		buscarProveedores(pagina);
 	});
 
+	$("#btnCancel").on("click", function () {
+		InicializaPantalla();
+	});
+
 	InicializaPantalla();
 	funcCallBack = buscarProveedores;
 	return true;
@@ -79,6 +83,22 @@ function btnSubmitClick() {
 function ejecutaDblClickGrid(x, grid) {
 	AbrirWaiting("Espere mientras se busca el producto seleccionado...");
 	selectRegDbl(x, grid);
+}
+
+function selectReg(x, gridId) {
+	$("#" + gridId + " tbody tr").each(function (index) {
+		$(this).removeClass("selected-row");
+		$(this).removeClass("selectedEdit-row");
+	});
+	$(x).addClass("selected-row");
+	LimpiarSeleccion();
+}
+
+function LimpiarSeleccion() {
+	BuscarProductosPorFamilia("");
+	$("#btnDetalle").prop("disabled", true);
+	$("#divDetalle").collapse("hide");
+
 }
 
 function selectRegDbl(x, gridId) {
@@ -169,7 +189,7 @@ function actualizarListaDeProductos() {
 function analizaEstadoBtnDetalle() {
 	var res = $("#divDetalle").hasClass("show");
 	if (res === true) {
-		selectRegProv(regSelected, Grids.GridProveedor);
+		selectReg(regSelected, Grids.GridProveedor);
 	}
 	return true;
 
@@ -180,6 +200,12 @@ function InicializaPantalla() {
 	if (tb.length === 0) {
 		$("#divFiltro").collapse("show")
 	}
+	$("#divDetalle").collapse("hide");
+	$("#divGrilla").html(`<p style="background-color: gray"><h5> No se han especificado datos aún.</h5 ></p >`);
+	//$("#divGrilla").collapse("hide");
+	//$("#divGrilla").addClass("collapse");
+	$("#divPaginacion").collapse("hide");
+	$("#divPaginacion").addClass("collapse");
 
 	$("#lbRel01").text("TIPO OPE");
 
@@ -195,7 +221,23 @@ function InicializaPantalla() {
 	$("#lbChkDesdeHasta").text("ID Cuenta");
 
 	$("#IdSelected").val("");
+	$("#chkDescr").prop('checked', false);
+	$("#chkDescr").trigger("change");
+	$("#Buscar").val("");
+	$("#Buscar").prop("disabled", true);
+	$("#chkDesdeHasta").prop('checked', false);
+	$("#chkDesdeHasta").trigger("change");
+	$("#Id").val("");
+	$("#Id").prop("disabled", true);
+	$("#Id2").val("");
+	$("#Id2").prop("disabled", true);
+	$("#chkRel01").prop('checked', false);
+	$("#chkRel01").trigger("change");
+	$("#Rel01").val("");
+	$("#Rel01").prop("disabled", true);
+	//
 	$(".activable").prop("disabled", true);
+	$("#btnDetalle").prop("disabled", true);
 	activarBotones(false);
 	CerrarWaiting();
 	return true;
@@ -267,6 +309,8 @@ function buscarProveedores(pag, esBaja = false) {
 
 				$("#pagEstado").val(true).trigger("change");
 				$(".activable").prop("disabled", true);
+				$("#divGrilla").removeClass("collapse");
+				$("#divPaginacion").removeClass("collapse");
 			}
 
 		});

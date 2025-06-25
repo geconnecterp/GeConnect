@@ -3,6 +3,7 @@ using gc.api.core.Contratos.Servicios;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
 using gc.infraestructura.Dtos.OrdenDePago.Request;
@@ -22,14 +23,16 @@ namespace gc.api.Controllers.OrdenDePago
 		private readonly IMapper _mapper;
 		private readonly IUriService _uriService;
 		private readonly IOrdenDePagoServicio _ordenDePagoServicio;
+		private readonly IConsultaServicio _consultaServicio;
 		private readonly ILogger<ApiOrdenDePagoController> _logger;
 
-		public ApiOrdenDePagoController(IOrdenDePagoServicio ordenDePagoServicio, IMapper mapper, IUriService uriService, ILogger<ApiOrdenDePagoController> logger)
+		public ApiOrdenDePagoController(IOrdenDePagoServicio ordenDePagoServicio, IConsultaServicio consultaServicio, IMapper mapper, IUriService uriService, ILogger<ApiOrdenDePagoController> logger)
 		{
 			_mapper = mapper;
 			_uriService = uriService;
 			_logger = logger;
 			_ordenDePagoServicio = ordenDePagoServicio;
+			_consultaServicio = consultaServicio;
 		}
 
 		[HttpGet]

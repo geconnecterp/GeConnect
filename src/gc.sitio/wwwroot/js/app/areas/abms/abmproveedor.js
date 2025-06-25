@@ -7,6 +7,8 @@
 	$(document).on("change", "#listaAfip", controlaValorAfip);
 	$(document).on("change", "#listaProvi", controlaValorProvi);
 	$(document).on("change", "#listaFP", controlaValorFP);
+	$(document).on("keyup", "#FormaDePago_Fp_Dias", controlaKeyUpFP);
+	$(document).on("focusout", "#FormaDePago_Fp_Dias", controlaFocusOutFP);
 
 	$(document).on("dblclick", "#" + Grids.GridProveedor + " tbody tr", function () {
 		x = $(this);
@@ -34,7 +36,7 @@
 
 	$("#btnDetalle").prop("disabled", true);
 	$("#btnCancel").on("click", function () {
-		$("#btnFiltro").trigger("click");
+		InicializaPantallaAbmProveedor();
 	});
 	$("#btnBuscar").on("click", function () {
 		//es nueva la busqueda no resguardamos la busqueda anterior. es util para paginado
@@ -52,6 +54,15 @@
 	funcCallBack = buscarProveedores;
 	return true;
 });
+
+function controlaKeyUpFP(e) { }
+
+function controlaFocusOutFP(x) {
+	var value = $("#FormaDePago_Fp_Dias").val();
+	if (value > 360) {
+		$("#FormaDePago_Fp_Dias").val(360);
+	}
+}
 
 function activarControles(band) { }
 
@@ -156,6 +167,11 @@ function InicializaPantallaAbmProveedor() {
 		$("#divFiltro").collapse("show")
 	}
 
+	$("#divDetalle").collapse("hide");
+	$("#divGrilla").html(`<p style="background-color: gray"><h5> No se han especificado datos aún.</h5 ></p >`);
+	$("#divPaginacion").collapse("hide");
+	$("#divPaginacion").addClass("collapse");
+
 	$("#lbRel01").text("TIPO OPE");
 
 	$("#chkRel02").hide();
@@ -167,10 +183,29 @@ function InicializaPantallaAbmProveedor() {
 	$("#lbChkDescr").text("Denominación");
 	$("#lbDescr").html("Desc");
 
+	$("#chkDescr").prop('checked', false);
+	$("#chkDescr").trigger("change");
+	$("#Buscar").val("");
+	$("#Buscar").prop("disabled", true);
+	$("#chkDesdeHasta").prop('checked', false);
+	$("#chkDesdeHasta").trigger("change");
+	$("#Id").val("");
+	$("#Id").prop("disabled", true);
+	$("#Id2").val("");
+	$("#Id2").prop("disabled", true);
+
+	$("#chkRel01").prop('checked', false);
+	$("#chkRel01").trigger("change");
+	$("#Rel01").val("");
+	$("#Rel01").prop("disabled", true);
+
+	$("#Rel01List").empty();
+
 	$("#lbChkDesdeHasta").text("ID Cuenta");
 
 	$("#IdSelected").val("");
 	$(".activable").prop("disabled", true);
+	$("#btnDetalle").prop("disabled", true);
 	activarBotones(false);
 	CerrarWaiting();
 	return true;
@@ -257,6 +292,8 @@ function buscarProveedores(pag, esBaja = false) {
 
 				$("#pagEstado").val(true).trigger("change");
 				$(".activable").prop("disabled", true);
+				$("#divGrilla").removeClass("collapse");
+				$("#divPaginacion").removeClass("collapse");
 			}
 
 		});
@@ -316,6 +353,18 @@ function selectRegProv(e, gridId) {
 		case Grids.GridFlias:
 			break;
 		default:
+	}
+}
+
+function selectReg(x, gridId) {
+	$("#" + gridId + " tbody tr").each(function (index) {
+		$(this).removeClass("selected-row");
+		$(this).removeClass("selectedEdit-row");
+	});
+	$(x).addClass("selected-row");
+	if (gridId == Grids.GridProveedor) {
+		$("#btnDetalle").prop("disabled", true);
+		$("#divDetalle").collapse("hide");
 	}
 }
 
@@ -449,6 +498,9 @@ function controlaValorFP() {
 		$("#FormaDePago_Cta_Bco_Cuenta_Cbu").prop("disabled", false);
 		$("#FormaDePago_Cta_Bco_Cuenta_Cbu").show();
 		$("#Cta_Bco_Cuenta_Cbu_Lbl").show();
+		$("#listaTipoCueBco_Lbl").show();
+		$("#listaTipoCueBco").prop("disabled", false);
+		$("#listaTipoCueBco").show();
 	}
 	else {
 		$("#listaTipoCueBco").prop("disabled", true);
@@ -460,6 +512,9 @@ function controlaValorFP() {
 		$("#FormaDePago_Cta_Bco_Cuenta_Cbu").prop("disabled", true);
 		$("#FormaDePago_Cta_Bco_Cuenta_Cbu").hide();
 		$("#Cta_Bco_Cuenta_Cbu_Lbl").hide();
+		$("#listaTipoCueBco_Lbl").hide();
+		$("#listaTipoCueBco").prop("disabled", true);
+		$("#listaTipoCueBco").hide();
 	}
 	if ($("#listaFP option:selected").val() === "H") {
 		$("#FormaDePago_Cta_Valores_A_Nombre").prop("disabled", false);

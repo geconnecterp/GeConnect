@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System.Reflection;
 
 namespace gc.api.Controllers.Consultas
 {
@@ -221,5 +222,18 @@ namespace gc.api.Controllers.Consultas
             var regs = _consSv.ConsultaRecepcionProveedorDetalle(cmptId);
             return Ok(new ApiResponse<List<ConsRecepcionProveedorDetalleDto>>(regs));
         }
-    }
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult ConsultaOrdPagoDetExtend(string opCompte)
+		{
+			if (string.IsNullOrEmpty(opCompte))
+			{
+				return BadRequest("No se recepcionó ningún comprobante");
+			}
+			
+            var res = _consSv.ConsultaOrdenDePagoProveedor(opCompte);
+			return Ok(new ApiResponse<List<ConsOrdPagoDetExtendDto>>(res));
+		}
+	}
 }

@@ -10,6 +10,9 @@
 	$(document).on("click", "#chkIbCertActiva", controlaCertIb);
 	$(document).on("click", "#chkCtaEmpActiva", controlaCtaEmp);
 	$(document).on("change", "#listaFP", controlaValorFP);
+	$(document).on("keyup", "#FormaDePago_Fp_Dias", controlaKeyUpFP);
+	$(document).on("focusout", "#FormaDePago_Fp_Dias", controlaFocusOutFP);
+	//focusout
 
 	$(document).on("dblclick", "#" + Grids.GridCliente + " tbody tr", function () {
 		x = $(this);
@@ -34,7 +37,8 @@
 
 	$("#btnDetalle").prop("disabled", true);
 	$("#btnCancel").on("click", function () {
-		$("#btnFiltro").trigger("click");
+		//$("#btnFiltro").trigger("click");
+		InicializaPantallaAbmCliente();
 	});
 	$("#btnBuscar").on("click", function () {
 		//es nueva la busqueda no resguardamos la busqueda anterior. es util para paginado
@@ -52,6 +56,15 @@
 	funcCallBack = buscarClientes;
 	return true;
 });
+
+function controlaKeyUpFP(e) { }
+
+function controlaFocusOutFP(x) {
+	var value = $("#FormaDePago_Fp_Dias").val();
+	if (value > 360) {
+		$("#FormaDePago_Fp_Dias").val(360);
+	}
+}
 
 function activarControles(band) { }
 function SeteaIDClienteSelected() {
@@ -76,6 +89,9 @@ function controlaValorFP() {
 		$("#FormaDePago_Cta_Bco_Cuenta_Cbu").prop("disabled", false);
 		$("#FormaDePago_Cta_Bco_Cuenta_Cbu").show();
 		$("#Cta_Bco_Cuenta_Cbu_Lbl").show();
+		$("#listaTipoCueBco_Lbl").show();
+		$("#listaTipoCueBco").prop("disabled", false);
+		$("#listaTipoCueBco").show();
 	}
 	else {
 		$("#listaTipoCueBco").prop("disabled", true);
@@ -87,6 +103,9 @@ function controlaValorFP() {
 		$("#FormaDePago_Cta_Bco_Cuenta_Cbu").prop("disabled", true);
 		$("#FormaDePago_Cta_Bco_Cuenta_Cbu").hide();
 		$("#Cta_Bco_Cuenta_Cbu_Lbl").hide();
+		$("#listaTipoCueBco_Lbl").hide();
+		$("#listaTipoCueBco").prop("disabled", true);
+		$("#listaTipoCueBco").hide();
 	}
 	if ($("#listaFP option:selected").val() === "H") {
 		$("#FormaDePago_Cta_Valores_A_Nombre").prop("disabled", false);
@@ -149,6 +168,11 @@ function InicializaPantallaAbmCliente() {
 		$("#divFiltro").collapse("show")
 	}
 
+	$("#divDetalle").collapse("hide");
+	$("#divGrilla").html(`<p style="background-color: gray"><h5> No se han especificado datos aún.</h5 ></p >`);
+	$("#divPaginacion").collapse("hide");
+	$("#divPaginacion").addClass("collapse");
+
 	$("#lbRel01").text("TIPO");
 	$("#lbRel02").text("ZONA");
 
@@ -157,8 +181,32 @@ function InicializaPantallaAbmCliente() {
 
 	$("#lbChkDesdeHasta").text("ID Cuenta");
 
+	$("#chkDescr").prop('checked', false);
+	$("#chkDescr").trigger("change");
+	$("#Buscar").val("");
+	$("#Buscar").prop("disabled", true);
+	$("#chkDesdeHasta").prop('checked', false);
+	$("#chkDesdeHasta").trigger("change");
+	$("#Id").val("");
+	$("#Id").prop("disabled", true);
+	$("#Id2").val("");
+	$("#Id2").prop("disabled", true);
+
+	$("#chkRel01").prop('checked', false);
+	$("#chkRel01").trigger("change");
+	$("#Rel01").val("");
+	$("#Rel01").prop("disabled", true);
+	$("#chkRel02").prop('checked', false);
+	$("#chkRel02").trigger("change");
+	$("#Rel02").val("");
+	$("#Rel02").prop("disabled", true);
+
+	$("#Rel01List").empty();
+	$("#Rel02List").empty();
+
 	$("#IdSelected").val("");
 	$(".activable").prop("disabled", true);
+	$("#btnDetalle").prop("disabled", true);
 	activarBotones(false);
 	CerrarWaiting();
 	return true;
@@ -249,6 +297,8 @@ function buscarClientes(pag, esBaja = false) {
 
 				$("#pagEstado").val(true).trigger("change");
 				$(".activable").prop("disabled", true);
+				$("#divGrilla").removeClass("collapse");
+				$("#divPaginacion").removeClass("collapse");
 			}
 
 		});
@@ -258,6 +308,18 @@ function buscarClientes(pag, esBaja = false) {
 		CerrarWaiting();
 	});
 
+}
+
+function selectReg(x, gridId) {
+	$("#" + gridId + " tbody tr").each(function (index) {
+		$(this).removeClass("selected-row");
+		$(this).removeClass("selectedEdit-row");
+	});
+	$(x).addClass("selected-row");
+	if (gridId == Grids.GridCliente) {
+		$("#btnDetalle").prop("disabled", true);
+		$("#divDetalle").collapse("hide");
+	}
 }
 
 function BuscarCliente(ctaId) {
