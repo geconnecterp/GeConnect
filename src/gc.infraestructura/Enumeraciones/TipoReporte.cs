@@ -27,6 +27,7 @@ namespace gc.infraestructura.Enumeraciones
         R012_ResumenLibroMayorContable = 12,
         R013_LibroDiarioXCuenta = 13,
         R014_BalanceSumasSaldos = 14,
-        R015_LibroDiarioResumen = 15
+        R015_LibroDiarioResumen = 15,
+        R016_BalanceGeneral = 16,
     }
 }

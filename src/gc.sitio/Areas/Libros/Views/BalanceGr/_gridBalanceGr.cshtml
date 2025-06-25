@@ -1,0 +1,71 @@
+﻿@model GridCoreSmart<BalanseGrDto>
+@{
+    var alt = true;
+    string clase = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+    string leyend = ViewBag.Leyenda;
+
+}
+
+<div class="grid-golden">
+    <div class="grid-golden-header">
+        <div class="row align-items-md-center">
+            <div class="col-md-8 col-sm-6">
+                <h5 class="mb-0">
+                    <i class="bx bx-book-open me-2"></i>
+                    <strong>@leyend</strong>
+                </h5>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="d-flex justify-content-sm-end">
+                    <!-- Botón Imprimir -->
+                    <button type="button" class="btn btn-golden btn-sm mt-1 me-1 btnImprimir" title="Imprimir">
+                        <i class="bx bx-printer"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid-golden-body">
+        <div class="table-responsive text-nowrap table-wrapper">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbBSS">
+                <thead>
+                    <tr class="header">
+                        <th class="text-sm-center" scope="col">Cuenta</th>
+                        <th class="text-sm-center" scope="col">Denominación</th>
+                        <th class="text-sm-center" scope="col">Id Padre</th>
+                        <th class="text-sm-center text-end" scope="col">Debe</th>
+                        <th class="text-sm-center text-end" scope="col">Haber</th>
+                        <th class="text-sm-center text-end" scope="col">Saldo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.ListaDatos == null || Model.ListaDatos.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center">No se han encontrado movimientos para los criterios especificados.</td>
+                        </tr>
+                    }
+                    else
+                    {                        
+                        // Filas de datos
+                        @foreach (var item in Model.ListaDatos)
+                        {
+                            decimal saldo = item.Debe - item.Haber;
+                            if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
+                            <tr class="@clase" data-ccb-id="@item.Ccb_id" onclick="selectReg(this,'tbBSS')">
+                                <td class="@Model.ObtenerClase(item.Ccb_id)">@Model.FormatearDato(item.Ccb_id, FormatDato.Ninguno)</td>
+                                <td class="@Model.ObtenerClase(item.Ccb_desc)">@Model.FormatearDato(item.Ccb_desc, FormatDato.Ninguno)</td>
+                                <td class="@Model.ObtenerClase(item.Ccb_id_padre)">@Model.FormatearDato(item.Ccb_id_padre, FormatDato.Ninguno)</td>
+                                <td class="@Model.ObtenerClase(item.Debe)">@Model.FormatearDato(item.Debe, FormatDato.Monto)</td>
+                                <td class="@Model.ObtenerClase(item.Haber) text-end">@Model.FormatearDato(item.Haber, FormatDato.Monto)</td>
+                                <td class="@Model.ObtenerClase(saldo) text-end @(saldo < 0 ? "importe-negativo" : "")">@Model.FormatearDato(saldo, FormatDato.Monto)</td>                                
+                            </tr>
+                        }                      
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>    
+</div>
