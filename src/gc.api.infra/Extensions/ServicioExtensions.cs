@@ -107,6 +107,7 @@ namespace gc.api.infra.Extensions
             services.AddScoped<IApiLMayorServicio, ApiLMayorServicio>();
             services.AddScoped<IApiLDiarioServicio, ApiLDiarioServicio>();
             services.AddScoped<IApiSumaSaldoServicio, ApiSumaSaldoServicio>();
+            services.AddScoped<IApiBalanceGeneralServicio, ApiBalanceGeneralServicio>();
             //De Reportes
 
             services.AddScoped<IReportService, ReportService>();
