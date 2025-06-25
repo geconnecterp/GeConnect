@@ -25,6 +25,7 @@ namespace gc.api.core.Servicios.Reportes
             IApiLMayorServicio apiLMayor,
             IApiLDiarioServicio ldSv,
             IApiSumaSaldoServicio apiBSS,
+            IApiBalanceGeneralServicio apiBgr,
              IOptions<EmpresaGeco> empresa, ICuentaServicio ctaSv, ILogger<ReportService> logger) : base(uow)
         {
 
@@ -46,6 +47,8 @@ namespace gc.api.core.Servicios.Reportes
                 { InfoReporte.R013_LibroDiarioXCuenta, new R013_LibroDiarioXCuenta(uow,ldSv,empresa,ctaSv, logger) },
                 { InfoReporte.R014_BalanceSumasSaldos, new R014_BalanceSumasSaldos(uow,apiBSS,empresa,ctaSv, logger) },
                 { InfoReporte.R015_LibroDiarioResumen, new R015_LibroDiarioResumen(uow,ldSv,empresa,ctaSv, logger) },
+                { InfoReporte.R016_BalanceGeneral, new R016_BalanceGeneral(uow,apiBgr,empresa,ctaSv, logger) },
+                
             }; 
             _logger = logger;
         }

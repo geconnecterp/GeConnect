@@ -8,6 +8,7 @@
         LMAYOR, //LIBRO MAYOR,
         BSS, //BALANCE SUMA SALDOS
         LDIARIO, //LIBRO DIARIO
+        BGR, //BALANCE GENERAL
     }
 
     public enum AppReportes

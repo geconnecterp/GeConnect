@@ -3,45 +3,46 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Asientos;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Libros;
+using gc.infraestructura.EntidadesComunes;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Enumeraciones;
 using gc.sitio.core.Servicios.Contratos.Asientos;
 using gc.sitio.core.Servicios.Contratos.DocManager;
 using gc.sitio.core.Servicios.Contratos.Libros;
+using gc.sitio.core.Servicios.Implementacion.Libros;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
 namespace gc.sitio.Areas.Libros.Controllers
 {
     [Area("Libros")]
-    public class DiarioController : MayorBase
+    public class BalanceGrController : MayorBase
     {
         private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
         private AppModulo _modulo; //tengo el AppModulo que corresponde a la consulta de cuentas
-        private string APP_MODULO = AppModulos.LDIARIO.ToString();
+        private string APP_MODULO = AppModulos.BGR.ToString();
         private readonly AppSettings _appSettings;
 
         private readonly IAsientoFrontServicio _asientoServicio;
+        private readonly IBalanceGrServicio _bgrServicio;
         private readonly IDocManagerServicio _docMSv;
-        private readonly ILibroDiarioServicio _ldiarioServicio;
-
-        public DiarioController(
-              IOptions<AppSettings> options, IOptions<DocsManager> docsManager,
-              IHttpContextAccessor contexto,
-              ILogger<MayorController> logger,
-              IAsientoFrontServicio asientoServicio,
-              IDocManagerServicio docManager,
-              ILibroDiarioServicio libroDiarioServicio
-            ) : base(options, contexto, logger)
+        public BalanceGrController(
+            IOptions<AppSettings> options,
+            IOptions<DocsManager> docsManager,
+            IHttpContextAccessor contexto,
+            ILogger<BSSController> logger,
+            IDocManagerServicio docManager,
+            IBalanceGrServicio bgrServicio,
+            IAsientoFrontServicio asientoFront) : base(options, contexto, logger)
         {
-            _asientoServicio = asientoServicio;
             _appSettings = options.Value;
             _docsManager = docsManager.Value;
+            _asientoServicio = asientoFront;
+            _bgrServicio = bgrServicio;
             _modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO);
             _docMSv = docManager;
-            _ldiarioServicio = libroDiarioServicio;
         }
+
 
         public async Task<IActionResult> Index()
         {
@@ -51,7 +52,7 @@ namespace gc.sitio.Areas.Libros.Controllers
                 if (!VerificarAutenticacion(out IActionResult redirectResult))
                     return redirectResult;
 
-                string titulo = "Libro Diario";
+                string titulo = "Balance General ";
                 ViewData["Titulo"] = titulo;
 
                 #region Gestor Impresion - Inicializacion de variables
@@ -134,7 +135,7 @@ namespace gc.sitio.Areas.Libros.Controllers
         /// <param name="query">Parámetros de filtro</param>
         /// <returns>Vista parcial con el grid o mensaje de error</returns>
         [HttpPost]
-        public async Task<IActionResult> ObtenerLD(LDiarioRequest query, string sort = "Eje_nro", string sortDir = "asc", int pagina = 1)
+        public async Task<IActionResult> ObtenerBgr(int eje_nro)
         {
             RespuestaGenerica<EntidadBase> response = new();
 
@@ -144,18 +145,8 @@ namespace gc.sitio.Areas.Libros.Controllers
                 if (!VerificarAutenticacion(out IActionResult redirectResult))
                     return redirectResult;
 
-                // Validar el filtro recibido
-                if (query == null)
-                {
-                    return PartialView("_gridMensaje", new RespuestaGenerica<EntidadBase>
-                    {
-                        Ok = false,
-                        Mensaje = "El filtro no puede ser nulo."
-                    });
-                }
-
                 // Validar parámetros obligatorios
-                if (query.Eje_nro <= 0)
+                if (eje_nro <= 0)
                 {
                     return PartialView("_gridMensaje", new RespuestaGenerica<EntidadBase>
                     {
@@ -165,132 +156,32 @@ namespace gc.sitio.Areas.Libros.Controllers
                 }
 
 
-                // Configurar los parámetros de paginación y ordenamiento
-                query.Orden = sort;
-                query.Regs = _appSettings.NroRegistrosPagina;
-                query.Pagina = pagina;
 
                 // Llamar al servicio para obtener el libro mayor
-                var res = await _ldiarioServicio.ObtenerAsientosLibroDiario(query, Token);
+                var res = await _bgrServicio.ObtenerBalanceGeneral(eje_nro, Token);
 
-                if (res.Item1.Count == 0)
+                if (res.Count == 0)
                 {
-                    throw new NegocioException($"No se encontraron registros para el Libro Diario en el Ejercicio {query.Eje_nro}");
+                    throw new NegocioException($"No se encontraron registros para el Balance General del Ejercicio {eje_nro}");
                 }
-
-                LibroDiario = res.Item1; // Asignar la lista de Libro Mayor
-                var lista = res.Item1.OrderBy(x => x.Dia_movi).ToList();
-                MetadataGeneral = res.Item2;
-
-                // Crear el grid para la vista
-                var grid = GenerarGrillaSmart(
-                    lista,
-                    query.Orden,
-                    _appSettings.NroRegistrosPagina,
-                    pagina,
-                    lista.Count,
-                     (int)Math.Ceiling((double)lista.Count / _appSettings.NroRegistrosPagina), // Total de páginas
-                    string.Empty
-                );
-                string leyenda = $"Ejercicio {query.Eje_nro} - Desde {query.Desde.ToShortDateString()} al {query.Hasta.ToShortDateString()} - Libro Diario";
 
                 
-
-                ViewBag.Leyenda = $"{leyenda}";
-                return PartialView("_gridLibroDiario", grid);
-            }
-            catch (NegocioException ex)
-            {
-                _logger?.LogError(ex, ex.Message);
-
-                string msg = ex.Message;
-                _logger?.LogError(ex, msg);
-                response.Mensaje = msg;
-                response.Ok = false;
-                response.EsWarn = true;
-                response.EsError = false;
-                return PartialView("_gridMensaje", response);
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError(ex, "Error al obtener el Balance SS: {Mensaje}", ex.Message);
-
-                string msg = "Error al obtener el Balance de SS";
-                _logger?.LogError(ex, msg);
-                response.Mensaje = msg;
-                response.Ok = false;
-                response.EsWarn = false;
-                response.EsError = true;
-                return PartialView("_gridMensaje", response);
-            }
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> ObtenerLDResumen(LDiarioRequest query, string sort = "Eje_nro", string sortDir = "asc", int pagina = 1)
-        {
-            RespuestaGenerica<EntidadBase> response = new();
-
-            try
-            {
-                // Verificar autenticación
-                if (!VerificarAutenticacion(out IActionResult redirectResult))
-                    return redirectResult;
-
-                // Validar el filtro recibido
-                if (query == null)
-                {
-                    return PartialView("_gridMensaje", new RespuestaGenerica<EntidadBase>
-                    {
-                        Ok = false,
-                        Mensaje = "El filtro no puede ser nulo."
-                    });
-                }
-
-                // Validar parámetros obligatorios
-                if (query.Eje_nro <= 0)
-                {
-                    return PartialView("_gridMensaje", new RespuestaGenerica<EntidadBase>
-                    {
-                        Ok = false,
-                        Mensaje = "Debe seleccionar un ejercicio contable válido."
-                    });
-                }
-
-
-                // Configurar los parámetros de paginación y ordenamiento
-                query.Orden = sort;
-                query.Regs = _appSettings.NroRegistrosPagina;
-                query.Pagina = pagina;
-
-                // Llamar al servicio para obtener el libro mayor
-                var res = await _ldiarioServicio.ObtenerAsientosLibroDiarioResumen(query, Token);
-
-                if (res.Item1.Count == 0)
-                {
-                    throw new NegocioException($"No se encontraron registros para el Libro Diario en el Ejercicio {query.Eje_nro}");
-                }
-
-               
-                var lista = res.Item1.OrderBy(x => x.Dia_tipo).ToList();
-                //MetadataGeneral = res.Item2;
+                var lista = res.OrderBy(x => x.Ccb_id).ToList();
 
                 // Crear el grid para la vista
                 var grid = GenerarGrillaSmart(
                     lista,
-                    query.Orden,
-                    _appSettings.NroRegistrosPagina,
-                    pagina,
+                    "ccb_id",
+                    9999999,
+                    1,
                     lista.Count,
                      (int)Math.Ceiling((double)lista.Count / _appSettings.NroRegistrosPagina), // Total de páginas
-                    string.Empty
+                    ""
                 );
-
-                grid.MetadataGeneral = res.Item2; // Asignar metadata del grid
-
-                string leyenda = $"Ejercicio {query.Eje_nro} - Desde {query.Desde.ToShortDateString()} al {query.Hasta.ToShortDateString()} - Libro Diario";
+                string leyenda = $"Ejercicio {eje_nro} - Balance General";
 
                 ViewBag.Leyenda = $"{leyenda}";
-                return PartialView("_gridLibroDiarioResumen", grid);
+                return PartialView("_gridBalanceGr", grid);
             }
             catch (NegocioException ex)
             {

@@ -368,7 +368,8 @@ namespace gc.api.core.Constantes
             #region MyRegion
             public const string SP_LIBRO_MAYOR_LISTA = "SPGECO_Conta_Libro_Mayor";
             public const string SP_BALANCE_SS_LISTA = "SPGECO_Conta_BSS";
-            
+            public const string SP_BALANCE_GR_LISTA = "SPGECO_Conta_BGRL";
+
             #endregion
         }
     }

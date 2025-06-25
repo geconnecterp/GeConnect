@@ -1,10 +1,11 @@
 ﻿@model QueryAsiento
 @{
     string etiqueta = (Model.Modelo == ModeloFilter.BSS || Model.Modelo == ModeloFilter.LDIARIO) ? "Fechas Asiento" : "Rango de Fechas";
+    string titulo = ViewBag.Titulo;
 }
 <div class="card card-golden">
     <div class="card-header mb-2">
-        <h5 class="mb-0">Filtros para Libro Mayor</h5>
+        <h5 class="mb-0">Filtros para @titulo</h5>
     </div>
     <div class="card-body">
         <!-- Contenido existente con mejoras de estilo -->
@@ -15,17 +16,20 @@
                         <input class="form-check-input" type="checkbox" id="chkEjercicio" checked disabled>
                         <label class="form-check-label fw-medium" for="chkEjercicio">Ejercicio</label>
                     </div>
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="chkIncluirTemp">
-                        <label class="form-check-label fw-medium" for="chkIncluirTemp">Incluir asientos temporales</label>
-                    </div>
+                    @if (Model.Modelo != ModeloFilter.BGR)
+                    {
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="chkIncluirTemp">
+                            <label class="form-check-label fw-medium" for="chkIncluirTemp">Incluir asientos temporales</label>
+                        </div>
+                    }
                 </div>
                 @Html.DropDownList("Eje_nro", ViewBag.ListaEjercicios as SelectList,
-                                           new
-                                           {
-                                               @class = "form-control inputEditable",
-                                               style = "background-color:rgb(251,255,195);font-weight:900;"
-                                           })
+                         new
+                         {
+                             @class = "form-control inputEditable",
+                             style = "background-color:rgb(251,255,195);font-weight:900;"
+                         })
 
                 <input type="hidden" id="incluirTemporales" value="false" />
             </div>
@@ -50,47 +54,13 @@
                 </div>
             }
         </div>
-
-        <div class="row mb-3">
-            <div class="col-md-12">
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="Rango">
-                    <label class="form-check-label fw-medium" for="Rango">@etiqueta</label>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-6">
-                <div class="mb-3">
-                    <label for="fechaDesde" class="form-label small text-muted">Desde</label>
-                    <input type="text" class="form-control form-control-sm datepicker" 
-                    name="Desde" id="fechaDesde" 
-                    placeholder="DD/MM/YYYY"
-                    data-date-format="dd/MM/yyyy"
-                    data-date-language="es" 
-                    disabled>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="mb-3">
-                    <label for="fechaHasta" class="form-label small text-muted">Hasta</label>
-                    <input type="text" class="form-control form-control-sm datepicker" 
-                    name="Hasta" id="fechaHasta" 
-                    placeholder="DD/MM/YYYY" 
-                    data-date-format="dd/MM/yyyy"
-                    data-date-language="es"
-                    disabled>
-                </div>
-            </div>
-        </div>
-        @if (Model.Modelo == ModeloFilter.LDIARIO)
+        @if (Model.Modelo != ModeloFilter.BGR)
         {
             <div class="row mb-3">
                 <div class="col-md-12">
                     <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="RangoFC">
-                        <label class="form-check-label fw-medium" for="Rango">Fecha Carga</label>
+                        <input class="form-check-input" type="checkbox" id="Rango">
+                        <label class="form-check-label fw-medium" for="Rango">@etiqueta</label>
                     </div>
                 </div>
             </div>
@@ -100,7 +70,7 @@
                     <div class="mb-3">
                         <label for="fechaDesde" class="form-label small text-muted">Desde</label>
                         <input type="text" class="form-control form-control-sm datepicker"
-                               name="DesdeFC" id="fechaDesdeFC"
+                               name="Desde" id="fechaDesde"
                                placeholder="DD/MM/YYYY"
                                data-date-format="dd/MM/yyyy"
                                data-date-language="es"
@@ -111,7 +81,7 @@
                     <div class="mb-3">
                         <label for="fechaHasta" class="form-label small text-muted">Hasta</label>
                         <input type="text" class="form-control form-control-sm datepicker"
-                               name="HastaFC" id="fechaHastaFC"
+                               name="Hasta" id="fechaHasta"
                                placeholder="DD/MM/YYYY"
                                data-date-format="dd/MM/yyyy"
                                data-date-language="es"
@@ -119,9 +89,46 @@
                     </div>
                 </div>
             </div>
+            @if (Model.Modelo == ModeloFilter.LDIARIO)
+            {
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="RangoFC">
+                            <label class="form-check-label fw-medium" for="Rango">Fecha Carga</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="fechaDesde" class="form-label small text-muted">Desde</label>
+                            <input type="text" class="form-control form-control-sm datepicker"
+                                   name="DesdeFC" id="fechaDesdeFC"
+                                   placeholder="DD/MM/YYYY"
+                                   data-date-format="dd/MM/yyyy"
+                                   data-date-language="es"
+                                   disabled>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="fechaHasta" class="form-label small text-muted">Hasta</label>
+                            <input type="text" class="form-control form-control-sm datepicker"
+                                   name="HastaFC" id="fechaHastaFC"
+                                   placeholder="DD/MM/YYYY"
+                                   data-date-format="dd/MM/yyyy"
+                                   data-date-language="es"
+                                   disabled>
+                        </div>
+                    </div>
+                </div>
+            }
         }
+
     </div>
-   @*  <div class="card-footer bg-white border-top d-flex justify-content-end">
+    @*  <div class="card-footer bg-white border-top d-flex justify-content-end">
         <button type="button" id="btnBuscar" class="btn btn-sm btn-primary me-2">
             <i class="bx bx-search-alt me-1"></i>Buscar
         </button>

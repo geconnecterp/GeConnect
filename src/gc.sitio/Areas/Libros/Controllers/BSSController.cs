@@ -6,14 +6,10 @@ using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Enumeraciones;
-using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos.Asientos;
 using gc.sitio.core.Servicios.Contratos.DocManager;
 using gc.sitio.core.Servicios.Contratos.Libros;
-using gc.sitio.core.Servicios.Implementacion.Libros;
-using log4net;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Options;
 
 namespace gc.sitio.Areas.Libros.Controllers
