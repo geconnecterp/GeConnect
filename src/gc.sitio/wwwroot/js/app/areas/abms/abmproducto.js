@@ -27,9 +27,15 @@
         x = $(this);
         ejecutaDblClickGrid2(x);
     });
+    //$(document).on("dblclick", "#" + tabGrid03 + " tbody tr", function () {
+    //    x = $(this);
+    //    ejecutaDblClickGrid3(x);
+    //});
     $(document).on("dblclick", "#" + tabGrid03 + " tbody tr", function () {
         x = $(this);
-        ejecutaDblClickGrid3(x);
+        //se resguarda el registro de la tabla
+        regSelected = x;
+        ejecutaDblClickGridLIm(x);
     });
 
 
@@ -162,6 +168,7 @@
     $("#BtnLiTab02").on("click", presentarBarrado);
     $("#BtnLiTab03").on("click", presentarLimites);
 
+    
 
     InicializaPantallaAbmProd("tbGridProd");
 
@@ -171,6 +178,11 @@
     /*    AbrirWaiting();*/
     return true;
 });
+
+function ejecutaDblClickGridLIm(x) {
+    AbrirWaiting("Espere mientras se busca el Vendedor solicitado...");
+    selectAbmRegDbl(x, tabGrid03);
+}
 
 function analizaEstadoBtnDetalle() {
     var res = $("#divDetalle").hasClass("show");
@@ -182,7 +194,7 @@ function analizaEstadoBtnDetalle() {
 }
 
 function InicializaPantallaAbmProd(grilla) {
-    if (grilla !== tabGrid01 || grilla !== tabGrid02 || grilla !== tabGrid03) {
+    if (grilla !== tabGrid01 && grilla !== tabGrid02 && grilla !== tabGrid03) {
         switch (tabAbm) {
             case 1:
                 grilla = Grids.GridProductos;
@@ -195,6 +207,7 @@ function InicializaPantallaAbmProd(grilla) {
                 break;
             case 3:
                 grilla = Grids.GridLimite;
+                break;
             default:
                 return false;
         }
@@ -451,8 +464,8 @@ function selectAbmRegDbl(x, gridId) {
             break;
         case 3:
             //se busca  
-            var data = { barradoId: id };
-            PostGen(data, buscarBarradoUrl, function (obj) {
+            var data = {  }; //los datos ya estan en el servidor
+            PostGen(data, BuscaLimiteDatoUrl, function (obj) {
                 CerrarWaiting();
                 if (obj.error === true) {
                     AbrirMensaje("¡¡Algo no fué bien!!", obj.msg, function () {

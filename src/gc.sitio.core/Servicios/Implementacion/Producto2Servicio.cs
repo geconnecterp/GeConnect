@@ -37,7 +37,7 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string PROD_BARRADOS = "/ObtenerBarradoDeProd";
         private const string PROD_BARRADO = "/BuscarBarrado";
         private const string LIMITE_STK = "/ObtenerLimitesStkLista";
-        private const string PROD_LIMITE = "/BuscarLimite";
+        private const string PROD_LIMITE = "/BuscaLimite";
 
 
         private readonly AppSettings _appSettings;
