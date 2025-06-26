@@ -479,5 +479,5 @@ function imprimirLD() {
     };
 
     // Invocar gestor documental
-    invocacionGestorDoc(data);
+    invocacionGestorDoc({});
 }

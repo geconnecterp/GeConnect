@@ -351,7 +351,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
         /// <param name="admId"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> BuscaLimiteDato()
+        public async Task<IActionResult> BuscaLimiteDato(string admId)
         {
             try
             {
@@ -360,7 +360,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
                 {
                     return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
                 }
-                RespuestaGenerica<LimiteStkDto> lim = await _prodSv.BuscarLimite(ProductoABMSeleccionado.p_id, AdministracionId, TokenCookie);
+                RespuestaGenerica<LimiteStkDto> lim = await _prodSv.BuscarLimite(ProductoABMSeleccionado.p_id, admId, TokenCookie);
                 if (lim == null || !lim.Ok)
                 {
                     // Solución para evitar el warning CS8602 y CS8604

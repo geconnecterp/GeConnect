@@ -29,5 +29,6 @@ namespace gc.infraestructura.Enumeraciones
         R014_BalanceSumasSaldos = 14,
         R015_LibroDiarioResumen = 15,
         R016_BalanceGeneral = 16,
+        R017_OrdePagoProveedor=17,
     }
 }

@@ -10,9 +10,10 @@
 }
 @section styles {
 	<link rel="stylesheet" href="~/css/simplePagination.css" />
+	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
 }
 <div class="container">
-	<div class="row">
+	<div class="row mb-2">
 		<div class="col-md-6">
 			<div class="d-flex justify-content-sm-around">
 				<button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
@@ -34,6 +35,17 @@
 				</button>
 			</div>
 		</div>
+		<div class="col-md-2">
+			<div class="d-flex justify-content-sm-end">
+				<!-- Botón Imprimir -->
+				<button type="button" class="btn btn-golden btn-sm mt-1 me-1 btnImprimir" title="Imprimir">
+					<i class="bx bx-printer"></i>
+				</button>
+				<button type="button" class="btn btn-golden btn-sm mt-1 me-1 btnImprimir" id="btnImprimirTemp" title="Imprimir Temporal">
+					<i class="bx bx-printer"></i>
+				</button>
+			</div>
+		</div>
 	</div>
 	<div class="collapse" id="divFiltro" style="">
 		<partial name="_filtroBase" model="filtro" />
@@ -45,6 +57,10 @@
 
 <div id="modalSeleccionValores"></div>
 @Html.Hidden("UpdateValores", false)
+
+<!-- para el modal del geston de impresion -->
+<div id="modalGestorDocumental"></div>
+
 
 @section scripts {
 	<script type="text/javascript">
@@ -79,7 +95,19 @@
 		var agregarItemAColeccionDeValoresUrl = "@Url.Action("AgregarItemAColeccionDeValores", "selecciondevalores", new { area = "ControlComun" })";
 		/**/
 
+		  // Gestor de impresión
+		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+		var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
+		var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarEmailUrl = "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarWhatsAppUrl = "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
+		var generadorArchivoUrl = "@Url.Action("GeneradorArchivo", "GestorImpresion", new { area = "ControlComun" })";
+
+
 	</script>
+	<script src="~/lib/jstree/jstree.min.js"></script>
+	<script src="~/js/app/areas/docmngr/docmanager.js"></script>
+
 	<script src="~/js/app/controlcomun/selecciondevalores.js"></script>
 	<script src="~/js/app/areas/ordendepagoaproveedor/odepaproveedor.js"></script>
 }

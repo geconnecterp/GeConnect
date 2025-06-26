@@ -1,22 +1,17 @@
-﻿using DocumentFormat.OpenXml.Office2013.Drawing.ChartStyle;
-using gc.api.core.Contratos.Servicios;
+﻿using gc.api.core.Contratos.Servicios;
 using gc.api.core.Contratos.Servicios.Libros;
 using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Asientos;
-using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Libros;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Win32;
-using Newtonsoft.Json;
 
 namespace gc.api.core.Servicios.Reportes
 {

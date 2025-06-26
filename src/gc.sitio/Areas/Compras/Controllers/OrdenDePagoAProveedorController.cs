@@ -4,9 +4,12 @@ using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
 using gc.infraestructura.Dtos.OrdenDePago.Request;
+using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Enumeraciones;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Compras.Models.OrdenDePagoAProveedor;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -16,7 +19,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 	[Area("Compras")]
 	public class OrdenDePagoAProveedorController : OrdenDePagoAProveedorControladorBase
 	{
-		private readonly AppSettings _settings;
+        //PARA MODULO DE IMPRESION
+        private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
+        private AppModulo _modulo; //tengo el AppModulo que corresponde a la consulta de cuentas
+        private string APP_MODULO = AppModulos.OPP.ToString();
+        private readonly IDocManagerServicio _docMSv;
+
+        //************************
+
+        private readonly AppSettings _settings;
 		private readonly ICuentaServicio _cuentaServicio;
 		private readonly IOrdenDePagoServicio _ordenDePagoServicio;
 		private readonly ITipoGastoServicio _tipoGastoServicio;
@@ -33,7 +44,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public OrdenDePagoAProveedorController(IOrdenDePagoServicio ordenDePagoServicio, ICuentaServicio cuentaServicio, ITipoGastoServicio tipoGastoServicio, IProveedorServicio proveedorServicio,
 											   IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<OrdenDePagoAProveedorController> logger, 
-											   IFormaDePagoServicio formaDePagoServicio) : base(options, contexto, logger)
+											   IFormaDePagoServicio formaDePagoServicio, 
+											   IDocManagerServicio docManager, IOptions<DocsManager> docsManager) : base(options, contexto, logger)
 		{
 			_settings = options.Value;
 			_cuentaServicio = cuentaServicio;
@@ -41,7 +53,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 			_tipoGastoServicio = tipoGastoServicio;
 			_proveedorServicio = proveedorServicio;
 			_formaDePagoServicio = formaDePagoServicio;
-		}
+
+            //PARA MODULO DE IMPRESION
+            _docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
+            _modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO); //identifico los datos del modulo que necesito: OPP
+            _docMSv = docManager; //instancio el servicio de impresión
+
+        }
 
 		public IActionResult Index()
 		{
@@ -51,10 +69,22 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 
-				var listR01 = new List<ComboGenDto>();
-				ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
+                string titulo = "ORDEN DE PAGO A PROVEEDORES"; ;
+                ViewData["Titulo"] = titulo;
 
-				ViewData["Titulo"] = "ORDEN DE PAGO A PROVEEDORES";
+                #region Gestor Impresion - Inicializacion de variables
+                //Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
+                DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
+                // en este mismo acto se cargan los posibles documentos
+                //que se pueden imprimir, exportar, enviar por email o whatsapp
+                ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
+
+                #endregion
+
+
+                var listR01 = new List<ComboGenDto>();
+				ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
+			
 				CargarDatosIniciales(true);
 				return View();
 			}
