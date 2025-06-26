@@ -48,6 +48,7 @@ namespace gc.api.core.Servicios.Reportes
                 { InfoReporte.R014_BalanceSumasSaldos, new R014_BalanceSumasSaldos(uow,apiBSS,empresa,ctaSv, logger) },
                 { InfoReporte.R015_LibroDiarioResumen, new R015_LibroDiarioResumen(uow,ldSv,empresa,ctaSv, logger) },
                 { InfoReporte.R016_BalanceGeneral, new R016_BalanceGeneral(uow,apiBgr,empresa,ctaSv, logger) },
+                { InfoReporte.R017_OrdePagoProveedor, new R017_OrdePagoProveedor(uow,consSv,empresa,ctaSv, logger) },
                 
             }; 
             _logger = logger;

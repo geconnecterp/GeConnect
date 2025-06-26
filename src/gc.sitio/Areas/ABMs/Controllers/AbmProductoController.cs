@@ -346,12 +346,12 @@ namespace gc.sitio.Areas.ABMs.Controllers
         }
 
         /// <summary>
-        /// Se buscan los datos del barrado
+        /// Se buscan los datos del limite
         /// </summary>
         /// <param name="admId"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> BuscarLimite(string admId)
+        public async Task<IActionResult> BuscaLimiteDato(string admId)
         {
             try
             {

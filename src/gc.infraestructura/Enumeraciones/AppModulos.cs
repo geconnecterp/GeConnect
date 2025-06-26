@@ -9,6 +9,7 @@
         BSS, //BALANCE SUMA SALDOS
         LDIARIO, //LIBRO DIARIO
         BGR, //BALANCE GENERAL
+        OPP, //ORDEN DE PAGO A PROVEEDOR
     }
 
     public enum AppReportes

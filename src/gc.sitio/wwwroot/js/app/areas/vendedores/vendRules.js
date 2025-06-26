@@ -160,7 +160,7 @@ function activarControles(act) {
                 $("#ve_nombre").prop("disabled", act);
                 $("#ve_comision").mask("99.99", { reverse: true }).prop("disabled", act);                
                 $("#ve_mail").prop("disabled", act);
-                $("#ve_celu").mask("(000) 000-0000").prop("disabled", act);                
+                $("#ve_celu").prop("disabled", act);                
                 break;
            
             default:

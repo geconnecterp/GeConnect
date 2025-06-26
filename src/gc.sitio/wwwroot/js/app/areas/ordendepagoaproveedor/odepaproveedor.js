@@ -5,6 +5,17 @@
 	$(document).on("click", "#btnAnterior2", btnAnterior2Validar);
 	$(document).on("click", "#btnAgregarValor", btnAgregarValorValidar);
 	$(document).on("click", "#btnConfirmar2", btnConfirmar2Validar);
+
+	// Botón de imprimir
+	$(document).on("click", ".btnImprimir", function () {
+		imprimirOPP();
+	});
+
+	$("#btnImprimirTemp").on("click", function () {
+		let data = { op_compte: "00-C0123763", ctaId :"C0017180"};
+		// Guardamos parámetros para el reporte
+		cargarReporteEnArre(17, data, "ORDEN DE PAGO A PROVEEDORES", "", "");
+	});
 	//
 	InicializaPantalla();
 	$("#btnBuscar").on("click", function () {
@@ -34,6 +45,12 @@
 		$("#divDetalle").collapse("hide");
 	});
 });
+
+function imprimirOPP() {	
+	// Invocar gestor documental
+	invocacionGestorDoc({});
+}
+
 
 function btnConfirmar2Validar() {
 	ValidarPrevioAConfirmar();
@@ -72,6 +89,10 @@ function ValidarPrevioAConfirmar() {
 								AbrirMensaje("ATENCIÓN", obj.msg, function () {
 									$("#msjModal").modal("hide");
 									console.log(obj.id); //Tomar este valor para imprimir.
+									let par = { op_compte: obj.id };
+									// Guardamos parámetros para el reporte
+									cargarReporteEnArre(17, par, "ORDEN DE PAGO A PROVEEDORES", "", "");
+
 									btnAbmCancelar_click();
 									return true;
 								}, false, ["Aceptar"], "succ!", null);

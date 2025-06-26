@@ -27,9 +27,15 @@
         x = $(this);
         ejecutaDblClickGrid2(x);
     });
+    //$(document).on("dblclick", "#" + tabGrid03 + " tbody tr", function () {
+    //    x = $(this);
+    //    ejecutaDblClickGrid3(x);
+    //});
     $(document).on("dblclick", "#" + tabGrid03 + " tbody tr", function () {
         x = $(this);
-        ejecutaDblClickGrid3(x);
+        //se resguarda el registro de la tabla
+        regSelected = x;
+        ejecutaDblClickGridLIm(x);
     });
 
 
@@ -162,6 +168,7 @@
     $("#BtnLiTab02").on("click", presentarBarrado);
     $("#BtnLiTab03").on("click", presentarLimites);
 
+    
 
     InicializaPantallaAbmProd("tbGridProd");
 
@@ -172,17 +179,62 @@
     return true;
 });
 
+//divpanel01
+
 function analizaEstadoBtnDetalle() {
-    var res = $("#divDetalle").hasClass("show");
-    if (res === true) {
-        selectRegProd(regSelected, tabGrid01);
+    // Verificar si hay un asiento abierto (panel de detalle visible)
+    if ($("#divDetalle").is(":visible")) {
+        // Hay un asiento abierto, limpiarlo y cerrar el panel
+        limpiarProductoPresentado();
     }
     return true;
 
 }
 
+function limpiarProductoPresentado() {
+    // 1. Limpiar todos los divs relevantes
+    $("#divpanel01").empty();
+    $("#divBarrado2").empty();
+    $("#divLimite2").empty();
+    $("#divSucursal").empty();
+
+    // 2. Ocultar explícitamente el panel de detalle
+    $("#divDetalle").collapse("hide");
+
+    // 3. Restablecer todas las variables de estado
+    regSelected = "";
+    EntidadSelect = "";
+    EntidadEstado = "";
+
+    // 4. Resetear a la primera pestaña (Productos)
+    tabAbm = 1;
+    $("#BtnLiTab01").tab("show");
+
+    // 5. Configurar estado de botones
+    $("#btnFiltro").prop("disabled", false);
+    $("#btnDetalle").prop("disabled", true);
+
+    // 6. Remover clases de selección de todas las grillas
+    $("#" + tabGrid01 + " tbody tr").removeClass("selected-row").removeClass("selectedEdit-row");
+    $("#" + tabGrid02 + " tbody tr").removeClass("selected-row").removeClass("selectedEdit-row");
+    $("#" + tabGrid03 + " tbody tr").removeClass("selected-row").removeClass("selectedEdit-row");
+
+    // 7. Activar la grilla principal
+    activarGrilla(tabGrid01);
+
+    // 8. Mostrar el filtro si es necesario
+    if ($("#" + tabGrid01 + " tbody tr").length === 0) {
+        $("#divFiltro").collapse("show");
+    }
+
+    // 9. Inicializar la pantalla como estado final
+    accionBotones(AbmAction.CANCEL);
+
+    return true;
+}
+
 function InicializaPantallaAbmProd(grilla) {
-    if (grilla !== tabGrid01 || grilla !== tabGrid02 || grilla !== tabGrid03) {
+    if (grilla !== tabGrid01 && grilla !== tabGrid02 && grilla !== tabGrid03) {
         switch (tabAbm) {
             case 1:
                 grilla = Grids.GridProductos;
@@ -195,6 +247,7 @@ function InicializaPantallaAbmProd(grilla) {
                 break;
             case 3:
                 grilla = Grids.GridLimite;
+                break;
             default:
                 return false;
         }
@@ -384,10 +437,9 @@ function ejecutaDblClickGrid2(x) {
     selectAbmRegDbl(x, tabGrid02);
 
 }
-function ejecutaDblClickGrid3(x) {
-    AbrirWaiting("Espere mientras se busca el Limite de Stock seleccionado...");
+function ejecutaDblClickGridLIm(x) {
+    AbrirWaiting("Espere mientras se busca el Límite de Stock seleccionado...");
     selectAbmRegDbl(x, tabGrid03);
-
 }
 
 function selectAbmRegDbl(x, gridId) {
@@ -450,9 +502,13 @@ function selectAbmRegDbl(x, gridId) {
             });
             break;
         case 3:
-            //se busca  
-            var data = { barradoId: id };
-            PostGen(data, buscarBarradoUrl, function (obj) {
+            // Obtener el ID de administración (que está en la primera columna de la grilla)
+            var admId = x.find("td:nth-child(1)").text();
+
+            // Crear los datos con el ID de administración
+            var data = { admId: admId };
+
+            PostGen(data, BuscaLimiteDatoUrl, function (obj) {
                 CerrarWaiting();
                 if (obj.error === true) {
                     AbrirMensaje("¡¡Algo no fué bien!!", obj.msg, function () {
@@ -470,15 +526,13 @@ function selectAbmRegDbl(x, gridId) {
                     }, false, ["Aceptar"], "warn!", null);
                 }
                 else {
-                    //se presentan los datos en los controles
+                    // Asignar los datos a los controles correctos del límite de stock
+                    $("#adm_id").val(obj.datos.adm_id);
+                    $("#p_stk_min").val(obj.datos.p_stk_min);
+                    $("#p_stk_max").val(obj.datos.p_stk_max);
 
-                    $("#p_id").val(obj.datos.p_id);
-                    $("#p_id_barrado").val(obj.datos.p_id_barrado);
-                    $("#p_unidad_pres").val(obj.datos.p_unidad_pres);
-                    $("#p_unidad_x_bulto").val(obj.datos.p_unidad_x_bulto);
-                    $("#p_bulto_x_piso").val(obj.datos.p_bulto_x_piso);
-                    $("#p_piso_x_pallet").val(obj.datos.p_piso_x_pallet);
-                    $("#tba_id").val(obj.datos.tba_id);
+                    // Activar los botones de acción
+                    activarBotones(true);
                 }
 
             });
@@ -524,7 +578,7 @@ function presentarBarrado() {
 }
 
 function presentarLimites() {
-    //AbrirWaiting("Buscando Limites...");
+    AbrirWaiting("Buscando Límites de Stock..."); 
     tabAbm = 3;
     desactivarGrilla(tabGrid01);
     InicializaPantallaAbmProd(tabGrid03);
@@ -532,15 +586,21 @@ function presentarLimites() {
     PostGenHtml({}, presentarLimitesUrl, function (obj) {
         $("#divLimite2").html(obj);
 
-        var tb = $("#"+tabGrid03+" tbody tr");
-        if (tb.length === 0) {
-            $("#tab3l1").hide();          
-        }
-        else {
-            $("#tab3l1").show();
-        }
+        // Después de cargar la vista parcial, ahora cargamos los datos de límites
+        // Usando el mismo ProductoABMSeleccionado.p_id que se usa en el controlador
+        PostGenHtml({}, buscarLimiteUrl, function (innerObj) {
+            $("#divLimite2").find("#divLimite2").html(innerObj);
 
-        CerrarWaiting();
+            var tb = $("#" + tabGrid03 + " tbody tr");
+            if (tb.length === 0) {
+                $("#tab3l1").hide();
+            }
+            else {
+                $("#tab3l1").show();
+            }
+
+            CerrarWaiting(); // Cerrar waiting solo después de que todo esté cargado
+        });
     });
 }
 
