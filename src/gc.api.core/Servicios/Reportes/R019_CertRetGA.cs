@@ -16,7 +16,7 @@ using System.Drawing;
 
 namespace gc.api.core.Servicios.Reportes
 {
-    public class R017_OrdePagoProveedor : Servicio<EntidadBase>, IGeneradorReporte
+    public class R019_CertRetGA : Servicio<EntidadBase>, IGeneradorReporte
     {
         private readonly IConsultaServicio _consultaServicio;
 
@@ -26,19 +26,21 @@ namespace gc.api.core.Servicios.Reportes
         private readonly ICuentaServicio _cuentaSv;
         private readonly ILogger _logger;
 
-        public R017_OrdePagoProveedor(IUnitOfWork uow, IConsultaServicio consulta,
+        public R019_CertRetGA(IUnitOfWork uow, IConsultaServicio consulta,
            IOptions<EmpresaGeco> empresa, ICuentaServicio consultaSv, ILogger logger) : base(uow)
         {
             _consultaServicio = consulta;
 
             _empresaGeco = empresa.Value;
-            _titulos = new List<string> { "Descripción", "Importe",  };
-            _campos = new List<string> { "Descripcion", "Importe", };
+            _titulos = ["Cert Nro", "ID", "Gan CUIT", "Gan Razón Social", "Gan Domicilio", "Fecha", "Base", "Reten", "Estado", "OP_Compte", "Gan Actu", "Razon Social", "CUIT", "IB Nro", "Domicilio", 
+                        "Gan Desc.", "Gan Porc.", "Gan Impreso",];
+            _campos = [ "cganNro", "ctaId", "cganCuit", "cganRazSoc", "cganDomi", "cganFecha", "cganBase", "cganReten", "cganEstado", "opCompte", "cganActu", "empRazSoc", "empCuit", "empIbNro",
+						"empDomi", "rganDesc", "rganPorc", "rganImpreso", ];
             _cuentaSv = consultaSv;
             _logger = logger;
-        }
+		}
 
-        public string Generar(ReporteSolicitudDto solicitud)
+		public string Generar(ReporteSolicitudDto solicitud)
         {
             float[] anchos;
 
@@ -51,14 +53,14 @@ namespace gc.api.core.Servicios.Reportes
                 #region Obteniendo registros desde la base de datos
                 string ctaId;
                 string tit;
-                List<ConsOrdPagoDetExtendDto> registros = ObtenerDatos(solicitud, out ctaId, out tit);
+                List<CertRetenGananDto> registros = ObtenerDatos(solicitud, out ctaId, out tit);
 
                 if (registros == null || registros.Count == 0)
                 {
-                    throw new NegocioException($"No se encontraron registros de la cuenta corriente {ctaId}.");
+                    throw new NegocioException($"No se encontraron registros para poder generar el certificado correspondiente.");
                 }
 
-                var importe = registros.Sum(x => x.Cc_importe);
+                //var importe = registros.Sum(x => x.Cc_importe);
                 
                 //buscando datos del cliente
                 var cta = _cuentaSv.GetCuentaComercialLista(ctaId, 'T');
@@ -79,11 +81,27 @@ namespace gc.api.core.Servicios.Reportes
                 //hago el modelo de dato aca ya que necesito los datos de la cuenta
                 var regs = registros.Select(x => new
                 {
-                    x.Grupo,
-                    GrDesc = x.Grupo_des,
-                    Descripcion = x.Concepto,
-                    Importe = x.Cc_importe,                    
-                }).ToList();
+					#region Campos
+					cganNro = x.cgan_nro,
+					ctaId = x.cta_id,
+					cganCuit = x.cgan_cuit,
+					cganRazSoc = x.cgan_raz_soc,
+					cganDomi = x.cgan_domicilio,
+					cganFecha = x.cgan_fecha,
+					cganBase = x.cgan_base,
+					cganReten = x.cgan_reten,
+					cganEstado = x.cgan_estado,
+					opCompte = x.op_compte,
+					cganActu = x.cgan_actu,
+					empRazSoc = x.emp_razon_social,
+					empCuit = x.emp_cuit,
+					empIbNro = x.emp_ib_nro,
+					empDomi = x.emp_domicilio,
+					rganDesc = x.rgan_desc,
+					rganPorc = x.rgan_porc,
+					rganImpreso = x.rgan_impreso,
+					#endregion
+				}).ToList();
 
                 #endregion
                 #region Scripts PDF
@@ -112,7 +130,7 @@ namespace gc.api.core.Servicios.Reportes
                 PdfPTable tabla = GeneraCabeceraPdf3C(solicitud, chico, titulo, logo, _empresaGeco);
 
                 // Convertir la tabla en un Phrase
-                Phrase phrase = new Phrase();
+                Phrase phrase = new();
                 phrase.Add(tabla);
 
                 // Crear el HeaderFooter con el Phrase que contiene la tabla
@@ -130,51 +148,9 @@ namespace gc.api.core.Servicios.Reportes
 
                 pdf.Open();
 
-                #region Datos del Cliente o Proveedor
-                tabla = HelperPdf.GeneraTabla(4, [20f, 70f, 5f, 5f], 100, 10, 10);
-                //hay que ir a buscar los datos del cliente para presentarlos en pantalla.
-                HelperPdf.CargarTablaProveedor(pdf, cliente, normal, normalBold);
-                #endregion
+				//TODO MARCE: Completar el cuerpo del reporte
 
-                #region Conceptos Cancelados
-                HelperPdf.CargarTablaConceptosCancelados(pdf, registros, chico, normalBold);
-				#endregion
-
-				Chunk linebreak = new Chunk(new LineSeparator(1f, 100f, BaseColor.Black, Element.ALIGN_CENTER, 5));
-				pdf.Add(linebreak);
-
-				#region Formas de Pago
-				HelperPdf.CargarTablaFormaDePago(pdf, registros, chico, normalBold);
-				#endregion
-
-				#region Valores Entregados
-				HelperPdf.CargarTablaValoresEntregados(pdf, registros, chico, normalBold);
-				#endregion
-
-				#region Total Valores Cancelatorios
-                HelperPdf.CargarTablaTotalValoresCancelatorios(pdf, registros, chico, normalBold);
-				#endregion
-				//#region Carga del Listado
-
-				//HelperPdf.GeneraCabeceraLista(pdf, _titulos, anchos, normalBold);
-				//utilizo cliente.Monto para el total previamente cargado, pero ya dejo preparado el helper para definir
-				//multiples campos con totales. Ejemplo: Debe, Haber y Saldo.
-				//var totales = new Dictionary<string, decimal>
-				//        {
-				//            { "Debe", 15420.50m },
-				//            { "Haber", 10325.30m },
-				//            { "Saldo", 5095.20m }
-				//        };
-				//var totales = new Dictionary<string, decimal>{
-    //                { "Importe", importe} };
-                    
-
-                //HelperPdf.GenerarListadoDesdeLista(pdf, regs, _campos, anchos, chico, false, true, totales);
-                //var aTotalizar = new List<string> { "Importe" };
-                //HelperPdf.GenerarListadoAgrupado(pdf, regs, _campos, _titulos, anchos, "Grupo", "GrDesc", chico, HelperPdf.FontSubtituloPredeterminado(),null,false,null);
-                //#endregion
-
-                pdf.Close();
+				pdf.Close();
                 #endregion
 
                 return Convert.ToBase64String(ms.ToArray());
@@ -194,13 +170,13 @@ namespace gc.api.core.Servicios.Reportes
 
 
 
-        private List<ConsOrdPagoDetExtendDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string ctaId, out string titulo)
+        private List<CertRetenGananDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string ctaId, out string titulo)
         {
             //Se obtienen los parámetros del reporte
             ctaId = solicitud.Parametros.GetValueOrDefault("ctaId", "").ToString() ?? "";
             string cmptId = solicitud.Parametros.GetValueOrDefault("op_compte", "").ToString();          
-            titulo = $"Orden de Pago a Proveedores N° {cmptId}";
-            return _consultaServicio.ConsultaOrdenDePagoProveedor(cmptId);
+            titulo = $"Certificado de Retención Impuesto a las Ganancias";
+            return _consultaServicio.ConsultaCertRetenGA(cmptId);
 
         }
 
@@ -209,7 +185,7 @@ namespace gc.api.core.Servicios.Reportes
             #region Obteniendo registros desde la base de datos
             string ctaId;
             string tit;
-            List<ConsOrdPagoDetExtendDto> registros = ObtenerDatos(solicitud, out ctaId, out tit);
+            List<CertRetenGananDto> registros = ObtenerDatos(solicitud, out ctaId, out tit);
 
             if (registros == null || registros.Count == 0)
             {
@@ -219,11 +195,27 @@ namespace gc.api.core.Servicios.Reportes
             //hago el modelo de dato aca ya que necesito los datos de la cuenta
             var regs = registros.Select(x => new
             {
-                x.Grupo,
-                GrDesc = x.Grupo_des,
-                Descripcion = x.Concepto,
-                Importe = x.Cc_importe,
-            }).ToList();
+				#region Campos
+				cganNro = x.cgan_nro,
+                ctaId = x.cta_id,
+                cganCuit = x.cgan_cuit,
+                cganRazSoc = x.cgan_raz_soc,
+                cganDomi=x.cgan_domicilio,
+                cganFecha=x.cgan_fecha,
+                cganBase=x.cgan_base,
+                cganReten=x.cgan_reten,
+                cganEstado=x.cgan_estado,
+                opCompte=x.op_compte,
+                cganActu=x.cgan_actu,
+                empRazSoc=x.emp_razon_social,
+                empCuit=x.emp_cuit,
+                empIbNro=x.emp_ib_nro,
+                empDomi=x.emp_domicilio,
+				rganDesc = x.rgan_desc,
+				rganPorc = x.rgan_porc,
+				rganImpreso = x.rgan_impreso,
+				#endregion
+			}).ToList();
 
 
             #endregion
@@ -236,7 +228,7 @@ namespace gc.api.core.Servicios.Reportes
             #region Obteniendo registros desde la base de datos
             string ctaId;
             string tit;
-            List<ConsOrdPagoDetExtendDto> registros = ObtenerDatos(solicitud, out ctaId, out tit);
+            List<CertRetenGananDto> registros = ObtenerDatos(solicitud, out ctaId, out tit);
 
             if (registros == null || registros.Count == 0)
             {
@@ -246,11 +238,27 @@ namespace gc.api.core.Servicios.Reportes
             //hago el modelo de dato aca ya que necesito los datos de la cuenta
             var regs = registros.Select(x => new
             {
-                x.Grupo,
-                GrDesc = x.Grupo_des,
-                Descripcion = x.Concepto,
-                Importe = x.Cc_importe,
-            }).ToList();
+				#region Campos
+				cganNro = x.cgan_nro,
+				ctaId = x.cta_id,
+				cganCuit = x.cgan_cuit,
+				cganRazSoc = x.cgan_raz_soc,
+				cganDomi = x.cgan_domicilio,
+				cganFecha = x.cgan_fecha,
+				cganBase = x.cgan_base,
+				cganReten = x.cgan_reten,
+				cganEstado = x.cgan_estado,
+				opCompte = x.op_compte,
+				cganActu = x.cgan_actu,
+				empRazSoc = x.emp_razon_social,
+				empCuit = x.emp_cuit,
+				empIbNro = x.emp_ib_nro,
+				empDomi = x.emp_domicilio,
+				rganDesc = x.rgan_desc,
+				rganPorc = x.rgan_porc,
+				rganImpreso = x.rgan_impreso,
+				#endregion
+			}).ToList();
 
             #endregion
 

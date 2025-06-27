@@ -389,7 +389,82 @@
             tabla.AddCell(celdaFechaHora);
             return tabla;
         }
-        protected PdfPTable GeneraCabeceraPDF2(ReporteSolicitudDto solicitud, Font chico, Font titulo, Image? logo, EmpresaGeco _empresaGeco)
+
+		protected PdfPTable GeneraCabeceraPdf3C(ReporteSolicitudDto solicitud, Font chico, Font titulo, Image? logo, EmpresaGeco _empresaGeco)
+		{
+			PdfPTable tabla = HelperPdf.GeneraTabla(3, [10f, 25f, 65f], 100, 10, 20);
+            
+			// Columna 1: Logo
+			PdfPCell celdaLogo;
+			if (logo == null)
+			{
+				celdaLogo = new PdfPCell(new Paragraph("CA", titulo));
+			}
+			else
+			{
+				celdaLogo = HelperPdf.GeneraCelda(logo, false);
+			}
+			tabla.AddCell(celdaLogo);
+
+			// Columna 2: Datos apilados y título
+			PdfPTable subTabla = new(1);
+			subTabla.WidthPercentage = 100;
+
+			// Datos apilados
+			subTabla.AddCell(HelperPdf.CrearCeldaTexto(_empresaGeco.Nombre, chico));
+			subTabla.AddCell(HelperPdf.CrearCeldaTexto($"CUIT: {_empresaGeco.CUIT} s:{solicitud.Administracion}", chico));
+			subTabla.AddCell(HelperPdf.CrearCeldaTexto($"IIBB: {_empresaGeco.IngresosBrutos}", chico));
+			subTabla.AddCell(HelperPdf.CrearCeldaTexto($"Dirección: {_empresaGeco.Direccion}", chico));
+
+			PdfPCell celdaSubTabla = new PdfPCell(subTabla)
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				VerticalAlignment = Element.ALIGN_MIDDLE
+			};
+			tabla.AddCell(celdaSubTabla);
+
+			// Columna 3: Título del informe y Fecha
+			PdfPTable subTablaC3 = new(1);
+			subTablaC3.WidthPercentage = 100;
+
+			// Título del informe
+			PdfPCell celdaTitulo = new PdfPCell(new Phrase(solicitud.Titulo, titulo))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_RIGHT,
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				PaddingTop = 10f
+			};
+
+			// Fecha
+			string fechaHora = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+			PdfPCell celdaFechaHora = new PdfPCell(new Phrase(fechaHora, chico))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_RIGHT,
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				PaddingTop = 10f
+			};
+
+			// Datos apilados
+			subTablaC3.AddCell(celdaFechaHora);
+			subTablaC3.AddCell(HelperPdf.CrearCeldaTexto(string.Empty, chico));
+			subTablaC3.AddCell(celdaTitulo);
+			subTablaC3.AddCell(HelperPdf.CrearCeldaTexto(string.Empty, chico));
+
+			PdfPCell celdaSubTablaC3 = new PdfPCell(subTablaC3)
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_RIGHT,
+				VerticalAlignment = Element.ALIGN_MIDDLE
+			};
+			tabla.AddCell(celdaSubTablaC3);
+
+			return tabla;
+		}
+
+		protected PdfPTable GeneraCabeceraPDF2(ReporteSolicitudDto solicitud, Font chico, Font titulo, Image? logo, EmpresaGeco _empresaGeco)
         {
             PdfPTable tabla = HelperPdf.GeneraTabla(4, [10f, 20f, 50f, 20f], 100, 10, 20);
 

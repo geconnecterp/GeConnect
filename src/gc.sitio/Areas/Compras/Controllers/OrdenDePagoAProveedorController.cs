@@ -24,7 +24,10 @@ namespace gc.sitio.Areas.Compras.Controllers
         private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
         private AppModulo _modulo; //tengo el AppModulo que corresponde a la consulta de cuentas
         private string APP_MODULO = AppModulos.OPP.ToString();
-        private readonly IDocManagerServicio _docMSv;
+		private string APP_MODULO_IIBB = AppModulos.CERTRETENIIBB.ToString();
+		private string APP_MODULO_GA = AppModulos.CERTRETENGA.ToString();
+		private string APP_MODULO_IVA = AppModulos.CERTRETENIVA.ToString();
+		private readonly IDocManagerServicio _docMSv;
 
         //************************
 
@@ -70,7 +73,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 
-                string titulo = "ORDEN DE PAGO A PROVEEDORES"; ;
+                string titulo = "ORDEN DE PAGO A PROVEEDOR"; ;
                 ViewData["Titulo"] = titulo;
 
                 #region Gestor Impresion - Inicializacion de variables

@@ -15,6 +15,9 @@
 		let data = { op_compte: "00-C0123763", ctaId :"C0017180"};
 		// Guardamos parámetros para el reporte
 		cargarReporteEnArre(17, data, "ORDEN DE PAGO A PROVEEDORES", "", "");
+		cargarReporteEnArre(18, data, "CERTIFICADO RETENCIÓN IIBB", "", "");
+		cargarReporteEnArre(19, data, "CERTIFICADO RETENCIÓN GA", "", "");
+		cargarReporteEnArre(20, data, "CERTIFICADO RETENCIÓN IVA", "", "");
 	});
 	//
 	InicializaPantalla();

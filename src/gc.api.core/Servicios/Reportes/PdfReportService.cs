@@ -49,8 +49,10 @@ namespace gc.api.core.Servicios.Reportes
                 { InfoReporte.R015_LibroDiarioResumen, new R015_LibroDiarioResumen(uow,ldSv,empresa,ctaSv, logger) },
                 { InfoReporte.R016_BalanceGeneral, new R016_BalanceGeneral(uow,apiBgr,empresa,ctaSv, logger) },
                 { InfoReporte.R017_OrdePagoProveedor, new R017_OrdePagoProveedor(uow,consSv,empresa,ctaSv, logger) },
-                
-            }; 
+				{ InfoReporte.R018_CertRetIIBB, new R018_CertRetIIBB(uow,consSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R019_CertRetGA, new R019_CertRetGA(uow,consSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R020_CertRetIVA, new R020_CertRetIVA(uow,consSv,empresa,ctaSv, logger) }
+			}; 
             _logger = logger;
         }
 
