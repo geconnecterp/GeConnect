@@ -64,6 +64,17 @@
         ejecutaDblClickGrid1(x);
     });
 
+    // Quitar cualquier máscara aplicada a ve_celu
+    $("#rp_celu").unmask();
+
+    // Agregar validación para asegurar máximo 11 dígitos
+    $("#rp_celu").on("input", function () {
+        this.value = this.value.replace(/\D/g, '');
+        if (this.value.length > 11) {
+            this.value = this.value.slice(0, 11);
+        }
+    });
+
     InicializaPantallaRepartidor(Grids.GridRepartidor);
     //inicia la pantalla presentando la primer pagina de usuarios
     //$("#btnBuscar").trigger("click");

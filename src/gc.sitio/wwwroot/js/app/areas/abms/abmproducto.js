@@ -195,7 +195,23 @@ function limpiarProductoPresentado() {
     // 1. Limpiar todos los divs relevantes
     $("#divpanel01").empty();
     $("#divBarrado2").empty();
+
+    /*Inicializa controles Barrado*/
+    $("#p_id").val("");
+    $("#p_id_barrado").val("");
+    $("#p_unidad_pres").val("");
+    $("#p_unidad_x_bulto").val("");
+    $("#p_bulto_x_piso").val("");
+    $("#p_piso_x_pallet").val("");
+    $("#tba_id").val("");
+
+
     $("#divLimite2").empty();
+    // Asignar los datos a los controles correctos del límite de stock
+    $("#adm_id").val("");
+    $("#p_stk_min").val("");
+    $("#p_stk_max").val("");
+
     $("#divSucursal").empty();
 
     // 2. Ocultar explícitamente el panel de detalle
@@ -578,18 +594,32 @@ function presentarBarrado() {
 }
 
 function presentarLimites() {
-    AbrirWaiting("Buscando Límites de Stock..."); 
+    AbrirWaiting("Buscando Límites de Stock...");
     tabAbm = 3;
     desactivarGrilla(tabGrid01);
     InicializaPantallaAbmProd(tabGrid03);
 
-    PostGenHtml({}, presentarLimitesUrl, function (obj) {
+    // Verificar si hay un producto seleccionado
+    if (EntidadSelect === "") {
+        CerrarWaiting();
+        AbrirMensaje("Atención", "Debe seleccionar un producto primero", function () {
+            $("#msjModal").modal("hide");
+            // Volver a la pestaña de productos
+            $("#BtnLiTab01").trigger("click");
+        }, false, ["Aceptar"], "warn!", null);
+        return;
+    }
+
+    // Incluir el ID del producto en la petición
+    var data = { p_id: EntidadSelect };
+
+    PostGenHtml(data, presentarLimitesUrl, function (obj) {
         $("#divLimite2").html(obj);
 
-        // Después de cargar la vista parcial, ahora cargamos los datos de límites
-        // Usando el mismo ProductoABMSeleccionado.p_id que se usa en el controlador
-        PostGenHtml({}, buscarLimiteUrl, function (innerObj) {
-            $("#divLimite2").find("#divLimite2").html(innerObj);
+        // Usar el mismo ID del producto para cargar los límites
+        PostGenHtml(data, buscarLimiteUrl, function (innerObj) {
+            // Reemplazar el contenido completo (no buscar un divLimite2 dentro de divLimite2)
+            $("#divLimite2").html(innerObj);
 
             var tb = $("#" + tabGrid03 + " tbody tr");
             if (tb.length === 0) {
@@ -599,10 +629,12 @@ function presentarLimites() {
                 $("#tab3l1").show();
             }
 
-            CerrarWaiting(); // Cerrar waiting solo después de que todo esté cargado
+            CerrarWaiting();
         });
     });
 }
+
+
 
 
 function buscarLimite(data) {

@@ -244,6 +244,14 @@ namespace gc.sitio.Areas.ABMs.Controllers
             GridCoreSmart<LimiteStkDto> grillaDatos;
             try
             {
+                // Si se proporciona p_id, usarlo en lugar del ProductoABMSeleccionado.p_id
+                string productoId = !string.IsNullOrEmpty(p_id) ? p_id : ProductoABMSeleccionado?.p_id;
+
+                if (string.IsNullOrEmpty(productoId))
+                {
+                    throw new NegocioException("No se ha seleccionado ningún producto o el ID proporcionado es inválido.");
+                }
+
                 RespuestaGenerica<LimiteStkDto>? lim = await ObtenerLimiteStkGen(p_id);
                 if (lim == null || (!lim.Ok && string.IsNullOrEmpty(lim.Mensaje)))
                 {
@@ -288,7 +296,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
         //
         [HttpPost]
-        public async Task<IActionResult> PresentarLimiteStk()
+        public async Task<IActionResult> PresentarLimiteStk(string p_id)
         {
             RespuestaGenerica<EntidadBase> response = new();
             GridCoreSmart<LimiteStkDto> grillaDatos;
@@ -298,6 +306,14 @@ namespace gc.sitio.Areas.ABMs.Controllers
             bool encontrado = false;
             try
             {
+                // Si se proporciona p_id, usarlo en lugar del ProductoABMSeleccionado.p_id
+                string productoId = !string.IsNullOrEmpty(p_id) ? p_id : ProductoABMSeleccionado.p_id;
+
+                if (string.IsNullOrEmpty(productoId))
+                {
+                    throw new NegocioException("No se ha seleccionado ningún producto o el ID proporcionado es inválido.");
+                }
+
                 var lim = LimitesStk;
                 if (lim.Count == 0)
                 {
