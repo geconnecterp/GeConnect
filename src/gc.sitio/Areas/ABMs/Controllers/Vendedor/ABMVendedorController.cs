@@ -182,8 +182,13 @@ namespace gc.sitio.Areas.ABMs.Controllers.Vendedor
                     return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
                 }
 
+                string emailOriginal = ve.ve_mail;
+
                 ve = HelperGen.PasarAMayusculas(ve);
-                //prod.P_Obs = prod.P_Obs.ToUpper();
+
+                // Restaurar el email original
+                ve.ve_mail = emailOriginal;
+                
                 AbmGenDto abm = new AbmGenDto()
                 {
                     Json = JsonConvert.SerializeObject(ve),

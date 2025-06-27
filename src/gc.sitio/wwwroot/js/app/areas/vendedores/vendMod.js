@@ -36,32 +36,24 @@
         //$("#btnAbmElimi").prop("disabled", false);       
 
     });
-    //$("#BtnLiTab02").on("click", function () {
-    //    tabAbm = 2;
-    //    desactivarGrilla(Grids.GridUser);
-    //    activarBotones(true);
-    //    presentaPerfilesUsuario();
-    //});
-    //$("#BtnLiTab03").on("click", function () {
-    //    tabAbm = 3;
-    //    desactivarGrilla(Grids.GridUser);
-    //    activarBotones(true);
 
-    //    presentaAdministracionesUsuario();
-    //});
-    //$("#BtnLiTab04").on("click", function () {
-    //    tabAbm = 4;
-    //    desactivarGrilla(Grids.GridUser);
-    //    activarBotones(true);
-
-    //    presentaDerechosUsuario();
-    //});
 
     $(document).on("dblclick", "#" + Grids.GridVendedor + " tbody tr", function () {
         x = $(this);
         //se resguarda el registro de la tabla
         regSelected = x;
         ejecutaDblClickGrid1(x);
+    });
+
+    // Quitar cualquier máscara aplicada a ve_celu
+    $("#ve_celu").unmask();
+
+    // Agregar validación para asegurar máximo 11 dígitos
+    $("#ve_celu").on("input", function () {
+        this.value = this.value.replace(/\D/g, '');
+        if (this.value.length > 11) {
+            this.value = this.value.slice(0, 11);
+        }
     });
 
     InicializaPantallaVendedor(Grids.GridVendedor);
