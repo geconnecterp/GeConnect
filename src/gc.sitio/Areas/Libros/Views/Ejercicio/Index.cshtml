@@ -1,0 +1,42 @@
+﻿@{
+    Layout = "~/views/shared/_Layout.cshtml";
+
+    var filtro = new QueryAsiento() { Modelo = ModeloFilter.EJERCICIO_CONTABLE };
+    var filtro2 = new QueryFilters() { Modelo = ModeloFilter.EJERCICIO_CONTABLE };
+}
+@section styles {
+    <link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+    <!-- Agregar esto al <head> de la página o en un archivo CSS si no existe ya -->
+}
+
+<div class="container">
+    <partial name="_botonera" model="filtro2" />
+</div>
+<div class="collapse show" id="divFiltro">
+    <partial name="_filtroLibro" model="filtro" />
+    @Html.Hidden("pagEstado", false)
+</div>
+<div class="collapse" id="divDetalle">
+    <partial name="_n01TabsEj" />
+</div>
+
+@* <div class="row">
+    <div id="divResultados" class="collapse">
+        <!-- Aquí se cargarán los resultados -->
+    </div>
+</div> *@
+
+@section scripts{
+    <script type="text/javascript">
+        var obtenerDatosEjercicioUrl = "@Url.Action("ObtenerDatosEjercicio", "Ejercicio", new { area = "Libros" })";
+        var confirmarEjercicioUrl = "@Url.Action("ConfirmarEjercicio", "Ejercicio", new { area = "Libros" })";
+        var nuevoEjercicioUrl = "@Url.Action("NuevoEjercicio", "Ejercicio", new { area = "Libros" })";
+        var imprimirEjercicioUrl = "@Url.Action("ImprimirEjercicio", "Ejercicio", new { area = "Libros" })";
+        var homeEjUrl = "@Url.Action("Index", "Ejercicio", new { area = "Libros" })";
+
+    </script>
+
+    <script src="~/js/app/areas/abms/abmsettings.js"></script>
+    <script src="~/js/app/areas/abms/abmcommons.js"></script>
+    <script src="~/js/app/areas/libros/ejer.js"></script>
+}

@@ -71,6 +71,7 @@ namespace gc.infraestructura.Constantes
             public const string BSS = "BALANCE_SUMA_SALDOS";
             public const string LDIARIO = "LIBRO_DIARIO";
             public const string BGR = "BALANCE_GENERAL";
+            public const string EJERCICIO_CONTABLE = "EJERCICIO_CONTABLE";
         }
     }
 }
