@@ -3,13 +3,11 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Asientos;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.EntidadesComunes;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Enumeraciones;
 using gc.sitio.core.Servicios.Contratos.Asientos;
 using gc.sitio.core.Servicios.Contratos.DocManager;
 using gc.sitio.core.Servicios.Contratos.Libros;
-using gc.sitio.core.Servicios.Implementacion.Libros;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
