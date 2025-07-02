@@ -14,29 +14,31 @@ using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Org.BouncyCastle.Ocsp;
 
 namespace gc.sitio.Areas.Compras.Controllers
 {
 	[Area("Compras")]
 	public class OrdenDePagoAProveedorController : OrdenDePagoAProveedorControladorBase
 	{
-        //PARA MODULO DE IMPRESION
-        private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
-        private AppModulo _modulo; //tengo el AppModulo que corresponde a la consulta de cuentas
-        private string APP_MODULO = AppModulos.OPP.ToString();
+		//PARA MODULO DE IMPRESION
+		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
+		private AppModulo _modulo; //tengo el AppModulo que corresponde a la consulta de cuentas
+		private string APP_MODULO = AppModulos.OPP.ToString();
 		private string APP_MODULO_IIBB = AppModulos.CERTRETENIIBB.ToString();
 		private string APP_MODULO_GA = AppModulos.CERTRETENGA.ToString();
 		private string APP_MODULO_IVA = AppModulos.CERTRETENIVA.ToString();
 		private readonly IDocManagerServicio _docMSv;
 
-        //************************
+		//************************
 
-        private readonly AppSettings _settings;
+		private readonly AppSettings _settings;
 		private readonly ICuentaServicio _cuentaServicio;
 		private readonly IOrdenDePagoServicio _ordenDePagoServicio;
 		private readonly ITipoGastoServicio _tipoGastoServicio;
 		private readonly IProveedorServicio _proveedorServicio;
 		private readonly IFormaDePagoServicio _formaDePagoServicio;
+		private readonly IConsultasServicio _consultasServicio;
 
 		private const string tabla_obligaciones = "tbListaObligaciones";
 		private const string tabla_creditos = "tbListaCreditos";
@@ -47,8 +49,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private const string accion_quitar = "quitar";
 
 		public OrdenDePagoAProveedorController(IOrdenDePagoServicio ordenDePagoServicio, ICuentaServicio cuentaServicio, ITipoGastoServicio tipoGastoServicio, IProveedorServicio proveedorServicio,
-											   IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<OrdenDePagoAProveedorController> logger, 
-											   IFormaDePagoServicio formaDePagoServicio, 
+											   IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<OrdenDePagoAProveedorController> logger,
+											   IFormaDePagoServicio formaDePagoServicio, IConsultasServicio consultasServicio,
 											   IDocManagerServicio docManager, IOptions<DocsManager> docsManager) : base(options, contexto, logger)
 		{
 			_settings = options.Value;
@@ -57,13 +59,14 @@ namespace gc.sitio.Areas.Compras.Controllers
 			_tipoGastoServicio = tipoGastoServicio;
 			_proveedorServicio = proveedorServicio;
 			_formaDePagoServicio = formaDePagoServicio;
+			_consultasServicio = consultasServicio;
 
-            //PARA MODULO DE IMPRESION
-            _docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
-            _modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO); //identifico los datos del modulo que necesito: OPP
-            _docMSv = docManager; //instancio el servicio de impresión
+			//PARA MODULO DE IMPRESION
+			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
+			_modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO); //identifico los datos del modulo que necesito: OPP
+			_docMSv = docManager; //instancio el servicio de impresión
 
-        }
+		}
 
 		public IActionResult Index()
 		{
@@ -73,22 +76,22 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 
-                string titulo = "ORDEN DE PAGO A PROVEEDOR"; ;
-                ViewData["Titulo"] = titulo;
+				string titulo = "ORDEN DE PAGO A PROVEEDOR"; ;
+				ViewData["Titulo"] = titulo;
 
-                #region Gestor Impresion - Inicializacion de variables
-                //Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
-                DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
-                // en este mismo acto se cargan los posibles documentos
-                //que se pueden imprimir, exportar, enviar por email o whatsapp
-                ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
+				#region Gestor Impresion - Inicializacion de variables
+				//Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
+				DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
+				// en este mismo acto se cargan los posibles documentos
+				//que se pueden imprimir, exportar, enviar por email o whatsapp
+				ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
 
-                #endregion
+				#endregion
 
 
-                var listR01 = new List<ComboGenDto>();
+				var listR01 = new List<ComboGenDto>();
 				ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
-			
+
 				CargarDatosIniciales(true);
 				return View();
 			}
@@ -961,6 +964,35 @@ namespace gc.sitio.Areas.Compras.Controllers
 			catch (Exception ex)
 			{
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al confirmar la Orden de Pago a Proveedor. {ex}" });
+			}
+		}
+
+		public JsonResult ValidarExistenciaDeCertificadosParaImprimir(string opCompte)
+		{
+			if (opCompte == null)
+				return Json(new { error = true, warn = false, msg = $"Request vacío, por favor revise." });
+
+			try
+			{
+				var boolExisteIIBB = false;
+				var boolExisteIVA = false;
+				var boolExisteGAN = false;
+				var existeIIBB = _consultasServicio.ConsultaCertRetenIB(opCompte, TokenCookie);
+				var existeIVA = _consultasServicio.ConsultaCertRetenIVA(opCompte, TokenCookie);
+				var existeGanancias = _consultasServicio.ConsultaCertRetenGA(opCompte, TokenCookie);
+
+				if (existeIIBB != null && existeIIBB.Count > 0)
+					boolExisteIIBB = true;
+				if (existeIVA != null && existeIVA.Count > 0)
+					boolExisteIVA = true;
+				if (existeGanancias != null && existeGanancias.Count > 0)
+					boolExisteGAN = true;
+
+				return Json(new { error = false, warn = false, msg = "", imprimeIIBB = boolExisteIIBB, imprimeIVA = boolExisteIVA, imprimeGAN = boolExisteGAN });
+			}
+			catch (Exception)
+			{
+				return Json(new { error = true, warn = false, msg = "Se ha producido un error al intentar validar certificados de retencion para imprimir." });
 			}
 		}
 

@@ -189,6 +189,8 @@ namespace gc.api.core.Servicios.Reportes
 				HelperPdf.CargarSeccionFirmaParaCertificadoDeRetencion(pdf, subtitulo, normal, titulo, false, 435, 330);
 				#endregion
 
+				HelperPdf.CargarSeccionCopiaParaCertificadoDeRetencion(pdf, writer);
+
 				//TODO: Agregar fecha y recuadro para firma del agente de retención
 				pdf.Close();
 				#endregion

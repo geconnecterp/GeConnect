@@ -235,5 +235,44 @@ namespace gc.api.Controllers.Consultas
             var res = _consSv.ConsultaOrdenDePagoProveedor(opCompte);
 			return Ok(new ApiResponse<List<ConsOrdPagoDetExtendDto>>(res));
 		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult ConsultaCertRetenIB(string opCompte)
+		{
+			if (string.IsNullOrEmpty(opCompte))
+			{
+				return BadRequest("No se recepcionó ningún comprobante");
+			}
+
+			var res = _consSv.ConsultaCertRetenIB(opCompte);
+			return Ok(new ApiResponse<List<CertRetenIBDto>>(res));
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult ConsultaCertRetenIVA(string opCompte)
+		{
+			if (string.IsNullOrEmpty(opCompte))
+			{
+				return BadRequest("No se recepcionó ningún comprobante");
+			}
+
+			var res = _consSv.ConsultaCertRetenIVA(opCompte);
+			return Ok(new ApiResponse<List<CertRetenIVADto>>(res));
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult ConsultaCertRetenGAN(string opCompte)
+		{
+			if (string.IsNullOrEmpty(opCompte))
+			{
+				return BadRequest("No se recepcionó ningún comprobante");
+			}
+
+			var res = _consSv.ConsultaCertRetenGA(opCompte);
+			return Ok(new ApiResponse<List<CertRetenGananDto>>(res));
+		}
 	}
 }

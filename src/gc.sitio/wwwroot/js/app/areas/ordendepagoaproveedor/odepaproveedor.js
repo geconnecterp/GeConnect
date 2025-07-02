@@ -12,13 +12,14 @@
 	});
 
 	$("#btnImprimirTemp").on("click", function () {
-		let data = { op_compte: "00-C0123765", ctaId :"C0191994"};
-		// Guardamos parámetros para el reporte
-		cargarReporteEnArre(17, data, "ORDEN DE PAGO A PROVEEDORES", "", "");
-		cargarReporteEnArre(18, data, "CERTIFICADO RETENCIÓN IIBB", "", "");
-		cargarReporteEnArre(19, data, "CERTIFICADO RETENCIÓN GA", "", "");
-		data = { op_compte: "00-S0038688", ctaId: "C0196957" };
-		cargarReporteEnArre(20, data, "CERTIFICADO RETENCIÓN IVA", "", "");
+		//let data = { op_compte: "00-C0123765", ctaId :"C0191994"};
+		//// Guardamos parámetros para el reporte
+		//cargarReporteEnArre(17, data, "ORDEN DE PAGO A PROVEEDORES", "", "");
+		//cargarReporteEnArre(18, data, "CERTIFICADO RETENCIÓN IIBB", "", "");
+		//cargarReporteEnArre(19, data, "CERTIFICADO RETENCIÓN GA", "", "");
+		//data = { op_compte: "00-S0038591", ctaId: "C0200360" };
+		//cargarReporteEnArre(20, data, "CERTIFICADO RETENCIÓN IVA", "", "");
+		ImprimirOPP_Generada("00-C0123765", "C0191994");
 	});
 	//
 	InicializaPantalla();
@@ -56,13 +57,29 @@ function imprimirOPP() {
 }
 
 function ImprimirOPP_Generada(opCompte, ctaId) {
-	let data = { op_compte: opCompte, ctaId: ctaId };
-	// Guardamos parámetros para el reporte
-	cargarReporteEnArre(17, data, "ORDEN DE PAGO A PROVEEDORES", "", "");
-	cargarReporteEnArre(18, data, "CERTIFICADO RETENCIÓN IIBB", "", "");
-	cargarReporteEnArre(19, data, "CERTIFICADO RETENCIÓN GA", "", "");
-	cargarReporteEnArre(20, data, "CERTIFICADO RETENCIÓN IVA", "", "");
-	invocacionGestorDoc({});
+	let data = { opCompte };
+	PostGen(data, validarExistenciaDeCertificadosParaImprimirUrl, function (obj) {
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			let data = { op_compte: opCompte, ctaId: ctaId };
+			cargarReporteEnArre(17, data, "ORDEN DE PAGO A PROVEEDORES", "", "");
+			if (obj.imprimeIIBB) {
+				cargarReporteEnArre(18, data, "CERTIFICADO RETENCIÓN IIBB", "", "");
+			}
+			if (obj.imprimeIVA) {
+				cargarReporteEnArre(20, data, "CERTIFICADO RETENCIÓN IVA", "", "");
+			}
+			if (obj.imprimeGAN) {
+				cargarReporteEnArre(19, data, "CERTIFICADO RETENCIÓN GA", "", "");
+			}
+			invocacionGestorDoc({});
+		}
+	});
 }
 
 function btnConfirmar2Validar() {

@@ -22,6 +22,9 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RespuestaGenerica<ConsOrdPagosDetDto>> ConsultaOrdenesDePagoProveedorDetalle(string cmptId, string token);
         Task<RespuestaGenerica<ConsRecepcionProveedorDto>> ConsultaRecepcionProveedor(string ctaId, DateTime fd, DateTime fh, string admId, string token);
         Task<RespuestaGenerica<ConsRecepcionProveedorDetalleDto>> ConsultaRecepcionProveedorDetalle(string cmptId, string token);
-    }
+		List<CertRetenGananDto> ConsultaCertRetenGA(string op_compte, string token);
+		List<CertRetenIBDto> ConsultaCertRetenIB(string op_compte, string token);
+		List<CertRetenIVADto> ConsultaCertRetenIVA(string op_compte, string token);
+	}
 }
 

@@ -1184,7 +1184,7 @@ namespace gc.infraestructura.Helpers
 			pdf.Add(tabla);
 		}
 
-		public static void CargarSeccionFirmaParaCertificadoDeRetencion(Document pdf, Font fuenteEtiqueta, Font fuenteValor, Font titulo, bool mostrarCargo, float bottom, float top )
+		public static void CargarSeccionFirmaParaCertificadoDeRetencion(Document pdf, Font fuenteEtiqueta, Font fuenteValor, Font titulo, bool mostrarCargo, float bottom, float top)
 		{
 			PdfPTable tabla = GeneraTabla(1, [100f], 100, 10, 10);
 			tabla.AddCell(CeldaSinBorde($"San Juan, {DateTime.Now.ToString("dd/MM/yyyy")}", fuenteEtiqueta, Element.ALIGN_LEFT));
@@ -1219,10 +1219,112 @@ namespace gc.infraestructura.Helpers
 			pdf.Add(rect);
 		}
 
+		public static void CargarSeccionCopiaParaCertificadoDeRetencion(Document pdf, PdfWriter writer)
+		{
+			PdfContentByte cb = writer.DirectContent;
+			float MargenInferior = 15;
+			float footerY = pdf.BottomMargin - MargenInferior;
+			PdfPTable tabla = GeneraTabla(1, [100f], 100, 10, 10);
+
+			float llx = 20; // esquina inferior izquierda X - Borde izquierdo
+			float lly = 50; // esquina inferior izquierda Y - Borde Inferior
+			float urx = pdf.PageSize.Width - 20; // esquina superior derecha X
+			float ury = 65; // esquina superior derecha Y - Borde superior
+
+			Rectangle rect = new(llx, lly, urx, ury)
+			{
+				Border = Rectangle.BOX,
+				BorderWidth = 1,
+				BorderColor = new BaseColor(0, 0, 0)
+			};
+
+			cb.Rectangle(rect);
+			cb.Stroke();
+
+			BaseFont baseFont = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
+			cb.SetFontAndSize(baseFont, 8);
+			cb.BeginText();
+
+			// Posicionamos el texto dentro del rectángulo
+			string texto = "COPIA ORIGINAL PARA CAFÉ AMÉRICA";
+			float x = (llx + (urx * 7 / 12)) / 2;
+			float y = ((lly + ury) - 5) / 2;
+
+			cb.ShowTextAligned(Element.ALIGN_RIGHT, texto, x, y, 0);
+			cb.EndText();
+		}
+
+		public static void CargarSeccionPieOrdenDePagoProveedor(Document pdf, PdfWriter writer, List<ConsOrdPagoDetExtendDto> regs)
+		{
+			PdfContentByte cb = writer.DirectContent;
+			float MargenInferior = 15;
+			float footerY = pdf.BottomMargin - MargenInferior;
+			PdfPTable tabla = GeneraTabla(1, [100f], 100, 10, 10);
+
+			float llx = 20; // esquina inferior izquierda X - Borde izquierdo
+			float lly = 50; // esquina inferior izquierda Y - Borde Inferior
+			float urx = pdf.PageSize.Width - 20; // esquina superior derecha X
+			float ury = 120; // esquina superior derecha Y - Borde superior
+			float leading = 14; // espacio entre líneas
+
+			Rectangle rect = new(llx, lly, urx, ury)
+			{
+				Border = Rectangle.BOX,
+				BorderWidth = 1,
+				BorderColor = new BaseColor(0, 0, 0)
+			};
+
+			cb.Rectangle(rect);
+			cb.Stroke();
+
+			BaseFont baseFont = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
+			BaseFont baseFontBold = BaseFont.CreateFont(BaseFont.HELVETICA_BOLD, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
+			cb.SetFontAndSize(baseFont, 9);
+			cb.BeginText();
+			
+			string texto = $"Son Pesos: ";
+			float x = llx;
+			float y = (lly + ury + 80) / 2;
+			cb.ShowTextAligned(Element.ALIGN_LEFT, texto, x, y, 0);
+			string textoBold = $"{HelperGen.EnLetras(regs.Where(x => x.Grupo.Equals("2") || x.Grupo.Equals("3") || x.Grupo.Equals("4")).Sum(y => y.Cc_importe).ToString())}";
+			cb.SetFontAndSize(baseFontBold, 9);
+			cb.ShowTextAligned(Element.ALIGN_LEFT, textoBold, x+50, y, 0);
+			cb.EndText();
+
+			baseFont = BaseFont.CreateFont(BaseFont.HELVETICA_BOLD, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
+			cb.SetFontAndSize(baseFont, 9);
+			cb.BeginText();
+
+			// Posicionamos el texto dentro del rectángulo
+			string texto1 = "Este comprobante de pago, es suficiente recibo de cancelación y aceptación de todos los conceptos en él incluidos.";
+			string texto2 = "Recibimos CONFORME los valores y remitos detallados.";
+			x = ((24 * llx) + urx) / 2;
+			y = (lly + ury + 40) / 2;
+
+			cb.ShowTextAligned(Element.ALIGN_RIGHT, texto1, x, y, 0);
+			cb.ShowTextAligned(Element.ALIGN_RIGHT, texto2, (x / 2) + 7, y - leading, 0);
+			cb.EndText();
+
+			// Suponiendo que ya tenés el objeto cb y el documento abierto
+			float margenDerecho = 50f;
+			float largoLinea = 150f;
+			y = 60f; // Altura desde el borde inferior
+
+			float xFin = pdf.PageSize.Width - margenDerecho;
+			float xInicio = xFin - largoLinea;
+
+			cb.SetLineWidth(1f);
+			cb.SetColorStroke(BaseColor.Black);
+			cb.MoveTo(xInicio, y);
+			cb.LineTo(xFin, y);
+			cb.Stroke();
+
+		}
+
 		public static void CargarTablaConceptosCancelados(Document pdf, List<ConsOrdPagoDetExtendDto> regs, Font fuenteEtiqueta, Font fuenteValor)
 		{
 			List<string> _campos = ["Descripcion", "Importe",];
-			List<string> _titulosTabla = ["Concepto", "Comprobante", "Ctag_motivo", "Cc_fecha_carga", "Cc_importe",];
+			List<string> _titulosTabla = ["Concepto", "Comprobante", "CuentaGastoRelacionada", "Fecha", "Importe",];
 			float[] _anchosTitulosTabla = [30f, 15f, 15, 20, 20f];
 			PdfPTable tablaTitulo = GeneraTabla(1, [100f], 100, 10, 0);
 
@@ -1250,9 +1352,9 @@ namespace gc.infraestructura.Helpers
 			{
 				x.Concepto,
 				Comprobante = x.Cm_compte,
-				x.Ctag_motivo,
-				Cc_fecha_carga = x.Cc_fecha_carga.ToString("dd/MM/yyyy"),
-				x.Cc_importe
+				CuentaGastoRelacionada=x.Ctag_motivo,
+				Fecha = x.Cc_fecha_carga.ToString("dd/MM/yyyy"),
+				Importe = x.Cc_importe
 			}).ToList();
 			HelperPdf.GenerarListadoDesdeLista(pdf, regsAux, _titulosTabla, _anchosTitulosTabla, fuenteEtiqueta);
 			//HelperPdf.GenerarListadoAgrupado(pdf, regs, _campos, _titulos, anchos, "Grupo", "GrDesc", chico, HelperPdf.FontSubtituloPredeterminado(), null, false, null);

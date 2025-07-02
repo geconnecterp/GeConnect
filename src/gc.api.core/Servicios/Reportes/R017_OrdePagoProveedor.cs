@@ -154,27 +154,10 @@ namespace gc.api.core.Servicios.Reportes
 				#region Total Valores Cancelatorios
                 HelperPdf.CargarTablaTotalValoresCancelatorios(pdf, registros, chico, normalBold);
 				#endregion
-				//#region Carga del Listado
 
-				//HelperPdf.GeneraCabeceraLista(pdf, _titulos, anchos, normalBold);
-				//utilizo cliente.Monto para el total previamente cargado, pero ya dejo preparado el helper para definir
-				//multiples campos con totales. Ejemplo: Debe, Haber y Saldo.
-				//var totales = new Dictionary<string, decimal>
-				//        {
-				//            { "Debe", 15420.50m },
-				//            { "Haber", 10325.30m },
-				//            { "Saldo", 5095.20m }
-				//        };
-				//var totales = new Dictionary<string, decimal>{
-    //                { "Importe", importe} };
-                    
+				HelperPdf.CargarSeccionPieOrdenDePagoProveedor(pdf, writer, registros);
 
-                //HelperPdf.GenerarListadoDesdeLista(pdf, regs, _campos, anchos, chico, false, true, totales);
-                //var aTotalizar = new List<string> { "Importe" };
-                //HelperPdf.GenerarListadoAgrupado(pdf, regs, _campos, _titulos, anchos, "Grupo", "GrDesc", chico, HelperPdf.FontSubtituloPredeterminado(),null,false,null);
-                //#endregion
-
-                pdf.Close();
+				pdf.Close();
                 #endregion
 
                 return Convert.ToBase64String(ms.ToArray());
