@@ -361,7 +361,10 @@ namespace gc.api.core.Constantes
             public const string SP_ASIENTO_DEF_DETALLE = "SPGECO_Conta_Asiento_DEF_Datos";
             public const string SP_ASIENTO_DETALLE_REPO = "SPGECO_Conta_Asiento_Repo";
             public const string SP_ASIENTO_LIBRO_DIARIO = "SPGECO_Conta_Libro_Diario";
-            public const string SP_ASIENTO_LIBRO_DIARIO_RESUMEN = "SPGECO_Conta_Libro_Diario_Resumen";            
+            public const string SP_ASIENTO_LIBRO_DIARIO_RESUMEN = "SPGECO_Conta_Libro_Diario_Resumen";
+            public const string SP_ASIENTO_AJUSTE_INFLACION = "SPGECO_Conta_Asiento_Ajuste_CCB_Lista";
+            public const string SP_ASIENTO_AJUSTE_CCB = "SPGECO_Conta_Asiento_Ajuste_CCB";
+            
 
             #endregion
 

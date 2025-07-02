@@ -27,5 +27,17 @@ namespace gc.sitio.core.Servicios.Contratos.Asientos
         /// <param name="token">Token de autenticación</param>
         /// <returns>Lista de usuarios del ejercicio</returns>
         Task<RespuestaGenerica<UsuAsientoDto>> ObtenerUsuariosDeEjercicio(int eje_nro, string token);
+
+
+        Task<RespuestaGenerica<AsientoAjusteDto>> ObtenerAsientosAjuste(int eje_nro, string token);
+        Task<RespuestaGenerica<AsientoAjusteCcbDto>> ObtenerAsientosAjusteCcb(int eje_nro, string ccb_id, bool todas, string token);
+
+        /// <summary>
+        /// Genera un asiento de ajuste por inflación para las cuentas seleccionadas
+        /// </summary>
+        /// <param name="request">Datos para generar el asiento de ajuste</param>
+        /// <param name="token">Token de autenticación</param>
+        /// <returns>Resultado de la operación</returns>
+        Task<GenerarAsientoAjusteResponseDto> GenerarAsientoAjuste(GenerarAsientoAjusteRequestDto request, string token);
     }
 }

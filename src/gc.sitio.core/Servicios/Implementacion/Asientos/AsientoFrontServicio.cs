@@ -15,12 +15,14 @@ using System.Reflection;
 
 namespace gc.sitio.core.Servicios.Implementacion.Asientos
 {
-    public class AsientoFrontServicio :Servicio<Dto>, IAsientoFrontServicio
+    public class AsientoFrontServicio : Servicio<Dto>, IAsientoFrontServicio
     {
         private const string RutaAPI = "/api/ApiAsiento";
         private const string GET_EJERCICIOS = "/ejercicios";
         private const string GET_TIPOS_ASIENTO = "/tipos";
         private const string GET_USUARIOS_EJERCICIO = "/usuarios-ejercicio";
+        private const string GET_ASIENTO_AJUSTE = "/asiento-ajuste";
+        private const string GET_ASIENTO_AJUSTE_CCB = "/asiento-ajuste-ccb";
 
 
         private readonly AppSettings _appSettings;
@@ -28,6 +30,121 @@ namespace gc.sitio.core.Servicios.Implementacion.Asientos
         public AsientoFrontServicio(IOptions<AppSettings> options, ILogger<AsientoFrontServicio> logger):base(options, logger, RutaAPI)
         {
             _appSettings = options.Value;
+        }
+
+        public Task<GenerarAsientoAjusteResponseDto> GenerarAsientoAjuste(GenerarAsientoAjusteRequestDto request, string token)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<RespuestaGenerica<AsientoAjusteDto>> ObtenerAsientosAjuste(int eje_nro, string token)
+        {
+            try
+            {
+                ApiResponse<List<AsientoAjusteDto>> apiResponse;
+                HelperAPI helper = new();
+                HttpClient client = helper.InicializaCliente(token);
+                HttpResponseMessage response;
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_ASIENTO_AJUSTE}/{eje_nro}";
+                response = await client.GetAsync(link);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
+                    }
+
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AsientoAjusteDto>>>(stringData)
+                        ?? throw new NegocioException("No se pudo deserializar los datos solicitados.");
+
+                    return new RespuestaGenerica<AsientoAjusteDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
+                }
+                else
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    if (error != null && error.TypeException?.Equals(nameof(NegocioException)) == true)
+                    {
+                        return new RespuestaGenerica<AsientoAjusteDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else if (error != null && error.TypeException?.Equals(nameof(NotFoundException)) == true)
+                    {
+                        return new RespuestaGenerica<AsientoAjusteDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else if (error != null)
+                    {
+                        throw new Exception(error.Detail);
+                    }
+                    else
+                    {
+                        throw new Exception("Error desconocido al procesar la respuesta de la API.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+                return new RespuestaGenerica<AsientoAjusteDto> { Ok = false, Mensaje = $"Algo no fue bien al intentar obtener los usuarios del ejercicio {eje_nro}." };
+            }
+        }
+
+        public async Task<RespuestaGenerica<AsientoAjusteCcbDto>> ObtenerAsientosAjusteCcb(int eje_nro, string ccb_id, bool todas, string token)
+        {
+            try
+            {
+                ApiResponse<List<AsientoAjusteCcbDto>> apiResponse;
+                HelperAPI helper = new();
+                HttpClient client = helper.InicializaCliente(token);
+                HttpResponseMessage response;
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_ASIENTO_AJUSTE_CCB}/{eje_nro}/{ccb_id}/{todas}";
+                response = await client.GetAsync(link);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
+                    }
+
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AsientoAjusteCcbDto>>>(stringData)
+                        ?? throw new NegocioException("No se pudo deserializar los datos solicitados.");
+
+                    return new RespuestaGenerica<AsientoAjusteCcbDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
+                }
+                else
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    if (error != null && error.TypeException?.Equals(nameof(NegocioException)) == true)
+                    {
+                        return new RespuestaGenerica<AsientoAjusteCcbDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else if (error != null && error.TypeException?.Equals(nameof(NotFoundException)) == true)
+                    {
+                        return new RespuestaGenerica<AsientoAjusteCcbDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else if (error != null)
+                    {
+                        throw new Exception(error.Detail);
+                    }
+                    else
+                    {
+                        throw new Exception("Error desconocido al procesar la respuesta de la API.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+                return new RespuestaGenerica<AsientoAjusteCcbDto> { Ok = false, Mensaje = $"Algo no fue bien al intentar obtener los usuarios del ejercicio {eje_nro}." };
+            }
         }
 
         /// <inheritdoc/>

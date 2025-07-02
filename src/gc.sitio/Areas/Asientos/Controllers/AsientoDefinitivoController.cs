@@ -17,7 +17,7 @@ using Newtonsoft.Json;
 namespace gc.sitio.Areas.Asientos.Controllers
 {
     [Area("Asientos")]
-    public class AsientoDefinitivoController : AsientoBase
+    public class AsientoDefinitivoController : AsientoBaseController
     {
         private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
         private AppModulo _modulo; //tengo el AppModulo que corresponde a la consulta de cuentas

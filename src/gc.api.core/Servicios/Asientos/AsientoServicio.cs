@@ -15,6 +15,30 @@ namespace gc.api.core.Servicios.Asientos
         {
         }
 
+        public List<AsientoAjusteDto> ObtenerAsientosAjuste(int eje_nro)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_ASIENTO_AJUSTE_INFLACION;
+            var ps = new List<SqlParameter>()
+            {
+                new SqlParameter("@eje_nro", eje_nro)
+            };
+
+            var lista = _repository.EjecutarLstSpExt<AsientoAjusteDto>(sp, ps, true);
+            return lista;
+        }
+
+        public List<AsientoAjusteCcbDto> ObtenerAsientosAjusteCcb(int eje_nro, string ccb_id, bool todas)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_ASIENTO_AJUSTE_CCB;
+            var ps = new List<SqlParameter>()
+            {
+                new SqlParameter("@eje_nro", eje_nro)
+            };
+
+            var lista = _repository.EjecutarLstSpExt<AsientoAjusteCcbDto>(sp, ps, true);
+            return lista;
+        }
+
         public List<EjercicioDto> ObtenerEjercicios()
         {
             var sp = ConstantesGC.StoredProcedures.SP_EJERCICIOS_LISTA;
