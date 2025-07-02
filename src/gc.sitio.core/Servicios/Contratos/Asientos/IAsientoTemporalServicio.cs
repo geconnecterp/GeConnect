@@ -25,6 +25,7 @@ namespace gc.sitio.core.Servicios.Contratos.Asientos
 
         Task<RespuestaGenerica<AsientoDetalleDto>> ObtenerAsientoDetalle(string moviId, string token);
 
+       
     }
 }
 

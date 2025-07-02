@@ -1,5 +1,4 @@
-﻿using DocumentFormat.OpenXml.Drawing;
-using gc.api.core.Entidades;
+﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
@@ -8,21 +7,17 @@ using gc.infraestructura.Dtos.Asientos;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Enumeraciones;
-using gc.infraestructura.Helpers;
-using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos.ABM;
 using gc.sitio.core.Servicios.Contratos.Asientos;
 using gc.sitio.core.Servicios.Contratos.DocManager;
-using IronSoftware.DOM;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 namespace gc.sitio.Areas.Asientos.Controllers
 {
     [Area("Asientos")]
-    public class AsientoTemporalController : AsientoBase
+    public class AsientoTemporalController : AsientoBaseController
     {
         private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
         private AppModulo _modulo; //tengo el AppModulo que corresponde a la consulta de cuentas

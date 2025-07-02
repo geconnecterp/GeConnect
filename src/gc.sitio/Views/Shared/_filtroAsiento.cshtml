@@ -30,7 +30,7 @@
                              })
                 </div>
             </div>
-            @if (Model.Modelo != ModeloFilter.EJERCICIO_CONTABLE && Model.Modelo != ModeloFilter.BGR && Model.Modelo != ModeloFilter.LIBRO_MAYOR)
+            @if (Model.Modelo != ModeloFilter.ASIENTO_AJUSTE && Model.Modelo != ModeloFilter.EJERCICIO_CONTABLE && Model.Modelo != ModeloFilter.BGR && Model.Modelo != ModeloFilter.LIBRO_MAYOR)
             {
                 <!-- Asiento -->
                 <div class="col-md-6 col-sm-12">
@@ -47,7 +47,7 @@
                 </div>
             }
         </div>
-        @if (Model.Modelo != ModeloFilter.EJERCICIO_CONTABLE && Model.Modelo != ModeloFilter.BGR && Model.Modelo != ModeloFilter.LIBRO_MAYOR)
+        @if (Model.Modelo != ModeloFilter.ASIENTO_AJUSTE && Model.Modelo != ModeloFilter.EJERCICIO_CONTABLE && Model.Modelo != ModeloFilter.BGR && Model.Modelo != ModeloFilter.LIBRO_MAYOR)
         {
             <div class="row mb-1">
                 <!-- Usuario -->
@@ -92,7 +92,7 @@
                 </div>
             </div>
         }
-        @if (Model.Modelo != ModeloFilter.EJERCICIO_CONTABLE && Model.Modelo != ModeloFilter.BGR && Model.Modelo != ModeloFilter.LIBRO_MAYOR)
+        @if (Model.Modelo != ModeloFilter.ASIENTO_AJUSTE && Model.Modelo != ModeloFilter.EJERCICIO_CONTABLE && Model.Modelo != ModeloFilter.BGR && Model.Modelo != ModeloFilter.LIBRO_MAYOR)
         {
             <div class="row mb-1">
                 <!-- Rango de Fechas -->

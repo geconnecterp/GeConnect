@@ -1,0 +1,105 @@
+﻿@model GridCoreSmart<AsientoAjusteDto>
+@{
+    var alt = true;
+    string clase = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+    string leyend = ViewBag.Leyenda;
+}
+
+<div class="grid-golden">
+    <div class="grid-golden-header">
+        <div class="row align-items-md-center">
+            <div class="col-md-8 col-sm-6">
+                <h5 class="mb-0">
+                    <i class="bx bx-book-open me-2"></i>
+                    <strong>@leyend</strong>
+                </h5>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="d-flex justify-content-sm-end">
+                    <!-- Botón Imprimir -->
+                    <button type="button" class="btn btn-golden btn-sm mt-1 me-1 btnImprimir" title="Imprimir">
+                        <i class="bx bx-printer"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid-golden-body">
+        <div class="table-responsive text-nowrap table-wrapper">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbAAJ">
+                <thead>
+                    <tr class="header">
+                        <th class="text-sm-center" style="width: 30px;">
+                            <input type="checkbox" class="form-check-input" id="checkAllAAJ" />
+                        </th>
+                        <th class="text-sm-center" scope="col">Cuenta</th>
+                        <th class="text-sm-center" scope="col">Denominación</th>
+                        <th class="text-sm-center text-end" scope="col">Saldo</th>
+                        <th class="text-sm-center text-end" scope="col">Ajuste</th>
+                        <th class="text-sm-center text-end" scope="col">Saldo Ajustado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.ListaDatos == null || Model.ListaDatos.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center">No se han encontrado asientos de ajuste para los criterios especificados.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        // Filas de datos
+                        @foreach (var item in Model.ListaDatos)
+                        {
+                            if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
+                            <tr class="@clase" data-ccb-id="@item.Ccb_id" onclick="selectReg(this,'tbAAJ')">
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input asiento-check"
+                                    @(item.Ajusta ? "checked" : "")
+                                           data-ccb-id="@item.Ccb_id" />
+                                </td>
+                                <td>@item.Ccb_id</td>
+                                <td>@item.Ccb_desc</td>
+                                <td class="text-end">@Model.FormatearDato(item.Saldo, FormatDato.Monto)</td>
+                                <td class="text-end">@Model.FormatearDato(item.Ajuste, FormatDato.Monto)</td>
+                                <td class="text-end">@Model.FormatearDato(item.Saldo_ajustado, FormatDato.Monto)</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="grid-golden-footer">
+        <div class="row align-items-center">
+            <div class="col-md-4">
+                <div class="form-group mb-0">
+                    <label class="form-label">Fecha De Asiento:</label>
+                    <input type="text" class="form-control form-control-sm datepicker" id="fechaAsiento" />
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="form-group mb-0">
+                    <label class="form-label">Cuenta de Ajuste:</label>
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" id="cuentaAjuste" placeholder="Cuenta de ajuste..." />
+                        <button class="btn btn-outline-secondary" type="button" id="btnBuscarCuenta">
+                            <i class="bx bx-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 text-end">
+                <button class="btn btn-danger btn-sm" id="btnCancelarAjuste">
+                    <i class="bx bx-x-circle me-1"></i>Cancelar
+                </button>
+                <button class="btn btn-success btn-sm" id="btnConfirmarAjuste">
+                    <i class="bx bx-check-circle me-1"></i>Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

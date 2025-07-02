@@ -85,5 +85,61 @@ namespace gc.api.Controllers.Asientos
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
+
+        /// <summary>
+        /// Obtiene el detalle de los asientos de ajuste por inflación para un ejercicio contable específico
+        /// </summary>
+        /// <param name="eje_nro">Número de ejercicio</param>
+        /// <returns>Lista de usuarios del ejercicio</returns>
+        [HttpGet("asiento-ajuste/{eje_nro}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public ActionResult<List<AsientoAjusteDto>> ObtenerAsientosAjuste(int eje_nro)
+        {
+            if (eje_nro <= 0)
+            {
+                return BadRequest("El número de ejercicio debe ser mayor a cero");
+            }
+
+            try
+            {
+                var resultado = _asientosServicio.ObtenerAsientosAjuste(eje_nro);
+                return Ok(new ApiResponse<List<AsientoAjusteDto>>(resultado));
+            }
+            catch (System.Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Obtiene el detalle de los asientos de ajuste por inflación para un ejercicio contable específico
+        /// </summary>
+        /// <param name="eje_nro">Número de ejercicio</param>
+        /// <param name="ccb_id">Id de la cuenta contable</param>
+        /// <param name="todas">Indica si se deben obtener todos los asientos o solo los de la cuenta contable especificada</param>
+        /// <returns>Lista de usuarios del ejercicio</returns>
+        [HttpGet("asiento-ajuste-ccb/{eje_nro}/{ccb_id}/{todas}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public ActionResult<List<AsientoAjusteCcbDto>> ObtenerAsientosAjusteCcb(int eje_nro,string ccb_id,bool todas)
+        {
+            if (eje_nro <= 0)
+            {
+                return BadRequest("El número de ejercicio debe ser mayor a cero");
+            }
+
+            try
+            {
+                var resultado = _asientosServicio.ObtenerAsientosAjusteCcb(eje_nro,ccb_id,todas);
+                return Ok(new ApiResponse<List<AsientoAjusteCcbDto>>(resultado));
+            }
+            catch (System.Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
     }
 }

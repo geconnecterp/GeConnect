@@ -1,0 +1,54 @@
+﻿@{
+    Layout = "~/views/shared/_Layout.cshtml";
+
+    var filtro = new QueryAsiento() { Modelo = ModeloFilter.ASIENTO_AJUSTE };
+    var filtro2 = new QueryFilters() { Modelo = ModeloFilter.ASIENTO_AJUSTE };
+}
+@section styles {
+    <link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+    <!-- Agregar esto al <head> de la página o en un archivo CSS si no existe ya -->
+}
+
+<div class="container">
+    <partial name="_botonera" model="filtro2" />
+</div>
+<div class="collapse show" id="divFiltro">
+    <partial name="_filtroAsiento" model="filtro" />
+    @Html.Hidden("pagEstado", false)
+</div>
+<div class="collapse" id="divDetalle">
+    <partial name="_n01TabsAaj" />
+</div>
+
+<div class="row">
+    <div id="divResultados" class="collapse">
+        <!-- Aquí se cargarán los resultados -->
+    </div>
+</div>
+<div id="modalGestorDocumental"></div>
+
+@section scripts {
+    <script type="text/javascript">
+        var primerArranque = true;
+        var homeAsAjUrl = "@Url.Action("index", "AsientoAjuste", new { area = "asientos" })";
+        var obtenerEjerciciosUrl = "@Url.Action("ObtenerEjercicios", "AsientoAjuste", new { area = "asientos" })";
+        var buscarAsientosAjusteUrl = "@Url.Action("BuscarAsientosDeAjuste", "AsientoAjuste", new { area = "asientos" })";
+
+
+        // Gestor de impresión
+        var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+        var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
+        var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
+        var enviarEmailUrl = "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
+        var enviarWhatsAppUrl = "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
+
+    </script>
+
+    <script src="~/lib/jstree/jstree.min.js"></script>
+    <script src="~/js/mask/jquery.inputmask.min.js"></script>
+
+    <script src="~/js/app/areas/docmngr/docmanager.js"></script>
+    <script src="~/js/app/areas/abms/abmsettings.js"></script>
+    <script src="~/js/app/areas/abms/abmcommons.js"></script>
+    <script src="~/js/app/areas/asientos/asientoajuste.js"></script>
+}
