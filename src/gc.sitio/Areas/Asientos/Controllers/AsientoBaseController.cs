@@ -2,6 +2,7 @@
 using gc.infraestructura.Dtos.Administracion;
 using gc.infraestructura.Dtos.Asientos;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Users;
 using gc.infraestructura.Helpers;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos.Asientos;
@@ -11,18 +12,36 @@ using Newtonsoft.Json;
 
 namespace gc.sitio.Areas.Asientos.Controllers
 {
-    public class AsientoBase:ControladorBase
+    public class AsientoBaseController:ControladorBase
     {
        
         protected List<UsuAsientoDto> UsuariosEjercicioLista { get; set; } = [];
         
 
-        public AsientoBase(IOptions<AppSettings> options,IHttpContextAccessor contexto,ILogger logger ):base(options,contexto,logger)
+        public AsientoBaseController(IOptions<AppSettings> options,IHttpContextAccessor contexto,ILogger logger ):base(options,contexto,logger)
         {
             
         }
 
-       
+        public List<AsientoAjusteDto> AsientosAjuste
+        {
+            get
+            {
+                string json = _context.HttpContext?.Session.GetString("AsientosAjuste") ?? string.Empty;
+                if (string.IsNullOrEmpty(json))
+                {
+                    return new();
+                }
+                return JsonConvert.DeserializeObject<List<AsientoAjusteDto>>(json) ?? [];
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session.SetString("AsientosAjuste", json);
+            }
+        }
+
+
         /// <summary>
         /// Obtiene los tipos de asiento para el combo
         /// </summary>

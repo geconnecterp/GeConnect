@@ -8,5 +8,8 @@ namespace gc.api.core.Contratos.Servicios.Asientos
         List<EjercicioDto> ObtenerEjercicios();
         List<TipoAsientoDto> ObtenerTiposAsiento();
         List<UsuAsientoDto> ObtenerUsuariosDeEjercicio(int nro_eje);
+
+        List<AsientoAjusteDto> ObtenerAsientosAjuste(int eje_nro);
+        List<AsientoAjusteCcbDto> ObtenerAsientosAjusteCcb(int eje_nro, string ccb_id,bool todas);
     }
 }
