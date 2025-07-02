@@ -57,7 +57,7 @@ namespace gc.api.core.Servicios.Reportes
 
                 if (registros == null || registros.Count == 0)
                 {
-                    throw new NegocioException($"No se encontraron registros para poder generar el certificado correspondiente.");
+                    throw new NegocioException($"No se encontraron registros para poder generar el Certificado de Retencióm Impuesto a las Ganancias.");
                 }
 
                 //var importe = registros.Sum(x => x.Cc_importe);
@@ -103,10 +103,27 @@ namespace gc.api.core.Servicios.Reportes
 					#endregion
 				}).ToList();
 
-                #endregion
-                #region Scripts PDF
-                #region instanciamos el pdf
-                pdf = HelperPdf.GenerarInstanciaAndInit(ref writer, out ms, HojaSize.A4, true);
+				var agRet = regs.Select(x => new CertificadosDto()
+				{
+					// Campos del agente de retención
+					emp_cuit = x.empCuit,
+					emp_razon_social = x.empRazSoc,
+					emp_domicilio = x.empDomi,
+					emp_ib_nro = x.empIbNro,
+				}).First();
+
+				var certi = regs.Select(x => new Certificado()
+				{
+					// Campos del certificado
+					id = x.cganNro,
+					fecha = x.cganFecha,
+
+				}).First();
+
+				#endregion
+				#region Scripts PDF
+				#region instanciamos el pdf
+				pdf = HelperPdf.GenerarInstanciaAndInit(ref writer, out ms, HojaSize.A4, true);
 
                 // Agregar el evento de pie de página
                 writer.PageEvent = new CustomPdfPageEventHelper(solicitud.Observacion);
@@ -124,10 +141,11 @@ namespace gc.api.core.Servicios.Reportes
                 var normalBold = HelperPdf.FontNormalPredeterminado(true);
                 var titulo = HelperPdf.FontTituloPredeterminado();
                 var subtitulo = HelperPdf.FontSubtituloPredeterminado();
+				var subtituloBold = HelperPdf.FontSubtituloPredeterminado(true);
 
-                #region Generación de Cabecera               
+				#region Generación de Cabecera               
 
-                PdfPTable tabla = GeneraCabeceraPdf3C(solicitud, chico, titulo, logo, _empresaGeco);
+				PdfPTable tabla = GeneraCabeceraPdf3C(solicitud, chico, titulo, logo, _empresaGeco);
 
                 // Convertir la tabla en un Phrase
                 Phrase phrase = new();
@@ -148,7 +166,24 @@ namespace gc.api.core.Servicios.Reportes
 
                 pdf.Open();
 
-				//TODO MARCE: Completar el cuerpo del reporte
+				#region Datos del Agente de Retencion
+				HelperPdf.CargarTablaAgenteDeRetencion1Col(pdf, agRet, normal, normalBold, titulo, false);
+				#endregion
+
+				Chunk linebreak = new Chunk(new LineSeparator(1f, 100f, BaseColor.Black, Element.ALIGN_CENTER, 5));
+				pdf.Add(linebreak);
+
+				#region Datos datos/titulo del certificado
+				HelperPdf.CargarTablaCertificado(pdf, certi, normal, normalBold, titulo);
+				#endregion
+
+				#region Datos del certificado
+				HelperPdf.CargarTablaCertificadoGanDetalle(pdf, registros.First(), subtitulo, subtituloBold, titulo);
+				#endregion
+
+				#region Firma
+				HelperPdf.CargarSeccionFirmaParaCertificadoDeRetencion(pdf, subtitulo, normal, titulo, true, 460, 355);
+				#endregion
 
 				pdf.Close();
                 #endregion

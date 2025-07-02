@@ -1,7 +1,13 @@
 ﻿
 namespace gc.infraestructura.Dtos.Consultas
 {
-	public abstract class CertificadosDto : Dto { }
+	public class CertificadosDto : Dto 
+	{
+		public string emp_razon_social { get; set; } = string.Empty;
+		public string emp_cuit { get; set; } = string.Empty;
+		public string emp_ib_nro { get; set; } = string.Empty;
+		public string emp_domicilio { get; set; } = string.Empty;
+	}
 
 	public class  CertRetenGananDto : CertificadosDto
 	{
@@ -16,10 +22,6 @@ namespace gc.infraestructura.Dtos.Consultas
 		public string cgan_estado { get; set; } = string.Empty;
 		public string op_compte { get; set; } = string.Empty;
 		public string cgan_actu { get; set; } = string.Empty;
-		public string emp_razon_social { get; set; } = string.Empty;
-		public string emp_cuit { get; set; } = string.Empty;
-		public string emp_ib_nro { get; set; } = string.Empty;
-		public string emp_domicilio { get; set; } = string.Empty;
 		public string rgan_desc { get; set; } = string.Empty;
 		public decimal rgan_porc { get; set; } = 0.00M;
 		public string rgan_impreso { get; set; } = string.Empty;
@@ -39,10 +41,6 @@ namespace gc.infraestructura.Dtos.Consultas
 		public string op_compte { get; set; } = string.Empty;
 		public string cib_actu { get; set; } = string.Empty;
 		public decimal cib_reten_lh { get; set; } = 0.00M;
-		public string emp_razon_social { get; set; } = string.Empty;
-		public string emp_cuit { get; set; } = string.Empty;
-		public string emp_ib_nro { get; set; } = string.Empty;
-		public string emp_domicilio { get; set; } = string.Empty;
 		public string cib_nro_ins { get; set; } = string.Empty;
 		public decimal cib_ali { get; set; } = 0.00M;
 		public decimal cib_ali_lh { get; set; } = 0.00M;
@@ -65,9 +63,11 @@ namespace gc.infraestructura.Dtos.Consultas
 		public string op_compte { get; set; } = string.Empty;
 		public string civa_actu { get; set; } = string.Empty;
 		public string civa_impreso { get; set; } = string.Empty;
-		public string emp_razon_social { get; set; } = string.Empty;
-		public string emp_cuit { get; set; } = string.Empty;
-		public string emp_ib_nro { get; set; } = string.Empty;
-		public string emp_domicilio { get; set; } = string.Empty;
+	}
+
+	public class Certificado
+	{
+		public string id { get; set; } = string.Empty;
+		public DateTime fecha { get; set; }
 	}
 }

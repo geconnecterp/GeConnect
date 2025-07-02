@@ -123,6 +123,7 @@
 
 
 
+using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.DocManager;
@@ -973,6 +974,249 @@ namespace gc.infraestructura.Helpers
 			tabla.AddCell(CeldaSinBorde(domicilioCompleto, fuenteValor, Element.ALIGN_LEFT));
 
 			pdf.Add(tabla);
+		}
+
+		public static void CargarTablaAgenteDeRetencion1Col(Document pdf, CertificadosDto certi, Font fuenteEtiqueta, Font fuenteValor, Font titulo, bool mostrarInscripcion = false)
+		{
+			PdfPTable tabla = GeneraTabla(1, [100f], 100, 10, 10);
+			tabla.AddCell(CeldaSinBorde("Datos del Agente de Retención:", titulo, Element.ALIGN_LEFT));
+			tabla.AddCell(CeldaSinBorde("         ", titulo, Element.ALIGN_LEFT));
+
+			// FILA 1 - Razon Social
+			tabla.AddCell(CeldaSinBorde($"RAZÓN SOCIAL: {certi.emp_razon_social}", fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 2 - DOMICILIO
+			tabla.AddCell(CeldaSinBorde($"DOMICILIO: {certi.emp_domicilio}", fuenteValor, Element.ALIGN_LEFT));
+
+			if (mostrarInscripcion)
+			{
+				// FILA 3 - Nro de Inscripción de Ingresos Brutos
+				tabla.AddCell(CeldaSinBorde($"N° INSCRIPCIÓN INGRESOS BRUTOS: {certi.emp_ib_nro}", fuenteValor, Element.ALIGN_LEFT));
+			}
+
+			// FILA 4 - CUIT
+			tabla.AddCell(CeldaSinBorde($"NÚMERO DE CUIT: {certi.emp_cuit}", fuenteValor, Element.ALIGN_LEFT));
+
+			pdf.Add(tabla);
+		}
+
+		public static void CargarTablaAgenteDeRetencion2Col(Document pdf, CertificadosDto certi, Font fuenteEtiqueta, Font fuenteValor, Font titulo, bool mostrarInscripcion = false)
+		{
+			PdfPTable tablaTitulo = GeneraTabla(1, [100f], 100, 10, 10);
+			tablaTitulo.AddCell(CeldaSinBorde("Datos del Agente de Retención:", titulo, Element.ALIGN_LEFT));
+			pdf.Add(tablaTitulo);
+
+			PdfPTable tabla = GeneraTabla(2, [25f, 75f], 100, 10, 10);
+
+			// FILA 1 - Razon Social
+			tabla.AddCell(CeldaSinBorde("RAZÓN SOCIAL:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde($"{certi.emp_razon_social}", fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 2 - DOMICILIO
+			string domicilioCompleto = $"{certi.emp_domicilio}";
+			tabla.AddCell(CeldaSinBorde("DOMICILIO:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde(domicilioCompleto, fuenteValor, Element.ALIGN_LEFT));
+
+			if (mostrarInscripcion)
+			{
+				// FILA 3 - Nro de Inscripción de Ingresos Brutos
+				tabla.AddCell(CeldaSinBorde("N° INSCRIPCIÓN INGRESOS BRUTOS:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+				tabla.AddCell(CeldaSinBorde($"{certi.emp_ib_nro}", fuenteValor, Element.ALIGN_LEFT));
+			}
+
+			// FILA 4 - CUIT
+			tabla.AddCell(CeldaSinBorde("NÚMERO DE CUIT:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde($"{certi.emp_cuit}", fuenteValor, Element.ALIGN_LEFT));
+
+			pdf.Add(tabla);
+		}
+
+		public static void CargarTablaCertificado(Document pdf, Certificado certi, Font fuenteEtiqueta, Font fuenteValor, Font titulo)
+		{
+			PdfPTable tabla = GeneraTabla(2, [80f, 20f], 100, 10, 10);
+
+			// FILA 1 - Numero de Certificado
+			tabla.AddCell(CeldaSinBorde("Número de Certificado: ", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde($"{certi.id}", fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 2 - Fecha
+			tabla.AddCell(CeldaSinBorde("Fecha: ", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde(certi.fecha.ToString("dd/MM/yyyy HH:mm"), fuenteValor, Element.ALIGN_LEFT));
+
+			pdf.Add(tabla);
+		}
+
+		public static void CargarTablaCertificadoIIBBDetalle(Document pdf, CertRetenIBDto certi, Font fuenteEtiqueta, Font fuenteValor, Font titulo)
+		{
+			PdfPTable tabla = GeneraTabla(2, [25f, 75f], 100, 10, 10);
+
+			// FILA 1 - Numero de Certificado
+			tabla.AddCell(CeldaSinBorde("Número de Cuenta:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde($"{certi.cta_id}", fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 2 - Razón Social
+			tabla.AddCell(CeldaSinBorde("Razón Social:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde(certi.cib_raz_soc, fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 3 - Domicilio
+			tabla.AddCell(CeldaSinBorde("Domicilio:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde(certi.cib_domicilio, fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 4 - N° Inscripción de IIBB
+			tabla.AddCell(CeldaSinBorde("N° Inscripción de IIBB:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde(certi.cib_nro_ins, fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 5 - Nro CUIT
+			tabla.AddCell(CeldaSinBorde("Número de CUIT:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde(certi.cib_cuit, fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 6 - Orden de Pago
+			tabla.AddCell(CeldaSinBorde("Orden de Pago:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde(certi.op_compte, fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 7 - Base Imponible
+			tabla.AddCell(CeldaSinBorde("Base Imponible:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde(certi.cib_base.ToString("N2"), fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 8 - Importe de Retencion IB
+			tabla.AddCell(CeldaSinBorde("Importe de Retencion IB:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde($"{certi.cib_reten:N2}     (Alicuota: {certi.cib_ali})", fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 9 - Importe de Retencion LH
+			tabla.AddCell(CeldaSinBorde("Importe de Retencion LH:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde($"{certi.cib_reten_lh:N2}     (Alicuota: {certi.cib_ali_lh})", fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 10 - Total Retenido
+			var total = certi.cib_reten + certi.cib_reten_lh;
+			tabla.AddCell(CeldaSinBorde("Total Retenido:", fuenteValor, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde($"{total:N2}", fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 11 - Total en texto
+			tabla.AddCell(CeldaSinBorde("", fuenteValor, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde(HelperGen.EnLetras(total.ToString()), fuenteValor, Element.ALIGN_LEFT));
+
+			pdf.Add(tabla);
+		}
+
+		public static void CargarTablaCertificadoIVADetalle(Document pdf, CertRetenIVADto certi, Font fuenteEtiqueta, Font fuenteValor, Font titulo)
+		{
+			PdfPTable tabla = GeneraTabla(2, [20f, 80f], 100, 10, 10);
+
+			// FILA 1 - Numero de Certificado
+			tabla.AddCell(CeldaSinBorde("Número de Cuenta:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde($"{certi.cta_id}", fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 2 - Nro CUIT
+			tabla.AddCell(CeldaSinBorde("Número de CUIT:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde(certi.civa_cuit, fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 3 - Razón Social
+			tabla.AddCell(CeldaSinBorde("Razón Social:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde(certi.civa_raz_soc, fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 4 - Domicilio
+			tabla.AddCell(CeldaSinBorde("Domicilio:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde(certi.civa_domicilio, fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 5 - Impusto
+			tabla.AddCell(CeldaSinBorde("Impuesto:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde("IVA", fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 6 - Orden de Pago
+			tabla.AddCell(CeldaSinBorde("Orden de Pago:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde(certi.op_compte, fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 7 - Base Imponible
+			tabla.AddCell(CeldaSinBorde("Base Imponible:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde(certi.civa_base.ToString("N2"), fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 8 - Importe de Retencion IB
+			tabla.AddCell(CeldaSinBorde("Importe de Retencion:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde($"{certi.civa_reten:N2}", fuenteValor, Element.ALIGN_LEFT));
+
+			pdf.Add(tabla);
+		}
+
+		public static void CargarTablaCertificadoGanDetalle(Document pdf, CertRetenGananDto certi, Font fuenteEtiqueta, Font fuenteValor, Font titulo)
+		{
+			PdfPTable tabla = GeneraTabla(2, [20f, 80f], 100, 10, 10);
+
+			// FILA 1 - Numero de Certificado
+			tabla.AddCell(CeldaSinBorde("Número de Cuenta:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde($"{certi.cta_id}", fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 2 - Nro CUIT
+			tabla.AddCell(CeldaSinBorde("Número de CUIT:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde(certi.cgan_cuit, fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 3 - Razón Social
+			tabla.AddCell(CeldaSinBorde("Razón Social:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde(certi.cgan_raz_soc, fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 4 - Domicilio
+			tabla.AddCell(CeldaSinBorde("Domicilio:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde(certi.cgan_domicilio, fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 5 - Impuesto
+			tabla.AddCell(CeldaSinBorde("Impuesto:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde("GANANCIAS", fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 6 - Regimen
+			tabla.AddCell(CeldaSinBorde("Régimen:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde(certi.rgan_desc, fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 7 - Orden de Pago
+			tabla.AddCell(CeldaSinBorde("Orden de Pago:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde(certi.op_compte, fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 8 - Base Imponible
+			tabla.AddCell(CeldaSinBorde("Base Imponible:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde(certi.cgan_base.ToString("N2"), fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 9 - Importe de Retencion IB
+			tabla.AddCell(CeldaSinBorde("Importe de Retencion:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde($"{certi.cgan_reten:N2}", fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 10 - Total en texto
+			tabla.AddCell(CeldaSinBorde("", fuenteValor, Element.ALIGN_RIGHT));
+			tabla.AddCell(CeldaSinBorde(HelperGen.EnLetras(certi.cgan_reten.ToString()), fuenteValor, Element.ALIGN_LEFT));
+
+			pdf.Add(tabla);
+		}
+
+		public static void CargarSeccionFirmaParaCertificadoDeRetencion(Document pdf, Font fuenteEtiqueta, Font fuenteValor, Font titulo, bool mostrarCargo, float bottom, float top )
+		{
+			PdfPTable tabla = GeneraTabla(1, [100f], 100, 10, 10);
+			tabla.AddCell(CeldaSinBorde($"San Juan, {DateTime.Now.ToString("dd/MM/yyyy")}", fuenteEtiqueta, Element.ALIGN_LEFT));
+			tabla.AddCell(CeldaSinBorde($"         ", fuenteEtiqueta, Element.ALIGN_LEFT));
+			tabla.AddCell(CeldaSinBorde($"         ", fuenteEtiqueta, Element.ALIGN_LEFT));
+			tabla.AddCell(CeldaSinBorde($"         ", fuenteEtiqueta, Element.ALIGN_LEFT));
+			tabla.AddCell(CeldaSinBorde($"         ", fuenteEtiqueta, Element.ALIGN_LEFT));
+			tabla.AddCell(CeldaSinBorde($"         ", fuenteEtiqueta, Element.ALIGN_LEFT));
+			if (mostrarCargo)
+			{
+				tabla.AddCell(CeldaSinBorde($"                             Por Café América Mayorista S.A. Autorizado", fuenteValor, Element.ALIGN_LEFT));
+				tabla.AddCell(CeldaSinBorde($"    CARGO: ...........................................................", fuenteEtiqueta, Element.ALIGN_LEFT));
+			}
+			else
+			{
+				tabla.AddCell(CeldaSinBorde($"         ", fuenteEtiqueta, Element.ALIGN_LEFT));
+				tabla.AddCell(CeldaSinBorde($"                             Por Café América Mayorista S.A. Autorizado", fuenteValor, Element.ALIGN_LEFT));
+			}
+			tabla.AddCell(CeldaSinBorde($"         ", fuenteEtiqueta, Element.ALIGN_LEFT));
+			tabla.AddCell(CeldaSinBorde($"Declaro bajo juramento que los datos consignados en la presente constancia son fiel expresión de la verdad.", fuenteEtiqueta, Element.ALIGN_LEFT));
+			pdf.Add(tabla);
+
+			var rect = new Rectangle(300, 200, 23, 100)
+			{
+				Border = Rectangle.BOX,
+				BorderWidth = 1,
+				BorderColor = new BaseColor(0, 0, 0),
+				Bottom = bottom,
+				Top = top
+			};
+
+			pdf.Add(rect);
 		}
 
 		public static void CargarTablaConceptosCancelados(Document pdf, List<ConsOrdPagoDetExtendDto> regs, Font fuenteEtiqueta, Font fuenteValor)

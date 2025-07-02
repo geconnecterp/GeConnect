@@ -32,7 +32,7 @@ namespace gc.api.core.Servicios.Reportes
 			_consultaServicio = consulta;
 
 			_empresaGeco = empresa.Value;
-			_titulos = new List<string> { "IB Nro", "ID", "IB CUIT", "IB Razón Social", "IB Domicilio", "Fecha", "Base", "Reten", "Estado", "OP_Compte", "IB Actu", "Reten LH", "Razón Social", "CUIT", "IB Nro", "Domicilio", "IB Nro. Ins.", 
+			_titulos = new List<string> { "IB Nro", "ID", "IB CUIT", "IB Razón Social", "IB Domicilio", "Fecha", "Base", "Reten", "Estado", "OP_Compte", "IB Actu", "Reten LH", "Razón Social", "CUIT", "IB Nro", "Domicilio", "IB Nro. Ins.",
 										  "IB Ali", "IB Ali LH", "RIB Desc", "RIB Porc", "RIB Impreso",  };
 			_campos = new List<string> { "cibNro", "ctaId", "cibCuit", "cibRazSoc", "cibDomicilio", "cibFecha", "cibBase", "cibReten", "cibEstado", "opCompte", "cibActu", "cibRetenLh", "empRazSoc", "empCuit", "empIbNro", "empDomicilio", "cibNroIns",
 										 "cibAli","cibAliLh","ribDesc","ribPorc","ribImpreso", };
@@ -57,7 +57,7 @@ namespace gc.api.core.Servicios.Reportes
 
 				if (registros == null || registros.Count == 0)
 				{
-					throw new NegocioException($"No se encontraron registros para poder generar el certificado correspondiente.");
+					throw new NegocioException($"No se encontraron registros para poder generar el Certificado de Retención Impuesto sobre los Ingresos Brutos.");
 				}
 
 				//var importe = registros.Sum(x => x.Cc_importe);
@@ -107,6 +107,23 @@ namespace gc.api.core.Servicios.Reportes
 					#endregion
 				}).ToList();
 
+				var agRet = regs.Select(x => new CertificadosDto()
+				{
+					// Campos del agente de retención
+					emp_cuit = x.empCuit,
+					emp_razon_social = x.empRazSoc,
+					emp_domicilio = x.empDomicilio,
+					emp_ib_nro = x.empIbNro,
+				}).First();
+
+				var certi = regs.Select(x => new Certificado()
+				{
+					// Campos del certificado
+					id = x.cibNro,
+					fecha = x.cibFecha,
+
+				}).First();
+
 				#endregion
 				#region Scripts PDF
 				#region instanciamos el pdf
@@ -128,6 +145,7 @@ namespace gc.api.core.Servicios.Reportes
 				var normalBold = HelperPdf.FontNormalPredeterminado(true);
 				var titulo = HelperPdf.FontTituloPredeterminado();
 				var subtitulo = HelperPdf.FontSubtituloPredeterminado();
+				var subtituloBold = HelperPdf.FontSubtituloPredeterminado(true);
 
 				#region Generación de Cabecera               
 
@@ -152,7 +170,26 @@ namespace gc.api.core.Servicios.Reportes
 
 				pdf.Open();
 
-				//TODO MARCE: Completar el cuerpo del reporte
+				#region Datos del Agente de Retencion
+				HelperPdf.CargarTablaAgenteDeRetencion1Col(pdf, agRet, normal, normalBold, titulo, true);
+				#endregion
+
+				Chunk linebreak = new Chunk(new LineSeparator(1f, 100f, BaseColor.Black, Element.ALIGN_CENTER, 5));
+				pdf.Add(linebreak);
+
+				#region Datos datos/titulo del certificado
+				HelperPdf.CargarTablaCertificado(pdf, certi, normal, normalBold, titulo);
+				#endregion
+
+				#region Detalle de certificado
+				HelperPdf.CargarTablaCertificadoIIBBDetalle(pdf, registros.First(), subtitulo, subtituloBold, titulo);
+				#endregion
+
+				#region Firma
+				HelperPdf.CargarSeccionFirmaParaCertificadoDeRetencion(pdf, subtitulo, normal, titulo, false, 435, 330);
+				#endregion
+
+				//TODO: Agregar fecha y recuadro para firma del agente de retención
 				pdf.Close();
 				#endregion
 

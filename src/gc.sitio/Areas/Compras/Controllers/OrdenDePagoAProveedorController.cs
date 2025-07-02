@@ -955,6 +955,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				Console.WriteLine("json_v:");
 				Console.WriteLine(JsonConvert.SerializeObject(OPValoresDesdeObligYCredLista, new JsonSerializerSettings()));
 				var respuesta = _ordenDePagoServicio.ConfirmarOrdenDePagoAProveedor(req, TokenCookie);
+				//var respuesta = ObtenerEntidadAux();
 				return AnalizarRespuesta(respuesta, "La Orden de Compra se Confirmo con Éxito");
 			}
 			catch (Exception ex)
@@ -986,6 +987,20 @@ namespace gc.sitio.Areas.Compras.Controllers
 		#endregion
 
 		#region Metodos Privados
+		private RespuestaGenerica<RespuestaDto> ObtenerEntidadAux()
+		{
+			return new RespuestaGenerica<RespuestaDto>
+			{
+				EsError = false,
+				EsWarn = false,
+				Ok = true,
+				Entidad = new RespuestaDto
+				{
+					resultado = 0,
+					resultado_id = "00-C0123765"
+				}
+			};
+		}
 		private decimal ObtenerTotalImputacionCreditos()
 		{
 			try

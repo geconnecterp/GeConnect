@@ -12,11 +12,12 @@
 	});
 
 	$("#btnImprimirTemp").on("click", function () {
-		let data = { op_compte: "00-C0123763", ctaId :"C0017180"};
+		let data = { op_compte: "00-C0123765", ctaId :"C0191994"};
 		// Guardamos parámetros para el reporte
 		cargarReporteEnArre(17, data, "ORDEN DE PAGO A PROVEEDORES", "", "");
 		cargarReporteEnArre(18, data, "CERTIFICADO RETENCIÓN IIBB", "", "");
 		cargarReporteEnArre(19, data, "CERTIFICADO RETENCIÓN GA", "", "");
+		data = { op_compte: "00-S0038688", ctaId: "C0196957" };
 		cargarReporteEnArre(20, data, "CERTIFICADO RETENCIÓN IVA", "", "");
 	});
 	//
@@ -54,6 +55,15 @@ function imprimirOPP() {
 	invocacionGestorDoc({});
 }
 
+function ImprimirOPP_Generada(opCompte, ctaId) {
+	let data = { op_compte: opCompte, ctaId: ctaId };
+	// Guardamos parámetros para el reporte
+	cargarReporteEnArre(17, data, "ORDEN DE PAGO A PROVEEDORES", "", "");
+	cargarReporteEnArre(18, data, "CERTIFICADO RETENCIÓN IIBB", "", "");
+	cargarReporteEnArre(19, data, "CERTIFICADO RETENCIÓN GA", "", "");
+	cargarReporteEnArre(20, data, "CERTIFICADO RETENCIÓN IVA", "", "");
+	invocacionGestorDoc({});
+}
 
 function btnConfirmar2Validar() {
 	ValidarPrevioAConfirmar();
@@ -92,9 +102,10 @@ function ValidarPrevioAConfirmar() {
 								AbrirMensaje("ATENCIÓN", obj.msg, function () {
 									$("#msjModal").modal("hide");
 									console.log(obj.id); //Tomar este valor para imprimir.
-									let par = { op_compte: obj.id };
+									//let par = { op_compte: obj.id };
 									// Guardamos parámetros para el reporte
-									cargarReporteEnArre(17, par, "ORDEN DE PAGO A PROVEEDORES", "", "");
+									ImprimirOPP_Generada(obj.id, ctaIdSelected);
+									//cargarReporteEnArre(17, par, "ORDEN DE PAGO A PROVEEDORES", "", "");
 
 									btnAbmCancelar_click();
 									return true;
