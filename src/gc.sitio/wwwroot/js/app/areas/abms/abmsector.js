@@ -25,7 +25,7 @@
 	$("#btnAbmAceptar").hide();
 	$("#btnAbmCancelar").hide();
 	$("#btnCancel").on("click", function () {
-		$("#btnFiltro").trigger("click");
+		window.location.href = homeSectorUrl;
 	});
 
 	$("#btnBuscar").on("click", function () {
@@ -167,11 +167,26 @@ function ModificaRubro(tabAct, mainGrid) {
 }
 
 function analizaEstadoBtnDetalle() {
-	var res = $("#divDetalle").hasClass("show");
-	if (res === true) {
-		selectRegCli(regSelected, Grids.GridProveedor);
+	if ($("#divDetalle").is(":visible")) {
+		// HAY QUE LIMPIAR 	
+		$("#divDatosSector").empty();
+		$("#divSubSector").empty();
+		$("#divRubro").empty();
+		accionBotones(AbmAction.CANCEL);
+		activarGrilla(Grids.GridSector);
+		$("#" + Grids.GridSector + " tbody tr").each(function (index) {
+			$(this).removeClass("selected-row");
+			$(this).removeClass("selectedEdit-row");
+		});
+		$("#divDetalle").collapse("hide");
+		$("#divFilter").collapse("show");
 	}
-	return true;
+
+	//var res = $("#divDetalle").hasClass("show");
+	//if (res === true) {
+	//	selectRegCli(regSelected, Grids.GridProveedor);
+	//}
+	//return true;
 
 }
 

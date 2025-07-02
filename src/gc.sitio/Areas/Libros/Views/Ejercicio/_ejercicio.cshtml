@@ -1,0 +1,153 @@
+﻿@model EjercicioDto
+
+@{
+    var esActivo = Model.Eje_activo=='S';
+    var fechaDesdeFormateada = Model.Eje_desde.ToString("dd/MM/yyyy");
+    var fechaHastaFormateada = Model.Eje_hasta.ToString("dd/MM/yyyy");
+    var fechaControlFormateada = Model.Eje_ctl.ToString("dd/MM/yyyy");
+    var ejercicioId = Model.Eje_nro;
+    string leyend = $"Ejercicio {ejercicioId}";
+}
+
+<!-- Cabecera del ejercicio con estilo Golden -->
+<div class="card card-golden">
+    <div class="grid-golden-header">
+        <div class="row align-items-md-center">
+            <div class="col-md-8 col-sm-6">
+                <h5 class="mb-0">
+                    <i class="bx bx-book-open me-2"></i>
+                    <strong>@leyend</strong>
+                </h5>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="d-flex justify-content-sm-end">
+                    <!-- Botón Imprimir -->
+                    <button type="button" class="btn btn-golden btn-sm mt-1 me-1 btnImprimir" title="Imprimir">
+                        <i class="bx bx-printer"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="alert alert-light border">
+                    <span class="fw-bold">Período:</span> Desde @fechaDesdeFormateada hasta @fechaHastaFormateada
+                </div>
+            </div>
+        </div>
+
+        <!-- Datos del ejercicio -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="form-group mb-3">
+                    <label class="form-label fw-bold text-primary">
+                        <i class="bx bx-calendar-event me-1"></i>Desde:
+                    </label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light">
+                            <i class="bx bx-calendar"></i>
+                        </span>
+                        <input type="text" id="ejeDesde" class="form-control datepicker" value="@fechaDesdeFormateada" disabled>
+                    </div>
+                    <small class="text-muted">Inicio del ejercicio (no editable)</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group mb-3">
+                    <label class="form-label fw-bold text-primary">
+                        <i class="bx bx-calendar-x me-1"></i>Hasta:
+                    </label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light">
+                            <i class="bx bx-calendar"></i>
+                        </span>
+                        <input type="text" id="ejeHasta" class="form-control datepicker" value="@fechaHastaFormateada" @(esActivo ? "" : "disabled")>
+                    </div>
+                    @if (esActivo)
+                    {
+                        <small class="text-success">Editable por ser ejercicio corriente</small>
+                    }
+                    else
+                    {
+                        <small class="text-muted">Solo editable en ejercicios corrientes</small>
+                    }
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group mb-3">
+                    <label class="form-label fw-bold text-primary">
+                        <i class="bx bx-check-shield me-1"></i>Control:
+                    </label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light">
+                            <i class="bx bx-calendar"></i>
+                        </span>
+                        <input type="text" id="ejeControl" class="form-control datepicker" value="@fechaControlFormateada">
+                    </div>
+                    <small class="text-muted">Fecha de control (siempre editable)</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Indicador de ejercicio corriente -->
+        @if (esActivo)
+        {
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="alert alert-success d-flex align-items-center" id="ejercicioCorriente">
+                        <i class="bx bx-check-circle fs-5 me-2"></i>
+                        <span class="fw-bold">Ejercicio Corriente</span>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="alert alert-secondary d-flex align-items-center" id="ejercicioCorriente" style="display:none;">
+                        <i class="bx bx-info-circle fs-5 me-2"></i>
+                        <span class="fw-bold">Ejercicio No Corriente</span>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Campo oculto para el ID del ejercicio -->
+        <input type="hidden" id="ejeId" value="@ejercicioId">
+
+        <!-- Botones de acción -->
+        <div class="row mt-4">
+            <div class="col-12 d-flex justify-content-center">
+                <button id="btnConfirmar" class="btn btn-success me-2">
+                    <i class="bx bx-check-circle me-1"></i> Confirmar
+                </button>
+                <button id="btnCancelar" class="btn btn-danger me-2">
+                    <i class="bx bx-x-circle me-1"></i> Cancelar
+                </button>
+                <button id="btnNuevoEjercicio" class="btn btn-primary" @(ejercicioId=="0"?"disabled":"")>
+                    <i class="bx bx-plus-circle me-1"></i> Nuevo Ejercicio
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Script para inicializar componentes específicos de esta vista -->
+<script>
+    $(document).ready(function() {
+        // Inicializar datepickers
+        $('#ejeDesde, #ejeHasta, #ejeControl').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+            language: 'es',
+            todayHighlight: true
+        });
+
+        // Aplicar estilos adicionales para campos deshabilitados
+        $('input:disabled').addClass('bg-light');
+    });
+</script>

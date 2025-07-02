@@ -16,7 +16,7 @@
                         <input class="form-check-input" type="checkbox" id="chkEjercicio" checked disabled>
                         <label class="form-check-label fw-medium" for="chkEjercicio">Ejercicio</label>
                     </div>
-                    @if (Model.Modelo != ModeloFilter.BGR)
+                    @if (Model.Modelo != ModeloFilter.EJERCICIO_CONTABLE && Model.Modelo != ModeloFilter.BGR)
                     {
                         <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" id="chkIncluirTemp">
@@ -54,7 +54,7 @@
                 </div>
             }
         </div>
-        @if (Model.Modelo != ModeloFilter.BGR)
+        @if (Model.Modelo != ModeloFilter.EJERCICIO_CONTABLE && Model.Modelo != ModeloFilter.BGR)
         {
             <div class="row mb-3">
                 <div class="col-md-12">
