@@ -12,7 +12,6 @@ using iTextSharp.text;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 using iTextSharp.text.pdf.draw;
-using System.Drawing;
 
 namespace gc.api.core.Servicios.Reportes
 {
@@ -32,10 +31,10 @@ namespace gc.api.core.Servicios.Reportes
 			_consultaServicio = consulta;
 
 			_empresaGeco = empresa.Value;
-			_titulos = new List<string> { "IB Nro", "ID", "IB CUIT", "IB Razón Social", "IB Domicilio", "Fecha", "Base", "Reten", "Estado", "OP_Compte", "IB Actu", "Reten LH", "Razón Social", "CUIT", "IB Nro", "Domicilio", "IB Nro. Ins.",
-										  "IB Ali", "IB Ali LH", "RIB Desc", "RIB Porc", "RIB Impreso",  };
-			_campos = new List<string> { "cibNro", "ctaId", "cibCuit", "cibRazSoc", "cibDomicilio", "cibFecha", "cibBase", "cibReten", "cibEstado", "opCompte", "cibActu", "cibRetenLh", "empRazSoc", "empCuit", "empIbNro", "empDomicilio", "cibNroIns",
-										 "cibAli","cibAliLh","ribDesc","ribPorc","ribImpreso", };
+			_titulos = [ "IB Nro", "ID", "IB CUIT", "IB Razón Social", "IB Domicilio", "Fecha", "Base", "Reten", "Estado", "OP_Compte", "IB Actu", "Reten LH", "Razón Social", "CUIT", "IB Nro", "Domicilio", "IB Nro. Ins.",
+										  "IB Ali", "IB Ali LH", "RIB Desc", "RIB Porc", "RIB Impreso",  ];
+			_campos = [ "cibNro", "ctaId", "cibCuit", "cibRazSoc", "cibDomicilio", "cibFecha", "cibBase", "cibReten", "cibEstado", "opCompte", "cibActu", "cibRetenLh", "empRazSoc", "empCuit", "empIbNro", "empDomicilio", "cibNroIns",
+										 "cibAli","cibAliLh","ribDesc","ribPorc","ribImpreso", ];
 			_cuentaSv = consultaSv;
 			_logger = logger;
 		}
@@ -59,8 +58,6 @@ namespace gc.api.core.Servicios.Reportes
 				{
 					throw new NegocioException($"No se encontraron registros para poder generar el Certificado de Retención Impuesto sobre los Ingresos Brutos.");
 				}
-
-				//var importe = registros.Sum(x => x.Cc_importe);
 
 				//buscando datos del cliente
 				var cta = _cuentaSv.GetCuentaComercialLista(ctaId, 'T');
@@ -160,9 +157,6 @@ namespace gc.api.core.Servicios.Reportes
 				{
 					Alignment = Element.ALIGN_TOP,
 					BorderWidth = 0,
-					//Border=1
-					//BorderWidthBottom = 1,   
-
 				};
 
 				pdf.Header = header;
@@ -191,7 +185,6 @@ namespace gc.api.core.Servicios.Reportes
 
 				HelperPdf.CargarSeccionCopiaParaCertificadoDeRetencion(pdf, writer);
 
-				//TODO: Agregar fecha y recuadro para firma del agente de retención
 				pdf.Close();
 				#endregion
 
@@ -204,9 +197,8 @@ namespace gc.api.core.Servicios.Reportes
 			}
 			catch (Exception ex)
 			{
-				//_logger.Log(typeof(R001_InformeCuentaCorriente), Level.Error, $"Error al generar el informe de cuenta corriente: {ex.Message}", ex);
-				_logger.LogError(ex, "Error en R003");
-				throw new NegocioException("Se produjo un error al intentar generar el Informe de Cuenta Corriente. Para mayores datos ver el log.");
+				_logger.LogError(ex, "Error en R018");
+				throw new NegocioException("Se produjo un error al intentar generar el Certificado de Retencion de IIBB. Para mayores datos ver el log.");
 			}
 		}
 

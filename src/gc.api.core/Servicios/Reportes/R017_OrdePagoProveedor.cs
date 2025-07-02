@@ -32,8 +32,8 @@ namespace gc.api.core.Servicios.Reportes
             _consultaServicio = consulta;
 
             _empresaGeco = empresa.Value;
-            _titulos = new List<string> { "Descripción", "Importe",  };
-            _campos = new List<string> { "Descripcion", "Importe", };
+            _titulos = ["Descripción", "Importe",];
+            _campos = ["Descripcion", "Importe",];
             _cuentaSv = consultaSv;
             _logger = logger;
         }
@@ -116,13 +116,10 @@ namespace gc.api.core.Servicios.Reportes
                 phrase.Add(tabla);
 
                 // Crear el HeaderFooter con el Phrase que contiene la tabla
-                HeaderFooter header = new HeaderFooter(phrase, false)
+                HeaderFooter header = new(phrase, false)
                 {
                     Alignment = Element.ALIGN_TOP,
                     BorderWidth = 0,
-                    //Border=1
-                    //BorderWidthBottom = 1,   
-
                 };
 
                 pdf.Header = header;

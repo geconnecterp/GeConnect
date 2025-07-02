@@ -1357,7 +1357,6 @@ namespace gc.infraestructura.Helpers
 				Importe = x.Cc_importe
 			}).ToList();
 			HelperPdf.GenerarListadoDesdeLista(pdf, regsAux, _titulosTabla, _anchosTitulosTabla, fuenteEtiqueta);
-			//HelperPdf.GenerarListadoAgrupado(pdf, regs, _campos, _titulos, anchos, "Grupo", "GrDesc", chico, HelperPdf.FontSubtituloPredeterminado(), null, false, null);
 
 			// FILA 4
 			PdfPTable tablaTotal = GeneraTabla(1, [100f], 100, 0, 10);
@@ -1400,9 +1399,6 @@ namespace gc.infraestructura.Helpers
 			tablaTitulo.AddCell(celdaVacia);
 			pdf.Add(tablaTitulo);
 
-			//Chunk linebreak = new Chunk(new LineSeparator(1f, 17f, BaseColor.Black, Element.ALIGN_LEFT, -4));
-			//pdf.Add(linebreak);
-
 			// FILA 2
 			// hago el modelo de dato 
 			var regsAux = regs.Where(x => x.Grupo.Equals("2") || x.Grupo.Equals("3")).Select(x => new
@@ -1429,9 +1425,6 @@ namespace gc.infraestructura.Helpers
 			};
 			tablaTitulo.AddCell(celdaTitulo);
 			//pdf.Add(tablaTitulo);
-
-			//Chunk linebreak = new Chunk(new LineSeparator(1f, 17f, BaseColor.Black, Element.ALIGN_LEFT, -4));
-			//pdf.Add(linebreak);
 
 			PdfPCell celdaVacia = new PdfPCell(new Phrase("", HelperPdf.FontNormalPredeterminado(true)))
 			{

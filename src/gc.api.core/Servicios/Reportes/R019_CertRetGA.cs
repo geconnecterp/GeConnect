@@ -12,7 +12,6 @@ using iTextSharp.text;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 using iTextSharp.text.pdf.draw;
-using System.Drawing;
 
 namespace gc.api.core.Servicios.Reportes
 {
@@ -156,9 +155,6 @@ namespace gc.api.core.Servicios.Reportes
                 {
                     Alignment = Element.ALIGN_TOP,
                     BorderWidth = 0,
-                    //Border=1
-                    //BorderWidthBottom = 1,   
-
                 };
 
                 pdf.Header = header;
@@ -199,9 +195,8 @@ namespace gc.api.core.Servicios.Reportes
             }
             catch (Exception ex)
             {
-                //_logger.Log(typeof(R001_InformeCuentaCorriente), Level.Error, $"Error al generar el informe de cuenta corriente: {ex.Message}", ex);
-                _logger.LogError(ex, "Error en R003");
-                throw new NegocioException("Se produjo un error al intentar generar el Informe de Cuenta Corriente. Para mayores datos ver el log.");
+                _logger.LogError(ex, "Error en R019");
+                throw new NegocioException("Se produjo un error al intentar generar el Certificado de Retención de Ganancias. Para mayores datos ver el log.");
             }
         }
 

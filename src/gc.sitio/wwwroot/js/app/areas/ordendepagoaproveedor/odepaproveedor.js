@@ -12,13 +12,6 @@
 	});
 
 	$("#btnImprimirTemp").on("click", function () {
-		//let data = { op_compte: "00-C0123765", ctaId :"C0191994"};
-		//// Guardamos parámetros para el reporte
-		//cargarReporteEnArre(17, data, "ORDEN DE PAGO A PROVEEDORES", "", "");
-		//cargarReporteEnArre(18, data, "CERTIFICADO RETENCIÓN IIBB", "", "");
-		//cargarReporteEnArre(19, data, "CERTIFICADO RETENCIÓN GA", "", "");
-		//data = { op_compte: "00-S0038591", ctaId: "C0200360" };
-		//cargarReporteEnArre(20, data, "CERTIFICADO RETENCIÓN IVA", "", "");
 		ImprimirOPP_Generada("00-C0123765", "C0191994");
 	});
 	//
@@ -119,11 +112,7 @@ function ValidarPrevioAConfirmar() {
 								AbrirMensaje("ATENCIÓN", obj.msg, function () {
 									$("#msjModal").modal("hide");
 									console.log(obj.id); //Tomar este valor para imprimir.
-									//let par = { op_compte: obj.id };
-									// Guardamos parámetros para el reporte
 									ImprimirOPP_Generada(obj.id, ctaIdSelected);
-									//cargarReporteEnArre(17, par, "ORDEN DE PAGO A PROVEEDORES", "", "");
-
 									btnAbmCancelar_click();
 									return true;
 								}, false, ["Aceptar"], "succ!", null);
@@ -143,7 +132,6 @@ function ValidarPrevioAConfirmar() {
 
 //Abro modal de seleccion de valores
 function btnAgregarValorValidar() {
-	//TODO MARCE: Ver de donde saco los datos "importe" y "valor_a_nombre_de"
 	var app = "OPP";
 	var saldo = $("#txtDiferencias").val();
 	saldo = saldo.replaceAll(".", "");
@@ -422,15 +410,6 @@ function btnAbmCancelar_click() {
 	$("#btnFiltro").trigger("click");
 	$("#btnDetalle").trigger("click");
 	$("#divDetalle").collapse("hide");
-
-	/*
-			InicializarDatosEnSesion();
-		InicializaPantalla();
-		LimpiarDatosDelFiltroInicial();
-		$("#btnFiltro").trigger("click");
-		$("#btnDetalle").trigger("click");
-		$("#divDetalle").collapse("hide");
-	*/
 }
 
 function CargarObligacionesOCreditos(tipo_carga) {
