@@ -29,7 +29,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string AgregarQuitarOPDebitoCreditoDelProveedor = "/CargarSacarOPDebitoCreditoDelProveedor";
 		private const string ObtenerRetencionesDesdeObligYCredSeleccionados = "/CargarRetencionesDesdeObligYCredSeleccionados";
 		private const string ObtenerValoresDesdeObligYCredSeleccionados = "/CargarValoresDesdeObligYCredSeleccionados";
-		//private const string ObtenerCuentaFinParaSeleccionDeValores = "/CargarCuentaFinParaSeleccionDeValores";
+		private const string ObtenerOPMotivosCtag = "/CargarOPMotivosCtag";
 		private const string GuardarOrdenDePagoAProveedor = "/ConfirmarOrdenDePagoAProveedor";
 		private const string ConsOrdPagoDetExtend = "/ConsultaOrdPagoDetExtend";
 		private readonly AppSettings _appSettings;
@@ -287,6 +287,49 @@ namespace gc.sitio.core.Servicios.Implementacion
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Error al intentar obtener los datos de consulta de orden de pago a proveedor.");
+				throw;
+			}
+		}
+
+		public List<OPMotivoCtagDto> CargarOPMotivosCtag(string opt_id, string token)
+		{
+			ApiResponse<List<OPMotivoCtagDto>> respuesta;
+			string stringData;
+			try
+			{
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerOPMotivosCtag}?opt_id={opt_id}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (!string.IsNullOrEmpty(stringData))
+					{
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<OPMotivoCtagDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+					}
+					else
+					{
+						throw new Exception("No se logro obtener la respuesta de la API con los datos de motivos de op. Verifique.");
+					}
+					return respuesta.Data;
+				}
+				else
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogError($"Error al intentar obtener los datos de motivos de op: {stringData}");
+					throw new NegocioException("Hubo un error al intentar obtener los datos de motivos de op");
+				}
+
+			}
+			catch (NegocioException)
+			{
+				throw;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar obtener los datos de motivos de op.");
 				throw;
 			}
 		}

@@ -7,5 +7,6 @@ namespace gc.api.core.Contratos.Servicios
 	{
 		List<TipoComprobanteDto> GetTipoComprobanteListaPorCuenta(string cuenta);
 		List<TipoComprobanteDto> GetTipoComprobanteListaPorTipoAfip(string afip_id);
+		List<TipoComprobanteDto> GetTipoComprobanteListaPorTipoAfip(string afip_id, string opt_id);
 	}
 }

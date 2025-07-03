@@ -119,5 +119,16 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<OPMotivoCtagDto> CargarOPMotivosCtag(string opt_id)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OP_MOTIVOS_CTAG;
+			var ps = new List<SqlParameter>()
+			{
+				new("@opt_id", opt_id)
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<OPMotivoCtagDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

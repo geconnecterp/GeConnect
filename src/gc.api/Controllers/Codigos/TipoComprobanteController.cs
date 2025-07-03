@@ -53,5 +53,20 @@ namespace gc.api.Controllers.Codigos
 
 			return Ok(response);
 		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<TipoComprobanteDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetTipoComprobanteListaPorTipoAfipOptId(string afip_id, string opt_id)
+		{
+			ApiResponse<List<TipoComprobanteDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _tipos_comprobanteSv.GetTipoComprobanteListaPorTipoAfip(afip_id, opt_id);
+
+			response = new ApiResponse<List<TipoComprobanteDto>>(res);
+
+			return Ok(response);
+		}
 	}
 }

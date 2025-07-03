@@ -5,6 +5,7 @@ using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Compras.Models.OrdenDePagoDirecta;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 
 namespace gc.sitio.Areas.Compras.Controllers
@@ -14,10 +15,18 @@ namespace gc.sitio.Areas.Compras.Controllers
 	{
 		private readonly AppSettings _settings;
 		private readonly ITipoOrdenDePagoServicio _tipoOrdenDePagoServicio;
-		public OrdenDePagoDirectaController(ITipoOrdenDePagoServicio tipoOrdenDePagoServicio, IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<OrdenDePagoDirectaController> logger) : base(options, contexto, logger)
+		private readonly ITipoComprobanteServicio _tipoComprobanteServicio;
+		private readonly ICondicionAfipServicio _condicionAfipServicio;
+		private readonly IOrdenDePagoServicio _ordenDePagoServicio;
+		public OrdenDePagoDirectaController(ITipoOrdenDePagoServicio tipoOrdenDePagoServicio, ITipoComprobanteServicio tipoComprobanteServicio, ICondicionAfipServicio condicionAfipServicio,
+											IOrdenDePagoServicio ordenDePagoServicio,
+											IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<OrdenDePagoDirectaController> logger) : base(options, contexto, logger)
 		{
 			_settings = options.Value;
 			_tipoOrdenDePagoServicio = tipoOrdenDePagoServicio;
+			_tipoComprobanteServicio = tipoComprobanteServicio;
+			_condicionAfipServicio = condicionAfipServicio;
+			_ordenDePagoServicio = ordenDePagoServicio;
 		}
 
 		public IActionResult Index()
@@ -92,9 +101,26 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private void CargarDatosIniciales(bool actualizar)
 		{
 			if (TipoOrdenDePagoLista.Count == 0 || actualizar)
-			{
 				ObtenerTiposDeOrdenDePago(_tipoOrdenDePagoServicio);
-			}
+			
+			if (CondicionesAfipLista.Count == 0 || actualizar)
+				ObtenerCondicionesAfip(_condicionAfipServicio);
+		}
+
+		protected SelectList ComboTipoComprobante(string afip_id, string opt_id)
+		{
+			var listaTemp = _tipoComprobanteServicio.BuscarTipoComprobanteListaPorTipoAfip(afip_id, opt_id, Token).Result;
+			TiposComprobante = listaTemp;
+			var lista = listaTemp.Select(x => new ComboGenDto { Id = x.tco_id, Descripcion = x.tco_desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+
+		protected SelectList ComboOPMotivoCtag(string opt_id)
+		{
+			var listaTemp = _ordenDePagoServicio.CargarOPMotivosCtag(opt_id, Token);
+			OPMotivoCtagDtoLista = listaTemp;
+			var lista = listaTemp.Select(x => new ComboGenDto { Id = x.ctag_motivo, Descripcion = x.ctag_motivo });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
 		#endregion
 	}

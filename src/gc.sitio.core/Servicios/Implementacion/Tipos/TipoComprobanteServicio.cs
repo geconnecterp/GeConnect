@@ -16,6 +16,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string RutaAPI = "/api/tipocomprobante";
 		private const string ComptesPorCuentaBuscar = "/GetTipoComprobanteListaPorCuenta";
 		private const string ComptesPorAfipBuscar = "/GetTipoComprobanteListaPorTipoAfip";
+		private const string ComptesPorAfipOptIdBuscar = "/GetTipoComprobanteListaPorTipoAfipOptId";
+		//
 		private readonly AppSettings _appSettings;
 
 		public TipoComprobanteServicio(IOptions<AppSettings> options, ILogger<AdministracionServicio> logger) : base(options, logger)
@@ -60,7 +62,43 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 		}
 
-		
+		public async Task<List<TipoComprobanteDto>> BuscarTipoComprobanteListaPorTipoAfip(string afip_id, string opt_id, string token)
+		{
+			try
+			{
+				ApiResponse<List<TipoComprobanteDto>> apiResponse;
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{ComptesPorAfipOptIdBuscar}?afip_id={afip_id}&opt_id={opt_id}";
+				response = await client.GetAsync(link);
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					string stringData = await response.Content.ReadAsStringAsync();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						_logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda afip_id:{afip_id} - opt_id: {opt_id}");
+						return [];
+					}
+					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<TipoComprobanteDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+					return apiResponse.Data;
+				}
+				else
+				{
+					string stringData = await response.Content.ReadAsStringAsync();
+					_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+					return [];
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogWarning($"Algo no fue bien. Error interno {ex.Message}");
+				return [];
+			}
+		}
+
 		public async Task<List<TipoComprobanteDto>> BuscarTiposComptesPorCuenta(string cuenta, string token)
 		{
 			try

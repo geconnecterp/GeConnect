@@ -116,5 +116,20 @@ namespace gc.api.Controllers.OrdenDePago
 			response = new ApiResponse<RespuestaDto>(res.First());
 			return Ok(response);
 		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<OPMotivoCtagDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult CargarOPMotivosCtag(string opt_id)
+		{
+			ApiResponse<List<OPMotivoCtagDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _ordenDePagoServicio.CargarOPMotivosCtag(opt_id);
+
+			response = new ApiResponse<List<OPMotivoCtagDto>>(res);
+
+			return Ok(response);
+		}
 	}
 }

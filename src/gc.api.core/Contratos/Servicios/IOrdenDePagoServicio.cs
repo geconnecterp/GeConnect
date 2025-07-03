@@ -13,5 +13,6 @@ namespace gc.api.core.Contratos.Servicios
 		List<RetencionesDesdeObligYCredDto> CargarRetencionesDesdeObligYCredSeleccionados(CargarRetencionesDesdeObligYCredSeleccionadosRequest r);
 		List<ValoresDesdeObligYCredDto> CargarValoresDesdeObligYCredSeleccionados(CargarValoresDesdeObligYCredSeleccionadosRequest r);
 		List<RespuestaDto> ConfirmarOrdenDePagoAProveedor(ConfirmarOPaProveedorRequest request);
+		List<OPMotivoCtagDto> CargarOPMotivosCtag(string opt_id);
 	}
 }

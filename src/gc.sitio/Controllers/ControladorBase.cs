@@ -1947,6 +1947,26 @@ namespace gc.sitio.Controllers
         }
 		#endregion
 
+		#region OP MOTIVOS CTAG
+		public List<OPMotivoCtagDto> OPMotivoCtagDtoLista
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("OPMotivoCtagDtoLista") ?? string.Empty;
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<OPMotivoCtagDto>();
+				}
+				return JsonConvert.DeserializeObject<List<OPMotivoCtagDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("OPMotivoCtagDtoLista", json);
+			}
+		}
+		#endregion
+
 		#region TIPO DESCUENTO FINANCIERO VALORIZAR RPR
 		public List<TipoOrdenDePagoDto> TipoOrdenDePagoLista
 		{

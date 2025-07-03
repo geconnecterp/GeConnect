@@ -6,5 +6,6 @@ namespace gc.sitio.core.Servicios.Contratos
 	{
 		Task<List<TipoComprobanteDto>> BuscarTiposComptesPorCuenta(string cuenta, string token);
 		Task<List<TipoComprobanteDto>> BuscarTipoComprobanteListaPorTipoAfip(string afip_id, string token);
+		Task<List<TipoComprobanteDto>> BuscarTipoComprobanteListaPorTipoAfip(string afip_id, string opt_id, string token);
 	}
 }

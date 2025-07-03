@@ -14,5 +14,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		List<ValoresDesdeObligYCredDto> CargarValoresDesdeObligYCredSeleccionados(CargarValoresDesdeObligYCredSeleccionadosRequest r, string token);
 		RespuestaGenerica<RespuestaDto> ConfirmarOrdenDePagoAProveedor(ConfirmarOPaProveedorRequest r, string token);
 		List<ConsOrdPagoDetExtendDto> ConsultaOrdPagoDetExtend(string op_compte, string token);
+		List<OPMotivoCtagDto> CargarOPMotivosCtag(string opt_id, string token);
 	}
 }

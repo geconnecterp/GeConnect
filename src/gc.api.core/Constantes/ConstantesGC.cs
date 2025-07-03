@@ -171,6 +171,7 @@ namespace gc.api.core.Constantes
 			public const string SP_OP_SV_CTAF = "SPGECO_OP_SV_Ctaf";
 			public const string SP_OP_SV_CARTERA = "SPGECO_OP_SV_Cartera";
             public const string SP_OP_CONFIRMAR = "SPGECO_OP_Confirmar";
+			public const string SP_OP_MOTIVOS_CTAG = "SPGECO_OP_Motivos_Ctag";
 			//
 			#endregion
 
