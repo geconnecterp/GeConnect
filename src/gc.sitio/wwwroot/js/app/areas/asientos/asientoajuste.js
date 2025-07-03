@@ -32,8 +32,106 @@ $(function () {
     $(document).on('click', '#btnCancelarAjuste', function () {
         cancelarAjustes();
     });
+
+
+    // Mejorar el comportamiento de click en filas para incluir el checkbox
+    $(document).on('click', '#tbAAJ tr', function (e) {
+        // Evitar que se active si se hizo click directamente en el checkbox
+        if (!$(e.target).is('.asiento-check') && !$(e.target).is('input[type="checkbox"]')) {
+            // Encontrar el checkbox dentro de la fila y cambiar su estado
+            var checkbox = $(this).find('.asiento-check');
+            checkbox.prop('checked', !checkbox.prop('checked'));
+
+            // Desmarcar todos los demás
+            $('.asiento-check').not(checkbox).prop('checked', false);
+
+            // Actualizar el estado y cargar detalles
+            actualizarEstadoAjusta();
+        }
+    });
+
+    // Modificar el manejador de click en checkboxes individuales para mostrar detalles
+    $(document).on('click', '.asiento-check', function (e) {
+        e.stopPropagation(); // Evitar que el click en el checkbox active la fila
+
+        // Desmarcar todos los demás checkboxes si este se marcó
+        if ($(this).prop('checked')) {
+            $('.asiento-check').not(this).prop('checked', false);
+        }
+
+        // Actualizar el estado y cargar detalles
+        actualizarEstadoAjusta();
+
+        // Actualizar el estado del checkbox general
+        $('#checkAllAAJ').prop('checked', $('.asiento-check:checked').length === $('.asiento-check').length);
+    });
+
+    // Modificar el manejador del checkbox general para reflejar cambios en detalle
+    $(document).on('click', '#checkAllAAJ', function () {
+        var isChecked = $(this).prop('checked');
+        $('.asiento-check').prop('checked', isChecked);
+
+        // Actualizar el estado y cargar detalles solo si hay algún checkbox marcado
+        if (isChecked && $('.asiento-check').length > 0) {
+            // Marcamos solo el primero para mostrar sus detalles
+            $('.asiento-check').prop('checked', false);
+            $('.asiento-check:first').prop('checked', true);
+        }
+
+        actualizarEstadoAjusta();
+    });
+
+    
 });
 
+// Función para actualizar el estado Ajusta y cargar los detalles
+function actualizarEstadoAjusta() {
+    // Obtener todos los checkboxes marcados
+    var checkedBoxes = $('.asiento-check:checked');
+
+    // Si hay al menos un checkbox marcado, buscar los detalles
+    if (checkedBoxes.length > 0) {
+        // Tomamos el primer checkbox marcado para mostrar sus detalles
+        // (se puede modificar esta lógica si se requiere otro comportamiento)
+        var selectedCcbId = $(checkedBoxes[0]).data('ccb-id');
+        var ejercicio = $("#Eje_nro").val();
+
+        // Limpiamos el div de detalle antes de cargar nuevos datos
+        $("#divAajDet").empty();
+
+        // Mostramos indicador de carga
+        $("#divAajDet").html('<div class="text-center"><i class="bx bx-loader bx-spin text-primary" style="font-size: 2rem;"></i><p>Cargando detalles...</p></div>');
+
+        // Invocamos al controlador para obtener los detalles
+        var data = {
+            eje_nro: ejercicio,
+            ccb_id: selectedCcbId
+        };
+
+        // Realizar la petición AJAX
+        PostGenHtml(data, buscarRegistrosAsAjCcbUrl, function (html) {
+            // Actualizar el div con la respuesta
+            $("#divAajDet").html(html);
+
+            // Inicializar componentes que pudieran necesitar reinicialización
+            $('.datepicker').datepicker({
+                format: 'dd/mm/yyyy',
+                autoclose: true,
+                language: 'es',
+                todayHighlight: true,
+                orientation: 'bottom'
+            });
+
+        }, function (error) {
+            // Manejo de errores
+            $("#divAajDet").html('<div class="alert alert-danger">Error al cargar los detalles: ' + error.message + '</div>');
+        });
+    } else {
+        // Si no hay checkboxes seleccionados, limpiar el área de detalle
+        $("#divAajDet").empty();
+        $("#divAajDet").html('<div class="alert alert-info">Seleccione una cuenta para ver sus detalles.</div>');
+    }
+}
 
 function inicializaComponentesAsientoAjuste() {
     // Inicializar selectores con Select2 si está disponible
@@ -112,7 +210,7 @@ function analizaEstadoBtnDetalleaaj() {
 }
 
 function buscaraaj() {
-    AbrirWaiting("Consultando los asientos de ajuste por inflación...");
+    AbrirWaiting("Consultando los asientos de ajuste por inflación. Espere, puede tardar. Sea paciente...");
 
     // Desactivamos los botones de acción
     $("#btnImprimir").prop("disabled", true);
@@ -148,10 +246,10 @@ function buscaraaj() {
     limpiarAaj();
 
     // Realizamos la petición al servidor
-    PostGenHtml(data, buscarAsientosAjusteUrl, function (obj) {
+    PostGenHtml(data, buscarAsientosAjusteUrl, function (obj) {       
         // Mostramos el resultado en el div correspondiente
         $("#divAaj").html(obj);
-
+      
         // Mostramos resultados directamente
         $("#divDetalle").collapse("show");
 
@@ -170,6 +268,7 @@ function buscaraaj() {
 // Función auxiliar para limpiar el área de resultados
 function limpiarAaj() {
     $("#divAaj").empty();
+    $("#divAajDet").empty(); // Limpiar también el área de detalle
     $("#btnFilter").collapse("show");
 }
 
@@ -186,30 +285,27 @@ function imprimiraaj() {
     invocacionGestorDoc({});
 }
 
-// Manejar el check/uncheck de todos los elementos
-$(document).on('click', '#checkAllAAJ', function () {
-    var isChecked = $(this).prop('checked');
-    $('.asiento-check').prop('checked', isChecked);
-    actualizarEstadoAjusta();
-});
+// Esta función se llama cuando se hace click en una fila del grid
+function selectReg(elem, tableId) {
+    // Si se hizo click en una fila de la tabla principal de asientos
+    if (tableId === 'tbAAJ') {
+        // Desmarcar todas las filas
+        $("#" + tableId + " tr").removeClass("selected-row");
 
-// Manejar el check/uncheck individual
-$(document).on('click', '.asiento-check', function (e) {
-    e.stopPropagation(); // Evitar que el click en el checkbox active la fila
-    actualizarEstadoAjusta();
+        // Marcar esta fila como seleccionada
+        $(elem).addClass("selected-row");
 
-    // Verificar si todos están seleccionados para actualizar checkAllAAJ
-    var totalChecks = $('.asiento-check').length;
-    var totalChecked = $('.asiento-check:checked').length;
-    $('#checkAllAAJ').prop('checked', totalChecks === totalChecked);
-});
+        // Encontrar el checkbox en esta fila y marcarlo
+        var checkbox = $(elem).find('.asiento-check');
 
-// Botón de confirmar ajustes
-$(document).on('click', '#btnConfirmarAjuste', function () {
-    confirmarAjustes();
-});
+        // Desmarcar todos los demás checkboxes
+        $('.asiento-check').prop('checked', false);
 
-// Botón de cancelar ajustes
-$(document).on('click', '#btnCancelarAjuste', function () {
-    cancelarAjustes();
-});
+        // Marcar este checkbox
+        checkbox.prop('checked', true);
+
+        // Actualizar el estado y cargar detalles
+        actualizarEstadoAjusta();
+    }
+}
+

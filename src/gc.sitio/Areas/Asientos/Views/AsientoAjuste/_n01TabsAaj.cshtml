@@ -1,4 +1,7 @@
-﻿<div class="container-fluid">
+﻿@{
+    string leyend = ViewBag.Leyenda;
+}
+<div class="container-fluid">
     <div class="card mb-4">
         <div class="card-header">
             <ul class="nav nav-tabs card-header-tabs" role="tablist">
@@ -10,9 +13,35 @@
         <div class="card-body">
             <div class="tab-content">
                 <div class="tab-pane fade show active" id="aajTab" role="tabpanel" aria-labelledby="tabAAJ">
-                    <div id="divAaj" class="row mt-2">
-                        <!-- Aquí se cargarán los asientos de ajuste -->
+                    <div class="row align-items-md-center">
+                        <div class="col-md-8 col-sm-6">
+                            <h5 class="mb-0">
+                                <i class="bx bx-book-open me-2"></i>
+                                <strong>@leyend</strong>
+                            </h5>
+                        </div>
+                        <div class="col-md-4 col-sm-6">
+                            <div class="d-flex justify-content-sm-end">
+                                <!-- Botón Imprimir -->
+                                <button type="button" class="btn btn-golden btn-sm mt-1 me-1 btnImprimir" title="Imprimir">
+                                    <i class="bx bx-printer"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
+                    <div class="row">
+                        <div class="col-md-6 col-sm-6">
+                            <div id="divAaj" class="row mt-2">
+                                <!-- Aquí se cargarán los asientos de ajuste -->
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-6">
+                            <div id="divAajDet" class="row mt-2">
+                                <!-- Aquí se cargarán los detalles del asiento de ajuste seleccionado -->
+                            </div>
+                        </div>
+                    </div>
+                    
                 </div>
             </div>
         </div>

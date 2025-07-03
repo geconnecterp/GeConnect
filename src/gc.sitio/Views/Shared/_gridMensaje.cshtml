@@ -1,11 +1,76 @@
-﻿
-@model RespuestaGenerica<EntidadBase>
-@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model RespuestaGenerica<EntidadBase>
+
 @{
+    var tipoMensaje = "info";
+    var iconoMensaje = "bx-info-circle";
+    var colorBorde = "primary";
+    var colorIcono = "primary";
+    var tituloMensaje = "Información";
+
+    if (Model.EsError)
+    {
+        tipoMensaje = "error";
+        iconoMensaje = "bx-error-circle";
+        colorBorde = "danger";
+        colorIcono = "danger";
+        tituloMensaje = "Error";
+        <input type="hidden" id="msgError" value="true" />
+    }
+    else if (Model.EsWarn)
+    {
+        tipoMensaje = "warning";
+        iconoMensaje = "bx-shape-triangle";
+        colorBorde = "warning";
+        colorIcono = "warning";
+        tituloMensaje = "Advertencia";
+        <input type="hidden" id="msgWarn" value="true" />
+    }
+    else if (Model.Ok)
+    {
+        tipoMensaje = "success";
+        iconoMensaje = "bx-check-circle";
+        colorBorde = "success";
+        colorIcono = "success";
+        tituloMensaje = "Éxito";
+        <input type="hidden" id="msgSucc" value="true" />
+    }
+    else
+    {
+        <input type="hidden" id="msgInfo" value="true" />
+    }
 }
-<div class="container mt-4 bg-white rounded-4 p-4">
+<div class="golden-message-container animate__animated animate__fadeIn">
+    <div class="card golden-message golden-message-@tipoMensaje border-@colorBorde shadow-sm">
+        <div class="card-header bg-transparent border-0 d-flex align-items-center">
+            <div class="golden-message-icon bg-@colorBorde bg-opacity-10 text-@colorIcono rounded-circle p-3 me-3">
+                <i class="bx @iconoMensaje fs-4"></i>
+            </div>
+            <h5 class="card-title mb-0 fw-bold text-@colorBorde">@tituloMensaje</h5>
+        </div>
+        <div class="card-body pt-2">
+            <div class="golden-message-content">
+                <p class="text-dark mb-0">
+                    @Model.Mensaje
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        // Añadir efecto de pulso al icono en mensajes de error y advertencia
+    @if (Model.EsError || Model.EsWarn)
+    {
+        <text>
+                setTimeout(function() {
+                    $('.golden-message-icon').css('animation', 'pulse 2s infinite');
+                }, 1000);
+        </text>
+    }
+    });
+</script>
+@* <div class="container mt-4 bg-white rounded-4 p-4">
     <div class="row">
         <div class="col-sm-12">
             <div class="card">
@@ -41,4 +106,4 @@
             </div>
         </div>
     </div>   
-</div> 
+</div>  *@

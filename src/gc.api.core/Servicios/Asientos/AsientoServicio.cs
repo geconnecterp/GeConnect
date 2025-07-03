@@ -32,7 +32,9 @@ namespace gc.api.core.Servicios.Asientos
             var sp = ConstantesGC.StoredProcedures.SP_ASIENTO_AJUSTE_CCB;
             var ps = new List<SqlParameter>()
             {
-                new SqlParameter("@eje_nro", eje_nro)
+                new SqlParameter("@eje_nro", eje_nro),
+                new SqlParameter("@ccb_id",ccb_id),
+                new SqlParameter("@todas",todas)
             };
 
             var lista = _repository.EjecutarLstSpExt<AsientoAjusteCcbDto>(sp, ps, true);
