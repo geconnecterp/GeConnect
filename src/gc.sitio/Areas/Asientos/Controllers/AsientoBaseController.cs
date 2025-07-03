@@ -41,6 +41,23 @@ namespace gc.sitio.Areas.Asientos.Controllers
             }
         }
 
+        public List<AsientoAjusteCcbDto> AsientosAjusteCcb
+        {
+            get
+            {
+                string json = _context.HttpContext?.Session.GetString("AsientosAjusteCcb") ?? string.Empty;
+                if (string.IsNullOrEmpty(json))
+                {
+                    return new();
+                }
+                return JsonConvert.DeserializeObject<List<AsientoAjusteCcbDto>>(json) ?? [];
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session.SetString("AsientosAjusteCcb", json);
+            }
+        }
 
         /// <summary>
         /// Obtiene los tipos de asiento para el combo

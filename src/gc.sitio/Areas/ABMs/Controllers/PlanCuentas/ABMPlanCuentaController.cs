@@ -103,7 +103,7 @@ namespace gc.sitio.Areas.ABMs.Controllers.PlanCuenta
         }
 
         [HttpPost]
-        public async Task<JsonResult> BuscarCuenta([FromBody] RequestId req)
+        public async Task<JsonResult> BuscarCuenta( RequestId req)
         {
             RespuestaGenerica<EntidadBase> response = new();
 

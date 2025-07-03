@@ -28,6 +28,100 @@ body {
 activable {
 }
 
+/*ESTILO GOLDE PARA MENSAJES*/
+/* Estilos para mensajes Golden */
+.selected-row {
+    background-color: #e3f2fd !important;
+}
+
+#divAajDet .grid-golden {
+    margin-top: 0;
+}
+
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    flex-direction: column;
+}
+
+.golden-message-container {
+    width: 100%;
+    padding: 0.5rem;
+}
+
+.golden-message {
+    border-left-width: 4px !important;
+    transition: all 0.3s ease;
+}
+
+    .golden-message:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1) !important;
+    }
+
+.golden-message-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+}
+
+.golden-message-content {
+    padding-left: 0.5rem;
+}
+
+/* Estilos específicos por tipo */
+.golden-message-error {
+    background-color: rgba(255, 235, 238, 0.4);
+}
+
+.golden-message-warning {
+    background-color: rgba(255, 248, 225, 0.4);
+}
+
+.golden-message-success {
+    background-color: rgba(232, 245, 233, 0.4);
+}
+
+.golden-message-info {
+    background-color: rgba(227, 242, 253, 0.4);
+}
+
+/* Animaciones */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.animate__fadeIn {
+    animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* FIN ESTILO*/
 /* ESTILO GOLDEN PARA MODALES*/
 /* Estilos para modales con tema dorado */
 .modal-golden {
