@@ -71,7 +71,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		//public async Task<IActionResult> BuscarProductos(NCPICargarListaDeProductos2Request request)
 		public IActionResult BuscarProductos(NCPICargarListaDeProductos2Request request)
 		{
 			MetadataGrid metadata;

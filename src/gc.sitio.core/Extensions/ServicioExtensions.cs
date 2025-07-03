@@ -87,8 +87,9 @@ namespace gc.sitio.core.Extensions
             services.AddScoped<ILibroDiarioServicio, LibroDiarioServicio>();
             services.AddScoped<IBSSServicio, BSSServicio>();
             services.AddScoped<IBalanceGrServicio, BalanceGrServicio>();
+			services.AddScoped<ITipoOrdenDePagoServicio, TipoOrdenDePagoServicio>();
 
-            services.AddScoped<IOrdenDePagoServicio, OrdenDePagoServicio>();
+			services.AddScoped<IOrdenDePagoServicio, OrdenDePagoServicio>();
 
             return services;
         }

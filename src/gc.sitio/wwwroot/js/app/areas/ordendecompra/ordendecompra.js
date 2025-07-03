@@ -203,6 +203,10 @@ function ConfirmarOrdenDeCompra() {
 					else {
 						AbrirMensaje("ATENCIÓN", obj.msg, function () {
 							$("#msjModal").modal("hide");
+							if (obj.id != "") {
+								console.log(obj.id); //Tomar este valor para imprimir.
+								ImprimirOC_Generada(obj.id, ctaIdSelected);
+							}
 							InicializarDatosEnSesion();
 							InicializaPantalla();
 							LimpiarDatosDelFiltroInicial();
@@ -222,6 +226,12 @@ function ConfirmarOrdenDeCompra() {
 		return true;
 
 	}, true, ["Aceptar", "Cancelar"], "question!", null);
+}
+
+function ImprimirOC_Generada(ocCompte, ctaId) {
+	let data = { oc_compte: ocCompte, ctaId: ctaId };
+	cargarReporteEnArre(21, data, "ORDEN DE COMPRA", "", "");
+	invocacionGestorDoc({});
 }
 
 function InicializarDatosEnSesion() {

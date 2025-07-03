@@ -3,6 +3,7 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Tipos;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 

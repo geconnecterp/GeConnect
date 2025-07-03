@@ -15,6 +15,7 @@ using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
 using gc.infraestructura.Dtos.Productos;
+using gc.infraestructura.Dtos.Tipos;
 using gc.infraestructura.Dtos.Users;
 using gc.infraestructura.EntidadesComunes;
 using gc.infraestructura.Helpers;
@@ -1944,10 +1945,30 @@ namespace gc.sitio.Controllers
                 _context.HttpContext?.Session.SetString("TipoDescValorizaRprLista", json);
             }
         }
-        #endregion
+		#endregion
 
-        #region Metodos generales
-        public PartialViewResult ObtenerMensajeDeError(string mensaje)
+		#region TIPO DESCUENTO FINANCIERO VALORIZAR RPR
+		public List<TipoOrdenDePagoDto> TipoOrdenDePagoLista
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("TipoOrdenDePagoLista") ?? string.Empty;
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<TipoOrdenDePagoDto>();
+				}
+				return JsonConvert.DeserializeObject<List<TipoOrdenDePagoDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("TipoOrdenDePagoLista", json);
+			}
+		}
+		#endregion
+
+		#region Metodos generales
+		public PartialViewResult ObtenerMensajeDeError(string mensaje)
         {
             RespuestaGenerica<EntidadBase> response = new()
             {
@@ -2084,7 +2105,14 @@ namespace gc.sitio.Controllers
             TipoNegocioLista = _tipoNegSv.ObtenerTiposDeNegocio(TokenCookie);
         }
 
-        protected void ObtenerZonas(IZonaServicio _zonaSv)
+		protected void ObtenerTiposDeOrdenDePago(ITipoOrdenDePagoServicio _tipoOPSv)
+		{
+			//se guardan los tipos de negocio en session. Para ser utilizados posteriormente
+
+			TipoOrdenDePagoLista = _tipoOPSv.ObtenerTiposDeOrdenDePago(TokenCookie);
+		}
+
+		protected void ObtenerZonas(IZonaServicio _zonaSv)
         {
             //se guardan las zonas en session. Para ser utilizados posteriormente
 
@@ -2405,9 +2433,23 @@ namespace gc.sitio.Controllers
             var lista = TipoDescValorizaRprLista.Select(x => new ComboGenDto { Id = x.dtoc_id, Descripcion = x.dtoc_lista });
             return HelperMvc<ComboGenDto>.ListaGenerica(lista);
         }
-        #endregion
 
-        [HttpPost]
+		protected SelectList ComboTipoDeOrdenDePago(TipoDeOrdenDePago tipo)
+		{
+            if (tipo == TipoDeOrdenDePago.Directa)
+            {
+                var lista = TipoOrdenDePagoLista.Where(x => x.opt_id.Equals("PD") || x.opt_id.Equals("PB") || x.opt_id.Equals("PI")).Select(x => new ComboGenDto { Id = x.opt_id, Descripcion = x.opt_lista });
+                return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+            }
+            else
+            {
+				var lista = TipoOrdenDePagoLista.Select(x => new ComboGenDto { Id = x.opt_id, Descripcion = x.opt_lista });
+				return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+			}
+		}
+		#endregion
+
+		[HttpPost]
         public JsonResult BuscarProvs(string prefix)
         {
             //var nombres = await _provSv.BuscarAsync(new QueryFilters { Search = prefix }, TokenCookie);
@@ -2589,6 +2631,12 @@ namespace gc.sitio.Controllers
             A = 1,
             B = 2,
             M = 3
+        }
+
+        public enum TipoDeOrdenDePago
+        { 
+            Directa=1,
+            Otros=2,
         }
 
 		public List<ValoresDesdeObligYCredDto> OPValoresDesdeObligYCredLista

@@ -4,6 +4,7 @@ using gc.api.core.Contratos.Servicios.Tipos;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Tipos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Reflection;
@@ -45,6 +46,7 @@ namespace gc.api.Controllers.Codigos
 		private readonly IOrdenDeCompraEstadoServicio _ordenDeCompraEstadoServicio;
 		private readonly ITipoTributoServicio _tipoTributoServicio;
 		private readonly ITipoDtoValorizaRprServicio _tipoDtoValorizaRprServicio;
+		private readonly ITipoOrdenDePagoServicio _tipoOrdenDePagoServicio;
 
 		public TiposVsController( IMapper mapper, IUriService uriService, ILogger<TiposVsController> logger, ICondicionAfipServicio condicionAfipServicio,
 								ICondicionIBServicio condicionIBServicio, IDepartamentoServicio departamentoServicio, IFormaDePagoServicio formaDePagoServicio,
@@ -55,7 +57,7 @@ namespace gc.api.Controllers.Codigos
 								ITipoProveedorServicio tipoProveedorServicio, ITipoGastoServicio tipoGastoServicio, ITipoRetGanServicio tipoRetGanServicio,
 								ITipoRetIbServicio tipoRetIbServicio, ITipoCuentaFinServicio tipoCuentaFinServicio, ITipoMonedaServicio tipoMonedaServicio,
 								ITipoCuentaGastoServicio tipoCuentaGastoServicio, IOrdenDeCompraEstadoServicio ordenDeCompraEstadoServicio, ITipoTributoServicio tipoTributoServicio,
-								ITipoDtoValorizaRprServicio tipoDtoValorizaRprServicio)
+								ITipoDtoValorizaRprServicio tipoDtoValorizaRprServicio, ITipoOrdenDePagoServicio tipoOrdenDePagoServicio)
         {
             _mapper = mapper;
             _uriService = uriService;
@@ -86,6 +88,7 @@ namespace gc.api.Controllers.Codigos
 			_ordenDeCompraEstadoServicio = ordenDeCompraEstadoServicio;
 			_tipoTributoServicio = tipoTributoServicio;
 			_tipoDtoValorizaRprServicio = tipoDtoValorizaRprServicio;
+			_tipoOrdenDePagoServicio = tipoOrdenDePagoServicio;
 		}
 
 		[HttpGet]
@@ -469,6 +472,18 @@ namespace gc.api.Controllers.Codigos
 			var lista = _mapper.Map<List<TipoDtoValorizaRprDto>>(financiero);
 
 			var response = new ApiResponse<List<TipoDtoValorizaRprDto>>(lista);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult GetTiposOrdenDePago()
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			List<TipoOrdenDePagoDto> financiero = _tipoOrdenDePagoServicio.GetTiposDeOrdenDePago();
+			var lista = _mapper.Map<List<TipoOrdenDePagoDto>>(financiero);
+
+			var response = new ApiResponse<List<TipoOrdenDePagoDto>>(lista);
 			return Ok(response);
 		}
 		//

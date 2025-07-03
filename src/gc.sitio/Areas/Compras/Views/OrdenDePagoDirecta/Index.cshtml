@@ -1,0 +1,62 @@
+﻿@using static gc.infraestructura.Constantes.Constantes
+@model QueryFilters
+@{
+	Layout = "~/views/shared/_Layout.cshtml";
+	var filtro = new QueryFilters()
+	{
+		Rel01 = new List<string>(),
+		Modelo = ModeloFilter.ORDEN_DE_PAGO_DIRECTA,
+	};
+}
+
+<div class="container">
+	<div class="row mb-2">
+		<div class="col-md-6">
+			<div class="d-flex justify-content-sm-around">
+				<button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
+					<i class="bx bx-filter bx-xs"></i>
+				</button>
+
+				<button class="btn btn-primary btn-sm mt-1 me-1" type="button" id="btnDetalle" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle" hidden>
+					<i class="bx bxs-arrow-to-bottom-stroke"></i>
+				</button>
+			</div>
+		</div>
+		<div class="col-md-2">
+			<div class="d-flex justify-content-sm-center">
+				<button id="btnAbmAceptar" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Aceptar" disabled hidden>
+					<i class="bx bx-file-plus"></i>
+				</button>
+				<button id="btnAbmCancelar" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar" disabled hidden>
+					<i class="bx bx-x-circle bx-xs"></i>
+				</button>
+			</div>
+		</div>
+		<div class="collapse col-md-2">
+			<div class="d-flex justify-content-sm-end">
+				<!-- Botón Imprimir -->
+				<button type="button" class="btn btn-golden btn-sm mt-1 me-1 btnImprimir" title="Imprimir">
+					<i class="bx bx-printer"></i>
+				</button>
+				<button type="button" class="btn btn-golden btn-sm mt-1 me-1 btnImprimir" id="btnImprimirTemp" title="Imprimir Temporal">
+					<i class="bx bx-printer"></i>
+				</button>
+			</div>
+		</div>
+	</div>
+	<div class="collapse" id="divFiltro" style="">
+		<partial name="_filtroBase" model="filtro" />
+		@Html.Hidden("pagEstado", false);
+	</div>
+	<div class="collapse" id="divDetalle" style="">
+	</div>
+</div>
+
+@section scripts {
+	<script type="text/javascript">
+		var autoComRel01Url = "@Url.Action("BuscarTiposOPD", "ordendepagodirecta", new { area = "Compras" })";
+		var buscarTiposDeOrdenDePagoUrl = "@Url.Action("BuscarTiposDeOrdenDePago", "ordendepagodirecta", new { area = "Compras" })";
+	</script>
+
+	<script src="~/js/app/areas/ordendepagodirecta/odepagodirecta.js"></script>
+}

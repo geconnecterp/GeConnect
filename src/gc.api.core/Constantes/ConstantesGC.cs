@@ -333,6 +333,7 @@ namespace gc.api.core.Constantes
 			public const string SP_TIPO_COMPROBANTE = "SPGECO_Tipos_Comprobantes";
             public const string SP_TIPO_TRIBUTO = "SPGECO_Tipos_Tributos";
 			public const string SP_TIPO_DTOS_VALORIZA_RPR_LISTA = "SPGECO_Tipos_Dtos_Valoriza_RPR_Lista";
+            public const string SP_TIPO_ORDEN_PAGO = "SPGECO_Tipos_Orden_Pagos";
 			//
 			#endregion
 
