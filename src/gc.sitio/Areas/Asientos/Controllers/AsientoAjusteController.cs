@@ -162,19 +162,21 @@ namespace gc.sitio.Areas.Asientos.Controllers
 
                 if (!respuesta.Ok || respuesta.ListaEntidad == null || !respuesta.ListaEntidad.Any())
                 {
-                    return PartialView("_gridMensaje", new RespuestaGenerica<EntidadBase>
-                    {
-                        Ok = false,
-                        Mensaje = respuesta.Mensaje ?? "No se encontraron asientos de ajuste para el ejercicio seleccionado."
-                    });
+                    response.Mensaje = "No se encontraron asientos de ajuste para el ejercicio seleccionado.";
+                    response.Ok = false;
+                    response.EsWarn = true;
+                    response.EsError = false;
+                    return PartialView("_gridMensaje", response);
                 }
 
                 // Guardar datos en variable de sesión para uso posterior
                 AsientosAjuste = respuesta.ListaEntidad;
+                var lista = AsientosAjuste;
+                lista.ForEach(x => x.Ajusta = false);
 
                 // Crear el grid para la vista (sin paginación)
                 var grid = GenerarGrillaSmart(
-                    AsientosAjuste,
+                    lista,
                     "Ccb_id",  // Ordenamiento por defecto
                     respuesta.ListaEntidad.Count,  // Todos los registros en una página
                     1,  // Página única
@@ -194,6 +196,61 @@ namespace gc.sitio.Areas.Asientos.Controllers
                 _logger?.LogError(ex, "Error al obtener asientos de ajuste");
 
                 response.Mensaje = "Error al obtener los asientos de ajuste.";
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
+            }
+        }
+
+
+        /// <summary>
+        /// Este metodo devolvera todos los registros de asiento de ajuste por Cuenta.
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<IActionResult> BuscarRegistrosAsAjCcb(int eje_nro,string ccb_id)
+        {
+            RespuestaGenerica<EntidadBase> response = new();
+            try
+            {
+               
+                #region buscar el detalle de cada cuenta con ajusta == 1
+                //inicializo variable
+                List<AsientoAjusteCcbDto> ajustesCcb = [];
+                
+                    //invocaré uno por uno los asientos de cada cuenta
+                    var resp = await _asientoServicio.ObtenerAsientosAjusteCcb(eje_nro, ccb_id, false, TokenCookie);
+                    if (resp.Ok && resp.ListaEntidad?.Count > 0)
+                    {
+                        ajustesCcb.AddRange(resp.ListaEntidad);
+                    }
+              
+
+                AsientosAjusteCcb = ajustesCcb;
+                #endregion
+
+                var detalle = AsientosAjusteCcb;
+                // Crear el grid para la vista (sin paginación)
+                var grid = GenerarGrillaSmart(
+                    detalle,
+                    "Ccb_id",  // Ordenamiento por defecto
+                    detalle.Count,  // Todos los registros en una página
+                    1,  // Página única
+                    detalle.Count,  // Total de registros
+                    1,  // Total de páginas (una sola)
+                    "ASC"  // Dirección de ordenamiento por defecto
+                );
+
+                // Devolver la vista parcial con el grid
+                return PartialView("_gridaajDet", grid);
+            }
+            catch (Exception ex)
+            {
+                string msg = "Error al obtener ajuste de los asientos de ajustes segun cuenta.";
+                _logger?.LogError(ex, msg);
+
+                response.Mensaje = msg;
                 response.Ok = false;
                 response.EsWarn = false;
                 response.EsError = true;

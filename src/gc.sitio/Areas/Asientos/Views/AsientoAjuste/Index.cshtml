@@ -33,7 +33,7 @@
         var homeAsAjUrl = "@Url.Action("index", "AsientoAjuste", new { area = "asientos" })";
         var obtenerEjerciciosUrl = "@Url.Action("ObtenerEjercicios", "AsientoAjuste", new { area = "asientos" })";
         var buscarAsientosAjusteUrl = "@Url.Action("BuscarAsientosDeAjuste", "AsientoAjuste", new { area = "asientos" })";
-
+        var buscarRegistrosAsAjCcbUrl = "@Url.Action("BuscarRegistrosAsAjCcb", "AsientoAjuste", new { area = "asientos" })";
 
         // Gestor de impresión
         var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
@@ -45,7 +45,6 @@
     </script>
 
     <script src="~/lib/jstree/jstree.min.js"></script>
-    <script src="~/js/mask/jquery.inputmask.min.js"></script>
 
     <script src="~/js/app/areas/docmngr/docmanager.js"></script>
     <script src="~/js/app/areas/abms/abmsettings.js"></script>
