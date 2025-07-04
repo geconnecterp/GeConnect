@@ -1,0 +1,295 @@
+﻿@model OPDPaso1Model
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+	var listaTipoCompte = Model.listaTiposComptes;
+	var listaCondAfip = Model.listaCondAfip;
+	var listaCuentaDirecta = Model.listaCuentaDirecta;
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	fieldset {
+		margin: 8px;
+		border: 1px solid silver;
+		padding: 8px;
+		border-radius: 4px;
+		max-width: 100%;
+		margin-top: 8px;
+		margin-left: 0px;
+		margin-right: 0px;
+		margin-bottom: 0px;
+		height: 500px;
+	}
+
+	legend {
+		padding: 2px;
+		margin-top: -22px;
+		background: #f3f5f7 !important;
+		width: 25%;
+		text-align: center;
+		font-size: small;
+	}
+</style>
+<div class="row mt-2">
+	<div class="col-md-5">
+		<div class="input-group input-group-sm mt-1" id="divProveedorSeleccionado">
+			<h5>OPD - Gastos Corrientes </h5>
+		</div>
+	</div>
+	<div class="col-md-7">
+		<div class="input-group input-group-sm mt-1">
+			<span class="input-group-text fixed-lbl-for-abm-100" title="Obligaciones a Cancelar">Obl. a Cancelar: </span>
+			<input type="text" id="txtObligACancelar" class="form-control align-right" style="background-color: darkred; color: white;" value="0" disabled />
+			<span class="input-group-text fixed-lbl-for-abm-150" title="Créditos y Valores Imputados">Cred. y Val. Imputados: </span>
+			<input type="text" id="txtCredYValImputados" class="form-control align-right" style="background-color: dodgerblue; color: white;" value="0" disabled />
+			<span class="input-group-text fixed-lbl-for-abm-100">Diferencia: </span>
+			<input type="text" id="txtDiferencias" class="form-control align-right" style="background-color: forestgreen; color: white;" value="0" disabled />
+		</div>
+	</div>
+</div>
+<div class="row mt-2">
+	<div class="col-6" style="height: 500px;">
+		<fieldset style="height: 280px;">
+			<legend>Obligaciones</legend>
+			<div class="row" id="divObligaciones">
+				<div class="table-responsive table-wrapper-400" id="containerListaObligaciones_Paso1">
+					<table class="table table-bordered table-hover" id="tbListaObligaciones_Paso1" style="height: 200px;">
+						<thead style="background: darkred;">
+							<tr>
+								<th style="width:50%;" class="col-header-small align-center tiny-row">Comprobante</th>
+								<th style="width:5%;" class="col-header-small align-center tiny-row">Vencimiento</th>
+								<th style="width:15%;" class="col-header-small align-center tiny-row">Gasto</th>
+								<th style="width:15%;" class="col-header-small align-center tiny-row">Motivo</th>
+								<th style="width:15%;" class="col-header-small align-center tiny-row">Imputado</th>
+								@* <th style="width:0%;display:none;" class="col-header-small align-center tiny-row">dia_movi</th>
+								<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">cm_compte</th>
+								<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">tco_id</th>
+								<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">cta_id</th> *@
+							</tr>
+						</thead>
+						<tbody>
+							@if (Model.GrillaObligaciones != null && Model.GrillaObligaciones.ListaDatos != null && Model.GrillaObligaciones.ListaDatos.Count > 0)
+							{
+								@foreach (var item in Model.GrillaObligaciones.ListaDatos)
+								{
+									<tr onclick="selectReg(this, 'tbListaObligaciones_Paso1')" ondblclick="selectRegDbl(this, 'tbListaObligaciones_Paso1')">
+										<td class="@Model.GrillaObligaciones.ObtenerClase(item.concepto) cell-fit-content">@Model.GrillaObligaciones.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
+										<td class="@Model.GrillaObligaciones.ObtenerClase(item.fecha_vencimiento) cell-fit-content">@Model.GrillaObligaciones.FormatearDato(item.fecha_vencimiento, FormatDato.Fecha)</td>
+										<td class="@Model.GrillaObligaciones.ObtenerClase(item.gasto) cell-fit-content">@Model.GrillaObligaciones.FormatearDato(item.gasto, FormatDato.Ninguno)</td>
+										<td class="@Model.GrillaObligaciones.ObtenerClase(item.motivo) cell-fit-content">@Model.GrillaObligaciones.FormatearDato(item.motivo, FormatDato.Ninguno)</td>
+										<td class="@Model.GrillaObligaciones.ObtenerClase(item.imputado) cell-fit-content">@Model.GrillaObligaciones.FormatearDato(item.imputado, FormatDato.Monto)</td>
+										@* 										<td style="display:none;">@item.dia_movi</td>
+										<td style="display:none;">@item.cm_compte</td>
+										<td style="display:none;">@item.tco_id</td>
+										<td style="display:none;">@item.cta_id</td> *@
+									</tr>
+								}
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<div class="row justify-content-sm-center mb-1">
+				<div class="col-md-2">
+					<div class="d-flex justify-content-sm-center">
+						<button id="btnAnterior1" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Anterior" disabled>
+							<i class="bx bx-arrow-to-left-stroke bx-xs"></i>
+						</button>
+						<button id="btnSiguiente2" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Siguiente">
+							<i class="bx bx-arrow-to-right-stroke"></i>
+						</button>
+						<button id="btnAbmCancelar" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar" onclick="btnAbmCancelar_click();">
+							<i class="bx bx-x-circle bx-xs"></i>
+						</button>
+					</div>
+				</div>
+			</div>
+		</fieldset>
+		<fieldset style="height: 212px;padding-top: 15px;">
+			<legend>Detalle</legend>
+			<div class="row">
+				<div class="col-6">
+					<div class="table-responsive text-nowrap table-wrapper-300-full-width">
+						<table class="table table-sm mb-0 table-hover" id="tbGridTotales">
+							<thead class="table-dark">
+								<tr class="header">
+									<th class="col-header-small align-left">Concepto</th>
+									<th class="col-header-small align-right">Importe</th>
+								</tr>
+							</thead>
+							<tbody>
+								@if (Model != null && Model.GrillaConcpetos.ListaDatos != null)
+								{
+									@foreach (var item in Model.GrillaConcpetos.ListaDatos)
+									{
+										<tr>
+											<td class="align-left">@item.Concepto</td>
+											<td class="align-right font-bold">@item.Importe</td>
+										</tr>
+									}
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="col-6">
+					<div class="d-flex justify-content-sm-center">
+						<button id="btnAbmAgregarItem" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Aceptar" disabled>
+							<i class="bx bx-file-plus"></i>
+						</button>
+						<button id="btnAbmEditarItem" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Aceptar" disabled>
+							<i class="bx bx-edit-alt"></i>
+						</button>
+						<button id="btnAbmEliminarItem" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Aceptar" disabled>
+							<i class="bx bx-trash"></i>
+						</button>
+						<button id="btnAbmAceptar" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Aceptar" disabled>
+							<i class="bx bx-check-circle"></i>
+						</button>
+						<button id="btnAbmCancelar" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar" disabled>
+							<i class="bx bx-x-circle bx-xs"></i>
+						</button>
+					</div>
+				</div>
+			</div>
+		</fieldset>
+	</div>
+	<div class="col-6" style="height: 500px;">
+		<fieldset>
+			<legend>Detalle</legend>
+			<div>
+				<div class="row mt-1">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text fixed-lbl-for-abm-100">Tipo Compte.: </span>
+						<div id="divTipoCompte">
+							@Html.DropDownListFor(m => m.itemOPD.tco_id, listaTipoCompte, "Seleccionar...", new { @id = "listaTipoCompte", @class = "form-control activable", style = "font-size: 11px;max-width: 115px;" })
+						</div>
+						<span class="input-group-text fixed-lbl-for-abm-100">N° Compte.: </span>
+						<input type="text" asp-for="itemOPD.nro_compte" class="form-control activable inputEditable" />
+						<span class="input-group-text fixed-lbl-for-abm-100">Fecha: </span>
+						@Html.TextBoxFor(m => m.itemOPD.fecha_compte, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeFechaCompte(this);" })
+					</div>
+				</div>
+				<div class="row mt-1">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text fixed-lbl-for-abm-100">CUIT: </span>
+						<input type="text" asp-for="itemOPD.cuit" class="form-control activable inputEditable" />
+						<span class="input-group-text fixed-lbl-for-abm-100">Condición AFIP: </span>
+						@Html.DropDownListFor(m => m.itemOPD.afip_id, listaCondAfip, "Seleccionar...", new { @id = "listaCondAfip", @class = "form-control activable", @onchange = "onChangeCondAfip(this);" })
+					</div>
+				</div>
+				<div class="row mt-1">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text fixed-lbl-for-abm-100">Razón Social: </span>
+						<input type="text" asp-for="itemOPD.razon_soc" class="form-control activable inputEditable" />
+						@* Seccion donde meter "lIBRO IVA 2025-02" *@
+					</div>
+				</div>
+				<div class="row mt-1">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text fixed-lbl-for-abm-100">Cuenta Directa: </span>
+						@Html.DropDownListFor(m => m.itemOPD.cta_dir_id, listaCuentaDirecta, "Seleccionar...", new { @id = "listaCtaDir", @class = "form-control activable" })
+						<span class="input-group-text fixed-lbl-for-abm-100">Motivo: </span>
+						<input type="text" class="form-control inputEditable" name="Rel03" id="Rel03" />
+						@Html.Hidden("Rel03Item")
+					</div>
+				</div>
+				<div class="row mt-1">
+					<div class="row">
+						<div class="col-md-6" style="display: flex; align-items: center; text-align: justify; margin-top: 5px; margin-bottom: -15px;">
+							<h6>Conceptos Facturados</h6>
+						</div>
+						<div class="col-md-6">
+							<button id="btnAgregarConceptoFacturado" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Agregar Concepto Facturado">
+								<i class="bx bx-plus bx-xs"></i>
+							</button>
+						</div>
+					</div>
+					<div class="table-responsive text-nowrap table-wrapper-200">
+						<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridConceptoFacturado" style="height: 120px;">
+							<thead class="table-dark">
+								<tr class="header">
+									<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">Id</th>
+									<th style="width:5%;" class="col-header-small align-center tiny-row">Concepto</th>
+									<th style="width:5%;" class="col-header-small align-center tiny-row">Tipo IVA</th>
+									<th style="width:5%;" class="col-header-small align-center tiny-row">Ali IVA</th>
+									<th style="width:5%;" class="col-header-small align-center tiny-row">Subtotal</th>
+									<th style="width:5%;" class="col-header-small align-center tiny-row">IVA</th>
+									<th style="width:5%;" class="col-header-small align-center tiny-row">Subtotal+IVA</th>
+									<th style="width:0.1%;" class="col-header-small align-center tiny-row">Carro</th>
+								</tr>
+							</thead>
+							<tbody>
+								@if (Model != null && Model.GrillaConceptosFacturados.ListaDatos != null)
+								{
+									@foreach (var item in Model.GrillaConceptosFacturados.ListaDatos)
+									{
+										if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+										<tr class="@clase" onclick="selectReg(this, 'tbGridConceptoFacturado')">
+											<td style="display:none;">@item.id</td>
+											<td class="text-sm-left">@item.concepto.ToUpper()</td>
+											<td class="text-sm-center">@item.iva_situacion</td>
+											<td class="text-sm-end">@item.iva_alicuota.ToString().Replace('.', ',')</td>
+											<td class="text-sm-end">@item.getStringFormat(item.subtotal)</td>
+											<td class="text-sm-end">@item.iva.ToString("0.00")</td>
+											<td class="text-sm-end">@item.total.ToString("0.00")</td>
+											<td><a class="btn btn-xs btn-outline-dark" data-interaction="@item.id" onclick="quitarConceptoFacturado(this);"> <i class="bx bxs-trash"></i></a></td> @*20*@
+										</tr>
+									}
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="row mt-1">
+					<div class="row">
+						<div class="col-md-6" style="display: flex; align-items: center; text-align: justify; margin-top: 5px; margin-bottom: -15px;">
+							<h6>Otros Tributos</h6>
+						</div>
+						<div class="col-md-6">
+							<button id="btnAgregarOtroTributo" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Agregar Otros Tributos">
+								<i class="bx bx-plus bx-xs"></i>
+							</button>
+						</div>
+					</div>
+					<div class="table-responsive text-nowrap  table-wrapper-200">
+						<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridOtroTributo" style="height: 140px;">
+							<thead class="table-dark">
+								<tr class="header">
+									<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">Id</th>
+									<th style="width:5%;" class="col-header-small align-center tiny-row">Concepto</th>
+									<th style="width:5%;" class="col-header-small align-center tiny-row">Base</th>
+									<th style="width:5%;" class="col-header-small align-center tiny-row">Ali</th>
+									<th style="width:5%;" class="col-header-small align-center tiny-row">Importe</th>
+									<th style="width:0.1%;" class="col-header-small align-center tiny-row">Carro</th>
+								</tr>
+							</thead>
+							<tbody>
+								@if (Model != null && Model.GrillaOtrosTributos.ListaDatos != null)
+								{
+									@foreach (var item in Model.GrillaOtrosTributos.ListaDatos)
+									{
+										if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+										var nombre_base_imp = "base_imp_" + item.ins_id;
+										var nombre_alicuota = "alicuota_" + item.ins_id;
+										var nombre_importe = "importe_" + item.ins_id;
+										<tr class="@clase" onclick="selectReg(this, 'tbGridOtroTributo')">
+											<td style="display:none;">@item.ins_id</td>
+											<td class="text-sm-start">@item.imp</td>
+											<td class="text-sm-end content-editable-td inputEditable" data-interaction="@item.ins_id" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_base_imp>@item.base_imp.ToString("0.##")</td>
+											<td class="text-sm-end content-editable-td inputEditable" data-interaction="@item.ins_id" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_alicuota>@item.alicuota.ToString("0.##")</td>
+											<td class="text-sm-end content-editable-td inputEditable" data-interaction="@item.ins_id" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_importe>@item.importe.ToString("0.##")</td>
+											<td><a class="btn btn-xs btn-outline-dark" data-interaction="@item.ins_id" onclick="quitarOtroTributo(this);"> <i class="bx bxs-trash"></i></a></td> @*20*@
+										</tr>
+									}
+								}
+							</tbody>
+						</table>
+					</div>
+
+				</div>
+			</div>
+		</fieldset>
+	</div>
+</div>

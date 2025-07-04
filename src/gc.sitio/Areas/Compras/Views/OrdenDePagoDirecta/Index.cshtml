@@ -54,8 +54,11 @@
 
 @section scripts {
 	<script type="text/javascript">
-		var autoComRel01Url = "@Url.Action("BuscarTiposOPD", "ordendepagodirecta", new { area = "Compras" })";
+		var tipoOPSelected = "";
+		var autoComRel03Url = "@Url.Action("BuscarMotivos", "ordendepagodirecta", new { area = "Compras" })";
 		var buscarTiposDeOrdenDePagoUrl = "@Url.Action("BuscarTiposDeOrdenDePago", "ordendepagodirecta", new { area = "Compras" })";
+		var aceptarDesdeSeleccionarTipoDeOPUrl = "@Url.Action("AceptarDesdeSeleccionarTipoDeOP", "ordendepagodirecta", new { area = "Compras" })";
+		var buscarTiposComptesUrl = "@Url.Action("BuscarTiposComptes", "ordendepagodirecta", new { area = "Compras" })";
 	</script>
 
 	<script src="~/js/app/areas/ordendepagodirecta/odepagodirecta.js"></script>

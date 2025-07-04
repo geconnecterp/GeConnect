@@ -1,0 +1,26 @@
+﻿@model GridCoreSmart<OrdenDeCompraConceptoDto>
+@{
+}
+<div class="table-responsive text-nowrap table-wrapper-300-full-width">
+	<table class="table table-sm mb-0 table-hover" id="tbGridTotales">
+		<thead class="table-dark">
+			<tr class="header">
+				<th class="col-header-small align-left">Concepto</th>
+				<th class="col-header-small align-right">Importe</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model != null && Model.ListaDatos != null)
+			{
+				@foreach (var item in Model.ListaDatos)
+				{
+					<tr>
+						<td class="align-left">@item.Concepto</td>
+						<td class="align-right font-bold">@item.Importe</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>
+

@@ -1,0 +1,5 @@
+﻿@model SelectTipoComprobanteModel
+@{
+	var lista = Model.listaTiposComptes;
+}
+@Html.DropDownListFor(m => m.tco_id, lista, "Seleccionar...", new { @id = "listaTipoCompte", @class = "form-control activable", style = "font-size: 11px;max-width: 115px;" })

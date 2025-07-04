@@ -1,0 +1,50 @@
+﻿@model GridCoreSmart<OtroTributoDto>
+@{
+    var alt = true;
+    string clase = string.Empty;
+}
+
+<div class="row">
+    <div class="col-md-6" style="display: flex; align-items: center; text-align: justify; margin-top: 5px; margin-bottom: -15px;">
+        <h6>Otros Tributos</h6>
+    </div>
+    <div class="col-md-6">
+        <button id="btnAgregarOtroTributo" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Agregar Otros Tributos">
+            <i class="bx bx-plus bx-xs"></i>
+        </button>
+    </div>
+</div>
+<div class="table-responsive text-nowrap  table-wrapper">
+    <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridOtroTributo">
+        <thead class="table-dark">
+            <tr class="header">
+                <th style="width:0%;display:none;" class="col-header-small align-center tiny-row">Id</th>
+                <th style="width:5%;" class="col-header-small align-center tiny-row">Concepto</th>
+                <th style="width:5%;" class="col-header-small align-center tiny-row">Base</th>
+                <th style="width:5%;" class="col-header-small align-center tiny-row">Ali</th>
+                <th style="width:5%;" class="col-header-small align-center tiny-row">Importe</th>
+                <th style="width:0.1%;" class="col-header-small align-center tiny-row">Carro</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.ListaDatos != null)
+            {
+                @foreach (var item in Model.ListaDatos)
+                {
+                    if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+                    var nombre_base_imp = "base_imp_" + item.ins_id;
+                    var nombre_alicuota = "alicuota_" + item.ins_id;
+                    var nombre_importe = "importe_" + item.ins_id;
+                    <tr class="@clase" onclick="selectReg(this, 'tbGridOtroTributo')">
+                        <td style="display:none;">@item.ins_id</td>
+                        <td class="text-sm-start">@item.imp</td>
+                        <td class="text-sm-end content-editable-td inputEditable" data-interaction="@item.ins_id" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_base_imp>@item.base_imp.ToString("0.##")</td>
+                        <td class="text-sm-end content-editable-td inputEditable" data-interaction="@item.ins_id" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_alicuota>@item.alicuota.ToString("0.##")</td>
+                        <td class="text-sm-end content-editable-td inputEditable" data-interaction="@item.ins_id" contenteditable='true' onfocusin="focusOnTd(this);" id=@nombre_importe>@item.importe.ToString("0.##")</td>
+                        <td><a class="btn btn-xs btn-outline-dark" data-interaction="@item.ins_id" onclick="quitarOtroTributo(this);"> <i class="bx bxs-trash"></i></a></td> @*20*@
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
