@@ -23,7 +23,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 	public class AbmProveedorController : ProveedorControladorBase
 	{
 		private readonly AppSettings _settings;
-		private readonly ILogger<AbmProveedorController> _logger;
+		//private readonly ILogger<AbmProveedorController> _logger;
 		private readonly IProveedorServicio _proveedorServicio;
 		private readonly IABMProveedorServicio _abmProvServ;
 		private readonly IABMProductoServicio _abmProdServ;
@@ -55,7 +55,7 @@ namespace gc.sitio.Areas.ABMs.Controllers
 									  IAbmServicio abmServicio, IProductoServicio productoServicio, IABMProductoServicio abmProdServ) : base(options, accessor, logger)
 		{
 			_settings = options.Value;
-			_logger = logger;
+		//	_logger = logger;
 			_proveedorServicio = proveedorServicio;
 			_abmProvServ = abmProvServ;
 			_tipoOpeServicio = tipoOpeIvaServicio;

@@ -816,7 +816,7 @@ function cargarArbolCuentasLMayor() {
                     "pasivo": { "icon": "bx bx-trending-down" },
                     "patrimonio": { "icon": "bx bx-building-house" },
                     "ingresos": { "icon": "bx bx-dollar-circle" },
-                    "egresos": { "icon": "bx bx-print-dollar" },
+                    "egresos": { "icon": "bx bx-money-withdraw" },
                     "default": { "icon": "bx bx-folder" }
                 },
                 'search': {

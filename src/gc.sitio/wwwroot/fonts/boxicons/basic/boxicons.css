@@ -3634,7 +3634,7 @@ url("./boxicons.woff2?0f2b67081120384aafab1ba37aaf7845") format("woff2");
 .bx-price-tag:before {
     content: "\f5b3";
 }
-.bx-print-dollar:before {
+.bx-money-withdraw:before {
     content: "\f5b4";
 }
 .bx-printer:before {

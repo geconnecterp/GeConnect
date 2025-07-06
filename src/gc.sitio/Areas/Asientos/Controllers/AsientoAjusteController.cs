@@ -156,7 +156,7 @@ namespace gc.sitio.Areas.Asientos.Controllers
                         Mensaje = "El ejercicio seleccionado no es válido."
                     });
                 }
-
+                
                 // Llamar al servicio para obtener los asientos de ajuste
                 var respuesta = await _asientoServicio.ObtenerAsientosAjuste(ejercicioId, TokenCookie);
 
@@ -171,12 +171,12 @@ namespace gc.sitio.Areas.Asientos.Controllers
 
                 // Guardar datos en variable de sesión para uso posterior
                 AsientosAjuste = respuesta.ListaEntidad;
-                var lista = AsientosAjuste;
-                lista.ForEach(x => x.Ajusta = false);
+                //var lista = AsientosAjuste;
+                //lista.ForEach(x => x.Ajusta = false);
 
                 // Crear el grid para la vista (sin paginación)
                 var grid = GenerarGrillaSmart(
-                    lista,
+                    respuesta.ListaEntidad,
                     "Ccb_id",  // Ordenamiento por defecto
                     respuesta.ListaEntidad.Count,  // Todos los registros en una página
                     1,  // Página única

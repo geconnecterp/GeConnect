@@ -13,22 +13,7 @@
         <div class="card-body">
             <div class="tab-content">
                 <div class="tab-pane fade show active" id="aajTab" role="tabpanel" aria-labelledby="tabAAJ">
-                    <div class="row align-items-md-center">
-                        <div class="col-md-8 col-sm-6">
-                            <h5 class="mb-0">
-                                <i class="bx bx-book-open me-2"></i>
-                                <strong>@leyend</strong>
-                            </h5>
-                        </div>
-                        <div class="col-md-4 col-sm-6">
-                            <div class="d-flex justify-content-sm-end">
-                                <!-- Botón Imprimir -->
-                                <button type="button" class="btn btn-golden btn-sm mt-1 me-1 btnImprimir" title="Imprimir">
-                                    <i class="bx bx-printer"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+
                     <div class="row">
                         <div class="col-md-6 col-sm-6">
                             <div id="divAaj" class="row mt-2">
@@ -36,14 +21,174 @@
                             </div>
                         </div>
                         <div class="col-md-6 col-sm-6">
-                            <div id="divAajDet" class="row mt-2">
+                            <div id="divAajDet" class="mt-2">
                                 <!-- Aquí se cargarán los detalles del asiento de ajuste seleccionado -->
+                            </div>
+
+                            <!-- Formulario de Asiento y Botones -->
+                            <div class="grid-golden mt-3">
+                                <div class="grid-golden-body p-3">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-2">
+                                                <label class="form-label">Fecha De Asiento:</label>
+                                                <input type="text" class="form-control form-control-sm datepicker" id="fechaAsiento" />
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-2">
+                                                <label class="form-label">Cuenta de Ajuste:</label>
+                                                <div class="input-group input-group-sm">
+                                                    <input type="text" class="form-control" id="cuentaAjuste" name="cuentaAjuste"
+                                                           placeholder="Cuenta de ajuste..." readonly
+                                                           data-bs-toggle="tooltip" title="Haga clic en la lupa para seleccionar una cuenta" />
+                                                    <input type="hidden" id="cuentaAjusteId" name="cuentaAjusteId" />
+                                                    <button class="btn btn-outline-secondary" type="button" id="btnBuscarCuenta">
+                                                        <i class="bx bx-search"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="grid-golden-footer">
+                                    <div class="row">
+                                        <div class="col-12 text-end">
+                                            <button class="btn btn-danger btn-sm" id="btnCancelarAjuste">
+                                                <i class="bx bx-x-circle me-1"></i>Cancelar
+                                            </button>
+                                            <button class="btn btn-success btn-sm" id="btnConfirmarAjuste">
+                                                <i class="bx bx-check-circle me-1"></i>Confirmar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    
+
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+
+<!-- Modal para selección de cuentas -->
+<!-- Modal para selección de cuentas -->
+<div class="modal fade modal-golden" id="selectorPlanCuentasModal" tabindex="-1" aria-labelledby="selectorPlanCuentasModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="selectorPlanCuentasModalLabel">
+                    <i class="bx bx-list-ul"></i> Seleccionar Cuenta Contable
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bx bx-search"></i></span>
+                        <input type="text" class="form-control" id="txtBuscarCuentaPlan" placeholder="Buscar cuenta mientras escribe...">
+                    </div>
+                    <small class="form-text text-muted">La búsqueda se realiza automáticamente mientras escribe</small>
+                </div>
+
+                <!-- Área para mostrar resultados de búsqueda -->
+                <div id="resultadosBusqueda" class="mb-2" style="display: none;"></div>
+
+                <div id="cuentasTree" class="tree-container-golden jstree-golden" style="max-height: 350px; overflow-y: auto;"></div>
+                <div class="mt-3 small">
+                    <div class="d-flex flex-wrap text-muted">
+                        <span class="me-2 d-flex align-items-center">
+                            <i class="bx bx-wallet text-success me-1"></i> Activo
+                        </span>
+                        <span class="me-2 d-flex align-items-center">
+                            <i class="bx bx-trending-down text-danger me-1"></i> Pasivo
+                        </span>
+                        <span class="me-2 d-flex align-items-center">
+                            <i class="bx bx-building-house text-purple me-1"></i> Patrimonio
+                        </span>
+                        <span class="me-2 d-flex align-items-center">
+                            <i class="bx bx-dollar-circle text-warning me-1"></i> Ingresos
+                        </span>
+                        <span class="me-2 d-flex align-items-center">
+                            <i class="bx bx-money-withdraw text-info me-1"></i> Egresos
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bx bx-x me-1"></i> Cerrar
+                </button>
+                <button type="button" class="btn btn-golden" id="btnSeleccionarCuenta" disabled>
+                    <i class="bx bx-check me-1"></i> Seleccionar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estilos para el árbol de cuentas -->
+<style>
+    /* Estilos para el árbol de cuentas */
+    .jstree-anchor.tipo-movimiento {
+        font-weight: bold;
+    }
+
+    .jstree-anchor.cuenta-activo {
+        color: #28a745;
+    }
+
+    .jstree-anchor.cuenta-pasivo {
+        color: #dc3545;
+    }
+
+    .jstree-anchor.cuenta-patrimonio {
+        color: #6f42c1;
+    }
+
+    .jstree-anchor.cuenta-ingresos {
+        color: #fd7e14;
+    }
+
+    .jstree-anchor.cuenta-egresos {
+        color: #17a2b8;
+    }
+
+    /* Estilos Golden para el modal */
+    .modal-golden .modal-header {
+        background-color: #f0ad4e;
+        color: white;
+        border-bottom: 3px solid #eea236;
+    }
+
+    .modal-golden .modal-footer {
+        border-top: 2px solid #f5f5f5;
+        background-color: #fcf8e3;
+    }
+
+    .btn-golden {
+        background-color: #f0ad4e;
+        border-color: #eea236;
+        color: white;
+    }
+
+        .btn-golden:hover, .btn-golden:focus {
+            background-color: #ec971f;
+            border-color: #d58512;
+            color: white;
+        }
+
+        .btn-golden:disabled {
+            background-color: #f8d9ac;
+            border-color: #f5c879;
+        }
+
+    .tree-container-golden {
+        border: 1px solid #f0ad4e;
+        border-radius: 0.25rem;
+        padding: 0.5rem;
+    }
+</style>
