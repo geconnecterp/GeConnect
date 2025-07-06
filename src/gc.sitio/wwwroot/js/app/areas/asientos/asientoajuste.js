@@ -688,10 +688,31 @@ function confirmarAjustes() {
     // Obtener el ID de la cuenta seleccionada y la fecha
     const cuentaAjusteId = $('#cuentaAjusteId').val();
     const fechaAsiento = $('#fechaAsiento').val();
-    const selectedCcbId = $('.asiento-check:checked').first().data('ccb-id');
-    const ejercicio = $("#Eje_nro").val();
+    const ejercicio = parseInt($("#Eje_nro").val());
 
-    // Validar que se haya seleccionado una cuenta
+    // Obtener todas las cuentas seleccionadas (checkboxes marcados)
+    const cuentasSeleccionadas = [];
+    $('.asiento-check:checked').each(function () {
+        const ccbId = $(this).data('ccb-id');
+        if (ccbId) {
+            cuentasSeleccionadas.push(ccbId);
+        }
+    });
+
+    // Validaciones
+    if (!ejercicio || isNaN(ejercicio)) {
+        AbrirMensaje(
+            "Validación",
+            "Debe seleccionar un ejercicio contable válido.",
+            function () { $("#msjModal").modal("hide"); },
+            false,
+            ["Aceptar"],
+            "warn!",
+            null
+        );
+        return;
+    }
+
     if (!cuentaAjusteId) {
         AbrirMensaje(
             "Validación",
@@ -705,7 +726,6 @@ function confirmarAjustes() {
         return;
     }
 
-    // Validar que se haya seleccionado una fecha
     if (!fechaAsiento) {
         AbrirMensaje(
             "Validación",
@@ -719,11 +739,10 @@ function confirmarAjustes() {
         return;
     }
 
-    // Validar que se haya seleccionado una cuenta para ajustar
-    if (!selectedCcbId) {
+    if (cuentasSeleccionadas.length === 0) {
         AbrirMensaje(
             "Validación",
-            "Debe seleccionar una cuenta para aplicar el ajuste.",
+            "Debe seleccionar al menos una cuenta para aplicar el ajuste.",
             function () { $("#msjModal").modal("hide"); },
             false,
             ["Aceptar"],
@@ -742,20 +761,26 @@ function confirmarAjustes() {
                 // Mostrar indicador de carga
                 AbrirWaiting("Generando asiento de ajuste por inflación...");
 
-                // Preparar datos para la petición
-                const data = {
-                    eje_nro: ejercicio,
-                    ccb_id: selectedCcbId,
-                    cuenta_ajuste_id: cuentaAjusteId,
-                    fecha_asiento: fechaAsiento
-                };
+                // Convertir la fecha del formato "dd/mm/yyyy" a un objeto Date si es necesario
+                let fechaEnvio = fechaAsiento;
+                if (typeof fechaAsiento === 'string' && fechaAsiento.includes('/')) {
+                    const partes = fechaAsiento.split('/');
+                    if (partes.length === 3) {
+                        fechaEnvio = partes[2] + "-" + partes[1] + "-" + partes[0]; // formato ISO yyyy-MM-dd
+                    }
+                }
 
-                // Realizar la petición al servidor
+                // CORRECCIÓN: Enviar los datos con los nombres correctos como parámetros normales (no JSON)
                 $.ajax({
-                    url: confirmarAsientoAjusteUrl, // Esta URL debe definirse en la vista
+                    url: confirmarAsientoAjusteUrl,
                     type: "POST",
-                    contentType: "application/json",
-                    data: JSON.stringify(data),
+                    data: {
+                        eje_nro: ejercicio,
+                        fecha: fechaEnvio,
+                        ccbid: cuentaAjusteId,
+                        listCcb: cuentasSeleccionadas
+                    },
+                    traditional: true, // Importante para arrays
                     success: function (resultado) {
                         CerrarWaiting();
 
@@ -767,6 +792,25 @@ function confirmarAjustes() {
                                 false,
                                 ["Aceptar"],
                                 "error!",
+                                null
+                            );
+                            return;
+                        }
+
+                        if (resultado.warn) {
+                            AbrirMensaje(
+                                "Advertencia",
+                                resultado.msg || "Se encontraron advertencias al generar el asiento",
+                                function () {
+                                    $("#msjModal").modal("hide");
+                                    // Si es un problema de autenticación, redirigir al login
+                                    if (resultado.auth) {
+                                        window.location.href = loginUrl;
+                                    }
+                                },
+                                false,
+                                ["Aceptar"],
+                                "warn!",
                                 null
                             );
                             return;
@@ -789,9 +833,21 @@ function confirmarAjustes() {
                     },
                     error: function (xhr, status, error) {
                         CerrarWaiting();
+
+                        // Intentar parsear el mensaje de error si es un JSON
+                        let mensajeError = error;
+                        try {
+                            const respuestaError = JSON.parse(xhr.responseText);
+                            if (respuestaError && respuestaError.msg) {
+                                mensajeError = respuestaError.msg;
+                            }
+                        } catch (e) {
+                            // Si no es un JSON válido, usar el mensaje de error original
+                        }
+
                         AbrirMensaje(
                             "Error",
-                            "Error al generar el asiento de ajuste: " + error,
+                            "Error al generar el asiento de ajuste: " + mensajeError,
                             function () { $("#msjModal").modal("hide"); },
                             false,
                             ["Aceptar"],

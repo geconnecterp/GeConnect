@@ -3,7 +3,7 @@ using gc.api.core.Contratos.Servicios.Asientos;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Dtos.Asientos;
-
+using gc.infraestructura.Dtos.Gen;
 using Microsoft.Data.SqlClient;
 
 namespace gc.api.core.Servicios.Asientos
@@ -25,6 +25,38 @@ namespace gc.api.core.Servicios.Asientos
 
             var lista = _repository.EjecutarLstSpExt<AsientoAjusteDto>(sp, ps, true);
             return lista;
+        }
+
+        public RespuestaDto ConfirmarAsientoAjuste(AjusteConfirmarDto confirmar)
+        {
+            try
+            {
+                var sp = ConstantesGC.StoredProcedures.SP_ASIENTO_AJUSTE_CONFIRMAR;
+                var ps = new List<SqlParameter>()
+            {
+                new SqlParameter("@eje_nro", confirmar.EjeNro),
+                new SqlParameter("@usu_id",confirmar.User),
+                new SqlParameter("@adm_id",confirmar.AdmId),
+                new SqlParameter("@dia_fecha",confirmar.Fecha),
+                new SqlParameter("@ccb_id",confirmar.CcbId),
+                new SqlParameter("@json",confirmar.Json)
+            };
+
+                List<RespuestaDto> resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+                if (resp.Count == 0)
+                {
+                    return new RespuestaDto() { resultado = -1, resultado_msj = "No se Recepcionó respuesta del proceso." };
+                }
+                return resp.First();
+            }
+            catch(SqlException ex)
+            {
+                return new RespuestaDto() { resultado = -1, resultado_msj = ex.Message };
+            }
+            catch (Exception ex)
+            {
+                return new RespuestaDto() { resultado = -1, resultado_msj = ex.Message };
+            }
         }
 
         public List<AsientoAjusteCcbDto> ObtenerAsientosAjusteCcb(int eje_nro, string ccb_id, bool todas)

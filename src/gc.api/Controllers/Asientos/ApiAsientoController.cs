@@ -1,6 +1,7 @@
 ﻿using gc.api.core.Contratos.Servicios.Asientos;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Asientos;
+using gc.infraestructura.Dtos.Gen;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -30,7 +31,7 @@ namespace gc.api.Controllers.Asientos
             try
             {
                 var resultado = _asientosServicio.ObtenerEjercicios();
-                return Ok(new ApiResponse<List<EjercicioDto>>( resultado));
+                return Ok(new ApiResponse<List<EjercicioDto>>(resultado));
             }
             catch (System.Exception ex)
             {
@@ -50,8 +51,8 @@ namespace gc.api.Controllers.Asientos
             try
             {
                 var resultado = _asientosServicio.ObtenerTiposAsiento();
-                
-                return Ok(new ApiResponse<List<TipoAsientoDto>>( resultado));
+
+                return Ok(new ApiResponse<List<TipoAsientoDto>>(resultado));
             }
             catch (System.Exception ex)
             {
@@ -78,7 +79,7 @@ namespace gc.api.Controllers.Asientos
             try
             {
                 var resultado = _asientosServicio.ObtenerUsuariosDeEjercicio(eje_nro);
-                return Ok(new ApiResponse<List<UsuAsientoDto>>( resultado));
+                return Ok(new ApiResponse<List<UsuAsientoDto>>(resultado));
             }
             catch (System.Exception ex)
             {
@@ -124,7 +125,7 @@ namespace gc.api.Controllers.Asientos
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult<List<AsientoAjusteCcbDto>> ObtenerAsientosAjusteCcb(int eje_nro,string ccb_id,bool todas)
+        public ActionResult<List<AsientoAjusteCcbDto>> ObtenerAsientosAjusteCcb(int eje_nro, string ccb_id, bool todas)
         {
             if (eje_nro <= 0)
             {
@@ -133,13 +134,49 @@ namespace gc.api.Controllers.Asientos
 
             try
             {
-                var resultado = _asientosServicio.ObtenerAsientosAjusteCcb(eje_nro,ccb_id,todas);
+                var resultado = _asientosServicio.ObtenerAsientosAjusteCcb(eje_nro, ccb_id, todas);
                 return Ok(new ApiResponse<List<AsientoAjusteCcbDto>>(resultado));
             }
             catch (System.Exception ex)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
+        }
+
+        /// <summary>
+        /// Confirma un asiento de ajuste por inflación
+        /// </summary>
+        /// <param name="confirmar">Datos para confirmar el asiento de ajuste</param>
+        /// <returns>Resultado de la operación</returns>
+        [HttpPost("confirmar-asiento-ajuste")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public ActionResult<RespuestaDto> ConfirmarAsientoAjuste([FromBody] AjusteConfirmarDto confirmar)
+        {
+            if (confirmar == null)
+            {
+                return BadRequest("Los datos para confirmar el asiento no pueden ser nulos");
+            }
+
+            if (confirmar.EjeNro <= 0)
+            {
+                return BadRequest("El número de ejercicio debe ser mayor a cero");
+            }
+
+            if (string.IsNullOrEmpty(confirmar.User))
+            {
+                return BadRequest("El identificador de usuario es requerido");
+            }
+
+            if (string.IsNullOrEmpty(confirmar.Json))
+            {
+                return BadRequest("El detalle del asiento (Json) es requerido");
+            }
+
+            var resultado = _asientosServicio.ConfirmarAsientoAjuste(confirmar);
+
+            return Ok(new ApiResponse<RespuestaDto>(resultado));
         }
     }
 }
