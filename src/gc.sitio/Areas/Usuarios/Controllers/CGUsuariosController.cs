@@ -20,7 +20,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
     public class CGUsuariosController : ControladorUsuariosBase
     {
         private readonly AppSettings _settings;
-        private readonly ILogger<CGUsuariosController> _logger;
+        //private readonly ILogger<CGUsuariosController> _logger;
         private readonly ITipoDocumentoServicio _tDocSv;
         private readonly IUserServicio _userServicio;
         private readonly ITipoNegocioServicio _tipoNegocioServicio;
@@ -33,7 +33,7 @@ namespace gc.sitio.Areas.Usuarios.Controllers
             ICuentaServicio ctaSv, IAbmServicio abmServicio) : base(options, accessor, logger)
         {
             _settings = options.Value;
-            _logger = logger;
+          //  _logger = logger;
             _tDocSv = tipoDocumento;
             _userServicio = userServicio;
             _tipoNegocioServicio = tipoNegocioServicio;

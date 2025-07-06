@@ -13,12 +13,12 @@ namespace gc.pocket.site.Areas.ControlComun.Controllers
     [Area("ControlComun")]
     public class CuentaController : ControladorBase
     {
-        private readonly ILogger<CuentaController> _logger;
+        //private readonly ILogger<CuentaController> _logger;
         private readonly ICuentaServicio _cuentaServicio;
 
         public CuentaController(ILogger<CuentaController> logger, ICuentaServicio cuentaServicio, IOptions<AppSettings> options1, IHttpContextAccessor context) : base(options1, context)
         {
-            _logger = logger;
+         //   _logger = logger;
             _cuentaServicio = cuentaServicio;
         }
 

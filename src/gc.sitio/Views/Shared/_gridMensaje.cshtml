@@ -2,35 +2,39 @@
 
 @{
     var tipoMensaje = "info";
-    var iconoMensaje = "bx-info-circle";
+    var iconoMensaje = "bxs-info-circle";  // Cambiado a icono sólido
     var colorBorde = "primary";
-    var colorIcono = "primary";
     var tituloMensaje = "Información";
+    var bgIcono = "bg-primary";
+    var colorIcono = "white";  // Garantizar contraste con fondo primary
 
     if (Model.EsError)
     {
         tipoMensaje = "error";
-        iconoMensaje = "bx-error-circle";
+        iconoMensaje = "bxs-error-circle";  // Cambiado a icono sólido
         colorBorde = "danger";
-        colorIcono = "danger";
+        colorIcono = "white";
+        bgIcono = "bg-danger";
         tituloMensaje = "Error";
         <input type="hidden" id="msgError" value="true" />
     }
     else if (Model.EsWarn)
     {
         tipoMensaje = "warning";
-        iconoMensaje = "bx-shape-triangle";
+        iconoMensaje = "bxs-error-triangle";  // Cambiado a un icono sólido más reconocible
         colorBorde = "warning";
-        colorIcono = "warning";
+        colorIcono = "dark";  // Texto oscuro para contraste con fondo amarillo
+        bgIcono = "bg-warning";
         tituloMensaje = "Advertencia";
         <input type="hidden" id="msgWarn" value="true" />
     }
     else if (Model.Ok)
     {
         tipoMensaje = "success";
-        iconoMensaje = "bx-check-circle";
+        iconoMensaje = "bxs-check-circle";  // Cambiado a icono sólido
         colorBorde = "success";
-        colorIcono = "success";
+        colorIcono = "white";
+        bgIcono = "bg-success";
         tituloMensaje = "Éxito";
         <input type="hidden" id="msgSucc" value="true" />
     }
@@ -40,16 +44,16 @@
     }
 }
 <div class="golden-message-container animate__animated animate__fadeIn">
-    <div class="card golden-message golden-message-@tipoMensaje border-@colorBorde shadow-sm">
-        <div class="card-header bg-transparent border-0 d-flex align-items-center">
-            <div class="golden-message-icon bg-@colorBorde bg-opacity-10 text-@colorIcono rounded-circle p-3 me-3">
-                <i class="bx @iconoMensaje fs-4"></i>
+    <div class="card golden-message golden-message-@tipoMensaje border-@colorBorde shadow">
+        <div class="card-header bg-transparent border-0 d-flex align-items-center p-3">
+            <div class="golden-message-icon @bgIcono rounded-circle me-3 shadow-sm d-flex align-items-center justify-content-center">
+                <i class="bx @iconoMensaje fs-3 text-@colorIcono"></i>
             </div>
             <h5 class="card-title mb-0 fw-bold text-@colorBorde">@tituloMensaje</h5>
         </div>
-        <div class="card-body pt-2">
-            <div class="golden-message-content">
-                <p class="text-dark mb-0">
+        <div class="card-body pt-0 pb-3">
+            <div class="golden-message-content ms-5">
+                <p class="text-dark mb-0 fs-6">
                     @Model.Mensaje
                 </p>
             </div>
@@ -58,7 +62,7 @@
 </div>
 
 <script>
-    $(document).ready(function() {
+    $(function() {
         // Añadir efecto de pulso al icono en mensajes de error y advertencia
     @if (Model.EsError || Model.EsWarn)
     {
@@ -70,40 +74,3 @@
     }
     });
 </script>
-@* <div class="container mt-4 bg-white rounded-4 p-4">
-    <div class="row">
-        <div class="col-sm-12">
-            <div class="card">
-                <div class="card-header">
-                    <div class="message-header info-message">
-                        <div class="media-left padding-5">
-                            @if (Model.EsError)
-                            {
-                                <i class="bx bx-error-circle text-danger"></i>
-                                <input type="hidden" id="msgError" value="true" />
-                            }
-                            else if (Model.EsWarn)
-                            {
-                                <i class="bx bx-shape-triangle text-warning"></i>
-                                <input type="hidden" id="msgWarn" value="true" />
-
-                            }
-                            else
-                            {
-                                <i class="bx bx-check-circle text-success"></i>
-                                <input type="hidden" id="msgSucc" value="true" />
-                            }
-
-                        </div>
-                        <div class="card-body">
-                            <h3>Importante</h3>
-                            <p class="text-muted">
-                                @Model.Mensaje
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>   
-</div>  *@

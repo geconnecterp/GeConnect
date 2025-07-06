@@ -15,7 +15,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
     [Area("ControlComun")]
     public class ProductoController : ProductoControladorBase
 	{
-        private readonly ILogger<ProductoController> _logger;
+       // private readonly ILogger<ProductoController> _logger;
         private readonly ICuentaServicio _ctaSv;
         private readonly IRubroServicio _rubSv;
         private readonly IProductoServicio _productoServicio;
@@ -24,7 +24,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
         public ProductoController(ILogger<ProductoController> logger, IOptions<MenuSettings> options, IOptions<AppSettings> options1, IOptions<BusquedaProducto> busqueda,
             ICuentaServicio cuentaServicio, IHttpContextAccessor context, IRubroServicio rubSv, IProductoServicio productoServicio) : base(options1, context, logger)
         {
-            _logger = logger;
+          //  _logger = logger;
             _ctaSv = cuentaServicio;
             _rubSv = rubSv;
             _busqueda = busqueda.Value;

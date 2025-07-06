@@ -1,26 +1,28 @@
-﻿let aajDataBak = {};
-
-$(function () {
+﻿$(function () {
     inicializaComponentesAsientoAjuste();
     configurarBotonesAsientoAjuste();
 
 
-    // Manejar el check/uncheck de todos los elementos
+    // Manejar el check/uncheck de todos los elementos - MODIFICADO
     $(document).on('click', '#checkAllAAJ', function () {
         var isChecked = $(this).prop('checked');
         $('.asiento-check').prop('checked', isChecked);
-        actualizarEstadoAjusta();
+
+        // No llamamos a actualizarEstadoAjusta() aquí
+        // Solo se encarga de marcar/desmarcar todos los checkboxes
     });
 
-    // Manejar el check/uncheck individual
+    // Manejar el check/uncheck individual - MODIFICADO
     $(document).on('click', '.asiento-check', function (e) {
         e.stopPropagation(); // Evitar que el click en el checkbox active la fila
-        actualizarEstadoAjusta();
 
-        // Verificar si todos están seleccionados para actualizar checkAllAAJ
+        // Simplemente actualizamos el estado del checkbox general
         var totalChecks = $('.asiento-check').length;
         var totalChecked = $('.asiento-check:checked').length;
         $('#checkAllAAJ').prop('checked', totalChecks === totalChecked);
+
+        // No llamamos a actualizarEstadoAjusta() aquí
+        // Solo gestionamos el estado del checkbox
     });
 
     // Botón de confirmar ajustes
@@ -33,58 +35,55 @@ $(function () {
         cancelarAjustes();
     });
 
-
-    // Mejorar el comportamiento de click en filas para incluir el checkbox
+    // Comportamiento de click en filas - MODIFICADO
     $(document).on('click', '#tbAAJ tr', function (e) {
+        // Si la tabla está desactivada o hay una carga en progreso, no hacer nada
+        if ($("#divAaj").hasClass("tabla-desactivada")) {
+            return;
+        }
+
         // Evitar que se active si se hizo click directamente en el checkbox
         if (!$(e.target).is('.asiento-check') && !$(e.target).is('input[type="checkbox"]')) {
-            // Encontrar el checkbox dentro de la fila y cambiar su estado
+            // Encontrar el checkbox dentro de la fila
             var checkbox = $(this).find('.asiento-check');
-            checkbox.prop('checked', !checkbox.prop('checked'));
 
-            // Desmarcar todos los demás
-            $('.asiento-check').not(checkbox).prop('checked', false);
+            // Desmarcar todas las filas
+            $("#tbAAJ tr").removeClass("selected-row");
 
-            // Actualizar el estado y cargar detalles
+            // Marcar esta fila como seleccionada
+            $(this).addClass("selected-row");
+
+            // Ahora sí, llamamos a actualizarEstadoAjusta
             actualizarEstadoAjusta();
         }
     });
 
-    // Modificar el manejador de click en checkboxes individuales para mostrar detalles
-    $(document).on('click', '.asiento-check', function (e) {
-        e.stopPropagation(); // Evitar que el click en el checkbox active la fila
-
-        // Desmarcar todos los demás checkboxes si este se marcó
-        if ($(this).prop('checked')) {
-            $('.asiento-check').not(this).prop('checked', false);
-        }
-
-        // Actualizar el estado y cargar detalles
-        actualizarEstadoAjusta();
-
-        // Actualizar el estado del checkbox general
-        $('#checkAllAAJ').prop('checked', $('.asiento-check:checked').length === $('.asiento-check').length);
-    });
-
-    // Modificar el manejador del checkbox general para reflejar cambios en detalle
-    $(document).on('click', '#checkAllAAJ', function () {
-        var isChecked = $(this).prop('checked');
-        $('.asiento-check').prop('checked', isChecked);
-
-        // Actualizar el estado y cargar detalles solo si hay algún checkbox marcado
-        if (isChecked && $('.asiento-check').length > 0) {
-            // Marcamos solo el primero para mostrar sus detalles
-            $('.asiento-check').prop('checked', false);
-            $('.asiento-check:first').prop('checked', true);
-        }
-
-        actualizarEstadoAjusta();
-    });
-
-    
+   
 });
 
-// Función para actualizar el estado Ajusta y cargar los detalles
+/**
+ * Función para bloquear o desbloquear la tabla de asientos
+ * @param {boolean} bloquear - true para bloquear, false para desbloquear
+ */
+function bloquearTablaAsientos(bloquear) {
+    if (bloquear) {
+        // Añadir overlay y clase de desactivado
+        $("#divAaj").addClass("tabla-desactivada");
+        if ($("#overlay-tabla").length === 0) {
+            $("#divAaj").append('<div id="overlay-tabla" class="overlay-tabla"></div>');
+        }
+        // Deshabilitar eventos de clic en las filas
+        $("#tbAAJ tr").css("pointer-events", "none");
+    } else {
+        // Quitar overlay y clase de desactivado
+        $("#divAaj").removeClass("tabla-desactivada");
+        $("#overlay-tabla").remove();
+        // Rehabilitar eventos de clic en las filas
+        $("#tbAAJ tr").css("pointer-events", "auto");
+    }
+}
+
+// Función para actualizar el estado Ajusta y cargar los detalles - SIN CAMBIOS
 function actualizarEstadoAjusta() {
     // Obtener todos los checkboxes marcados
     var checkedBoxes = $('.asiento-check:checked');
@@ -92,9 +91,11 @@ function actualizarEstadoAjusta() {
     // Si hay al menos un checkbox marcado, buscar los detalles
     if (checkedBoxes.length > 0) {
         // Tomamos el primer checkbox marcado para mostrar sus detalles
-        // (se puede modificar esta lógica si se requiere otro comportamiento)
         var selectedCcbId = $(checkedBoxes[0]).data('ccb-id');
         var ejercicio = $("#Eje_nro").val();
+
+        // Bloquear la tabla mientras se carga el detalle
+        bloquearTablaAsientos(true);
 
         // Limpiamos el div de detalle antes de cargar nuevos datos
         $("#divAajDet").empty();
@@ -122,9 +123,14 @@ function actualizarEstadoAjusta() {
                 orientation: 'bottom'
             });
 
+            // Desbloquear la tabla después de cargar el detalle
+            bloquearTablaAsientos(false);
         }, function (error) {
             // Manejo de errores
             $("#divAajDet").html('<div class="alert alert-danger">Error al cargar los detalles: ' + error.message + '</div>');
+
+            // Desbloquear la tabla en caso de error
+            bloquearTablaAsientos(false);
         });
     } else {
         // Si no hay checkboxes seleccionados, limpiar el área de detalle
@@ -134,6 +140,11 @@ function actualizarEstadoAjusta() {
 }
 
 function inicializaComponentesAsientoAjuste() {
+
+    // Inicializar tooltips
+    $('[data-bs-toggle="tooltip"]').tooltip();
+
+
     // Inicializar selectores con Select2 si está disponible
     if ($.fn.select2) {
         $("#Eje_nro").select2({
@@ -165,7 +176,11 @@ function inicializaComponentesAsientoAjuste() {
     });
 
     // Forzar la localización regional para las fechas
-    $.datepicker.setDefaults($.datepicker.regional["es"]);
+    $.datepicker.setDefaults($.datepicker.regional["es"]);   
+
+
+    // Inicializar el selector de cuentas
+    inicializarSelectorCuentas();
 }
 
 function configurarBotonesAsientoAjuste() {
@@ -285,7 +300,7 @@ function imprimiraaj() {
     invocacionGestorDoc({});
 }
 
-// Esta función se llama cuando se hace click en una fila del grid
+// También modificamos la función selectReg para mantener consistencia
 function selectReg(elem, tableId) {
     // Si se hizo click en una fila de la tabla principal de asientos
     if (tableId === 'tbAAJ') {
@@ -294,18 +309,519 @@ function selectReg(elem, tableId) {
 
         // Marcar esta fila como seleccionada
         $(elem).addClass("selected-row");
-
-        // Encontrar el checkbox en esta fila y marcarlo
-        var checkbox = $(elem).find('.asiento-check');
-
-        // Desmarcar todos los demás checkboxes
-        $('.asiento-check').prop('checked', false);
-
-        // Marcar este checkbox
-        checkbox.prop('checked', true);
-
+       
         // Actualizar el estado y cargar detalles
         actualizarEstadoAjusta();
     }
 }
 
+// Variables globales para el selector de cuentas
+let cuentaSeleccionada = null;
+let arbolCuentasInicializado = false;
+
+/**
+ * Modifica el selector de cuentas para implementar la búsqueda en tiempo real
+ */
+function inicializarSelectorCuentas() {
+    // Configurar evento para abrir el selector al hacer clic en el botón
+    $('#btnBuscarCuenta').off('click').on('click', function () {
+        // Guardar referencias para los campos destino
+        $('#selectorPlanCuentasModal').data('campo-destino', 'cuentaAjuste');
+        $('#selectorPlanCuentasModal').data('campo-destino-id', 'cuentaAjusteId');
+
+        // Abrir el modal
+        $('#selectorPlanCuentasModal').modal('show');
+
+        // Cargar el árbol si no está inicializado
+        if (!arbolCuentasInicializado) {
+            cargarArbolCuentas();
+        }
+    });
+
+    // NUEVA IMPLEMENTACIÓN: Búsqueda en tiempo real al escribir
+    $('#txtBuscarCuentaPlan').off('keyup').on('keyup', function () {
+        const termino = $(this).val().trim();
+
+        // Obtener instancia del árbol
+        const tree = $("#cuentasTree").jstree(true);
+        if (!tree) return;
+
+        if (termino.length > 0) {
+            // Si hay texto, realizar la búsqueda
+            tree.search(termino, false, true);
+
+            // Usar setTimeout para dar tiempo a jsTree a actualizar el DOM
+            setTimeout(function () {
+                // Contar los resultados usando jQuery
+                const nodosEncontrados = $('.jstree-search');
+                const totalResultados = nodosEncontrados.length;
+
+                // Expandir los nodos padre de los resultados
+                nodosEncontrados.each(function () {
+                    const nodeId = $(this).closest('.jstree-node').attr('id');
+                    if (nodeId) {
+                        // Obtener y expandir todos los nodos padres
+                        let parent = tree.get_parent(nodeId);
+                        while (parent && parent !== "#") {
+                            tree.open_node(parent);
+                            parent = tree.get_parent(parent);
+                        }
+                    }
+                });
+
+                // Mostrar mensaje con cantidad de resultados
+                if (totalResultados > 0) {
+                    $("#resultadosBusqueda").html(`
+                    <div class="alert alert-success py-1 small">
+                        <i class="bx bx-check-circle me-1"></i>
+                        Se encontraron <strong>${totalResultados}</strong> cuenta(s) que coinciden
+                    </div>
+                `).show();
+                } else {
+                    $("#resultadosBusqueda").html(`
+                    <div class="alert alert-warning py-1 small">
+                        <i class="bx bx-error-circle me-1"></i>
+                        No se encontraron cuentas que coincidan
+                    </div>
+                `).show();
+                }
+
+                // Ocultar después de 3 segundos
+                setTimeout(function () {
+                    $("#resultadosBusqueda").fadeOut();
+                }, 3000);
+            }, 200); // Pequeño retraso para que jsTree termine de actualizar el DOM
+        } else {
+            // Si el campo está vacío, limpiar la búsqueda
+            tree.clear_search();
+            tree.close_all();
+            $("#resultadosBusqueda").fadeOut();
+        }
+    });
+
+
+    // Búsqueda al presionar Enter (para evitar envío de formulario)
+    $('#txtBuscarCuentaPlan').off('keypress').on('keypress', function (e) {
+        if (e.which === 13) {
+            e.preventDefault(); // Evitar envío de formulario
+            // La búsqueda ya se habrá hecho con el evento keyup
+        }
+    });
+
+    // Evento para seleccionar cuenta
+    $('#btnSeleccionarCuenta').off('click').on('click', function () {
+        if (cuentaSeleccionada) {
+            // Obtener los campos destino desde el modal
+            const campoDestino = $('#selectorPlanCuentasModal').data('campo-destino');
+            const campoDestinoId = $('#selectorPlanCuentasModal').data('campo-destino-id');
+
+            // Actualizar los campos con la cuenta seleccionada
+            $('#' + campoDestino).val(cuentaSeleccionada.text);
+            $('#' + campoDestinoId).val(cuentaSeleccionada.id);
+
+            // Cerrar el modal
+            $('#selectorPlanCuentasModal').modal('hide');
+        }
+    });
+
+    // Limpiar búsqueda y selección al abrir el modal
+    $('#selectorPlanCuentasModal').off('shown.bs.modal').on('shown.bs.modal', function () {
+        // Limpiar campo de búsqueda y darle el foco
+        $('#txtBuscarCuentaPlan').val('').trigger("focus");
+
+        // Limpiar búsqueda previa
+        const tree = $("#cuentasTree").jstree(true);
+        if (tree) {
+            tree.clear_search();
+            tree.close_all();
+        }
+
+        // Resetear selección
+        cuentaSeleccionada = null;
+        $('#btnSeleccionarCuenta').prop('disabled', true);
+        $("#resultadosBusqueda").hide();
+    });
+
+    // Limpiar búsqueda y selección al cerrar el modal
+    $('#selectorPlanCuentasModal').off('hidden.bs.modal').on('hidden.bs.modal', function () {
+        $('#txtBuscarCuentaPlan').val('');
+        cuentaSeleccionada = null;
+        $('#btnSeleccionarCuenta').prop('disabled', true);
+
+        // Devolver el foco al botón que abrió el modal (para accesibilidad)
+        $('#btnBuscarCuenta').trigger("focus");
+    });
+}
+
+
+
+/**
+ * Carga el árbol de cuentas desde el servidor
+ */
+function cargarArbolCuentas() {
+    // Mostrar indicador de carga en el árbol
+    $("#cuentasTree").html(`
+        <div class="text-center p-3">
+            <div class="spinner-border spinner-border-sm text-warning" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-2 small">Cargando plan de cuentas...</p>
+        </div>
+    `);
+
+    AbrirWaiting("Cargando plan de cuentas...");
+
+    const data = {
+        buscar: "",
+        buscaNew: true
+    };
+
+    // Verificar que la URL esté configurada
+    if (!buscarPlanCuentasUrl) {
+        console.error("La URL para buscar el plan de cuentas no está configurada");
+        AbrirMensaje(
+            "Error",
+            "No se pudo cargar el plan de cuentas. La URL no está configurada.",
+            function () { $("#msjModal").modal("hide"); },
+            false,
+            ["Aceptar"],
+            "error!",
+            null
+        );
+        CerrarWaiting();
+        return;
+    }
+
+    // Realizar la petición AJAX
+    $.ajax({
+        url: buscarPlanCuentasUrl,
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(data),
+        success: function (resultado) {
+            CerrarWaiting();
+
+            if (resultado.error) {
+                console.error("Error al cargar el plan de cuentas:", resultado.msg);
+                AbrirMensaje(
+                    "Error",
+                    "Error al cargar el plan de cuentas: " + resultado.msg,
+                    function () { $("#msjModal").modal("hide"); },
+                    false,
+                    ["Aceptar"],
+                    "error!",
+                    null
+                );
+                return;
+            }
+
+            try {
+                // Parsear el árbol
+                const arbolCuentas = JSON.parse(resultado.arbol);
+
+                // Procesar los nodos para añadir íconos y clases
+                procesarNodosArbol(arbolCuentas);
+
+                // Inicializar jsTree
+                inicializarJsTree(arbolCuentas);
+
+                arbolCuentasInicializado = true;
+            } catch (error) {
+                console.error("Error al procesar los datos del plan de cuentas:", error);
+                AbrirMensaje(
+                    "Error",
+                    "Error al procesar los datos del plan de cuentas",
+                    function () { $("#msjModal").modal("hide"); },
+                    false,
+                    ["Aceptar"],
+                    "error!",
+                    null
+                );
+            }
+        },
+        error: function (xhr, status, error) {
+            CerrarWaiting();
+            console.error("Error al cargar el plan de cuentas:", error);
+            AbrirMensaje(
+                "Error",
+                "Error de comunicación al cargar el plan de cuentas",
+                function () { $("#msjModal").modal("hide"); },
+                false,
+                ["Aceptar"],
+                "error!",
+                null
+            );
+        }
+    });
+}
+
+/**
+ * Procesa los nodos del árbol para añadir íconos y clases
+ * @param {Array} nodos - Lista de nodos del árbol
+ */
+function procesarNodosArbol(nodos) {
+    nodos.forEach(nodo => {
+        // Determinar tipo de cuenta para el ícono
+        const tipo = nodo.data?.tipo;
+        const cuentaTipo = nodo.data?.cuenta?.toLowerCase();
+
+        // Asignar tipo para íconos
+        nodo.type = cuentaTipo || "default";
+
+        // Asignar clases CSS
+        nodo.a_attr = nodo.a_attr || {};
+        let clases = [];
+
+        if (tipo === "M") clases.push("tipo-movimiento");
+        if (cuentaTipo) clases.push("cuenta-" + cuentaTipo);
+
+        nodo.a_attr.class = clases.join(" ");
+
+        // Procesar nodos hijos recursivamente
+        if (nodo.children && nodo.children.length > 0) {
+            procesarNodosArbol(nodo.children);
+        }
+    });
+}
+
+/**
+ * Inicializa el árbol jsTree con los datos procesados y configura la búsqueda
+ * @param {Array} datos - Datos del árbol
+ */
+function inicializarJsTree(datos) {
+    // Destruir instancia previa si existe
+    if ($.jstree.reference("#cuentasTree")) {
+        $("#cuentasTree").jstree("destroy");
+    }
+
+    // Inicializar nueva instancia con soporte para búsqueda
+    $("#cuentasTree").jstree({
+        core: {
+            data: datos,
+            themes: {
+                responsive: true
+            }
+        },
+        types: {
+            activo: {
+                icon: "bx bx-wallet"
+            },
+            pasivo: {
+                icon: "bx bx-trending-down"
+            },
+            patrimonio: {
+                icon: "bx bx-building-house"
+            },
+            ingresos: {
+                icon: "bx bx-dollar-circle"
+            },
+            egresos: {
+                icon: "bx bx-money-withdraw"
+            },
+            default: {
+                icon: "bx bx-folder"
+            }
+        },
+        search: {
+            show_only_matches: true,
+            show_only_matches_children: true,
+            close_opened_onclear: true,
+            search_leaves_only: false
+        },
+        plugins: ["types", "search"]
+    });
+
+    // Evento al seleccionar un nodo
+    $("#cuentasTree").off('select_node.jstree').on("select_node.jstree", function (e, data) {
+        const nodo = data.node;
+        const nodoId = nodo.id;
+        const nodoTexto = nodo.text;
+        const nodoTipo = nodo.data?.tipo;
+
+        // Solo permitir seleccionar cuentas de movimiento
+        if (nodoTipo === "M") {
+            // Guardar la cuenta seleccionada
+            cuentaSeleccionada = {
+                id: nodoId,
+                text: nodoTexto
+            };
+
+            // Habilitar el botón de seleccionar
+            $('#btnSeleccionarCuenta').prop('disabled', false);
+        } else {
+            // No es una cuenta de movimiento, mostrar mensaje
+            AbrirMensaje(
+                "Aviso",
+                "Solo puede seleccionar cuentas de movimiento.",
+                function () { $("#msjModal").modal("hide"); },
+                false,
+                ["Aceptar"],
+                "info!",
+                null
+            );
+
+            // Desseleccionar el nodo
+            $("#cuentasTree").jstree("deselect_node", nodoId);
+
+            // Deshabilitar el botón de seleccionar
+            $('#btnSeleccionarCuenta').prop('disabled', true);
+            cuentaSeleccionada = null;
+        }
+    });
+
+    // Cuando el árbol está listo, colapsarlo inicialmente
+    $("#cuentasTree").on("ready.jstree", function () {
+        $("#cuentasTree").jstree("close_all");
+    });
+}
+
+
+// Función global para cargar cuentas (para compatibilidad con llamadas externas)
+function cargarCuentas() {
+    if (!arbolCuentasInicializado) {
+        cargarArbolCuentas();
+    }
+}
+
+// Función para confirmar ajustes
+function confirmarAjustes() {
+    // Obtener el ID de la cuenta seleccionada y la fecha
+    const cuentaAjusteId = $('#cuentaAjusteId').val();
+    const fechaAsiento = $('#fechaAsiento').val();
+    const selectedCcbId = $('.asiento-check:checked').first().data('ccb-id');
+    const ejercicio = $("#Eje_nro").val();
+
+    // Validar que se haya seleccionado una cuenta
+    if (!cuentaAjusteId) {
+        AbrirMensaje(
+            "Validación",
+            "Debe seleccionar una cuenta para el ajuste.",
+            function () { $("#msjModal").modal("hide"); },
+            false,
+            ["Aceptar"],
+            "warn!",
+            null
+        );
+        return;
+    }
+
+    // Validar que se haya seleccionado una fecha
+    if (!fechaAsiento) {
+        AbrirMensaje(
+            "Validación",
+            "Debe seleccionar una fecha para el asiento.",
+            function () { $("#msjModal").modal("hide"); },
+            false,
+            ["Aceptar"],
+            "warn!",
+            null
+        );
+        return;
+    }
+
+    // Validar que se haya seleccionado una cuenta para ajustar
+    if (!selectedCcbId) {
+        AbrirMensaje(
+            "Validación",
+            "Debe seleccionar una cuenta para aplicar el ajuste.",
+            function () { $("#msjModal").modal("hide"); },
+            false,
+            ["Aceptar"],
+            "warn!",
+            null
+        );
+        return;
+    }
+
+    // Confirmar la operación
+    AbrirMensaje(
+        "Confirmación",
+        "¿Está seguro de que desea generar el asiento de ajuste por inflación?",
+        function (resp) {
+            if (resp === "SI") {
+                // Mostrar indicador de carga
+                AbrirWaiting("Generando asiento de ajuste por inflación...");
+
+                // Preparar datos para la petición
+                const data = {
+                    eje_nro: ejercicio,
+                    ccb_id: selectedCcbId,
+                    cuenta_ajuste_id: cuentaAjusteId,
+                    fecha_asiento: fechaAsiento
+                };
+
+                // Realizar la petición al servidor
+                $.ajax({
+                    url: confirmarAsientoAjusteUrl, // Esta URL debe definirse en la vista
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(data),
+                    success: function (resultado) {
+                        CerrarWaiting();
+
+                        if (resultado.error) {
+                            AbrirMensaje(
+                                "Error",
+                                resultado.msg || "Error al generar el asiento de ajuste",
+                                function () { $("#msjModal").modal("hide"); },
+                                false,
+                                ["Aceptar"],
+                                "error!",
+                                null
+                            );
+                            return;
+                        }
+
+                        // Mostrar mensaje de éxito
+                        AbrirMensaje(
+                            "Éxito",
+                            resultado.msg || "El asiento de ajuste por inflación se ha generado correctamente",
+                            function () {
+                                $("#msjModal").modal("hide");
+                                // Actualizar la vista
+                                buscaraaj();
+                            },
+                            false,
+                            ["Aceptar"],
+                            "success!",
+                            null
+                        );
+                    },
+                    error: function (xhr, status, error) {
+                        CerrarWaiting();
+                        AbrirMensaje(
+                            "Error",
+                            "Error al generar el asiento de ajuste: " + error,
+                            function () { $("#msjModal").modal("hide"); },
+                            false,
+                            ["Aceptar"],
+                            "error!",
+                            null
+                        );
+                    }
+                });
+            }
+
+            $("#msjModal").modal("hide");
+        },
+        true,
+        ["SI", "NO"],
+        "question!",
+        null
+    );
+}
+
+// Función para cancelar ajustes
+function cancelarAjustes() {
+    // Limpiar campos
+    $('#cuentaAjuste').val('');
+    $('#cuentaAjusteId').val('');
+    $('#fechaAsiento').datepicker('setDate', new Date());
+
+    // Desmarcar todos los checkboxes
+    $('.asiento-check').prop('checked', false);
+    $('#checkAllAAJ').prop('checked', false);
+
+    // Actualizar vista
+    actualizarEstadoAjusta();
+}

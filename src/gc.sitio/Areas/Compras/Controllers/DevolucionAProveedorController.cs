@@ -29,11 +29,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private readonly AppSettings _appSettings;
 		private readonly IDepositoServicio _depositoServicio;
 		private readonly IProductoServicio _productoServicio;
-		private readonly ILogger<CompraController> _logger;
+		//private readonly ILogger<CompraController> _logger;
 		public DevolucionAProveedorController(IProductoServicio productoServicio, IDepositoServicio depositoServicio,
 			ILogger<CompraController> logger, IOptions<AppSettings> options, IHttpContextAccessor context) : base(options, context)
 		{
-			_logger = logger;
+		//	_logger = logger;
 			_appSettings = options.Value;
 			_depositoServicio = depositoServicio;
 			_productoServicio = productoServicio;

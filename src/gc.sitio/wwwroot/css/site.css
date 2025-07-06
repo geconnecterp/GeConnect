@@ -28,6 +28,29 @@ body {
 activable {
 }
 
+/* Estilos para bloquear la tabla durante la carga */
+.tabla-desactivada {
+    position: relative;
+    opacity: 0.7;
+    cursor: wait !important;
+}
+
+.overlay-tabla {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.1);
+    z-index: 1000;
+    cursor: wait !important;
+}
+
+.tabla-desactivada tr {
+    pointer-events: none;
+}
+
+
 /*ESTILO GOLDE PARA MENSAJES*/
 /* Estilos para mensajes Golden */
 .selected-row {
@@ -52,21 +75,23 @@ activable {
 }
 
 .golden-message {
-    border-left-width: 4px !important;
+    border-left-width: 5px !important;
     transition: all 0.3s ease;
+    overflow: hidden;
 }
 
     .golden-message:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1) !important;
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15) !important;
     }
 
 .golden-message-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 48px;
-    height: 48px;
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
 }
 
 .golden-message-content {
@@ -215,6 +240,32 @@ activable {
     padding: 10px;
     background-color: white;
     box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Estilos para resultados de búsqueda */
+.jstree-search {
+    color: #000 !important;
+    font-weight: bold !important;
+    background-color: #ffff99 !important;
+}
+
+/* Animación de resaltado */
+@keyframes highlight-search {
+    0% {
+        background-color: #ffff99;
+    }
+
+    50% {
+        background-color: #ffffd9;
+    }
+
+    100% {
+        background-color: #ffff99;
+    }
+}
+
+.jstree-search {
+    animation: highlight-search 1.5s ease-in-out infinite;
 }
 
 /* Estilos para jstree en tema dorado */
