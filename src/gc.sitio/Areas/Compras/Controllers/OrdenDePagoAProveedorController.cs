@@ -407,7 +407,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 					var item = OPDebitoNuevaLista.FirstOrDefault(x => x.cm_compte_cuota.Equals(r.cuota) && x.dia_movi.Equals(r.dia_movi) && x.cm_compte.Equals(r.cm_compte) && x.tco_id.Equals(r.tco_id) && x.cta_id.Equals(r.cta_id));
 					if (item != null)
 					{
-						//TODO MARCE: Consultar con CR si debo llamar al SP tambien cuando saco elementos de las grillas de Debito/Credito nuevas
 						var respuesta = _ordenDePagoServicio.CargarSacarOPDebitoCreditoDelProveedor(r, TokenCookie);
 						Console.WriteLine("Request enviado a [SPGECO_OP_cargar_sacar]:");
 						Console.WriteLine(JsonConvert.SerializeObject(r, new JsonSerializerSettings()));
@@ -481,7 +480,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 					var item = OPCreditoNuevaLista.FirstOrDefault(x => x.cm_compte_cuota.Equals(r.cuota) && x.dia_movi.Equals(r.dia_movi) && x.cm_compte.Equals(r.cm_compte) && x.tco_id.Equals(r.tco_id) && x.cta_id.Equals(r.cta_id));
 					if (item != null)
 					{
-						//TODO MARCE: Consultar con CR si debo llamar al SP tambien cuando saco elementos de las grillas de Debito/Credito nuevas
 						var respuesta = _ordenDePagoServicio.CargarSacarOPDebitoCreditoDelProveedor(r, TokenCookie);
 						Console.WriteLine("Request enviado a [SPGECO_OP_cargar_sacar]:");
 						Console.WriteLine(JsonConvert.SerializeObject(r, new JsonSerializerSettings()));

@@ -1,4 +1,7 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra;
+using gc.infraestructura.Dtos.OrdenDePago.Dtos;
 using gc.sitio.Controllers;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -32,6 +35,99 @@ namespace gc.sitio.Areas.Compras.Controllers
 				_context.HttpContext?.Session.SetString("TipoOPSelected", valor);
 			}
 
+		}
+
+		public List<ConceptoFacturadoDto> ListaConceptoFacturado
+		{
+			get
+			{
+				var txt = _context.HttpContext?.Session.GetString("ListaConceptoFacturado");
+				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
+				{
+					return new List<ConceptoFacturadoDto>();
+				}
+				return JsonConvert.DeserializeObject<List<ConceptoFacturadoDto>>(txt) ?? [];
+			}
+			set
+			{
+				var valor = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ListaConceptoFacturado", valor);
+			}
+
+		}
+
+		public List<OtroTributoDto> ListaOtrosTributos
+		{
+			get
+			{
+				var txt = _context.HttpContext?.Session.GetString("ListaOtrosTributos");
+				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
+				{
+					return new List<OtroTributoDto>();
+				}
+				return JsonConvert.DeserializeObject<List<OtroTributoDto>>(txt) ?? [];
+			}
+			set
+			{
+				var valor = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ListaOtrosTributos", valor);
+			}
+
+		}
+
+		public List<OrdenDeCompraConceptoDto> ListaTotales
+		{
+			get
+			{
+				var txt = _context.HttpContext?.Session.GetString("ListaTotales");
+				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
+				{
+					return new List<OrdenDeCompraConceptoDto>();
+				}
+				return JsonConvert.DeserializeObject<List<OrdenDeCompraConceptoDto>>(txt) ?? [];
+			}
+			set
+			{
+				var valor = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ListaTotales", valor);
+			}
+
+		}
+
+		public List<ValoresDesdeOrdenDePagoDirecta> ListaValores
+		{
+			get
+			{
+				var txt = _context.HttpContext?.Session.GetString("ListaValores");
+				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<ValoresDesdeOrdenDePagoDirecta>>(txt) ?? [];
+			}
+			set
+			{
+				var valor = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ListaValores", valor);
+			}
+		}
+
+		public List<OrdenDePagoDirectaDto> ListaOrdenDePagoDirecta
+		{
+			get
+			{
+				var txt = _context.HttpContext?.Session.GetString("ListaOrdenDePagoDirecta");
+				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<OrdenDePagoDirectaDto>>(txt) ?? [];
+			}
+			set
+			{
+				var valor = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ListaOrdenDePagoDirecta", valor);
+			}
 		}
 	}
 }

@@ -1064,7 +1064,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (compteSeleccionado == null)
 					return model;
 
-				//Cargar Detalle de Productos RPR TODO MARCE: Probar esto
 				var listaAux = ComprobantesValorizaDetalleRprLista;
 				foreach (var item in listaAux)
 				{
