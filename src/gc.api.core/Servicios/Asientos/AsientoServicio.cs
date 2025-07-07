@@ -27,6 +27,19 @@ namespace gc.api.core.Servicios.Asientos
             return lista;
         }
 
+
+        public List<AsientoResultadoDto> ObtenerAsientosResultadoPG(int eje_nro)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_ASIENTO_AJUSTE_PG_CCB;
+            var ps = new List<SqlParameter>()
+            {
+                new SqlParameter("@eje_nro", eje_nro)
+            };
+
+            var lista = _repository.EjecutarLstSpExt<AsientoResultadoDto>(sp, ps, true);
+            return lista;
+        }
+
         public RespuestaDto ConfirmarAsientoAjuste(AjusteConfirmarDto confirmar)
         {
             try
@@ -50,6 +63,37 @@ namespace gc.api.core.Servicios.Asientos
                 return resp.First();
             }
             catch(SqlException ex)
+            {
+                return new RespuestaDto() { resultado = -1, resultado_msj = ex.Message };
+            }
+            catch (Exception ex)
+            {
+                return new RespuestaDto() { resultado = -1, resultado_msj = ex.Message };
+            }
+        }
+
+        public RespuestaDto ConfirmarAsientoResultadoPG(AjusteConfirmarDto confirmar)
+        {
+            try
+            {
+                var sp = ConstantesGC.StoredProcedures.SP_ASIENTO_AJUSTE_PG_CONFIRMAR;
+                var ps = new List<SqlParameter>()
+            {
+                new SqlParameter("@eje_nro", confirmar.EjeNro),
+                new SqlParameter("@usu_id",confirmar.User),
+                new SqlParameter("@adm_id",confirmar.AdmId),
+                new SqlParameter("@ccb_id",confirmar.CcbId),
+                new SqlParameter("@json",confirmar.Json)
+            };
+
+                List<RespuestaDto> resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+                if (resp.Count == 0)
+                {
+                    return new RespuestaDto() { resultado = -1, resultado_msj = "No se Recepcionó respuesta del proceso." };
+                }
+                return resp.First();
+            }
+            catch (SqlException ex)
             {
                 return new RespuestaDto() { resultado = -1, resultado_msj = ex.Message };
             }

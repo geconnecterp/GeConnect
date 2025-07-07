@@ -14,7 +14,7 @@ using Newtonsoft.Json;
 namespace gc.sitio.Areas.Asientos.Controllers
 {
     [Area("Asientos")]
-    public class AsientoAjusteController : AsientoBaseController
+    public class AsientoResultadoPGController : AsientoBaseController
     {
         private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
         private AppModulo _modulo; //tengo el AppModulo que corresponde a la consulta de cuentas
@@ -26,7 +26,7 @@ namespace gc.sitio.Areas.Asientos.Controllers
 
         private readonly AppSettings _appSettings;
 
-        public AsientoAjusteController(
+        public AsientoResultadoPGController(
           IOptions<AppSettings> options, IOptions<DocsManager> docsManager,
           IHttpContextAccessor contexto,
           ILogger<AsientoTemporalController> logger,
@@ -128,7 +128,7 @@ namespace gc.sitio.Areas.Asientos.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> BuscarAsientosDeAjuste(string eje_nro)
+        public async Task<IActionResult> BuscarAsientosResultado(string eje_nro)
         {
             RespuestaGenerica<EntidadBase> response = new();
             try
@@ -158,7 +158,7 @@ namespace gc.sitio.Areas.Asientos.Controllers
                 }
 
                 // Llamar al servicio para obtener los asientos de ajuste
-                var respuesta = await _asientoServicio.ObtenerAsientosAjuste(ejercicioId, TokenCookie);
+                RespuestaGenerica<AsientoResultadoDto> respuesta = await _asientoServicio.ObtenerAsientosPG(ejercicioId, TokenCookie);
 
                 if (!respuesta.Ok || respuesta.ListaEntidad == null || !respuesta.ListaEntidad.Any())
                 {
@@ -170,9 +170,7 @@ namespace gc.sitio.Areas.Asientos.Controllers
                 }
 
                 // Guardar datos en variable de sesión para uso posterior
-                AsientosAjuste = respuesta.ListaEntidad;
-                //var lista = AsientosAjuste;
-                //lista.ForEach(x => x.Ajusta = false);
+                AsientosResultado = respuesta.ListaEntidad;
 
                 // Crear el grid para la vista (sin paginación)
                 var grid = GenerarGrillaSmart(
@@ -186,10 +184,10 @@ namespace gc.sitio.Areas.Asientos.Controllers
                 );
 
                 // Configurar leyenda para el grid
-                ViewBag.Leyenda = $"Ejercicio {eje_nro} - Asientos de Ajuste por Inflación";
+                ViewBag.Leyenda = $"Ejercicio {eje_nro} - Asientos de Resultado PG";
 
                 // Devolver la vista parcial con el grid
-                return PartialView("_gridaaj", grid);
+                return PartialView("_gridres", grid);
             }
             catch (Exception ex)
             {
@@ -203,63 +201,8 @@ namespace gc.sitio.Areas.Asientos.Controllers
             }
         }
 
-
-        /// <summary>
-        /// Este metodo devolvera todos los registros de asiento de ajuste por Cuenta.
-        /// </summary>
-        /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> BuscarRegistrosAsAjCcb(int eje_nro, string ccb_id)
-        {
-            RespuestaGenerica<EntidadBase> response = new();
-            try
-            {
-
-                #region buscar el detalle de cada cuenta con ajusta == 1
-                //inicializo variable
-                List<AsientoAjusteCcbDto> ajustesCcb = [];
-
-                //invocaré uno por uno los asientos de cada cuenta
-                var resp = await _asientoServicio.ObtenerAsientosAjusteCcb(eje_nro, ccb_id, false, TokenCookie);
-                if (resp.Ok && resp.ListaEntidad?.Count > 0)
-                {
-                    ajustesCcb.AddRange(resp.ListaEntidad);
-                }
-
-
-                AsientosAjusteCcb = ajustesCcb;
-                #endregion
-
-                var detalle = AsientosAjusteCcb;
-                // Crear el grid para la vista (sin paginación)
-                var grid = GenerarGrillaSmart(
-                    detalle,
-                    "Ccb_id",  // Ordenamiento por defecto
-                    detalle.Count,  // Todos los registros en una página
-                    1,  // Página única
-                    detalle.Count,  // Total de registros
-                    1,  // Total de páginas (una sola)
-                    "ASC"  // Dirección de ordenamiento por defecto
-                );
-
-                // Devolver la vista parcial con el grid
-                return PartialView("_gridaajDet", grid);
-            }
-            catch (Exception ex)
-            {
-                string msg = "Error al obtener ajuste de los asientos de ajustes segun cuenta.";
-                _logger?.LogError(ex, msg);
-
-                response.Mensaje = msg;
-                response.Ok = false;
-                response.EsWarn = false;
-                response.EsError = true;
-                return PartialView("_gridMensaje", response);
-            }
-        }
-
-        [HttpPost]
-        public async Task<JsonResult> ConfirmarAsientoAjuste(int eje_nro, DateTime fecha, string ccbid, string[] listCcb)
+        public async Task<JsonResult> ConfirmarAsientoResultado(int eje_nro, string ccbid, string[] listCcb)
         {
             try
             {
@@ -272,54 +215,46 @@ namespace gc.sitio.Areas.Asientos.Controllers
                 if (eje_nro <= 0)
                     return Json(new { error = false, warn = true, msg = "Debe seleccionar un ejercicio contable válido." });
 
-                if (fecha == default)
-                    return Json(new { error = false, warn = true, msg = "Debe seleccionar una fecha válida para el asiento." });
-
                 if (string.IsNullOrEmpty(ccbid))
                     return Json(new { error = false, warn = true, msg = "Debe seleccionar una cuenta de ajuste." });
 
                 if (listCcb == null || listCcb.Length == 0)
                     return Json(new { error = false, warn = true, msg = "Debe seleccionar al menos una cuenta para ajustar." });
 
-
-                bool huboError = false;
-                string ctaSelect = "";
-                var asientosAjuste = AsientosAjuste;
-                if (asientosAjuste == null || !asientosAjuste.Any())
+                var asientosResultado = AsientosResultado;
+                if (asientosResultado == null || !asientosResultado.Any())
                     return Json(new { error = false, warn = true, msg = "No hay datos de asientos disponibles. Intente realizar la búsqueda nuevamente." });
 
-                List<AjusteDto> ajustes = [];
+                List<AsientoResultadoDatoDto> asRes = [];
                 foreach (var item in listCcb)
                 {
-                    var reg = asientosAjuste.SingleOrDefault(x => x.Ccb_id.Equals(item));
+                    var reg = asientosResultado.SingleOrDefault(x => x.Ccb_id.Equals(item));
                     if (reg == null)
                     {
                         return Json(new { error = false, warn = true, msg = $"La cuenta seleccionada {item} no se encontró. Intente nuevamente más tarde." });
                     }
 
-                    ajustes.Add(new AjusteDto
+                    asRes.Add(new AsientoResultadoDatoDto
                     {
                         eje_nro = eje_nro,
                         ccb_id = item,
-                        ajuste = reg.Ajuste,
-                        ajusta = true
+                        saldo = reg.Saldo,
                     });
                 }
 
 
                 // Crear objeto para confirmar asiento
-                var asientoConfirmar = new AjusteConfirmarDto
+                var asientoResGPConfirmar = new AjusteConfirmarDto
                 {
-                    Json = JsonConvert.SerializeObject(ajustes),
+                    Json = JsonConvert.SerializeObject(asRes),
                     AdmId = AdministracionId,
                     User = UserName,
-                    Fecha = fecha,
                     CcbId = ccbid,
                     EjeNro = eje_nro
                 };
 
                 // Enviar al servicio
-                var res = await _asientoServicio.ConfirmarAsientoAjuste(asientoConfirmar, TokenCookie);
+                var res = await _asientoServicio.ConfirmarAsientoResultadoPG(asientoResGPConfirmar, TokenCookie);
 
                 if (res.Ok)
                 {
@@ -327,7 +262,7 @@ namespace gc.sitio.Areas.Asientos.Controllers
                     {
                         error = false,
                         warn = false,
-                        msg = "EL ALTA DEL ASIENTO DE AJUSTE SE REALIZÓ SATISFACTORIAMENTE"
+                        msg = "EL ALTA DEL ASIENTO DE RESULTADO GP SE REALIZÓ SATISFACTORIAMENTE"
                     });
                 }
                 else if (res.Entidad != null)
@@ -366,60 +301,5 @@ namespace gc.sitio.Areas.Asientos.Controllers
                 return Json(new { error = true, warn = false, msg = $"Error al procesar la solicitud: {ex.Message}" });
             }
         }
-
-        //[HttpPost]
-        //public async Task<JsonResult> GenerarAsientoAjuste(GenerarAsientoAjusteViewModel model)
-        //{
-        //    try
-        //    {
-        //        // Verificar autenticación
-        //        if (!VerificarAutenticacion(out IActionResult redirectResult))
-        //            return Json(new { error = true, msg = "No está autenticado o la sesión ha expirado." });
-
-        //        if (model.CuentasSeleccionadas == null || !model.CuentasSeleccionadas.Any())
-        //            return Json(new { error = true, msg = "Debe seleccionar al menos una cuenta para ajustar." });
-
-        //        if (string.IsNullOrEmpty(model.CuentaAjuste))
-        //            return Json(new { error = true, msg = "Debe especificar una cuenta de ajuste." });
-
-        //        if (model.FechaAsiento==default)
-        //            return Json(new { error = true, msg = "Debe especificar la fecha del asiento." });
-
-        //        //// Convertir la fecha a un formato válido para el servidor
-        //        //DateTime fechaAsiento;
-        //        //if (!DateTime.TryParseExact(model.FechaAsiento, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out fechaAsiento))
-        //        //    return Json(new { error = true, msg = "El formato de la fecha no es válido." });
-
-        //        // Crear el objeto de solicitud para el servicio
-        //        var request = new GenerarAsientoAjusteRequestDto
-        //        {
-        //            Eje_nro = model.Ejercicio,
-        //            Fecha_asiento = model.FechaAsiento,
-        //            Cuenta_ajuste = model.CuentaAjuste,
-        //            Cuentas_seleccionadas = model.CuentasSeleccionadas
-        //        };
-
-        //        // Llamar al servicio para generar el asiento
-        //        var result = await _asientoServicio.GenerarAsientoAjuste(request, TokenCookie);
-
-        //        if (result.Error)
-        //        {
-        //            return Json(new { error = true, msg = result.Mensaje });
-        //        }
-
-        //        return Json(new
-        //        {
-        //            error = false,
-        //            msg = "El asiento de ajuste se ha generado correctamente.",
-        //            id = result.AsientoId
-        //        });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger?.LogError(ex, "Error al generar asiento de ajuste");
-        //        return Json(new { error = true, msg = "Error al generar el asiento de ajuste: " + ex.Message });
-        //    }
-        //}
-
     }
 }

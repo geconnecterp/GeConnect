@@ -178,5 +178,69 @@ namespace gc.api.Controllers.Asientos
 
             return Ok(new ApiResponse<RespuestaDto>(resultado));
         }
+
+
+        /// <summary>
+        /// Obtiene el detalle de los asientos de ajuste por inflación para un ejercicio contable específico
+        /// </summary>
+        /// <param name="eje_nro">Número de ejercicio</param>
+        /// <returns>Lista de usuarios del ejercicio</returns>
+        [HttpGet("asiento-resultado-pg/{eje_nro}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public ActionResult<List<AsientoResultadoDto>> ObtenerAsientosResultadoPG(int eje_nro)
+        {
+            if (eje_nro <= 0)
+            {
+                return BadRequest("El número de ejercicio debe ser mayor a cero");
+            }
+
+            try
+            {
+                var resultado = _asientosServicio.ObtenerAsientosResultadoPG(eje_nro);
+                return Ok(new ApiResponse<List<AsientoResultadoDto>>(resultado));
+            }
+            catch (System.Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Confirma un asiento de ajuste por inflación
+        /// </summary>
+        /// <param name="confirmar">Datos para confirmar el asiento de ajuste</param>
+        /// <returns>Resultado de la operación</returns>
+        [HttpPost("confirmar-asiento-resultado-pg")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public ActionResult<RespuestaDto> ConfirmarAsientoResultadoPG([FromBody] AjusteConfirmarDto confirmar)
+        {
+            if (confirmar == null)
+            {
+                return BadRequest("Los datos para confirmar el asiento no pueden ser nulos");
+            }
+
+            if (confirmar.EjeNro <= 0)
+            {
+                return BadRequest("El número de ejercicio debe ser mayor a cero");
+            }
+
+            if (string.IsNullOrEmpty(confirmar.User))
+            {
+                return BadRequest("El identificador de usuario es requerido");
+            }
+
+            if (string.IsNullOrEmpty(confirmar.Json))
+            {
+                return BadRequest("El detalle del asiento (Json) es requerido");
+            }
+
+            var resultado = _asientosServicio.ConfirmarAsientoResultadoPG(confirmar);
+
+            return Ok(new ApiResponse<RespuestaDto>(resultado));
+        }
     }
 }

@@ -74,6 +74,7 @@ namespace gc.infraestructura.Constantes
             public const string EJERCICIO_CONTABLE = "EJERCICIO_CONTABLE";
             public const string ASIENTO_AJUSTE = "ASIENTO_AJUSTE";
             public const string ORDEN_DE_PAGO_DIRECTA = "ORDEN_DE_PAGO_DIRECTA";
-		}
+            public const string ASIENTO_RESULTADO = "ASIENTO_RESULTADO";
+        }
     }
 }

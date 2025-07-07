@@ -1,197 +1,34 @@
 ﻿$(function () {
-    inicializaComponentesAsientoAjuste();
-    configurarBotonesAsientoAjuste();
-
-
-    // Manejar el check/uncheck de todos los elementos - MODIFICADO
-    $(document).on('click', '#checkAllAAJ', function () {
-        var isChecked = $(this).prop('checked');
-        $('.asiento-check').prop('checked', isChecked);
-
-        // No llamamos a actualizarEstadoAjusta() aquí
-        // Solo se encarga de marcar/desmarcar todos los checkboxes
-    });
-
-    // Manejar el check/uncheck individual - MODIFICADO
-    $(document).on('click', '.asiento-check', function (e) {
-        e.stopPropagation(); // Evitar que el click en el checkbox active la fila
-
-        // Simplemente actualizamos el estado del checkbox general
-        var totalChecks = $('.asiento-check').length;
-        var totalChecked = $('.asiento-check:checked').length;
-        $('#checkAllAAJ').prop('checked', totalChecks === totalChecked);
-
-        // No llamamos a actualizarEstadoAjusta() aquí
-        // Solo gestionamos el estado del checkbox
-    });
+    inicializaComponentesAsientoResultado();
+    configurarBotonesAsientoResultado();
 
     // Botón de confirmar ajustes
     $(document).on('click', '#btnConfirmarAjuste', function () {
-        confirmarAjustes();
+        confirmarAjustesRes();
     });
 
     // Botón de cancelar ajustes
     $(document).on('click', '#btnCancelarAjuste', function () {
-        cancelarAjustes();
+        cancelarAjustesRes();
     });
-
-    // Comportamiento de click en filas - MODIFICADO
-    $(document).on('click', '#tbAAJ tr', function (e) {
-        // Si la tabla está desactivada o hay una carga en progreso, no hacer nada
-        if ($("#divAaj").hasClass("tabla-desactivada")) {
-            return;
-        }
-
-        // Evitar que se active si se hizo click directamente en el checkbox
-        if (!$(e.target).is('.asiento-check') && !$(e.target).is('input[type="checkbox"]')) {
-            // Encontrar el checkbox dentro de la fila
-            var checkbox = $(this).find('.asiento-check');
-
-            // Desmarcar todas las filas
-            $("#tbAAJ tr").removeClass("selected-row");
-
-            // Marcar esta fila como seleccionada
-            $(this).addClass("selected-row");
-
-            // Ahora sí, llamamos a actualizarEstadoAjusta
-            actualizarEstadoAjusta();
-        }
-    });
-
-   
 });
 
-/**
- * Función para bloquear o desbloquear la tabla de asientos
- * @param {boolean} bloquear - true para bloquear, false para desbloquear
- */
-function bloquearTablaAsientos(bloquear) {
-    if (bloquear) {
-        // Añadir overlay y clase de desactivado
-        $("#divAaj").addClass("tabla-desactivada");
-        if ($("#overlay-tabla").length === 0) {
-            $("#divAaj").append('<div id="overlay-tabla" class="overlay-tabla"></div>');
-        }
-        // Deshabilitar eventos de clic en las filas
-        $("#tbAAJ tr").css("pointer-events", "none");
-    } else {
-        // Quitar overlay y clase de desactivado
-        $("#divAaj").removeClass("tabla-desactivada");
-        $("#overlay-tabla").remove();
-        // Rehabilitar eventos de clic en las filas
-        $("#tbAAJ tr").css("pointer-events", "auto");
-    }
-}
-
-// Función para actualizar el estado Ajusta y cargar los detalles - SIN CAMBIOS
-function actualizarEstadoAjusta() {
-    // Obtener todos los checkboxes marcados
-    var checkedBoxes = $('.asiento-check:checked');
-
-    // Si hay al menos un checkbox marcado, buscar los detalles
-    if (checkedBoxes.length > 0) {
-        // Tomamos el primer checkbox marcado para mostrar sus detalles
-        var selectedCcbId = $(checkedBoxes[0]).data('ccb-id');
-        var ejercicio = $("#Eje_nro").val();
-
-        // Bloquear la tabla mientras se carga el detalle
-        bloquearTablaAsientos(true);
-
-        // Limpiamos el div de detalle antes de cargar nuevos datos
-        $("#divAajDet").empty();
-
-        // Mostramos indicador de carga
-        $("#divAajDet").html('<div class="text-center"><i class="bx bx-loader bx-spin text-primary" style="font-size: 2rem;"></i><p>Cargando detalles...</p></div>');
-
-        // Invocamos al controlador para obtener los detalles
-        var data = {
-            eje_nro: ejercicio,
-            ccb_id: selectedCcbId
-        };
-
-        // Realizar la petición AJAX
-        PostGenHtml(data, buscarRegistrosAsAjCcbUrl, function (html) {
-            // Actualizar el div con la respuesta
-            $("#divAajDet").html(html);
-
-            // Inicializar componentes que pudieran necesitar reinicialización
-            $('.datepicker').datepicker({
-                format: 'dd/mm/yyyy',
-                autoclose: true,
-                language: 'es',
-                todayHighlight: true,
-                orientation: 'bottom'
-            });
-
-            // Desbloquear la tabla después de cargar el detalle
-            bloquearTablaAsientos(false);
-        }, function (error) {
-            // Manejo de errores
-            $("#divAajDet").html('<div class="alert alert-danger">Error al cargar los detalles: ' + error.message + '</div>');
-
-            // Desbloquear la tabla en caso de error
-            bloquearTablaAsientos(false);
-        });
-    } else {
-        // Si no hay checkboxes seleccionados, limpiar el área de detalle
-        $("#divAajDet").empty();
-        $("#divAajDet").html('<div class="alert alert-info">Seleccione una cuenta para ver sus detalles.</div>');
-    }
-}
-
-function inicializaComponentesAsientoAjuste() {
-
+function inicializaComponentesAsientoResultado() {
     // Inicializar tooltips
     $('[data-bs-toggle="tooltip"]').tooltip();
-
-
-    // Inicializar selectores con Select2 si está disponible
-    if ($.fn.select2) {
-        $("#Eje_nro").select2({
-            placeholder: "Seleccione ejercicio",
-            width: '100%'
-        });
-    }
-
-    // Configurar datepickers para fechas con localización explícita
-    $.fn.datepicker.dates['es'] = {
-        days: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
-        daysShort: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
-        daysMin: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
-        months: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
-        monthsShort: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
-        today: "Hoy",
-        clear: "Borrar",
-        format: "dd/mm/yyyy",
-        titleFormat: "MM yyyy",
-        weekStart: 1
-    };
-
-    $('.datepicker').datepicker({
-        format: 'dd/mm/yyyy',
-        autoclose: true,
-        language: 'es',
-        todayHighlight: true,
-        orientation: 'bottom'
-    });
-
-    // Forzar la localización regional para las fechas
-    $.datepicker.setDefaults($.datepicker.regional["es"]);   
-
 
     // Inicializar el selector de cuentas
     inicializarSelectorCuentas();
 }
-
-function configurarBotonesAsientoAjuste() {
+function configurarBotonesAsientoResultado() {
     // Botón de cancelar
     $("#btnCancel").on("click", function () {
-        window.location.href = homeAsAjUrl;
+        window.location.href = homeAResUrl;
     });
 
     // Botón de búsqueda
     $("#btnBuscar").on("click", function () {
-        
+
         // Es una nueva búsqueda, no resguardamos la búsqueda anterior
         mayorDataBak = {};
 
@@ -199,33 +36,26 @@ function configurarBotonesAsientoAjuste() {
         pagina = 1;
 
         // Realizar búsqueda
-        buscaraaj();
+        buscarres();
     });
 
     // Usar mousedown en lugar de click para evitar conflictos con el collapse
-    $("#btnDetalle").on("mousedown", analizaEstadoBtnDetalleaaj);
+    $("#btnDetalle").on("mousedown", analizaEstadoBtnDetalleAres);
     $("#btnFiltro").on("mousedown", function () {
         if ($("#divFiltro").is(":hidden")) {
             $("#divDetalle").collapse("hide");
         }
     });
-
-    // Botón de imprimir
-    $(document).on("click", ".btnImprimir", function () {
-        imprimiraaj();
-    });
 }
 
-function analizaEstadoBtnDetalleaaj() {
-    if ($("#divDetalle").is(":visible")) {
-        // HAY QUE LIMPIAR 
-        bssDataBak = {};
-        limpiarAaj();
+function analizaEstadoBtnDetalleAres() {
+    if ($("#divDetalle").is(":visible")) {        
+        limpiarAsres();
     }
 }
 
-function buscaraaj() {
-    AbrirWaiting("Consultando los asientos de ajuste por inflación. Espere, puede tardar. Sea paciente...");
+function buscarres() {
+    AbrirWaiting("Consultando los asientos de resultados. Espere, puede tardar. Sea paciente...");
 
     // Desactivamos los botones de acción
     $("#btnImprimir").prop("disabled", true);
@@ -256,15 +86,15 @@ function buscaraaj() {
     let data = { eje_nro };
 
     // Guardamos parámetros para el reporte
-    cargarReporteEnArre(21, data, "Asientos de Ajuste por Inflación", "", administracion);
+    cargarReporteEnArre(22, data, "Asientos de Resultado por PG", "", administracion);
 
-    limpiarAaj();
+    limpiarAsres();
 
     // Realizamos la petición al servidor
-    PostGenHtml(data, buscarAsientosAjusteUrl, function (obj) {       
+    PostGenHtml(data, buscarAsientosResUrl, function (obj) {
         // Mostramos el resultado en el div correspondiente
-        $("#divAaj").html(obj);
-      
+        $("#divAsres").html(obj);
+
         // Mostramos resultados directamente
         $("#divDetalle").collapse("show");
 
@@ -280,33 +110,11 @@ function buscaraaj() {
     });
 }
 
-// Función auxiliar para limpiar el área de resultados
-function limpiarAaj() {
-    $("#divAaj").empty();
-    $("#divAajDet").empty(); // Limpiar también el área de detalle
+function limpiarAsres() {
+    $("#divAsres").empty();
     $("#btnFilter").collapse("show");
 }
 
-
-function imprimiraaj() {
-    // Invocar gestor documental
-    invocacionGestorDoc({});
-}
-
-// También modificamos la función selectReg para mantener consistencia
-function selectReg(elem, tableId) {
-    // Si se hizo click en una fila de la tabla principal de asientos
-    if (tableId === 'tbAAJ') {
-        // Desmarcar todas las filas
-        $("#" + tableId + " tr").removeClass("selected-row");
-
-        // Marcar esta fila como seleccionada
-        $(elem).addClass("selected-row");
-       
-        // Actualizar el estado y cargar detalles
-        actualizarEstadoAjusta();
-    }
-}
 
 // Variables globales para el selector de cuentas
 let cuentaSeleccionada = null;
@@ -676,18 +484,19 @@ function cargarCuentas() {
     }
 }
 
+
 // Función para confirmar ajustes
-function confirmarAjustes() {
+function confirmarAjustesRes() {
     // Obtener el ID de la cuenta seleccionada y la fecha
     const cuentaAjusteId = $('#cuentaAjusteId').val();
-    const fechaAsiento = $('#fechaAsiento').val();
     const ejercicio = parseInt($("#Eje_nro").val());
 
-    // Obtener todas las cuentas seleccionadas (checkboxes marcados)
+    // Obtener todas las cuentas de resultados
     const cuentasSeleccionadas = [];
-    $('.asiento-check:checked').each(function () {
+
+    $('[data-ccb-id]').each(function () {
         const ccbId = $(this).data('ccb-id');
-        if (ccbId) {
+        if (ccbId && cuentasSeleccionadas.indexOf(ccbId) === -1) {
             cuentasSeleccionadas.push(ccbId);
         }
     });
@@ -717,20 +526,7 @@ function confirmarAjustes() {
             null
         );
         return;
-    }
-
-    if (!fechaAsiento) {
-        AbrirMensaje(
-            "Validación",
-            "Debe seleccionar una fecha para el asiento.",
-            function () { $("#msjModal").modal("hide"); },
-            false,
-            ["Aceptar"],
-            "warn!",
-            null
-        );
-        return;
-    }
+    }    
 
     if (cuentasSeleccionadas.length === 0) {
         AbrirMensaje(
@@ -748,28 +544,20 @@ function confirmarAjustes() {
     // Confirmar la operación
     AbrirMensaje(
         "Confirmación",
-        "¿Está seguro de que desea generar el asiento de ajuste por inflación?",
+        "¿Está seguro de que desea generar el asiento de resultados PG?",
         function (resp) {
             if (resp === "SI") {
                 // Mostrar indicador de carga
-                AbrirWaiting("Generando asiento de ajuste por inflación...");
+                AbrirWaiting("Generando asiento de resultados PG...");
 
-                // Convertir la fecha del formato "dd/mm/yyyy" a un objeto Date si es necesario
-                let fechaEnvio = fechaAsiento;
-                if (typeof fechaAsiento === 'string' && fechaAsiento.includes('/')) {
-                    const partes = fechaAsiento.split('/');
-                    if (partes.length === 3) {
-                        fechaEnvio = partes[2] + "-" + partes[1] + "-" + partes[0]; // formato ISO yyyy-MM-dd
-                    }
-                }
+                
 
                 // CORRECCIÓN: Enviar los datos con los nombres correctos como parámetros normales (no JSON)
                 $.ajax({
-                    url: confirmarAsientoAjusteUrl,
+                    url: confirmarAsientoResUrl,
                     type: "POST",
                     data: {
                         eje_nro: ejercicio,
-                        fecha: fechaEnvio,
                         ccbid: cuentaAjusteId,
                         listCcb: cuentasSeleccionadas
                     },
@@ -780,7 +568,7 @@ function confirmarAjustes() {
                         if (resultado.error) {
                             AbrirMensaje(
                                 "Error",
-                                resultado.msg || "Error al generar el asiento de ajuste",
+                                resultado.msg || "Error al generar el asiento de resultados PG",
                                 function () { $("#msjModal").modal("hide"); },
                                 false,
                                 ["Aceptar"],
@@ -812,7 +600,7 @@ function confirmarAjustes() {
                         // Mostrar mensaje de éxito
                         AbrirMensaje(
                             "Éxito",
-                            resultado.msg || "El asiento de ajuste por inflación se ha generado correctamente",
+                            resultado.msg || "El asiento de ajuste de resultados PG se ha generado correctamente",
                             function () {
                                 $("#msjModal").modal("hide");
                                 // Actualizar la vista
@@ -840,7 +628,7 @@ function confirmarAjustes() {
 
                         AbrirMensaje(
                             "Error",
-                            "Error al generar el asiento de ajuste: " + mensajeError,
+                            "Error al generar el asiento de resultados PG: " + mensajeError,
                             function () { $("#msjModal").modal("hide"); },
                             false,
                             ["Aceptar"],
@@ -861,7 +649,7 @@ function confirmarAjustes() {
 }
 
 // Función para cancelar ajustes
-function cancelarAjustes() {
+function cancelarAjustesRes() {
     // Limpiar campos
     $('#cuentaAjuste').val('');
     $('#cuentaAjusteId').val('');

@@ -33,5 +33,7 @@ namespace gc.sitio.core.Servicios.Contratos.Asientos
         Task<RespuestaGenerica<AsientoAjusteCcbDto>> ObtenerAsientosAjusteCcb(int eje_nro, string ccb_id, bool todas, string token);
 
         Task<RespuestaGenerica<RespuestaDto>> ConfirmarAsientoAjuste(AjusteConfirmarDto confirmar, string token);
+        Task<RespuestaGenerica<AsientoResultadoDto>> ObtenerAsientosPG(int ejercicioId, string tokenCookie);
+        Task<RespuestaGenerica<RespuestaDto>> ConfirmarAsientoResultadoPG(AjusteConfirmarDto confirmar, string token);
     }
 }

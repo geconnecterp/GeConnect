@@ -8,4 +8,6 @@
         public bool ajusta { get; set; }
 
     }
+
+    
 }

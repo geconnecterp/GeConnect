@@ -13,5 +13,8 @@ namespace gc.api.core.Contratos.Servicios.Asientos
         List<AsientoAjusteDto> ObtenerAsientosAjuste(int eje_nro);
         List<AsientoAjusteCcbDto> ObtenerAsientosAjusteCcb(int eje_nro, string ccb_id,bool todas);
         RespuestaDto ConfirmarAsientoAjuste(AjusteConfirmarDto confirmar);
+
+        List<AsientoResultadoDto> ObtenerAsientosResultadoPG(int eje_nro);
+        RespuestaDto ConfirmarAsientoResultadoPG(AjusteConfirmarDto confirmar);
     }
 }
