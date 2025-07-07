@@ -25,6 +25,10 @@
         "css/bootstrap-datepicker3.min.css",
         "css/bootstrap-datepicker.min.css"
       ]
+    },
+    {
+      "library": "boxicons@2.1.4",
+      "destination": "wwwroot/lib/boxicons/"
     }
   ]
 }

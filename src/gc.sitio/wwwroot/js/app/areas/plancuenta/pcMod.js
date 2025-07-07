@@ -164,7 +164,7 @@ function buscarPlanCuenta(pagina) {
                         "icon": "bx bx-dollar-circle"
                     },
                     "egresos": {
-                        "icon": "bx bx-print-dollar"
+                        "icon": "bx bx-money-withdraw"
                     },
                     "default": {
                         "icon": "bx bx-folder"

@@ -11,11 +11,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 	public class OrdenDePagoAProveedorControladorBase : ControladorBase
 	{
 		private readonly AppSettings _setting;
-		private readonly ILogger _logger;
+		//private readonly ILogger _logger;
 		public OrdenDePagoAProveedorControladorBase(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger logger) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
-			_logger = logger;
+		//	_logger = logger;
 		}
 
 		public string CtaIdSelected

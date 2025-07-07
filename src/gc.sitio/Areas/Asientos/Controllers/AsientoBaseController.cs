@@ -23,6 +23,24 @@ namespace gc.sitio.Areas.Asientos.Controllers
             
         }
 
+        public List<AsientoResultadoDto> AsientosResultado
+        {
+            get
+            {
+                string json = _context.HttpContext?.Session.GetString("AsientosResultado") ?? string.Empty;
+                if (string.IsNullOrEmpty(json))
+                {
+                    return new();
+                }
+                return JsonConvert.DeserializeObject<List<AsientoResultadoDto>>(json) ?? [];
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session.SetString("AsientosResultado", json);
+            }
+        }
+
         public List<AsientoAjusteDto> AsientosAjuste
         {
             get

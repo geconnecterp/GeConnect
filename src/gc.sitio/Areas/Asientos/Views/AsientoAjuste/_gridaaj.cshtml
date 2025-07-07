@@ -3,12 +3,27 @@
     var alt = true;
     string clase = string.Empty;
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
-  
+    string leyend = ViewBag.Leyenda;
 }
 
 <div class="grid-golden">
     <div class="grid-golden-header">
-       
+        <div class="row align-items-md-center">
+            <div class="col-md-8 col-sm-6">
+                <h5 class="mb-0">
+                    <i class="bx bx-book-open me-2"></i>
+                    <strong>@leyend</strong>
+                </h5>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="d-flex justify-content-sm-end">
+                    <!-- Botón Imprimir -->
+                    <button type="button" class="btn btn-golden btn-sm mt-1 me-1 btnImprimir" title="Imprimir">
+                        <i class="bx bx-printer"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="grid-golden-body">

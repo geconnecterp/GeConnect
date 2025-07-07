@@ -10,6 +10,8 @@ using gc.sitio.core.Servicios.Contratos.Asientos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using OfficeOpenXml.FormulaParsing.LexicalAnalysis;
 using System.Net;
 using System.Reflection;
 
@@ -23,6 +25,9 @@ namespace gc.sitio.core.Servicios.Implementacion.Asientos
         private const string GET_USUARIOS_EJERCICIO = "/usuarios-ejercicio";
         private const string GET_ASIENTO_AJUSTE = "/asiento-ajuste";
         private const string GET_ASIENTO_AJUSTE_CCB = "/asiento-ajuste-ccb";
+        private const string GET_ASIENTO_AJUSTE_CONFIRMAR = "/confirmar-asiento-ajuste";
+        private const string GET_ASIENTO_RESULTADO = "/asiento-resultado-pg";
+        private const string GET_ASIENTO_RESULTADO_CONFIRMAR = "/confirmar-asiento-resultado-pg";
 
 
         private readonly AppSettings _appSettings;
@@ -32,9 +37,126 @@ namespace gc.sitio.core.Servicios.Implementacion.Asientos
             _appSettings = options.Value;
         }
 
-        public Task<GenerarAsientoAjusteResponseDto> GenerarAsientoAjuste(GenerarAsientoAjusteRequestDto request, string token)
+        public async Task<RespuestaGenerica<RespuestaDto>> ConfirmarAsientoAjuste(AjusteConfirmarDto confirmar, string token)
         {
-            throw new NotImplementedException();
+            try
+            {
+                ApiResponse<RespuestaDto>? apiResponse;
+                HelperAPI helper = new();
+
+                HttpClient client = helper.InicializaCliente(confirmar, token, out StringContent contentData);
+                HttpResponseMessage response;
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_ASIENTO_AJUSTE_CONFIRMAR}";
+
+                response = await client.PostAsync(link, contentData);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde.");
+                    }
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+
+                    var entidad = apiResponse.Data;
+
+                    if (entidad.resultado == 0)
+                    {
+                        return new RespuestaGenerica<RespuestaDto> { Ok = true, Entidad = apiResponse.Data };
+                    }
+                    else
+                    {
+                        return new RespuestaGenerica<RespuestaDto> { Ok = false, Mensaje = entidad.resultado_msj, Entidad = entidad };
+                    }
+                }
+                else
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    {
+                        throw new NegocioException(error.Detail);
+                    }
+                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    {
+                        throw new NegocioException(error.Detail);
+                    }
+                    else
+                    {
+                        throw new Exception(error.Detail);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+
+                throw new Exception("Algo no fue bien al intentar confirmar el asiento de ajuste.");
+            }
+        }
+
+        public async Task<RespuestaGenerica<RespuestaDto>> ConfirmarAsientoResultadoPG(AjusteConfirmarDto confirmar,string token)
+        {
+            try
+            {
+                ApiResponse<RespuestaDto>? apiResponse;
+                HelperAPI helper = new();
+
+                HttpClient client = helper.InicializaCliente(confirmar, token, out StringContent contentData);
+                HttpResponseMessage response;
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_ASIENTO_RESULTADO_CONFIRMAR}";
+
+                response = await client.PostAsync(link, contentData);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde.");
+                    }
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+
+                    var entidad = apiResponse.Data;
+
+                    if (entidad.resultado == 0)
+                    {
+                        return new RespuestaGenerica<RespuestaDto> { Ok = true, Entidad = apiResponse.Data };
+                    }
+                    else
+                    {
+                        return new RespuestaGenerica<RespuestaDto> { Ok = false, Mensaje = entidad.resultado_msj, Entidad = entidad };
+                    }
+                }
+                else
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    {
+                        throw new NegocioException(error.Detail);
+                    }
+                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    {
+                        throw new NegocioException(error.Detail);
+                    }
+                    else
+                    {
+                        throw new Exception(error.Detail);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+
+                throw new Exception("Algo no fue bien al intentar confirmar el asiento de resultado PG .");
+            }
         }
 
         public async Task<RespuestaGenerica<AsientoAjusteDto>> ObtenerAsientosAjuste(int eje_nro, string token)
@@ -144,6 +266,61 @@ namespace gc.sitio.core.Servicios.Implementacion.Asientos
             {
                 _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
                 return new RespuestaGenerica<AsientoAjusteCcbDto> { Ok = false, Mensaje = $"Algo no fue bien al intentar obtener los usuarios del ejercicio {eje_nro}." };
+            }
+        }
+
+        public async Task<RespuestaGenerica<AsientoResultadoDto>> ObtenerAsientosPG(int eje_nro, string token)
+        {
+            try
+            {
+                ApiResponse<List<AsientoResultadoDto>> apiResponse;
+                HelperAPI helper = new();
+                HttpClient client = helper.InicializaCliente(token);
+                HttpResponseMessage response;
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_ASIENTO_RESULTADO}/{eje_nro}";
+                response = await client.GetAsync(link);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
+                    }
+
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AsientoResultadoDto>>>(stringData)
+                        ?? throw new NegocioException("No se pudo deserializar los datos solicitados.");
+
+                    return new RespuestaGenerica<AsientoResultadoDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
+                }
+                else
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    if (error != null && error.TypeException?.Equals(nameof(NegocioException)) == true)
+                    {
+                        return new RespuestaGenerica<AsientoResultadoDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else if (error != null && error.TypeException?.Equals(nameof(NotFoundException)) == true)
+                    {
+                        return new RespuestaGenerica<AsientoResultadoDto> { Ok = false, Mensaje = error.Detail };
+                    }
+                    else if (error != null)
+                    {
+                        throw new Exception(error.Detail);
+                    }
+                    else
+                    {
+                        throw new Exception("Error desconocido al procesar la respuesta de la API.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+                return new RespuestaGenerica<AsientoResultadoDto> { Ok = false, Mensaje = $"Algo no fue bien al intentar obtener los usuarios del ejercicio {eje_nro}." };
             }
         }
 

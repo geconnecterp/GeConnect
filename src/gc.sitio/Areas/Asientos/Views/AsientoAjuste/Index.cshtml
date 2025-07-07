@@ -27,6 +27,7 @@
 </div>
 <div id="modalGestorDocumental"></div>
 
+
 @section scripts {
     <script type="text/javascript">
         var primerArranque = true;
@@ -34,6 +35,11 @@
         var obtenerEjerciciosUrl = "@Url.Action("ObtenerEjercicios", "AsientoAjuste", new { area = "asientos" })";
         var buscarAsientosAjusteUrl = "@Url.Action("BuscarAsientosDeAjuste", "AsientoAjuste", new { area = "asientos" })";
         var buscarRegistrosAsAjCcbUrl = "@Url.Action("BuscarRegistrosAsAjCcb", "AsientoAjuste", new { area = "asientos" })";
+        var confirmarAsientoAjusteUrl = "@Url.Action("ConfirmarAsientoAjuste", "AsientoAjuste", new { area = "asientos" })";
+
+             // Añadir la URL para el plan de cuentas
+        var buscarPlanCuentasUrl = '@Url.Action("Buscar", "ABMPlanCuenta", new { area = "ABMs" })';
+
 
         // Gestor de impresión
         var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
@@ -42,6 +48,11 @@
         var enviarEmailUrl = "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
         var enviarWhatsAppUrl = "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
 
+             // Asignar la URL al cargar la página
+        $(function() {
+            // Configurar la URL para el selector de cuentas
+            window.buscarPlanCuentasUrl = buscarPlanCuentasUrl;
+        });
     </script>
 
     <script src="~/lib/jstree/jstree.min.js"></script>

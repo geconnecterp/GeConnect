@@ -12,11 +12,11 @@ namespace gc.sitio.Areas.ABMs.Controllers
 	public class ProveedorControladorBase : ControladorBase
 	{
 		private readonly AppSettings _setting;
-		private readonly ILogger _logger;
+		//private readonly ILogger _logger;
 		public ProveedorControladorBase(IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger logger) : base(options, accessor, logger)
 		{
 			_setting = options.Value;
-			_logger = logger;
+		//	_logger = logger;
 		}
 
 		#region ABM

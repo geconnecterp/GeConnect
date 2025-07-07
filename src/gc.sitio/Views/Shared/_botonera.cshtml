@@ -13,11 +13,11 @@
             <button class="btn btn-primary btn-sm mt-1 me-1" type="button" id="btnDetalle"
                     data-bs-toggle="collapse" data-bs-target="#divDetalle"
                     aria-expanded="true" aria-controls="divDetalle">
-                <i class="bx bxs-arrow-down-stroke"></i>
+                <i class="bx bx-caret-down"></i>
             </button>
         </div>
     </div>
-    @if (Model.Modelo != ModeloFilter.ASIENTO_AJUSTE && Model.Modelo != ModeloFilter.EJERCICIO_CONTABLE && Model.Modelo != ModeloFilter.BGR && Model.Modelo != ModeloFilter.LIBRO_MAYOR && Model.Modelo != ModeloFilter.BSS && Model.Modelo != ModeloFilter.LDIARIO)
+    @if (Model.Modelo != ModeloFilter.ASIENTO_RESULTADO && Model.Modelo != ModeloFilter.ASIENTO_AJUSTE && Model.Modelo != ModeloFilter.EJERCICIO_CONTABLE && Model.Modelo != ModeloFilter.BGR && Model.Modelo != ModeloFilter.LIBRO_MAYOR && Model.Modelo != ModeloFilter.BSS && Model.Modelo != ModeloFilter.LDIARIO)
     {
         <div class="col-md-2 col-sm-6">
             <div class="d-flex justify-content-sm-center">
@@ -52,7 +52,7 @@
             <div class="d-flex justify-content-sm-center">
 
                 <button id="btnAbmNuevo" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Alta Asiento" disabled>
-                    <i class="bx bx-file-plus"></i>
+                    <i class="bx bx-plus-circle"></i>
                 </button>
                 <button id="btnAbmModif" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Editar Asiento" disabled>
                     <i class="bx bx-edit-alt"></i>

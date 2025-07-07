@@ -16,11 +16,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private readonly AppSettings _appSettings;
 		private readonly IRemitoServicio _remitoServicio;
 		private readonly IProductoServicio _productoServicio;
-		private readonly ILogger<CompraController> _logger;
+	//	private readonly ILogger<CompraController> _logger;
 
 		public RemitoController(ILogger<CompraController> logger, IOptions<AppSettings> options, IHttpContextAccessor context, IRemitoServicio remitoServicio, IProductoServicio productoServicio) : base(options, context)
 		{
-			_logger = logger;
+		//	_logger = logger;
 			_appSettings = options.Value;
 			_remitoServicio = remitoServicio;
 			_productoServicio = productoServicio;

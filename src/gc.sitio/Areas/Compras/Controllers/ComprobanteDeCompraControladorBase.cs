@@ -11,11 +11,11 @@ namespace gc.sitio.Areas.Compras.Controllers
     public class ComprobanteDeCompraControladorBase : ControladorBase
 	{
 		private readonly AppSettings _setting;
-		private readonly ILogger _logger;
+		//private readonly ILogger _logger;
 		public ComprobanteDeCompraControladorBase(IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger logger) : base(options, accessor, logger)
 		{
 			_setting = options.Value;
-			_logger = logger;
+			//_logger = logger;
 		}
 
 		public List<ConceptoFacturadoDto> ListaConceptoFacturado

@@ -15,7 +15,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
     [Area("ControlComun")]
     public class ProveedorController : ControladorBase
     {
-        private readonly ILogger<ProveedorController> _logger;
+      //  private readonly ILogger<ProveedorController> _logger;
         private readonly AppSettings _appSettings;
         private readonly IProveedorServicio _provSv;
 		private readonly ICuentaServicio _ctaSv;
@@ -24,7 +24,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         {
             _appSettings = options.Value;
 			_ctaSv = cuentaServicio;
-			_logger = logger;
+		//	_logger = logger;
             _provSv = proveedoresServicio;
         }
 
