@@ -51,20 +51,20 @@
 	<div class="col-6" style="height: 500px;">
 		<fieldset style="height: 280px;">
 			<legend>Obligaciones</legend>
-			<div class="row" id="divObligaciones">
+			<div class="row" id="divObligaciones" style="height: 220px;">
 				<div class="table-responsive table-wrapper-400" id="containerListaObligaciones_Paso1">
-					<table class="table table-bordered table-hover" id="tbListaObligaciones_Paso1" style="height: 200px;">
+					<table class="table table-bordered table-hover" id="tbListaObligaciones_Paso1">
 						<thead style="background: darkred;">
 							<tr>
-								<th style="width:50%;" class="col-header-small align-center tiny-row">Comprobante</th>
-								<th style="width:5%;" class="col-header-small align-center tiny-row">Vencimiento</th>
-								<th style="width:15%;" class="col-header-small align-center tiny-row">Gasto</th>
-								<th style="width:15%;" class="col-header-small align-center tiny-row">Motivo</th>
-								<th style="width:15%;" class="col-header-small align-center tiny-row">Imputado</th>
-								@* <th style="width:0%;display:none;" class="col-header-small align-center tiny-row">dia_movi</th>
+								<th style="width:25%;" class="col-header-small align-center tiny-row">Comprobante</th>
+								<th style="width:10%;" class="col-header-small align-center tiny-row">Vencimiento</th>
+								<th style="width:25%;" class="col-header-small align-center tiny-row">Gasto</th>
+								<th style="width:30%;" class="col-header-small align-center tiny-row">Motivo</th>
+								<th style="width:10%;" class="col-header-small align-center tiny-row">Imputado</th>
+								<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">afip_id</th>
 								<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">cm_compte</th>
 								<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">tco_id</th>
-								<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">cta_id</th> *@
+								<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">cm_cuit</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -78,10 +78,10 @@
 										<td class="@Model.GrillaObligaciones.ObtenerClase(item.gasto) cell-fit-content">@Model.GrillaObligaciones.FormatearDato(item.gasto, FormatDato.Ninguno)</td>
 										<td class="@Model.GrillaObligaciones.ObtenerClase(item.motivo) cell-fit-content">@Model.GrillaObligaciones.FormatearDato(item.motivo, FormatDato.Ninguno)</td>
 										<td class="@Model.GrillaObligaciones.ObtenerClase(item.imputado) cell-fit-content">@Model.GrillaObligaciones.FormatearDato(item.imputado, FormatDato.Monto)</td>
-										@* 										<td style="display:none;">@item.dia_movi</td>
+										<td style="display:none;">@item.afip_id</td>
 										<td style="display:none;">@item.cm_compte</td>
 										<td style="display:none;">@item.tco_id</td>
-										<td style="display:none;">@item.cta_id</td> *@
+										<td style="display:none;">@item.cm_cuit</td>
 									</tr>
 								}
 							}
@@ -158,45 +158,47 @@
 		<fieldset>
 			<legend>Detalle</legend>
 			<div>
-				<div class="row mt-1">
-					<div class="input-group input-group-sm">
-						<span class="input-group-text fixed-lbl-for-abm-100">Condición AFIP: </span>
-						@Html.DropDownListFor(m => m.itemOPD.afip_id, listaCondAfip, "Seleccionar...", new { @id = "listaCondAfip", @class = "form-control activable", @onchange = "onChangeCondAfip(this);" })
-						<span class="input-group-text fixed-lbl-for-abm-100">CUIT: </span>
-						<input type="text" asp-for="itemOPD.cm_cuit" class="form-control activable inputEditable" />
-					</div>
-				</div>
-				<div class="row mt-1">
-					<div class="input-group input-group-sm">
-						<span class="input-group-text fixed-lbl-for-abm-100">Razón Social: </span>
-						<input type="text" asp-for="itemOPD.cm_nombre" class="form-control activable inputEditable" />
-						<span class="input-group-text fixed-lbl-for-abm-100">Domicilio: </span>
-						<input type="text" asp-for="itemOPD.cm_domicilio" class="form-control activable inputEditable" />
-					</div>
-				</div>
-				<div class="row mt-1">
-					<div class="input-group input-group-sm">
-						<span class="input-group-text fixed-lbl-for-abm-100">Tipo Compte.: </span>
-						<div id="divTipoCompte">
-							@Html.DropDownListFor(m => m.itemOPD.tco_id, listaTipoCompte, "Seleccionar...", new { @id = "listaTCompte", @class = "form-control activable", style = "font-size: 11px;max-width: 115px;" })
+				<div id="divDatosComprobante">
+					<div class="row mt-1">
+						<div class="input-group input-group-sm">
+							<span class="input-group-text fixed-lbl-for-abm-100">Condición AFIP: </span>
+							@Html.DropDownListFor(m => m.itemOPD.afip_id, listaCondAfip, "Seleccionar...", new { @id = "listaCondAfip", @class = "form-control activable", @onchange = "onChangeCondAfip(this);" })
+							<span class="input-group-text fixed-lbl-for-abm-100">CUIT: </span>
+							<input type="text" asp-for="itemOPD.cm_cuit" class="form-control activable inputEditable" />
 						</div>
-						@* <span class="input-group-text fixed-lbl-for-abm-100">N° Compte.: </span>
-						<input type="text" asp-for="itemOPD.cm_compte" class="form-control activable inputEditable" /> *@
-						<span class="input-group-text fixed-lbl-for-abm-100">N° Compte:</span>
-						<input type="text" asp-for="itemOPD.cm_compte_pto_vta" style="max-width:50px;border-color: rgb(70,196,104);text-align: left;font-weight: 700;" class="form-control activable" />
-						<span class="input-group-text" style="display: block;float: right;text-align: right;">-</span>
-						<input type="text" asp-for="itemOPD.cm_compte_pto_nro" style="max-width:78px;border-color: rgb(70,196,104);text-align: left;font-weight: 700;" class="form-control activable" />
-						<span class="input-group-text fixed-lbl-for-abm-100">Fecha: </span>
-						@Html.TextBoxFor(m => m.itemOPD.cm_fecha, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeFechaCompte(this);" })
 					</div>
-				</div>
-				<div class="row mt-1">
-					<div class="input-group input-group-sm">
-						<span class="input-group-text fixed-lbl-for-abm-100">Cuenta Directa: </span>
-						@Html.DropDownListFor(m => m.itemOPD.ctag_id, listaCuentaDirecta, "Seleccionar...", new { @id = "listaCtaDir", @class = "form-control activable" })
-						<span class="input-group-text fixed-lbl-for-abm-100">Motivo: </span>
-						<input type="text" class="form-control inputEditable" name="Rel03" id="Rel03" />
-						@Html.Hidden("Rel03Item")
+					<div class="row mt-1">
+						<div class="input-group input-group-sm">
+							<span class="input-group-text fixed-lbl-for-abm-100">Razón Social: </span>
+							<input type="text" asp-for="itemOPD.cm_nombre" class="form-control activable inputEditable" />
+							<span class="input-group-text fixed-lbl-for-abm-100">Domicilio: </span>
+							<input type="text" asp-for="itemOPD.cm_domicilio" class="form-control activable inputEditable" />
+						</div>
+					</div>
+					<div class="row mt-1">
+						<div class="input-group input-group-sm">
+							<span class="input-group-text fixed-lbl-for-abm-100">Tipo Compte.: </span>
+							<div id="divTipoCompte">
+								@Html.DropDownListFor(m => m.itemOPD.tco_id, listaTipoCompte, "Seleccionar...", new { @id = "listaTCompte", @class = "form-control activable", style = "font-size: 11px;max-width: 115px;" })
+							</div>
+							@* <span class="input-group-text fixed-lbl-for-abm-100">N° Compte.: </span>
+						<input type="text" asp-for="itemOPD.cm_compte" class="form-control activable inputEditable" /> *@
+							<span class="input-group-text fixed-lbl-for-abm-100">N° Compte:</span>
+							<input type="text" asp-for="itemOPD.cm_compte_pto_vta" style="max-width:50px;border-color: rgb(70,196,104);text-align: left;font-weight: 700;" class="form-control activable" />
+							<span class="input-group-text" style="display: block;float: right;text-align: right;">-</span>
+							<input type="text" asp-for="itemOPD.cm_compte_pto_nro" style="max-width:78px;border-color: rgb(70,196,104);text-align: left;font-weight: 700;" class="form-control activable" />
+							<span class="input-group-text fixed-lbl-for-abm-100">Fecha: </span>
+							@Html.TextBoxFor(m => m.itemOPD.cm_fecha, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeFechaCompte(this);" })
+						</div>
+					</div>
+					<div class="row mt-1">
+						<div class="input-group input-group-sm">
+							<span class="input-group-text fixed-lbl-for-abm-100">Cuenta Directa: </span>
+							@Html.DropDownListFor(m => m.itemOPD.ctag_id, listaCuentaDirecta, "Seleccionar...", new { @id = "listaCtaDir", @class = "form-control activable" })
+							<span class="input-group-text fixed-lbl-for-abm-100">Motivo: </span>
+							<input type="text" class="form-control inputEditable" name="Rel03" id="Rel03" />
+							@Html.Hidden("Rel03Item")
+						</div>
 					</div>
 				</div>
 				<div class="row mt-1" id="divConceptosFacturados">
@@ -210,7 +212,7 @@
 							</button>
 						</div>
 					</div>
-					<div class="table-responsive text-nowrap table-wrapper-200">
+					<div class="table-responsive text-nowrap table-wrapper-200" style="height: 120px;">
 						<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridConceptoFacturado" style="height: 120px;">
 							<thead class="table-dark">
 								<tr class="header">

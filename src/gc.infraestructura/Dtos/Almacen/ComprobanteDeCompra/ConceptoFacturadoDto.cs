@@ -2,7 +2,22 @@
 
 namespace gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra
 {
-    public class ConceptoFacturadoDto : Dto
+	public class ConceptoFacturadoEnOPDDto : ConceptoFacturadoDto
+	{
+		[DataMember]
+		public string afip_id { get; set; } = string.Empty;
+
+		[DataMember]
+		public string cm_cuit { get; set; } = string.Empty;
+
+		[DataMember]
+		public string tco_id { get; set; } = string.Empty;
+
+		[DataMember]
+		public string cm_compte { get; set; } = string.Empty;
+	}
+    
+	public class ConceptoFacturadoDto : Dto
     {
 		[DataMember]
 		public int id { get; set; } = 0; //Valor que se usa para poder identificar un elemento de la colección

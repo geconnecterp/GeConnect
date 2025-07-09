@@ -1,4 +1,4 @@
-﻿@model GridCoreSmart<ConceptoFacturadoDto>
+﻿@model GridCoreSmart<ConceptoFacturadoEnOPDDto>
 @using static gc.infraestructura.Helpers.GridHelper
 @{
 	var alt = true;
@@ -14,8 +14,8 @@
 		</button>
 	</div>
 </div>
-<div class="table-responsive text-nowrap table-wrapper-200">
-	<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridConceptoFacturado" style="height: 120px;">
+<div class="table-responsive text-nowrap table-wrapper-200" style="height: 120px;">
+	<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbGridConceptoFacturado">
 		<thead class="table-dark">
 			<tr class="header">
 				<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">Id</th>

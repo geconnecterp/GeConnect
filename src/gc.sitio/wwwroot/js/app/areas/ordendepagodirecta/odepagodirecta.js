@@ -100,11 +100,27 @@ var mensajeErrorAlAgregarAntesDeGuardar = "";
 var focusObject = "";
 function AbmAgregarItem() {
 	if (ValidarAntesDeAgregar()) {
-		AbrirMensaje("ATENCIÓN", "¿Agrega el Comprobante?", function (e) {
+		AbrirMensaje("ATENCIÓN!!", "¿Agrega el Comprobante?", function (e) {
 			$("#msjModal").modal("hide");
 			switch (e) {
-				case "SI": //TODO MARCE: Seguir acá
-					
+				case "SI":
+					var request = ObtenerEncabezado();
+					var data = { request };
+					PostGen(data, agregarItemEnOpdPaso1Url, function (obj) {
+						if (obj.error === true) {
+							AbrirMensaje("ATENCIÓN", obj.msg, function () {
+								$("#msjModal").modal("hide");
+								return true;
+							}, false, ["Aceptar"], "error!", null);
+						}
+						else {
+							//Limpiar variables de sesión
+							LimpiarCamposDeEdicion();
+							CargarGrillasAdicionales();
+							CargarListaObligaciones();
+							ActualizarTotalesSuperiores();
+						}
+					});
 					break;
 				case "NO":
 					break;
@@ -124,6 +140,58 @@ function AbmAgregarItem() {
 			return true;
 		}, false, ["Aceptar"], "error!", null);
 	}
+}
+
+function ActualizarTotalesSuperiores() {
+	PostGen(data, actualizarTotalesSuperioresUrl, function (obj) {
+		if (obj.error === true) {
+			ControlaMensajeError(obj.msg);
+		}
+		else {
+			$("#txtObligACancelar").val(formatter.format(obj.data.obligacionesCancelar));
+			$("#txtCredYValImputados").val(formatter.format(obj.data.credYValImputados));
+			$("#txtDiferencias").val(formatter.format(obj.data.diferencia));
+		}
+	});
+}
+
+function CargarListaObligaciones() {
+	var data = {};
+	PostGenHtml(data, cargarGrillaObligacionesUrl, function (obj) {
+		$("#divObligaciones").html(obj);
+		return true
+	});
+}
+
+function LimpiarCamposDeEdicion() {
+	$("#itemOPD_cm_cuit").val("");
+	$("#itemOPD_cm_nombre").val("");
+	$("#itemOPD_cm_domicilio").val("");
+	$("#listaCondAfip").val("");
+	$("#listaTCompte").val("");
+	$("#itemOPD_cm_compte_pto_vta").val("");
+	$("#itemOPD_cm_compte_pto_nro").val("");
+	$("#itemOPD_cm_fecha").val(moment().format('yyyy-MM-DD'));
+	$("#listaCtaDir").val("");
+	$("#Rel03").val("");
+}
+
+function LimpiarVariablesDeSesion() {
+	var data = {};
+	PostGen(data, limpiarVariablesDeSesionUrl, function (obj) {
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			//Limpiar variables de sesión
+			$("#divDetalle").html("");
+			CargarListaTiposDeOrdenDePago();
+			return true;
+		}
+	});
 }
 
 function ValidarAntesDeAgregar() {
@@ -170,6 +238,7 @@ function ValidarAntesDeAgregar() {
 		focusObject = "#btnAgregarConceptoFacturado";
 		return false;
 	}
+	return true;
 }
 
 function AceptarDesdeSeleccionarTipoDeOP() {
@@ -256,6 +325,41 @@ function selectReg(x, gridId) {
 		$(this).removeClass("selectedEdit-row");
 	});
 	$(x).addClass("selected-row");
+
+	if (gridId == "tbListaObligaciones_Paso1") {
+		CargarItemsObligacionDesdeElementoSeleccionado(x);
+	}
+}
+
+function CargarItemsObligacionDesdeElementoSeleccionado(x) {
+	AbrirWaiting("Cargando datos...");
+	var aux = x.cells[0].innerText.trim();
+	var aux2 = x.childNodes[7].innerText;
+	var afip_id = x.cells[5].innerText.trim();
+	var cm_cuit = x.cells[8].innerText.trim();
+	var tco_id = x.cells[7].innerText.trim();
+	var cm_compte = x.cells[6].innerText.trim();
+	var data = { afip_id, cm_cuit, tco_id, cm_compte };
+	PostGenHtml(data, cargarDatosDeComprobanteSeleccionadoUrl, function (obj) {
+		$("#divDatosComprobante").html(obj);
+		$("#Rel03").val($("#itemOPD_ctag_motivo").val());
+		CargarGrillaOtrosTributosDesdeSeleccion(afip_id, cm_cuit, tco_id, cm_compte);
+		CargarGrillaConceptosFacturadosDesdeSeleccion(afip_id, cm_cuit, tco_id, cm_compte);
+		setTimeout(() => {
+			CargarGrillaTotalesDesdeSeleccion();
+		}, 500);
+		return true
+	});
+}
+
+function CargarGrillaTotalesDesdeSeleccion() {
+	var data = {};
+	PostGenHtml(data, cargarGrillaTotalesDesdeSeleccionUrl, function (obj) {
+		$("#divTotales").html(obj);
+		FormatearValores(tbGridTotales, [1]);
+		CerrarWaiting();
+		return true
+	});
 }
 
 function onChangeFechaCompte(x) {
@@ -458,43 +562,14 @@ function ObtenerEncabezado() {
 	var cm_nombre = $("#itemOPD_cm_nombre").val();
 	var cm_domicilio = $("#itemOPD_cm_domicilio").val();
 	var tco_id = $("#listaTCompte").val();
+	var tco_desc = $("#listaTCompte option:selected").text();
 	var cm_compte = $("#itemOPD_cm_compte_pto_vta").val() + '-' + $("#itemOPD_cm_compte_pto_nro").val();
 	var cm_fecha = $("#itemOPD_cm_fecha").val();
 	var ctag_id = $("#listaCtaDir").val();
+	var ctag_desc = $("#listaCtaDir option:selected").text();
 	var ctag_motivo = $("#Rel03").val();
 	var encabezado = {
-		afip_id, cm_cuit, cm_nombre, cm_domicilio, tco_id, cm_compte, cm_fecha, ctag_id, ctag_motivo
+		afip_id, cm_cuit, cm_nombre, cm_domicilio, tco_id, tco_desc, cm_compte, cm_fecha, ctag_id, ctag_desc, ctag_motivo
 	};
 	return encabezado;
 }
-
-//function getMaskForDiscountType(selector) {
-//	$(selector).inputmask({
-//		alias: 'numeric',
-//		groupSeparator: '.',
-//		radixPoint: ',',
-//		digits: 1,
-//		digitsOptional: false,
-//		allowMinus: false,
-//		prefix: '',
-//		suffix: '',
-//		min: 0,
-//		max: 50,
-//		unmaskAsNumber: true
-//	});
-//}
-
-//function getMaskForMoneyType(selector) {
-//	$(selector).inputmask({
-//		alias: 'numeric',
-//		groupSeparator: '.',
-//		radixPoint: ',',
-//		digits: 2,
-//		digitsOptional: false,
-//		allowMinus: false,
-//		prefix: '',
-//		suffix: '',
-//		rightAlign: true,
-//		unmaskAsNumber: true
-//	});
-//}

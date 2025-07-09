@@ -1,8 +1,22 @@
-﻿
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra
 {
+	public class  OtroTributoEnOPDDto : OtroTributoDto
+	{
+		[DataMember]
+		public string afip_id { get; set; } = string.Empty;
+
+		[DataMember]
+		public string cm_cuit { get; set; } = string.Empty;
+
+		[DataMember]
+		public string tco_id { get; set; } = string.Empty;
+
+		[DataMember]
+		public string cm_compte { get; set; } = string.Empty;
+	}
 	public class OtroTributoDto : Dto
 	{
 		public string ins_id { get; set; } = string.Empty; //Valor que se usa para poder identificar un elemento de la colección

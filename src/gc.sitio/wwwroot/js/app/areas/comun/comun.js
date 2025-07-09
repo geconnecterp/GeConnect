@@ -92,23 +92,36 @@ function AgregarOtroTributo() {
 	};
 }
 
+function CargarGrillaOtrosTributosDesdeSeleccion(afip_id, cm_cuit, tco_id, cm_compte) {
+	var data = { afip_id, cm_cuit, tco_id, cm_compte };
+	PostGenHtml(data, cargarOtrosTributosDesdeSeleccionUrl, function (obj) {
+		$("#divOtrosTributos").html(obj);
+		addInCellKeyDownHandler();
+		tableUpDownArrow();
+		addInCellGotFocusHandler();
+		addInCellEditHandler();
+		addInCellLostFocusHandler();
+		FormatearValores(tbGridOtroTributo, [2, 3, 4]);
+		addMaskInEditableCells();
+		return true
+	});
+}
+
 function CargarGrillaOtrosTributos() {
-	var tco_id = $("#listaTCompte option:selected").val()
-	if (tco_id != "") {
-		tcoIdSelected = tco_id;
-		var data = { tco_id };
-		PostGenHtml(data, cargarOtrosTributosUrl, function (obj) {
-			$("#divOtrosTributos").html(obj);
-			addInCellKeyDownHandler();
-			tableUpDownArrow();
-			addInCellGotFocusHandler();
-			addInCellEditHandler();
-			addInCellLostFocusHandler();
-			FormatearValores(tbGridOtroTributo, [2, 3, 4]);
-			addMaskInEditableCells();
-			return true
-		});
-	}
+	var tco_id = $("#listaTCompte").val();
+	tcoIdSelected = tco_id;
+	var data = { tco_id };
+	PostGenHtml(data, cargarOtrosTributosUrl, function (obj) {
+		$("#divOtrosTributos").html(obj);
+		addInCellKeyDownHandler();
+		tableUpDownArrow();
+		addInCellGotFocusHandler();
+		addInCellEditHandler();
+		addInCellLostFocusHandler();
+		FormatearValores(tbGridOtroTributo, [2, 3, 4]);
+		addMaskInEditableCells();
+		return true
+	});
 }
 
 function CalcularImporteOT() {
@@ -377,6 +390,15 @@ function CargarGrillasAdicionales() {
 function CargarGrillaConceptosFacturados() {
 	var data = {};
 	PostGenHtml(data, cargarCargarConceptosFacturadosUrl, function (obj) {
+		$("#divConceptosFacturados").html(obj);
+		FormatearValores(tbGridConceptoFacturado, [4, 5, 6]);
+		return true
+	});
+}
+
+function CargarGrillaConceptosFacturadosDesdeSeleccion(afip_id, cm_cuit, tco_id, cm_compte) {
+	var data = { afip_id, cm_cuit, tco_id, cm_compte };
+	PostGenHtml(data, cargarConceptosFacturadosDesdeSeleccionUrl, function (obj) {
 		$("#divConceptosFacturados").html(obj);
 		FormatearValores(tbGridConceptoFacturado, [4, 5, 6]);
 		return true

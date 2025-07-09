@@ -37,16 +37,16 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		}
 
-		public List<ConceptoFacturadoDto> ListaConceptoFacturado
+		public List<ConceptoFacturadoEnOPDDto> ListaConceptoFacturado
 		{
 			get
 			{
 				var txt = _context.HttpContext?.Session.GetString("ListaConceptoFacturado");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
-					return new List<ConceptoFacturadoDto>();
+					return [];
 				}
-				return JsonConvert.DeserializeObject<List<ConceptoFacturadoDto>>(txt) ?? [];
+				return JsonConvert.DeserializeObject<List<ConceptoFacturadoEnOPDDto>>(txt) ?? [];
 			}
 			set
 			{
@@ -56,16 +56,16 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		}
 
-		public List<OtroTributoDto> ListaOtrosTributos
+		public List<OtroTributoEnOPDDto> ListaOtrosTributos
 		{
 			get
 			{
 				var txt = _context.HttpContext?.Session.GetString("ListaOtrosTributos");
 				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
 				{
-					return new List<OtroTributoDto>();
+					return [];
 				}
-				return JsonConvert.DeserializeObject<List<OtroTributoDto>>(txt) ?? [];
+				return JsonConvert.DeserializeObject<List<OtroTributoEnOPDDto>>(txt) ?? [];
 			}
 			set
 			{

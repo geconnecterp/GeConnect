@@ -4,6 +4,7 @@ using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra;
 using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.OrdenDePago.Dtos;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Compras.Models;
@@ -12,6 +13,7 @@ using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
+using static gc.sitio.Areas.Compras.Controllers.OrdenDePagoAProveedorController;
 
 namespace gc.sitio.Areas.Compras.Controllers
 {
@@ -237,7 +239,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (ListaConceptoFacturado.Count != 0)
 					maxId = ListaConceptoFacturado.Max(x => x.id);
 				maxId++;
-				var newItem = new ConceptoFacturadoDto()
+				var newItem = new ConceptoFacturadoEnOPDDto()
 				{
 					id = maxId,
 					concepto = concepto,
@@ -248,7 +250,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					subtotal = Math.Round(subt, 2),
 					total = Math.Round(tot, 2)
 				};
-				var listaTemp = new List<ConceptoFacturadoDto>();
+				var listaTemp = new List<ConceptoFacturadoEnOPDDto>();
 				listaTemp = ListaConceptoFacturado;
 				listaTemp.Add(newItem);
 				ListaConceptoFacturado = listaTemp;
@@ -266,7 +268,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		[HttpPost]
 		public IActionResult CargarConceptosFacturados()
 		{
-			var model = new GridCoreSmart<ConceptoFacturadoDto>();
+			var model = new GridCoreSmart<ConceptoFacturadoEnOPDDto>();
 			try
 			{
 				var auth = EstaAutenticado;
@@ -275,9 +277,39 @@ namespace gc.sitio.Areas.Compras.Controllers
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 				}
 				if (ListaConceptoFacturado != null && ListaConceptoFacturado.Count >= 0)
-					model = ObtenerGridCoreSmart<ConceptoFacturadoDto>(ListaConceptoFacturado);
+					model = ObtenerGridCoreSmart<ConceptoFacturadoEnOPDDto>(ListaConceptoFacturado);
 				else
-					model = ObtenerGridCoreSmart<ConceptoFacturadoDto>([]);
+					model = ObtenerGridCoreSmart<ConceptoFacturadoEnOPDDto>([]);
+				return PartialView("_tabCompte_ConFactu", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public IActionResult CargarConceptosFacturadosDesdeSeleccion(CargarComprobanteOPDRequest request)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				if (request == null || string.IsNullOrEmpty(request.tco_id) || string.IsNullOrEmpty(request.afip_id) || string.IsNullOrEmpty(request.cm_cuit) || string.IsNullOrEmpty(request.cm_compte))
+					return PartialView("_empty_view");
+
+				var listaAux = ListaOrdenDePagoDirecta.Where(x=> x.opd.afip_id.Equals(request.afip_id) && x.opd.cm_cuit.Equals(request.cm_cuit) && x.opd.cm_compte.Equals(request.cm_compte) && x.opd.tco_id.Equals(request.tco_id)).First();
+				var model = ObtenerGridCoreSmart<ConceptoFacturadoEnOPDDto>(listaAux.listaConceptoFacturado);
+				ListaConceptoFacturado = listaAux.listaConceptoFacturado;
 				return PartialView("_tabCompte_ConFactu", model);
 			}
 			catch (Exception ex)
@@ -313,6 +345,40 @@ namespace gc.sitio.Areas.Compras.Controllers
 						ActualizarItemEnGrillaTotales("OtrosTributos", ListaOtrosTributos.Sum(x => x.importe));
 					model = ObtenerGridCoreSmart<OrdenDeCompraConceptoDto>(ListaTotales ?? []);
 				}
+				return PartialView("_tabCompte_Totales", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public IActionResult CargarGrillaTotalesDesdeSeleccion(CargarComprobanteOPDRequest request)
+		{
+			var model = new GridCoreSmart<OrdenDeCompraConceptoDto>();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+				{
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+				}
+
+				ActualizarGrillaTotales_ConceptosFacturados();
+				ActualizarGrillaTotales_OtrosTributos();
+
+				if (ListaTotales != null && ListaTotales.Count > 0)
+					model = ObtenerGridCoreSmart<OrdenDeCompraConceptoDto>(ListaTotales);
+				else
+					model = ObtenerGridCoreSmart<OrdenDeCompraConceptoDto>([]);
 				return PartialView("_tabCompte_Totales", model);
 			}
 			catch (Exception ex)
@@ -389,7 +455,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			try
 			{
-				var model = new GridCoreSmart<ConceptoFacturadoDto>();
+				var model = new GridCoreSmart<ConceptoFacturadoEnOPDDto>();
 				var auth = EstaAutenticado;
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
@@ -397,16 +463,16 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (id <= 0)
 				{
 					if (ListaConceptoFacturado != null && ListaConceptoFacturado.Count >= 0)
-						model = ObtenerGridCoreSmart<ConceptoFacturadoDto>(ListaConceptoFacturado);
+						model = ObtenerGridCoreSmart<ConceptoFacturadoEnOPDDto>(ListaConceptoFacturado);
 					else
-						model = ObtenerGridCoreSmart<ConceptoFacturadoDto>([]);
+						model = ObtenerGridCoreSmart<ConceptoFacturadoEnOPDDto>([]);
 					return PartialView("_tabCompte_ConFactu", model);
 				}
 				var listaTemp = ListaConceptoFacturado;
 				var itemTemp = listaTemp.Where(x => x.id.Equals(id)).First(); //Lo mantengo para buscarlo y quitarlo de la lista de totales
 				listaTemp = [.. listaTemp.Where(x => !x.id.Equals(id))];
 				ListaConceptoFacturado = listaTemp;
-				model = ObtenerGridCoreSmart<ConceptoFacturadoDto>(ListaConceptoFacturado);
+				model = ObtenerGridCoreSmart<ConceptoFacturadoEnOPDDto>(ListaConceptoFacturado);
 
 				//Busco el item de la lista de totales para quitarlo
 				if (ListaTotales != null && ListaTotales.Count > 0)
@@ -440,7 +506,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			try
 			{
-				var model = new GridCoreSmart<OtroTributoDto>();
+				var model = new GridCoreSmart<OtroTributoEnOPDDto>();
 				var auth = EstaAutenticado;
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
@@ -449,17 +515,17 @@ namespace gc.sitio.Areas.Compras.Controllers
 					if (ListaOtrosTributos != null && ListaOtrosTributos.Count >= 0)
 					{
 						ActualizarGrillaTotales_OtrosTributos();
-						model = ObtenerGridCoreSmart<OtroTributoDto>(ListaOtrosTributos);
+						model = ObtenerGridCoreSmart<OtroTributoEnOPDDto>(ListaOtrosTributos);
 					}
 					else
-						model = ObtenerGridCoreSmart<OtroTributoDto>([]);
+						model = ObtenerGridCoreSmart<OtroTributoEnOPDDto>([]);
 					return PartialView("_tabCompte_OtrosTrib", model);
 				}
 				var listaTemp = ListaOtrosTributos;
 				listaTemp = [.. listaTemp.Where(x => !x.ins_id.Equals(id))];
 				ListaOtrosTributos = listaTemp;
 				ActualizarGrillaTotales_OtrosTributos();
-				model = ObtenerGridCoreSmart<OtroTributoDto>(ListaOtrosTributos);
+				model = ObtenerGridCoreSmart<OtroTributoEnOPDDto>(ListaOtrosTributos);
 				return PartialView("_tabCompte_OtrosTrib", model);
 			}
 			catch (Exception ex)
@@ -484,8 +550,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 					return Json(new { error = true, warn = true, msg = $"El concepto es obligatorio." });
 				if (ListaOtrosTributos.Exists(x => x.ins_id.Equals(insId)))
 					return Json(new { error = true, warn = true, msg = $"El concepto '{insId}' ya se encuentra en la lista." });
-				var newItem = new OtroTributoDto() { ins_id = insId, base_imp = baseImp, alicuota = alicuota, importe = importe, imp = TiposTributoLista.Where(x => x.ins_id.Equals(insId)).First().ins_desc };
-				var listaTemp = new List<OtroTributoDto>();
+				var newItem = new OtroTributoEnOPDDto() { ins_id = insId, base_imp = baseImp, alicuota = alicuota, importe = importe, imp = TiposTributoLista.Where(x => x.ins_id.Equals(insId)).First().ins_desc };
+				var listaTemp = new List<OtroTributoEnOPDDto>();
 				listaTemp = ListaOtrosTributos;
 				listaTemp.Add(newItem);
 				ListaOtrosTributos = listaTemp;
@@ -503,7 +569,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		[HttpPost]
 		public IActionResult CargarOtrosTributos(string tco_id)
 		{
-			var model = new GridCoreSmart<OtroTributoDto>();
+			var model = new GridCoreSmart<OtroTributoEnOPDDto>();
 			try
 			{
 				var auth = EstaAutenticado;
@@ -511,8 +577,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 				}
-				if (string.IsNullOrEmpty(tco_id))
-					return PartialView("_empty_view");
+				if (string.IsNullOrEmpty(tco_id)) //Inicializo la grilla cuando viene vacío el parámetro
+					return PartialView("_tabCompte_OtrosTrib", ObtenerGridCoreSmart<OtroTributoEnOPDDto>([]));
 
 				var tco = TiposComprobante.Where(x => x.tco_id.Equals(tco_id)).First();
 				if (tco == null)
@@ -526,7 +592,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					};
 					return PartialView("_gridMensaje", response);
 				}
-				var listTempo = new List<OtroTributoDto>();
+				var listTempo = new List<OtroTributoEnOPDDto>();
 				if (tco.tco_iva_discriminado == "S")
 				{
 					//Busco en la lista de Tipos de tributo los que se deben cargar previamente
@@ -535,7 +601,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					{
 						foreach (var item in listaTributos)
 						{
-							var otroTributo = new OtroTributoDto
+							var otroTributo = new OtroTributoEnOPDDto
 							{
 								ins_id = item.ins_id,
 								imp = item.ins_desc,
@@ -556,10 +622,43 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					listTempo.AddRange(ListaOtrosTributos);
 					ListaOtrosTributos = listTempo;
-					model = ObtenerGridCoreSmart<OtroTributoDto>(ListaOtrosTributos);
+					model = ObtenerGridCoreSmart<OtroTributoEnOPDDto>(ListaOtrosTributos);
 				}
 				else
-					model = ObtenerGridCoreSmart<OtroTributoDto>([]);
+					model = ObtenerGridCoreSmart<OtroTributoEnOPDDto>([]);
+				return PartialView("_tabCompte_OtrosTrib", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public IActionResult CargarOtrosTributosDesdeSeleccion(CargarComprobanteOPDRequest request)
+		{ 
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				if (request == null || string.IsNullOrEmpty(request.tco_id) || string.IsNullOrEmpty(request.afip_id) || string.IsNullOrEmpty(request.cm_cuit) || string.IsNullOrEmpty(request.cm_compte))
+					return PartialView("_empty_view");
+
+				if (ListaOtrosTributos == null || ListaOtrosTributos.Count <= 0)
+					return PartialView("_tabCompte_OtrosTrib", ObtenerGridCoreSmart<OtroTributoEnOPDDto>([]));
+
+				var listaAux = ListaOrdenDePagoDirecta.Where(x => x.opd.afip_id.Equals(request.afip_id) && x.opd.cm_cuit.Equals(request.cm_cuit) && x.opd.cm_compte.Equals(request.cm_compte) && x.opd.tco_id.Equals(request.tco_id)).First();
+				var model = ObtenerGridCoreSmart<OtroTributoEnOPDDto>(listaAux.listaOtrosTributos);
+				ListaOtrosTributos = listaAux.listaOtrosTributos;
 				return PartialView("_tabCompte_OtrosTrib", model);
 			}
 			catch (Exception ex)
@@ -645,6 +744,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (request == null)
 					return Json(new { error = true, warn = true, msg = $"Debe completar los campos obligatorios." });
 
+				if (string.IsNullOrEmpty(request.afip_id) || string.IsNullOrEmpty(request.cm_cuit) || string.IsNullOrEmpty(request.cm_compte) || string.IsNullOrEmpty(request.tco_id))
+					return Json(new { error = true, warn = true, msg = $"Debe completar los campos obligatorios." });
+
+				var listaAux = ListaOrdenDePagoDirecta.Where(x => x.opd.afip_id.Equals(request.afip_id) && x.opd.cm_cuit.Equals(request.cm_cuit) && x.opd.cm_compte.Equals(request.cm_compte) && x.opd.tco_id.Equals(request.tco_id)).ToList();
+				if(listaAux != null && listaAux.Count > 0)
+					return Json(new { error = true, warn = true, msg = $"Ya existe un comprobante con los datos ingresados." });
+
 				var nuevoComprobante = new ComprobanteDto
 				{
 					afip_id = request.afip_id,
@@ -654,8 +760,19 @@ namespace gc.sitio.Areas.Compras.Controllers
 					cm_compte = request.cm_compte,
 					cm_nombre = request.cm_nombre,
 					tco_id = request.tco_id,
-					ctag_motivo = request.ctag_motivo
+					tco_desc = request.tco_desc,
+					ctag_motivo = request.ctag_motivo,
+					ctag_desc = request.ctag_desc,
+					cm_domicilio = request.cm_domicilio,
+					cm_total = ListaConceptoFacturado.Select(x=>x.total).Sum() + ListaOtrosTributos.Select(x => x.importe).Sum(),
 				};
+				ListaConceptoFacturado.ForEach(x => { x.afip_id = request.afip_id; x.cm_cuit = request.cm_cuit; x.tco_id = request.tco_id; x.cm_compte = request.cm_compte; });
+				//************
+				//Si existen item con 0 en monto, los quitos (ya que han sido precargados cuando se seleccionó el tipo de comprobante)
+				var listaAuxOtrosTrib = ListaOtrosTributos.Where(x => x.importe != 0).ToList();
+				ListaOtrosTributos = listaAuxOtrosTrib;
+				//************
+				ListaOtrosTributos.ForEach(x => { x.afip_id = request.afip_id; x.cm_cuit = request.cm_cuit; x.tco_id = request.tco_id; x.cm_compte = request.cm_compte; });
 				var nuevaOPD = new OrdenDePagoDirectaDto
 				{
 					opd = nuevoComprobante,
@@ -665,6 +782,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				var listaTemp = ListaOrdenDePagoDirecta;
 				listaTemp.Add(nuevaOPD);
+				ListaOrdenDePagoDirecta = listaTemp;
 
 				//Limpiamos listas en sesión luego de cargar el item a la lista principal, menos la de valores
 				InicializarDatosEnSession(false);
@@ -674,6 +792,141 @@ namespace gc.sitio.Areas.Compras.Controllers
 			catch (Exception)
 			{
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar cargar el agregar el ítem en Obligaciones." });
+			}
+		}
+
+		[HttpPost]
+		public IActionResult CargarGrillaObligaciones()
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return Json(new { error = true, warn = false, msg = $"La sesión ha finalizado, debe reingresar al sistema." });
+
+				var listaTemp = new List<OPDirectaObligacionesDto>();
+				var listaTem2 = new List<ComprobanteDto>();
+				listaTem2.AddRange([.. ListaOrdenDePagoDirecta.Select(x => x.opd)]);
+				foreach (var item in listaTem2)
+				{
+					var opd = new OPDirectaObligacionesDto
+					{
+						concepto = $"{item.tco_desc} ({item.tco_id}) {item.cm_compte}",
+						fecha_vencimiento = item.cm_fecha,
+						gasto  = item.ctag_desc,
+						motivo = item.ctag_motivo,
+						imputado = item.cm_total,
+						afip_id = item.afip_id,
+						cm_cuit = item.cm_cuit,
+						cm_compte = item.cm_compte,
+						tco_id = item.tco_id,
+					};
+					listaTemp.Add(opd);
+				}
+				var model = ObtenerGridCoreSmart<OPDirectaObligacionesDto>(listaTemp);
+				return PartialView("_grillaObligaciones", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public JsonResult ActualizarTotalesSuperiores()
+		{
+			try
+			{
+				//Obligaciones a cancelar
+				var tot_ObligacionesCancelar = (decimal)0.00;
+				if (ListaOrdenDePagoDirecta != null && ListaOrdenDePagoDirecta.Count > 0)
+				{
+					var listaTem2 = new List<ComprobanteDto>();
+					listaTem2.AddRange([.. ListaOrdenDePagoDirecta.Select(x => x.opd)]);
+					tot_ObligacionesCancelar = listaTem2.Sum(x => x.cm_total);
+				}
+
+				//Créditos
+				var tot_CredYValImputados = (decimal)0.00;
+				if (ListaValores != null && ListaValores.Count > 0)
+					tot_CredYValImputados = ListaValores.Sum(x => x.op_importe);
+				
+				//Diferencia
+				var tot_Diferencia = tot_ObligacionesCancelar - tot_CredYValImputados;
+				return Json(new { error = false, warn = false, msg = string.Empty, data = new TotalesActualizados() { ObligacionesCancelar = tot_ObligacionesCancelar, CredYValImputados = tot_CredYValImputados, Diferencia = tot_Diferencia } });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar calcular los totales. {ex}" });
+			}
+		}
+
+		[HttpPost]
+		public IActionResult CargarDatosDeComprobanteSeleccionado(CargarComprobanteOPDRequest request)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				if (request == null || string.IsNullOrEmpty(request.tco_id) || string.IsNullOrEmpty(request.afip_id) || string.IsNullOrEmpty(request.cm_cuit) || string.IsNullOrEmpty(request.cm_compte))
+					return PartialView("_empty_view");
+
+				var item = ListaOrdenDePagoDirecta.Where(x => x.opd.tco_id.Equals(request.tco_id) && x.opd.afip_id.Equals(request.afip_id) && x.opd.cm_cuit.Equals(request.cm_cuit) && x.opd.cm_compte.Equals(request.cm_compte)).First();
+				if (item == null)
+				{
+					RespuestaGenerica<EntidadBase> response = new()
+					{
+						Ok = false,
+						EsError = true,
+						EsWarn = false,
+						Mensaje = $"No se ha encontrado el comprobante seleccionado."
+					};
+					return PartialView("_gridMensaje", response);
+				}
+				var ptoVta = item.opd.cm_compte.Split('-')[0];
+				var ptoNro = item.opd.cm_compte.Split('-')[1];
+				var model = new ComprobanteModel
+				{
+					listaCondAfip = ComboAfip(),
+					listaTiposComptes = ComboTipoComprobante(item.opd.afip_id, TipoOPSelected),
+					listaCuentaDirecta = ComboTipoGasto(),
+					itemOPD = new AgregarOPDRequest()
+					{
+						afip_id = item.opd.afip_id,
+						ctag_id = item.opd.ctag_id,
+						cm_cuit = item.opd.cm_cuit,
+						cm_fecha = item.opd.cm_fecha,
+						cm_compte = item.opd.cm_compte,
+						cm_nombre = item.opd.cm_nombre,
+						tco_id = item.opd.tco_id,
+						ctag_motivo = item.opd.ctag_motivo,
+						cm_compte_pto_vta = ptoVta,
+						cm_compte_pto_nro = ptoNro,
+						cm_domicilio= item.opd.cm_domicilio,
+
+					},
+				};
+
+				return PartialView("_datosComprobante", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
 			}
 		}
 
@@ -704,6 +957,28 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return Json(tipos);
 		}
 
+		/// <summary>
+		/// Limpiar las variables de sesion (listas)
+		/// </summary>
+		/// <param name="limpiaValores">Si es 'true' limpia la lista de Valores a agregar</param>
+		/// <returns></returns>
+		[HttpPost]
+		public JsonResult LimpiarVariablesDeSesion(bool limpiaValores = false)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return Json(new { error = true, warn = false, msg = $"La sesión ha finalizado, debe reingresar al sistema." });
+				InicializarDatosEnSession(limpiaValores);
+				return Json(new { error = false, warn = false, msg = string.Empty });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.Message });
+			}
+		}
+
 		#region Métodos privados
 		private void InicializarDatosEnSession(bool limpiaValores = false)
 		{
@@ -722,7 +997,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			else
 			{
-				var listTempo = new List<OtroTributoDto>();
+				var listTempo = new List<OtroTributoEnOPDDto>();
 				if (tco.tco_iva_discriminado == "S")
 				{
 					//Busco en la lista de Tipos de tributo los que se deben cargar previamente
@@ -731,7 +1006,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					{
 						foreach (var item in listaTributos)
 						{
-							var otroTributo = new OtroTributoDto
+							var otroTributo = new OtroTributoEnOPDDto
 							{
 								ins_id = item.ins_id,
 								imp = item.ins_desc,

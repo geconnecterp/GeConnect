@@ -1,0 +1,50 @@
+﻿@model ComprobanteModel
+@{
+	var listaTipoCompte = Model.listaTiposComptes;
+	var listaCondAfip = Model.listaCondAfip;
+	var listaCuentaDirecta = Model.listaCuentaDirecta;
+}
+@* @Html.Hidden("itemOPD_ctag_motivo") *@
+@* @Html.Hidden("ctag_motivo") *@
+<input type="text" asp-for="itemOPD.ctag_motivo" class="form-control activable inputEditable" style="visibility: collapse;" type="hidden" />
+<div class="row mt-1">
+	<div class="input-group input-group-sm">
+		<span class="input-group-text fixed-lbl-for-abm-100">Condición AFIP: </span>
+		@Html.DropDownListFor(m => m.itemOPD.afip_id, listaCondAfip, "Seleccionar...", new { @id = "listaCondAfip", @class = "form-control activable", @onchange = "onChangeCondAfip(this);" })
+		<span class="input-group-text fixed-lbl-for-abm-100">CUIT: </span>
+		<input type="text" asp-for="itemOPD.cm_cuit" class="form-control activable inputEditable" />
+	</div>
+</div>
+<div class="row mt-1">
+	<div class="input-group input-group-sm">
+		<span class="input-group-text fixed-lbl-for-abm-100">Razón Social: </span>
+		<input type="text" asp-for="itemOPD.cm_nombre" class="form-control activable inputEditable" />
+		<span class="input-group-text fixed-lbl-for-abm-100">Domicilio: </span>
+		<input type="text" asp-for="itemOPD.cm_domicilio" class="form-control activable inputEditable" />
+	</div>
+</div>
+<div class="row mt-1">
+	<div class="input-group input-group-sm">
+		<span class="input-group-text fixed-lbl-for-abm-100">Tipo Compte.: </span>
+		<div id="divTipoCompte">
+			@Html.DropDownListFor(m => m.itemOPD.tco_id, listaTipoCompte, "Seleccionar...", new { @id = "listaTCompte", @class = "form-control activable", style = "font-size: 11px;max-width: 115px;" })
+		</div>
+		@* <span class="input-group-text fixed-lbl-for-abm-100">N° Compte.: </span>
+						<input type="text" asp-for="itemOPD.cm_compte" class="form-control activable inputEditable" /> *@
+		<span class="input-group-text fixed-lbl-for-abm-100">N° Compte:</span>
+		<input type="text" asp-for="itemOPD.cm_compte_pto_vta" style="max-width:50px;border-color: rgb(70,196,104);text-align: left;font-weight: 700;" class="form-control activable" />
+		<span class="input-group-text" style="display: block;float: right;text-align: right;">-</span>
+		<input type="text" asp-for="itemOPD.cm_compte_pto_nro" style="max-width:78px;border-color: rgb(70,196,104);text-align: left;font-weight: 700;" class="form-control activable" />
+		<span class="input-group-text fixed-lbl-for-abm-100">Fecha: </span>
+		@Html.TextBoxFor(m => m.itemOPD.cm_fecha, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeFechaCompte(this);" })
+	</div>
+</div>
+<div class="row mt-1">
+	<div class="input-group input-group-sm">
+		<span class="input-group-text fixed-lbl-for-abm-100">Cuenta Directa: </span>
+		@Html.DropDownListFor(m => m.itemOPD.ctag_id, listaCuentaDirecta, "Seleccionar...", new { @id = "listaCtaDir", @class = "form-control activable" })
+		<span class="input-group-text fixed-lbl-for-abm-100">Motivo: </span>
+		<input type="text" class="form-control inputEditable" name="Rel03" id="Rel03" />
+		@Html.Hidden("Rel03Item")
+	</div>
+</div>
