@@ -378,17 +378,17 @@ function quitarConceptoFacturado(e) {
 	});
 }
 
-function CargarGrillasAdicionales() {
+function CargarGrillasAdicionales(reinicia = false) {
 	//Grilla de Conceptos Facturados
-	CargarGrillaConceptosFacturados();
+	CargarGrillaConceptosFacturados(reinicia);
 	//Grilla de Otros Tributos
 	CargarGrillaOtrosTributos();
 	//Grilla Totales
 	CargarGrillaTotales();
 }
 
-function CargarGrillaConceptosFacturados() {
-	var data = {};
+function CargarGrillaConceptosFacturados(reinicia = false) {
+	var data = { reinicia };
 	PostGenHtml(data, cargarCargarConceptosFacturadosUrl, function (obj) {
 		$("#divConceptosFacturados").html(obj);
 		FormatearValores(tbGridConceptoFacturado, [4, 5, 6]);

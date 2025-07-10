@@ -19,6 +19,10 @@
 	$(document).on("keyup", "#itemOPD_cm_compte_pto_nro", ControlaKeyUpCompteNro);
 
 	$(document).on("click", "#btnAbmAgregarItem", AbmAgregarItem);
+	$(document).on("click", "#btnAbmEditarItem", AbmEditarItem);
+	$(document).on("click", "#btnAbmEliminarItem", AbmEliminarItem);
+	$(document).on("click", "#btnAbmAceptarItem", AbmAceptar);
+	$(document).on("click", "#btnAbmCancelarItem", AbmCancelar);
 	//
 
 	$(".inputEditable").on("keypress", analizaEnterInput);
@@ -64,7 +68,8 @@
 			AceptarDesdeSeleccionarTipoDeOP();
 		}
 	});
-
+	$(".activable").prop("disabled", true);
+	EstadoBotonesABM(AbmAction.ALTA, false);
 });
 
 const IvaSituacion = {
@@ -79,6 +84,7 @@ const formatter = new Intl.NumberFormat('de-DE', {
 });
 
 var keysAceptadas = [8, 37, 39, 46, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 110, 190];
+var accion = "";
 
 function ControlaKeyUpComptePtoVta(e) {
 	if (e.which == 13 || e.which == 109) {
@@ -96,9 +102,109 @@ function ControlaKeyUpCompteNro(e) {
 	}
 }
 
+function DesactivarCamposPrincipales() {
+	$("#itemOPD_cm_cuit").prop("disabled", true);
+	$("#listaCondAfip").prop("disabled", true);
+	$("#listaTCompte").prop("disabled", true);
+	$("#itemOPD_cm_compte_pto_vta").prop("disabled", true);
+	$("#itemOPD_cm_compte_pto_nro").prop("disabled", true);
+}
+
+function AbmAgregarItem() {
+	var data = {};
+	PostGenHtml(data, inicializarComprobanteUrl, function (obj) {
+		$("#divDatosComprobante").html(obj);
+		$(".activable").prop("disabled", false);
+		$("#btnAgregarConceptoFacturado").prop("disabled", false);
+		$("#btnAgregarOtroTributo").prop("disabled", false);
+		desactivarGrilla("tbListaObligaciones_Paso1");
+		CargarGrillasAdicionales(true);
+		$("#listaCondAfip").trigger("focus");
+		EstadoBotonesABM(AbmAction.ALTA, false);
+		CargarMascaras();
+		accion = AbmAction.ALTA;
+		return true
+	});
+}
+
+function AbmEditarItem() {
+	$(".activable").prop("disabled", false);
+	$("#btnAgregarConceptoFacturado").prop("disabled", false);
+	$("#btnAgregarOtroTributo").prop("disabled", false);
+	DesactivarCamposPrincipales();
+	desactivarGrilla("tbListaObligaciones_Paso1");
+	activarGrilla("tbGridConceptoFacturado");
+	activarGrilla("tbGridOtroTributo");
+	$("#listaCondAfip").trigger("focus");
+	EstadoBotonesABM(AbmAction.MODIFICACION, false);
+	CargarMascaras();
+	accion = AbmAction.MODIFICACION;
+}
+
+function AbmEliminarItem() {
+	$(".activable").prop("disabled", true);
+	$("#btnAgregarConceptoFacturado").prop("disabled", true);
+	$("#btnAgregarOtroTributo").prop("disabled", true);
+	desactivarGrilla("tbListaObligaciones_Paso1");
+	desactivarGrilla("tbGridConceptoFacturado");
+	desactivarGrilla("tbGridOtroTributo");
+	EstadoBotonesABM(AbmAction.BAJA, false);
+	accion = AbmAction.BAJA;
+}
+
+function AbmAceptar() {
+	switch (accion) {
+		case AbmAction.ALTA:
+			AgregarItemObligaciones();
+			break;
+		case AbmAction.MODIFICACION:
+			EditarItemObligaciones();
+			break;
+		case AbmAction.BAJA:
+			EliminarItemObligaciones();
+			break;
+		default:
+	}
+}
+
+function AbmCancelar() {
+	LimpiarCamposDeEdicion();
+	CargarGrillasAdicionales();
+	$(".activable").prop("disabled", true);
+	activarGrilla("tbListaObligaciones_Paso1");
+	EstadoBotonesABM(AbmAction.CANCEL, false);
+}
+
+function EstadoBotonesABM(Abm, esSeleccionDeObligacion) {
+	if (!esSeleccionDeObligacion) {
+		if (Abm == AbmAction.ALTA || Abm == AbmAction.MODIFICACION || Abm == AbmAction.BAJA) {
+			$("#btnAbmAgregarItem").prop('disabled', true);
+			$("#btnAbmEditarItem").prop('disabled', true);
+			$("#btnAbmEliminarItem").prop('disabled', true);
+			$("#btnAbmAceptarItem").prop('disabled', false);
+			$("#btnAbmCancelarItem").prop('disabled', false);
+		}
+		else {
+			$("#btnAbmAgregarItem").prop('disabled', false);
+			$("#btnAbmEditarItem").prop('disabled', true);
+			$("#btnAbmEliminarItem").prop('disabled', true);
+			$("#btnAbmAceptarItem").prop('disabled', true);
+			$("#btnAbmCancelarItem").prop('disabled', true);
+		}
+	}
+	else {
+		$("#btnAbmAgregarItem").prop('disabled', false);
+		$("#btnAbmEditarItem").prop('disabled', false);
+		$("#btnAbmEliminarItem").prop('disabled', false);
+		$("#btnAbmAceptarItem").prop('disabled', true);
+		$("#btnAbmCancelarItem").prop('disabled', true);
+	}
+}
+
 var mensajeErrorAlAgregarAntesDeGuardar = "";
 var focusObject = "";
-function AbmAgregarItem() {
+
+function AgregarItemObligaciones() {
 	if (ValidarAntesDeAgregar()) {
 		AbrirMensaje("ATENCIÓN!!", "¿Agrega el Comprobante?", function (e) {
 			$("#msjModal").modal("hide");
@@ -116,9 +222,99 @@ function AbmAgregarItem() {
 						else {
 							//Limpiar variables de sesión
 							LimpiarCamposDeEdicion();
+							$(".activable").prop("disabled", true);
 							CargarGrillasAdicionales();
 							CargarListaObligaciones();
 							ActualizarTotalesSuperiores();
+							EstadoBotonesABM(AbmAction.SUBMIT, false);
+						}
+					});
+					break;
+				case "NO":
+					break;
+				default: //NO
+					break;
+			}
+			return true;
+
+		}, true, ["Aceptar", "Cancelar"], "question!", null);
+	}
+	else {
+		AbrirMensaje("ATENCIÓN", mensajeErrorAlAgregarAntesDeGuardar, function () {
+			$("#msjModal").modal("hide");
+			$(focusObject).trigger("focus");
+			mensajeErrorAlAgregarAntesDeGuardar = "";
+			focusObject = "";
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+}
+
+function EditarItemObligaciones() {
+	if (ValidarAntesDeAgregar()) {
+		AbrirMensaje("ATENCIÓN", "¿Confirma la modificación del Comprobante?", function (e) {
+			$("#msjModal").modal("hide");
+			switch (e) {
+				case "SI":
+					var request = ObtenerEncabezado();
+					var data = { request };
+					PostGen(data, editarItemEnOpdPaso1Url, function (obj) {
+						if (obj.error === true) {
+							AbrirMensaje("ATENCIÓN", obj.msg, function () {
+								$("#msjModal").modal("hide");
+								return true;
+							}, false, ["Aceptar"], "error!", null);
+						}
+						else {
+							LimpiarCamposDeEdicion();
+							CargarGrillasAdicionales();
+							CargarListaObligaciones();
+							ActualizarTotalesSuperiores();
+							EstadoBotonesABM(AbmAction.SUBMIT, false);
+						}
+					});
+					break;
+				case "NO":
+					break;
+				default: //NO
+					break;
+			}
+			return true;
+
+		}, true, ["Aceptar", "Cancelar"], "question!", null);
+	}
+	else {
+		AbrirMensaje("ATENCIÓN", mensajeErrorAlAgregarAntesDeGuardar, function () {
+			$("#msjModal").modal("hide");
+			$(focusObject).trigger("focus");
+			mensajeErrorAlAgregarAntesDeGuardar = "";
+			focusObject = "";
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+}
+
+function EliminarItemObligaciones() {
+	if (ValidarAntesDeAgregar()) {
+		AbrirMensaje("ATENCIÓN", "¿Confirma la eliminación del Comprobante?", function (e) {
+			$("#msjModal").modal("hide");
+			switch (e) {
+				case "SI":
+					var request = ObtenerEncabezado();
+					var data = { request };
+					PostGen(data, eliminarItemEnOpdPaso1Url, function (obj) {
+						if (obj.error === true) {
+							AbrirMensaje("ATENCIÓN", obj.msg, function () {
+								$("#msjModal").modal("hide");
+								return true;
+							}, false, ["Aceptar"], "error!", null);
+						}
+						else {
+							LimpiarCamposDeEdicion();
+							CargarGrillasAdicionales();
+							CargarListaObligaciones();
+							ActualizarTotalesSuperiores();
+							EstadoBotonesABM(AbmAction.SUBMIT, false);
 						}
 					});
 					break;
@@ -252,6 +448,8 @@ function AceptarDesdeSeleccionarTipoDeOP() {
 			$("#chkRel04").trigger("change");
 			CargarGrillasAdicionales();
 			CargarMascaras();
+			EstadoBotonesABM(AbmAction.SUBMIT, false);
+			$(".activable").prop("disabled", true);
 			return true;
 		}
 		else {
@@ -283,11 +481,11 @@ function ControlalistaTipoOPSelected() {
 }
 
 function ControlalistaTCompteSelected() {
-	var tco_id = $("#listaTCompte option:selected").val()
-	if (tco_id != "") {
-		//Grilla de Otros Tributos
-		CargarGrillaOtrosTributos();
-	}
+	//var tco_id = $("#listaTCompte option:selected").val()
+	//if (tco_id != "") {
+	//	//Grilla de Otros Tributos
+	//	CargarGrillaOtrosTributos();
+	//}
 }
 
 function CargarListaTiposDeOrdenDePago() {
@@ -328,6 +526,7 @@ function selectReg(x, gridId) {
 
 	if (gridId == "tbListaObligaciones_Paso1") {
 		CargarItemsObligacionDesdeElementoSeleccionado(x);
+		EstadoBotonesABM(AbmAction.MODIFICACION, true);
 	}
 }
 
@@ -346,14 +545,14 @@ function CargarItemsObligacionDesdeElementoSeleccionado(x) {
 		CargarGrillaOtrosTributosDesdeSeleccion(afip_id, cm_cuit, tco_id, cm_compte);
 		CargarGrillaConceptosFacturadosDesdeSeleccion(afip_id, cm_cuit, tco_id, cm_compte);
 		setTimeout(() => {
-			CargarGrillaTotalesDesdeSeleccion();
+			CargarGrillaTotalesDesdeSeleccion(afip_id, cm_cuit, tco_id, cm_compte);
 		}, 500);
 		return true
 	});
 }
 
-function CargarGrillaTotalesDesdeSeleccion() {
-	var data = {};
+function CargarGrillaTotalesDesdeSeleccion(afip_id, cm_cuit, tco_id, cm_compte) {
+	var data = { afip_id, cm_cuit, tco_id, cm_compte };
 	PostGenHtml(data, cargarGrillaTotalesDesdeSeleccionUrl, function (obj) {
 		$("#divTotales").html(obj);
 		FormatearValores(tbGridTotales, [1]);
