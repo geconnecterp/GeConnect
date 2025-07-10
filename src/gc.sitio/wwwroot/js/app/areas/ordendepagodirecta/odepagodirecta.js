@@ -169,7 +169,7 @@ function AbmAceptar() {
 
 function AbmCancelar() {
 	LimpiarCamposDeEdicion();
-	CargarGrillasAdicionales();
+	CargarGrillasAdicionales(true);
 	$(".activable").prop("disabled", true);
 	activarGrilla("tbListaObligaciones_Paso1");
 	EstadoBotonesABM(AbmAction.CANCEL, false);
@@ -223,10 +223,14 @@ function AgregarItemObligaciones() {
 							//Limpiar variables de sesión
 							LimpiarCamposDeEdicion();
 							$(".activable").prop("disabled", true);
-							CargarGrillasAdicionales();
+							CargarGrillasAdicionales(true);
 							CargarListaObligaciones();
 							ActualizarTotalesSuperiores();
 							EstadoBotonesABM(AbmAction.SUBMIT, false);
+							setTimeout(() => {
+								$("#btnAgregarConceptoFacturado").prop("disabled", true);
+								$("#btnAgregarOtroTributo").prop("disabled", true);
+							}, 500);
 						}
 					});
 					break;
@@ -267,10 +271,14 @@ function EditarItemObligaciones() {
 						}
 						else {
 							LimpiarCamposDeEdicion();
-							CargarGrillasAdicionales();
+							CargarGrillasAdicionales(true);
 							CargarListaObligaciones();
 							ActualizarTotalesSuperiores();
 							EstadoBotonesABM(AbmAction.SUBMIT, false);
+							setTimeout(() => {
+								$("#btnAgregarConceptoFacturado").prop("disabled", true);
+								$("#btnAgregarOtroTributo").prop("disabled", true);
+							}, 500);
 						}
 					});
 					break;
@@ -311,10 +319,14 @@ function EliminarItemObligaciones() {
 						}
 						else {
 							LimpiarCamposDeEdicion();
-							CargarGrillasAdicionales();
+							CargarGrillasAdicionales(true);
 							CargarListaObligaciones();
 							ActualizarTotalesSuperiores();
 							EstadoBotonesABM(AbmAction.SUBMIT, false);
+							setTimeout(() => {
+								$("#btnAgregarConceptoFacturado").prop("disabled", true);
+								$("#btnAgregarOtroTributo").prop("disabled", true);
+							}, 500);
 						}
 					});
 					break;
@@ -450,6 +462,10 @@ function AceptarDesdeSeleccionarTipoDeOP() {
 			CargarMascaras();
 			EstadoBotonesABM(AbmAction.SUBMIT, false);
 			$(".activable").prop("disabled", true);
+			setTimeout(() => {
+				$("#btnAgregarConceptoFacturado").prop("disabled", true);
+				$("#btnAgregarOtroTributo").prop("disabled", true);
+			}, 500);
 			return true;
 		}
 		else {
@@ -542,6 +558,7 @@ function CargarItemsObligacionDesdeElementoSeleccionado(x) {
 	PostGenHtml(data, cargarDatosDeComprobanteSeleccionadoUrl, function (obj) {
 		$("#divDatosComprobante").html(obj);
 		$("#Rel03").val($("#itemOPD_ctag_motivo").val());
+		DesactivarCamposPrincipales();
 		CargarGrillaOtrosTributosDesdeSeleccion(afip_id, cm_cuit, tco_id, cm_compte);
 		CargarGrillaConceptosFacturadosDesdeSeleccion(afip_id, cm_cuit, tco_id, cm_compte);
 		setTimeout(() => {

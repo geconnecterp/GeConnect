@@ -103,6 +103,8 @@ function CargarGrillaOtrosTributosDesdeSeleccion(afip_id, cm_cuit, tco_id, cm_co
 		addInCellLostFocusHandler();
 		FormatearValores(tbGridOtroTributo, [2, 3, 4]);
 		addMaskInEditableCells();
+		desactivarGrilla(tbGridOtroTributo);
+		$("#btnAgregarOtroTributo").prop("disabled", true);
 		return true
 	});
 }
@@ -396,11 +398,24 @@ function CargarGrillaConceptosFacturados(reinicia = false) {
 	});
 }
 
+function desactivarGrilla(gridId) {
+	$(gridId).addClass("disable-table-rows");
+	$(".table-wrapper").css("overflow", "hidden");
+}
+
+function activarGrilla(gridId) {
+	$(gridId).removeClass("disable-table-rows");
+	$(".table-wrapper").css("overflow", "auto");
+
+}
+
 function CargarGrillaConceptosFacturadosDesdeSeleccion(afip_id, cm_cuit, tco_id, cm_compte) {
 	var data = { afip_id, cm_cuit, tco_id, cm_compte };
 	PostGenHtml(data, cargarConceptosFacturadosDesdeSeleccionUrl, function (obj) {
 		$("#divConceptosFacturados").html(obj);
 		FormatearValores(tbGridConceptoFacturado, [4, 5, 6]);
+		desactivarGrilla(tbGridConceptoFacturado);
+		$("#btnAgregarConceptoFacturado").prop("disabled", true);
 		return true
 	});
 }

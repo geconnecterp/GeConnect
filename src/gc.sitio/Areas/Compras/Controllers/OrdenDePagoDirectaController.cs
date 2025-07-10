@@ -575,56 +575,51 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				var auth = EstaAutenticado;
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
-				{
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
-				}
+				
 				if (string.IsNullOrEmpty(tco_id)) //Inicializo la grilla cuando viene vacío el parámetro
 					return PartialView("_tabCompte_OtrosTrib", ObtenerGridCoreSmart<OtroTributoEnOPDDto>([]));
 
-				var tco = TiposComprobante.Where(x => x.tco_id.Equals(tco_id)).First();
-				if (tco == null)
-				{
-					RespuestaGenerica<EntidadBase> response = new()
-					{
-						Ok = false,
-						EsError = true,
-						EsWarn = false,
-						Mensaje = $"No se ha encontrado el tipo de comprobante {tco_id}"
-					};
-					return PartialView("_gridMensaje", response);
-				}
-				var listTempo = new List<OtroTributoEnOPDDto>();
-				if (tco.tco_iva_discriminado == "S")
-				{
-					//Busco en la lista de Tipos de tributo los que se deben cargar previamente
-					var listaTributos = TiposTributoLista.Where(x => x.carga_aut_discriminado).OrderBy(y => y.orden).ToList();
-					if (listaTributos != null && listaTributos.Count > 0)
-					{
-						foreach (var item in listaTributos)
-						{
-							var otroTributo = new OtroTributoEnOPDDto
-							{
-								ins_id = item.ins_id,
-								imp = item.ins_desc,
-								base_imp = 0.00M,
-								alicuota = 0.00M,
-								importe = 0.00M
-							};
-							if (!ListaOtrosTributos.Exists(x => x.ins_id.Equals(item.ins_id)))
-								listTempo.Add(otroTributo);
-						}
-					}
-					else
-					{
-						listTempo = [];
-					}
-				}
+				//var tco = TiposComprobante.Where(x => x.tco_id.Equals(tco_id)).First();
+				//if (tco == null)
+				//{
+				//	RespuestaGenerica<EntidadBase> response = new()
+				//	{
+				//		Ok = false,
+				//		EsError = true,
+				//		EsWarn = false,
+				//		Mensaje = $"No se ha encontrado el tipo de comprobante {tco_id}"
+				//	};
+				//	return PartialView("_gridMensaje", response);
+				//}
+				//var listTempo = new List<OtroTributoEnOPDDto>();
+				//if (tco.tco_iva_discriminado == "S")
+				//{
+				//	//Busco en la lista de Tipos de tributo los que se deben cargar previamente
+				//	var listaTributos = TiposTributoLista.Where(x => x.carga_aut_discriminado).OrderBy(y => y.orden).ToList();
+				//	if (listaTributos != null && listaTributos.Count > 0)
+				//	{
+				//		foreach (var item in listaTributos)
+				//		{
+				//			var otroTributo = new OtroTributoEnOPDDto
+				//			{
+				//				ins_id = item.ins_id,
+				//				imp = item.ins_desc,
+				//				base_imp = 0.00M,
+				//				alicuota = 0.00M,
+				//				importe = 0.00M
+				//			};
+				//			if (!ListaOtrosTributos.Exists(x => x.ins_id.Equals(item.ins_id)))
+				//				listTempo.Add(otroTributo);
+				//		}
+				//	}
+				//	else
+				//	{
+				//		listTempo = [];
+				//	}
+				//}
 				if (ListaOtrosTributos != null && ListaOtrosTributos.Count >= 0)
-				{
-					listTempo.AddRange(ListaOtrosTributos);
-					ListaOtrosTributos = listTempo;
 					model = ObtenerGridCoreSmart<OtroTributoEnOPDDto>(ListaOtrosTributos);
-				}
 				else
 					model = ObtenerGridCoreSmart<OtroTributoEnOPDDto>([]);
 				return PartialView("_tabCompte_OtrosTrib", model);
@@ -827,6 +822,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				itemTemp.listaConceptoFacturado = ListaConceptoFacturado ?? [];
 				itemTemp.listaOtrosTributos = ListaOtrosTributos ?? [];
 				ListaOrdenDePagoDirecta = listaTemp;
+				ListaTotales = [];
 
 				return Json(new { error = false, warn = false, msg = string.Empty });
 			}
@@ -855,8 +851,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (listaAux == null || listaAux.Count <= 0)
 					return Json(new { error = true, warn = true, msg = $"No existe el comprobante con los datos ingresados." });
 
-				var listaTemp = ListaOrdenDePagoDirecta.Where(x => !x.opd.afip_id.Equals(request.afip_id) && !x.opd.cm_cuit.Equals(request.cm_cuit) && !x.opd.cm_compte.Equals(request.cm_compte) && !x.opd.tco_id.Equals(request.tco_id)).ToList();
+				var listaTemp = ListaOrdenDePagoDirecta.Where(x => !x.opd.afip_id.Equals(request.afip_id) || !x.opd.cm_cuit.Equals(request.cm_cuit) || !x.opd.cm_compte.Equals(request.cm_compte) || !x.opd.tco_id.Equals(request.tco_id)).ToList();
 				ListaOrdenDePagoDirecta = listaTemp;
+				ListaTotales = [];
 
 				return Json(new { error = false, warn = false, msg = string.Empty });
 			}
