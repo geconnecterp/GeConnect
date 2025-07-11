@@ -15,5 +15,6 @@ namespace gc.infraestructura.Dtos.OrdenDePago.Dtos
 		public string cm_cuit { get; set; } = string.Empty;
 		public string tco_id { get; set; } = string.Empty;
 		public string cm_compte { get; set; } = string.Empty;
+		public int signo { get; set; }
 	}
 }

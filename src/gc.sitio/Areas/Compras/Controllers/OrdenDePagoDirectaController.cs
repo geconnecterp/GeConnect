@@ -373,6 +373,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 				}
 
+				InicializarGrillaTotales();
 				ActualizarGrillaTotales_OtrosTributos(request, true);
 				ActualizarGrillaTotales_ConceptosFacturados(request, true);
 
@@ -576,7 +577,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				var auth = EstaAutenticado;
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
-				
+
 				if (string.IsNullOrEmpty(tco_id)) //Inicializo la grilla cuando viene vacío el parámetro
 					return PartialView("_tabCompte_OtrosTrib", ObtenerGridCoreSmart<OtroTributoEnOPDDto>([]));
 
@@ -747,6 +748,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (listaAux != null && listaAux.Count > 0)
 					return Json(new { error = true, warn = true, msg = $"Ya existe un comprobante con los datos ingresados." });
 
+				//var tco = TiposComprobanteLista.Where(x => x.tco_id.Equals(request.tco_id)).FirstOrDefault();
+				//var signo = tco != null && tco.tco_tipo.Equals("NC") ? -1 : 1;
 				var nuevoComprobante = new ComprobanteDto
 				{
 					afip_id = request.afip_id,
@@ -760,7 +763,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					ctag_motivo = request.ctag_motivo,
 					ctag_desc = request.ctag_desc,
 					cm_domicilio = request.cm_domicilio,
-					cm_total = ListaConceptoFacturado.Select(x => x.total).Sum() + ListaOtrosTributos.Select(x => x.importe).Sum(),
+					cm_total = ListaConceptoFacturado.Select(x => x.total).Sum() + ListaOtrosTributos.Select(x => x.importe).Sum()
 				};
 				ListaConceptoFacturado.ForEach(x => { x.afip_id = request.afip_id; x.cm_cuit = request.cm_cuit; x.tco_id = request.tco_id; x.cm_compte = request.cm_compte; });
 				//************
@@ -888,6 +891,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 						cm_cuit = item.cm_cuit,
 						cm_compte = item.cm_compte,
 						tco_id = item.tco_id,
+						signo = ObtenerSigno(item.tco_id)
 					};
 					listaTemp.Add(opd);
 				}
@@ -905,6 +909,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 				};
 				return PartialView("_gridMensaje", response);
 			}
+		}
+
+		private int ObtenerSigno(string tco_id)
+		{
+			var signo = 1;
+			var tco = TiposComprobanteLista.Where(x => x.tco_id.Equals(tco_id)).FirstOrDefault();
+			if (tco != null && tco.tco_tipo.Equals("NC"))
+				signo = -1;
+			return signo;
 		}
 
 		public JsonResult ActualizarTotalesSuperiores()
@@ -1327,6 +1340,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 			if (TipoGastoLista.Count == 0 || actualizar)
 				ObtenerTipoGastos(_tipoGastoServicio);
+
+			if (TiposComprobanteLista.Count == 0 || actualizar)
+				ObtenerTiposComprobanteLista(_tipoComprobanteServicio);
 		}
 
 		protected SelectList ComboTipoComprobante(string afip_id, string opt_id)

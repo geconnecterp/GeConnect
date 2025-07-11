@@ -1206,10 +1206,30 @@ namespace gc.sitio.Controllers
                 _context.HttpContext?.Session.SetString("TiposComprobante", json);
             }
         }
-        #endregion
+		#endregion
 
-        #region TIPO CUENTA BANCO
-        public List<TipoCuentaBcoDto> TipoCuentaBcoLista
+		#region TIPOS COMPROBANTES
+		public List<TipoComprobanteDto> TiposComprobanteLista
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("TiposComprobanteLista") ?? string.Empty;
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<TipoComprobanteDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("TiposComprobanteLista", json);
+			}
+		}
+		#endregion
+
+		#region TIPO CUENTA BANCO
+		public List<TipoCuentaBcoDto> TipoCuentaBcoLista
         {
             get
             {
@@ -2168,6 +2188,11 @@ namespace gc.sitio.Controllers
         {
             TipoCanalLista = _tipoCanal.GetTipoCanalLista(TokenCookie);
         }
+
+        protected void ObtenerTiposComprobanteLista(ITipoComprobanteServicio _tipoComp)
+        { 
+            TiposComprobanteLista = _tipoComp.BuscarTipoComprobanteListaPorTipoAfip("%","%",TokenCookie).Result;
+		}
 
         protected void ObtenerTiposDeCuentaBco(ITipoCuentaBcoServicio _tipoCueBco)
         {

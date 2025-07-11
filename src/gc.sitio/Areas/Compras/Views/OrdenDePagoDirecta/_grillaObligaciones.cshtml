@@ -15,6 +15,7 @@
 				<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">cm_compte</th>
 				<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">tco_id</th>
 				<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">cm_cuit</th>
+				<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">signo</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -27,11 +28,12 @@
 						<td class="@Model.ObtenerClase(item.fecha_vencimiento) cell-fit-content">@Model.FormatearDato(item.fecha_vencimiento, FormatDato.Fecha)</td>
 						<td class="@Model.ObtenerClase(item.gasto) cell-fit-content">@Model.FormatearDato(item.gasto, FormatDato.Ninguno)</td>
 						<td class="@Model.ObtenerClase(item.motivo) cell-fit-content">@Model.FormatearDato(item.motivo, FormatDato.Ninguno)</td>
-						<td class="@Model.ObtenerClase(item.imputado) cell-fit-content">@Model.FormatearDato(item.imputado, FormatDato.Monto)</td>
+						<td class="@Model.ObtenerClase(item.imputado) cell-fit-content">@Model.FormatearDato((item.imputado * item.signo), FormatDato.Monto)</td>
 						<td style="display:none;">@item.afip_id</td>
 						<td style="display:none;">@item.cm_compte</td>
 						<td style="display:none;">@item.tco_id</td>
 						<td style="display:none;">@item.cm_cuit</td>
+						<td style="display:none;">@item.signo</td>
 					</tr>
 				}
 			}
