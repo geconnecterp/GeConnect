@@ -391,7 +391,7 @@ function CargarGrillasAdicionales(reinicia = false) {
 
 function CargarGrillaConceptosFacturados(reinicia = false) {
 	var data = { reinicia };
-	PostGenHtml(data, cargarCargarConceptosFacturadosUrl, function (obj) {
+	PostGenHtml(data, cargarConceptosFacturadosUrl, function (obj) {
 		$("#divConceptosFacturados").html(obj);
 		FormatearValores(tbGridConceptoFacturado, [4, 5, 6]);
 		return true

@@ -5,6 +5,7 @@ using gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra;
 using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
+using gc.infraestructura.Dtos.OrdenDePago.Request;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Compras.Models;
@@ -13,6 +14,8 @@ using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using Org.BouncyCastle.Ocsp;
 using static gc.sitio.Areas.Compras.Controllers.OrdenDePagoAProveedorController;
 
 namespace gc.sitio.Areas.Compras.Controllers
@@ -88,6 +91,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					optIdSelected = string.Empty
 				};
 
+				InicializarDatosEnSession(true);
 				return PartialView("_listaTipoOrdenDePago", model);
 			}
 			catch (Exception ex)
@@ -875,27 +879,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return Json(new { error = true, warn = false, msg = $"La sesión ha finalizado, debe reingresar al sistema." });
 
-				var listaTemp = new List<OPDirectaObligacionesDto>();
-				var listaTem2 = new List<ComprobanteDto>();
-				listaTem2.AddRange([.. ListaOrdenDePagoDirecta.Select(x => x.opd)]);
-				foreach (var item in listaTem2)
-				{
-					var opd = new OPDirectaObligacionesDto
-					{
-						concepto = $"{item.tco_desc} ({item.tco_id}) {item.cm_compte}",
-						fecha_vencimiento = item.cm_fecha,
-						gasto = item.ctag_desc,
-						motivo = item.ctag_motivo,
-						imputado = item.cm_total,
-						afip_id = item.afip_id,
-						cm_cuit = item.cm_cuit,
-						cm_compte = item.cm_compte,
-						tco_id = item.tco_id,
-						signo = ObtenerSigno(item.tco_id)
-					};
-					listaTemp.Add(opd);
-				}
-				var model = ObtenerGridCoreSmart<OPDirectaObligacionesDto>(listaTemp);
+				var model = ObtenerGridCoreSmart<OPDirectaObligacionesDto>(ObtenerListaObligaciones());
 				return PartialView("_grillaObligaciones", model);
 			}
 			catch (Exception ex)
@@ -909,15 +893,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 				};
 				return PartialView("_gridMensaje", response);
 			}
-		}
-
-		private int ObtenerSigno(string tco_id)
-		{
-			var signo = 1;
-			var tco = TiposComprobanteLista.Where(x => x.tco_id.Equals(tco_id)).FirstOrDefault();
-			if (tco != null && tco.tco_tipo.Equals("NC"))
-				signo = -1;
-			return signo;
 		}
 
 		public JsonResult ActualizarTotalesSuperiores()
@@ -935,8 +910,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				//Créditos
 				var tot_CredYValImputados = (decimal)0.00;
-				if (ListaValores != null && ListaValores.Count > 0)
-					tot_CredYValImputados = ListaValores.Sum(x => x.op_importe);
+				if (OPValoresDesdeObligYCredLista != null && OPValoresDesdeObligYCredLista.Count > 0)
+					tot_CredYValImputados = OPValoresDesdeObligYCredLista.Sum(x => x.op_importe);
 
 				//Diferencia
 				var tot_Diferencia = tot_ObligacionesCancelar - tot_CredYValImputados;
@@ -1056,6 +1031,183 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		[HttpPost]
+		public IActionResult InicializarPaso2()
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				var model = new OPDPaso2Model
+				{
+					GrillaObligaciones = ObtenerGridCoreSmart<OPDirectaObligacionesDto>(ObtenerListaObligaciones()),
+					GrillaValores = ObtenerGridCoreSmart<ValoresDesdeObligYCredDto>(OPValoresDesdeObligYCredLista)
+				};
+				return PartialView("_vistaOPD_paso2", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public IActionResult InicializarPaso1()
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				if (string.IsNullOrEmpty(TipoOPSelected))
+					return PartialView("_empty_view");
+
+				InicializarGrillaTotales();
+				var listaTemp = _ordenDePagoServicio.CargarOPMotivosCtag(TipoOPSelected, TokenCookie);
+				OPMotivoCtagDtoLista = listaTemp;
+				var model = new OPDPaso1Model
+				{
+					listaCondAfip = ComboAfip(),
+					listaTiposComptes = ComboTipoComprobante(string.Empty, TipoOPSelected),
+					listaCuentaDirecta = ComboTipoGasto(),
+					itemOPD = new AgregarOPDRequest()
+					{
+						afip_id = string.Empty,
+						ctag_id = string.Empty,
+						cm_cuit = string.Empty,
+						cm_fecha = DateTime.Now,
+						cm_compte = string.Empty,
+						cm_nombre = string.Empty,
+						tco_id = string.Empty,
+						ctag_motivo = string.Empty,
+					},
+					GrillaConceptosFacturados = ObtenerGridCoreSmart<ConceptoFacturadoDto>([]),
+					GrillaOtrosTributos = ObtenerGridCoreSmart<OtroTributoDto>([]),
+					GrillaConcpetos = ObtenerGridCoreSmart<OrdenDeCompraConceptoDto>(ListaTotales),
+					GrillaObligaciones = ObtenerGridCoreSmart<OPDirectaObligacionesDto>(ObtenerListaObligaciones())
+				};
+				return PartialView("_vistaOPD_paso1", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public IActionResult CargarValores()
+		{
+			var model = new GridCoreSmart<ValoresDesdeObligYCredDto>();
+			try
+			{
+				model = ObtenerGridCoreSmart<ValoresDesdeObligYCredDto>(OPValoresDesdeObligYCredLista);
+				return PartialView("_grillaValores", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public IActionResult ActualizarGrillaValores(int orden)
+		{
+			var model = new GridCoreSmart<ValoresDesdeObligYCredDto>();
+			try
+			{
+				if (orden > 0)
+				{
+					var listaAux = OPValoresDesdeObligYCredLista;
+					listaAux = [.. listaAux.Where(x => x.orden != orden)];
+					OPValoresDesdeObligYCredLista = listaAux;
+				}
+				model = ObtenerGridCoreSmart<ValoresDesdeObligYCredDto>(OPValoresDesdeObligYCredLista);
+				return PartialView("_grillaValores", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public JsonResult ConfirmarOpd()
+		{
+			try
+			{
+				var request = new ConfirmarOrdenDePagoDirectaRequest()
+				{
+					usu_id = UserName,
+					adm_id = AdministracionId,
+					opt_id = TipoOPSelected,
+					op_desc = TipoOPSelected,
+					json_encabezado = string.Empty,
+					json_concepto = string.Empty,
+					json_otro = string.Empty,
+					json_v = string.Empty,
+				};
+				ArmarJsons(request);
+
+				Console.WriteLine("Request enviado a [SPGECO_OPD_Confirmar]:");
+				Console.WriteLine("usu_id:");
+				Console.WriteLine(request.usu_id);
+				Console.WriteLine("adm_id:");
+				Console.WriteLine(request.adm_id);
+				Console.WriteLine("opt_id:");
+				Console.WriteLine(request.opt_id);
+				Console.WriteLine("op_desc:");
+				Console.WriteLine(request.op_desc);
+				Console.WriteLine("json_encabezado:");
+				Console.WriteLine(request.json_encabezado);
+				Console.WriteLine("json_concepto:");
+				Console.WriteLine(request.json_concepto);
+				Console.WriteLine("json_otro:");
+				Console.WriteLine(request.json_otro);
+				Console.WriteLine("json_v:");
+				Console.WriteLine(request.json_v);
+
+				var respuesta = _ordenDePagoServicio.ConfirmarOrdenDePagoDirecta(request, TokenCookie);
+				//var respuesta = ObtenerEntidadAux();
+				return AnalizarRespuesta(respuesta, "La Orden de Pago Directa se confirmó con Éxito");
+				//return Json(new { error = false, warn = false, msg = string.Empty });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.Message });
+			}
+		}
+
+		[HttpPost]
 		public IActionResult BuscarTiposComptes(string condAfip)
 		{
 			var lista = ComboTipoComprobante(condAfip, TipoOPSelected);
@@ -1105,13 +1257,201 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		#region Métodos privados
+		private RespuestaGenerica<RespuestaDto> ObtenerEntidadAux()
+		{
+			return new RespuestaGenerica<RespuestaDto>
+			{
+				EsError = false,
+				EsWarn = false,
+				Ok = true,
+				Entidad = new RespuestaDto
+				{
+					resultado = 0,
+					resultado_id = "00-C0123765"
+				}
+			};
+		}
+		private void ArmarJsons(ConfirmarOrdenDePagoDirectaRequest request)
+		{
+			var listaEncabezado = new List<Confirmar_EncabezadoModel>();
+			var listaConcepto = new List<Confirmar_ConceptoModel>();
+			var listaOtro = new List<Confirmar_OtroModel>();
+			var listaValor = new List<Confirmar_ValorModel>();
+			foreach (var item in ListaOrdenDePagoDirecta)
+			{
+				if (item.opd == null)
+					continue;
+
+				//ENCABEZADO
+				var encabezado = new Confirmar_EncabezadoModel
+				{
+					#region Encabezado
+					afip_id = item.opd.afip_id,
+					cm_cuit = item.opd.cm_cuit,
+					cm_nombre = item.opd.cm_nombre,
+					cm_domicilio = item.opd.cm_domicilio,
+					tco_id = item.opd.tco_id,
+					cm_compte = item.opd.cm_compte,
+					cm_fecha = item.opd.cm_fecha,
+					ctag_id = item.opd.ctag_id,
+					ctag_motivo = item.opd.ctag_motivo,
+					cm_libro_iva = "",
+					cm_total = item.opd.cm_total,
+					cm_no_gravado = ListaTotales.Where(x => x.id.Equals("NetoNoGravado")).Sum(y => y.Importe),
+					cm_exento = ListaTotales.Where(x => x.id.Equals("NetoExento")).Sum(y => y.Importe),
+					cm_gravado = ListaTotales.Where(x => x.id.Equals("NetoGravado")).Sum(y => y.Importe),
+					cm_iva = ListaTotales.Where(x => x.id.Contains("IVA")).Sum(y => y.Importe),
+					cm_otros_ng = ListaTotales.Where(x => x.id.Equals("OtrosTributos")).Sum(y => y.Importe),
+					cm_ii = ListaTotales.Where(x => x.id.Equals("II")).Sum(y => y.Importe), //TODO MARCE: VERIFICAR ESTE VALOR, SI EXISTE EN LOS TOTALES
+					cm_percepciones = ListaTotales.Where(x => x.id.Equals("PERCEP")).Sum(y => y.Importe) //TODO MARCE: VERIFICAR ESTE VALOR, SI EXISTE EN LOS TOTALES
+					#endregion
+				};
+				listaEncabezado.Add(encabezado);
+
+				//CONCEPTOS
+				if (item.listaConceptoFacturado != null && item.listaConceptoFacturado.Count > 0)
+				{ 
+					foreach (var conceptoItem in item.listaConceptoFacturado)
+					{
+						if (conceptoItem == null)
+							continue;
+						var itemConcepto = new Confirmar_ConceptoModel()
+						{
+							afip_id = encabezado.afip_id,
+							cm_cuit = encabezado.cm_cuit,
+							tco_id = encabezado.tco_id,
+							cm_compte = encabezado.cm_compte,
+							concepto = conceptoItem.concepto,
+							cantidad = conceptoItem.cantidad,
+							iva_situacion = conceptoItem.iva_situacion,
+							iva_alicuota = conceptoItem.iva_alicuota,
+							subtotal = conceptoItem.subtotal,
+							iva = conceptoItem.iva,
+							total = conceptoItem.total,
+						};
+						listaConcepto.Add(itemConcepto);
+					}
+				}
+
+				//OTROS TRIBUTOS
+				if (item.listaOtrosTributos != null && item.listaOtrosTributos.Count > 0)
+				{
+					foreach (var otroItem in item.listaOtrosTributos)
+					{
+						if (otroItem == null)
+							continue;
+						var itemOtro = new Confirmar_OtroModel()
+						{
+							afip_id = encabezado.afip_id,
+							cm_cuit = encabezado.cm_cuit,
+							tco_id = encabezado.tco_id,
+							cm_compte = encabezado.cm_compte,
+							imp = otroItem.imp,
+							base_imp = otroItem.base_imp,
+							alicuota = otroItem.alicuota,
+							importe = otroItem.importe
+						};
+						listaOtro.Add(itemOtro);
+					}
+				}
+
+				//VALORES
+				if (OPValoresDesdeObligYCredLista != null && OPValoresDesdeObligYCredLista.Count > 0)
+				{
+					foreach (var valorItem in OPValoresDesdeObligYCredLista)
+					{
+						if (valorItem == null)
+							continue;
+						var itemValor = new Confirmar_ValorModel()
+						{
+							ctaf_id = valorItem.ctaf_id,
+							ctaf_denominacion = valorItem.ctaf_denominacion,
+							tcf_id = valorItem.tcf_id,
+							tipo = valorItem.tipo,
+							automatico = valorItem.automatico,
+							op_dato1_valor = valorItem.op_dato1_valor,
+							op_dato1_desc = valorItem.op_dato1_desc,
+							op_dato2_valor = valorItem.op_dato2_valor,
+							op_dato2_desc = valorItem.op_dato2_desc,
+							op_dato3_valor = valorItem.op_dato3_valor,
+							op_dato3_desc = valorItem.op_dato3_desc,
+							op_importe = valorItem.op_importe,
+							op_fecha_valor = valorItem.op_fecha_valor,
+							fc_compte = valorItem.fc_compte,
+							fc_item = valorItem.fc_item,
+							fc_dia_movi = valorItem.fc_dia_movi,
+							fc_cta_id = valorItem.fc_cta_id,
+							fc_anombre = valorItem.fc_anombre,
+							concepto_valor = valorItem.concepto_valor,
+							resultado = valorItem.resultado,
+							resultado_msj = valorItem.resultado_msj,
+							orden = valorItem.orden
+						};
+						listaValor.Add(itemValor);
+					}
+				}
+			}
+			//PASAR A JSON
+			request.json_encabezado = JsonConvert.SerializeObject(listaEncabezado, new JsonSerializerSettings());
+			request.json_concepto = JsonConvert.SerializeObject(listaConcepto, new JsonSerializerSettings());
+			request.json_otro = JsonConvert.SerializeObject(listaOtro, new JsonSerializerSettings());
+			request.json_v = JsonConvert.SerializeObject(listaValor, new JsonSerializerSettings());
+		}
+
+		private List<OPDirectaObligacionesDto> ObtenerListaObligaciones()
+		{
+			try
+			{
+				var listaTemp = new List<OPDirectaObligacionesDto>();
+				var listaTem2 = new List<ComprobanteDto>();
+				listaTem2.AddRange([.. ListaOrdenDePagoDirecta.Select(x => x.opd)]);
+				foreach (var item in listaTem2)
+				{
+					var opd = new OPDirectaObligacionesDto
+					{
+						concepto = $"{item.tco_desc} ({item.tco_id}) {item.cm_compte}",
+						fecha_vencimiento = item.cm_fecha,
+						gasto = item.ctag_desc,
+						motivo = item.ctag_motivo,
+						imputado = item.cm_total,
+						afip_id = item.afip_id,
+						cm_cuit = item.cm_cuit,
+						cm_compte = item.cm_compte,
+						tco_id = item.tco_id,
+						signo = ObtenerSigno(item.tco_id)
+					};
+					listaTemp.Add(opd);
+				}
+				if (listaTemp == null || listaTemp.Count <= 0)
+					return [];
+				else
+					return listaTemp;
+			}
+			catch (Exception)
+			{
+				return [];
+			}
+
+		}
+		private int ObtenerSigno(string tco_id)
+		{
+			var signo = 1;
+			var tco = TiposComprobanteLista.Where(x => x.tco_id.Equals(tco_id)).FirstOrDefault();
+			if (tco != null && tco.tco_tipo.Equals("NC"))
+				signo = -1;
+			return signo;
+		}
 		private void InicializarDatosEnSession(bool limpiaValores = false)
 		{
 			ListaConceptoFacturado = [];
 			ListaOtrosTributos = [];
 			ListaTotales = [];
 			if (limpiaValores)
+			{
 				ListaValores = [];
+				OPValoresDesdeObligYCredLista = [];
+				ListaOrdenDePagoDirecta = [];
+			}
 		}
 
 		private void InicializarListaOtrosTributos(string tco_id)

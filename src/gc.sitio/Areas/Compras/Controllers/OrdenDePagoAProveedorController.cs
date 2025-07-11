@@ -957,7 +957,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				Console.WriteLine(JsonConvert.SerializeObject(OPValoresDesdeObligYCredLista, new JsonSerializerSettings()));
 				var respuesta = _ordenDePagoServicio.ConfirmarOrdenDePagoAProveedor(req, TokenCookie);
 				//var respuesta = ObtenerEntidadAux();
-				return AnalizarRespuesta(respuesta, "La Orden de Compra se Confirmo con Éxito");
+				return AnalizarRespuesta(respuesta, "La Orden de Pago a Proveedor se confirmó con Éxito");
 			}
 			catch (Exception ex)
 			{

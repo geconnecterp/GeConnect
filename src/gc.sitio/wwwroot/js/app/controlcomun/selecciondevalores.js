@@ -373,16 +373,16 @@ function seleccionarFinanciero(x) {
 	seleccionarGrilla(x, 'tbFinanciero');
 }
 
-function desactivarGrilla(gridId) {
-	$("#" + gridId + "").addClass("disable-table-rows");
-	$(".table-wrapper").css("overflow", "hidden");
-}
+//function desactivarGrilla(gridId) {
+//	$("#" + gridId + "").addClass("disable-table-rows");
+//	$(".table-wrapper").css("overflow", "hidden");
+//}
 
-function activarGrilla(gridId) {
-	$("#" + gridId + "").removeClass("disable-table-rows");
-	$(".table-wrapper").css("overflow", "auto");
+//function activarGrilla(gridId) {
+//	$("#" + gridId + "").removeClass("disable-table-rows");
+//	$(".table-wrapper").css("overflow", "auto");
 
-}
+//}
 
 function seleccionarValoresEnCartera(x) {
 	seleccionarGrilla(x, 'tbValoresEnCartera');

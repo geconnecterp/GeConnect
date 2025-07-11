@@ -130,5 +130,23 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<OPMotivoCtagDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<RespuestaDto> ConfirmarOrdenDePagoDirecta(ConfirmarOrdenDePagoDirectaRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OPD_CONFIRMAR;
+			var ps = new List<SqlParameter>()
+			{
+				new("@usu_id",request.usu_id),
+				new("@adm_id",request.adm_id),
+				new("@opt_id",request.opt_id),
+				new("@op_desc",request.op_desc),
+				new("@json_encabezado",request.json_encabezado),
+				new("@json_concepto",request.json_concepto),
+				new("@json_otro",request.json_otro),
+				new("@json_v",request.json_v),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

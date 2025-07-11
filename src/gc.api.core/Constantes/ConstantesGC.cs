@@ -86,9 +86,9 @@ namespace gc.api.core.Constantes
 			public const string SP_RPR_UL = "SPGECO_UL_x_RPR";
 			public const string SP_RPR_UL_D = "SPGECO_UL_d";
             public const string SP_INFO_UL_REPO = "SPGECO_UL_repo";
+			
 
-
-            public const string SP_CUENTA_BUSQUEDA = "dbo.spgeco_c_busqueda_lista";
+			public const string SP_CUENTA_BUSQUEDA = "dbo.spgeco_c_busqueda_lista";
             public const string SP_CUENTA_DATO = "SPGECO_C_Contacto_Datos";
 			public const string SP_CUENTA_OBS_DATO = "SPGECO_C_Obs_Datos";
 
@@ -172,7 +172,7 @@ namespace gc.api.core.Constantes
 			public const string SP_OP_SV_CARTERA = "SPGECO_OP_SV_Cartera";
             public const string SP_OP_CONFIRMAR = "SPGECO_OP_Confirmar";
 			public const string SP_OP_MOTIVOS_CTAG = "SPGECO_OP_Motivos_Ctag";
-			//
+			public const string SP_OPD_CONFIRMAR = "SPGECO_OPD_Confirmar";
 			#endregion
 
 			#region Cliente

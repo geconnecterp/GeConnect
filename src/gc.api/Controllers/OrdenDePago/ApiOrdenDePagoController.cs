@@ -131,5 +131,18 @@ namespace gc.api.Controllers.OrdenDePago
 
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ConfirmarOrdenDePagoDirecta([FromBody] ConfirmarOrdenDePagoDirectaRequest r)
+		{
+			ApiResponse<RespuestaDto> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _ordenDePagoServicio.ConfirmarOrdenDePagoDirecta(r);
+			response = new ApiResponse<RespuestaDto>(res.First());
+			return Ok(response);
+		}
 	}
 }

@@ -22,8 +22,12 @@
 	$(document).on("click", "#btnAbmEditarItem", AbmEditarItem);
 	$(document).on("click", "#btnAbmEliminarItem", AbmEliminarItem);
 	$(document).on("click", "#btnAbmAceptarItem", AbmAceptar);
-	$(document).on("click", "#btnAbmCancelarItem", AbmCancelar);
-	//
+
+	$(document).on("click", "#btnSiguiente1", btnSiguiente1);
+	$(document).on("click", "#btnAnterior2", btnAnterior2);
+	$(document).on("click", "#btnConfirmar", btnConfirmar);
+
+	$(document).on("click", "#btnAgregarValor", btnAgregarValorValidar);
 
 	$(".inputEditable").on("keypress", analizaEnterInput);
 	$(document).on("keydown.autocomplete", "input#Rel03", function () {
@@ -68,6 +72,11 @@
 			AceptarDesdeSeleccionarTipoDeOP();
 		}
 	});
+	$("#UpdateValores").on("change", function () {
+		if ($(this).val() == 'true') {
+			CargarValores();
+		}
+	});
 	$(".activable").prop("disabled", true);
 	EstadoBotonesABM(AbmAction.ALTA, false);
 });
@@ -108,6 +117,126 @@ function DesactivarCamposPrincipales() {
 	$("#listaTCompte").prop("disabled", true);
 	$("#itemOPD_cm_compte_pto_vta").prop("disabled", true);
 	$("#itemOPD_cm_compte_pto_nro").prop("disabled", true);
+}
+
+function CargarValores() {
+	var data = {};
+	PostGenHtml(data, cargarValoresUrl, function (obj) {
+		$("#divValores").html(obj);
+		ActualizarTotalesSuperiores();
+	});
+}
+
+function selectRegDblGrillaValores(x) {
+	var orden = x.childNodes[7].innerText;
+	var data = { orden };
+	PostGenHtml(data, actualizarGrillaValoresUrl, function (obj) {
+		$("#divValores").html(obj);
+		//Actualizar totales
+		ActualizarTotalesSuperiores();
+	});
+}
+
+//Abro modal de seleccion de valores
+function btnAgregarValorValidar() {
+	//var app = tipoOPSelected; TODO MARCE: Descomentar esto cuando Jorge corrija el SP
+	var app = "OPP";
+	var saldo = $("#txtDiferencias").val();
+	saldo = saldo.replaceAll(".", "");
+	saldo = saldo.replace(",", ".");
+	var saldoN = Number(saldo);
+	var importe = 0
+	if (saldoN != NaN && saldoN > 0)
+		importe = saldoN;
+	var valor_a_nombre_de = valorANombreDe;
+	var valores = [];
+	var data = { app, importe, valor_a_nombre_de, valores };
+	invocarModalDeSeleccionDeValores(data);
+}
+
+function btnAnterior2() {
+	var data = {};
+	PostGenHtml(data, inicializarPaso1, function (obj) {
+		$("#divDetalle").html(obj);
+		//CargarGrillasAdicionales();
+		CargarMascaras();
+		EstadoBotonesABM(AbmAction.SUBMIT, false);
+		$(".activable").prop("disabled", true);
+		setTimeout(() => {
+			$("#btnAgregarConceptoFacturado").prop("disabled", true);
+			$("#btnAgregarOtroTributo").prop("disabled", true);
+		}, 500);
+		ActualizarTotalesSuperiores();
+		$("#Paso").val("Paso1");
+		return true;
+	});
+}
+
+function ValidarAntesDeConfirmar() {
+	var rowsObligaciones = $("#tbListaObligaciones_Paso2 > tbody > tr").length;
+	if (rowsObligaciones <= 0) {
+		mensajeErrorAlAgregarAntesDeConfirmar = "Debe al menos ingresar un Comprobante.";
+		btnAnterior2();
+		return false;
+	}
+	return true;
+}
+
+function btnConfirmar() {
+	if (ValidarAntesDeConfirmar()) {
+		AbrirMensaje("ATENCIÓN!!", "¿Confirmar la Orden de Pago Directa?", function (e) {
+			$("#msjModal").modal("hide");
+			switch (e) {
+				case "SI":
+					AbrirWaiting("Confirmando Orden de Pago Directa...");
+					var data = {};
+					PostGen(data, confirmarOpdUrl, function (obj) {
+						if (obj.error === true) {
+							AbrirMensaje("ATENCIÓN", obj.msg, function () {
+								$("#msjModal").modal("hide");
+								return true;
+							}, false, ["Aceptar"], "error!", null);
+						}
+						else {
+							ControlaMensajeSuccess(obj.msg);
+							//Limpiar variables de sesión
+							LimpiarVariablesDeSesion(true);
+							ActualizarTotalesSuperiores();
+							setTimeout(() => {
+								$("#divFiltro").collapse("show");
+								$("#divDetalle").collapse("hide");	
+								CerrarWaiting();
+							}, 1000);
+						}
+					});
+					break;
+				case "NO":
+					break;
+				default: //NO
+					break;
+			}
+			return true;
+
+		}, true, ["Aceptar", "Cancelar"], "question!", null);
+	}
+	else {
+		AbrirMensaje("ATENCIÓN", mensajeErrorAlAgregarAntesDeConfirmar, function () {
+			$("#msjModal").modal("hide");
+			mensajeErrorAlAgregarAntesDeConfirmar = "";
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+		return false;
+	}
+}
+
+function btnSiguiente1() {
+	var data = {};
+	PostGenHtml(data, inicializarPaso2, function (obj) {
+		$("#divDetalle").html(obj);
+		ActualizarTotalesSuperiores();
+		$("#Paso").val("Paso2");
+		return true
+	});
 }
 
 function AbmAgregarItem() {
@@ -202,6 +331,7 @@ function EstadoBotonesABM(Abm, esSeleccionDeObligacion) {
 }
 
 var mensajeErrorAlAgregarAntesDeGuardar = "";
+var mensajeErrorAlAgregarAntesDeConfirmar = "";
 var focusObject = "";
 
 function AgregarItemObligaciones() {
@@ -351,6 +481,7 @@ function EliminarItemObligaciones() {
 }
 
 function ActualizarTotalesSuperiores() {
+	var data = {};
 	PostGen(data, actualizarTotalesSuperioresUrl, function (obj) {
 		if (obj.error === true) {
 			ControlaMensajeError(obj.msg);
@@ -384,8 +515,8 @@ function LimpiarCamposDeEdicion() {
 	$("#Rel03").val("");
 }
 
-function LimpiarVariablesDeSesion() {
-	var data = {};
+function LimpiarVariablesDeSesion(limpiaValores = false) {
+	var data = { limpiaValores };
 	PostGen(data, limpiarVariablesDeSesionUrl, function (obj) {
 		if (obj.error === true) {
 			AbrirMensaje("ATENCIÓN", obj.msg, function () {
@@ -441,7 +572,7 @@ function ValidarAntesDeAgregar() {
 
 	var rowsConceptosFacturados = $("#tbGridConceptoFacturado > tbody > tr").length;
 	if (rowsConceptosFacturados <= 0) {
-		
+
 		mensajeErrorAlAgregarAntesDeGuardar = "Debe al menos ingresar un Concepto Facturado.";
 		focusObject = "#btnAgregarConceptoFacturado";
 		return false;
@@ -466,6 +597,7 @@ function AceptarDesdeSeleccionarTipoDeOP() {
 				$("#btnAgregarConceptoFacturado").prop("disabled", true);
 				$("#btnAgregarOtroTributo").prop("disabled", true);
 			}, 500);
+			$("#Paso").val("Paso1");
 			return true;
 		}
 		else {
@@ -540,7 +672,7 @@ function selectReg(x, gridId) {
 	});
 	$(x).addClass("selected-row");
 
-	if (gridId == "tbListaObligaciones_Paso1") {
+	if ($("#Paso").val() == "Paso1" && gridId =="tbListaObligaciones_Paso1") {
 		CargarItemsObligacionDesdeElementoSeleccionado(x);
 		EstadoBotonesABM(AbmAction.MODIFICACION, true);
 	}

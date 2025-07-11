@@ -14,5 +14,6 @@ namespace gc.api.core.Contratos.Servicios
 		List<ValoresDesdeObligYCredDto> CargarValoresDesdeObligYCredSeleccionados(CargarValoresDesdeObligYCredSeleccionadosRequest r);
 		List<RespuestaDto> ConfirmarOrdenDePagoAProveedor(ConfirmarOPaProveedorRequest request);
 		List<OPMotivoCtagDto> CargarOPMotivosCtag(string opt_id);
+		List<RespuestaDto> ConfirmarOrdenDePagoDirecta(ConfirmarOrdenDePagoDirectaRequest request);
 	}
 }
