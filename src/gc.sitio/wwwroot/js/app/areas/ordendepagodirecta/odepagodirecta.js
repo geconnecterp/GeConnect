@@ -97,11 +97,6 @@
 			CerrarWaiting();
 		}, 1000);
 	});
-	//
-	// Botón de imprimir
-	//$(document).on("click", ".btnImprimir", function () {
-	//	imprimirOPP();
-	//});
 
 	$("#btnImprimirTemp").on("click", function () {
 		ImprimirOPD_Generada("00-00003444", "");
@@ -197,8 +192,7 @@ function selectRegDblGrillaValores(x) {
 
 //Abro modal de seleccion de valores
 function btnAgregarValorValidar() {
-	var app = tipoOPSelected; //TODO MARCE: Descomentar esto cuando Jorge corrija el SP
-	//var app = "OPP";
+	var app = tipoOPSelected;
 	var saldo = $("#txtDiferencias").val();
 	saldo = saldo.replaceAll(".", "");
 	saldo = saldo.replace(",", ".");
