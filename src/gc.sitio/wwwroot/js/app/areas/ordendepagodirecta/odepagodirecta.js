@@ -88,6 +88,25 @@
 	});
 	$(".activable").prop("disabled", true);
 	EstadoBotonesABM(AbmAction.ALTA, false);
+	$("#btnCancel").on("click", function () {
+		LimpiarVariablesDeSesion(true);
+		ActualizarTotalesSuperiores();
+		setTimeout(() => {
+			$("#divFiltro").collapse("show");
+			$("#divDetalle").collapse("hide");
+			CerrarWaiting();
+		}, 1000);
+	});
+	//
+	// Botón de imprimir
+	//$(document).on("click", ".btnImprimir", function () {
+	//	imprimirOPP();
+	//});
+
+	$("#btnImprimirTemp").on("click", function () {
+		ImprimirOPD_Generada("00-00003444", "");
+	});
+
 });
 
 const IvaSituacion = {
@@ -220,6 +239,17 @@ function ValidarAntesDeConfirmar() {
 	return true;
 }
 
+function imprimirOPP() {
+	// Invocar gestor documental
+	invocacionGestorDoc({});
+}
+
+function ImprimirOPD_Generada(opCompte, ctaId) {
+	let data = { op_compte: opCompte, ctaId: ctaId };
+	cargarReporteEnArre(23, data, "ORDEN DE PAGO DIRECTA", "", "");
+	invocacionGestorDoc({});
+}
+
 function btnConfirmar() {
 	if (ValidarAntesDeConfirmar()) {
 		AbrirMensaje("ATENCIÓN!!", "¿Confirmar la Orden de Pago Directa?", function (e) {
@@ -236,8 +266,10 @@ function btnConfirmar() {
 							}, false, ["Aceptar"], "error!", null);
 						}
 						else {
+							console.log(obj.id); //Tomar este valor para imprimir.
 							ControlaMensajeSuccess(obj.msg);
 							//Limpiar variables de sesión
+							ImprimirOPD_Generada(obj.id, "");
 							LimpiarVariablesDeSesion(true);
 							ActualizarTotalesSuperiores();
 							setTimeout(() => {
@@ -288,6 +320,7 @@ function AbmAgregarItem() {
 		CargarGrillasAdicionales(true);
 		$("#listaCondAfip").trigger("focus");
 		EstadoBotonesABM(AbmAction.ALTA, false);
+		$("#btnSiguiente1").prop("disabled", true);
 		CargarMascaras();
 		accion = AbmAction.ALTA;
 		return true
@@ -304,6 +337,7 @@ function AbmEditarItem() {
 	activarGrilla("tbGridOtroTributo");
 	$("#listaCondAfip").trigger("focus");
 	EstadoBotonesABM(AbmAction.MODIFICACION, false);
+	$("#btnSiguiente1").prop("disabled", true);
 	CargarMascaras();
 	accion = AbmAction.MODIFICACION;
 }
@@ -316,6 +350,7 @@ function AbmEliminarItem() {
 	desactivarGrilla("tbGridConceptoFacturado");
 	desactivarGrilla("tbGridOtroTributo");
 	EstadoBotonesABM(AbmAction.BAJA, false);
+	$("#btnSiguiente1").prop("disabled", true);
 	accion = AbmAction.BAJA;
 }
 
@@ -340,6 +375,7 @@ function AbmCancelarItem() {
 	$(".activable").prop("disabled", true);
 	activarGrilla("tbListaObligaciones_Paso1");
 	EstadoBotonesABM(AbmAction.CANCEL, false);
+	$("#btnSiguiente1").prop("disabled", false);
 }
 
 function EstadoBotonesABM(Abm, esSeleccionDeObligacion) {
@@ -396,6 +432,7 @@ function AgregarItemObligaciones() {
 							CargarListaObligaciones();
 							ActualizarTotalesSuperiores();
 							EstadoBotonesABM(AbmAction.SUBMIT, false);
+							$("#btnSiguiente1").prop("disabled", false);
 							setTimeout(() => {
 								$("#btnAgregarConceptoFacturado").prop("disabled", true);
 								$("#btnAgregarOtroTributo").prop("disabled", true);
@@ -444,6 +481,7 @@ function EditarItemObligaciones() {
 							CargarListaObligaciones();
 							ActualizarTotalesSuperiores();
 							EstadoBotonesABM(AbmAction.SUBMIT, false);
+							$("#btnSiguiente1").prop("disabled", false);
 							setTimeout(() => {
 								$("#btnAgregarConceptoFacturado").prop("disabled", true);
 								$("#btnAgregarOtroTributo").prop("disabled", true);
@@ -492,6 +530,7 @@ function EliminarItemObligaciones() {
 							CargarListaObligaciones();
 							ActualizarTotalesSuperiores();
 							EstadoBotonesABM(AbmAction.SUBMIT, false);
+							$("#btnSiguiente1").prop("disabled", false);
 							setTimeout(() => {
 								$("#btnAgregarConceptoFacturado").prop("disabled", true);
 								$("#btnAgregarOtroTributo").prop("disabled", true);

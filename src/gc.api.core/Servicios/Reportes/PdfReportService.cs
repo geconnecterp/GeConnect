@@ -51,7 +51,9 @@ namespace gc.api.core.Servicios.Reportes
                 { InfoReporte.R017_OrdePagoProveedor, new R017_OrdePagoProveedor(uow,consSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R018_CertRetIIBB, new R018_CertRetIIBB(uow,consSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R019_CertRetGA, new R019_CertRetGA(uow,consSv,empresa,ctaSv, logger) },
-				{ InfoReporte.R020_CertRetIVA, new R020_CertRetIVA(uow,consSv,empresa,ctaSv, logger) }
+				{ InfoReporte.R020_CertRetIVA, new R020_CertRetIVA(uow,consSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R021_OrdenDeCompra, new R021_OrdenDeCompra(uow,consSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R023_OrdenDePagoDirecta, new R023_OrdenDePagoDirecta(uow,consSv,empresa,ctaSv, logger) }
 			}; 
             _logger = logger;
         }

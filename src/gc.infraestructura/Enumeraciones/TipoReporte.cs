@@ -33,5 +33,7 @@ namespace gc.infraestructura.Enumeraciones
 		R018_CertRetIIBB = 18,
 		R019_CertRetGA = 19,
 		R020_CertRetIVA = 20,
+		R021_OrdenDeCompra = 21,
+		R023_OrdenDePagoDirecta = 23,
 	}
 }

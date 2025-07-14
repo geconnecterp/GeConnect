@@ -7,10 +7,13 @@ using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
 using gc.infraestructura.Dtos.OrdenDePago.Request;
 using gc.infraestructura.Dtos.Productos;
+using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Enumeraciones;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Compras.Models;
 using gc.sitio.Areas.Compras.Models.OrdenDePagoDirecta;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
@@ -23,6 +26,14 @@ namespace gc.sitio.Areas.Compras.Controllers
 	[Area("Compras")]
 	public class OrdenDePagoDirectaController : OrdenDePagoDirectaControladorBase
 	{
+		//PARA MODULO DE IMPRESION
+		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
+		private AppModulo _modulo; //tengo el AppModulo que corresponde a la consulta de cuentas
+		private string APP_MODULO = AppModulos.OPD.ToString();
+		private readonly IDocManagerServicio _docMSv;
+
+		//************************
+
 		private readonly AppSettings _settings;
 		private readonly ITipoOrdenDePagoServicio _tipoOrdenDePagoServicio;
 		private readonly ITipoComprobanteServicio _tipoComprobanteServicio;
@@ -33,7 +44,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private readonly ITipoGastoServicio _tipoGastoServicio;
 		public OrdenDePagoDirectaController(ITipoOrdenDePagoServicio tipoOrdenDePagoServicio, ITipoComprobanteServicio tipoComprobanteServicio, ICondicionAfipServicio condicionAfipServicio,
 											IOrdenDePagoServicio ordenDePagoServicio, IProducto2Servicio producto2Servicio, ITipoTributoServicio tipoTributoServicio,
-											ITipoGastoServicio tipoGastoServicio,
+											ITipoGastoServicio tipoGastoServicio, IDocManagerServicio docManager, IOptions<DocsManager> docsManager,
 											IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<OrdenDePagoDirectaController> logger) : base(options, contexto, logger)
 		{
 			_settings = options.Value;
@@ -44,6 +55,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 			_producto2Servicio = producto2Servicio;
 			_tipoTributoServicio = tipoTributoServicio;
 			_tipoGastoServicio = tipoGastoServicio;
+
+			//PARA MODULO DE IMPRESION
+			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
+			_modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO); //identifico los datos del modulo que necesito: OPP
+			_docMSv = docManager; //instancio el servicio de impresión
 		}
 
 		public IActionResult Index()
@@ -56,6 +72,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				string titulo = "ORDEN DE PAGO DIRECTA";
 				ViewData["Titulo"] = titulo;
+
+				#region Gestor Impresion - Inicializacion de variables
+				//Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
+				DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
+				// en este mismo acto se cargan los posibles documentos
+				//que se pueden imprimir, exportar, enviar por email o whatsapp
+				ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
+
+				#endregion
 
 				var listR01 = new List<ComboGenDto>();
 				ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
