@@ -101,9 +101,6 @@
 						<button id="btnSiguiente1" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Siguiente">
 							<i class="bx bx-arrow-to-right"></i>
 						</button>
-						<button id="btnAbmCancelar" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar" onclick="btnAbmCancelar_click();">
-							<i class="bx bx-x-circle bx-xs"></i>
-						</button>
 					</div>
 				</div>
 			</div>
@@ -184,8 +181,6 @@
 							<div id="divTipoCompte">
 								@Html.DropDownListFor(m => m.itemOPD.tco_id, listaTipoCompte, "Seleccionar...", new { @id = "listaTCompte", @class = "form-control activable", style = "font-size: 11px;max-width: 115px;" })
 							</div>
-							@* <span class="input-group-text fixed-lbl-for-abm-100">N° Compte.: </span>
-						<input type="text" asp-for="itemOPD.cm_compte" class="form-control activable inputEditable" /> *@
 							<span class="input-group-text fixed-lbl-for-abm-100">N° Compte:</span>
 							<input type="text" asp-for="itemOPD.cm_compte_pto_vta" style="max-width:50px;border-color: rgb(70,196,104);text-align: left;font-weight: 700;" class="form-control activable" />
 							<span class="input-group-text" style="display: block;float: right;text-align: right;">-</span>

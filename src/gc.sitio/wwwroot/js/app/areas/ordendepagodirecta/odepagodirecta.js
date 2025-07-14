@@ -1,6 +1,9 @@
 ﻿$(function () {
 	$(document).on("change", "#listaTipoOP", ControlalistaTipoOPSelected);
 	$(document).on("change", "#listaTCompte", ControlalistaTCompteSelected);
+	$(document).on("change", "#listaCondAfip", ControlalistaCondAfipSelected);
+	$(document).on("change", "#listaCtaDir", ControlalistaCtaDirSelected);
+
 	$(document).on("click", "#btnAgregarConceptoFacturado", AbrirModalConceptoFacturado); //Abrir modal
 	$(document).on("click", "#btnAgregarOtroTributo", AbrirModalAgregarOtroTributo); //Abrir modal
 	$(document).on("change", "#listaIvaSit", ControlaSituacionSeleccionada);
@@ -17,11 +20,17 @@
 
 	$(document).on("keyup", "#itemOPD_cm_compte_pto_vta", ControlaKeyUpComptePtoVta);
 	$(document).on("keyup", "#itemOPD_cm_compte_pto_nro", ControlaKeyUpCompteNro);
+	$(document).on("keyup", "#itemOPD_cm_cuit", ControlaKeyUpCmCuit);
+	$(document).on("keyup", "#itemOPD_cm_nombre", ControlaKeyUpCmNombre);
+	$(document).on("keyup", "#itemOPD_cm_domicilio", ControlaKeyUpCmDomicilio);
+	$(document).on("keyup", "#itemOPD_cm_fecha", ControlaKeyUpCmFecha);
+	$(document).on("keyup", "#Rel03", ControlaKeyUpRel03);
 
 	$(document).on("click", "#btnAbmAgregarItem", AbmAgregarItem);
 	$(document).on("click", "#btnAbmEditarItem", AbmEditarItem);
 	$(document).on("click", "#btnAbmEliminarItem", AbmEliminarItem);
-	$(document).on("click", "#btnAbmAceptarItem", AbmAceptar);
+	$(document).on("click", "#btnAbmAceptarItem", AbmAceptarItem);
+	$(document).on("click", "#btnAbmCancelarItem", AbmCancelarItem);
 
 	$(document).on("click", "#btnSiguiente1", btnSiguiente1);
 	$(document).on("click", "#btnAnterior2", btnAnterior2);
@@ -111,6 +120,36 @@ function ControlaKeyUpCompteNro(e) {
 	}
 }
 
+function ControlaKeyUpCmCuit(e) {
+	if (e.which == 13 || e.which == 109) {
+		$("#itemOPD_cm_nombre").trigger("focus");
+	}
+}
+
+function ControlaKeyUpCmNombre(e) {
+	if (e.which == 13 || e.which == 109) {
+		$("#itemOPD_cm_domicilio").trigger("focus");
+	}
+}
+
+function ControlaKeyUpCmDomicilio(e) {
+	if (e.which == 13 || e.which == 109) {
+		$("#listaTCompte").trigger("focus");
+	}
+}
+
+function ControlaKeyUpCmFecha(e) {
+	if ($("#itemOPD_cm_fecha").val() != "") {
+		$("#listaCtaDir").trigger("focus");
+	}
+}
+
+function ControlaKeyUpRel03(e) {
+	if (e.which == 13 || e.which == 109) {
+		$("#btnAgregarConceptoFacturado").trigger("focus");
+	}
+}
+
 function DesactivarCamposPrincipales() {
 	$("#itemOPD_cm_cuit").prop("disabled", true);
 	$("#listaCondAfip").prop("disabled", true);
@@ -139,8 +178,8 @@ function selectRegDblGrillaValores(x) {
 
 //Abro modal de seleccion de valores
 function btnAgregarValorValidar() {
-	//var app = tipoOPSelected; TODO MARCE: Descomentar esto cuando Jorge corrija el SP
-	var app = "OPP";
+	var app = tipoOPSelected; //TODO MARCE: Descomentar esto cuando Jorge corrija el SP
+	//var app = "OPP";
 	var saldo = $("#txtDiferencias").val();
 	saldo = saldo.replaceAll(".", "");
 	saldo = saldo.replace(",", ".");
@@ -158,7 +197,6 @@ function btnAnterior2() {
 	var data = {};
 	PostGenHtml(data, inicializarPaso1, function (obj) {
 		$("#divDetalle").html(obj);
-		//CargarGrillasAdicionales();
 		CargarMascaras();
 		EstadoBotonesABM(AbmAction.SUBMIT, false);
 		$(".activable").prop("disabled", true);
@@ -281,7 +319,7 @@ function AbmEliminarItem() {
 	accion = AbmAction.BAJA;
 }
 
-function AbmAceptar() {
+function AbmAceptarItem() {
 	switch (accion) {
 		case AbmAction.ALTA:
 			AgregarItemObligaciones();
@@ -296,7 +334,7 @@ function AbmAceptar() {
 	}
 }
 
-function AbmCancelar() {
+function AbmCancelarItem() {
 	LimpiarCamposDeEdicion();
 	CargarGrillasAdicionales(true);
 	$(".activable").prop("disabled", true);
@@ -346,6 +384,7 @@ function AgregarItemObligaciones() {
 						if (obj.error === true) {
 							AbrirMensaje("ATENCIÓN", obj.msg, function () {
 								$("#msjModal").modal("hide");
+								CerrarWaiting();
 								return true;
 							}, false, ["Aceptar"], "error!", null);
 						}
@@ -629,11 +668,21 @@ function ControlalistaTipoOPSelected() {
 }
 
 function ControlalistaTCompteSelected() {
-	//var tco_id = $("#listaTCompte option:selected").val()
-	//if (tco_id != "") {
-	//	//Grilla de Otros Tributos
-	//	CargarGrillaOtrosTributos();
-	//}
+	if ($("#listaTCompte").val() != "") {
+		$("#itemOPD_cm_compte_pto_vta").trigger("focus");
+	}
+}
+
+function ControlalistaCondAfipSelected() {
+	if ($("#listaCondAfip").val() != "") {
+		$("#itemOPD_cm_cuit").trigger("focus");
+	}
+}
+
+function ControlalistaCtaDirSelected() {
+	if ($("#listaCtaDir").val() != "") {
+		$("#Rel03").trigger("focus");
+	}
 }
 
 function CargarListaTiposDeOrdenDePago() {
@@ -788,14 +837,6 @@ function tableUpDownArrow() {
 				else if (pos.r == nbRows)
 					pos.r = nbRows;
 
-				//if (pos.c == 8 && cellIndexTemp < pos.c) //moviendome desde la columna 'pedido bultos' hacia la derecha, la cual no es editable, debo saltar a la siguiente
-				//	pos.c = 9;
-				//if (pos.c == 6 && cellIndexTemp > pos.c) //moviendome desde la columna 'pedido bultos' hacia la izquierda, la cual no es editable, debo saltar a la siguiente
-				//	pos.c = 15;
-				//if (pos.c == 8 && cellIndexTemp > pos.c) //moviendome desde la columna 'precio lista' hacia la izquierda, la cual no es editable, debo saltar a la siguiente
-				//	pos.c = 7;
-				//if (pos.c == 16 && cellIndexTemp < pos.c) //moviendome desde la columna 'boni' hacia la derecha, la cual no es editable, debo saltar a la siguiente
-				//	pos.c = 7;
 				nxFocus = myTable.rows[pos.r - 1].cells[pos.c]
 
 				if (nxFocus
@@ -818,9 +859,6 @@ function tableUpDownArrow() {
 			event.preventDefault();
 	}
 }
-
-
-function btnAbmCancelar_click() { }
 
 function CalcularIva(e) {
 	var sit_id = $("#listaIvaSit option:selected").val()
