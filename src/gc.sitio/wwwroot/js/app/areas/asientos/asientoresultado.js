@@ -604,7 +604,7 @@ function confirmarAjustesRes() {
                             function () {
                                 $("#msjModal").modal("hide");
                                 // Actualizar la vista
-                                buscaraaj();
+                                window.location.href = homeAResUrl; // Redirigir a la página principal de asientos de resultado GP
                             },
                             false,
                             ["Aceptar"],

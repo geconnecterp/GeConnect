@@ -816,7 +816,7 @@ function confirmarAjustes() {
                             function () {
                                 $("#msjModal").modal("hide");
                                 // Actualizar la vista
-                                buscaraaj();
+                                window.location.href = homeAsAjUrl; // Redirigir a la página principal de asientos de ajuste
                             },
                             false,
                             ["Aceptar"],

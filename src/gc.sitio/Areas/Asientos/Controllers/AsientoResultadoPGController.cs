@@ -51,7 +51,7 @@ namespace gc.sitio.Areas.Asientos.Controllers
                 if (!VerificarAutenticacion(out IActionResult redirectResult))
                     return redirectResult;
 
-                string titulo = "Asiento por Ajuste de Inflación";
+                string titulo = "Asiento por Ajuste de Resultado PG";
                 ViewData["Titulo"] = titulo;
 
                 #region Gestor Impresion - Inicializacion de variables
@@ -183,8 +183,10 @@ namespace gc.sitio.Areas.Asientos.Controllers
                     "ASC"  // Dirección de ordenamiento por defecto
                 );
 
+                var ejer = Ejercicios.First(x => x.Eje_nro == eje_nro);
+                
                 // Configurar leyenda para el grid
-                ViewBag.Leyenda = $"Ejercicio {eje_nro} - Asientos de Resultado PG";
+                ViewBag.Leyenda = $"Ej: {eje_nro} - Asientos de Resultado PG - D:{ejer.Eje_desde.ToShortDateString()} H:{ejer.Eje_hasta.ToShortDateString()} ";
 
                 // Devolver la vista parcial con el grid
                 return PartialView("_gridres", grid);
