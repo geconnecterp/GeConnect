@@ -185,8 +185,11 @@ namespace gc.sitio.Areas.Asientos.Controllers
                     "ASC"  // Dirección de ordenamiento por defecto
                 );
 
+
+                var ejer = Ejercicios.First(x => x.Eje_nro == eje_nro);
+
                 // Configurar leyenda para el grid
-                ViewBag.Leyenda = $"Ejercicio {eje_nro} - Asientos de Ajuste por Inflación";
+                ViewBag.Leyenda = $"Ej: {eje_nro} Asientos de Ajuste por Inflación - D:{ejer.Eje_desde.ToShortDateString()} H:{ejer.Eje_hasta.ToShortDateString()} ";
 
                 // Devolver la vista parcial con el grid
                 return PartialView("_gridaaj", grid);
