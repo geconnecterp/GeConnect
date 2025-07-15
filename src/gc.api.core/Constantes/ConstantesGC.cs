@@ -91,6 +91,7 @@ namespace gc.api.core.Constantes
 			public const string SP_CUENTA_BUSQUEDA = "dbo.spgeco_c_busqueda_lista";
             public const string SP_CUENTA_DATO = "SPGECO_C_Contacto_Datos";
 			public const string SP_CUENTA_OBS_DATO = "SPGECO_C_Obs_Datos";
+			public const string SP_CUENTA_DATOS_X_CUIT = "SPGECO_C_Datos_x_CUIT";
 
 			public const string SP_TR_AUTORIZACIONES_PENDIENTES = "SPGECO_TR_Pendientes";
             public const string SP_TR_Lista_BOX = "SPGECO_TR_Lista_BOX";

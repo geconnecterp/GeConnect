@@ -142,4 +142,11 @@ namespace gc.infraestructura.Dtos.Almacen
         public string Cta_Email { get; set; } = string.Empty;
         public char Tc_Id { get; set; }        
     }
+
+	public class CuentaDatoCuitDto : Dto
+	{
+		public string Cta_id { get; set; } = string.Empty;
+		public string Nombre { get; set; } = string.Empty;
+		public string Domicilio { get; set; } = string.Empty;
+	}
 }

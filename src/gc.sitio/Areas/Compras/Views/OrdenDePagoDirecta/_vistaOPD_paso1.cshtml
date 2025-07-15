@@ -31,6 +31,7 @@
 	}
 </style>
 @Html.Hidden("Paso")
+@Html.Hidden("CtaId")
 <div class="row mt-2">
 	<div class="col-md-5">
 		<div class="input-group input-group-sm mt-1" id="divProveedorSeleccionado">
@@ -95,8 +96,8 @@
 			<div class="row justify-content-sm-center mb-1">
 				<div class="col-md-2">
 					<div class="d-flex justify-content-sm-center">
-						<button id="btnAnterior1" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Anterior" disabled>
-							<i class="bx bx-arrow-to-left bx-xs"></i>
+						<button id="btnCancelar1" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar">
+							<i class="bx bx-x-circle"></i>
 						</button>
 						<button id="btnSiguiente1" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Siguiente">
 							<i class="bx bx-arrow-to-right"></i>
@@ -198,6 +199,7 @@
 							@Html.Hidden("Rel03Item")
 						</div>
 					</div>
+					<input type="hidden" asp-for="itemOPD.orden" class="form-control activable inputEditable"/>
 				</div>
 				<div class="row mt-1" id="divConceptosFacturados">
 					<div class="row">

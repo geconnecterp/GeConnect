@@ -42,9 +42,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private readonly IProducto2Servicio _producto2Servicio;
 		private readonly ITipoTributoServicio _tipoTributoServicio;
 		private readonly ITipoGastoServicio _tipoGastoServicio;
+		private readonly ICuentaServicio _cuentaServicio;
 		public OrdenDePagoDirectaController(ITipoOrdenDePagoServicio tipoOrdenDePagoServicio, ITipoComprobanteServicio tipoComprobanteServicio, ICondicionAfipServicio condicionAfipServicio,
 											IOrdenDePagoServicio ordenDePagoServicio, IProducto2Servicio producto2Servicio, ITipoTributoServicio tipoTributoServicio,
-											ITipoGastoServicio tipoGastoServicio, IDocManagerServicio docManager, IOptions<DocsManager> docsManager,
+											ITipoGastoServicio tipoGastoServicio, IDocManagerServicio docManager, IOptions<DocsManager> docsManager, ICuentaServicio cuentaServicio,
 											IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<OrdenDePagoDirectaController> logger) : base(options, contexto, logger)
 		{
 			_settings = options.Value;
@@ -55,6 +56,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			_producto2Servicio = producto2Servicio;
 			_tipoTributoServicio = tipoTributoServicio;
 			_tipoGastoServicio = tipoGastoServicio;
+			_cuentaServicio = cuentaServicio;
 
 			//PARA MODULO DE IMPRESION
 			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
@@ -276,7 +278,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					cantidad = 1,
 					iva = Math.Round(iva, 2),
 					iva_alicuota = Math.Round(ali, 2),
-					iva_situacion = sit,
+					iva_situacion = sit ?? "N",
 					subtotal = Math.Round(subt, 2),
 					total = Math.Round(tot, 2)
 				};
@@ -777,22 +779,27 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (listaAux != null && listaAux.Count > 0)
 					return Json(new { error = true, warn = true, msg = $"Ya existe un comprobante con los datos ingresados." });
 
-				//var tco = TiposComprobanteLista.Where(x => x.tco_id.Equals(request.tco_id)).FirstOrDefault();
-				//var signo = tco != null && tco.tco_tipo.Equals("NC") ? -1 : 1;
+				var orden = 0;
+				if (ListaOrdenDePagoDirecta == null || ListaOrdenDePagoDirecta.Count <= 0)
+					orden = 1;
+				else
+					orden = ListaOrdenDePagoDirecta.Max(x => x.opd.orden) + 1;
 				var nuevoComprobante = new ComprobanteDto
-				{
-					afip_id = request.afip_id,
-					ctag_id = request.ctag_id,
-					cm_cuit = request.cm_cuit,
-					cm_fecha = request.cm_fecha,
-					cm_compte = request.cm_compte,
-					cm_nombre = request.cm_nombre,
-					tco_id = request.tco_id,
-					tco_desc = request.tco_desc,
-					ctag_motivo = request.ctag_motivo,
-					ctag_desc = request.ctag_desc,
-					cm_domicilio = request.cm_domicilio,
-					cm_total = ListaConceptoFacturado.Select(x => x.total).Sum() + ListaOtrosTributos.Select(x => x.importe).Sum()
+					{
+						afip_id = request.afip_id,
+						ctag_id = request.ctag_id,
+						cm_cuit = request.cm_cuit,
+						cm_fecha = request.cm_fecha,
+						cm_compte = request.cm_compte,
+						cm_nombre = request.cm_nombre,
+						tco_id = request.tco_id,
+						tco_desc = request.tco_desc,
+						ctag_motivo = request.ctag_motivo,
+						ctag_desc = request.ctag_desc,
+						cm_domicilio = request.cm_domicilio,
+						cm_total = ListaConceptoFacturado.Select(x => x.total).Sum() + ListaOtrosTributos.Select(x => x.importe).Sum(),
+						signo = ObtenerSigno(request.tco_id),
+						orden = orden
 				};
 				ListaConceptoFacturado.ForEach(x => { x.afip_id = request.afip_id; x.cm_cuit = request.cm_cuit; x.tco_id = request.tco_id; x.cm_compte = request.cm_compte; });
 				//************
@@ -838,12 +845,16 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (string.IsNullOrEmpty(request.afip_id) || string.IsNullOrEmpty(request.cm_cuit) || string.IsNullOrEmpty(request.cm_compte) || string.IsNullOrEmpty(request.tco_id))
 					return Json(new { error = true, warn = true, msg = $"Debe completar los campos obligatorios." });
 
-				var listaAux = ListaOrdenDePagoDirecta.Where(x => x.opd.afip_id.Equals(request.afip_id) && x.opd.cm_cuit.Equals(request.cm_cuit) && x.opd.cm_compte.Equals(request.cm_compte) && x.opd.tco_id.Equals(request.tco_id)).ToList();
+				var listaAux = ListaOrdenDePagoDirecta.Where(x => x.opd.orden.Equals(request.orden)).ToList();
 				if (listaAux == null || listaAux.Count <= 0)
 					return Json(new { error = true, warn = true, msg = $"No existe el comprobante con los datos ingresados." });
 
 				var listaTemp = ListaOrdenDePagoDirecta;
-				var itemTemp = listaTemp.Where(x => x.opd.afip_id.Equals(request.afip_id) && x.opd.cm_cuit.Equals(request.cm_cuit) && x.opd.cm_compte.Equals(request.cm_compte) && x.opd.tco_id.Equals(request.tco_id)).First();
+				var itemTemp = listaTemp.Where(x => x.opd.orden.Equals(request.orden)).First();
+				itemTemp.opd.afip_id = request.afip_id;
+				itemTemp.opd.cm_compte = request.cm_compte;
+				itemTemp.opd.tco_id = request.tco_id;
+				itemTemp.opd.cm_cuit = request.cm_cuit;
 				itemTemp.opd.ctag_id = request.ctag_id;
 				itemTemp.opd.cm_fecha = request.cm_fecha;
 				itemTemp.opd.cm_nombre = request.cm_nombre;
@@ -930,7 +941,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				{
 					var listaTem2 = new List<ComprobanteDto>();
 					listaTem2.AddRange([.. ListaOrdenDePagoDirecta.Select(x => x.opd)]);
-					tot_ObligacionesCancelar = listaTem2.Sum(x => x.cm_total);
+					tot_ObligacionesCancelar = listaTem2.Sum(x => x.cm_total * x.signo);
 				}
 
 				//Créditos
@@ -992,7 +1003,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 						cm_compte_pto_vta = ptoVta,
 						cm_compte_pto_nro = ptoNro,
 						cm_domicilio = item.opd.cm_domicilio,
-
+						orden = item.opd.orden
 					},
 				};
 
@@ -1233,6 +1244,26 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		[HttpPost]
+		public JsonResult ValidarAntesDeCancelar()
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return Json(new { error = true, warn = false, msg = $"La sesión ha finalizado, debe reingresar al sistema." });
+
+				if (ListaOrdenDePagoDirecta == null || ListaOrdenDePagoDirecta.Count <= 0) //Si esta vacío, cancelo
+					return Json(new { error = true, warn = false, msg = string.Empty });
+				else
+					return Json(new { error = false, warn = false, msg = $"Desea cancelar la carga de la Orden de Pago Directa?." });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.Message });
+			}
+		}
+
+		[HttpPost]
 		public IActionResult BuscarTiposComptes(string condAfip)
 		{
 			var lista = ComboTipoComprobante(condAfip, TipoOPSelected);
@@ -1257,6 +1288,27 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var top = OPMotivoCtagDtoLista.Where(x => x.ctag_motivo.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
 			var tipos = top.Select(x => new ComboGenDto { Id = x.ctag_motivo, Descripcion = x.ctag_motivo });
 			return Json(tipos);
+		}
+
+		[HttpPost]
+		public JsonResult BuscarCuentaPorCuit(string cuit)
+		{
+			try
+			{
+				var cta = _cuentaServicio.ObtenerCuentaPorCuit(cuit, TokenCookie);
+				if (cta == null || cta.Count <= 0)
+					return Json(new { error = true, warn = false, msg = $"No se ha encontrado una cuenta asociada al CUIT: {cuit}." });
+				var cuenta = cta.FirstOrDefault();
+				if (cuenta == null)
+					return Json(new { error = true, warn = false, msg = $"No se ha encontrado una cuenta asociada al CUIT: {cuit}." });
+				if (cuenta.Cta_id == "")
+					return Json(new { error = true, warn = false, msg = $"No se ha encontrado una cuenta asociada al CUIT: {cuit}." });
+				return Json(new { error = false, warn = false, msg = string.Empty, data = new { cta_id = cuenta.Cta_id, nombre = cuenta.Nombre, domicilio = cuenta.Domicilio } });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.Message });
+			}
 		}
 
 		/// <summary>
@@ -1302,10 +1354,16 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var listaConcepto = new List<Confirmar_ConceptoModel>();
 			var listaOtro = new List<Confirmar_OtroModel>();
 			var listaValor = new List<Confirmar_ValorModel>();
+
 			foreach (var item in ListaOrdenDePagoDirecta)
 			{
 				if (item.opd == null)
 					continue;
+
+				InicializarGrillaTotales();
+				var req = new CargarComprobanteOPDRequest() { afip_id = item.opd.afip_id, cm_compte = item.opd.cm_compte, cm_cuit = item.opd.cm_cuit, tco_id = item.opd.tco_id };
+				ActualizarGrillaTotales_OtrosTributos(req, true);
+				ActualizarGrillaTotales_ConceptosFacturados(req, true);
 
 				//ENCABEZADO
 				var encabezado = new Confirmar_EncabezadoModel
@@ -1335,7 +1393,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				//CONCEPTOS
 				if (item.listaConceptoFacturado != null && item.listaConceptoFacturado.Count > 0)
-				{ 
+				{
 					foreach (var conceptoItem in item.listaConceptoFacturado)
 					{
 						if (conceptoItem == null)
@@ -1443,7 +1501,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 						cm_cuit = item.cm_cuit,
 						cm_compte = item.cm_compte,
 						tco_id = item.tco_id,
-						signo = ObtenerSigno(item.tco_id)
+						signo = ObtenerSigno(item.tco_id),
+						orden = item.orden,
 					};
 					listaTemp.Add(opd);
 				}

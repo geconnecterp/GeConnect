@@ -36,6 +36,6 @@ namespace gc.sitio.core.Servicios.Contratos
         List<CompteValorizaCostoPorProductoDto> ObtenerComprobanteValorizaCostoOC(CompteValorizaCostoOcRequest request, string token);
 		Task<List<CuentaDatoDto>> ObtenerCuentaDatos(string cta, char tipo, string token);
 		List<CuentaObsDto> ObtenerCuentaObs(string cta_id, char to_id, string token);
-
+        List<CuentaDatoCuitDto> ObtenerCuentaPorCuit(string cuit, string token);
 	}
 }

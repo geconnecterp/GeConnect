@@ -124,6 +124,21 @@ namespace gc.api.Controllers.Almacen
 		}
 
 		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaDatoCuitDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetCuentaPorCuit(string cuit)
+		{
+			ApiResponse<List<CuentaDatoCuitDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _cuentasSv.GetCuentaPorCuit(cuit);
+
+			response = new ApiResponse<List<CuentaDatoCuitDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaDto>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]

@@ -40,6 +40,8 @@ namespace gc.infraestructura.Dtos.Almacen.Request
 		public decimal cm_ii { get; set; } = 0.00M;
 		public decimal cm_percepciones { get; set; } = 0.00M;
 		public decimal cm_total { get; set; } = 0.00M;
+		public int signo { get; set; } = 1;
+		public int orden { get; set; } = 0;
 	}
 
 	public class Encabezado

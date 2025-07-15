@@ -64,7 +64,8 @@
 @section scripts {
 	<script type="text/javascript">
 		var tipoOPSelected = "";
-		var valorANombreDe = "";
+		//var valorANombreDe = "";
+		var aNombreDe = "";
 		var autoComRel03Url = "@Url.Action("BuscarMotivos", "ordendepagodirecta", new { area = "Compras" })";
 		var buscarTiposDeOrdenDePagoUrl = "@Url.Action("BuscarTiposDeOrdenDePago", "ordendepagodirecta", new { area = "Compras" })";
 		var aceptarDesdeSeleccionarTipoDeOPUrl = "@Url.Action("AceptarDesdeSeleccionarTipoDeOP", "ordendepagodirecta", new { area = "Compras" })";
@@ -95,6 +96,8 @@
 		var cargarValoresUrl = "@Url.Action("CargarValores", "ordendepagodirecta", new { area = "Compras" })";
 		var actualizarGrillaValoresUrl = "@Url.Action("ActualizarGrillaValores", "ordendepagodirecta", new { area = "Compras" })";
 		var confirmarOpdUrl = "@Url.Action("ConfirmarOpd", "ordendepagodirecta", new { area = "Compras" })";
+		var validarAntesDeCancelarUrl = "@Url.Action("ValidarAntesDeCancelar", "ordendepagodirecta", new { area = "Compras" })";
+		var buscarCuentaPorCuitUrl = "@Url.Action("BuscarCuentaPorCuit", "ordendepagodirecta", new { area = "Compras" })";
 
 		/*URL para componente de Seleccion de Valores*/
 		var abrirComponenteDeSeleccionDeValoresUrl = "@Url.Action("AbrirComponente", "selecciondevalores", new { area = "ControlComun" })";

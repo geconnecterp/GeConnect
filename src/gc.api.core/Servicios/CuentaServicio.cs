@@ -307,6 +307,20 @@ namespace gc.api.core.Servicios
 				return res;
 		}
 
+		public List<CuentaDatoCuitDto> GetCuentaPorCuit(string cuit)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_CUENTA_DATOS_X_CUIT;
+			var ps = new List<SqlParameter>()
+			{
+					new("@cuit", cuit),
+			};
+			var res = _repository.EjecutarLstSpExt<CuentaDatoCuitDto>(sp, ps, true);
+			if (res.Count == 0)
+				return [];
+			else
+				return res;
+		}
+
 		public List<RPROrdenDeCompraDto> GetOCporCuenta(string cta_id)
         {
             var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_OC;

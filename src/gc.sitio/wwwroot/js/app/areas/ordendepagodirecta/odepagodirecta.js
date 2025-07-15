@@ -35,6 +35,9 @@
 	$(document).on("click", "#btnSiguiente1", btnSiguiente1);
 	$(document).on("click", "#btnAnterior2", btnAnterior2);
 	$(document).on("click", "#btnConfirmar", btnConfirmar);
+	$(document).on("click", "#btnCancelar1", btnCancelar1);
+	$(document).on("click", "#btnCancelar2", btnCancelar2);
+	//
 
 	$(document).on("click", "#btnAgregarValor", btnAgregarValorValidar);
 
@@ -89,13 +92,7 @@
 	$(".activable").prop("disabled", true);
 	EstadoBotonesABM(AbmAction.ALTA, false);
 	$("#btnCancel").on("click", function () {
-		LimpiarVariablesDeSesion(true);
-		ActualizarTotalesSuperiores();
-		setTimeout(() => {
-			$("#divFiltro").collapse("show");
-			$("#divDetalle").collapse("hide");
-			CerrarWaiting();
-		}, 1000);
+		CancelarCarga();
 	});
 
 	$("#btnImprimirTemp").on("click", function () {
@@ -136,7 +133,7 @@ function ControlaKeyUpCompteNro(e) {
 
 function ControlaKeyUpCmCuit(e) {
 	if (e.which == 13 || e.which == 109) {
-		$("#itemOPD_cm_nombre").trigger("focus");
+		BuscarCuentaPorCuit($("#itemOPD_cm_cuit").inputmask('unmaskedvalue'));
 	}
 }
 
@@ -200,7 +197,7 @@ function btnAgregarValorValidar() {
 	var importe = 0
 	if (saldoN != NaN && saldoN > 0)
 		importe = saldoN;
-	var valor_a_nombre_de = valorANombreDe;
+	var valor_a_nombre_de = aNombreDe;
 	var valores = [];
 	var data = { app, importe, valor_a_nombre_de, valores };
 	invocarModalDeSeleccionDeValores(data);
@@ -244,6 +241,80 @@ function ImprimirOPD_Generada(opCompte, ctaId) {
 	invocacionGestorDoc({});
 }
 
+function CancelarCarga() {
+	LimpiarVariablesDeSesion(true);
+	ActualizarTotalesSuperiores();
+	setTimeout(() => {
+		$("#divFiltro").collapse("show");
+		$("#divDetalle").collapse("hide");
+		CerrarWaiting();
+	}, 1000);
+}
+
+function ValidarAntesDeCancelar() {
+	var data = {};
+	PostGen(data, validarAntesDeCancelarUrl, function (obj) {
+		if (obj.error === true) {
+			CancelarCarga();
+		}
+		else {
+			AbrirMensaje("ATENCIÓN!!", obj.msg, function (e) {
+				$("#msjModal").modal("hide");
+				switch (e) {
+					case "SI":
+						CancelarCarga();
+						break;
+					case "NO":
+						break;
+					default: //NO
+						break;
+				}
+				return true;
+
+			}, true, ["Aceptar", "Cancelar"], "question!", null);
+		}
+	});
+}
+
+function btnCancelar1() {
+	ValidarAntesDeCancelar();
+}
+
+function btnCancelar2() {
+	ValidarAntesDeCancelar();
+}
+
+function BuscarCuentaPorCuit(cuit) {
+	AbrirWaiting("Buscando datos de la cuenta por CUIT...");
+	var data = { cuit: cuit };
+	PostGen(data, buscarCuentaPorCuitUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			ControlaMensajeError(obj.msg);
+			$("#itemOPD_cm_nombre").val("");
+			$("#itemOPD_cm_domicilio").val("");
+			aNombreDe = "";
+			$("#itemOPD_cm_cuit").trigger("focus");
+		}
+		else {
+			if (obj.data != null) {
+				$("#CtaId").val(obj.data.cta_id);
+				$("#itemOPD_cm_nombre").val(obj.data.nombre);
+				$("#itemOPD_cm_domicilio").val(obj.data.domicilio);
+				aNombreDe = obj.data.nombre;
+				$("#itemOPD_cm_nombre").trigger("focus");
+			}
+			else {
+				ControlaMensajeError("No se encontró una cuenta asociada al CUIT ingresado.");
+				$("#itemOPD_cm_nombre").val("");
+				$("#itemOPD_cm_domicilio").val("");
+				aNombreDe = "";
+				$("#itemOPD_cm_cuit").trigger("focus");
+			}
+		}
+	});
+}
+
 function btnConfirmar() {
 	if (ValidarAntesDeConfirmar()) {
 		AbrirMensaje("ATENCIÓN!!", "¿Confirmar la Orden de Pago Directa?", function (e) {
@@ -254,6 +325,7 @@ function btnConfirmar() {
 					var data = {};
 					PostGen(data, confirmarOpdUrl, function (obj) {
 						if (obj.error === true) {
+							CerrarWaiting();
 							AbrirMensaje("ATENCIÓN", obj.msg, function () {
 								$("#msjModal").modal("hide");
 								return true;
@@ -325,7 +397,7 @@ function AbmEditarItem() {
 	$(".activable").prop("disabled", false);
 	$("#btnAgregarConceptoFacturado").prop("disabled", false);
 	$("#btnAgregarOtroTributo").prop("disabled", false);
-	DesactivarCamposPrincipales();
+	//DesactivarCamposPrincipales();
 	desactivarGrilla("tbListaObligaciones_Paso1");
 	activarGrilla("tbGridConceptoFacturado");
 	activarGrilla("tbGridOtroTributo");
@@ -772,7 +844,8 @@ function CargarItemsObligacionDesdeElementoSeleccionado(x) {
 	PostGenHtml(data, cargarDatosDeComprobanteSeleccionadoUrl, function (obj) {
 		$("#divDatosComprobante").html(obj);
 		$("#Rel03").val($("#itemOPD_ctag_motivo").val());
-		DesactivarCamposPrincipales();
+		//DesactivarCamposPrincipales();
+		$(".activable").prop("disabled", true);
 		CargarGrillaOtrosTributosDesdeSeleccion(afip_id, cm_cuit, tco_id, cm_compte);
 		CargarGrillaConceptosFacturadosDesdeSeleccion(afip_id, cm_cuit, tco_id, cm_compte);
 		setTimeout(() => {
@@ -987,8 +1060,9 @@ function ObtenerEncabezado() {
 	var ctag_id = $("#listaCtaDir").val();
 	var ctag_desc = $("#listaCtaDir option:selected").text();
 	var ctag_motivo = $("#Rel03").val();
+	var orden = $("#itemOPD_orden").val();
 	var encabezado = {
-		afip_id, cm_cuit, cm_nombre, cm_domicilio, tco_id, tco_desc, cm_compte, cm_fecha, ctag_id, ctag_desc, ctag_motivo
+		afip_id, cm_cuit, cm_nombre, cm_domicilio, tco_id, tco_desc, cm_compte, cm_fecha, ctag_id, ctag_desc, ctag_motivo, orden
 	};
 	return encabezado;
 }

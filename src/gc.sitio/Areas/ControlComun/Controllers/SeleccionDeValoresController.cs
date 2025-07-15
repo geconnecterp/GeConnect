@@ -25,7 +25,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 		private readonly ICuentaServicio _cuentaServicio;
 
 		public SeleccionDeValoresController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<SeleccionDeValoresController> logger,
-											ICuentaServicio cuentaServicio,ITipoCuentaFinServicio tipoCuentaFinServicio, IFinancieroServicio financieroServicio) : base(options, contexto, logger)
+											ICuentaServicio cuentaServicio, ITipoCuentaFinServicio tipoCuentaFinServicio, IFinancieroServicio financieroServicio) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
 			_tipoCuentaFinServicio = tipoCuentaFinServicio;
@@ -273,10 +273,15 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 					return new Resultado() { Exito = false, Mensaje = "El/Los elemento/s que esta intentando agregar ya existe/n." };
 
 				var listaAux = new List<ValoresDesdeObligYCredDto>();
-
+				var orden = 0;
+				if (OPValoresDesdeObligYCredLista == null || OPValoresDesdeObligYCredLista.Count <= 0)
+					orden = 1;
+				else
+					orden = OPValoresDesdeObligYCredLista.Max(x => x.orden) + 1;
 				foreach (var item in req.DataObject)
 				{
 					var objAux = item;
+					objAux.orden = orden;
 					ObtenerConceptoValor(objAux);
 					listaAux.Add(objAux);
 				}

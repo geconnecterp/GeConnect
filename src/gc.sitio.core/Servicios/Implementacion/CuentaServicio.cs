@@ -48,6 +48,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string ObtenerCompteValorizaCostoOC = "/GetCompteValorizaCostoOC";
 		private const string GetCuentaDatos = "/GetCuentaDatos";
 		private const string GetCuentaObs = "/GetCuentaObs";
+		private const string GetCuentaPorCuit = "/GetCuentaPorCuit";
 		//
 		private readonly AppSettings _appSettings;
         public CuentaServicio(IOptions<AppSettings> options, ILogger<CuentaServicio> logger) : base(options, logger)
@@ -152,6 +153,44 @@ namespace gc.sitio.core.Servicios.Implementacion
 						return [];
 					}
 					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<CuentaObsDto>>>(stringData)
+						?? throw new Exception("Error al deserializar la respuesta de la API.");
+					return apiResponse.Data;
+				}
+				else
+				{
+					string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+					return [];
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogWarning($"Algo no fue bien. Error interno {ex.Message}");
+				return [];
+			}
+		}
+
+		public List<CuentaDatoCuitDto> ObtenerCuentaPorCuit(string cuit, string token)
+		{
+			try
+			{
+				ApiResponse<List<CuentaDatoCuitDto>> apiResponse;
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{GetCuentaPorCuit}?cuit={cuit}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						_logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda cuit:{cuit}");
+						return [];
+					}
+					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<CuentaDatoCuitDto>>>(stringData)
 						?? throw new Exception("Error al deserializar la respuesta de la API.");
 					return apiResponse.Data;
 				}
