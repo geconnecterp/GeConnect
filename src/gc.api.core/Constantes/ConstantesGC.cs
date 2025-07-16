@@ -174,6 +174,8 @@ namespace gc.api.core.Constantes
             public const string SP_OP_CONFIRMAR = "SPGECO_OP_Confirmar";
 			public const string SP_OP_MOTIVOS_CTAG = "SPGECO_OP_Motivos_Ctag";
 			public const string SP_OPD_CONFIRMAR = "SPGECO_OPD_Confirmar";
+			public const string SP_OP_USU = "SPGECO_OP_Usu";
+			public const string SP_OP_LISTA = "SPGECO_OP_Lista";
 			#endregion
 
 			#region Cliente

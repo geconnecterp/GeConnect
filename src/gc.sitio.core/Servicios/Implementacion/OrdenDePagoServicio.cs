@@ -1,9 +1,12 @@
-﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra;
+using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
@@ -33,6 +36,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string GuardarOrdenDePagoAProveedor = "/ConfirmarOrdenDePagoAProveedor";
 		private const string ConsOrdPagoDetExtend = "/ConsultaOrdPagoDetExtend";
 		private const string GuardarOrdenDePagoDirecta = "/ConfirmarOrdenDePagoDirecta";
+		private const string CargarOPUsuarios = "/CargarOPUsuarios";
+		private const string OP_Lista = "/CargarOrdenDePagoConsultaLista";
 		private readonly AppSettings _appSettings;
 		public OrdenDePagoServicio(IOptions<AppSettings> options, ILogger<OrdenDePagoServicio> logger) : base(options, logger, RutaAPI)
 		{
@@ -361,6 +366,80 @@ namespace gc.sitio.core.Servicios.Implementacion
 			else
 			{
 				string stringData = response.Content.ReadAsStringAsync().Result;
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public List<OPUserDto> ObtenerOPUsuarios(DateTime f_desde, DateTime f_hasta, string token)
+		{
+			ApiResponse<List<OPUserDto>> respuesta;
+			string stringData;
+			try
+			{
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{CargarOPUsuarios}?f_desde={f_desde.ToString("yyyy-MM-dd 00:00:00")}&f_hasta={f_hasta.ToString("yyyy-MM-dd 00:00:00")}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (!string.IsNullOrEmpty(stringData))
+					{
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<OPUserDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+					}
+					else
+					{
+						throw new Exception("No se logro obtener la respuesta de la API con los datos de usuarios de op. Verifique.");
+					}
+					return respuesta.Data;
+				}
+				else
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogError($"Error al intentar obtener los datos de usuarios de op: {stringData}");
+					throw new NegocioException("Hubo un error al intentar obtener los datos de usuarios de op");
+				}
+
+			}
+			catch (NegocioException)
+			{
+				throw;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar obtener los datos de motivos de op.");
+				throw;
+			}
+		}
+
+		public async Task<(List<OrdenDePagoConsultaDto>, MetadataGrid)> CargarOrdenDePagoConsultaLista(BuscarOrdenesDePagoRequest request, string token)
+		{
+			ApiResponse<List<OrdenDePagoConsultaDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{OP_Lista}";
+
+			response = await client.PostAsync(link, contentData);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<OrdenDePagoConsultaDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+				return (apiResponse.Data ?? [], apiResponse.Meta ?? new());
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
 				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
 				return new();
 			}

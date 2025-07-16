@@ -48,6 +48,8 @@
     <Folder Include="wwwroot\archivos\" />
     <Folder Include="wwwroot\fonts\" />
     <Folder Include="wwwroot\images\logo\" />
+    <Folder Include="wwwroot\js\app\areas\ordendepagoaproveedor\" />
+    <Folder Include="wwwroot\js\app\areas\ordendepagodirecta\" />
   </ItemGroup>
 
   <ItemGroup>

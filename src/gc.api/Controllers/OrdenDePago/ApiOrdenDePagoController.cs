@@ -1,14 +1,18 @@
 ﻿using AutoMapper;
 using gc.api.core.Contratos.Servicios;
+using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
 using gc.infraestructura.Dtos.OrdenDePago.Request;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System.Net;
 using System.Reflection;
 
@@ -142,6 +146,56 @@ namespace gc.api.Controllers.OrdenDePago
 			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _ordenDePagoServicio.ConfirmarOrdenDePagoDirecta(r);
 			response = new ApiResponse<RespuestaDto>(res.First());
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<OPUserDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult CargarOPUsuarios(string f_desde, string f_hasta)
+		{
+			ApiResponse<List<OPUserDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _ordenDePagoServicio.CargarOPUsuarios(f_desde, f_hasta);
+
+			response = new ApiResponse<List<OPUserDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<OrdenDePagoConsultaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult CargarOrdenDePagoConsultaLista(BuscarOrdenesDePagoRequest request)
+		{
+			OrdenDePagoConsultaDto reg = new();
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _ordenDePagoServicio.CargarOrdenDePagoConsultaLista(request);
+			if (res.Count > 0)
+			{
+				reg = res.First();
+			}
+			// presentando en el header información basica sobre la paginación
+			var metadata = new MetadataGrid
+			{
+				TotalCount = reg.total_registros,
+				PageSize = request.Registros ?? 0,
+				CurrentPage = request.Pagina ?? 0,
+				TotalPages = reg.total_paginas,
+				HasNextPage = (request.Pagina ?? 0) < reg.total_paginas,
+				HasPreviousPage = (request.Pagina ?? 0) > 1,
+				NextPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(CargarOrdenDePagoConsultaLista)) ?? "").ToString(),
+				PreviousPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(CargarOrdenDePagoConsultaLista)) ?? "").ToString(),
+
+			};
+
+			var response = new ApiResponse<IEnumerable<OrdenDePagoConsultaDto>>(res)
+			{
+				Meta = metadata
+			};
+			Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
 			return Ok(response);
 		}
 	}

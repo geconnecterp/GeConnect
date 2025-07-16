@@ -1,0 +1,79 @@
+﻿@using static gc.infraestructura.Constantes.Constantes
+@{
+	Layout = "~/views/shared/_Layout.cshtml";
+	var filtro = new QueryFilters()
+	{
+		Rel01 = new List<string>(),
+		Rel02 = new List<string>(),
+		Rel03 = new List<ComboGenDto>(),
+		Modelo = ModeloFilter.ORDEN_DE_PAGO_CONSULTA,
+	};
+}
+
+@section styles {
+	<link rel="stylesheet" href="~/css/simplePagination.css" />
+}
+<div class="container">
+	<div class="row">
+		<div class="col-md-6">
+			<div class="d-flex justify-content-sm-around">
+				<button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
+					<i class="bx bx-filter bx-xs"></i>
+				</button>
+
+				<button class="btn btn-primary btn-sm mt-1 me-1" type="button" id="btnDetalle" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle">
+					<i class="bx bx-caret-down"></i>
+				</button>
+			</div>
+		</div>
+	</div>
+	<div class="collapse" id="divFiltro" style="">
+		<partial name="_filtroBase" model="filtro" />
+		@Html.Hidden("pagEstado", false);
+	</div>
+	<div class="collapse" id="divDetalle" style="">
+		<ul class="nav nav-tabs mt-2" role="tablist" id="tabsConsultaDeOP">
+			<li class="nav-item" role="presentation" id="tabOrdenesDePago">
+				<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-home" aria-controls="navs-top-home" aria-selected="true" id="btnTabOrdenesDePago">
+					Ordenes de Pago
+				</button>
+			</li>
+			<li class="nav-item" role="presentation" id="tabDetalleDeOP">
+				<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-profile" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1" id="btnTabDetalleDeOP">
+					Detalle
+				</button>
+			</li>
+		</ul>
+		<div class="tab-content">
+			<div class="tab-pane fade show active" id="navs-top-home" role="tabpanel">
+				<div id="divOrdenesDePago">
+				</div>
+			</div>
+			<div class="tab-pane fade" id="navs-top-profile" role="tabpanel">
+				<div id="divDetalleDeOP">
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section scripts {
+	<script type="text/javascript">
+		var totalRegs = 0;
+		var pagRegs = 0;
+		var pags = 0;
+		var pagina = 1;
+		var search = "";
+		var opIdSeleccionado = "";
+		var funcCallBack = "BuscarOrdenesDePago";
+		var autoComRel01Url = "@Url.Action("BuscarProvs", "ordendepagoconsulta", new { area = "Compras" })";
+		var autoComRel03Url = "@Url.Action("BuscarTipos", "ordendepagoconsulta", new { area = "Compras" })";
+		var autoComRel02Url = "@Url.Action("BuscarUsuarios", "ordendepagoconsulta", new { area = "Compras" })";
+		var buscarOrdenesDePagoURL = "@Url.Action("BuscarOrdenesDePago", "ordendepagoconsulta", new { area = "Compras" })";
+		var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "ordendepagoconsulta", new { area = "Compras" })";
+		var actualizarListaDeUsuariosOPURL = "@Url.Action("ActualizarListaDeUsuariosOP", "ordendepagoconsulta", new { area = "Compras" })";
+	</script>
+
+	<script src="~/js/plugins/jquery.simplePagination.js"></script>
+	<script src="~/js/app/areas/ordendepago/odepagoconsulta.js"></script>
+}

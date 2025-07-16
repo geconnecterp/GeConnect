@@ -1,4 +1,6 @@
 ﻿using gc.api.core.Entidades;
+using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
 using gc.infraestructura.Dtos.OrdenDePago.Request;
@@ -15,5 +17,7 @@ namespace gc.api.core.Contratos.Servicios
 		List<RespuestaDto> ConfirmarOrdenDePagoAProveedor(ConfirmarOPaProveedorRequest request);
 		List<OPMotivoCtagDto> CargarOPMotivosCtag(string opt_id);
 		List<RespuestaDto> ConfirmarOrdenDePagoDirecta(ConfirmarOrdenDePagoDirectaRequest request);
+		List<OPUserDto> CargarOPUsuarios(string f_desde, string f_hasta);
+		List<OrdenDePagoConsultaDto> CargarOrdenDePagoConsultaLista(BuscarOrdenesDePagoRequest request);
 	}
 }

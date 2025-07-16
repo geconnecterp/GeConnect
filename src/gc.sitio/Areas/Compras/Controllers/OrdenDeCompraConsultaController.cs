@@ -35,7 +35,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 		public IActionResult Index()
 		{
-			MetadataGrid metadata;
 			try
 			{
 				var auth = EstaAutenticado;

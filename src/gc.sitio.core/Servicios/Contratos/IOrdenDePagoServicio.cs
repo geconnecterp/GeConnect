@@ -1,4 +1,7 @@
-﻿using gc.infraestructura.Dtos.Consultas;
+﻿using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.Request;
+using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
 using gc.infraestructura.Dtos.OrdenDePago.Request;
@@ -16,5 +19,7 @@ namespace gc.sitio.core.Servicios.Contratos
 		List<ConsOrdPagoDetExtendDto> ConsultaOrdPagoDetExtend(string op_compte, string token);
 		List<OPMotivoCtagDto> CargarOPMotivosCtag(string opt_id, string token);
 		RespuestaGenerica<RespuestaDto> ConfirmarOrdenDePagoDirecta(ConfirmarOrdenDePagoDirectaRequest r, string token);
+		List<OPUserDto> ObtenerOPUsuarios(DateTime f_desde, DateTime f_hasta, string token);
+		Task<(List<OrdenDePagoConsultaDto>, MetadataGrid)> CargarOrdenDePagoConsultaLista(BuscarOrdenesDePagoRequest request, string token);
 	}
 }

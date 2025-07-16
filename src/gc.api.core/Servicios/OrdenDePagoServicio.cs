@@ -3,6 +3,8 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
 using gc.infraestructura.Dtos.OrdenDePago.Request;
@@ -147,6 +149,107 @@ namespace gc.api.core.Servicios
 			};
 			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 			return listaTemp;
+		}
+
+		public List<OPUserDto> CargarOPUsuarios(string f_desde, string f_hasta)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OP_USU;
+			var ps = new List<SqlParameter>()
+			{
+				new("@desde", f_desde),
+				new("@hasta", f_hasta)
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<OPUserDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<OrdenDePagoConsultaDto> CargarOrdenDePagoConsultaLista(BuscarOrdenesDePagoRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OP_LISTA;
+			var ps = new List<SqlParameter>
+			{
+				new("@fecha_d", request.Date1),
+				new("@fecha_h", request.Date2)
+			};
+			if (request.Rel01 != null && request.Rel01.Count > 0)
+			{
+				ps.Add(new SqlParameter("@prov", true));
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in request.Rel01)
+				{
+					if (first)
+					{
+						first = false;
+					}
+					else
+					{
+						sb.Append(',');
+					}
+					sb.Append(item);
+				}
+
+				ps.Add(new SqlParameter("@prov_list", sb.ToString() + ','));
+			}
+			else
+			{
+				ps.Add(new SqlParameter("@prov", false));
+			}
+
+			if (request.Rel02 != null && request.Rel02.Count > 0)
+			{
+				ps.Add(new SqlParameter("@tipo", true));
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in request.Rel02)
+				{
+					if (first)
+					{
+						first = false;
+					}
+					else
+					{
+						sb.Append(',');
+					}
+					sb.Append(item);
+				}
+
+				ps.Add(new SqlParameter("@tipo_list", sb.ToString()));
+			}
+			else
+			{
+				ps.Add(new SqlParameter("@tipo", false));
+			}
+
+			if (request.Rel03 != null && request.Rel03.Count > 0)
+			{
+				ps.Add(new SqlParameter("@usu", true));
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in request.Rel03)
+				{
+					if (first)
+					{
+						first = false;
+					}
+					else
+					{
+						sb.Append(',');
+					}
+					sb.Append(item.Id);
+				}
+
+				ps.Add(new SqlParameter("@usu_list", sb.ToString() + ','));
+			}
+			else
+			{
+				ps.Add(new SqlParameter("@usu", false));
+			}
+			ps.Add(new SqlParameter("@registros", request.Registros));
+			ps.Add(new SqlParameter("@pagina", request.Pagina));
+			ps.Add(new SqlParameter("@ordenar", string.IsNullOrEmpty(request.Sort) ? "oc_desc" : request.Sort));
+			List<OrdenDePagoConsultaDto> respuesta = _repository.EjecutarLstSpExt<OrdenDePagoConsultaDto>(sp, ps, true);
+			return respuesta;
 		}
 	}
 }
