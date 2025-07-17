@@ -1,8 +1,9 @@
-﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿using gc.api.core.Entidades;
+using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Compras.Controllers;
-using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -11,22 +12,23 @@ using Microsoft.Extensions.Options;
 namespace gc.sitio.Areas.Productos.Controllers
 {
     [Area("Productos")]
-    public class CargaPreciosController : ControladorBase
+    public class CargaPreciosController : ControladorProductoBase
     {
         private readonly AppSettings _appSettings;
         private readonly IAdministracionServicio _administracionServicio;
         private readonly ICuentaServicio _cuentaServicio;
         private readonly IRubroServicio _rubroServicio;
-        private readonly IProductoServicio _productoServicio;
+        private readonly IProducto2Servicio _productoServicio;
+
 
         public CargaPreciosController(
             ICuentaServicio cuentaServicio,
             IRubroServicio rubroServicio,
-            IProductoServicio productoServicio,
+            IProducto2Servicio productoServicio,
             IAdministracionServicio administracionServicio,
             ILogger<CompraController> logger,
             IOptions<AppSettings> options,
-            IHttpContextAccessor context) : base(options, context)
+            IHttpContextAccessor context) : base(options, context, logger)
         {
             _administracionServicio = administracionServicio;
             _cuentaServicio = cuentaServicio;
@@ -67,6 +69,86 @@ namespace gc.sitio.Areas.Productos.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> ObtenerProductosDetalle(string buscar,
+            string id, string id2,
+            string ctaId, List<ComboGenDto> familias,
+            List<string> rubros,
+            bool disc = true, bool file = false)
+        {
+            RespuestaGenerica<EntidadBase> response = new();
+            try
+            {
+                // Verificar autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return redirectResult;
+
+                // Validar que el parámetro eje_nro no sea nulo o vacío
+                if (string.IsNullOrEmpty(ctaId))
+                {
+                    return PartialView("_gridMensaje", new RespuestaGenerica<EntidadBase>
+                    {
+                        Ok = false,
+                        Mensaje = "Debe indicar el proveedor."
+                    });
+                }
+
+                // Llamar al servicio para obtener los asientos de ajuste
+                var filtro = new QueryFilters
+                {
+                    Buscar = buscar,
+                    Id = id,
+                    Id2 = id2,
+                    Rel01 = new List<string> { ctaId },
+                    Rel02 = rubros,
+                    Rel03 = familias,
+                    Opt1 = disc,
+                    Opt2 = file
+                };
+                var respuesta = await _productoServicio.Obtener_ProductoDetalle(filtro, TokenCookie);
+
+                if (!respuesta.Ok || respuesta.ListaEntidad == null || !respuesta.ListaEntidad.Any())
+                {
+                    response.Mensaje = "No se encontraron productos para la configuración del filtro que especificó.";
+                    response.Ok = false;
+                    response.EsWarn = true;
+                    response.EsError = false;
+                    return PartialView("_gridMensaje", response);
+                }
+                var lista = respuesta.ListaEntidad.OrderBy(x => x.pg_id).ThenBy(x => x.p_id).ToList();
+                // Guardar datos en variable de sesión para uso posterior
+                ProductosDetalle = lista;
+              
+
+                // Crear el grid para la vista (sin paginación)
+                var grid = GenerarGrillaSmart(
+                    lista,
+                    "pg_id",  // Ordenamiento por defecto
+                    respuesta.ListaEntidad.Count,  // Todos los registros en una página
+                    1,  // Página única
+                    respuesta.ListaEntidad.Count,  // Total de registros
+                    1,  // Total de páginas (una sola)
+                    "ASC"  // Dirección de ordenamiento por defecto
+                );
+                
+                // Devolver la vista parcial con el grid
+                return PartialView("_gridProdDet", grid);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al obtener el detalle de productos");
+
+                response.Mensaje = "Error al obtener el detalle de productos.";
+                response.Ok = false;
+                response.EsWarn = false;
+                response.EsError = true;
+                return PartialView("_gridMensaje", response);
+            }
+        }
+
+
+
+
         //Invocar cuando se haya seleccionado solo un proveedor desde el filtro base.
         [HttpPost]
         public JsonResult BuscarFamiliaDesdeProveedorSeleccionado(string ctaId)
@@ -75,9 +157,9 @@ namespace gc.sitio.Areas.Productos.Controllers
             {
                 CargarProveedoresFamiliaLista(ctaId, _cuentaServicio);
                 var familias = ProveedorFamiliaLista;
-                var combo = familias.Select(x => new ComboGenDto { Id = x.pg_id, Descripcion = x.pg_desc})
+                var combo = familias.Select(x => new ComboGenDto { Id = x.pg_id, Descripcion = x.pg_desc })
                     .ToList();
-                return Json(new { error = false, warn = false, lista= combo });
+                return Json(new { error = false, warn = false, lista = combo });
             }
             catch (Exception)
             {
@@ -85,7 +167,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             }
 
         }
-       
+
         protected void CargarProveedoresFamiliaLista(string ctaId, ICuentaServicio _cuentaServicio, string? fam = null)
         {
             var adms = _cuentaServicio.ObtenerListaProveedoresFamilia(ctaId, TokenCookie);

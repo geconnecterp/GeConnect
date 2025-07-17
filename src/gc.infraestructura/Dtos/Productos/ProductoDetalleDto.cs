@@ -50,7 +50,7 @@ namespace gc.infraestructura.Dtos.Productos
         public decimal lp_margen { get; set; }
         public DateTime p_actu_fecha { get; set; }
         public string usu_id { get; set; } = string.Empty;
-        public decimal p_neto { get; set; }
+        public decimal p_pneto { get; set; }
         public decimal p_iva { get; set; }
         public decimal p_in { get; set; }
         public decimal p_pvta { get; set; }
@@ -62,7 +62,7 @@ namespace gc.infraestructura.Dtos.Productos
         public decimal tp_dto4 { get; set; }
         public decimal tp_dto_pa { get; set; }
         public decimal tp_porc_flete { get; set; }
-        public int tp_boni { get; set; }
+        public string tp_boni { get; set; } = string.Empty;
         public decimal tp_pcosto { get; set; }
         public decimal tin_alicuota { get; set; }
         public int lp_porc_mg { get; set; }

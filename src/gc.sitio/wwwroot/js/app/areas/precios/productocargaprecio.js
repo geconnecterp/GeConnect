@@ -283,6 +283,12 @@ function configurarBotonesProdCP() {
         window.location.href = homeCPUrl;
     });
 
+    // Evento para el botón buscar
+    $("#btnBuscar").on("click", function (e) {
+        e.preventDefault();
+        buscarProductosDetalle();
+    });
+
     $("#btnFiltro").on("mousedown", function () {
         if ($("#divFiltro").is(":hidden")) {
             $("#divDetalle").collapse("hide");
@@ -348,3 +354,103 @@ function configurarBotonesProdCP() {
     }
 }
 
+function buscarProductosDetalle() {
+    // Obtener valores de los filtros
+    const proveedor = $("#Rel01Item").val() || $("#Rel01List").val();
+
+    // Validar que se haya seleccionado un proveedor
+    if (!proveedor || proveedor === "") {
+        mostrarMensajeError("Debe seleccionar un proveedor para realizar la búsqueda.");
+        return false;
+    }
+
+    // Obtener el resto de parámetros
+    const buscar = $("#Buscar").val() || "";
+    const id = $("#Id").val() || "";
+    const id2 = $("#Id2").val() || "";
+
+    // Obtener rubros seleccionados
+    const rubros = [];
+    $("#Rel02List option").each(function () {
+        // Agregar todos los elementos de la lista, estén seleccionados o no
+        rubros.push($(this).val());
+    });
+
+
+    // Obtener familias seleccionadas
+    const familias = [];
+    $("#Rel03List option").each(function () {
+        // Agregar todos los elementos de la lista, estén seleccionados o no
+        familias.push({
+            id: $(this).val(),
+            descripcion: $(this).text()
+        });
+    });
+
+    // Verificar opciones adicionales
+    const incluirDiscontinuos = $("#Opt1").prop("checked");
+    const generarArchivo = $("#Opt2").prop("checked");
+
+    // Mostrar indicador de carga
+    $("#divResultados").html('<div class="text-center p-3"><i class="bx bx-loader bx-spin font-size-24"></i><p class="mt-2">Cargando datos...</p></div>');
+
+    // Realizar petición AJAX
+    $.ajax({
+        url: buscarProdDetUrl,
+        type: "POST",
+        data: {
+            buscar: buscar,
+            id: id,
+            id2: id2,
+            ctaId: proveedor,
+            familias: familias,
+            rubros: rubros,
+            disc: incluirDiscontinuos,
+            file: generarArchivo
+        },
+        success: function (response) {
+            // Mostrar resultados
+            $("#divPCP").html(response);
+
+            // Si hay resultados, mostrar el panel de detalles
+            if ($(response).find("tbody tr").length > 0) {
+                $("#divFiltro").removeClass("show");
+                $("#divDetalle").addClass("show");
+
+                // Configurar eventos para la tabla de resultados
+                configurarEventosTabla();
+            }
+        },
+        error: function (error) {
+            console.error("Error al obtener productos:", error);
+            mostrarMensajeError("Se produjo un error al buscar los productos. Por favor, inténtelo de nuevo más tarde.");
+        }
+    });
+
+    return false;
+}
+
+function configurarEventosTabla() {
+    // Evento para seleccionar filas de la tabla
+    $("#tbProdDet tbody tr").on("click", function () {
+        $(this).toggleClass("selected");
+    });
+
+    // Evento para el checkbox de seleccionar todos
+    $("#checkAllProd").on("change", function () {
+        const isChecked = $(this).prop("checked");
+        $("#tbProdDet tbody tr").each(function () {
+            if (isChecked) {
+                $(this).addClass("selected");
+            } else {
+                $(this).removeClass("selected");
+            }
+        });
+    });
+}
+
+// Función para volver al filtro
+function volverAFiltro() {
+    $("#divDetalle").removeClass("show");
+    $("#divFiltro").addClass("show");
+}
