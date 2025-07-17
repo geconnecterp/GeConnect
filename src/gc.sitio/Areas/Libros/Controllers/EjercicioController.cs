@@ -57,8 +57,8 @@ namespace gc.sitio.Areas.Libros.Controllers
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Error al cargar la vista de BSS");
-                TempData["error"] = "Hubo un problema al cargar la vista del BSS. Si el problema persiste, contacte al administrador.";
+                _logger?.LogError(ex, "Error al cargar la vista de Ejercicio Contable");
+                TempData["error"] = "Hubo un problema al cargar la vista de Ejercicio Contable. Si el problema persiste, contacte al administrador.";
                 return View();
             }
         }

@@ -1,0 +1,116 @@
+﻿@using static gc.infraestructura.Helpers.GridHelper
+@model GridCoreSmart<ProductoDetalleDto>
+@{
+    var alt = true;
+    string clase = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+    string leyend = ViewBag.Leyenda ?? "Detalle de Productos";
+
+    // Variables para agrupar por familia
+    string familiaActual = string.Empty;
+    string familiaAnterior = string.Empty;
+}
+
+<div class="grid-golden">
+    <div class="grid-golden-header">
+        <div class="row align-items-md-center">
+            <div class="col-md-10 col-sm-6">
+                <h5 class="mb-0">
+                    <i class="bx bx-package me-2"></i>
+                    <strong>@leyend</strong>
+                </h5>
+            </div>
+            <div class="col-md-2 col-sm-6">
+                <div class="d-flex justify-content-sm-end">
+                    <!-- Botón Imprimir -->
+                    <button type="button" class="btn btn-golden btn-sm mt-1 me-1 btnImprimir" title="Imprimir">
+                        <i class="bx bx-printer"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid-golden-body">
+        <div class="table-responsive text-nowrap table-wrapper">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbProdDet">
+                <thead>
+                    <tr class="header">
+                        <th scope="col">Código</th>
+                        <th scope="col">Descripción</th>
+                        <th scope="col">Cód. Prov</th>
+                        <th scope="col">EAN</th>
+                        <th scope="col">P.Lista</th>
+                        <th scope="col">D1</th>
+                        <th scope="col">D2</th>
+                        <th scope="col">D3</th>
+                        <th scope="col">D4</th>
+                        <th scope="col">Dpa</th>
+                        <th scope="col">Ft</th>
+                        <th scope="col" class="text-end">P.Costo</th>
+                        <th scope="col" class="text-end">Margen</th>
+                        <th scope="col" class="text-end">P.Neto</th>
+                        <th scope="col">IVA</th>
+                        <th scope="col">II</th>
+                        <th scope="col" class="text-end">P.Vta May</th>
+                        <th scope="col" class="text-end">%Re</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.ListaDatos == null || Model.ListaDatos.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="18" class="text-center">No se han encontrado productos para los criterios especificados.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        // Ordenamos los datos por familia para agruparlos
+                        var productosPorFamilia = Model.ListaDatos.OrderBy(p => p.pg_id).ThenBy(p => p.p_id).ToList();
+
+                        // Filas de datos agrupadas por familia
+                        @foreach (var item in productosPorFamilia)
+                        {
+                            familiaActual = item.pg_id;
+
+                            // Si cambia la familia, insertamos una fila de encabezado para la familia
+                            if (familiaActual != familiaAnterior)
+                            {
+                                <tr class="table-secondary fw-bold">
+                                    <td colspan="18">
+                                        <i class="bx bx-folder me-1"></i>
+                                        Familia: @item.pg_id - @item.pg_desc
+                                    </td>
+                                </tr>
+                                familiaAnterior = familiaActual;
+                                alt = true; // Reiniciar alternancia de colores después de cada familia
+                            }
+
+                            if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
+                            <tr class="@clase" data-p-id="@item.p_id" onclick="selectReg(this,'tbProdDet')">
+                                <td class="@Model.ObtenerClase(item.p_id)">@Model.FormatearDato(item.p_id, FormatDato.Ninguno)</td>
+                                <td class="@Model.ObtenerClase(item.p_desc)">@Model.FormatearDato(item.p_desc, FormatDato.Ninguno)</td>
+                                <td class="@Model.ObtenerClase(item.p_id_prov)">@Model.FormatearDato(item.p_id_prov, FormatDato.Ninguno)</td>
+                                <td class="@Model.ObtenerClase(item.p_id_barrado)">@Model.FormatearDato(item.p_id_barrado, FormatDato.Ninguno)</td>
+                                <td class="@Model.ObtenerClase(item.P_Plista)">@Model.FormatearDato(item.P_Plista, FormatDato.Monto)</td>
+                                <td class="@Model.ObtenerClase(item.P_Dto1)">@Model.FormatearDato(item.P_Dto1, FormatDato.Monto)</td>
+                                <td class="@Model.ObtenerClase(item.P_Dto2)">@Model.FormatearDato(item.P_Dto2, FormatDato.Monto)</td>
+                                <td class="@Model.ObtenerClase(item.P_Dto3)">@Model.FormatearDato(item.P_Dto3, FormatDato.Monto)</td>
+                                <td class="@Model.ObtenerClase(item.P_Dto4)">@Model.FormatearDato(item.P_Dto4, FormatDato.Monto)</td>
+                                <td class="@Model.ObtenerClase(item.P_Dto_Pa)">@Model.FormatearDato(item.P_Dto_Pa, FormatDato.Monto)</td>
+                                <td class="@Model.ObtenerClase(item.P_Porc_Flete)">@Model.FormatearDato(item.P_Porc_Flete, FormatDato.Monto)</td>
+                                <td class="@Model.ObtenerClase(item.P_Pcosto)">@Model.FormatearDato(item.P_Pcosto, FormatDato.Monto)</td>
+                                <td class="@Model.ObtenerClase(item.lp_margen)">@Model.FormatearDato(item.lp_margen, FormatDato.Monto)</td>
+                                <td class="@Model.ObtenerClase(item.p_pneto)">@Model.FormatearDato(item.p_pneto, FormatDato.Monto)</td>
+                                <td class="@Model.ObtenerClase(item.p_iva)">@item.p_iva</td>
+                                <td class="@Model.ObtenerClase(item.p_in)">@item.p_in</td>
+                                <td class="@Model.ObtenerClase(item.p_pvta)">@Model.FormatearDato(item.p_pvta, FormatDato.Monto)</td>
+                                <td class="@Model.ObtenerClase(item.p_pvta)">?????</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

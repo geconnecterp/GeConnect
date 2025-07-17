@@ -1,0 +1,40 @@
+﻿@using static gc.infraestructura.Constantes.Constantes
+@{
+    Layout = "~/views/shared/_Layout.cshtml";
+    var filtro = new QueryFilters()
+            {
+                Rel01 = new List<string>(),
+                Rel02 = new List<string>(),
+                Rel03 = new List<ComboGenDto>(),
+                Modelo = ModeloFilter.PRODUCTO_CARGA_PRECIO,
+                Opt1 = true, //destinado a la opcion "Incluir Discontinuos"
+                Opt2 = false, //destinados a la opcion "Archivo"
+            };
+}
+<div class="container">
+    <partial name="_botonera" model="filtro" />
+</div>
+<div class="collapse show" id="divFiltro">
+    <partial name="_filtroBase" model="filtro" />
+    @Html.Hidden("pagEstado", false)
+</div>
+<div class="collapse" id="divDetalle">
+    <partial name="_n01TabsCP" />
+</div>
+
+@section scripts {
+    <script type="text/javascript">
+        var homeCPUrl = "@Url.Action("Index", "cargaprecios", new { area = "productos" })";
+        var buscarProdDetUrl ="@Url.Action("ObtenerProductosDetalle", "cargaprecios", new { area = "productos" })";
+        
+
+        var buscarFamiliaUrl = "@Url.Action("BuscarFamiliaDesdeProveedorSeleccionado", "cargaprecios", new { area = "productos" })";/**/
+        var autoComRel01Url = "@Url.Action("BuscarProvs", "ndecypi", new { area = "Compras" })";/**/
+        var autoComRel02Url = "@Url.Action("BuscarRubros", "ndecypi", new { area = "Compras" })";/**/
+        var autoComRel03Url = "@Url.Action("BuscarFlias", "ndecypi", new { area = "Compras" })";/**/
+    </script>
+
+    <script src="~/js/app/siteGen.js"></script>
+    <script src="~/js/app/busquedas.js"></script>
+    <script src="~/js/app/areas/precios/productocargaprecio.js"></script>
+}

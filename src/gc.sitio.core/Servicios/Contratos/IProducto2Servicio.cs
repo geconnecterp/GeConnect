@@ -1,4 +1,5 @@
-﻿using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
+﻿using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
 using gc.infraestructura.Dtos.Almacen.Info;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Box;
@@ -25,5 +26,8 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RespuestaGenerica<LimiteStkDto>> ObtenerLimiteStk(string p_id, string token);
         Task<RespuestaGenerica<ProductoBarradoDto>> ObtenerBarrado(string p_id, string barradoId, string tokenCookie);
         Task<RespuestaGenerica<LimiteStkDto>> BuscarLimite(string p_id, string admId, string tokenCookie);
+
+        Task<RespuestaGenerica<ProductoDetalleDto>> Obtener_ProductoDetalle(QueryFilters filtro, string token);
+        Task<RespuestaGenerica<ProductoDetalleDto>> Obtener_ProductoDetalleListas(QueryFilters filtro, string token);
     }
 }

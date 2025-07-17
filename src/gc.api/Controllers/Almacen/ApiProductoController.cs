@@ -1413,30 +1413,38 @@ namespace gc.api.Controllers.Almacen
 			return Ok(response);
 		}
 
-		/// <summary>
-		/// Método destinado a validar la estructura del Json antes de ser enviado a la base de datos
-		/// </summary>
-		/// <param name = "json" ></ param >
-		/// < returns ></ returns >
-		private bool JsonValido(string json)
-        {
-            try
-            {
-                JObject.Parse(json);
-                return true;
-            }
-            catch (JsonReaderException ex)
-            {
-                _logger.LogError(ex.Message, "JSON No válido.");
-                return false;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message, "JSON No válido.");
-                return false;
-            }
-        }
+		
         #endregion
 
+
+        [HttpPost("obtener-producto-detalle")]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<ProductoDetalleDto>>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        public ActionResult<ProductoDetalleDto> Obtener_ProductoDetalle(QueryFilters filtro)
+        {
+            if(filtro.Rel01?.Count == 0)
+            {
+                return BadRequest("No se la cuenta del proveedor.");
+            }
+
+            var resultado = _productosSv.Obtener_ProductoDetalleBase(filtro);
+
+            return Ok(new ApiResponse<List<ProductoDetalleDto>>(resultado));
+        }
+
+        [HttpPost("obtener-producto-detalle-lista")]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<ProductoDetalleDto>>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        public ActionResult<ProductoDetalleDto> Obtener_ProductoDetalleListas(QueryFilters filtro)
+        {
+            if (filtro.Rel01?.Count == 0)
+            {
+                return BadRequest("No se la cuenta del proveedor.");
+            }
+
+            var resultado = _productosSv.Obtener_ProductoDetalleListas(filtro);
+
+            return Ok(new ApiResponse<List<ProductoDetalleDto>>(resultado));
+        }
     }
 }

@@ -652,10 +652,6 @@ $("#Rel01").autocomplete({
             $("#Rel01Item").val(ui.item.id);
             var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
             $("#Rel01List").append(opc);
-
-            //$("#Rel01").prop("disabled", true);
-            //$("#Rel01List").prop("disabled", true);
-
         }
         return true;
     }
