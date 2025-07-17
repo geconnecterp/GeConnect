@@ -16,6 +16,7 @@ using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor.Request;
 using gc.infraestructura.Dtos.Almacen.Info;
+using gc.infraestructura.Core.EntidadesComunes;
 
 namespace gc.api.core.Contratos.Servicios
 {
@@ -109,5 +110,11 @@ namespace gc.api.core.Contratos.Servicios
         ProductoBarradoDto BuscarBarrado(string p_id, string barradoId);
 		RespuestaDto OCValidar(string oc_compte, string cta_id);
 
-	}
+
+		#region CargaPrecios
+		List<ProductoDetalleDto> Obtener_ProductoDetalleBase(QueryFilters filtro);
+        List<ProductoDetalleDto> Obtener_ProductoDetalleListas(QueryFilters filtro);
+
+        #endregion
+    }
 }

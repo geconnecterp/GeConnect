@@ -16,6 +16,8 @@ namespace gc.infraestructura.Core.EntidadesComunes
                     && string.IsNullOrWhiteSpace(Buscar) 
                     && Registros == default 
                     && Pagina == default; } }
+
+        //public string CtaId { get; set; } = string.Empty; //especifico para cuentas id
         public string? Id { get; set; }
         public string? Id2 { get; set; }
         /// <summary>
@@ -53,13 +55,14 @@ namespace gc.infraestructura.Core.EntidadesComunes
         /*
         
          */
-        public bool? Opt1 { get; set; }
-		public bool? Opt2 { get; set; }
+        public bool? Opt1 { get; set; } //discontinuo
+		public bool? Opt2 { get; set; } //bandera de file
 		public bool? Opt3 { get; set; }
 		public bool? Opt4 { get; set; }
 		public bool? Opt5 { get; set; }
 
-		public string? TituloLeyend { get; set; }
+        public List<string> ListNN { get; set; } = []; //para el nombre de archivos que pueden venir concatenados con ","
+        public string? TituloLeyend { get; set; }
 
 		public string? Date1 { get; set; }
 		public string? Date2 { get; set; }

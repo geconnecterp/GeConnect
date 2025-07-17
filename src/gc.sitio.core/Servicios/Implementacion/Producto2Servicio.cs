@@ -39,6 +39,9 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string LIMITE_STK = "/ObtenerLimitesStkLista";
         private const string PROD_LIMITE = "/BuscaLimite";
 
+        private const string PROD_DETALLE = "/obtener-producto-detalle";
+        private const string PROD_DETALLE_LISTAS = "/obtener-producto-detalle-listas";
+
 
         private readonly AppSettings _appSettings;
 
@@ -162,10 +165,10 @@ namespace gc.sitio.core.Servicios.Implementacion
 
                 }
                 else if (response.StatusCode == HttpStatusCode.NotFound)
-                { 
+                {
                     return new() { Ok = false, Mensaje = $"No se encontraron movimientos para el box {box_id}" };
                 }
-                else                
+                else
                 {
                     string stringData = await response.Content.ReadAsStringAsync();
                     _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
@@ -180,7 +183,7 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-        public async Task<RespuestaGenerica<RespuestaDto>> AJ_CargaConteosPrevios(List<ProductoGenDto> lista,string admid,string depo,string box,string token)
+        public async Task<RespuestaGenerica<RespuestaDto>> AJ_CargaConteosPrevios(List<ProductoGenDto> lista, string admid, string depo, string box, string token)
         {
             try
             {
@@ -193,12 +196,12 @@ namespace gc.sitio.core.Servicios.Implementacion
                 #endregion
                 var ent = new CargarJsonGenRequest { json_str = json, admid = admid };
 
-                HttpClient client = helper.InicializaCliente(ent, token,out StringContent contentData);
+                HttpClient client = helper.InicializaCliente(ent, token, out StringContent contentData);
                 HttpResponseMessage response;
-             
+
                 var link = $"{_appSettings.RutaBase}{RutaAPI}{AJ_CARGA_CONTEO_PREVIOS}";
 
-                response = await client.PostAsync(link,contentData);
+                response = await client.PostAsync(link, contentData);
 
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
@@ -212,13 +215,13 @@ namespace gc.sitio.core.Servicios.Implementacion
                     var resp = apiResponse.Data;
                     if (resp.resultado == 0)
                     {
-                        return new RespuestaGenerica<RespuestaDto> { Ok = true, Mensaje = "OK", Entidad = resp};
+                        return new RespuestaGenerica<RespuestaDto> { Ok = true, Mensaje = "OK", Entidad = resp };
                     }
                     else
                     {
                         return new RespuestaGenerica<RespuestaDto> { Ok = false, Mensaje = resp.resultado_msj, Entidad = resp };
                     }
-                }               
+                }
                 else
                 {
                     string stringData = await response.Content.ReadAsStringAsync();
@@ -298,8 +301,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 
                 HttpClient client = helper.InicializaCliente(token);
                 HttpResponseMessage response;
-                var d=fecD.Ticks;
-                var h=fecH.Ticks;
+                var d = fecD.Ticks;
+                var h = fecH.Ticks;
 
                 var link = $"{_appSettings.RutaBase}{RutaAPI}{UL_CONSULTA}?tipo={tipo}&fecD={d}&fecH={h}&admId={admId}";
 
@@ -755,7 +758,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 
                         return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
                     }
-                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<LimiteStkDto>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos")  ;
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<LimiteStkDto>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 
                     return new RespuestaGenerica<LimiteStkDto> { Ok = true, Mensaje = "OK", Entidad = apiResponse.Data };
                 }
@@ -795,6 +798,116 @@ namespace gc.sitio.core.Servicios.Implementacion
                 _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
                 return new RespuestaGenerica<LimiteStkDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener el barrado de producto." };
+            }
+        }
+
+        public async Task<RespuestaGenerica<ProductoDetalleDto>> Obtener_ProductoDetalle(QueryFilters filtro, string token)
+        {
+            try
+            {
+                ApiResponse<List<ProductoDetalleDto>>? apiResponse;
+                HelperAPI helper = new();
+
+                HttpClient client = helper.InicializaCliente(filtro, token, out StringContent contentData);
+                HttpResponseMessage response;
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{PROD_DETALLE}";
+
+                response = await client.PostAsync(link, contentData);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde.");
+                    }
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProductoDetalleDto>>>(stringData);
+
+                    var listado = apiResponse.Data;
+
+                    return new RespuestaGenerica<ProductoDetalleDto> { Ok = true, ListaEntidad = listado };
+
+                }
+                else
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    {
+                        throw new NegocioException(error.Detail);
+                    }
+                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    {
+                        throw new NegocioException(error.Detail);
+                    }
+                    else
+                    {
+                        throw new Exception(error.Detail);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+
+                throw new Exception("Algo no fue bien al intentar obtener el detalle de productos.");
+            }
+        }
+
+        public async Task<RespuestaGenerica<ProductoDetalleDto>> Obtener_ProductoDetalleListas(QueryFilters filtro, string token)
+        {
+            try
+            {
+                ApiResponse<List<ProductoDetalleDto>>? apiResponse;
+                HelperAPI helper = new();
+
+                HttpClient client = helper.InicializaCliente(filtro, token, out StringContent contentData);
+                HttpResponseMessage response;
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{PROD_DETALLE_LISTAS}";
+
+                response = await client.PostAsync(link, contentData);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde.");
+                    }
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProductoDetalleDto>>>(stringData);
+
+                    var listado = apiResponse.Data;
+
+                    return new RespuestaGenerica<ProductoDetalleDto> { Ok = true, ListaEntidad = listado };
+
+                }
+                else
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    {
+                        throw new NegocioException(error.Detail);
+                    }
+                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    {
+                        throw new NegocioException(error.Detail);
+                    }
+                    else
+                    {
+                        throw new Exception(error.Detail);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+
+                throw new Exception("Algo no fue bien al intentar obtener el detalle de productos según las Listas.");
             }
         }
     }
