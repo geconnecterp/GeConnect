@@ -1,0 +1,7 @@
+﻿@model ListaTipoCertificadoModel
+@{
+	var lista = Model.ListaTipoCertificado;
+}
+<div class="input-group input-group-sm" style="margin-left: -8px;">
+	@Html.DropDownListFor(m => m.ListaTipoCertificado.First().Value, lista, "Seleccionar...", new { @id = "listaTipoCert", @class = "form-control activable" })
+</div>

@@ -19,5 +19,6 @@ namespace gc.api.core.Contratos.Servicios
 		List<RespuestaDto> ConfirmarOrdenDePagoDirecta(ConfirmarOrdenDePagoDirectaRequest request);
 		List<OPUserDto> CargarOPUsuarios(string f_desde, string f_hasta);
 		List<OrdenDePagoConsultaDto> CargarOrdenDePagoConsultaLista(BuscarOrdenesDePagoRequest request);
+		List<RespuestaDto> AnularOrdenDePago(AnularOrdenDePagoRequest request);
 	}
 }

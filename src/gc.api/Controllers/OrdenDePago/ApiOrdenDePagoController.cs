@@ -198,5 +198,18 @@ namespace gc.api.Controllers.OrdenDePago
 			Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult AnularOrdenDePago([FromBody] AnularOrdenDePagoRequest r)
+		{
+			ApiResponse<RespuestaDto> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _ordenDePagoServicio.AnularOrdenDePago(r);
+			response = new ApiResponse<RespuestaDto>(res.First());
+			return Ok(response);
+		}
 	}
 }

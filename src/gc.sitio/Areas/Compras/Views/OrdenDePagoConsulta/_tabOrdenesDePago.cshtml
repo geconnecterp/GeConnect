@@ -1,6 +1,7 @@
 ﻿@using static gc.infraestructura.Helpers.GridHelper
 @model ConsultaOPModel
 @{
+	var lista = Model.ListaTipoCertificado;
 }
 <style>
 	thead th {
@@ -16,12 +17,12 @@
 					<thead class="table-dark">
 						<tr>
 							<th style="width:10%;" class="col-header-small align-center tiny-row">N° OP</th>
-							<th style="width:30%;" class="col-header-small align-center tiny-row">Tipo</th>
+							<th style="width:20%;" class="col-header-small align-center tiny-row">Tipo</th>
 							<th style="width:5%;" class="col-header-small align-center tiny-row">Fecha</th>
 							<th style="width:30%;" class="col-header-small align-center tiny-row">Proveedor</th>
-							<th style="width:5%;" class="col-header-small align-center tiny-row">Estado</th>
+							<th style="width:5%;" class="col-header-small align-center tiny-row">Anulada</th>
 							<th style="width:15%;" class="col-header-small align-center tiny-row">Usuario</th>
-							<th style="width:5%;" class="col-header-small align-center tiny-row">Importe</th>
+							<th style="width:10%;" class="col-header-small align-center tiny-row">Importe</th>
 							<th style="width:5%;" class="col-header-small align-center tiny-row">Imprimir Det</th>
 							<th style="width:0%; display:none;">usu_id</th>
 							<th style="width:0%; display:none;">cta_id</th>
@@ -33,15 +34,23 @@
 						{
 							@foreach (var item in Model.GrillaOP.ListaDatos)
 							{
+								var nombre = "chkImpreso" + item.op_compte;
 								<tr onclick="selectListaOPRow(this)">
 									<td class="tiny-row @Model.GrillaOP.ObtenerClase(item.op_compte)">@item.op_compte</td>
 									<td class="tiny-row @Model.GrillaOP.ObtenerClase(item.opt_desc)">@Model.GrillaOP.FormatearDato(item.opt_desc, FormatDato.Ninguno)</td>
 									<td class="tiny-row @Model.GrillaOP.ObtenerClase(item.op_fecha)">@Model.GrillaOP.FormatearDato(item.op_fecha, FormatDato.Fecha)</td>
 									<td class="tiny-row @Model.GrillaOP.ObtenerClase(item.cta_denominacion)">@Model.GrillaOP.FormatearDato(item.cta_denominacion, FormatDato.Ninguno)</td>
-									<td class="tiny-row @Model.GrillaOP.ObtenerClase(item.op_fecha)">@Model.GrillaOP.FormatearDato(item.op_fecha, FormatDato.Fecha)</td> @*TODO MARCE: Ver que le mando a la columna Estado*@
+									<td class="tiny-row @Model.GrillaOP.ObtenerClase(item.op_anulada_desc)">@Model.GrillaOP.FormatearDato(item.op_anulada_desc, FormatDato.Fecha)</td>
 									<td class="tiny-row @Model.GrillaOP.ObtenerClase(item.usu_apellidoynombre)">@Model.GrillaOP.FormatearDato(item.usu_apellidoynombre, FormatDato.Ninguno)</td>
 									<td class="tiny-row @Model.GrillaOP.ObtenerClase(item.op_importe)">@Model.GrillaOP.FormatearDato(item.op_importe, FormatDato.Monto)</td>
-									<td class="tiny-row"></td> @*TODO MARCE: Ver que le mando a la columna Imprimir Det*@
+									@if (item.op_impreso_bool)
+									{
+										<td class="@Model.GrillaOP.ObtenerClase(item.op_impreso_bool)"><input type="checkbox" class="chkImpreso" name=@nombre id="@nombre" checked /></td>
+									}
+									else
+									{
+										<td class="@Model.GrillaOP.ObtenerClase(item.op_impreso_bool)"><input type="checkbox" class="chkImpreso" name=@nombre id="@nombre" /></td>
+									}
 									<td style="display:none;">@item.usu_id</td>
 									<td style="display:none;">@item.cta_id</td>
 									<td style="display:none;">@item.opt_id</td>
@@ -118,5 +127,14 @@
 				</div>
 			</button>
 		</div>
+		<input type="hidden" asp-for="MostrarListaTipoCertificado" class="form-control activable inputEditable" />
+		<div class="row mt-1" id="divListaCert">
+		</div>
+		@if (Model.MostrarListaTipoCertificado)
+		{
+			<div class="input-group input-group-sm" style="margin-left: -8px;">
+				@Html.DropDownListFor(m => m.ListaTipoCertificado.First().Value, lista, "Seleccionar...", new { @id = "listaTipoCert", @class = "form-control activable" })
+			</div>
+		}
 	</div>
 </div>

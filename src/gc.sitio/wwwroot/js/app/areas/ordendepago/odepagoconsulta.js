@@ -23,6 +23,17 @@
 		pagina = 1;
 		BuscarOrdenesDePago(pagina);
 	});
+	$("#btnCancel").on("click", function () {
+		InicializarDatosEnSesion();
+		InicializaPantalla();
+		LimpiarDatosDelFiltroInicial();
+		$("#btnFiltro").trigger("click");
+		$("#btnDetalle").trigger("click");
+		$("#divDetalle").collapse("hide");
+	});
+
+	$(document).on("click", "#btnAnularOP", btnAnularOP);
+	$(document).on("click", "#btnAnularCertRet", btnAnularCertRet);
 });
 
 const formatter = new Intl.NumberFormat('de-DE', {
@@ -30,7 +41,140 @@ const formatter = new Intl.NumberFormat('de-DE', {
 	maximumFractionDigits: 2
 });
 
+function LimpiarDatosDelFiltroInicial() {
+	$("#chkDesdeHasta").prop('checked', true);
+	$("#chkDesdeHasta").trigger("change");
+	$("#chkDesdeHasta").prop("disabled", true);
+	$("#chkRel01").prop('checked', false);
+	$("#chkRel01").trigger("change");
+	$("#chkRel02").prop('checked', false);
+	$("#chkRel02").trigger("change");
+	$("#chkRel03").prop('checked', false);
+	$("#chkRel03").trigger("change");
+	$("#Rel01").val("");
+	$("#Rel02").val("");
+	$("#Rel03").val("");
+	$("#Rel01List").empty();
+	$("#Rel03List").empty();
+	$("#Rel02List").empty();
+	$("#Rel01").prop("disabled", true);
+	$("#Rel02").prop("disabled", true);
+	$("#Rel03").prop("disabled", true);
+	$("#Rel01List").prop("disabled", true);
+	$("#Rel02List").prop("disabled", true);
+	$("#Rel03List").prop("disabled", true);
+}
+
+function InicializarDatosEnSesion() {
+	PostGen({}, inicializarDatosEnSesionURL, function (obj) {
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+	});
+}
+
+function btnAnularCertRet() {
+	ControlaMensajeInfo("Servicio no implementado");
+}
+
+function btnAnularOP() {
+	if (opIdSeleccionado == "") {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar una Orden de Pago.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirMensaje("ATENCIÓN", "¿Desea anular la Orden de Pago seleccionada?", function (e) {
+			$("#msjModal").modal("hide");
+			switch (e) {
+				case "SI": //Confirmar
+					AbrirWaiting();
+					var data = { op_compte: opIdSeleccionado };
+					PostGen(data, anularOrdenDePagoURL, function (obj) {
+						if (obj.error === true) {
+							CerrarWaiting();
+							ControlaMensajeWarning(obj.msg);
+						}
+						else {
+							ActualizarRegistroDeOrdenDePagoLuegoDeAnular(opIdSeleccionado);
+						}
+					});			
+					break;
+				case "NO":
+					break;
+				default:
+					break;
+			}
+			return true;
+		}, true, ["Aceptar", "Cancelar"], "warn!", null);
+		
+	}
+}
+
+function ActualizarRegistroDeOrdenDePagoLuegoDeAnular(op_compte) {
+	$("#tbListaOP").find('tr').each(function (i, el) {
+		var td = $(this).find('td');
+		if (td.length > 0 && td[1].innerText !== undefined && td[0].innerText === op_compte) {
+			//GRILLA
+			td[4].innerText = "SI";//
+		}
+	});
+	$("#btnAnularOP").prop("disabled", true);
+	CerrarWaiting();
+}
+
 function selectListaOPRow(x) {
+	if (x) {
+		opIdSeleccionado = x.cells[0].innerText.trim();
+	}
+	else {
+		opIdSeleccionado = "";
+	}
+	ConsultarExistenciaDeCertificados(opIdSeleccionado);
+	CargarDetalleDeOP(opIdSeleccionado);
+}
+
+function CargarDetalleDeOP(op_compte) {
+	var data = { cmptId: op_compte };
+	PostGenHtml(data, consultarOPProvDetUrl, function (obj) {
+		$("#divDetalleDeOP").html(obj);
+		CerrarWaiting();
+		return true
+	});
+}
+
+function ConsultarExistenciaDeCertificados(op_compte) {
+	AbrirWaiting();
+	var data = { op_compte };
+	PostGen(data, consultarExistenciaDeCertificadosURL, function (obj) {
+		if (obj.error === true) {
+			CerrarWaiting();
+			ControlaMensajeWarning(obj.msg);
+		}
+		else {
+			$("#MostrarListaTipoCertificado").val(obj.tieneCertificados);
+			ActivarBotonesTabPrincipal();
+			if (obj.tieneCertificados) {
+				CargarListaTiposCertificados(op_compte);
+			}
+			else {
+				CerrarWaiting();
+			}
+		}
+	});
+}
+
+function CargarListaTiposCertificados(op_compte) {
+	var data = { op_compte };
+	PostGenHtml(data, cargarListaTiposCertificadosURL, function (obj) {
+		$("#divListaCert").html(obj);
+		CerrarWaiting();
+		return true
+	});
 }
 
 function InicializaPantalla() {
@@ -95,15 +239,9 @@ function BuscarOrdenesDePago(pag = 1) {
 	PostGenHtml(data, buscarOrdenesDePagoURL, function (obj) {
 		$("#divOrdenesDePago").html(obj);
 		AddEventListenerToGrid("tbListaOP");
-		ActivarBotonesTabPrincipal("");
-		//$("#btnActivarOC").on("click", function () { ModificarOC(AccionesOC.ACTIVAR); });
-		//$("#btnCerrarOC").on("click", function () { ModificarOC(AccionesOC.CERRAR); });
-		//$("#btnAnularOC").on("click", function () { ModificarOC(AccionesOC.ANULAR); });
-		//$("#btnLevantarOC").on("click", function () { ModificarOC(AccionesOC.LEVANTAR); });
-		//$("#btnModiAdm").on("click", function () { ModificarOC(AccionesOC.MODIFICAR_ADM); });
+		ActivarBotonesTabPrincipal();
 		FormatearValores("#tbListaOC", 6)
 		$("#Importe").val(formatter.format($("#Importe").val()));
-		//formatter.format(td[idx].innerText);
 		$("#divDetalle").collapse("show");
 
 		PostGen({}, buscarMetadataURL, function (obj) {
@@ -225,36 +363,26 @@ function FormatearValores(grilla, idx) {
 	});
 }
 
-function ActivarBotonesTabPrincipal(estado) {
-	//$("#btnActivarOC").prop("disabled", true);
-	//$("#btnCerrarOC").prop("disabled", true);
-	//$("#btnAnularOC").prop("disabled", true);
-	//$("#btnModiAdm").prop("disabled", true);
-	//$("#btnImprimir").prop("disabled", true);
-	//$("#btnServicioExt").prop("disabled", true);
-	//$("#btnLevantarOC").prop("disabled", true);
-	//$("#listaAdm").prop("disabled", true);
-
-	//if (estado == 'A') {
-	//	$("#btnLevantarOC").prop("disabled", false);
-	//}
-	//if (estado == 'P') {
-	//	$("#btnActivarOC").prop("disabled", false);
-	//	$("#btnAnularOC").prop("disabled", false);
-	//	$("#btnImprimir").prop("disabled", false);
-	//}
-	//if (estado == "C") {
-	//	$("#btnAnularOC").prop("disabled", false);
-	//	$("#btnModiAdm").prop("disabled", false);
-	//	$("#listaAdm").prop("disabled", false);
-	//	$("#btnServicioExt").prop("disabled", false);
-	//	$("#btnImprimir").prop("disabled", false);
-	//}
-	//if (estado == "R") {
-	//	$("#btnCerrarOC").prop("disabled", false);
-	//	$("#btnModiAdm").prop("disabled", false);
-	//	$("#listaAdm").prop("disabled", false);
-	//	$("#btnServicioExt").prop("disabled", false);
-	//	$("#btnImprimir").prop("disabled", false);
-	//}
+function ActivarBotonesTabPrincipal() {
+	var mostrarListaTipoCertificado = $("#MostrarListaTipoCertificado").val();
+	if (mostrarListaTipoCertificado === "true") {
+		$("#divListaCert").collapse("show");
+		$("#btnAnularCertRet").prop("disabled", false);
+	}
+	else {
+		$("#divListaCert").collapse("hide");
+		$("#btnAnularCertRet").prop("disabled", true);
+	}
+	$("#tbListaOP").find('tr').each(function (i, el) {
+		var td = $(this).find('td');
+		if (td.length > 0 && td[1].innerText !== undefined && td[0].innerText === opIdSeleccionado) {
+			if (td[4].innerText == "SI") {
+				$("#btnAnularOP").prop("disabled", true);
+			}
+			else {
+				$("#btnAnularOP").prop("disabled", false);
+			}
+			return false;
+		}
+	});
 }

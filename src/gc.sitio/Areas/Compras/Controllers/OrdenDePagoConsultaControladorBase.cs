@@ -1,6 +1,7 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
+using gc.sitio.Areas.Compras.Models.OrdenDePagoConsulta;
 using gc.sitio.Controllers;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -51,6 +52,32 @@ namespace gc.sitio.Areas.Compras.Controllers
 				_context.HttpContext?.Session.SetString("ListaOPUsuarios", valor);
 			}
 
+		}
+
+		public List<TipoCertificadoModel> ListaTipoCertificado
+		{
+			get
+			{
+				var txt = _context.HttpContext?.Session.GetString("ListaTipoCertificado");
+				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
+				{
+					return new List<TipoCertificadoModel>();
+				}
+				return JsonConvert.DeserializeObject<List<TipoCertificadoModel>>(txt) ?? [];
+			}
+			set
+			{
+				var valor = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ListaTipoCertificado", valor);
+			}
+
+		}
+
+		public enum TipoCertificado
+		{
+			IngresosBrutos = 1,
+			Ganancias=2,
+			IVA=3,
 		}
 	}
 }

@@ -27,5 +27,27 @@ namespace gc.infraestructura.Dtos.Almacen
 		public bool certificado_ib { get; set; }
 		public bool certificado_ga { get; set; }
 		public bool certificado_iva { get; set; }
+		public string op_anulada_desc
+		{
+			get
+			{
+				if (char.IsWhiteSpace(op_anulada) || string.IsNullOrWhiteSpace(char.ToString(op_anulada)))
+					return "No";
+				return op_anulada == 'S' ? "SI" : "NO";
+			}
+			set { _op_anulada_desc = value; }
+		}
+		private string _op_anulada_desc;
+		public bool op_impreso_bool
+		{
+			get
+			{
+				if (char.IsWhiteSpace(op_impreso) || string.IsNullOrWhiteSpace(char.ToString(op_impreso)))
+					return false;
+				return op_impreso == 'S' ? false : true;
+			}
+			set { _op_impreso_bool = value; }
+		}
+		private bool _op_impreso_bool;
 	}
 }

@@ -251,5 +251,18 @@ namespace gc.api.core.Servicios
 			List<OrdenDePagoConsultaDto> respuesta = _repository.EjecutarLstSpExt<OrdenDePagoConsultaDto>(sp, ps, true);
 			return respuesta;
 		}
+
+		public List<RespuestaDto> AnularOrdenDePago(AnularOrdenDePagoRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OP_ANULAR;
+			var ps = new List<SqlParameter>()
+			{
+				//new("@usu_id",request.usu_id),
+				//new("@adm_id",request.adm_id),
+				new("@op_compte",request.op_compte),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

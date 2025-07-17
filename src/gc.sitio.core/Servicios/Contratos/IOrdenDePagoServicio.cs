@@ -21,5 +21,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		RespuestaGenerica<RespuestaDto> ConfirmarOrdenDePagoDirecta(ConfirmarOrdenDePagoDirectaRequest r, string token);
 		List<OPUserDto> ObtenerOPUsuarios(DateTime f_desde, DateTime f_hasta, string token);
 		Task<(List<OrdenDePagoConsultaDto>, MetadataGrid)> CargarOrdenDePagoConsultaLista(BuscarOrdenesDePagoRequest request, string token);
+		RespuestaGenerica<RespuestaDto> AnularOrdenDePago(AnularOrdenDePagoRequest r, string token);
 	}
 }
