@@ -40,7 +40,7 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string PROD_LIMITE = "/BuscaLimite";
 
         private const string PROD_DETALLE = "/obtener-producto-detalle";
-        private const string PROD_DETALLE_LISTAS = "/obtener-producto-detalle-listas";
+        private const string PROD_DETALLE_LISTAS = "/obtener-producto-detalle-lista";
 
 
         private readonly AppSettings _appSettings;

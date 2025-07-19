@@ -30,7 +30,7 @@ namespace gc.api.infra.Datos.Implementacion.Security
             //se invoca la encriptación para comparar la con el hash
             var patron = new { usuario, clave = password };
 
-            string sp = $"select {ConstantesGC.StoredProcedures.FX_PASSWORD_ENCRIPTA}('{JsonSerializer.Serialize(patron)}')";
+            string sp = $"select {ConstantesGC.StoredFunctions.FX_PASSWORD_ENCRIPTA}('{JsonSerializer.Serialize(patron)}')";
             var pass = _repository.InvokarSpScalar(sp, null,false,true,false);
 
             if (pass != null)
@@ -84,7 +84,7 @@ namespace gc.api.infra.Datos.Implementacion.Security
 
             var patron= new {usuario=registroUserDto.User,clave=registroUserDto.Password};
 
-            string sp = $"select {ConstantesGC.StoredProcedures.FX_PASSWORD_ENCRIPTA}('{JsonSerializer.Serialize(patron)}')";
+            string sp = $"select {ConstantesGC.StoredFunctions.FX_PASSWORD_ENCRIPTA}('{JsonSerializer.Serialize(patron)}')";
             var pass = _repository.InvokarSpScalar(sp, null,false,true,false);
             if(pass != null)
             {

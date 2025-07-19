@@ -15,22 +15,22 @@ namespace gc.infraestructura.Dtos.Productos
         public string rub_desc { get; set; } = string.Empty;
         #region p_activo
         public char p_activo { get; set; }
-        private bool pActivo;
-        public bool PActivo
-        {
-            get
-            {
-                if (char.IsWhiteSpace(p_activo) ||
-                    string.IsNullOrWhiteSpace(char.ToString(p_activo)))
-                    return false;
-                return p_activo == 'S';
-            }
-            set
-            {
-                //P_Materia_Prima = value ? 'S' : 'N';
-                pActivo = value;
-            }
-        }
+        //private bool pActivo;
+        //public bool PActivo
+        //{
+        //    get
+        //    {
+        //        if (char.IsWhiteSpace(p_activo) ||
+        //            string.IsNullOrWhiteSpace(char.ToString(p_activo)))
+        //            return false;
+        //        return p_activo == 'S';
+        //    }
+        //    set
+        //    {
+        //        //P_Materia_Prima = value ? 'S' : 'N';
+        //        pActivo = value;
+        //    }
+        //}
         #endregion
         public char iva_situacion { get; set; }
         public decimal iva_alicuota { get; set; }
@@ -47,6 +47,7 @@ namespace gc.infraestructura.Dtos.Productos
         public decimal lp_prevision_tot { get; set; }
         public decimal lp_prevision_pin { get; set; }
         public string lp_id { get; set; } = string.Empty;
+        public string lp_desc { get; set; } = string.Empty;
         public decimal lp_margen { get; set; }
         public DateTime p_actu_fecha { get; set; }
         public string usu_id { get; set; } = string.Empty;
@@ -55,7 +56,7 @@ namespace gc.infraestructura.Dtos.Productos
         public decimal p_in { get; set; }
         public decimal p_pvta { get; set; }
         public int carga { get; set; }
-        public decimal tp_pista { get; set; }
+        public decimal tp_plista { get; set; }
         public decimal tp_dto1 { get; set; }
         public decimal tp_dto2 { get; set; }
         public decimal tp_dto3 { get; set; }

@@ -4,7 +4,7 @@
     string nombreControl = Model;
 }
 
-<div class="row mt-2" id="controlCta@(nombreControl)" style="display:none;">
+<div class="row mt-2" id="controlCta@(nombreControl)" style="display:none;font-size: 0.5rem; transform: scale(0.9); transform-origin: left top;">
     <div class="col-md-6 col-sm-12 m-0">
         <div class="input-group">
             <span class="input-group-text">Cuenta: </span>
@@ -14,7 +14,7 @@
     <div class="col-md-6 col-sm-12 m-0">
         <div class="input-group">
             <input type="text" class="form-control text-truncate"  id="rrss@(nombreControl)" readonly />@*aca*@
-            <i class="bx bx-user bx-md" id="iconTipoCCv2@(nombreControl)"></i> @*aca*@
+            <i class="bx bx-user bx-custom-size" id="iconTipoCCv2@(nombreControl)"></i> @*aca*@
             <input type="hidden" id="controlConsultaCambio@(nombreControl)" value="false" />
         </div>
     </div>

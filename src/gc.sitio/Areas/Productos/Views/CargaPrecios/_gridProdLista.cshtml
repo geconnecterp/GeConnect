@@ -1,0 +1,56 @@
+﻿@using static gc.infraestructura.Helpers.GridHelper
+@model GridCoreSmart<ProductoDetalleDto>
+@{
+    var alt = true;
+    string clase = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+    string leyend = ViewBag.Leyenda ?? "Detalle de Productos";
+
+    // Variables para agrupar por familia
+    string familiaActual = string.Empty;
+    string familiaAnterior = string.Empty;
+}
+
+<div class="grid-golden">
+    <div class="grid-golden-body">
+        <div class="table-responsive text-nowrap table-wrapper">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbProdDet">
+                <thead>
+                    <tr class="header">
+                        <th scope="col">Código</th>
+                        <th scope="col">Lista</th>
+                        <th scope="col">Mrg</th>
+                        <th scope="col">PVta</th>
+                        <th scope="col">%Re</th>                       
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.ListaDatos == null || Model.ListaDatos.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="18" class="text-center">No se han encontrado productos para los criterios especificados.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        // Filas de datos agrupadas por familia
+                        @foreach (var item in Model.ListaDatos)
+                        {
+                            decimal re = 0M;
+                            if(item.p_pvta>0){ re = Math.Round(item.tp_pvta / item.p_pvta, 2); }
+                            if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
+                            <tr class="@clase" data-lp-id="@item.lp_id" onclick="selectReg(this,'tbProdDet')">
+                                <td class="@Model.ObtenerClase(item.lp_id)">@Model.FormatearDato(item.lp_id, FormatDato.Ninguno)</td>
+                                <td class="@Model.ObtenerClase(item.lp_desc)">@Model.FormatearDato(item.lp_desc, FormatDato.Ninguno)</td>
+                                <td class="@Model.ObtenerClase(item.tp_margen)">@Model.FormatearDato(item.tp_margen, FormatDato.Monto)</td>
+                                <td class="@Model.ObtenerClase(item.tp_pvta)">@Model.FormatearDato(item.tp_pvta, FormatDato.Monto)</td>
+                                
+                                <td class="@Model.ObtenerClase(item.p_pvta)">@Model.FormatearDato(re, FormatDato.Monto)</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

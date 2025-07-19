@@ -27,7 +27,10 @@ body {
 
 activable {
 }
-
+/* Para agrandar el tamaño del icono*/
+.bx-custom-size {
+    font-size: 2.5em !important;
+}
 /* Estilos para bloquear la tabla durante la carga */
 .tabla-desactivada {
     position: relative;

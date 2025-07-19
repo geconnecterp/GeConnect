@@ -641,7 +641,7 @@ $("#Rel01").autocomplete({
             success: function (obj) {
                 response($.map(obj, function (item) {
                     var texto = item.descripcion;
-                    return { label: texto, value: item.descripcion, id: item.id, prov: item.provId };
+                    return { label: texto, value: item.descripcion, id: item.id, prov: item.provId, tipo: "P" };
                 }));
             }
         })
@@ -652,6 +652,10 @@ $("#Rel01").autocomplete({
             $("#Rel01Item").val(ui.item.id);
             var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
             $("#Rel01List").append(opc);
+
+            consCta = ui.item.id;
+            consRrss = ui.item.label;
+            consTipo = ui.item.tipo;
         }
         return true;
     }
