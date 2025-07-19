@@ -11,6 +11,50 @@
     string familiaAnterior = string.Empty;
 }
 
+<style>
+    /* Estilo para alinear a la derecha los inputs numéricos */
+    .input-numeric {
+        text-align: right;
+        padding-right: 5px;
+        font-size: 0.85rem; /* Reducir tamaño de fuente para valores grandes */
+    }
+
+    /* Ajustar el padding interno para aprovechar mejor el espacio */
+    .form-control-sm.input-numeric {
+        padding: 0.15rem 0.3rem;
+        height: auto;
+        min-width: 70px; /* Ancho mínimo para visibilidad */
+    }
+
+    /* Ajustes específicos para la visualización de números grandes */
+    .input-tp_plista {
+        width: 100%;
+        letter-spacing: -0.5px; /* Reduce ligeramente el espacio entre caracteres */
+    }
+
+    /* Reducir el ancho de la columna de descripción al 80% */
+    #tbProdDet td:nth-child(2) {
+        max-width: 200px; /* Establecer ancho máximo */
+        width: 80%; /* Reducir al 80% */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Ajustar ancho del campo de bonificación para el patrón 999/999 */
+    .input-tp_boni {
+        min-width: 70px; /* Mismo ancho mínimo que los otros campos */
+        text-align: center; /* Centrar el texto para mejor visualización */
+        font-family: monospace; /* Fuente monoespaciada para mejor alineación */
+    }
+
+    /* Asegurar que todas las celdas de la tabla tengan un ancho apropiado */
+    #tbProdDet th, #tbProdDet td {
+        padding: 0.25rem 0.35rem; /* Reducir padding general */
+    }
+</style>
+
+
 <div class="grid-golden">
     <div class="grid-golden-header">
         <div class="row align-items-md-center">
@@ -38,7 +82,7 @@
                     <tr class="header">
                         <th scope="col">Código</th>
                         <th scope="col">Descripción</th>
-                        <th scope="col">Cód. Prov</th>
+                        <th scope="col">Cód.Prv</th>
                         <th scope="col">EAN</th>
                         <th scope="col">P.Lista</th>
                         <th scope="col">D1</th>
@@ -47,6 +91,7 @@
                         <th scope="col">D4</th>
                         <th scope="col">Dpa</th>
                         <th scope="col">Ft</th>
+                        <th scope="col">Bonif</th>
                         <th scope="col" class="text-end">P.Costo</th>
                         <th scope="col" class="text-end">Margen</th>
                         <th scope="col" class="text-end">P.Neto</th>
@@ -77,7 +122,7 @@
                             if (familiaActual != familiaAnterior)
                             {
                                 <tr class="table-secondary fw-bold">
-                                    <td colspan="18">
+                                    <td colspan="19">
                                         <i class="bx bx-folder me-1"></i>
                                         Familia: @item.pg_id - @item.pg_desc
                                     </td>
@@ -85,27 +130,95 @@
                                 familiaAnterior = familiaActual;
                                 alt = true; // Reiniciar alternancia de colores después de cada familia
                             }
-
+                            decimal re = 0M;
+                            if (item.p_pvta > 0) { re = Math.Round(item.tp_pvta / item.p_pvta, 2); }
                             if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
                             <tr class="@clase" data-p-id="@item.p_id" onclick="selectReg(this,'tbProdDet')">
                                 <td class="@Model.ObtenerClase(item.p_id)">@Model.FormatearDato(item.p_id, FormatDato.Ninguno)</td>
                                 <td class="@Model.ObtenerClase(item.p_desc)">@Model.FormatearDato(item.p_desc, FormatDato.Ninguno)</td>
                                 <td class="@Model.ObtenerClase(item.p_id_prov)">@Model.FormatearDato(item.p_id_prov, FormatDato.Ninguno)</td>
                                 <td class="@Model.ObtenerClase(item.p_id_barrado)">@Model.FormatearDato(item.p_id_barrado, FormatDato.Ninguno)</td>
-                                <td class="@Model.ObtenerClase(item.P_Plista)">@Model.FormatearDato(item.P_Plista, FormatDato.Monto)</td>
-                                <td class="@Model.ObtenerClase(item.P_Dto1)">@Model.FormatearDato(item.P_Dto1, FormatDato.Monto)</td>
-                                <td class="@Model.ObtenerClase(item.P_Dto2)">@Model.FormatearDato(item.P_Dto2, FormatDato.Monto)</td>
-                                <td class="@Model.ObtenerClase(item.P_Dto3)">@Model.FormatearDato(item.P_Dto3, FormatDato.Monto)</td>
-                                <td class="@Model.ObtenerClase(item.P_Dto4)">@Model.FormatearDato(item.P_Dto4, FormatDato.Monto)</td>
-                                <td class="@Model.ObtenerClase(item.P_Dto_Pa)">@Model.FormatearDato(item.P_Dto_Pa, FormatDato.Monto)</td>
-                                <td class="@Model.ObtenerClase(item.P_Porc_Flete)">@Model.FormatearDato(item.P_Porc_Flete, FormatDato.Monto)</td>
-                                <td class="@Model.ObtenerClase(item.P_Pcosto)">@Model.FormatearDato(item.P_Pcosto, FormatDato.Monto)</td>
-                                <td class="@Model.ObtenerClase(item.lp_margen)">@Model.FormatearDato(item.lp_margen, FormatDato.Monto)</td>
-                                <td class="@Model.ObtenerClase(item.p_pneto)">@Model.FormatearDato(item.p_pneto, FormatDato.Monto)</td>
-                                <td class="@Model.ObtenerClase(item.p_iva)">@item.p_iva</td>
-                                <td class="@Model.ObtenerClase(item.p_in)">@item.p_in</td>
-                                <td class="@Model.ObtenerClase(item.p_pvta)">@Model.FormatearDato(item.p_pvta, FormatDato.Monto)</td>
-                                <td class="@Model.ObtenerClase(item.p_pvta)">?????</td>
+                                <td class="@Model.ObtenerClase(item.tp_plista)">
+                                    <input type="text" class="form-control form-control-sm input-tp_plista input-numeric"
+                                           value="@(item.tp_plista)"
+                                           data-original-value="@(item.tp_plista)" />
+                                </td>
+                                <td class="@Model.ObtenerClase(item.tp_dto1)">
+                                    <input type="text" class="form-control form-control-sm input-tp_dto1 input-numeric"
+                                           value="@(item.tp_dto1.ToString("F2"))"
+                                           data-p-id="@item.p_id"
+                                           data-original-value="@item.tp_dto1" />
+                                </td>
+                                <td class="@Model.ObtenerClase(item.tp_dto2)">
+                                    <input type="text" class="form-control form-control-sm input-tp_dto2 input-numeric"
+                                           value="@(item.tp_dto2.ToString("F2"))"
+                                           data-p-id="@item.p_id"
+                                           data-original-value="@item.tp_dto2" />
+                                </td>
+                                <td class="@Model.ObtenerClase(item.tp_dto3)">
+                                    <input type="text" class="form-control form-control-sm input-tp_dto3 input-numeric"
+                                           value="@(item.tp_dto3.ToString("F2"))"
+                                           data-p-id="@item.p_id"
+                                           data-original-value="@item.tp_dto3" />
+                                </td>
+                                <td class="@Model.ObtenerClase(item.tp_dto4)">
+                                    <input type="text" class="form-control form-control-sm input-tp_dto4 input-numeric"
+                                           value="@(item.tp_dto4.ToString("F2"))"
+                                           data-p-id="@item.p_id"
+                                           data-original-value="@item.tp_dto4" />
+                                </td>
+                                <td class="@Model.ObtenerClase(item.tp_dto_pa)">
+                                    <input type="text" class="form-control form-control-sm input-tp_dto_pa input-numeric"
+                                           value="@(item.tp_dto_pa.ToString("F2"))"
+                                           data-p-id="@item.p_id"
+                                           data-original-value="@item.tp_dto_pa" />
+                                </td>
+                                <td class="@Model.ObtenerClase(item.tp_porc_flete)">
+                                    <input type="text" class="form-control form-control-sm input-tp_porc_flete input-numeric"
+                                           value="@(item.tp_porc_flete.ToString("F2"))"
+                                           data-p-id="@item.p_id"
+                                           data-original-value="@item.tp_porc_flete" />
+                                </td>
+                                <td class="@Model.ObtenerClase('c')">
+                                    <input type="text" class="form-control form-control-sm input-tp_boni"
+                                           value="@Model.FormatearDato(item.tp_boni, FormatDato.Ninguno)"
+                                           data-p-id="@item.p_id"
+                                           placeholder="000/000" />
+                                </td>
+                                <td class="@Model.ObtenerClase(item.tp_pcosto)">
+                                    <input type="text" class="form-control form-control-sm input-numeric"
+                                           value="@(item.tp_pcosto.ToString("F2"))"
+                                           readonly
+                                           data-p-id="@item.p_id"
+                                           data-original-value="@item.tp_pcosto" />
+                                </td>
+                                <td class="@Model.ObtenerClase(item.tp_margen)">
+                                    <input type="text" class="form-control form-control-sm input-tp_margen input-numeric"
+                                           value="@(item.tp_margen.ToString("F2"))"
+                                           data-p-id="@item.p_id"
+                                           data-original-value="@item.tp_margen" />
+                                </td>
+                                <td class="@Model.ObtenerClase(item.tp_pneto)">
+                                    <input type="text" class="form-control form-control-sm input-numeric"
+                                           value="@(item.tp_pneto.ToString("F2"))"
+                                           readonly
+                                           data-p-id="@item.p_id"
+                                           data-original-value="@item.tp_pneto" />
+                                </td>
+                                <td class="@Model.ObtenerClase('c')">@($"{item.iva_situacion}-{item.iva_alicuota}")</td>
+                                <td class="@Model.ObtenerClase(item.tin_alicuota)">
+                                    <input type="text" class="form-control form-control-sm input-tin_alicuota input-numeric"
+                                           value="@(item.tin_alicuota.ToString("F2"))"
+                                           data-p-id="@item.p_id"
+                                           data-original-value="@item.tin_alicuota" />
+                                </td>
+                                <td class="@Model.ObtenerClase(item.tp_pvta)">
+                                    <input type="text" class="form-control form-control-sm input-tp_pvta input-numeric"
+                                           value="@(item.tp_pvta.ToString("F2"))"
+                                           data-p-id="@item.p_id"
+                                           data-original-value="@item.tp_pvta" />
+                                </td>
+                                <td class="@Model.ObtenerClase(item.p_pvta)">@Model.FormatearDato(re, FormatDato.Monto)</td>
                             </tr>
                         }
                     }

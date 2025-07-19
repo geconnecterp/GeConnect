@@ -391,6 +391,18 @@ namespace gc.api.core.Constantes
 
             #endregion
         }
+
+        public static class StoredFunctions
+        {
+            public const string FX_PASSWORD_ENCRIPTA = "dbo.sf_pass_e";
+            public const string FX_PASSWORD_DESENCRIPTA = "dbo.sf_pass_d";
+
+            public const string FX_PROD_COSTO = "SF_PCosto";
+            public const string FX_PROD_PVTA_LISTA_BASE = "SF_PVta_Lista_Base";
+            public const string FX_PROD_PVTA_LISTA_LINK = "SF_PVta_Lista_Link";
+            public const string FX_PROD_PVTA_MARGEN = "SF_PVta_x_Mg";
+
+        }
     }
 
 }

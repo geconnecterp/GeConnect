@@ -1,7 +1,340 @@
-﻿$(function () {
+﻿const divs = {
+    ProductoDetalle: "#divPCP",
+    ProductoListas: "#divProdLista"
+}
+
+$(function () {
+    // Estilos para campos readonly
+    $('<style>')
+        .prop('type', 'text/css')
+        .html(`
+            .campo-readonly {
+                background-color: #f8f9fa;
+                cursor: pointer;
+                border-color: #ced4da;
+            }
+            .campo-readonly:hover {
+                background-color: #e9ecef;
+                border-color: #adb5bd;
+            }
+        `)
+        .appendTo('head');
+    // Estilos para campos readonly
+    if (!$('style:contains(".campo-readonly")').length) {
+        $('<style>')
+            .prop('type', 'text/css')
+            .html(`
+                .campo-readonly {
+                    background-color: #f8f9fa;
+                    cursor: pointer;
+                    border-color: #ced4da;
+                }
+                .campo-readonly:hover {
+                    background-color: #e9ecef;
+                    border-color: #adb5bd;
+                }
+                input[readonly]:not(.campo-readonly) {
+                    background-color: #e9ecef;
+                    cursor: not-allowed;
+                }
+            `)
+            .appendTo('head');
+    }
+
     configurarBotonesProdCP();
     cargaEventosCP();
+    
 });
+
+function inicializaControlCuenta() {
+    $("#controlConsultaCambio" + nnControlCta01).val(true);
+    window["AsignaDatosCuenta" + nnControlCta01]();
+
+    //muestro el control
+    $("#controlCta" + nnControlCta01).show("fast");
+}
+
+function configurarEventosTabla() {
+    // Evento para seleccionar filas de la tabla
+    $("#tbProdDet tbody tr").on("click", function (e) {
+        // Solo activar si el clic no fue en un input
+        if (!$(e.target).is('input')) {
+            $(this).toggleClass("selected");
+        }
+    });
+
+    // Evento para el checkbox de seleccionar todos
+    $("#checkAllProd").on("change", function () {
+        const isChecked = $(this).prop("checked");
+        $("#tbProdDet tbody tr").each(function () {
+            if (isChecked) {
+                $(this).addClass("selected");
+            } else {
+                $(this).removeClass("selected");
+            }
+        });
+    });
+}
+
+
+// Configuración optimizada de elementos de tabla
+function configuracionElementosTablaDetalle() {
+    console.log("Configurando elementos de tabla detalle...");
+
+    // Remover máscaras previas para evitar conflictos en todos los campos
+    $('.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta').inputmask('remove');
+
+    // Establecer todos los campos como readonly inicialmente (excepto los que ya tienen readonly)
+    $('.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta')
+        .prop('readonly', true)
+        .addClass('campo-readonly');
+
+    // Formatear los valores
+    formatearValoresIniciales();
+
+    // Configurar eventos para activar/desactivar edición
+    configurarEventosEdicion();
+
+    // Configuración para campos con 3 decimales (P.Lista)
+    Inputmask({
+        alias: "numeric",
+        groupSeparator: ",",
+        radixPoint: ".",
+        autoGroup: true,
+        digits: 3,
+        digitsOptional: false,
+        rightAlign: true,
+        prefix: '',
+        placeholder: "0",
+        clearMaskOnLostFocus: false,
+        showMaskOnHover: false,
+        showMaskOnFocus: false,
+        onBeforeMask: function (value) {
+            if (value) {
+                let numValue = parseFloat(value.toString().replace(/,/g, ''));
+                return isNaN(numValue) ? value : numValue.toFixed(3);
+            }
+            return value;
+        }
+    }).mask('.input-tp_plista');
+
+    // Configuración para campos con 2 decimales (todos los demás campos numéricos)
+    Inputmask({
+        alias: "numeric",
+        groupSeparator: ",",
+        radixPoint: ".",
+        autoGroup: true,
+        digits: 2,
+        digitsOptional: false,
+        rightAlign: true,
+        prefix: '',
+        placeholder: "0",
+        clearMaskOnLostFocus: false,
+        showMaskOnHover: false,
+        showMaskOnFocus: false,
+        onBeforeMask: function (value) {
+            if (value) {
+                let numValue = parseFloat(value.toString().replace(/,/g, ''));
+                return isNaN(numValue) ? value : numValue.toFixed(2);
+            }
+            return value;
+        }
+    }).mask('.input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta');
+
+    // Configuración para campo de bonificación (formato 999/999)
+    Inputmask({
+        mask: "999/999",
+        placeholder: "",
+        showMaskOnHover: false,
+        showMaskOnFocus: false
+    }).mask('.input-tp_boni');
+
+    // Validación tp_boni para asegurar que denominador > numerador
+    $('.input-tp_boni').off('blur').on('blur', function () {
+        var val = $(this).val();
+        var partes = val.split('/');
+        if (partes.length === 2) {
+            var num = parseInt(partes[0], 10);
+            var den = parseInt(partes[1], 10);
+            if (num > den && den > 0) {
+                alert('El denominador debe ser mayor al numerador. Se corregirá automáticamente.');
+                $(this).val(den + '/' + num);
+            }
+        }
+
+        // Volver a readonly cuando pierde foco
+        $(this).prop('readonly', true).addClass('campo-readonly');
+    });
+
+    console.log("Configuración de elementos de tabla detalle completada");
+}
+
+// Función de depuración mejorada que verifica todos los campos
+function depurarValoresIniciales() {
+    console.log("=== DEPURACIÓN DE VALORES INICIALES ===");
+
+    // Agrupar todos los selectores para campos con 3 decimales
+    $('.input-tp_plista').each(function (index) {
+        let value = $(this).val();
+        let originalValue = $(this).data('original-value');
+        console.log(`Campo tp_plista ${index + 1}: valor=${value}, original=${originalValue}`);
+    });
+
+    // Agrupar todos los selectores para campos con 2 decimales
+    $('.input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete').each(function (index) {
+        let value = $(this).val();
+        let originalValue = $(this).data('original-value');
+        let fieldClass = $(this).attr('class').match(/input-tp_[^\s]+/)[0];
+        console.log(`Campo ${fieldClass} ${index + 1}: valor=${value}, original=${originalValue}`);
+    });
+
+    // Revisar campos de bonificación
+    $('.input-tp_boni').each(function (index) {
+        let value = $(this).val();
+        console.log(`Campo tp_boni ${index + 1}: valor=${value}`);
+    });
+}
+
+//// Función optimizada para formatear valores iniciales
+//function depurarValoresIniciales() {
+//    console.log("=== DEPURACIÓN DE VALORES INICIALES ===");
+
+//    // Agrupar todos los selectores para campos con 3 decimales
+//    $('.input-tp_plista').each(function (index) {
+//        let value = $(this).val();
+//        let originalValue = $(this).data('original-value');
+//        console.log(`Campo tp_plista ${index + 1}: valor=${value}, original=${originalValue}`);
+//    });
+
+//    // Agrupar todos los selectores para campos con 2 decimales (incluye nuevos campos)
+//    $('.input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta').each(function (index) {
+//        let value = $(this).val();
+//        let originalValue = $(this).data('original-value');
+//        let fieldClass = $(this).attr('class').match(/input-tp_[^\s]+|input-tin_[^\s]+/)[0];
+//        console.log(`Campo ${fieldClass} ${index + 1}: valor=${value}, original=${originalValue}`);
+//    });
+
+//    // Revisar campos de bonificación
+//    $('.input-tp_boni').each(function (index) {
+//        let value = $(this).val();
+//        console.log(`Campo tp_boni ${index + 1}: valor=${value}`);
+//    });
+
+//    // Revisar campos readonly
+//    $('input[readonly]').not('.campo-readonly').each(function (index) {
+//        let value = $(this).val();
+//        let originalValue = $(this).data('original-value');
+//        let fieldId = $(this).attr('id') || 'readonly-field';
+//        console.log(`Campo readonly ${fieldId} ${index + 1}: valor=${value}, original=${originalValue}`);
+//    });
+//}
+
+// Nueva función para recalcular valores cuando cambia un campo
+function recalcularValores(changedField) {
+    // Obtener el ID del producto
+    let productId = changedField.data('p-id');
+    let row = changedField.closest('tr');
+
+    // Si el campo cambiado es uno de los que afecta al costo
+    if (changedField.hasClass('input-tp_plista') ||
+        changedField.hasClass('input-tp_dto1') ||
+        changedField.hasClass('input-tp_dto2') ||
+        changedField.hasClass('input-tp_dto3') ||
+        changedField.hasClass('input-tp_dto4') ||
+        changedField.hasClass('input-tp_dto_pa') ||
+        changedField.hasClass('input-tp_porc_flete') ||
+        changedField.hasClass('input-tp_boni')) {
+
+        // Recalcular costo (esto sería un ejemplo, el cálculo real dependería de la lógica de negocio)
+        recalcularCosto(row);
+    }
+
+    // Si el campo cambiado es el margen
+    if (changedField.hasClass('input-tp_margen')) {
+        // Recalcular precio neto basado en el costo y el nuevo margen
+        recalcularPrecioNeto(row);
+    }
+
+    // Si el campo cambiado es precio de venta o impuesto interno
+    if (changedField.hasClass('input-tp_pvta') || changedField.hasClass('input-tin_alicuota')) {
+        // Recalcular relación con precio venta
+        recalcularRelacionPrecioVenta(row);
+    }
+}
+
+// Funciones auxiliares para los recálculos
+function recalcularCosto(row) {
+    // Obtener valores de los campos
+    let precioLista = parseFloat(row.find('.input-tp_plista').val().replace(/,/g, ''));
+    let dto1 = parseFloat(row.find('.input-tp_dto1').val().replace(/,/g, ''));
+    let dto2 = parseFloat(row.find('.input-tp_dto2').val().replace(/,/g, ''));
+    let dto3 = parseFloat(row.find('.input-tp_dto3').val().replace(/,/g, ''));
+    let dto4 = parseFloat(row.find('.input-tp_dto4').val().replace(/,/g, ''));
+    let dtoPa = parseFloat(row.find('.input-tp_dto_pa').val().replace(/,/g, ''));
+    let flete = parseFloat(row.find('.input-tp_porc_flete').val().replace(/,/g, ''));
+
+    // Procesar bonificación
+    let boniText = row.find('.input-tp_boni').val();
+    let boniValue = 0;
+    if (boniText && boniText.includes('/')) {
+        let parts = boniText.split('/');
+        if (parts.length === 2) {
+            let num = parseInt(parts[0], 10);
+            let den = parseInt(parts[1], 10);
+            if (den > 0) {
+                boniValue = num / den;
+            }
+        }
+    }
+
+    // Aquí iría la lógica de cálculo del costo (ejemplo simplificado)
+    // Nota: Esta es una simplificación, el cálculo real dependería de la lógica de negocio específica
+    let precioConDescuentos = precioLista;
+    if (!isNaN(dto1) && dto1 > 0) precioConDescuentos = precioConDescuentos * (1 - dto1 / 100);
+    if (!isNaN(dto2) && dto2 > 0) precioConDescuentos = precioConDescuentos * (1 - dto2 / 100);
+    if (!isNaN(dto3) && dto3 > 0) precioConDescuentos = precioConDescuentos * (1 - dto3 / 100);
+    if (!isNaN(dto4) && dto4 > 0) precioConDescuentos = precioConDescuentos * (1 - dto4 / 100);
+    if (!isNaN(dtoPa) && dtoPa > 0) precioConDescuentos = precioConDescuentos * (1 - dtoPa / 100);
+
+    let costoCalculado = precioConDescuentos;
+    if (!isNaN(flete) && flete > 0) costoCalculado = costoCalculado * (1 + flete / 100);
+    if (boniValue > 0) costoCalculado = costoCalculado * (1 - boniValue);
+
+    // Actualizar el campo de costo (readonly)
+    row.find('input[data-original-value]').filter(function () {
+        return $(this).closest('td').hasClass(row.find('.input-tp_pcosto').closest('td').attr('class'));
+    }).val(costoCalculado.toFixed(2));
+
+    // Recalcular precio neto basado en el margen actual
+    recalcularPrecioNeto(row);
+}
+
+function recalcularPrecioNeto(row) {
+    // Obtener el costo
+    let costo = parseFloat(row.find('input[data-original-value]').filter(function () {
+        return $(this).closest('td').hasClass(row.find('.input-tp_pcosto').closest('td').attr('class'));
+    }).val().replace(/,/g, ''));
+
+    // Obtener el margen
+    let margen = parseFloat(row.find('.input-tp_margen').val().replace(/,/g, ''));
+
+    // Calcular precio neto
+    let precioNeto = costo;
+    if (!isNaN(margen) && margen > 0) {
+        precioNeto = costo * (1 + margen / 100);
+    }
+
+    // Actualizar el campo de precio neto (readonly)
+    row.find('input[data-original-value]').filter(function () {
+        return $(this).closest('td').hasClass(row.find('input[data-original-value="' + row.find('.input-tp_pneto').data('original-value') + '"]').closest('td').attr('class'));
+    }).val(precioNeto.toFixed(2));
+}
+
+function recalcularRelacionPrecioVenta(row) {
+    // Esta función calcularía la relación entre precio de venta y otros valores
+    // La implementación dependería de la lógica de negocio específica
+}
+
 
 function cargaEventosCP() {
     // Observar la adición de elementos mediante MutationObserver
@@ -286,8 +619,35 @@ function configurarBotonesProdCP() {
     // Evento para el botón buscar
     $("#btnBuscar").on("click", function (e) {
         e.preventDefault();
+
+        // Verificar si se ha seleccionado un proveedor mediante la variable consCta
+        // Esta variable debería contener el ID de la cuenta del proveedor si se ha seleccionado
+        if (typeof consCta === 'undefined' || !consCta) {
+            // Si no hay proveedor seleccionado, mostrar mensaje de advertencia
+            AbrirMensaje(
+                "ATENCIÓN",
+                "Debe seleccionar un proveedor antes de realizar la búsqueda.",
+                function () {
+                    $("#msjModal").modal("hide");
+                },
+                false,
+                ["Entendido"],
+                "warn!",
+                null
+            );
+            return false; // Detener la ejecución
+        }
+
+        AbrirWaiting("Cargando los productos del proveedor según el filtro especificado. Por favor espere..."); 
+        // Si hay un proveedor seleccionado, continuar con la búsqueda
         buscarProductosDetalle();
+        //Presenta el control comun de cuenta
+        inicializaControlCuenta();
     });
+
+    //inicializo botones aceptar y confirmar desactivados y ocultos
+    $("#btnAbmAceptar").prop("disabled", true).hide();
+    $("#btnAbmCancelar").prop("disabled", true).hide();
 
     $("#btnFiltro").on("mousedown", function () {
         if ($("#divFiltro").is(":hidden")) {
@@ -352,9 +712,23 @@ function configurarBotonesProdCP() {
         $("#Rel03List").empty();
         $("#Rel03List").prop("disabled", true);
     }
+
+    // Asegurarse de que los campos vuelvan a estado readonly si el usuario hace clic en otra parte
+    $(document).on('click', function (e) {
+        if (!$(e.target).is('.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta')) {
+            // Si se hizo clic fuera de los inputs y hay alguno activo, desactivarlo
+            $('.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta').each(function () {
+                if (!$(this).prop('readonly')) {
+                    // Simular el evento blur para formatear y desactivar
+                    $(this).blur();
+                }
+            });
+        }
+    });
+
 }
 
-function buscarProductosDetalle() {
+function obtenerParametros(div) {
     // Obtener valores de los filtros
     const proveedor = $("#Rel01Item").val() || $("#Rel01List").val();
 
@@ -392,22 +766,27 @@ function buscarProductosDetalle() {
     const generarArchivo = $("#Opt2").prop("checked");
 
     // Mostrar indicador de carga
-    $("#divResultados").html('<div class="text-center p-3"><i class="bx bx-loader bx-spin font-size-24"></i><p class="mt-2">Cargando datos...</p></div>');
+    $(div).html('<div class="text-center p-3"><i class="bx bx-loader bx-spin font-size-24"></i><p class="mt-2">Cargando datos...</p></div>');
+    return {
+        buscar: buscar,
+        id: id,
+        id2: id2,
+        ctaId: proveedor,
+        familias: familias,
+        rubros: rubros,
+        disc: incluirDiscontinuos,
+        file: generarArchivo
+    };
+}
+
+function buscarProductosDetalle() {
+    let datos = obtenerParametros(divs.ProductoDetalle);
 
     // Realizar petición AJAX
     $.ajax({
         url: buscarProdDetUrl,
         type: "POST",
-        data: {
-            buscar: buscar,
-            id: id,
-            id2: id2,
-            ctaId: proveedor,
-            familias: familias,
-            rubros: rubros,
-            disc: incluirDiscontinuos,
-            file: generarArchivo
-        },
+        data: datos,
         success: function (response) {
             // Mostrar resultados
             $("#divPCP").html(response);
@@ -419,6 +798,25 @@ function buscarProductosDetalle() {
 
                 // Configurar eventos para la tabla de resultados
                 configurarEventosTabla();
+
+                // Depurar valores iniciales antes de aplicar configuración
+                console.log("Datos cargados, verificando valores iniciales...");
+                depurarValoresIniciales();
+
+                // Aplicar configuración a los inputs numéricos
+                configuracionElementosTablaDetalle();
+
+                // Verificar valores después de aplicar la configuración
+                setTimeout(function () {
+                    console.log("Después de aplicar configuración:");
+                    depurarValoresIniciales();
+                }, 500);
+
+                // Obtener el ID del primer producto para consultar sus listas de precios
+                const primerProductoId = $(response).find("tbody tr:not(.table-secondary):first").data("p-id");
+                console.log("ID del primer producto:", primerProductoId);
+
+                buscarProductoLista(primerProductoId);
             }
         },
         error: function (error) {
@@ -429,6 +827,116 @@ function buscarProductosDetalle() {
 
     return false;
 }
+
+function buscarProductoLista(primerProductoId) {
+    // Si encontramos un producto, cargar sus listas de precios
+    if (primerProductoId) {
+        console.log("Cargando listas de precios para el producto ID:", primerProductoId);
+
+        let datos = obtenerParametros(divs.ProductoListas);
+        // Añadir el ID del producto a los parámetros
+        datos.id = primerProductoId;
+        /*datos.id2 = primerProductoId;*/
+
+        // Mostrar indicador de carga en el div de listas de precios
+        $("#divProdLista").html('<div class="text-center p-3"><i class="bx bx-loader bx-spin font-size-24"></i><p class="mt-2">Cargando listas de precios...</p></div>');
+
+        // Realizar la segunda petición AJAX para obtener las listas de precios
+        $.ajax({
+            url: buscarProdListaUrl,
+            type: "POST",
+            data: datos,
+            success: function (responseLista) {
+                CerrarWaiting();
+                // Mostrar resultados de listas de precios
+                $("#divProdLista").html(responseLista);
+                console.log("Listas de precios cargadas correctamente");
+            },
+            error: function (error) {
+                CerrarWaiting();
+                console.error("Error al obtener las listas de precios:", error);
+                $("#divProdLista").html('<div class="alert alert-danger">Error al cargar las listas de precios.</div>');
+            }
+        });
+    } else {
+        CerrarWaiting();
+        console.warn("No se pudo obtener el ID del primer producto");
+        $("#divProdLista").html('<div class="alert alert-warning">No se pudo obtener información de listas de precios.</div>');
+    }
+}
+
+// Función para configurar eventos de activación/desactivación de edición
+function configurarEventosEdicion() {
+    // Eliminar cualquier evento click previo para evitar duplicados
+    $('.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta').off('click');
+
+    // Agregar evento click para habilitar edición
+    $('.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta').on('click', function (e) {
+        // Evitar propagación para no activar el evento de selección de fila
+        e.stopPropagation();
+
+        // Activar edición solo para este campo
+        $(this).prop('readonly', false).removeClass('campo-readonly').focus();
+
+        console.log(`Campo ${$(this).attr('class').match(/input-tp_[^\s]+|input-tin_[^\s]+/)[0]} activado para edición`);
+    });
+
+    // Agregar evento blur para todos los campos excepto tp_boni (que ya tiene su propio evento)
+    $('.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta').off('blur').on('blur', function () {
+        // Formatear el valor según el tipo de campo
+        let value = $(this).val().replace(/,/g, '');
+        let numValue = parseFloat(value);
+
+        if (!isNaN(numValue)) {
+            // Aplicar formato según el tipo de campo
+            if ($(this).hasClass('input-tp_plista')) {
+                $(this).val(numValue.toFixed(3));
+            } else {
+                $(this).val(numValue.toFixed(2));
+            }
+        }
+
+        // Volver a readonly
+        $(this).prop('readonly', true).addClass('campo-readonly');
+
+        // Recalcular valores si es necesario
+        recalcularValores($(this));
+
+        console.log(`Campo ${$(this).attr('class').match(/input-tp_[^\s]+|input-tin_[^\s]+/)[0]} vuelve a readonly`);
+    });
+}
+
+// Función para formatear valores iniciales
+function formatearValoresIniciales() {
+    console.log("Formateando valores iniciales...");
+
+    // Formatear campos con 3 decimales
+    $('.input-tp_plista').each(function () {
+        let originalValue = $(this).data('original-value');
+        if (originalValue !== undefined) {
+            let numValue = parseFloat(originalValue);
+            if (!isNaN(numValue)) {
+                $(this).val(numValue.toFixed(3));
+                console.log(`Valor tp_plista: ${originalValue} → ${numValue.toFixed(3)}`);
+            }
+        }
+    });
+
+    // Formatear campos con 2 decimales (incluye los nuevos campos)
+    $('.input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta').each(function () {
+        let originalValue = $(this).data('original-value');
+        let fieldClass = $(this).attr('class').match(/input-tp_[^\s]+|input-tin_[^\s]+/)[0];
+
+        if (originalValue !== undefined) {
+            let numValue = parseFloat(originalValue);
+            if (!isNaN(numValue)) {
+                $(this).val(numValue.toFixed(2));
+                console.log(`Valor ${fieldClass}: ${originalValue} → ${numValue.toFixed(2)}`);
+            }
+        }
+    });
+}
+
 
 function configurarEventosTabla() {
     // Evento para seleccionar filas de la tabla

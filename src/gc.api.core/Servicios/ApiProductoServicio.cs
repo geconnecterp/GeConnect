@@ -1524,7 +1524,7 @@ namespace gc.api.core.Servicios
 
         public List<ProductoDetalleDto> Obtener_ProductoDetalleListas(QueryFilters filtro)
         {
-            var sp = ConstantesGC.StoredProcedures.SP_PROD_DETALLE_PROD;
+            var sp = ConstantesGC.StoredProcedures.SP_PROD_CARGA_ALL;
             var ps = new List<SqlParameter>();
 
             //si o si tiene que venir la cuenta del proveedor
@@ -1551,47 +1551,56 @@ namespace gc.api.core.Servicios
                     ps.Add(new SqlParameter("@p_id_h", filtro.Id2));
                 }
             }
+            ps.Add(new SqlParameter("@des", false));
+            ps.Add(new SqlParameter("@pg", false));
+            ps.Add(new SqlParameter("@rub", false));
+            ps.Add(new SqlParameter("@discontinuo", true));
+            ps.Add(new SqlParameter("@file", false));
 
-            //evalua si hay algun texto de algun producto
-            if (!string.IsNullOrEmpty(filtro.Buscar))
-            {
-                ps.Add(new SqlParameter("@des", true));
-                ps.Add(new SqlParameter("@p_desc_like", filtro.Buscar));
-            }
-            else
-            {
-                ps.Add(new SqlParameter("@des", false));
-            }
 
-            //se tiene en cuenta si vienen id de familia
-            if (filtro.Rel03?.Count > 0)
-            {
-                var items = filtro.Rel03?.Select(x => x.Id).ToList();
-                if (items.Count > 0)
-                {
-                    var familias = string.Join(",", items);
-                    ps.Add(new SqlParameter("@pg", true));
-                    ps.Add(new SqlParameter("@pg_list", familias));
-                }
-            }
+            #region Se comenta todo este codigo por si surgen requerimientos nuevos o nueva complejidad
+            ////evalua si hay algun texto de algun producto
+            //if (!string.IsNullOrEmpty(filtro.Buscar))
+            //{
+            //    ps.Add(new SqlParameter("@des", true));
+            //    ps.Add(new SqlParameter("@p_desc_like", filtro.Buscar));
+            //}
+            //else
+            //{
+            //    ps.Add(new SqlParameter("@des", false));
+            //}
 
-            if (filtro.Rel02?.Count > 0)
-            {
-                var rubros = string.Join(",", filtro.Rel02);
-                ps.Add(new SqlParameter("@rub", true));
-                ps.Add(new SqlParameter("@rub_list", rubros));
-            }
+            ////se tiene en cuenta si vienen id de familia
+            //if (filtro.Rel03?.Count > 0)
+            //{
+            //    var items = filtro.Rel03?.Select(x => x.Id).ToList();
+            //    if (items.Count > 0)
+            //    {
+            //        var familias = string.Join(",", items);
+            //        ps.Add(new SqlParameter("@pg", true));
+            //        ps.Add(new SqlParameter("@pg_list", familias));
+            //    }
+            //}
 
-            //discontinuos
-            ps.Add(new SqlParameter("@discontinuo", filtro.Opt1));
+            //if (filtro.Rel02?.Count > 0)
+            //{
+            //    var rubros = string.Join(",", filtro.Rel02);
+            //    ps.Add(new SqlParameter("@rub", true));
+            //    ps.Add(new SqlParameter("@rub_list", rubros));
+            //}
 
-            //archivos
-            if (filtro.ListNN.Count > 0)
-            {
-                var archs = string.Join(",", filtro.ListNN);
-                ps.Add(new SqlParameter("@file", true));
-                ps.Add(new SqlParameter("@file_list", archs));
-            }
+            ////discontinuos
+            //ps.Add(new SqlParameter("@discontinuo", filtro.Opt1));
+
+            ////archivos
+            //if (filtro.ListNN.Count > 0)
+            //{
+            //    var archs = string.Join(",", filtro.ListNN);
+            //    ps.Add(new SqlParameter("@file", true));
+            //    ps.Add(new SqlParameter("@file_list", archs));
+            //}
+
+            #endregion
 
             List<ProductoDetalleDto> resp = _repository.EjecutarLstSpExt<ProductoDetalleDto>(sp, ps, true);
             return resp;
