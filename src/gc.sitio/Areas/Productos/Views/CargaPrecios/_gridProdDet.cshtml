@@ -111,7 +111,7 @@
                     else
                     {
                         // Ordenamos los datos por familia para agruparlos
-                        var productosPorFamilia = Model.ListaDatos.OrderBy(p => p.pg_id).ThenBy(p => p.p_id).ToList();
+                        var productosPorFamilia = Model.ListaDatos.OrderBy(p => p.pg_id).ThenBy(p => p.p_desc).ToList();
 
                         // Filas de datos agrupadas por familia
                         @foreach (var item in productosPorFamilia)
@@ -186,7 +186,7 @@
                                            placeholder="000/000" />
                                 </td>
                                 <td class="@Model.ObtenerClase(item.tp_pcosto)">
-                                    <input type="text" class="form-control form-control-sm input-numeric"
+                                    <input type="text" class="form-control form-control-sm input-tp_pcosto input-numeric"
                                            value="@(item.tp_pcosto.ToString("F2"))"
                                            readonly
                                            data-p-id="@item.p_id"
@@ -199,7 +199,7 @@
                                            data-original-value="@item.tp_margen" />
                                 </td>
                                 <td class="@Model.ObtenerClase(item.tp_pneto)">
-                                    <input type="text" class="form-control form-control-sm input-numeric"
+                                    <input type="text" class="form-control form-control-sm input-tp_pneto input-numeric"
                                            value="@(item.tp_pneto.ToString("F2"))"
                                            readonly
                                            data-p-id="@item.p_id"
