@@ -118,7 +118,34 @@ function configuracionElementosTablaDetalle() {
         }
     }).mask('.input-tp_plista');
 
-    // Configuración para campos con 2 decimales (todos los demás campos numéricos)
+    // Configuración para campos con 1 decimal (descuentos y flete)
+    Inputmask({
+        alias: "numeric",
+        groupSeparator: ",",
+        radixPoint: ".",
+        autoGroup: true,
+        digits: 1,
+        digitsOptional: false,
+        rightAlign: true,
+        integerDigits: 2, // Máximo 2 dígitos enteros
+        min: 0,
+        max: 99.9, // Máximo valor permitido: 99.9
+        prefix: '',
+        placeholder: "0",
+        clearMaskOnLostFocus: false,
+        showMaskOnHover: false,
+        showMaskOnFocus: false,
+        onBeforeMask: function (value) {
+            if (value) {
+                let numValue = parseFloat(value.toString().replace(/,/g, ''));
+                if (numValue > 99.9) numValue = 99.9; // Limitar al máximo permitido
+                return isNaN(numValue) ? value : numValue.toFixed(1);
+            }
+            return value;
+        }
+    }).mask('.input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete');
+
+    // Configuración para campos con 2 decimales (los demás campos numéricos)
     Inputmask({
         alias: "numeric",
         groupSeparator: ",",
@@ -139,7 +166,7 @@ function configuracionElementosTablaDetalle() {
             }
             return value;
         }
-    }).mask('.input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta');
+    }).mask('.input-tp_margen, .input-tin_alicuota, .input-tp_pvta');
 
     // Configuración para campo de bonificación (formato 999/999)
     Inputmask({
@@ -149,26 +176,8 @@ function configuracionElementosTablaDetalle() {
         showMaskOnFocus: false
     }).mask('.input-tp_boni');
 
-    // Validación tp_boni para asegurar que denominador > numerador
-    $('.input-tp_boni').off('blur').on('blur', function () {
-        var val = $(this).val();
-        var partes = val.split('/');
-        if (partes.length === 2) {
-            var num = parseInt(partes[0], 10);
-            var den = parseInt(partes[1], 10);
-            if (num > den && den > 0) {
-                alert('El denominador debe ser mayor al numerador. Se corregirá automáticamente.');
-                $(this).val(den + '/' + num);
-            }
-        }
-
-        // Volver a readonly cuando pierde foco
-        $(this).prop('readonly', true).addClass('campo-readonly');
-    });
-
     console.log("Configuración de elementos de tabla detalle completada");
 }
-
 // Función de depuración mejorada que verifica todos los campos
 function depurarValoresIniciales() {
     console.log("=== DEPURACIÓN DE VALORES INICIALES ===");
@@ -714,13 +723,15 @@ function configurarBotonesProdCP() {
     }
 
     // Asegurarse de que los campos vuelvan a estado readonly si el usuario hace clic en otra parte
-    $(document).on('click', function (e) {
+    $(document).off('click').on('click', function (e) {
         if (!$(e.target).is('.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta')) {
             // Si se hizo clic fuera de los inputs y hay alguno activo, desactivarlo
             $('.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta').each(function () {
                 if (!$(this).prop('readonly')) {
-                    // Simular el evento blur para formatear y desactivar
-                    $(this).blur();
+                    // En lugar de usar .blur() directamente, que está deprecated
+                    // Disparamos el evento blur de forma manual en el elemento DOM nativo
+                    const event = new Event('blur', { bubbles: true });
+                    this.dispatchEvent(event);
                 }
             });
         }
@@ -868,41 +879,124 @@ function buscarProductoLista(primerProductoId) {
 // Función para configurar eventos de activación/desactivación de edición
 function configurarEventosEdicion() {
     // Eliminar cualquier evento click previo para evitar duplicados
-    $('.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta').off('click');
+    $('.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta')
+        .off('click')
+        .off('focus')
+        .off('blur');
 
     // Agregar evento click para habilitar edición
     $('.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta').on('click', function (e) {
         // Evitar propagación para no activar el evento de selección de fila
         e.stopPropagation();
 
-        // Activar edición solo para este campo
-        $(this).prop('readonly', false).removeClass('campo-readonly').focus();
+        // Obtener referencia al elemento DOM nativo
+        const inputElement = this;
 
-        console.log(`Campo ${$(this).attr('class').match(/input-tp_[^\s]+|input-tin_[^\s]+/)[0]} activado para edición`);
+        // Activar edición solo para este campo
+        $(inputElement).prop('readonly', false).removeClass('campo-readonly');
+
+        // Usar setTimeout para evitar la advertencia de deprecated
+        setTimeout(function () {
+            // Enfocar el elemento
+            inputElement.focus();
+
+            // Seleccionar todo el contenido
+            inputElement.select();
+        }, 0);
+
+        console.log(`Campo ${$(inputElement).attr('class').match(/input-tp_[^\s]+|input-tin_[^\s]+/)[0]} activado para edición`);
     });
 
-    // Agregar evento blur para todos los campos excepto tp_boni (que ya tiene su propio evento)
-    $('.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta').off('blur').on('blur', function () {
+    // Definir los campos de la secuencia01
+    const camposSecuencia01 = '.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni';
+
+    // Agregar evento para manejar la pérdida de foco en campos de la secuencia01
+    $(camposSecuencia01).on('blur', function () {
+        const $this = $(this);
+        const campo = $this.attr('class').match(/input-tp_[^\s]+/)[0];
+        const row = $this.closest('tr');
+
         // Formatear el valor según el tipo de campo
-        let value = $(this).val().replace(/,/g, '');
+        let value = $this.val().replace(/,/g, '');
         let numValue = parseFloat(value);
 
         if (!isNaN(numValue)) {
             // Aplicar formato según el tipo de campo
-            if ($(this).hasClass('input-tp_plista')) {
-                $(this).val(numValue.toFixed(3));
-            } else {
-                $(this).val(numValue.toFixed(2));
+            if ($this.hasClass('input-tp_plista')) {
+                $this.val(numValue.toFixed(3));
+            } else if ($this.hasClass('input-tp_dto1') ||
+                $this.hasClass('input-tp_dto2') ||
+                $this.hasClass('input-tp_dto3') ||
+                $this.hasClass('input-tp_dto4') ||
+                $this.hasClass('input-tp_dto_pa') ||
+                $this.hasClass('input-tp_porc_flete')) {
+                // Limitar a 99.9 como máximo para los campos de descuento y flete
+                numValue = Math.min(numValue, 99.9);
+                $this.val(numValue.toFixed(1));
+            }
+        }
+
+        // Procesar bonificación si es el campo correspondiente
+        if (campo === 'input-tp_boni') {
+            let val = $this.val();
+            let partes = val.split('/');
+            if (partes.length === 2) {
+                let num = parseInt(partes[0], 10);
+                let den = parseInt(partes[1], 10);
+                if (num > den && den > 0) {
+                    alert('El denominador debe ser mayor al numerador. Se corregirá automáticamente.');
+                    $this.val(den + '/' + num);
+                }
             }
         }
 
         // Volver a readonly
-        $(this).prop('readonly', true).addClass('campo-readonly');
+        $this.prop('readonly', true).addClass('campo-readonly');
 
-        // Recalcular valores si es necesario
-        recalcularValores($(this));
+        // Llamar a la API para recalcular el costo
+        calcularCostoAPI(row);
 
-        console.log(`Campo ${$(this).attr('class').match(/input-tp_[^\s]+|input-tin_[^\s]+/)[0]} vuelve a readonly`);
+        console.log(`Campo ${campo} vuelve a readonly, recalculando costo...`);
+    });
+
+    // Agregar evento para manejar la pérdida de foco en otros campos
+    $('.input-tp_margen, .input-tin_alicuota, .input-tp_pvta').on('blur', function () {
+        const $this = $(this);
+        const campo = $this.attr('class').match(/input-tp_[^\s]+|input-tin_[^\s]+/)[0];
+
+        // Formatear el valor
+        let value = $this.val().replace(/,/g, '');
+        let numValue = parseFloat(value);
+
+        if (!isNaN(numValue)) {
+            $this.val(numValue.toFixed(2));
+        }
+
+        // Volver a readonly
+        $this.prop('readonly', true).addClass('campo-readonly');
+
+        // Ejecutar cálculos adicionales según el campo
+        if (campo === 'input-tp_margen') {
+            recalcularPrecioNetoDesdeMargen($this.closest('tr'));
+        } else if (campo === 'input-tin_alicuota' || campo === 'input-tp_pvta') {
+            recalcularRelacionPrecioVenta($this.closest('tr'));
+        }
+
+        console.log(`Campo ${campo} vuelve a readonly`);
+    });
+
+    // Asegurar que los campos vuelvan a estado readonly si el usuario hace clic en otra parte
+    $(document).off('click.desactivarCampos').on('click.desactivarCampos', function (e) {
+        if (!$(e.target).is('.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta')) {
+            // Si se hizo clic fuera de los inputs y hay alguno activo, desactivarlo
+            $('.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta').filter(function () {
+                return !$(this).prop('readonly');
+            }).each(function () {
+                // Disparamos el evento blur de forma manual en el elemento DOM nativo
+                const event = new Event('blur', { bubbles: true });
+                this.dispatchEvent(event);
+            });
+        }
     });
 }
 
@@ -922,8 +1016,24 @@ function formatearValoresIniciales() {
         }
     });
 
-    // Formatear campos con 2 decimales (incluye los nuevos campos)
-    $('.input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta').each(function () {
+    // Formatear campos con 1 decimal (descuentos y flete)
+    $('.input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete').each(function () {
+        let originalValue = $(this).data('original-value');
+        let fieldClass = $(this).attr('class').match(/input-tp_[^\s]+/)[0];
+
+        if (originalValue !== undefined) {
+            let numValue = parseFloat(originalValue);
+            if (!isNaN(numValue)) {
+                // Limitar a 99.9 como máximo
+                numValue = Math.min(numValue, 99.9);
+                $(this).val(numValue.toFixed(1));
+                console.log(`Valor ${fieldClass}: ${originalValue} → ${numValue.toFixed(1)}`);
+            }
+        }
+    });
+
+    // Formatear campos con 2 decimales (otros campos numéricos)
+    $('.input-tp_margen, .input-tin_alicuota, .input-tp_pvta').each(function () {
         let originalValue = $(this).data('original-value');
         let fieldClass = $(this).attr('class').match(/input-tp_[^\s]+|input-tin_[^\s]+/)[0];
 
@@ -961,4 +1071,100 @@ function configurarEventosTabla() {
 function volverAFiltro() {
     $("#divDetalle").removeClass("show");
     $("#divFiltro").addClass("show");
+}
+
+// Opcionalmente, agregar una función helper para seleccionar contenido
+function seleccionarContenido(element) {
+    setTimeout(function () {
+        element.focus();
+        element.select();
+    }, 0);
+}
+
+// Función para llamar a la API de cálculo de costo
+function calcularCostoAPI(row) {
+    const productId = row.data('p-id');
+
+    // Recopilar los valores de los campos del Segmento01
+    const datos = {
+        p_id: productId,
+        tp_plista: parseFloat(row.find('.input-tp_plista').val().replace(/,/g, '')),
+        tp_dto1: parseFloat(row.find('.input-tp_dto1').val().replace(/,/g, '')),
+        tp_dto2: parseFloat(row.find('.input-tp_dto2').val().replace(/,/g, '')),
+        tp_dto3: parseFloat(row.find('.input-tp_dto3').val().replace(/,/g, '')),
+        tp_dto4: parseFloat(row.find('.input-tp_dto4').val().replace(/,/g, '')),
+        tp_dto_pa: parseFloat(row.find('.input-tp_dto_pa').val().replace(/,/g, '')),
+        tp_porc_flete: parseFloat(row.find('.input-tp_porc_flete').val().replace(/,/g, '')),
+        tp_boni: row.find('.input-tp_boni').val()
+    };
+
+    // Mostrar indicador de carga en el campo de costo
+    const campoCoste = row.find('td:nth-child(13) input');
+    const valorOriginal = campoCoste.val();
+    campoCoste.val('Calculando...').addClass('calculating');
+
+    // Llamar a la API usando PostGen según el patrón proporcionado
+    AbrirWaiting("Calculando costo...");
+    PostGen(datos, calcularCostoUrl, function (obj) {
+        CerrarWaiting();
+
+        if (obj.error === true) {
+            // Manejo del error
+            campoCoste.val(valorOriginal).removeClass('calculating');
+            AbrirMensaje("¡¡Algo no fué bien!!", obj.msg, function () {
+                $("#msjModal").modal("hide");
+                return true;
+            }, false, ["Aceptar"], "error!", null);
+        } else if (obj.warn === true) {
+            // Manejo de advertencia
+            campoCoste.val(valorOriginal).removeClass('calculating');
+            AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                if (obj.auth === true) {
+                    window.location.href = login;
+                } else {
+                    $("#msjModal").modal("hide");
+                }
+                return true;
+            }, false, ["Aceptar"], "warn!", null);
+        } else {
+            // Éxito: actualizar el valor del costo con el resultado de la API
+            campoCoste.val(parseFloat(obj.costo).toFixed(2)).removeClass('calculating');
+
+            // Actualizar también el atributo data-original-value
+            campoCoste.data('original-value', obj.costo);
+
+            // Recalcular el precio neto basado en el nuevo costo
+            recalcularPrecioNetoDesdeMargen(row);
+
+            console.log('Costo actualizado para producto ID:', productId, 'Nuevo valor:', obj.costo);
+        }
+    }, function (error) {
+        // Función de error (callback de error de PostGen)
+        CerrarWaiting();
+        console.error('Error en la llamada al servidor:', error);
+        campoCoste.val(valorOriginal).removeClass('calculating');
+        AbrirMensaje("ERROR", "Se produjo un error al comunicarse con el servidor. Por favor, inténtelo nuevamente.", function () {
+            $("#msjModal").modal("hide");
+        }, false, ["Aceptar"], "error!", null);
+    });
+}
+
+// Función para recalcular el precio neto basado en el margen
+function recalcularPrecioNetoDesdeMargen(row) {
+    // Obtener el costo
+    let costo = parseFloat(row.find('td:nth-child(13) input').val().replace(/,/g, ''));
+
+    // Obtener el margen
+    let margen = parseFloat(row.find('.input-tp_margen').val().replace(/,/g, ''));
+
+    // Calcular precio neto
+    let precioNeto = costo;
+    if (!isNaN(margen) && margen > 0) {
+        precioNeto = costo * (1 + margen / 100);
+    }
+
+    // Actualizar el campo de precio neto (readonly)
+    row.find('td:nth-child(15) input').val(precioNeto.toFixed(2));
+
+    console.log('Precio neto recalculado basado en el margen:', precioNeto.toFixed(2));
 }

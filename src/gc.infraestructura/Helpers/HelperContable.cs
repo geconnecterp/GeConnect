@@ -17,12 +17,15 @@
             costo = 0;
             boni = 1;
 
-            var boniArr = p_boni.Split("/").Select(x=>x.ToInt()).ToArray();
-            if (boniArr.Length == 2)
+            if (!string.IsNullOrEmpty(p_boni))
             {
-                if (boniArr[0] < boniArr[1] && boniArr[0]>0 && boniArr[1] > 0)
+                var boniArr = p_boni.Split("/").Select(x => x.ToInt()).ToArray();
+                if (boniArr.Length == 2)
                 {
-                    boni = boniArr[0] / boniArr[1];
+                    if (boniArr[0] < boniArr[1] && boniArr[0] > 0 && boniArr[1] > 0)
+                    {
+                        boni = boniArr[0] / boniArr[1];
+                    }
                 }
             }
 
