@@ -19,6 +19,7 @@ $(function () {
             }
         `)
         .appendTo('head');
+    
     // Estilos para campos readonly
     if (!$('style:contains(".campo-readonly")').length) {
         $('<style>')
@@ -41,9 +42,54 @@ $(function () {
             .appendTo('head');
     }
 
+    // Añadir estilos para ajustar anchos de campos específicos
+    $('<style>')
+        .prop('type', 'text/css')
+        .html(`
+            /* Campos descuentos y flete reducidos al 50% (antes 70%) */
+            .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni {
+                width: 50%;
+                min-width: 45px;
+                font-size: 0.75rem; /* Fuente más pequeña para estos campos */
+            }
+            
+            /* Campos con 3 decimales (más anchos) */
+            .input-tp_plista, .input-tp_pcosto, .input-tp_pneto {
+                width: 100%;
+                min-width: 85px;
+                font-size: 0.8rem; /* Fuente ligeramente más pequeña para estos campos */
+            }
+            
+            /* Campos con 2 decimales */
+            .input-tp_margen, .input-tin_alicuota, .input-tp_pvta {
+                font-size: 0.8rem;
+                min-width: 70px;
+            }
+            
+            /* Ajustes generales para todos los campos numéricos */
+            .input-numeric {
+                padding: 0.2rem 0.3rem; /* Reducir el padding interno */
+                height: auto;           /* Altura automática */
+            }
+            
+            /* Alineación del texto en los inputs */
+            .input-numeric {
+                text-align: right;
+                letter-spacing: -0.2px; /* Reducir ligeramente el espacio entre caracteres */
+            }
+            
+            /* Mejorar visualización en pantallas pequeñas */
+            @media (max-width: 1200px) {
+                .input-tp_plista, .input-tp_pcosto, .input-tp_pneto {
+                    font-size: 0.75rem;
+                }
+            }
+        `)
+        .appendTo('head');
+
     configurarBotonesProdCP();
     cargaEventosCP();
-    
+
 });
 
 function inicializaControlCuenta() {
@@ -78,6 +124,7 @@ function configurarEventosTabla() {
 
 
 // Configuración optimizada de elementos de tabla
+// Configuración optimizada de elementos de tabla
 function configuracionElementosTablaDetalle() {
     console.log("Configurando elementos de tabla detalle...");
 
@@ -95,7 +142,7 @@ function configuracionElementosTablaDetalle() {
     // Configurar eventos para activar/desactivar edición
     configurarEventosEdicion();
 
-    // Configuración para campos con 3 decimales (P.Lista)
+    // Configuración para campos con 3 decimales (P.Lista, P.Costo y P.Neto)
     Inputmask({
         alias: "numeric",
         groupSeparator: ",",
@@ -116,7 +163,7 @@ function configuracionElementosTablaDetalle() {
             }
             return value;
         }
-    }).mask('.input-tp_plista');
+    }).mask('.input-tp_plista, .input-tp_pcosto, .input-tp_pneto');
 
     // Configuración para campos con 1 decimal (descuentos y flete)
     Inputmask({
@@ -178,6 +225,8 @@ function configuracionElementosTablaDetalle() {
 
     console.log("Configuración de elementos de tabla detalle completada");
 }
+
+
 // Función de depuración mejorada que verifica todos los campos
 function depurarValoresIniciales() {
     console.log("=== DEPURACIÓN DE VALORES INICIALES ===");
@@ -526,6 +575,10 @@ function cargaEventosCP() {
             console.log("Modo archivo desactivado: Se restauran los filtros normales");
         }
     });
+
+    $(document).on('blur', 'input.form-control-sm', function () {
+        marcarCampoModificado(this);
+    });
 }
 
 // Función centralizada para verificar y desactivar los controles
@@ -647,7 +700,7 @@ function configurarBotonesProdCP() {
             return false; // Detener la ejecución
         }
 
-        AbrirWaiting("Cargando los productos del proveedor según el filtro especificado. Por favor espere..."); 
+        AbrirWaiting("Cargando los productos del proveedor según el filtro especificado. Por favor espere...");
         // Si hay un proveedor seleccionado, continuar con la búsqueda
         buscarProductosDetalle();
         //Presenta el control comun de cuenta
@@ -817,10 +870,47 @@ function buscarProductosDetalle() {
                 // Aplicar configuración a los inputs numéricos
                 configuracionElementosTablaDetalle();
 
+                // Añadir estilos para campos modificados si no existen
+                if (!$('style:contains(".campo-modificado")').length) {
+                    $('<style>')
+                        .prop('type', 'text/css')
+                        .html(`
+                            /* Estilo para campos modificados */
+                            .campo-modificado {
+                                background-color: #d4f1f9 !important; /* Celeste pastel claro */
+                                border-color: #a8e1f5 !important;
+                            }
+                            
+                            /* Indicador visual de cambio */
+                            .indicador-cambio {
+                                position: absolute;
+                                top: 0;
+                                right: 0;
+                                width: 0;
+                                height: 0;
+                                border-style: solid;
+                                border-width: 0 8px 8px 0;
+                                border-color: transparent #4bacc6 transparent transparent;
+                            }
+                            
+                            /* Hacer que las celdas sean relativas para posicionar el indicador */
+                            #tbProdDet td {
+                                position: relative;
+                            }
+                        `)
+                        .appendTo('head');
+                }
+
+                // Optimizar la visualización de la tabla
+                optimizarVisualizacionTabla();
+
                 // Verificar valores después de aplicar la configuración
                 setTimeout(function () {
                     console.log("Después de aplicar configuración:");
                     depurarValoresIniciales();
+
+                    // Inicializar la detección de campos modificados
+                    actualizarCamposModificados();
                 }, 500);
 
                 // Obtener el ID del primer producto para consultar sus listas de precios
@@ -837,6 +927,28 @@ function buscarProductosDetalle() {
     });
 
     return false;
+}
+
+// Función para optimizar la visualización de la tabla
+function optimizarVisualizacionTabla() {
+    // Asegurarnos de que la tabla existe
+    if ($("#tbProdDet").length === 0) {
+        return;
+    }
+
+    // Ajustar columnas con texto para que no sean demasiado anchas
+    $("#tbProdDet th:nth-child(2)").css('max-width', '180px'); // Descripción
+    $("#tbProdDet td:nth-child(2)").css({
+        'max-width': '180px',
+        'white-space': 'nowrap',
+        'overflow': 'hidden',
+        'text-overflow': 'ellipsis'
+    });
+
+    // Asegurarnos que la tabla tenga scroll horizontal si es necesario
+    $("#tbProdDet").closest('.table-responsive').css('overflow-x', 'auto');
+
+    console.log("Tabla optimizada para mejor visualización");
 }
 
 function buscarProductoLista(primerProductoId) {
@@ -1001,17 +1113,19 @@ function configurarEventosEdicion() {
 }
 
 // Función para formatear valores iniciales
+// Función para formatear valores iniciales
 function formatearValoresIniciales() {
     console.log("Formateando valores iniciales...");
 
-    // Formatear campos con 3 decimales
-    $('.input-tp_plista').each(function () {
+    // Formatear campos con 3 decimales (plista, pcosto y pneto)
+    $('.input-tp_plista, .input-tp_pcosto, .input-tp_pneto').each(function () {
         let originalValue = $(this).data('original-value');
         if (originalValue !== undefined) {
             let numValue = parseFloat(originalValue);
             if (!isNaN(numValue)) {
                 $(this).val(numValue.toFixed(3));
-                console.log(`Valor tp_plista: ${originalValue} → ${numValue.toFixed(3)}`);
+                let fieldClass = $(this).attr('class').match(/input-tp_[^\s]+/)[0];
+                console.log(`Valor ${fieldClass}: ${originalValue} → ${numValue.toFixed(3)}`);
             }
         }
     });
@@ -1046,6 +1160,7 @@ function formatearValoresIniciales() {
         }
     });
 }
+
 
 
 function configurarEventosTabla() {
@@ -1128,13 +1243,22 @@ function calcularCostoAPI(row) {
             }, false, ["Aceptar"], "warn!", null);
         } else {
             // Éxito: actualizar el valor del costo con el resultado de la API
-            campoCoste.val(parseFloat(obj.costo).toFixed(2)).removeClass('calculating');
+            // Cambiado a 3 decimales
+            campoCoste.val(parseFloat(obj.costo).toFixed(3)).removeClass('calculating');
 
-            // Actualizar también el atributo data-original-value
-            campoCoste.data('original-value', obj.costo);
+            // NO actualizar data-original-value para mantener referencia al valor original
+            // Esto permite identificar que el campo ha sido modificado
+            // campoCoste.data('original-value', obj.costo);
+
+            // Marcar el campo como modificado para destacarlo visualmente
+            marcarCampoModificado(campoCoste);
 
             // Recalcular el precio neto basado en el nuevo costo
-            recalcularPrecioNetoDesdeMargen(row);
+            // Pasamos false como segundo parámetro para indicar que no resguarde cambios aún
+            recalcularPrecioNetoDesdeMargen(row, false);
+
+            // Resguardar los cambios después de completar todos los cálculos
+            resguardarCambiosProducto(row);
 
             console.log('Costo actualizado para producto ID:', productId, 'Nuevo valor:', obj.costo);
         }
@@ -1149,8 +1273,52 @@ function calcularCostoAPI(row) {
     });
 }
 
+// Nueva función para resguardar los cambios del producto
+function resguardarCambiosProducto(row) {
+    // Recopilar todos los valores del producto
+    const datos = {
+        p_id: row.data('p-id'),
+        tp_plista: parseFloat(row.find('.input-tp_plista').val().replace(/,/g, '')),
+        tp_dto1: parseFloat(row.find('.input-tp_dto1').val().replace(/,/g, '')),
+        tp_dto2: parseFloat(row.find('.input-tp_dto2').val().replace(/,/g, '')),
+        tp_dto3: parseFloat(row.find('.input-tp_dto3').val().replace(/,/g, '')),
+        tp_dto4: parseFloat(row.find('.input-tp_dto4').val().replace(/,/g, '')),
+        tp_dto_pa: parseFloat(row.find('.input-tp_dto_pa').val().replace(/,/g, '')),
+        tp_porc_flete: parseFloat(row.find('.input-tp_porc_flete').val().replace(/,/g, '')),
+        tp_boni: row.find('.input-tp_boni').val(),
+        tp_pcosto: parseFloat(row.find('td:nth-child(13) input').val().replace(/,/g, '')),
+        tp_margen: parseFloat(row.find('.input-tp_margen').val().replace(/,/g, '')),
+        tp_pneto: parseFloat(row.find('td:nth-child(15) input').val().replace(/,/g, '')),
+        tin_alicuota: parseFloat(row.find('.input-tin_alicuota').val().replace(/,/g, '')),
+        tp_pvta: parseFloat(row.find('.input-tp_pvta').val().replace(/,/g, ''))
+    };
+
+    // Llamar al servidor para resguardar los cambios
+    $.ajax({
+        url: resguardarCambiosProductoUrl, // Esta URL debe definirse en el controlador
+        type: 'POST',
+        data: datos,
+        dataType: 'json',
+        success: function (response) {
+            if (response.error) {
+                console.error('Error al resguardar cambios:', response.msg);
+            } else if (response.warn) {
+                console.warn('Advertencia al resguardar cambios:', response.msg);
+            } else {
+                console.log('Cambios resguardados correctamente:', response.msg);
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error('Error en la llamada AJAX al resguardar cambios:', error);
+        }
+    });
+}
+
 // Función para recalcular el precio neto basado en el margen
-function recalcularPrecioNetoDesdeMargen(row) {
+// Añadimos un segundo parámetro para controlar si se resguardan los cambios
+// Función para recalcular el precio neto basado en el margen
+// Añadimos un segundo parámetro para controlar si se resguardan los cambios
+function recalcularPrecioNetoDesdeMargen(row, resguardar = true) {
     // Obtener el costo
     let costo = parseFloat(row.find('td:nth-child(13) input').val().replace(/,/g, ''));
 
@@ -1163,8 +1331,110 @@ function recalcularPrecioNetoDesdeMargen(row) {
         precioNeto = costo * (1 + margen / 100);
     }
 
-    // Actualizar el campo de precio neto (readonly)
-    row.find('td:nth-child(15) input').val(precioNeto.toFixed(2));
+    // Actualizar el campo de precio neto (readonly) con 3 decimales
+    row.find('td:nth-child(15) input').val(precioNeto.toFixed(3));
+    marcarCampoModificado(row.find('td:nth-child(15) input'));
 
-    console.log('Precio neto recalculado basado en el margen:', precioNeto.toFixed(2));
+    // Resguardar los cambios solo si el parámetro resguardar es true
+    if (resguardar) {
+        resguardarCambiosProducto(row);
+    }
+
+    console.log('Precio neto recalculado basado en el margen:', precioNeto.toFixed(3));
 }
+
+// Función para marcar un campo como modificado
+function marcarCampoModificado(input) {
+    const $input = $(input);
+    const valorOriginal = $input.data('original-value');
+    const valorActual = $input.val().replace(/,/g, '');
+
+    // Comparar valores numéricos con una pequeña tolerancia para decimales
+    let esModificado = false;
+
+    if ($input.hasClass('input-tp_boni')) {
+        // Para el campo de bonificación, comparamos los strings directamente
+        esModificado = valorOriginal !== valorActual;
+    } else {
+        // Para campos numéricos, convertimos a números y comparamos con tolerancia
+        const numOriginal = parseFloat(valorOriginal);
+        const numActual = parseFloat(valorActual);
+
+        // Consideramos diferente si hay una diferencia mayor a 0.001
+        esModificado = Math.abs(numOriginal - numActual) > 0.001;
+    }
+
+    // Aplicar o quitar la clase según corresponda
+    if (esModificado) {
+        $input.addClass('campo-modificado');
+
+        // Si no existe el indicador de cambio, agregarlo
+        if ($input.parent().find('.indicador-cambio').length === 0) {
+            $input.parent().append('<div class="indicador-cambio"></div>');
+        }
+    } else {
+        $input.removeClass('campo-modificado');
+        $input.parent().find('.indicador-cambio').remove();
+    }
+}
+
+// Función mejorada para marcar campos modificados
+function actualizarCamposModificados() {
+    // Procesar todos los inputs de la tabla
+    $('#tbProdDet input').each(function () {
+        const $input = $(this);
+        const valorOriginal = $input.data('original-value');
+
+        // Ignorar si no tiene valor original o es readonly sin clase campo-readonly
+        if (valorOriginal === undefined || ($input.prop('readonly') && !$input.hasClass('campo-readonly'))) {
+            return;
+        }
+
+        let valorActual = $input.val().replace(/,/g, '');
+        let esModificado = false;
+
+        if ($input.hasClass('input-tp_boni')) {
+            // Para bonificación, comparación directa
+            esModificado = valorOriginal.toString() !== valorActual.toString();
+        } else {
+            // Para campos numéricos
+            const numOriginal = parseFloat(valorOriginal);
+            const numActual = parseFloat(valorActual);
+
+            if (!isNaN(numOriginal) && !isNaN(numActual)) {
+                // Usar una tolerancia basada en el tipo de campo
+                let tolerancia = 0.001;
+
+                if ($input.hasClass('input-tp_dto1') ||
+                    $input.hasClass('input-tp_dto2') ||
+                    $input.hasClass('input-tp_dto3') ||
+                    $input.hasClass('input-tp_dto4') ||
+                    $input.hasClass('input-tp_dto_pa') ||
+                    $input.hasClass('input-tp_porc_flete')) {
+                    tolerancia = 0.05; // Mayor tolerancia para descuentos (1 decimal)
+                } else if ($input.hasClass('input-tp_plista') ||
+                    $input.hasClass('input-tp_pcosto') ||
+                    $input.hasClass('input-tp_pneto')) {
+                    tolerancia = 0.0005; // Menor tolerancia para valores con 3 decimales
+                }
+
+                esModificado = Math.abs(numOriginal - numActual) > tolerancia;
+            } else {
+                esModificado = true; // Si uno no es número, considerarlo modificado
+            }
+        }
+
+        // Aplicar o quitar la clase según corresponda
+        $input.toggleClass('campo-modificado', esModificado);
+
+        // Manejar el indicador visual de cambio
+        if (esModificado) {
+            if ($input.parent().find('.indicador-cambio').length === 0) {
+                $input.parent().append('<div class="indicador-cambio"></div>');
+            }
+        } else {
+            $input.parent().find('.indicador-cambio').remove();
+        }
+    });
+}
+

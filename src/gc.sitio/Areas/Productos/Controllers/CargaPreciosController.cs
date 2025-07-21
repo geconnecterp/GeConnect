@@ -4,6 +4,7 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Compras.Controllers;
 using gc.sitio.core.Servicios.Contratos;
@@ -197,8 +198,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 }
                 var lista = respuesta.ListaEntidad.OrderBy(x => x.pg_id).ThenBy(x => x.p_id).ToList();
                 // Guardar datos en variable de sesión para uso posterior
-                ProductosDetalle = lista;
-
+                ProductosDetalleLista = lista;
 
                 // Crear el grid para la vista (sin paginación)
                 var grid = GenerarGrillaSmart(
@@ -227,7 +227,7 @@ namespace gc.sitio.Areas.Productos.Controllers
         }
 
         [HttpPost]
-        public JsonResult CalcularCosto(decimal tp_plista, decimal tp_dto1, decimal tp_dto2,
+        public JsonResult CalcularCosto(string p_id, decimal tp_plista, decimal tp_dto1, decimal tp_dto2,
             decimal tp_dto3, decimal tp_dto4, decimal tp_dto_pa, decimal tp_porc_flete, string tp_boni)
         {
             try
@@ -262,6 +262,129 @@ namespace gc.sitio.Areas.Productos.Controllers
                 return Json(new { error = true, warn = false, msg = ex.Message });
             }
         }
+
+        [HttpPost]
+        public JsonResult ResguardarCambiosProducto(string p_id, decimal tp_plista, decimal tp_dto1, decimal tp_dto2,
+     decimal tp_dto3, decimal tp_dto4, decimal tp_dto_pa, decimal tp_porc_flete, string tp_boni,
+     decimal tp_pcosto, decimal tp_margen, decimal tp_pneto, decimal tin_alicuota, decimal tp_pvta)
+        {
+            try
+            {
+                // Verificar autenticación
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+                }
+
+                if (string.IsNullOrEmpty(p_id))
+                {
+                    throw new NegocioException("No se ha especificado el ID del producto a modificar.");
+                }
+
+                // Obtener los productos desde la sesión
+                var productosOriginales = ProductosDetalle;
+                var productosTemporal = ProductosDetalleTEMPORAL;
+
+                // Buscar el producto original por su ID
+                var productoOriginal = productosOriginales.FirstOrDefault(p => p.p_id == p_id);
+                if (productoOriginal == null)
+                {
+                    throw new NegocioException($"No se encontró el producto con ID {p_id} en la lista original.");
+                }
+
+                // Verificar si hay cambios en los valores que afectan el precio
+                bool hayCambios =
+                    Math.Round(productoOriginal.tp_plista, 3) != Math.Round(tp_plista, 3) ||
+                    Math.Round(productoOriginal.tp_dto1, 1) != Math.Round(tp_dto1, 1) ||
+                    Math.Round(productoOriginal.tp_dto2, 1) != Math.Round(tp_dto2, 1) ||
+                    Math.Round(productoOriginal.tp_dto3, 1) != Math.Round(tp_dto3, 1) ||
+                    Math.Round(productoOriginal.tp_dto4, 1) != Math.Round(tp_dto4, 1) ||
+                    Math.Round(productoOriginal.tp_dto_pa, 1) != Math.Round(tp_dto_pa, 1) ||
+                    Math.Round(productoOriginal.tp_porc_flete, 1) != Math.Round(tp_porc_flete, 1) ||
+                    productoOriginal.tp_boni != tp_boni ||
+                    Math.Round(productoOriginal.tp_margen, 2) != Math.Round(tp_margen, 2) ||
+                    Math.Round(productoOriginal.tin_alicuota, 2) != Math.Round(tin_alicuota, 2) ||
+                    Math.Round(productoOriginal.tp_pvta, 2) != Math.Round(tp_pvta, 2);
+
+                // Si no hay cambios, verificar si el producto está en la lista temporal y eliminarlo
+                if (!hayCambios)
+                {
+                    // Eliminar de la lista temporal si existe
+                    var productoTemporalExistente = productosTemporal.FirstOrDefault(p => p.p_id == p_id);
+                    if (productoTemporalExistente != null)
+                    {
+                        productosTemporal.Remove(productoTemporalExistente);
+                        ProductosDetalleTEMPORAL = productosTemporal; // Guardar en sesión
+                        return Json(new { error = false, warn = false, msg = "No se detectaron cambios en el producto. Se ha eliminado de la lista temporal." });
+                    }
+
+                    return Json(new { error = false, warn = false, msg = "No se detectaron cambios en el producto." });
+                }
+
+                // Crear una copia del producto original con los valores actualizados
+                // Reemplazamos la sintaxis 'with' por una creación y copia manual de propiedades
+                var productoModificado = new ProductoDetalleDto();
+
+                // Copiar todas las propiedades del original al nuevo objeto
+                foreach (var prop in typeof(ProductoDetalleDto).GetProperties())
+                {
+                    if (prop.CanWrite && prop.CanRead)
+                    {
+                        prop.SetValue(productoModificado, prop.GetValue(productoOriginal));
+                    }
+                }
+
+                // Actualizar las propiedades específicas con los nuevos valores
+                productoModificado.tp_plista = tp_plista;
+                productoModificado.tp_dto1 = tp_dto1;
+                productoModificado.tp_dto2 = tp_dto2;
+                productoModificado.tp_dto3 = tp_dto3;
+                productoModificado.tp_dto4 = tp_dto4;
+                productoModificado.tp_dto_pa = tp_dto_pa;
+                productoModificado.tp_porc_flete = tp_porc_flete;
+                productoModificado.tp_boni = tp_boni;
+                productoModificado.tp_pcosto = tp_pcosto;
+                productoModificado.tp_margen = tp_margen;
+                productoModificado.tp_pneto = tp_pneto;
+                productoModificado.tin_alicuota = tin_alicuota;
+                productoModificado.tp_pvta = tp_pvta;
+                productoModificado.carga = 1; // Marcar como modificado
+
+                // Verificar si el producto ya existe en la lista temporal
+                var indiceExistente = productosTemporal.FindIndex(p => p.p_id == p_id);
+                if (indiceExistente >= 0)
+                {
+                    // Actualizar el producto existente
+                    productosTemporal[indiceExistente] = productoModificado;
+                }
+                else
+                {
+                    // Agregar el nuevo producto modificado
+                    productosTemporal.Add(productoModificado);
+                }
+
+                // Guardar la lista temporal en la sesión
+                ProductosDetalleTEMPORAL = productosTemporal;
+
+                return Json(new { error = false, warn = false, msg = "Producto resguardado correctamente para su posterior actualización." });
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al resguardar cambios del producto");
+                return Json(new { error = true, warn = false, msg = "Se produjo un error al intentar resguardar los cambios del producto." });
+            }
+        }
+
+
 
         //Invocar cuando se haya seleccionado solo un proveedor desde el filtro base.
         [HttpPost]

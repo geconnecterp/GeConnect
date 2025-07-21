@@ -33,11 +33,11 @@ namespace gc.sitio.Areas.Productos.Controllers
             }
         }
 
-        public List<ProductoDetalleDto> ProductosDetalleTEMPORAL
+        public List<ProductoDetalleDto> ProductosDetalleLista
         {
             get
             {
-                string json = _context.HttpContext?.Session.GetString("ProductosDetalle") ?? string.Empty;
+                string json = _context.HttpContext?.Session.GetString("ProductosDetalleLista") ?? string.Empty;
                 if (string.IsNullOrEmpty(json))
                 {
                     return new();
@@ -47,7 +47,25 @@ namespace gc.sitio.Areas.Productos.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext?.Session.SetString("ProductosDetalle", json);
+                _context.HttpContext?.Session.SetString("ProductosDetalleLista", json);
+            }
+        }
+
+        public List<ProductoDetalleDto> ProductosDetalleTEMPORAL
+        {
+            get
+            {
+                string json = _context.HttpContext?.Session.GetString("ProductosDetalleTEMPORAL") ?? string.Empty;
+                if (string.IsNullOrEmpty(json))
+                {
+                    return new();
+                }
+                return JsonConvert.DeserializeObject<List<ProductoDetalleDto>>(json) ?? [];
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session.SetString("ProductosDetalleTEMPORAL", json);
             }
         }
     }

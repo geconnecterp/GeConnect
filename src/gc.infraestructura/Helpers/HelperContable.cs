@@ -19,7 +19,7 @@
 
             if (!string.IsNullOrEmpty(p_boni))
             {
-                var boniArr = p_boni.Split("/").Select(x => x.ToInt()).ToArray();
+                var boniArr = p_boni.Split("/").Select(x => x.ToDecimal()).ToArray();
                 if (boniArr.Length == 2)
                 {
                     if (boniArr[0] < boniArr[1] && boniArr[0] > 0 && boniArr[1] > 0)

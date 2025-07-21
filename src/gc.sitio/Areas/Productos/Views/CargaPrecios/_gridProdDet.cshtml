@@ -52,6 +52,29 @@
     #tbProdDet th, #tbProdDet td {
         padding: 0.25rem 0.35rem; /* Reducir padding general */
     }
+
+    /* NUEVO: Estilo para campos modificados */
+    .campo-modificado {
+        background-color: #d4f1f9 !important; /* Celeste pastel claro */
+        border-color: #a8e1f5 !important;
+    }
+
+    /* NUEVO: Estilo para indicador visual de cambio */
+    .indicador-cambio {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: 0 8px 8px 0;
+        border-color: transparent #4bacc6 transparent transparent;
+    }
+
+    /* NUEVO: Contenedor relativo para posicionar el indicador */
+    .input-container {
+        position: relative;
+    }
 </style>
 
 
@@ -139,85 +162,114 @@
                                 <td class="@Model.ObtenerClase(item.p_id_prov)">@Model.FormatearDato(item.p_id_prov, FormatDato.Ninguno)</td>
                                 <td class="@Model.ObtenerClase(item.p_id_barrado)">@Model.FormatearDato(item.p_id_barrado, FormatDato.Ninguno)</td>
                                 <td class="@Model.ObtenerClase(item.tp_plista)">
-                                    <input type="text" class="form-control form-control-sm input-tp_plista input-numeric"
-                                           value="@(item.tp_plista)"
-                                           data-original-value="@(item.tp_plista)" />
+                                    <div class="input-container">
+                                        <input type="text" class="form-control form-control-sm input-tp_plista input-numeric"
+                                               value="@(item.tp_plista.ToString("F3"))"
+                                               data-p-id="@item.p_id"
+                                               data-original-value="@(item.tp_plista)" />
+                                    </div>
                                 </td>
                                 <td class="@Model.ObtenerClase(item.tp_dto1)">
-                                    <input type="text" class="form-control form-control-sm input-tp_dto1 input-numeric"
-                                           value="@(item.tp_dto1.ToString("F2"))"
-                                           data-p-id="@item.p_id"
-                                           data-original-value="@item.tp_dto1" />
+                                    <div class="input-container">
+                                        <input type="text" class="form-control form-control-sm input-tp_dto1 input-numeric"
+                                               value="@(item.tp_dto1.ToString("F1"))"
+                                               data-p-id="@item.p_id"
+                                               data-original-value="@item.tp_dto1" />
+                                    </div>
                                 </td>
                                 <td class="@Model.ObtenerClase(item.tp_dto2)">
-                                    <input type="text" class="form-control form-control-sm input-tp_dto2 input-numeric"
-                                           value="@(item.tp_dto2.ToString("F2"))"
-                                           data-p-id="@item.p_id"
-                                           data-original-value="@item.tp_dto2" />
+                                    <div class="input-container">
+                                        <input type="text" class="form-control form-control-sm input-tp_dto2 input-numeric"
+                                               value="@(item.tp_dto2.ToString("F1"))"
+                                               data-p-id="@item.p_id"
+                                               data-original-value="@item.tp_dto2" />
+                                    </div>
                                 </td>
                                 <td class="@Model.ObtenerClase(item.tp_dto3)">
-                                    <input type="text" class="form-control form-control-sm input-tp_dto3 input-numeric"
-                                           value="@(item.tp_dto3.ToString("F2"))"
-                                           data-p-id="@item.p_id"
-                                           data-original-value="@item.tp_dto3" />
+                                    <div class="input-container">
+                                        <input type="text" class="form-control form-control-sm input-tp_dto3 input-numeric"
+                                               value="@(item.tp_dto3.ToString("F1"))"
+                                               data-p-id="@item.p_id"
+                                               data-original-value="@item.tp_dto3" />
+                                    </div>
                                 </td>
                                 <td class="@Model.ObtenerClase(item.tp_dto4)">
-                                    <input type="text" class="form-control form-control-sm input-tp_dto4 input-numeric"
-                                           value="@(item.tp_dto4.ToString("F2"))"
-                                           data-p-id="@item.p_id"
-                                           data-original-value="@item.tp_dto4" />
+                                    <div class="input-container">
+                                        <input type="text" class="form-control form-control-sm input-tp_dto4 input-numeric"
+                                               value="@(item.tp_dto4.ToString("F1"))"
+                                               data-p-id="@item.p_id"
+                                               data-original-value="@item.tp_dto4" />
+                                    </div>
                                 </td>
                                 <td class="@Model.ObtenerClase(item.tp_dto_pa)">
-                                    <input type="text" class="form-control form-control-sm input-tp_dto_pa input-numeric"
-                                           value="@(item.tp_dto_pa.ToString("F2"))"
-                                           data-p-id="@item.p_id"
-                                           data-original-value="@item.tp_dto_pa" />
+                                    <div class="input-container">
+                                        <input type="text" class="form-control form-control-sm input-tp_dto_pa input-numeric"
+                                               value="@(item.tp_dto_pa.ToString("F1"))"
+                                               data-p-id="@item.p_id"
+                                               data-original-value="@item.tp_dto_pa" />
+                                    </div>
                                 </td>
                                 <td class="@Model.ObtenerClase(item.tp_porc_flete)">
-                                    <input type="text" class="form-control form-control-sm input-tp_porc_flete input-numeric"
-                                           value="@(item.tp_porc_flete.ToString("F2"))"
-                                           data-p-id="@item.p_id"
-                                           data-original-value="@item.tp_porc_flete" />
+                                    <div class="input-container">
+                                        <input type="text" class="form-control form-control-sm input-tp_porc_flete input-numeric"
+                                               value="@(item.tp_porc_flete.ToString("F1"))"
+                                               data-p-id="@item.p_id"
+                                               data-original-value="@item.tp_porc_flete" />
+                                    </div>
                                 </td>
                                 <td class="@Model.ObtenerClase('c')">
-                                    <input type="text" class="form-control form-control-sm input-tp_boni"
-                                           value="@Model.FormatearDato(item.tp_boni, FormatDato.Ninguno)"
-                                           data-p-id="@item.p_id"
-                                           placeholder="000/000" />
+                                    <div class="input-container">
+                                        <input type="text" class="form-control form-control-sm input-tp_boni"
+                                               value="@Model.FormatearDato(item.tp_boni, FormatDato.Ninguno)"
+                                               data-p-id="@item.p_id"
+                                               data-original-value="@Model.FormatearDato(item.tp_boni, FormatDato.Ninguno)"
+                                               placeholder="000/000" />
+                                    </div>
                                 </td>
                                 <td class="@Model.ObtenerClase(item.tp_pcosto)">
-                                    <input type="text" class="form-control form-control-sm input-tp_pcosto input-numeric"
-                                           value="@(item.tp_pcosto.ToString("F2"))"
-                                           readonly
-                                           data-p-id="@item.p_id"
-                                           data-original-value="@item.tp_pcosto" />
+                                    <div class="input-container">
+                                        <input type="text" class="form-control form-control-sm input-tp_pcosto input-numeric"
+                                               value="@(item.tp_pcosto.ToString("F3"))"
+                                               readonly
+                                               data-p-id="@item.p_id"
+                                               data-original-value="@item.tp_pcosto" />
+                                    </div>
                                 </td>
                                 <td class="@Model.ObtenerClase(item.tp_margen)">
-                                    <input type="text" class="form-control form-control-sm input-tp_margen input-numeric"
-                                           value="@(item.tp_margen.ToString("F2"))"
-                                           data-p-id="@item.p_id"
-                                           data-original-value="@item.tp_margen" />
+                                    <div class="input-container">
+                                        <input type="text" class="form-control form-control-sm input-tp_margen input-numeric"
+                                               value="@(item.tp_margen.ToString("F2"))"
+                                               data-p-id="@item.p_id"
+                                               data-original-value="@item.tp_margen" />
+                                    </div>
                                 </td>
                                 <td class="@Model.ObtenerClase(item.tp_pneto)">
-                                    <input type="text" class="form-control form-control-sm input-tp_pneto input-numeric"
-                                           value="@(item.tp_pneto.ToString("F2"))"
-                                           readonly
-                                           data-p-id="@item.p_id"
-                                           data-original-value="@item.tp_pneto" />
+                                    <div class="input-container">
+                                        <input type="text" class="form-control form-control-sm input-tp_pneto input-numeric"
+                                               value="@(item.tp_pneto.ToString("F3"))"
+                                               readonly
+                                               data-p-id="@item.p_id"
+                                               data-original-value="@item.tp_pneto" />
+                                    </div>
                                 </td>
                                 <td class="@Model.ObtenerClase('c')">@($"{item.iva_situacion}-{item.iva_alicuota}")</td>
                                 <td class="@Model.ObtenerClase(item.tin_alicuota)">
-                                    <input type="text" class="form-control form-control-sm input-tin_alicuota input-numeric"
-                                           value="@(item.tin_alicuota.ToString("F2"))"
-                                           data-p-id="@item.p_id"
-                                           data-original-value="@item.tin_alicuota" />
+                                    <div class="input-container">
+                                        <input type="text" class="form-control form-control-sm input-tin_alicuota input-numeric"
+                                               value="@(item.tin_alicuota.ToString("F2"))"
+                                               data-p-id="@item.p_id"
+                                               data-original-value="@item.tin_alicuota" />
+                                    </div>
                                 </td>
                                 <td class="@Model.ObtenerClase(item.tp_pvta)">
-                                    <input type="text" class="form-control form-control-sm input-tp_pvta input-numeric"
-                                           value="@(item.tp_pvta.ToString("F2"))"
-                                           data-p-id="@item.p_id"
-                                           data-original-value="@item.tp_pvta" />
+                                    <div class="input-container">
+                                        <input type="text" class="form-control form-control-sm input-tp_pvta input-numeric"
+                                               value="@(item.tp_pvta.ToString("F2"))"
+                                               data-p-id="@item.p_id"
+                                               data-original-value="@item.tp_pvta" />
+                                    </div>
                                 </td>
+
                                 <td class="@Model.ObtenerClase(item.p_pvta)">@Model.FormatearDato(re, FormatDato.Monto)</td>
                             </tr>
                         }
