@@ -211,5 +211,18 @@ namespace gc.api.Controllers.OrdenDePago
 			response = new ApiResponse<RespuestaDto>(res.First());
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult AnularCertificadoDeOrdenDePago([FromBody] AnularCertificadoDeOrdenDePagoRequest r)
+		{
+			ApiResponse<RespuestaDto> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _ordenDePagoServicio.AnularCertificadoDeOrdenDePago(r);
+			response = new ApiResponse<RespuestaDto>(res.First());
+			return Ok(response);
+		}
 	}
 }

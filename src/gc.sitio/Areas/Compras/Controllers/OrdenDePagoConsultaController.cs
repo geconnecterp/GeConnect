@@ -190,6 +190,54 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		[HttpPost]
+		public JsonResult AnularCertificadoDeOrdenDePago(string op_compte, string imp_id)
+		{
+			try
+			{
+				if (string.IsNullOrEmpty(op_compte))
+					return Json(new { error = true, warn = false, msg = $"Debe seleccionar una Orden de Pago." });
+
+				if (string.IsNullOrEmpty(imp_id))
+					return Json(new { error = true, warn = false, msg = $"Debe seleccionar un Tipo de Certificado." });
+
+				var respuesta = _ordenDePagoServicio.AnularCertificadoDeOrdenDePago(new AnularCertificadoDeOrdenDePagoRequest() { op_compte = op_compte, imp_id = imp_id, adm_id = AdministracionId, usu_id = UserName }, TokenCookie);
+				//var respuesta = ObtenerRespuestaGenericaMock(TipoDeRespuestaMock.EsOk, "", 0);
+				if (respuesta == null)
+					return Json(new { error = true, warn = false, msg = $"Se ha producido un error al intentar anular el Certificado de la Orden de Pago ({op_compte})." });
+				if (respuesta.Entidad == null)
+					return Json(new { error = true, warn = false, msg = $"Se ha producido un error al intentar anular el Certificado de la Orden de Pago ({op_compte})." });
+				if (respuesta.Entidad.resultado > 0)
+					return Json(new { error = true, warn = false, msg = respuesta.Entidad.resultado_msj });
+
+				var listaTemp = ListaOrdenDePagoConsulta;
+				var item = listaTemp.Where(x => x.op_compte.Equals(op_compte)).First();
+				if (item != null)
+				{
+					switch (imp_id)
+					{
+						case "GA":
+							item.certificado_ga = false;
+							break;
+						case "IV":
+							item.certificado_iva = false;
+							break;
+						case "IB":
+							item.certificado_ib = false;
+							break;
+						default:
+							break;
+					}
+					ListaOrdenDePagoConsulta = listaTemp;
+				}
+				return Json(new { error = false, warn = false, msg = $"Se ha anulado el Certificado de la Orden de Pago ({op_compte})" });
+			}
+			catch (Exception)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar anular el Certificado de la Orden de Pago ({op_compte})." });
+			}
+		}
+
+		[HttpPost]
 		public JsonResult InicializarDatosEnSesion()
 		{
 			try

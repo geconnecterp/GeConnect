@@ -34,6 +34,7 @@
 
 	$(document).on("click", "#btnAnularOP", btnAnularOP);
 	$(document).on("click", "#btnAnularCertRet", btnAnularCertRet);
+	$(document).on("change", "#listaTipoCert", ControlalistaTipoCertSelected);
 });
 
 const formatter = new Intl.NumberFormat('de-DE', {
@@ -76,8 +77,49 @@ function InicializarDatosEnSesion() {
 	});
 }
 
+function ControlalistaTipoCertSelected() {
+	//impIdSeleccionado
+	if ($("#listaTipoCert").val() != "") {
+		impIdSeleccionado = $("#listaTipoCert").val();
+	}
+	else {
+		impIdSeleccionado = "";
+	}
+}
+
 function btnAnularCertRet() {
-	ControlaMensajeInfo("Servicio no implementado");
+	if (impIdSeleccionado == "") {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un Tipo de Certificado.", function () {
+			$("#msjModal").modal("hide");
+			$("#listaTipoCert").trigger("focus");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirMensaje("ATENCIÓN", "¿Desea anular el Certificado de Retención?", function (e) {
+			$("#msjModal").modal("hide");
+			switch (e) {
+				case "SI": //Confirmar
+					AbrirWaiting();
+					var data = { op_compte: opIdSeleccionado, imp_id: impIdSeleccionado };
+					PostGen(data, anularCertificadoDeOrdenDePagoURL, function (obj) {
+						if (obj.error === true) {
+							CerrarWaiting();
+							ControlaMensajeWarning(obj.msg);
+						}
+						else {
+							ConsultarExistenciaDeCertificados(opIdSeleccionado);
+						}
+					});
+					break;
+				case "NO":
+					break;
+				default:
+					break;
+			}
+			return true;
+		}, true, ["Aceptar", "Cancelar"], "warn!", null);
+	}
 }
 
 function btnAnularOP() {
@@ -102,7 +144,7 @@ function btnAnularOP() {
 						else {
 							ActualizarRegistroDeOrdenDePagoLuegoDeAnular(opIdSeleccionado);
 						}
-					});			
+					});
 					break;
 				case "NO":
 					break;
@@ -111,7 +153,7 @@ function btnAnularOP() {
 			}
 			return true;
 		}, true, ["Aceptar", "Cancelar"], "warn!", null);
-		
+
 	}
 }
 
@@ -172,6 +214,12 @@ function CargarListaTiposCertificados(op_compte) {
 	var data = { op_compte };
 	PostGenHtml(data, cargarListaTiposCertificadosURL, function (obj) {
 		$("#divListaCert").html(obj);
+		if ($("#listaTipoCert").val() != "") {
+			impIdSeleccionado = $("#listaTipoCert").val();
+		}
+		else {
+			impIdSeleccionado = "";
+		}
 		CerrarWaiting();
 		return true
 	});

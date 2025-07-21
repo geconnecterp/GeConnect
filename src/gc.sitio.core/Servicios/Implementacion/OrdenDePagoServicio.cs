@@ -39,6 +39,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string CargarOPUsuarios = "/CargarOPUsuarios";
 		private const string OP_Lista = "/CargarOrdenDePagoConsultaLista";
 		private const string AnularOP = "/AnularOrdenDePago";
+		private const string AnularCertDeOP = "/AnularCertificadoDeOrdenDePago";
 		private readonly AppSettings _appSettings;
 		public OrdenDePagoServicio(IOptions<AppSettings> options, ILogger<OrdenDePagoServicio> logger) : base(options, logger, RutaAPI)
 		{
@@ -476,5 +477,37 @@ namespace gc.sitio.core.Servicios.Implementacion
 				return new();
 			}
 		}
+
+		public RespuestaGenerica<RespuestaDto> AnularCertificadoDeOrdenDePago(AnularCertificadoDeOrdenDePagoRequest r, string token)
+		{
+			ApiResponse<RespuestaDto> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(r, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{AnularCertDeOP}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().Result;
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return new RespuestaGenerica<RespuestaDto>() { Entidad = apiResponse.Data };
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().Result;
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+		//
 	}
 }

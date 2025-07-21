@@ -130,7 +130,7 @@
 		<input type="hidden" asp-for="MostrarListaTipoCertificado" class="form-control activable inputEditable" />
 		<div class="row mt-1" id="divListaCert">
 		</div>
-		@if (Model.MostrarListaTipoCertificado)
+		@if (Model != null && Model.MostrarListaTipoCertificado)
 		{
 			<div class="input-group input-group-sm" style="margin-left: -8px;">
 				@Html.DropDownListFor(m => m.ListaTipoCertificado.First().Value, lista, "Seleccionar...", new { @id = "listaTipoCert", @class = "form-control activable" })
