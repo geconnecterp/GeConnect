@@ -217,12 +217,16 @@
                                                data-original-value="@item.tp_porc_flete" />
                                     </div>
                                 </td>
+                                @{
+                                    bool resBoni = item.tp_boni?.Trim().Equals("0") ?? false;
+                                    string bonificacionMostrada = resBoni ? "" : Model.FormatearDato(item.tp_boni, FormatDato.Ninguno);
+                                }
                                 <td class="@Model.ObtenerClase('c')">
                                     <div class="input-container">
                                         <input type="text" class="form-control form-control-sm input-tp_boni"
-                                               value="@Model.FormatearDato(item.tp_boni, FormatDato.Ninguno)"
+                                               value="@bonificacionMostrada"
                                                data-p-id="@item.p_id"
-                                               data-original-value="@Model.FormatearDato(item.tp_boni, FormatDato.Ninguno)"
+                                               data-original-value="@bonificacionMostrada"
                                                placeholder="000/000" />
                                     </div>
                                 </td>
