@@ -184,10 +184,11 @@ namespace gc.api.core.Constantes
 			public const string SP_OP_USU = "SPGECO_OP_Usu";
 			public const string SP_OP_LISTA = "SPGECO_OP_Lista";
 			public const string SP_OP_ANULAR = "SPGECO_OP_Anular";
+			public const string SP_OP_ANULAR_CERTIFICADO = "SPGECO_OP_Anular_Certificado";
 			#endregion
 
-            #region Cliente
-            public const string SP_CLIENTE_LISTA = "spgeco_clientes_lista";
+			#region Cliente
+			public const string SP_CLIENTE_LISTA = "spgeco_clientes_lista";
             #endregion
 
             #region Usuarios

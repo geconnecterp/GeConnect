@@ -264,5 +264,19 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<RespuestaDto> AnularCertificadoDeOrdenDePago(AnularCertificadoDeOrdenDePagoRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OP_ANULAR_CERTIFICADO;
+			var ps = new List<SqlParameter>()
+			{
+				new("@op_compte",request.op_compte),
+				new("@imp_id",request.imp_id),
+				new("@adm_id",request.adm_id),
+				new("@usu_id",request.usu_id),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }
