@@ -20,14 +20,14 @@
 				</button>
 
 				<button class="btn btn-primary btn-sm mt-1 me-1" type="button" id="btnDetalle" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle">
-					<i class="bx bxs-arrow-to-bottom-stroke"></i>
+					<i class="bx bx-caret-down"></i>
 				</button>
 			</div>
 		</div>
 		<div class="col-md-2">
 			<div class="d-flex justify-content-sm-center">
 				<button id="btnAbmAceptar" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Aceptar" disabled>
-					<i class="bx bx-file-plus"></i>
+					<i class="bx bx-check-circle"></i>
 				</button>
 
 				<button id="btnAbmCancelar" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar" disabled>
@@ -65,7 +65,7 @@
 		var idOtroTributoSeleccionadoFocusOut = "";
 		var autoComRel01Url = "@Url.Action("BuscarProvs", "comprobantedecompra", new { area = "Compras" })";
 		var inicializarComprobanteUrl = "@Url.Action("InicializarComprobante", "comprobantedecompra", new { area = "Compras" })";
-		var cargarCargarConceptosFacturadosUrl = "@Url.Action("CargarConceptosFacturados", "comprobantedecompra", new { area = "Compras" })";
+		var cargarConceptosFacturadosUrl = "@Url.Action("CargarConceptosFacturados", "comprobantedecompra", new { area = "Compras" })";
 		var cargarOtrosTributosUrl = "@Url.Action("CargarOtrosTributos", "comprobantedecompra", new { area = "Compras" })";
 		var cargarGrillaTotalesUrl = "@Url.Action("CargarGrillaTotales", "comprobantedecompra", new { area = "Compras" })";
 		var actualizarListaOpcionesUrl = "@Url.Action("ActualizarListaOpciones", "comprobantedecompra", new { area = "Compras" })";
