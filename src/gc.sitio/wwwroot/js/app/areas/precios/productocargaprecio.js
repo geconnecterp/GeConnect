@@ -1112,8 +1112,7 @@ function configurarEventosEdicion() {
     });
 }
 
-// Función para formatear valores iniciales
-// Función para formatear valores iniciales
+// Función mejorada para formatear valores iniciales
 function formatearValoresIniciales() {
     console.log("Formateando valores iniciales...");
 
@@ -1123,9 +1122,15 @@ function formatearValoresIniciales() {
         if (originalValue !== undefined) {
             let numValue = parseFloat(originalValue);
             if (!isNaN(numValue)) {
-                $(this).val(numValue.toFixed(3));
+                // Redondear a 3 decimales para coincidir exactamente con el formato mostrado
+                const valorRedondeado = parseFloat(numValue.toFixed(3));
+                $(this).val(valorRedondeado.toFixed(3));
+
+                // Actualizar data-original-value para que coincida exactamente con el valor mostrado
+                $(this).data('original-value', valorRedondeado);
+
                 let fieldClass = $(this).attr('class').match(/input-tp_[^\s]+/)[0];
-                console.log(`Valor ${fieldClass}: ${originalValue} → ${numValue.toFixed(3)}`);
+                console.log(`Valor ${fieldClass}: ${originalValue} → ${valorRedondeado.toFixed(3)}`);
             }
         }
     });
@@ -1138,10 +1143,15 @@ function formatearValoresIniciales() {
         if (originalValue !== undefined) {
             let numValue = parseFloat(originalValue);
             if (!isNaN(numValue)) {
-                // Limitar a 99.9 como máximo
+                // Limitar a 99.9 como máximo y redondear a 1 decimal
                 numValue = Math.min(numValue, 99.9);
-                $(this).val(numValue.toFixed(1));
-                console.log(`Valor ${fieldClass}: ${originalValue} → ${numValue.toFixed(1)}`);
+                const valorRedondeado = parseFloat(numValue.toFixed(1));
+                $(this).val(valorRedondeado.toFixed(1));
+
+                // Actualizar data-original-value para que coincida exactamente con el valor mostrado
+                $(this).data('original-value', valorRedondeado);
+
+                console.log(`Valor ${fieldClass}: ${originalValue} → ${valorRedondeado.toFixed(1)}`);
             }
         }
     });
@@ -1154,12 +1164,27 @@ function formatearValoresIniciales() {
         if (originalValue !== undefined) {
             let numValue = parseFloat(originalValue);
             if (!isNaN(numValue)) {
-                $(this).val(numValue.toFixed(2));
-                console.log(`Valor ${fieldClass}: ${originalValue} → ${numValue.toFixed(2)}`);
+                const valorRedondeado = parseFloat(numValue.toFixed(2));
+                $(this).val(valorRedondeado.toFixed(2));
+
+                // Actualizar data-original-value para que coincida exactamente con el valor mostrado
+                $(this).data('original-value', valorRedondeado);
+
+                console.log(`Valor ${fieldClass}: ${originalValue} → ${valorRedondeado.toFixed(2)}`);
             }
         }
     });
+
+    // Normalizar bonificaciones con valor "0" a cadena vacía
+    $('.input-tp_boni').each(function () {
+        let originalValue = $(this).data('original-value');
+        if (originalValue !== undefined && originalValue.toString().trim() === '0') {
+            $(this).val('');
+            $(this).data('original-value', ''); // Actualizar para coincidencia exacta
+        }
+    });
 }
+
 
 
 
@@ -1379,6 +1404,7 @@ function marcarCampoModificado(input) {
 }
 
 // Función mejorada para marcar campos modificados
+// Función mejorada para marcar campos modificados
 function actualizarCamposModificados() {
     // Procesar todos los inputs de la tabla
     $('#tbProdDet input').each(function () {
@@ -1394,33 +1420,59 @@ function actualizarCamposModificados() {
         let esModificado = false;
 
         if ($input.hasClass('input-tp_boni')) {
-            // Para bonificación, comparación directa
-            esModificado = valorOriginal.toString() !== valorActual.toString();
-        } else {
-            // Para campos numéricos
-            const numOriginal = parseFloat(valorOriginal);
-            const numActual = parseFloat(valorActual);
+            // Para el campo de bonificación
+            // 1. Normalizar ambos valores quitando espacios
+            const originalTrimmed = (valorOriginal || '').toString().trim();
+            const actualTrimmed = valorActual.toString().trim();
 
-            if (!isNaN(numOriginal) && !isNaN(numActual)) {
-                // Usar una tolerancia basada en el tipo de campo
-                let tolerancia = 0.001;
-
-                if ($input.hasClass('input-tp_dto1') ||
-                    $input.hasClass('input-tp_dto2') ||
-                    $input.hasClass('input-tp_dto3') ||
-                    $input.hasClass('input-tp_dto4') ||
-                    $input.hasClass('input-tp_dto_pa') ||
-                    $input.hasClass('input-tp_porc_flete')) {
-                    tolerancia = 0.05; // Mayor tolerancia para descuentos (1 decimal)
-                } else if ($input.hasClass('input-tp_plista') ||
-                    $input.hasClass('input-tp_pcosto') ||
-                    $input.hasClass('input-tp_pneto')) {
-                    tolerancia = 0.0005; // Menor tolerancia para valores con 3 decimales
-                }
-
-                esModificado = Math.abs(numOriginal - numActual) > tolerancia;
+            // 2. Verificar si el valor original es "0" y el actual está vacío
+            if (originalTrimmed === "0" && actualTrimmed === "") {
+                esModificado = false; // Consideramos "0" igual a vacío para bonificación
             } else {
-                esModificado = true; // Si uno no es número, considerarlo modificado
+                esModificado = originalTrimmed !== actualTrimmed;
+            }
+        } else {
+            // Para campos numéricos, usando parsing más seguro
+            try {
+                const numOriginal = parseFloat(valorOriginal);
+                const numActual = parseFloat(valorActual);
+
+                if (!isNaN(numOriginal) && !isNaN(numActual)) {
+                    // Usar una tolerancia basada en el tipo de campo y su precisión
+                    let tolerancia = 0.009; // Tolerancia base para valores con 2 decimales
+
+                    if ($input.hasClass('input-tp_dto1') ||
+                        $input.hasClass('input-tp_dto2') ||
+                        $input.hasClass('input-tp_dto3') ||
+                        $input.hasClass('input-tp_dto4') ||
+                        $input.hasClass('input-tp_dto_pa') ||
+                        $input.hasClass('input-tp_porc_flete')) {
+                        tolerancia = 0.09; // Mayor tolerancia para descuentos (1 decimal)
+                    } else if ($input.hasClass('input-tp_plista') ||
+                        $input.hasClass('input-tp_pcosto') ||
+                        $input.hasClass('input-tp_pneto')) {
+                        tolerancia = 0.0009; // Menor tolerancia para valores con 3 decimales
+                    }
+
+                    // Determinar modificación en base a la diferencia relativa o absoluta
+                    if (Math.abs(numOriginal) < 0.001) {
+                        // Para valores cercanos a cero, usar diferencia absoluta
+                        esModificado = Math.abs(numActual) > tolerancia;
+                    } else {
+                        // Para otros valores, usar diferencia relativa o absoluta, la que sea menor
+                        const difAbsoluta = Math.abs(numOriginal - numActual);
+                        const difRelativa = difAbsoluta / Math.abs(numOriginal);
+                        esModificado = difAbsoluta > tolerancia && difRelativa > 0.001;
+                    }
+                } else {
+                    // Si alguno no es número pero no ambos están vacíos
+                    const ambosVacios = (valorOriginal === null || valorOriginal === undefined || valorOriginal.toString().trim() === '') &&
+                        (valorActual === null || valorActual === undefined || valorActual.trim() === '');
+                    esModificado = !ambosVacios;
+                }
+            } catch (e) {
+                console.error("Error al comparar valores:", e, { original: valorOriginal, actual: valorActual });
+                esModificado = false; // En caso de error, asumimos que no hay cambios
             }
         }
 
