@@ -32,26 +32,26 @@
 	});
 	$("#chkRel02").on("click", function () {
 		if ($("#chkRel02").is(":checked")) {
-			$("#listaUsuario").prop("disabled", false);
+			$("#listaLs02").prop("disabled", false);
 			$("#Rel02List").prop("disabled", false);
-			$("#listaUsuario").trigger("focus");
+			$("#listaLs02").trigger("focus");
 
 		}
 		else {
-			$("#listaUsuario").prop("disabled", true).val("");
+			$("#listaLs02").prop("disabled", true).val("");
 			$("#Rel02List").prop("disabled", true).empty();
 		}
 	});
 	//check generico REL03 activando componentes disables
 	$("#chkRel03").on("click", function () {
 		if ($("#chkRel03").is(":checked")) {
-			$("#listaTipo").prop("disabled", false);
+			$("#listaLs03").prop("disabled", false);
 			$("#Rel03List").prop("disabled", false);
-			$("#listaTipo").trigger("focus");
+			$("#listaLs03").trigger("focus");
 
 		}
 		else {
-			$("#listaTipo").prop("disabled", true).val("");
+			$("#listaLs03").prop("disabled", true).val("");
 			$("#Rel03List").prop("disabled", true).empty();
 		}
 	});
@@ -60,8 +60,8 @@
 	$(document).on("click", "#btnAnularCertRet", btnAnularCertRet);
 	$(document).on("click", "#btnImprimirLista", btnImprimirLista);
 	$(document).on("change", "#listaTipoCert", ControlalistaTipoCertSelected);
-	$(document).on("change", "#listaTipo", ControlalistaTipoSelected);
-	$(document).on("change", "#listaUsuario", ControlalistaUsuarioSelected);
+	$(document).on("change", "#listaLs03", ControlalistaTipoSelected);
+	$(document).on("change", "#listaLs02", ControlalistaUsuarioSelected);
 
 	$("#Rel02List").on("dblclick", 'option', function () { $(this).remove(); })
 	$("#Rel03List").on("dblclick", 'option', function () { $(this).remove(); })
@@ -73,8 +73,8 @@ const formatter = new Intl.NumberFormat('de-DE', {
 });
 
 function ControlalistaTipoSelected() {
-	var item = $("#listaTipo").val();
-	var desc = $("#listaTipo option:selected").text();
+	var item = $("#listaLs03").val();
+	var desc = $("#listaLs03 option:selected").text();
 	if ($("#Rel03List").has('option:contains("' + item + '")').length === 0) {
 		$("#Rel03Item").val(item);
 		var opc = "<option value=" + item + ">" + desc + "</option>"
@@ -83,8 +83,8 @@ function ControlalistaTipoSelected() {
 }
 
 function ControlalistaUsuarioSelected() {
-	var item = $("#listaUsuario").val();
-	var desc = $("#listaUsuario option:selected").text();
+	var item = $("#listaLs02").val();
+	var desc = $("#listaLs02 option:selected").text();
 	if ($("#Rel02List").has('option:contains("' + item + '")').length === 0 && $("#Rel02List").has('option:contains("' + desc + '")').length === 0) {
 		$("#Rel02Item").val(item);
 		var opc = "<option value=" + item + ">" + desc + "</option>"
@@ -421,7 +421,7 @@ function ValidarFechas() {
 function ActualizarListaDeUsuarios() {
 	var data = { f_desde: $("#Date1").val(), f_hasta: $("#Date2").val() };
 	PostGenHtml(data, actualizarListaDeUsuariosURL, function (obj) {
-		$("#divListaUsuarios").html(obj);
+		$("#divLs02").html(obj);
 		$("#chkRel02").prop('checked', false);
 		$("#chkRel02").trigger("change");
 		$("#Rel02List").empty();
@@ -445,7 +445,7 @@ function ActualizarListaDeUsuariosOP() {
 function ActualizarListaDeTipos() {
 	var data = {};
 	PostGenHtml(data, actualizarListaDeTiposURL, function (obj) {
-		$("#divListaTipos").html(obj);
+		$("#divLs03").html(obj);
 		$("#chkRel03").prop('checked', false);
 		$("#chkRel03").trigger("change");
 		CerrarWaiting();

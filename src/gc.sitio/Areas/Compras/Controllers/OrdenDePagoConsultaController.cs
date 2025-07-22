@@ -316,10 +316,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			try
 			{
-				var model = new ListaUsuariosModel();
+				var model = new Ls02Model();
 				var lista = _ordenDePagoServicio.ObtenerOPUsuarios(f_desde, f_hasta, TokenCookie);
 				model.id = "";
-				model.ListaUsuarios = new SelectList(lista, "usu_id", "usu_apellidoynombre");
+				model.ListaLs02 = new SelectList(lista, "usu_id", "usu_apellidoynombre");
 				return PartialView("_listaUsuarios", model);
 			}
 			catch (Exception ex)
@@ -341,9 +341,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			try
 			{
-				var model = new ListaTiposModel();
-				model.id = "";
-				model.ListaTipos = ComboTipoDeOrdenDePago(TipoDeOrdenDePago.Otros);
+				var model = new Ls03Model
+				{
+					id = "",
+					ListaLs03 = ComboTipoDeOrdenDePago(TipoDeOrdenDePago.Otros)
+				};
 				return PartialView("_listaTipos", model);
 			}
 			catch (Exception ex)

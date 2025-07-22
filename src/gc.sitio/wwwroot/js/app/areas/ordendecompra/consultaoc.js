@@ -25,6 +25,30 @@
 		pagina = 1;
 		BuscarOrdenesDeCompra(pagina);
 	});
+	$("#chkRel02").on("click", function () {
+		if ($("#chkRel02").is(":checked")) {
+			$("#listaLs02").prop("disabled", false);
+			$("#Rel02List").prop("disabled", false);
+			$("#listaLs02").trigger("focus");
+
+		}
+		else {
+			$("#listaLs02").prop("disabled", true).val("");
+			$("#Rel02List").prop("disabled", true).empty();
+		}
+	});
+	$("#chkRel03").on("click", function () {
+		if ($("#chkRel03").is(":checked")) {
+			$("#listaLs03").prop("disabled", false);
+			$("#Rel03List").prop("disabled", false);
+			$("#listaLs03").trigger("focus");
+
+		}
+		else {
+			$("#listaLs03").prop("disabled", true).val("");
+			$("#Rel03List").prop("disabled", true).empty();
+		}
+	});
 	$("#btnCancel").on("click", function () {
 		InicializarDatosEnSesion();
 		InicializaPantalla();
@@ -32,6 +56,12 @@
 		$("#btnDetalle").trigger("click");
 		$("#divDetalle").collapse("hide");
 	});
+
+	$(document).on("change", "#listaLs03", ControlalistaSucursalSelected);
+	$(document).on("change", "#listaLs02", ControlalistaEstadoSelected);
+
+	$("#Rel02List").on("dblclick", 'option', function () { $(this).remove(); })
+	$("#Rel03List").on("dblclick", 'option', function () { $(this).remove(); })
 });
 
 const AccionesOC = {
@@ -40,6 +70,26 @@ const AccionesOC = {
 	ANULAR: 'ANULAR',
 	LEVANTAR: 'LEVANTAR',
 	MODIFICAR_ADM: 'MODIFICAR_ADM'
+}
+
+function ControlalistaEstadoSelected() {
+	var item = $("#listaLs02").val();
+	var desc = $("#listaLs02 option:selected").text();
+	if ($("#Rel02List").has('option:contains("' + item + '")').length === 0) {
+		$("#Rel02Item").val(item);
+		var opc = "<option value=" + item + ">" + desc + "</option>"
+		$("#Rel02List").append(opc);
+	}
+}
+
+function ControlalistaSucursalSelected() {
+	var item = $("#listaLs03").val();
+	var desc = $("#listaLs03 option:selected").text();
+	if ($("#Rel03List").has('option:contains("' + item + '")').length === 0 && $("#Rel03List").has('option:contains("' + desc + '")').length === 0) {
+		$("#Rel03Item").val(item);
+		var opc = "<option value=" + item + ">" + desc + "</option>"
+		$("#Rel03List").append(opc);
+	}
 }
 
 function LimpiarDatosDelFiltroInicial() {
@@ -282,6 +332,8 @@ function InicializaPantalla() {
 	$("#Date1").val(fecha)
 	funcCallBack = BuscarOrdenesDeCompra;
 	ActivarBotonesTabPrincipal('');
+	ActualizarListaDeEstados();
+	ActualizarListaSucursal();
 	CerrarWaiting();
 	return true;
 }
@@ -416,6 +468,30 @@ function BuscarOrdenesDeCompra(pag = 1) {
 		});
 
 		$("#btnDetalle").prop("disabled", false);
+		CerrarWaiting();
+		return true
+	});
+}
+
+function ActualizarListaDeEstados() {
+	var data = {};
+	PostGenHtml(data, actualizarListaDeEstadosURL, function (obj) {
+		$("#divLs02").html(obj);
+		$("#chkRel02").prop('checked', false);
+		$("#chkRel02").trigger("change");
+		$("#Rel02List").empty();
+		CerrarWaiting();
+		return true
+	});
+}
+
+function ActualizarListaSucursal() {
+	var data = {};
+	PostGenHtml(data, actualizarListaDeSucursalesURL, function (obj) {
+		$("#divLs03").html(obj);
+		$("#chkRel03").prop('checked', false);
+		$("#chkRel03").trigger("change");
+		$("#Rel03List").empty();
 		CerrarWaiting();
 		return true
 	});

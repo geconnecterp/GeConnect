@@ -6,6 +6,8 @@ using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Compras.Models;
+using gc.sitio.Areas.Compras.Models.OrdenDeCompraConsulta;
+using gc.sitio.Areas.Compras.Models.OrdenDePagoConsulta;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -117,7 +119,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					model.SucursalEntrega = detalleItem.adm_nombre;
 					model.Observaciones = detalleItem.oc_observaciones;
 					model.PagoAnticipado = detalleItem.oc_pago_ant == 'S' ? true : false;
-					model.PagoPlazo = detalleItem.oc_pago_ant_vto??DateTime.MinValue;
+					model.PagoPlazo = detalleItem.oc_pago_ant_vto ?? DateTime.MinValue;
 					CargarDatosDeConceptosEnTabDetalle(model, detalleItem);
 				}
 				return PartialView("_grillaDetalleDeOC", model);
@@ -256,6 +258,60 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar inicializar los datos en Sesion - ORDENDECOMPRA" });
 			}
+		}
+
+		[HttpPost]
+		public IActionResult ActualizarListaDeEstados()
+		{
+			try
+			{
+
+				var model = new Ls02Model
+				{
+					id = "",
+					ListaLs02 = new SelectList(OrdenDeCompraEstadoLista, "oce_id", "oce_lista")
+				};
+				return PartialView("_listaEstados", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+
+		}
+
+		[HttpPost]
+		public IActionResult ActualizarListaSucursal()
+		{
+			try
+			{
+
+				var model = new Ls03Model
+				{
+					id = "",
+					ListaLs03 = new SelectList(AdministracionesLista, "Adm_id", "Adm_nombre")
+				};
+				return PartialView("_listaSucursal", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+
 		}
 
 		#region Métodos Privados

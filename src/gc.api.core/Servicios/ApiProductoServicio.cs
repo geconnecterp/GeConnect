@@ -911,7 +911,7 @@ namespace gc.api.core.Servicios
 
             if (request.Rel02 != null && request.Rel02.Count > 0)
             {
-                ps.Add(new SqlParameter("@adm", true));
+                ps.Add(new SqlParameter("@estado", true));
                 StringBuilder sb = new();
                 bool first = true;
                 foreach (var item in request.Rel02)
@@ -927,16 +927,16 @@ namespace gc.api.core.Servicios
                     sb.Append(item);
                 }
 
-                ps.Add(new SqlParameter("@adm_list", sb.ToString()));
+                ps.Add(new SqlParameter("@estado_list", sb.ToString()));
             }
             else
             {
-                ps.Add(new SqlParameter("@adm", false));
+                ps.Add(new SqlParameter("@estado", false));
             }
 
             if (request.Rel03 != null && request.Rel03.Count > 0)
             {
-                ps.Add(new SqlParameter("@estado", true));
+                ps.Add(new SqlParameter("@adm", true));
                 StringBuilder sb = new();
                 bool first = true;
                 foreach (var item in request.Rel03)
@@ -952,11 +952,11 @@ namespace gc.api.core.Servicios
                     sb.Append(item.Id);
                 }
 
-                ps.Add(new SqlParameter("@estado_list", sb.ToString() + ','));
+                ps.Add(new SqlParameter("@adm_list", sb.ToString() + ','));
             }
             else
             {
-                ps.Add(new SqlParameter("@estado", false));
+                ps.Add(new SqlParameter("@adm", false));
             }
             ps.Add(new SqlParameter("@registros", request.Registros));
             ps.Add(new SqlParameter("@pagina", request.Pagina));

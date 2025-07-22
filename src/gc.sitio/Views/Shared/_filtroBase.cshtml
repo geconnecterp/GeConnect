@@ -196,10 +196,10 @@
         }
         @*---------------------------FIN BUSQUEDA DE PROVEEDORES---------------------------*@
         @*---------------------------BUSQUEDA DE FAMILIAS---------------------------*@
-        @if (Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_CONSULTA))
+        @if (Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_CONSULTA) || Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA))
         {
             var list = new List<ComboGenDto>();
-            var tipo = new SelectList(list, "Id", "Descripcion");
+            var ls03 = new SelectList(list, "Id", "Descripcion");
             <div class="row">
                 <div class="col-sm-6">
                     <div class="input-group input-group-sm">
@@ -211,10 +211,10 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-6" id="divListaTipos">
+                <div class="col-md-6" id="divLs03">
                     <div class="input-group input-group-sm">
                         <span class="input-group-text">Nombre</span>
-                        @Html.DropDownListFor(m => m.Tipo, tipo, "Seleccionar", new { @id = "listaTipo", disabled = "disabled", @class = "form-control inputEditable activable" })
+                        @Html.DropDownListFor(m => m.Tipo, ls03, "Seleccionar", new { @id = "listaLs03", disabled = "disabled", @class = "form-control inputEditable activable" })
                     </div>
                 </div>
                 <div class="col-sm-6">
@@ -266,10 +266,10 @@
         
         @*---------------------------FIN BUSQUEDA DE FAMILIAS---------------------------*@
         @*---------------------------BUSQUEDA DE RUBROS---------------------------*@
-        @if (Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_CONSULTA))
+        @if (Model.Modelo.Equals(ModeloFilter.ORDEN_DE_PAGO_CONSULTA) || Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA))
         {
             var list = new List<ComboGenDto>();
-            var tipo = new SelectList(list, "Id", "Descripcion");
+            var ls02 = new SelectList(list, "Id", "Descripcion");
             <div class="row">
                 <div class="col-sm-6">
                     <div class="input-group input-group-sm">
@@ -281,10 +281,10 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-6" id="divListaUsuarios">
+                <div class="col-md-6" id="divLs02">
                     <div class="input-group input-group-sm">
                         <span class="input-group-text">Nombre</span>
-                        @Html.DropDownListFor(m => m.Tipo, tipo, "Seleccionar", new { @id = "listaUsuario", disabled = "disabled", @class = "form-control inputEditable activable" })
+                        @Html.DropDownListFor(m => m.Tipo, ls02, "Seleccionar", new { @id = "listaLs02", disabled = "disabled", @class = "form-control inputEditable activable" })
                     </div>
                 </div>
                 <div class="col-sm-6">
