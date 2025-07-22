@@ -198,7 +198,7 @@ namespace gc.api.core.Servicios
 
 			if (request.Rel02 != null && request.Rel02.Count > 0)
 			{
-				ps.Add(new SqlParameter("@tipo", true));
+				ps.Add(new SqlParameter("@usu", true));
 				StringBuilder sb = new();
 				bool first = true;
 				foreach (var item in request.Rel02)
@@ -214,16 +214,16 @@ namespace gc.api.core.Servicios
 					sb.Append(item);
 				}
 
-				ps.Add(new SqlParameter("@tipo_list", sb.ToString()));
+				ps.Add(new SqlParameter("@usu_list", sb.ToString()));
 			}
 			else
 			{
-				ps.Add(new SqlParameter("@tipo", false));
+				ps.Add(new SqlParameter("@usu", false));
 			}
 
 			if (request.Rel03 != null && request.Rel03.Count > 0)
 			{
-				ps.Add(new SqlParameter("@usu", true));
+				ps.Add(new SqlParameter("@tipo", true));
 				StringBuilder sb = new();
 				bool first = true;
 				foreach (var item in request.Rel03)
@@ -239,15 +239,103 @@ namespace gc.api.core.Servicios
 					sb.Append(item.Id);
 				}
 
-				ps.Add(new SqlParameter("@usu_list", sb.ToString() + ','));
+				ps.Add(new SqlParameter("@tipo_list", sb.ToString() + ','));
+			}
+			else
+			{
+				ps.Add(new SqlParameter("@tipo", false));
+			}
+			ps.Add(new SqlParameter("@registros", request.Registros));
+			ps.Add(new SqlParameter("@pagina", request.Pagina));
+			ps.Add(new SqlParameter("@ordenar", string.IsNullOrEmpty(request.Sort) ? "oc_desc" : request.Sort));
+			List<OrdenDePagoConsultaDto> respuesta = _repository.EjecutarLstSpExt<OrdenDePagoConsultaDto>(sp, ps, true);
+			return respuesta;
+		}
+
+		public List<OrdenDePagoConsultaDto> CargarOrdenDePagoConsultaListaReporte(BuscarOrdenesDePagoRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OP_LISTA;
+			var ps = new List<SqlParameter>
+			{
+				new("@fecha_d", request.Date1),
+				new("@fecha_h", request.Date2)
+			};
+			if (request.Rel01 != null && request.Rel01.Count > 0)
+			{
+				ps.Add(new SqlParameter("@prov", true));
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in request.Rel01)
+				{
+					if (first)
+					{
+						first = false;
+					}
+					else
+					{
+						sb.Append(',');
+					}
+					sb.Append(item);
+				}
+
+				ps.Add(new SqlParameter("@prov_list", sb.ToString() + ','));
+			}
+			else
+			{
+				ps.Add(new SqlParameter("@prov", false));
+			}
+
+			if (request.Rel02 != null && request.Rel02.Count > 0)
+			{
+				ps.Add(new SqlParameter("@usu", true));
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in request.Rel02)
+				{
+					if (first)
+					{
+						first = false;
+					}
+					else
+					{
+						sb.Append(',');
+					}
+					sb.Append(item);
+				}
+
+				ps.Add(new SqlParameter("@usu_list", sb.ToString()));
 			}
 			else
 			{
 				ps.Add(new SqlParameter("@usu", false));
 			}
-			ps.Add(new SqlParameter("@registros", request.Registros));
-			ps.Add(new SqlParameter("@pagina", request.Pagina));
-			ps.Add(new SqlParameter("@ordenar", string.IsNullOrEmpty(request.Sort) ? "oc_desc" : request.Sort));
+
+			if (request.Rel03 != null && request.Rel03.Count > 0)
+			{
+				ps.Add(new SqlParameter("@tipo", true));
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in request.Rel03)
+				{
+					if (first)
+					{
+						first = false;
+					}
+					else
+					{
+						sb.Append(',');
+					}
+					sb.Append(item.Id);
+				}
+
+				ps.Add(new SqlParameter("@tipo_list", sb.ToString() + ','));
+			}
+			else
+			{
+				ps.Add(new SqlParameter("@tipo", false));
+			}
+
+			ps.Add(new SqlParameter("@ordenar", string.IsNullOrEmpty(request.Sort) ? "op_compte" : request.Sort));
 			List<OrdenDePagoConsultaDto> respuesta = _repository.EjecutarLstSpExt<OrdenDePagoConsultaDto>(sp, ps, true);
 			return respuesta;
 		}
@@ -257,8 +345,8 @@ namespace gc.api.core.Servicios
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_OP_ANULAR;
 			var ps = new List<SqlParameter>()
 			{
-				//new("@usu_id",request.usu_id),
-				//new("@adm_id",request.adm_id),
+				new("@usu_id",request.usu_id),
+				new("@adm_id",request.adm_id),
 				new("@op_compte",request.op_compte),
 			};
 			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);

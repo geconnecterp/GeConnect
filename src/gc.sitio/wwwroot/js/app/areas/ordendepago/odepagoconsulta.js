@@ -27,20 +27,70 @@
 		InicializarDatosEnSesion();
 		InicializaPantalla();
 		LimpiarDatosDelFiltroInicial();
-		$("#btnFiltro").trigger("click");
 		$("#btnDetalle").trigger("click");
 		$("#divDetalle").collapse("hide");
+	});
+	$("#chkRel02").on("click", function () {
+		if ($("#chkRel02").is(":checked")) {
+			$("#listaUsuario").prop("disabled", false);
+			$("#Rel02List").prop("disabled", false);
+			$("#listaUsuario").trigger("focus");
+
+		}
+		else {
+			$("#listaUsuario").prop("disabled", true).val("");
+			$("#Rel02List").prop("disabled", true).empty();
+		}
+	});
+	//check generico REL03 activando componentes disables
+	$("#chkRel03").on("click", function () {
+		if ($("#chkRel03").is(":checked")) {
+			$("#listaTipo").prop("disabled", false);
+			$("#Rel03List").prop("disabled", false);
+			$("#listaTipo").trigger("focus");
+
+		}
+		else {
+			$("#listaTipo").prop("disabled", true).val("");
+			$("#Rel03List").prop("disabled", true).empty();
+		}
 	});
 
 	$(document).on("click", "#btnAnularOP", btnAnularOP);
 	$(document).on("click", "#btnAnularCertRet", btnAnularCertRet);
+	$(document).on("click", "#btnImprimirLista", btnImprimirLista);
 	$(document).on("change", "#listaTipoCert", ControlalistaTipoCertSelected);
+	$(document).on("change", "#listaTipo", ControlalistaTipoSelected);
+	$(document).on("change", "#listaUsuario", ControlalistaUsuarioSelected);
+
+	$("#Rel02List").on("dblclick", 'option', function () { $(this).remove(); })
+	$("#Rel03List").on("dblclick", 'option', function () { $(this).remove(); })
 });
 
 const formatter = new Intl.NumberFormat('de-DE', {
 	minimumFractionDigits: 2,
 	maximumFractionDigits: 2
 });
+
+function ControlalistaTipoSelected() {
+	var item = $("#listaTipo").val();
+	var desc = $("#listaTipo option:selected").text();
+	if ($("#Rel03List").has('option:contains("' + item + '")').length === 0) {
+		$("#Rel03Item").val(item);
+		var opc = "<option value=" + item + ">" + desc + "</option>"
+		$("#Rel03List").append(opc);
+	}
+}
+
+function ControlalistaUsuarioSelected() {
+	var item = $("#listaUsuario").val();
+	var desc = $("#listaUsuario option:selected").text();
+	if ($("#Rel02List").has('option:contains("' + item + '")').length === 0 && $("#Rel02List").has('option:contains("' + desc + '")').length === 0) {
+		$("#Rel02Item").val(item);
+		var opc = "<option value=" + item + ">" + desc + "</option>"
+		$("#Rel02List").append(opc);
+	}
+}
 
 function LimpiarDatosDelFiltroInicial() {
 	$("#chkDesdeHasta").prop('checked', true);
@@ -64,6 +114,7 @@ function LimpiarDatosDelFiltroInicial() {
 	$("#Rel01List").prop("disabled", true);
 	$("#Rel02List").prop("disabled", true);
 	$("#Rel03List").prop("disabled", true);
+	$("#chkRel03").prop("disabled", false);
 }
 
 function InicializarDatosEnSesion() {
@@ -78,13 +129,49 @@ function InicializarDatosEnSesion() {
 }
 
 function ControlalistaTipoCertSelected() {
-	//impIdSeleccionado
 	if ($("#listaTipoCert").val() != "") {
 		impIdSeleccionado = $("#listaTipoCert").val();
 	}
 	else {
 		impIdSeleccionado = "";
 	}
+}
+
+function btnImprimirLista() {
+	if ($("#tbListaOP > tbody > tr").length === 0) {
+		AbrirMensaje("ATENCIÓN", "No hay datos generar el reporte.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		ImprimirListadoDeOP();
+	}
+}
+
+function ImprimirListadoDeOP() {
+	var Buscar = "";
+	var Date1 = $("#Date1").val();
+	var Date2 = $("#Date2").val();
+	var Date1Print = moment($("#Date1").val()).format('DD/MM/yyyy')
+	var Date2Print = moment($("#Date2").val()).format('DD/MM/yyyy')
+	var Id = "";
+	var Id2 = "";
+	var Rel01 = [];
+	var Rel02 = [];
+	var Rel03 = [];
+	$("#Rel01List").children().each(function (i, item) { Rel01.push($(item).val()) });
+	$("#Rel02List").children().each(function (i, item) { Rel02.push($(item).val()) });
+	$("#Rel03List").children().each(function (i, item) {
+		var aux = { Id: $(item).val(), Descripcion: $(item).text() };
+		Rel03.push(aux);
+	});
+	var rel01 = Rel01.toString();
+	var rel02 = Rel02.toString();
+	var rel03 = Rel03.toString();
+	var data = { Buscar, Id, Id2, Date1, Date2, rel01, rel02, rel03, Date1Print, Date2Print };
+	cargarReporteEnArre(24, data, "CONSULTA DE ORDENES DE PAGO", "", "");
+	invocacionGestorDoc({});
 }
 
 function btnAnularCertRet() {
@@ -241,6 +328,9 @@ function InicializaPantalla() {
 	fecha = moment($("#FechaEntrega").val()).add(-30, 'day').format('yyyy-MM-DD');
 	$("#Date1").val(fecha)
 	$("#divFiltro").collapse("show")
+	$("#chkRel03").prop("disabled", false);
+	ActualizarListaDeUsuarios();
+	ActualizarListaDeTipos();
 	funcCallBack = BuscarOrdenesDePago;
 }
 
@@ -316,25 +406,6 @@ function BuscarOrdenesDePago(pag = 1) {
 }
 
 function ValidarFechas() {
-	if ($("#Date1").val() <= $("#Date2").val()) {
-		let d1 = moment($("#Date1").val());
-		let d2 = moment($("#Date2").val());
-		let diffInDays = d2.diff(d1, 'days');
-		if (diffInDays > 370) {
-			AbrirMensaje("ATENCIÓN", "La diferencia entre las fechas no puede ser mayor a 370 días, revise.", function () {
-				$("#msjModal").modal("hide");
-				var fecha = moment().format('yyyy-MM-DD');
-				$("#Date2").val(fecha);
-				fecha = moment($("#FechaEntrega").val()).add(-30, 'day').format('yyyy-MM-DD');
-				$("#Date1").val(fecha);
-				return true;
-			}, false, ["Aceptar"], "error!", null);
-		}
-		else {
-			ActualizarListaDeUsuariosOP();
-		}
-		return;
-	}
 	if ($("#Date1").val() > $("#Date2").val()) {
 		AbrirMensaje("ATENCIÓN", "El valor de Fecha Desde no puede ser mayor a Fecha Hasta, revise.", function () {
 			$("#msjModal").modal("hide");
@@ -342,7 +413,21 @@ function ValidarFechas() {
 			return true;
 		}, false, ["Aceptar"], "error!", null);
 	}
-	console.log($("#Date2").val() - $("#Date1").val());
+	else {
+		ActualizarListaDeUsuarios();
+	}
+}
+
+function ActualizarListaDeUsuarios() {
+	var data = { f_desde: $("#Date1").val(), f_hasta: $("#Date2").val() };
+	PostGenHtml(data, actualizarListaDeUsuariosURL, function (obj) {
+		$("#divListaUsuarios").html(obj);
+		$("#chkRel02").prop('checked', false);
+		$("#chkRel02").trigger("change");
+		$("#Rel02List").empty();
+		CerrarWaiting();
+		return true
+	});
 }
 
 function ActualizarListaDeUsuariosOP() {
@@ -354,6 +439,17 @@ function ActualizarListaDeUsuariosOP() {
 		else {
 			console.log("Lista de usuarios actualizada correctamente.");
 		}
+	});
+}
+
+function ActualizarListaDeTipos() {
+	var data = {};
+	PostGenHtml(data, actualizarListaDeTiposURL, function (obj) {
+		$("#divListaTipos").html(obj);
+		$("#chkRel03").prop('checked', false);
+		$("#chkRel03").trigger("change");
+		CerrarWaiting();
+		return true
 	});
 }
 

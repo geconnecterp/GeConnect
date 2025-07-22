@@ -26,7 +26,7 @@ namespace gc.api.core.Servicios.Reportes
             IApiLDiarioServicio ldSv,
             IApiSumaSaldoServicio apiBSS,
             IApiBalanceGeneralServicio apiBgr,
-             IOptions<EmpresaGeco> empresa, ICuentaServicio ctaSv, ILogger<ReportService> logger) : base(uow)
+             IOptions<EmpresaGeco> empresa, ICuentaServicio ctaSv, IOrdenDePagoServicio _opSv, ILogger<ReportService> logger) : base(uow)
         {
 
             // Se inicializa el diccionario de generadores de reportes
@@ -53,7 +53,8 @@ namespace gc.api.core.Servicios.Reportes
 				{ InfoReporte.R019_CertRetGA, new R019_CertRetGA(uow,consSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R020_CertRetIVA, new R020_CertRetIVA(uow,consSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R021_OrdenDeCompra, new R021_OrdenDeCompra(uow,consSv,empresa,ctaSv, logger) },
-				{ InfoReporte.R023_OrdenDePagoDirecta, new R023_OrdenDePagoDirecta(uow,consSv,empresa,ctaSv, logger) }
+				{ InfoReporte.R023_OrdenDePagoDirecta, new R023_OrdenDePagoDirecta(uow,consSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R024_ConsultaDeOrdenesDePago, new R024_ConsultaDeOrdenesDePago(uow,consSv, _opSv,empresa,ctaSv, logger) }
 			}; 
             _logger = logger;
         }

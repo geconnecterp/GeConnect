@@ -35,5 +35,6 @@ namespace gc.infraestructura.Enumeraciones
 		R020_CertRetIVA = 20,
 		R021_OrdenDeCompra = 21,
 		R023_OrdenDePagoDirecta = 23,
+		R024_ConsultaDeOrdenesDePago = 24,
 	}
 }

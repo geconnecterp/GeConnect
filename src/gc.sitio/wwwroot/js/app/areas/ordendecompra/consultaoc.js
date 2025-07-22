@@ -25,6 +25,13 @@
 		pagina = 1;
 		BuscarOrdenesDeCompra(pagina);
 	});
+	$("#btnCancel").on("click", function () {
+		InicializarDatosEnSesion();
+		InicializaPantalla();
+		LimpiarDatosDelFiltroInicial();
+		$("#btnDetalle").trigger("click");
+		$("#divDetalle").collapse("hide");
+	});
 });
 
 const AccionesOC = {
@@ -33,6 +40,42 @@ const AccionesOC = {
 	ANULAR: 'ANULAR',
 	LEVANTAR: 'LEVANTAR',
 	MODIFICAR_ADM: 'MODIFICAR_ADM'
+}
+
+function LimpiarDatosDelFiltroInicial() {
+	$("#chkDesdeHasta").prop('checked', true);
+	$("#chkDesdeHasta").trigger("change");
+	$("#chkDesdeHasta").prop("disabled", true);
+	$("#chkRel01").prop('checked', false);
+	$("#chkRel01").trigger("change");
+	$("#chkRel02").prop('checked', false);
+	$("#chkRel02").trigger("change");
+	$("#chkRel03").prop('checked', false);
+	$("#chkRel03").trigger("change");
+	$("#Rel01").val("");
+	$("#Rel02").val("");
+	$("#Rel03").val("");
+	$("#Rel01List").empty();
+	$("#Rel03List").empty();
+	$("#Rel02List").empty();
+	$("#Rel01").prop("disabled", true);
+	$("#Rel02").prop("disabled", true);
+	$("#Rel03").prop("disabled", true);
+	$("#Rel01List").prop("disabled", true);
+	$("#Rel02List").prop("disabled", true);
+	$("#Rel03List").prop("disabled", true);
+	$("#chkRel03").prop("disabled", false);
+}
+
+function InicializarDatosEnSesion() {
+	PostGen({}, inicializarDatosEnSesionURL, function (obj) {
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+	});
 }
 
 function ModificarOC(opt) {
@@ -107,22 +150,6 @@ function ModificarOC(opt) {
 }
 
 function ValidarFechas() {
-	if ($("#Date1").val() <= $("#Date2").val()) {
-		let d1 = moment($("#Date1").val());
-		let d2 = moment($("#Date2").val());
-		let diffInDays = d2.diff(d1, 'days');
-		if (diffInDays > 370) {
-			AbrirMensaje("ATENCIÓN", "La diferencia entre las fechas no puede ser mayor a 370 días, revise.", function () {
-				$("#msjModal").modal("hide");
-				var fecha = moment().format('yyyy-MM-DD');
-				$("#Date2").val(fecha)
-				fecha = moment($("#FechaEntrega").val()).add(-30, 'day').format('yyyy-MM-DD');
-				$("#Date1").val(fecha)
-				return true;
-			}, false, ["Aceptar"], "error!", null);
-		}
-		return;
-	}
 	if ($("#Date1").val() > $("#Date2").val()) {
 		AbrirMensaje("ATENCIÓN", "El valor de Fecha Desde no puede ser mayor a Fecha Hasta, revise.", function () {
 			$("#msjModal").modal("hide");
@@ -130,7 +157,6 @@ function ValidarFechas() {
 			return true;
 		}, false, ["Aceptar"], "error!", null);
 	}
-	console.log($("#Date2").val() - $("#Date1").val());
 }
 
 function BuscarRprAsociadasDeOCTabClick() {
@@ -184,22 +210,9 @@ function FormatearValores(grilla, idx) {
 	});
 }
 
-// Create our number formatter.
-const formatter = new Intl.NumberFormat('en-US', {
-	style: 'currency',
-	currency: 'USD',
-
-	// These options can be used to round to whole numbers.
-	trailingZeroDisplay: 'stripIfInteger'   // This is probably what most people
-	// want. It will only stop printing
-	// the fraction when the input
-	// amount is a round number (int)
-	// already. If that's not what you
-	// need, have a look at the options
-	// below.
-	//minimumFractionDigits: 0, // This suffices for whole numbers, but will
-	// print 2500.10 as $2,500.1
-	//maximumFractionDigits: 0, // Causes 2500.99 to be printed as $2,501
+const formatter = new Intl.NumberFormat('de-DE', {
+	minimumFractionDigits: 2,
+	maximumFractionDigits: 2
 });
 
 function selectListaOCDetalleRow(x) {
@@ -261,6 +274,7 @@ function InicializaPantalla() {
 	$("#lbRel02").text("Estado");
 	$(".activable").prop("disabled", true);
 	$("#btnDetalle").prop("disabled", true);
+	$("#chkRel03").prop("disabled", false);
 	$("#divFiltro").collapse("show")
 	var fecha = moment().format('yyyy-MM-DD');
 	$("#Date2").val(fecha)

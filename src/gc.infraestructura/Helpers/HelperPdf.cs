@@ -1281,14 +1281,14 @@ namespace gc.infraestructura.Helpers
 			BaseFont baseFontBold = BaseFont.CreateFont(BaseFont.HELVETICA_BOLD, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
 			cb.SetFontAndSize(baseFont, 9);
 			cb.BeginText();
-			
+
 			string texto = $"Son Pesos: ";
 			float x = llx;
 			float y = (lly + ury + 80) / 2;
 			cb.ShowTextAligned(Element.ALIGN_LEFT, texto, x, y, 0);
 			string textoBold = $"{HelperGen.EnLetras(regs.Where(x => x.Grupo.Equals("2") || x.Grupo.Equals("3") || x.Grupo.Equals("4")).Sum(y => y.Cc_importe).ToString())}";
 			cb.SetFontAndSize(baseFontBold, 9);
-			cb.ShowTextAligned(Element.ALIGN_LEFT, textoBold, x+50, y, 0);
+			cb.ShowTextAligned(Element.ALIGN_LEFT, textoBold, x + 50, y, 0);
 			cb.EndText();
 
 			baseFont = BaseFont.CreateFont(BaseFont.HELVETICA_BOLD, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
@@ -1352,7 +1352,7 @@ namespace gc.infraestructura.Helpers
 			{
 				x.Concepto,
 				Comprobante = x.Cm_compte,
-				CuentaGastoRelacionada=x.Ctag_motivo,
+				CuentaGastoRelacionada = x.Ctag_motivo,
 				Fecha = x.Cc_fecha_carga.ToString("dd/MM/yyyy"),
 				Importe = x.Cc_importe
 			}).ToList();
@@ -1461,6 +1461,64 @@ namespace gc.infraestructura.Helpers
 			tablaTotal.AddCell(celdaTotal);
 			pdf.Add(tablaTotal);
 		}
+
+		public static void CargarTablaConceptosOrdenesDePago(Document pdf, List<OrdenDePagoConsultaDto> regs, Font fuenteEtiqueta, Font fuenteValor)
+		{
+			//_titulos = ["N° OP", "Tipo", "Fecha", "Proveedor", "Anulada", "Usuario", "Importe"];
+			//_campos = ["op_compte", "opt_desc", "op_fecha", "cta_denominacion", "op_anulada_desc", "usu_apellidoynombre", "op_importe"];
+			List<string> _campos = ["op_compte", "opt_desc", "op_fecha", "cta_denominacion", "op_anulada_desc", "usu_apellidoynombre", "op_importe",];
+			List<string> _titulosTabla = ["Nro", "Tipo", "Fecha", "Proveedor", "Anulada", "Usuario", "Importe",];
+			float[] _anchosTitulosTabla = [10f, 20f, 10, 20, 10f, 20, 10];
+			PdfPTable tablaTitulo = GeneraTabla(1, [100f], 100, 10, 0);
+
+			// FILA 1
+			//PdfPCell celdaTitulo = new PdfPCell(new Phrase("Conceptos Cancelados", HelperPdf.FontNormalPredeterminado(true)))
+			//{
+			//	Border = Rectangle.NO_BORDER,
+			//	HorizontalAlignment = Element.ALIGN_LEFT,
+			//	VerticalAlignment = Element.ALIGN_MIDDLE,
+			//	PaddingTop = 0f,
+			//	PaddingBottom = -2f
+			//};
+			//tablaTitulo.AddCell(celdaTitulo);
+			//pdf.Add(tablaTitulo);
+
+			//Chunk linebreak = new Chunk(new LineSeparator(1f, 17f, BaseColor.Black, Element.ALIGN_LEFT, -4));
+			//pdf.Add(linebreak);
+
+			// FILA 1
+			HelperPdf.GeneraCabeceraLista(pdf, _titulosTabla, _anchosTitulosTabla, HelperPdf.FontNormalPredeterminado(true));
+
+			// FILA 2
+			//hago el modelo de dato aca ya que necesito los datos de la cuenta
+			var regsAux = regs.Select(x => new
+			{
+				Nro=x.op_compte,
+				Tipo=x.opt_desc,
+				Fecha = x.op_fecha.ToString("dd/MM/yyyy"),
+				Proveedor=x.cta_denominacion,
+				Anulada=x.op_anulada_desc,
+				Usuario=x.usu_apellidoynombre,
+				Importe=x.op_importe
+			}).ToList();
+			HelperPdf.GenerarListadoDesdeLista(pdf, regsAux, _titulosTabla, _anchosTitulosTabla, fuenteEtiqueta);
+
+			// FILA 3
+			PdfPTable tablaTotal = GeneraTabla(1, [100f], 100, 0, 10);
+			PdfPCell celdaTotal = new PdfPCell(new Phrase($"Total Ordenes de Pago: {regs.Sum(y => y.op_importe).ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_RIGHT,
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				PaddingTop = 0f,
+				BackgroundColor = BaseColor.LightGray
+			};
+
+			tablaTotal.AddCell(celdaTotal);
+			pdf.Add(tablaTotal);
+		}
+
+		
 
 		public static void GenerarListadoAgrupado<T>(
 					Document pdf,
@@ -1729,6 +1787,18 @@ namespace gc.infraestructura.Helpers
 				MargenInferior = margenInferior
 			};
 			writer.PageEvent = evento;
+		}
+
+		private static NumberFormatInfo ForzarObtenerFormatoMonetario()
+		{
+			CultureInfo culturaArgentina = CultureInfo.CreateSpecificCulture("es-AR");
+			NumberFormatInfo formatoPersonalizado = culturaArgentina.NumberFormat.Clone() as NumberFormatInfo;
+			formatoPersonalizado.CurrencySymbol = "$";                // Cambia el símbolo
+			formatoPersonalizado.CurrencyDecimalSeparator = ",";         // Separador decimal
+			formatoPersonalizado.CurrencyGroupSeparator = ".";           // Separador de miles
+			formatoPersonalizado.CurrencyDecimalDigits = 2;              // Cantidad de decimales
+			formatoPersonalizado.CurrencyNegativePattern = 1;            // Muestra negativos como "-ARS$ 1.234,56"
+			return formatoPersonalizado;
 		}
 	}
 

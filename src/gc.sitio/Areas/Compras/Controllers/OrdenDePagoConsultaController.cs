@@ -5,10 +5,13 @@ using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Request;
+using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Enumeraciones;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Compras.Models;
 using gc.sitio.Areas.Compras.Models.OrdenDePagoConsulta;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
@@ -20,17 +23,31 @@ namespace gc.sitio.Areas.Compras.Controllers
 	[Area("Compras")]
 	public class OrdenDePagoConsultaController : OrdenDePagoConsultaControladorBase
 	{
+		//PARA MODULO DE IMPRESION
+		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
+		private AppModulo _modulo; //tengo el AppModulo que corresponde a la consulta de cuentas
+		private string APP_MODULO = AppModulos.COP.ToString();
+		private readonly IDocManagerServicio _docMSv;
+
+		//************************
+
 		private readonly AppSettings _settings;
 		private readonly ITipoOrdenDePagoServicio _tipoOrdenDePagoServicio;
 		private readonly IOrdenDePagoServicio _ordenDePagoServicio;
 		private readonly ICuentaServicio _cuentaServicio;
 		public OrdenDePagoConsultaController(ITipoOrdenDePagoServicio tipoOrdenDePagoServicio, IOrdenDePagoServicio ordenDePagoServicio, ICuentaServicio cuentaServicio,
-											 IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger<OrdenDePagoConsultaController> logger) : base(options, accessor, logger)
+											 IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger<OrdenDePagoConsultaController> logger,
+											 IDocManagerServicio docManager, IOptions<DocsManager> docsManager) : base(options, accessor, logger)
 		{
 			_settings = options.Value;
 			_tipoOrdenDePagoServicio = tipoOrdenDePagoServicio;
 			_ordenDePagoServicio = ordenDePagoServicio;
 			_cuentaServicio = cuentaServicio;
+
+			//PARA MODULO DE IMPRESION
+			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
+			_modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO); //identifico los datos del modulo que necesito: COP
+			_docMSv = docManager; //instancio el servicio de impresión
 		}
 
 		public IActionResult Index()
@@ -43,6 +60,18 @@ namespace gc.sitio.Areas.Compras.Controllers
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 				}
 
+				string titulo = "CONSULTA DE ORDENES DE PAGO";
+				ViewData["Titulo"] = titulo;
+
+				#region Gestor Impresion - Inicializacion de variables
+				//Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
+				DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
+				// en este mismo acto se cargan los posibles documentos
+				//que se pueden imprimir, exportar, enviar por email o whatsapp
+				ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
+
+				#endregion
+
 				var listR01 = new List<ComboGenDto>();
 				ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
 
@@ -51,8 +80,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				var listR03 = new List<ComboGenDto>();
 				ViewBag.Rel03List = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
-
-				ViewData["Titulo"] = "CONSULTA DE ORDENES DE PAGO";
+				
 				CargarDatosIniciales(true);
 				return View();
 			}
@@ -248,7 +276,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 			catch (Exception)
 			{
-				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar inicializar los datos en Sesion - ORDENDECOMPRA" });
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar inicializar los datos en Sesion - ORDENDEPAGO" });
 			}
 		}
 
@@ -281,6 +309,55 @@ namespace gc.sitio.Areas.Compras.Controllers
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar actualizar los datos de los usuarios de Ordenes de Pagos." });
 			}
 			
+		}
+
+		[HttpPost]
+		public IActionResult ActualizarListaDeUsuarios(DateTime f_desde, DateTime f_hasta)
+		{
+			try
+			{
+				var model = new ListaUsuariosModel();
+				var lista = _ordenDePagoServicio.ObtenerOPUsuarios(f_desde, f_hasta, TokenCookie);
+				model.id = "";
+				model.ListaUsuarios = new SelectList(lista, "usu_id", "usu_apellidoynombre");
+				return PartialView("_listaUsuarios", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+
+		}
+
+		[HttpPost]
+		public IActionResult ActualizarListaDeTipos()
+		{
+			try
+			{
+				var model = new ListaTiposModel();
+				model.id = "";
+				model.ListaTipos = ComboTipoDeOrdenDePago(TipoDeOrdenDePago.Otros);
+				return PartialView("_listaTipos", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+
 		}
 
 		#region Métodos Privados

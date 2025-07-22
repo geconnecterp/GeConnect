@@ -1,0 +1,8 @@
+﻿@model ListaUsuariosModel
+@{
+	var usuarios = Model.ListaUsuarios;
+}
+<div class="input-group input-group-sm">
+    <span class="input-group-text">Nombre</span>
+    @Html.DropDownListFor(m => m.id, usuarios, "Seleccionar", new { @id = "listaUsuario", disabled = "disabled", @class = "form-control inputEditable activable" })
+</div>

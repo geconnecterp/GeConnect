@@ -4,7 +4,7 @@
 	var filtro = new QueryFilters()
 	{
 		Rel01 = new List<string>(),
-		Rel02 = new List<string>(),
+		//Rel02 = new List<string>(),
 		Rel03 = new List<ComboGenDto>(),
 		Modelo = ModeloFilter.ORDEN_DE_PAGO_CONSULTA,
 	};
@@ -12,6 +12,7 @@
 
 @section styles {
 	<link rel="stylesheet" href="~/css/simplePagination.css" />
+	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
 }
 <div class="container">
 	<div class="row">
@@ -57,6 +58,9 @@
 	</div>
 </div>
 
+<!-- para el modal del geston de impresion -->
+<div id="modalGestorDocumental"></div>
+
 @section scripts {
 	<script type="text/javascript">
 		var totalRegs = 0;
@@ -73,14 +77,28 @@
 		var buscarOrdenesDePagoURL = "@Url.Action("BuscarOrdenesDePago", "ordendepagoconsulta", new { area = "Compras" })";
 		var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "ordendepagoconsulta", new { area = "Compras" })";
 		var actualizarListaDeUsuariosOPURL = "@Url.Action("ActualizarListaDeUsuariosOP", "ordendepagoconsulta", new { area = "Compras" })";
+		var actualizarListaDeUsuariosURL = "@Url.Action("ActualizarListaDeUsuarios", "ordendepagoconsulta", new { area = "Compras" })";
+		var actualizarListaDeTiposURL = "@Url.Action("ActualizarListaDeTipos", "ordendepagoconsulta", new { area = "Compras" })";
 		var consultarExistenciaDeCertificadosURL = "@Url.Action("ConsultarExistenciaDeCertificados", "ordendepagoconsulta", new { area = "Compras" })";
 		var cargarListaTiposCertificadosURL = "@Url.Action("CargarListaTiposCertificados", "ordendepagoconsulta", new { area = "Compras" })";
 		var anularOrdenDePagoURL = "@Url.Action("AnularOrdenDePago", "ordendepagoconsulta", new { area = "Compras" })";
 		var inicializarDatosEnSesionURL = "@Url.Action("InicializarDatosEnSesion", "ordendepagoconsulta", new { area = "Compras" })";
 		var anularCertificadoDeOrdenDePagoURL = "@Url.Action("AnularCertificadoDeOrdenDePago", "ordendepagoconsulta", new { area = "Compras" })";
 
+		// Detalle de OP (Extracto de ConsCuenta)
 		var consultarOPProvDetUrl = "@Url.Action("ConsultaOPagoProveedorDetalle", "ConsCuenta", new { area = "Consultas" })";
+
+		// Gestor de impresión
+		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+		var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
+		var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarEmailUrl = "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarWhatsAppUrl = "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
+		var generadorArchivoUrl = "@Url.Action("GeneradorArchivo", "GestorImpresion", new { area = "ControlComun" })";
 	</script>
+	
+	<script src="~/lib/jstree/jstree.min.js"></script>
+	<script src="~/js/app/areas/docmngr/docmanager.js"></script>
 
 	<script src="~/js/plugins/jquery.simplePagination.js"></script>
 	<script src="~/js/app/areas/ordendepago/odepagoconsulta.js"></script>

@@ -243,6 +243,21 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return Json(lista);
 		}
 
+		[HttpPost]
+		public JsonResult InicializarDatosEnSesion()
+		{
+			try
+			{
+				ListaOrdenDeCompraConsulta = [];
+
+				return Json(new { error = false, warn = false, msg = "Inicializacion correcta." });
+			}
+			catch (Exception)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar inicializar los datos en Sesion - ORDENDECOMPRA" });
+			}
+		}
+
 		#region Métodos Privados
 		private void CargarDatosIniciales(bool actualizar)
 		{
