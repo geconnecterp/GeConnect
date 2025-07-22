@@ -10,7 +10,9 @@ namespace gc.api.infra.Datos.Implementacion
     using System;
     using System.Collections.Generic;
     using System.Data;
+    using System.Diagnostics;
     using System.Linq;
+    using System.Reflection;
     using System.Text;
     using System.Threading.Tasks;
 
@@ -188,6 +190,67 @@ namespace gc.api.infra.Datos.Implementacion
                 }
             }
             return resultado;
+        }
+
+        public List<TResult> EjecutarLstFunction<TResult>(string sqlFunction, List<SqlParameter> parameters = null, bool esTransaccion = false) where TResult : class, new()
+        {
+            try
+            {
+                using var connection = _dbContext.ObtenerConexionSql();
+                connection.Open();
+
+                SqlCommand command = new(sqlFunction, connection);
+                command.CommandType = CommandType.Text;  // Importante: CommandType.Text porque es una función
+
+                // Agregar parámetros si existen
+                if (parameters != null)
+                {
+                    foreach (var param in parameters)
+                    {
+                        command.Parameters.Add(param);
+                    }
+                }
+                
+                List<TResult> resultado = new();
+
+                // Ejecutar la consulta y mapear los resultados
+                using var reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    TResult item = new();
+                    Type tipo = typeof(TResult);
+                    PropertyInfo[] propiedades = tipo.GetProperties();
+
+                    foreach (PropertyInfo propiedad in propiedades)
+                    {
+                        try
+                        {
+                            if (reader[propiedad.Name] != DBNull.Value)
+                            {
+                                object valor = Convert.ChangeType(reader[propiedad.Name], propiedad.PropertyType);
+                                propiedad.SetValue(item, valor);
+                            }
+                        }
+                        catch (IndexOutOfRangeException)
+                        {
+                            // La columna no existe en el resultado, ignoramos
+                            continue;
+                        }
+                        catch (Exception ex)
+                        {
+                            // Log del error pero continuar con las otras propiedades
+                            Debug.WriteLine($"Error al mapear la propiedad {propiedad.Name}: {ex.Message}");
+                        }
+                    }
+                    resultado.Add(item);
+                }
+
+                return resultado;
+            }
+            catch (Exception )
+            {
+                throw ;
+            }
         }
 
         public int InvokarSpNQuery(string sp, List<SqlParameter> parametros, bool esTransacciona = false, bool elUltimo = true)

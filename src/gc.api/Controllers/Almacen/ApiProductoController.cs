@@ -34,7 +34,7 @@ namespace gc.api.Controllers.Almacen
     using System.Threading.Tasks;
     using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 
-    [Authorize]
+    //[Authorize]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
@@ -958,11 +958,11 @@ namespace gc.api.Controllers.Almacen
             var metadata = new MetadataGrid
             {
                 TotalCount = reg.total_registros,
-                PageSize = request.Registros??0,
-                CurrentPage = request.Pagina??0,
+                PageSize = request.Registros ?? 0,
+                CurrentPage = request.Pagina ?? 0,
                 TotalPages = reg.total_paginas,
-                HasNextPage = (request.Pagina??0) < reg.total_paginas,
-                HasPreviousPage = (request.Pagina??0) > 1,
+                HasNextPage = (request.Pagina ?? 0) < reg.total_paginas,
+                HasPreviousPage = (request.Pagina ?? 0) > 1,
                 NextPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(CargarOrdenDeCompraConsultaLista)) ?? "").ToString(),
                 PreviousPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(CargarOrdenDeCompraConsultaLista)) ?? "").ToString(),
 
@@ -1029,11 +1029,11 @@ namespace gc.api.Controllers.Almacen
             var metadata = new MetadataGrid
             {
                 TotalCount = reg.total_registros,
-                PageSize = request.Registros??0,
-                CurrentPage = request.Pagina??0,
+                PageSize = request.Registros ?? 0,
+                CurrentPage = request.Pagina ?? 0,
                 TotalPages = reg.total_paginas,
-                HasNextPage = (request.Pagina??0) < reg.total_paginas,
-                HasPreviousPage =(request.Pagina??0)> 1,
+                HasNextPage = (request.Pagina ?? 0) < reg.total_paginas,
+                HasPreviousPage = (request.Pagina ?? 0) > 1,
                 NextPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(NCPICargarListaDeProductosPag)) ?? "").ToString(),
                 PreviousPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(NCPICargarListaDeProductosPag)) ?? "").ToString(),
 
@@ -1079,11 +1079,11 @@ namespace gc.api.Controllers.Almacen
             var metadata = new MetadataGrid
             {
                 TotalCount = reg.total_registros,
-                PageSize = request.Registros??0,
-                CurrentPage = request.Pagina??0,
+                PageSize = request.Registros ?? 0,
+                CurrentPage = request.Pagina ?? 0,
                 TotalPages = reg.total_paginas,
-                HasNextPage =(request.Pagina??0)< reg.total_paginas,
-                HasPreviousPage =(request.Pagina??0)> 1,
+                HasNextPage = (request.Pagina ?? 0) < reg.total_paginas,
+                HasPreviousPage = (request.Pagina ?? 0) > 1,
                 NextPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(NCPICargarListaDeProductosPag2)) ?? "").ToString(),
                 PreviousPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(NCPICargarListaDeProductosPag2)) ?? "").ToString(),
 
@@ -1398,22 +1398,22 @@ namespace gc.api.Controllers.Almacen
             return Ok(new ApiResponse<LimiteStkDto>(res));
         }
 
-		[HttpPost]
-		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
-		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
-		[Route("[action]")]
-		public IActionResult OCValidar(OCValidarRequest request)
-		{
-			ApiResponse<RespuestaDto> response;
-			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
-			var res = _productosSv.OCValidar(request.oc_compte, request.cta_id);
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult OCValidar(OCValidarRequest request)
+        {
+            ApiResponse<RespuestaDto> response;
+            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+            var res = _productosSv.OCValidar(request.oc_compte, request.cta_id);
 
-			response = new ApiResponse<RespuestaDto>(res);
+            response = new ApiResponse<RespuestaDto>(res);
 
-			return Ok(response);
-		}
+            return Ok(response);
+        }
 
-		
+
         #endregion
 
 
@@ -1422,7 +1422,7 @@ namespace gc.api.Controllers.Almacen
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public ActionResult<ProductoDetalleDto> Obtener_ProductoDetalle(QueryFilters filtro)
         {
-            if(filtro.Rel01?.Count == 0)
+            if (filtro.Rel01?.Count == 0)
             {
                 return BadRequest("No se la cuenta del proveedor.");
             }
@@ -1445,6 +1445,47 @@ namespace gc.api.Controllers.Almacen
             var resultado = _productosSv.Obtener_ProductoDetalleListas(filtro);
 
             return Ok(new ApiResponse<List<ProductoDetalleDto>>(resultado));
+        }
+
+
+        [HttpPost("obtener-precio-pvta-base")]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoResponsePVtaLista>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        public ActionResult<ProductoResponsePVtaLista> ObtenerPrecioVentaBase(ProductoRequestPvtaLista req)
+        {
+            if (req == null)
+            {
+                return BadRequest("No se recepcionaron los valores para el calculo del precio de venta base.");
+            }
+            var resultado = _productosSv.ObtenerPrecioVentaBase(req.p_pcosto, req.lp_prevision_tot, req.lp_prevision_pin,
+                req.tp_margen, req.iva_situacion, req.iva_alicuota, req.in_alicuota);
+
+            if (resultado == null)
+            {
+                return BadRequest("No se pudo calcular el precio de venta base. Verifique los datos ingresados.");
+            }
+
+            return Ok(new ApiResponse<ProductoResponsePVtaLista>(resultado));
+        }
+
+        [HttpPost("obtener-precio-pvta-margen")]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoResponsePVtaMargen>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        public ActionResult<ProductoResponsePVtaLista> ObtenerPrecioVentaMargen(ProductoRequestPVtaMargen req)
+        {
+            if (req == null)
+            {
+                return BadRequest("No se recepcionaron los valores para el calculo del precio de venta base.");
+            }
+            var resultado = _productosSv.ObtenerPrecioVentaMargen(req.p_pcosto, req.lp_prevision_tot, req.lp_prevision_pin,
+                req.p_pvta, req.iva_situacion, req.in_alicuota, req.in_alicuota);
+
+            if (resultado == null)
+            {
+                return BadRequest("No se pudo calcular el precio de venta base. Verifique los datos ingresados.");
+            }
+
+            return Ok(new ApiResponse<List<ProductoResponsePVtaMargen>>(resultado));
         }
     }
 }

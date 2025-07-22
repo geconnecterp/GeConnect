@@ -1605,5 +1605,28 @@ namespace gc.api.core.Servicios
             List<ProductoDetalleDto> resp = _repository.EjecutarLstSpExt<ProductoDetalleDto>(sp, ps, true);
             return resp;
         }
+
+        public ProductoResponsePVtaLista ObtenerPrecioVentaBase(decimal pcosto,decimal prevision_tot,
+            decimal prevision_pin, decimal margen, char iva_situacion, decimal iva_alicuota,decimal in_alicuota)
+        {
+            // Construir la llamada a la función SQL
+            var functionCall = $"select * from {ConstantesGC.StoredFunctions.FX_PROD_PVTA_LISTA_BASE}({pcosto.ToString().Replace(",",".")},{prevision_tot.ToString().Replace(",", ".")},{prevision_pin.ToString().Replace(",", ".")},{margen.ToString().Replace(",", ".")},'{iva_situacion}',{iva_alicuota.ToString().Replace(",", ".")},{in_alicuota.ToString().Replace(",", ".")})";
+
+            // Llamar al nuevo método
+            List<ProductoResponsePVtaLista> resp = _repository.EjecutarLstFunction<ProductoResponsePVtaLista>(functionCall);
+
+            return resp.FirstOrDefault();
+        }
+
+        public List<ProductoResponsePVtaMargen> ObtenerPrecioVentaMargen(decimal pcosto, decimal prevision_tot, decimal prevision_pin, decimal pvta, char iva_situacion, decimal iva_alicuota, decimal in_alicuota)
+        {
+            var fx = $"select * from  {ConstantesGC.StoredFunctions.FX_PROD_PVTA_MARGEN}({pcosto.ToString().Replace(",", ".")},{prevision_tot.ToString().Replace(",", ".")},{prevision_pin.ToString().Replace(",", ".")},{pvta.ToString().Replace(",", ".")},'{iva_situacion.ToString().Replace(",", ".")}',{iva_alicuota.ToString().Replace(",", ".")},{in_alicuota.ToString().Replace(",", ".")})";
+            List<ProductoResponsePVtaMargen> resp = _repository.EjecutarLstFunction<ProductoResponsePVtaMargen>(fx);
+            if (resp.Count == 0)
+            {
+                throw new NegocioException("No se pudo calcular el margen de ganancia. Verifique los datos.");
+            }
+            return resp;
+        }
     }
 }

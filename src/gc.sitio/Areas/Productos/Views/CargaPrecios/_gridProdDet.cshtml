@@ -237,14 +237,17 @@
                                                readonly
                                                data-p-id="@item.p_id"
                                                data-original-value="@item.tp_pcosto" />
+                                        @Html.Hidden("lp_prevision_tot", item.lp_prevision_tot)
+                                        @Html.Hidden("lp_prevision_pin", item.lp_prevision_pin)
                                     </div>
                                 </td>
                                 <td class="@Model.ObtenerClase(item.tp_margen)">
-                                    <div class="input-container">
+                                    <div class="input-container"> 
                                         <input type="text" class="form-control form-control-sm input-tp_margen input-numeric"
                                                value="@(item.tp_margen.ToString("F2"))"
                                                data-p-id="@item.p_id"
                                                data-original-value="@item.tp_margen" />
+                                        @Html.Hidden("p_margen",item.p_margen)
                                     </div>
                                 </td>
                                 <td class="@Model.ObtenerClase(item.tp_pneto)">
