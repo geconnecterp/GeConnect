@@ -1,18 +1,22 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
-using gc.infraestructura.Dtos.Almacen.Request;
-using gc.infraestructura.Dtos.Almacen;
-using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Helpers;
-using gc.sitio.core.Servicios.Contratos;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using gc.sitio.Areas.Compras.Models;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using gc.infraestructura.Dtos.Administracion;
-using Newtonsoft.Json;
+using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.Request;
+using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
+using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Enumeraciones;
+using gc.infraestructura.Helpers;
+using gc.sitio.Areas.Compras.Models;
+using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Contratos.DocManager;
+using log4net;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 
 namespace gc.sitio.Areas.Compras.Controllers
@@ -20,19 +24,33 @@ namespace gc.sitio.Areas.Compras.Controllers
 	[Area("Compras")]
 	public class OrdenDeCompraController : OrdenDeCompraControladorBase
 	{
+		//PARA MODULO DE IMPRESION
+		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
+		private AppModulo _modulo; //tengo el AppModulo que corresponde a la consulta de cuentas
+		private string APP_MODULO = AppModulos.OC.ToString();
+		private readonly IDocManagerServicio _docMSv;
+
+		//************************
+
 		private readonly AppSettings _settings;
 		private readonly ICuentaServicio _cuentaServicio;
 		private readonly IRubroServicio _rubroServicio;
 		private readonly IProductoServicio _productoServicio;
 		private readonly IAdministracionServicio _adminServicio;
 		public OrdenDeCompraController(ICuentaServicio cuentaServicio, IRubroServicio rubroServicio, IProductoServicio productoServicio, ILogger<OrdenDeCompraController> logger,
-									   IAdministracionServicio adminServicio, IOptions<AppSettings> options, IHttpContextAccessor context) : base(options, context, logger)
+									   IAdministracionServicio adminServicio, IOptions<AppSettings> options, IHttpContextAccessor context, IOptions<DocsManager> docsManager,
+									   IDocManagerServicio docManager) : base(options, context, logger)
 		{
 			_settings = options.Value;
 			_cuentaServicio = cuentaServicio;
 			_rubroServicio = rubroServicio;
 			_productoServicio = productoServicio;
 			_adminServicio = adminServicio;
+
+			//PARA MODULO DE IMPRESION
+			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
+			_modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO); //identifico los datos del modulo que necesito: COP
+			_docMSv = docManager; //instancio el servicio de impresión
 		}
 		public IActionResult Index()
 		{
@@ -45,6 +63,18 @@ namespace gc.sitio.Areas.Compras.Controllers
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 				}
 
+				string titulo = "ORDEN DE COMPRA";
+				ViewData["Titulo"] = titulo;
+
+				#region Gestor Impresion - Inicializacion de variables
+				//Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
+				DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
+				// en este mismo acto se cargan los posibles documentos
+				//que se pueden imprimir, exportar, enviar por email o whatsapp
+				ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
+
+				#endregion
+
 				var listR01 = new List<ComboGenDto>();
 				ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
 
@@ -54,7 +84,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 				var listR03 = new List<ComboGenDto>();
 				ViewBag.Rel03List = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
 
-				ViewData["Titulo"] = "ORDEN DE COMPRA";
 				CargarDatosIniciales(true);
 				return View();
 			}

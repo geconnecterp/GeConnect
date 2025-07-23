@@ -527,7 +527,35 @@
 				VerticalAlignment = Element.ALIGN_MIDDLE,
 				PaddingTop = 10f
 			};
-			tabla.AddCell(celdaTitulo);
+			PdfPCell celdaSubTitulo = new();
+			if (!string.IsNullOrEmpty(solicitud.SubTitulo))
+			{
+				// Título del informe
+				celdaSubTitulo = new PdfPCell(new Phrase(solicitud.SubTitulo, titulo))
+				{
+					Border = Rectangle.NO_BORDER,
+					HorizontalAlignment = Element.ALIGN_CENTER,
+					VerticalAlignment = Element.ALIGN_MIDDLE,
+					PaddingTop = 10f
+				};
+			}
+			PdfPTable subTablaC3 = new(1);
+			subTablaC3.WidthPercentage = 100;
+			subTablaC3.AddCell(HelperPdf.CrearCeldaTexto(string.Empty, chico));
+			subTablaC3.AddCell(celdaTitulo);
+			if (!string.IsNullOrEmpty(solicitud.SubTitulo))
+			{
+				subTablaC3.AddCell(HelperPdf.CrearCeldaTexto(string.Empty, chico));
+				subTablaC3.AddCell(celdaSubTitulo);
+			}
+
+			PdfPCell celdaSubTablaC3 = new PdfPCell(subTablaC3)
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				VerticalAlignment = Element.ALIGN_MIDDLE
+			};
+			tabla.AddCell(celdaSubTablaC3);
 
 			// Columna 4: Fecha
 			string fechaHora = DateTime.Now.ToString("dd/MM/yyyy HH:mm");

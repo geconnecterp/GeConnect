@@ -81,6 +81,9 @@
 	$("#tabProductos").on("click", function () {
 		$("#btnAbmAceptar").prop("disabled", true);
 	});
+	$("#btnImprimirTemp").on("click", function () {
+		ImprimirOC_Generada("07-00000121", "C0017180");
+	});
 	return true;
 });
 

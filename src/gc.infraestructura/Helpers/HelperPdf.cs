@@ -127,6 +127,7 @@ using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.DocManager;
+using gc.infraestructura.EntidadesComunes.Options;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 using iTextSharp.text.pdf.draw;
@@ -1464,42 +1465,24 @@ namespace gc.infraestructura.Helpers
 
 		public static void CargarTablaConceptosOrdenesDePago(Document pdf, List<OrdenDePagoConsultaDto> regs, Font fuenteEtiqueta, Font fuenteValor)
 		{
-			//_titulos = ["N° OP", "Tipo", "Fecha", "Proveedor", "Anulada", "Usuario", "Importe"];
-			//_campos = ["op_compte", "opt_desc", "op_fecha", "cta_denominacion", "op_anulada_desc", "usu_apellidoynombre", "op_importe"];
 			List<string> _campos = ["op_compte", "opt_desc", "op_fecha", "cta_denominacion", "op_anulada_desc", "usu_apellidoynombre", "op_importe",];
 			List<string> _titulosTabla = ["Nro", "Tipo", "Fecha", "Proveedor", "Anulada", "Usuario", "Importe",];
 			float[] _anchosTitulosTabla = [10f, 20f, 10, 20, 10f, 20, 10];
 			PdfPTable tablaTitulo = GeneraTabla(1, [100f], 100, 10, 0);
 
 			// FILA 1
-			//PdfPCell celdaTitulo = new PdfPCell(new Phrase("Conceptos Cancelados", HelperPdf.FontNormalPredeterminado(true)))
-			//{
-			//	Border = Rectangle.NO_BORDER,
-			//	HorizontalAlignment = Element.ALIGN_LEFT,
-			//	VerticalAlignment = Element.ALIGN_MIDDLE,
-			//	PaddingTop = 0f,
-			//	PaddingBottom = -2f
-			//};
-			//tablaTitulo.AddCell(celdaTitulo);
-			//pdf.Add(tablaTitulo);
-
-			//Chunk linebreak = new Chunk(new LineSeparator(1f, 17f, BaseColor.Black, Element.ALIGN_LEFT, -4));
-			//pdf.Add(linebreak);
-
-			// FILA 1
 			HelperPdf.GeneraCabeceraLista(pdf, _titulosTabla, _anchosTitulosTabla, HelperPdf.FontNormalPredeterminado(true));
 
 			// FILA 2
-			//hago el modelo de dato aca ya que necesito los datos de la cuenta
 			var regsAux = regs.Select(x => new
 			{
-				Nro=x.op_compte,
-				Tipo=x.opt_desc,
+				Nro = x.op_compte,
+				Tipo = x.opt_desc,
 				Fecha = x.op_fecha.ToString("dd/MM/yyyy"),
-				Proveedor=x.cta_denominacion,
-				Anulada=x.op_anulada_desc,
-				Usuario=x.usu_apellidoynombre,
-				Importe=x.op_importe
+				Proveedor = x.cta_denominacion,
+				Anulada = x.op_anulada_desc,
+				Usuario = x.usu_apellidoynombre,
+				Importe = x.op_importe
 			}).ToList();
 			HelperPdf.GenerarListadoDesdeLista(pdf, regsAux, _titulosTabla, _anchosTitulosTabla, fuenteEtiqueta);
 
@@ -1518,7 +1501,161 @@ namespace gc.infraestructura.Helpers
 			pdf.Add(tablaTotal);
 		}
 
-		
+		public static void CargarTablaDatosDeProveedorEnOrdenDeCompra(Document pdf, OrdenDeCompraDto oc, CuentaDto cta, Font fuenteEtiqueta, Font fuenteValor, Font titulo)
+		{
+			PdfPTable tabla = GeneraTabla(2, [85f, 15f], 100, 10, 10);
+			PdfPTable tablaDatos = GeneraTabla(4, [20f, 45f, 15f, 20f], 100, 10, 10);
+
+			// FILA 1
+			tablaDatos.AddCell(CeldaSinBorde("Proveedor:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tablaDatos.AddCell(CeldaSinBorde($"{cta.Cta_Id} {cta.Cta_Denominacion}", fuenteValor, Element.ALIGN_LEFT));
+			tablaDatos.AddCell(CeldaSinBorde("Email:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tablaDatos.AddCell(CeldaSinBorde(cta.Cta_Email, fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 2
+			tablaDatos.AddCell(CeldaSinBorde("Fecha generación:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tablaDatos.AddCell(CeldaSinBorde(oc.Oc_Fecha.ToString("dd/MM/yyyy"), fuenteValor, Element.ALIGN_LEFT));
+			tablaDatos.AddCell(CeldaSinBorde("Fecha entrega:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tablaDatos.AddCell(CeldaSinBorde(oc.Oc_Entrega_Fecha.ToString("dd/MM/yyyy"), fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 3 
+			tablaDatos.AddCell(CeldaSinBorde("Pago Ant.:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tablaDatos.AddCell(CeldaSinBorde(oc.Oc_Pago_Ant == 'S' ? "SI" : "NO", fuenteValor, Element.ALIGN_LEFT));
+			tablaDatos.AddCell(CeldaSinBorde("Vto. Pago Ant.:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tablaDatos.AddCell(CeldaSinBorde(oc.Oc_Pago_Ant_Vto == null ? "" : oc.Oc_Pago_Ant_Vto.Value.ToString("dd/MM/yyyy"), fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 4 
+			tablaDatos.AddCell(CeldaSinBorde("Flete:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tablaDatos.AddCell(CeldaSinBorde("No Pago", fuenteValor, Element.ALIGN_LEFT)); //TODO MARCE: Consultar que sorcho pongo aca, es decir, de donde saco este valor
+			tablaDatos.AddCell(CeldaSinBorde("Dep. Entrega:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tablaDatos.AddCell(CeldaSinBorde("Santa Lucia", fuenteValor, Element.ALIGN_LEFT)); //TODO MARCE: Consultar que sorcho pongo aca, es decir, de donde saco este valor
+
+			PdfPCell celdaSubTabla = new PdfPCell(tablaDatos)
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				VerticalAlignment = Element.ALIGN_MIDDLE
+			};
+			tabla.AddCell(celdaSubTabla);
+
+			//tabla.AddCell(tablaDatos);
+			tabla.AddCell(CeldaSinBorde($"Generado por: {oc.Usu_Apellidoynombre}", fuenteEtiqueta, Element.ALIGN_RIGHT));
+
+			pdf.Add(tabla);
+		}
+
+		public static void CargarTablaDatosDeDetalleEnOrdenDeCompra(Document pdf, OrdenDeCompraDto reg, List<OrdenDeCompraDetalleDto> regs, Font fuenteEtiqueta, Font fuenteValor)
+		{
+			List<string> _campos = ["pCodigo", "pNombre", "codProv", "pLista", "dto1", "dto2", "dto3", "dto4", "dtoPago", "bxp", "cant", "bonif", "pCosto", "cTotal", "total",];
+			List<string> _titulosTabla = ["Cód.", "Producto", "Cód. Prov.", "P. Lista", "Dto1", "Dto2", "Dto3", "Dto4", "Dto Pago", "B x P", "Cant.", "Bonif.", "P. Costo", "Cant. Total", "Total",];
+			float[] _anchosTitulosTabla = [5f, 30f, 5f, 5f, 5f, 5f, 5f, 5f, 5f, 5f, 5f, 5f, 5f, 5f, 5f];
+			PdfPTable tablaTitulo = GeneraTabla(1, [100f], 100, 10, 0);
+
+			// FILA 1
+			HelperPdf.GeneraCabeceraLista(pdf, _titulosTabla, _anchosTitulosTabla, HelperPdf.FontNormalPredeterminado(true));
+
+			// FILA 2
+			var regsAux = regs.Select(x => new
+			{
+				pCodigo = x.p_id,
+				pNombre = x.p_desc.Trim(),
+				codProv = x.p_id_prov,
+				pLista = x.ocd_plista,
+				dto1 = x.ocd_dto1,
+				dto2 = x.ocd_dto2,
+				dto3 = x.ocd_dto3,
+				dto4 = x.ocd_dto4,
+				dtoPago = x.ocd_dto_pa,
+				bxp = x.ocd_unidad_x_bulto,
+				cant = x.ocd_cantidad,
+				bonif = x.ocd_bonificacion,
+				pCosto = x.ocd_pcosto,
+				cTotal = x.ocd_cantidad + x.ocd_bonificacion,
+				total = x.ocd_pcosto_tot
+			}).ToList();
+			HelperPdf.GenerarListadoDesdeLista(pdf, regsAux, _campos, _anchosTitulosTabla, fuenteEtiqueta);
+
+			// FILA 3
+			PdfPTable tablaTotal = GeneraTabla(1, [100f], 100, 0, 10);
+			// Gravados
+			PdfPCell celdaGravado = new(new Phrase($"Gravados: {reg.Oc_Gravado.ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_RIGHT,
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				PaddingTop = 0f
+			};
+			tablaTotal.AddCell(celdaGravado);
+
+			// No Gravados
+			PdfPCell celdaNoGravado = new(new Phrase($"No Gravados: {reg.Oc_No_Gravado.ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_RIGHT,
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				PaddingTop = 0f
+			};
+			tablaTotal.AddCell(celdaNoGravado);
+
+			// Flete
+			PdfPCell celdaFlete = new(new Phrase($"Flete: {reg.Oc_Flete_Importe.ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_RIGHT,
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				PaddingTop = 0f
+			};
+			tablaTotal.AddCell(celdaFlete);
+
+			// Subtotal de la orden de compra
+			var subTotal = reg.Oc_Gravado + reg.Oc_No_Gravado + reg.Oc_Flete_Importe;
+			PdfPCell celdaSubTotal = new(new Phrase($"SUBTOTAL: ................. {subTotal.ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_RIGHT,
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				PaddingTop = 0f
+			};
+			tablaTotal.AddCell(celdaSubTotal);
+
+			// Impuestos Internos
+			PdfPCell celdaIN = new(new Phrase($"Impuestos Internos: {reg.Oc_In.ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_RIGHT,
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				PaddingTop = 0f
+			};
+			tablaTotal.AddCell(celdaIN);
+
+			// IVA 21%
+			PdfPCell celdaIva21 = new(new Phrase($"I.V.A. (21.00%): {reg.Oc_Iva.ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_RIGHT,
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				PaddingTop = 0f
+			};
+			tablaTotal.AddCell(celdaIva21);
+
+			// Total de la orden de compra
+			var total = subTotal + reg.Oc_In + reg.Oc_Iva;
+			PdfPCell celdaTotal = new(new Phrase($"TOTAL ................. {total.ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_RIGHT,
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				PaddingTop = 0f,
+				BackgroundColor = BaseColor.LightGray
+			};
+			tablaTotal.AddCell(celdaTotal);
+
+			pdf.Add(tablaTotal);
+
+			PdfPTable tablaObservaciones = GeneraTabla(1, [100f], 100, 0, 10);
+			tablaObservaciones.AddCell(CeldaSinBorde($"Observaciones: {reg.Oc_Observaciones}", fuenteValor, Element.ALIGN_LEFT));
+			pdf.Add(tablaObservaciones);
+		}
 
 		public static void GenerarListadoAgrupado<T>(
 					Document pdf,
@@ -1805,6 +1942,23 @@ namespace gc.infraestructura.Helpers
 	public enum HojaSize
 	{
 		A1, A2, A3, A4, A5, A6
+	}
+
+	public class EventoConTabla : PdfPageEventHelper
+	{
+		PdfPTable tabla;
+
+		public EventoConTabla(PdfPTable tablaARepetir)
+		{
+			tabla = tablaARepetir;
+		}
+
+		public override void OnEndPage(PdfWriter writer, Document document)
+		{
+			// Posición debajo del header
+			float yPos = document.Top - 60;
+			tabla.WriteSelectedRows(0, -1, document.LeftMargin, yPos, writer.DirectContent);
+		}
 	}
 
 	public class CustomPdfPageEventHelper : PdfPageEventHelper
