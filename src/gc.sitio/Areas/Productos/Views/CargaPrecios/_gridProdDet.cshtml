@@ -237,14 +237,17 @@
                                                readonly
                                                data-p-id="@item.p_id"
                                                data-original-value="@item.tp_pcosto" />
+                                        @Html.Hidden("lp_prevision_tot", item.lp_prevision_tot)
+                                        @Html.Hidden("lp_prevision_pin", item.lp_prevision_pin)
                                     </div>
                                 </td>
                                 <td class="@Model.ObtenerClase(item.tp_margen)">
-                                    <div class="input-container">
+                                    <div class="input-container"> 
                                         <input type="text" class="form-control form-control-sm input-tp_margen input-numeric"
                                                value="@(item.tp_margen.ToString("F2"))"
                                                data-p-id="@item.p_id"
                                                data-original-value="@item.tp_margen" />
+                                        @Html.Hidden("p_margen",item.p_margen)
                                     </div>
                                 </td>
                                 <td class="@Model.ObtenerClase(item.tp_pneto)">
@@ -256,7 +259,14 @@
                                                data-original-value="@item.tp_pneto" />
                                     </div>
                                 </td>
-                                <td class="@Model.ObtenerClase('c')">@($"{item.iva_situacion}-{item.iva_alicuota}")</td>
+                                <td class="@Model.ObtenerClase('c')">@($"{item.iva_situacion}-{item.iva_alicuota}")
+                                    @Html.Hidden("iva_situacion", item.iva_situacion)
+                                    @Html.Hidden("iva_alicuota", item.iva_alicuota)
+                                    @Html.Hidden("in_alicuota", item.in_alicuota)
+                                    @Html.Hidden("p_iva",item.p_iva)
+                                    @Html.Hidden("p_in",item.p_in)
+
+                                </td>
                                 <td class="@Model.ObtenerClase(item.tin_alicuota)">
                                     <div class="input-container">
                                         <input type="text" class="form-control form-control-sm input-tin_alicuota input-numeric"
@@ -271,6 +281,8 @@
                                                value="@(item.tp_pvta.ToString("F2"))"
                                                data-p-id="@item.p_id"
                                                data-original-value="@item.tp_pvta" />
+                                        @Html.Hidden("tp_iva", item.tp_iva)
+                                        @Html.Hidden("tp_in", item.tp_in)
                                     </div>
                                 </td>
 

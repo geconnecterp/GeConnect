@@ -264,6 +264,140 @@ namespace gc.sitio.Areas.Productos.Controllers
         }
 
         [HttpPost]
+        public async Task<JsonResult> CalcularPrecioVentaBase(decimal tp_pcosto, decimal lp_prevision_tot,
+            decimal lp_prevision_pin, decimal tp_margen, char iva_situacion,
+            decimal iva_alicuota, decimal in_alicuota)
+        {
+            try
+            {
+                // Verificar autenticación
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+                }
+                if (tp_pcosto <= 0)
+                {
+                    throw new NegocioException("El valor del Costo es incorrecto. Por favor verifique.");
+                }
+
+                var request = new ProductoRequestPvtaBase
+                {
+                    in_alicuota = in_alicuota,
+                    iva_alicuota = iva_alicuota,
+                    iva_situacion = iva_situacion,
+                    lp_prevision_tot = lp_prevision_tot,
+                    lp_prevision_pin = lp_prevision_pin,
+                    p_pcosto = tp_pcosto,
+                    tp_margen = tp_margen
+                };
+                var precioVentaBase = await _productoServicio.ObtenerPrecioVentaBase(request, TokenCookie);
+                return Json(new { error = false, warn = false, pvta = precioVentaBase.Entidad });
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> CalcularPrecioVentaMargen(decimal tp_pcosto, decimal lp_prevision_tot,
+            decimal lp_prevision_pin, decimal tp_pvta, char iva_situacion,
+            decimal iva_alicuota, decimal in_alicuota)
+        {
+            try
+            {
+                // Verificar autenticación
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+                }
+                if (tp_pcosto <= 0)
+                {
+                    throw new NegocioException("El valor del Costo es incorrecto. Por favor verifique.");
+                }
+
+                var request = new ProductoRequestPVtaMargen
+                {
+                    in_alicuota = in_alicuota,
+                    iva_alicuota = iva_alicuota,
+                    iva_situacion = iva_situacion,
+                    lp_prevision_tot = lp_prevision_tot,
+                    lp_prevision_pin = lp_prevision_pin,
+                    p_pcosto = tp_pcosto,
+                    p_pvta = tp_pvta
+                };
+                var precioVentaMg = await _productoServicio.ObtenerPrecioVentaMargen(request, TokenCookie);
+                return Json(new { error = false, warn = false, pvta = precioVentaMg.Entidad });
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+        }
+
+
+        [HttpPost]
+        public async Task<JsonResult> CalcularPrecioVentaLink(decimal tp_pcosto, decimal p_pneto_base,
+            decimal lp_porc_mg, char iva_situacion,decimal iva_alicuota, decimal in_alicuota)
+        {
+            try
+            {
+                // Verificar autenticación
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+                }
+                if (tp_pcosto <= 0)
+                {
+                    throw new NegocioException("El valor del Costo es incorrecto. Por favor verifique.");
+                }
+
+                var request = new ProductoRequestPvtaLista
+                {
+                    in_alicuota = in_alicuota,
+                    iva_alicuota = iva_alicuota,
+                    iva_situacion = iva_situacion,
+                    lp_porc_mg = lp_porc_mg,
+                    p_pcosto = tp_pcosto,
+                    p_pneto_base = p_pneto_base
+                };
+                var precioVentaMg = await _productoServicio.ObtenerPrecioVentaLista(request, TokenCookie);
+                return Json(new { error = false, warn = false, pvta = precioVentaMg.ListaEntidad });
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+        }
+
+        [HttpPost]
         public JsonResult ResguardarCambiosProducto(string p_id, decimal tp_plista, decimal tp_dto1, decimal tp_dto2,
      decimal tp_dto3, decimal tp_dto4, decimal tp_dto_pa, decimal tp_porc_flete, string tp_boni,
      decimal tp_pcosto, decimal tp_margen, decimal tp_pneto, decimal tin_alicuota, decimal tp_pvta)

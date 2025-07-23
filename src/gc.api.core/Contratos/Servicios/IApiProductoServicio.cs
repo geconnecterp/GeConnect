@@ -114,7 +114,14 @@ namespace gc.api.core.Contratos.Servicios
 		#region CargaPrecios
 		List<ProductoDetalleDto> Obtener_ProductoDetalleBase(QueryFilters filtro);
         List<ProductoDetalleDto> Obtener_ProductoDetalleListas(QueryFilters filtro);
+		ProductoResponsePVta ObtenerPrecioVentaBase(decimal pcosto, decimal prevision_tot,
+			decimal prevision_pin, decimal margen, char iva_situacion, decimal iva_alicuota, decimal in_alicuota);
 
+		ProductoResponsePVtaMargen ObtenerPrecioVentaMargen(decimal pcosto, decimal prevision_tot,
+            decimal prevision_pin, decimal pvta, char iva_situacion, decimal iva_alicuota, decimal in_alicuota);
+
+		List<ProductoResponsePVta> ObtenerPrecioVentaLink(decimal pcosto, decimal p_pneto_base,
+			decimal lp_porc_mg, char iva_situacion, decimal iva_alicuota, decimal in_alicuota);
         #endregion
     }
 }
