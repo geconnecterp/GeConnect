@@ -29,5 +29,11 @@ namespace gc.sitio.core.Servicios.Contratos
 
         Task<RespuestaGenerica<ProductoDetalleDto>> Obtener_ProductoDetalle(QueryFilters filtro, string token);
         Task<RespuestaGenerica<ProductoDetalleDto>> Obtener_ProductoDetalleListas(QueryFilters filtro, string token);
+
+        Task<RespuestaGenerica<ProductoResponsePVta>> ObtenerPrecioVentaBase(ProductoRequestPvtaBase req, string token);
+
+        Task<RespuestaGenerica<ProductoResponsePVtaMargen>> ObtenerPrecioVentaMargen(ProductoRequestPVtaMargen req,string token);
+
+        Task<RespuestaGenerica<ProductoResponsePVta>> ObtenerPrecioVentaLista(ProductoRequestPvtaLista req, string token);
     }
 }

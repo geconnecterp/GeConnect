@@ -11,6 +11,51 @@
     string familiaAnterior = string.Empty;
 }
 
+<style>
+    /* Estilo para alinear a la derecha los inputs numéricos */
+    .input-numeric {
+        text-align: right;
+        padding-right: 5px;
+        font-size: 0.85rem; /* Reducir tamaño de fuente para valores grandes */
+    }
+
+    /* Ajustar el padding interno para aprovechar mejor el espacio */
+    .form-control-sm.input-numeric {
+        padding: 0.15rem 0.3rem;
+        height: auto;
+        min-width: 70px; /* Ancho mínimo para visibilidad */
+    }
+
+    /* Campos con 2 decimales */
+    .input-tp_margen_lista, .input-tp_pvta_lista {
+        font-size: 0.8rem;
+        min-width: 70px;
+    }
+
+    /* Estilo para campos modificados */
+    .campo-modificado {
+        background-color: #d4f1f9 !important; /* Celeste pastel claro */
+        border-color: #a8e1f5 !important;
+    }
+
+    /* Indicador visual de cambio */
+    .indicador-cambio {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: 0 8px 8px 0;
+        border-color: transparent #4bacc6 transparent transparent;
+    }
+
+    /* Contenedor relativo para posicionar el indicador */
+    .input-container {
+        position: relative;
+    }
+</style>
+
 <div class="grid-golden">
     <div class="grid-golden-body">
         <div class="table-responsive text-nowrap table-wrapper">
@@ -42,8 +87,26 @@
                             <tr class="@clase" data-lp-id="@item.lp_id" onclick="selectReg(this,'tbProdDet')">
                                 <td class="@Model.ObtenerClase(item.lp_id)">@Model.FormatearDato(item.lp_id, FormatDato.Ninguno)</td>
                                 <td class="@Model.ObtenerClase(item.lp_desc)">@Model.FormatearDato(item.lp_desc, FormatDato.Ninguno)</td>
-                                <td class="@Model.ObtenerClase(item.tp_margen)">@Model.FormatearDato(item.tp_margen, FormatDato.Monto)</td>
-                                <td class="@Model.ObtenerClase(item.tp_pvta)">@Model.FormatearDato(item.tp_pvta, FormatDato.Monto)</td>
+                                <td class="@Model.ObtenerClase(item.tp_margen)">
+                                    <div class="input-container">
+                                        <input type="text" class="form-control form-control-sm input-tp_margen_lista input-numeric"
+                                               value="@(item.tp_margen.ToString("F2"))"
+                                               data-lp-id="@item.lp_id"
+                                               data-p-id="@item.p_id"
+                                               data-original-value="@item.tp_margen"
+                                               readonly />
+                                    </div>
+                                </td>
+                                <td class="@Model.ObtenerClase(item.tp_pvta)">
+                                    <div class="input-container">
+                                        <input type="text" class="form-control form-control-sm input-tp_pvta_lista input-numeric"
+                                               value="@(item.tp_pvta.ToString("F2"))"
+                                               data-lp-id="@item.lp_id"
+                                               data-p-id="@item.p_id"
+                                               data-original-value="@item.tp_pvta"
+                                               readonly />
+                                    </div>
+                                </td>
                                 
                                 <td class="@Model.ObtenerClase(item.p_pvta)">@Model.FormatearDato(re, FormatDato.Monto)</td>
                             </tr>

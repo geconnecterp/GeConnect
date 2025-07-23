@@ -42,6 +42,10 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string PROD_DETALLE = "/obtener-producto-detalle";
         private const string PROD_DETALLE_LISTAS = "/obtener-producto-detalle-lista";
 
+        private const string FX_PVTA_BASE = "/obtener-precio-pvta-base";
+        private const string FX_PVTA_MARGEN = "/obtener-precio-pvta-margen";
+        private const string FX_PVTA_LISTA = "/obtener-precio-pvta-lista";
+        
 
         private readonly AppSettings _appSettings;
 
@@ -908,6 +912,171 @@ namespace gc.sitio.core.Servicios.Implementacion
                 _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
                 throw new Exception("Algo no fue bien al intentar obtener el detalle de productos según las Listas.");
+            }
+        }
+
+        public async Task<RespuestaGenerica<ProductoResponsePVta>> ObtenerPrecioVentaBase(ProductoRequestPvtaBase req, string token)
+        {
+            try
+            {
+                ApiResponse<ProductoResponsePVta>? apiResponse;
+                HelperAPI helper = new();
+
+                HttpClient client = helper.InicializaCliente(req, token, out StringContent contentData);
+                HttpResponseMessage response;
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{FX_PVTA_BASE}";
+
+                response = await client.PostAsync(link, contentData);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde.");
+                    }
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<ProductoResponsePVta>>(stringData);
+
+                    var listado = apiResponse.Data;
+
+                    return new RespuestaGenerica<ProductoResponsePVta> { Ok = true, Entidad = listado };
+
+                }
+                else
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    {
+                        throw new NegocioException(error.Detail);
+                    }
+                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    {
+                        throw new NegocioException(error.Detail);
+                    }
+                    else
+                    {
+                        throw new Exception(error.Detail);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+
+                throw new Exception("Algo no fue bien al intentar recalcular el precio de venta del producto.");
+            }
+        }
+
+        public async Task<RespuestaGenerica<ProductoResponsePVtaMargen>> ObtenerPrecioVentaMargen(ProductoRequestPVtaMargen req, string token)
+        {
+            try
+            {
+                ApiResponse<ProductoResponsePVtaMargen>? apiResponse;
+                HelperAPI helper = new();
+
+                HttpClient client = helper.InicializaCliente(req, token, out StringContent contentData);
+                HttpResponseMessage response;
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{FX_PVTA_MARGEN}";
+
+                response = await client.PostAsync(link, contentData);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde.");
+                    }
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<ProductoResponsePVtaMargen>>(stringData);
+
+                    var listado = apiResponse.Data;
+
+                    return new RespuestaGenerica<ProductoResponsePVtaMargen> { Ok = true, Entidad = listado };
+
+                }
+                else
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    {
+                        throw new NegocioException(error.Detail);
+                    }
+                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    {
+                        throw new NegocioException(error.Detail);
+                    }
+                    else
+                    {
+                        throw new Exception(error.Detail);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+
+                throw new Exception("Algo no fue bien al intentar recalcular el precio de venta del producto x margen.");
+            }
+        }
+
+        public async  Task<RespuestaGenerica<ProductoResponsePVta>> ObtenerPrecioVentaLista(ProductoRequestPvtaLista req, string token)
+        {
+            try
+            {
+                ApiResponse<List<ProductoResponsePVta>>? apiResponse;
+                HelperAPI helper = new();
+
+                HttpClient client = helper.InicializaCliente(req, token, out StringContent contentData);
+                HttpResponseMessage response;
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{FX_PVTA_LISTA}";
+
+                response = await client.PostAsync(link, contentData);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde.");
+                    }
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProductoResponsePVta>>>(stringData);
+
+                    var listado = apiResponse?.Data;
+
+                    return new RespuestaGenerica<ProductoResponsePVta> { Ok = true, ListaEntidad = listado };
+
+                }
+                else
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    {
+                        throw new NegocioException(error.Detail);
+                    }
+                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    {
+                        throw new NegocioException(error.Detail);
+                    }
+                    else
+                    {
+                        throw new Exception(error.Detail);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+
+                throw new Exception("Algo no fue bien al intentar recalcular el precio de venta de las listas.");
             }
         }
     }

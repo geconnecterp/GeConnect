@@ -27,14 +27,13 @@ namespace gc.api.Controllers.Almacen
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
     using System.Collections.Generic;
     using System.Net;
     using System.Reflection;
     using System.Threading.Tasks;
     using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 
-    //[Authorize]
+    [Authorize]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
@@ -1449,9 +1448,9 @@ namespace gc.api.Controllers.Almacen
 
 
         [HttpPost("obtener-precio-pvta-base")]
-        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoResponsePVtaLista>))]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoResponsePVta>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-        public ActionResult<ProductoResponsePVtaLista> ObtenerPrecioVentaBase(ProductoRequestPvtaLista req)
+        public ActionResult<ProductoResponsePVta> ObtenerPrecioVentaBase(ProductoRequestPvtaBase req)
         {
             if (req == null)
             {
@@ -1465,27 +1464,47 @@ namespace gc.api.Controllers.Almacen
                 return BadRequest("No se pudo calcular el precio de venta base. Verifique los datos ingresados.");
             }
 
-            return Ok(new ApiResponse<ProductoResponsePVtaLista>(resultado));
+            return Ok(new ApiResponse<ProductoResponsePVta>(resultado));
         }
 
         [HttpPost("obtener-precio-pvta-margen")]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProductoResponsePVtaMargen>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-        public ActionResult<ProductoResponsePVtaLista> ObtenerPrecioVentaMargen(ProductoRequestPVtaMargen req)
+        public ActionResult<ProductoResponsePVtaMargen> ObtenerPrecioVentaMargen(ProductoRequestPVtaMargen req)
         {
             if (req == null)
             {
                 return BadRequest("No se recepcionaron los valores para el calculo del precio de venta base.");
             }
             var resultado = _productosSv.ObtenerPrecioVentaMargen(req.p_pcosto, req.lp_prevision_tot, req.lp_prevision_pin,
-                req.p_pvta, req.iva_situacion, req.in_alicuota, req.in_alicuota);
+                req.p_pvta, req.iva_situacion, req.iva_alicuota, req.in_alicuota);
 
             if (resultado == null)
             {
                 return BadRequest("No se pudo calcular el precio de venta base. Verifique los datos ingresados.");
             }
 
-            return Ok(new ApiResponse<List<ProductoResponsePVtaMargen>>(resultado));
+            return Ok(new ApiResponse<ProductoResponsePVtaMargen>(resultado));
+        }
+
+        [HttpPost("obtener-precio-pvta-lista")]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<ProductoResponsePVta>>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        public ActionResult<ProductoResponsePVta> ObtenerPrecioVentaLista(ProductoRequestPvtaLista req)
+        {
+            if (req == null)
+            {
+                return BadRequest("No se recepcionaron los valores para el calculo del precio de venta base.");
+            }
+            var resultado = _productosSv.ObtenerPrecioVentaLink(req.p_pcosto, req.p_pneto_base, req.lp_porc_mg,
+                req.iva_situacion, req.iva_alicuota, req.in_alicuota);
+
+            if (resultado == null)
+            {
+                return BadRequest("No se pudo calcular el precio de venta base. Verifique los datos ingresados.");
+            }
+
+            return Ok(new ApiResponse<List<ProductoResponsePVta>>(resultado));
         }
     }
 }
