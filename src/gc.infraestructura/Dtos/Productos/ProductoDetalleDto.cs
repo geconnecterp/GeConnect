@@ -48,7 +48,7 @@ namespace gc.infraestructura.Dtos.Productos
         public decimal lp_prevision_pin { get; set; }
         public string lp_id { get; set; } = string.Empty;
         public string lp_desc { get; set; } = string.Empty;
-        public decimal lp_margen { get; set; }
+        public decimal p_margen { get; set; }
         public DateTime p_actu_fecha { get; set; }
         public string usu_id { get; set; } = string.Empty;
         public decimal p_pneto { get; set; }
@@ -68,6 +68,7 @@ namespace gc.infraestructura.Dtos.Productos
         public decimal tin_alicuota { get; set; }
         public int lp_porc_mg { get; set; }
         public decimal tp_margen { get; set; }
+        public decimal tp_margen_vta { get; set; }
         public decimal tp_pneto { get; set; }
         public decimal tp_iva { get; set; }
         public decimal tp_in { get; set; }
