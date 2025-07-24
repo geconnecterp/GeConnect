@@ -1176,15 +1176,14 @@ function buscarProductoLista(productoId) {
     });
 }
 
-
-
 // Función para configurar eventos de activación/desactivación de edición
 function configurarEventosEdicion() {
     // Eliminar cualquier evento click previo para evitar duplicados
     $('.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta')
         .off('click')
         .off('focus')
-        .off('blur');
+        .off('blur')
+        .off('keydown'); // Asegurarse de eliminar cualquier evento keydown anterior
 
     // Agregar evento click para habilitar edición
     $('.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta').on('click', function (e) {
@@ -1207,6 +1206,22 @@ function configurarEventosEdicion() {
         }, 0);
 
         console.log(`Campo ${$(inputElement).attr('class').match(/input-tp_[^\s]+|input-tin_[^\s]+/)[0]} activado para edición`);
+    });
+
+    // Agregar evento keydown para detectar ENTER en todos los campos editables
+    $('.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta').on('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault(); // Prevenir cualquier comportamiento por defecto
+
+            // Disparar el evento blur manualmente para aplicar los cambios
+            const event = new Event('blur', { bubbles: true });
+            this.dispatchEvent(event);
+
+            // Opcionalmente, se puede mover el foco al siguiente campo
+            // $(this).closest('td').next().find('input').focus();
+
+            console.log(`ENTER presionado en campo, aplicando cambios`);
+        }
     });
 
     // Definir los campos de la secuencia01
@@ -1344,6 +1359,7 @@ function configurarEventosEdicion() {
         }
     });
 }
+
 
 
 // Nueva función para resguardar los cambios del producto
@@ -1973,82 +1989,6 @@ function resguardarCambiosProducto(row) {
 }
 
 
-// Mejorar la función marcarCampoModificado para ser más precisa
-function marcarCampoModificado(input) {
-    const $input = $(this);
-    const valorOriginal = $input.data('original-value');
-    let valorActual = $input.val().replace(/,/g, '');
-    
-    // Si no hay valor original definido, no podemos comparar
-    if (valorOriginal === undefined) {
-        return;
-    }
-    
-    // Determinar si el campo está modificado
-    let esModificado = false;
-    
-    // Para el campo de bonificación (caso especial)
-    if ($input.hasClass('input-tp_boni')) {
-        const originalTrim = (valorOriginal || '').toString().trim();
-        const actualTrim = (valorActual || '').toString().trim();
-        
-        // Casos especiales: "0" y "" se consideran iguales
-        if ((originalTrim === "0" && actualTrim === "") || 
-            (originalTrim === "" && actualTrim === "0")) {
-            esModificado = false;
-        } else {
-            esModificado = originalTrim !== actualTrim;
-        }
-    } else {
-        // Para campos numéricos
-        try {
-            const numOriginal = parseFloat(valorOriginal);
-            const numActual = parseFloat(valorActual);
-            
-            if (!isNaN(numOriginal) && !isNaN(numActual)) {
-                // Determinar tolerancia según el tipo de campo
-                let tolerancia = 0.009; // Base para campos con 2 decimales
-                
-                if ($input.hasClass('input-tp_dto1') || 
-                    $input.hasClass('input-tp_dto2') || 
-                    $input.hasClass('input-tp_dto3') || 
-                    $input.hasClass('input-tp_dto4') || 
-                    $input.hasClass('input-tp_dto_pa') || 
-                    $input.hasClass('input-tp_porc_flete')) {
-                    tolerancia = 0.09; // Para campos con 1 decimal
-                } else if ($input.hasClass('input-tp_plista') || 
-                          $input.hasClass('input-tp_pcosto') || 
-                          $input.hasClass('input-tp_pneto')) {
-                    tolerancia = 0.0009; // Para campos con 3 decimales
-                }
-                
-                esModificado = Math.abs(numOriginal - numActual) > tolerancia;
-            } else if (isNaN(numOriginal) !== isNaN(numActual)) {
-                // Si uno es NaN y el otro no, están diferentes
-                esModificado = true;
-            }
-        } catch (e) {
-            console.error("Error al comparar valores:", e);
-            esModificado = false; // En caso de error, no marcar como modificado
-        }
-    }
-    
-    // Aplicar o quitar la clase según corresponda
-    $input.toggleClass('campo-modificado', esModificado);
-    
-    // Manejar el indicador visual
-    const container = $input.closest('.input-container');
-    if (esModificado) {
-        if (container.find('.indicador-cambio').length === 0) {
-            container.append('<div class="indicador-cambio"></div>');
-        }
-    } else {
-        container.find('.indicador-cambio').remove();
-    }
-    
-    return esModificado;
-}
-
 // Función mejorada para la actualización de campos modificados
 function actualizarCamposModificados() {
     console.log("Actualizando campos modificados...");
@@ -2147,7 +2087,6 @@ function actualizarCamposModificados() {
     console.log(`Campos marcados como modificados: ${camposModificados}`);
 }
 
-/**CODIFICACION DEL GRID LISTA*/
 function configurarInputsListaPrecios() {
     console.log("Configurando inputs para grid de listas de precios...");
 
@@ -2204,6 +2143,20 @@ function configurarInputsListaPrecios() {
             }, 0);
 
             console.log(`Campo ${$(inputElement).attr('class').match(/input-tp_[^\s]+_lista/)[0]} activado para edición`);
+        });
+
+    // Evento keydown para detectar ENTER en los campos de la lista (delegación de eventos)
+    $(document).off('keydown', '.input-tp_margen_lista, .input-tp_pvta_lista')
+        .on('keydown', '.input-tp_margen_lista, .input-tp_pvta_lista', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault(); // Prevenir cualquier comportamiento por defecto
+
+                // Disparar el evento blur manualmente para aplicar los cambios
+                const event = new Event('blur', { bubbles: true });
+                this.dispatchEvent(event);
+
+                console.log(`ENTER presionado en campo de lista, aplicando cambios`);
+            }
         });
 
     // Evento blur para el campo margen de lista (delegación de eventos)
@@ -2277,12 +2230,120 @@ function configurarInputsListaPrecios() {
 }
 
 
+// Mejorar la función marcarCampoModificado para ser más precisa
+function marcarCampoModificado(input) {
+    // Usar el parámetro input en lugar de this
+    const $input = $(input);
+
+    // Validar que el input existe y tiene un valor
+    if (!$input.length) {
+        console.warn('marcarCampoModificado: Input no válido', input);
+        return false;
+    }
+
+    const valorOriginal = $input.data('original-value');
+
+    // Obtener valor actual con manejo de errores
+    let valorActual = '';
+    try {
+        valorActual = $input.val() ? $input.val().replace(/,/g, '') : '';
+    } catch (e) {
+        console.error('Error al obtener valor del campo:', e);
+        return false;
+    }
+
+    // Si no hay valor original definido, no podemos comparar
+    if (valorOriginal === undefined) {
+        return false;
+    }
+
+    // Determinar si el campo está modificado
+    let esModificado = false;
+
+    // Para el campo de bonificación (caso especial)
+    if ($input.hasClass('input-tp_boni')) {
+        const originalTrim = (valorOriginal || '').toString().trim();
+        const actualTrim = (valorActual || '').toString().trim();
+
+        // Casos especiales: "0" y "" se consideran iguales
+        if ((originalTrim === "0" && actualTrim === "") ||
+            (originalTrim === "" && actualTrim === "0")) {
+            esModificado = false;
+        } else {
+            esModificado = originalTrim !== actualTrim;
+        }
+    } else {
+        // Para campos numéricos
+        try {
+            const numOriginal = parseFloat(valorOriginal);
+            const numActual = parseFloat(valorActual);
+
+            if (!isNaN(numOriginal) && !isNaN(numActual)) {
+                // Determinar tolerancia según el tipo de campo
+                let tolerancia = 0.009; // Base para campos con 2 decimales
+
+                if ($input.hasClass('input-tp_dto1') ||
+                    $input.hasClass('input-tp_dto2') ||
+                    $input.hasClass('input-tp_dto3') ||
+                    $input.hasClass('input-tp_dto4') ||
+                    $input.hasClass('input-tp_dto_pa') ||
+                    $input.hasClass('input-tp_porc_flete')) {
+                    tolerancia = 0.09; // Para campos con 1 decimal
+                } else if ($input.hasClass('input-tp_plista') ||
+                    $input.hasClass('input-tp_pcosto') ||
+                    $input.hasClass('input-tp_pneto')) {
+                    tolerancia = 0.0009; // Para campos con 3 decimales
+                }
+
+                esModificado = Math.abs(numOriginal - numActual) > tolerancia;
+            } else if (isNaN(numOriginal) !== isNaN(numActual)) {
+                // Si uno es NaN y el otro no, están diferentes
+                esModificado = true;
+            }
+        } catch (e) {
+            console.error("Error al comparar valores:", e);
+            esModificado = false; // En caso de error, no marcar como modificado
+        }
+    }
+
+    // Aplicar o quitar la clase según corresponda
+    $input.toggleClass('campo-modificado', esModificado);
+
+    // Manejar el indicador visual
+    const container = $input.closest('.input-container');
+    if (esModificado) {
+        if (container.find('.indicador-cambio').length === 0) {
+            container.append('<div class="indicador-cambio"></div>');
+        }
+    } else {
+        container.find('.indicador-cambio').remove();
+    }
+
+    return esModificado;
+}
+
+
 // Función para marcar un campo como modificado (similar a la existente en productocargaprecio.js)
 // Función optimizada para marcar un campo modificado (unificada para ambos grids)
 function marcarCampoModificadoLista(input) {
-    const $input = $(input);
+    const $input = $(input);  // Usar el parámetro input
+
+    // Validar que el input existe
+    if (!$input.length) {
+        console.warn('marcarCampoModificadoLista: Input no válido', input);
+        return false;
+    }
+
     const valorOriginal = $input.data('original-value');
-    const valorActual = $input.val().replace(/,/g, '');
+
+    // Obtener valor actual con manejo de errores
+    let valorActual = '';
+    try {
+        valorActual = $input.val() ? $input.val().replace(/,/g, '') : '';
+    } catch (e) {
+        console.error('Error al obtener valor del campo de lista:', e);
+        return false;
+    }
 
     // Para campos numéricos, convertimos a números y comparamos con tolerancia
     const numOriginal = parseFloat(valorOriginal);
@@ -2306,6 +2367,7 @@ function marcarCampoModificadoLista(input) {
 
     return esModificado; // Devolver si se modificó para uso posterior
 }
+
 
 // Función para actualizar el margen en una lista
 function actualizarMargenLista(row, lpId, pId, nuevoMargen) {
