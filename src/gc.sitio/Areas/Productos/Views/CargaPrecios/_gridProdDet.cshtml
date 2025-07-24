@@ -77,7 +77,6 @@
     }
 </style>
 
-
 <div class="grid-golden">
     <div class="grid-golden-header">
         <div class="row align-items-md-center">
@@ -156,14 +155,18 @@
                             decimal re = 0M;
                             if (item.p_pvta > 0) { re = Math.Round(item.tp_pvta / item.p_pvta, 2); }
                             if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
-                            <tr class="@clase" data-p-id="@item.p_id" onclick="selectReg(this,'tbProdDet')">
+
+                            // Verificar si estamos en modo de carga temporal
+                            bool modoTemporal = item.carga == 1;
+
+                            <tr class="@clase" data-p-id="@item.p_id" data-carga="@item.carga" onclick="selectReg(this,'tbProdDet')">
                                 <td class="@Model.ObtenerClase(item.p_id)">@Model.FormatearDato(item.p_id, FormatDato.Ninguno)</td>
                                 <td class="@Model.ObtenerClase(item.p_desc)">@Model.FormatearDato(item.p_desc, FormatDato.Ninguno)</td>
                                 <td class="@Model.ObtenerClase(item.p_id_prov)">@Model.FormatearDato(item.p_id_prov, FormatDato.Ninguno)</td>
                                 <td class="@Model.ObtenerClase(item.p_id_barrado)">@Model.FormatearDato(item.p_id_barrado, FormatDato.Ninguno)</td>
                                 <td class="@Model.ObtenerClase(item.tp_plista)">
                                     <div class="input-container">
-                                        <input type="text" class="form-control form-control-sm input-tp_plista input-numeric @(item.tp_plista== item.P_Plista?"":"campo-modificado")"
+                                        <input type="text" class="form-control form-control-sm input-tp_plista input-numeric"
                                                value="@(item.tp_plista.ToString("F3"))"
                                                data-p-id="@item.p_id"
                                                data-original-value="@(item.P_Plista)" />
@@ -171,7 +174,7 @@
                                 </td>
                                 <td class="@Model.ObtenerClase(item.tp_dto1)">
                                     <div class="input-container">
-                                        <input type="text" class="form-control form-control-sm input-tp_dto1 input-numeric @(item.tp_dto1== item.P_Dto1?"":"campo-modificado")"
+                                        <input type="text" class="form-control form-control-sm input-tp_dto1 input-numeric"
                                                value="@(item.tp_dto1.ToString("F1"))"
                                                data-p-id="@item.p_id"
                                                data-original-value="@item.P_Dto1" />
@@ -179,7 +182,7 @@
                                 </td>
                                 <td class="@Model.ObtenerClase(item.tp_dto2)">
                                     <div class="input-container">
-                                        <input type="text" class="form-control form-control-sm input-tp_dto2 input-numeric @(item.tp_dto2== item.P_Dto2?"":"campo-modificado")"
+                                        <input type="text" class="form-control form-control-sm input-tp_dto2 input-numeric"
                                                value="@(item.tp_dto2.ToString("F1"))"
                                                data-p-id="@item.p_id"
                                                data-original-value="@item.P_Dto2" />
@@ -187,7 +190,7 @@
                                 </td>
                                 <td class="@Model.ObtenerClase(item.tp_dto3)">
                                     <div class="input-container">
-                                        <input type="text" class="form-control form-control-sm input-tp_dto3 input-numeric @(item.tp_dto3== item.P_Dto3?"":"campo-modificado")"
+                                        <input type="text" class="form-control form-control-sm input-tp_dto3 input-numeric"
                                                value="@(item.tp_dto3.ToString("F1"))"
                                                data-p-id="@item.p_id"
                                                data-original-value="@item.P_Dto3" />
@@ -195,7 +198,7 @@
                                 </td>
                                 <td class="@Model.ObtenerClase(item.tp_dto4)">
                                     <div class="input-container">
-                                        <input type="text" class="form-control form-control-sm input-tp_dto4 input-numeric @(item.tp_dto4== item.P_Dto4?"":"campo-modificado")"
+                                        <input type="text" class="form-control form-control-sm input-tp_dto4 input-numeric"
                                                value="@(item.tp_dto4.ToString("F1"))"
                                                data-p-id="@item.p_id"
                                                data-original-value="@item.P_Dto4" />
@@ -203,7 +206,7 @@
                                 </td>
                                 <td class="@Model.ObtenerClase(item.tp_dto_pa)">
                                     <div class="input-container">
-                                        <input type="text" class="form-control form-control-sm input-tp_dto_pa input-numeric @(item.tp_dto_pa== item.P_Dto_Pa?"":"campo-modificado")"
+                                        <input type="text" class="form-control form-control-sm input-tp_dto_pa input-numeric"
                                                value="@(item.tp_dto_pa.ToString("F1"))"
                                                data-p-id="@item.p_id"
                                                data-original-value="@item.P_Dto_Pa" />
@@ -211,7 +214,7 @@
                                 </td>
                                 <td class="@Model.ObtenerClase(item.tp_porc_flete)">
                                     <div class="input-container">
-                                        <input type="text" class="form-control form-control-sm input-tp_porc_flete input-numeric @(item.tp_porc_flete== item.P_Porc_Flete?"":"campo-modificado")"
+                                        <input type="text" class="form-control form-control-sm input-tp_porc_flete input-numeric"
                                                value="@(item.tp_porc_flete.ToString("F1"))"
                                                data-p-id="@item.p_id"
                                                data-original-value="@item.P_Porc_Flete" />
@@ -221,11 +224,12 @@
                                     bool resBoni = item.P_Boni?.Trim().Equals("0") ?? false;
                                     string bonificacionMostrada = resBoni ? "" : Model.FormatearDato(item.P_Boni, FormatDato.Ninguno);
                                     bool tresBoni = item.tp_boni?.Trim().Equals("0") ?? false;
-                                    string tbonificacionMostrada = resBoni ? "" : Model.FormatearDato(item.tp_boni, FormatDato.Ninguno);
+                                    string tbonificacionMostrada = tresBoni ? "" : Model.FormatearDato(item.tp_boni, FormatDato.Ninguno);
+                                    
                                 }
                                 <td class="@Model.ObtenerClase('c')">
                                     <div class="input-container">
-                                        <input type="text" class="form-control form-control-sm input-tp_boni @(item.P_Boni== item.tp_boni?"":"campo-modificado")"
+                                        <input type="text" class="form-control form-control-sm input-tp_boni"
                                                value="@tbonificacionMostrada"
                                                data-p-id="@item.p_id"
                                                data-original-value="@bonificacionMostrada"
@@ -234,7 +238,7 @@
                                 </td>
                                 <td class="@Model.ObtenerClase(item.tp_pcosto)">
                                     <div class="input-container">
-                                        <input type="text" class="form-control form-control-sm input-tp_pcosto input-numeric @(item.tp_pcosto== item.P_Pcosto?"":"campo-modificado")"
+                                        <input type="text" class="form-control form-control-sm input-tp_pcosto input-numeric"
                                                value="@(item.tp_pcosto.ToString("F3"))"
                                                readonly
                                                data-p-id="@item.p_id"
@@ -245,7 +249,7 @@
                                 </td>
                                 <td class="@Model.ObtenerClase(item.tp_margen)">
                                     <div class="input-container">
-                                        <input type="text" class="form-control form-control-sm input-tp_margen input-numeric @(item.tp_margen== item.p_margen?"":"campo-modificado")"
+                                        <input type="text" class="form-control form-control-sm input-tp_margen input-numeric"
                                                value="@(item.tp_margen.ToString("F2"))"
                                                data-p-id="@item.p_id"
                                                data-original-value="@item.p_margen" />
@@ -254,7 +258,7 @@
                                 </td>
                                 <td class="@Model.ObtenerClase(item.tp_pneto)">
                                     <div class="input-container">
-                                        <input type="text" class="form-control form-control-sm input-tp_pneto input-numeric @(item.tp_pneto== item.p_pneto?"":"campo-modificado")"
+                                        <input type="text" class="form-control form-control-sm input-tp_pneto input-numeric"
                                                value="@(item.tp_pneto.ToString("F3"))"
                                                readonly
                                                data-p-id="@item.p_id"
@@ -268,11 +272,10 @@
                                     @Html.Hidden("in_alicuota", item.in_alicuota)
                                     @Html.Hidden("p_iva", item.p_iva)
                                     @Html.Hidden("p_in", item.p_in)
-
                                 </td>
                                 <td class="@Model.ObtenerClase(item.tin_alicuota)">
                                     <div class="input-container">
-                                        <input type="text" class="form-control form-control-sm input-tin_alicuota input-numeric @(item.tin_alicuota== item.in_alicuota?"":"campo-modificado")"
+                                        <input type="text" class="form-control form-control-sm input-tin_alicuota input-numeric"
                                                value="@(item.tin_alicuota.ToString("F2"))"
                                                data-p-id="@item.p_id"
                                                data-original-value="@item.in_alicuota" />
@@ -280,7 +283,7 @@
                                 </td>
                                 <td class="@Model.ObtenerClase(item.tp_pvta)">
                                     <div class="input-container">
-                                        <input type="text" class="form-control form-control-sm input-tp_pvta input-numeric @(item.tp_pvta== item.p_pvta?"":"campo-modificado")"
+                                        <input type="text" class="form-control form-control-sm input-tp_pvta input-numeric"
                                                value="@(item.tp_pvta.ToString("F2"))"
                                                data-p-id="@item.p_id"
                                                data-original-value="@item.p_pvta" />
@@ -288,7 +291,6 @@
                                         @Html.Hidden("tp_in", item.tp_in)
                                     </div>
                                 </td>
-
                                 <td class="@Model.ObtenerClase(item.p_pvta)">@Model.FormatearDato(re, FormatDato.Monto)</td>
                             </tr>
                         }
@@ -298,3 +300,16 @@
         </div>
     </div>
 </div>
+
+<script>
+    $(function() {
+        // Esta función aplica los indicadores visuales a los campos modificados en la carga inicial
+        // Para mantener la coherencia con el comportamiento de productocargaprecio.js
+        $('.campo-modificado').each(function() {
+            // Solo si no tiene ya un indicador
+            if ($(this).parent('.input-container').find('.indicador-cambio').length === 0) {
+                $(this).parent('.input-container').append('<div class="indicador-cambio"></div>');
+            }
+        });
+    });
+</script>
