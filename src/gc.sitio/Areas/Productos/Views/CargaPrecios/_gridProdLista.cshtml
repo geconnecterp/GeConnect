@@ -59,7 +59,7 @@
 <div class="grid-golden">
     <div class="grid-golden-body">
         <div class="table-responsive text-nowrap table-wrapper">
-            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbProdDet">
+            <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbProdLista">
                 <thead>
                     <tr class="header">
                         <th scope="col">Código</th>
@@ -95,6 +95,12 @@
                                                data-p-id="@item.p_id"
                                                data-original-value="@item.tp_margen"
                                                readonly />
+                                        @Html.Hidden("p_pcosto",item.P_Pcosto)
+                                        @Html.Hidden("p_pneto",item.p_pneto)
+                                        @Html.Hidden("lp_porc_mg",item.lp_porc_mg)
+                                        @Html.Hidden("iva_situacion",item.iva_situacion)
+                                        @Html.Hidden("iva_alicuota", item.iva_alicuota)
+                                        @Html.Hidden("in_alicuota", item.in_alicuota)
                                     </div>
                                 </td>
                                 <td class="@Model.ObtenerClase(item.tp_pvta)">
@@ -105,6 +111,11 @@
                                                data-p-id="@item.p_id"
                                                data-original-value="@item.tp_pvta"
                                                readonly />
+                                        @Html.Hidden("tp_iva", item.tp_iva)
+                                        @Html.Hidden("tp_in", item.tp_in)
+
+                                        @Html.Hidden("tp_pneto", item.tp_in)
+                                        
                                     </div>
                                 </td>
                                 

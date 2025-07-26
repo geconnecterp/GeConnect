@@ -66,7 +66,7 @@ namespace gc.infraestructura.Dtos.Productos
         public string tp_boni { get; set; } = string.Empty;
         public decimal tp_pcosto { get; set; }
         public decimal tin_alicuota { get; set; }
-        public int lp_porc_mg { get; set; }
+        public decimal lp_porc_mg { get; set; }
         public decimal tp_margen { get; set; }
         public decimal tp_margen_vta { get; set; }
         public decimal tp_pneto { get; set; }

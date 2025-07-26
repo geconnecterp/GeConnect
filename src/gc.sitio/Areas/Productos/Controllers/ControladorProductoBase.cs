@@ -68,5 +68,23 @@ namespace gc.sitio.Areas.Productos.Controllers
                 _context.HttpContext?.Session.SetString("ProductosDetalleTEMPORAL", json);
             }
         }
+
+        public List<ProductoDetalleDto> ProductosDetalleListaTEMPORAL
+        {
+            get
+            {
+                string json = _context.HttpContext?.Session.GetString("ProductosDetalleListaTEMPORAL") ?? string.Empty;
+                if (string.IsNullOrEmpty(json))
+                {
+                    return new();
+                }
+                return JsonConvert.DeserializeObject<List<ProductoDetalleDto>>(json) ?? [];
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session.SetString("ProductosDetalleListaTEMPORAL", json);
+            }
+        }
     }
 }
