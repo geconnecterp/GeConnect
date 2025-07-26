@@ -196,7 +196,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                     response.EsError = false;
                     return PartialView("_gridMensaje", response);
                 }
-                var lista = respuesta.ListaEntidad.OrderBy(x => x.pg_id).ThenBy(x => x.p_id).ToList();
+                var lista = respuesta.ListaEntidad.Where(x => !x.lp_id.Equals("001")).OrderBy(x => x.pg_id).ThenBy(x => x.p_id).ToList();
                 // Guardar datos en variable de sesión para uso posterior
                 ProductosDetalleLista = lista;
 
@@ -356,7 +356,7 @@ namespace gc.sitio.Areas.Productos.Controllers
 
         [HttpPost]
         public async Task<JsonResult> CalcularPrecioVentaLink(decimal tp_pcosto, decimal p_pneto_base,
-            decimal lp_porc_mg, char iva_situacion,decimal iva_alicuota, decimal in_alicuota)
+            decimal lp_porc_mg, char iva_situacion, decimal iva_alicuota, decimal in_alicuota)
         {
             try
             {

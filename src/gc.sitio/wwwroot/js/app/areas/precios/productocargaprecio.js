@@ -91,8 +91,44 @@ $(function () {
         `)
         .appendTo('head');
 
+    // Estilo para la fila seleccionada en la tabla de productos
+    $('<style>')
+        .prop('type', 'text/css')
+        .html(`
+            #tbProdDet tbody tr.selected {
+                background-color: #e6f2ff !important; /* Azul claro */
+                box-shadow: inset 0 0 0 1px #4c8dff; /* Borde azul */
+            }
+            #tbProdDet tbody tr:hover:not(.selected) {
+                background-color: rgba(230, 242, 255, 0.5); /* Azul muy claro */
+            }
+        `)
+        .appendTo('head');
+
     configurarBotonesProdCP();
     cargaEventosCP();
+
+    // Mantener el código que inicializa la tabla si ya existe
+    $(function () {
+        // Si ya hay datos cargados en la página (por ejemplo, al recargar)
+        if ($('#tbProdDet tbody tr').length > 0) {
+            console.log("Detectada tabla de productos ya cargada, procesando campos modificados...");
+
+            // Secuencia correcta de inicialización
+            asegurarEstilosCamposModificados();
+            asegurarAtributosCarga();
+            actualizarCamposModificados();
+            formatearValoresIniciales();
+            configuracionElementosTablaDetalle();
+            optimizarVisualizacionTabla();
+
+            // Verificar el resultado
+            setTimeout(function () {
+                const camposModificados = $('#tbProdDet .campo-modificado').length;
+                console.log(`Verificación post-inicialización: ${camposModificados} campos marcados como modificados`);
+            }, 500);
+        }
+    });
 });
 
 function inicializaControlCuenta() {
@@ -103,17 +139,37 @@ function inicializaControlCuenta() {
     $("#controlCta" + nnControlCta01).show("fast");
 }
 
+// Función corregida para configurar eventos de tabla
 function configurarEventosTabla() {
+    console.log("Configurando eventos de tabla...");
+
+    // Primero eliminar cualquier evento click previo para evitar duplicados
+    $("#tbProdDet tbody tr").off("click");
+
     // Evento para seleccionar filas de la tabla
     $("#tbProdDet tbody tr").on("click", function (e) {
         // Solo activar si el clic no fue en un input
         if (!$(e.target).is('input')) {
-            $(this).toggleClass("selected");
+            // Obtener el ID del producto de la fila seleccionada
+            const productoId = $(this).data('p-id');
+
+            if (!productoId) {
+                console.warn("No se pudo obtener el ID del producto para la fila seleccionada");
+                return;
+            }
+
+            console.log("Fila seleccionada para producto ID:", productoId);
+
+            // Destacar visualmente la fila seleccionada
+            destacarFilaSeleccionada(productoId);
+
+            // Cargar las listas de precios para este producto
+            buscarProductoLista(productoId);
         }
     });
 
     // Evento para el checkbox de seleccionar todos
-    $("#checkAllProd").on("change", function () {
+    $("#checkAllProd").off("change").on("change", function () {
         const isChecked = $(this).prop("checked");
         $("#tbProdDet tbody tr").each(function () {
             if (isChecked) {
@@ -122,11 +178,24 @@ function configurarEventosTabla() {
                 $(this).removeClass("selected");
             }
         });
+
+        // Si se marca, cargar las listas del primer producto seleccionado
+        if (isChecked) {
+            const primerProductoSeleccionado = $("#tbProdDet tbody tr:first").data('p-id');
+            if (primerProductoSeleccionado) {
+                destacarFilaSeleccionada(primerProductoSeleccionado);
+                buscarProductoLista(primerProductoSeleccionado);
+            }
+        } else {
+            // Si se desmarca, limpiar el panel de listas
+            $("#divProdLista").html('<div class="alert alert-info">Seleccione un producto para ver sus listas de precios.</div>');
+        }
     });
+
+    console.log("Eventos de tabla configurados correctamente");
 }
 
 
-// Configuración optimizada de elementos de tabla
 // Configuración optimizada de elementos de tabla
 function configuracionElementosTablaDetalle() {
     console.log("Configurando elementos de tabla detalle...");
@@ -254,6 +323,43 @@ function depurarValoresIniciales() {
         let value = $(this).val();
         console.log(`Campo tp_boni ${index + 1}: valor=${value}`);
     });
+}
+
+// Función de utilidad para destacar la fila seleccionada
+function destacarFilaSeleccionada(productoId) {
+    console.log("Destacando fila para producto ID:", productoId);
+
+    // Remover el destacado de todas las filas
+    $("#tbProdDet tbody tr").removeClass("selected");
+
+    // Verificar que existe una fila con ese ID
+    const $fila = $("#tbProdDet tbody tr[data-p-id='" + productoId + "']");
+
+    if ($fila.length === 0) {
+        console.warn(`No se encontró ninguna fila con data-p-id="${productoId}"`);
+        return;
+    }
+
+    // Añadir el destacado solo a la fila del producto seleccionado
+    $fila.addClass("selected");
+    console.log("Fila destacada correctamente");
+
+    // Opcionalmente, hacer scroll a la fila seleccionada si está fuera de la vista
+    const $tableContainer = $("#tbProdDet").closest('.table-responsive');
+
+    if ($tableContainer.length > 0) {
+        const containerTop = $tableContainer.offset().top;
+        const rowTop = $fila.offset().top;
+
+        if (rowTop < containerTop || rowTop > containerTop + $tableContainer.height()) {
+            $tableContainer.animate({
+                scrollTop: $tableContainer.scrollTop() + (rowTop - containerTop)
+            }, 300);
+            console.log("Realizando scroll a la fila seleccionada");
+        }
+    } else {
+        console.warn("No se encontró un contenedor .table-responsive para la tabla");
+    }
 }
 
 // Nueva función para recalcular valores cuando cambia un campo
@@ -778,6 +884,7 @@ function obtenerParametros(div) {
     };
 }
 
+// Modificar la función buscarProductosDetalle para asegurar la correcta secuencia de inicialización
 function buscarProductosDetalle() {
     let datos = obtenerParametros(divs.ProductoDetalle);
 
@@ -795,64 +902,45 @@ function buscarProductosDetalle() {
                 $("#divFiltro").removeClass("show");
                 $("#divDetalle").addClass("show");
 
-                // Configurar eventos para la tabla de resultados
+                // Asegurar que los estilos para campos modificados existan
+                asegurarEstilosCamposModificados();
+
+                // IMPORTANTE: Orden correcto de inicialización
+                // 1. Primero asegurar que todas las filas tengan data-carga
+                asegurarAtributosCarga();
+
+                // 2. Configurar eventos para la tabla de resultados
                 configurarEventosTabla();
 
-                // Depurar valores iniciales antes de aplicar configuración
-                console.log("Datos cargados, verificando valores iniciales...");
-                depurarValoresIniciales();
+                // 3. Marcar los campos modificados antes de formatear
+                actualizarCamposModificados();
 
-                // Aplicar configuración a los inputs numéricos
+                // 4. Formatear valores (preservando las marcas)
+                formatearValoresIniciales();
+
+                // 5. Aplicar configuración de inputmask y eventos
                 configuracionElementosTablaDetalle();
 
-                // Añadir estilos para campos modificados si no existen
-                if (!$('style:contains(".campo-modificado")').length) {
-                    $('<style>')
-                        .prop('type', 'text/css')
-                        .html(`
-                            /* Estilo para campos modificados */
-                            .campo-modificado {
-                                background-color: #d4f1f9 !important; /* Celeste pastel claro */
-                                border-color: #a8e1f5 !important;
-                            }
-                            
-                            /* Indicador visual de cambio */
-                            .indicador-cambio {
-                                position: absolute;
-                                top: 0;
-                                right: 0;
-                                width: 0;
-                                height: 0;
-                                border-style: solid;
-                                border-width: 0 8px 8px 0;
-                                border-color: transparent #4bacc6 transparent transparent;
-                            }
-                            
-                            /* Hacer que las celdas sean relativas para posicionar el indicador */
-                            #tbProdDet td {
-                                position: relative;
-                            }
-                        `)
-                        .appendTo('head');
-                }
-
-                // Optimizar la visualización de la tabla
+                // 6. Optimizar la visualización de la tabla
                 optimizarVisualizacionTabla();
 
-                // Verificar valores después de aplicar la configuración
+                // 7. Verificar el resultado final
                 setTimeout(function () {
-                    console.log("Después de aplicar configuración:");
-                    depurarValoresIniciales();
-
-                    // Inicializar la detección de campos modificados
-                    actualizarCamposModificados();
-                }, 500);
+                    const camposModificados = $('#tbProdDet .campo-modificado').length;
+                    console.log(`Verificación final: ${camposModificados} campos marcados como modificados`);
+                }, 800);
 
                 // Obtener el ID del primer producto para consultar sus listas de precios
                 const primerProductoId = $(response).find("tbody tr:not(.table-secondary):first").data("p-id");
                 console.log("ID del primer producto:", primerProductoId);
 
-                buscarProductoLista(primerProductoId);
+                // Destacar visualmente el primer producto
+                if (primerProductoId) {
+                    destacarFilaSeleccionada(primerProductoId);
+
+                    // Cargar las listas de precios del primer producto
+                    buscarProductoLista(primerProductoId);
+                }
             }
         },
         error: function (error) {
@@ -863,6 +951,103 @@ function buscarProductosDetalle() {
 
     return false;
 }
+
+
+// Añadir un observador de mutaciones para mantener las marcas tras manipulaciones del DOM
+function inicializarObservadorDOM() {
+    // Si el navegador soporta MutationObserver
+    if (window.MutationObserver) {
+        const config = {
+            childList: true,
+            subtree: true,
+            characterData: true,
+            attributeFilter: ['value', 'class']
+        };
+
+        const observer = new MutationObserver(function (mutations) {
+            let requiereActualizacion = false;
+
+            mutations.forEach(function (mutation) {
+                // Si se agregaron nodos o se cambió un atributo
+                if (mutation.type === 'childList' ||
+                    (mutation.type === 'attributes' &&
+                        (mutation.attributeName === 'value' ||
+                            mutation.attributeName === 'class'))) {
+
+                    // Solo si afecta a elementos dentro de tbProdDet
+                    if ($(mutation.target).closest('#tbProdDet').length > 0) {
+                        requiereActualizacion = true;
+                    }
+                }
+            });
+
+            // Si hubo cambios relevantes, actualizar después de un breve retraso
+            if (requiereActualizacion) {
+                clearTimeout(window.actualizacionTimeout);
+                window.actualizacionTimeout = setTimeout(function () {
+                    console.log("Cambios detectados en el DOM, actualizando campos modificados...");
+                    actualizarCamposModificados();
+                }, 300);
+            }
+        });
+
+        // Iniciar observación cuando la tabla exista
+        const iniciarObservador = function () {
+            const tabla = document.getElementById('tbProdDet');
+            if (tabla) {
+                observer.observe(tabla, config);
+                console.log("Observador DOM inicializado para #tbProdDet");
+            }
+        };
+
+        // Verificar periódicamente hasta que la tabla exista
+        const verificadorTabla = setInterval(function () {
+            if ($('#tbProdDet').length > 0) {
+                iniciarObservador();
+                clearInterval(verificadorTabla);
+            }
+        }, 100);
+    } else {
+        console.warn("MutationObserver no soportado en este navegador");
+    }
+}
+
+
+// Nueva función para asegurar que existan los estilos necesarios
+function asegurarEstilosCamposModificados() {
+    if (!$('style:contains(".campo-modificado")').length) {
+        $('<style>')
+            .prop('type', 'text/css')
+            .html(`
+                /* Estilo para campos modificados */
+                .campo-modificado {
+                    background-color: #d4f1f9 !important; /* Celeste pastel claro */
+                    border-color: #a8e1f5 !important;
+                }
+                
+                /* Indicador visual de cambio */
+                .indicador-cambio {
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    width: 0;
+                    height: 0;
+                    border-style: solid;
+                    border-width: 0 8px 8px 0;
+                    border-color: transparent #4bacc6 transparent transparent;
+                }
+                
+                /* Contenedor para posicionar el indicador */
+                .input-container {
+                    position: relative;
+                }
+            `)
+            .appendTo('head');
+
+        console.log("Estilos para campos modificados añadidos");
+    }
+}
+
 
 // Función para optimizar la visualización de la tabla
 function optimizarVisualizacionTabla() {
@@ -886,41 +1071,109 @@ function optimizarVisualizacionTabla() {
     console.log("Tabla optimizada para mejor visualización");
 }
 
-function buscarProductoLista(primerProductoId) {
-    // Si encontramos un producto, cargar sus listas de precios
-    if (primerProductoId) {
-        console.log("Cargando listas de precios para el producto ID:", primerProductoId);
+// Optimizar la función buscarProductoLista
+function buscarProductoLista(productoId) {
+    console.log(`Iniciando búsqueda de listas para producto ID: ${productoId}`);
 
-        let datos = obtenerParametros(divs.ProductoListas);
-        // Añadir el ID del producto a los parámetros
-        datos.id = primerProductoId;
-        /*datos.id2 = primerProductoId;*/
-
-        // Mostrar indicador de carga en el div de listas de precios
-        $("#divProdLista").html('<div class="text-center p-3"><i class="bx bx-loader bx-spin font-size-24"></i><p class="mt-2">Cargando listas de precios...</p></div>');
-
-        // Realizar la segunda petición AJAX para obtener las listas de precios
-        $.ajax({
-            url: buscarProdListaUrl,
-            type: "POST",
-            data: datos,
-            success: function (responseLista) {
-                CerrarWaiting();
-                // Mostrar resultados de listas de precios
-                $("#divProdLista").html(responseLista);
-                console.log("Listas de precios cargadas correctamente");
-            },
-            error: function (error) {
-                CerrarWaiting();
-                console.error("Error al obtener las listas de precios:", error);
-                $("#divProdLista").html('<div class="alert alert-danger">Error al cargar las listas de precios.</div>');
-            }
-        });
-    } else {
-        CerrarWaiting();
-        console.warn("No se pudo obtener el ID del primer producto");
+    // Validar que se haya proporcionado un ID de producto
+    if (!productoId) {
+        console.warn("No se proporcionó un ID de producto válido para cargar listas");
         $("#divProdLista").html('<div class="alert alert-warning">No se pudo obtener información de listas de precios.</div>');
+        return;
     }
+
+    // Actualizar título o información del producto seleccionado si existe
+    const productoSeleccionado = $("#tbProdDet tbody tr[data-p-id='" + productoId + "']");
+    if (productoSeleccionado.length > 0) {
+        // Obtenemos el código o nombre del producto para mostrarlo en el panel
+        const productoNombre = productoSeleccionado.find("td:eq(1)").text().trim();
+        console.log(`Producto seleccionado: ${productoNombre} (ID: ${productoId})`);
+
+        // Si existe un título del panel, actualizarlo
+        if ($("#tituloListas").length > 0) {
+            $("#tituloListas").text(`Listas de precios - ${productoNombre}`);
+        }
+    }
+
+    // Mostrar indicador de carga
+    $("#divProdLista").html('<div class="text-center p-3"><i class="bx bx-loader bx-spin font-size-24"></i><p class="mt-2">Cargando listas de precios...</p></div>');
+
+    // Obtener parámetros para la consulta
+    let datos = obtenerParametros(divs.ProductoListas);
+
+    // Verificar que obtenerParametros haya devuelto datos válidos
+    if (datos === false) {
+        console.error("Error al obtener parámetros para la consulta de listas");
+        $("#divProdLista").html('<div class="alert alert-danger">Error al preparar la consulta de listas de precios.</div>');
+        return;
+    }
+
+    // Añadir el ID del producto a los parámetros
+    datos.id = productoId;
+
+    console.log("Parámetros para la consulta de listas:", datos);
+
+    // Realizar petición AJAX
+    $.ajax({
+        url: buscarProdListaUrl,
+        type: "POST",
+        data: datos,
+        success: function (responseLista) {
+            CerrarWaiting();
+
+            // Verificar si la respuesta está vacía
+            if (!responseLista || responseLista.trim() === '') {
+                console.warn(`No se recibieron datos para las listas del producto ID: ${productoId}`);
+                $("#divProdLista").html('<div class="alert alert-info">No hay listas de precios disponibles para este producto.</div>');
+                return;
+            }
+
+            // Verificar si hay elementos en la respuesta (podría ser HTML vacío)
+            const tempElement = $('<div>').html(responseLista);
+            if (tempElement.find("table tbody tr").length === 0) {
+                console.log(`Respuesta recibida pero sin filas para el producto ID: ${productoId}`);
+                $("#divProdLista").html('<div class="alert alert-info">No hay listas de precios disponibles para este producto.</div>');
+                return;
+            }
+
+            // Mostrar resultados de listas de precios
+            $("#divProdLista").html(responseLista);
+            console.log(`Listas de precios cargadas correctamente para producto ID: ${productoId}`);
+
+            // Ejecutar código específico si hay ciertos elementos en la respuesta
+            if ($("#tbProdLista").length > 0) {
+                // Aplicar configuraciones a la tabla de listas
+                optimizarVisualizacionTablaListas();
+                configurarInputsListaPrecios();
+
+                console.log(`Se encontraron ${$("#tbProdLista tbody tr").length} listas de precios`);
+
+                // Configurar eventos para la tabla de listas
+                $("#tbProdLista tbody tr").off("click").on("click", function (e) {
+                    // Solo activar si el clic no fue en un input
+                    if (!$(e.target).is('input')) {
+                        $(this).toggleClass("selected");
+                    }
+                });
+            } else {
+                console.warn("No se encontró la tabla #tbProdLista en la respuesta");
+            }
+        },
+        error: function (xhr, status, error) {
+            CerrarWaiting();
+            console.error("Error en la petición AJAX de listas:", error);
+            console.error("Estado:", status);
+            console.error("Respuesta:", xhr.responseText);
+
+            // Mostrar mensaje de error
+            $("#divProdLista").html(
+                '<div class="alert alert-danger">' +
+                '<h5>Error al cargar las listas de precios</h5>' +
+                '<p>Se produjo un error al intentar cargar la información. Detalles: ' + status + '</p>' +
+                '</div>'
+            );
+        }
+    });
 }
 
 // Función para configurar eventos de activación/desactivación de edición
@@ -929,7 +1182,8 @@ function configurarEventosEdicion() {
     $('.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta')
         .off('click')
         .off('focus')
-        .off('blur');
+        .off('blur')
+        .off('keydown'); // Asegurarse de eliminar cualquier evento keydown anterior
 
     // Agregar evento click para habilitar edición
     $('.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta').on('click', function (e) {
@@ -952,6 +1206,22 @@ function configurarEventosEdicion() {
         }, 0);
 
         console.log(`Campo ${$(inputElement).attr('class').match(/input-tp_[^\s]+|input-tin_[^\s]+/)[0]} activado para edición`);
+    });
+
+    // Agregar evento keydown para detectar ENTER en todos los campos editables
+    $('.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta').on('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault(); // Prevenir cualquier comportamiento por defecto
+
+            // Disparar el evento blur manualmente para aplicar los cambios
+            const event = new Event('blur', { bubbles: true });
+            this.dispatchEvent(event);
+
+            // Opcionalmente, se puede mover el foco al siguiente campo
+            // $(this).closest('td').next().find('input').focus();
+
+            console.log(`ENTER presionado en campo, aplicando cambios`);
+        }
     });
 
     // Definir los campos de la secuencia01
@@ -1091,6 +1361,7 @@ function configurarEventosEdicion() {
 }
 
 
+
 // Nueva función para resguardar los cambios del producto
 function resguardarCambiosProducto(row) {
     // Recopilar todos los valores del producto
@@ -1137,101 +1408,205 @@ function resguardarCambiosProducto(row) {
     });
 }
 
+//// Añadir el botón para actualizar manualmente las listas
+//function agregarBotonActualizarListas() {
+//    // Verificar si el botón ya existe
+//    if ($("#btnActualizarListas").length === 0) {
+//        $('<button>')
+//            .attr('id', 'btnActualizarListas')
+//            .addClass('btn btn-sm btn-golden float-end mb-2')
+//            .html('<i class="bx bx-refresh me-1"></i>Actualizar listas')
+//            .on('click', function () {
+//                const productoSeleccionado = $("#tbProdDet tbody tr.selected").data('p-id');
+//                if (productoSeleccionado) {
+//                    buscarProductoLista(productoSeleccionado);
+//                } else {
+//                    AbrirMensaje(
+//                        "ATENCIÓN",
+//                        "Debe seleccionar un producto para actualizar sus listas de precios.",
+//                        function () { $("#msjModal").modal("hide"); },
+//                        false,
+//                        ["Entendido"],
+//                        "warn!",
+//                        null
+//                    );
+//                }
+//            })
+//            .insertBefore("#divProdLista");
+//    }
+//}
 
-// Función mejorada para formatear valores iniciales
+
+// Función para asegurar que todas las filas tengan el atributo data-carga
+function asegurarAtributosCarga() {
+    console.log("Asegurando atributos data-carga en todas las filas...");
+
+    // Para cada fila de producto (no encabezados de familia)
+    $('#tbProdDet tbody tr:not(.table-secondary)').each(function () {
+        const row = $(this);
+
+        // Si la fila no tiene el atributo data-carga explícito
+        if (row.data('carga') === undefined) {
+            // Buscar si hay algún indicio de modo temporal
+            // 1. Verificar si algún campo tiene valor diferente al original
+            let hayDiferencias = false;
+            row.find('input[data-original-value]').each(function () {
+                const $input = $(this);
+                const valorOriginal = $input.data('original-value');
+                const valorActual = $input.val().replace(/,/g, '');
+
+                // Si es bonificación, tratar como string
+                if ($input.hasClass('input-tp_boni')) {
+                    if (valorOriginal !== undefined &&
+                        valorOriginal.toString().trim() !== valorActual.toString().trim() &&
+                        !(valorOriginal.toString().trim() === "0" && valorActual.toString().trim() === "")) {
+                        hayDiferencias = true;
+                        return false; // Salir del bucle each
+                    }
+                } else {
+                    // Para campos numéricos
+                    try {
+                        const numOriginal = parseFloat(valorOriginal);
+                        const numActual = parseFloat(valorActual);
+
+                        if (!isNaN(numOriginal) && !isNaN(numActual)) {
+                            // Usar una tolerancia baja para la detección inicial
+                            if (Math.abs(numOriginal - numActual) > 0.0001) {
+                                hayDiferencias = true;
+                                return false; // Salir del bucle each
+                            }
+                        }
+                    } catch (e) {
+                        console.log("Error al comparar valores:", e);
+                    }
+                }
+            });
+
+            // Si hay diferencias, considerar modo temporal (carga=1)
+            row.attr('data-carga', hayDiferencias ? '1' : '0');
+            row.data('carga', hayDiferencias ? 1 : 0);
+
+            console.log(`Fila ${row.data('p-id')}: Asignado data-carga=${hayDiferencias ? 1 : 0}`);
+        } else {
+            // Asegurar que data-carga está también como atributo
+            const cargaValue = row.data('carga');
+            row.attr('data-carga', cargaValue);
+            console.log(`Fila ${row.data('p-id')}: Verificado data-carga=${cargaValue}`);
+        }
+    });
+
+    console.log("Atributos data-carga verificados");
+}
+
+// Mejorar la función formatearValoresIniciales para preservar el estado
 function formatearValoresIniciales() {
-    console.log("Formateando valores iniciales...");
+    console.log("Formateando valores iniciales sin alterar marcas de modificación...");
+
+    // Guardar el estado de campos modificados antes de formatear
+    const camposModificados = [];
+    $('.campo-modificado').each(function () {
+        camposModificados.push(this);
+    });
 
     // Formatear campos con 3 decimales (plista, pcosto y pneto)
     $('.input-tp_plista, .input-tp_pcosto, .input-tp_pneto').each(function () {
-        let originalValue = $(this).data('original-value');
+        const $input = $(this);
+        let originalValue = $input.data('original-value');
+
+        // Asegurar que el valor original siempre sea un número
         if (originalValue !== undefined) {
+            // Convertir a número y asegurar formato con 3 decimales
             let numValue = parseFloat(originalValue);
             if (!isNaN(numValue)) {
-                // Redondear a 3 decimales para coincidir exactamente con el formato mostrado
-                const valorRedondeado = parseFloat(numValue.toFixed(3));
-                $(this).val(valorRedondeado.toFixed(3));
+                // Guardamos el valor original con precisión exacta
+                $input.data('original-value', numValue);
 
-                // Actualizar data-original-value para que coincida exactamente con el valor mostrado
-                $(this).data('original-value', valorRedondeado);
+                // Solo formatear el valor visible si no es un campo modificado
+                if (!$input.hasClass('campo-modificado')) {
+                    $input.val(numValue.toFixed(3));
+                }
 
-                let fieldClass = $(this).attr('class').match(/input-tp_[^\s]+/)[0];
-                console.log(`Valor ${fieldClass}: ${originalValue} → ${valorRedondeado.toFixed(3)}`);
+                let fieldClass = $input.attr('class').match(/input-tp_[^\s]+/)[0];
+                console.log(`Valor ${fieldClass}: original=${originalValue}, guardado=${numValue}`);
             }
         }
     });
 
     // Formatear campos con 1 decimal (descuentos y flete)
     $('.input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete').each(function () {
-        let originalValue = $(this).data('original-value');
-        let fieldClass = $(this).attr('class').match(/input-tp_[^\s]+/)[0];
+        const $input = $(this);
+        let originalValue = $input.data('original-value');
 
         if (originalValue !== undefined) {
             let numValue = parseFloat(originalValue);
             if (!isNaN(numValue)) {
-                // Limitar a 99.9 como máximo y redondear a 1 decimal
+                // Limitar a 99.9 como máximo
                 numValue = Math.min(numValue, 99.9);
-                const valorRedondeado = parseFloat(numValue.toFixed(1));
-                $(this).val(valorRedondeado.toFixed(1));
 
-                // Actualizar data-original-value para que coincida exactamente con el valor mostrado
-                $(this).data('original-value', valorRedondeado);
+                // Guardamos el valor original con precisión exacta
+                $input.data('original-value', numValue);
 
-                console.log(`Valor ${fieldClass}: ${originalValue} → ${valorRedondeado.toFixed(1)}`);
+                // Solo formatear el valor visible si no es un campo modificado
+                if (!$input.hasClass('campo-modificado')) {
+                    $input.val(numValue.toFixed(1));
+                }
             }
         }
     });
 
     // Formatear campos con 2 decimales (otros campos numéricos)
     $('.input-tp_margen, .input-tin_alicuota, .input-tp_pvta').each(function () {
-        let originalValue = $(this).data('original-value');
-        let fieldClass = $(this).attr('class').match(/input-tp_[^\s]+|input-tin_[^\s]+/)[0];
+        const $input = $(this);
+        let originalValue = $input.data('original-value');
 
         if (originalValue !== undefined) {
             let numValue = parseFloat(originalValue);
             if (!isNaN(numValue)) {
-                const valorRedondeado = parseFloat(numValue.toFixed(2));
-                $(this).val(valorRedondeado.toFixed(2));
+                // Guardamos el valor original con precisión exacta
+                $input.data('original-value', numValue);
 
-                // Actualizar data-original-value para que coincida exactamente con el valor mostrado
-                $(this).data('original-value', valorRedondeado);
-
-                console.log(`Valor ${fieldClass}: ${originalValue} → ${valorRedondeado.toFixed(2)}`);
+                // Solo formatear el valor visible si no es un campo modificado
+                if (!$input.hasClass('campo-modificado')) {
+                    $input.val(numValue.toFixed(2));
+                }
             }
         }
     });
 
-    // Normalizar bonificaciones con valor "0" a cadena vacía
+    // Normalizar bonificaciones
     $('.input-tp_boni').each(function () {
-        let originalValue = $(this).data('original-value');
-        if (originalValue !== undefined && originalValue.toString().trim() === '0') {
-            $(this).val('');
-            $(this).data('original-value', ''); // Actualizar para coincidencia exacta
+        const $input = $(this);
+        let originalValue = $input.data('original-value');
+
+        if (originalValue !== undefined && originalValue.toString().trim() === '0' && !$input.hasClass('campo-modificado')) {
+            $input.val('');
+            $input.data('original-value', '');
         }
     });
+
+    console.log("Formateo de valores iniciales completado");
 }
 
 
 
+//function configurarEventosTabla() {
+//    // Evento para seleccionar filas de la tabla
+//    $("#tbProdDet tbody tr").on("click", function () {
+//        $(this).toggleClass("selected");
+//    });
 
-function configurarEventosTabla() {
-    // Evento para seleccionar filas de la tabla
-    $("#tbProdDet tbody tr").on("click", function () {
-        $(this).toggleClass("selected");
-    });
-
-    // Evento para el checkbox de seleccionar todos
-    $("#checkAllProd").on("change", function () {
-        const isChecked = $(this).prop("checked");
-        $("#tbProdDet tbody tr").each(function () {
-            if (isChecked) {
-                $(this).addClass("selected");
-            } else {
-                $(this).removeClass("selected");
-            }
-        });
-    });
-}
+//    // Evento para el checkbox de seleccionar todos
+//    $("#checkAllProd").on("change", function () {
+//        const isChecked = $(this).prop("checked");
+//        $("#tbProdDet tbody tr").each(function () {
+//            if (isChecked) {
+//                $(this).addClass("selected");
+//            } else {
+//                $(this).removeClass("selected");
+//            }
+//        });
+//    });
+//}
 
 // Función para volver al filtro
 function volverAFiltro() {
@@ -1614,129 +1989,104 @@ function resguardarCambiosProducto(row) {
 }
 
 
-// Función para marcar un campo como modificado
-function marcarCampoModificado(input) {
-    const $input = $(input);
-    const valorOriginal = $input.data('original-value');
-    const valorActual = $input.val().replace(/,/g, '');
-
-    // Comparar valores numéricos con una pequeña tolerancia para decimales
-    let esModificado = false;
-
-    if ($input.hasClass('input-tp_boni')) {
-        // Para el campo de bonificación, comparamos los strings directamente
-        esModificado = valorOriginal !== valorActual;
-    } else {
-        // Para campos numéricos, convertimos a números y comparamos con tolerancia
-        const numOriginal = parseFloat(valorOriginal);
-        const numActual = parseFloat(valorActual);
-
-        // Consideramos diferente si hay una diferencia mayor a 0.001
-        esModificado = Math.abs(numOriginal - numActual) > 0.001;
-    }
-
-    // Aplicar o quitar la clase según corresponda
-    if (esModificado) {
-        $input.addClass('campo-modificado');
-
-        // Si no existe el indicador de cambio, agregarlo
-        if ($input.parent().find('.indicador-cambio').length === 0) {
-            $input.parent().append('<div class="indicador-cambio"></div>');
-        }
-    } else {
-        $input.removeClass('campo-modificado');
-        $input.parent().find('.indicador-cambio').remove();
-    }
-}
-
-// Función mejorada para marcar campos modificados
-// Función mejorada para marcar campos modificados
+// Función mejorada para la actualización de campos modificados
 function actualizarCamposModificados() {
-    // Procesar todos los inputs de la tabla
-    $('#tbProdDet input').each(function () {
-        const $input = $(this);
-        const valorOriginal = $input.data('original-value');
+    console.log("Actualizando campos modificados...");
 
-        // Ignorar si no tiene valor original o es readonly sin clase campo-readonly
-        if (valorOriginal === undefined || ($input.prop('readonly') && !$input.hasClass('campo-readonly'))) {
-            return;
-        }
+    // Primero asegurar que todas las filas tengan el atributo data-carga
+    asegurarAtributosCarga();
 
-        let valorActual = $input.val().replace(/,/g, '');
-        let esModificado = false;
+    // Iterar por cada fila de la tabla
+    $('#tbProdDet tbody tr:not(.table-secondary)').each(function () {
+        const row = $(this);
+        const modoTemporal = row.data('carga') === 1;
 
-        if ($input.hasClass('input-tp_boni')) {
-            // Para el campo de bonificación
-            // 1. Normalizar ambos valores quitando espacios
-            const originalTrimmed = (valorOriginal || '').toString().trim();
-            const actualTrimmed = valorActual.toString().trim();
+        console.log(`Fila ${row.data('p-id')}: Modo temporal=${modoTemporal}`);
 
-            // 2. Verificar si el valor original es "0" y el actual está vacío
-            if (originalTrimmed === "0" && actualTrimmed === "") {
-                esModificado = false; // Consideramos "0" igual a vacío para bonificación
-            } else {
-                esModificado = originalTrimmed !== actualTrimmed;
-            }
-        } else {
-            // Para campos numéricos, usando parsing más seguro
-            try {
-                const numOriginal = parseFloat(valorOriginal);
-                const numActual = parseFloat(valorActual);
+        if (modoTemporal) {
+            // Si estamos en modo temporal, verificar cada campo de la fila
+            row.find('input[data-original-value]').each(function () {
+                const $input = $(this);
+                const valorOriginal = $input.data('original-value');
+                let valorActual = $input.val().replace(/,/g, '');
 
-                if (!isNaN(numOriginal) && !isNaN(numActual)) {
-                    // Usar una tolerancia basada en el tipo de campo y su precisión
-                    let tolerancia = 0.009; // Tolerancia base para valores con 2 decimales
+                // Determinar si el campo está modificado
+                let esModificado = false;
 
-                    if ($input.hasClass('input-tp_dto1') ||
-                        $input.hasClass('input-tp_dto2') ||
-                        $input.hasClass('input-tp_dto3') ||
-                        $input.hasClass('input-tp_dto4') ||
-                        $input.hasClass('input-tp_dto_pa') ||
-                        $input.hasClass('input-tp_porc_flete')) {
-                        tolerancia = 0.09; // Mayor tolerancia para descuentos (1 decimal)
-                    } else if ($input.hasClass('input-tp_plista') ||
-                        $input.hasClass('input-tp_pcosto') ||
-                        $input.hasClass('input-tp_pneto')) {
-                        tolerancia = 0.0009; // Menor tolerancia para valores con 3 decimales
-                    }
+                // Para el campo de bonificación (caso especial)
+                if ($input.hasClass('input-tp_boni')) {
+                    const originalTrim = (valorOriginal || '').toString().trim();
+                    const actualTrim = (valorActual || '').toString().trim();
 
-                    // Determinar modificación en base a la diferencia relativa o absoluta
-                    if (Math.abs(numOriginal) < 0.001) {
-                        // Para valores cercanos a cero, usar diferencia absoluta
-                        esModificado = Math.abs(numActual) > tolerancia;
+                    // Casos especiales: "0" y "" se consideran iguales
+                    if ((originalTrim === "0" && actualTrim === "") ||
+                        (originalTrim === "" && actualTrim === "0")) {
+                        esModificado = false;
                     } else {
-                        // Para otros valores, usar diferencia relativa o absoluta, la que sea menor
-                        const difAbsoluta = Math.abs(numOriginal - numActual);
-                        const difRelativa = difAbsoluta / Math.abs(numOriginal);
-                        esModificado = difAbsoluta > tolerancia && difRelativa > 0.001;
+                        esModificado = originalTrim !== actualTrim;
                     }
                 } else {
-                    // Si alguno no es número pero no ambos están vacíos
-                    const ambosVacios = (valorOriginal === null || valorOriginal === undefined || valorOriginal.toString().trim() === '') &&
-                        (valorActual === null || valorActual === undefined || valorActual.trim() === '');
-                    esModificado = !ambosVacios;
+                    // Para campos numéricos
+                    try {
+                        const numOriginal = parseFloat(valorOriginal);
+                        const numActual = parseFloat(valorActual);
+
+                        if (!isNaN(numOriginal) && !isNaN(numActual)) {
+                            // Determinar tolerancia según el tipo de campo
+                            let tolerancia = 0.009; // Base para campos con 2 decimales
+
+                            if ($input.hasClass('input-tp_dto1') ||
+                                $input.hasClass('input-tp_dto2') ||
+                                $input.hasClass('input-tp_dto3') ||
+                                $input.hasClass('input-tp_dto4') ||
+                                $input.hasClass('input-tp_dto_pa') ||
+                                $input.hasClass('input-tp_porc_flete')) {
+                                tolerancia = 0.09; // Para campos con 1 decimal
+                            } else if ($input.hasClass('input-tp_plista') ||
+                                $input.hasClass('input-tp_pcosto') ||
+                                $input.hasClass('input-tp_pneto')) {
+                                tolerancia = 0.0009; // Para campos con 3 decimales
+                            }
+
+                            esModificado = Math.abs(numOriginal - numActual) > tolerancia;
+
+                            if (esModificado) {
+                                console.log(`Campo modificado en fila ${row.data('p-id')}: ${$input.attr('class').match(/input-[^\s]+/)[0]}, original=${numOriginal}, actual=${numActual}`);
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Error al comparar valores:", e, {
+                            valorOriginal: valorOriginal,
+                            valorActual: valorActual
+                        });
+                    }
                 }
-            } catch (e) {
-                console.error("Error al comparar valores:", e, { original: valorOriginal, actual: valorActual });
-                esModificado = false; // En caso de error, asumimos que no hay cambios
-            }
-        }
 
-        // Aplicar o quitar la clase según corresponda
-        $input.toggleClass('campo-modificado', esModificado);
+                // Aplicar o quitar la clase según corresponda
+                $input.toggleClass('campo-modificado', esModificado);
 
-        // Manejar el indicador visual de cambio
-        if (esModificado) {
-            if ($input.parent().find('.indicador-cambio').length === 0) {
-                $input.parent().append('<div class="indicador-cambio"></div>');
-            }
+                // Manejar el indicador visual
+                const container = $input.closest('.input-container');
+                if (esModificado) {
+                    if (container.find('.indicador-cambio').length === 0) {
+                        container.append('<div class="indicador-cambio"></div>');
+                    }
+                } else {
+                    container.find('.indicador-cambio').remove();
+                }
+            });
         } else {
-            $input.parent().find('.indicador-cambio').remove();
+            // Si no estamos en modo temporal, quitar todas las marcas
+            row.find('.campo-modificado').removeClass('campo-modificado');
+            row.find('.indicador-cambio').remove();
         }
     });
+
+    // Informar cuántos campos fueron marcados como modificados
+    const camposModificados = $('.campo-modificado').length;
+    console.log(`Campos marcados como modificados: ${camposModificados}`);
 }
 
-/**CODIFICACION DEL GRID LISTA*/
 function configurarInputsListaPrecios() {
     console.log("Configurando inputs para grid de listas de precios...");
 
@@ -1793,6 +2143,20 @@ function configurarInputsListaPrecios() {
             }, 0);
 
             console.log(`Campo ${$(inputElement).attr('class').match(/input-tp_[^\s]+_lista/)[0]} activado para edición`);
+        });
+
+    // Evento keydown para detectar ENTER en los campos de la lista (delegación de eventos)
+    $(document).off('keydown', '.input-tp_margen_lista, .input-tp_pvta_lista')
+        .on('keydown', '.input-tp_margen_lista, .input-tp_pvta_lista', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault(); // Prevenir cualquier comportamiento por defecto
+
+                // Disparar el evento blur manualmente para aplicar los cambios
+                const event = new Event('blur', { bubbles: true });
+                this.dispatchEvent(event);
+
+                console.log(`ENTER presionado en campo de lista, aplicando cambios`);
+            }
         });
 
     // Evento blur para el campo margen de lista (delegación de eventos)
@@ -1866,12 +2230,120 @@ function configurarInputsListaPrecios() {
 }
 
 
+// Mejorar la función marcarCampoModificado para ser más precisa
+function marcarCampoModificado(input) {
+    // Usar el parámetro input en lugar de this
+    const $input = $(input);
+
+    // Validar que el input existe y tiene un valor
+    if (!$input.length) {
+        console.warn('marcarCampoModificado: Input no válido', input);
+        return false;
+    }
+
+    const valorOriginal = $input.data('original-value');
+
+    // Obtener valor actual con manejo de errores
+    let valorActual = '';
+    try {
+        valorActual = $input.val() ? $input.val().replace(/,/g, '') : '';
+    } catch (e) {
+        console.error('Error al obtener valor del campo:', e);
+        return false;
+    }
+
+    // Si no hay valor original definido, no podemos comparar
+    if (valorOriginal === undefined) {
+        return false;
+    }
+
+    // Determinar si el campo está modificado
+    let esModificado = false;
+
+    // Para el campo de bonificación (caso especial)
+    if ($input.hasClass('input-tp_boni')) {
+        const originalTrim = (valorOriginal || '').toString().trim();
+        const actualTrim = (valorActual || '').toString().trim();
+
+        // Casos especiales: "0" y "" se consideran iguales
+        if ((originalTrim === "0" && actualTrim === "") ||
+            (originalTrim === "" && actualTrim === "0")) {
+            esModificado = false;
+        } else {
+            esModificado = originalTrim !== actualTrim;
+        }
+    } else {
+        // Para campos numéricos
+        try {
+            const numOriginal = parseFloat(valorOriginal);
+            const numActual = parseFloat(valorActual);
+
+            if (!isNaN(numOriginal) && !isNaN(numActual)) {
+                // Determinar tolerancia según el tipo de campo
+                let tolerancia = 0.009; // Base para campos con 2 decimales
+
+                if ($input.hasClass('input-tp_dto1') ||
+                    $input.hasClass('input-tp_dto2') ||
+                    $input.hasClass('input-tp_dto3') ||
+                    $input.hasClass('input-tp_dto4') ||
+                    $input.hasClass('input-tp_dto_pa') ||
+                    $input.hasClass('input-tp_porc_flete')) {
+                    tolerancia = 0.09; // Para campos con 1 decimal
+                } else if ($input.hasClass('input-tp_plista') ||
+                    $input.hasClass('input-tp_pcosto') ||
+                    $input.hasClass('input-tp_pneto')) {
+                    tolerancia = 0.0009; // Para campos con 3 decimales
+                }
+
+                esModificado = Math.abs(numOriginal - numActual) > tolerancia;
+            } else if (isNaN(numOriginal) !== isNaN(numActual)) {
+                // Si uno es NaN y el otro no, están diferentes
+                esModificado = true;
+            }
+        } catch (e) {
+            console.error("Error al comparar valores:", e);
+            esModificado = false; // En caso de error, no marcar como modificado
+        }
+    }
+
+    // Aplicar o quitar la clase según corresponda
+    $input.toggleClass('campo-modificado', esModificado);
+
+    // Manejar el indicador visual
+    const container = $input.closest('.input-container');
+    if (esModificado) {
+        if (container.find('.indicador-cambio').length === 0) {
+            container.append('<div class="indicador-cambio"></div>');
+        }
+    } else {
+        container.find('.indicador-cambio').remove();
+    }
+
+    return esModificado;
+}
+
+
 // Función para marcar un campo como modificado (similar a la existente en productocargaprecio.js)
 // Función optimizada para marcar un campo modificado (unificada para ambos grids)
 function marcarCampoModificadoLista(input) {
-    const $input = $(input);
+    const $input = $(input);  // Usar el parámetro input
+
+    // Validar que el input existe
+    if (!$input.length) {
+        console.warn('marcarCampoModificadoLista: Input no válido', input);
+        return false;
+    }
+
     const valorOriginal = $input.data('original-value');
-    const valorActual = $input.val().replace(/,/g, '');
+
+    // Obtener valor actual con manejo de errores
+    let valorActual = '';
+    try {
+        valorActual = $input.val() ? $input.val().replace(/,/g, '') : '';
+    } catch (e) {
+        console.error('Error al obtener valor del campo de lista:', e);
+        return false;
+    }
 
     // Para campos numéricos, convertimos a números y comparamos con tolerancia
     const numOriginal = parseFloat(valorOriginal);
@@ -1895,6 +2367,7 @@ function marcarCampoModificadoLista(input) {
 
     return esModificado; // Devolver si se modificó para uso posterior
 }
+
 
 // Función para actualizar el margen en una lista
 function actualizarMargenLista(row, lpId, pId, nuevoMargen) {
