@@ -1,0 +1,53 @@
+﻿@model NotasACuentaModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+}
+@Html.HiddenFor(x => x.MostrarGrilla)
+<div class="row">
+	<div class="col-6">
+		<h6>Notas a Cuenta de Valorización</h6>
+	</div>
+	<div id="divLeyenda" class="col-6">
+		<h6 style="color: red;">Seleccione la Nota a Cuenta que desea Anular</h6>
+	</div>
+</div>
+<div class="row">
+	<div class="table-responsive table-wrapper-400" id="containerGrillaNotaACuenta">
+		<table class="table table-bordered table-hover" id="tbGrillaNotaACuenta">
+			<thead class="table-dark">
+				<tr>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">Fecha</th>
+					<th style="width:10%;" class="col-header-small align-center tiny-row">N° Mov</th>
+					<th style="width:10%;" class="col-header-small align-center tiny-row">Tipo Compte.</th>
+					<th style="width:10%;" class="col-header-small align-center tiny-row">N° Compte</th>
+					<th style="width:30%;" class="col-header-small align-center tiny-row">Concepto</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">Cuota</th>
+					<th style="width:10%;" class="col-header-small align-center tiny-row">Vencimiento</th>
+					<th style="width:10%;" class="col-header-small align-center tiny-row">Importe Ori.</th>
+					<th style="width:10%;" class="col-header-small align-center tiny-row">Importe</th>
+					<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">tco_id</th>
+				</tr>
+			</thead>
+			<tbody>
+				@if (Model != null && Model.GrillaNotasACuenta != null && Model.GrillaNotasACuenta.ListaDatos != null && Model.GrillaNotasACuenta.ListaDatos.Count > 0)
+				{
+					@foreach (var item in Model.GrillaNotasACuenta.ListaDatos)
+					{
+						<tr onclick="selectReg(this, 'tbGrillaNotaACuenta')" ondblclick="selectRegDbl(this, 'tbGrillaNotaACuenta')">
+							<td class="@Model.GrillaNotasACuenta.ObtenerClase(item.cv_fecha_carga) cell-fit-content">@Model.GrillaNotasACuenta.FormatearDato(item.cv_fecha_carga, FormatDato.Fecha)</td>
+							<td class="align-center cell-fit-content">@Model.GrillaNotasACuenta.FormatearDato(item.dia_movi, FormatDato.Fecha)</td>
+							<td class="@Model.GrillaNotasACuenta.ObtenerClase(item.tco_desc_ori) cell-fit-content">@Model.GrillaNotasACuenta.FormatearDato(item.tco_desc_ori, FormatDato.Ninguno)</td>
+							<td class="align-center cell-fit-content">@Model.GrillaNotasACuenta.FormatearDato(item.cm_compte, FormatDato.Ninguno)</td>
+							<td class="@Model.GrillaNotasACuenta.ObtenerClase(item.cv_concepto) cell-fit-content">@Model.GrillaNotasACuenta.FormatearDato(item.cv_concepto, FormatDato.Ninguno)</td>
+							<td class="@Model.GrillaNotasACuenta.ObtenerClase(item.cm_compte_cuota) cell-fit-content">@Model.GrillaNotasACuenta.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
+							<td class="@Model.GrillaNotasACuenta.ObtenerClase(item.cv_fecha_vto) cell-fit-content">@Model.GrillaNotasACuenta.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
+							<td class="@Model.GrillaNotasACuenta.ObtenerClase(item.cv_importe_ori) cell-fit-content">@Model.GrillaNotasACuenta.FormatearDato(item.cv_importe_ori, FormatDato.Monto)</td>
+							<td class="@Model.GrillaNotasACuenta.ObtenerClase(item.cv_importe) cell-fit-content">@Model.GrillaNotasACuenta.FormatearDato(item.cv_importe, FormatDato.Monto)</td>
+							<td style="display:none;">@item.tco_id</td>
+						</tr>
+					}
+				}
+			</tbody>
+		</table>
+	</div>
+</div>

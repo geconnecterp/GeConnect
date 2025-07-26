@@ -1,0 +1,114 @@
+﻿@using static gc.infraestructura.Constantes.Constantes
+@model QueryFilters
+@{
+	Layout = "~/views/shared/_Layout.cshtml";
+	var filtro = new QueryFilters()
+	{
+		Rel01 = new List<string>(),
+		Modelo = ModeloFilter.ANULACION_DE_COMPROBANTE_Y_VALORIZACION,
+	};
+}
+@section styles {
+	<link rel="stylesheet" href="~/css/simplePagination.css" />
+}
+<style>
+	fieldset {
+		margin: 8px;
+		border: 1px solid silver;
+		padding: 8px;
+		border-radius: 4px;
+		max-width: 98%;
+		margin-top: 8px;
+		margin-left: 0px;
+		margin-right: 0px;
+		margin-bottom: 0px;
+	}
+
+	legend {
+		padding: 2px;
+		margin-top: -22px;
+		margin-bottom: 0px;
+		background: #f3f5f7 !important;
+		width: 15%;
+		text-align: center;
+		font-size: small;
+		font-weight: bold;
+	}
+</style>
+<div class="container">
+	<div class="row">
+		<div class="col-md-6">
+			<div class="d-flex justify-content-sm-around">
+				<button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
+					<i class="bx bx-filter bx-xs"></i>
+				</button>
+
+				<button class="btn btn-primary btn-sm mt-1 me-1" type="button" id="btnDetalle" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle">
+					<i class="bx bx-caret-down"></i>
+				</button>
+			</div>
+		</div>
+		<div class="col-md-2">
+			<div class="d-flex justify-content-sm-center">
+				<button id="btnAbmAceptar" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Aceptar" disabled>
+					<i class="bx bx-check-circle"></i>
+				</button>
+
+				<button id="btnAbmCancelar" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar" disabled>
+					<i class="bx bx-x-circle bx-xs"></i>
+				</button>
+			</div>
+		</div>
+	</div>
+	<div class="collapse" id="divFiltro" style="">
+		<partial name="_filtroBase" model="filtro" />
+		@Html.Hidden("pagEstado", false);
+	</div>
+	<div class="collapse" id="divDetalle" style="">
+		<div class="row mt-2">
+			<div class="col-md-5">
+				<div class="input-group input-group-sm mt-1" id="divProveedorSeleccionado">
+					<span class="input-group-text fixed-lbl-for-abm-70">Cuenta: </span>
+					<input type="text" id="CtaID" class="form-control" style="max-width: 100px;text-align: right;" disabled />
+					<input type="text" id="CtaDesc" class="form-control" disabled />
+				</div>
+				<div class="col-md-6" style="display: flex; align-items: center; text-align: justify; margin-top: 10px;margin-bottom: -10px;">
+					<h6>Comprobantes a Anular</h6>
+				</div>
+			</div>
+			<div class="col-md-7">
+				<fieldset>
+					<legend>Anular</legend>
+					<form class="opciones" id="radioSection">
+						<label><input type="radio" name="opcion" value="opcion1"> Comprobante y Valorización asociada</label>
+						<label style="margin-left: 50px;"><input type="radio" name="opcion" value="opcion2"> Solo Valorización</label>
+						<label style="margin-left: 50px;"><input type="radio" name="opcion" value="opcion3"> Notas a Cuenta de Valorizaciones</label>
+					</form>
+				</fieldset>
+			</div>
+		</div>
+		<div id="divComprobante">
+		</div>
+	</div>
+</div>
+
+@section scripts {
+	<script type="text/javascript">
+		var ctaIdSelected = "";
+		var ctaDescSelected = "";
+		var optSelected = "";
+		var diaMoviGrid1 = "";
+		var tcoIdGrid1 = "";
+		var cmCompteGrid1 = "";
+		var diaMoviGrid2 = "";
+		var tcoIdGrid2 = "";
+		var cmCompteGrid2 = "";
+		var autoComRel01Url = "@Url.Action("BuscarProvs", "anulaciondecomprobante", new { area = "Compras" })";
+		var inicializarDatosEnSesionURL = "@Url.Action("InicializarDatosEnSesion", "anulaciondecomprobante", new { area = "Compras" })";
+		var inicializarComprobanteUrl = "@Url.Action("InicializarComprobante", "anulaciondecomprobante", new { area = "Compras" })";
+		var inicializarVistaNotasACuentaUrl = "@Url.Action("InicializarVistaNotasACuenta", "anulaciondecomprobante", new { area = "Compras" })";
+		var confirmarAnulacionUrl = "@Url.Action("ConfirmarAnulacion", "anulaciondecomprobante", new { area = "Compras" })";
+	</script>
+
+	<script src="~/js/app/areas/anulaciondecomprobante/anuladecomp.js"></script>
+}

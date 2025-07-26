@@ -1,0 +1,53 @@
+﻿@model AnulacionDeComprobanteModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+}
+<style>
+	thead th {
+		position: sticky;
+		top: 0px;
+	}
+</style>
+
+<div class="row" id="divGrillaComprobantes" style="height: 300px;">
+	<div class="table-responsive table-wrapper-300" id="containerGrillaComprobantes">
+		<table class="table table-bordered table-hover" id="tbGrillaComprobantes">
+			<thead class="table-dark">
+				<tr>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">Fecha</th>
+					<th style="width:10%;" class="col-header-small align-center tiny-row">N° Mov</th>
+					<th style="width:10%;" class="col-header-small align-center tiny-row">Tipo Compte.</th>
+					<th style="width:10%;" class="col-header-small align-center tiny-row">N° Compte</th>
+					<th style="width:30%;" class="col-header-small align-center tiny-row">Concepto</th>
+					<th style="width:5%;" class="col-header-small align-center tiny-row">Cuota</th>
+					<th style="width:10%;" class="col-header-small align-center tiny-row">Vencimiento</th>
+					<th style="width:10%;" class="col-header-small align-center tiny-row">Importe Ori.</th>
+					<th style="width:10%;" class="col-header-small align-center tiny-row">Importe</th>
+					<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">tco_id</th>
+				</tr>
+			</thead>
+			<tbody>
+				@if (Model != null && Model.GrillaComprobantes != null && Model.GrillaComprobantes.ListaDatos != null && Model.GrillaComprobantes.ListaDatos.Count > 0)
+				{
+					@foreach (var item in Model.GrillaComprobantes.ListaDatos)
+					{
+						<tr onclick="selectReg(this, 'tbGrillaComprobantes')" ondblclick="selectRegDbl(this, 'tbGrillaComprobantes')">
+							<td class="@Model.GrillaComprobantes.ObtenerClase(item.cv_fecha_carga) cell-fit-content">@Model.GrillaComprobantes.FormatearDato(item.cv_fecha_carga, FormatDato.Fecha)</td>
+							<td class="align-center cell-fit-content">@Model.GrillaComprobantes.FormatearDato(item.dia_movi, FormatDato.Fecha)</td>
+							<td class="@Model.GrillaComprobantes.ObtenerClase(item.tco_desc) cell-fit-content">@Model.GrillaComprobantes.FormatearDato(item.tco_desc, FormatDato.Ninguno)</td>
+							<td class="align-center cell-fit-content">@Model.GrillaComprobantes.FormatearDato(item.cm_compte, FormatDato.Ninguno)</td>
+							<td class="@Model.GrillaComprobantes.ObtenerClase(item.cv_concepto) cell-fit-content">@Model.GrillaComprobantes.FormatearDato(item.cv_concepto, FormatDato.Ninguno)</td>
+							<td class="@Model.GrillaComprobantes.ObtenerClase(item.cm_compte_cuota) cell-fit-content">@Model.GrillaComprobantes.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
+							<td class="@Model.GrillaComprobantes.ObtenerClase(item.cv_fecha_vto) cell-fit-content">@Model.GrillaComprobantes.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
+							<td class="@Model.GrillaComprobantes.ObtenerClase(item.cv_importe_ori) cell-fit-content">@Model.GrillaComprobantes.FormatearDato(item.cv_importe_ori, FormatDato.Monto)</td>
+							<td class="@Model.GrillaComprobantes.ObtenerClase(item.cv_importe) cell-fit-content">@Model.GrillaComprobantes.FormatearDato(item.cv_importe, FormatDato.Monto)</td>
+							<td style="display:none;">@item.tco_id</td>
+						</tr>
+					}
+				}
+			</tbody>
+		</table>
+	</div>
+</div>
+<div class="row" id="divGrillaNotas">
+</div>

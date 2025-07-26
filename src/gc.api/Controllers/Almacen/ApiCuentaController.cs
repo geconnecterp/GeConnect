@@ -8,6 +8,8 @@ namespace gc.api.Controllers.Almacen
     using gc.infraestructura.Core.Responses;
     using gc.infraestructura.Dtos;
     using gc.infraestructura.Dtos.Almacen;
+	using gc.infraestructura.Dtos.Almacen.AnulacionDeComprobante;
+	using gc.infraestructura.Dtos.Almacen.AnulacionDeComprobante.Request;
 	using gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra;
 	using gc.infraestructura.Dtos.Almacen.Request;
 	using gc.infraestructura.Dtos.CuentaComercial;
@@ -564,6 +566,48 @@ namespace gc.api.Controllers.Almacen
 			var res = _cuentasSv.ObtenerCompteValorizaCostoOC(request);
 
 			response = new ApiResponse<List<CompteValorizaCostoPorProductoDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ComprobanteParaAnularDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerComprobanteParaAnular(string ctaId)
+		{
+			ApiResponse<List<ComprobanteParaAnularDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _cuentasSv.ObtenerComprobanteParaAnular(ctaId);
+
+			response = new ApiResponse<List<ComprobanteParaAnularDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<NotaACuentaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerNotaACuentaDeValorizacionParaAnular(InicializarNotaACuentaRequest request)
+		{
+			ApiResponse<List<NotaACuentaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _cuentasSv.ObtenerNotaACuentaDeValorizacionParaAnular(request);
+
+			response = new ApiResponse<List<NotaACuentaDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[Route("[action]")]
+		public IActionResult AnulacionDeComprobanteConfirma(ConfirmarAnulacionRequest request)
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _cuentasSv.AnulacionDeComprobanteConfirma(request);
+
+			var response = new ApiResponse<RespuestaDto>(res.First());
 
 			return Ok(response);
 		}

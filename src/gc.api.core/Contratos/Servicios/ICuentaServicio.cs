@@ -1,5 +1,7 @@
 using gc.api.core.Entidades;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.AnulacionDeComprobante;
+using gc.infraestructura.Dtos.Almacen.AnulacionDeComprobante.Request;
 using gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra;
 using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.CuentaComercial;
@@ -39,5 +41,8 @@ namespace gc.api.core.Contratos.Servicios
 		List<CuentaDatoDto> GetCuentaDatos(string cta, char tipo);
         List<CuentaObsDto> GetCuentaObs(string cta_id, char to_id);
         List<CuentaDatoCuitDto> GetCuentaPorCuit(string cuit);
+        List<ComprobanteParaAnularDto> ObtenerComprobanteParaAnular(string ctaId);
+        List<NotaACuentaDto> ObtenerNotaACuentaDeValorizacionParaAnular(InicializarNotaACuentaRequest request);
+        List<RespuestaDto> AnulacionDeComprobanteConfirma(ConfirmarAnulacionRequest request);
 	}
 }

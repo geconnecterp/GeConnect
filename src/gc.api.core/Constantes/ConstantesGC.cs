@@ -361,11 +361,13 @@ namespace gc.api.core.Constantes
             public const string SP_COMPTE_VALORIZA_DTOS = "SPGECO_Compte_Valoriza_Dtos";
             public const string SP_COMPTE_VALORIZA = "SPGECO_Compte_Valoriza";
             public const string SP_COMPTE_VALORIZA_COSTO_OC = "SPGECO_Compte_Valoriza_Costo_OC";
+			public const string SP_COMPTE_ANULA_LISTA = "SPGECO_Compte_Anula_Lista";
+			public const string SP_COMPTE_ANULA_A_CTA = "SPGECO_Compte_Anula_A_Cta";
+			public const string SP_COMPTE_ANULA_CONFIRMA = "SPGECO_Compte_Anula_Confirma";
+			//
 
-
-
-            #region Asientos
-            public const string SP_EJERCICIOS_LISTA = "SPGECO_Conta_Ejercicios";
+			#region Asientos
+			public const string SP_EJERCICIOS_LISTA = "SPGECO_Conta_Ejercicios";
             public const string SP_CONTA_USU_ASIENTOS = "SPGECO_Conta_Usu_Asientos";
             public const string SP_TIPO_ASIENTO = "SPGECO_Tipos_Asientos";
             public const string SP_CONTA_ASIENTOS_TMP = "SPGECO_Conta_Asiento_TMP_Lista";

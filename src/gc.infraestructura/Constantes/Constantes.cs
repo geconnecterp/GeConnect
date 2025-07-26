@@ -78,6 +78,7 @@ namespace gc.infraestructura.Constantes
             public const string PRODUCTO_CARGA_PRECIO = "PRODUCTO_CARGA_PRECIO";
         
 			public const string ORDEN_DE_PAGO_CONSULTA = "ORDEN_DE_PAGO_CONSULTA";
+			public const string ANULACION_DE_COMPROBANTE_Y_VALORIZACION = "ANULACION_DE_COMPROBANTE_Y_VALORIZACION";
 		}
     }
 }

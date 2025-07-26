@@ -4,6 +4,8 @@ using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.AnulacionDeComprobante;
+using gc.infraestructura.Dtos.Almacen.AnulacionDeComprobante.Request;
 using gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra;
 using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.CuentaComercial;
@@ -565,6 +567,48 @@ namespace gc.api.core.Servicios
 				new("@p_id",request.p_id),
 			};
 			var listaTemp = _repository.EjecutarLstSpExt<CompteValorizaCostoPorProductoDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<ComprobanteParaAnularDto> ObtenerComprobanteParaAnular(string ctaId)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_COMPTE_ANULA_LISTA;
+			var ps = new List<SqlParameter>()
+			{
+				new("@cta_id", ctaId),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<ComprobanteParaAnularDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<NotaACuentaDto> ObtenerNotaACuentaDeValorizacionParaAnular(InicializarNotaACuentaRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_COMPTE_ANULA_A_CTA;
+			var ps = new List<SqlParameter>()
+			{
+				new("@cta_id", request.ctaId),
+				new("@dia_movi", request.diaMovi),
+				new("@tco_id", request.tcoId),
+				new("@cm_compte", request.cmCompte),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<NotaACuentaDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<RespuestaDto> AnulacionDeComprobanteConfirma(ConfirmarAnulacionRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_COMPTE_ANULA_CONFIRMA;
+			var ps = new List<SqlParameter>()
+			{
+				new("@cta_id",request.ctaId),
+				new("@usu_id",request.usuId),
+				new("@adm_id",request.admId),
+				new("@dia_movi",request.diaMovi),
+				new("@tco_id",request.tcoId),
+				new("@cm_compte",request.cmCompte),
+				new("@opcion",request.opcion),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 			return listaTemp;
 		}
 	}

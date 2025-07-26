@@ -4,6 +4,8 @@ using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.AnulacionDeComprobante;
+using gc.infraestructura.Dtos.Almacen.AnulacionDeComprobante.Request;
 using gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra;
 using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.CuentaComercial;
@@ -49,7 +51,10 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string GetCuentaDatos = "/GetCuentaDatos";
 		private const string GetCuentaObs = "/GetCuentaObs";
 		private const string GetCuentaPorCuit = "/GetCuentaPorCuit";
-		//
+		private const string GetComprobanteParaAnular = "/ObtenerComprobanteParaAnular";
+		private const string GetNotaACuentaDeValorizacionParaAnular = "/ObtenerNotaACuentaDeValorizacionParaAnular";
+		private const string AnulacionDeComprobante = "/AnulacionDeComprobanteConfirma";
+
 		private readonly AppSettings _appSettings;
         public CuentaServicio(IOptions<AppSettings> options, ILogger<CuentaServicio> logger) : base(options, logger)
         {
@@ -1223,5 +1228,111 @@ namespace gc.sitio.core.Servicios.Implementacion
 				return new();
 			}
 		}
+
+		public List<ComprobanteParaAnularDto> ObtenerComprobanteParaAnular(string ctaId, string token)
+		{
+			ApiResponse<List<ComprobanteParaAnularDto>> respuesta;
+			string stringData;
+			try
+			{
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{GetComprobanteParaAnular}?ctaId={ctaId}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (!string.IsNullOrEmpty(stringData))
+					{
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<ComprobanteParaAnularDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+					}
+					else
+					{
+						throw new Exception("No se logro obtener la respuesta de la API con los datos de los comprobantes. Verifique.");
+					}
+					return respuesta.Data;
+				}
+				else
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogError($"Error al intentar obtener los datos de los comprobantes: {stringData}");
+					throw new NegocioException("Hubo un error al intentar obtener los datos de los comprobantes");
+				}
+
+			}
+			catch (NegocioException)
+			{
+				throw;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar obtener los datos de los comprobantes.");
+				throw;
+			}
+		}
+
+		public List<NotaACuentaDto> ObtenerNotaACuentaDeValorizacionParaAnular(InicializarNotaACuentaRequest request, string token)
+		{
+			ApiResponse<List<NotaACuentaDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{GetNotaACuentaDeValorizacionParaAnular}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().Result;
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros cm_compte:{request.cmCompte} dia_movi:{request.diaMovi}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<NotaACuentaDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().Result;
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public RespuestaGenerica<RespuestaDto> AnulacionDeComprobanteConfirma(ConfirmarAnulacionRequest request, string token)
+		{
+			ApiResponse<RespuestaDto> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{AnulacionDeComprobante}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros cta_id:{request.ctaId} usu_id: {request.usuId} adm_id: {request.admId} tco_id: {request.tcoId} dia_movi: {request.diaMovi} cm_compte: {request.cmCompte} opcion: {request.opcion}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return new RespuestaGenerica<RespuestaDto>() { Entidad = apiResponse.Data };
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
 	}
 }
