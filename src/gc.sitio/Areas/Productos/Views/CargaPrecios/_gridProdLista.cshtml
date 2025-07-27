@@ -14,45 +14,45 @@
 <style>
     /* Estilo para alinear a la derecha los inputs numéricos */
     .input-numeric {
-        text-align: right;
-        padding-right: 5px;
-        font-size: 0.85rem; /* Reducir tamaño de fuente para valores grandes */
+    text-align: right;
+    padding-right: 5px;
+    font-size: 0.85rem; /* Reducir tamaño de fuente para valores grandes */
     }
 
     /* Ajustar el padding interno para aprovechar mejor el espacio */
     .form-control-sm.input-numeric {
-        padding: 0.15rem 0.3rem;
-        height: auto;
-        min-width: 70px; /* Ancho mínimo para visibilidad */
+    padding: 0.15rem 0.3rem;
+    height: auto;
+    min-width: 70px; /* Ancho mínimo para visibilidad */
     }
 
     /* Campos con 2 decimales */
     .input-tp_margen_lista, .input-tp_pvta_lista {
-        font-size: 0.8rem;
-        min-width: 70px;
+    font-size: 0.8rem;
+    min-width: 70px;
     }
 
     /* Estilo para campos modificados */
     .campo-modificado {
-        background-color: #d4f1f9 !important; /* Celeste pastel claro */
-        border-color: #a8e1f5 !important;
+    background-color: #d4f1f9 !important; /* Celeste pastel claro */
+    border-color: #a8e1f5 !important;
     }
 
     /* Indicador visual de cambio */
     .indicador-cambio {
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 0;
-        height: 0;
-        border-style: solid;
-        border-width: 0 8px 8px 0;
-        border-color: transparent #4bacc6 transparent transparent;
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 8px 8px 0;
+    border-color: transparent #4bacc6 transparent transparent;
     }
 
     /* Contenedor relativo para posicionar el indicador */
     .input-container {
-        position: relative;
+    position: relative;
     }
 </style>
 
@@ -90,11 +90,11 @@
                                 <td class="@Model.ObtenerClase(item.tp_margen)">
                                     <div class="input-container">
                                         <input type="text" class="form-control form-control-sm input-tp_margen_lista input-numeric"
-                                               value="@(item.tp_margen.ToString("F2"))"
-                                               data-lp-id="@item.lp_id"
-                                               data-p-id="@item.p_id"
-                                               data-original-value="@item.p_margen"
-                                               readonly />
+                                        value="@(item.tp_margen.ToString("F2"))"
+                                        data-lp-id="@item.lp_id"
+                                        data-p-id="@item.p_id"
+                                        data-original-value="@item.p_margen"
+                                        readonly />
                                         @Html.Hidden("p_pcosto",item.P_Pcosto)
                                         @Html.Hidden("p_pneto",item.p_pneto)
                                         @Html.Hidden("lp_porc_mg",item.lp_porc_mg)
@@ -103,9 +103,13 @@
                                         @Html.Hidden("in_alicuota", item.in_alicuota)
                                     </div>
                                 </td>
+                                @{
+                                    string modificadoCss = "campo-modificado";
+                                    bool modificadoBandera = item.p_pvta != item.tp_pvta;
+                                }
                                 <td class="@Model.ObtenerClase(item.tp_pvta)">
                                     <div class="input-container">
-                                        <input type="text" class="form-control form-control-sm input-tp_pvta_lista input-numeric"
+                                        <input type="text" class="form-control form-control-sm input-tp_pvta_lista input-numeric @(modificadoBandera==true?modificadoCss:"")"
                                                value="@(item.tp_pvta.ToString("F2"))"
                                                data-lp-id="@item.lp_id"
                                                data-p-id="@item.p_id"
