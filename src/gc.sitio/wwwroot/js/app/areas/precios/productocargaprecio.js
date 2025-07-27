@@ -1313,6 +1313,13 @@ function configurarEventosEdicion() {
     // Evento blur para margen (secuencia02)
     $('.input-tp_margen').on('blur', function () {
         const $this = $(this);
+
+        // SOLUCIÓN: Si el campo ya está en readonly, no hacer nada
+        if ($this.prop('readonly')) {
+            console.log(`Campo ya en readonly, ignorando evento blur`);
+            return;
+        }
+
         const campo = $this.attr('class').match(/input-tp_[^\s]+/)[0];
         const row = $this.closest('tr');
         let value = $this.val().replace(/,/g, '');
