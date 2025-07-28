@@ -623,5 +623,20 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<CompteJbiDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<RespuestaDto> ConfirmaCompteJbi(ConfirmarJustificacionRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_COMPTE_JBI_CONFIRMA;
+			var ps = new List<SqlParameter>()
+			{
+				new("@cta_id",request.cta_id),
+				new("@adm_id",request.adm_id),
+				new("@usu_id",request.usu_id),
+				new("@json_comptes",request.json_comptes),
+				new("@json_rp",request.json_rp),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

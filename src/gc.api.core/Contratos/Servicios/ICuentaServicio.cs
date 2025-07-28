@@ -46,5 +46,6 @@ namespace gc.api.core.Contratos.Servicios
         List<NotaACuentaDto> ObtenerNotaACuentaDeValorizacionParaAnular(InicializarNotaACuentaRequest request);
         List<RespuestaDto> AnulacionDeComprobanteConfirma(ConfirmarAnulacionRequest request);
         List<CompteJbiDto> GetCompteJbi(string ctaId);
+        List<RespuestaDto> ConfirmaCompteJbi(ConfirmarJustificacionRequest request);
 	}
 }

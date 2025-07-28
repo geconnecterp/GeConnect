@@ -1,0 +1,100 @@
+﻿@model RelacionarComprobanteSinRPModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+}
+<style>
+	thead th {
+		position: sticky;
+		top: 0px;
+	}
+</style>
+<div class="row" style="padding-top: 10px;">
+	<div class="col-6">
+		<div class="table-responsive table-wrapper-400-full-width" id="containerListaComprobantes">
+			<table class="table table-bordered table-hover" id="tbListaComprobantes">
+				<thead class="table-dark">
+					<tr>
+						<th style="width:20%;" class="col-header-small align-center tiny-row">Comprobante</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">Vencimiento</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">Cargado</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">Importe</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">Obs.</th>
+						<th style="width:1%;padding: 0;text-align-last: center;vertical-align: middle;"><input name="select_all" value="1" type="checkbox"></th>
+						<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">tco_id</th>
+						<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">dia_movi</th>
+					</tr>
+				</thead>
+				<tbody>
+					@if (Model != null && Model.GrillaComprobantes != null && Model.GrillaComprobantes.ListaDatos != null)
+					{
+						@foreach (var item in Model.GrillaComprobantes.ListaDatos)
+						{
+							var nombre = "chk" + item.cm_compte;
+							<tr onclick="selectReg(this, 'tbListaComprobantes')">
+								<td class="@Model.GrillaComprobantes.ObtenerClase(item.cm_compte)">@Model.GrillaComprobantes.FormatearDato(item.cm_compte, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaComprobantes.ObtenerClase(item.cm_fecha)">@Model.GrillaComprobantes.FormatearDato(item.cm_fecha, FormatDato.Fecha)</td>
+								<td class="@Model.GrillaComprobantes.ObtenerClase(item.cm_fecha_carga)">@Model.GrillaComprobantes.FormatearDato(item.cm_fecha_carga, FormatDato.Fecha)</td>
+								<td class="@Model.GrillaComprobantes.ObtenerClase(item.cm_total)">@Model.GrillaComprobantes.FormatearDato(item.cm_total, FormatDato.Monto)</td>
+								<td class="@Model.GrillaComprobantes.ObtenerClase(item.motivo_just)">@Model.GrillaComprobantes.FormatearDato(item.motivo_just, FormatDato.Ninguno)</td>
+								@if (item.justificado_bool)
+								{
+									<td style="padding: 0; text-align-last: center;"><input type="checkbox" class="chkJustificado" name=@nombre id="chkJustificado" onchange="onChangeChkJustifica(this);" checked /></td>
+								}
+								else
+								{
+									<td style="padding: 0; text-align-last: center;"><input type="checkbox" class="chkJustificado" name=@nombre id="chkJustificado" onchange="onChangeChkJustifica(this);" /></td>
+								}
+								<td style="display:none;">@item.tco_id</td>
+								<td style="display:none;">@item.dia_movi</td>
+							</tr>
+						}
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<div class="col-6">
+		<div class="table-responsive table-wrapper-400-full-width" id="containerListaRP">
+			<table class="table table-bordered table-hover" id="tbListaRP">
+				<thead class="table-dark">
+					<tr>
+						<th style="width:20%;" class="col-header-small align-center tiny-row">Comprobante</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">RP N°</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">Fecha</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">Sucursal</th>
+						<th style="width:5%;" class="col-header-small align-center tiny-row">Importe</th>
+						<th style="width:1%;padding: 0;text-align-last: center;vertical-align: middle;"><input name="select_all" value="1" type="checkbox"></th>
+						<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">cm_compte_rp</th>
+						<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">dia_movi</th>
+					</tr>
+				</thead>
+				<tbody>
+					@if (Model != null && Model.GrillaRP != null && Model.GrillaRP.ListaDatos != null)
+					{
+						@foreach (var item in Model.GrillaRP.ListaDatos)
+						{
+							var nombre = "chk" + item.rp_compte;
+							<tr onclick="selectReg(this, 'tbListaRP')">
+								<td class="@Model.GrillaRP.ObtenerClase(item.concepto)">@Model.GrillaRP.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaRP.ObtenerClase(item.rp_compte)">@Model.GrillaRP.FormatearDato(item.rp_compte, FormatDato.Fecha)</td>
+								<td class="@Model.GrillaRP.ObtenerClase(item.rp_fecha)">@Model.GrillaRP.FormatearDato(item.rp_fecha, FormatDato.Fecha)</td>
+								<td class="@Model.GrillaRP.ObtenerClase(item.rpe_desc)">@Model.GrillaRP.FormatearDato(item.rpe_desc, FormatDato.Ninguno)</td> @*Reemplazar por el campo sucursal cuando este listo*@
+								<td class="@Model.GrillaRP.ObtenerClase(item.cm_importe_rp)">@Model.GrillaRP.FormatearDato(item.cm_importe_rp, FormatDato.Monto)</td>
+								@if (item.justificado_bool)
+								{
+									<td style="padding: 0; text-align-last: center;"><input type="checkbox" class="chkJustificado" name=@nombre id="chkJustificado" onchange="onChangeChkJustifica(this);" checked /></td>
+								}
+								else
+								{
+									<td style="padding: 0; text-align-last: center;"><input type="checkbox" class="chkJustificado" name=@nombre id="chkJustificado" onchange="onChangeChkJustifica(this);" /></td>
+								}
+								<td style="display:none;">@item.cm_compte_rp</td>
+								<td style="display:none;">@item.dia_movi</td>
+							</tr>
+						}
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>

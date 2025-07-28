@@ -44,5 +44,6 @@ namespace gc.sitio.core.Servicios.Contratos
         List<NotaACuentaDto> ObtenerNotaACuentaDeValorizacionParaAnular(InicializarNotaACuentaRequest request, string token);
         RespuestaGenerica<RespuestaDto> AnulacionDeComprobanteConfirma(ConfirmarAnulacionRequest request, string token);
         List<CompteJbiDto> GetCompteJbi(string ctaId, string token);
+		RespuestaGenerica<RespuestaDto> ConfirmaCompteJbi(ConfirmarJustificacionRequest request, string token);
 	}
 }

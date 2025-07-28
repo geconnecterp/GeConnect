@@ -81,8 +81,11 @@
 	<script type="text/javascript">
 		var ctaIdSelected = "";
 		var ctaDescSelected = "";
-		var autoComRel01Url = "@Url.Action("BuscarProvs", "anulaciondecomprobante", new { area = "Compras" })";
-		var inicializarDatosEnSesionURL = "@Url.Action("InicializarDatosEnSesion", "anulaciondecomprobante", new { area = "Compras" })";
+		var autoComRel01Url = "@Url.Action("BuscarProvs", "relacionarcomprobantesinrp", new { area = "Compras" })";
+		var inicializarDatosEnSesionURL = "@Url.Action("InicializarDatosEnSesion", "relacionarcomprobantesinrp", new { area = "Compras" })";
+		var inicializarComprobantesUrl = "@Url.Action("InicializarComprobantes", "relacionarcomprobantesinrp", new { area = "Compras" })";
+		var inicializarDetalleRpUrl = "@Url.Action("InicializarDetalleRP", "relacionarcomprobantesinrp", new { area = "Compras" })";
+		var confirmarJustificacionUrl = "@Url.Action("ConfirmarJustificacion", "relacionarcomprobantesinrp", new { area = "Compras" })";
 	</script>
 
 	<script src="~/js/app/areas/relacionarcomprobantesinrp/relcomptesinrp.js"></script>

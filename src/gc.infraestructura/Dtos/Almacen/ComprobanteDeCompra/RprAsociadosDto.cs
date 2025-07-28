@@ -13,6 +13,7 @@ namespace gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra
 		public string cta_id { get; set; } = string.Empty;
 		public string usu_id { get; set; } = string.Empty;
 		public string adm_id { get; set; } = string.Empty;
+		public string adm_nombre { get; set; } = string.Empty;
 		public char rpe_id { get; set; }
 		public string rpe_desc { get; set; } = string.Empty;
 		public string dia_movi { get; set; } = string.Empty;

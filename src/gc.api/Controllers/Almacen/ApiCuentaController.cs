@@ -627,5 +627,17 @@ namespace gc.api.Controllers.Almacen
 
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[Route("[action]")]
+		public IActionResult ConfirmaCompteJbi(ConfirmarJustificacionRequest request)
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _cuentasSv.ConfirmaCompteJbi(request);
+
+			var response = new ApiResponse<RespuestaDto>(res.First());
+
+			return Ok(response);
+		}
 	}
 }

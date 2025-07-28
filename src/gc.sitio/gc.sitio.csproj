@@ -34,7 +34,6 @@
   <ItemGroup>
     <Folder Include="Areas\Asientos\Data\" />
     <Folder Include="Areas\Asientos\Models\" />
-    <Folder Include="Areas\Compras\Models\RelacionarComprobanteSinRP\" />
     <Folder Include="Areas\Consultas\Data\" />
     <Folder Include="Areas\Consultas\Models\" />
     <Folder Include="Areas\ControlComun\Data\" />
