@@ -2,6 +2,8 @@
     ProductoDetalle: "#divPCP",
     ProductoListas: "#divProdLista"
 }
+// 1. Agregar variable global para almacenar el p_id del producto actual cargado en la lista
+let productoActualEnLista = null;
 
 $(function () {
     // Estilos para campos readonly
@@ -160,6 +162,10 @@ function configurarEventosTabla() {
 
             console.log("Fila seleccionada para producto ID:", productoId);
 
+            // Actualizar variable global
+            productoActualEnLista = productoId;
+            $("#divProdLista").attr('data-producto-actual', productoId);
+
             // Destacar visualmente la fila seleccionada
             destacarFilaSeleccionada(productoId);
 
@@ -167,6 +173,8 @@ function configurarEventosTabla() {
             buscarProductoLista(productoId);
         }
     });
+
+
 
     // Evento para el checkbox de seleccionar todos
     $("#checkAllProd").off("change").on("change", function () {
@@ -1071,7 +1079,9 @@ function optimizarVisualizacionTabla() {
     console.log("Tabla optimizada para mejor visualización");
 }
 
-// Optimizar la función buscarProductoLista
+
+
+// 2. Modificar la función buscarProductoLista para guardar el p_id del producto actual
 function buscarProductoLista(productoId) {
     console.log(`Iniciando búsqueda de listas para producto ID: ${productoId}`);
 
@@ -1079,6 +1089,7 @@ function buscarProductoLista(productoId) {
     if (!productoId) {
         console.warn("No se proporcionó un ID de producto válido para cargar listas");
         $("#divProdLista").html('<div class="alert alert-warning">No se pudo obtener información de listas de precios.</div>');
+        productoActualEnLista = null; // Limpiar la referencia al no haber producto
         return;
     }
 
@@ -1105,11 +1116,14 @@ function buscarProductoLista(productoId) {
     if (datos === false) {
         console.error("Error al obtener parámetros para la consulta de listas");
         $("#divProdLista").html('<div class="alert alert-danger">Error al preparar la consulta de listas de precios.</div>');
+        productoActualEnLista = null; // Limpiar la referencia
         return;
     }
 
     // Añadir el ID del producto a los parámetros
     datos.id = productoId;
+    // IMPORTANTE: Añadir un parámetro para indicar que debe verificar datos temporales
+    datos.verificarTemp = true;
 
     console.log("Parámetros para la consulta de listas:", datos);
 
@@ -1125,6 +1139,7 @@ function buscarProductoLista(productoId) {
             if (!responseLista || responseLista.trim() === '') {
                 console.warn(`No se recibieron datos para las listas del producto ID: ${productoId}`);
                 $("#divProdLista").html('<div class="alert alert-info">No hay listas de precios disponibles para este producto.</div>');
+                productoActualEnLista = null; // Limpiar la referencia
                 return;
             }
 
@@ -1133,11 +1148,18 @@ function buscarProductoLista(productoId) {
             if (tempElement.find("table tbody tr").length === 0) {
                 console.log(`Respuesta recibida pero sin filas para el producto ID: ${productoId}`);
                 $("#divProdLista").html('<div class="alert alert-info">No hay listas de precios disponibles para este producto.</div>');
+                productoActualEnLista = null; // Limpiar la referencia
                 return;
             }
 
             // Mostrar resultados de listas de precios
             $("#divProdLista").html(responseLista);
+
+            // IMPORTANTE: Guardar el ID del producto cargado en la lista
+            productoActualEnLista = productoId;
+            // También almacenar el producto ID como atributo de datos en el contenedor para mayor seguridad
+            $("#divProdLista").attr('data-producto-actual', productoId);
+
             console.log(`Listas de precios cargadas correctamente para producto ID: ${productoId}`);
 
             // Ejecutar código específico si hay ciertos elementos en la respuesta
@@ -1147,6 +1169,12 @@ function buscarProductoLista(productoId) {
                 configurarInputsListaPrecios();
 
                 console.log(`Se encontraron ${$("#tbProdLista tbody tr").length} listas de precios`);
+
+                // Verificar si hay elementos temporales (marcados con alguna clase especial)
+                const elementosTemporales = $("#tbProdLista .campo-modificado").length;
+                if (elementosTemporales > 0) {
+                    console.log(`Se encontraron ${elementosTemporales} registros temporales`);
+                }
 
                 // Configurar eventos para la tabla de listas
                 $("#tbProdLista tbody tr").off("click").on("click", function (e) {
@@ -1172,54 +1200,68 @@ function buscarProductoLista(productoId) {
                 '<p>Se produjo un error al intentar cargar la información. Detalles: ' + status + '</p>' +
                 '</div>'
             );
+
+            // Limpiar la referencia al producto en caso de error
+            productoActualEnLista = null;
         }
     });
 }
 
+
 // Función para configurar eventos de activación/desactivación de edición
 function configurarEventosEdicion() {
-    // Eliminar cualquier evento click previo para evitar duplicados
-    $('.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta')
+    // Eliminar cualquier evento previo para evitar duplicados
+    const camposEditables = '.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta';
+    $(camposEditables)
         .off('click')
         .off('focus')
         .off('blur')
-        .off('keydown'); // Asegurarse de eliminar cualquier evento keydown anterior
+        .off('keydown');
 
-    // Agregar evento click para habilitar edición
-    $('.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta').on('click', function (e) {
-        // Evitar propagación para no activar el evento de selección de fila
+    // Evento click: habilita edición y compara p_id con el producto actual en lista
+    $(camposEditables).on('click', function (e) {
         e.stopPropagation();
 
-        // Obtener referencia al elemento DOM nativo
+        // Obtener el p_id del producto actual en detalle
+        const $rowDetalle = $(this).closest('tr');
+        const pIdDetalle = $rowDetalle.data('p-id');
+
+        // Verificar si estamos cambiando de producto
+        const cambioDeProducto = pIdDetalle !== productoActualEnLista;
+
+        // Si hay un cambio de producto, actualizamos la interfaz
+        if (cambioDeProducto) {
+            console.log(`Cambiando de producto ${productoActualEnLista} a ${pIdDetalle}`);
+
+            // Actualizar variable global
+            productoActualEnLista = pIdDetalle;
+            $("#divProdLista").attr('data-producto-actual', pIdDetalle);
+
+            // Destacar la fila del nuevo producto
+            destacarFilaSeleccionada(pIdDetalle);
+
+            // Cargar las listas del producto
+            buscarProductoLista(pIdDetalle);
+        }
+
+        // Habilitar el campo para edición
         const inputElement = this;
-
-        // Activar edición solo para este campo
         $(inputElement).prop('readonly', false).removeClass('campo-readonly');
-
-        // Usar setTimeout para evitar la advertencia de deprecated
         setTimeout(function () {
-            // Enfocar el elemento
             inputElement.focus();
-
-            // Seleccionar todo el contenido
             inputElement.select();
         }, 0);
 
         console.log(`Campo ${$(inputElement).attr('class').match(/input-tp_[^\s]+|input-tin_[^\s]+/)[0]} activado para edición`);
     });
 
-    // Agregar evento keydown para detectar ENTER en todos los campos editables
-    $('.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta').on('keydown', function (e) {
-        if (e.key === 'Enter') {
-            e.preventDefault(); // Prevenir cualquier comportamiento por defecto
 
-            // Disparar el evento blur manualmente para aplicar los cambios
+    // Evento keydown para detectar ENTER en todos los campos editables
+    $(camposEditables).on('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
             const event = new Event('blur', { bubbles: true });
             this.dispatchEvent(event);
-
-            // Opcionalmente, se puede mover el foco al siguiente campo
-            // $(this).closest('td').next().find('input').focus();
-
             console.log(`ENTER presionado en campo, aplicando cambios`);
         }
     });
@@ -1227,18 +1269,15 @@ function configurarEventosEdicion() {
     // Definir los campos de la secuencia01
     const camposSecuencia01 = '.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni';
 
-    // Agregar evento para manejar la pérdida de foco en campos de la secuencia01
+    // Evento blur para campos de la secuencia01
     $(camposSecuencia01).on('blur', function () {
         const $this = $(this);
         const campo = $this.attr('class').match(/input-tp_[^\s]+/)[0];
         const row = $this.closest('tr');
-
-        // Formatear el valor según el tipo de campo
         let value = $this.val().replace(/,/g, '');
         let numValue = parseFloat(value);
 
         if (!isNaN(numValue)) {
-            // Aplicar formato según el tipo de campo
             if ($this.hasClass('input-tp_plista')) {
                 $this.val(numValue.toFixed(3));
             } else if ($this.hasClass('input-tp_dto1') ||
@@ -1247,7 +1286,6 @@ function configurarEventosEdicion() {
                 $this.hasClass('input-tp_dto4') ||
                 $this.hasClass('input-tp_dto_pa') ||
                 $this.hasClass('input-tp_porc_flete')) {
-                // Limitar a 99.9 como máximo para los campos de descuento y flete
                 numValue = Math.min(numValue, 99.9);
                 $this.val(numValue.toFixed(1));
             }
@@ -1267,22 +1305,23 @@ function configurarEventosEdicion() {
             }
         }
 
-        // Volver a readonly
         $this.prop('readonly', true).addClass('campo-readonly');
-
-        // Llamar a la API para recalcular el costo
         calcularCostoAPI(row);
-
         console.log(`Campo ${campo} vuelve a readonly, recalculando costo...`);
     });
 
-    // Agregar evento para manejar la pérdida de foco en el campo margen (secuencia02)
+    // Evento blur para margen (secuencia02)
     $('.input-tp_margen').on('blur', function () {
         const $this = $(this);
+
+        // SOLUCIÓN: Si el campo ya está en readonly, no hacer nada
+        if ($this.prop('readonly')) {
+            console.log(`Campo ya en readonly, ignorando evento blur`);
+            return;
+        }
+
         const campo = $this.attr('class').match(/input-tp_[^\s]+/)[0];
         const row = $this.closest('tr');
-
-        // Formatear el valor
         let value = $this.val().replace(/,/g, '');
         let numValue = parseFloat(value);
 
@@ -1290,22 +1329,16 @@ function configurarEventosEdicion() {
             $this.val(numValue.toFixed(2));
         }
 
-        // Volver a readonly
         $this.prop('readonly', true).addClass('campo-readonly');
-
-        // Llamar a la API para calcular precio de venta (Secuencia02)
         calcularPrecioVentaAPI(row);
-
         console.log(`Campo ${campo} vuelve a readonly, calculando precio de venta...`);
     });
 
-    // Agregar evento para manejar la pérdida de foco en el campo precio venta (secuencia03)
+    // Evento blur para precio venta (secuencia03)
     $('.input-tp_pvta').on('blur', function () {
         const $this = $(this);
         const campo = $this.attr('class').match(/input-tp_[^\s]+/)[0];
         const row = $this.closest('tr');
-
-        // Formatear el valor
         let value = $this.val().replace(/,/g, '');
         let numValue = parseFloat(value);
 
@@ -1313,22 +1346,16 @@ function configurarEventosEdicion() {
             $this.val(numValue.toFixed(2));
         }
 
-        // Volver a readonly
         $this.prop('readonly', true).addClass('campo-readonly');
-
-        // Llamar a la API para calcular margen (Secuencia03)
         calcularPrecioVentaMargenAPI(row);
-
         console.log(`Campo ${campo} vuelve a readonly, calculando margen...`);
     });
 
-    // Agregar evento para manejar la pérdida de foco en el campo de impuesto interno
+    // Evento blur para impuesto interno
     $('.input-tin_alicuota').on('blur', function () {
         const $this = $(this);
         const campo = $this.attr('class').match(/input-tin_[^\s]+/)[0];
         const row = $this.closest('tr');
-
-        // Formatear el valor
         let value = $this.val().replace(/,/g, '');
         let numValue = parseFloat(value);
 
@@ -1336,29 +1363,24 @@ function configurarEventosEdicion() {
             $this.val(numValue.toFixed(2));
         }
 
-        // Volver a readonly
         $this.prop('readonly', true).addClass('campo-readonly');
-
-        // Ejecutar cálculos específicos para impuesto interno
         recalcularRelacionPrecioVenta(row);
-
         console.log(`Campo ${campo} vuelve a readonly`);
     });
 
-    // Asegurar que los campos vuelvan a estado readonly si el usuario hace clic en otra parte
+    // Asegurar que los campos vuelvan a readonly si el usuario hace clic en otra parte
     $(document).off('click.desactivarCampos').on('click.desactivarCampos', function (e) {
-        if (!$(e.target).is('.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta')) {
-            // Si se hizo clic fuera de los inputs y hay alguno activo, desactivarlo
-            $('.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta').filter(function () {
+        if (!$(e.target).is(camposEditables)) {
+            $(camposEditables).filter(function () {
                 return !$(this).prop('readonly');
             }).each(function () {
-                // Disparamos el evento blur de forma manual en el elemento DOM nativo
                 const event = new Event('blur', { bubbles: true });
                 this.dispatchEvent(event);
             });
         }
     });
 }
+
 
 
 
@@ -1718,6 +1740,11 @@ function calcularPrecioVentaAPI(row) {
     // Marcar que estamos calculando el precio
     row.data('calculating-price', true);
 
+    // SOLUCIÓN: Actualizar la variable global productoActualEnLista 
+    // con el ID del producto actual
+    productoActualEnLista = productId;
+    $("#divProdLista").attr('data-producto-actual', productId);
+
     // Recopilar los valores de los campos de la Secuencia02
     const datos = {
         p_id: productId,
@@ -1791,6 +1818,16 @@ function calcularPrecioVentaAPI(row) {
                 console.log('  Precio venta:', pvta);
                 console.log('  IVA:', response.pvta.p_iva);
                 console.log('  Impuesto interno:', response.pvta.p_in);
+
+                // SOLUCIÓN: Simplificar la lógica de verificación
+                // ya que productoActualEnLista ahora siempre está actualizado
+                const hayFilasLista = $('#tbProdLista tbody tr').length > 0;
+                if (hayFilasLista) {
+                    console.log('Actualizando precios en grid de listas para producto ID:', productId);
+                    actualizarPreciosListas(datos, pvta);
+                } else {
+                    console.log('No hay tabla de listas visible, no es necesario actualizar precios');
+                }
             }
         },
         error: function (xhr, status, error) {
@@ -1807,6 +1844,164 @@ function calcularPrecioVentaAPI(row) {
         }
     });
 }
+
+
+// Nueva función auxiliar para extraer la lógica de actualización de listas
+// Función optimizada que agrupa todas las solicitudes de listas en una sola llamada
+function actualizarPreciosListas(datosProducto, pvta) {
+    // Obtener las filas de la tabla de listas
+    const filasLista = $('#tbProdLista tbody tr');
+
+    // Si no hay filas, no hacer nada
+    if (filasLista.length === 0) {
+        console.log('No hay filas en la tabla de listas para actualizar');
+        return;
+    }
+
+    console.log("Iniciando actualización de precios en listas...");
+
+    // Verificar datos necesarios
+    if (!datosProducto.tp_pcosto || isNaN(datosProducto.tp_pcosto)) {
+        console.error("Falta el costo del producto para actualizar listas");
+        return;
+    }
+
+    // Obtener el precio neto base
+    let precioNetoBase;
+    const productoFila = $(`#tbProdDet tbody tr[data-p-id='${productoActualEnLista}']`);
+    if (productoFila.length > 0) {
+        const pNetoValue = productoFila.find('.input-tp_pneto').val();
+        if (pNetoValue) {
+            precioNetoBase = parseFloat(pNetoValue.replace(/,/g, ''));
+        }
+    }
+
+    // Si no tenemos precio neto base, intentar calcularlo
+    if (!precioNetoBase || isNaN(precioNetoBase)) {
+        if (datosProducto.tp_pcosto && datosProducto.tp_margen) {
+            precioNetoBase = datosProducto.tp_pcosto * (1 + datosProducto.tp_margen / 100);
+        } else {
+            console.warn("No se pudo determinar p_pneto_base, las listas no se actualizarán correctamente");
+            return;
+        }
+    }
+
+    // Crear array con todas las listas a actualizar
+    const listasParaActualizar = [];
+
+    filasLista.each(function () {
+        const listaRow = $(this);
+        const lp_id = listaRow.data('lp-id');
+        const p_id = listaRow.find('.input-tp_margen_lista').data('p-id') || productoActualEnLista;
+        const lp_porc_mg = parseFloat(listaRow.find('input[name="lp_porc_mg"]').val());
+
+        // Solo agregar listas con datos válidos
+        if (!isNaN(lp_porc_mg) && lp_id && p_id) {
+            listasParaActualizar.push({
+                listaRow: listaRow,
+                lp_id: lp_id,
+                p_id: p_id,
+                lp_porc_mg: lp_porc_mg
+            });
+        }
+    });
+
+    if (listasParaActualizar.length === 0) {
+        console.log("No hay listas válidas para actualizar");
+        return;
+    }
+
+    // Mostrar indicador de carga global para las listas
+    AbrirWaiting("Actualizando precios de listas...");
+
+    // Procesar cada lista secuencialmente para evitar problemas de concurrencia
+    function procesarSiguienteLista(indice) {
+        if (indice >= listasParaActualizar.length) {
+            // Terminamos de procesar todas las listas
+            CerrarWaiting();
+            console.log('Todas las listas actualizadas correctamente');
+            return;
+        }
+
+        const lista = listasParaActualizar[indice];
+
+        // Construir datos para la API
+        const datosLista = {
+            p_id: lista.p_id,
+            lp_id: lista.lp_id,
+            tp_pcosto: datosProducto.tp_pcosto,
+            p_pneto_base: precioNetoBase,
+            lp_porc_mg: lista.lp_porc_mg,
+            iva_situacion: datosProducto.iva_situacion,
+            iva_alicuota: datosProducto.iva_alicuota,
+            in_alicuota: datosProducto.in_alicuota
+        };
+
+        // Realizar la llamada AJAX para esta lista
+        $.ajax({
+            url: calcularPrecioVentaLinkUrl,
+            type: 'POST',
+            data: datosLista,
+            dataType: 'json',
+            success: function (respLista) {
+                if (respLista && respLista.pvta) {
+                    // Actualizar los campos de la lista
+                    const listaRow = lista.listaRow;
+
+                    // Actualizar precio neto
+                    listaRow.find('input[name="tp_pneto"]').val(parseFloat(respLista.pvta.p_pneto).toFixed(3));
+
+                    // Actualizar precio venta lista
+                    const campoPVtaLista = listaRow.find('.input-tp_pvta_lista');
+                    const nuevoPVta = parseFloat(respLista.pvta.p_pvta).toFixed(2);
+                    const valorAnterior = parseFloat(campoPVtaLista.val().replace(/,/g, ''));
+
+                    // Actualizar el valor solo si es diferente
+                    if (Math.abs(valorAnterior - nuevoPVta) > 0.01) {
+                        campoPVtaLista.val(nuevoPVta);
+
+                        // CORRECCIÓN: Resguardar los cambios del precio en lista
+                        // Primero actualizamos el valor original para que marcarCampoModificadoLista() funcione correctamente
+                        const originalValue = campoPVtaLista.data('original-value');
+
+                        // Llamar directamente a actualizarPrecioVentaLista para resguardar los cambios
+                        actualizarPrecioVentaLista(listaRow, lista.lp_id, lista.p_id, parseFloat(nuevoPVta));
+
+                        console.log(`Precio de venta de lista ${lista.lp_id} actualizado y resguardado: ${nuevoPVta}`);
+                    }
+
+                    // Actualizar campos ocultos
+                    listaRow.find('input[name="tp_iva"]').val(respLista.pvta.p_iva);
+                    listaRow.find('input[name="tp_in"]').val(respLista.pvta.p_in);
+
+                    // Calcular y actualizar ratio si corresponde
+                    if (pvta > 0) {
+                        const ratio = (parseFloat(nuevoPVta) / parseFloat(pvta)).toFixed(2);
+                        const celdaRatio = listaRow.find('td:eq(4)');
+                        celdaRatio.text(ratio);
+                    }
+
+                    console.log(`Lista ${lista.lp_id} actualizada: PVta=${nuevoPVta}`);
+                }
+
+                // Procesar la siguiente lista
+                procesarSiguienteLista(indice + 1);
+            },
+            error: function (xhr, status, error) {
+                console.error(`Error al recalcular precio venta en lista ${lista.lp_id}:`, error);
+
+                // Continuar con la siguiente lista a pesar del error
+                procesarSiguienteLista(indice + 1);
+            }
+        });
+    }
+
+    // Iniciar el procesamiento secuencial
+    procesarSiguienteLista(0);
+}
+
+
+
 
 // Función para calcular margen a partir del precio de venta (Secuencia 3)
 function calcularPrecioVentaMargenAPI(row) {
@@ -1939,55 +2134,6 @@ function calcularPrecioVentaMargenAPI(row) {
         }
     });
 }
-
-
-
-// Nueva función para resguardar los cambios del producto
-function resguardarCambiosProducto(row) {
-    // Recopilar todos los valores del producto
-    const datos = {
-        p_id: row.data('p-id'),
-        tp_plista: parseFloat(row.find('.input-tp_plista').val().replace(/,/g, '')),
-        tp_dto1: parseFloat(row.find('.input-tp_dto1').val().replace(/,/g, '')),
-        tp_dto2: parseFloat(row.find('.input-tp_dto2').val().replace(/,/g, '')),
-        tp_dto3: parseFloat(row.find('.input-tp_dto3').val().replace(/,/g, '')),
-        tp_dto4: parseFloat(row.find('.input-tp_dto4').val().replace(/,/g, '')),
-        tp_dto_pa: parseFloat(row.find('.input-tp_dto_pa').val().replace(/,/g, '')),
-        tp_porc_flete: parseFloat(row.find('.input-tp_porc_flete').val().replace(/,/g, '')),
-        tp_boni: row.find('.input-tp_boni').val(),
-        tp_pcosto: parseFloat(row.find('.input-tp_pcosto').val().replace(/,/g, '')),
-        tp_margen: parseFloat(row.find('.input-tp_margen').val().replace(/,/g, '')),
-        tp_pneto: parseFloat(row.find('.input-tp_pneto').val().replace(/,/g, '')),
-        tin_alicuota: parseFloat(row.find('.input-tin_alicuota').val().replace(/,/g, '')),
-        tp_pvta: parseFloat(row.find('.input-tp_pvta').val().replace(/,/g, '')),
-        tp_iva: parseFloat(row.find('input[name="tp_iva"]').val()),
-        tp_in: parseFloat(row.find('input[name="tp_in"]').val()),
-        iva_situacion: row.find('input[name="iva_situacion"]').val(),
-        iva_alicuota: parseFloat(row.find('input[name="iva_alicuota"]').val()),
-        in_alicuota: parseFloat(row.find('input[name="in_alicuota"]').val())
-    };
-
-    // Llamar al servidor para resguardar los cambios
-    $.ajax({
-        url: resguardarCambiosProductoUrl,
-        type: 'POST',
-        data: datos,
-        dataType: 'json',
-        success: function (response) {
-            if (response.error) {
-                console.error('Error al resguardar cambios:', response.msg);
-            } else if (response.warn) {
-                console.warn('Advertencia al resguardar cambios:', response.msg);
-            } else {
-                console.log('Cambios resguardados correctamente:', response.msg);
-            }
-        },
-        error: function (xhr, status, error) {
-            console.error('Error en la llamada AJAX al resguardar cambios:', error);
-        }
-    });
-}
-
 
 // Función mejorada para la actualización de campos modificados
 function actualizarCamposModificados() {
@@ -2122,92 +2268,92 @@ function configurarInputsListaPrecios() {
     }).mask('.input-tp_margen_lista, .input-tp_pvta_lista');
 
     // Evento click para habilitar edición (delegación de eventos para mejor rendimiento)
-    $(document).off('click', '.input-tp_margen_lista, .input-tp_pvta_lista')
-        .on('click', '.input-tp_margen_lista, .input-tp_pvta_lista', function (e) {
-            // Evitar propagación para no activar el evento de selección de fila
-            e.stopPropagation();
+    $(document).off('click.habilitarCamposLista').on('click.habilitarCamposLista', '.input-tp_margen_lista, .input-tp_pvta_lista', function (e) {
+        // Evitar propagación para no activar el evento de selección de fila
+        e.stopPropagation();
 
-            // Obtener referencia al elemento DOM nativo
-            const inputElement = this;
+        // Obtener referencia al elemento DOM nativo
+        const inputElement = this;
 
-            // Activar edición solo para este campo
-            $(inputElement).prop('readonly', false).removeClass('campo-readonly');
+        // Activar edición solo para este campo
+        $(inputElement).prop('readonly', false).removeClass('campo-readonly');
 
-            // Usar setTimeout para mejor compatibilidad
-            setTimeout(function () {
-                // Enfocar el elemento
-                inputElement.focus();
+        // Usar setTimeout para mejor compatibilidad
+        setTimeout(function () {
+            // Enfocar el elemento
+            inputElement.focus();
 
-                // Seleccionar todo el contenido
-                inputElement.select();
-            }, 0);
+            // Seleccionar todo el contenido
+            inputElement.select();
+        }, 0);
 
-            console.log(`Campo ${$(inputElement).attr('class').match(/input-tp_[^\s]+_lista/)[0]} activado para edición`);
-        });
+        console.log(`Campo ${$(inputElement).attr('class').match(/input-tp_[^\s]+_lista/)[0]} activado para edición`);
+    });
 
     // Evento keydown para detectar ENTER en los campos de la lista (delegación de eventos)
-    $(document).off('keydown', '.input-tp_margen_lista, .input-tp_pvta_lista')
-        .on('keydown', '.input-tp_margen_lista, .input-tp_pvta_lista', function (e) {
-            if (e.key === 'Enter') {
-                e.preventDefault(); // Prevenir cualquier comportamiento por defecto
+    $(document).off('keydown.enterCamposLista').on('keydown.enterCamposLista', '.input-tp_margen_lista, .input-tp_pvta_lista', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault(); // Prevenir cualquier comportamiento por defecto
 
-                // Disparar el evento blur manualmente para aplicar los cambios
-                const event = new Event('blur', { bubbles: true });
-                this.dispatchEvent(event);
+            // Disparar el evento blur manualmente para aplicar los cambios
+            const event = new Event('blur', { bubbles: true });
+            this.dispatchEvent(event);
 
-                console.log(`ENTER presionado en campo de lista, aplicando cambios`);
-            }
-        });
+            console.log(`ENTER presionado en campo de lista, aplicando cambios`);
+        }
+    });
 
-    // Evento blur para el campo margen de lista (delegación de eventos)
-    $(document).off('blur', '.input-tp_margen_lista')
-        .on('blur', '.input-tp_margen_lista', function () {
-            const $this = $(this);
-            const lpId = $this.data('lp-id');
-            const pId = $this.data('p-id');
-            const row = $this.closest('tr');
+    // IMPORTANTE: Usar evento directo para campos específicos
+    // Evento blur para el campo margen de lista
+    $('.input-tp_margen_lista').off('blur.margenLista').on('blur.margenLista', function () {
+        const $this = $(this);
+        const lpId = $this.data('lp-id');
+        const pId = $this.data('p-id') || productoActualEnLista;
+        const row = $this.closest('tr');
 
-            // Formatear el valor
-            let value = $this.val().replace(/,/g, '');
-            let numValue = parseFloat(value);
+        // Formatear el valor
+        let value = $this.val().replace(/,/g, '');
+        let numValue = parseFloat(value);
 
-            if (!isNaN(numValue)) {
-                $this.val(numValue.toFixed(2));
-            }
+        if (!isNaN(numValue)) {
+            $this.val(numValue.toFixed(2));
+        }
 
-            // Volver a readonly
-            $this.prop('readonly', true).addClass('campo-readonly');
+        // Volver a readonly
+        $this.prop('readonly', true).addClass('campo-readonly');
 
-            // Llamar a la función para actualizar margen en lista
-            actualizarMargenLista(row, lpId, pId, numValue);
+        // Llamar a la función para actualizar margen en lista
+        actualizarMargenLista(row, lpId, pId, numValue);
 
-            console.log(`Margen actualizado en lista ${lpId} para producto ${pId}: ${numValue}`);
-        });
+        console.log(`Margen actualizado en lista ${lpId} para producto ${pId}: ${numValue}`);
+    });
 
-    // Evento blur para el campo precio venta de lista (delegación de eventos)
-    $(document).off('blur', '.input-tp_pvta_lista')
-        .on('blur', '.input-tp_pvta_lista', function () {
-            const $this = $(this);
-            const lpId = $this.data('lp-id');
-            const pId = $this.data('p-id');
-            const row = $this.closest('tr');
+    // IMPORTANTE: Usar evento directo para campos específicos
+    // Evento blur para el campo precio venta de lista
+    $('.input-tp_pvta_lista').off('blur.pvtaLista').on('blur.pvtaLista', function () {
+        const $this = $(this);
+        const lpId = $this.data('lp-id');
+        const pId = $this.data('p-id') || productoActualEnLista;
+        const row = $this.closest('tr');
 
-            // Formatear el valor
-            let value = $this.val().replace(/,/g, '');
-            let numValue = parseFloat(value);
+        console.log(`Evento blur activado en campo de precio venta de lista. LP ID: ${lpId}, P ID: ${pId}`);
 
-            if (!isNaN(numValue)) {
-                $this.val(numValue.toFixed(2));
-            }
+        // Formatear el valor
+        let value = $this.val().replace(/,/g, '');
+        let numValue = parseFloat(value);
 
-            // Volver a readonly
-            $this.prop('readonly', true).addClass('campo-readonly');
+        if (!isNaN(numValue)) {
+            $this.val(numValue.toFixed(2));
+        }
 
-            // Llamar a la función para actualizar precio venta en lista
-            actualizarPrecioVentaLista(row, lpId, pId, numValue);
+        // Volver a readonly
+        $this.prop('readonly', true).addClass('campo-readonly');
 
-            console.log(`Precio venta actualizado en lista ${lpId} para producto ${pId}: ${numValue}`);
-        });
+        // Llamar a la función para actualizar precio venta en lista
+        actualizarPrecioVentaLista(row, lpId, pId, numValue);
+
+        console.log(`Precio venta actualizado en lista ${lpId} para producto ${pId}: ${numValue}`);
+    });
 
     // Asegurarse de que los eventos de clickOutside no se dupliquen
     $(document).off('click.desactivarCamposLista');
@@ -2219,15 +2365,58 @@ function configurarInputsListaPrecios() {
             $('.input-tp_margen_lista, .input-tp_pvta_lista').filter(function () {
                 return !$(this).prop('readonly');
             }).each(function () {
+                console.log("Aplicando blur a campo activo por clic fuera");
                 // Disparar el evento blur manualmente
-                const event = new Event('blur', { bubbles: true });
-                this.dispatchEvent(event);
+                $(this).trigger('blur');
             });
         }
     });
 
+    // Comprobación adicional: verificar cuántos campos de lista se encontraron
+    const cantidadMargenLista = $('.input-tp_margen_lista').length;
+    const cantidadPvtaLista = $('.input-tp_pvta_lista').length;
+    console.log(`Campos encontrados: ${cantidadMargenLista} márgenes y ${cantidadPvtaLista} precios de venta`);
+
     console.log("Configuración de inputs para grid de listas completada");
+
+    // SOLUCIÓN ALTERNATIVA: Asegurar que todos los campos pvta_lista tengan configurado el evento correcto
+    setTimeout(function () {
+        console.log("Verificando nuevamente configuración de eventos para campos de lista...");
+        $('.input-tp_pvta_lista').each(function (index) {
+            const $campo = $(this);
+            const lpId = $campo.data('lp-id') || "desconocido";
+            console.log(`Campo #${index + 1} - LP ID: ${lpId}`);
+
+            // Asegurar que este campo específico tenga el evento blur configurado
+            if (!$campo.data('evento-configurado')) {
+                $campo.data('evento-configurado', true);
+                $campo.off('blur').on('blur', function () {
+                    const $this = $(this);
+                    const lpId = $this.data('lp-id');
+                    const pId = $this.data('p-id') || productoActualEnLista;
+                    const row = $this.closest('tr');
+
+                    console.log(`Evento blur (respaldo) activado en campo precio venta lista. LP ID: ${lpId}`);
+
+                    // Formatear el valor
+                    let value = $this.val().replace(/,/g, '');
+                    let numValue = parseFloat(value);
+
+                    if (!isNaN(numValue)) {
+                        $this.val(numValue.toFixed(2));
+                    }
+
+                    // Volver a readonly
+                    $this.prop('readonly', true).addClass('campo-readonly');
+
+                    // Llamar a la función para actualizar precio venta en lista
+                    actualizarPrecioVentaLista(row, lpId, pId, numValue);
+                });
+            }
+        });
+    }, 200);
 }
+
 
 
 // Mejorar la función marcarCampoModificado para ser más precisa
@@ -2377,93 +2566,184 @@ function actualizarMargenLista(row, lpId, pId, nuevoMargen) {
 
     // Solo proceder si realmente hubo un cambio
     if (fueModificado) {
-        // Recopilar datos para la actualización
+        // Recopilar todos los datos necesarios para el resguardo
         const datos = {
+            p_id: productoActualEnLista, 
             lp_id: lpId,
-            p_id: pId,
-            tp_margen: nuevoMargen
+            tp_margen: nuevoMargen,
+            tp_pvta: parseFloat(row.find('.input-tp_pvta_lista').val().replace(/,/g, '')),
+            p_pcosto: parseFloat(row.find('input[name="p_pcosto"]').val()),
+            p_pneto: parseFloat(row.find('input[name="tp_pneto"]').val()),
+            lp_porc_mg: parseFloat(row.find('input[name="lp_porc_mg"]').val()),
+            iva_situacion: row.find('input[name="iva_situacion"]').val(),
+            iva_alicuota: parseFloat(row.find('input[name="iva_alicuota"]').val()),
+            in_alicuota: parseFloat(row.find('input[name="in_alicuota"]').val()),
+            tp_iva: parseFloat(row.find('input[name="tp_iva"]').val()),
+            tp_in: parseFloat(row.find('input[name="tp_in"]').val())
         };
 
         // Actualizar el valor original para futuras comparaciones
         campoMargen.data('original-value', nuevoMargen);
 
-        // Aquí implementar llamada al endpoint correspondiente
-        // Por ejemplo:
-        /*
+        // Llamar al servidor para resguardar los cambios
         $.ajax({
-            url: actualizarMargenListaUrl,
+            url: resguardarCambiosProductoListaUrl,
             type: 'POST',
             data: datos,
             dataType: 'json',
-            success: function(response) {
+            success: function (response) {
                 if (response.error) {
-                    console.error('Error al actualizar margen:', response.msg);
+                    console.error('Error al resguardar cambios en lista:', response.msg);
+                    AbrirMensaje("Error", "No se pudieron guardar los cambios: " + response.msg,
+                        function () { $("#msjModal").modal("hide"); },
+                        false, ["Aceptar"], "error!", null);
+                } else if (response.warn) {
+                    console.warn('Advertencia al resguardar cambios en lista:', response.msg);
                 } else {
-                    console.log('Margen actualizado correctamente');
-                    
-                    // Si el backend devuelve valores recalculados, actualizarlos
+                    console.log('Cambios de margen en lista resguardados correctamente:', response.msg);
+                    // Si el backend devuelve valores actualizados, podríamos aplicarlos
                     if (response.pvta) {
-                        row.find('.input-tp_pvta_lista').val(parseFloat(response.pvta).toFixed(2));
+                        const campoPVta = row.find('.input-tp_pvta_lista');
+                        campoPVta.val(parseFloat(response.pvta).toFixed(2));
+                        campoPVta.data('original-value', parseFloat(response.pvta));
                     }
                 }
             },
-            error: function(xhr, status, error) {
-                console.error('Error en la llamada AJAX:', error);
+            error: function (xhr, status, error) {
+                console.error('Error en la llamada AJAX al resguardar cambios en lista:', error);
+                AbrirMensaje("Error", "Ocurrió un error al comunicarse con el servidor. Por favor, inténtelo nuevamente.",
+                    function () { $("#msjModal").modal("hide"); },
+                    false, ["Aceptar"], "error!", null);
             }
         });
-        */
 
-        console.log(`Actualizar margen: Lista=${lpId}, Producto=${pId}, Valor=${nuevoMargen}`);
+        console.log(`Actualizando margen en servidor: Lista=${lpId}, Producto=${pId}, Valor=${nuevoMargen}`);
     }
 }
 
+
 // Función para actualizar el precio de venta en una lista
 function actualizarPrecioVentaLista(row, lpId, pId, nuevoPrecioVenta) {
+    // Log de diagnóstico
+    console.log(`Entrando en actualizarPrecioVentaLista. LP ID: ${lpId}, P ID: ${pId}, Nuevo precio: ${nuevoPrecioVenta}`);
+
+    // Validaciones de seguridad
+    if (!row || !row.length) {
+        console.error('Error: No se proporcionó una fila válida para actualizar el precio de venta');
+        return;
+    }
+
+    if (!lpId) {
+        console.error('Error: No se proporcionó un ID de lista de precio válido');
+        lpId = row.data('lp-id');
+        if (!lpId) {
+            console.error('No se pudo obtener el ID de lista de precio de la fila');
+            return;
+        }
+    }
+
+    if (!pId) {
+        console.error('Error: No se proporcionó un ID de producto válido');
+        pId = productoActualEnLista;
+        if (!pId) {
+            console.error('No se pudo obtener el ID de producto actual');
+            return;
+        }
+    }
+
+    if (isNaN(nuevoPrecioVenta) || nuevoPrecioVenta <= 0) {
+        console.error(`Error: Precio de venta inválido: ${nuevoPrecioVenta}`);
+        return;
+    }
+
     // Marcar el campo como modificado
     const campoPrecioVenta = row.find('.input-tp_pvta_lista');
+
+    if (!campoPrecioVenta.length) {
+        console.error('No se encontró el campo de precio de venta en la fila');
+        return;
+    }
+
     const fueModificado = marcarCampoModificadoLista(campoPrecioVenta);
 
     // Solo proceder si realmente hubo un cambio
     if (fueModificado) {
-        // Recopilar datos para la actualización
-        const datos = {
-            lp_id: lpId,
-            p_id: pId,
-            tp_pvta: nuevoPrecioVenta
-        };
+        console.log(`=== CAMPO MODIFICADO ===`);
+        console.log(`Lista: ${lpId}, Producto: ${pId}`);
+        console.log(`Valor original: ${campoPrecioVenta.data('original-value')}`);
+        console.log(`Nuevo valor: ${nuevoPrecioVenta}`);
 
-        // Actualizar el valor original para futuras comparaciones
-        campoPrecioVenta.data('original-value', nuevoPrecioVenta);
+        // Recopilar todos los datos necesarios para el resguardo con validaciones
+        try {
+            const datos = {
+                p_id: pId,
+                lp_id: lpId,
+                tp_margen: parseFloat(row.find('.input-tp_margen_lista').val().replace(/,/g, '')) || 0,
+                tp_pvta: nuevoPrecioVenta,
+                p_pcosto: parseFloat(row.find('input[name="p_pcosto"]').val()) || 0,
+                p_pneto: parseFloat(row.find('input[name="tp_pneto"]').val()) || 0,
+                lp_porc_mg: parseFloat(row.find('input[name="lp_porc_mg"]').val()) || 0,
+                iva_situacion: row.find('input[name="iva_situacion"]').val() || 'E',
+                iva_alicuota: parseFloat(row.find('input[name="iva_alicuota"]').val()) || 0,
+                in_alicuota: parseFloat(row.find('input[name="in_alicuota"]').val()) || 0,
+                tp_iva: parseFloat(row.find('input[name="tp_iva"]').val()) || 0,
+                tp_in: parseFloat(row.find('input[name="tp_in"]').val()) || 0
+            };
 
-        // Aquí implementar llamada al endpoint correspondiente
-        // Por ejemplo:
-        /*
-        $.ajax({
-            url: actualizarPrecioVentaListaUrl,
-            type: 'POST',
-            data: datos,
-            dataType: 'json',
-            success: function(response) {
-                if (response.error) {
-                    console.error('Error al actualizar precio venta:', response.msg);
-                } else {
-                    console.log('Precio venta actualizado correctamente');
-                    
-                    // Si el backend devuelve valores recalculados, actualizarlos
-                    if (response.margen) {
-                        row.find('.input-tp_margen_lista').val(parseFloat(response.margen).toFixed(2));
+            console.log(`Datos que se enviarán:`, datos);
+
+            // Actualizar el valor original para futuras comparaciones
+            campoPrecioVenta.data('original-value', nuevoPrecioVenta);
+
+            // Llamar al servidor para resguardar los cambios
+            console.log(`Iniciando llamada AJAX a: ${resguardarCambiosProductoListaUrl}`);
+
+            $.ajax({
+                url: resguardarCambiosProductoListaUrl,
+                type: 'POST',
+                data: datos,
+                dataType: 'json',
+                success: function (response) {
+                    console.log('Respuesta recibida del servidor:', response);
+
+                    if (response.error) {
+                        console.error('Error al resguardar cambios en lista:', response.msg);
+                        AbrirMensaje("Error", "No se pudieron guardar los cambios: " + response.msg,
+                            function () { $("#msjModal").modal("hide"); },
+                            false, ["Aceptar"], "error!", null);
+                    } else if (response.warn) {
+                        console.warn('Advertencia al resguardar cambios en lista:', response.msg);
+                    } else {
+                        console.log('Cambios de precio en lista resguardados correctamente:', response.msg);
+                        // Si el backend devuelve valores actualizados, podríamos aplicarlos
+                        if (response.margen) {
+                            const campoMargen = row.find('.input-tp_margen_lista');
+                            campoMargen.val(parseFloat(response.margen).toFixed(2));
+                            campoMargen.data('original-value', parseFloat(response.margen));
+                        }
                     }
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('Error en la llamada AJAX:', error);
-            }
-        });
-        */
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error en la llamada AJAX al resguardar cambios en lista:', error);
+                    console.error('Estado:', status);
+                    console.error('Respuesta:', xhr.responseText);
 
-        console.log(`Actualizar precio venta: Lista=${lpId}, Producto=${pId}, Valor=${nuevoPrecioVenta}`);
+                    AbrirMensaje("Error", "Ocurrió un error al comunicarse con el servidor. Por favor, inténtelo nuevamente.",
+                        function () { $("#msjModal").modal("hide"); },
+                        false, ["Aceptar"], "error!", null);
+                }
+            });
+
+            console.log(`Actualizando precio venta en servidor: Lista=${lpId}, Producto=${pId}, Valor=${nuevoPrecioVenta}`);
+        } catch (ex) {
+            console.error('Excepción al procesar actualizarPrecioVentaLista:', ex);
+        }
+    } else {
+        console.log('El campo de precio venta no fue modificado, no se enviarán cambios al servidor');
     }
 }
+
+
 
 // Función para optimizar la visualización de la tabla de listas
 function optimizarVisualizacionTablaListas() {
