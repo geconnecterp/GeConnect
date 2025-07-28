@@ -2,6 +2,7 @@
 using gc.infraestructura.Dtos.Almacen.AnulacionDeComprobante;
 using gc.infraestructura.Dtos.Almacen.AnulacionDeComprobante.Request;
 using gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra;
+using gc.infraestructura.Dtos.Almacen.RelacionarComprobanteSinRP;
 using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
@@ -42,5 +43,6 @@ namespace gc.sitio.core.Servicios.Contratos
         List<ComprobanteParaAnularDto> ObtenerComprobanteParaAnular(string ctaId, string token);
         List<NotaACuentaDto> ObtenerNotaACuentaDeValorizacionParaAnular(InicializarNotaACuentaRequest request, string token);
         RespuestaGenerica<RespuestaDto> AnulacionDeComprobanteConfirma(ConfirmarAnulacionRequest request, string token);
+        List<CompteJbiDto> GetCompteJbi(string ctaId, string token);
 	}
 }

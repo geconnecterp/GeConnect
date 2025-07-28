@@ -364,7 +364,7 @@ namespace gc.api.core.Constantes
 			public const string SP_COMPTE_ANULA_LISTA = "SPGECO_Compte_Anula_Lista";
 			public const string SP_COMPTE_ANULA_A_CTA = "SPGECO_Compte_Anula_A_Cta";
 			public const string SP_COMPTE_ANULA_CONFIRMA = "SPGECO_Compte_Anula_Confirma";
-			//
+			public const string SP_COMPTE_CARGA_JBI = "SPGECO_Compte_Jbi";
 
 			#region Asientos
 			public const string SP_EJERCICIOS_LISTA = "SPGECO_Conta_Ejercicios";

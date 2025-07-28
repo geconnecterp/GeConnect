@@ -7,6 +7,7 @@ using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.AnulacionDeComprobante;
 using gc.infraestructura.Dtos.Almacen.AnulacionDeComprobante.Request;
 using gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra;
+using gc.infraestructura.Dtos.Almacen.RelacionarComprobanteSinRP;
 using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
@@ -609,6 +610,17 @@ namespace gc.api.core.Servicios
 				new("@opcion",request.opcion),
 			};
 			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<CompteJbiDto> GetCompteJbi(string ctaId)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_COMPTE_CARGA_JBI;
+			var ps = new List<SqlParameter>()
+			{
+				new("@cta_id",ctaId),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<CompteJbiDto>(sp, ps, true);
 			return listaTemp;
 		}
 	}

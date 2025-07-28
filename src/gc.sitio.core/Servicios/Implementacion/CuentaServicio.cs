@@ -7,6 +7,7 @@ using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.AnulacionDeComprobante;
 using gc.infraestructura.Dtos.Almacen.AnulacionDeComprobante.Request;
 using gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra;
+using gc.infraestructura.Dtos.Almacen.RelacionarComprobanteSinRP;
 using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
@@ -54,6 +55,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string GetComprobanteParaAnular = "/ObtenerComprobanteParaAnular";
 		private const string GetNotaACuentaDeValorizacionParaAnular = "/ObtenerNotaACuentaDeValorizacionParaAnular";
 		private const string AnulacionDeComprobante = "/AnulacionDeComprobanteConfirma";
+		private const string ObtenerCompteJbi = "/GetCompteJbi";
 
 		private readonly AppSettings _appSettings;
         public CuentaServicio(IOptions<AppSettings> options, ILogger<CuentaServicio> logger) : base(options, logger)
@@ -1334,5 +1336,47 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 		}
 
+		public List<CompteJbiDto> GetCompteJbi(string ctaId, string token)
+		{
+			ApiResponse<List<CompteJbiDto>> respuesta;
+			string stringData;
+			try
+			{
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerCompteJbi}?ctaId={ctaId}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (!string.IsNullOrEmpty(stringData))
+					{
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<CompteJbiDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+					}
+					else
+					{
+						throw new Exception("No se logro obtener la respuesta de la API con los datos de los comprobantes. Verifique.");
+					}
+					return respuesta.Data;
+				}
+				else
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogError($"Error al intentar obtener los datos de los comprobantes: {stringData}");
+					throw new NegocioException("Hubo un error al intentar obtener los datos de los comprobantes");
+				}
+
+			}
+			catch (NegocioException)
+			{
+				throw;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar obtener los datos de los comprobantes.");
+				throw;
+			}
+		}
 	}
 }

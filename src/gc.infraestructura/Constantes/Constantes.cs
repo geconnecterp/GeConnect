@@ -79,6 +79,7 @@ namespace gc.infraestructura.Constantes
         
 			public const string ORDEN_DE_PAGO_CONSULTA = "ORDEN_DE_PAGO_CONSULTA";
 			public const string ANULACION_DE_COMPROBANTE_Y_VALORIZACION = "ANULACION_DE_COMPROBANTE_Y_VALORIZACION";
+			public const string RELACIONAR_COMPROBANTE_SIN_RP = "RELACIONAR_COMPROBANTE_SIN_RP";
 		}
     }
 }

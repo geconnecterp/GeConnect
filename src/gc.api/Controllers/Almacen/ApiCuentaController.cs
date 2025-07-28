@@ -11,6 +11,7 @@ namespace gc.api.Controllers.Almacen
 	using gc.infraestructura.Dtos.Almacen.AnulacionDeComprobante;
 	using gc.infraestructura.Dtos.Almacen.AnulacionDeComprobante.Request;
 	using gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra;
+	using gc.infraestructura.Dtos.Almacen.RelacionarComprobanteSinRP;
 	using gc.infraestructura.Dtos.Almacen.Request;
 	using gc.infraestructura.Dtos.CuentaComercial;
 	using gc.infraestructura.Dtos.Gen;
@@ -608,6 +609,21 @@ namespace gc.api.Controllers.Almacen
 			var res = _cuentasSv.AnulacionDeComprobanteConfirma(request);
 
 			var response = new ApiResponse<RespuestaDto>(res.First());
+
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CompteJbiDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetCompteJbi(string ctaId)
+		{
+			ApiResponse<List<CompteJbiDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _cuentasSv.GetCompteJbi(ctaId);
+
+			response = new ApiResponse<List<CompteJbiDto>>(res);
 
 			return Ok(response);
 		}
