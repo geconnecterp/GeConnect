@@ -129,7 +129,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				var pag = request.Pagina == null ? 1 : request.Pagina.Value;
 				ListaProductos = productos.Item1;
-				grillaDatos = GenerarGrillaSmart(productos.Item1, request.Sort, _settings.NroRegistrosPagina, pag, metadata.TotalCount, metadata.TotalPages, request.SortDir);
+
+				var nnCol = request.Sort ?? string.Empty;
+				var sortDir = request.SortDir ?? "ASC";
+
+				grillaDatos = GenerarGrillaSmart(productos.Item1, nnCol, _settings.NroRegistrosPagina, pag, metadata.TotalCount, metadata.TotalPages, sortDir);
 				model.grillaDatos = grillaDatos;
 				model.ComboSucursales = ComboSucursales();
 				return PartialView("_grillaProductos", model);
@@ -281,6 +285,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				}
 				if (productos.Count > 0)
 				{
+					var datosDelProductoParaEnviar = new DatosDeProductoActualizado();
 					var producto = productos.FirstOrDefault(x => x.P_Id == pId);
 					if (producto != null)
 					{
@@ -329,14 +334,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 						producto.P_Pcosto_Total = Math.Round(producto.P_Pcosto * (producto.Pedido_Mas_Boni == 0.0M ? 1.0M : producto.Pedido_Mas_Boni), 2);
 						producto.Paletizado = Math.Round((producto.Pedido_Mas_Boni == 0.0M ? 1.0M : producto.Pedido_Mas_Boni) / producto.P_Unidad_Palet, 1);
 						producto.Cantidad_Total = producto.Cantidad + producto.Bonificados;
-					}
-					ListaProductosOC = productos; //Actualizo la lista en memoria
-					return Json(new msgRes()
-					{
-						error = false,
-						warn = false,
-						msg = string.Empty,
-						data = new DatosDeProductoActualizado()
+
+						datosDelProductoParaEnviar = new DatosDeProductoActualizado()
 						{
 							PedidoCantidad = producto.Cantidad,
 							Pedido_Mas_Boni = producto.Pedido_Mas_Boni,
@@ -345,7 +344,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 							Paletizado = producto.Paletizado,
 							Total_Costo = productos.Sum(x => x.P_Pcosto_Total),
 							Total_Pallet = productos.Sum(x => x.Paletizado)
-						}
+						};
+					}
+					ListaProductosOC = productos; //Actualizo la lista en memoria
+					return Json(new msgRes()
+					{
+						error = false,
+						warn = false,
+						msg = string.Empty,
+						data = datosDelProductoParaEnviar
 					});
 				}
 				else
@@ -921,7 +928,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		public class ActualizacionMasivaRequest()
 		{
-			public string[] pIds { get; set; }
+			public required string[] pIds { get; set; }
 			public decimal dto1 { get; set; }
 			public decimal dto2 { get; set; }
 			public decimal dto3 { get; set; }

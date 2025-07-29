@@ -71,7 +71,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public async Task<IActionResult> BuscarOrdenesDeCompra(BuscarOrdenesDeCompraRequest request)
+		public IActionResult BuscarOrdenesDeCompra(BuscarOrdenesDeCompraRequest request)
 		{
 			MetadataGrid metadata;
 			GridCoreSmart<OrdenDeCompraConsultaDto> grillaDatos;
@@ -85,7 +85,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				var pag = request.Pagina == null ? 1 : request.Pagina.Value;
 				ListaOrdenDeCompraConsulta = productos.Item1;
-				grillaDatos = GenerarGrillaSmart(productos.Item1, request.Sort, _settings.NroRegistrosPagina, pag, metadata.TotalCount, metadata.TotalPages, request.SortDir);
+
+				var nnCol = request.Sort ?? string.Empty;
+				var sortDir = request.SortDir ?? "ASC";
+
+				grillaDatos = GenerarGrillaSmart(productos.Item1, nnCol, _settings.NroRegistrosPagina, pag, metadata.TotalCount, metadata.TotalPages, sortDir);
 				model.GrillaOC = grillaDatos;
 				model.Importe = ListaOrdenDeCompraConsulta.Count > 0 ? ListaOrdenDeCompraConsulta.Sum(x => x.oc_total) : 0;
 				model.ListaAdministraciones = new SelectList(AdministracionesLista, "Adm_id", "Adm_nombre");
@@ -105,7 +109,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> BuscarDetalleDeOrdenDeCompra(string ocCompte)
+		public IActionResult BuscarDetalleDeOrdenDeCompra(string ocCompte)
 		{
 			ConsultaOCDetalleModel model = new ConsultaOCDetalleModel();
 			try
@@ -147,7 +151,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		/// En caso de error, retorna un mensaje de error en una vista parcial.
 		/// </remarks>
 		[HttpPost]
-		public async Task<IActionResult> BuscarRprAsociadasDeOrdenDeCompra(string ocCompte)
+		public IActionResult BuscarRprAsociadasDeOrdenDeCompra(string ocCompte)
 		{
 			GridCoreSmart<OrdenDeCompraRprAsociadasDto> grilla = new();
 			try
@@ -197,7 +201,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				//return AnalizarRespuesta(respuesta);
 				return Json(new msgRes() { error = false, warn = false, msg = string.Empty, data = new { oc_compte = request.oc_compte, oce_id = obtenerOcPorCompte.Oce_Id, oce_desc = obtenerOcPorCompte.Oce_Desc, adm_id = obtenerOcPorCompte.Adm_Id, adm_nombre = obtenerOcPorCompte.Adm_Nombre } });
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar actualizar los datos de la Orden de Compra. Oc_Compte: {request.oc_compte}" });
 			}
@@ -219,6 +223,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				ObtenerAdministracionesLista(_adminServicio);
 			}
+			if (AdministracionesLista == null)
+				return Json(new List<ComboGenDto>());
 			var adms = AdministracionesLista.Where(x => x.Adm_nombre.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
 			var lista = adms.Select(x => new ComboGenDto { Id = x.Adm_id, Descripcion = x.Adm_nombre });
 			return Json(lista);
@@ -240,6 +246,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				ObtenerOrdenDeCompraEstadoLista(_ordenDeCompraEstadoServicio);
 			}
+			if (OrdenDeCompraEstadoLista == null)
+				return Json(new List<ComboGenDto>());
 			var ocs = OrdenDeCompraEstadoLista.Where(x => x.oce_lista.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
 			var lista = ocs.Select(x => new ComboGenDto { Id = x.oce_id, Descripcion = x.oce_lista });
 			return Json(lista);
@@ -389,7 +397,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			public bool error { get; set; }
 			public bool warn { get; set; }
 			public string msg { get; set; } = string.Empty;
-			public object data { get; set; }
+			public required object data { get; set; }
 		}
 		#endregion
 	}

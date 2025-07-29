@@ -14,7 +14,7 @@ namespace gc.infraestructura.Dtos.Almacen.RelacionarComprobanteSinRP
 			set { _justificado_bool = value; }
 		}
 
-		private string _concepto { get; set; }
+		private string _concepto { get; set; } = string.Empty;
 		public string concepto
 		{
 			get { return $"{tco_desc_rp} ({tco_id_rp}) {cm_compte_rp}"; }

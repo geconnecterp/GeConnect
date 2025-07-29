@@ -57,7 +57,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 		[HttpPost]
 		public IActionResult InicializarComprobante(string cta_id)
 		{
-			var model = new AnulacionDeComprobanteModel();
+			var model = new AnulacionDeComprobanteModel
+			{
+				GrillaComprobantes = new GridCoreSmart<ComprobanteParaAnularDto>()
+			};
+
 			try
 			{
 				var auth = EstaAutenticado;

@@ -5,6 +5,6 @@ namespace gc.sitio.Areas.Compras.Models.AnulacionDeComprobante
 {
 	public class AnulacionDeComprobanteModel
 	{
-		public GridCoreSmart<ComprobanteParaAnularDto> GrillaComprobantes { get; set; }
+		public required GridCoreSmart<ComprobanteParaAnularDto> GrillaComprobantes { get; set; }
 	}
 }
