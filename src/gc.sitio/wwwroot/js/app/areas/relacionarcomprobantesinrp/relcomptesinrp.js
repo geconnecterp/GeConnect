@@ -89,7 +89,8 @@ function btnAbmAceptarClick() {
 						}
 						else {
 							ControlaMensajeSuccess(obj.msg);
-							$("#btnAbmCancelar").trigger("click");
+							//$("#btnAbmCancelar").trigger("click");
+							InicializarTabsComprobantes($("#CtaID").val());
 						}
 						return true;
 					});
@@ -123,38 +124,6 @@ function ObtenerComprobantes() {
 		}
 	});
 	return comprobantes;
-	//if (id_selected == 1) {
-	//	//RPR
-	//	var dataTable = document.getElementById('tbGridRprAsociado');
-	//	var inputs = dataTable.querySelectorAll('tbody>tr>td>input');
-	//	var pIds = [];
-	//	inputs.forEach(function (input) {
-	//		if (input.checked) {
-	//			alMenosUno = true;
-	//			pIds.push(input.id.substr(3, 11));
-	//		}
-	//	});
-	//	if (pIds.length > 0) {
-	//		for (var i = 0; i < pIds.length; i++) {
-	//			asociaciones.push({ tco_id: "RPR", cm_compte_rp: pIds[i] });
-	//		}
-	//	}
-	//}
-	//else if (id_selected == 4) {
-	//	//Notas a cuenta
-	//	var dataTable = document.getElementById('tbGridNotasACuenta');
-	//	var inputs = dataTable.querySelectorAll('tbody>tr>td>input');
-	//	var pIds = [];
-	//	inputs.forEach(function (input) {
-	//		if (input.checked) {
-	//			alMenosUno = true;
-	//			if (input.parentNode && input.parentNode.parentNode && input.parentNode.parentNode.childNodes && input.parentNode.parentNode.childNodes.length > 0) {
-	//				asociaciones.push({ tco_id: input.parentNode.parentNode.childNodes[13].innerText, cm_compte_rp: input.parentNode.parentNode.childNodes[11].innerText });
-	//			}
-	//		}
-	//	});
-	//}
-	//return asociaciones;
 }
 
 function ObtenerComprobantesRpr() {

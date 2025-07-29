@@ -140,7 +140,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 					return Json(new { error = true, warn = false, msg = "Debe seleccionar al menos un comprobante para justificar." });
 
 				var jsonComptes = JsonConvert.SerializeObject(request.comprobantes, new JsonSerializerSettings());
-				var jsonRps = request.rps != null ? JsonConvert.SerializeObject(request.rps, new JsonSerializerSettings()) : string.Empty;
+				var jsonRps = request.rps != null ? JsonConvert.SerializeObject(request.rps, new JsonSerializerSettings()) : JsonConvert.SerializeObject(new List<RpParaJustificar>(), new JsonSerializerSettings());
+				Console.WriteLine($"cta_id: {request.cta_id}");
+				Console.WriteLine($"adm_id: {AdministracionId}");
+				Console.WriteLine($"usu_id: {UserName}");
+				Console.WriteLine($"cta_id: {request.cta_id}");
+				Console.WriteLine($"json_comptes: {jsonComptes}");
+				Console.WriteLine($"json_rp: {jsonRps}");
 				var response = _cuentaServicio.ConfirmaCompteJbi(new ConfirmarJustificacionRequest() { cta_id = request.cta_id, adm_id = AdministracionId, usu_id = UserName, json_comptes = jsonComptes, json_rp = jsonRps }, TokenCookie);
 				return AnalizarRespuesta(response, "La Justificación se realizó con Éxito");
 			}
