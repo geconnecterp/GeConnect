@@ -776,6 +776,51 @@ namespace gc.sitio.Areas.Productos.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<JsonResult> ConfirmarPreciosTemporales(ProductoCPConfirmar precios)
+        {
+            try
+            {
+                // Verificar autenticación
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+                }
+                if (precios == null || precios.Listas == null || !precios.Listas.Any())
+                {
+                    throw new NegocioException("No se han recepcionado precios de productos a confirmar o en ninguna de sus listas.");
+                }
+                // Llamar al servicio para confirmar los precios temporales
+                var respuesta = await _productoServicio.ConfirmarPreciosTemporales(precios, TokenCookie);
+                if (!respuesta.Ok)
+                {
+                    throw new NegocioException(respuesta.Mensaje??"No se recepción un mensaje de confirmación. Analice si los cambios se aplicarón o verifique logs para determinar el origen del problema, por la falta de respuesta del servicio.");
+                }
+                // Limpiar las listas temporales después de la confirmación exitosa
+                ProductosDetalleTEMPORAL = [];
+                ProductosDetalleListaTEMPORAL = [];
+                return Json(new { error = false, warn = false, msg = "Los precios temporales han sido confirmados correctamente." });
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al confirmar precios temporales");
+                return Json(new { error = true, warn = false, msg = "Se produjo un error al intentar confirmar los precios temporales." });
+            }
+        }
+
+
+
+
+
         //Invocar cuando se haya seleccionado solo un proveedor desde el filtro base.
         [HttpPost]
         public JsonResult BuscarFamiliaDesdeProveedorSeleccionado(string ctaId)
