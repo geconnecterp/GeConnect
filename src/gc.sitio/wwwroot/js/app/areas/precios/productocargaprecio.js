@@ -1455,6 +1455,62 @@ function configurarInputsListaPreciosOptimizado() {
         showMaskOnFocus: false
     }).mask('.input-tp_margen_lista, .input-tp_pvta_lista');
 
+    // Función para activar el siguiente campo en la tabla de listas
+    function activarSiguienteCampoLista(campoActual) {
+        const $campoActual = $(campoActual);
+        const $fila = $campoActual.closest('tr');
+        const camposLista = '.input-tp_margen_lista, .input-tp_pvta_lista';
+
+        // Obtener todos los campos editables en la fila
+        const $camposEnFila = $fila.find(camposLista);
+
+        // Encontrar el índice del campo actual
+        const indiceActual = $camposEnFila.index($campoActual);
+
+        // Si hay un siguiente campo en la fila, activarlo
+        if (indiceActual < $camposEnFila.length - 1) {
+            const $siguienteCampo = $camposEnFila.eq(indiceActual + 1);
+
+            // Desactivar el campo actual
+            $campoActual.prop('readonly', true).addClass('campo-readonly');
+
+            // Activar el siguiente campo
+            $siguienteCampo.prop('readonly', false).removeClass('campo-readonly');
+
+            // Enfocar y seleccionar el siguiente campo
+            setTimeout(function () {
+                $siguienteCampo[0].focus();
+                $siguienteCampo[0].select();
+            }, 0);
+
+            return true;
+        } else if ($fila.next('tr').length) {
+            // Si estamos en el último campo de la fila, pasar a la primera celda de la siguiente fila
+            const $siguienteFila = $fila.next('tr');
+            const $primerCampo = $siguienteFila.find(camposLista).first();
+
+            if ($primerCampo.length) {
+                // Desactivar el campo actual
+                $campoActual.prop('readonly', true).addClass('campo-readonly');
+
+                // Activar el primer campo de la siguiente fila
+                $primerCampo.prop('readonly', false).removeClass('campo-readonly');
+
+                // Enfocar y seleccionar el siguiente campo
+                setTimeout(function () {
+                    $primerCampo[0].focus();
+                    $primerCampo[0].select();
+                }, 0);
+
+                return true;
+            }
+        }
+
+        // Si no hay siguiente campo, solo desactivar el actual
+        $campoActual.prop('readonly', true).addClass('campo-readonly');
+        return false;
+    }
+
     // Usar delegación de eventos en lugar de asignar a cada elemento
     $(document)
         .off('click.habilitarCamposLista')
@@ -1475,12 +1531,33 @@ function configurarInputsListaPreciosOptimizado() {
         })
         .off('keydown.enterCamposLista')
         .on('keydown.enterCamposLista', '.input-tp_margen_lista, .input-tp_pvta_lista', function (e) {
-            if (e.key === 'Enter') {
+            if (e.key === 'Enter' || e.key === 'Tab') {
                 e.preventDefault();
 
-                // Disparar blur para aplicar cambios
-                const event = new Event('blur', { bubbles: true });
-                this.dispatchEvent(event);
+                const $this = $(this);
+                const lpId = $this.data('lp-id');
+                const pId = $this.data('p-id') || productoActualEnLista;
+                const row = $this.closest('tr');
+
+                // Formatear valor
+                let value = $this.val().replace(/,/g, '');
+                let numValue = parseFloat(value);
+
+                if (!isNaN(numValue)) {
+                    $this.val(numValue.toFixed(2));
+                }
+
+                // Determinar el tipo de campo y guardar el valor
+                if ($this.hasClass('input-tp_margen_lista')) {
+                    // Actualizar con debounce
+                    actualizarMargenListaDebounced(row, lpId, pId, numValue);
+                } else if ($this.hasClass('input-tp_pvta_lista')) {
+                    // Actualizar con debounce
+                    actualizarPrecioVentaListaDebounced(row, lpId, pId, numValue);
+                }
+
+                // Avanzar al siguiente campo
+                activarSiguienteCampoLista(this);
             }
         })
         .off('blur.margenLista')
@@ -1547,6 +1624,7 @@ function configurarInputsListaPreciosOptimizado() {
 
     console.log("Configuración de inputs para grid de listas completada");
 }
+
 
 // Funciones con debounce para listas
 const actualizarMargenListaDebounced = debounce(function (row, lpId, pId, nuevoMargen) {
@@ -1745,6 +1823,61 @@ function configurarEventosEdicionOptimizado() {
     const camposEditables = '.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni, .input-tp_margen, .input-tin_alicuota, .input-tp_pvta';
     const camposSecuencia01 = '.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni';
 
+    // Función para encontrar y activar el siguiente campo editable
+    function activarSiguienteCampo(campoActual) {
+        const $campoActual = $(campoActual);
+        const $fila = $campoActual.closest('tr');
+
+        // Obtener todos los campos editables en la fila
+        const $camposEnFila = $fila.find(camposEditables);
+
+        // Encontrar el índice del campo actual
+        const indiceActual = $camposEnFila.index($campoActual);
+
+        // Si hay un siguiente campo en la fila, activarlo
+        if (indiceActual < $camposEnFila.length - 1) {
+            const $siguienteCampo = $camposEnFila.eq(indiceActual + 1);
+
+            // Desactivar el campo actual
+            $campoActual.prop('readonly', true).addClass('campo-readonly');
+
+            // Activar el siguiente campo
+            $siguienteCampo.prop('readonly', false).removeClass('campo-readonly');
+
+            // Enfocar y seleccionar el siguiente campo
+            setTimeout(function () {
+                $siguienteCampo[0].focus();
+                $siguienteCampo[0].select();
+            }, 0);
+
+            return true;
+        } else if ($fila.next('tr').length) {
+            // Si estamos en el último campo de la fila, pasar a la primera celda de la siguiente fila
+            const $siguienteFila = $fila.next('tr');
+            const $primerCampo = $siguienteFila.find(camposEditables).first();
+
+            if ($primerCampo.length) {
+                // Desactivar el campo actual
+                $campoActual.prop('readonly', true).addClass('campo-readonly');
+
+                // Activar el primer campo de la siguiente fila
+                $primerCampo.prop('readonly', false).removeClass('campo-readonly');
+
+                // Enfocar y seleccionar el siguiente campo
+                setTimeout(function () {
+                    $primerCampo[0].focus();
+                    $primerCampo[0].select();
+                }, 0);
+
+                return true;
+            }
+        }
+
+        // Si no hay siguiente campo, solo desactivar el actual
+        $campoActual.prop('readonly', true).addClass('campo-readonly');
+        return false;
+    }
+
     // Evento click: habilita edición
     $(document).on('click.camposEditables', camposEditables, function (e) {
         e.stopPropagation();
@@ -1780,12 +1913,30 @@ function configurarEventosEdicionOptimizado() {
         }, 0);
     });
 
-    // Evento keydown para detectar ENTER
+    // Evento keydown para detectar ENTER y TAB
     $(document).on('keydown.camposEditables', camposEditables, function (e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            const event = new Event('blur', { bubbles: true });
-            this.dispatchEvent(event);
+        if (e.key === 'Enter' || e.key === 'Tab') {
+            e.preventDefault(); // Evitar comportamiento predeterminado
+
+            // Aplicar cambios al campo actual
+            const row = $(this).closest('tr');
+
+            // Guardar el tipo de campo para calcular después
+            const esSecuencia01 = $(this).is(camposSecuencia01);
+            const esMargen = $(this).hasClass('input-tp_margen');
+            const esPrecioVenta = $(this).hasClass('input-tp_pvta');
+
+            // Avanzar al siguiente campo
+            const seActivoSiguiente = activarSiguienteCampo(this);
+
+            // Aplicar los cálculos según el tipo de campo
+            if (esSecuencia01) {
+                calcularCostoAPIDebounced(row);
+            } else if (esMargen) {
+                calcularPrecioVentaAPIDebounced(row);
+            } else if (esPrecioVenta) {
+                calcularPrecioVentaMargenAPIDebounced(row);
+            }
         }
     });
 
@@ -1829,7 +1980,7 @@ function configurarEventosEdicionOptimizado() {
             }
         }
 
-        // Volver a readonly
+        // Volver a readonly si no estamos en navegación con Tab/Enter
         $this.prop('readonly', true).addClass('campo-readonly');
 
         // Utilizar debounce para evitar cálculos repetidos
@@ -1905,7 +2056,6 @@ function configurarEventosEdicionOptimizado() {
         }
     });
 }
-
 
 
 // Nueva función para resguardar los cambios del producto
