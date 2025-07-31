@@ -1079,5 +1079,10 @@ namespace gc.sitio.core.Servicios.Implementacion
                 throw new Exception("Algo no fue bien al intentar recalcular el precio de venta de las listas.");
             }
         }
+
+        public Task<RespuestaGenerica<RespuestaDto>> ConfirmarPreciosTemporales(ProductoCPConfirmar precios, string tokenCookie)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
