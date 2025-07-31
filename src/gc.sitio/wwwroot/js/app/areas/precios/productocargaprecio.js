@@ -15,6 +15,28 @@ $(function () {
     configurarBotonesProdCP();
     cargaEventosCP();
 
+    // Delegación de eventos para manejar la activación de campos de edición en _datosGenerales
+    $(document).on('change', '#chkPLista, #chkDto1, #chkDto2, #chkDto3, #chkDto4, #chkDpo, #chkBon, #chkFl', function () {
+        const campoId = $(this).attr('id').replace('chk', 'txt');
+        const $campo = $('#' + campoId);
+
+        if ($(this).is(':checked')) {
+            $campo.prop('disabled', false);
+        } else {
+            $campo.prop('disabled', true);
+        }
+    });
+
+    // Evento para el botón Aplicar en _datosGenerales
+    $(document).on('click', '#btnAplicar', function () {
+        aplicarCambiosDatosGenerales();
+    });
+
+    // Evento para el botón Cancelar en _datosGenerales
+    $(document).on('click', '#btnCancelar', function () {
+        cancelarCambiosDatosGenerales();
+    });
+
     // Inicializar tabla si ya está cargada
     if ($('#tbProdDet tbody tr').length > 0) {
         console.log("Detectada tabla de productos ya cargada, iniciando optimizada...");
@@ -22,6 +44,125 @@ $(function () {
     }
 });
 
+// Función para aplicar los cambios de _datosGenerales a todas las filas seleccionadas
+function aplicarCambiosDatosGenerales() {
+    console.log("Aplicando cambios de datos generales...");
+
+    // Verificar que hay filas seleccionadas
+    const filasSeleccionadas = $("#tbProdDet tbody tr.selected");
+    if (filasSeleccionadas.length === 0) {
+        AbrirMensaje("Atención", "Debe seleccionar al menos una fila para aplicar los cambios.",
+            function () { $("#msjModal").modal("hide"); },
+            false, ["Aceptar"], "warn!", null);
+        return;
+    }
+
+    // Obtener los valores de los campos de edición que están habilitados
+    const cambios = {};
+
+    if ($('#chkPLista').is(':checked')) cambios.plista = $('#txtPLista').val();
+    if ($('#chkDto1').is(':checked')) cambios.dto1 = $('#txtDto1').val();
+    if ($('#chkDto2').is(':checked')) cambios.dto2 = $('#txtDto2').val();
+    if ($('#chkDto3').is(':checked')) cambios.dto3 = $('#txtDto3').val();
+    if ($('#chkDto4').is(':checked')) cambios.dto4 = $('#txtDto4').val();
+    if ($('#chkDpo').is(':checked')) cambios.dpo = $('#txtDpo').val();
+    if ($('#chkBon').is(':checked')) cambios.bon = $('#txtBon').val();
+    if ($('#chkFl').is(':checked')) cambios.fl = $('#txtFl').val();
+
+    // Verificar que hay cambios para aplicar
+    if (Object.keys(cambios).length === 0) {
+        AbrirMensaje("Atención", "No hay cambios para aplicar. Seleccione al menos un campo y modifique su valor.",
+            function () { $("#msjModal").modal("hide"); },
+            false, ["Aceptar"], "warn!", null);
+        return;
+    }
+
+    // Aplicar los cambios a cada fila seleccionada
+    filasSeleccionadas.each(function () {
+        const $fila = $(this);
+        let fueModificado = false;
+
+        // Aplicar cada cambio a la fila
+        if (cambios.plista !== undefined) {
+            $fila.find('.input-tp_plista').val(cambios.plista);
+            fueModificado = true;
+        }
+
+        if (cambios.dto1 !== undefined) {
+            $fila.find('.input-tp_dto1').val(cambios.dto1);
+            fueModificado = true;
+        }
+
+        if (cambios.dto2 !== undefined) {
+            $fila.find('.input-tp_dto2').val(cambios.dto2);
+            fueModificado = true;
+        }
+
+        if (cambios.dto3 !== undefined) {
+            $fila.find('.input-tp_dto3').val(cambios.dto3);
+            fueModificado = true;
+        }
+
+        if (cambios.dto4 !== undefined) {
+            $fila.find('.input-tp_dto4').val(cambios.dto4);
+            fueModificado = true;
+        }
+
+        if (cambios.dpo !== undefined) {
+            $fila.find('.input-tp_dto_pa').val(cambios.dpo);
+            fueModificado = true;
+        }
+
+        if (cambios.bon !== undefined) {
+            $fila.find('.input-tp_boni').val(cambios.bon);
+            fueModificado = true;
+        }
+
+        if (cambios.fl !== undefined) {
+            $fila.find('.input-tp_porc_flete').val(cambios.fl);
+            fueModificado = true;
+        }
+
+        // Si hubo cambios, marcarlos y recalcular
+        if (fueModificado) {
+            // Marcar campos como modificados
+            if (cambios.plista !== undefined) marcarCampoModificado($fila.find('.input-tp_plista'));
+            if (cambios.dto1 !== undefined) marcarCampoModificado($fila.find('.input-tp_dto1'));
+            if (cambios.dto2 !== undefined) marcarCampoModificado($fila.find('.input-tp_dto2'));
+            if (cambios.dto3 !== undefined) marcarCampoModificado($fila.find('.input-tp_dto3'));
+            if (cambios.dto4 !== undefined) marcarCampoModificado($fila.find('.input-tp_dto4'));
+            if (cambios.dpo !== undefined) marcarCampoModificado($fila.find('.input-tp_dto_pa'));
+            if (cambios.bon !== undefined) marcarCampoModificado($fila.find('.input-tp_boni'));
+            if (cambios.fl !== undefined) marcarCampoModificado($fila.find('.input-tp_porc_flete'));
+
+            // Actualizar estado de carga
+            actualizarEstadoCarga($fila);
+
+            // Recalcular valores
+            calcularCostoAPIDebounced($fila);
+        }
+    });
+
+    // Limpiar checkboxes y deshabilitar campos después de aplicar
+    $('#chkPLista, #chkDto1, #chkDto2, #chkDto3, #chkDto4, #chkDpo, #chkBon, #chkFl').prop('checked', false);
+    $('#txtPLista, #txtDto1, #txtDto2, #txtDto3, #txtDto4, #txtDpo, #txtBon, #txtFl').prop('disabled', true);
+
+    AbrirMensaje("Éxito", "Los cambios se han aplicado correctamente a los productos seleccionados.",
+        function () { $("#msjModal").modal("hide"); },
+        false, ["Aceptar"], "success!", null);
+}
+
+// Función para cancelar los cambios en _datosGenerales
+function cancelarCambiosDatosGenerales() {
+    // Limpiar checkboxes y deshabilitar campos
+    $('#chkPLista, #chkDto1, #chkDto2, #chkDto3, #chkDto4, #chkDpo, #chkBon, #chkFl').prop('checked', false);
+    $('#txtPLista, #txtDto1, #txtDto2, #txtDto3, #txtDto4, #txtDpo, #txtBon, #txtFl').prop('disabled', true).val('');
+
+    // Si hay un producto seleccionado, recargar sus datos originales
+    if (productoActualEnLista) {
+        cargarDatosEnVistaPrevia(productoActualEnLista);
+    }
+}
 
 function inicializaControlCuenta() {
     $("#controlConsultaCambio" + nnControlCta01).val(true);
@@ -58,6 +199,9 @@ function configurarEventosTabla() {
 
             // Destacar visualmente la fila seleccionada
             destacarFilaSeleccionada(productoId);
+
+            // NUEVO: Cargar los datos originales en la vista previa
+            cargarDatosEnVistaPrevia(productoId);
 
             // Cargar las listas de precios para este producto
             buscarProductoListaOptimizado(productoId);
@@ -686,6 +830,47 @@ function verificarYDesactivarControles(mostrarLog = true) {
     }
 }
 
+function cargarDatosEnVistaPrevia(productoId) {
+    console.log("Cargando datos originales en vista previa para producto ID:", productoId);
+
+    // Verificar que el producto exista en la tabla
+    const $fila = $("#tbProdDet tbody tr[data-p-id='" + productoId + "']");
+
+    if ($fila.length === 0) {
+        console.warn(`No se encontró ninguna fila con data-p-id="${productoId}"`);
+        return;
+    }
+
+    // Obtener los valores originales de los campos relevantes
+    const datosOriginales = {
+        plista: $fila.find('.input-tp_plista').data('original-value') || '',
+        dto1: $fila.find('.input-tp_dto1').data('original-value') || '',
+        dto2: $fila.find('.input-tp_dto2').data('original-value') || '',
+        dto3: $fila.find('.input-tp_dto3').data('original-value') || '',
+        dto4: $fila.find('.input-tp_dto4').data('original-value') || '',
+        dpo: $fila.find('.input-tp_dto_pa').data('original-value') || '',
+        bon: $fila.find('.input-tp_boni').data('original-value') || '',
+        fl: $fila.find('.input-tp_porc_flete').data('original-value') || ''
+    };
+
+    // Verificar si existe la vista previa (_datosGenerales)
+    if ($('.input-PListaValor, .input-Dto1Valor, .input-Dto2Valor, .input-Dto3Valor, .input-Dto4Valor, .input-DpoValor, .input-BonValor, .input-FlValor').length > 0) {
+        // Asignar los valores a los campos correspondientes de la vista previa
+        $('.input-PListaValor').val(datosOriginales.plista);
+        $('.input-Dto1Valor').val(datosOriginales.dto1);
+        $('.input-Dto2Valor').val(datosOriginales.dto2);
+        $('.input-Dto3Valor').val(datosOriginales.dto3);
+        $('.input-Dto4Valor').val(datosOriginales.dto4);
+        $('.input-DpoValor').val(datosOriginales.dpo);
+        $('.input-BonValor').val(datosOriginales.bon);
+        $('.input-FlValor').val(datosOriginales.fl);
+
+        console.log("Datos originales cargados en vista previa:", datosOriginales);
+    } else {
+        console.warn("No se encontraron los campos de vista previa en _datosGenerales");
+    }
+}
+
 // Función para cargar las familias relacionadas con un proveedor
 function cargarFamiliasDelProveedor(proveedorId) {
     // No cargar familias si estamos en modo archivo
@@ -937,6 +1122,10 @@ function buscarProductosDetalle() {
                     const primerProductoId = $("#tbProdDet tbody tr:not(.table-secondary):first").data("p-id");
                     if (primerProductoId) {
                         destacarFilaSeleccionada(primerProductoId);
+
+                        // NUEVO: Cargar los datos originales en la vista previa
+                        cargarDatosEnVistaPrevia(primerProductoId);
+
                         buscarProductoListaOptimizado(primerProductoId);
                     }
 
