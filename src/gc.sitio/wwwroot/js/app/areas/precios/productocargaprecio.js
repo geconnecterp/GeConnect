@@ -22,6 +22,10 @@ $(function () {
 
         if ($(this).is(':checked')) {
             $campo.prop('disabled', false);
+            // Usar setTimeout para asegurar que la selección ocurra después de que el campo esté habilitado
+            setTimeout(function () {
+                $campo.focus().select();
+            }, 0);
         } else {
             $campo.prop('disabled', true);
         }
@@ -173,16 +177,18 @@ function inicializaControlCuenta() {
 }
 
 // Función corregida para configurar eventos de tabla
+// Función corregida para configurar eventos de tabla
 function configurarEventosTabla() {
     console.log("Configurando eventos de tabla...");
 
     // Primero eliminar cualquier evento click previo para evitar duplicados
     $("#tbProdDet tbody tr").off("click");
+    $("#tbProdDet tbody tr input[type='checkbox']").off("click");
 
-    // Evento para seleccionar filas de la tabla
+    // Evento para seleccionar filas de la tabla - modificado para no afectar checkboxes
     $("#tbProdDet tbody tr").on("click", function (e) {
-        // Solo activar si el clic no fue en un input
-        if (!$(e.target).is('input')) {
+        // Solo activar si el clic no fue en un input o checkbox
+        if (!$(e.target).is('input') && !$(e.target).is(':checkbox') && !$(e.target).closest('label').length) {
             // Obtener el ID del producto de la fila seleccionada
             const productoId = $(this).data('p-id');
 
@@ -197,10 +203,10 @@ function configurarEventosTabla() {
             productoActualEnLista = productoId;
             $("#divProdLista").attr('data-producto-actual', productoId);
 
-            // Destacar visualmente la fila seleccionada
+            // Destacar visualmente la fila seleccionada (sin afectar checkboxes)
             destacarFilaSeleccionada(productoId);
 
-            // NUEVO: Cargar los datos originales en la vista previa
+            // Cargar los datos originales en la vista previa
             cargarDatosEnVistaPrevia(productoId);
 
             // Cargar las listas de precios para este producto
@@ -208,16 +214,38 @@ function configurarEventosTabla() {
         }
     });
 
+    // Evento para manejar el clic en checkboxes individualmente
+    $("#tbProdDet tbody tr input[type='checkbox']").on("click", function (e) {
+        // Detener propagación para evitar que se active el evento click de la fila
+        e.stopPropagation();
 
+        // Manejar la selección de la fila independientemente
+        const fila = $(this).closest('tr');
+
+        // Si se marca el checkbox, agregar la clase 'selected' a la fila
+        // Si se desmarca, quitar la clase 'selected'
+        if ($(this).is(':checked')) {
+            fila.addClass("selected");
+        } else {
+            fila.removeClass("selected");
+        }
+    });
 
     // Evento para el checkbox de seleccionar todos
     $("#checkAllProd").off("change").on("change", function () {
         const isChecked = $(this).prop("checked");
+
+        // Actualizar todas las filas y checkboxes
         $("#tbProdDet tbody tr").each(function () {
+            // Actualizar la clase de la fila
             if (isChecked) {
                 $(this).addClass("selected");
+                // También marcar el checkbox de la fila
+                $(this).find('input[type="checkbox"]').prop('checked', true);
             } else {
                 $(this).removeClass("selected");
+                // También desmarcar el checkbox de la fila
+                $(this).find('input[type="checkbox"]').prop('checked', false);
             }
         });
 
@@ -236,6 +264,7 @@ function configurarEventosTabla() {
 
     console.log("Eventos de tabla configurados correctamente");
 }
+
 
 
 // Configuración optimizada de elementos de tabla
