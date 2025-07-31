@@ -35,5 +35,6 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RespuestaGenerica<ProductoResponsePVtaMargen>> ObtenerPrecioVentaMargen(ProductoRequestPVtaMargen req,string token);
 
         Task<RespuestaGenerica<ProductoResponsePVta>> ObtenerPrecioVentaLista(ProductoRequestPvtaLista req, string token);
+        Task<RespuestaGenerica<RespuestaDto>> ConfirmarPreciosTemporales(ProductoCPConfirmar precios, string tokenCookie);
     }
 }

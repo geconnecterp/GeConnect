@@ -1,71 +1,122 @@
-﻿<div class="row mb-3">
-    <div class="col-md-10">
-        <div class="input-fields-container">
-            <div class="input-field-group d-flex flex-wrap">
-                <!-- PLista -->
-                <div class="me-3 mb-2">
-                    <div class="input-group input-group-sm">
-                        <div class="input-group-text">
-                            <input class="form-check-input mt-0" type="checkbox" id="chkPLista" aria-label="Checkbox para PLista">
-                        </div>
-                        <span class="input-group-text" style="width:75px;">PLista</span>
-                        <input type="text" class="form-control" id="txtPLista" style="width: 100px;" disabled>
-                    
-                        <div class="input-group-text">
-                            <input class="form-check-input mt-0" type="checkbox" id="chkDto1" aria-label="Checkbox para Dto1">
-                        </div>
-                        <span class="input-group-text" style="width:75px;">Dto1</span>
-                        <input type="text" class="form-control" id="txtDto1" style="width: 100px;" disabled>
-                    
-                        <div class="input-group-text">
-                            <input class="form-check-input mt-0" type="checkbox" id="chkDto2" aria-label="Checkbox para Dto2">
-                        </div>
-                        <span class="input-group-text" style="width:75px;">Dto2</span>
-                        <input type="text" class="form-control" id="txtDto2" style="width: 100px;" disabled>
-                    
-                        <div class="input-group-text">
-                            <input class="form-check-input mt-0" type="checkbox" id="chkDto3" aria-label="Checkbox para Dto3">
-                        </div>
-                        <span class="input-group-text" style="width:75px;">Dto3</span>
-                        <input type="text" class="form-control" id="txtDto3" style="width: 100px;" disabled>
-                    </div>
-                </div>
+﻿<div class="row mb-3 align-items-center">
+    <div class="col-9">
+        <!-- Fila única de campos en formato horizontal -->
+        <div class="d-flex flex-row align-items-center">
+            <!-- PLista -->
+            <div class="campo-edicion me-1">
+                <input class="form-check-input" type="checkbox" id="chkPLista" aria-label="Seleccionar PLista">
+                <label class="campo-etiqueta" for="chkPLista">PL</label>
+                <input type="text" class="form-control form-control-sm campo-valor" id="txtPLista" disabled>
+            </div>
 
-                <!-- Dto4 -->
-                <div class="mb-2">
-                    <div class="input-group input-group-sm">
-                        <div class="input-group-text">
-                            <input class="form-check-input mt-0" type="checkbox" id="chkDto4" aria-label="Checkbox para Dto4">
-                        </div>
-                        <span class="input-group-text" style="width:75px;">Dto4</span>
-                        <input type="text" class="form-control" id="txtDto4" style="width: 100px;" disabled>
-                  
-                        <div class="input-group-text">
-                            <input class="form-check-input mt-0" type="checkbox" id="chkDpo" aria-label="Checkbox para Dpo">
-                        </div>
-                        <span class="input-group-text" style="width:75px;">Dpo</span>
-                        <input type="text" class="form-control" id="txtDpo" style="width: 100px;" disabled>
-                  
-                        <div class="input-group-text">
-                            <input class="form-check-input mt-0" type="checkbox" id="chkBon" aria-label="Checkbox para Bon">
-                        </div>
-                        <span class="input-group-text" style="width:75px;">Bon</span>
-                        <input type="text" class="form-control" id="txtBon" style="width: 100px;" disabled>
-                   
-                        <div class="input-group-text">
-                            <input class="form-check-input mt-0" type="checkbox" id="chkFl" aria-label="Checkbox para Fl">
-                        </div>
-                        <span class="input-group-text" style="width:75px;">Fl</span>
-                        <input type="text" class="form-control" id="txtFl" style="width: 100px;" disabled>
-                    </div>
-                </div>
+            <!-- Dto1 -->
+            <div class="campo-edicion me-1">
+                <input class="form-check-input" type="checkbox" id="chkDto1" aria-label="Seleccionar Dto1">
+                <label class="campo-etiqueta" for="chkDto1">D1</label>
+                <input type="text" class="form-control form-control-sm campo-valor" id="txtDto1" disabled>
+            </div>
+
+            <!-- Dto2 -->
+            <div class="campo-edicion me-1">
+                <input class="form-check-input" type="checkbox" id="chkDto2" aria-label="Seleccionar Dto2">
+                <label class="campo-etiqueta" for="chkDto2">D2</label>
+                <input type="text" class="form-control form-control-sm campo-valor" id="txtDto2" disabled>
+            </div>
+
+            <!-- Dto3 -->
+            <div class="campo-edicion me-1">
+                <input class="form-check-input" type="checkbox" id="chkDto3" aria-label="Seleccionar Dto3">
+                <label class="campo-etiqueta" for="chkDto3">D3</label>
+                <input type="text" class="form-control form-control-sm campo-valor" id="txtDto3" disabled>
+            </div>
+
+            <!-- Dto4 -->
+            <div class="campo-edicion me-1">
+                <input class="form-check-input" type="checkbox" id="chkDto4" aria-label="Seleccionar Dto4">
+                <label class="campo-etiqueta" for="chkDto4">D4</label>
+                <input type="text" class="form-control form-control-sm campo-valor" id="txtDto4" disabled>
+            </div>
+
+            <!-- Dpo -->
+            <div class="campo-edicion me-1">
+                <input class="form-check-input" type="checkbox" id="chkDpo" aria-label="Seleccionar Dpo">
+                <label class="campo-etiqueta" for="chkDpo">Dpo</label>
+                <input type="text" class="form-control form-control-sm campo-valor" id="txtDpo" disabled>
+            </div>
+
+            <!-- Bon -->
+            <div class="campo-edicion me-1">
+                <input class="form-check-input" type="checkbox" id="chkBon" aria-label="Seleccionar Bon">
+                <label class="campo-etiqueta" for="chkBon">Bon</label>
+                <input type="text" class="form-control form-control-sm campo-valor" id="txtBon" disabled>
+            </div>
+
+            <!-- Fl -->
+            <div class="campo-edicion">
+                <input class="form-check-input" type="checkbox" id="chkFl" aria-label="Seleccionar Fl">
+                <label class="campo-etiqueta" for="chkFl">Fl</label>
+                <input type="text" class="form-control form-control-sm campo-valor" id="txtFl" disabled>
             </div>
         </div>
     </div>
-    <div class="col-md-2">
-        <div class="col d-flex flex-column">
-            <button type="button" class="btn btn-sm btn-success" id="btnAplicar">
+    <div class="col-3">
+        <div class="d-flex justify-content-md-start">
+            <button type="button" class="btn btn-sm btn-info me-1" id="btnAplicar">
                 <i class="bx bx-check me-1"></i>Aplicar
+            </button>          
+        </div>
+    </div>
+</div>
+<div class="row mb-3 align-items-center">
+    <div class="col-9">
+        <!-- Fila solo lectura: datos actuales -->
+        <div class="d-flex flex-row align-items-center mt-2">
+            <!-- PLista actual -->
+            <div class="campo-edicion me-1">                
+                <label class="campo-etiqueta">PL</label>
+                <input type="text" class="form-control form-control-sm campo-valor input-PListaValor" disabled>
+            </div>
+            <!-- Dto1 actual -->
+            <div class="campo-edicion me-1">
+                <label class="campo-etiqueta">D1</label>
+                <input type="text" class="form-control form-control-sm campo-valor input-Dto1Valor"  disabled>
+            </div>
+            <!-- Dto2 actual -->
+            <div class="campo-edicion me-1">
+                <label class="campo-etiqueta">D2</label>
+                <input type="text" class="form-control form-control-sm campo-valor input-Dto2Valor"  disabled>
+            </div>
+            <!-- Dto3 actual -->
+            <div class="campo-edicion me-1">
+                <label class="campo-etiqueta">D3</label>
+                <input type="text" class="form-control form-control-sm campo-valor input-Dto3Valor"  disabled>
+            </div>
+            <!-- Dto4 actual -->
+            <div class="campo-edicion me-1">
+                <label class="campo-etiqueta">D4</label>
+                <input type="text" class="form-control form-control-sm campo-valor input-Dto4Valor"  disabled>
+            </div>
+            <!-- Dpo actual -->
+            <div class="campo-edicion me-1">
+                <label class="campo-etiqueta">Dpo</label>
+                <input type="text" class="form-control form-control-sm campo-valor input-DpoValor"  disabled>
+            </div>
+            <!-- Bon actual -->
+            <div class="campo-edicion me-1">
+                <label class="campo-etiqueta">Bon</label>
+                <input type="text" class="form-control form-control-sm campo-valor input-BonValor"  disabled>
+            </div>
+            <!-- Fl actual -->
+            <div class="campo-edicion">
+                <label class="campo-etiqueta">Fl</label>
+                <input type="text" class="form-control form-control-sm campo-valor input-FlValor"  disabled>
+            </div>
+        </div>
+    </div>
+    <div class="col-3">
+        <div class="d-flex justify-content-md-start">
+            <button type="button" class="btn btn-sm btn-success me-1" id="btnConfirmar">
+                <i class="bx bx-check me-1"></i>Confirmar
             </button>
             <button type="button" class="btn btn-sm btn-danger" id="btnCancelar">
                 <i class="bx bx-x me-1"></i>Cancelar
@@ -73,3 +124,58 @@
         </div>
     </div>
 </div>
+<!-- Estilos CSS para formato adecuado -->
+<style>
+    .campo-edicion {
+        display: flex;
+        align-items: center;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        background-color: #f8f9fa;
+        padding: 0;
+        overflow: hidden;
+    }
+
+   /*  .form-check-input {
+        margin: 0;
+        border-radius: 0;
+        border: none;
+        border-right: 1px solid #ced4da;
+        height: 100%;
+        width: 24px;
+        padding: 6px;
+    } */
+
+    .campo-etiqueta {
+        display: inline-block;
+        margin: 0;
+        padding: 0.25rem 0.5rem;
+        background-color: #e9ecef;
+        border-right: 1px solid #ced4da;
+        font-size: 0.875rem;
+        width: 45px;
+        text-align: center;
+    }
+
+    .campo-valor {
+        border: none;
+        border-radius: 0;
+        width: 60px;
+        text-align: right;
+        font-size: 0.875rem;
+    }
+
+    /* Ajuste responsive */
+    @@media (max-width: 992px) {
+        .d-flex.flex-row
+
+    {
+        flex-wrap: wrap;
+    }
+
+    .campo-edicion {
+        margin-bottom: 0.25rem;
+    }
+
+    }
+</style>
