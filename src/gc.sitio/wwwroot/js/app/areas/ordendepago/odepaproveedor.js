@@ -5,6 +5,10 @@
 	$(document).on("click", "#btnAnterior2", btnAnterior2Validar);
 	$(document).on("click", "#btnAgregarValor", btnAgregarValorValidar);
 	$(document).on("click", "#btnConfirmar2", btnConfirmar2Validar);
+	$(document).on("click", "#btnAgregarConceptoCancelatoriobtnAgregarConceptoCancelatorio", btnAgregarConceptoCancelatoriobtnAgregarConceptoCancelatorio);
+	$(document).on("keyup", "#txtValorCtaDirSeleccionada", ControlaKeyUpValorCtaDirSeleccionada);
+	$(document).on("keyup", "#txtMotivoCtaDirSeleccionada", ControlaKeyUpMotivoCtaDirSeleccionada);
+	$(document).on("change", "#listaCtaDir", ControlaListaCtaDir);
 
 	// Botón de imprimir
 	$(document).on("click", ".btnImprimir", function () {
@@ -12,7 +16,7 @@
 	});
 
 	$("#btnImprimirTemp").on("click", function () {
-		ImprimirOPP_Generada("00-C0123765", "C0191994");
+		ImprimirOPP_Generada("00-C0123771", "C0193779");
 	});
 	//
 	InicializaPantalla();
@@ -43,6 +47,64 @@
 		$("#divDetalle").collapse("hide");
 	});
 });
+
+function ControlaKeyUpValorCtaDirSeleccionada(e) {
+	if (e.which == 13 || e.which == 109) {
+		$("#txtMotivoCtaDirSeleccionada").trigger("focus");
+	}
+}
+
+function ControlaKeyUpMotivoCtaDirSeleccionada(e) {
+	if (e.which == 13 || e.which == 109) {
+		$("#btnAgregarConceptoCancelatoriobtnAgregarConceptoCancelatorio").trigger("focus");
+	}
+}
+
+function ControlaListaCtaDir() {
+	var id = $("#listaCtaDir").val();
+	if (id != "") {
+		$("#txtValorCtaDirSeleccionada").trigger("focus");
+	}
+}
+
+function btnAgregarConceptoCancelatoriobtnAgregarConceptoCancelatorio() {
+	var ctagSelected = $("#listaCtaDir").val();
+	if (ctagSelected != "") {
+		var ctag_id = ctagSelected;
+		var ctag_desc = $("#listaCtaDir option:selected").text();
+		var importe = $("#txtValorCtaDirSeleccionada").inputmask('unmaskedvalue');
+		var ctag_motivo = $("#txtMotivoCtaDirSeleccionada").val();
+		var data = { ctag_id, ctag_desc, importe, ctag_motivo };	
+		PostGen(data, agregarCreditoDesdeCuentaDirectaUrl, function (obj) {
+			if (obj.error === true) {
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				//Recargar Grilla de creditos
+				//Recargar Grilla de totales
+				ActualizarGrillaCreditosSuperior();
+				ActualizarTotalesSuperiores();
+				LimpiarSeleccionDeCtag();
+			}
+		});
+	}
+	else {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar una cuenta directa", function () {
+			$("#msjModal").modal("hide");
+			$("#listaCtaDir").trigger("focus");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+}
+
+function LimpiarSeleccionDeCtag() {
+	$("#listaCtaDir").val("");
+	$("#txtValorCtaDirSeleccionada").val(0);
+	$("#txtMotivoCtaDirSeleccionada").val("");
+}
 
 function imprimirOPP() {	
 	// Invocar gestor documental
@@ -160,6 +222,7 @@ function btnAnterior2Validar() {
 		ActualizarGrillaObligacionesInferior();
 		ActualizarGrillaCreditosInferior();
 		EvaluarBotonesWizzard();
+		getMaskForMoneyType("#txtValorCtaDirSeleccionada");
 		CerrarWaiting();
 	});
 }
@@ -180,9 +243,6 @@ function btnSiguiente1Validar() {
 		MostrarDatosDeCuenta(true);
 		CargarRetencionesDesdeObligYCredSeleccionados();
 		CargarValoresDesdeObligYCredSeleccionados();
-		setTimeout(() => {
-			ActualizarTotalesSuperiores();
-		}, 500);
 		CerrarWaiting();
 		if (esPagoAnticipado) {
 			ControlaMensajeInfo("Es Pago Anticipado.");
@@ -201,7 +261,9 @@ function CargarValoresDesdeObligYCredSeleccionados() {
 	var data = {};
 	PostGenHtml(data, cargarValoresDesdeObligYCredSeleccionadosUrl, function (obj) {
 		$("#divValores").html(obj);
-		ActualizarTotalesSuperiores();
+		setTimeout(() => {
+			ActualizarTotalesSuperiores();
+		}, 500);
 	});
 }
 
@@ -399,6 +461,7 @@ function AceptarDesdeValidPrev() {
 			$("#divDetalle").collapse("hide");
 		});
 		valorANombreDe = $("#valoresANombreDe").val();
+		getMaskForMoneyType("#txtValorCtaDirSeleccionada");
 		CerrarWaiting();
 	});
 }
@@ -558,4 +621,19 @@ function RestaurarGrillasInferioresParaPaso1() {
 	setTimeout(() => {
 		CargarObligacionesOCreditos("Creditos"); //Créditos
 	}, 500);
+}
+
+function getMaskForMoneyType(selector) {
+	$(selector).inputmask({
+		alias: 'numeric',
+		groupSeparator: '.',
+		radixPoint: ',',
+		digits: 2,
+		digitsOptional: false,
+		allowMinus: false,
+		prefix: '',
+		suffix: '',
+		rightAlign: true,
+		unmaskAsNumber: true
+	});
 }

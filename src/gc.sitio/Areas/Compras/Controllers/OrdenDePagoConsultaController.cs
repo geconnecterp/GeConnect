@@ -26,7 +26,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 		//PARA MODULO DE IMPRESION
 		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
 		private AppModulo _modulo; //tengo el AppModulo que corresponde a la consulta de cuentas
+		private AppModulo _modulo_2; //tengo el AppModulo que corresponde a la consulta de cuentas
 		private string APP_MODULO = AppModulos.COP.ToString();
+		private string APP_MODULO_2 = AppModulos.OPP.ToString();
 		private readonly IDocManagerServicio _docMSv;
 
 		//************************
@@ -47,7 +49,51 @@ namespace gc.sitio.Areas.Compras.Controllers
 			//PARA MODULO DE IMPRESION
 			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
 			_modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO); //identifico los datos del modulo que necesito: COP
+			_modulo_2 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_2); //identifico los datos del modulo que necesito: COP
 			_docMSv = docManager; //instancio el servicio de impresión
+		}
+
+		/// <summary>
+		/// Establece el tipo de reporte seleccionado por el usuario para la consulta de órdenes de pago.
+		/// Inicializa el gestor de impresión y carga los documentos disponibles según el tipo de reporte.
+		/// </summary>
+		public JsonResult SetearTipoDeReporte(int tipoReporte)
+		{
+			try
+			{
+				if (tipoReporte < 0)
+					return Json(new { error = true, warn = false, msg = "Debe seleccionar un tipo de reporte." });
+				
+				string titulo = "CONSULTA DE ORDENES DE PAGO";
+				//Seteo el tipo de reporte en la sesion
+				if (tipoReporte == 1)
+				{
+					#region Gestor Impresion - Inicializacion de variables
+					//Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
+					DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
+					// en este mismo acto se cargan los posibles documentos
+					//que se pueden imprimir, exportar, enviar por email o whatsapp
+					ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
+
+					#endregion
+				}
+				else
+				{
+					#region Gestor Impresion - Inicializacion de variables
+					//Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
+					DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_2);
+					// en este mismo acto se cargan los posibles documentos
+					//que se pueden imprimir, exportar, enviar por email o whatsapp
+					ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_2);
+
+					#endregion
+				}
+				return Json(new { error = false, warn = false, msg = "Tipo de reporte actualizado correctamente." });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar setear el tipo de reporte: {ex.Message}" });
+			}
 		}
 
 		public IActionResult Index()
@@ -65,10 +111,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				#region Gestor Impresion - Inicializacion de variables
 				//Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
-				DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
+				DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_2);
 				// en este mismo acto se cargan los posibles documentos
 				//que se pueden imprimir, exportar, enviar por email o whatsapp
-				ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
+				ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_2);
 
 				#endregion
 

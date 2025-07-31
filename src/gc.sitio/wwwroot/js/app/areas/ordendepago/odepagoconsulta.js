@@ -59,6 +59,7 @@
 	$(document).on("click", "#btnAnularOP", btnAnularOP);
 	$(document).on("click", "#btnAnularCertRet", btnAnularCertRet);
 	$(document).on("click", "#btnImprimirLista", btnImprimirLista);
+	$(document).on("click", "#btnImprimirOP", btnImprimirOP);
 	$(document).on("change", "#listaTipoCert", ControlalistaTipoCertSelected);
 	$(document).on("change", "#listaLs03", ControlalistaTipoSelected);
 	$(document).on("change", "#listaLs02", ControlalistaUsuarioSelected);
@@ -145,7 +146,49 @@ function btnImprimirLista() {
 		}, false, ["Aceptar"], "error!", null);
 	}
 	else {
-		ImprimirListadoDeOP();
+		var tipoReporte = 1;
+		var data = { tipoReporte };
+		PostGen(data, setearTipoDeReporteUrl, function (obj) {
+			if (obj.error === true) {
+				CerrarWaiting();
+				//ControlaMensajeWarning(obj.msg);
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				CerrarWaiting();
+				ImprimirListadoDeOP();
+			}
+		});
+	}
+}
+
+function btnImprimirOP() {
+	if ($("#tbListaOP > tbody > tr").length === 0) {
+		AbrirMensaje("ATENCIÓN", "No hay datos generar el reporte.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		var tipoReporte = 2;
+		var data = { tipoReporte };
+		PostGen(data, setearTipoDeReporteUrl, function (obj) {
+			if (obj.error === true) {
+				CerrarWaiting();
+				//ControlaMensajeWarning(obj.msg);
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				CerrarWaiting();
+				ImprimirOPSeleccionadas();
+			}
+		});
 	}
 }
 
@@ -174,6 +217,33 @@ function ImprimirListadoDeOP() {
 	invocacionGestorDoc({});
 }
 
+function ImprimirOPSeleccionadas() {
+	var Ids = [];
+	$("#tbListaOP").find('tr').each(function (i, el) {
+		var td = $(this).find('td');
+		if (td.length > 0 && td[0].innerText !== undefined) {
+			if (td.eq(0)[0]) {
+				if (td.eq(7)[0].children[0].checked)
+					Ids.push({ Id1: td.eq(0).text(), Id2: td.eq(9).text() });
+			}
+		}
+	});
+	console.log(Ids);
+	let data = { Ids };
+	cargarReporteEnArre(17, data, "ORDEN DE PAGO A PROVEEDORES", "", "");
+	//TODO MARCE: Para una segunda etapa dejar la verificacion de si tienen o no certificados de retencion.
+	//if (obj.imprimeIIBB) {
+	//	cargarReporteEnArre(18, data, "CERTIFICADO RETENCIÓN IIBB", "", "");
+	//}
+	//if (obj.imprimeIVA) {
+	//	cargarReporteEnArre(20, data, "CERTIFICADO RETENCIÓN IVA", "", "");
+	//}
+	//if (obj.imprimeGAN) {
+	//	cargarReporteEnArre(19, data, "CERTIFICADO RETENCIÓN GA", "", "");
+	//}
+	invocacionGestorDoc({});
+}
+
 function btnAnularCertRet() {
 	if (impIdSeleccionado == "") {
 		AbrirMensaje("ATENCIÓN", "Debe seleccionar un Tipo de Certificado.", function () {
@@ -192,10 +262,19 @@ function btnAnularCertRet() {
 					PostGen(data, anularCertificadoDeOrdenDePagoURL, function (obj) {
 						if (obj.error === true) {
 							CerrarWaiting();
-							ControlaMensajeWarning(obj.msg);
+							//ControlaMensajeWarning(obj.msg);
+							AbrirMensaje("ATENCIÓN", obj.msg, function () {
+								$("#msjModal").modal("hide");
+								return true;
+							}, false, ["Aceptar"], "error!", null);
 						}
 						else {
+							CerrarWaiting();
 							ConsultarExistenciaDeCertificados(opIdSeleccionado);
+							AbrirMensaje("ATENCIÓN", obj.msg, function () {
+								$("#msjModal").modal("hide");
+								return true;
+							}, false, ["Aceptar"], "succ!", null);
 						}
 					});
 					break;
@@ -226,10 +305,19 @@ function btnAnularOP() {
 					PostGen(data, anularOrdenDePagoURL, function (obj) {
 						if (obj.error === true) {
 							CerrarWaiting();
-							ControlaMensajeWarning(obj.msg);
+							//ControlaMensajeWarning(obj.msg);
+							AbrirMensaje("ATENCIÓN", obj.msg, function () {
+								$("#msjModal").modal("hide");
+								return true;
+							}, false, ["Aceptar"], "error!", null);
 						}
 						else {
+							CerrarWaiting();
 							ActualizarRegistroDeOrdenDePagoLuegoDeAnular(opIdSeleccionado);
+							AbrirMensaje("ATENCIÓN", obj.msg, function () {
+								$("#msjModal").modal("hide");
+								return true;
+							}, false, ["Aceptar"], "succ!", null);
 						}
 					});
 					break;

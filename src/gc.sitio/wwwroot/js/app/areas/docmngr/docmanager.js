@@ -591,6 +591,7 @@ function imprimirArchivoSeleccionado() {
                     const solicitudReporte = {
                         Reporte: data.reporte,  // Con mayúscula para coincidir con C#
                         Parametros: data.parametros,  // Con mayúscula
+                        Ids: data.parametros.Ids,  // Con mayúscula
                         Titulo: node.text,  // Con mayúscula
                         SubTitulo: data.subTitulo,
                         Observacion: data.observacion || "",  // Con mayúscula
@@ -618,12 +619,28 @@ function imprimirArchivoSeleccionado() {
                             }, false, ["Aceptar"], "error!", null);
                         } else {
                             var archivoBase64 = obj.base64;
-                            var blob = b64toBlob(archivoBase64, 'application/pdf');
-                            var url = URL.createObjectURL(blob);
-                            var printWindow = window.open(url);
-                            printWindow.onload = function () {
-                                printWindow.print();
-                            };
+                            if (!archivoBase64.includes("|")) {
+                                var blob = b64toBlob(archivoBase64, 'application/pdf');
+                                var url = URL.createObjectURL(blob);
+                                var printWindow = window.open(url);
+                                printWindow.onload = function () {
+                                    printWindow.print();
+                                };
+                            }
+                            else {
+                                var arrArchivoBase64 = archivoBase64.split("|");
+                                arrArchivoBase64.forEach(function (elemento, indice, arrayOriginal) {
+                                    if (elemento != "") {
+                                        var blob = b64toBlob(elemento, 'application/pdf');
+                                        var url = URL.createObjectURL(blob);
+                                        var printWindow = window.open(url);
+                                        printWindow.onload = function () {
+                                            printWindow.print();
+                                        };
+                                    }
+                                });
+
+                            }
                         }
                     });
                 }                

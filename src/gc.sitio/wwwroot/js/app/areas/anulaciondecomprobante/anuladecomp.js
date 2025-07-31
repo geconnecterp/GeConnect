@@ -1,7 +1,6 @@
 ﻿$(function () {
 	InicializaPantalla();
 	$(document).on("click", "#btnAbmAceptar", btnAbmAceptarClick); //Abrir modal
-	//
 });
 
 function InicializaPantalla() {
@@ -52,11 +51,17 @@ function InicializaPantalla() {
 	activarBotones(false);
 	ctaIdSelected = "";
 	MostrarDatosDeCuenta(false);
-
+	LimpiarSeleccionEnRadioButtons();
 	document.getElementById("Rel01").focus();
 
 	CerrarWaiting();
 	return true;
+}
+
+function LimpiarSeleccionEnRadioButtons() {
+	$('input[name="opcion"][value="opcion1"]').prop('checked', false);
+	$('input[name="opcion"][value="opcion2"]').prop('checked', false);
+	$('input[name="opcion"][value="opcion3"]').prop('checked', false);
 }
 
 function btnAbmAceptarClick() {
@@ -99,12 +104,21 @@ function btnAbmAceptarClick() {
 					PostGen(data, confirmarAnulacionUrl, function (obj) {
 						if (obj.error === true) {
 							CerrarWaiting();
-							ControlaMensajeError(obj.msg);
+							//ControlaMensajeError(obj.msg);
+							AbrirMensaje("ATENCIÓN", obj.msg, function () {
+								$("#msjModal").modal("hide");
+								return true;
+							}, false, ["Aceptar"], "error!", null);
 						}
 						else {
-							ControlaMensajeSuccess(obj.msg);
+							AbrirMensaje("ATENCIÓN", obj.msg, function () {
+								$("#msjModal").modal("hide");
+								return true;
+							}, false, ["Aceptar"], "error!", null);
+							//ControlaMensajeSuccess(obj.msg);
 							InicializarDatosEnSesion(false);
 							InicializarComprobante(ctaIdSelected);
+							LimpiarSeleccionEnRadioButtons();
 						}
 						return true;
 					});
@@ -122,6 +136,9 @@ function btnAbmAceptarClick() {
 }
 
 function ValidarAntesDeConfirmar() {
+	if (optSelected == undefined) {
+		return { error: true, msg: "Debe seleccionar una opcion de tipo para anular." };
+	}
 	if (optSelected == "") {
 		return { error: true, msg: "Debe seleccionar una opcion de tipo para anular." };
 	}
@@ -166,7 +183,7 @@ function InicializarComprobante(id) {
 				}
 			}
 		});
-		$('input[name="opcion"][value="opcion1"]').prop('checked', true);
+		//$('input[name="opcion"][value="opcion1"]').prop('checked', true);
 		CerrarWaiting();
 		return true
 	});
@@ -263,6 +280,9 @@ function selectReg(x, gridId) {
 	$(x).addClass("selected-row");
 	if (gridId === "tbGrillaComprobantes") {
 		CargarNotasACuenta(x);
+		diaMoviGrid2 = "";
+		tcoIdGrid2 = "";
+		cmCompteGrid2 = "";
 	}
 	else {
 		diaMoviGrid2 = $(x).find("td").eq(1).text().trim();

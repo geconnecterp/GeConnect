@@ -1,4 +1,5 @@
-﻿using gc.api.core.Entidades;
+﻿using DocumentFormat.OpenXml.Drawing;
+using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen;
@@ -14,6 +15,7 @@ using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using NuGet.Protocol;
 using Org.BouncyCastle.Ocsp;
 
 namespace gc.sitio.Areas.Compras.Controllers
@@ -480,62 +482,78 @@ namespace gc.sitio.Areas.Compras.Controllers
 					var item = OPCreditoNuevaLista.FirstOrDefault(x => x.cm_compte_cuota.Equals(r.cuota) && x.dia_movi.Equals(r.dia_movi) && x.cm_compte.Equals(r.cm_compte) && x.tco_id.Equals(r.tco_id) && x.cta_id.Equals(r.cta_id));
 					if (item != null)
 					{
-						var respuesta = _ordenDePagoServicio.CargarSacarOPDebitoCreditoDelProveedor(r, TokenCookie);
-						Console.WriteLine("Request enviado a [SPGECO_OP_cargar_sacar]:");
-						Console.WriteLine(JsonConvert.SerializeObject(r, new JsonSerializerSettings()));
-
-						if (respuesta != null && respuesta.Entidad != null)
+						if (r.cuota.Equals(1) && r.dia_movi.Equals(item.tco_desc) && item.cm_compte.Equals(item.cv_estado)) //Registro agregado desde cuenta de gasto directa
 						{
-							if (respuesta.Entidad.resultado == 0)
+							//Lo quito de la lista que uso para cargar la grilla de obligaciones nuevas
+							var listaTemp = new List<OPDebitoYCreditoDelProveedorDto>();
+							foreach (var itemCredito in OPCreditoNuevaLista)
 							{
-								//Lo quito de la lista que uso para cargar la grilla de obligaciones nuevas
-								var listaTemp = new List<OPDebitoYCreditoDelProveedorDto>();
-								foreach (var itemCredito in OPCreditoNuevaLista)
-								{
-									if (itemCredito.dia_movi.Equals(r.dia_movi) && itemCredito.cm_compte.Equals(r.cm_compte) && itemCredito.cm_compte_cuota.Equals(r.cuota) && itemCredito.tco_id.Equals(r.tco_id))
-										continue;
-									listaTemp.Add(itemCredito);
-								}
-								DormirMetodo(100);
-								OPCreditoNuevaLista = listaTemp;
+								if (itemCredito.dia_movi.Equals(r.dia_movi) && itemCredito.cm_compte.Equals(r.cm_compte) && itemCredito.cm_compte_cuota.Equals(r.cuota) && itemCredito.tco_id.Equals(r.tco_id))
+									continue;
+								listaTemp.Add(itemCredito);
+							}
+							DormirMetodo(100);
+							OPCreditoNuevaLista = listaTemp;
+						}
+						else 
+						{
+							var respuesta = _ordenDePagoServicio.CargarSacarOPDebitoCreditoDelProveedor(r, TokenCookie);
+							Console.WriteLine("Request enviado a [SPGECO_OP_cargar_sacar]:");
+							Console.WriteLine(JsonConvert.SerializeObject(r, new JsonSerializerSettings()));
 
-								//Si la respuesta contiene valor en la propiedad "rela", debo quitar los items de la lista de creditos nuevos.
-								if (!string.IsNullOrEmpty(respuesta.Entidad.rela.Trim()))
+							if (respuesta != null && respuesta.Entidad != null)
+							{
+								if (respuesta.Entidad.resultado == 0)
 								{
-									var listaAux2 = OPDebitoNuevaLista;
-									ActualizarListasDeCreditosObligacionesParaAgregar(respuesta.Entidad.rela, listaAux2, accion_quitar, false);
-									//OPDebitoNuevaLista = listaAux2;
-
-									//Si estos items de la propiedad rela ya existian en la lista original de Débitos, debo agregarlos como forma de restauración.
-									if (OPDebitoOriginalLista == null || OPDebitoOriginalLista.Count <= 0)
+									//Lo quito de la lista que uso para cargar la grilla de obligaciones nuevas
+									var listaTemp = new List<OPDebitoYCreditoDelProveedorDto>();
+									foreach (var itemCredito in OPCreditoNuevaLista)
 									{
-										OPDebitoOriginalLista = ObtenerData('D');
+										if (itemCredito.dia_movi.Equals(r.dia_movi) && itemCredito.cm_compte.Equals(r.cm_compte) && itemCredito.cm_compte_cuota.Equals(r.cuota) && itemCredito.tco_id.Equals(r.tco_id))
+											continue;
+										listaTemp.Add(itemCredito);
 									}
-									OPDebitoLista = ActualizarListasDeCreditosObligaciones(respuesta.Entidad.rela, OPDebitoOriginalLista, OPDebitoLista);
-								}
-
-								//Lo agrego a la lista de creditos inferior, para eso lo busco en la lista original (Backup)
-								item = null;
-								item = OPCreditoOriginalLista.FirstOrDefault(x => x.cm_compte_cuota.Equals(r.cuota) && x.dia_movi.Equals(r.dia_movi) && x.cm_compte.Equals(r.cm_compte) && x.tco_id.Equals(r.tco_id) && x.cta_id.Equals(r.cta_id));
-								if (item != null)
-								{
-									model.MsgErrorEnCargarOSacarCreditos = "";
-									var lista = OPCreditoLista;
 									DormirMetodo(100);
-									lista.Add(item);
-									OPCreditoLista = lista;
+									OPCreditoNuevaLista = listaTemp;
+
+									//Si la respuesta contiene valor en la propiedad "rela", debo quitar los items de la lista de creditos nuevos.
+									if (!string.IsNullOrEmpty(respuesta.Entidad.rela.Trim()))
+									{
+										var listaAux2 = OPDebitoNuevaLista;
+										ActualizarListasDeCreditosObligacionesParaAgregar(respuesta.Entidad.rela, listaAux2, accion_quitar, false);
+										//OPDebitoNuevaLista = listaAux2;
+
+										//Si estos items de la propiedad rela ya existian en la lista original de Débitos, debo agregarlos como forma de restauración.
+										if (OPDebitoOriginalLista == null || OPDebitoOriginalLista.Count <= 0)
+										{
+											OPDebitoOriginalLista = ObtenerData('D');
+										}
+										OPDebitoLista = ActualizarListasDeCreditosObligaciones(respuesta.Entidad.rela, OPDebitoOriginalLista, OPDebitoLista);
+									}
+
+									//Lo agrego a la lista de creditos inferior, para eso lo busco en la lista original (Backup)
+									item = null;
+									item = OPCreditoOriginalLista.FirstOrDefault(x => x.cm_compte_cuota.Equals(r.cuota) && x.dia_movi.Equals(r.dia_movi) && x.cm_compte.Equals(r.cm_compte) && x.tco_id.Equals(r.tco_id) && x.cta_id.Equals(r.cta_id));
+									if (item != null)
+									{
+										model.MsgErrorEnCargarOSacarCreditos = "";
+										var lista = OPCreditoLista;
+										DormirMetodo(100);
+										lista.Add(item);
+										OPCreditoLista = lista;
+									}
+									else
+										model.MsgErrorEnCargarOSacarCreditos = "Se ha producido un error al intentar restaurar la lista de Créditos.";
 								}
 								else
-									model.MsgErrorEnCargarOSacarCreditos = "Se ha producido un error al intentar restaurar la lista de Créditos.";
+									model.MsgErrorEnCargarOSacarCreditos = string.IsNullOrEmpty(respuesta.Entidad.resultado_msj) ? $"No se puede agregar el item, error desconocido. ({respuesta.Entidad.resultado})" : respuesta.Entidad.resultado_msj;
 							}
 							else
-								model.MsgErrorEnCargarOSacarCreditos = string.IsNullOrEmpty(respuesta.Entidad.resultado_msj) ? $"No se puede agregar el item, error desconocido. ({respuesta.Entidad.resultado})" : respuesta.Entidad.resultado_msj;
+								model.MsgErrorEnCargarOSacarCreditos = "Se ha producido un error al intentar generar la transacción de Créditos.";
 						}
-						else
-							model.MsgErrorEnCargarOSacarCreditos = "Se ha producido un error al intentar generar la transacción de Créditos.";
 					}
 					else
-						model.MsgErrorEnCargarOSacarCreditos = "Se ha producido un error al intentar generar la transacción de Créditos.";
+						model.MsgErrorEnCargarOSacarCreditos = "Se ha producido un error al quitar el ítem de créditos desde cuenta de gasto directa.";
 
 					model.GrillaCreditosNueva = ObtenerGridCoreSmart<OPDebitoYCreditoDelProveedorDto>(OPCreditoNuevaLista);
 					return PartialView("_grillaNuevosCreditos", model);
@@ -663,6 +681,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 				var tot_CredYValImputados = (decimal)0.00;
 				if (OPCreditoNuevaLista != null && OPCreditoNuevaLista.Count > 0)
 					tot_CredYValImputados += OPCreditoNuevaLista.Sum(x => x.cv_importe);
+				Console.WriteLine($"OPRetencionesDesdeObligYCredLista.Count(): {(OPRetencionesDesdeObligYCredLista != null ? OPRetencionesDesdeObligYCredLista.Count : 0)}");
+				if (OPRetencionesDesdeObligYCredLista == null || OPRetencionesDesdeObligYCredLista.Count <= 0)
+					OPRetencionesDesdeObligYCredLista = ObtenerRetenciones();
 				if (OPRetencionesDesdeObligYCredLista != null && OPRetencionesDesdeObligYCredLista.Count > 0)
 					tot_CredYValImputados += OPRetencionesDesdeObligYCredLista.Sum(x => x.retencion);
 				if (OPValoresDesdeObligYCredLista != null && OPValoresDesdeObligYCredLista.Count > 0)
@@ -792,17 +813,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new GridCoreSmart<RetencionesDesdeObligYCredDto>();
 			try
 			{
-				var cta_id = CtaIdSelected;
-				var json_debitos = JsonConvert.SerializeObject(OPDebitoNuevaLista, new JsonSerializerSettings());
-				var json_creditos = JsonConvert.SerializeObject(OPCreditoNuevaLista, new JsonSerializerSettings());
-				var response = _ordenDePagoServicio.CargarRetencionesDesdeObligYCredSeleccionados(new CargarRetencionesDesdeObligYCredSeleccionadosRequest
+				if (OPRetencionesDesdeObligYCredLista != null && OPRetencionesDesdeObligYCredLista.Count > 0)
 				{
-					cta_id = cta_id,
-					json_d = json_debitos,
-					json_h = json_creditos
-				}, TokenCookie);
-				model = ObtenerGridCoreSmart<RetencionesDesdeObligYCredDto>(response);
-				OPRetencionesDesdeObligYCredLista = response;
+					model = ObtenerGridCoreSmart<RetencionesDesdeObligYCredDto>(OPRetencionesDesdeObligYCredLista);
+					return PartialView("_grillaRetenciones", model);
+				}
+				OPRetencionesDesdeObligYCredLista = ObtenerRetenciones();
+				model = ObtenerGridCoreSmart<RetencionesDesdeObligYCredDto>(OPRetencionesDesdeObligYCredLista);
 				return PartialView("_grillaRetenciones", model);
 			}
 			catch (Exception ex)
@@ -927,12 +944,33 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				if (req == null)
 					return Json(new { error = true, warn = false, msg = $"Request vacío, por favor revise." });
+				
+				var settings = new JsonSerializerSettings
+				{
+					DateFormatString = "yyyy-MM-dd HH:mm:ss"
+				};
+
 
 				req.cta_id = CtaIdSelected;
 				req.adm_id = AdministracionId;
 				req.usu_id = UserName;
 				req.json_d = JsonConvert.SerializeObject(OPDebitoNuevaLista, new JsonSerializerSettings());
-				req.json_h = JsonConvert.SerializeObject(OPCreditoNuevaLista, new JsonSerializerSettings());
+				//Areglo la lista de Creditos en aquellos registros que tengan cuota = 1 y dia_movi = tco_desc, ya que son los que se agregan desde cuenta de gasto directa.
+				if (OPCreditoNuevaLista != null && OPCreditoNuevaLista.Count > 0)
+				{
+					var listaTemp = OPCreditoNuevaLista;
+					foreach (var item in listaTemp)
+					{
+						if (item.dia_movi.Equals(item.tco_desc) && item.cm_compte.Equals(item.cv_estado) && item.cm_compte.Equals(item.ctag_id))
+						{
+							item.cm_compte = string.Empty; //Lo pongo en cero para que no se considere como cuota.
+							item.dia_movi = string.Empty; //Lo dejo vacío, ya que no es un movimiento de cuenta de gasto directa.
+							item.cv_estado = null;
+						}
+					}
+					OPCreditoNuevaLista = listaTemp;
+				}
+				req.json_h = JsonConvert.SerializeObject(OPCreditoNuevaLista, settings);
 				req.json_r = JsonConvert.SerializeObject(OPRetencionesDesdeObligYCredLista, new JsonSerializerSettings());
 				req.json_v = JsonConvert.SerializeObject(OPValoresDesdeObligYCredLista, new JsonSerializerSettings());
 
@@ -994,6 +1032,52 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
+		public JsonResult AgregarCreditoDesdeCuentaDirecta(string ctag_id, string ctag_desc, decimal importe, string ctag_motivo)
+		{
+			if (string.IsNullOrEmpty(ctag_id) || string.IsNullOrEmpty(ctag_desc) || importe <= 0 || string.IsNullOrEmpty(ctag_motivo))
+				return Json(new { error = true, warn = false, msg = $"Algunos de los valores relacionados a cuenta de gastos directa que se desea agregar no están completos." });
+
+			//Si existe, no lo agrego
+			if (OPCreditoNuevaLista.Where(x => x.dia_movi.Equals(ctag_desc) && x.tco_desc.Equals(ctag_desc) && x.cm_compte.Equals(ctag_id) && x.cv_estado.Equals(ctag_id)).Any())
+				return Json(new { error = true, warn = false, msg = $"El elemento que desea agregar, ya existe." });
+			
+			try
+			{
+				var listaTemp = OPCreditoNuevaLista;
+				var newItem = new OPDebitoYCreditoDelProveedorDto
+				{
+					#region Campos
+					cta_id = CtaIdSelected,
+					dia_movi = ctag_desc,//string.Empty,
+					tco_id = "OPA",
+					tco_desc = ctag_desc,
+					cm_compte = ctag_id,//string.Empty,
+					cm_compte_cuota = 1,
+					cv_fecha_vto = DateTime.Today,
+					cv_importe = importe,
+					cv_importe_ori = importe,
+					cv_imputado = importe,
+					cv_estado = ctag_id,//null,
+					cv_fecha_carga = DateTime.Today,
+					cv_concepto = string.Empty,
+					ve_id = null,
+					ccb_id = TipoGastoLista.Where(x => x.ctag_id.Equals(ctag_id)).First().ccb_id,
+					concepto = $"{ctag_desc} ({ctag_id})",
+					ctag_id = ctag_id,
+					ctag_motivo = ctag_motivo
+					#endregion
+				};
+				listaTemp.Add(newItem);
+				OPCreditoNuevaLista = listaTemp;
+				return Json(new { error = false, warn = false, msg = "" });
+			}
+
+			catch (Exception)
+			{
+				return Json(new { error = true, warn = false, msg = "Se ha producido un error al intentar agregar crédito desde una cuenta directa." });
+			}
+		}
+
 		#region Clases
 		private void RecalcularOrden(List<ValoresDesdeObligYCredDto> lista)
 		{
@@ -1017,6 +1101,29 @@ namespace gc.sitio.Areas.Compras.Controllers
 		#endregion
 
 		#region Metodos Privados
+		private List<RetencionesDesdeObligYCredDto> ObtenerRetenciones()
+		{
+			var cta_id = CtaIdSelected;
+			var json_debitos = JsonConvert.SerializeObject(OPDebitoNuevaLista, new JsonSerializerSettings());
+			//*************//
+			//Antes debo quitar los que son gastos directos
+			var listaTemp = new List<OPDebitoYCreditoDelProveedorDto>();
+			foreach (var itemCredito in OPCreditoNuevaLista)
+			{
+				if (itemCredito.dia_movi.Equals(itemCredito.tco_desc) && itemCredito.cm_compte.Equals(itemCredito.cv_estado) && itemCredito.cm_compte.Equals(itemCredito.ctag_id))
+					continue;
+				listaTemp.Add(itemCredito);
+			}
+			//*************//
+			var json_creditos = JsonConvert.SerializeObject(listaTemp, new JsonSerializerSettings());
+			var response = _ordenDePagoServicio.CargarRetencionesDesdeObligYCredSeleccionados(new CargarRetencionesDesdeObligYCredSeleccionadosRequest
+			{
+				cta_id = cta_id,
+				json_d = json_debitos,
+				json_h = json_creditos
+			}, TokenCookie);
+			return response;
+		}
 		private RespuestaGenerica<RespuestaDto> ObtenerEntidadAux()
 		{
 			return new RespuestaGenerica<RespuestaDto>

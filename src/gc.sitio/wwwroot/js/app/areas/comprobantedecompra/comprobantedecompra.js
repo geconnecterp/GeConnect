@@ -75,7 +75,9 @@ function InicializaPantalla() {
 	$(document).on("change", "#listaOtroTrib", ControlaOtroTribSeleccionada);
 	$(document).on("change", "#Comprobante_fecha_compte", ControlaFechaCompteSeleccionada);
 	$(document).on("keyup", "#Comprobante_cm_compte_pto_vta", ControlaKeyUpComptePtoVta);
+	$(document).on("focusout", "#Comprobante_cm_compte_pto_vta", ControlaFocusOutComptePtoVta);
 	$(document).on("keyup", "#Comprobante_cm_compte_pto_nro", ControlaKeyUpCompteNro);
+	$(document).on("focusout", "#Comprobante_cm_compte_pto_nro", ControlaFocusOutCompteNro);
 	$(document).on("keyup", "#ConceptoFacturado_concepto", ControlaKeyUpConceptoFacturado_concepto);
 	$(document).on("keyup", "#ConceptoFacturado_subtotal", ControlaKeyUpConceptoFacturado_subtotal);
 	$(document).on("focusin", "#ConceptoFacturado_subtotal", ControlaGotFocusConceptoFacturado_subtotal);
@@ -100,11 +102,29 @@ function InicializaPantalla() {
 	return true;
 }
 
+function ControlaFocusOutComptePtoVta() {
+	var ptv = $("#Comprobante_cm_compte_pto_vta").inputmask('unmaskedvalue');
+	if (ptv != "") {
+		var aux = $("#Comprobante_cm_compte_pto_vta").inputmask('unmaskedvalue').padStart(4, '0');
+		$("#Comprobante_cm_compte_pto_vta").val(aux);
+		$("#Comprobante_cm_compte_pto_nro").trigger("focus");
+	}
+}
+
 function ControlaKeyUpComptePtoVta(e) {
 	if (e.which == 13 || e.which == 109) {
 		var aux = $("#Comprobante_cm_compte_pto_vta").inputmask('unmaskedvalue').padStart(4, '0');
 		$("#Comprobante_cm_compte_pto_vta").val(aux);
 		$("#Comprobante_cm_compte_pto_nro").trigger("focus");
+	}
+}
+
+function ControlaFocusOutCompteNro() {
+	var nro = $("#Comprobante_cm_compte_pto_nro").inputmask('unmaskedvalue');
+	if (nro != "") {
+		var aux = $("#Comprobante_cm_compte_pto_nro").inputmask('unmaskedvalue').padStart(8, '0');
+		$("#Comprobante_cm_compte_pto_nro").val(aux);
+		$("#Comprobante_fecha_compte").trigger("focus");
 	}
 }
 

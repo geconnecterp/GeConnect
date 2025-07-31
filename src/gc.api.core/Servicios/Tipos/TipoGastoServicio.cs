@@ -30,6 +30,7 @@ namespace gc.api.core.Servicios
 					ctag_id = x.ctag_id,
 					ctag_lista = x.ctag_lista,
 					ctag_tipo = x.ctag_tipo,
+					ccb_id = x.ccb_id,
 					#endregion
 				}).ToList();
 		}

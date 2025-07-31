@@ -392,7 +392,7 @@
 
 		protected PdfPTable GeneraCabeceraPdf3C(ReporteSolicitudDto solicitud, Font chico, Font titulo, Image? logo, EmpresaGeco _empresaGeco)
 		{
-			PdfPTable tabla = HelperPdf.GeneraTabla(3, [10f, 25f, 65f], 100, 10, 20);
+			PdfPTable tabla = HelperPdf.GeneraTabla(3, [10f, 20f, 70f], 100, 10, 20);
 
 			// Columna 1: Logo
 			PdfPCell celdaLogo;

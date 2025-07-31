@@ -150,8 +150,12 @@
 			</div>
 			<div class="row col-md-12 mb-1 mt-2">
 				<div class="input-group input-group-sm">
-					@Html.DropDownListFor(m => m.ctaDir, lstCtaDir, "Seleccionar...", new { @id = "listaCtaDir", disabled = "disabled", @class = "form-control activable" })
-					<input type="text" id="txtValorCtaDirSeleccionada" class="form-control activable inputEditable" disabled/>
+					@Html.DropDownListFor(m => m.ctaDir, lstCtaDir, "Seleccionar...", new { @id = "listaCtaDir", @class = "form-control activable", @style = "width: 20%;" })
+					<input type="text" id="txtValorCtaDirSeleccionada" class="form-control activable inputEditable"/>
+					<input type="text" id="txtMotivoCtaDirSeleccionada" class="form-control activable inputEditable" style="width: 20%;" />
+					<button id="btnAgregarConceptoCancelatoriobtnAgregarConceptoCancelatorio" class="btn btn-success btn-sm" type="button" title="Agregar concepto cancelatorio">
+						<i class="bx bx-plus-circle"></i>
+					</button>
 				</div>
 			</div>
 			<div class="row" id="divCreditos">

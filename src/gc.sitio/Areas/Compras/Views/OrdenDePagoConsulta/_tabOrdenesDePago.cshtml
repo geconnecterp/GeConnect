@@ -36,11 +36,11 @@
 							{
 								var nombre = "chkImpreso" + item.op_compte;
 								<tr onclick="selectListaOPRow(this)">
-									<td class="tiny-row @Model.GrillaOP.ObtenerClase(item.op_compte)">@item.op_compte</td>
+									<td class="tiny-row align-center">@item.op_compte</td>
 									<td class="tiny-row @Model.GrillaOP.ObtenerClase(item.opt_desc)">@Model.GrillaOP.FormatearDato(item.opt_desc, FormatDato.Ninguno)</td>
 									<td class="tiny-row @Model.GrillaOP.ObtenerClase(item.op_fecha)">@Model.GrillaOP.FormatearDato(item.op_fecha, FormatDato.Fecha)</td>
 									<td class="tiny-row @Model.GrillaOP.ObtenerClase(item.cta_denominacion)">@Model.GrillaOP.FormatearDato(item.cta_denominacion, FormatDato.Ninguno)</td>
-									<td class="tiny-row @Model.GrillaOP.ObtenerClase(item.op_anulada_desc)">@Model.GrillaOP.FormatearDato(item.op_anulada_desc, FormatDato.Fecha)</td>
+									<td class="tiny-row align-center">@Model.GrillaOP.FormatearDato(item.op_anulada_desc, FormatDato.Fecha)</td>
 									<td class="tiny-row @Model.GrillaOP.ObtenerClase(item.usu_apellidoynombre)">@Model.GrillaOP.FormatearDato(item.usu_apellidoynombre, FormatDato.Ninguno)</td>
 									<td class="tiny-row @Model.GrillaOP.ObtenerClase(item.op_importe)">@Model.GrillaOP.FormatearDato(item.op_importe, FormatDato.Monto)</td>
 									@if (item.op_impreso_bool)
