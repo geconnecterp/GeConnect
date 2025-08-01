@@ -45,10 +45,10 @@ namespace gc.api.core.Servicios.Reportes
 
 			PdfWriter? writer = null;
 			Document pdf;
-
+			var ms = new MemoryStream();
 			try
 			{
-				var ms = new MemoryStream();
+
 				#region Obteniendo registros desde la base de datos
 				//Puede ser que en lugar de imprimir un reporte venga varios
 				if (EsUnaListaDeOPP(solicitud))
@@ -163,12 +163,13 @@ namespace gc.api.core.Servicios.Reportes
 
 				pdf.Close();
 				#endregion
-
+				pdf.Dispose();
 				return Convert.ToBase64String(ms.ToArray());
 
 			}
-			catch (NegocioException)
+			catch (NegocioException neg)
 			{
+				_logger.LogError(neg, "Error en R017");
 				throw;
 			}
 			catch (Exception ex)
@@ -176,6 +177,10 @@ namespace gc.api.core.Servicios.Reportes
 				//_logger.Log(typeof(R001_InformeCuentaCorriente), Level.Error, $"Error al generar el informe de cuenta corriente: {ex.Message}", ex);
 				_logger.LogError(ex, "Error en R003");
 				throw new NegocioException("Se produjo un error al intentar generar el Informe de Cuenta Corriente. Para mayores datos ver el log.");
+			}
+			finally
+			{
+				ms.Dispose();
 			}
 		}
 
@@ -306,18 +311,17 @@ namespace gc.api.core.Servicios.Reportes
 
 					#endregion
 
-					//return Convert.ToBase64String(ms.ToArray());
-					//reporteMasivo += Convert.ToBase64String(ms.ToArray()) + "|"; // Agregar un separador entre los reportes
-					reporteMasivo += Convert.ToBase64String(ms.ToArray()) + "|"; 
+					reporteMasivo += Convert.ToBase64String(ms.ToArray()) + "|";
+					pdf.Dispose();
+					ms.Dispose();
 				}
 				return reporteMasivo;
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
-
-				throw;
+				_logger.LogError(ex, "Error en R017");
+				return string.Empty;
 			}
-			return string.Empty;
 		}
 
 		private bool EsUnaListaDeOPP(ReporteSolicitudDto solicitud)
@@ -345,7 +349,7 @@ namespace gc.api.core.Servicios.Reportes
 			string cmptId = item.Id1;
 			var comprobanteLista = _consultaServicio.ConsultaOrdenDePagoProveedor(cmptId);
 			titulo = $"Orden de Pago a Proveedores {comprobanteLista.First().Opt_desc} N° {cmptId}";
-			return _consultaServicio.ConsultaOrdenDePagoProveedor(cmptId);
+			return comprobanteLista;
 		}
 
 		private List<ConsOrdPagoDetExtendDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string ctaId, out string titulo)
@@ -355,7 +359,7 @@ namespace gc.api.core.Servicios.Reportes
 			string cmptId = solicitud.Parametros.GetValueOrDefault("op_compte", "").ToString();
 			var comprobanteLista = _consultaServicio.ConsultaOrdenDePagoProveedor(cmptId);
 			titulo = $"Orden de Pago a Proveedores {comprobanteLista.First().Opt_desc} N° {cmptId}";
-			return _consultaServicio.ConsultaOrdenDePagoProveedor(cmptId);
+			return comprobanteLista;
 		}
 
 		public string GenerarTxt(ReporteSolicitudDto solicitud)

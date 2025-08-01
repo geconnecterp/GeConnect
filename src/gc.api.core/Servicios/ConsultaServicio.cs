@@ -146,6 +146,16 @@ namespace gc.api.core.Servicios
 			List<CertRetenGananDto> res = _repository.EjecutarLstSpExt<CertRetenGananDto>(sp, ps, true);
 			return res;
 		}
+		public List<CertRetenGananDto> ConsultaCertRetenGAFromList(string op_compte)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_C_CERT_RETEN_GA_FROM_LIST;
+			var ps = new List<SqlParameter>() {
+				new("@op_compte_lista",op_compte),
+			};
+
+			List<CertRetenGananDto> res = _repository.EjecutarLstSpExt<CertRetenGananDto>(sp, ps, true);
+			return res;
+		}
 		public List<CertRetenIBDto> ConsultaCertRetenIB(string op_compte)
 		{
 			var sp = ConstantesGC.StoredProcedures.SP_C_CERT_RETEN_IB;
@@ -156,11 +166,31 @@ namespace gc.api.core.Servicios
 			List<CertRetenIBDto> res = _repository.EjecutarLstSpExt<CertRetenIBDto>(sp, ps, true);
 			return res;
 		}
+		public List<CertRetenIBDto> ConsultaCertRetenIBFromList(string op_compte)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_C_CERT_RETEN_IB_FROM_LIST;
+			var ps = new List<SqlParameter>() {
+				new("@op_compte_lista",op_compte),
+			};
+
+			List<CertRetenIBDto> res = _repository.EjecutarLstSpExt<CertRetenIBDto>(sp, ps, true);
+			return res;
+		}
 		public List<CertRetenIVADto> ConsultaCertRetenIVA(string op_compte)
 		{
 			var sp = ConstantesGC.StoredProcedures.SP_C_CERT_RETEN_IVA;
 			var ps = new List<SqlParameter>() {
 				new("@op_compte",op_compte),
+			};
+
+			List<CertRetenIVADto> res = _repository.EjecutarLstSpExt<CertRetenIVADto>(sp, ps, true);
+			return res;
+		}
+		public List<CertRetenIVADto> ConsultaCertRetenIVAFromList(string op_compte)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_C_CERT_RETEN_IVA_FROM_LIST;
+			var ps = new List<SqlParameter>() {
+				new("@op_compte_lista",op_compte),
 			};
 
 			List<CertRetenIVADto> res = _repository.EjecutarLstSpExt<CertRetenIVADto>(sp, ps, true);

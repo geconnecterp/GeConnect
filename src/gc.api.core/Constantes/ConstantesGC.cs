@@ -255,12 +255,15 @@ namespace gc.api.core.Constantes
 
             #region Certificados
             public const string SP_C_CERT_RETEN_GA = "SPGECO_C_Cert_Reten_GA";
-            public const string SP_C_CERT_RETEN_IB = "SPGECO_C_Cert_Reten_IB";
-            public const string SP_C_CERT_RETEN_IVA = "SPGECO_C_Cert_Reten_IVA";
-            #endregion
+			public const string SP_C_CERT_RETEN_GA_FROM_LIST = "SPGECO_C_Cert_Reten_GA_From_List";
+			public const string SP_C_CERT_RETEN_IB = "SPGECO_C_Cert_Reten_IB";
+			public const string SP_C_CERT_RETEN_IB_FROM_LIST = "SPGECO_C_Cert_Reten_IB_From_List";
+			public const string SP_C_CERT_RETEN_IVA = "SPGECO_C_Cert_Reten_IVA";
+			public const string SP_C_CERT_RETEN_IVA_FROM_LIST = "SPGECO_C_Cert_Reten_IVA_From_List";
+			#endregion
 
-            #region ABM
-            public const string SP_ABM_P_LISTA = "SPGECO_ABM_P_Lista";
+			#region ABM
+			public const string SP_ABM_P_LISTA = "SPGECO_ABM_P_Lista";
             public const string SP_ABM_P_DATOS = "SPGECO_ABM_P_Datos";
 
             public const string SP_ABM_CLI_LISTA = "SPGECO_ABM_Cli_Lista";

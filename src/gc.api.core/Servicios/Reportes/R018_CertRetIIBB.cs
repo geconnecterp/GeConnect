@@ -45,11 +45,16 @@ namespace gc.api.core.Servicios.Reportes
 
 			PdfWriter? writer = null;
 			Document pdf;
-
+			var ms = new MemoryStream();
 			try
 			{
-				var ms = new MemoryStream();
 				#region Obteniendo registros desde la base de datos
+				//Puede ser que en lugar de imprimir un reporte venga varios
+				if (EsUnaListaDeOPP(solicitud))
+				{
+					return GenerarReporteMasivo(solicitud);
+				}
+
 				string ctaId;
 				string tit;
 				List<CertRetenIBDto> registros = ObtenerDatos(solicitud, out ctaId, out tit);
@@ -187,12 +192,13 @@ namespace gc.api.core.Servicios.Reportes
 
 				pdf.Close();
 				#endregion
-
+				pdf.Dispose();
 				return Convert.ToBase64String(ms.ToArray());
 
 			}
-			catch (NegocioException)
+			catch (NegocioException neg)
 			{
+				_logger.LogError(neg, "Error en R018");
 				throw;
 			}
 			catch (Exception ex)
@@ -200,9 +206,210 @@ namespace gc.api.core.Servicios.Reportes
 				_logger.LogError(ex, "Error en R018");
 				throw new NegocioException("Se produjo un error al intentar generar el Certificado de Retencion de IIBB. Para mayores datos ver el log.");
 			}
+			finally 
+			{ 
+				ms.Dispose(); 
+			}
 		}
 
+		private string GenerarReporteMasivo(ReporteSolicitudDto solicitud)
+		{
+			try
+			{
+				string reporteMasivo = string.Empty;
+				string ctaId;
+				string tit;
+				//Primero obtenemos la lista de objetos del tipo [cm_compte, cta_id]
+				var listaTemp = ObtenerDatos(solicitud);
 
+				foreach (var item in listaTemp)
+				{
+					var ms = new MemoryStream();
+					float[] anchos;
+
+					PdfWriter? writer = null;
+					Document pdf;
+
+					#region Obteniendo registros desde la base de datos
+					List<CertRetenIBDto> registros = ObtenerDatos(item, out ctaId, out tit);
+
+					if (registros == null || registros.Count == 0)
+					{
+						continue;
+					}
+
+					//buscando datos del cliente
+					var cta = _cuentaSv.GetCuentaComercialLista(ctaId, 'T');
+
+					if (cta == null || cta.Count == 0)
+					{
+						continue;
+					}
+					var cliente = cta[0];
+					cliente.Monto = 0m;
+					cliente.MontoEtiqueta = "";
+					//COMPLETAMOS EL TITULO DEL REPORTE AGREGANDO LA DENOMINACIÓN DE LA CUENTA
+					//tit += cliente.Cta_Denominacion;
+					solicitud.Titulo = tit;
+					solicitud.Cuenta = cliente;
+
+
+					//hago el modelo de dato aca ya que necesito los datos de la cuenta
+					var regs = registros.Select(x => new
+					{
+						#region Campos
+						cibNro = x.cib_nro,
+						ctaId = x.cta_id,
+						cibCuit = x.cib_cuit,
+						cibRazSoc = x.cib_raz_soc,
+						cibDomicilio = x.cib_domicilio,
+						cibFecha = x.cib_fecha,
+						cibBase = x.cib_base,
+						cibReten = x.cib_reten,
+						cibEstado = x.cib_estado,
+						opCompte = x.op_compte,
+						cibActu = x.cib_actu,
+						cibRetenLh = x.cib_reten_lh,
+						empRazSoc = x.emp_razon_social,
+						empCuit = x.emp_cuit,
+						empIbNro = x.emp_ib_nro,
+						empDomicilio = x.emp_domicilio,
+						cibNroIns = x.cib_nro_ins,
+						cibAli = x.cib_ali,
+						cibAliLh = x.cib_ali_lh,
+						ribDesc = x.rib_desc,
+						ribPorc = x.rib_porc,
+						ribImpreso = x.rib_impreso,
+						#endregion
+					}).ToList();
+
+					var agRet = regs.Select(x => new CertificadosDto()
+					{
+						// Campos del agente de retención
+						emp_cuit = x.empCuit,
+						emp_razon_social = x.empRazSoc,
+						emp_domicilio = x.empDomicilio,
+						emp_ib_nro = x.empIbNro,
+					}).First();
+
+					var certi = regs.Select(x => new Certificado()
+					{
+						// Campos del certificado
+						id = x.cibNro,
+						fecha = x.cibFecha,
+
+					}).First();
+
+					#endregion
+					#region Scripts PDF
+					#region instanciamos el pdf
+					pdf = HelperPdf.GenerarInstanciaAndInit(ref writer, out ms, HojaSize.A4, true);
+
+					// Agregar el evento de pie de página
+					writer.PageEvent = new CustomPdfPageEventHelper(solicitud.Observacion);
+
+					var logo = HelperPdf.CargaLogo(solicitud.LogoPath, 20, pdf.PageSize.Height - 10, 20);
+
+					#endregion
+					//****=============================****/
+					//****  CAMBIAR ANCHOS DE COLUMNAS ****
+					//****=============================****/
+					anchos = [70f, 30f];
+
+					var chico = HelperPdf.FontChicoPredeterminado();
+					var normal = HelperPdf.FontNormalPredeterminado();
+					var normalBold = HelperPdf.FontNormalPredeterminado(true);
+					var titulo = HelperPdf.FontTituloPredeterminado();
+					var subtitulo = HelperPdf.FontSubtituloPredeterminado();
+					var subtituloBold = HelperPdf.FontSubtituloPredeterminado(true);
+
+					#region Generación de Cabecera               
+
+					PdfPTable tabla = GeneraCabeceraPdf3C(solicitud, chico, titulo, logo, _empresaGeco);
+
+					// Convertir la tabla en un Phrase
+					Phrase phrase = new();
+					phrase.Add(tabla);
+
+					// Crear el HeaderFooter con el Phrase que contiene la tabla
+					HeaderFooter header = new(phrase, false)
+					{
+						Alignment = Element.ALIGN_TOP,
+						BorderWidth = 0,
+					};
+
+					pdf.Header = header;
+					#endregion
+
+					pdf.Open();
+
+					#region Datos del Agente de Retencion
+					HelperPdf.CargarTablaAgenteDeRetencion1Col(pdf, agRet, normal, normalBold, titulo, true);
+					#endregion
+
+					Chunk linebreak = new Chunk(new LineSeparator(1f, 100f, BaseColor.Black, Element.ALIGN_CENTER, 5));
+					pdf.Add(linebreak);
+
+					#region Datos datos/titulo del certificado
+					HelperPdf.CargarTablaCertificado(pdf, certi, normal, normalBold, titulo);
+					#endregion
+
+					#region Detalle de certificado
+					HelperPdf.CargarTablaCertificadoIIBBDetalle(pdf, registros.First(), subtitulo, subtituloBold, titulo);
+					#endregion
+
+					#region Firma
+					HelperPdf.CargarSeccionFirmaParaCertificadoDeRetencion(pdf, subtitulo, normal, titulo, false, 435, 330);
+					#endregion
+
+					HelperPdf.CargarSeccionCopiaParaCertificadoDeRetencion(pdf, writer);
+
+					pdf.Close();
+					#endregion
+
+					reporteMasivo += Convert.ToBase64String(ms.ToArray()) + "|";
+					pdf.Dispose();
+					ms.Dispose();
+				}
+				return reporteMasivo;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error en R018");
+				return string.Empty;
+			}
+			finally
+			{
+				
+			}
+		}
+		private bool EsUnaListaDeOPP(ReporteSolicitudDto solicitud)
+		{
+			var esUnaLista = false;
+			var bl = solicitud.Parametros.ContainsKey("Ids");
+			if (bl)
+				esUnaLista = true;
+			return esUnaLista;
+		}
+
+		private List<IdCollection> ObtenerDatos(ReporteSolicitudDto solicitud)
+		{
+			//Se obtienen los parámetros del reporte
+			var ids = solicitud.Ids;
+			if (ids == null || ids.Count <= 0)
+				throw new NegocioException("No se han encontrado los parámetros necesarios para generar el reporte.");
+
+			return ids;
+		}
+
+		private List<CertRetenIBDto> ObtenerDatos(IdCollection item, out string ctaId, out string titulo)
+		{
+			ctaId = item.Id2;
+			string cmptId = item.Id1;
+			var comprobanteLista = _consultaServicio.ConsultaCertRetenIB(cmptId);
+			titulo = $"Certificado de Retención Impuesto sobre los Ingresos Brutos";
+			return comprobanteLista;
+		}
 
 		private List<CertRetenIBDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string ctaId, out string titulo)
 		{

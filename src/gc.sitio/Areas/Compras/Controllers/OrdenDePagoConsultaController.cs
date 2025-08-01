@@ -37,7 +37,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private readonly ITipoOrdenDePagoServicio _tipoOrdenDePagoServicio;
 		private readonly IOrdenDePagoServicio _ordenDePagoServicio;
 		private readonly ICuentaServicio _cuentaServicio;
+		private readonly IConsultasServicio _consultasServicio;
 		public OrdenDePagoConsultaController(ITipoOrdenDePagoServicio tipoOrdenDePagoServicio, IOrdenDePagoServicio ordenDePagoServicio, ICuentaServicio cuentaServicio,
+											 IConsultasServicio consultasServicio,
 											 IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger<OrdenDePagoConsultaController> logger,
 											 IDocManagerServicio docManager, IOptions<DocsManager> docsManager) : base(options, accessor, logger)
 		{
@@ -45,55 +47,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 			_tipoOrdenDePagoServicio = tipoOrdenDePagoServicio;
 			_ordenDePagoServicio = ordenDePagoServicio;
 			_cuentaServicio = cuentaServicio;
+			_consultasServicio = consultasServicio;
 
 			//PARA MODULO DE IMPRESION
 			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
 			_modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO); //identifico los datos del modulo que necesito: COP
 			_modulo_2 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_2); //identifico los datos del modulo que necesito: COP
 			_docMSv = docManager; //instancio el servicio de impresión
-		}
-
-		/// <summary>
-		/// Establece el tipo de reporte seleccionado por el usuario para la consulta de órdenes de pago.
-		/// Inicializa el gestor de impresión y carga los documentos disponibles según el tipo de reporte.
-		/// </summary>
-		public JsonResult SetearTipoDeReporte(int tipoReporte)
-		{
-			try
-			{
-				if (tipoReporte < 0)
-					return Json(new { error = true, warn = false, msg = "Debe seleccionar un tipo de reporte." });
-				
-				string titulo = "CONSULTA DE ORDENES DE PAGO";
-				//Seteo el tipo de reporte en la sesion
-				if (tipoReporte == 1)
-				{
-					#region Gestor Impresion - Inicializacion de variables
-					//Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
-					DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
-					// en este mismo acto se cargan los posibles documentos
-					//que se pueden imprimir, exportar, enviar por email o whatsapp
-					ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
-
-					#endregion
-				}
-				else
-				{
-					#region Gestor Impresion - Inicializacion de variables
-					//Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
-					DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_2);
-					// en este mismo acto se cargan los posibles documentos
-					//que se pueden imprimir, exportar, enviar por email o whatsapp
-					ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_2);
-
-					#endregion
-				}
-				return Json(new { error = false, warn = false, msg = "Tipo de reporte actualizado correctamente." });
-			}
-			catch (Exception ex)
-			{
-				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar setear el tipo de reporte: {ex.Message}" });
-			}
 		}
 
 		public IActionResult Index()
@@ -126,7 +86,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				var listR03 = new List<ComboGenDto>();
 				ViewBag.Rel03List = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
-				
+
 				CargarDatosIniciales(true);
 				return View();
 			}
@@ -207,7 +167,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		[HttpPost]
-		public IActionResult CargarListaTiposCertificados(string op_compte) 
+		public IActionResult CargarListaTiposCertificados(string op_compte)
 		{
 			try
 			{
@@ -219,7 +179,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				var lista = ListaTipoCertificado;
 				var op = ListaOrdenDePagoConsulta.Where(x => x.op_compte.Equals(op_compte)).First();
 				if (op.certificado_ga)
-					lista.Add(new TipoCertificadoModel { id = "GA", descripcion= "Certificado de Ganancias" });
+					lista.Add(new TipoCertificadoModel { id = "GA", descripcion = "Certificado de Ganancias" });
 				if (op.certificado_iva)
 					lista.Add(new TipoCertificadoModel { id = "IVA", descripcion = "Certificado de IVA" });
 				if (op.certificado_ib)
@@ -354,7 +314,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar actualizar los datos de los usuarios de Ordenes de Pagos." });
 			}
-			
+
 		}
 
 		[HttpPost]
@@ -407,6 +367,79 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 
 		}
+
+		/// <summary>
+		/// Establece el tipo de reporte seleccionado por el usuario para la consulta de órdenes de pago.
+		/// Inicializa el gestor de impresión y carga los documentos disponibles según el tipo de reporte.
+		/// </summary>
+		public JsonResult SetearTipoDeReporte(int tipoReporte)
+		{
+			try
+			{
+				if (tipoReporte < 0)
+					return Json(new { error = true, warn = false, msg = "Debe seleccionar un tipo de reporte." });
+
+				string titulo = "CONSULTA DE ORDENES DE PAGO";
+				//Seteo el tipo de reporte en la sesion
+				if (tipoReporte == 1)
+				{
+					#region Gestor Impresion - Inicializacion de variables
+					//Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
+					DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
+					// en este mismo acto se cargan los posibles documentos
+					//que se pueden imprimir, exportar, enviar por email o whatsapp
+					ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
+
+					#endregion
+				}
+				else
+				{
+					#region Gestor Impresion - Inicializacion de variables
+					//Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
+					DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_2);
+					// en este mismo acto se cargan los posibles documentos
+					//que se pueden imprimir, exportar, enviar por email o whatsapp
+					ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_2);
+
+					#endregion
+				}
+				return Json(new { error = false, warn = false, msg = "Tipo de reporte actualizado correctamente." });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar setear el tipo de reporte: {ex.Message}" });
+			}
+		}
+
+		public JsonResult ValidarExistenciaDeCertificadosParaImprimir(string opCompteLista)
+		{
+			if (string.IsNullOrEmpty(opCompteLista))
+				return Json(new { error = true, warn = false, msg = $"Request vacío, por favor revise." });
+
+			try
+			{
+				var boolExisteIIBB = false;
+				var boolExisteIVA = false;
+				var boolExisteGAN = false;
+				var existeIIBB = _consultasServicio.ConsultaCertRetenIBFromList(opCompteLista, TokenCookie);
+				var existeIVA = _consultasServicio.ConsultaCertRetenIVAFromList(opCompteLista, TokenCookie);
+				var existeGanancias = _consultasServicio.ConsultaCertRetenGAFromList(opCompteLista, TokenCookie);
+
+				if (existeIIBB != null && existeIIBB.Count > 0)
+					boolExisteIIBB = true;
+				if (existeIVA != null && existeIVA.Count > 0)
+					boolExisteIVA = true;
+				if (existeGanancias != null && existeGanancias.Count > 0)
+					boolExisteGAN = true;
+
+				return Json(new { error = false, warn = false, msg = "", imprimeIIBB = boolExisteIIBB, imprimeIVA = boolExisteIVA, imprimeGAN = boolExisteGAN });
+			}
+			catch (Exception)
+			{
+				return Json(new { error = true, warn = false, msg = "Se ha producido un error al intentar validar certificados de retencion para imprimir." });
+			}
+		}
+
 
 		#region Métodos Privados
 		private void CargarDatosIniciales(bool actualizar)

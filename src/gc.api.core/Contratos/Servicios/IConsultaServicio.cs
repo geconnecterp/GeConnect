@@ -23,8 +23,10 @@ namespace gc.api.core.Contratos.Servicios
         List<ConsRecepcionProveedorDetalleDto> ConsultaRecepcionProveedorDetalle(string cmptId);
         List<ConsOrdPagoDetExtendDto> ConsultaOrdenDePagoProveedor(string op_compte);
         List<CertRetenGananDto> ConsultaCertRetenGA(string op_compte);
-        List<CertRetenIBDto> ConsultaCertRetenIB(string op_compte);
+        List<CertRetenGananDto> ConsultaCertRetenGAFromList(string op_compte);
+		List<CertRetenIBDto> ConsultaCertRetenIB(string op_compte);
         List<CertRetenIVADto> ConsultaCertRetenIVA(string op_compte);
-
+        List<CertRetenIBDto> ConsultaCertRetenIBFromList(string op_compte);
+        List<CertRetenIVADto> ConsultaCertRetenIVAFromList(string op_compte);
 	}
 }

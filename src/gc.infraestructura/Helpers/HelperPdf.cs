@@ -162,6 +162,14 @@ namespace gc.infraestructura.Helpers
 			return doc;
 		}
 
+		public static Document GenerarInstanciaAndInit(ref PdfWriter writer, HojaSize pagina = HojaSize.A4, bool esVertical = true)
+		{
+			Document doc = new Document(ObtenerHoja(pagina, esVertical), 20, 20, 15, 50);
+			var mStream = new MemoryStream();
+			writer = PdfWriter.GetInstance(doc, mStream);
+			return doc;
+		}
+
 		public static Document GenerarInstanciaAndInit(ref PdfWriter writer, string fileName, HojaSize pagina = HojaSize.A4, bool esVertical = true)
 		{
 			Document doc = new Document(ObtenerHoja(pagina, esVertical), 50, 50, 50, 20);

@@ -200,9 +200,35 @@ namespace gc.api.core.Servicios.Reportes
             }
         }
 
+		private bool EsUnaListaDeOPP(ReporteSolicitudDto solicitud)
+		{
+			var esUnaLista = false;
+			var bl = solicitud.Parametros.ContainsKey("Ids");
+			if (bl)
+				esUnaLista = true;
+			return esUnaLista;
+		}
 
+		private List<IdCollection> ObtenerDatos(ReporteSolicitudDto solicitud)
+		{
+			//Se obtienen los parámetros del reporte
+			var ids = solicitud.Ids;
+			if (ids == null || ids.Count <= 0)
+				throw new NegocioException("No se han encontrado los parámetros necesarios para generar el reporte.");
 
-        private List<CertRetenGananDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string ctaId, out string titulo)
+			return ids;
+		}
+
+		private List<CertRetenGananDto> ObtenerDatos(IdCollection item, out string ctaId, out string titulo)
+		{
+			ctaId = item.Id2;
+			string cmptId = item.Id1;
+			var comprobanteLista = _consultaServicio.ConsultaOrdenDePagoProveedor(cmptId);
+			titulo = $"Certificado de Retención Impuesto a las Ganancias";
+			return _consultaServicio.ConsultaCertRetenGA(cmptId);
+		}
+
+		private List<CertRetenGananDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string ctaId, out string titulo)
         {
             //Se obtienen los parámetros del reporte
             ctaId = solicitud.Parametros.GetValueOrDefault("ctaId", "").ToString() ?? "";

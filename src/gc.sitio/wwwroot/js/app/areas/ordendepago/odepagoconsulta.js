@@ -218,30 +218,48 @@ function ImprimirListadoDeOP() {
 }
 
 function ImprimirOPSeleccionadas() {
+	var IdsComptes = [];
 	var Ids = [];
 	$("#tbListaOP").find('tr').each(function (i, el) {
 		var td = $(this).find('td');
 		if (td.length > 0 && td[0].innerText !== undefined) {
 			if (td.eq(0)[0]) {
-				if (td.eq(7)[0].children[0].checked)
+				if (td.eq(7)[0].children[0].checked) {
 					Ids.push({ Id1: td.eq(0).text(), Id2: td.eq(9).text() });
+					IdsComptes.push(td.eq(0).text());
+				}
 			}
 		}
 	});
-	console.log(Ids);
-	let data = { Ids };
-	cargarReporteEnArre(17, data, "ORDEN DE PAGO A PROVEEDORES", "", "");
-	//TODO MARCE: Para una segunda etapa dejar la verificacion de si tienen o no certificados de retencion.
-	//if (obj.imprimeIIBB) {
-	//	cargarReporteEnArre(18, data, "CERTIFICADO RETENCIÓN IIBB", "", "");
-	//}
-	//if (obj.imprimeIVA) {
-	//	cargarReporteEnArre(20, data, "CERTIFICADO RETENCIÓN IVA", "", "");
-	//}
-	//if (obj.imprimeGAN) {
-	//	cargarReporteEnArre(19, data, "CERTIFICADO RETENCIÓN GA", "", "");
-	//}
-	invocacionGestorDoc({});
+	AbrirWaiting();
+	var opCompteLista = IdsComptes.join(',');
+	var data = { opCompteLista };
+	PostGen(data, validarExistenciaDeCertificadosParaImprimirURL, function (obj) {
+		if (obj.error === true) {
+			CerrarWaiting();
+			//ControlaMensajeWarning(obj.msg);
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			CerrarWaiting();
+			let data = { Ids };
+			cargarReporteEnArre(17, data, "ORDEN DE PAGO A PROVEEDORES", "", "");
+			if (obj.imprimeIIBB) {
+				cargarReporteEnArre(18, data, "CERTIFICADO RETENCIÓN IIBB", "", "");
+			}
+			if (obj.imprimeIVA) {
+				cargarReporteEnArre(20, data, "CERTIFICADO RETENCIÓN IVA", "", "");
+			}
+			if (obj.imprimeGAN) {
+				cargarReporteEnArre(19, data, "CERTIFICADO RETENCIÓN GA", "", "");
+			}
+			//TODO MARCE: Modificar los reportes de IVA y GA para soportar la multiple generación de reportes.
+			invocacionGestorDoc({});
+		}
+	});
 }
 
 function btnAnularCertRet() {

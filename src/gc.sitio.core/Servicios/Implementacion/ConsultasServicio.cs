@@ -29,7 +29,9 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string CONS_CERT_RETEN_IB = "/ConsultaCertRetenIB";
 		private const string CONS_CERT_RETEN_IVA = "/ConsultaCertRetenIVA";
 		private const string CONS_CERT_RETEN_GAN = "/ConsultaCertRetenGAN";
-
+		private const string CONS_CERT_RETEN_IB_FROM_LIST = "/ConsultaCertRetenIBFromList";
+		private const string CONS_CERT_RETEN_IVA_FROM_LIST = "/ConsultaCertRetenIVAFromList";
+		private const string CONS_CERT_RETEN_GAN_FROM_LIST = "/ConsultaCertRetenGANFromList";
 
 		private readonly AppSettings _appSettings;
         public ConsultasServicio(IOptions<AppSettings> options, ILogger<ConsultasServicio> logger) : base(options, logger)
@@ -632,6 +634,50 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 		}
 
+		public List<CertRetenGananDto> ConsultaCertRetenGAFromList(string op_compte, string token)
+		{
+			ApiResponse<List<CertRetenGananDto>> respuesta;
+			string stringData;
+			try
+			{
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{CONS_CERT_RETEN_GAN_FROM_LIST}?opCompte={op_compte}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (!string.IsNullOrEmpty(stringData))
+					{
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<CertRetenGananDto>>>(stringData)
+							?? throw new NegocioException("Hubo un problema al deserializar los datos");
+					}
+					else
+					{
+						throw new Exception("No se logro obtener la respuesta de la API con los datos de la cuenta directa. Verifique.");
+					}
+					return respuesta.Data;
+				}
+				else
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogError($"Error al intentar obtener los datos de la cuenta directa: {stringData}");
+					throw new NegocioException("Hubo un error al intentar obtener los datos de la cuenta directa");
+				}
+
+			}
+			catch (NegocioException)
+			{
+				throw;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar obtener los datos de la cuenta directa.");
+				throw;
+			}
+		}
+
 		public List<CertRetenIBDto> ConsultaCertRetenIB(string op_compte, string token)
 		{
 			ApiResponse<List<CertRetenIBDto>> respuesta;
@@ -676,6 +722,50 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 		}
 
+		public List<CertRetenIBDto> ConsultaCertRetenIBFromList(string op_compte, string token)
+		{
+			ApiResponse<List<CertRetenIBDto>> respuesta;
+			string stringData;
+			try
+			{
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{CONS_CERT_RETEN_IB_FROM_LIST}?opCompte={op_compte}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (!string.IsNullOrEmpty(stringData))
+					{
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<CertRetenIBDto>>>(stringData)
+							?? throw new NegocioException("Hubo un problema al deserializar los datos");
+					}
+					else
+					{
+						throw new Exception("No se logro obtener la respuesta de la API con los datos de la cuenta directa. Verifique.");
+					}
+					return respuesta.Data;
+				}
+				else
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogError($"Error al intentar obtener los datos de la cuenta directa: {stringData}");
+					throw new NegocioException("Hubo un error al intentar obtener los datos de la cuenta directa");
+				}
+
+			}
+			catch (NegocioException)
+			{
+				throw;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar obtener los datos de la cuenta directa.");
+				throw;
+			}
+		}
+
 		public List<CertRetenIVADto> ConsultaCertRetenIVA(string op_compte, string token)
 		{
 			ApiResponse<List<CertRetenIVADto>> respuesta;
@@ -686,6 +776,50 @@ namespace gc.sitio.core.Servicios.Implementacion
 				HttpClient client = helper.InicializaCliente(token);
 				HttpResponseMessage response;
 				var link = $"{_appSettings.RutaBase}{RutaAPI}{CONS_CERT_RETEN_IVA}?opCompte={op_compte}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (!string.IsNullOrEmpty(stringData))
+					{
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<CertRetenIVADto>>>(stringData)
+							?? throw new NegocioException("Hubo un problema al deserializar los datos");
+					}
+					else
+					{
+						throw new Exception("No se logro obtener la respuesta de la API con los datos de la cuenta directa. Verifique.");
+					}
+					return respuesta.Data;
+				}
+				else
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogError($"Error al intentar obtener los datos de la cuenta directa: {stringData}");
+					throw new NegocioException("Hubo un error al intentar obtener los datos de la cuenta directa");
+				}
+
+			}
+			catch (NegocioException)
+			{
+				throw;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar obtener los datos de la cuenta directa.");
+				throw;
+			}
+		}
+
+		public List<CertRetenIVADto> ConsultaCertRetenIVAFromList(string op_compte, string token)
+		{
+			ApiResponse<List<CertRetenIVADto>> respuesta;
+			string stringData;
+			try
+			{
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{CONS_CERT_RETEN_IVA_FROM_LIST}?opCompte={op_compte}";
 				response = client.GetAsync(link).GetAwaiter().GetResult();
 				if (response.StatusCode == HttpStatusCode.OK)
 				{
