@@ -1771,7 +1771,7 @@ function inicializarTablaProductos() {
     // Mostrar indicador de progreso
     $('<div id="loadingIndicator" class="position-fixed top-50 start-50 translate-middle bg-white p-3 rounded shadow-lg" style="z-index:1050;">' +
         '<div class="text-center"><i class="bx bx-loader bx-spin font-size-24"></i>' +
-        '<p class="mt-2 mb-0">Inicializando tabla...</p>' +
+        '<p class="mt-2 mb-0">Inicializando Productos...</p>' +
         '<div id="progressInfo" class="mt-2 small text-muted">Preparando componentes...</div></div></div>')
         .appendTo('body');
 
