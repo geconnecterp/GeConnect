@@ -329,7 +329,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                     return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
                 }
 
-                if (tp_plista <= 0)
+                if (tp_plista < 0)
                 {
                     throw new NegocioException("El valor del Producto es incorrecto. Por favor verifique.");
                 }
@@ -366,7 +366,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 {
                     return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
                 }
-                if (tp_pcosto <= 0)
+                if (tp_pcosto < 0)
                 {
                     throw new NegocioException("El valor del Costo es incorrecto. Por favor verifique.");
                 }
