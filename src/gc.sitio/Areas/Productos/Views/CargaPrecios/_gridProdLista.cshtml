@@ -87,17 +87,20 @@
                             <tr class="@clase" data-lp-id="@item.lp_id" onclick="selectReg(this,'tbProdDet')">
                                 <td class="@Model.ObtenerClase(item.lp_id)">@Model.FormatearDato(item.lp_id, FormatDato.Ninguno)</td>
                                 <td class="@Model.ObtenerClase(item.lp_desc)">@Model.FormatearDato(item.lp_desc, FormatDato.Ninguno)</td>
-                                <td class="@Model.ObtenerClase(item.tp_margen)">
+                                <td class="@Model.ObtenerClase(item.p_margen)">
                                     <div class="input-container">
                                         <input type="text" class="form-control form-control-sm input-tp_margen_lista input-numeric"
-                                        value="@(item.tp_margen.ToString("F2"))"
+                                        value="@(item.p_margen.ToString("F2"))"
                                         data-lp-id="@item.lp_id"
                                         data-p-id="@item.p_id"
                                         data-original-value="@item.p_margen"
                                         readonly />
-                                        @Html.Hidden("p_pcosto",item.P_Pcosto)
+                                        @Html.Hidden("tp_margen", item.tp_margen)
+                                        @Html.Hidden("p_pcosto", item.P_Pcosto)
                                         @Html.Hidden("p_pneto",item.p_pneto)
-                                        @Html.Hidden("lp_porc_mg",item.lp_porc_mg)
+                                        @Html.Hidden("lp_prevision_tot", item.lp_prevision_tot)
+                                        @Html.Hidden("lp_prevision_pin", item.lp_prevision_pin)
+                                        @Html.Hidden("lp_porc_mg", item.lp_porc_mg)
                                         @Html.Hidden("iva_situacion",item.iva_situacion)
                                         @Html.Hidden("iva_alicuota", item.iva_alicuota)
                                         @Html.Hidden("in_alicuota", item.in_alicuota)
@@ -117,8 +120,7 @@
                                                readonly />
                                         @Html.Hidden("tp_iva", item.tp_iva)
                                         @Html.Hidden("tp_in", item.tp_in)
-
-                                        @Html.Hidden("tp_pneto", item.tp_in)
+                                        @Html.Hidden("tp_pneto", item.tp_pneto)
                                         
                                     </div>
                                 </td>

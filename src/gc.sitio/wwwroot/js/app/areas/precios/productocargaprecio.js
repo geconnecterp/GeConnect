@@ -1519,6 +1519,188 @@ const calcularPrecioVentaMargenAPIDebounced = debounce(function (row) {
     calcularPrecioVentaMargenAPI(row);
 }, 300);
 
+// Función con debounce para cálculo de margen en listas
+const calcularPrecioVentaMargenListaDebounced = debounce(function (row, lpId, pId, nuevoPrecioVenta) {
+    calcularPrecioVentaMargenLista(row, lpId, pId, nuevoPrecioVenta);
+}, 300);
+
+// NUEVA: Función para calcular margen en grid de listas (equivalente a secuencia03)
+// NUEVA: Función para calcular margen en grid de listas (equivalente a secuencia03)
+function calcularPrecioVentaMargenLista(row, lpId, pId, nuevoPrecioVenta) {
+    console.log(`Iniciando cálculo de margen para lista LP ID: ${lpId}, P ID: ${pId}, Precio: ${nuevoPrecioVenta}`);
+
+    // Validaciones de seguridad
+    if (!row || !row.length) {
+        console.error('Error: No se proporcionó una fila válida para calcular margen');
+        return;
+    }
+
+    if (isNaN(nuevoPrecioVenta) || nuevoPrecioVenta <= 0) {
+        console.error(`Error: Precio de venta inválido: ${nuevoPrecioVenta}`);
+        return;
+    }
+
+    // Evitar cálculos redundantes
+    const calculatingKey = `calculating-margin-lista-${lpId}`;
+    if (row.data(calculatingKey) === true) {
+        console.log('Ya hay un cálculo de margen en proceso para esta lista, evitando duplicación');
+        return;
+    }
+
+    // Marcar que estamos calculando
+    row.data(calculatingKey, true);
+
+    // Recopilar parámetros desde los campos ocultos de la fila de lista
+    const datos = {
+        p_id: pId,
+        lp_id: lpId,
+        tp_pcosto: parseFloat(row.find('input[name="p_pcosto"]').val()) || 0,
+        lp_prevision_tot: parseFloat(row.find('input[name="lp_prevision_tot"]').val()) || 0,
+        lp_prevision_pin: parseFloat(row.find('input[name="lp_prevision_pin"]').val()) || 0,
+        tp_pvta: nuevoPrecioVenta,
+        iva_situacion: row.find('input[name="iva_situacion"]').val() || 'E',
+        iva_alicuota: parseFloat(row.find('input[name="iva_alicuota"]').val()) || 0,
+        in_alicuota: parseFloat(row.find('input[name="in_alicuota"]').val()) || 0
+    };
+
+    console.log('Parámetros para cálculo de margen en lista:', datos);
+
+    // Mostrar indicador de carga en el campo de precio de venta
+    const campoPVenta = row.find('.input-tp_pvta_lista');
+    const valorOriginal = campoPVenta.val();
+    campoPVenta.addClass('calculating');
+
+    // Llamar a la API usando la misma URL que secuencia03
+    $.ajax({
+        url: calcularPrecioVentaMargenUrl,
+        type: 'POST',
+        data: datos,
+        dataType: 'json',
+        success: function (response) {
+            // Desmarcar estado de cálculo
+            row.data(calculatingKey, false);
+            campoPVenta.removeClass('calculating');
+
+            console.log('Respuesta del cálculo de margen en lista:', response);
+
+            if (response.error === true) {
+                // Manejo del error - restaurar valor original
+                campoPVenta.val(valorOriginal);
+                console.error('Error en cálculo de margen para lista:', response.msg);
+                AbrirMensaje("Error", "Error al calcular margen: " + response.msg,
+                    function () { $("#msjModal").modal("hide"); },
+                    false, ["Aceptar"], "error!", null);
+            } else if (response.warn === true) {
+                // Manejo de advertencia
+                campoPVenta.val(valorOriginal);
+                console.warn('Advertencia en cálculo de margen para lista:', response.msg);
+                AbrirMensaje("Atención", response.msg,
+                    function () { $("#msjModal").modal("hide"); },
+                    false, ["Aceptar"], "warn!", null);
+            } else {
+                // Éxito: actualizar los campos ocultos con los nuevos valores calculados
+                if (response.pvta) {
+                    // *** PASO 1: ACTUALIZAR CAMPOS OCULTOS SEGÚN ESPECIFICACIÓN ***
+                    row.find('input[name="tp_pneto"]').val(response.pvta.p_pneto);
+                    row.find('input[name="tp_margen"]').val(response.pvta.p_margen);
+                    row.find('input[name="tp_iva"]').val(response.pvta.p_iva);
+                    row.find('input[name="tp_in"]').val(response.pvta.p_in);
+
+                    // *** PASO 2: ACTUALIZAR EL CAMPO VISIBLE DE MARGEN ***
+                    const campoMargenVisible = row.find('.input-tp_margen_lista');
+                    if (campoMargenVisible.length > 0) {
+                        campoMargenVisible.val(parseFloat(response.pvta.p_margen).toFixed(2));
+                        campoMargenVisible.data('original-value', parseFloat(response.pvta.p_margen));
+                        marcarCampoModificadoLista(campoMargenVisible);
+                    }
+
+                    // *** PASO 3: MARCAR EL CAMPO DE PRECIO DE VENTA COMO MODIFICADO ***
+                    campoPVenta.data('original-value', nuevoPrecioVenta);
+                    marcarCampoModificadoLista(campoPVenta);
+
+                    // *** PASO 4: RESGUARDAR AUTOMÁTICAMENTE LOS CAMBIOS ***
+                    resguardarCambiosListaCalculados(row, lpId, pId, nuevoPrecioVenta, response.pvta);
+
+                    console.log('Margen calculado y actualizado en lista:');
+                    console.log('  Precio neto:', response.pvta.p_pneto);
+                    console.log('  Margen:', response.pvta.p_margen);
+                    console.log('  IVA:', response.pvta.p_iva);
+                    console.log('  Impuesto interno:', response.pvta.p_in);
+                } else {
+                    console.error('La respuesta no contiene los datos esperados:', response);
+                }
+            }
+        },
+        error: function (xhr, status, error) {
+            // Error en la petición
+            row.data(calculatingKey, false);
+            campoPVenta.removeClass('calculating').val(valorOriginal);
+
+            console.error('Error en la llamada AJAX para calcular margen en lista:', error);
+            AbrirMensaje("Error", "Error de comunicación con el servidor. Inténtelo nuevamente.",
+                function () { $("#msjModal").modal("hide"); },
+                false, ["Aceptar"], "error!", null);
+        }
+    });
+}
+
+// NUEVA: Función específica para resguardar cambios después de cálculos de margen
+function resguardarCambiosListaCalculados(row, lpId, pId, nuevoPrecioVenta, datosCalculados) {
+    console.log(`Resguardando cambios calculados para lista LP ID: ${lpId}, P ID: ${pId}`);
+
+    // Recopilar datos completos para el resguardo, incluyendo los valores calculados
+    const datos = {
+        p_id: pId,
+        lp_id: lpId,
+        tp_margen: parseFloat(datosCalculados.p_margen) || 0, // *** USAR VALOR CALCULADO ***
+        tp_pvta: nuevoPrecioVenta,
+        p_pcosto: parseFloat(row.find('input[name="p_pcosto"]').val()) || 0,
+        p_pneto: parseFloat(datosCalculados.p_pneto) || 0, // *** USAR VALOR CALCULADO ***
+        lp_porc_mg: parseFloat(row.find('input[name="lp_porc_mg"]').val()) || 0,
+        iva_situacion: row.find('input[name="iva_situacion"]').val() || 'E',
+        iva_alicuota: parseFloat(row.find('input[name="iva_alicuota"]').val()) || 0,
+        in_alicuota: parseFloat(row.find('input[name="in_alicuota"]').val()) || 0,
+        tp_iva: parseFloat(datosCalculados.p_iva) || 0, // *** USAR VALOR CALCULADO ***
+        tp_in: parseFloat(datosCalculados.p_in) || 0 // *** USAR VALOR CALCULADO ***
+    };
+
+    console.log('Datos que se resguardarán después del cálculo:', datos);
+
+    // Llamar al servidor para resguardar los cambios
+    $.ajax({
+        url: resguardarCambiosProductoListaUrl,
+        type: 'POST',
+        data: datos,
+        dataType: 'json',
+        success: function (response) {
+            if (response.error) {
+                console.error('Error al resguardar cambios calculados en lista:', response.msg);
+                AbrirMensaje("Error", "No se pudieron guardar los cambios calculados: " + response.msg,
+                    function () { $("#msjModal").modal("hide"); },
+                    false, ["Aceptar"], "error!", null);
+            } else if (response.warn) {
+                console.warn('Advertencia al resguardar cambios calculados en lista:', response.msg);
+            } else {
+                console.log('Cambios calculados en lista resguardados correctamente:', response.msg);
+
+                // *** ACTUALIZAR VALORES ORIGINALES PARA FUTURAS COMPARACIONES ***
+                const campoMargen = row.find('.input-tp_margen_lista');
+                const campoPVenta = row.find('.input-tp_pvta_lista');
+
+                campoMargen.data('original-value', parseFloat(datosCalculados.p_margen));
+                campoPVenta.data('original-value', nuevoPrecioVenta);
+
+                console.log('Valores originales actualizados después del resguardo');
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error('Error en la llamada AJAX al resguardar cambios calculados:', error);
+            AbrirMensaje("Error", "Error de comunicación al resguardar cambios. Inténtelo nuevamente.",
+                function () { $("#msjModal").modal("hide"); },
+                false, ["Aceptar"], "error!", null);
+        }
+    });
+}
 
 // Función de depuración mejorada que verifica todos los campos
 function depurarValoresIniciales() {
@@ -2850,13 +3032,18 @@ function configurarInputsListaPreciosOptimizado() {
                     $this.val(numValue.toFixed(2));
                 }
 
-                // Determinar el tipo de campo y guardar el valor
+                // Determinar el tipo de campo y procesar
                 if ($this.hasClass('input-tp_margen_lista')) {
-                    // Actualizar con debounce
+                    // Actualizar margen con debounce
                     actualizarMargenListaDebounced(row, lpId, pId, numValue);
                 } else if ($this.hasClass('input-tp_pvta_lista')) {
-                    // Actualizar con debounce
-                    actualizarPrecioVentaListaDebounced(row, lpId, pId, numValue);
+                    // *** CORREGIDO: Solo calcular margen, no llamar a actualizarPrecioVentaListaDebounced ***
+                    if (!isNaN(numValue) && numValue > 0) {
+                        console.log(`Precio de venta confirmado con Enter/Tab, calculando margen: ${numValue}`);
+                        calcularPrecioVentaMargenLista(row, lpId, pId, numValue);
+                    } else {
+                        console.warn(`Valor de precio de venta inválido: ${numValue}, no se realizará cálculo`);
+                    }
                 }
 
                 // Avanzar al siguiente campo
@@ -2910,8 +3097,13 @@ function configurarInputsListaPreciosOptimizado() {
             // Volver a readonly
             $this.prop('readonly', true).addClass('campo-readonly');
 
-            // Actualizar con debounce
-            actualizarPrecioVentaListaDebounced(row, lpId, pId, numValue);
+            // *** CORREGIDO: Solo calcular margen, no llamar a actualizarPrecioVentaListaDebounced ***
+            if (!isNaN(numValue) && numValue > 0) {
+                console.log(`Precio de venta editado en lista, calculando margen: ${numValue}`);
+                calcularPrecioVentaMargenLista(row, lpId, pId, numValue);
+            } else {
+                console.warn(`Valor de precio de venta inválido: ${numValue}, no se realizará cálculo`);
+            }
         })
         .off('click.desactivarCamposLista')
         .on('click.desactivarCamposLista', function (e) {

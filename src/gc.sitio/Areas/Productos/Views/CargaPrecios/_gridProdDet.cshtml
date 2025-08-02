@@ -139,13 +139,10 @@
     }
     /* Para dispositivos móviles, mantener un mínimo funcional */
     @@media (max-width: 768px) {
-        #tbProdDet td:nth-child(3), #tbProdDet th:nth-child(3)
-
-    {
-        min-width: 100px !important;
-        width: 100px !important;
-    }
-
+        #tbProdDet td:nth-child(3), #tbProdDet th:nth-child(3) {
+            min-width: 100px !important;
+            width: 100px !important;
+        }
     }
     /* Añadir tooltip para descripción truncada */
     #tbProdDet td:nth-child(3):hover {
@@ -186,6 +183,30 @@
         vertical-align: middle; /* AÑADIDO: Centrar verticalmente todo el contenido */
     }
 
+    /* ✅ CORREGIDO: Estilo golden para header de tabla con contraste */
+    #tbProdDet thead th {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background-color: #f0ad4e !important; /* Color golden del sistema */
+        color: #000 !important; /* Texto negro para máximo contraste */
+        border-bottom: 2px solid #eea236 !important; /* Borde inferior más oscuro */
+        font-weight: 700 !important; /* Texto en negrita para mejor legibilidad */
+        text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.3) !important; /* Sombra de texto clara */
+        font-size: 0.85rem !important; /* Tamaño de fuente consistente */
+    }
+
+        /* ✅ AÑADIDO: Hover effect para headers */
+        #tbProdDet thead th:hover {
+            background-color: #ec971f !important; /* Color más oscuro al hover */
+            color: #000 !important; /* Mantener contraste */
+        }
+
+    /* ✅ AÑADIDO: Estilo para filas alternas usando el sistema existente */
+    #tbProdDet tr.alt {
+        background-color: #C0FFC0 !important; /* Verde claro del sistema existente */
+    }
+
     /* NUEVO: Estilo para campos modificados */
     .campo-modificado {
         background-color: #d4f1f9 !important; /* Celeste pastel claro */
@@ -215,6 +236,8 @@
         min-width: 40px; /* Asegurar ancho mínimo */
         text-align: center;
         padding: 0.25rem !important; /* Padding consistente */
+        background-color: #f0ad4e !important; /* Fondo golden consistente */
+        color: #000 !important; /* Texto negro para contraste */
     }
 
     /* CORREGIDO: Mejor ubicación de los checkboxes */
@@ -242,21 +265,23 @@
         margin: 0 !important;
     }
 
-    /* AÑADIDO: Destacar filas seleccionadas */
+    /* ✅ MEJORADO: Destacar filas seleccionadas con estilo golden */
     #tbProdDet tr.selected {
-        background-color: #f8f9fa !important;
+        background-color: #f9f2e7 !important; /* Color golden claro para filas seleccionadas */
+        border-left: 4px solid #f0ad4e !important; /* Borde izquierdo golden */
     }
 
-    /* AÑADIDO: Asegurar que el encabezado tiene suficiente espacio */
-    #tbProdDet thead th {
-        position: sticky;
-        top: 0;
-        z-index: 10;
-        background-color: #f8f9fa;
+        /* ✅ AÑADIDO: Estilo para filas seleccionadas al hover */
+        #tbProdDet tr.selected:hover {
+            background-color: #f5e79e !important; /* Color más intenso al hover */
+        }
+
+    /* ✅ MEJORADO: Estilo para la clase de fila seleccionada del sistema existente */
+    #tbProdDet tr.sel {
+        background-color: #f0ad4e !important; /* Usar golden en lugar del azul original */
+        color: #000 !important; /* Texto negro para contraste */
     }
 </style>
-
-
 
 <div class="grid-golden">
     <div class="grid-golden-header">

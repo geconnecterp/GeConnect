@@ -119,10 +119,14 @@ namespace gc.sitio.Areas.Productos.Controllers
                     response.EsError = false;
                     return PartialView("_gridMensaje", response);
                 }
+               
+
                 var lista = respuesta.ListaEntidad.OrderBy(x => x.pg_id).ThenBy(x => x.p_id).ToList();
                 // Guardar datos en variable de sesión para uso posterior
                 ProductosDetalle = lista;
-
+                //se analiza que productos vienen con valores temporales (carga==1). 
+                //Para todos ellos se cargan en la lista de productos temporales
+                ProductosDetalleTEMPORAL = lista.Where(x=>x.carga == 1).ToList();
 
                 // Crear el grid para la vista (sin paginación)
                 var grid = GenerarGrillaSmart(
