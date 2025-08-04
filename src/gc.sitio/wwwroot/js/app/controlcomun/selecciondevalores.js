@@ -138,7 +138,12 @@ function btnAceptarAgregarValorValidar() {
 				break;
 			default:
 		}
-		AgregarValorValidar(listaObjValor, tcf_id_selected);
+		var cierroModal = false;
+		var imp = $("#ImporteS").inputmask('unmaskedvalue');
+		if (imp == importe) {
+			cierroModal = true;
+		}
+		AgregarValorValidar(listaObjValor, tcf_id_selected, cierroModal);
 	}
 }
 
@@ -213,7 +218,7 @@ function ValidarAntesDeAgregarUnItemEnValor(tcfIdSelected) {
 	return esValido;
 }
 
-function AgregarValorValidar(dataObjectArray, dataType) {
+function AgregarValorValidar(dataObjectArray, dataType, cerraModal) {
 	var DataObject = dataObjectArray;
 	var DataType = dataType;
 	var data = { DataObject, DataType };
@@ -226,6 +231,9 @@ function AgregarValorValidar(dataObjectArray, dataType) {
 		}
 		else {
 			LimpiarDatosEnSeccionEdicion(dataType);
+			if (cerraModal) {
+				$("#seleccionDeValoresModal").modal("hide");
+			}
 			ControlaMensajeInfo("Se han agegado los valores correctamente.");
 		}
 	});

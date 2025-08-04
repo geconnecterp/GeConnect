@@ -2483,7 +2483,7 @@ namespace gc.sitio.Controllers
 		{
 			if (tipo == TipoDeOrdenDePago.Directa)
 			{
-				var lista = TipoOrdenDePagoLista.Where(x => x.opt_id.Equals("PD") || x.opt_id.Equals("PB") || x.opt_id.Equals("PI")).Select(x => new ComboGenDto { Id = x.opt_id, Descripcion = x.opt_lista });
+				var lista = TipoOrdenDePagoLista.Where(x => x.opt_id.Equals("PD") || x.opt_id.Equals("PB") || x.opt_id.Equals("PZ")).Select(x => new ComboGenDto { Id = x.opt_id, Descripcion = x.opt_lista });
 				return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 			}
 			else

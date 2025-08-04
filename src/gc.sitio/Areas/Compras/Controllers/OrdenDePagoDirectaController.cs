@@ -1437,43 +1437,44 @@ namespace gc.sitio.Areas.Compras.Controllers
 						listaOtro.Add(itemOtro);
 					}
 				}
+			}
 
-				//VALORES
-				if (OPValoresDesdeObligYCredLista != null && OPValoresDesdeObligYCredLista.Count > 0)
+			//VALORES
+			if (OPValoresDesdeObligYCredLista != null && OPValoresDesdeObligYCredLista.Count > 0)
+			{
+				foreach (var valorItem in OPValoresDesdeObligYCredLista)
 				{
-					foreach (var valorItem in OPValoresDesdeObligYCredLista)
+					if (valorItem == null)
+						continue;
+					var itemValor = new Confirmar_ValorModel()
 					{
-						if (valorItem == null)
-							continue;
-						var itemValor = new Confirmar_ValorModel()
-						{
-							ctaf_id = valorItem.ctaf_id,
-							ctaf_denominacion = valorItem.ctaf_denominacion,
-							tcf_id = valorItem.tcf_id,
-							tipo = valorItem.tipo,
-							automatico = valorItem.automatico,
-							op_dato1_valor = valorItem.op_dato1_valor,
-							op_dato1_desc = valorItem.op_dato1_desc,
-							op_dato2_valor = valorItem.op_dato2_valor,
-							op_dato2_desc = valorItem.op_dato2_desc,
-							op_dato3_valor = valorItem.op_dato3_valor,
-							op_dato3_desc = valorItem.op_dato3_desc,
-							op_importe = valorItem.op_importe,
-							op_fecha_valor = valorItem.op_fecha_valor,
-							fc_compte = valorItem.fc_compte,
-							fc_item = valorItem.fc_item,
-							fc_dia_movi = valorItem.fc_dia_movi,
-							fc_cta_id = valorItem.fc_cta_id,
-							fc_anombre = valorItem.fc_anombre,
-							concepto_valor = valorItem.concepto_valor,
-							resultado = valorItem.resultado,
-							resultado_msj = valorItem.resultado_msj,
-							orden = valorItem.orden
-						};
-						listaValor.Add(itemValor);
-					}
+						ctaf_id = valorItem.ctaf_id,
+						ctaf_denominacion = valorItem.ctaf_denominacion,
+						tcf_id = valorItem.tcf_id,
+						tipo = valorItem.tipo,
+						automatico = valorItem.automatico,
+						op_dato1_valor = valorItem.op_dato1_valor,
+						op_dato1_desc = valorItem.op_dato1_desc,
+						op_dato2_valor = valorItem.op_dato2_valor,
+						op_dato2_desc = valorItem.op_dato2_desc,
+						op_dato3_valor = valorItem.op_dato3_valor,
+						op_dato3_desc = valorItem.op_dato3_desc,
+						op_importe = valorItem.op_importe,
+						op_fecha_valor = valorItem.op_fecha_valor,
+						fc_compte = valorItem.fc_compte,
+						fc_item = valorItem.fc_item,
+						fc_dia_movi = valorItem.fc_dia_movi,
+						fc_cta_id = valorItem.fc_cta_id,
+						fc_anombre = valorItem.fc_anombre,
+						concepto_valor = valorItem.concepto_valor,
+						resultado = valorItem.resultado,
+						resultado_msj = valorItem.resultado_msj,
+						orden = valorItem.orden
+					};
+					listaValor.Add(itemValor);
 				}
 			}
+
 			//PASAR A JSON
 			request.json_encabezado = JsonConvert.SerializeObject(listaEncabezado, new JsonSerializerSettings());
 			request.json_concepto = JsonConvert.SerializeObject(listaConcepto, new JsonSerializerSettings());
