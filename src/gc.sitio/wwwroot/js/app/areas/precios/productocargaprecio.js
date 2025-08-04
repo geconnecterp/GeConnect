@@ -415,6 +415,7 @@ function aplicarCambiosAFila(fila, cambios) {
 
 
 // MEJORADO: Función para finalizar la aplicación de cambios con mejor logging
+// MEJORADO: Función para finalizar la aplicación de cambios con mejor logging
 function finalizarAplicacionCambios() {
     console.log("=== FINALIZANDO APLICACIÓN DE CAMBIOS ===");
 
@@ -425,29 +426,55 @@ function finalizarAplicacionCambios() {
     $('#chkPLista, #chkDto1, #chkDto2, #chkDto3, #chkDto4, #chkDpo, #chkBon, #chkFl').prop('checked', false);
     $('#txtPLista, #txtDto1, #txtDto2, #txtDto3, #txtDto4, #txtDpo, #txtBon, #txtFl').prop('disabled', true);
 
-    // ✅ ASEGURAR que el diálogo se cierre correctamente
+    // ✅ CORREGIDO: Cerrar diálogo de progreso de forma más robusta
     const dialogo = $("#dialogoProgresoAvanzado");
+
+    // Función para mostrar mensaje final después de cerrar completamente el modal
+    const mostrarMensajeFinal = function () {
+        // ✅ ASEGURAR: Eliminar cualquier backdrop residual
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open');
+
+        // Mostrar mensaje de éxito
+        AbrirMensaje("Proceso completado",
+            "Los cambios se han aplicado correctamente a los productos seleccionados y se han recalculado los costos y precios de venta.",
+            function () {
+                $("#msjModal").modal("hide");
+                console.log("Proceso completamente terminado");
+            },
+            false, ["Aceptar"], "success!", null);
+    };
+
     if (dialogo.length > 0) {
         console.log("Cerrando diálogo de progreso");
+
+        // ✅ MEJORADO: Usar evento 'hidden.bs.modal' para asegurar cierre completo
+        dialogo.off('hidden.bs.modal').on('hidden.bs.modal', function () {
+            console.log("Diálogo de progreso cerrado completamente");
+            $(this).remove();
+
+            // ✅ SEGURIDAD: Pequeño delay para asegurar limpieza del DOM
+            setTimeout(mostrarMensajeFinal, 100);
+        });
+
+        // Cerrar el modal
         dialogo.modal('hide');
 
-        // ✅ SEGURIDAD ADICIONAL: Remover el diálogo después de un tiempo
+        // ✅ SEGURIDAD ADICIONAL: Timeout por si el evento no se dispara
         setTimeout(function () {
-            dialogo.remove();
-            console.log("Diálogo de progreso removido del DOM");
-        }, 1000);
+            if (dialogo.length > 0) {
+                console.warn("Timeout de seguridad: forzando cierre del diálogo");
+                dialogo.remove();
+                $('.modal-backdrop').remove();
+                $('body').removeClass('modal-open');
+                mostrarMensajeFinal();
+            }
+        }, 3000);
     } else {
         console.warn("No se encontró el diálogo de progreso para cerrar");
+        // Si no hay diálogo, mostrar mensaje inmediatamente
+        mostrarMensajeFinal();
     }
-
-    // Mostrar mensaje de éxito
-    AbrirMensaje("Proceso completado",
-        "Los cambios se han aplicado correctamente a los productos seleccionados y se han recalculado los costos y precios de venta.",
-        function () {
-            $("#msjModal").modal("hide");
-            console.log("Proceso completamente terminado");
-        },
-        false, ["Aceptar"], "success!", null);
 
     console.log("=== PROCESO DE APLICACIÓN DE CAMBIOS COMPLETADO ===");
 }
@@ -481,6 +508,7 @@ function iniciarCalculoPrecios() {
 }
 
 // NUEVO: Función para procesar lotes de cálculos
+// NUEVO: Función para procesar lotes de cálculos
 function procesarCalculosPrecios(arrayFilas, inicio, tamanoLote, totalFilas, intervaloEntreLotes) {
     // Calcular el fin de este lote
     const fin = Math.min(inicio + tamanoLote, arrayFilas.length);
@@ -508,12 +536,117 @@ function procesarCalculosPrecios(arrayFilas, inicio, tamanoLote, totalFilas, int
                     procesarCalculosPrecios(arrayFilas, fin, tamanoLote, totalFilas, intervaloEntreLotes);
                 }, intervaloEntreLotes);
             } else {
-                // Cálculos completados
-                $("#dialogoProgresoAvanzado").modal('hide');
-                AbrirMensaje("Proceso completado",
-                    "Los precios se han calculado correctamente para todos los productos.",
-                    function () { $("#msjModal").modal("hide"); },
-                    false, ["Aceptar"], "success!", null);
+                // ✅ CORREGIDO: Cálculos completados - cerrar modal correctamente
+                const dialogoProgreso = $("#dialogoProgresoAvanzado");
+
+                const mostrarMensajeExito = function () {
+                    // ✅ LIMPIAR: Asegurar que no queden backdrops
+                    $('.modal-backdrop').remove();
+                    $('body').removeClass('modal-open');
+
+                    AbrirMensaje("Proceso completado",
+                        "Los precios se han calculado correctamente para todos los productos.",
+                        function () { $("#msjModal").modal("hide"); },
+                        false, ["Aceptar"], "success!", null);
+                };
+
+                if (dialogoProgreso.length > 0) {
+                    // Usar evento para asegurar cierre completo
+                    dialogoProgreso.off('hidden.bs.modal').on('hidden.bs.modal', function () {
+                        $(this).remove();
+                        setTimeout(mostrarMensajeExito, 100);
+                    });
+
+                    dialogoProgreso.modal('hide');
+
+                    // Timeout de seguridad
+                    setTimeout(function () {
+                        if (dialogoProgreso.length > 0) {
+                            dialogoProgreso.remove();
+                            $('.modal-backdrop').remove();
+                            $('body').removeClass('modal-open');
+                            mostrarMensajeExito();
+                        }
+                    }, 3000);
+                } else {
+                    mostrarMensajeExito();
+                }
+            }
+        }
+    }
+
+    // Procesar cada fila de este lote
+    for (let i = inicio; i < fin; i++) {
+        const fila = $(arrayFilas[i]);
+
+        // Llamar a calcularCostoAPI con una función de callback personalizada
+        calcularCostoAPIConCallback(fila, calculoCompletado);
+    }
+}
+
+// NUEVO: Función para procesar lotes de cálculos
+function procesarCalculosPrecios(arrayFilas, inicio, tamanoLote, totalFilas, intervaloEntreLotes) {
+    // Calcular el fin de este lote
+    const fin = Math.min(inicio + tamanoLote, arrayFilas.length);
+
+    // Variable para contar filas procesadas en este lote
+    let procesadosLote = 0;
+
+    // Función para manejar la finalización de un cálculo
+    function calculoCompletado() {
+        procesadosLote++;
+
+        // Si se completaron todos los cálculos de este lote, continuar con el siguiente
+        if (procesadosLote === (fin - inicio)) {
+            // Actualizar progreso visual
+            const procesados = fin;
+            const porcentaje = Math.round((procesados / totalFilas) * 100);
+
+            $("#barraProgreso").css('width', porcentaje + '%');
+            $("#filasCompletadas").text(procesados);
+            $("#textoProgreso").text(`Calculando precios... ${porcentaje}%`);
+
+            // Si quedan filas, programar el siguiente lote
+            if (fin < arrayFilas.length) {
+                setTimeout(function () {
+                    procesarCalculosPrecios(arrayFilas, fin, tamanoLote, totalFilas, intervaloEntreLotes);
+                }, intervaloEntreLotes);
+            } else {
+                // ✅ CORREGIDO: Cálculos completados - cerrar modal correctamente
+                const dialogoProgreso = $("#dialogoProgresoAvanzado");
+
+                const mostrarMensajeExito = function () {
+                    // ✅ LIMPIAR: Asegurar que no queden backdrops
+                    $('.modal-backdrop').remove();
+                    $('body').removeClass('modal-open');
+
+                    AbrirMensaje("Proceso completado",
+                        "Los precios se han calculado correctamente para todos los productos.",
+                        function () { $("#msjModal").modal("hide"); },
+                        false, ["Aceptar"], "success!", null);
+                };
+
+                if (dialogoProgreso.length > 0) {
+                    // Usar evento para asegurar cierre completo
+                    dialogoProgreso.off('hidden.bs.modal').on('hidden.bs.modal', function () {
+                        $(this).remove();
+                        setTimeout(mostrarMensajeExito, 100);
+                    });
+
+                    dialogoProgreso.modal('hide');
+
+                    // Timeout de seguridad
+                    setTimeout(function () {
+                        if (dialogoProgreso.length > 0) {
+                            dialogoProgreso.remove();
+                            $('.modal-backdrop').remove();
+                            $('body').removeClass('modal-open');
+                            mostrarMensajeExito();
+                        }
+                    }, 3000);
+                } else {
+                    mostrarMensajeExito();
+                }
             }
         }
     }
@@ -2194,7 +2327,10 @@ function configurarBotonesProdCP() {
 
     //inicializo botones aceptar y confirmar desactivados y ocultos
     $("#btnAbmAceptar").prop("disabled", true);//.hide();
-    $("#btnAbmCancelar").prop("disabled", true);//.hide();
+    $("#btnAbmCancelar").prop("disabled", false);//.hide();
+    $("#btnAbmCancelar").on("click", function () {
+        window.location.href = homeCPUrl;
+    });
 
     $("#btnFiltro").on("mousedown", function () {
         if ($("#divFiltro").is(":hidden")) {

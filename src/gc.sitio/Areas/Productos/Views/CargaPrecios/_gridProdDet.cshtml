@@ -202,9 +202,9 @@
             color: #000 !important; /* Mantener contraste */
         }
 
-    /* ✅ AÑADIDO: Estilo para filas alternas usando el sistema existente */
+    /* ✅ CORREGIDO: Estilo para filas alternas con celeste clarito */
     #tbProdDet tr.alt {
-        background-color: #C0FFC0 !important; /* Verde claro del sistema existente */
+        background-color: #e3f2fd !important; /* Celeste muy claro para interlineado */
     }
 
     /* NUEVO: Estilo para campos modificados */
@@ -236,7 +236,7 @@
         min-width: 40px; /* Asegurar ancho mínimo */
         text-align: center;
         padding: 0.25rem !important; /* Padding consistente */
-        background-color: #f0ad4e !important; /* Fondo golden consistente */
+        /*background-color: #f0ad4e !important; /* Fondo golden consistente */
         color: #000 !important; /* Texto negro para contraste */
     }
 
@@ -265,21 +265,31 @@
         margin: 0 !important;
     }
 
-    /* ✅ MEJORADO: Destacar filas seleccionadas con estilo golden */
+    /* ✅ CORREGIDO: Estilo para filas seleccionadas con celeste más oscuro */
     #tbProdDet tr.selected {
-        background-color: #f9f2e7 !important; /* Color golden claro para filas seleccionadas */
-        border-left: 4px solid #f0ad4e !important; /* Borde izquierdo golden */
+        background-color: #b3d9ff !important; /* Celeste más oscuro para filas seleccionadas */
+        border-left: 4px solid #2196f3 !important; /* Borde azul para destacar */
     }
 
-        /* ✅ AÑADIDO: Estilo para filas seleccionadas al hover */
+        /* ✅ MEJORADO: Estilo para filas seleccionadas al hover */
         #tbProdDet tr.selected:hover {
-            background-color: #f5e79e !important; /* Color más intenso al hover */
+            background-color: #90caf9 !important; /* Celeste aún más intenso al hover */
         }
 
-    /* ✅ MEJORADO: Estilo para la clase de fila seleccionada del sistema existente */
+    /* ✅ CORREGIDO: Estilo para la clase de fila seleccionada del sistema existente */
     #tbProdDet tr.sel {
-        background-color: #f0ad4e !important; /* Usar golden en lugar del azul original */
+        background-color: #64b5f6 !important; /* Celeste medio para compatibilidad */
         color: #000 !important; /* Texto negro para contraste */
+    }
+
+    /* ✅ AÑADIDO: Estilo hover para filas normales */
+    #tbProdDet tbody tr:not(.table-secondary):hover {
+        background-color: #f0f8ff !important; /* Celeste muy suave al hover */
+    }
+
+    /* ✅ MEJORADO: Asegurar que las filas alternas se mantengan visibles con hover */
+    #tbProdDet tbody tr.alt:hover {
+        background-color: #d1ecf1 !important; /* Celeste claro pero más visible al hover */
     }
 </style>
 
