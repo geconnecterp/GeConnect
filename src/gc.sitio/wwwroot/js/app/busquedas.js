@@ -147,6 +147,7 @@ function buscarProducto() {
 
     PostGen(datos, _post, function (obj) {
         if (obj.error === true) {
+            CerrarWaiting();
             AbrirMensaje("ATENCIÓN", obj.msg, function () {
                 productoBase = null;
                 $("#estadoFuncion").val(false);
@@ -157,6 +158,7 @@ function buscarProducto() {
             }, false, ["Aceptar"], "error!", null);
         }
         else if (obj.warn === true) {
+            CerrarWaiting();
             if (obj.producto.p_id === "0000-0000") {
                 AbrirMensaje("ATENCIÓN", obj.msg, function () {
                     productoBase = null;
@@ -168,8 +170,6 @@ function buscarProducto() {
                 }, false, ["Aceptar"], "error!", null);
             }
             else if (obj.producto.p_id === "NO") {
-                CerrarWaiting();
-
                 if (funcionBusquedaAvanzada === true) {
                     AbrirMensaje("ATENCIÓN", "NO SE ENCONTRO EL PRODUCTO QUE INTENTO BUSCAR. SE ABRIRÁ LA BUSQUEDA AVANZADA.", function () {
                         $("#msjModal").modal("hide");
@@ -192,7 +192,6 @@ function buscarProducto() {
                 }               
             } else {
                 //encontro producto pero hay warning
-                CerrarWaiting();
                 AbrirMensaje("ATENCIÓN!", obj.msg, function (resp) {
                     if (resp === "SI") {
                         productoBase = obj.producto;

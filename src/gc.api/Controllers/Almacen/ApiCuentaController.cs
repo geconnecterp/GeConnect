@@ -527,6 +527,21 @@ namespace gc.api.Controllers.Almacen
 		}
 
 		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CompteValorizaRprDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerComprobantesValorizaRpr(CompteValorizaRprDtosRequest request)
+		{
+			ApiResponse<List<CompteValorizaRprDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _cuentasSv.ObtenerComprobantesValorizaRpr(request);
+
+			response = new ApiResponse<List<CompteValorizaRprDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CompteValorizaDtosListaDto>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]

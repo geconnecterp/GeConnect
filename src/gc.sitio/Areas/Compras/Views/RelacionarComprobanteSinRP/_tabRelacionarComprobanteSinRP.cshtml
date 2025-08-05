@@ -22,6 +22,7 @@
 						<th style="width:1%;padding: 0;text-align-last: center;vertical-align: middle;"><input name="select_all" value="1" type="checkbox"></th>
 						<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">tco_id</th>
 						<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">dia_movi</th>
+						<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">cm_compte</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -31,7 +32,7 @@
 						{
 							var nombre = "chk" + item.cm_compte;
 							<tr onclick="selectReg(this, 'tbListaComprobantes')">
-								<td class="@Model.GrillaComprobantes.ObtenerClase(item.cm_compte)">@Model.GrillaComprobantes.FormatearDato(item.cm_compte, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaComprobantes.ObtenerClase(item.concepto)">@Model.GrillaComprobantes.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
 								<td class="@Model.GrillaComprobantes.ObtenerClase(item.cm_fecha)">@Model.GrillaComprobantes.FormatearDato(item.cm_fecha, FormatDato.Fecha)</td>
 								<td class="@Model.GrillaComprobantes.ObtenerClase(item.cm_fecha_carga)">@Model.GrillaComprobantes.FormatearDato(item.cm_fecha_carga, FormatDato.Fecha)</td>
 								<td class="@Model.GrillaComprobantes.ObtenerClase(item.cm_total)">@Model.GrillaComprobantes.FormatearDato(item.cm_total, FormatDato.Monto)</td>
@@ -46,6 +47,7 @@
 								}
 								<td style="display:none;">@item.tco_id</td>
 								<td style="display:none;">@item.dia_movi</td>
+								<td style="display:none;">@item.cm_compte</td>
 							</tr>
 						}
 					}

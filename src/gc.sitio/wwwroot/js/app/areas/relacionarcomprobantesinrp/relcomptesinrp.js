@@ -117,7 +117,7 @@ function ObtenerComprobantes() {
 				comprobantes.push({
 					cta_id: $("#CtaID").val(),
 					tco_id: input.parentNode.parentNode.childNodes[13].innerText,
-					cm_compte: input.parentNode.parentNode.childNodes[1].innerText,
+					cm_compte: input.parentNode.parentNode.childNodes[17].innerText,
 					dia_movi: input.parentNode.parentNode.childNodes[15].innerText
 				});
 			}

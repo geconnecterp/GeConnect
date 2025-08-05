@@ -523,6 +523,20 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
+		public List<CompteValorizaRprDto> ObtenerComprobantesValorizaRpr(CompteValorizaRprDtosRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_COMPTE_VALORIZA_RPR;
+			var ps = new List<SqlParameter>()
+			{
+				new("@cta_id",request.cta_id),
+				new("@tco_id",request.tco_id),
+				new("@cm_compte",request.cm_compte),
+				new("@dia_movi",request.dia_movi),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<CompteValorizaRprDto>(sp, ps, true);
+			return listaTemp;
+		}
+
 		public List<CompteValorizaDtosListaDto> ObtenerComprobantesDtos(CompteValorizaRprDtosRequest request)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_COMPTE_VALORIZA_DTOS;

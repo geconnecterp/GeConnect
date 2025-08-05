@@ -64,6 +64,11 @@
 
 @section scripts {
 	<script type="text/javascript">
+		//funcionalidad busqueda avanzada
+		var productoBase = null; //se hidrata en busquedas.
+		var p_id_selected = "";
+		var funcionBusquedaAvanzada = true;
+
 		var cmCompteSelected = "";
 		var ctaIdSelected = "";
 		var ctaDescSelected = "";
@@ -90,6 +95,14 @@
 		var cargarDesdeCopiaDeRespaldoListaRprUrl = "@Url.Action("CargarDesdeCopiaDeRespaldoListaRpr", "valorizaciondecomprobante", new { area = "Compras" })";
 		var actualizarProductosSeleccionadosDesdeOcOriginalUrl = "@Url.Action("ActualizarProductosSeleccionadosDesdeOcOriginal", "valorizaciondecomprobante", new { area = "Compras" })";
 		var VerificarErrorEnCalculoDeCostosUrl = "@Url.Action("VerificarErrorEnCalculoDeCostos", "valorizaciondecomprobante", new { area = "Compras" })";
+		var obtenerDatosModalAgregarProductoUrl = "@Url.Action("ObtenerDatosModalAgregarProducto", "valorizaciondecomprobante", new { area = "Compras" })";
+
+		var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun" })";
+		var busquedaAvanzadaUrl = "@Url.Action("BusquedaAvanzada", "producto", new { area = "ControlComun" })";
 	</script>
+	
+	<script src="~/js/app/busquedas.js" type="text/javascript"></script>
+	<script src="~/js/app/controlcomun/rpr.js" type="text/javascript"></script>
+	<script src="~/js/app/controlcomun/infoRpr.js" type="text/javascript"></script>
 	<script src="~/js/app/areas/valorcompte/valorizaciondecomprobante.js"></script>
 }

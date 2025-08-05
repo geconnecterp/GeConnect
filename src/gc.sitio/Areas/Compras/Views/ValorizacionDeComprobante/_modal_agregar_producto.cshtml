@@ -1,0 +1,73 @@
+﻿@model AgregarProductoModel
+@{
+	BusquedaProducto busquedaProducto = new();
+	var listaRP = Model.ComboRP;
+}
+<div class="modal-header">
+	<h5 class="modal-title" id="modalCenterTitle">Agregar Producto</h5>
+	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+	<div class="row">
+		<div class="col-md-12">
+			<div class="input-group input-group-sm">
+				<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
+				@* <div class="col-3 input-group-sm" style="float:left;margin-right:5px;">
+					<span class="fixed-lbl-for-abm-50" style="float: left;text-align:left;">ID: </span>
+					<input type="text" asp-for="p_id" class="form-control activable inputEditable" />
+					<input type="text" asp-for="p_desc" class="form-control activable inputEditable" />
+				</div> *@
+				<div class="input-group input-group-sm mt-2">
+					<span class="input-group-text">ID: </span>
+					<input type="text" asp-for="p_id" class="form-control activable inputEditable" readonly />
+					<input type="text" asp-for="p_desc" class="form-control activable inputEditable" style="width: 60%;" readonly />
+				</div>
+				<div class="input-group input-group-sm mt-2">
+					<span class="input-group-text">Cantidad: </span>
+					<input type="text" asp-for="p_cantidad" class="form-control activable inputEditable" style="max-width:120px;" />
+					<div class="form-check form-check-inline form-switch" style="margin-bottom: 0px;margin-left: 10px;">
+						<input class="form-check-input activable" type="checkbox" asp-for="incluye_rp" value="" id="chkIncluyeRp">
+						<label class="form-check-label" for="chkIncluyeRp"> Incluir Cantidad en RP</label>
+					</div>
+				</div>
+				<div class="input-group input-group-sm mt-2">
+					<span class="input-group-text">RP: </span>
+					@Html.DropDownListFor(m => m.rp, listaRP, "Seleccionar...", new { @id = "listaRP", @class = "form-control activable inputEditable" })
+				</div>
+				@*
+				@if (Model.EsGravado)
+				{
+					<div class="col-2 input-group-sm wrapper" style="float:left;margin-right:5px;max-width: 120px;">
+						<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">Situación: </span>
+						@Html.DropDownListFor(m => m.ConceptoFacturado.iva_situacion, sit, "Seleccionar...", new { @id = "listaIvaSit", @class = "form-control activable inputEditable" })
+					</div>
+					<div class="col-1 input-group-sm wrapper" style="float:left;margin-right:5px;">
+						<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">Alicuota: </span>
+						@Html.DropDownListFor(m => m.ConceptoFacturado.iva_alicuota, ali, "Seleccionar...", new { @id = "listaIvaAli", @class = "form-control activable inputEditable" })
+					</div>
+				}
+				<div class="col-2 input-group-sm" style="float:left;margin-right:5px;">
+					<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">Subtotal: </span>
+					<input type="text" asp-for="ConceptoFacturado.subtotal" class="form-control activable inputEditable" />
+				</div>
+				@if (Model.EsGravado)
+				{
+					<div class="col-2 input-group-sm" style="float:left;margin-right:5px;">
+						<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">IVA: </span>
+						<input type="text" asp-for="ConceptoFacturado.iva" class="form-control activable inputEditable" />
+					</div>
+				}
+				<div class="col-2 input-group-sm" style="float:left;margin-right:5px;">
+					<span class="fixed-lbl-for-abm-100" style="float: left;text-align:right;">Subtotal+IVA: </span>
+					<input type="text" asp-for="ConceptoFacturado.total" style="text-align:end;" class="form-control activable" disabled />
+				</div> *@
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal-footer">
+	<button type="button" class="btn btn-primary" onclick="AgregarProducto();" id="btnAgregar">Agregar</button>
+	<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+		Cerrar
+	</button>
+</div>

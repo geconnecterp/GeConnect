@@ -4,6 +4,7 @@ namespace gc.infraestructura.Dtos.Almacen.RelacionarComprobanteSinRP
 	public class CompteJbiDto : Dto
 	{
 		public string tco_id { get; set; } = string.Empty;
+		public string tco_desc { get; set; } = string.Empty;
 		public string cm_compte { get; set; } = string.Empty;
 		public string dia_movi { get; set; } = string.Empty;
 		public DateTime cm_fecha { get; set; }
@@ -22,6 +23,12 @@ namespace gc.infraestructura.Dtos.Almacen.RelacionarComprobanteSinRP
 		{
 			get { return justificado == 'N' ? false : true; }
 			set { _justificado_bool = value; }
+		}
+		private string _concepto { get; set; } = string.Empty;
+		public string concepto
+		{
+			get { return $"{tco_desc} ({tco_id}) {cm_compte}"; }
+			set { _concepto = value ?? string.Empty; }
 		}
 	}
 }

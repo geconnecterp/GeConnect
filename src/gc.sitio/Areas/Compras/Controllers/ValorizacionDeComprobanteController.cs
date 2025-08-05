@@ -5,6 +5,7 @@ using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Compras.Models;
+using gc.sitio.Areas.Compras.Models.ValorizacionDeComprobante;
 using gc.sitio.Areas.Compras.Models.ValorizacionDeComprobante.Request;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
@@ -910,6 +911,30 @@ namespace gc.sitio.Areas.Compras.Controllers
 			catch (Exception)
 			{
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar inicializar los datos en Sesion - COMPROBANTEDECOMPRA" });
+			}
+		}
+
+		public IActionResult ObtenerDatosModalAgregarProducto(string cm_compte, string cta_id, string dia_movi, string tco_id)
+		{
+			var model = new AgregarProductoModel();
+			try
+			{
+				var lista = _cuentaServicio.ObtenerComprobantesValorizaRpr(new CompteValorizaRprDtosRequest() { cm_compte = cm_compte, cta_id = cta_id, dia_movi = dia_movi, tco_id = tco_id }, TokenCookie);
+				var listaTemp= lista.Select(x => new ComboGenDto { Id = x.rp_compte.ToString(), Descripcion = x.rp_compte });
+				model.ComboRP = HelperMvc<ComboGenDto>.ListaGenerica(listaTemp);
+
+				return PartialView("_modal_agregar_producto", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
 			}
 		}
 
