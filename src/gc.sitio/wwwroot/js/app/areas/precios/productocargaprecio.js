@@ -734,253 +734,36 @@ function inicializaControlCuenta() {
     $("#controlCta" + nnControlCta01).show("fast");
 }
 
-// Función corregida para configurar eventos de tabla
 function configurarEventosTabla() {
-    console.log("Configurando eventos de tabla...");
+    console.log("🔧 Configurando eventos de tabla...");
 
-    // Primero eliminar cualquier evento click previo para evitar duplicados
     $("#tbProdDet tbody tr").off("click");
     $("#tbProdDet tbody tr input[type='checkbox']").off("click change");
 
-    // PASO 1: Evento EXCLUSIVO para checkboxes individuales - Solo maneja el estado del checkbox
+    // Checkboxes
     $("#tbProdDet tbody tr input[type='checkbox']").on("click", function (e) {
-        // CRÍTICO: Detener completamente la propagación del evento
         e.stopPropagation();
-        e.stopImmediatePropagation();
-
-        // SOLO manejar el estado visual de la fila según el checkbox
-        const fila = $(this).closest('tr');
-        const isChecked = $(this).is(':checked');
-
-        if (isChecked) {
-            fila.addClass("selected");
-        } else {
-            fila.removeClass("selected");
-        }
-
-        // NO hacer nada más - el checkbox maneja su propio estado automáticamente
-        console.log(`Checkbox ${isChecked ? 'marcado' : 'desmarcado'} para producto:`, fila.data('p-id'));
+        $(this).closest('tr').toggleClass("selected", $(this).is(':checked'));
     });
 
-    // PASO 2: Evento para seleccionar filas - EXCLUYE COMPLETAMENTE los checkboxes y sus celdas contenedoras
+    // ✅ CRÍTICO: Evento click simplificado
     $("#tbProdDet tbody tr").on("click", function (e) {
-        // CRÍTICO: Verificaciones exhaustivas para excluir checkboxes
-        const target = $(e.target);
-        const clickedElement = e.target;
+        if ($(e.target).is('input[type="checkbox"]')) return;
 
-        // 1. Verificar si el clic fue directamente en un checkbox
-        if (target.is('input[type="checkbox"]')) {
-            console.log("Click detectado en checkbox - ignorando evento de fila");
-            return;
-        }
-
-        // 2. Verificar si el clic fue en un elemento que contiene un checkbox
-        if (target.closest('input[type="checkbox"]').length > 0) {
-            console.log("Click detectado en contenedor de checkbox - ignorando evento de fila");
-            return;
-        }
-
-        // 3. Verificar si el clic fue en la celda que contiene el checkbox (primera columna típicamente)
-        const celda = target.closest('td');
-        if (celda.length > 0 && celda.find('input[type="checkbox"]').length > 0) {
-            console.log("Click detectado en celda de checkbox - ignorando evento de fila");
-            return;
-        }
-
-        // 4. Verificar si el clic fue en un label asociado a un checkbox
-        if (target.is('label') && target.attr('for') && target.attr('for').includes('check')) {
-            console.log("Click detectado en label de checkbox - ignorando evento de fila");
-            return;
-        }
-
-        // 5. Verificar si el elemento clickeado es hijo de un label de checkbox
-        if (target.closest('label[for*="check"]').length > 0) {
-            console.log("Click detectado en elemento hijo de label de checkbox - ignorando evento de fila");
-            return;
-        }
-
-        // 6. Verificación adicional por posición: si el click fue en los primeros 40px de la fila (donde típicamente está el checkbox)
-        const filaOffset = $(this).offset();
-        const clickX = e.pageX;
-        if (clickX - filaOffset.left < 40) {
-            // Verificar si hay un checkbox en esa área
-            const primeraColumna = $(this).find('td:first');
-            if (primeraColumna.find('input[type="checkbox"]').length > 0) {
-                console.log("Click detectado en área de checkbox (primeros 40px) - ignorando evento de fila");
-                return;
-            }
-        }
-
-        // PASO 3: Solo si pasó todas las verificaciones, proceder con la selección de fila
         const productoId = $(this).data('p-id');
+        if (!productoId) return;
 
-        if (!productoId) {
-            console.warn("No se pudo obtener el ID del producto para la fila seleccionada");
-            return;
-        }
+        console.log(`🎯 Producto seleccionado: ${productoId}`);
 
-        console.log("Fila seleccionada para producto ID:", productoId);
-
-        // Actualizar variable global
         productoActualEnLista = productoId;
-        $("#divProdLista").attr('data-producto-actual', productoId);
-
-        // Destacar visualmente la fila seleccionada (sin afectar checkboxes)
         destacarFilaSeleccionada(productoId);
-
-        // Cargar los datos originales en la vista previa
         cargarDatosEnVistaPrevia(productoId);
-
-        // Cargar las listas de precios para este producto
-        buscarProductoListaOptimizado(productoId);
+        buscarProductoListaOptimizado(productoId); // ← FUNCIÓN CLAVE
     });
 
-    // PASO 4: Evento para el checkbox de seleccionar todos - Simplificado
-    $("#checkAllProd").off("change").on("change", function (e) {
-        // Detener propagación para evitar conflictos
-        e.stopPropagation();
-
-        const isChecked = $(this).prop("checked");
-
-        // Actualizar todos los checkboxes individuales y las clases de fila
-        $("#tbProdDet tbody tr").each(function () {
-            const checkbox = $(this).find('input[type="checkbox"]');
-            const fila = $(this);
-
-            // Actualizar el estado del checkbox
-            checkbox.prop('checked', isChecked);
-
-            // Actualizar la clase visual de la fila
-            if (isChecked) {
-                fila.addClass("selected");
-            } else {
-                fila.removeClass("selected");
-            }
-        });
-
-        // Si se marca todo, cargar las listas del primer producto
-        if (isChecked) {
-            const primerProductoSeleccionado = $("#tbProdDet tbody tr:first").data('p-id');
-            if (primerProductoSeleccionado) {
-                destacarFilaSeleccionada(primerProductoSeleccionado);
-                buscarProductoListaOptimizado(primerProductoSeleccionado);
-            }
-        } else {
-            // Si se desmarca todo, limpiar el panel de listas
-            $("#divProdLista").html('<div class="alert alert-info">Seleccione un producto para ver sus listas de precios.</div>');
-        }
-
-        console.log(`Checkbox "Seleccionar todo" ${isChecked ? 'marcado' : 'desmarcado'}`);
-    });
-
-    console.log("Eventos de tabla configurados correctamente");
+    console.log("✅ Eventos configurados");
 }
 
-
-
-// Configuración optimizada de elementos de tabla
-//function configuracionElementosTablaDetalle() {
-//    console.log("Configurando elementos de tabla detalle...");
-
-//    // Remover máscaras previas para evitar conflictos en todos los campos
-//    $('.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni, .input-tp_pcosto, .input-tp_margen, .input-tp_pneto, .input-tin_alicuota, .input-tp_pvta').inputmask('remove');
-
-//    // Establecer todos los campos como readonly inicialmente (excepto los que ya tienen readonly)
-//    $('.input-tp_plista, .input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete, .input-tp_boni, .input-tp_pcosto, .input-tp_margen, .input-tp_pneto, .input-tin_alicuota, .input-tp_pvta')
-//        .prop('readonly', true)
-//        .addClass('campo-readonly');
-
-//    // Formatear los valores
-//    formatearValoresIniciales();
-
-//    // Configurar eventos para activar/desactivar edición
-//    configurarEventosEdicion();
-
-//    // Configuración para campos con 3 decimales (P.Lista, P.Costo y P.Neto)
-//    Inputmask({
-//        alias: "numeric",
-//        groupSeparator: ",",
-//        radixPoint: ".",
-//        autoGroup: true,
-//        digits: 3,
-//        digitsOptional: false,
-//        rightAlign: true,
-//        prefix: '',
-//        placeholder: "0",
-//        clearMaskOnLostFocus: false,
-//        showMaskOnHover: false,
-//        showMaskOnFocus: false,
-//        onBeforeMask: function (value) {
-//            if (value) {
-//                let numValue = parseFloat(value.toString().replace(/,/g, ''));
-//                return isNaN(numValue) ? value : numValue.toFixed(3);
-//            }
-//            return value;
-//        }
-//    }).mask('.input-tp_plista, .input-tp_pcosto, .input-tp_pneto');
-
-//    // Configuración para campos con 1 decimal (descuentos y flete)
-//    Inputmask({
-//        alias: "numeric",
-//        groupSeparator: ",",
-//        radixPoint: ".",
-//        autoGroup: true,
-//        digits: 1,
-//        digitsOptional: false,
-//        rightAlign: true,
-//        integerDigits: 2, // Máximo 2 dígitos enteros
-//        min: 0,
-//        max: 99.9, // Máximo valor permitido: 99.9
-//        prefix: '',
-//        placeholder: "0",
-//        clearMaskOnLostFocus: false,
-//        showMaskOnHover: false,
-//        showMaskOnFocus: false,
-//        onBeforeMask: function (value) {
-//            if (value) {
-//                let numValue = parseFloat(value.toString().replace(/,/g, ''));
-//                if (numValue > 99.9) numValue = 99.9; // Limitar al máximo permitido
-//                return isNaN(numValue) ? value : numValue.toFixed(1);
-//            }
-//            return value;
-//        }
-//    }).mask('.input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete');
-
-//    // Configuración para campos con 2 decimales (los demás campos numéricos)
-//    Inputmask({
-//        alias: "numeric",
-//        groupSeparator: ",",
-//        radixPoint: ".",
-//        autoGroup: true,
-//        digits: 2,
-//        digitsOptional: false,
-//        rightAlign: true,
-//        prefix: '',
-//        placeholder: "0",
-//        clearMaskOnLostFocus: false,
-//        showMaskOnHover: false,
-//        showMaskOnFocus: false,
-//        onBeforeMask: function (value) {
-//            if (value) {
-//                let numValue = parseFloat(value.toString().replace(/,/g, ''));
-//                return isNaN(numValue) ? value : numValue.toFixed(2);
-//            }
-//            return value;
-//        }
-//    }).mask('.input-tp_margen, .input-tin_alicuota, .input-tp_pvta');
-
-//    // Configuración para campo de bonificación (formato 999/999)
-//    Inputmask({
-//        mask: "999/999",
-//        placeholder: "",
-//        showMaskOnHover: false,
-//        showMaskOnFocus: false
-//    }).mask('.input-tp_boni');
-
-//    console.log("Configuración de elementos de tabla detalle completada");
-//}
-
-// Función optimizada para aplicar InputMask
 function configuracionInputMaskOptimizada() {
     console.log("Aplicando configuración InputMask optimizada...");
 
@@ -1227,7 +1010,7 @@ function calcularPrecioVentaMargenLista(row, lpId, pId, nuevoPrecioVenta) {
 
                     // ✅ LLAMADA UNIFICADA PARA RESGUARDAR
                     resguardarCambiosListaUnificado(datosResguardo, {
-                        modo: 'async',
+                        modo: 'sync',
                         mostrarErrores: true,
                         logDetallado: true,
                         callback: function (response, success) {
@@ -1288,7 +1071,7 @@ function resguardarCambiosListaCalculados(row, lpId, pId, nuevoPrecioVenta, dato
 
     // ✅ DESPUÉS: Llamada unificada
     resguardarCambiosListaUnificado(datos, {
-        modo: 'async',
+        modo: 'sync',
         mostrarErrores: true,
         logDetallado: true,
         callback: function (response, success) {
@@ -1304,8 +1087,9 @@ function resguardarCambiosListaCalculados(row, lpId, pId, nuevoPrecioVenta, dato
 }
 
 // Función de utilidad para destacar la fila seleccionada
+// ✅ MEJORADA: Función destacar fila con verificación adicional
 function destacarFilaSeleccionada(productoId) {
-    console.log("Destacando fila para producto ID:", productoId);
+    console.log(`🎯 Destacando fila para producto ID: ${productoId}`);
 
     // Remover el destacado de todas las filas
     $("#tbProdDet tbody tr").removeClass("selected");
@@ -1314,29 +1098,36 @@ function destacarFilaSeleccionada(productoId) {
     const $fila = $("#tbProdDet tbody tr[data-p-id='" + productoId + "']");
 
     if ($fila.length === 0) {
-        console.warn(`No se encontró ninguna fila con data-p-id="${productoId}"`);
-        return;
+        console.warn(`⚠️ No se encontró ninguna fila con data-p-id="${productoId}"`);
+        return false;
     }
 
     // Añadir el destacado solo a la fila del producto seleccionado
     $fila.addClass("selected");
-    console.log("Fila destacada correctamente");
+    console.log(`✅ Fila destacada correctamente para producto ${productoId}`);
 
-    // Opcionalmente, hacer scroll a la fila seleccionada si está fuera de la vista
+    // Hacer scroll a la fila si está fuera de vista
+    scrollAFilaSeleccionada($fila);
+
+    return true;
+}
+
+// ✅ NUEVA: Función separada para scroll optimizado
+function scrollAFilaSeleccionada($fila) {
     const $tableContainer = $("#tbProdDet").closest('.table-responsive');
 
     if ($tableContainer.length > 0) {
         const containerTop = $tableContainer.offset().top;
+        const containerHeight = $tableContainer.height();
         const rowTop = $fila.offset().top;
 
-        if (rowTop < containerTop || rowTop > containerTop + $tableContainer.height()) {
+        // Solo hacer scroll si la fila está fuera del área visible
+        if (rowTop < containerTop || rowTop > containerTop + containerHeight) {
             $tableContainer.animate({
-                scrollTop: $tableContainer.scrollTop() + (rowTop - containerTop)
+                scrollTop: $tableContainer.scrollTop() + (rowTop - containerTop - containerHeight / 2)
             }, 300);
-            console.log("Realizando scroll a la fila seleccionada");
+            console.log(`📜 Realizando scroll a la fila seleccionada`);
         }
-    } else {
-        console.warn("No se encontró un contenedor .table-responsive para la tabla");
     }
 }
 
@@ -1707,6 +1498,7 @@ function obtenerParametros(div = null, contexto = 'normal') {
 }
 
 // Modificar la función buscarProductosDetalle para asegurar la correcta secuencia de inicialización
+// ✅ VERIFICADA: Función que también debe cargar listas del primer producto
 function buscarProductosDetalle() {
     let datos = obtenerParametros(divs.ProductoDetalle, 'busqueda');
     if (!datos) return false;
@@ -1736,11 +1528,16 @@ function buscarProductosDetalle() {
                 setTimeout(function () {
                     const primerProductoId = $("#tbProdDet tbody tr:not(.table-secondary):first").data("p-id");
                     if (primerProductoId) {
+                        // ✅ CRÍTICO: Actualizar variable global
+                        productoActualEnLista = primerProductoId;
+                        $("#divProdLista").attr('data-producto-actual', primerProductoId);
+
                         destacarFilaSeleccionada(primerProductoId);
 
                         // NUEVO: Cargar los datos originales en la vista previa
                         cargarDatosEnVistaPrevia(primerProductoId);
 
+                        // ✅ CRÍTICO CORREGIDO: Cargar listas del primer producto
                         buscarProductoListaOptimizado(primerProductoId);
                     }
 
@@ -2056,121 +1853,156 @@ function optimizarVisualizacionTabla() {
     console.log("Tabla optimizada para mejor visualización");
 }
 
-// ✅ CORREGIDA: Función sin referencias a variables inexistentes
+// ✅ ASEGURAR: Que esta función esté funcionando correctamente
 function buscarProductoListaOptimizado(productoId) {
-    console.log(`Iniciando búsqueda de listas para producto ID: ${productoId}`);
-
-    // ✅ NUEVA VALIDACIÓN: Si está en procesamiento individual, no recargar
-    if (!procesamientoMasivoActivo && productoActualEnLista === productoId) {
-        console.log(`ℹ️ Producto ${productoId} ya cargado en modo individual, omitiendo recarga`);
-        return;
-    }
+    console.log(`🔄 BUSCANDO listas para producto: ${productoId}`);
 
     // Validaciones básicas
     if (!productoId) {
-        console.warn("No se proporcionó un ID de producto válido");
-        $("#divProdLista").html('<div class="alert alert-warning">No se pudo obtener información de listas de precios.</div>');
-        productoActualEnLista = null;
+        console.error("❌ No se proporcionó productoId");
         return;
     }
 
-    // ✅ SIMPLIFICADO: Control de concurrencia básico
+    // ✅ AGREGAR: Log adicional para debugging
+    console.log(`📋 Estado actual: procesamientoMasivoActivo=${procesamientoMasivoActivo}, productoActualEnLista=${productoActualEnLista}`);
+
+    // Control de concurrencia
     if (window.currentListasXHR) {
-        console.log("Cancelando request anterior de listas");
+        console.log("🔄 Cancelando request anterior");
         window.currentListasXHR.abort();
+        window.currentListasXHR = null;
     }
 
-    // Actualizar variables de control
+    // Actualizar variables
     productoActualEnLista = productoId;
     $("#divProdLista").attr('data-producto-actual', productoId);
 
-    // Mostrar indicador de carga
-    $("#divProdLista").html('<div class="text-center p-3"><i class="bx bx-loader bx-spin font-size-24"></i><p class="mt-2">Cargando listas de precios...</p></div>');
+    // Mostrar indicador
+    $("#divProdLista").html('<div class="text-center p-3"><i class="bx bx-loader bx-spin font-size-24"></i><p class="mt-2">🔄 Cargando listas...</p></div>');
 
     // Obtener parámetros
     let datos = obtenerParametros(null, 'listas');
     if (datos === false) {
-        console.error("Error al obtener parámetros para la consulta");
-        $("#divProdLista").html('<div class="alert alert-danger">Error al preparar la consulta de listas de precios.</div>');
+        console.error("❌ Error obteniendo parámetros");
+        $("#divProdLista").html('<div class="alert alert-danger">❌ Error preparando consulta</div>');
         return;
     }
 
-    // Configurar parámetros
     datos.id = productoId;
     datos.verificarTemp = true;
 
-    // Agregar parámetro para forzar recarga durante procesamiento masivo
-    if (procesamientoMasivoActivo) {
-        datos.forzarRecarga = true;
-        console.log("Modo masivo activo: forzando recarga de listas desde servidor");
-    }
+    console.log(`📤 Enviando request para producto ${productoId}:`, datos);
 
-    // ✅ SIMPLIFICADO: Request AJAX sin variables complejas
+    // Request AJAX con logging detallado
     window.currentListasXHR = $.ajax({
         url: buscarProdListaUrl,
         type: "POST",
         data: datos,
+        timeout: 30000,
         success: function (responseLista) {
-            // Limpiar referencia al request
             window.currentListasXHR = null;
+            console.log(`✅ Response recibido para producto ${productoId}:`, responseLista ? 'con datos' : 'vacío');
 
-            // Validar response
             if (!responseLista || responseLista.trim() === '') {
-                console.warn(`No se recibieron datos para el producto ID: ${productoId}`);
-                $("#divProdLista").html('<div class="alert alert-info">No hay listas de precios disponibles para este producto.</div>');
+                $("#divProdLista").html('<div class="alert alert-info">ℹ️ Sin listas disponibles</div>');
                 return;
             }
 
-            // Mostrar resultados
             $("#divProdLista").html(responseLista);
-            console.log(`Listas de precios cargadas para producto ID: ${productoId}`);
+            console.log(`✅ Listas cargadas exitosamente para producto ${productoId}`);
 
             // Inicializar componentes
-            setTimeout(() => {
-                if ($("#tbProdLista").length > 0) {
-                    optimizarVisualizacionTablaListas();
-                    configurarInputsListaPreciosOptimizado();
-
-                    // Detectar y resaltar registros temporales
-                    const registrosTemporales = $("#tbProdLista tbody tr[data-carga='1']").length;
-                    if (registrosTemporales > 0) {
-                        console.log(`Detectados ${registrosTemporales} registros temporales en las listas`);
-                        $("#divProdLista").prepend(
-                            `<div class="alert alert-info alert-dismissible fade show" role="alert">
-                                <i class="bx bx-info-circle me-1"></i>
-                                Se están mostrando <strong>${registrosTemporales} registros modificados</strong> pendientes de confirmación.
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>`
-                        );
-                    }
-
-                    // Configurar eventos
-                    $("#tbProdLista tbody tr").off("click").on("click", function (e) {
-                        if (!$(e.target).is('input')) {
-                            $(this).toggleClass("selected");
-                        }
-                    });
-                }
-            }, 10);
+            setTimeout(() => inicializarComponentesListas(productoId), 50);
         },
         error: function (xhr, status, error) {
-            // Solo procesar error si no fue cancelado intencionalmente
+            window.currentListasXHR = null;
             if (status !== 'abort') {
-                window.currentListasXHR = null;
-                console.error("Error en la petición AJAX de listas:", error);
-                $("#divProdLista").html(
-                    '<div class="alert alert-danger">' +
-                    '<h5>Error al cargar las listas de precios</h5>' +
-                    '<p>Se produjo un error al intentar cargar la información.</p>' +
-                    '</div>'
-                );
-            } else {
-                console.log("Request de listas cancelado correctamente");
+                console.error(`❌ Error cargando listas para ${productoId}:`, error);
+                $("#divProdLista").html(`
+                    <div class="alert alert-danger">
+                        ❌ Error cargando listas: ${error}
+                        <button class="btn btn-sm btn-outline-primary ms-2" onclick="buscarProductoListaOptimizado(${productoId})">🔄 Reintentar</button>
+                    </div>
+                `);
             }
         }
     });
 }
 
+// ✅ FUNCIÓN DE DEBUG: Para verificar que todo funcione
+function debugEventosTabla() {
+    console.log("🐛 DEBUGGING - Estado de eventos de tabla:");
+
+    // Verificar si hay filas
+    const filas = $("#tbProdDet tbody tr");
+    console.log(`📊 Filas encontradas: ${filas.length}`);
+
+    // Verificar si tienen eventos
+    filas.each(function (index) {
+        const eventos = $._data(this, 'events');
+        console.log(`Fila ${index}: eventos =`, eventos ? Object.keys(eventos) : 'ninguno');
+    });
+
+    // Verificar variables globales
+    console.log(`🌐 productoActualEnLista: ${productoActualEnLista}`);
+    console.log(`🌐 procesamientoMasivoActivo: ${procesamientoMasivoActivo}`);
+
+    // Verificar URLs
+    console.log(`🔗 buscarProdListaUrl: ${typeof buscarProdListaUrl !== 'undefined' ? buscarProdListaUrl : 'NO DEFINIDA'}`);
+}
+
+// ✅ LLAMAR EN CONSOLA: debugEventosTabla(); para verificar estado
+
+// ✅ NUEVA: Función separada para inicializar componentes de listas
+function inicializarComponentesListas(productoId) {
+    console.log(`🔧 Inicializando componentes de listas para producto ${productoId}`);
+
+    // Usar setTimeout para permitir que el DOM se actualice completamente
+    setTimeout(() => {
+        if ($("#tbProdLista").length > 0) {
+            // 1. Optimizar visualización de tabla
+            optimizarVisualizacionTablaListas();
+
+            // 2. Configurar inputs de listas
+            configurarInputsListaPreciosOptimizado();
+
+            // 3. Detectar y resaltar registros temporales
+            const registrosTemporales = $("#tbProdLista tbody tr[data-carga='1']").length;
+            if (registrosTemporales > 0) {
+                console.log(`📋 Detectados ${registrosTemporales} registros temporales en las listas`);
+                $("#divProdLista").prepend(
+                    `<div class="alert alert-info alert-dismissible fade show" role="alert">
+                        <i class="bx bx-info-circle me-1"></i>
+                        Se están mostrando <strong>${registrosTemporales} registros modificados</strong> pendientes de confirmación.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>`
+                );
+            }
+
+            // 4. Configurar eventos de tabla de listas
+            configurarEventosTableListas();
+
+            console.log(`✅ Componentes de listas inicializados para producto ${productoId}`);
+        } else {
+            console.warn(`⚠️ No se encontró tabla de listas para producto ${productoId}`);
+        }
+    }, 50); // Pequeño delay para asegurar que el DOM esté listo
+}
+
+// ✅ NUEVA: Configurar eventos específicos de la tabla de listas
+function configurarEventosTableListas() {
+    // Limpiar eventos previos
+    $("#tbProdLista tbody tr").off("click.tableListas");
+
+    // Configurar evento click para selección de filas de listas
+    $("#tbProdLista tbody tr").on("click.tableListas", function (e) {
+        // Solo activar si el clic no fue en un input
+        if (!$(e.target).is('input')) {
+            $(this).toggleClass("selected");
+            console.log(`Fila de lista ${$(this).data('lp-id')} seleccionada`);
+        }
+    });
+}
 function configurarInputsListaPreciosOptimizado() {
     console.log("Configurando inputs para grid de listas de precios (optimizado)...");
 
@@ -3039,7 +2871,7 @@ function actualizarMargenLista(row, lpId, pId, nuevoMargen) {
     }, lpId);
 
     resguardarCambiosListaUnificado(datos, {
-        modo: 'async',
+        modo: 'sync',
         callback: (response, success) => {
             if (success) {
                 campoMargen.data('original-value', nuevoMargen);
@@ -4020,7 +3852,7 @@ function logResultadoListas(productId, resultado) {
 function resguardarCambiosListaUnificado(datos, opciones = {}) {
     // ✅ CONFIGURACIÓN POR DEFECTO
     const config = {
-        modo: 'async',           // 'async' | 'sync' | 'silent'
+        modo: 'sync',           // 'async' | 'sync' | 'silent'
         mostrarErrores: true,    // Mostrar mensajes de error
         callback: null,          // Función callback para async
         logDetallado: false,     // Logging detallado
