@@ -42,6 +42,53 @@
 	InicializarPantallaDeFiltros();
 });
 
+function AgregarProducto() {
+	//p_cantidad
+	var cantidad = $("#p_cantidad").inputmask('unmaskedvalue');
+	if (cantidad <= 0) {
+		AbrirMensaje("ATENCIÓN", "La cantidad debe ser mayor a 0.", function () {
+			$("#msjModal").modal("hide");
+			$("#p_cantidad").trigger("focus");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else if ($("#chkIncluyeRp")[0].checked && $("#listaRP").val()=="") {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un valor para RP.", function () {
+			$("#msjModal").modal("hide");
+			$("#listaRP").trigger("focus");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting("Agregando producto para valorizar...");
+		//TODO Marce: Agregar producto llamando al SP [SPGECO_Compte_Valoriza_Agragar_Producto]
+		var cta_id = $("#CtaID").val();
+		var tco_id = $("#tco_id").val();
+		var cm_compte = $("#cm_compte").val();
+		var dia_movi = $("#dia_movi").val();
+		var incluye_rp = $("#chkIncluyeRp")[0].checked;
+		var p_id = $("#p_id").val();
+		var cantidad = $("#p_cantidad").inputmask('unmaskedvalue');
+		var rp_compte = $("#listaRP").val();
+		var data = { cta_id, tco_id, cm_compte, dia_movi, rp_compte, p_id, cantidad, incluye_rp };
+		PostGen(data, agregarProductoParaValorizarUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				//TODO Marce: Recargar la valorizacion luego de agregar el producto (cuando se recibe 0 en la respuesta de agregar producto)
+				$("#modalAgregarProducto").modal("hide");
+				CargarDatosParaValorizar($("#cm_compte").val());
+			}
+		});
+		
+	}
+}
+
 function verificaTeclaDeBusqueda(e) {
 	if (e.which == "13") {
 
@@ -55,8 +102,8 @@ function verificaTeclaDeBusqueda(e) {
 function AbrirModalAgregarProducto() {
 	var cm_compte = $("#cm_compte").val();
 	var cta_id = $("#CtaID").val();
-	var dia_movi = $("#dia_movi").val();;
-	var tco_id = $("#tco_id").val();;
+	var dia_movi = $("#dia_movi").val();
+	var tco_id = $("#tco_id").val();
 	AbrirWaiting();
 	var datos = { cm_compte, cta_id, dia_movi, tco_id };
 	PostGenHtml(datos, obtenerDatosModalAgregarProductoUrl, function (obj) {
@@ -71,55 +118,21 @@ function AbrirModalAgregarProducto() {
 			return true;
 		});
 		$("#estadoFuncion").on("change", verificaEstado); //este control debe ser insertado el mismo o similar para cada modulo.
-		//$("input#Busqueda").keypress(verificaTeclaDeBusqueda);
+		
 		$(document).on("keyup", "#Busqueda", verificaTeclaDeBusqueda);
 
-		//$("#ConceptoFacturado_subtotal").inputmask({
-		//	alias: 'numeric',
-		//	groupSeparator: '.',
-		//	radixPoint: ',',
-		//	digits: 2,
-		//	digitsOptional: false,
-		//	allowMinus: false,
-		//	prefix: '',
-		//	suffix: '',
-		//	rightAlign: true,
-		//	unmaskAsNumber: true // Devuelve un número al obtener el valor
-		//});
-		//$("#ConceptoFacturado_subtotal").on('focusout', function (e) {
-		//	CalcularIva(e);
-		//});
-
-		//$("#ConceptoFacturado_iva").inputmask({
-		//	alias: 'numeric',
-		//	groupSeparator: '.',
-		//	radixPoint: ',',
-		//	digits: 2,
-		//	digitsOptional: false,
-		//	allowMinus: false,
-		//	prefix: '',
-		//	suffix: '',
-		//	rightAlign: true,
-		//	unmaskAsNumber: true // Devuelve un número al obtener el valor
-		//});
-		//$("#ConceptoFacturado_iva").on('focusout', function (e) {
-		//	CalcularIva(e);
-		//});
-		//$("#ConceptoFacturado_total").mask("000.000.000.000,00", { reverse: true });
-		//setTimeout(() => {
-		//	$(".inputEditable").on("keypress", analizaEnterInput)
-		//	document.getElementById("ConceptoFacturado_concepto").focus();
-		//}, 500);
-		//$("#ConceptoFacturado_concepto").trigger("focus");
-
-		//document.getElementById("btnAgregar").addEventListener("keyup", function (event) {
-		//	if (event.keyCode === 13) {
-		//		AgregarConceptoFacturado();
-		//	}
-		//});
 		CerrarWaiting();
 		return true
 	});
+}
+
+function LimpiarCamposEnModalDeAgregarProductoParaValorizar() {
+	$("#p_id").val("");
+	$("#p_desc").val("");
+	$("#p_cantidad").val("");
+	$("#chkIncluyeRp").prop('checked', false);
+	$("#chkIncluyeRp").trigger("change");
+	$("#listaRP").val("");
 }
 
 function buscarProducto() {
@@ -144,7 +157,8 @@ function buscarProducto() {
 				$("#estadoFuncion").val(false);
 				$("#btnBusquedaBase").prop("disabled", false);
 				$("#msjModal").modal("hide");
-				$("#Busqueda").focus();
+				LimpiarCamposEnModalDeAgregarProductoParaValorizar();
+				$("#Busqueda").trigger("focus");
 				return true;
 			}, false, ["Aceptar"], "error!", null);
 		}
@@ -156,7 +170,8 @@ function buscarProducto() {
 					$("#estadoFuncion").val(false);
 					$("#btnBusquedaBase").prop("disabled", false);
 					$("#msjModal").modal("hide");
-					$("#Busqueda").focus();
+					LimpiarCamposEnModalDeAgregarProductoParaValorizar();
+					$("#Busqueda").trigger("focus");
 					return true;
 				}, false, ["Aceptar"], "error!", null);
 			}
@@ -176,7 +191,8 @@ function buscarProducto() {
 				else {
 					AbrirMensaje("ATENCIÓN", "NO SE ENCONTRO EL PRODUCTO QUE INTENTO BUSCAR.", function () {
 						$("#msjModal").modal("hide");
-						$("#Busqueda").focus();
+						LimpiarCamposEnModalDeAgregarProductoParaValorizar();
+						$("#Busqueda").trigger("focus");
 						return true;
 					}, false, ["Aceptar"], "error!", null);
 
@@ -189,10 +205,7 @@ function buscarProducto() {
 						$("#estadoFuncion").val(true);
 						$("#estadoFuncion").trigger("change");
 						$("#msjModal").modal("hide");
-						var up = $("#txtUPEnComprobanteRP");
-						if (up) {
-							up.focus();
-						}
+						$("#Busqueda").trigger("focus");
 						return true;
 					}
 					else {
@@ -201,7 +214,7 @@ function buscarProducto() {
 						$("#estadoFuncion").val(false);
 						$("#btnBusquedaBase").prop("disabled", false);
 						$("#msjModal").modal("hide");
-						$("#Busqueda").focus();
+						$("#Busqueda").trigger("focus");
 						return true;
 					}
 				},
@@ -226,7 +239,7 @@ function verificaEstado(e) {
 	if (res === "true") {
 		//traigo la variable productoBase e hidrato componentes
 		var prod = productoBase;
-
+		console.log(prod);
 		$("#p_id").val(prod.p_id);
 		$("#p_desc").val(prod.p_desc);
 		$("#estadoFuncion").val(false);
@@ -237,53 +250,8 @@ function verificaEstado(e) {
 			getMaskForMoneyType("#p_cantidad", 3);
 		}
 		$("#p_cantidad").val("");
-		//$("#txtUP_ID").val(prod.up_id);
-		//$("#txtBARRADO_ID").val(prod.p_id_barrado);
-		//$("#txtID_PROV").val(prod.p_id_prov);
-		//$("#txtUP").mask("000.000.000.000", { reverse: true });
-		//$("txtBto").mask('#,##0', {
-		//	reverse: true,
-		//	translation: {
-		//		'#': {
-		//			pattern: /-|\d/,
-		//			recursive: true
-		//		}
-		//	},
-		//	onChange: function (value, e) {
-		//		e.target.value = value.replace(/(?!^)-/g, '').replace(/^,/, '').replace(/^-,/, '-');
-		//	}
-		//});
-
-		//$("#txtBto").mask("000.000.000.000", {
-		//	reverse: true,
-		//	translation: {
-		//		'#': {
-		//			pattern: /-|\d/,
-		//			recursive: true
-		//		}
-		//	},
-		//	onChange: function (value, e) {
-		//		e.target.value = value.replace(/(?!^)-/g, '').replace(/^,/, '').replace(/^-,/, '-');
-		//	}
-		//});
-
-		//$("#txtUP").val(prod.p_unidad_pres).prop("disabled", false);
-		//$("#txtBto").val(prod.bulto).prop("disabled", false);
-		//$("#txtUnid").mask("000.000.000.000", { reverse: true });
-
-		//if (prod.up_id !== "07") {  //unidades enteras
-		//	// $("#box").mask("000.000.000.000,00", { reverse: true });
-		//	$("#txtUnid").mask("000.000.000.000,00", { reverse: true });
-		//	$("#txtUnid").val(0).prop("disabled", false);
-		//}
-		//else { //unidades decimales
-		//	//$("#txtUnid").val(0).prop("disabled", true);
-		//}
 		$("#Busqueda").val("");
-		//if (prod.p_con_vto !== "N") {
-		//} else {
-		//}
-		//$("#txtUP").focus();
+		$("#p_cantidad").trigger("focus");
 	}
 	return true;
 }
@@ -649,43 +617,47 @@ function inCellInputEditable() {
 	});
 }
 
+function CargarDatosParaValorizar(cmCompteSelected) {
+	AbrirWaiting("Obteniendo datos de Valorización...");
+	var cm_compte = cmCompteSelected;
+	data = { cm_compte };
+	PostGenHtml(data, cargarDatosParaValorizarURL, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			$("#divComprobantes").html(obj);
+			$("#divDetalle").collapse("show");
+			$("#btnDetalle").prop("disabled", false);
+			$("#divFiltro").collapse("hide")
+			AddEventListenerToGrid("tbListaValorizacion");
+			AddEventListenerToGrid("tbListaDescFinanc");
+			MostrarDatosDeCuenta(true);
+			$("#chkSobreTotal").on("click", function () {
+				ActualizarEstadoChecks_SobreTotal();
+			});
+			$("#chkNetoFijo").on("click", function () {
+				ActualizarEstadoChecks_NetoFijo();
+			});
+			ActualizarVisualizacionDeControlesABMDescFinanc();
+			AplicarMascarasEnInput_Section_DescFinanc();
+			ObtenerListaDetalleRpr();
+			ValidarRespuestaDeObtencionDeValorizacion();
+		}
+	});
+}
+
 function ControlaListaCompteSelected() {
 	if ($("#listaComptesPend").val() != "")
 		cmCompteSelected = $("#listaComptesPend").val();
 	else
 		cmCompteSelected = "";
 	if (cmCompteSelected != "") {
-		AbrirWaiting("Obteniendo datos de Valorización...");
-		var cm_compte = cmCompteSelected;
-		data = { cm_compte };
-		PostGenHtml(data, cargarDatosParaValorizarURL, function (obj) {
-			CerrarWaiting();
-			if (obj.error === true) {
-				AbrirMensaje("ATENCIÓN", obj.msg, function () {
-					$("#msjModal").modal("hide");
-					return true;
-				}, false, ["Aceptar"], "error!", null);
-			}
-			else {
-				$("#divComprobantes").html(obj);
-				$("#divDetalle").collapse("show");
-				$("#btnDetalle").prop("disabled", false);
-				$("#divFiltro").collapse("hide")
-				AddEventListenerToGrid("tbListaValorizacion");
-				AddEventListenerToGrid("tbListaDescFinanc");
-				MostrarDatosDeCuenta(true);
-				$("#chkSobreTotal").on("click", function () {
-					ActualizarEstadoChecks_SobreTotal();
-				});
-				$("#chkNetoFijo").on("click", function () {
-					ActualizarEstadoChecks_NetoFijo();
-				});
-				ActualizarVisualizacionDeControlesABMDescFinanc();
-				AplicarMascarasEnInput_Section_DescFinanc();
-				ObtenerListaDetalleRpr();
-				ValidarRespuestaDeObtencionDeValorizacion();
-			}
-		});
+		CargarDatosParaValorizar(cmCompteSelected);
 	}
 }
 

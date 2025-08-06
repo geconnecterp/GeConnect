@@ -652,5 +652,23 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<RespuestaDto> CompteValorizarAgregarProducto(CompteValorizarAgregarProductoRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_COMPTE_VALORIZA_AGREGAR_PRODUCTO;
+			var ps = new List<SqlParameter>()
+			{
+				new("@cta_id",request.cta_id),
+				new("@tco_id",request.tco_id),
+				new("@cm_compte",request.cm_compte),
+				new("@dia_movi",request.dia_movi),
+				new("@rp_compte",request.rp_compte),
+				new("@p_id",request.p_id),
+				new("@cantidad",request.cantidad),
+				new("@incluye_rp",request.incluye_rp),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

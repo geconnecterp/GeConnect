@@ -370,6 +370,7 @@ namespace gc.api.core.Constantes
 			public const string SP_COMPTE_CARGA_JBI = "SPGECO_Compte_Jbi";
 			public const string SP_COMPTE_JBI_CONFIRMA = "SPGECO_Compte_Jbi_Confirma";
 			public const string SP_COMPTE_VALORIZA_RPR = "SPGECO_Compte_Valoriza_RPR";
+			public const string SP_COMPTE_VALORIZA_AGREGAR_PRODUCTO = "SPGECO_Compte_Valoriza_Agragar_Producto";
 			#region Asientos
 			public const string SP_EJERCICIOS_LISTA = "SPGECO_Conta_Ejercicios";
             public const string SP_CONTA_USU_ASIENTOS = "SPGECO_Conta_Usu_Asientos";

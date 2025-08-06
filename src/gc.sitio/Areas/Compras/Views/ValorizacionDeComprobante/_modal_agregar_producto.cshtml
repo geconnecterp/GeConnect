@@ -12,11 +12,6 @@
 		<div class="col-md-12">
 			<div class="input-group input-group-sm">
 				<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
-				@* <div class="col-3 input-group-sm" style="float:left;margin-right:5px;">
-					<span class="fixed-lbl-for-abm-50" style="float: left;text-align:left;">ID: </span>
-					<input type="text" asp-for="p_id" class="form-control activable inputEditable" />
-					<input type="text" asp-for="p_desc" class="form-control activable inputEditable" />
-				</div> *@
 				<div class="input-group input-group-sm mt-2">
 					<span class="input-group-text">ID: </span>
 					<input type="text" asp-for="p_id" class="form-control activable inputEditable" readonly />
@@ -34,33 +29,6 @@
 					<span class="input-group-text">RP: </span>
 					@Html.DropDownListFor(m => m.rp, listaRP, "Seleccionar...", new { @id = "listaRP", @class = "form-control activable inputEditable" })
 				</div>
-				@*
-				@if (Model.EsGravado)
-				{
-					<div class="col-2 input-group-sm wrapper" style="float:left;margin-right:5px;max-width: 120px;">
-						<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">Situación: </span>
-						@Html.DropDownListFor(m => m.ConceptoFacturado.iva_situacion, sit, "Seleccionar...", new { @id = "listaIvaSit", @class = "form-control activable inputEditable" })
-					</div>
-					<div class="col-1 input-group-sm wrapper" style="float:left;margin-right:5px;">
-						<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">Alicuota: </span>
-						@Html.DropDownListFor(m => m.ConceptoFacturado.iva_alicuota, ali, "Seleccionar...", new { @id = "listaIvaAli", @class = "form-control activable inputEditable" })
-					</div>
-				}
-				<div class="col-2 input-group-sm" style="float:left;margin-right:5px;">
-					<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">Subtotal: </span>
-					<input type="text" asp-for="ConceptoFacturado.subtotal" class="form-control activable inputEditable" />
-				</div>
-				@if (Model.EsGravado)
-				{
-					<div class="col-2 input-group-sm" style="float:left;margin-right:5px;">
-						<span class="fixed-lbl-for-abm-100" style="float: left;text-align:left;">IVA: </span>
-						<input type="text" asp-for="ConceptoFacturado.iva" class="form-control activable inputEditable" />
-					</div>
-				}
-				<div class="col-2 input-group-sm" style="float:left;margin-right:5px;">
-					<span class="fixed-lbl-for-abm-100" style="float: left;text-align:right;">Subtotal+IVA: </span>
-					<input type="text" asp-for="ConceptoFacturado.total" style="text-align:end;" class="form-control activable" disabled />
-				</div> *@
 			</div>
 		</div>
 	</div>

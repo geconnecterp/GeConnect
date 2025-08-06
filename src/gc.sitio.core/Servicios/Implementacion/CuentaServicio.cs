@@ -58,6 +58,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string ObtenerCompteJbi = "/GetCompteJbi";
 		private const string ConfirmarCompteJbi = "/ConfirmaCompteJbi";
 		private const string ObtenerCompteValorizaRpr = "/ObtenerComprobantesValorizaRpr";
+		private const string CompteValorizarAgrProducto = "/CompteValorizarAgregarProducto";
 
 		private readonly AppSettings _appSettings;
         public CuentaServicio(IOptions<AppSettings> options, ILogger<CuentaServicio> logger) : base(options, logger)
@@ -1430,6 +1431,37 @@ namespace gc.sitio.core.Servicios.Implementacion
 				if (string.IsNullOrEmpty(stringData))
 				{
 					_logger.LogWarning($"La API devolvió error. Parametros cta_id:{request.cta_id} usu_id: {request.usu_id} adm_id: {request.adm_id} json_comprobantes: {request.json_comptes} json_rps: {request.json_rp}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return new RespuestaGenerica<RespuestaDto>() { Entidad = apiResponse.Data };
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public RespuestaGenerica<RespuestaDto> CompteValorizarAgregarProducto(CompteValorizarAgregarProductoRequest request, string token)
+		{
+			ApiResponse<RespuestaDto> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{CompteValorizarAgrProducto}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros cta_id:{request.cta_id} tco_id: {request.tco_id} cm_compte: {request.cm_compte} dia_movi: {request.dia_movi} rp_compte: {request.rp_compte}");
 					return new();
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");

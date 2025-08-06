@@ -572,7 +572,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				foreach (var item in listaIdsProds)
 				{
 					var prod = listaProdTemporal.FirstOrDefault(x => x.p_id == item);
-					
+
 					if (oc_compte.Equals("relacionada"))
 						resProdOc = _cuentaServicio.ObtenerComprobanteValorizaCostoOC(new CompteValorizaCostoOcRequest() { oc_compte = prod?.oc_compte, p_id = item }, TokenCookie);
 					else
@@ -585,26 +585,26 @@ namespace gc.sitio.Areas.Compras.Controllers
 							var elemento = resProdOc.First();
 							if (aplica_oc)
 							{
-								prod.ocd_plista = elemento.ocd_plista; 
-								prod.ocd_dto1 = elemento.ocd_dto1; 
-								prod.ocd_dto2 = elemento.ocd_dto2; 
-								prod.ocd_dto3 = elemento.ocd_dto3; 
-								prod.ocd_dto4 = elemento.ocd_dto4; 
-								prod.ocd_dto_pa = elemento.ocd_dto_pa; 
-								prod.ocd_boni = elemento.ocd_boni; 
+								prod.ocd_plista = elemento.ocd_plista;
+								prod.ocd_dto1 = elemento.ocd_dto1;
+								prod.ocd_dto2 = elemento.ocd_dto2;
+								prod.ocd_dto3 = elemento.ocd_dto3;
+								prod.ocd_dto4 = elemento.ocd_dto4;
+								prod.ocd_dto_pa = elemento.ocd_dto_pa;
+								prod.ocd_boni = elemento.ocd_boni;
 								prod.ocd_pcosto = CalcularPCosto(elemento.ocd_plista, elemento.ocd_dto1, elemento.ocd_dto2, elemento.ocd_dto3, elemento.ocd_dto4, elemento.ocd_dto_pa, elemento.ocd_boni, 0, prod.rpd_cantidad);
 								if (!oc_compte.Equals("relacionada") && !oc_compte.Equals("actual"))
 									prod.oc_compte = oc_compte;
 							}
 							if (aplica_fac)
 							{
-								prod.rpd_plista = resProdOc.First().ocd_plista; 
-								prod.rpd_dto1 = resProdOc.First().ocd_dto1; 
-								prod.rpd_dto2 = resProdOc.First().ocd_dto2; 
-								prod.rpd_dto3 = resProdOc.First().ocd_dto3; 
-								prod.rpd_dto4 = resProdOc.First().ocd_dto4; 
-								prod.rpd_dto_pa = resProdOc.First().ocd_dto_pa; 
-								prod.rpd_boni = resProdOc.First().ocd_boni; 
+								prod.rpd_plista = resProdOc.First().ocd_plista;
+								prod.rpd_dto1 = resProdOc.First().ocd_dto1;
+								prod.rpd_dto2 = resProdOc.First().ocd_dto2;
+								prod.rpd_dto3 = resProdOc.First().ocd_dto3;
+								prod.rpd_dto4 = resProdOc.First().ocd_dto4;
+								prod.rpd_dto_pa = resProdOc.First().ocd_dto_pa;
+								prod.rpd_boni = resProdOc.First().ocd_boni;
 								prod.rpd_pcosto = CalcularPCosto(elemento.ocd_plista, elemento.ocd_dto1, elemento.ocd_dto2, elemento.ocd_dto3, elemento.ocd_dto4, elemento.ocd_dto_pa, elemento.ocd_boni, 0, prod.rpd_cantidad);
 							}
 						}
@@ -920,7 +920,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			try
 			{
 				var lista = _cuentaServicio.ObtenerComprobantesValorizaRpr(new CompteValorizaRprDtosRequest() { cm_compte = cm_compte, cta_id = cta_id, dia_movi = dia_movi, tco_id = tco_id }, TokenCookie);
-				var listaTemp= lista.Select(x => new ComboGenDto { Id = x.rp_compte.ToString(), Descripcion = x.rp_compte });
+				var listaTemp = lista.Select(x => new ComboGenDto { Id = x.rp_compte.ToString(), Descripcion = x.rp_compte });
 				model.ComboRP = HelperMvc<ComboGenDto>.ListaGenerica(listaTemp);
 
 				return PartialView("_modal_agregar_producto", model);
@@ -935,6 +935,31 @@ namespace gc.sitio.Areas.Compras.Controllers
 					Mensaje = ex.Message
 				};
 				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public JsonResult AgregarProductoParaValorizar(CompteValorizarAgregarProductoRequest request)
+		{
+			try
+			{
+				if (request == null)
+					return Json(new { error = true, warn = false, msg = "Debe especificar datos válidos." });
+
+				var respuesta = _cuentaServicio.CompteValorizarAgregarProducto(request, TokenCookie);
+				if (respuesta == null)
+					return Json(new { error = true, warn = false, msg = "Se ha producido un error al intentar agregar un producto para valorizar." });
+
+				if (respuesta.Entidad == null)
+					return Json(new { error = true, warn = false, msg = "Se ha producido un error al intentar agregar un producto para valorizar." });
+
+				if (respuesta.Entidad != null && respuesta.Entidad.resultado != 0)
+					return Json(new { error = true, warn = false, msg = respuesta.Entidad.resultado_msj });
+
+				return Json(new { error = false, warn = false, msg = "" });
+			}
+			catch (Exception)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar agregar un producto para valorizar - AGREGARPRODUCTOPARAVALORIZAR" });
 			}
 		}
 

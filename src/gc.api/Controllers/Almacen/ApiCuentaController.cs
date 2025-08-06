@@ -654,5 +654,17 @@ namespace gc.api.Controllers.Almacen
 
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[Route("[action]")]
+		public IActionResult CompteValorizarAgregarProducto(CompteValorizarAgregarProductoRequest request)
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _cuentasSv.CompteValorizarAgregarProducto(request);
+
+			var response = new ApiResponse<RespuestaDto>(res.First());
+
+			return Ok(response);
+		}
 	}
 }
