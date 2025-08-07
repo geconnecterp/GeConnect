@@ -123,24 +123,931 @@ function aplicarCambiosDatosGenerales() {
 }
 
 // NUEVO: Función mejorada para iniciar el procesamiento por lotes
+// ✅ CORREGIDO: Función mejorada para iniciar el procesamiento por lotes
 function iniciarProcesamiento(filasSeleccionadas, cambios, totalFilas) {
-    // ✅ CRÍTICO: Inicializar/limpiar la variable global para este proceso
-    window.filasModificadasGlobal = [];
+    console.log("🚀 Iniciando procesamiento optimizado...");
 
-    // Mostrar indicador de progreso avanzado
+    // ✅ CRÍTICO: Mostrar diálogo INMEDIATAMENTE antes de cualquier procesamiento
     crearDialogoProgresoAvanzado(totalFilas);
 
-    // Constantes para el procesamiento por lotes
-    const TAMANO_LOTE = 50; // Procesar 50 filas a la vez
-    const INTERVALO_ENTRE_LOTES = 100; // 100ms entre lotes para permitir respuesta de UI
+    // ✅ OPTIMIZACIÓN: Usar setTimeout para permitir que el diálogo se renderice
+    setTimeout(() => {
+        // ✅ INICIALIZAR: Variables globales después de mostrar el diálogo
+        window.filasModificadasGlobal = [];
+        procesamientoMasivoActivo = true;
 
-    // Convertir la colección jQuery a un array para facilitar la división en lotes
-    const arrayFilas = filasSeleccionadas.toArray();
+        // ✅ CONFIGURACIÓN: Parámetros optimizados
+        const TAMANO_LOTE = 25; // Lotes más pequeños para mejor responsividad
+        const INTERVALO_ENTRE_LOTES = 50; // Intervalo más corto
 
-    // Comenzar el procesamiento por lotes, usando la nueva versión de procesarLoteDeFilas
-    procesarLoteDeFilas(arrayFilas, 0, TAMANO_LOTE, cambios, totalFilas, INTERVALO_ENTRE_LOTES);
+        // ✅ PREPARACIÓN: Convertir a array de forma eficiente
+        const arrayFilas = Array.from(filasSeleccionadas);
+
+        console.log(`📊 Procesando ${arrayFilas.length} filas en lotes de ${TAMANO_LOTE}`);
+
+        // ✅ INICIAR: Procesamiento real
+        procesarLoteDeFilasOptimizado(arrayFilas, 0, TAMANO_LOTE, cambios, totalFilas, INTERVALO_ENTRE_LOTES);
+    }, 100); // Pequeño delay para asegurar renderizado del diálogo
 }
 
+// ✅ NUEVA: Aplicar marcas visuales en batch para mejor rendimiento
+// ✅ OPTIMIZADA: Aplicar marcas visuales diferidas más eficientemente
+function aplicarMarcasVisualesDiferidas(filasModificadas) {
+    console.log(`🎨 Aplicando marcas visuales a ${filasModificadas.length} filas...`);
+
+    // ✅ BATCH: Procesar en lotes pequeños para no bloquear UI
+    const LOTE_VISUAL = 15; // Aumentar tamaño de lote
+    let indice = 0;
+
+    function procesarLoteVisual() {
+        const fin = Math.min(indice + LOTE_VISUAL, filasModificadas.length);
+
+        for (let i = indice; i < fin; i++) {
+            const $fila = $(filasModificadas[i]);
+
+            // ✅ EFICIENTE: Procesar todos los campos pendientes de una vez
+            const camposPendientes = $fila.find('.campo-modificado-pendiente');
+
+            if (camposPendientes.length > 0) {
+                // ✅ BATCH DOM: Cambiar todas las clases de una vez
+                camposPendientes.removeClass('campo-modificado-pendiente').addClass('campo-modificado');
+
+                // ✅ MARCAR: Estado de carga si no está marcado
+                if (!$fila.attr('data-carga') || $fila.attr('data-carga') !== '1') {
+                    $fila.data('carga', 1).attr('data-carga', '1');
+                }
+            }
+        }
+
+        indice = fin;
+
+        // ✅ CONTINUAR: Si quedan filas, programar siguiente lote
+        if (indice < filasModificadas.length) {
+            requestAnimationFrame(procesarLoteVisual);
+        } else {
+            console.log(`✅ ${indice} filas procesadas con marcas visuales`);
+        }
+    }
+
+    // ✅ INICIAR: Procesamiento visual
+    requestAnimationFrame(procesarLoteVisual);
+}
+
+// ✅ OPTIMIZADA: Función rápida para marcar campos sin operaciones DOM costosas
+function marcarCampoModificadoRapido($input) {
+    // ✅ SIMPLE: Solo agregar clase, sin indicadores complejos
+    $input.addClass('campo-modificado');
+
+    // ✅ OPCIONAL: Indicador simple si no existe
+    const container = $input.closest('td');
+    if (container.length > 0 && !container.hasClass('celda-modificada')) {
+        container.addClass('celda-modificada');
+    }
+}
+
+// ✅ OPTIMIZADA: Función para iniciar recálculos con mejor gestión de UI
+function iniciarRecalculoOptimizado(filasModificadas, totalFilasOriginales) {
+    const totalFilasModificadas = filasModificadas.length;
+
+    console.log(`🔢 Iniciando recálculos optimizados: ${totalFilasModificadas} de ${totalFilasOriginales}`);
+
+    if (totalFilasModificadas === 0) {
+        console.log("ℹ️ No hay filas para recalcular");
+        finalizarProcesamientoOptimizado();
+        return;
+    }
+
+    // ✅ ACTUALIZACIÓN: Progreso inmediata
+    $("#textoProgreso").text("Iniciando cálculo de precios...");
+    $("#barraProgreso").css('width', '0%');
+    $("#filasCompletadas").text('0');
+
+    // ✅ PROCESAMIENTO: Lotes más pequeños para cálculos
+    const TAMANO_LOTE_CALCULO = 5; // Lotes muy pequeños para cálculos intensivos
+    const INTERVALO_CALCULOS = 200; // Más tiempo entre cálculos
+
+    // ✅ DIFERIR: Aplicar marcas visuales pendientes antes de calcular
+    setTimeout(() => {
+        aplicarMarcasVisualesDiferidas(filasModificadas);
+
+        // ✅ INICIAR: Cálculos después de actualizar marcas
+        setTimeout(() => {
+            recalcularCostosPorLotesOptimizado(filasModificadas, 0, TAMANO_LOTE_CALCULO, totalFilasModificadas, INTERVALO_CALCULOS);
+        }, 50);
+    }, 50);
+}
+
+// ✅ OPTIMIZADA: Función de cálculos con mejor gestión de progreso
+// ✅ OPTIMIZADA: Función de cálculos con mejor control de resultados
+function recalcularCostosPorLotesOptimizado(arrayFilas, inicio, tamanoLote, totalFilas, intervaloEntreLotes) {
+    const fin = Math.min(inicio + tamanoLote, arrayFilas.length);
+
+    // ✅ VALIDACIÓN: Verificar límites
+    if (inicio >= arrayFilas.length) {
+        console.log("🎉 Todos los cálculos completados");
+        finalizarProcesamientoOptimizado();
+        return;
+    }
+
+    console.log(`🔢 Calculando lote ${inicio}-${fin} de ${totalFilas}`);
+
+    // ✅ ACTUALIZACIÓN: Progreso inmediato
+    const procesados = fin;
+    const porcentaje = Math.round((procesados / totalFilas) * 100);
+
+    $("#barraProgreso").css('width', porcentaje + '%');
+    $("#filasCompletadas").text(procesados);
+    $("#textoProgreso").text(`Calculando precios... ${porcentaje}%`);
+
+    // ✅ PROCESAMIENTO: Cálculos en RequestAnimationFrame con control de resultados
+    requestAnimationFrame(() => {
+        let exitosos = 0;
+        let errores = 0;
+        let saltados = 0;
+        let fallosResguardo = 0;
+
+        // ✅ PROCESAR: Lote actual con estadísticas
+        for (let i = inicio; i < fin; i++) {
+            const fila = $(arrayFilas[i]);
+            const productoId = fila.data('p-id');
+
+            try {
+                // ✅ VERIFICAR: Si requiere cálculo
+                const requireCalculo = fila.find('.campo-modificado').length > 0;
+
+                if (requireCalculo) {
+                    const resultado = calcularProductoCompletoSincrono(fila);
+
+                    if (resultado.success) {
+                        exitosos++;
+                        if (!resultado.resguardo) {
+                            fallosResguardo++;
+                        }
+                        console.log(`✅ Calculado: ${productoId} (resguardo: ${resultado.resguardo ? 'OK' : 'FALLO'})`);
+                    } else if (resultado.skip) {
+                        saltados++;
+                        console.log(`⏭️ Saltado: ${productoId} - ${resultado.reason}`);
+                    } else {
+                        errores++;
+                        console.error(`❌ Error: ${productoId} - ${resultado.error}`);
+                    }
+                } else {
+                    saltados++;
+                    console.log(`⏭️ Saltado: ${productoId} - Sin campos modificados`);
+                }
+            } catch (error) {
+                errores++;
+                console.error(`💥 Excepción calculando ${productoId}:`, error);
+            }
+        }
+
+        // ✅ LOGGING: Estadísticas del lote
+        console.log(`📊 Lote ${inicio}-${fin}: ${exitosos} exitosos, ${errores} errores, ${saltados} saltados, ${fallosResguardo} fallos resguardo`);
+
+        // ✅ CONTINUAR: Programar siguiente lote
+        setTimeout(() => {
+            recalcularCostosPorLotesOptimizado(arrayFilas, fin, tamanoLote, totalFilas, intervaloEntreLotes);
+        }, intervaloEntreLotes);
+    });
+}
+
+// ✅ CORREGIDA: Versión síncrona con resguardo completo de producto y listas
+function calcularProductoCompletoSincrono(row) {
+    const productId = row.data('p-id');
+
+    // ✅ EVITAR: Cálculos duplicados
+    if (row.data('processing') === true) {
+        console.log(`⏭️ Producto ${productId} ya en procesamiento`);
+        return { success: false, skip: true };
+    }
+
+    row.data('processing', true);
+
+    try {
+        console.log(`🔄 Calculando COMPLETO SÍNCRONO para producto ${productId}`);
+
+        // ✅ VERIFICAR: Si hay cambios que requieren secuencia 01
+        const hayCambiosCosto = row.find('.input-tp_plista.campo-modificado, .input-tp_dto1.campo-modificado, .input-tp_dto2.campo-modificado, .input-tp_dto3.campo-modificado, .input-tp_dto4.campo-modificado, .input-tp_dto_pa.campo-modificado, .input-tp_porc_flete.campo-modificado, .input-tp_boni.campo-modificado').length > 0;
+
+        if (!hayCambiosCosto) {
+            console.log(`⏭️ Producto ${productId} sin cambios en conceptos de costo, saltando secuencia`);
+            row.data('processing', false);
+            return { success: false, skip: true, reason: "Sin cambios de costo" };
+        }
+
+        // ✅ PASO 1: Calcular costo (SECUENCIA 01)
+        const resultadoCosto = calcularCostoSincronoRapido(row);
+        if (!resultadoCosto) {
+            console.error(`❌ Error en cálculo de costo para producto ${productId}`);
+            row.data('processing', false);
+            return { success: false, error: "Error en cálculo de costo" };
+        }
+
+        // ✅ PASO 2: Calcular precio de venta (SECUENCIA 02)
+        const resultadoPrecio = calcularPrecioVentaSincronoRapido(row);
+        if (!resultadoPrecio) {
+            console.error(`❌ Error en cálculo de precio para producto ${productId}`);
+            row.data('processing', false);
+            return { success: false, error: "Error en cálculo de precio" };
+        }
+
+        // ✅ PASO 3: Resguardar cambios del producto principal
+        const resultadoResguardoProducto = resguardarCambiosProductoRapido(row);
+        if (!resultadoResguardoProducto.success) {
+            console.error(`❌ Error resguardando producto ${productId}: ${resultadoResguardoProducto.error}`);
+            // ✅ DECISIÓN: Continuar aunque falle el resguardo para no bloquear el proceso
+            console.warn(`⚠️ Continuando proceso aunque falló resguardo producto ${productId}`);
+        }
+
+        // ✅ PASO 4: Actualizar y resguardar listas de precios (NUEVO)
+        const resultadoListas = actualizarYResguardarListasSincrono(productId, resultadoPrecio);
+        if (!resultadoListas.success && !resultadoListas.skip) {
+            console.warn(`⚠️ Warning actualizando listas para producto ${productId}: ${resultadoListas.error}`);
+        }
+
+        // ✅ PASO 5: Marcar estado de carga
+        if (!row.attr('data-carga') || row.attr('data-carga') !== '1') {
+            row.data('carga', 1).attr('data-carga', '1');
+        }
+
+        console.log(`✅ Secuencia completa finalizada para producto ${productId} (producto: ${resultadoResguardoProducto.success ? 'OK' : 'FALLO'}, listas: ${resultadoListas.success ? 'OK' : resultadoListas.skip ? 'SKIP' : 'FALLO'})`);
+
+        return {
+            success: true,
+            costo: resultadoCosto,
+            precio: resultadoPrecio,
+            resguardoProducto: resultadoResguardoProducto.success,
+            resguardoListas: resultadoListas.success || resultadoListas.skip
+        };
+
+    } catch (error) {
+        console.error(`💥 Error general en cálculo síncrono ${productId}:`, error);
+        return { success: false, error: error.message };
+    } finally {
+        row.data('processing', false);
+    }
+}
+
+// ✅ NUEVA: Función para actualizar y resguardar listas de forma síncrona
+function actualizarYResguardarListasSincrono(productId, datosProducto) {
+    console.log(`🔄 Actualizando y resguardando listas SÍNCRONO para producto ${productId}`);
+
+    try {
+        // ✅ VALIDAR: Datos de entrada
+        if (!productId || !datosProducto) {
+            console.error("❌ Parámetros inválidos para actualización de listas");
+            return {
+                success: false,
+                error: "Parámetros inválidos"
+            };
+        }
+
+        // ✅ VALIDAR: tp_pneto válido
+        if (!datosProducto.tp_pneto || isNaN(datosProducto.tp_pneto) || datosProducto.tp_pneto <= 0) {
+            console.warn(`⚠️ tp_pneto inválido (${datosProducto.tp_pneto}) para producto ${productId}, saltando listas`);
+            return {
+                success: true,
+                skip: true,
+                reason: "tp_pneto inválido"
+            };
+        }
+
+        // ✅ OBTENER: Listas desde servidor de forma síncrona
+        const datos = obtenerParametrosParaListasSincrono(productId);
+        if (!datos) {
+            return {
+                success: false,
+                error: "Error al obtener parámetros para listas"
+            };
+        }
+
+        // ✅ LLAMADA SÍNCRONA: Obtener HTML de listas
+        const responseHTML = realizarLlamadaSincrona(buscarProdListaUrl, datos, 2, 'html');
+
+        if (!responseHTML || responseHTML.trim() === '') {
+            console.log(`ℹ️ No hay listas disponibles para producto ${productId}`);
+            return {
+                success: true,
+                skip: true,
+                reason: "Sin listas disponibles"
+            };
+        }
+
+        // ✅ PROCESAR Y RESGUARDAR: Listas de forma eficiente
+        return procesarYResguardarListasSincrono(responseHTML, productId, datosProducto);
+
+    } catch (error) {
+        console.error(`💥 Error actualizando listas para producto ${productId}:`, error);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
+// ✅ NUEVA: Obtener parámetros para listas de forma optimizada
+function obtenerParametrosParaListasSincrono(productId) {
+    try {
+        // ✅ REUTILIZAR: Función existente sin efectos visuales
+        const datos = obtenerParametrosSilencioso();
+        if (datos === false) {
+            console.error("❌ Error al obtener parámetros base para listas");
+            return null;
+        }
+
+        // ✅ CONFIGURAR: Parámetros específicos para listas
+        datos.id = productId;
+        datos.verificarTemp = false; // No verificar temporales en procesamiento masivo
+        datos.forzarRecarga = true;  // Siempre forzar recarga desde servidor
+
+        return datos;
+
+    } catch (error) {
+        console.error("💥 Error configurando parámetros para listas:", error);
+        return null;
+    }
+}
+
+// ✅ NUEVA: Procesar y resguardar listas de forma síncrona y eficiente
+function procesarYResguardarListasSincrono(responseHTML, productId, datosProducto) {
+    console.log(`📋 Procesando y resguardando listas para producto ${productId}`);
+
+    try {
+        // ✅ EXTRAER: Listas del HTML
+        const $tempDiv = $('<div>').html(responseHTML);
+        const $filasLista = $tempDiv.find('#tbProdLista tbody tr');
+
+        if ($filasLista.length === 0) {
+            console.log(`ℹ️ No se encontraron filas de listas para producto ${productId}`);
+            return {
+                success: true,
+                skip: true,
+                reason: "Sin filas de listas en HTML"
+            };
+        }
+
+        let listasActualizadas = 0;
+        let listasOmitidas = 0;
+        let errores = 0;
+
+        // ✅ PROCESAR: Cada lista de forma síncrona
+        $filasLista.each(function (index) {
+            const $fila = $(this);
+            const lp_id = $fila.data('lp-id');
+            const lp_porc_mg = parseFloat($fila.find('input[name="lp_porc_mg"]').val());
+
+            // ✅ VALIDACIÓN: Datos básicos
+            if (!lp_id) {
+                console.warn(`⚠️ Lista sin ID en posición ${index}, omitiendo`);
+                listasOmitidas++;
+                return true; // Continuar
+            }
+
+            if (isNaN(lp_porc_mg)) {
+                console.warn(`⚠️ Lista ${lp_id} sin margen válido, omitiendo`);
+                listasOmitidas++;
+                return true; // Continuar
+            }
+
+            try {
+                // ✅ CALCULAR Y RESGUARDAR: Lista individual
+                const resultado = calcularYResguardarListaSincrono(lp_id, datosProducto, $fila);
+
+                if (resultado.success) {
+                    listasActualizadas++;
+                    console.log(`✅ Lista ${lp_id} calculada y resguardada: precio ${resultado.precio}`);
+                } else {
+                    errores++;
+                    console.error(`❌ Error en lista ${lp_id}: ${resultado.error}`);
+                }
+
+            } catch (error) {
+                errores++;
+                console.error(`💥 Excepción procesando lista ${lp_id}:`, error.message);
+            }
+        });
+
+        // ✅ RESULTADO: Resumen del procesamiento
+        const resultado = {
+            success: errores === 0,
+            listasActualizadas: listasActualizadas,
+            listasOmitidas: listasOmitidas,
+            errores: errores,
+            total: $filasLista.length
+        };
+
+        console.log(`📊 Listas producto ${productId}: ${listasActualizadas} actualizadas, ${listasOmitidas} omitidas, ${errores} errores`);
+
+        return resultado;
+
+    } catch (error) {
+        console.error(`💥 Error procesando listas:`, error);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
+// ✅ NUEVA: Calcular y resguardar lista individual de forma síncrona
+function calcularYResguardarListaSincrono(lp_id, datosProducto, $fila) {
+    try {
+        // ✅ RECOPILAR: Datos para el cálculo
+        const datosCalculo = {
+            p_id: datosProducto.p_id,
+            lp_id: lp_id,
+            tp_pcosto: datosProducto.tp_pcosto || 0,
+            p_pneto_base: datosProducto.tp_pneto || 0,
+            lp_porc_mg: parseFloat($fila.find('input[name="lp_porc_mg"]').val()) || 0,
+            iva_situacion: $fila.find('input[name="iva_situacion"]').val() || 'E',
+            iva_alicuota: parseFloat($fila.find('input[name="iva_alicuota"]').val()) || 0,
+            in_alicuota: parseFloat($fila.find('input[name="in_alicuota"]').val()) || 0
+        };
+
+        // ✅ LLAMADA SÍNCRONA: Calcular precio de lista
+        const response = realizarLlamadaSincrona(calcularPrecioVentaLinkUrl, datosCalculo);
+
+        if (!response || !response.pvta) {
+            throw new Error('Respuesta inválida del servidor al calcular precio de lista');
+        }
+
+        // ✅ CONSTRUIR: Datos para resguardo usando funciones existentes
+        const datosBase = {
+            p_id: datosProducto.p_id,
+            p_pcosto: datosProducto.tp_pcosto || 0,
+            p_pneto: parseFloat(response.pvta.p_pneto) || 0,
+            lp_porc_mg: datosCalculo.lp_porc_mg || 0,
+            iva_situacion: datosCalculo.iva_situacion || 'E',
+            iva_alicuota: datosCalculo.iva_alicuota || 0,
+            in_alicuota: datosCalculo.in_alicuota || 0,
+            tp_margen: parseFloat(response.pvta.p_margen) || 0,
+            tp_pvta: parseFloat(response.pvta.p_pvta) || 0,
+            tp_iva: parseFloat(response.pvta.p_iva) || 0,
+            tp_in: parseFloat(response.pvta.p_in) || 0
+        };
+
+        const datosResguardo = construirDatosResguardoLista(datosBase, lp_id);
+
+        // ✅ RESGUARDAR: De forma síncrona usando función unificada existente
+        const resguardoResult = resguardarCambiosListaUnificado(datosResguardo, {
+            modo: 'sync',
+            mostrarErrores: false,  // No mostrar errores en procesamiento masivo
+            logDetallado: false     // Sin logging detallado para mejor rendimiento
+        });
+
+        return {
+            success: resguardoResult.success,
+            precio: parseFloat(response.pvta.p_pvta).toFixed(2),
+            margen: parseFloat(response.pvta.p_margen).toFixed(2),
+            error: resguardoResult.error || null
+        };
+
+    } catch (error) {
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
+// ✅ MEJORADA: Función de estadísticas con información de listas
+function recalcularCostosPorLotesOptimizado(arrayFilas, inicio, tamanoLote, totalFilas, intervaloEntreLotes) {
+    const fin = Math.min(inicio + tamanoLote, arrayFilas.length);
+
+    // ✅ VALIDACIÓN: Verificar límites
+    if (inicio >= arrayFilas.length) {
+        console.log("🎉 Todos los cálculos completados");
+        finalizarProcesamientoOptimizado();
+        return;
+    }
+
+    console.log(`🔢 Calculando lote ${inicio}-${fin} de ${totalFilas}`);
+
+    // ✅ ACTUALIZACIÓN: Progreso inmediato
+    const procesados = fin;
+    const porcentaje = Math.round((procesados / totalFilas) * 100);
+
+    $("#barraProgreso").css('width', porcentaje + '%');
+    $("#filasCompletadas").text(procesados);
+    $("#textoProgreso").text(`Calculando precios... ${porcentaje}%`);
+
+    // ✅ PROCESAMIENTO: Cálculos en RequestAnimationFrame con estadísticas mejoradas
+    requestAnimationFrame(() => {
+        let exitosos = 0;
+        let errores = 0;
+        let saltados = 0;
+        let fallosResguardoProducto = 0;
+        let fallosResguardoListas = 0;
+
+        // ✅ PROCESAR: Lote actual con estadísticas detalladas
+        for (let i = inicio; i < fin; i++) {
+            const fila = $(arrayFilas[i]);
+            const productoId = fila.data('p-id');
+
+            try {
+                // ✅ VERIFICAR: Si requiere cálculo
+                const requireCalculo = fila.find('.campo-modificado').length > 0;
+
+                if (requireCalculo) {
+                    const resultado = calcularProductoCompletoSincrono(fila);
+
+                    if (resultado.success) {
+                        exitosos++;
+                        if (!resultado.resguardoProducto) {
+                            fallosResguardoProducto++;
+                        }
+                        if (!resultado.resguardoListas) {
+                            fallosResguardoListas++;
+                        }
+                        console.log(`✅ Calculado: ${productoId} (producto: ${resultado.resguardoProducto ? 'OK' : 'FALLO'}, listas: ${resultado.resguardoListas ? 'OK' : 'FALLO'})`);
+                    } else if (resultado.skip) {
+                        saltados++;
+                        console.log(`⏭️ Saltado: ${productoId} - ${resultado.reason}`);
+                    } else {
+                        errores++;
+                        console.error(`❌ Error: ${productoId} - ${resultado.error}`);
+                    }
+                } else {
+                    saltados++;
+                    console.log(`⏭️ Saltado: ${productoId} - Sin campos modificados`);
+                }
+            } catch (error) {
+                errores++;
+                console.error(`💥 Excepción calculando ${productoId}:`, error);
+            }
+        }
+
+        // ✅ LOGGING: Estadísticas detalladas del lote
+        console.log(`📊 Lote ${inicio}-${fin}: ${exitosos} exitosos, ${errores} errores, ${saltados} saltados, ${fallosResguardoProducto} fallos producto, ${fallosResguardoListas} fallos listas`);
+
+        // ✅ CONTINUAR: Programar siguiente lote
+        setTimeout(() => {
+            recalcularCostosPorLotesOptimizado(arrayFilas, fin, tamanoLote, totalFilas, intervaloEntreLotes);
+        }, intervaloEntreLotes);
+    });
+}
+
+// ✅ MEJORADA: Función precio con mejor retorno de información
+function calcularPrecioVentaSincronoRapido(row) {
+    const productId = row.data('p-id');
+
+    console.log(`💵 Calculando precio RÁPIDO SÍNCRONO para producto ${productId}`);
+
+    // ✅ RECOPILAR: Datos actualizados después del cálculo de costo
+    const datos = {
+        p_id: productId,
+        tp_pcosto: parseFloat(row.find('.input-tp_pcosto').val().replace(/,/g, '')) || 0,
+        lp_prevision_tot: parseFloat(row.find('input[name="lp_prevision_tot"]').val()) || 0,
+        lp_prevision_pin: parseFloat(row.find('input[name="lp_prevision_pin"]').val()) || 0,
+        tp_margen: parseFloat(row.find('.input-tp_margen').val().replace(/,/g, '')) || 0,
+        iva_situacion: row.find('input[name="iva_situacion"]').val() || 'E',
+        iva_alicuota: parseFloat(row.find('input[name="iva_alicuota"]').val()) || 0,
+        in_alicuota: parseFloat(row.find('input[name="in_alicuota"]').val()) || 0
+    };
+
+    try {
+        // ✅ LLAMADA SÍNCRONA: Sin indicadores visuales
+        const response = realizarLlamadaSincrona(calcularPrecioVentaBaseUrl, datos);
+
+        if (response.error || response.warn) {
+            console.error(`❌ Error en cálculo de precio: ${response.msg}`);
+            return false;
+        }
+
+        // ✅ ACTUALIZAR: Campos calculados sin efectos visuales
+        const pneto = parseFloat(response.pvta.p_pneto).toFixed(3);
+        const pvta = parseFloat(response.pvta.p_pvta).toFixed(2);
+
+        const campoPrecioNeto = row.find('.input-tp_pneto');
+        const campoPVenta = row.find('.input-tp_pvta');
+
+        campoPrecioNeto.val(pneto);
+        campoPVenta.val(pvta);
+
+        // ✅ MARCAR: Como modificados de forma eficiente
+        if (!campoPrecioNeto.hasClass('campo-modificado')) {
+            campoPrecioNeto.addClass('campo-modificado');
+        }
+        if (!campoPVenta.hasClass('campo-modificado')) {
+            campoPVenta.addClass('campo-modificado');
+        }
+
+        // ✅ ACTUALIZAR: Campos ocultos
+        row.find('input[name="tp_iva"]').val(response.pvta.p_iva || 0);
+        row.find('input[name="tp_in"]').val(response.pvta.p_in || 0);
+
+        // ✅ ACTUALIZAR: Ratio de forma rápida
+        actualizarRatioRapido(row, pvta);
+
+        console.log(`✅ Precio calculado rápidamente: neto=${pneto}, venta=${pvta}`);
+
+        // ✅ RETORNAR: Datos completos para uso posterior
+        return {
+            success: true,
+            p_id: productId,
+            tp_pcosto: datos.tp_pcosto,
+            tp_pneto: parseFloat(pneto),
+            tp_pvta: parseFloat(pvta),
+            tp_iva: response.pvta.p_iva || 0,
+            tp_in: response.pvta.p_in || 0,
+            datos: datos
+        };
+
+    } catch (error) {
+        console.error(`💥 Error calculando precio rápido para ${productId}:`, error.message);
+        return false;
+    }
+}
+
+// ✅ NUEVA: Actualización rápida de ratio sin efectos visuales
+function actualizarRatioRapido(row, pvta) {
+    const precioVentaOriginal = parseFloat(row.find('.input-tp_pvta').data('original-value') || '0');
+    const precioVentaNuevo = parseFloat(pvta);
+
+    const celdaRatio = row.find('.tdRe');
+    if (celdaRatio.length === 0) return;
+
+    // ✅ CALCULAR: Ratio de forma eficiente
+    let ratio = "0.00";
+    if (precioVentaOriginal > 0) {
+        ratio = (precioVentaNuevo / precioVentaOriginal).toFixed(2);
+    } else if (precioVentaNuevo > 0) {
+        ratio = "999.99";
+    }
+
+    // ✅ ACTUALIZAR: Sin animaciones costosas
+    celdaRatio.text(ratio);
+
+    // ✅ APLICAR: Estilo de forma eficiente
+    const ratioNum = parseFloat(ratio);
+    if (ratioNum > 1) {
+        celdaRatio.css({ 'color': 'blue', 'font-weight': 'bold' });
+    } else if (ratioNum < 1) {
+        celdaRatio.css({ 'color': 'red', 'font-weight': 'bold' });
+    } else {
+        celdaRatio.css({ 'color': '', 'font-weight': 'normal' });
+    }
+}
+
+// ✅ CORREGIDA: Función rápida para resguardar cambios de forma completamente síncrona
+function resguardarCambiosProductoRapido(row) {
+    const productId = row.data('p-id');
+
+    console.log(`💾 Resguardando RÁPIDO SÍNCRONO producto ${productId}`);
+
+    // ✅ RECOPILAR: Datos de forma eficiente
+    const datos = {
+        p_id: productId,
+        tp_plista: parseFloat(row.find('.input-tp_plista').val().replace(/,/g, '')) || 0,
+        tp_dto1: parseFloat(row.find('.input-tp_dto1').val().replace(/,/g, '')) || 0,
+        tp_dto2: parseFloat(row.find('.input-tp_dto2').val().replace(/,/g, '')) || 0,
+        tp_dto3: parseFloat(row.find('.input-tp_dto3').val().replace(/,/g, '')) || 0,
+        tp_dto4: parseFloat(row.find('.input-tp_dto4').val().replace(/,/g, '')) || 0,
+        tp_dto_pa: parseFloat(row.find('.input-tp_dto_pa').val().replace(/,/g, '')) || 0,
+        tp_porc_flete: parseFloat(row.find('.input-tp_porc_flete').val().replace(/,/g, '')) || 0,
+        tp_boni: row.find('.input-tp_boni').val() || '',
+        tp_pcosto: parseFloat(row.find('.input-tp_pcosto').val().replace(/,/g, '')) || 0,
+        tp_margen: parseFloat(row.find('.input-tp_margen').val().replace(/,/g, '')) || 0,
+        tp_pneto: parseFloat(row.find('.input-tp_pneto').val().replace(/,/g, '')) || 0,
+        tin_alicuota: parseFloat(row.find('.input-tin_alicuota').val().replace(/,/g, '')) || 0,
+        tp_pvta: parseFloat(row.find('.input-tp_pvta').val().replace(/,/g, '')) || 0,
+        tp_iva: parseFloat(row.find('input[name="tp_iva"]').val()) || 0,
+        tp_in: parseFloat(row.find('input[name="tp_in"]').val()) || 0,
+        iva_situacion: row.find('input[name="iva_situacion"]').val() || 'E',
+        iva_alicuota: parseFloat(row.find('input[name="iva_alicuota"]').val()) || 0,
+        in_alicuota: parseFloat(row.find('input[name="in_alicuota"]').val()) || 0
+    };
+
+    try {
+        // ✅ LLAMADA COMPLETAMENTE SÍNCRONA: Usar realizarLlamadaSincrona
+        const response = realizarLlamadaSincrona(resguardarCambiosProductoUrl, datos);
+
+        if (response.error) {
+            console.error(`❌ Error resguardando ${productId}: ${response.msg}`);
+            return { success: false, error: response.msg };
+        }
+
+        if (response.warn) {
+            console.warn(`⚠️ Warning resguardando ${productId}: ${response.msg}`);
+            return { success: true, warning: response.msg };
+        }
+
+        console.log(`✅ Producto ${productId} resguardado síncronamente exitoso`);
+        return { success: true, data: response };
+
+    } catch (error) {
+        console.error(`💥 Error en resguardo síncrono ${productId}:`, error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+// ✅ MEJORADA: Función cálculo de costo con mejor retorno de información
+function calcularCostoSincronoRapido(row) {
+    const productId = row.data('p-id');
+
+    console.log(`💰 Calculando costo RÁPIDO SÍNCRONO para producto ${productId}`);
+
+    // Recopilar datos
+    const datos = {
+        p_id: productId,
+        tp_plista: parseFloat(row.find('.input-tp_plista').val().replace(/,/g, '')) || 0,
+        tp_dto1: parseFloat(row.find('.input-tp_dto1').val().replace(/,/g, '')) || 0,
+        tp_dto2: parseFloat(row.find('.input-tp_dto2').val().replace(/,/g, '')) || 0,
+        tp_dto3: parseFloat(row.find('.input-tp_dto3').val().replace(/,/g, '')) || 0,
+        tp_dto4: parseFloat(row.find('.input-tp_dto4').val().replace(/,/g, '')) || 0,
+        tp_dto_pa: parseFloat(row.find('.input-tp_dto_pa').val().replace(/,/g, '')) || 0,
+        tp_porc_flete: parseFloat(row.find('.input-tp_porc_flete').val().replace(/,/g, '')) || 0,
+        tp_boni: row.find('.input-tp_boni').val() || ''
+    };
+
+    try {
+        // ✅ LLAMADA SÍNCRONA: Sin indicadores visuales para mejor rendimiento
+        const response = realizarLlamadaSincrona(calcularCostoUrl, datos);
+
+        if (response.error || response.warn) {
+            console.error(`❌ Error en cálculo de costo: ${response.msg}`);
+            return false;
+        }
+
+        // ✅ ACTUALIZAR: Campo de costo sin efectos visuales
+        const nuevoCosto = parseFloat(response.costo).toFixed(3);
+        const campoCosto = row.find('.input-tp_pcosto');
+        campoCosto.val(nuevoCosto);
+
+        // ✅ MARCAR: Como modificado de forma eficiente
+        if (!campoCosto.hasClass('campo-modificado')) {
+            campoCosto.addClass('campo-modificado');
+        }
+
+        console.log(`✅ Costo calculado rápidamente: ${nuevoCosto}`);
+
+        // ✅ RETORNAR: Información del cálculo
+        return {
+            success: true,
+            costo: nuevoCosto,
+            datos: datos
+        };
+
+    } catch (error) {
+        console.error(`💥 Error calculando costo rápido para ${productId}:`, error.message);
+        return false;
+    }
+}
+
+// ✅ CORREGIDA: Finalización con conteo correcto de productos únicos
+function finalizarProcesamientoOptimizado() {
+    console.log("🏁 Finalizando procesamiento masivo optimizado...");
+
+    // ✅ CORRECCIÓN: Contar productos únicos procesados, no registros modificados
+    const productosUnicos = new Set();
+
+    // Recopilar todos los p-id únicos de filas con cambios
+    //$("#tbProdDet tbody tr[data-carga='1']").each(function () {
+    //    const pId = $(this).data('p-id');
+    //    if (pId) {
+    //        productosUnicos.add(pId);
+    //    }
+    //});
+
+    $("#tbProdDet tbody tr").each(function () {
+        const checkbox = $(this).find('input[type="checkbox"]');
+        if (checkbox.is(':checked')) {
+            const pId = $(this).data('p-id');
+            if (pId) {
+                productosUnicos.add(pId);
+            }
+        }
+    });
+
+    const totalProductosProcesados = productosUnicos.size;
+
+    console.log(`📊 RESUMEN FINAL: ${totalProductosProcesados} productos únicos procesados con cambios`);
+
+    // ✅ LIMPIAR: Variables de estado
+    procesamientoMasivoActivo = false;
+    window.filasModificadasGlobal = [];
+
+    // ✅ LIMPIAR: Formulario de datos generales
+    $('#chkPLista, #chkDto1, #chkDto2, #chkDto3, #chkDto4, #chkDpo, #chkBon, #chkFl').prop('checked', false);
+    $('#txtPLista, #txtDto1, #txtDto2, #txtDto3, #txtDto4, #txtDpo, #txtBon, #txtFl').prop('disabled', true);
+
+    // ✅ CERRAR: Diálogo con mensaje corregido
+    const dialogo = $("#dialogoProgresoAvanzado");
+
+    if (dialogo.length > 0) {
+        dialogo.off('hidden.bs.modal').on('hidden.bs.modal', function () {
+            $(this).remove();
+
+            // ✅ MENSAJE: Corregido con conteo de productos únicos
+            setTimeout(() => {
+                const mensajeFinal = totalProductosProcesados === 1
+                    ? `Los cambios se han aplicado correctamente a ${totalProductosProcesados} producto.`
+                    : `Los cambios se han aplicado correctamente a ${totalProductosProcesados} productos.`;
+
+                const detalleOperacion = totalProductosProcesados > 0
+                    ? " Se han procesado tanto los precios base como sus listas de precios asociadas de forma síncrona."
+                    : " No se detectaron cambios para procesar.";
+
+                AbrirMensaje("Proceso completado",
+                    mensajeFinal + detalleOperacion,
+                    () => $("#msjModal").modal("hide"),
+                    false, ["Aceptar"], "success!", null);
+            }, 100);
+        });
+
+        dialogo.modal('hide');
+    }
+
+    console.log(`✅ Procesamiento masivo completado exitosamente: ${totalProductosProcesados} productos únicos procesados`);
+}
+
+// ✅ NUEVA: Función optimizada para procesar lotes sin bloquear UI
+function procesarLoteDeFilasOptimizado(arrayFilas, inicio, tamanoLote, cambios, totalFilas, intervaloEntreLotes, filasModificadasAcumuladas = []) {
+    // ✅ VALIDACIÓN: Verificar límites
+    if (inicio >= arrayFilas.length) {
+        console.log("✅ Todos los lotes procesados, iniciando cálculos...");
+        iniciarRecalculoOptimizado(filasModificadasAcumuladas, totalFilas);
+        return;
+    }
+
+    const fin = Math.min(inicio + tamanoLote, arrayFilas.length);
+    console.log(`🔄 Procesando lote ${inicio}-${fin} de ${totalFilas}`);
+
+    // ✅ ACTUALIZACIÓN INMEDIATA: Progreso visual antes de procesar
+    const procesados = fin;
+    const porcentaje = Math.round((procesados / totalFilas) * 100);
+
+    $("#barraProgreso").css('width', porcentaje + '%');
+    $("#filasCompletadas").text(procesados);
+    $("#textoProgreso").text(`Aplicando cambios... ${porcentaje}%`);
+
+    // ✅ PROCESAMIENTO: Batch optimizado con RequestAnimationFrame
+    requestAnimationFrame(() => {
+        let filasModificadasEnLote = 0;
+
+        // ✅ PROCESAR: Lote actual de forma eficiente
+        for (let i = inicio; i < fin; i++) {
+            const fila = $(arrayFilas[i]);
+
+            try {
+                const fueModificado = aplicarCambiosAFilaOptimizado(fila, cambios);
+                if (fueModificado) {
+                    filasModificadasAcumuladas.push(fila[0]);
+                    filasModificadasEnLote++;
+                }
+            } catch (error) {
+                console.error(`❌ Error procesando fila ${i}:`, error);
+            }
+        }
+
+        console.log(`✅ Lote completado: ${filasModificadasEnLote} filas modificadas`);
+
+        // ✅ PROGRAMAR: Siguiente lote con intervalo mínimo
+        setTimeout(() => {
+            procesarLoteDeFilasOptimizado(arrayFilas, fin, tamanoLote, cambios, totalFilas, intervaloEntreLotes, filasModificadasAcumuladas);
+        }, intervaloEntreLotes);
+    });
+}
+
+// ✅ OPTIMIZADA: Función para aplicar cambios sin operaciones costosas
+function aplicarCambiosAFilaOptimizado(fila, cambios) {
+    let fueModificado = false;
+
+    // ✅ OPTIMIZACIÓN: Usar documentFragment para operaciones DOM múltiples
+    const campos = [
+        { key: 'plista', selector: '.input-tp_plista' },
+        { key: 'dto1', selector: '.input-tp_dto1' },
+        { key: 'dto2', selector: '.input-tp_dto2' },
+        { key: 'dto3', selector: '.input-tp_dto3' },
+        { key: 'dto4', selector: '.input-tp_dto4' },
+        { key: 'dpo', selector: '.input-tp_dto_pa' },
+        { key: 'bon', selector: '.input-tp_boni' },
+        { key: 'fl', selector: '.input-tp_porc_flete' }
+    ];
+
+    // ✅ PROCESAMIENTO: Batch de cambios
+    campos.forEach(({ key, selector }) => {
+        if (cambios[key] !== undefined) {
+            const campo = fila.find(selector);
+            if (campo.length > 0) {
+                const valorAnterior = campo.val();
+                if (valorAnterior !== cambios[key]) {
+                    campo.val(cambios[key]);
+                    // ✅ DIFERIDO: Marcar modificado sin operaciones DOM costosas
+                    campo.addClass('campo-modificado-pendiente');
+                    fueModificado = true;
+                }
+            }
+        }
+    });
+
+    // ✅ OPTIMIZACIÓN: Actualizar estado de carga solo si hubo cambios
+    if (fueModificado) {
+        fila.data('carga', 1).attr('data-carga', '1');
+    }
+
+    return fueModificado;
+}
 
 // NUEVO: Crear un diálogo de progreso más avanzado
 function crearDialogoProgresoAvanzado(totalFilas) {
@@ -1413,7 +2320,12 @@ function configurarBotonesProdCP() {
     });
 
     // Configuración de estados iniciales
-    $("#btnAbmAceptar").prop("disabled", true);
+    // ✅ MODIFICADO: Usar btnAbmAceptar para confirmar precios temporales
+    $("#btnAbmAceptar").on("click", function (e) {
+        e.preventDefault();
+        confirmarPreciosTemporales();
+    }).prop("disabled", false);
+
     $("#lbRel01, #lbRel02, #lbRel03").text((i, txt) => ["PROVEEDOR", "RUBRO", "FAMILIA"][i]);
     $("#chkRel03").prop("disabled", true);
 
@@ -1447,6 +2359,202 @@ function configurarBotonesProdCP() {
         if ($("#chkFile").is(":checked")) $("#chkFile").trigger("change");
     }, 100);
 }
+
+/**
+ * ✅ NUEVA: Función simplificada para confirmar precios temporales
+ * El controlador se encarga de toda la validación
+ */
+function confirmarPreciosTemporales() {
+    console.log("🔄 Iniciando confirmación de precios temporales...");
+
+    try {
+        // ✅ PASO 1: Verificación básica de URL
+        if (!confirmarPreciosTemporalesUrl) {
+            mostrarMensajeError("Error de configuración. Recargue la página e inténtelo nuevamente.");
+            return;
+        }
+
+        // ✅ PASO 2: Mostrar indicador de procesamiento
+        const indicadorProgreso = mostrarIndicadorConfirmacion();
+
+        // ✅ PASO 3: Llamada AJAX simple al servidor
+        $.ajax({
+            url: confirmarPreciosTemporalesUrl,
+            type: 'POST',
+            dataType: 'json',
+            timeout: 240000, // 240 segundos
+            success: function (response) {
+                console.log("✅ Respuesta del servidor:", response);
+                manejarRespuestaConfirmacion(response, indicadorProgreso);
+            },
+            error: function (xhr, status, error) {
+                console.error("❌ Error en confirmación:", error);
+                manejarErrorConfirmacion(error, status, xhr, indicadorProgreso);
+            }
+        });
+
+    } catch (error) {
+        console.error("💥 Error inesperado:", error);
+        mostrarMensajeError("Error inesperado al procesar la confirmación.");
+    }
+}
+
+/**
+ * ✅ NUEVA: Indicador de progreso simple
+ */
+function mostrarIndicadorConfirmacion() {
+    // Eliminar indicador existente
+    $("#indicadorConfirmacion").remove();
+
+    // Crear indicador simple
+    const indicadorHTML = `
+        <div id="indicadorConfirmacion" class="modal fade" tabindex="-1" data-backdrop="static" data-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="bx bx-check-circle text-success me-2"></i>
+                            Confirmando Precios
+                        </h5>
+                    </div>
+                    <div class="modal-body text-center">
+                        <div class="mb-3">
+                            <i class="bx bx-loader bx-spin font-size-32 text-primary"></i>
+                        </div>
+                        <div class="mb-3">
+                            Procesando precios temporales...
+                        </div>
+                        <div class="text-muted small">
+                            Por favor espere, esta operación puede tardar unos momentos.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Agregar al DOM y mostrar
+    $('body').append(indicadorHTML);
+    $("#indicadorConfirmacion").modal('show');
+
+    return $("#indicadorConfirmacion");
+}
+
+/**
+ * ✅ NUEVA: Manejar respuesta del servidor
+ */
+function manejarRespuestaConfirmacion(response, indicador) {
+    // Cerrar indicador
+    cerrarIndicadorConfirmacion(indicador);
+
+    // Manejar diferentes tipos de respuesta
+    if (response.error === true) {
+        console.error("❌ Error del servidor:", response.msg);
+        mostrarMensajeError(`Error: ${response.msg}`);
+        return;
+    }
+
+    if (response.warn === true) {
+        console.warn("⚠️ Advertencia del servidor:", response.msg);
+        mostrarMensajeAdvertencia(response.msg);
+        return;
+    }
+
+    // ✅ ÉXITO: Mostrar mensaje y limpiar estado local
+    console.log("🎉 Confirmación exitosa");
+    limpiarEstadoTemporalLocal();
+
+    mostrarMensajeExito(
+        "¡Precios confirmados!",
+        response.msg || "Los precios temporales se han aplicado correctamente.",
+        function () {
+            $("#msjModal").modal("hide");
+            console.log("✅ Proceso completado");
+        }
+    );
+}
+
+/**
+ * ✅ NUEVA: Manejar errores de comunicación
+ */
+function manejarErrorConfirmacion(error, status, xhr, indicador) {
+    cerrarIndicadorConfirmacion(indicador);
+
+    let mensajeError = "Error de comunicación con el servidor.";
+
+    if (status === 'timeout') {
+        mensajeError = "La operación tardó demasiado tiempo. Verifique si los cambios se aplicaron.";
+    } else if (xhr.status === 500) {
+        mensajeError = "Error interno del servidor.";
+    } else if (xhr.status === 403) {
+        mensajeError = "No tiene permisos para esta operación.";
+    }
+
+    console.error("❌ Error detallado:", { error, status, statusCode: xhr.status });
+    mostrarMensajeError(mensajeError);
+}
+
+/**
+ * ✅ NUEVA: Cerrar indicador de forma segura
+ */
+function cerrarIndicadorConfirmacion(indicador) {
+    if (indicador && indicador.length > 0) {
+        indicador.off('hidden.bs.modal').on('hidden.bs.modal', function () {
+            $(this).remove();
+        });
+        indicador.modal('hide');
+
+        // Timeout de seguridad
+        setTimeout(function () {
+            if (indicador.length > 0) {
+                indicador.remove();
+                $('.modal-backdrop').remove();
+                $('body').removeClass('modal-open');
+            }
+        }, 2000);
+    }
+}
+
+/**
+ * ✅ NUEVA: Limpiar estado local tras confirmación exitosa
+ */
+function limpiarEstadoTemporalLocal() {
+    console.log("🧹 Limpiando estado temporal...");
+
+    // Remover marcas visuales
+    $('.campo-modificado').removeClass('campo-modificado');
+    $('.indicador-cambio').remove();
+
+    // Resetear atributos data-carga
+    $("#tbProdDet tbody tr[data-carga='1']").attr('data-carga', '0').data('carga', 0);
+    $("#tbProdLista tbody tr[data-carga='1']").attr('data-carga', '0').data('carga', 0);
+
+    // Limpiar variables globales
+    if (typeof window.filasModificadasGlobal !== 'undefined') {
+        window.filasModificadasGlobal = [];
+    }
+
+    console.log("✅ Estado temporal limpiado");
+}
+
+/**
+ * ✅ NUEVA: Funciones de mensajes reutilizables
+ */
+function mostrarMensajeExito(titulo, mensaje, callback) {
+    AbrirMensaje(titulo, mensaje, callback || function () { $("#msjModal").modal("hide"); },
+        false, ["Aceptar"], "success!", null);
+}
+
+function mostrarMensajeError(mensaje) {
+    AbrirMensaje("Error", mensaje, function () { $("#msjModal").modal("hide"); },
+        false, ["Aceptar"], "error!", null);
+}
+
+function mostrarMensajeAdvertencia(mensaje) {
+    AbrirMensaje("Atención", mensaje, function () { $("#msjModal").modal("hide"); },
+        false, ["Aceptar"], "warn!", null);
+}
+
 // ✅ CORREGIDO: En procesamiento masivo - función auxiliar
 function obtenerParametrosMasivo() {
     // ✅ NUEVA: Función específica para procesamiento masivo
@@ -3075,14 +4183,29 @@ function buscarProductoLista(primerProductoId) {
     }
 }
 
-// ✅ FUNCIÓN PRINCIPAL ACTUALIZADA: Distinguir contexto individual vs masivo
+// ✅ UNIFICADA: Función principal que detecta contexto y aplica la lógica correcta
 function calcularProductoCompleto(row, callback = null) {
     const productId = row.data('p-id');
 
-    console.log(`🔄 Iniciando cálculo completo ${procesamientoMasivoActivo ? 'MASIVO' : 'INDIVIDUAL'} para producto ${productId}`);
+    // ✅ DETECTAR: Contexto de ejecución
+    if (procesamientoMasivoActivo) {
+        // ✅ MASIVO: Usar función síncrona optimizada
+        console.log(`🔄 Cálculo MASIVO para producto ${productId}`);
+        calcularProductoCompletoSincrono(row);
+        if (callback) callback();
+    } else {
+        // ✅ INDIVIDUAL: Usar función completa con todas las funcionalidades
+        console.log(`🔄 Cálculo INDIVIDUAL para producto ${productId}`);
+        calcularProductoCompletoIndividual(row, callback);
+    }
+}
+
+// ✅ NUEVA: Función específica para cálculo individual
+function calcularProductoCompletoIndividual(row, callback = null) {
+    const productId = row.data('p-id');
 
     if (row.data('processing') === true) {
-        console.log(`⏭️ Producto ${productId} ya en procesamiento, saltando`);
+        console.log(`⏭️ Producto ${productId} ya en procesamiento`);
         if (callback) callback();
         return;
     }
@@ -3090,7 +4213,9 @@ function calcularProductoCompleto(row, callback = null) {
     row.data('processing', true);
 
     try {
-        // ✅ PASO 1: CALCULAR COSTO
+        // ✅ SECUENCIA INDIVIDUAL: Con indicadores visuales y manejo completo
+
+        // PASO 1: Calcular costo (con indicadores)
         const resultadoCosto = calcularCostoSincrono(row);
         if (!resultadoCosto.success) {
             console.error(`❌ Error en cálculo de costo: ${resultadoCosto.error}`);
@@ -3099,7 +4224,7 @@ function calcularProductoCompleto(row, callback = null) {
             return;
         }
 
-        // ✅ PASO 2: CALCULAR PRECIO DE VENTA
+        // PASO 2: Calcular precio de venta (con indicadores)
         const resultadoPrecio = calcularPrecioVentaSincrono(row);
         if (!resultadoPrecio.success) {
             console.error(`❌ Error en cálculo de precio: ${resultadoPrecio.error}`);
@@ -3108,36 +4233,20 @@ function calcularProductoCompleto(row, callback = null) {
             return;
         }
 
-        // ✅ PASO 3: ACTUALIZAR LISTAS SEGÚN CONTEXTO
-        let resultadoListas = { success: true, skip: true };
-
-        if (procesamientoMasivoActivo) {
-            // ✅ MASIVO: Actualizar datos en servidor solamente
-            resultadoListas = actualizarListasSincrono(productId, resultadoPrecio.datos);
-            logResultadoListas(productId, resultadoListas);
-        } else {
-            // ✅ INDIVIDUAL: Actualizar servidor Y grilla visible CON MARCADO
-            resultadoListas = actualizarListasIndividual(productId, resultadoPrecio.datos);
-
-            // ✅ LOGGING ESPECÍFICO PARA INDIVIDUAL
-            if (resultadoListas.success && resultadoListas.camposModificadosGrilla > 0) {
-                console.log(`🎯 INDIVIDUAL: ${resultadoListas.camposModificadosGrilla} campos de listas marcados como modificados en grilla`);
-            }
-        }
-
+        // PASO 3: Actualizar listas con grilla visible
+        const resultadoListas = actualizarListasIndividual(productId, resultadoPrecio.datos);
         if (!resultadoListas.success && !resultadoListas.skip) {
-            console.error(`❌ Error crítico en listas: ${resultadoListas.error}`);
-            // Continuar el proceso aunque falle las listas
+            console.warn(`⚠️ Warning en listas: ${resultadoListas.error}`);
         }
 
-        // ✅ PASO 4: FINALIZAR
+        // PASO 4: Marcar campos y resguardar
         marcarCamposModificados(row, resultadoPrecio.datos);
         resguardarCambiosProducto(row);
 
-        console.log(`✅ Cálculo completo finalizado para producto ${productId}`);
+        console.log(`✅ Cálculo individual completado para producto ${productId}`);
 
     } catch (error) {
-        console.error(`💥 Error general en cálculo de producto ${productId}:`, error);
+        console.error(`💥 Error en cálculo individual ${productId}:`, error);
     } finally {
         row.data('processing', false);
         if (callback) callback();
@@ -3762,22 +4871,28 @@ function construirDatosResguardo(datosProducto, lp_id, datosCalculo, pvtaCalcula
 }
 
 // ✅ FUNCIÓN MEJORADA: Manejar diferentes tipos de respuesta y errores
-function realizarLlamadaSincrona(url, datos, reintentos = 3, tipoRespuesta = 'json') {
+// ✅ OPTIMIZADA: Llamada síncrona más eficiente para procesamiento masivo
+function realizarLlamadaSincrona(url, datos, reintentos = 2, tipoRespuesta = 'json') {
     for (let intento = 1; intento <= reintentos; intento++) {
         try {
-            console.log(`🔄 Llamada síncrona a ${url} (intento ${intento})`);
+            // ✅ LOGGING MÍNIMO: Solo para primer intento en modo debug
+            if (intento === 1 && window.debugMode) {
+                console.log(`🔄 Llamada síncrona a ${url.split('/').pop()}`);
+            }
 
             let resultado = null;
             let error = null;
             let statusCode = 0;
 
-            // ✅ AJAX SÍNCRONO con manejo de errores mejorado
+            // ✅ AJAX SÍNCRONO optimizado
             $.ajax({
                 url: url,
                 type: 'POST',
                 data: datos,
                 dataType: tipoRespuesta,
-                async: false, // ✅ CRÍTICO: Hacer síncrono
+                async: false, // ✅ CRÍTICO: Mantener síncrono
+                timeout: 30000, // ✅ TIMEOUT: Reducido a 30s
+                cache: false,
                 success: function (response, textStatus, xhr) {
                     resultado = response;
                     statusCode = xhr.status;
@@ -3789,37 +4904,36 @@ function realizarLlamadaSincrona(url, datos, reintentos = 3, tipoRespuesta = 'js
             });
 
             if (error) {
-                // Para ciertos errores, no reintentar
-                if (statusCode === 404 || statusCode === 403) {
+                // ✅ NO REINTENTAR: Para ciertos errores críticos
+                if (statusCode === 404 || statusCode === 403 || statusCode === 401) {
                     throw error;
+                }
+
+                // ✅ REINTENTAR: Solo para errores de red/timeout
+                if (intento < reintentos) {
+                    console.warn(`⚠️ Intento ${intento} falló, reintentando...`);
+                    continue;
                 }
                 throw error;
             }
 
-            // ✅ VALIDACIÓN ADICIONAL: Para respuestas JSON, verificar estructura
-            if (tipoRespuesta === 'json' && resultado) {
-                // Si es una respuesta de error del servidor, tratarla como tal
-                if (resultado.error === true && resultado.msg) {
-                    throw new Error(`Server Error: ${resultado.msg}`);
-                }
+            // ✅ VALIDACIÓN RÁPIDA: Para respuestas JSON
+            if (tipoRespuesta === 'json' && resultado && resultado.error === true && resultado.msg) {
+                throw new Error(`Server Error: ${resultado.msg}`);
             }
 
-            console.log(`✅ Llamada síncrona exitosa a ${url}`);
             return resultado;
 
         } catch (err) {
-            console.warn(`⚠️ Intento ${intento}/${reintentos} falló: ${err.message}`);
-
             if (intento === reintentos) {
-                console.error(`❌ Todos los intentos fallaron para ${url}`);
+                console.error(`❌ Error definitivo en ${url.split('/').pop()}: ${err.message}`);
                 throw err;
             }
 
-            // Pausa progresiva antes del siguiente intento
-            const pausaMs = intento * 100;
-            const pausa = Date.now() + pausaMs;
+            // ✅ PAUSA MÍNIMA: Entre reintentos
+            const pausa = Date.now() + (intento * 50);
             while (Date.now() < pausa) {
-                // Pausa síncrona
+                // Pausa síncrona mínima
             }
         }
     }
