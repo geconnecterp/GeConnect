@@ -9,6 +9,8 @@
     // Variables para agrupar por familia
     string familiaActual = string.Empty;
     string familiaAnterior = string.Empty;
+    const string modificadoCss = "campo-modificado";
+
 }
 
 <style>
@@ -82,9 +84,8 @@
                         @foreach (var item in Model.ListaDatos)
                         {
                             decimal re = 0M;
-                            if(item.p_pvta>0){ re = Math.Round(item.tp_pvta / item.p_pvta, 2); }
                             if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
-                            <tr class="@clase" data-lp-id="@item.lp_id" onclick="selectReg(this,'tbProdDet')">
+                            <tr class="@clase" data-lp-id="@item.lp_id" onclick="selectReg(this,'tbProdLista')">
                                 <td class="@Model.ObtenerClase(item.lp_id)">@Model.FormatearDato(item.lp_id, FormatDato.Ninguno)</td>
                                 <td class="@Model.ObtenerClase(item.lp_desc)">@Model.FormatearDato(item.lp_desc, FormatDato.Ninguno)</td>
                                 <td class="@Model.ObtenerClase(item.p_margen)">
@@ -107,8 +108,8 @@
                                     </div>
                                 </td>
                                 @{
-                                    string modificadoCss = "campo-modificado";
                                     bool modificadoBandera = item.p_pvta != item.tp_pvta;
+                                    if (item.p_pvta > 0) { re = Math.Round(item.tp_pvta / item.p_pvta, 2); }
                                 }
                                 <td class="@Model.ObtenerClase(item.tp_pvta)">
                                     <div class="input-container">

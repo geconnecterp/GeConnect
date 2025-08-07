@@ -1,4 +1,5 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
 using gc.infraestructura.Dtos.Almacen.Info;
 using gc.infraestructura.Dtos.Almacen.Rpr;
@@ -22,7 +23,7 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RespuestaGenerica<MedidaDto>> ObtenerMedidas(string token);
         Task<RespuestaGenerica<IVASituacionDto>> ObtenerIVASituacion(string token);
         Task<RespuestaGenerica<IVAAlicuotaDto>> ObtenerIVAAlicuotas(string token);
-        Task<RespuestaGenerica<ProductoBarradoDto>> ObtenerBarradoDeProd(string p_id,string token);
+        Task<RespuestaGenerica<ProductoBarradoDto>> ObtenerBarradoDeProd(string p_id, string token);
         Task<RespuestaGenerica<LimiteStkDto>> ObtenerLimiteStk(string p_id, string token);
         Task<RespuestaGenerica<ProductoBarradoDto>> ObtenerBarrado(string p_id, string barradoId, string tokenCookie);
         Task<RespuestaGenerica<LimiteStkDto>> BuscarLimite(string p_id, string admId, string tokenCookie);
@@ -32,9 +33,9 @@ namespace gc.sitio.core.Servicios.Contratos
 
         Task<RespuestaGenerica<ProductoResponsePVta>> ObtenerPrecioVentaBase(ProductoRequestPvtaBase req, string token);
 
-        Task<RespuestaGenerica<ProductoResponsePVtaMargen>> ObtenerPrecioVentaMargen(ProductoRequestPVtaMargen req,string token);
+        Task<RespuestaGenerica<ProductoResponsePVtaMargen>> ObtenerPrecioVentaMargen(ProductoRequestPVtaMargen req, string token);
 
         Task<RespuestaGenerica<ProductoResponsePVta>> ObtenerPrecioVentaLista(ProductoRequestPvtaLista req, string token);
-        Task<RespuestaGenerica<RespuestaDto>> ConfirmarPreciosTemporales(ProductoCPConfirmar precios, string tokenCookie);
+        Task<RespuestaGenerica<RespuestaDto>> ConfirmarPreciosTemporales(AbmGenDto request, string tokenCookie);
     }
 }

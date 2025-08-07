@@ -7,6 +7,7 @@ namespace gc.api.Controllers.Almacen
     using gc.infraestructura.Core.Exceptions;
     using gc.infraestructura.Core.Interfaces;
     using gc.infraestructura.Core.Responses;
+    using gc.infraestructura.Dtos.ABM;
     using gc.infraestructura.Dtos.Almacen;
     using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
     using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
@@ -1505,6 +1506,25 @@ namespace gc.api.Controllers.Almacen
             }
 
             return Ok(new ApiResponse<List<ProductoResponsePVta>>(resultado));
+        }
+
+        [HttpPost("confirmar-precio-temporal")]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<ProductoResponsePVta>>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        public ActionResult<RespuestaDto> ConfirmacionPreciosTemporales(AbmGenDto req)
+        {
+            if (req == null)
+            {
+                return BadRequest("No se recepcionaron los valores para la confirmación de los precios temporales");
+            }
+            var resultado = _productosSv.ConfirmacionPreciosTemporales(req.Objeto.ToString(), req.Administracion, req.Usuario,req.Json);
+
+            if (resultado == null)
+            {
+                return BadRequest("No se pudo calcular el precio de venta base. Verifique los datos ingresados.");
+            }
+
+            return Ok(new ApiResponse<RespuestaDto>(resultado));
         }
     }
 }

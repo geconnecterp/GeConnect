@@ -3,6 +3,7 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Info;
 using gc.infraestructura.Dtos.Almacen.Rpr;
@@ -13,6 +14,9 @@ using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using OfficeOpenXml.FormulaParsing.LexicalAnalysis;
+using Org.BouncyCastle.Ocsp;
 using System.Net;
 using System.Reflection;
 
@@ -45,7 +49,9 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string FX_PVTA_BASE = "/obtener-precio-pvta-base";
         private const string FX_PVTA_MARGEN = "/obtener-precio-pvta-margen";
         private const string FX_PVTA_LISTA = "/obtener-precio-pvta-lista";
+        private const string PRODUCTO_CONF_PRECIO_TEMP = "/confirmar-precio-temporal";
         
+
 
         private readonly AppSettings _appSettings;
 
@@ -1080,9 +1086,59 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-        public Task<RespuestaGenerica<RespuestaDto>> ConfirmarPreciosTemporales(ProductoCPConfirmar precios, string tokenCookie)
+        public async Task<RespuestaGenerica<RespuestaDto>> ConfirmarPreciosTemporales(AbmGenDto req, string token)
         {
-            throw new NotImplementedException();
+            try
+            {
+                ApiResponse<RespuestaDto>? apiResponse;
+                HelperAPI helper = new();
+
+                HttpClient client = helper.InicializaCliente(req, token, out StringContent contentData);
+                HttpResponseMessage response;
+
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{PRODUCTO_CONF_PRECIO_TEMP}";
+
+                response = await client.PostAsync(link, contentData);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde.");
+                    }
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+
+                    var resp = apiResponse?.Data;
+
+                    return new RespuestaGenerica<RespuestaDto> { Ok = true, Entidad = resp };
+
+                }
+                else
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    {
+                        throw new NegocioException(error.Detail);
+                    }
+                    else if (error.TypeException.Equals(nameof(NotFoundException)))
+                    {
+                        throw new NegocioException(error.Detail);
+                    }
+                    else
+                    {
+                        throw new Exception(error.Detail);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+
+                throw new Exception("Algo no fue bien al intentar confirmar los precios temporales.");
+            }
         }
     }
 }

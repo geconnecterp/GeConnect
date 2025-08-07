@@ -1644,5 +1644,19 @@ namespace gc.api.core.Servicios
             }
             return resp;
         }
+
+        public RespuestaDto ConfirmacionPreciosTemporales(string ctaId, string admId, string usuarioId, string json)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_PROD_CONFIRMA_TEMP;
+            var ps = new List<SqlParameter>()
+            {
+                new("@cta_id",ctaId),
+                new("@usu_id",usuarioId),
+                new("@adm_id",admId),
+                new("@json",json),
+            };
+            List<RespuestaDto> resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+            return resp.First();
+        }
     }
 }

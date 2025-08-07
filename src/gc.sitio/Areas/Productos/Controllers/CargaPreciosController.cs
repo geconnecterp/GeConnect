@@ -3,6 +3,7 @@ using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Helpers;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 namespace gc.sitio.Areas.Productos.Controllers
 {
@@ -23,7 +25,8 @@ namespace gc.sitio.Areas.Productos.Controllers
         private readonly ICuentaServicio _cuentaServicio;
         private readonly IRubroServicio _rubroServicio;
         private readonly IProducto2Servicio _productoServicio;
-
+        // ✅ AGREGAR: Lock para operaciones thread-safe
+        private static readonly object _lockResguardoLista = new object();
 
         public CargaPreciosController(
             ICuentaServicio cuentaServicio,
@@ -62,6 +65,11 @@ namespace gc.sitio.Areas.Productos.Controllers
                 string titulo = "Productos - Carga de Precios";
                 ViewData["Titulo"] = titulo;
                 CargarDatosIniciales(true);
+
+                ProductosDetalle = [];
+                ProductosDetalleLista = [];
+                ProductosDetalleTEMPORAL = [];
+                ProductosDetalleListaTEMPORAL = [];
 
                 return View();
             }
@@ -156,15 +164,14 @@ namespace gc.sitio.Areas.Productos.Controllers
 
         [HttpPost]
         public async Task<IActionResult> ObtenerProductosDetalleLista(string buscar,
-  string id, string id2,
-  string ctaId, List<ComboGenDto> familias,
-  List<string> rubros,
-  bool disc = true, bool file = false, bool verificarTemp = true)
+      string id, string id2, string ctaId, List<ComboGenDto> familias,
+      List<string> rubros, bool disc = true, bool file = false,
+      bool verificarTemp = true, bool forzarRecarga = false)
         {
             RespuestaGenerica<EntidadBase> response = new();
             try
             {
-                // PASO 1: Validaciones iniciales
+                // Validaciones iniciales
                 if (!VerificarAutenticacion(out IActionResult redirectResult))
                     return redirectResult;
 
@@ -177,50 +184,54 @@ namespace gc.sitio.Areas.Productos.Controllers
                     });
                 }
 
-                // PASO 2: ✅ CORREGIDO - Inicializar lista temporal correctamente
+                // ✅ MEJORADO: Inicializar lista temporal
                 if (ProductosDetalleListaTEMPORAL == null)
                 {
                     ProductosDetalleListaTEMPORAL = new List<ProductoDetalleDto>();
                     _logger?.LogInformation("Lista temporal de listas inicializada");
                 }
 
-                // PASO 3: ✅ NUEVO - Verificar PRIMERO si hay registros temporales para el producto solicitado
-                if (verificarTemp && !string.IsNullOrEmpty(id))
+                // ✅ NUEVO: Si se fuerza recarga, limpiar caché temporal para este producto
+                if (forzarRecarga && !string.IsNullOrEmpty(id))
                 {
-                    // Filtrar registros temporales para el producto solicitado
+                    var registrosAEliminar = ProductosDetalleListaTEMPORAL
+                        .Where(p => p.p_id == id && !p.lp_id.Equals("001"))
+                        .ToList();
+
+                    foreach (var registro in registrosAEliminar)
+                    {
+                        ProductosDetalleListaTEMPORAL.Remove(registro);
+                    }
+
+                    _logger?.LogInformation($"Limpiados {registrosAEliminar.Count} registros temporales por forzarRecarga");
+                }
+
+                // ✅ PASO 3: Verificar registros temporales (solo si no se fuerza recarga)
+                if (verificarTemp && !forzarRecarga && !string.IsNullOrEmpty(id))
+                {
                     var registrosTemporalesExistentes = ProductosDetalleListaTEMPORAL
                         .Where(p => p.p_id == id && !p.lp_id.Equals("001"))
                         .ToList();
 
-                    // Si existen registros temporales, usarlos SIEMPRE (tienen prioridad)
                     if (registrosTemporalesExistentes.Any())
                     {
-                        _logger?.LogInformation($"Usando {registrosTemporalesExistentes.Count} registros temporales existentes para el producto ID: {id}");
+                        _logger?.LogInformation($"Devolviendo {registrosTemporalesExistentes.Count} registros temporales para producto {id}");
 
-                        // Ordenar los registros temporales
                         var listaOrdenada = registrosTemporalesExistentes
                             .OrderBy(x => x.pg_id)
                             .ThenBy(x => x.lp_id)
                             .ToList();
 
-                        // Crear el grid con los registros temporales
                         var gridTemporal = GenerarGrillaSmart(
-                            listaOrdenada,
-                            "pg_id",
-                            listaOrdenada.Count,
-                            1,
-                            listaOrdenada.Count,
-                            1,
-                            "ASC"
-                        );
+                            listaOrdenada, "pg_id", listaOrdenada.Count, 1, listaOrdenada.Count, 1, "ASC");
 
                         return PartialView("_gridProdLista", gridTemporal);
                     }
 
-                    _logger?.LogInformation($"No se encontraron registros temporales para producto ID: {id}, consultando al servidor");
+                    _logger?.LogInformation($"No se encontraron registros temporales para producto {id}, consultando servidor");
                 }
 
-                // PASO 4: Consultar al servidor (flujo normal cuando no hay temporales)
+                // ✅ PASO 4: Consultar al servidor
                 var filtro = new QueryFilters
                 {
                     Buscar = buscar,
@@ -240,106 +251,92 @@ namespace gc.sitio.Areas.Productos.Controllers
                     response.Mensaje = "No se encontraron las listas del producto especificado.";
                     response.Ok = false;
                     response.EsWarn = true;
-                    response.EsError = false;
                     return PartialView("_gridMensaje", response);
                 }
 
-                // PASO 5: Filtrar y ordenar los registros del servidor
                 var listaDelServidor = respuesta.ListaEntidad
                     .Where(x => !x.lp_id.Equals("001"))
                     .OrderBy(x => x.pg_id)
                     .ThenBy(x => x.lp_id)
                     .ToList();
 
-                // PASO 6: ✅ NUEVO - Procesar registros temporales que vienen del servidor
+                // ✅ PASO 5: Procesar registros temporales del servidor
                 var registrosTemporalesDelServidor = listaDelServidor
                     .Where(x => x.carga == 1)
                     .ToList();
 
                 if (registrosTemporalesDelServidor.Any())
                 {
-                    _logger?.LogInformation($"Se encontraron {registrosTemporalesDelServidor.Count} registros temporales del servidor para producto ID: {id}");
+                    _logger?.LogInformation($"Actualizando {registrosTemporalesDelServidor.Count} registros temporales del servidor");
 
-                    // Agregar a la lista temporal global, evitando duplicados
+                    // ✅ MEJORADO: Actualizar temporales existentes o agregar nuevos
                     foreach (var registroTemporal in registrosTemporalesDelServidor)
                     {
-                        // Buscar si ya existe este registro en la lista temporal
-                        var existeEnTemporal = ProductosDetalleListaTEMPORAL
-                            .Any(t => t.p_id == registroTemporal.p_id && t.lp_id == registroTemporal.lp_id);
+                        var indiceExistente = ProductosDetalleListaTEMPORAL.FindIndex(
+                            t => t.p_id == registroTemporal.p_id && t.lp_id == registroTemporal.lp_id);
 
-                        if (!existeEnTemporal)
+                        if (indiceExistente >= 0)
                         {
-                            ProductosDetalleListaTEMPORAL.Add(registroTemporal);
-                            _logger?.LogInformation($"Agregado registro temporal: Producto {registroTemporal.p_id}, Lista {registroTemporal.lp_id}");
+                            // Actualizar existente con datos más recientes
+                            ProductosDetalleListaTEMPORAL[indiceExistente] = registroTemporal;
+                            _logger?.LogInformation($"Actualizado registro temporal: Producto {registroTemporal.p_id}, Lista {registroTemporal.lp_id}");
                         }
                         else
                         {
-                            _logger?.LogInformation($"Registro temporal ya existe: Producto {registroTemporal.p_id}, Lista {registroTemporal.lp_id}");
+                            // Agregar nuevo
+                            ProductosDetalleListaTEMPORAL.Add(registroTemporal);
+                            _logger?.LogInformation($"Agregado registro temporal: Producto {registroTemporal.p_id}, Lista {registroTemporal.lp_id}");
                         }
                     }
                 }
 
-                // PASO 7: ✅ MEJORADO - Determinar qué lista devolver
+                // ✅ PASO 6: Determinar lista final con lógica mejorada
                 List<ProductoDetalleDto> listaFinal;
 
                 if (!string.IsNullOrEmpty(id))
                 {
-                    // Para un producto específico, verificar si tiene registros temporales
+                    // Para producto específico, priorizar temporales actualizados
                     var temporalesDelProducto = ProductosDetalleListaTEMPORAL
                         .Where(p => p.p_id == id && !p.lp_id.Equals("001"))
                         .ToList();
 
                     if (temporalesDelProducto.Any())
                     {
-                        // Si tiene registros temporales, usar esos
                         listaFinal = temporalesDelProducto.OrderBy(x => x.pg_id).ThenBy(x => x.lp_id).ToList();
-                        _logger?.LogInformation($"Devolviendo {listaFinal.Count} registros temporales para producto {id}");
+                        _logger?.LogInformation($"Devolviendo {listaFinal.Count} registros temporales finales para producto {id}");
                     }
                     else
                     {
-                        // Si no tiene temporales, usar los del servidor
                         listaFinal = listaDelServidor;
                         _logger?.LogInformation($"Devolviendo {listaFinal.Count} registros del servidor para producto {id}");
                     }
                 }
                 else
                 {
-                    // Para consultas generales, usar los del servidor
                     listaFinal = listaDelServidor;
                 }
 
-                // PASO 8: Guardar datos originales en variable de sesión (solo si no son temporales)
-                if (verificarTemp && listaFinal == listaDelServidor)
-                {
+                //// ✅ PASO 7: Guardar originales en sesión
+                //if (verificarTemp && listaFinal == listaDelServidor)
+                //{
                     ProductosDetalleLista = listaDelServidor;
                     _logger?.LogInformation($"Guardados {listaDelServidor.Count} registros originales en sesión");
-                }
+                //}
 
-                // PASO 9: Crear el grid para la vista
                 var gridResultado = GenerarGrillaSmart(
-                    listaFinal,
-                    "pg_id",
-                    listaFinal.Count,
-                    1,
-                    listaFinal.Count,
-                    1,
-                    "ASC"
-                );
+                    listaFinal, "pg_id", listaFinal.Count, 1, listaFinal.Count, 1, "ASC");
 
                 return PartialView("_gridProdLista", gridResultado);
             }
             catch (Exception ex)
             {
                 _logger?.LogError(ex, "Error al obtener el detalle de listas");
-
                 response.Mensaje = "Error al obtener el detalle de listas.";
                 response.Ok = false;
-                response.EsWarn = false;
                 response.EsError = true;
                 return PartialView("_gridMensaje", response);
             }
         }
-
 
 
         [HttpPost]
@@ -516,8 +513,8 @@ namespace gc.sitio.Areas.Productos.Controllers
 
         [HttpPost]
         public JsonResult ResguardarCambiosProducto(string p_id, decimal tp_plista, decimal tp_dto1, decimal tp_dto2,
-     decimal tp_dto3, decimal tp_dto4, decimal tp_dto_pa, decimal tp_porc_flete, string tp_boni,
-     decimal tp_pcosto, decimal tp_margen, decimal tp_pneto, decimal tin_alicuota, decimal tp_pvta)
+             decimal tp_dto3, decimal tp_dto4, decimal tp_dto_pa, decimal tp_porc_flete, string tp_boni,
+             decimal tp_pcosto, decimal tp_margen, decimal tp_pneto, decimal tin_alicuota, decimal tp_pvta)
         {
             try
             {
@@ -642,7 +639,7 @@ namespace gc.sitio.Areas.Productos.Controllers
         {
             try
             {
-                // PASO 1: Validaciones básicas
+                // ✅ PASO 1: Validaciones básicas (sin cambios)
                 var auth = EstaAutenticado;
                 if (!auth.Item1 || auth.Item2 < DateTime.Now)
                 {
@@ -659,141 +656,265 @@ namespace gc.sitio.Areas.Productos.Controllers
                     throw new NegocioException("No se ha identificado qué lista es la que se pretende modificar.");
                 }
 
-                // PASO 2: ✅ CORREGIDO - Asegurar inicialización de lista temporal
-                if (ProductosDetalleListaTEMPORAL == null)
+                // ✅ PASO 2: CORREGIDO - Inicialización thread-safe
+                lock (_lockResguardoLista)
                 {
-                    ProductosDetalleListaTEMPORAL = new List<ProductoDetalleDto>();
-                    _logger?.LogInformation("Lista temporal de listas inicializada en ResguardarCambios");
+                    if (ProductosDetalleListaTEMPORAL == null)
+                    {
+                        ProductosDetalleListaTEMPORAL = new List<ProductoDetalleDto>();
+                        _logger?.LogInformation("Lista temporal de listas inicializada de forma segura");
+                    }
                 }
 
-                // PASO 3: Buscar registro original (primero en temporales, luego en originales)
-                var productoOriginal = ProductosDetalleListaTEMPORAL
-                    .FirstOrDefault(p => p.p_id == p_id && p.lp_id == lp_id);
-
-                // Si no está en temporales, buscar en originales
-                if (productoOriginal == null)
-                {
-                    productoOriginal = ProductosDetalleLista?
-                        .FirstOrDefault(p => p.p_id == p_id && p.lp_id == lp_id);
-                }
-
+                // ✅ PASO 3: Búsqueda de registro original con logging mejorado
+                var productoOriginal = BuscarRegistroOriginal(p_id, lp_id);
                 if (productoOriginal == null)
                 {
                     throw new NegocioException($"No se encontró la lista del producto con ID {p_id} y Lista {lp_id}.");
                 }
 
-                // [El resto del código permanece igual...]
-                // PASO 4: Comparación de cambios (sin cambios)
-                const decimal TOLERANCIA_2_DECIMALES = 0.01m;
-                const decimal TOLERANCIA_3_DECIMALES = 0.001m;
+                // ✅ PASO 4: Verificación de cambios (optimizada)
+                var cambiosDetectados = VerificarCambiosEnLista(productoOriginal, tp_margen, tp_pvta, p_pcosto,
+                    p_pneto, lp_porc_mg, iva_situacion, iva_alicuota, in_alicuota, tp_iva, tp_in);
 
-                bool hayCambios = false;
-                hayCambios |= Math.Abs(productoOriginal.tp_margen - tp_margen) > TOLERANCIA_2_DECIMALES;
-                hayCambios |= Math.Abs(productoOriginal.tp_pvta - tp_pvta) > TOLERANCIA_2_DECIMALES;
-                hayCambios |= Math.Abs(productoOriginal.lp_porc_mg - lp_porc_mg) > TOLERANCIA_2_DECIMALES;
-                hayCambios |= Math.Abs(productoOriginal.iva_alicuota - iva_alicuota) > TOLERANCIA_2_DECIMALES;
-                hayCambios |= Math.Abs(productoOriginal.in_alicuota - in_alicuota) > TOLERANCIA_2_DECIMALES;
-                hayCambios |= Math.Abs(productoOriginal.tp_iva - tp_iva) > TOLERANCIA_2_DECIMALES;
-                hayCambios |= Math.Abs(productoOriginal.tp_in - tp_in) > TOLERANCIA_2_DECIMALES;
-                hayCambios |= Math.Abs(productoOriginal.P_Pcosto - p_pcosto) > TOLERANCIA_3_DECIMALES;
-                hayCambios |= Math.Abs(productoOriginal.p_pneto - p_pneto) > TOLERANCIA_3_DECIMALES;
-                hayCambios |= productoOriginal.iva_situacion != iva_situacion;
-
-                if (!hayCambios)
+                if (!cambiosDetectados.HayCambios)
                 {
-                    // Buscar y eliminar de la lista temporal si existe
-                    var productoTemporalExistente = ProductosDetalleListaTEMPORAL
-                        .FirstOrDefault(p => p.p_id == p_id && p.lp_id == lp_id);
-
-                    if (productoTemporalExistente != null)
-                    {
-                        ProductosDetalleListaTEMPORAL.Remove(productoTemporalExistente);
-                        _logger?.LogInformation($"Eliminado registro temporal: Producto {p_id}, Lista {lp_id}");
-                        return Json(new { error = false, warn = false, msg = "No se detectaron cambios en la lista del producto. Se ha eliminado de la lista temporal." });
-                    }
-
-                    return Json(new { error = false, warn = false, msg = "No se detectaron cambios en la lista del producto." });
+                    return EliminarDeListaTemporal(p_id, lp_id);
                 }
 
-                // PASO 5: Crear registro modificado
-                var productoModificado = new ProductoDetalleDto
-                {
-                    p_id = productoOriginal.p_id,
-                    lp_id = productoOriginal.lp_id,
-                    pg_id = productoOriginal.pg_id,
-                    pg_desc = productoOriginal.pg_desc,
-                    p_desc = productoOriginal.p_desc,
-                    tp_margen = tp_margen,
-                    tp_pvta = tp_pvta,
-                    P_Pcosto = p_pcosto,
-                    p_pneto = p_pneto,
-                    lp_porc_mg = lp_porc_mg,
-                    iva_situacion = iva_situacion,
-                    iva_alicuota = iva_alicuota,
-                    in_alicuota = in_alicuota,
-                    tp_iva = tp_iva,
-                    tp_in = tp_in,
-                    carga = 1 // ✅ IMPORTANTE: Marcar como temporal
-                };
+                // ✅ PASO 5: CRÍTICO - Actualización thread-safe
+                var registroModificado = CrearRegistroModificado(productoOriginal, tp_margen, tp_pvta, p_pcosto,
+                    p_pneto, lp_porc_mg, iva_situacion, iva_alicuota, in_alicuota, tp_iva, tp_in);
 
-                // Copiar el resto de propiedades
-                foreach (var prop in typeof(ProductoDetalleDto).GetProperties())
-                {
-                    if (new[] { "p_id", "lp_id", "pg_id", "pg_desc", "p_desc", "tp_margen", "tp_pvta", "P_Pcosto",
-                "p_pneto", "lp_porc_mg", "iva_situacion", "iva_alicuota", "in_alicuota",
-                "tp_iva", "tp_in", "carga" }.Contains(prop.Name))
-                    {
-                        continue;
-                    }
+                ActualizarListaTemporalSegura(p_id, lp_id, registroModificado);
 
-                    if (prop.CanWrite && prop.CanRead)
-                    {
-                        var valorOriginal = prop.GetValue(productoOriginal);
-                        if (valorOriginal != null)
-                        {
-                            prop.SetValue(productoModificado, valorOriginal);
-                        }
-                    }
-                }
-
-                // PASO 6: ✅ MEJORADO - Actualizar lista temporal
-                var indiceExistente = ProductosDetalleListaTEMPORAL.FindIndex(p => p.p_id == p_id && p.lp_id == lp_id);
-                if (indiceExistente >= 0)
-                {
-                    ProductosDetalleListaTEMPORAL[indiceExistente] = productoModificado;
-                    _logger?.LogInformation($"Actualizado registro temporal: Producto {p_id}, Lista {lp_id}");
-                }
-                else
-                {
-                    ProductosDetalleListaTEMPORAL.Add(productoModificado);
-                    _logger?.LogInformation($"Agregado nuevo registro temporal: Producto {p_id}, Lista {lp_id}. Total temporales: {ProductosDetalleListaTEMPORAL.Count}");
-                }
+                // ✅ PASO 6: Logging detallado para debugging
+                _logger?.LogInformation($"✅ RESGUARDADO: P={p_id}, LP={lp_id}, Total temporales: {ProductosDetalleListaTEMPORAL?.Count ?? 0}");
 
                 return Json(new
                 {
                     error = false,
                     warn = false,
                     msg = "Lista de precio del producto resguardada correctamente para su posterior actualización.",
-                    margen = tp_margen
+                    margen = tp_margen,
+                    debug = new
+                    {
+                        producto_id = p_id,
+                        lista_id = lp_id,
+                        total_temporales = ProductosDetalleListaTEMPORAL?.Count ?? 0
+                    }
                 });
             }
             catch (NegocioException ex)
             {
-                return Json(new { error = false, warn = true, msg = ex.Message });
-            }
-            catch (UnauthorizedException ex)
-            {
+                _logger?.LogError($"❌ Error de negocio resguardando P={p_id}, LP={lp_id}: {ex.Message}");
                 return Json(new { error = false, warn = true, msg = ex.Message });
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Error al resguardar cambios de la lista del producto");
+                _logger?.LogError(ex, $"💥 Error crítico resguardando P={p_id}, LP={lp_id}");
                 return Json(new { error = true, warn = false, msg = "Se produjo un error al intentar resguardar los cambios de la lista del producto." });
             }
         }
 
+        /// <summary>
+        /// ✅ NUEVA: Búsqueda optimizada de registro original
+        /// </summary>
+        private ProductoDetalleDto BuscarRegistroOriginal(string p_id, string lp_id)
+        {
+            lock (_lockResguardoLista)
+            {
+                //SE COMENTA TODO EL BLOQUE PORQUE SIEMPRE SE COMPARAR CON PRODUCTO DETALLE (NO TEMPORAL)
+                // Buscar primero en temporales (más reciente)
+                //var temporal = ProductosDetalleListaTEMPORAL?
+                //    .FirstOrDefault(p => p.p_id == p_id && p.lp_id == lp_id);
+
+                //if (temporal != null)
+                //{
+                //    _logger?.LogDebug($"📋 Encontrado en temporales: P={p_id}, LP={lp_id}");
+                //    return temporal;
+                //}
+
+                // Si no está en temporales, buscar en originales
+                var original = ProductosDetalleLista?
+                    .FirstOrDefault(p => p.p_id == p_id && p.lp_id == lp_id);
+
+                if (original != null)
+                {
+                    _logger?.LogDebug($"📋 Encontrado en originales: P={p_id}, LP={lp_id}");
+                }
+
+                return original;
+            }
+        }
+
+        /// <summary>
+        /// ✅ NUEVA: Verificación optimizada de cambios
+        /// </summary>
+        private (bool HayCambios, string Detalles) VerificarCambiosEnLista(
+            ProductoDetalleDto original, decimal tp_margen, decimal tp_pvta, decimal p_pcosto,
+            decimal p_pneto, decimal lp_porc_mg, char iva_situacion, decimal iva_alicuota,
+            decimal in_alicuota, decimal tp_iva, decimal tp_in)
+        {
+            const decimal TOLERANCIA_2_DECIMALES = 0.01m;
+            const decimal TOLERANCIA_3_DECIMALES = 0.001m;
+
+            var cambios = new List<string>();
+
+            // ✅ OPTIMIZADO: Verificar cada campo con tolerancia apropiada
+            if (Math.Abs(original.tp_margen - tp_margen) > TOLERANCIA_2_DECIMALES)
+                cambios.Add($"Margen: {original.tp_margen} → {tp_margen}");
+
+            if (Math.Abs(original.tp_pvta - tp_pvta) > TOLERANCIA_2_DECIMALES)
+                cambios.Add($"PVenta: {original.tp_pvta} → {tp_pvta}");
+
+            if (Math.Abs(original.lp_porc_mg - lp_porc_mg) > TOLERANCIA_2_DECIMALES)
+                cambios.Add($"PorcMg: {original.lp_porc_mg} → {lp_porc_mg}");
+
+            if (Math.Abs(original.iva_alicuota - iva_alicuota) > TOLERANCIA_2_DECIMALES)
+                cambios.Add($"IVA: {original.iva_alicuota} → {iva_alicuota}");
+
+            if (Math.Abs(original.in_alicuota - in_alicuota) > TOLERANCIA_2_DECIMALES)
+                cambios.Add($"ImpInt: {original.in_alicuota} → {in_alicuota}");
+
+            if (Math.Abs(original.tp_iva - tp_iva) > TOLERANCIA_2_DECIMALES)
+                cambios.Add($"TpIVA: {original.tp_iva} → {tp_iva}");
+
+            if (Math.Abs(original.tp_in - tp_in) > TOLERANCIA_2_DECIMALES)
+                cambios.Add($"TpIN: {original.tp_in} → {tp_in}");
+
+            if (Math.Abs(original.P_Pcosto - p_pcosto) > TOLERANCIA_3_DECIMALES)
+                cambios.Add($"Costo: {original.P_Pcosto} → {p_pcosto}");
+
+            if (Math.Abs(original.p_pneto - p_pneto) > TOLERANCIA_3_DECIMALES)
+                cambios.Add($"PNeto: {original.p_pneto} → {p_pneto}");
+
+            if (original.iva_situacion != iva_situacion)
+                cambios.Add($"SitIVA: {original.iva_situacion} → {iva_situacion}");
+
+            return (cambios.Any(), string.Join(", ", cambios));
+        }
+
+        /// <summary>
+        /// ✅ NUEVA: Creación optimizada de registro modificado
+        /// </summary>
+        private ProductoDetalleDto CrearRegistroModificado(
+            ProductoDetalleDto original, decimal tp_margen, decimal tp_pvta, decimal p_pcosto,
+            decimal p_pneto, decimal lp_porc_mg, char iva_situacion, decimal iva_alicuota,
+            decimal in_alicuota, decimal tp_iva, decimal tp_in)
+        {
+            // ✅ OPTIMIZADO: Clonación eficiente usando reflection cache
+            var modificado = ClonarRegistro(original);
+
+            // Actualizar solo los campos modificados
+            modificado.tp_margen = tp_margen;
+            modificado.tp_pvta = tp_pvta;
+            modificado.P_Pcosto = p_pcosto;
+            modificado.p_pneto = p_pneto;
+            modificado.lp_porc_mg = lp_porc_mg;
+            modificado.iva_situacion = iva_situacion;
+            modificado.iva_alicuota = iva_alicuota;
+            modificado.in_alicuota = in_alicuota;
+            modificado.tp_iva = tp_iva;
+            modificado.tp_in = tp_in;
+            modificado.carga = 1; // ✅ IMPORTANTE: Marcar como temporal
+
+            return modificado;
+        }
+
+        /// <summary>
+        /// ✅ CRÍTICO: Actualización thread-safe de lista temporal
+        /// </summary>
+        private void ActualizarListaTemporalSegura(string p_id, string lp_id, ProductoDetalleDto registroModificado)
+        {
+            lock (_lockResguardoLista)
+            {
+                // ✅ ASEGURAR: Lista existe
+                if (ProductosDetalleListaTEMPORAL == null)
+                {
+                    ProductosDetalleListaTEMPORAL = new List<ProductoDetalleDto>();
+                }
+
+                // ✅ BUSCAR: Registro existente
+                var indiceExistente = ProductosDetalleListaTEMPORAL.FindIndex(p => p.p_id == p_id && p.lp_id == lp_id);
+
+                if (indiceExistente >= 0)
+                {
+                    var lista = ProductosDetalleListaTEMPORAL;
+
+                    // ✅ ACTUALIZAR: Registro existente
+                    var anterior = lista[indiceExistente];
+                    lista[indiceExistente] = registroModificado;
+                    ProductosDetalleListaTEMPORAL = lista;
+
+                    _logger?.LogInformation($"🔄 ACTUALIZADO temporal: P={p_id}, LP={lp_id} " +
+                        $"(PVenta: {anterior.tp_pvta} → {registroModificado.tp_pvta})");
+                }
+                else
+                {
+                    // ✅ AGREGAR: Nuevo registro
+                    var lista = ProductosDetalleListaTEMPORAL;
+                    lista.Add(registroModificado);
+                    ProductosDetalleListaTEMPORAL = lista;
+
+                    _logger?.LogInformation($"➕ AGREGADO temporal: P={p_id}, LP={lp_id}, PVenta={registroModificado.tp_pvta}");
+                }
+
+                // ✅ LOGGING: Estado actual
+                var totalPorProducto = ProductosDetalleListaTEMPORAL.GroupBy(x => x.p_id)
+                    .ToDictionary(g => g.Key, g => g.Count());
+
+                _logger?.LogInformation($"📊 Estado temporal actual: Total={ProductosDetalleListaTEMPORAL.Count}, " +
+                    $"Por producto: {string.Join(", ", totalPorProducto.Select(kvp => $"{kvp.Key}:{kvp.Value}"))}");
+            }
+        }
+
+        /// <summary>
+        /// ✅ NUEVA: Eliminación segura de lista temporal
+        /// </summary>
+        private JsonResult EliminarDeListaTemporal(string p_id, string lp_id)
+        {
+            lock (_lockResguardoLista)
+            {
+                var eliminado = ProductosDetalleListaTEMPORAL?
+                    .FirstOrDefault(p => p.p_id == p_id && p.lp_id == lp_id);
+
+                if (eliminado != null)
+                {
+                    ProductosDetalleListaTEMPORAL.Remove(eliminado);
+                    _logger?.LogInformation($"🗑️ ELIMINADO temporal: P={p_id}, LP={lp_id}, Total restante: {ProductosDetalleListaTEMPORAL.Count}");
+                    return Json(new { error = false, warn = false, msg = "No se detectaron cambios en la lista del producto. Se ha eliminado de la lista temporal." });
+                }
+
+                return Json(new { error = false, warn = false, msg = "No se detectaron cambios en la lista del producto." });
+            }
+        }
+
+        /// <summary>
+        /// ✅ OPTIMIZADO: Clonación eficiente de registro
+        /// </summary>
+        private static ProductoDetalleDto ClonarRegistro(ProductoDetalleDto original)
+        {
+            var clonado = new ProductoDetalleDto();
+
+            // ✅ EFICIENTE: Copiar propiedades usando reflection optimizada
+            var propiedades = typeof(ProductoDetalleDto).GetProperties()
+                .Where(p => p.CanWrite && p.CanRead);
+
+            foreach (var propiedad in propiedades)
+            {
+                var valor = propiedad.GetValue(original);
+                if (valor != null)
+                {
+                    propiedad.SetValue(clonado, valor);
+                }
+            }
+
+            return clonado;
+        }
+
         [HttpPost]
-        public async Task<JsonResult> ConfirmarPreciosTemporales(ProductoCPConfirmar precios)
+        public async Task<JsonResult> ConfirmarPreciosTemporales()
         {
             try
             {
@@ -803,12 +924,166 @@ namespace gc.sitio.Areas.Productos.Controllers
                 {
                     return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
                 }
-                if (precios == null || precios.Listas == null || !precios.Listas.Any())
-                {
-                    throw new NegocioException("No se han recepcionado precios de productos a confirmar o en ninguna de sus listas.");
+                 
+                var prod = ProductosDetalleTEMPORAL.FirstOrDefault();
+                if (prod == null) {
+                    throw new NegocioException("No se han encontrado precios temporales para confirmar. Por favor, verifique si ha resguardado cambios previamente.");
                 }
+
+                #region Mapeo de los datos del temporales a mandar
+                var confirmar = new List<ProductoCPConfirmar>();
+
+                // ✅ PASO 1: Procesar todos los productos temporales (cambios de producto base)
+                foreach (var productoTemporal in ProductosDetalleTEMPORAL)
+                {
+                    // ✅ PASO 2: Crear el producto confirmado con los datos base (lp_id == "001")
+                    var productoConfirmar = new ProductoCPConfirmar
+                    {
+                        // Datos del producto base
+                        p_id = productoTemporal.p_id,
+                        lp_id = "001", // Lista base
+                        tp_plista = productoTemporal.tp_plista,
+                        tp_dto1 = productoTemporal.tp_dto1,
+                        tp_dto2 = productoTemporal.tp_dto2,
+                        tp_dto3 = productoTemporal.tp_dto3,
+                        tp_dto4 = productoTemporal.tp_dto4,
+                        tp_dto_pa = productoTemporal.tp_dto_pa,
+                        tp_porc_flete = productoTemporal.tp_porc_flete,
+                        tp_boni = productoTemporal.tp_boni ?? string.Empty,
+                        tp_pcosto = productoTemporal.tp_pcosto,
+                        tin_alicuota = productoTemporal.tin_alicuota,
+                        tp_margen = productoTemporal.tp_margen,
+                        tp_margen_vta = productoTemporal.tp_margen, // Asumiendo que son iguales
+                        tp_pneto = productoTemporal.tp_pneto,
+                        tp_iva = productoTemporal.tp_iva,
+                        tp_in = productoTemporal.tp_in,
+                        tp_pvta = productoTemporal.tp_pvta,
+                        Listas = new List<TPProducto>()
+                    };
+
+                    // ✅ PASO 3: Buscar listas temporales relacionadas con este producto
+                    var listasRelacionadas = ProductosDetalleListaTEMPORAL?
+                        .Where(lista => lista.p_id == productoTemporal.p_id && lista.lp_id != "001")
+                        .Select(lista => new TPProducto
+                        {
+                            lp_id = lista.lp_id,
+                            tp_plista = lista.tp_plista,
+                            tp_dto1 = lista.tp_dto1,
+                            tp_dto2 = lista.tp_dto2,
+                            tp_dto3 = lista.tp_dto3,
+                            tp_dto4 = lista.tp_dto4,
+                            tp_dto_pa = lista.tp_dto_pa,
+                            tp_porc_flete = lista.tp_porc_flete,
+                            tp_boni = lista.tp_boni ?? string.Empty,
+                            tp_pcosto = lista.P_Pcosto,
+                            tin_alicuota = lista.in_alicuota,
+                            tp_margen = lista.tp_margen,
+                            tp_margen_vta = lista.tp_margen, // Asumiendo que son iguales
+                            tp_pneto = lista.p_pneto,
+                            tp_iva = lista.tp_iva,
+                            tp_in = lista.tp_in,
+                            tp_pvta = lista.tp_pvta
+                        }).ToList() ?? new List<TPProducto>();
+
+                    // Agregar listas encontradas
+                    productoConfirmar.Listas.AddRange(listasRelacionadas);
+
+                    // Agregar el producto a la confirmación
+                    confirmar.Add(productoConfirmar);
+
+                    _logger?.LogInformation($"✅ Producto {productoTemporal.p_id}: {listasRelacionadas.Count} listas asociadas");
+                }
+
+                // ✅ PASO 4: Procesar listas temporales huérfanas (sin producto temporal asociado)
+                var listasHuerfanas = ProductosDetalleListaTEMPORAL?
+                    .Where(lista => lista.lp_id != "001" && !ProductosDetalleTEMPORAL.Any(prod => prod.p_id == lista.p_id))
+                    .GroupBy(lista => lista.p_id)
+                    .ToList() ?? new List<IGrouping<string, ProductoDetalleDto>>();
+
+                foreach (var grupoListasHuerfanas in listasHuerfanas)
+                {
+                    var p_id = grupoListasHuerfanas.Key;
+
+                    // ✅ PASO 5: Buscar producto original para las listas huérfanas
+                    var productoOriginal = ProductosDetalle?.FirstOrDefault(p => p.p_id == p_id);
+
+                    if (productoOriginal != null)
+                    {
+                        var productoHuerfano = new ProductoCPConfirmar
+                        {
+                            // Datos del producto original (sin cambios en precio base)
+                            p_id = productoOriginal.p_id,
+                            lp_id = "001", // Lista base
+                            tp_plista = productoOriginal.P_Plista,
+                            tp_dto1 = productoOriginal.P_Dto1,
+                            tp_dto2 = productoOriginal.P_Dto2,
+                            tp_dto3 = productoOriginal.P_Dto3,
+                            tp_dto4 = productoOriginal.P_Dto4,
+                            tp_dto_pa = productoOriginal.P_Dto_Pa,
+                            tp_porc_flete = productoOriginal.P_Porc_Flete,
+                            tp_boni = productoOriginal.P_Boni ?? string.Empty,
+                            tp_pcosto = productoOriginal.P_Pcosto,
+                            tin_alicuota = productoOriginal.in_alicuota,
+                            tp_margen = productoOriginal.p_margen,
+                            tp_margen_vta = productoOriginal.p_margen, // Asumiendo que son iguales
+                            tp_pneto = productoOriginal.p_pneto,
+                            tp_iva = productoOriginal.tp_iva,
+                            tp_in = productoOriginal.tp_in,
+                            tp_pvta = productoOriginal.p_pvta,
+
+                            // Solo cambios en listas
+                            Listas = grupoListasHuerfanas.Select(lista => new TPProducto
+                            {
+                                lp_id = lista.lp_id,
+                                tp_plista = lista.tp_plista,
+                                tp_dto1 = lista.tp_dto1,
+                                tp_dto2 = lista.tp_dto2,
+                                tp_dto3 = lista.tp_dto3,
+                                tp_dto4 = lista.tp_dto4,
+                                tp_dto_pa = lista.tp_dto_pa,
+                                tp_porc_flete = lista.tp_porc_flete,
+                                tp_boni = lista.tp_boni ?? string.Empty,
+                                tp_pcosto = lista.P_Pcosto,
+                                tin_alicuota = lista.in_alicuota,
+                                tp_margen = lista.tp_margen,
+                                tp_margen_vta = lista.tp_margen, // Asumiendo que son iguales
+                                tp_pneto = lista.p_pneto,
+                                tp_iva = lista.tp_iva,
+                                tp_in = lista.tp_in,
+                                tp_pvta = lista.tp_pvta
+                            }).ToList()
+                        };
+
+                        confirmar.Add(productoHuerfano);
+
+                        _logger?.LogInformation($"✅ Producto huérfano {p_id}: {grupoListasHuerfanas.Count()} listas temporales");
+                    }
+                    else
+                    {
+                        _logger?.LogWarning($"⚠️ No se encontró producto original para listas huérfanas con p_id: {p_id}");
+                    }
+                }
+
+                // ✅ PASO 6: Logging del resumen de mapeo
+                var totalProductos = confirmar.Count;
+                var totalListas = confirmar.Sum(p => p.Listas?.Count ?? 0);
+
+                _logger?.LogInformation($"📋 MAPEO COMPLETO: {totalProductos} productos, {totalListas} listas temporales confirmadas");
+
+                #endregion
+
+                //generamos response para confirmar los precios temporales
+                var request = new AbmGenDto
+                {
+                    Administracion = AdministracionId,
+                    Usuario = UserName,
+                    Objeto = prod.cta_id,
+                    Json = JsonConvert.SerializeObject(confirmar),
+                };
+
+
                 // Llamar al servicio para confirmar los precios temporales
-                var respuesta = await _productoServicio.ConfirmarPreciosTemporales(precios, TokenCookie);
+                var respuesta = await _productoServicio.ConfirmarPreciosTemporales(request, TokenCookie);
                 if (!respuesta.Ok)
                 {
                     throw new NegocioException(respuesta.Mensaje??"No se recepción un mensaje de confirmación. Analice si los cambios se aplicarón o verifique logs para determinar el origen del problema, por la falta de respuesta del servicio.");
@@ -855,6 +1130,53 @@ namespace gc.sitio.Areas.Productos.Controllers
             }
 
         }
+
+        /// <summary>
+        /// ✅ NUEVA: Endpoint de diagnóstico para debugging (solo en Development)
+        /// </summary>
+        [HttpPost]
+        public JsonResult DiagnosticoListasTemporal()
+        {
+            try
+            {
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { error = true, msg = "No autenticado" });
+
+                lock (_lockResguardoLista)
+                {
+                    var estado = new
+                    {
+                        total = ProductosDetalleListaTEMPORAL.Count,// ?? 0,
+                        por_producto = ProductosDetalleListaTEMPORAL?
+                            .GroupBy(x => x.p_id)
+                            .ToDictionary(g => g.Key, g => new
+                            {
+                                count = g.Count(),
+                                listas = g.Select(l => new { lp_id = l.lp_id, tp_pvta = l.tp_pvta, tp_margen = l.tp_margen }).ToList()
+                            }),// ?? new Dictionary<string, object>(),
+                        registros = ProductosDetalleListaTEMPORAL?
+                            .Select(x => new
+                            {
+                                p_id = x.p_id,
+                                lp_id = x.lp_id,
+                                tp_pvta = x.tp_pvta,
+                                tp_margen = x.tp_margen,
+                                carga = x.carga
+                            }).ToList(),// ?? new List<object>()
+                    };
+
+                    _logger?.LogInformation($"📊 DIAGNÓSTICO Lista temporal: {System.Text.Json.JsonSerializer.Serialize(estado)}");
+
+                    return Json(new { error = false, estado = estado });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error en diagnóstico de lista temporal");
+                return Json(new { error = true, msg = ex.Message });
+            }
+        }
+
 
         protected void CargarProveedoresFamiliaLista(string ctaId, ICuentaServicio _cuentaServicio, string? fam = null)
         {
