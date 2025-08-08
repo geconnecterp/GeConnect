@@ -1112,7 +1112,6 @@ namespace gc.sitio.core.Servicios.Implementacion
                     var resp = apiResponse?.Data;
 
                     return new RespuestaGenerica<RespuestaDto> { Ok = true, Entidad = resp };
-
                 }
                 else
                 {

@@ -1056,7 +1056,7 @@ function crearDialogoProgresoAvanzado(totalFilas) {
 
     // Crear nuevo diálogo
     const dialogoHTML = `
-        <div id="dialogoProgresoAvanzado" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">
+        <div id="dialogoProgresoAvanzado" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="static" data-bs-keyboard="false">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -2323,7 +2323,14 @@ function configurarBotonesProdCP() {
     // ✅ MODIFICADO: Usar btnAbmAceptar para confirmar precios temporales
     $("#btnAbmAceptar").on("click", function (e) {
         e.preventDefault();
-        confirmarPreciosTemporales();
+        AbrirMensaje("CONFIRMACIÓN", "¿Confirma que desea aplicar los precios temporales a los productos listados? Esta acción no se puede deshacer.",
+            function (resp) {
+                $("#msjModal").modal("hide");
+                if (resp === "SI") {
+                    confirmarPreciosTemporales();
+                }                
+            }, true, ["Continuar", "Cancelar"], "info!", null);
+
     }).prop("disabled", false);
 
     $("#lbRel01, #lbRel02, #lbRel03").text((i, txt) => ["PROVEEDOR", "RUBRO", "FAMILIA"][i]);
@@ -2408,7 +2415,7 @@ function mostrarIndicadorConfirmacion() {
 
     // Crear indicador simple
     const indicadorHTML = `
-        <div id="indicadorConfirmacion" class="modal fade" tabindex="-1" data-backdrop="static" data-keyboard="false">
+        <div id="indicadorConfirmacion" class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
