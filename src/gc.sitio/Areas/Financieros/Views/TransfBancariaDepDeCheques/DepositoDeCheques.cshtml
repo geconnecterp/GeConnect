@@ -1,0 +1,177 @@
+﻿@model DepositoDeChequesModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+	Layout = "~/views/shared/_Layout.cshtml";
+
+	var list = Model.ListaIntervalo;
+}
+<style>
+	thead th {
+		position: sticky;
+		top: 0px;
+	}
+
+	.opciones {
+		display: flex;
+		gap: 100px;
+	}
+
+	fieldset {
+		margin-left: 0px;
+		margin-right: 0px;
+		margin-top: 10px;
+		border: 1px solid silver;
+		padding: 8px;
+		border-radius: 4px;
+	}
+
+	legend {
+		padding: 2px;
+		margin-top: -22px;
+		background: #fff !important;
+		width: 25%;
+		text-align: center;
+		font-size: small;
+	}
+</style>
+@Html.Hidden("parametro_valores_origen", Model.parametro_valores_origen)
+@Html.Hidden("parametro_valores_destino", Model.parametro_valores_destino)
+<div class="card">
+	<div class="container" style="margin-top:10px;">
+		<div class="row">
+			<div class="col-md-6">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text">Concepto: </span>
+					<input type="text" asp-for="concepto" class="form-control inputEditable" readonly />
+					<span class="input-group-text">Acreditación: </span>
+					@Html.TextBoxFor(m => m.acreditacion, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeAcreditacion(this);", @id="fechaAcreditacion" })
+					@Html.DropDownList("id", list, "Seleccionar...", new { @id = "listaIntervalo", @class = "form-control" })
+					<button id="btnAbmAceptar" class="btn btn-success btn-sm me-1" type="button" title="Aceptar" disabled style="margin-left: 10px;">
+						<i class="bx bx-check-circle"></i>
+					</button>
+					<button id="btnAbmCancelar" class="btn btn-danger btn-sm me-1" type="button" title="Cancelar" disabled>
+						<i class="bx bx-x-circle bx-xs"></i>
+					</button>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<dvi class="col-6">
+				<fieldset>
+					<legend>Origen</legend>
+					<div class="row">
+						<div class="col-1">
+							<button id="btnAgregarValorOrigen" class="btn btn-success btn-sm me-1" type="button" title="Agregar">
+								<i class="bx bx-plus bx-xs"></i>
+							</button>
+						</div>
+						<div class="col-11" id="divOrigen" style="height: 200px;">
+							<div class="table-responsive table-wrapper-200-full" id="containerOrigen">
+								<table class="table table-bordered table-hover" id="tbListaOrigen">
+									<thead class="table-dark">
+										<tr>
+											<th style="width:35%;" class="col-header-small align-center tiny-row">Cuenta Financiera</th>
+											<th style="width:55%;" class="col-header-small align-center tiny-row">Valor</th>
+											<th style="width:10%;" class="col-header-small align-center tiny-row">Importe</th>
+											<th style="width:0%; display:none;">orden</th>
+										</tr>
+									</thead>
+									<tbody>
+										@if (Model != null && Model.GrillaOrigen != null && Model.GrillaOrigen.ListaDatos != null && Model.GrillaOrigen.ListaDatos.Count > 0)
+										{
+											@foreach (var item in Model.GrillaOrigen.ListaDatos)
+											{
+												<tr onclick="selectReg(this, 'tbListaValores_Paso2')" ondblclick="selectRegDblGrillaValores(this);">
+													<td class="@Model.GrillaOrigen.ObtenerClase(item.ctaf_denominacion) cell-fit-content">@Model.GrillaOrigen.FormatearDato(item.ctaf_denominacion, FormatDato.Ninguno)</td>
+													<td class="@Model.GrillaOrigen.ObtenerClase(item.concepto_valor) cell-fit-content">@Model.GrillaOrigen.FormatearDato(item.concepto_valor, FormatDato.Monto)</td>
+													<td class="@Model.GrillaOrigen.ObtenerClase(item.op_importe) cell-fit-content">@Model.GrillaOrigen.FormatearDato(item.op_importe, FormatDato.Monto)</td>
+													<td style="display:none;">@item.orden</td>
+												</tr>
+											}
+										}
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-8"></div>
+						<div class="col-4">
+							<div class="input-group input-group-sm">
+								<span class="input-group-text">Total Origen: </span>
+								<input type="text" asp-for="total_origen" class="form-control inputEditable" readonly />
+							</div>
+						</div>
+					</div>
+				</fieldset>
+			</dvi>
+			<dvi class="col-6">
+				<fieldset>
+					<legend>Destino</legend>
+					<div class="row">
+						<div class="col-1">
+							<button id="btnAgregarValorDestino" class="btn btn-success btn-sm me-1" type="button" title="Agregar">
+								<i class="bx bx-plus bx-xs"></i>
+							</button>
+						</div>
+						<div class="col-11" id="divDestino" style="height: 200px;">
+							<div class="table-responsive table-wrapper-200-full" id="containerDestino">
+								<table class="table table-bordered table-hover" id="tbListaDestino">
+									<thead class="table-dark">
+										<tr>
+											<th style="width:35%;" class="col-header-small align-center tiny-row">Cuenta Financiera</th>
+											<th style="width:55%;" class="col-header-small align-center tiny-row">Valor</th>
+											<th style="width:10%;" class="col-header-small align-center tiny-row">Importe</th>
+											<th style="width:0%; display:none;">orden</th>
+										</tr>
+									</thead>
+									<tbody>
+										@if (Model != null && Model.GrillaDestino != null && Model.GrillaDestino.ListaDatos != null && Model.GrillaDestino.ListaDatos.Count > 0)
+										{
+											@foreach (var item in Model.GrillaDestino.ListaDatos)
+											{
+												<tr onclick="selectReg(this, 'tbListaValores_Paso2')" ondblclick="selectRegDblGrillaValores(this);">
+													<td class="@Model.GrillaDestino.ObtenerClase(item.ctaf_denominacion) cell-fit-content">@Model.GrillaDestino.FormatearDato(item.ctaf_denominacion, FormatDato.Ninguno)</td>
+													<td class="@Model.GrillaDestino.ObtenerClase(item.concepto_valor) cell-fit-content">@Model.GrillaDestino.FormatearDato(item.concepto_valor, FormatDato.Monto)</td>
+													<td class="@Model.GrillaDestino.ObtenerClase(item.op_importe) cell-fit-content">@Model.GrillaDestino.FormatearDato(item.op_importe, FormatDato.Monto)</td>
+													<td style="display:none;">@item.orden</td>
+												</tr>
+											}
+										}
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-8"></div>
+						<div class="col-4">
+							<div class="input-group input-group-sm">
+								<span class="input-group-text">Total Destino: </span>
+								<input type="text" asp-for="total_destino" class="form-control inputEditable" readonly />
+							</div>
+						</div>
+					</div>
+				</fieldset>
+			</dvi>
+		</div>
+	</div>
+</div>
+
+<div id="modalSeleccionValores"></div>
+@Html.Hidden("UpdateValores", false)
+
+@section scripts {
+	<script type="text/javascript">
+		/*URL para componente de Seleccion de Valores*/
+		var abrirComponenteDeSeleccionDeValoresUrl = "@Url.Action("AbrirComponente", "selecciondevalores", new { area = "ControlComun" })";
+		var cargarCtaFinParaSeleccionDeValoresUrl = "@Url.Action("CargarCtaFinParaSeleccionDeValores", "selecciondevalores", new { area = "ControlComun" })";
+		var cargarSeccionEdicionEnSeleccionDeValoresUrl = "@Url.Action("CargarSeccionEdicionEnSeleccionDeValores", "selecciondevalores", new { area = "ControlComun" })";
+		var cargarGrillaFinancieroCarteraEnSeleccionDeValoresUrl = "@Url.Action("CargarGrillaFinancieroCarteraEnSeleccionDeValores", "selecciondevalores", new { area = "ControlComun" })";
+		var agregarItemAColeccionDeValoresUrl = "@Url.Action("AgregarItemAColeccionDeValores", "selecciondevalores", new { area = "ControlComun" })";
+		/**/
+	</script>
+
+	<script src="~/js/app/controlcomun/selecciondevalores.js"></script>
+	<script src="~/js/app/areas/financieros/transfbancariadepdecheques/transbancariadepdecheques.js"></script>
+}
