@@ -2317,6 +2317,7 @@ function configurarBotonesProdCP() {
         AbrirWaiting("Cargando productos...");
         buscarProductosDetalle();
         inicializaControlCuenta();
+        $("#btnAbmAceptar").prop("disabled", false);
     });
 
     // Configuración de estados iniciales
@@ -2331,7 +2332,7 @@ function configurarBotonesProdCP() {
                 }                
             }, true, ["Continuar", "Cancelar"], "info!", null);
 
-    }).prop("disabled", false);
+    }).prop("disabled", true);
 
     $("#lbRel01, #lbRel02, #lbRel03").text((i, txt) => ["PROVEEDOR", "RUBRO", "FAMILIA"][i]);
     $("#chkRel03").prop("disabled", true);
@@ -2476,6 +2477,7 @@ function manejarRespuestaConfirmacion(response, indicador) {
         response.msg || "Los precios temporales se han aplicado correctamente.",
         function () {
             $("#msjModal").modal("hide");
+            $("#btnCancel").trigger("click");
             console.log("✅ Proceso completado");
         }
     );
