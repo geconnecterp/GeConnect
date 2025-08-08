@@ -1917,7 +1917,7 @@ function calcularPrecioVentaMargenLista(row, lpId, pId, nuevoPrecioVenta) {
 
                     // ✅ LLAMADA UNIFICADA PARA RESGUARDAR
                     resguardarCambiosListaUnificado(datosResguardo, {
-                        modo: 'sync',
+                        modo: 'async',
                         mostrarErrores: true,
                         logDetallado: true,
                         callback: function (response, success) {
