@@ -1056,7 +1056,7 @@ function crearDialogoProgresoAvanzado(totalFilas) {
 
     // Crear nuevo diálogo
     const dialogoHTML = `
-        <div id="dialogoProgresoAvanzado" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">
+        <div id="dialogoProgresoAvanzado" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="static" data-bs-keyboard="false">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -1917,7 +1917,7 @@ function calcularPrecioVentaMargenLista(row, lpId, pId, nuevoPrecioVenta) {
 
                     // ✅ LLAMADA UNIFICADA PARA RESGUARDAR
                     resguardarCambiosListaUnificado(datosResguardo, {
-                        modo: 'sync',
+                        modo: 'async',
                         mostrarErrores: true,
                         logDetallado: true,
                         callback: function (response, success) {
@@ -2317,14 +2317,22 @@ function configurarBotonesProdCP() {
         AbrirWaiting("Cargando productos...");
         buscarProductosDetalle();
         inicializaControlCuenta();
+        $("#btnAbmAceptar").prop("disabled", false);
     });
 
     // Configuración de estados iniciales
     // ✅ MODIFICADO: Usar btnAbmAceptar para confirmar precios temporales
     $("#btnAbmAceptar").on("click", function (e) {
         e.preventDefault();
-        confirmarPreciosTemporales();
-    }).prop("disabled", false);
+        AbrirMensaje("CONFIRMACIÓN", "¿Confirma que desea aplicar los precios temporales a los productos listados? Esta acción no se puede deshacer.",
+            function (resp) {
+                $("#msjModal").modal("hide");
+                if (resp === "SI") {
+                    confirmarPreciosTemporales();
+                }                
+            }, true, ["Continuar", "Cancelar"], "info!", null);
+
+    }).prop("disabled", true);
 
     $("#lbRel01, #lbRel02, #lbRel03").text((i, txt) => ["PROVEEDOR", "RUBRO", "FAMILIA"][i]);
     $("#chkRel03").prop("disabled", true);
@@ -2408,7 +2416,7 @@ function mostrarIndicadorConfirmacion() {
 
     // Crear indicador simple
     const indicadorHTML = `
-        <div id="indicadorConfirmacion" class="modal fade" tabindex="-1" data-backdrop="static" data-keyboard="false">
+        <div id="indicadorConfirmacion" class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -2469,6 +2477,7 @@ function manejarRespuestaConfirmacion(response, indicador) {
         response.msg || "Los precios temporales se han aplicado correctamente.",
         function () {
             $("#msjModal").modal("hide");
+            $("#btnCancel").trigger("click");
             console.log("✅ Proceso completado");
         }
     );
