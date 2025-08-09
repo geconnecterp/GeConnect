@@ -1,4 +1,6 @@
 ﻿using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Financieros.Request;
+using gc.infraestructura.Dtos.Gen;
 
 namespace gc.sitio.core.Servicios.Contratos
 {
@@ -10,5 +12,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		List<PlanContableDto> GetPlanContableCuentaLista(string token);
 		List<FinancieroDesdeSeleccionDeTipoDto> GetFinancieroDesdeTipoParaSeleccionDeValores(string tcf_id, string adm_id, string token);
 		List<FinancieroCarteraDto> GetFinancieroCarteraParaSeleccionDeValores(string ctaf_id, string token);
+		RespuestaGenerica<RespuestaDto> FinancieroConfirmarTransferencia(ConfirmarTransferenciaRequest request, string token);
 	}
 }

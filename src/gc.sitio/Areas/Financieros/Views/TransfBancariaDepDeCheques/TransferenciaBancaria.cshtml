@@ -34,6 +34,7 @@
 </style>
 @Html.Hidden("parametro_valores_origen", Model.parametro_valores_origen)
 @Html.Hidden("parametro_valores_destino", Model.parametro_valores_destino)
+@Html.Hidden("parametro_confirmacion", Model.parametro_confirmacion)
 <div class="card">
 	<div class="container" style="margin-top:10px;">
 		<div class="row">
@@ -42,11 +43,11 @@
 					<span class="input-group-text">Concepto: </span>
 					<input type="text" asp-for="concepto" class="form-control inputEditable" />
 					<span class="input-group-text">Fecha: </span>
-					@Html.TextBoxFor(m => m.fecha, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeFecha(this);" })
-					<button id="btnAbmAceptar" class="btn btn-success btn-sm me-1" type="button" title="Aceptar" disabled style="margin-left: 10px;">
+					@Html.TextBoxFor(m => m.fecha, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeFecha(this);", @id = "fecha" })
+					<button id="btnAbmAceptar" class="btn btn-success btn-sm me-1" type="button" title="Aceptar" style="margin-left: 10px;">
 						<i class="bx bx-check-circle"></i>
 					</button>
-					<button id="btnAbmCancelar" class="btn btn-danger btn-sm me-1" type="button" title="Cancelar" disabled>
+					<button id="btnAbmCancelar" class="btn btn-danger btn-sm me-1" type="button" title="Cancelar">
 						<i class="bx bx-x-circle bx-xs"></i>
 					</button>
 				</div>
@@ -96,7 +97,7 @@
 						<div class="col-4">
 							<div class="input-group input-group-sm">
 								<span class="input-group-text">Total Origen: </span>
-								<input type="text" asp-for="total_origen" class="form-control inputEditable" readonly />
+								<input type="text" asp-for="total_origen" class="form-control inputEditable align-right" readonly />
 							</div>
 						</div>
 					</div>
@@ -145,7 +146,7 @@
 						<div class="col-4">
 							<div class="input-group input-group-sm">
 								<span class="input-group-text">Total Destino: </span>
-								<input type="text" asp-for="total_destino" class="form-control inputEditable" readonly />
+								<input type="text" asp-for="total_destino" class="form-control inputEditable align-right" readonly />
 							</div>
 						</div>
 					</div>
@@ -160,6 +161,17 @@
 
 @section scripts {
 	<script type="text/javascript">
+		var sourceSeleccionado = ""; /*1 Origen 2 Destino*/
+
+		var cargarValoresUrl = "@Url.Action("CargarValores", "transfbancariadepdecheques", new { area = "Financieros" })";
+		var actualizarTotalesUrl = "@Url.Action("ActualizarTotales", "transfbancariadepdecheques", new { area = "Financieros" })";
+		var inicializarDatosEnSesionURL = "@Url.Action("InicializarDatosEnSesion", "transfbancariadepdecheques", new { area = "Financieros" })";
+		var recargarGrillaOrigenUrl = "@Url.Action("RecargarGrillaOrigen", "transfbancariadepdecheques", new { area = "Financieros" })";
+		var recargarGrillaDestinoUrl = "@Url.Action("RecargarGrillaDestino", "transfbancariadepdecheques", new { area = "Financieros" })";
+		var actualizarGrillaValoresUrl = "@Url.Action("ActualizarGrillaValores", "transfbancariadepdecheques", new { area = "Financieros" })";
+		var validarAntesDeGuardarURL = "@Url.Action("ValidarAntesDeGuardar", "transfbancariadepdecheques", new { area = "Financieros" })";
+		var confirmarTransferenciaUrl = "@Url.Action("ConfirmarTransferencia", "transfbancariadepdecheques", new { area = "Financieros" })";
+
 		/*URL para componente de Seleccion de Valores*/
 		var abrirComponenteDeSeleccionDeValoresUrl = "@Url.Action("AbrirComponente", "selecciondevalores", new { area = "ControlComun" })";
 		var cargarCtaFinParaSeleccionDeValoresUrl = "@Url.Action("CargarCtaFinParaSeleccionDeValores", "selecciondevalores", new { area = "ControlComun" })";
