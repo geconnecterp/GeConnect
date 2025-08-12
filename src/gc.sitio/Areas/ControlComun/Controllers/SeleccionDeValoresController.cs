@@ -144,14 +144,21 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 		}
 
 		[HttpPost]
-		public IActionResult CargarGrillaFinancieroCarteraEnSeleccionDeValores(string ctaf_id)
+		public IActionResult CargarGrillaFinancieroCarteraEnSeleccionDeValores(string ctaf_id, bool verSoloValoresVencidos)
 		{
 			RespuestaGenerica<EntidadBase> response = new();
 			try
 			{
 				var model = new EdicionTipoValoresDeTercerosEnCarteraModel();
 				var finCarLista = _financieroServicio.GetFinancieroCarteraParaSeleccionDeValores(ctaf_id, TokenCookie);
+				if (finCarLista == null)
+					finCarLista = [];
+
+				if (finCarLista != null && finCarLista.Count > 0 && verSoloValoresVencidos)
+					finCarLista = finCarLista.Where(x => x.fc_fecha < DateTime.Today).ToList();
+				
 				model.GrillaValoresEnCartera = ObtenerGridCoreSmart<FinancieroCarteraDto>(finCarLista);
+				model.VerSoloValoresVencidos = verSoloValoresVencidos;
 				return View("~/areas/ControlComun/views/SeleccionDeValores/_edicion_tipo_terceros_en_cartera.cshtml", model);
 			}
 			catch (NegocioException ex)

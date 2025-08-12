@@ -257,11 +257,20 @@ function btnAgregarValorOrigenValidar() {
 }
 
 function btnAgregarValorDestinoValidar() {
-	sourceSeleccionado = "2";
 	var app = $("#parametro_valores_destino").val();
-	var importe = $("#total_origen").inputmask('unmaskedvalue');
-	var valor_a_nombre_de = "";
-	var valores = [];
-	var data = { app, importe, valor_a_nombre_de, valores };
-	invocarModalDeSeleccionDeValores(data);
+	var filas = $("#tbListaDestino tbody tr").length;
+	if (app == "DPD" && filas >= 1) {
+		AbrirMensaje("ATENCIÓN", "La cuanta destino solo puede cargar un solo valor.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		sourceSeleccionado = "2";
+		var importe = $("#total_origen").inputmask('unmaskedvalue');
+		var valor_a_nombre_de = "";
+		var valores = [];
+		var data = { app, importe, valor_a_nombre_de, valores };
+		invocarModalDeSeleccionDeValores(data);
+	}
 }

@@ -6,5 +6,6 @@ namespace gc.sitio.Areas.ControlComun.Models.SeleccionDeValores.Model
 	public class EdicionTipoValoresDeTercerosEnCarteraModel : EdicionTipoModel
 	{
 		public GridCoreSmart<FinancieroCarteraDto> GrillaValoresEnCartera { get; set; }
+		public bool VerSoloValoresVencidos { get; set; }
 	}
 }

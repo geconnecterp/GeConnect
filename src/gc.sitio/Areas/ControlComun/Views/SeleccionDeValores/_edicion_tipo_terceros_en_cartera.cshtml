@@ -2,11 +2,11 @@
 @using static gc.infraestructura.Helpers.GridHelper
 @{
 }
-<div class="col-md-12">
+<div class="row col-md-12">
 	@Html.HiddenFor(x => x.ctaf_id)
 	@Html.HiddenFor(x => x.ctaf_denominacion)
 	@Html.HiddenFor(x => x.ban_razon_social)
-	<div class="table-responsive table-wrapper-200-full" id="containerValoresEnCartera" style="padding-right: 0px;">
+	<div class="table-responsive table-wrapper-200-full" id="containerValoresEnCartera" style="padding-right: 0px;height: 200px;max-height: 200px;">
 		<table class="table table-bordered table-hover" id="tbValoresEnCartera" disabled>
 			<thead class="table-dark">
 				<tr>
@@ -15,7 +15,7 @@
 					<th style="width:20%;" class="col-header-small align-center tiny-row">Banco</th>
 					<th style="width:20%;" class="col-header-small align-center tiny-row">Nro. Cheque</th>
 					<th style="width:20%;" class="col-header-small align-center tiny-row">Importe</th>
-					<th style="width:1%;"><input name="select_all" value="1" type="checkbox"></th>
+					<th style="width:1%;" class="col-header-small align-center tiny-row"><input name="select_all" value="1" type="checkbox"></th>
 					<th style="width:0%; display:none;">ins_dato1_desc</th>
 					<th style="width:0%; display:none;">ins_dato2_desc</th>
 					<th style="width:0%; display:none;">fc_dato3_valor</th>
@@ -52,5 +52,11 @@
 				}
 			</tbody>
 		</table>
+	</div>
+	<div class="mt-2">
+		<div class="form-check form-check-inline form-switch" style="margin-bottom: 0px;margin-left: 10px;">
+			<input class="form-check-input activable" type="checkbox" asp-for="VerSoloValoresVencidos" value="" id="chkVerSoloValoresVencidos">
+			<label class="form-check-label" for="chkVerSoloValoresVencidos"> Ver solo valores vencidos</label>
+		</div>
 	</div>
 </div>
