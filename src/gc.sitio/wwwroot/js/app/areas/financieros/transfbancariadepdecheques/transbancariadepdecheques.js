@@ -13,8 +13,22 @@
 		}
 	});
 
+	// Botón de imprimir
+	$(document).on("click", ".btnImprimir", function () {
+		imprimirTRA();
+	});
+
+	$("#btnImprimirTemp").on("click", function () {
+		ImprimirTRA_Generada("00-00118821");
+	});
+
 	InicializarCampos();
 });
+
+function imprimirTRA() {
+	// Invocar gestor documental
+	invocacionGestorDoc({});
+}
 
 function selectRegDblGrillaValores(x, grilla) {
 	console.log(grilla);
@@ -38,6 +52,19 @@ const TypeIntervalo = {
 	48: '2',
 	72: '3',
 	Otros: '4'
+}
+
+function ImprimirTRA_Generada(traCompte) {
+	let data = { tra_compte: traCompte };
+	if ($("#parametro_confirmacion").val() == "TR") {
+		cargarReporteEnArre(25, data, "TRANSFERENCIA ENTRE CUENTAS BA - CA", "", "");
+		cargarReporteEnArre(27, data, "TRANSFERENCIA ENTRE LIQUIDACIÓN", "", "");
+	}
+	else {
+		cargarReporteEnArre(26, data, "TRANSFERENCIA DEPÓSITO CHEQUES", "", "");
+		cargarReporteEnArre(27, data, "TRANSFERENCIA ENTRE LIQUIDACIÓN", "", "");
+	}
+	invocacionGestorDoc({});
 }
 
 function btnAbmAceptarControlar() {
@@ -83,7 +110,7 @@ function btnAbmAceptarControlar() {
 									AbrirMensaje("ATENCIÓN", obj.msg, function () {
 										$("#msjModal").modal("hide");
 										console.log(obj.id); //Tomar este valor para imprimir.
-										ImprimirOPP_Generada(obj.id, ctaIdSelected);
+										ImprimirTRA_Generada(obj.id, ctaIdSelected);
 										btnAbmCancelar_click();
 										return true;
 									}, false, ["Aceptar"], "succ!", null);

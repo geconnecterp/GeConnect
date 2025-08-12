@@ -3,6 +3,7 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Request;
@@ -121,23 +122,25 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
-		public List<RespuestaDto> FinancieroConfirmarTransferencia(ConfirmarTransferenciaRequest request)
+		public List<FinancieroTraRepoCtagDto> GetFinancieroTraRepoCtag(string tra_compte)
 		{
-			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_TR_CONFIRMA;
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_TRA_REPO_CTAG;
 			var ps = new List<SqlParameter>()
 			{
-				new("@ttra_id",request.ttra_id),
-				new("@usu_id",request.usu_id),
-				new("@adm_id",request.adm_id),
-				new("@tra_concepto",request.tra_concepto),
-				new("@tra_fecha",request.tra_fecha),
-				new("@json_o",request.json_o),
-				new("@json_d",request.json_d),
-				new("@json_encabezado",request.json_encabezado),
-				new("@json_concepto",request.json_concepto),
-				new("@json_otro",request.json_otro),
+				new("@tra_compte",tra_compte),
 			};
-			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			var listaTemp = _repository.EjecutarLstSpExt<FinancieroTraRepoCtagDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<FinancieroTraRepoDDto> GetFinancieroTraRepoDDto(string tra_compte)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_TRA_REPO_D;
+			var ps = new List<SqlParameter>()
+			{
+				new("@tra_compte",tra_compte),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<FinancieroTraRepoDDto>(sp, ps, true);
 			return listaTemp;
 		}
 	}

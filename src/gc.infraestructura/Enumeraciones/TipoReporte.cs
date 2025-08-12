@@ -36,5 +36,8 @@ namespace gc.infraestructura.Enumeraciones
 		R021_OrdenDeCompra = 21,
 		R023_OrdenDePagoDirecta = 23,
 		R024_ConsultaDeOrdenesDePago = 24,
+		R025_TransferenciaEntreCuentas_BA_CA = 25,
+		R026_TransferenciaDepositoCheques = 26,
+		R027_TransferenciaEntreLiquidacion = 27,
 	}
 }

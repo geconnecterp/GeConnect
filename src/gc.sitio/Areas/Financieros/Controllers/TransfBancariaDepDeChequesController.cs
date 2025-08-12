@@ -6,9 +6,12 @@ using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
+using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Enumeraciones;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Financieros.Models;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
@@ -20,13 +23,30 @@ namespace gc.sitio.Areas.Financieros.Controllers
 	[Area("Financieros")]
 	public class TransfBancariaDepDeChequesController : TransfBancariaDepDeChequesControladorBase
 	{
+		//PARA MODULO DE IMPRESION
+		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
+		private AppModulo _modulo; //tengo el AppModulo que corresponde a la consulta de cuentas
+		private AppModulo _modulo_2; //tengo el AppModulo que corresponde a la consulta de cuentas
+		private string APP_MODULO = AppModulos.TEC.ToString();
+		private string APP_MODULO_2 = AppModulos.TDC.ToString();
+		private readonly IDocManagerServicio _docMSv;
+
+		//************************
+
 		private readonly AppSettings _setting;
 		private readonly IFinancieroServicio _financieroServicio;
 		public TransfBancariaDepDeChequesController(IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger<TransfBancariaDepDeChequesController> logger,
+													IDocManagerServicio docManager, IOptions<DocsManager> docsManager,
 													IFinancieroServicio financieroServicio) : base(options, accessor, logger)
 		{
 			_setting = options.Value;
 			_financieroServicio = financieroServicio;
+
+			//PARA MODULO DE IMPRESION
+			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
+			_modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO); //identifico los datos del modulo que necesito: TEC
+			_modulo_2 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_2); //identifico los datos del modulo que necesito: TDC
+			_docMSv = docManager; //instancio el servicio de impresión
 		}
 
 		public IActionResult Index()
@@ -45,7 +65,18 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 				}
 
-				ViewData["Titulo"] = "TRANSFERENCIAS BANCARIAS Y DE CAJA CHICA O EFECTIVO";
+				var titulo = "TRANSFERENCIAS BANCARIAS Y DE CAJA CHICA O EFECTIVO";
+				ViewData["Titulo"] = titulo;
+
+				#region Gestor Impresion - Inicializacion de variables
+				//Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
+				DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
+				// en este mismo acto se cargan los posibles documentos
+				//que se pueden imprimir, exportar, enviar por email o whatsapp
+				ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
+
+				#endregion
+
 				model.parametro_valores_origen = "TR";
 				model.parametro_valores_destino = "TR";
 				model.parametro_confirmacion = "TR";
@@ -75,7 +106,18 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 				}
 
-				ViewData["Titulo"] = "DEPÓSITOS DE CHEQUES EN CARTERA";
+				var titulo = "DEPÓSITOS DE CHEQUES EN CARTERA";
+				ViewData["Titulo"] = titulo;
+
+				#region Gestor Impresion - Inicializacion de variables
+				//Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
+				DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_2);
+				// en este mismo acto se cargan los posibles documentos
+				//que se pueden imprimir, exportar, enviar por email o whatsapp
+				ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_2);
+
+				#endregion
+
 				model.parametro_valores_origen = "DPO";
 				model.parametro_valores_destino = "DPD";
 				model.parametro_confirmacion = "CH";

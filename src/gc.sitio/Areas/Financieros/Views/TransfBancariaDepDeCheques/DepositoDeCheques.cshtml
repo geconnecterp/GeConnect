@@ -5,6 +5,10 @@
 
 	var list = Model.ListaIntervalo;
 }
+@section styles {
+	<link rel="stylesheet" href="~/css/simplePagination.css" />
+	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+}
 <style>
 	thead th {
 		position: sticky;
@@ -162,6 +166,9 @@
 <div id="modalSeleccionValores"></div>
 @Html.Hidden("UpdateValores", false)
 
+<!-- para el modal del geston de impresion -->
+<div id="modalGestorDocumental"></div>
+
 @section scripts {
 	<script type="text/javascript">
 		var sourceSeleccionado = ""; /*1 Origen 2 Destino*/
@@ -182,7 +189,17 @@
 		var cargarGrillaFinancieroCarteraEnSeleccionDeValoresUrl = "@Url.Action("CargarGrillaFinancieroCarteraEnSeleccionDeValores", "selecciondevalores", new { area = "ControlComun" })";
 		var agregarItemAColeccionDeValoresUrl = "@Url.Action("AgregarItemAColeccionDeValores", "selecciondevalores", new { area = "ControlComun" })";
 		/**/
+
+		// Gestor de impresión
+		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+		var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
+		var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarEmailUrl = "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarWhatsAppUrl = "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
+		var generadorArchivoUrl = "@Url.Action("GeneradorArchivo", "GestorImpresion", new { area = "ControlComun" })";
 	</script>
+	<script src="~/lib/jstree/jstree.min.js"></script>
+	<script src="~/js/app/areas/docmngr/docmanager.js"></script>
 
 	<script src="~/js/app/controlcomun/selecciondevalores.js"></script>
 	<script src="~/js/app/areas/financieros/transfbancariadepdecheques/transbancariadepdecheques.js"></script>
