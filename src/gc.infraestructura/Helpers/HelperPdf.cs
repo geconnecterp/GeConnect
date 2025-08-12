@@ -127,6 +127,7 @@ using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.DocManager;
+using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.EntidadesComunes.Options;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
@@ -1663,6 +1664,47 @@ namespace gc.infraestructura.Helpers
 			PdfPTable tablaObservaciones = GeneraTabla(1, [100f], 100, 0, 10);
 			tablaObservaciones.AddCell(CeldaSinBorde($"Observaciones: {reg.Oc_Observaciones}", fuenteValor, Element.ALIGN_LEFT));
 			pdf.Add(tablaObservaciones);
+		}
+
+		public static void CargarTablaDatosDeAcuseDeTransferencia_Encabezado(Document pdf, FinancieroTraRepoDDto fTra, Font fuenteEtiqueta, Font fuenteValor, Font titulo)
+		{
+			PdfPTable tabla = GeneraTabla(1, [100f], 100, 10, 10);
+			PdfPTable tablaDatos = GeneraTabla(4, [20f, 45f, 15f, 20f], 100, 10, 10);
+
+			// FILA 0
+			tablaDatos.AddCell(CeldaSinBorde(string.Empty, fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tablaDatos.AddCell(CeldaSinBorde(string.Empty, fuenteValor, Element.ALIGN_LEFT));
+			tablaDatos.AddCell(CeldaSinBorde(string.Empty, fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tablaDatos.AddCell(CeldaSinBorde(string.Empty, fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 1
+			tablaDatos.AddCell(CeldaSinBorde("Tipo de Transferencia:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tablaDatos.AddCell(CeldaSinBorde(fTra.ttra_desc, fuenteValor, Element.ALIGN_LEFT));
+			tablaDatos.AddCell(CeldaSinBorde("Fec. Registro:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tablaDatos.AddCell(CeldaSinBorde(fTra.tra_fecha.ToString("dd/MM/yyyy"), fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 2
+			tablaDatos.AddCell(CeldaSinBorde("Concepto:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tablaDatos.AddCell(CeldaSinBorde(fTra.tra_concepto, fuenteValor, Element.ALIGN_LEFT));
+			tablaDatos.AddCell(CeldaSinBorde(string.Empty, fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tablaDatos.AddCell(CeldaSinBorde(string.Empty, fuenteValor, Element.ALIGN_LEFT));
+
+			// FILA 3 
+			tablaDatos.AddCell(CeldaSinBorde("Fec. Movimiento:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tablaDatos.AddCell(CeldaSinBorde(fTra.tra_fecha_movi.ToString("dd/MM/yyyy"), fuenteValor, Element.ALIGN_LEFT));
+			tablaDatos.AddCell(CeldaSinBorde("Registrado por:", fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tablaDatos.AddCell(CeldaSinBorde(fTra.usu_apellidoynombre, fuenteValor, Element.ALIGN_LEFT));
+
+			PdfPCell celdaSubTabla = new PdfPCell(tablaDatos)
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				VerticalAlignment = Element.ALIGN_MIDDLE
+			};
+
+			tabla.AddCell(celdaSubTabla);
+
+			pdf.Add(tabla);
 		}
 
 		public static void GenerarListadoAgrupado<T>(

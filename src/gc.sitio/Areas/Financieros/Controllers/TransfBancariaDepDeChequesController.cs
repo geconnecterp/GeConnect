@@ -26,9 +26,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 		//PARA MODULO DE IMPRESION
 		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
 		private AppModulo _modulo; //tengo el AppModulo que corresponde a la consulta de cuentas
-		private AppModulo _modulo_2; //tengo el AppModulo que corresponde a la consulta de cuentas
 		private string APP_MODULO = AppModulos.TEC.ToString();
-		private string APP_MODULO_2 = AppModulos.TDC.ToString();
 		private readonly IDocManagerServicio _docMSv;
 
 		//************************
@@ -45,7 +43,6 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			//PARA MODULO DE IMPRESION
 			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
 			_modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO); //identifico los datos del modulo que necesito: TEC
-			_modulo_2 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_2); //identifico los datos del modulo que necesito: TDC
 			_docMSv = docManager; //instancio el servicio de impresión
 		}
 
@@ -111,10 +108,10 @@ namespace gc.sitio.Areas.Financieros.Controllers
 
 				#region Gestor Impresion - Inicializacion de variables
 				//Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
-				DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_2);
+				DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
 				// en este mismo acto se cargan los posibles documentos
 				//que se pueden imprimir, exportar, enviar por email o whatsapp
-				ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_2);
+				ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
 
 				#endregion
 

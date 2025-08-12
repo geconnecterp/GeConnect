@@ -56,14 +56,7 @@ const TypeIntervalo = {
 
 function ImprimirTRA_Generada(traCompte) {
 	let data = { tra_compte: traCompte };
-	if ($("#parametro_confirmacion").val() == "TR") {
-		cargarReporteEnArre(25, data, "TRANSFERENCIA ENTRE CUENTAS BA - CA", "", "");
-		cargarReporteEnArre(27, data, "TRANSFERENCIA ENTRE LIQUIDACIÓN", "", "");
-	}
-	else {
-		cargarReporteEnArre(26, data, "TRANSFERENCIA DEPÓSITO CHEQUES", "", "");
-		cargarReporteEnArre(27, data, "TRANSFERENCIA ENTRE LIQUIDACIÓN", "", "");
-	}
+	cargarReporteEnArre(25, data, "TRANSFERENCIA ENTRE CUENTAS", "", "");
 	invocacionGestorDoc({});
 }
 

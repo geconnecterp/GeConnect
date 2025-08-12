@@ -57,9 +57,7 @@ namespace gc.api.core.Servicios.Reportes
 				{ InfoReporte.R021_OrdenDeCompra, new R021_OrdenDeCompra(uow,consSv, apiProdSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R023_OrdenDePagoDirecta, new R023_OrdenDePagoDirecta(uow,consSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R024_ConsultaDeOrdenesDePago, new R024_ConsultaDeOrdenesDePago(uow,consSv, _opSv,empresa,ctaSv, logger) },
-				{ InfoReporte.R025_TransferenciaEntreCuentas_BA_CA, new R025_TransferenciaEntreCuentas_BA_CA(uow,consSv, finServ,empresa,ctaSv, logger) },
-				{ InfoReporte.R026_TransferenciaDepositoCheques, new R026_TransferenciaDepositoCheques(uow,consSv, _opSv,empresa,ctaSv, logger) },
-				{ InfoReporte.R027_TransferenciaEntreLiquidacion, new R027_TransferenciaEntreLiquidacion(uow,consSv, _opSv,empresa,ctaSv, logger) }
+				{ InfoReporte.R025_TransferenciaEntreCuentas, new R025_TransferenciaEntreCuentas(uow,consSv, finServ,empresa,ctaSv, logger) }
 			}; 
             _logger = logger;
         }
