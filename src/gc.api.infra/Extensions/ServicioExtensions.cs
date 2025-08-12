@@ -2,6 +2,7 @@
 using gc.api.core.Contratos.Servicios.ABM;
 using gc.api.core.Contratos.Servicios.Asientos;
 using gc.api.core.Contratos.Servicios.Contable;
+using gc.api.core.Contratos.Servicios.Importacion;
 using gc.api.core.Contratos.Servicios.Libros;
 using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Contratos.Servicios.Tipos;
@@ -11,6 +12,7 @@ using gc.api.core.Servicios;
 using gc.api.core.Servicios.ABM;
 using gc.api.core.Servicios.Asientos;
 using gc.api.core.Servicios.Contable;
+using gc.api.core.Servicios.Importacion;
 using gc.api.core.Servicios.Libros;
 using gc.api.core.Servicios.Reportes;
 using gc.api.core.Servicios.Tipos;
@@ -109,6 +111,11 @@ namespace gc.api.infra.Extensions
             services.AddScoped<IApiLDiarioServicio, ApiLDiarioServicio>();
             services.AddScoped<IApiSumaSaldoServicio, ApiSumaSaldoServicio>();
             services.AddScoped<IApiBalanceGeneralServicio, ApiBalanceGeneralServicio>();
+
+            //SERVICIO POR IMPORTACION DE LISTA DE PRECIOS
+            services.AddScoped<IApiImportarServicio, ApiImportarServicio>();
+
+
             //De Reportes
 
             services.AddScoped<IReportService, ReportService>();

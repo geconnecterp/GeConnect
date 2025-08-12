@@ -1,0 +1,195 @@
+﻿@model ProveedorListaDto
+@{
+    Layout = "~/views/shared/_Layout.cshtml";
+    string sub = "Importar";
+    string ctaImp = ViewBag.CuentaImp ?? "";
+    var data = ctaImp.Split('#');
+}
+
+<div class="container-fluid">
+    <div class="card ">
+        <div class="card-header">
+            <div class="row ">
+                <div class="col-md-12" style="font-size: 0.5rem; transform: scale(0.9); transform-origin: left top;">
+                    <div class="row">
+                        <partial name="~/areas/controlcomun/views/cuenta/_ctrbuscarccv3.cshtml" model="@sub" />
+
+                    </div>
+                </div>                
+            </div>
+            <!--VISTA PARCIAL DE UPLOAD-->
+            <div class="row mt-3">
+                <div class="col-12">
+                    @* <partial name="_importarUpload" model='new ViewDataDictionary(ViewData) { { "UploadId", sub } }' /> *@
+                    <!-- ✅ BOTÓN TOGGLE PARA MOSTRAR/OCULTAR UPLOAD -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center">
+                            <button type="button" id="btnToggleUpload" class="btn btn-golden btn-sm me-3">
+                                <i class="bx bx-upload me-1"></i>
+                                <span id="btnToggleText">Mostrar Importar Archivo</span>
+                            </button>
+
+                            <!-- ✅ INFORMACIÓN DEL ARCHIVO SELECCIONADO (SIEMPRE VISIBLE) -->
+                            <div id="fileSelectedInfo" class="text-muted small" style="display: none;">
+                                <i class="bx bx-file text-success me-1"></i>
+                                <span id="selectedFileName">archivo.xlsx</span>
+                                <span class="text-muted">seleccionado</span>
+                            </div>
+                        </div>
+
+                        <!-- ✅ BOTÓN PROCESAR (SOLO VISIBLE CUANDO HAY ARCHIVO) -->
+                        <button type="button" id="btnProcesarArchivo" class="btn btn-success btn-sm" style="display: none;" disabled>
+                            <i class="bx bx-play-circle me-1"></i>
+                            Procesar Importación
+                        </button>
+                    </div>
+
+                    <!-- ✅ ÁREA DE UPLOAD (INICIALMENTE OCULTA) -->
+                    <div id="uploadArea" style="display: none;">
+                        <partial name="_importarUpload" model='new ViewDataDictionary(ViewData) { { "UploadId", sub } }' />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <!-- ✅ ÁREA DE RESULTADOS DE IMPORTACIÓN -->
+            <div id="importResults" style="display: none;">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <i class="bx bx-info-circle me-2"></i>
+                            <strong>Importación en proceso...</strong>
+                            <div class="mt-2">
+                                <div class="progress" style="height: 20px;">
+                                    <div id="importProgress" class="progress-bar progress-bar-striped progress-bar-animated bg-info"
+                                         role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                                        0%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenido adicional aquí -->
+            <div id="mainContent">
+                <!-- Espacio liberado cuando se oculta el upload -->
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script type="text/javascript">
+        consCta = "@Model.Cta_Id";
+        consRrss = "@Model.Cta_Denominacion";
+        consTipo = "P";
+        let importarUrl = "@Url.Action("Index", "importar", new { area = "productos" })";
+
+        let analizarColumnasUrl = "@Url.Action("AnalizarColumnas", "Importar", new { area = "Productos" })";
+        let procesarExcelUrl = "@Url.Action("ProcesarExcel", "Importar", new { area = "Productos" })";
+
+         //esta variable es para usarla en Js. El (sub) es para usarlo aca nomas
+        nnControlCta01 = "@(sub)";
+
+        // ✅ NUEVAS: Variables para control de upload
+        let uploadAreaVisible = false;
+        let archivoSeleccionado = null;
+
+        $(function(){
+            setTimeout(()=>{
+                // Inicializa el control.
+                inicializaCtrl@(sub)();
+                inicializaControlCuentaImp();
+
+                // ✅ NUEVO: Inicializar controles de importación
+                inicializarControlesImportacion();
+            }, 100);
+
+            // ✅ MEJORADO: Eventos personalizados para el upload
+            $(document).on('fileSelected', function(event, file, uploadId) {
+                console.log('✅ Archivo seleccionado:', file.name);
+                manejarArchivoSeleccionado(file);
+            });
+
+            $(document).on('fileRemoved', function(event, uploadId) {
+                console.log('🗑️ Archivo removido del control:', uploadId);
+                manejarArchivoRemovido();
+            });
+        });
+
+        // ✅ NUEVA: Función para inicializar controles de importación
+        function inicializarControlesImportacion() {
+            // Evento para botón toggle
+            $('#btnToggleUpload').on('click', function() {
+                toggleUploadArea();
+            });
+
+            // Evento para botón procesar
+            $('#btnProcesarArchivo').on('click', function() {
+                if (archivoSeleccionado) {
+                    procesarImportacion();
+                }
+            });
+        }
+
+        // ✅ NUEVA: Función para alternar visibilidad del área de upload
+        function toggleUploadArea() {
+            const $uploadArea = $('#uploadArea');
+            const $btnText = $('#btnToggleText');
+            const $btnIcon = $('#btnToggleUpload i');
+
+            if (uploadAreaVisible) {
+                // Ocultar área de upload
+                $uploadArea.slideUp(300, function() {
+                    uploadAreaVisible = false;
+                    $btnText.text('Mostrar Importar Archivo');
+                    $btnIcon.removeClass('bx-chevron-up').addClass('bx-upload');
+                });
+            } else {
+                // Mostrar área de upload
+                $uploadArea.slideDown(300, function() {
+                    uploadAreaVisible = true;
+                    $btnText.text('Ocultar Importar Archivo');
+                    $btnIcon.removeClass('bx-upload').addClass('bx-chevron-up');
+                });
+            }
+        }
+
+        // ✅ NUEVA: Manejar archivo seleccionado
+        function manejarArchivoSeleccionado(file) {
+            archivoSeleccionado = file;
+
+            // Mostrar información del archivo
+            $('#selectedFileName').text(file.name);
+            $('#fileSelectedInfo').fadeIn(300);
+
+            // Habilitar botón procesar
+            $('#btnProcesarArchivo').prop('disabled', false).fadeIn(300);
+
+            // Opcional: Ocultar área de upload automáticamente
+            if (uploadAreaVisible) {
+                setTimeout(() => {
+                    toggleUploadArea();
+                }, 1000);
+            }
+        }
+
+        // ✅ NUEVA: Manejar archivo removido
+        function manejarArchivoRemovido() {
+            archivoSeleccionado = null;
+
+            // Ocultar información del archivo
+            $('#fileSelectedInfo').fadeOut(300);
+
+            // Deshabilitar botón procesar
+            $('#btnProcesarArchivo').prop('disabled', true).fadeOut(300);
+        }
+
+       
+        
+    </script>
+    <script src="~/js/app/busquedas.js"></script>
+    <script src="~/js/app/areas/precios/importarfile.js"></script>
+}

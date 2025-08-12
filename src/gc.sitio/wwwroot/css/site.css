@@ -1,5 +1,18 @@
-[class^="bx"] {
+Ôªø[class^="bx"] {
     font-size: 1.2rem !important;
+}
+
+/* Utilitarios m√°s espec√≠ficos (tienen 2 clases, mayor especificidad) */
+.bx.bx--sm {
+    font-size: .875rem !important;
+}
+
+.bx.bx--lg {
+    font-size: 1.6rem !important;
+}
+
+.bx.bx--xl {
+    font-size: 2rem !important;
 }
 
 html {
@@ -27,7 +40,7 @@ body {
 
 activable {
 }
-/* Para agrandar el tamaÒo del icono*/
+/* Para agrandar el tama√±o del icono*/
 .bx-custom-size {
     font-size: 2.5em !important;
 }
@@ -53,6 +66,244 @@ activable {
     pointer-events: none;
 }
 
+/*ESTILO UPLOAD */
+/* Estilos para el componente de carga de archivos */
+/* Estilos Golden para Upload de Archivos */
+.upload-container-golden {
+    border: 2px solid #DAA520;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #FFF8DC 0%, #FFFACD 100%);
+    padding: 20px;
+    margin: 15px 0;
+    box-shadow: 0 4px 15px rgba(218, 165, 32, 0.2);
+    transition: all 0.3s ease;
+}
+
+    .upload-container-golden:hover {
+        box-shadow: 0 6px 20px rgba(218, 165, 32, 0.3);
+        transform: translateY(-2px);
+    }
+
+.upload-header-golden {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    color: #B8860B;
+}
+
+    .upload-header-golden i {
+        font-size: 1.5rem;
+        margin-right: 10px;
+    }
+
+.upload-title-golden {
+    margin: 0;
+    font-weight: 600;
+    color: #B8860B;
+}
+
+.upload-drop-zone-golden {
+    border: 2px dashed #DAA520;
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+    background-color: #FFFEF7;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+    .upload-drop-zone-golden:hover {
+        border-color: #B8860B;
+        background-color: #FFF8DC;
+    }
+
+    .upload-drop-zone-golden.dragover {
+        border-color: #FFD700;
+        background-color: #FFFFE0;
+        transform: scale(1.02);
+    }
+
+.upload-content-golden {
+    pointer-events: none;
+}
+
+.upload-icon-golden {
+    font-size: 3rem;
+    color: #DAA520;
+    margin-bottom: 15px;
+}
+
+.upload-text-golden {
+    font-size: 1.1rem;
+    color: #B8860B;
+    margin: 10px 0 5px;
+    font-weight: 500;
+}
+
+.upload-subtext-golden {
+    color: #CD853F;
+    margin: 5px 0 15px;
+    font-size: 0.9rem;
+}
+
+.btn-upload-golden {
+    background: linear-gradient(135deg, #DAA520 0%, #B8860B 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-block;
+    text-decoration: none;
+    pointer-events: all;
+}
+
+    .btn-upload-golden:hover {
+        background: linear-gradient(135deg, #B8860B 0%, #DAA520 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(218, 165, 32, 0.4);
+        color: white;
+    }
+
+.file-input-hidden {
+    display: none;
+}
+
+.upload-info-golden {
+    margin-top: 20px;
+    padding: 15px;
+    background: linear-gradient(135deg, #FFFACD 0%, #FFF8DC 100%);
+    border-radius: 8px;
+    border: 1px solid #DAA520;
+}
+
+.file-info-golden {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.upload-file-icon-golden {
+    font-size: 2rem;
+    color: #DAA520;
+    margin-right: 15px;
+}
+
+.file-details-golden {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.file-name-golden {
+    font-weight: 600;
+    color: #B8860B;
+    font-size: 1rem;
+    margin-bottom: 3px;
+}
+
+.file-size-golden {
+    color: #CD853F;
+    font-size: 0.85rem;
+}
+
+.btn-remove-golden {
+    background-color: #DC3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+    .btn-remove-golden:hover {
+        background-color: #C82333;
+        transform: scale(1.1);
+    }
+
+.upload-progress-golden {
+    margin-top: 15px;
+}
+
+.progress-bar-golden {
+    width: 100%;
+    height: 8px;
+    background-color: #F0F0F0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.progress-fill-golden {
+    height: 100%;
+    background: linear-gradient(90deg, #DAA520 0%, #FFD700 100%);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+.progress-text-golden {
+    font-size: 0.9rem;
+    color: #B8860B;
+    font-weight: 600;
+}
+
+/* Responsive para upload golden */
+@media screen and (max-width: 768px) {
+    .upload-container-golden {
+        padding: 15px;
+        margin: 10px 0;
+    }
+
+    .upload-drop-zone-golden {
+        padding: 30px 15px;
+    }
+
+    .upload-icon-golden {
+        font-size: 2.5rem;
+    }
+
+    .upload-text-golden {
+        font-size: 1rem;
+    }
+
+    .btn-upload-golden {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .upload-drop-zone-golden {
+        padding: 25px 10px;
+    }
+
+    .upload-icon-golden {
+        font-size: 2rem;
+    }
+
+    .upload-text-golden {
+        font-size: 0.9rem;
+    }
+
+    .file-info-golden {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .upload-file-icon-golden {
+        margin-right: 0;
+    }
+}
+/*FINAL */
 
 /*ESTILO GOLDE PARA MENSAJES*/
 /* Estilos para mensajes Golden */
@@ -101,7 +352,7 @@ activable {
     padding-left: 0.5rem;
 }
 
-/* Estilos especÌficos por tipo */
+/* Estilos espec√≠ficos por tipo */
 .golden-message-error {
     background-color: rgba(255, 235, 238, 0.4);
 }
@@ -137,16 +388,57 @@ activable {
     animation: fadeIn 0.5s;
 }
 
+/* ‚úÖ ANIMACIONES SUAVES */
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+.fade-out {
+    animation: fadeOut 0.3s ease-out;
+}
+
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(-10px);
     }
 
     to {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
+
+/* ‚úÖ ESTILOS PARA INFORMACI√ìN DE ARCHIVO */
+#fileSelectedInfo {
+    background-color: #f8f9fa;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+
+/* ‚úÖ RESPONSIVE PARA BOTONES */
+@media screen and (max-width: 768px) {
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+        .d-flex.justify-content-between .d-flex:first-child {
+            justify-content: center;
+        }
 }
 
 /* FIN ESTILO*/
@@ -207,16 +499,34 @@ activable {
 
 /* Botones estilo dorado */
 .btn-golden {
-    background-color: #b8860b;
-    border-color: #daa520;
-    color: #fff;
+    background: linear-gradient(135deg, #DAA520 0%, #B8860B 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.3s ease;
 }
 
-    .btn-golden:hover,
-    .btn-golden:focus {
-        background-color: #daa520;
-        border-color: #b8860b;
-        color: #fff;
+    .btn-golden:hover {
+        background: linear-gradient(135deg, #B8860B 0%, #DAA520 100%);
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(218, 165, 32, 0.3);
+    }
+
+    .btn-golden:focus,
+    .btn-golden:active {
+        background: linear-gradient(135deg, #B8860B 0%, #DAA520 100%);
+        color: white;
+        box-shadow: 0 0 0 0.25rem rgba(218, 165, 32, 0.25);
+    }
+
+    .btn-golden:disabled {
+        background: #cccccc;
+        color: #666666;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
     }
 
 /* Estilos para componentes dentro de modales dorados */
@@ -234,7 +544,7 @@ activable {
     background-color: rgba(184, 134, 11, 0.1);
 }
 
-/* Contenedor de ·rbol con estilo dorado */
+/* Contenedor de √°rbol con estilo dorado */
 .tree-container-golden {
     max-height: 400px;
     overflow-y: auto;
@@ -245,14 +555,14 @@ activable {
     box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
 }
 
-/* Estilos para resultados de b˙squeda */
+/* Estilos para resultados de b√∫squeda */
 .jstree-search {
     color: #000 !important;
     font-weight: bold !important;
     background-color: #ffff99 !important;
 }
 
-/* AnimaciÛn de resaltado */
+/* Animaci√≥n de resaltado */
 @keyframes highlight-search {
     0% {
         background-color: #ffff99;
@@ -334,7 +644,7 @@ activable {
             font-size: 1.1em;
         }
 
-        /* TÌtulo del card */
+        /* T√≠tulo del card */
         .card-golden .card-header h5,
         .card-golden .card-header h6 {
             margin-bottom: 0;
@@ -356,7 +666,7 @@ activable {
         padding: 10px 16px;
     }
 
-/* Variante con encabezado m·s sutil */
+/* Variante con encabezado m√°s sutil */
 .card-golden-subtle .card-header {
     background: #faf5e6;
     border-bottom: 2px solid #daa520;
@@ -405,7 +715,7 @@ activable {
     color: #fff;
 }
 
-/* LÌneas divisorias con color dorado */
+/* L√≠neas divisorias con color dorado */
 .card-golden hr {
     border-color: rgba(184, 134, 11, 0.2);
 }
@@ -525,7 +835,7 @@ activable {
         background-color: rgba(218, 165, 32, 0.03);
     }
 
-    /* Estilos para ordenaciÛn en columnas */
+    /* Estilos para ordenaci√≥n en columnas */
     .table-golden th.sortable {
         cursor: pointer;
         position: relative;
@@ -548,7 +858,7 @@ activable {
             color: white;
         }
 
-    /* Estilos especÌficos para importes financieros */
+    /* Estilos espec√≠ficos para importes financieros */
     .table-golden .importe-positivo {
         color: #28a745;
     }
@@ -589,7 +899,7 @@ activable {
         align-items: center;
     }
 
-/* Estilos adicionales para alinear logo y tÌtulo */
+/* Estilos adicionales para alinear logo y t√≠tulo */
 .filter-golden-header-inline {
     display: flex; /*!important;*/
     flex-direction: row; /*!important;*/
@@ -646,7 +956,7 @@ activable {
     box-shadow: 0 0 0 0.2rem rgba(184, 134, 11, 0.25);
 }
 
-/* Estilo para inputs deshabilitados con fondos especÌficos */
+/* Estilo para inputs deshabilitados con fondos espec√≠ficos */
 .filter-golden .golden-disabled {
     background-color: #faf5e6 !important;
     border-color: #f5e7c1 !important;
@@ -688,7 +998,7 @@ activable {
     padding: 0.4rem;
 }
 
-    /* DÌa seleccionado */
+    /* D√≠a seleccionado */
     .datepicker table tr td.active,
     .datepicker table tr td.active:hover {
         background-color: #b8860b !important;
@@ -716,7 +1026,7 @@ activable {
         pointer-events: none;
     }
 
-/* Flechas navegaciÛn */
+/* Flechas navegaci√≥n */
 .datepicker .prev:hover,
 .datepicker .next:hover {
     background-color: #f5e7c1;
@@ -1086,7 +1396,7 @@ fieldset {
 .table-tbody-ext {
     max-width: 90%;
     overflow-y: auto;
-    overflow-x: †hidden;
+    overflow-x: ¬†hidden;
 }*/
 
 
@@ -1125,7 +1435,7 @@ input[type=number] {
     -moz-appearance: textfield;
 }
 
-/* Estilos para men˙s multinivel */
+/* Estilos para men√∫s multinivel */
 .dropdown-submenu {
     position: relative;
 }
@@ -1138,13 +1448,13 @@ input[type=number] {
         border-radius: 0.25rem;
     }
 
-    /* Muestra el submen˙ al pasar el ratÛn por encima */
+    /* Muestra el submen√∫ al pasar el rat√≥n por encima */
     .dropdown-submenu:hover > .dropdown-menu,
     .dropdown-submenu:focus > .dropdown-menu {
         display: block;
     }
 
-    /* AÒade una flecha indicadora para los submen˙s */
+    /* A√±ade una flecha indicadora para los submen√∫s */
     .dropdown-submenu > a:after {
         display: block;
         content: "";
@@ -1159,7 +1469,7 @@ input[type=number] {
         margin-right: -5px;
     }
 
-    /* Cambia el color de la flecha al pasar el ratÛn */
+    /* Cambia el color de la flecha al pasar el rat√≥n */
     .dropdown-submenu:hover > a:after {
         border-left-color: #fff;
     }
@@ -1201,7 +1511,7 @@ tr[title]:hover {
     background-color: #fff0f0;
 }
 
-/* Resalta la celda de cuenta faltante con fondo rojo p·lido y texto rojo */
+/* Resalta la celda de cuenta faltante con fondo rojo p√°lido y texto rojo */
 .cuenta-faltante {
     background-color: #ffeaea !important;
     color: #d32f2f !important;
@@ -1230,7 +1540,7 @@ tr[title]:hover {
 /* Estilo para mensajes de advertencia */
 .modal-header.warn {
     background-color: #fcf8e3; /* Amarillo claro */
-    color: #8a6d3b; /* MarrÛn oscuro */
+    color: #8a6d3b; /* Marr√≥n oscuro */
 }
 
 /* Estilo para mensajes de error */
@@ -1264,7 +1574,7 @@ tr[title]:hover {
         color: #6c757d;
     }
 
-/* DistinciÛn para Asientos Definitivos */
+/* Distinci√≥n para Asientos Definitivos */
 .modulo-definitivo {
     --modulo-color: #2c3e50;
     --modulo-accent: #3498db;
@@ -1274,7 +1584,7 @@ tr[title]:hover {
     --modulo-badge-border: #3498db;
 }
 
-/* DistinciÛn para Asientos Temporales */
+/* Distinci√≥n para Asientos Temporales */
 .modulo-temporal {
     --modulo-color: #27ae60;
     --modulo-accent: #2ecc71;
@@ -1284,7 +1594,7 @@ tr[title]:hover {
     --modulo-badge-border: #2ecc71;
 }
 
-/* Estilos comunes para aplicar el tema de color del mÛdulo */
+/* Estilos comunes para aplicar el tema de color del m√≥dulo */
 .modulo-header {
     border-bottom: 3px solid var(--modulo-color);
     margin-bottom: 1rem;
@@ -1360,11 +1670,11 @@ tr[title]:hover {
     color: #27ae60 !important;
 }
 
-/* Ajustes para dispositivos mÛviles */
+/* Ajustes para dispositivos m√≥viles */
 @media (max-width: 991px) {
 }
 
-/* Para dispositivos mÛviles */
+/* Para dispositivos m√≥viles */
 @media (max-width: 991px) {
 }
 
@@ -1536,14 +1846,14 @@ tr[title]:hover {
 input, select, textarea, button, checkbox, radio {
     border: 1px solid #ccc; /* Borde normal */
     outline: none; /* Eliminar el contorno predeterminado de algunos navegadores */
-    transition: all 0.3s ease; /* TransiciÛn suave */
+    transition: all 0.3s ease; /* Transici√≥n suave */
 }
 
     /* Estilo cuando el control recibe el foco */
     input:focus, select:focus, textarea:focus, button:focus,
     input[type="radio"]:focus, input[type="checkbox"]:focus {
         border-color: #3a87ad; /* Color de borde sutil pero visible (un azul suave) */
-        box-shadow: 0 0 8px rgba(58, 135, 173, 0.5); /* Sombra suave para dar la iluminaciÛn */
+        box-shadow: 0 0 8px rgba(58, 135, 173, 0.5); /* Sombra suave para dar la iluminaci√≥n */
     }
 
 .mt-1-ctm {

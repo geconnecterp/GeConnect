@@ -2302,6 +2302,7 @@ function cargarFamiliasDelProveedor(proveedorId) {
         }
     );
 }
+
 // ✅ SIMPLIFICADO: Configuración de botones más limpia
 function configurarBotonesProdCP() {
     // Configuración básica de botones
@@ -2314,6 +2315,42 @@ function configurarBotonesProdCP() {
                 () => $("#msjModal").modal("hide"), false, ["Entendido"], "warn!", null);
             return false;
         }
+
+        if ($("input#chkFile").is(":checked")) {
+            // ✅ PASO 1: Obtener ctaId del proveedor seleccionado
+            // consCta ya se asigno con la ctaId del proveedor seleccionado en el autocomplete
+            const ctaId = consCta;//$("#Rel01Item").val() || $("#Rel01List").val();
+
+            if (!ctaId) {
+                AbrirMensaje("ATENCIÓN", "No se ha seleccionado un proveedor válido.",
+                    () => $("#msjModal").modal("hide"), false, ["Entendido"], "warn!", null);
+                return false;
+            }
+
+            // ✅ PASO 2: Seleccionar proveedor antes de redirigir
+            AbrirWaiting("Preparando importación...");
+
+            // ✅ LLAMADA AJAX SIMPLIFICADA
+            $.post(seleccionarProveedorUrl, { ctaId: ctaId })
+                .done(function (response) {
+                    CerrarWaiting();
+                    if (response.error || response.warn) {
+                        AbrirMensaje("ATENCIÓN", response.msg || "Error al seleccionar proveedor",
+                            () => $("#msjModal").modal("hide"), false, ["Aceptar"],
+                            response.error ? "error!" : "warn!", null);
+                    } else {
+                        window.location.href = importarUrl;
+                    }
+                })
+                .fail(function () {
+                    CerrarWaiting();
+                    AbrirMensaje("ERROR", "Error de comunicación. Inténtelo nuevamente.",
+                        () => $("#msjModal").modal("hide"), false, ["Aceptar"], "error!", null);
+                });
+
+            return false; // Evitar continuar con el resto del código
+        }
+
         AbrirWaiting("Cargando productos...");
         buscarProductosDetalle();
         inicializaControlCuenta();

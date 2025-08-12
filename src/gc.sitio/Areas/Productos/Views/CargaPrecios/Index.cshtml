@@ -30,9 +30,7 @@
 
 @section scripts {
     <script type="text/javascript">
-        var consCta = "";
-        var consRrss = "";
-        var consTipo = "";
+     
 
         var homeCPUrl = "@Url.Action("Index", "cargaprecios", new { area = "productos" })";
         var buscarProdDetUrl ="@Url.Action("ObtenerProductosDetalle", "cargaprecios", new { area = "productos" })";
@@ -50,7 +48,10 @@
         var buscarFamiliaUrl = "@Url.Action("BuscarFamiliaDesdeProveedorSeleccionado", "cargaprecios", new { area = "productos" })";/**/
         var autoComRel01Url = "@Url.Action("BuscarProvs", "cargaprecios", new { area = "productos" })";/**/
         var autoComRel02Url = "@Url.Action("BuscarRubros", "cargaprecios", new { area = "productos" })";/**/
-        var autoComRel03Url = "@Url.Action("BuscarFlias", "cargaprecios", new { area = "productos" })";/**/       
+        var autoComRel03Url = "@Url.Action("BuscarFlias", "cargaprecios", new { area = "productos" })";/**/
+
+        let importarUrl = "@Url.Action("Index", "importar", new { area = "productos" })";
+        let seleccionarProveedorUrl = "@Url.Action("SeleccionarProveedor", "cargaprecios", new { area = "productos" })";
 
         let isInitializing = false;
         //esta variable es para usarla en Js. El (sub) es para usarlo aca nomas

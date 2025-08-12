@@ -926,10 +926,28 @@ namespace gc.sitio.Controllers
 				_context.HttpContext?.Session.SetString("ProveedoresLista", json);
 			}
 		}
-		#endregion
 
-		#region RUBRO
-		public List<RubroListaDto> RubroLista
+        public ProveedorListaDto ProveedorSeleccionado
+        {
+            get
+            {
+                var json = _context.HttpContext?.Session.GetString("ProveedorSeleccionado") ?? string.Empty;
+                if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                {
+                    return new();
+                }
+                return JsonConvert.DeserializeObject<ProveedorListaDto>(json) ?? new();
+            }
+            set
+            {
+                var json = JsonConvert.SerializeObject(value);
+                _context.HttpContext?.Session.SetString("ProveedorSeleccionado", json);
+            }
+        }
+        #endregion
+
+        #region RUBRO
+        public List<RubroListaDto> RubroLista
 		{
 			get
 			{

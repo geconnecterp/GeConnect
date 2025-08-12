@@ -88,7 +88,7 @@ namespace gc.api.Controllers.Almacen
         public IActionResult GetCuentaComercialLista(string texto, char tipo)
         {
             ApiResponse<List<CuentaDto>> response;
-            _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+          _logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
             var res = _cuentasSv.GetCuentaComercialLista(texto, tipo);
 
             response = new ApiResponse<List<CuentaDto>>(res);
