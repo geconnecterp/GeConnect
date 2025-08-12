@@ -59,7 +59,9 @@ namespace gc.api.core.Constantes
             public const string SP_PROD_CARGA_ALL = "SPGECO_P_PR_Carga_All";
             public const string SP_PROD_CONFIRMA_TEMP = "SPGECO_P_PR_Confirma";
 
+            public const string SP_PROD_PRECIO_FILE_DATOS = "SPGECO_P_PR_FILE_DATOS";
             
+
             #endregion
 
 

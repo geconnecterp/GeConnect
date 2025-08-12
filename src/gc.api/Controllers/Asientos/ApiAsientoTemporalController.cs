@@ -3,12 +3,15 @@ using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Asientos;
 using gc.infraestructura.Dtos.Gen;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
 namespace gc.api.Controllers.Asientos
 {
     [Route("api/[controller]")]
+    [Authorize]
+    [Produces("application/json")]
     [ApiController]
     public class ApiAsientoTemporalController : ControllerBase
     {

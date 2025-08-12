@@ -2,7 +2,6 @@
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
-using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
@@ -11,7 +10,6 @@ using gc.sitio.Areas.Compras.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
@@ -104,6 +102,21 @@ namespace gc.sitio.Areas.Productos.Controllers
                         Mensaje = "Debe indicar el proveedor."
                     });
                 }
+
+                #region Busco y resguardo la cuenta actual
+                var proveedor = ProveedoresLista.FirstOrDefault(x => x.Cta_Id.Equals(ctaId, StringComparison.OrdinalIgnoreCase));
+
+                if(proveedor == null)
+                {
+                    return PartialView("_gridMensaje", new RespuestaGenerica<EntidadBase>
+                    {
+                        Ok = false,
+                        Mensaje = "Debe indicar un proveedor válido."
+                    });
+                }
+                ProveedorSeleccionado = proveedor;
+
+                #endregion
 
                 // Llamar al servicio para obtener los asientos de ajuste
                 var filtro = new QueryFilters
@@ -634,8 +647,8 @@ namespace gc.sitio.Areas.Productos.Controllers
 
         [HttpPost]
         public JsonResult ResguardarCambiosProductoLista(string p_id, string lp_id, decimal tp_margen, decimal tp_pvta,
-   decimal p_pcosto, decimal p_pneto, decimal lp_porc_mg, char iva_situacion,
-   decimal iva_alicuota, decimal in_alicuota, decimal tp_iva, decimal tp_in)
+               decimal p_pcosto, decimal p_pneto, decimal lp_porc_mg, char iva_situacion,
+               decimal iva_alicuota, decimal in_alicuota, decimal tp_iva, decimal tp_in)
         {
             try
             {
@@ -1178,12 +1191,41 @@ namespace gc.sitio.Areas.Productos.Controllers
             }
         }
 
+        [HttpPost]
+        public JsonResult SeleccionarProveedor(string ctaId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(ctaId))
+                {
+                    throw new NegocioException("Debe seleccionar un proveedor.");
+                }
+                ProveedorSeleccionado = ProveedoresLista.First(x=>x.Cta_Id == ctaId);
+                if (ProveedorSeleccionado == null)
+                {
+                    throw new NegocioException($"No se encontró el proveedor con ID: {ctaId}");
+                }
+                
+                return Json(new { error = false, warn = false, msg = "Proveedor seleccionado correctamente." });
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al seleccionar proveedor");
+                return Json(new { error = true, warn = false, msg = "Se produjo un error al intentar seleccionar el proveedor." });
+            }
+        }
 
         protected void CargarProveedoresFamiliaLista(string ctaId, ICuentaServicio _cuentaServicio, string? fam = null)
         {
             var adms = _cuentaServicio.ObtenerListaProveedoresFamilia(ctaId, TokenCookie);
             ProveedorFamiliaLista = adms;
         }
+
+
 
         private SelectList ComboProveedores()
         {

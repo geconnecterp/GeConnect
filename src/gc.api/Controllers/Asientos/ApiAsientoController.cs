@@ -9,7 +9,8 @@ namespace gc.api.Controllers.Asientos
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
+    [Produces("application/json")]
     public class ApiAsientoController : ControllerBase
     {
         private readonly IAsientoServicio _asientosServicio;

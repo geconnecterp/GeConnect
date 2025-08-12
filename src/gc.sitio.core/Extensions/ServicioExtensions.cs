@@ -4,12 +4,14 @@ using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.ABM;
 using gc.sitio.core.Servicios.Contratos.Asientos;
 using gc.sitio.core.Servicios.Contratos.DocManager;
+using gc.sitio.core.Servicios.Contratos.Importacion;
 using gc.sitio.core.Servicios.Contratos.Libros;
 using gc.sitio.core.Servicios.Contratos.Users;
 using gc.sitio.core.Servicios.Implementacion;
 using gc.sitio.core.Servicios.Implementacion.ABM;
 using gc.sitio.core.Servicios.Implementacion.Asientos;
 using gc.sitio.core.Servicios.Implementacion.DocManager;
+using gc.sitio.core.Servicios.Implementacion.Importacion;
 using gc.sitio.core.Servicios.Implementacion.Libros;
 using gc.sitio.core.Servicios.Implementacion.Users;
 using Microsoft.AspNetCore.Http;
@@ -88,8 +90,9 @@ namespace gc.sitio.core.Extensions
             services.AddScoped<IBSSServicio, BSSServicio>();
             services.AddScoped<IBalanceGrServicio, BalanceGrServicio>();
 			services.AddScoped<ITipoOrdenDePagoServicio, TipoOrdenDePagoServicio>();
+            services.AddScoped<IImportarServicio, ImportarServicio>();
 
-			services.AddScoped<IOrdenDePagoServicio, OrdenDePagoServicio>();
+            services.AddScoped<IOrdenDePagoServicio, OrdenDePagoServicio>();
 
             return services;
         }

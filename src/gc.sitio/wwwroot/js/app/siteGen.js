@@ -4,6 +4,13 @@ var nnControlCta01 = "";
 var nnControlCta02 = "";
 var nnControlCta03 = "";
 var nnControlCta04 = "";
+var consCta = "";
+var consRrss = "";
+var consTipo = "";
+
+consCta2 = "";
+consRrss2 = "";
+consTipo2 = "";
 
 //arreglo destinado a contener los parametros del los reportes
 //Inicialmente se genera con 300 posiciones
