@@ -333,6 +333,11 @@ function seleccionarTipoFin(x) {
 				getMaskForMoneyType("#ImporteS");
 				/*$("#Importe").val(importe);*/
 				break;
+			case "CH":
+				$("#chkVerSoloValoresVencidos").on("change", function () {
+					seleccionarFinanciero(x);
+				});
+				break;
 			default:
 		}
 	});
@@ -368,10 +373,16 @@ function DarFocoEnBaseAlaSeleccion() {
 
 function seleccionarFinanciero(x) {
 	if (tcf_id_selected == "CH") {
+		AbrirWaiting("Actualizando lista...");
 		ctaf_id = x.cells[2].innerText.trim();
-		var data = { ctaf_id };
+		var verSoloValoresVencidos = $("#chkVerSoloValoresVencidos")[0].checked
+		var data = { ctaf_id, verSoloValoresVencidos };
 		PostGenHtml(data, cargarGrillaFinancieroCarteraEnSeleccionDeValoresUrl, function (obj) {
+			CerrarWaiting();
 			$("#divSeccionEditable").html(obj);
+			$("#chkVerSoloValoresVencidos").on("change", function () {
+				seleccionarFinanciero(x);
+			});
 			if ($("#tbValoresEnCartera tbody tr").length <= 0) {
 				ControlaMensajeInfo("Sin resultados para la Cartera seleccionada.");
 			}

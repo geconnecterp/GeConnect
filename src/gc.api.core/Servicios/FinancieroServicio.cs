@@ -3,6 +3,7 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Request;
 using Microsoft.Data.SqlClient;
@@ -97,6 +98,46 @@ namespace gc.api.core.Servicios
 				new("@ctaf_id",ctaf_id),
 			};
 			var listaTemp = _repository.EjecutarLstSpExt<FinancieroCarteraDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<RespuestaDto> FinancieroConfirmarTransferencia(ConfirmarTransferenciaRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_TR_CONFIRMA;
+			var ps = new List<SqlParameter>()
+			{
+				new("@ttra_id",request.ttra_id),
+				new("@usu_id",request.usu_id),
+				new("@adm_id",request.adm_id),
+				new("@tra_concepto",request.tra_concepto),
+				new("@tra_fecha",request.tra_fecha),
+				new("@json_o",request.json_o),
+				new("@json_d",request.json_d),
+				new("@json_encabezado",request.json_encabezado),
+				new("@json_concepto",request.json_concepto),
+				new("@json_otro",request.json_otro),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<RespuestaDto> FinancieroConfirmarTransferencia(ConfirmarTransferenciaRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_TR_CONFIRMA;
+			var ps = new List<SqlParameter>()
+			{
+				new("@ttra_id",request.ttra_id),
+				new("@usu_id",request.usu_id),
+				new("@adm_id",request.adm_id),
+				new("@tra_concepto",request.tra_concepto),
+				new("@tra_fecha",request.tra_fecha),
+				new("@json_o",request.json_o),
+				new("@json_d",request.json_d),
+				new("@json_encabezado",request.json_encabezado),
+				new("@json_concepto",request.json_concepto),
+				new("@json_otro",request.json_otro),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 			return listaTemp;
 		}
 	}

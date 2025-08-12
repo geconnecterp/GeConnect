@@ -1,18 +1,20 @@
 ﻿@model EdicionTipoEfectivoCajasModel
 @{
 }
-<div class="col-md-4">
-</div>
-<div class="col-md-4">
-	@Html.HiddenFor(x => x.ctaf_id)
-	@Html.HiddenFor(x => x.ctaf_denominacion)
-	@Html.HiddenFor(x => x.ban_razon_social)
-	<div class="row mt-1">
-		<div class="input-group input-group-sm">
-			<span class="input-group-text fixed-lbl-for-abm-100">Importe:</span>
-			<input type="text" asp-for="ImporteS" class="form-control activable inputEditable" disabled/>
+<div class="row" style="margin-top:50px;">
+	<div class="col-md-4">
+	</div>
+	<div class="col-md-4">
+		@Html.HiddenFor(x => x.ctaf_id)
+		@Html.HiddenFor(x => x.ctaf_denominacion)
+		@Html.HiddenFor(x => x.ban_razon_social)
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text fixed-lbl-for-abm-100">Importe:</span>
+				<input type="text" asp-for="ImporteS" class="form-control activable inputEditable" disabled />
+			</div>
 		</div>
 	</div>
-</div>
-<div class="col-md-4">
+	<div class="col-md-4">
+	</div>
 </div>

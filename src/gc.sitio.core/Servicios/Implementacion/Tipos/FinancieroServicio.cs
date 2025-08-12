@@ -3,6 +3,9 @@ using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Almacen.Request;
+using gc.infraestructura.Dtos.Financieros.Request;
+using gc.infraestructura.Dtos.Gen;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -13,13 +16,15 @@ namespace gc.sitio.core.Servicios.Implementacion
 {
 	public class FinancieroServicio : Servicio<FinancieroDto>, IFinancieroServicio
 	{
-		private const string RutaAPI = "/api/tiposvs";
+		private const string RutaTiposAPI = "/api/tiposvs";
+		private const string RutaAPI = "/api/apifinancieros";
 		private const string ObtenerFinancierosPorTipoCfLista = "/GetFinancierosPorTipoCfLista";
 		private const string ObtenerFinancierosRelaPorTipoCfLista = "/GetFinancierosRelaPorTipoCfLista";
 		private const string ObtenerFinancierosEstados = "/GetFinancierosEstados";
 		private const string ObtenerPlanContableCuenta = "/GetPlanContableCuentaLista";
 		private const string ObtenerFinancieroDesdeTipoParaSeleccionDeValores = "/GetFinancieroDesdeTipoParaSeleccionDeValores";
 		private const string ObtenerFinancieroCarteraParaSeleccionDeValores = "/GetFinancieroCarteraParaSeleccionDeValores";
+		private const string SetFinancieroConfirmarTransferencia = "/FinancieroConfirmarTransferencia";
 		private readonly AppSettings _appSettings;
 		public FinancieroServicio(IOptions<AppSettings> options, ILogger<AdministracionServicio> logger) : base(options, logger)
 		{
@@ -35,7 +40,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 				HttpClient client = helper.InicializaCliente(token);
 				HttpResponseMessage response;
 
-				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerPlanContableCuenta}";
+				var link = $"{_appSettings.RutaBase}{RutaTiposAPI}{ObtenerPlanContableCuenta}";
 				response = client.GetAsync(link).GetAwaiter().GetResult();
 
 				if (response.StatusCode == HttpStatusCode.OK)
@@ -72,7 +77,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 				HttpClient client = helper.InicializaCliente(token);
 				HttpResponseMessage response;
 
-				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerFinancierosEstados}";
+				var link = $"{_appSettings.RutaBase}{RutaTiposAPI}{ObtenerFinancierosEstados}";
 				response = client.GetAsync(link).GetAwaiter().GetResult();
 
 				if (response.StatusCode == HttpStatusCode.OK)
@@ -109,7 +114,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 				HttpClient client = helper.InicializaCliente(token);
 				HttpResponseMessage response;
 
-				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerFinancierosPorTipoCfLista}?tcf_id={tcf_id}";
+				var link = $"{_appSettings.RutaBase}{RutaTiposAPI}{ObtenerFinancierosPorTipoCfLista}?tcf_id={tcf_id}";
 				response = client.GetAsync(link).GetAwaiter().GetResult();
 
 				if (response.StatusCode == HttpStatusCode.OK)
@@ -146,7 +151,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 				HttpClient client = helper.InicializaCliente(token);
 				HttpResponseMessage response;
 
-				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerFinancierosRelaPorTipoCfLista}?tcf_id={tcf_id}";
+				var link = $"{_appSettings.RutaBase}{RutaTiposAPI}{ObtenerFinancierosRelaPorTipoCfLista}?tcf_id={tcf_id}";
 				response = client.GetAsync(link).GetAwaiter().GetResult();
 
 				if (response.StatusCode == HttpStatusCode.OK)
@@ -183,7 +188,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 				HttpClient client = helper.InicializaCliente(token);
 				HttpResponseMessage response;
 
-				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerFinancieroDesdeTipoParaSeleccionDeValores}?tcf_id={tcf_id}&adm_id={adm_id}";
+				var link = $"{_appSettings.RutaBase}{RutaTiposAPI}{ObtenerFinancieroDesdeTipoParaSeleccionDeValores}?tcf_id={tcf_id}&adm_id={adm_id}";
 				response = client.GetAsync(link).GetAwaiter().GetResult();
 
 				if (response.StatusCode == HttpStatusCode.OK)
@@ -220,7 +225,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 				HttpClient client = helper.InicializaCliente(token);
 				HttpResponseMessage response;
 
-				var link = $"{_appSettings.RutaBase}{RutaAPI}{ObtenerFinancieroCarteraParaSeleccionDeValores}?ctaf_id={ctaf_id}";
+				var link = $"{_appSettings.RutaBase}{RutaTiposAPI}{ObtenerFinancieroCarteraParaSeleccionDeValores}?ctaf_id={ctaf_id}";
 				response = client.GetAsync(link).GetAwaiter().GetResult();
 
 				if (response.StatusCode == HttpStatusCode.OK)
@@ -245,6 +250,37 @@ namespace gc.sitio.core.Servicios.Implementacion
 			{
 				_logger.LogWarning($"Algo no fue bien. Error interno {ex.Message}");
 				return [];
+			}
+		}
+
+		public RespuestaGenerica<RespuestaDto> FinancieroConfirmarTransferencia(ConfirmarTransferenciaRequest request, string token)
+		{
+			ApiResponse<List<RespuestaDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{SetFinancieroConfirmarTransferencia}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros ttra_id:{request.ttra_id} tra_concepto: {request.tra_concepto} tra_fecha: {request.tra_fecha} ");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return new RespuestaGenerica<RespuestaDto>() { Entidad = apiResponse.Data.First() };
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
 			}
 		}
 	}

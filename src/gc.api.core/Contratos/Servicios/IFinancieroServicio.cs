@@ -1,5 +1,7 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Financieros.Request;
+using gc.infraestructura.Dtos.Gen;
 
 namespace gc.api.core.Contratos.Servicios
 {
@@ -11,5 +13,6 @@ namespace gc.api.core.Contratos.Servicios
         List<PlanContableDto> GetPlanContableCuentaLista();
         List<FinancieroDesdeSeleccionDeTipoDto> GetFinancieroDesdeTipoParaSeleccionDeValores(string tcf_id, string adm_id);
         List<FinancieroCarteraDto> GetFinancieroCarteraParaSeleccionDeValores(string ctaf_id);
+        List<RespuestaDto> FinancieroConfirmarTransferencia(ConfirmarTransferenciaRequest request);
 	}
 }

@@ -1,11 +1,19 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra;
+using gc.infraestructura.Dtos.Almacen.Request;
+using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.OrdenDePago.Dtos;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Financieros.Models;
+using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using Org.BouncyCastle.Ocsp;
 
 namespace gc.sitio.Areas.Financieros.Controllers
 {
@@ -13,9 +21,12 @@ namespace gc.sitio.Areas.Financieros.Controllers
 	public class TransfBancariaDepDeChequesController : TransfBancariaDepDeChequesControladorBase
 	{
 		private readonly AppSettings _setting;
-		public TransfBancariaDepDeChequesController(IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger<TransfBancariaDepDeChequesController> logger) : base(options, accessor, logger)
+		private readonly IFinancieroServicio _financieroServicio;
+		public TransfBancariaDepDeChequesController(IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger<TransfBancariaDepDeChequesController> logger,
+													IFinancieroServicio financieroServicio) : base(options, accessor, logger)
 		{
 			_setting = options.Value;
+			_financieroServicio = financieroServicio;
 		}
 
 		public IActionResult Index()
@@ -81,6 +92,265 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					Mensaje = ex.Message
 				};
 				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public JsonResult ActualizarTotales()
+		{
+			try
+			{
+				var totalOrigen = OPValoresOrigen.Sum(x => x.op_importe);
+				var totalDestino = OPValoresDestino.Sum(x => x.op_importe);
+				return Json(new { error = false, warn = false, msg = "", totalOrigen, totalDestino });
+			}
+			catch (NegocioException ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+		}
+
+		public IActionResult CargarValores(string source, string sourceSeleccionado)
+		{
+			var model = new ValoresModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+				{
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+				}
+
+				if (OPValoresDesdeObligYCredLista == null || OPValoresDesdeObligYCredLista.Count <= 0) {
+					model.Grilla = new GridCoreSmart<ValoresDesdeObligYCredDto>();
+					if (sourceSeleccionado.Equals("1"))
+						return PartialView("_grillaValoresOrigen", model);
+					else
+						return PartialView("_grillaValoresDestino", model);
+				}
+
+				if (sourceSeleccionado.Equals("1"))
+				{
+					if (OPValoresOrigen == null)
+						OPValoresOrigen = [];
+					var listaTemp = OPValoresOrigen;
+					listaTemp.AddRange(OPValoresDesdeObligYCredLista);
+					OPValoresDesdeObligYCredLista = [];
+					OPValoresOrigen = listaTemp;
+					model.Grilla = ObtenerGridCoreSmart<ValoresDesdeObligYCredDto>(OPValoresOrigen);
+					return PartialView("_grillaValoresOrigen", model);
+				}
+				else 
+				{
+					if (OPValoresDestino == null)
+						OPValoresDestino = [];
+					var listaTemp = OPValoresDestino;
+					listaTemp.AddRange(OPValoresDesdeObligYCredLista);
+					OPValoresDesdeObligYCredLista = [];
+					OPValoresDestino = listaTemp;
+					model.Grilla = ObtenerGridCoreSmart<ValoresDesdeObligYCredDto>(OPValoresDestino);
+					return PartialView("_grillaValoresDestino", model);
+				}
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public JsonResult InicializarDatosEnSesion() 
+		{
+			try
+			{
+				OPValoresOrigen = [];
+				OPValoresDestino = [];
+				return Json(new { error = false, warn = false, msg = "" });
+			}
+			catch (NegocioException ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+		}
+
+		public IActionResult RecargarGrillaOrigen()
+		{
+			var model = new ValoresModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				model.Grilla = ObtenerGridCoreSmart<ValoresDesdeObligYCredDto>(OPValoresOrigen);
+				return PartialView("_grillaValoresOrigen", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public IActionResult RecargarGrillaDestino()
+		{
+			var model = new ValoresModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				model.Grilla = ObtenerGridCoreSmart<ValoresDesdeObligYCredDto>(OPValoresDestino);
+				return PartialView("_grillaValoresDestino", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public IActionResult ActualizarGrillaValores(int orden, string sourceSeleccionado)
+		{
+			var model = new ValoresModel();
+			try
+			{
+				if (orden > 0)
+				{
+					if (sourceSeleccionado.Equals("tbListaOrigen"))
+					{
+						var listaAux = OPValoresOrigen;
+						listaAux = [.. listaAux.Where(x => x.orden != orden)];
+						OPValoresOrigen = listaAux;
+						model.Grilla = ObtenerGridCoreSmart<ValoresDesdeObligYCredDto>(OPValoresOrigen);
+						return PartialView("_grillaValoresOrigen", model);
+					}
+					else
+					{
+						var listaAux = OPValoresDestino;
+						listaAux = [.. listaAux.Where(x => x.orden != orden)];
+						OPValoresDestino = listaAux;
+						model.Grilla = ObtenerGridCoreSmart<ValoresDesdeObligYCredDto>(OPValoresDestino);
+						return PartialView("_grillaValoresDestino", model);
+					}
+				}
+				else
+				{
+					if (sourceSeleccionado.Equals("tbListaOrigen"))
+					{
+						model.Grilla = ObtenerGridCoreSmart<ValoresDesdeObligYCredDto>(OPValoresOrigen);
+						return PartialView("_grillaValoresOrigen", model);
+					}
+					else
+					{
+						model.Grilla = ObtenerGridCoreSmart<ValoresDesdeObligYCredDto>(OPValoresDestino);
+						return PartialView("_grillaValoresDestino", model);
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public JsonResult ValidarAntesDeGuardar()
+		{
+			try
+			{
+				if (OPValoresOrigen != null && OPValoresOrigen.Count > 0 && OPValoresDestino != null && OPValoresDestino.Count > 0)
+				{
+					return Json(new { error = false, warn = false, msg = "" });
+				}
+				else
+				{
+					return Json(new { error = true, warn = false, msg = "Se deben especificar datos para Origen y Destino." });
+				}
+			}
+			catch (NegocioException ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+		}
+
+		[HttpPost]
+		public JsonResult ConfirmarTransferencia(ConfirmarTransferenciaRequest request)
+		{
+			try
+			{
+				if (request==null)
+					return Json(new { error = true, warn = false, msg = "No se han enviado datos para confirmar." });
+
+				Console.WriteLine($"ttra_id: {request.ttra_id}");
+				Console.WriteLine($"tra_concepto: {request.tra_concepto}");
+				Console.WriteLine($"tra_fecha: {request.tra_fecha}");
+				request.adm_id = AdministracionId;
+				Console.WriteLine($"adm_id: {request.adm_id}");
+				request.usu_id = UserName;
+				Console.WriteLine($"usu_id: {request.usu_id}");
+				request.json_o = JsonConvert.SerializeObject(OPValoresOrigen, new JsonSerializerSettings());
+				Console.WriteLine($"json_o: {request.json_o}");
+				request.json_d = JsonConvert.SerializeObject(OPValoresDestino, new JsonSerializerSettings());
+				Console.WriteLine($"json_d: {request.json_d}");
+				var encabezado = new Encabezado();
+				var ListaConceptoFacturado = new List<ConceptoFacturadoDto>();
+				var ListaOtrosTributos = new List<OtroTributoDto>();
+				
+				request.json_concepto = JsonConvert.SerializeObject(ListaConceptoFacturado, new JsonSerializerSettings());
+				Console.WriteLine($"json_concepto: {request.json_concepto}");
+				request.json_encabezado = JsonConvert.SerializeObject(ListaConceptoFacturado, new JsonSerializerSettings());
+				Console.WriteLine($"json_encabezado: {request.json_encabezado}");
+				request.json_otro = JsonConvert.SerializeObject(ListaOtrosTributos, new JsonSerializerSettings());
+				Console.WriteLine($"json_otro: {request.json_otro}");
+				var respuesta = _financieroServicio.FinancieroConfirmarTransferencia(request, TokenCookie);
+				return AnalizarRespuesta(respuesta, "La Transferencia se confirmó con Éxito");
+			}
+			catch (NegocioException ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { error = true, warn = false, msg = ex.InnerException });
 			}
 		}
 

@@ -1,0 +1,30 @@
+﻿@model ValoresModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+}
+<div class="table-responsive table-wrapper-200-full" id="containerDestino">
+	<table class="table table-bordered table-hover" id="tbListaDestino">
+		<thead class="table-dark">
+			<tr>
+				<th style="width:35%;" class="col-header-small align-center tiny-row">Cuenta Financiera</th>
+				<th style="width:55%;" class="col-header-small align-center tiny-row">Valor</th>
+				<th style="width:10%;" class="col-header-small align-center tiny-row">Importe</th>
+				<th style="width:0%; display:none;">orden</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model != null && Model.Grilla != null && Model.Grilla.ListaDatos != null && Model.Grilla.ListaDatos.Count > 0)
+			{
+				@foreach (var item in Model.Grilla.ListaDatos)
+				{
+					<tr onclick="selectReg(this, 'tbListaDestino')" ondblclick="selectRegDblGrillaValores(this, 'tbListaDestino');">
+						<td class="@Model.Grilla.ObtenerClase(item.ctaf_denominacion) cell-fit-content">@Model.Grilla.FormatearDato(item.ctaf_denominacion, FormatDato.Ninguno)</td>
+						<td class="@Model.Grilla.ObtenerClase(item.concepto_valor) cell-fit-content">@Model.Grilla.FormatearDato(item.concepto_valor, FormatDato.Monto)</td>
+						<td class="@Model.Grilla.ObtenerClase(item.op_importe) cell-fit-content">@Model.Grilla.FormatearDato(item.op_importe, FormatDato.Monto)</td>
+						<td style="display:none;">@item.orden</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>
