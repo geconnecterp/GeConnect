@@ -6,7 +6,7 @@
 
 $(function () {
 	var tcf_id_selected = "";
-	var importe = 0;
+	var importeSugerido = 0;
 	var valor_a_nombre_de = "";
 	var valores = [];
 	/* 	propiedades locales del componente para luego ser usadas y enviarse para almacenar los items*/
@@ -140,8 +140,11 @@ function btnAceptarAgregarValorValidar() {
 		}
 		var cierroModal = false;
 		var imp = $("#ImporteS").inputmask('unmaskedvalue');
-		if (imp == importe) {
+		if (imp == importeSugerido) {
 			cierroModal = true;
+		}
+		else {
+			importeSugerido = Math.round((importeSugerido - imp) * 100) / 100;
 		}
 		AgregarValorValidar(listaObjValor, tcf_id_selected, cierroModal);
 	}
@@ -246,7 +249,7 @@ function LimpiarDatosEnSeccionEdicion(dataType) {
 			var now = moment().format('yyyy-MM-DD');
 			$("#Fecha").val(now);
 			$("#Concepto").val("");
-			$("#Importe").val(0);
+			$("#ImporteS").val(importeSugerido);
 			document.getElementById("txtNroTransferencia").focus();
 			break;
 		case "EC"://Emision de cheques
@@ -254,11 +257,11 @@ function LimpiarDatosEnSeccionEdicion(dataType) {
 			var now = moment().format('yyyy-MM-DD');
 			$("#Fecha").val(now);
 			$("#ANombreDe").val("");
-			$("#Importe").val(0);
+			$("#ImporteS").val(importeSugerido);
 			document.getElementById("txtNroCheque").focus();
 			break;
 		case "EF": //Efectivo
-			$("#Importe").val(0);
+			$("#ImporteS").val(importeSugerido);
 			document.getElementById("ImporteS").focus();
 			break;
 		default:
@@ -273,16 +276,16 @@ p:
 { app, importe, valor_a_nombre_de, valores }
 Donde:
 	- app: Identificador del tipo de cuenta financiera.
-	- importe: Importe saldo sugerido, este monto si es mayor que cero debe ser sugerido por la app al momento en que se seleccione un valor de una cuenta financiera
+	- importeSugerido: Importe saldo sugerido, este monto si es mayor que cero debe ser sugerido por la app al momento en que se seleccione un valor de una cuenta financiera
 	- valor_a_nombre_de: es una ocurrencia string que debemos utilizar cuando se emiten cheques.
 	- valores: datos ya cargados en origen, con la idea de hacer algún control.
 */
 function invocarModalDeSeleccionDeValores(p) {
 	var app = p.app;
-	importe = p.importe;
+	importeSugerido = p.importe;
 	valor_a_nombre_de = p.valor_a_nombre_de;
 	valores = p.valores;
-	var data = { app, importe, valor_a_nombre_de, valores };
+	var data = { app, importeSugerido, valor_a_nombre_de, valores };
 	PostGenHtml(data, abrirComponenteDeSeleccionDeValoresUrl, function (obj) {
 		$("#modalSeleccionValores").html(obj);
 		$("#modalSeleccionValores").show();
@@ -299,7 +302,7 @@ function seleccionarTipoFin(x) {
 	seleccionarGrilla(x, 'tbTipoCuentaFin');
 	var tcf_id = x.cells[1].innerText.trim();
 	tcf_id_selected = tcf_id;
-	var data = { tcf_id };
+	var data = { tcf_id, importeSugerido };
 	PostGenHtml(data, cargarCtaFinParaSeleccionDeValoresUrl, function (obj) {
 		$("#divFinancieros").html(obj);
 	});

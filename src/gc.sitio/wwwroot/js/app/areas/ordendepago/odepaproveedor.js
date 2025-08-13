@@ -121,20 +121,32 @@ function ImprimirOPP_Generada(opCompte, ctaId) {
 			}, false, ["Aceptar"], "error!", null);
 		}
 		else {
-			let data = { op_compte: opCompte, ctaId: ctaId };
-			cargarReporteEnArre(17, data, "ORDEN DE PAGO A PROVEEDORES", "", "");
-			if (obj.imprimeIIBB) {
-				cargarReporteEnArre(18, data, "CERTIFICADO RETENCIÓN IIBB", "", "");
-			}
-			if (obj.imprimeIVA) {
-				cargarReporteEnArre(20, data, "CERTIFICADO RETENCIÓN IVA", "", "");
-			}
-			if (obj.imprimeGAN) {
-				cargarReporteEnArre(19, data, "CERTIFICADO RETENCIÓN GA", "", "");
-			}
-			invocacionGestorDoc({});
+			ReseteoDeReportes();
+			setTimeout(() => {
+				let data = { op_compte: opCompte, ctaId: ctaId };
+				cargarReporteEnArre(17, data, "ORDEN DE PAGO A PROVEEDORES", "", "");
+				if (obj.imprimeIIBB) {
+					cargarReporteEnArre(18, data, "CERTIFICADO RETENCIÓN IIBB", "", "");
+				}
+				if (obj.imprimeIVA) {
+					cargarReporteEnArre(20, data, "CERTIFICADO RETENCIÓN IVA", "", "");
+				}
+				if (obj.imprimeGAN) {
+					cargarReporteEnArre(19, data, "CERTIFICADO RETENCIÓN GA", "", "");
+				}
+				invocacionGestorDoc({});
+			}, 500);
 		}
 	});
+}
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	//ReporteResetCeldaEnArre(17);
+	//ReporteResetCeldaEnArre(18);
+	//ReporteResetCeldaEnArre(19);
+	//ReporteResetCeldaEnArre(20);
+	ReporteResetArre();
 }
 
 function btnConfirmar2Validar() {

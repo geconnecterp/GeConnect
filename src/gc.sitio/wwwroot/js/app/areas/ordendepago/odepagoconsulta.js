@@ -3,7 +3,7 @@
 	// Validar al salir del campo
 	$("#Date1, #Date2").on("blur", ValidarFechasClick);
 	// Validar al seleccionar con el mouse
-	$("#Date1, #Date2").on("change", ValidarFechasClick);
+	//$("#Date1, #Date2").on("change", ValidarFechasClick);
 
 	$("#pagEstado").on("change", function () {
 		var div = $("#divPaginacion");

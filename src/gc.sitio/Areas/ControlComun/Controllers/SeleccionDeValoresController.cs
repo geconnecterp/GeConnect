@@ -83,7 +83,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 			try
 			{
 				CtaValoresANombre = req.valor_a_nombre_de;
-				ImporteSaldo = req.importe;
+				ImporteSaldo = req.importeSugerido;
 				var tipoCuentaFinLista = _tipoCuentaFinServicio.GetTipoCuentaFinParaSeleccionDeValores(req.app, TokenCookie);
 				var model = new SeleccionDeValoresViewModel()
 				{
@@ -183,11 +183,12 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 		}
 
 		[HttpPost]
-		public IActionResult CargarSeccionEdicionEnSeleccionDeValores(string tcf_id)
+		public IActionResult CargarSeccionEdicionEnSeleccionDeValores(string tcf_id, decimal importeSugerido)
 		{
 			RespuestaGenerica<EntidadBase> response = new();
 			try
 			{
+				ImporteSaldo = importeSugerido;
 				switch (tcf_id)
 				{
 					case "BA":

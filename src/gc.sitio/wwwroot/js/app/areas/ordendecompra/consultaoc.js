@@ -1,7 +1,8 @@
 ﻿$(function () {
 	InicializaPantalla();
-	$("#Date1").on("change", function () { ValidarFechas(); });
-	$("#Date2").on("change", function () { ValidarFechas(); });
+	//$("#Date1").on("change", function () { ValidarFechas(); });
+	//$("#Date2").on("change", function () { ValidarFechas(); });
+	$("#Date1, #Date2").on("blur", ValidarFechas);
 	$("#tabDetalleDeOC").on("click", function () { BuscarDetalleDeOCTabClick(); });
 	$("#tabRprAsociadas").on("click", function () { BuscarRprAsociadasDeOCTabClick(); });
 	$("#pagEstado").on("change", function () {

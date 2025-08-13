@@ -939,6 +939,10 @@ function ReporteResetCeldaEnArre(numeroReporte) {
     arrRepoParams[numeroReporte - 1] = undefined;
 }
 
+function ReporteResetArre() {
+    arrRepoParams = new Array(300);
+}
+
 /**
  * Activa o desactiva un componente (input, select, etc.) según el estado de un checkbox.
  * Si el checkbox está marcado, habilita el componente y restaura su estilo visual.
