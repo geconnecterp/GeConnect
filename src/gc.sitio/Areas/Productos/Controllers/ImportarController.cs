@@ -1,4 +1,5 @@
-﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Importacion;
@@ -8,6 +9,7 @@ using gc.sitio.core.Servicios.Contratos.Importacion;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using OfficeOpenXml;
+using System.Globalization;
 
 namespace gc.sitio.Areas.Productos.Controllers
 {
@@ -19,6 +21,10 @@ namespace gc.sitio.Areas.Productos.Controllers
         private readonly ICuentaServicio _cuentaServicio;
         private readonly IImportarServicio _impServicio;
         private ProveedorListaDto _datosProveedor;
+        // Analizar primera fila (encabezados)
+        int filaEncabezados = 0;
+        int filaDatosInicio = 0;
+        int totalFilasDatos = 0;
 
         public ImportarController(
             ICuentaServicio cuentaServicio,
@@ -62,6 +68,16 @@ namespace gc.sitio.Areas.Productos.Controllers
             }
             return View(_datosProveedor);
         }
+
+        /// <summary>
+        /// Notas y recomendaciones
+        /// Tolerancia a encabezados multi-línea(dos filas de cabeceras) : Si llegás a tener archivos con cabeceras en 2 filas(no títulos, sino headers multinivel), podés ajustar la heurística para elegir la última fila candidata de cabecera antes de que empiecen los datos, o bien consolidar ambos niveles(concatenando FilaHeader1[col] + "_" + FilaHeader2[col]).
+        /// Métricas: Si ves falsos positivos con títulos muy “tabulares”, subí el umbral de cobertura(ej. 0.5) o el de contraste(ej. 0.4), o aumenta la penalización por merges/long text.
+        /// Rendimiento: El análisis toca solo las primeras maxFilasExploracion filas y calcula stats simples; es rápido para hojas grandes.
+        /// </summary>
+        /// <param name="archivo"></param>
+        /// <returns></returns>
+
 
         [HttpPost]
         public async Task<IActionResult> AnalizarColumnas(IFormFile archivo)
@@ -274,16 +290,26 @@ namespace gc.sitio.Areas.Productos.Controllers
                 Columnas = new List<ColumnaExcelDto>()
             };
 
+            if (analisis.TotalFilas == 0 || analisis.TotalColumnas == 0)
+            {
+                return analisis;
+            }
+
+            // Analizar primera fila (encabezados)
+             filaEncabezados = DetectarFilaEncabezados(worksheet, maxFilasExploracion: 10, minFilasDatos: 2);
+             filaDatosInicio = Math.Min(analisis.TotalFilas, filaEncabezados + 1);
+             totalFilasDatos = Math.Max(0, analisis.TotalFilas - filaEncabezados);
+
             // Analizar primera fila (encabezados)
             for (int col = 1; col <= analisis.TotalColumnas; col++)
             {
-                var valorEncabezado = worksheet.Cells[1, col].Value?.ToString()?.Trim() ?? $"Columna {col}";
+                var valorEncabezado = worksheet.Cells[filaEncabezados, col].Value?.ToString()?.Trim() ?? $"Columna {col}";
 
-                // Analizar tipo de datos en las primeras 10 filas (muestra)
-                var tipoDetectado = DetectarTipoDato(worksheet, col, Math.Min(10, analisis.TotalFilas));
+                // Analizar tipo de datos usando filas de datos (no la fila de encabezados)
+                var tipoDetectado = DetectarTipoDato(worksheet, col, filaDatosInicio);//, sampleRows: Math.Min(10, totalFilasDatos));
 
-                // Contar valores no vacíos en esta columna
-                var valoresNoVacios = ContarValoresNoVacios(worksheet, col, analisis.TotalFilas);
+                // Contar valores no vacíos SOLO en los datos
+                var valoresNoVacios = ContarValoresNoVacios(worksheet, col, filaDatosInicio, analisis.TotalFilas);
 
                 var columna = new ColumnaExcelDto
                 {
@@ -292,9 +318,10 @@ namespace gc.sitio.Areas.Productos.Controllers
                     Encabezado = valorEncabezado,
                     TipoDetectado = tipoDetectado,
                     ValoresNoVacios = valoresNoVacios,
-                    PorcentajeLlenado = analisis.TotalFilas > 1 ?
-                        Math.Round((double)valoresNoVacios / (analisis.TotalFilas - 1) * 100, 1) : 0,
-                    EjemplosValores = ObtenerEjemplosValores(worksheet, col, 3)
+                    PorcentajeLlenado = totalFilasDatos > 0
+                        ? Math.Round((double)valoresNoVacios / totalFilasDatos * 100, 1)
+                        : 0,
+                    EjemplosValores = ObtenerEjemplosValores(worksheet, col, cantidad: 3, filaDatosInicio)
                 };
 
                 analisis.Columnas.Add(columna);
@@ -302,6 +329,239 @@ namespace gc.sitio.Areas.Productos.Controllers
 
             return analisis;
         }
+
+        // --------------------------------------------------------------------
+        // FUNCIÓN DE ANÁLISIS: Detecta la fila de cabeceras (ignora títulos)
+        // --------------------------------------------------------------------
+        private int DetectarFilaEncabezados(ExcelWorksheet ws, int maxFilasExploracion = 10, int minFilasDatos = 2)
+        {
+            int totalFilas = ws.Dimension?.End.Row ?? 0;
+            int totalCols = ws.Dimension?.End.Column ?? 0;
+            if (totalFilas == 0 || totalCols == 0) return 1;
+
+            int maxRow = Math.Min(maxFilasExploracion, totalFilas);
+
+            // Lista básica de tokens comunes de headers (ES/EN)
+            var headerTokens = new HashSet<string>(new[]
+            {
+                "id","codigo","código","item","cliente","nombre","apellido","razon social","razón social",
+                "direccion","dirección","domicilio","ciudad","provincia","pais","país","cp","c.p.",
+                "email","correo","telefono","teléfono","movil","móvil",
+                "fecha","fec","año","mes","dia","día","hora",
+                "monto","importe","total","cantidad","precio","costo","neto","bruto","iva","tax","amount","qty","price",
+                "estado","status","tipo","categoria","categoría","descripcion","descripción","obs","observaciones",
+                "usuario","user"
+            }.Select(t => t.ToLowerInvariant()));
+
+            // Helpers locales para el scoring
+            bool EsVacia(ExcelRangeBase cell)
+                => string.IsNullOrWhiteSpace(cell?.Text);
+
+            bool EsBooleano(ExcelRangeBase cell)
+                => cell?.Value is bool;
+
+            bool EsNumero(ExcelRangeBase cell)
+            {
+                if (cell?.Value == null) return false;
+                if (cell.Value is sbyte or byte or short or ushort or int or uint or long or ulong or float or double or decimal) return true;
+                // A veces EPPlus expone todo como double/texto formateado:
+                return double.TryParse(cell.Text?.Trim(), NumberStyles.Any, CultureInfo.InvariantCulture, out _)
+                    || double.TryParse(cell.Text?.Trim(), NumberStyles.Any, CultureInfo.CurrentCulture, out _);
+            }
+
+            bool PareceFecha(ExcelRangeBase cell)
+            {
+                if (cell?.Value is DateTime) return true;
+
+                // Por formato: muy heurístico pero útil
+                var fmt = cell?.Style?.Numberformat?.Format?.ToLowerInvariant() ?? string.Empty;
+                if (!string.IsNullOrEmpty(fmt))
+                {
+                    if (fmt.Contains("yy") || fmt.Contains("dd") || fmt.Contains("mm") || fmt.Contains("hh") || fmt.Contains("ss"))
+                        return true;
+                }
+
+                // Por texto: intenta parsear fecha en culturas comunes
+                var txt = cell?.Text?.Trim();
+                if (string.IsNullOrEmpty(txt)) return false;
+
+                return DateTime.TryParse(txt, CultureInfo.CurrentCulture, DateTimeStyles.None, out _)
+                    || DateTime.TryParse(txt, CultureInfo.InvariantCulture, DateTimeStyles.None, out _);
+            }
+
+            bool EsTexto(ExcelRangeBase cell)
+            {
+                if (cell?.Value == null) return false;
+                if (EsNumero(cell) || PareceFecha(cell) || EsBooleano(cell)) return false;
+                // Si no cae en los anteriores y tiene texto, lo consideramos texto:
+                return !string.IsNullOrWhiteSpace(cell.Text);
+            }
+
+            bool EsTextoCorto(ExcelRangeBase cell)
+            {
+                var len = cell?.Text?.Trim().Length ?? 0;
+                return len > 0 && len <= 30;
+            }
+
+            bool TieneTextoLargo(ExcelRangeBase cell)
+            {
+                var len = cell?.Text?.Trim().Length ?? 0;
+                return len > 40; // típico de títulos
+            }
+
+            // Cuenta merges que toquen la fila r
+            int MergesEnFila(int r)
+            {
+                if (ws.MergedCells == null || ws.MergedCells.Count == 0) return 0;
+                int count = 0;
+                foreach (var addr in ws.MergedCells)
+                {
+                    var a = new ExcelAddress(addr);
+                    if (a.Start.Row <= r && a.End.Row >= r && a.Start.Column <= totalCols && a.End.Column >= 1)
+                        count++;
+                }
+                return count;
+            }
+
+            // Devuelve la siguiente fila "con datos" (densidad mínima)
+            int? SiguienteFilaConDatos(int startRow, double minDensidad = 0.3, int maxLookahead = 30)
+            {
+                int end = Math.Min(totalFilas, startRow + maxLookahead);
+                for (int r = startRow; r <= end; r++)
+                {
+                    int nonEmpty = 0;
+                    for (int c = 1; c <= totalCols; c++)
+                        if (!EsVacia(ws.Cells[r, c])) nonEmpty++;
+
+                    double densidad = (double)nonEmpty / totalCols;
+                    if (densidad >= minDensidad) return r;
+                }
+                return null;
+            }
+
+            // Verifica que existan al menos N filas de datos "consistentes" debajo
+            bool HayContinuidadDatos(int headerRow, int minFilas, double minDensidad = 0.3)
+            {
+                int encontrados = 0;
+                for (int r = headerRow + 1; r <= totalFilas; r++)
+                {
+                    int nonEmpty = 0;
+                    for (int c = 1; c <= totalCols; c++)
+                        if (!EsVacia(ws.Cells[r, c])) nonEmpty++;
+
+                    double densidad = (double)nonEmpty / totalCols;
+                    if (densidad >= minDensidad) encontrados++;
+                    if (encontrados >= minFilas) return true;
+                }
+                return false;
+            }
+
+            // Scoring por fila
+            double MejorScore = double.NegativeInfinity;
+            int mejorFila = 1;
+
+            for (int r = 1; r <= maxRow; r++)
+            {
+                int nonEmpty = 0, cntTexto = 0, cntTextoCorto = 0, cntTextoLargo = 0;
+                var valoresDistinct = new HashSet<string>();
+                int merges = MergesEnFila(r);
+
+                for (int c = 1; c <= totalCols; c++)
+                {
+                    var cell = ws.Cells[r, c];
+                    if (!EsVacia(cell)) nonEmpty++;
+
+                    if (EsTexto(cell))
+                    {
+                        cntTexto++;
+                        if (EsTextoCorto(cell)) cntTextoCorto++;
+                        if (TieneTextoLargo(cell)) cntTextoLargo++;
+
+                        var norm = (cell.Text ?? string.Empty).Trim().ToLowerInvariant();
+                        norm = new string(norm.Where(ch => char.IsLetterOrDigit(ch) || ch == '_' || ch == ' ').ToArray());
+                        if (!string.IsNullOrWhiteSpace(norm))
+                            valoresDistinct.Add(norm);
+                    }
+                }
+
+                double cobertura = (double)nonEmpty / totalCols;                 // [0..1]
+                double fracTexto = nonEmpty == 0 ? 0 : (double)cntTexto / nonEmpty;
+                double fracTextoCorto = nonEmpty == 0 ? 0 : (double)cntTextoCorto / nonEmpty;
+                double fracTextoLargo = nonEmpty == 0 ? 0 : (double)cntTextoLargo / nonEmpty;
+                double distintividad = nonEmpty == 0 ? 0 : (double)valoresDistinct.Count / Math.Max(1, cntTexto);
+
+                // Bonus por tokens típicos de headers
+                int hitsTokens = 0;
+                foreach (var v in valoresDistinct)
+                {
+                    var w = v.Trim().ToLowerInvariant();
+                    // separa por espacios y evalúa cada token
+                    foreach (var token in w.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+                        if (headerTokens.Contains(token)) hitsTokens++;
+                }
+                double bonusTokens = Math.Min(1.0, hitsTokens / Math.Max(1.0, totalCols / 4.0)); // normaliza aprox
+
+                // Contraste con siguiente fila "de datos"
+                double contraste = 0;
+                var nextRow = SiguienteFilaConDatos(r + 1);
+                if (nextRow.HasValue)
+                {
+                    int dif = 0, considerados = 0;
+                    for (int c = 1; c <= totalCols; c++)
+                    {
+                        var hc = ws.Cells[r, c];
+                        var dc = ws.Cells[nextRow.Value, c];
+
+                        bool hTexto = EsTexto(hc);
+                        bool dNum = EsNumero(dc);
+                        bool dFecha = PareceFecha(dc);
+                        bool dBool = EsBooleano(dc);
+
+                        if (!EsVacia(hc) || !EsVacia(dc))
+                        {
+                            considerados++;
+                            // Buscamos patrón: Header texto (o vacío) y Datos num/fecha/bool
+                            if ((hTexto || EsVacia(hc)) && (dNum || dFecha || dBool)) dif++;
+                        }
+                    }
+                    contraste = considerados == 0 ? 0 : (double)dif / considerados; // [0..1]
+                }
+
+                // Penalización por merges (títulos)
+                double penMerges = Math.Min(1.0, merges / Math.Max(1.0, totalCols / 4.0));
+
+                // Score final (ponderaciones afinadas empíricamente)
+                double score =
+                    0.35 * cobertura +
+                    0.20 * fracTexto +
+                    0.15 * distintividad +
+                    0.10 * fracTextoCorto +
+                    0.15 * contraste +
+                    0.05 * bonusTokens
+                    - 0.20 * penMerges
+                    - 0.10 * fracTextoLargo;
+
+                // Reglas de elegibilidad mínimas
+                bool elegible =
+                    (cobertura >= 0.40 && fracTexto >= 0.40)   // suficiente texto y cobertura
+                    || (contraste >= 0.30);                     // o buen contraste con la fila siguiente
+
+                if (!HayContinuidadDatos(r, minFilasDatos)) elegible = false;
+
+                if (elegible && score > MejorScore)
+                {
+                    MejorScore = score;
+                    mejorFila = r;
+                }
+            }
+
+            // Fallback si nada fue elegible
+            if (MejorScore == double.NegativeInfinity) return 1;
+
+            return mejorFila;
+        }
+        // --------------------------------------------------------------------
+
 
         private string DetectarTipoDato(ExcelWorksheet worksheet, int columna, int filasAAnalizar)
         {
@@ -338,10 +598,10 @@ namespace gc.sitio.Areas.Productos.Controllers
             return tipos.OrderByDescending(x => x.Value).First().Key;
         }
 
-        private int ContarValoresNoVacios(ExcelWorksheet worksheet, int columna, int totalFilas)
+        private int ContarValoresNoVacios(ExcelWorksheet worksheet, int columna,int filaDatosInicio, int totalFilas)
         {
             int count = 0;
-            for (int fila = 2; fila <= totalFilas; fila++)
+            for (int fila = filaDatosInicio; fila <= totalFilas; fila++)
             {
                 var valor = worksheet.Cells[fila, columna].Value;
                 if (valor != null && !string.IsNullOrWhiteSpace(valor.ToString()))
@@ -352,12 +612,12 @@ namespace gc.sitio.Areas.Productos.Controllers
             return count;
         }
 
-        private List<string> ObtenerEjemplosValores(ExcelWorksheet worksheet, int columna, int cantidad)
+        private List<string> ObtenerEjemplosValores(ExcelWorksheet worksheet, int columna, int cantidad, int filaDatosInicio)
         {
             var ejemplos = new List<string>();
             int encontrados = 0;
 
-            for (int fila = 2; fila <= worksheet.Dimension?.End.Row && encontrados < cantidad; fila++)
+            for (int fila = filaDatosInicio; fila <= worksheet.Dimension?.End.Row && encontrados < cantidad; fila++)
             {
                 var valor = worksheet.Cells[fila, columna].Value?.ToString()?.Trim();
                 if (!string.IsNullOrEmpty(valor))
