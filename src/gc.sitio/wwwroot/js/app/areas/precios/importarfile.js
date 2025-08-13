@@ -252,61 +252,71 @@ function procesarImportacion() {
     });
 }
 
-// ✅ NUEVA: Función para mostrar análisis de columnas
+// ✅ ACTUALIZAR: Función mostrarAnalisisColumnas con combo de mapeo
 function mostrarAnalisisColumnas(analisis) {
     const htmlAnalisis = `
         <div class="row mt-3">
             <div class="col-12">
-                <!-- ✅ INFORMACIÓN GENERAL DEL ARCHIVO -->
+                <!-- Información general del archivo (sin cambios) -->
                 <div class="alert alert-info border-0 shadow-sm">
                     <div class="d-flex align-items-center mb-2">
                         <i class="bx bx-file-blank bx-lg text-info me-3"></i>
                         <div>
-                            <h5 class="alert-heading mb-1">Análisis de Estructura</h5>
+                            <h5 class="alert-heading mb-1">Análisis de Estructura con Mapeo Automático</h5>
                             <p class="mb-0">
                                 <strong>${analisis.nombreArchivo}</strong> - Hoja: <em>${analisis.nombreHoja}</em>
                             </p>
                         </div>
                     </div>
                     <div class="row text-center">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="border-end">
                                 <h4 class="text-info mb-0">${analisis.totalFilas.toLocaleString()}</h4>
                                 <small class="text-muted">Filas Totales</small>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="border-end">
                                 <h4 class="text-info mb-0">${analisis.totalColumnas}</h4>
                                 <small class="text-muted">Columnas</small>
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <h4 class="text-info mb-0">${(analisis.totalFilas - 1).toLocaleString()}</h4>
-                            <small class="text-muted">Registros de Datos</small>
+                        <div class="col-md-3">
+                            <div class="border-end">
+                                <h4 class="text-info mb-0">${(analisis.totalFilas - 1).toLocaleString()}</h4>
+                                <small class="text-muted">Registros de Datos</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-success mb-0">${contarColumnasMapepadas(analisis.columnas)}</h4>
+                            <small class="text-muted">Auto-mapeadas</small>
                         </div>
                     </div>
                 </div>
 
-                <!-- ✅ ANÁLISIS DETALLADO DE COLUMNAS -->
+                <!-- ✅ TABLA ACTUALIZADA CON COMBO DE MAPEO -->
                 <div class="card shadow-sm">
-                    <div class="card-header bg-primary text-white">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                         <h6 class="mb-0">
                             <i class="bx bx-table me-2"></i>
-                            Estructura de Columnas Detectadas
+                            Estructura de Columnas Detectadas y Mapeo
                         </h6>
+                        <button type="button" class="btn btn-sm btn-outline-light" onclick="autoMapearTodas()">
+                            <i class="bx bx-magic-wand me-1"></i>Re-mapear Todo
+                        </button>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
                             <table class="table table-hover mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th class="text-center" style="width: 60px;">Col.</th>
-                                        <th style="min-width: 200px;">Encabezado</th>
-                                        <th class="text-center" style="width: 100px;">Tipo</th>
-                                        <th class="text-center" style="width: 80px;">Datos</th>
-                                        <th class="text-center" style="width: 100px;">% Llenado</th>
-                                        <th style="min-width: 250px;">Ejemplos</th>
+                                        <th class="text-center" style="width: 50px;">Col.</th>
+                                        <th style="min-width: 180px;">Encabezado Excel</th>
+                                        <th class="text-center" style="width: 80px;">Tipo</th>
+                                        <th class="text-center" style="width: 70px;">Datos</th>
+                                        <th class="text-center" style="width: 90px;">% Llenado</th>
+                                        <th style="min-width: 250px;">Campo Mapeado</th>
+                                        <th style="min-width: 200px;">Ejemplos</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -324,11 +334,11 @@ function mostrarAnalisisColumnas(analisis) {
                                                 </span>
                                             </td>
                                             <td class="text-center">
-                                                <strong>${columna.valoresNoVacios.toLocaleString()}</strong>
+                                                <small>${columna.valoresNoVacios.toLocaleString()}</small>
                                             </td>
                                             <td class="text-center">
                                                 <div class="d-flex align-items-center justify-content-center">
-                                                    <div class="progress me-2" style="width: 40px; height: 8px;">
+                                                    <div class="progress me-1" style="width: 30px; height: 6px;">
                                                         <div class="progress-bar ${getProgressBarClass(columna.porcentajeLlenado)}" 
                                                              style="width: ${columna.porcentajeLlenado}%"></div>
                                                     </div>
@@ -336,10 +346,26 @@ function mostrarAnalisisColumnas(analisis) {
                                                 </div>
                                             </td>
                                             <td>
+                                                <!-- ✅ COMBO DE MAPEO PRINCIPAL -->
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <select class="form-select form-select-sm mapeo-combo" 
+                                                            data-columna="${columna.indice}"
+                                                            onchange="actualizarMapeo(${columna.indice}, this.value)">
+                                                        <option value="">Sin mapear</option>
+                                                        ${generarOpcionesMapeo(analisis.camposDisponibles, columna.campoMapeado)}
+                                                    </select>
+                                                    ${columna.mapeadoAutomatico ?
+            `<span class="badge bg-success ms-1" title="Mapeo automático con ${columna.confianzaMapeo}% confianza">
+                                                            <i class="bx bx-magic-wand"></i> ${columna.confianzaMapeo}%
+                                                        </span>` : ''
+        }
+                                                </div>
+                                            </td>
+                                            <td>
                                                 <div class="d-flex flex-wrap gap-1">
-                                                    ${columna.ejemplosValores.map(ejemplo =>
-        `<small class="badge bg-light text-dark border">${truncateText(ejemplo, 20)}</small>`
-    ).join('')}
+                                                    ${columna.ejemplosValores.slice(0, 2).map(ejemplo =>
+            `<small class="badge bg-light text-dark border">${truncateText(ejemplo, 15)}</small>`
+        ).join('')}
                                                 </div>
                                             </td>
                                         </tr>
@@ -350,15 +376,22 @@ function mostrarAnalisisColumnas(analisis) {
                     </div>
                 </div>
 
-                <!-- ✅ BOTONES DE ACCIÓN -->
+                <!-- Botones de acción actualizados -->
                 <div class="d-flex justify-content-between align-items-center mt-4">
-                    <button type="button" class="btn btn-outline-secondary" onclick="cancelarAnalisis()">
-                        <i class="bx bx-x me-1"></i>Cancelar
-                    </button>
+                    <div class="d-flex align-items-center gap-3">
+                        <button type="button" class="btn btn-outline-secondary" onclick="cancelarAnalisis()">
+                            <i class="bx bx-x me-1"></i>Cancelar
+                        </button>
+                        <div class="text-muted small">
+                            <i class="bx bx-info-circle me-1"></i>
+                            <span id="contadorMapeados">${contarColumnasMapepadas(analisis.columnas)}</span> 
+                            de ${analisis.columnas.length} columnas mapeadas
+                        </div>
+                    </div>
                     
                     <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-outline-primary" onclick="configurarMapeoColumnas()">
-                            <i class="bx bx-cog me-1"></i>Configurar Mapeo
+                        <button type="button" class="btn btn-outline-warning" onclick="validarMapeo()">
+                            <i class="bx bx-check-shield me-1"></i>Validar Mapeo
                         </button>
                         <button type="button" class="btn btn-success" onclick="confirmarEIniciarImportacion()">
                             <i class="bx bx-check-double me-1"></i>Confirmar e Importar
@@ -370,6 +403,82 @@ function mostrarAnalisisColumnas(analisis) {
     `;
 
     $('#mainContent').html(htmlAnalisis).hide().slideDown(400);
+
+    // ✅ GUARDAR: Referencia global para uso posterior
+    window.analisisActual = analisis;
+}
+
+// ✅ NUEVAS: Funciones de soporte para mapeo
+function generarOpcionesMapeo(camposDisponibles, campoSeleccionado) {
+    return camposDisponibles.map(campo =>
+        `<option value="${campo.dato}" ${campo.dato === campoSeleccionado ? 'selected' : ''}>
+            ${campo.campo} (${campo.dato})
+        </option>`
+    ).join('');
+}
+
+function contarColumnasMapepadas(columnas) {
+    return columnas.filter(col => col.campoMapeado && col.campoMapeado !== '').length;
+}
+
+function actualizarMapeo(columnaIndice, nuevoCampo) {
+    if (!window.analisisActual) return;
+
+    const columna = window.analisisActual.columnas.find(col => col.indice === columnaIndice);
+    if (columna) {
+        columna.campoMapeado = nuevoCampo;
+        columna.mapeadoAutomatico = false; // Ya no es automático
+
+        // Buscar descripción del campo
+        const campoInfo = window.analisisActual.camposDisponibles.find(c => c.dato === nuevoCampo);
+        columna.descripcionMapeado = campoInfo ? campoInfo.campo : '';
+
+        // Actualizar contador
+        $('#contadorMapeados').text(contarColumnasMapepadas(window.analisisActual.columnas));
+
+        console.log(`✅ Mapeo actualizado: Columna ${columna.letra} → ${nuevoCampo}`);
+    }
+}
+
+function autoMapearTodas() {
+    AbrirMensaje("CONFIRMACIÓN",
+        "¿Desea aplicar el mapeo automático a todas las columnas? Esto sobrescribirá los mapeos manuales.",
+        function (respuesta) {
+            $("#msjModal").modal("hide");
+            if (respuesta === "SI") {
+                // Re-ejecutar análisis con mapeo automático
+                procesarImportacion();
+            }
+        },
+        true, ["Continuar", "Cancelar"], "info!", null);
+}
+
+function validarMapeo() {
+    if (!window.analisisActual) return;
+
+    const columnasMapeadas = window.analisisActual.columnas.filter(col => col.campoMapeado);
+    const columnasRequeridas = ['codigo', 'precio']; // Campos mínimos requeridos
+
+    let mensajeValidacion = `<div class="mb-3">
+        <strong>Resumen del Mapeo:</strong><br>
+        • ${columnasMapeadas.length} de ${window.analisisActual.columnas.length} columnas mapeadas<br>
+        • Campos detectados: ${columnasMapeadas.map(c => c.descripcionMapeado).join(', ')}
+    </div>`;
+
+    // Verificar campos requeridos
+    const faltantes = columnasRequeridas.filter(req =>
+        !columnasMapeadas.some(col => col.campoMapeado.includes(req))
+    );
+
+    if (faltantes.length > 0) {
+        mensajeValidacion += `<div class="alert alert-warning">
+            <strong>Advertencia:</strong> Faltan campos importantes: ${faltantes.join(', ')}
+        </div>`;
+    }
+
+    AbrirMensaje("Validación de Mapeo", mensajeValidacion,
+        () => $("#msjModal").modal("hide"), false, ["Aceptar"],
+        faltantes.length > 0 ? "warn!" : "success!", null);
 }
 
 // ✅ FUNCIONES AUXILIARES PARA PRESENTACIÓN

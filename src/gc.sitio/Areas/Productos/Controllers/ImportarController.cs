@@ -90,6 +90,12 @@ namespace gc.sitio.Areas.Productos.Controllers
 
                 var analisis = await AnalizarEstructuraExcel(archivo);
 
+                // ✅ NUEVO: Incluir campos disponibles para mapeo
+                analisis.CamposDisponibles = DatosParaImportacion;
+
+                // ✅ NUEVO: Aplicar mapeo automático inteligente
+                AplicarMapeoAutomaticoInteligente(analisis);
+
                 return Json(new
                 {
                     error = false,
@@ -108,6 +114,146 @@ namespace gc.sitio.Areas.Productos.Controllers
             }
         }
 
+        // ✅ NUEVA: Método para mapeo automático inteligente
+        private void AplicarMapeoAutomaticoInteligente(AnalisisExcelDto analisis)
+        {
+            foreach (var columna in analisis.Columnas)
+            {
+                var mapeoEncontrado = BuscarMejorMapeo(columna, analisis.CamposDisponibles);
+
+                if (mapeoEncontrado != null)
+                {
+                    columna.CampoMapeado = mapeoEncontrado.dato;
+                    columna.DescripcionMapeado = mapeoEncontrado.Campo;
+                    columna.MapeadoAutomatico = true;
+
+                    _logger?.LogInformation($"Mapeo automático: '{columna.Encabezado}' → '{mapeoEncontrado.Campo}' (Confianza: {columna.ConfianzaMapeo}%)");
+                }
+            }
+        }
+
+        // ✅ NUEVA: Algoritmo inteligente de mapeo por similitud
+        private PrecioFileDatos? BuscarMejorMapeo(ColumnaExcelDto columna, List<PrecioFileDatos> camposDisponibles)
+        {
+            var encabezadoLimpio = LimpiarTexto(columna.Encabezado);
+
+            // ✅ DICCIONARIO DE SINÓNIMOS COMUNES
+            var sinonimos = new Dictionary<string, string[]>
+            {
+                ["ean"] = ["ean", "codigo barras", "cod barras", "barcode", "gtin"],
+                ["codigo"] = ["codigo", "cod", "code", "item", "articulo", "art"],
+                ["descripcion"] = ["descripcion", "desc", "producto", "nombre", "detalle"],
+                ["precio"] = ["precio", "price", "valor", "importe", "monto"],
+                ["costo"] = ["costo", "cost", "precio compra"],
+                ["descuento"] = ["descuento", "desc", "discount", "dto", "rebaja"],
+                ["stock"] = ["stock", "existencia", "cantidad", "qty"],
+                ["marca"] = ["marca", "brand", "fabricante"],
+                ["categoria"] = ["categoria", "rubro", "familia", "grupo"],
+                ["peso"] = ["peso", "weight", "kg"],
+                ["medida"] = ["medida", "unidad", "unit", "um"]
+            };
+
+            PrecioFileDatos? mejorMapeo = null;
+            int mayorConfianza = 0;
+
+            foreach (var campo in camposDisponibles)
+            {
+                var confianza = CalcularConfianzaMapeo(encabezadoLimpio, campo, sinonimos, columna.TipoDetectado);
+
+                if (confianza > mayorConfianza && confianza >= 70) // Umbral mínimo 70%
+                {
+                    mayorConfianza = confianza;
+                    mejorMapeo = campo;
+                    columna.ConfianzaMapeo = confianza;
+                }
+            }
+
+            return mejorMapeo;
+        }
+
+        // ✅ NUEVA: Calcular confianza de mapeo con múltiples criterios
+        private int CalcularConfianzaMapeo(string encabezado, PrecioFileDatos campo,
+            Dictionary<string, string[]> sinonimos, string tipoDetectado)
+        {
+            var campoLimpio = LimpiarTexto(campo.Campo);
+            int confianza = 0;
+
+            // ✅ CRITERIO 1: Coincidencia exacta (100%)
+            if (encabezado == campoLimpio)
+                return 100;
+
+            // ✅ CRITERIO 2: Coincidencia parcial directa (80%)
+            if (encabezado.Contains(campoLimpio) || campoLimpio.Contains(encabezado))
+                confianza = Math.Max(confianza, 80);
+
+            // ✅ CRITERIO 3: Búsqueda en sinónimos (60-90%)
+            foreach (var sinonimo in sinonimos)
+            {
+                if (sinonimo.Value.Any(s => encabezado.Contains(s)))
+                {
+                    var palabrasClave = new[] { "precio", "ean", "codigo", "descripcion" };
+                    if (palabrasClave.Any(p => campoLimpio.Contains(p)))
+                    {
+                        confianza = Math.Max(confianza, 85);
+                    }
+                    else
+                    {
+                        confianza = Math.Max(confianza, 60);
+                    }
+                }
+            }
+
+            // ✅ CRITERIO 4: Compatibilidad de tipos (+10%)
+            if (VerificarCompatibilidadTipo(tipoDetectado, campo.Tipo))
+            {
+                confianza += 10;
+            }
+
+            // ✅ CRITERIO 5: Patrones específicos
+            confianza += DetectarPatronesEspecificos(encabezado, campo);
+
+            return Math.Min(confianza, 100); // Máximo 100%
+        }
+
+        // ✅ NUEVA: Funciones auxiliares
+        private string LimpiarTexto(string texto)
+        {
+            return texto.ToLowerInvariant()
+                        .Replace("_", " ")
+                        .Replace("-", " ")
+                        .Replace(".", "")
+                        .Trim();
+        }
+
+        private bool VerificarCompatibilidadTipo(string tipoDetectado, char tipoCampo)
+        {
+            return tipoDetectado switch
+            {
+                "Número" => tipoCampo == 'N',
+                "Texto" => tipoCampo == 'T',
+                "Fecha" => tipoCampo == 'D',
+                _ => false
+            };
+        }
+
+        private int DetectarPatronesEspecificos(string encabezado, PrecioFileDatos campo)
+        {
+            var patrones = new Dictionary<string, string[]>
+            {
+                ["p_ean"] = ["ean", "13", "barras", "gtin"],
+                ["p_plista"] = ["lista", "price", "precio", "$"],
+                ["p_desc"] = ["desc", "nombre", "producto"],
+                ["p_codigo"] = ["cod", "item", "art", "ref"]
+            };
+
+            if (patrones.ContainsKey(campo.dato))
+            {
+                var palabrasClave = patrones[campo.dato];
+                return palabrasClave.Any(p => encabezado.Contains(p)) ? 15 : 0;
+            }
+
+            return 0;
+        }
         private async Task<AnalisisExcelDto> AnalizarEstructuraExcel(IFormFile archivo)
         {
             using var stream = new MemoryStream();
