@@ -1,7 +1,10 @@
 ﻿$(function () {
 	InicializaPantalla();
-	$("#Date1").on("change", function () { ValidarFechas(); });
-	$("#Date2").on("change", function () { ValidarFechas(); });
+	// Validar al salir del campo
+	$("#Date1, #Date2").on("blur", ValidarFechasClick);
+	// Validar al seleccionar con el mouse
+	$("#Date1, #Date2").on("change", ValidarFechasClick);
+
 	$("#pagEstado").on("change", function () {
 		var div = $("#divPaginacion");
 		presentaPaginacionConsultaOP(div);
@@ -511,7 +514,23 @@ function BuscarOrdenesDePago(pag = 1) {
 	});
 }
 
+function ValidarFechasClick() {
+	const desde = $("#Date1").val();
+	const hasta = $("#Date2").val();
+
+	if (desde && hasta && desde > hasta) {
+		AbrirMensaje("ATENCIÓN", "El valor de Fecha Desde no puede ser mayor a Fecha Hasta, revise.", function () {
+			$("#msjModal").modal("hide");
+			$("#Date1").val($("#Date2").val());
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	} else {
+		ActualizarListaDeUsuarios();
+	}
+
+}
 function ValidarFechas() {
+	console.log("ValidarFechas entró");
 	if ($("#Date1").val() > $("#Date2").val()) {
 		AbrirMensaje("ATENCIÓN", "El valor de Fecha Desde no puede ser mayor a Fecha Hasta, revise.", function () {
 			$("#msjModal").modal("hide");

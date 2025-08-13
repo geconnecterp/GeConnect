@@ -19,11 +19,16 @@
 	$(document).on("keyup", "#OtroTributo_base_imp", ControlaKeyUpOtroTributo_base_imp);
 
 	$(document).on("keyup", "#itemOPD_cm_compte_pto_vta", ControlaKeyUpComptePtoVta);
+	$(document).on("focusout", "#itemOPD_cm_compte_pto_vta", ControlaFocusOutComptePtoVta);
 	$(document).on("keyup", "#itemOPD_cm_compte_pto_nro", ControlaKeyUpCompteNro);
+	$(document).on("focusout", "#itemOPD_cm_compte_pto_nro", ControlaFocusOutCompteNro);
 	$(document).on("keyup", "#itemOPD_cm_cuit", ControlaKeyUpCmCuit);
+	$(document).on("focusout", "#itemOPD_cm_cuit", ControlaFocusOutCmCuit);
 	$(document).on("keyup", "#itemOPD_cm_nombre", ControlaKeyUpCmNombre);
 	$(document).on("keyup", "#itemOPD_cm_domicilio", ControlaKeyUpCmDomicilio);
 	$(document).on("keyup", "#itemOPD_cm_fecha", ControlaKeyUpCmFecha);
+	$(document).on("blur", "#itemOPD_cm_fecha", ValidarCMFecha);
+
 	$(document).on("keyup", "#Rel03", ControlaKeyUpRel03);
 
 	$(document).on("click", "#btnAbmAgregarItem", AbmAgregarItem);
@@ -115,6 +120,24 @@ const formatter = new Intl.NumberFormat('de-DE', {
 var keysAceptadas = [8, 37, 39, 46, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 110, 190];
 var accion = "";
 
+function ControlaFocusOutComptePtoVta() {
+	var ptv = $("#itemOPD_cm_compte_pto_vta").inputmask('unmaskedvalue');
+	if (ptv != "") {
+		var aux = $("#itemOPD_cm_compte_pto_vta").inputmask('unmaskedvalue').padStart(4, '0');
+		$("#itemOPD_cm_compte_pto_vta").val(aux);
+		$("#itemOPD_cm_compte_pto_nro").trigger("focus");
+	}
+}
+
+function ControlaFocusOutCompteNro() {
+	var nro = $("#itemOPD_cm_compte_pto_nro").inputmask('unmaskedvalue');
+	if (nro != "") {
+		var aux = $("#itemOPD_cm_compte_pto_nro").inputmask('unmaskedvalue').padStart(8, '0');
+		$("#itemOPD_cm_compte_pto_nro").val(aux);
+		$("#itemOPD_cm_fecha").trigger("focus");
+	}
+}
+
 function ControlaKeyUpComptePtoVta(e) {
 	if (e.which == 13 || e.which == 109) {
 		var aux = $("#itemOPD_cm_compte_pto_vta").inputmask('unmaskedvalue').padStart(4, '0');
@@ -131,6 +154,9 @@ function ControlaKeyUpCompteNro(e) {
 	}
 }
 
+function ControlaFocusOutCmCuit() {
+	BuscarCuentaPorCuit($("#itemOPD_cm_cuit").inputmask('unmaskedvalue'));
+}
 function ControlaKeyUpCmCuit(e) {
 	if (e.which == 13 || e.which == 109) {
 		BuscarCuentaPorCuit($("#itemOPD_cm_cuit").inputmask('unmaskedvalue'));
@@ -151,7 +177,20 @@ function ControlaKeyUpCmDomicilio(e) {
 
 function ControlaKeyUpCmFecha(e) {
 	if ($("#itemOPD_cm_fecha").val() != "") {
-		$("#listaCtaDir").trigger("focus");
+	}
+}
+
+function ValidarCMFecha() {
+	const desde = $("#itemOPD_cm_fecha").val();
+	var minDesde = moment(desde);
+	var min = moment().add(-6, 'years');
+	if (minDesde && min && minDesde < min) {
+		$("#itemOPD_cm_fecha").val(moment().format('yyyy-MM-DD'));
+		AbrirMensaje("ATENCIÓN", "El valór mínimo de fecha no puede superar los 6 años hacia atrás.", function () {
+			$("#msjModal").modal("hide");
+			$("#itemOPD_cm_fecha").trigger("focus");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
 	}
 }
 
@@ -784,7 +823,7 @@ function CargarMascaras() {
 	$("#itemOPD_cm_compte_pto_nro").inputmask("99999999");
 
 	var now = moment().format('yyyy-MM-DD');
-	$("#itemOPD_cm_fecha").attr('min', now);
+	$("#itemOPD_cm_fecha").attr('max', now);
 	$("#itemOPD_cm_fecha").val(now);
 }
 

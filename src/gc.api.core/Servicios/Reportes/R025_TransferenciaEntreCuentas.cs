@@ -116,8 +116,23 @@ namespace gc.api.core.Servicios.Reportes
 				HelperPdf.CargarTablaDatosDeAcuseDeTransferencia_Encabezado(pdf, registros.First(), normal, normalBold, titulo);
 				#endregion
 
-				//Chunk linebreak = new Chunk(new LineSeparator(1f, 100f, BaseColor.Black, Element.ALIGN_CENTER, 5));
-				//pdf.Add(linebreak);
+				#region Origen
+				if (registros.Where(x => x.grupo.Equals(1)).Any())
+				{
+					HelperPdf.CargarTablaDatosDeAcuseDeTransferencia_Origen(pdf, [.. registros.Where(x=>x.grupo.Equals(1))], normal, normalBold, titulo);
+				}
+				#endregion
+
+				#region Destino
+				if (registros.Where(x => x.grupo.Equals(2)).Any())
+				{
+					HelperPdf.CargarTablaDatosDeAcuseDeTransferencia_Destino(pdf, [.. registros.Where(x => x.grupo.Equals(2))], normal, normalBold, titulo);
+				}
+				#endregion
+
+				#region Gastos
+				//TODO MARCE
+				#endregion
 
 				pdf.Close();
 				#endregion
@@ -149,6 +164,13 @@ namespace gc.api.core.Servicios.Reportes
 			tra_compte = traCompte;
 			return listaTemp;
 
+		}
+
+		private List<FinancieroTraRepoCtagDto> ObtenterDatosCtag(ReporteSolicitudDto solicitud)
+		{
+			var traCompte = solicitud.Parametros.GetValueOrDefault("tra_compte", "").ToString();
+			var listaTemp = _finSrv.GetFinancieroTraRepoCtag(traCompte);
+			return listaTemp;
 		}
 
 		public string GenerarTxt(ReporteSolicitudDto solicitud)
