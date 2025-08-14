@@ -19,7 +19,7 @@ namespace gc.infraestructura.Dtos.OrdenDePago.Dtos
 		public string fc_compte { get; set; } = string.Empty;
 		public int fc_item { get; set; }
 		public string fc_dia_movi { get; set; } = string.Empty;
-		public string fc_cta_id { get; set; } = string.Empty;
+		public string? fc_cta_id { get; set; } = string.Empty;
 		public string fc_anombre { get; set; } = string.Empty;
 		public string concepto_valor { get; set; } = string.Empty;
 		public int resultado { get; set; }

@@ -58,6 +58,7 @@ namespace gc.api.core.Servicios.Reportes
 				string subTit;
 				string tra_compte;
 				List<FinancieroTraRepoDDto> registros = ObtenerDatos(solicitud, out tit, out subTit, out tra_compte);
+				List<FinancieroTraRepoCtagDto> registrosCtag = ObtenterDatosCtag(solicitud);
 
 				if (registros == null || registros.Count <= 0)
 					throw new NegocioException($"No existen datos relacionados a la transferencia N° {tra_compte}.");
@@ -131,7 +132,17 @@ namespace gc.api.core.Servicios.Reportes
 				#endregion
 
 				#region Gastos
-				//TODO MARCE
+				if (registrosCtag.Any())
+				{ 
+					HelperPdf.CargarTablaDatosDeAcuseDeTransferencia_Ctag(pdf, registrosCtag, normal, normalBold, titulo);
+				}
+				#endregion
+
+				#region Total
+				if (registros.Where(x => x.grupo.Equals(1)).Any())
+				{
+					HelperPdf.CargarTablaDatosDeAcuseDeTransferencia_Total(pdf, registros, normal, normalBold);
+				}
 				#endregion
 
 				pdf.Close();
@@ -146,13 +157,10 @@ namespace gc.api.core.Servicios.Reportes
 			}
 			catch (Exception ex)
 			{
-				//_logger.Log(typeof(R001_InformeCuentaCorriente), Level.Error, $"Error al generar el informe de cuenta corriente: {ex.Message}", ex);
-				_logger.LogError(ex, "Error en R023");
-				throw new NegocioException("Se produjo un error al intentar generar el Reporte de Orden de Pago Directa. Para mayores datos ver el log.");
+				_logger.LogError(ex, "Error en R025");
+				throw new NegocioException("Se produjo un error al intentar generar el Reporte de Transferencias. Para mayores datos ver el log.");
 			}
 		}
-
-
 
 		private List<FinancieroTraRepoDDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo, out string subTitulo, out string tra_compte)
 		{

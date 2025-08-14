@@ -70,7 +70,9 @@ function btnAbmAceptarControlar() {
 	}
 	else {
 		var data = {};
+		AbrirWaiting();
 		PostGen(data, validarAntesDeGuardarURL, function (obj) {
+			CerrarWaiting();
 			if (obj.error === true) {
 				AbrirMensaje("ATENCIÓN", obj.msg, function () {
 					$("#msjModal").modal("hide");
@@ -99,12 +101,11 @@ function btnAbmAceptarControlar() {
 									}, false, ["Aceptar"], "error!", null);
 								}
 								else {
-									console.log(obj.id);
 									AbrirMensaje("ATENCIÓN", obj.msg, function () {
 										$("#msjModal").modal("hide");
 										console.log(obj.id); //Tomar este valor para imprimir.
-										ImprimirTRA_Generada(obj.id, ctaIdSelected);
-										btnAbmCancelar_click();
+										ImprimirTRA_Generada(obj.id);
+										btnAbmCancelarControlar();
 										return true;
 									}, false, ["Aceptar"], "succ!", null);
 								}
@@ -202,6 +203,7 @@ function InicializarCampos() {
 			}
 		});
 	}
+	$("#concepto").val("");
 	$("#total_origen").val(0);
 	$("#total_destino").val(0);
 	getMaskForMoneyType("#total_origen");

@@ -125,16 +125,18 @@ function btnAceptarAgregarValorValidar() {
 				listaObjValor.push(newItem);
 				break;
 			case "CH": //Cartera
-				$("#tbValoresEnCartera").find('tr').each(function (i, el) {
-					var td = $(this).find('td');
-					if (td.eq(0)[0]) {
-						if (td.eq(5)[0].children[0].checked) {
-							var newItem = new ObjValor(ctaf_id, ctaf_denominacion, tcf_id_selected, " ", " ", td.eq(2).text(), td.eq(6).text(), td.eq(3).text(), td.eq(7).text(), td.eq(8).text(), td.eq(9).text(), td.eq(4).text().replace(',', ''), td.eq(13).text(),
-								td.eq(10).text(), td.eq(11).text(), td.eq(12).text(), $("#CtaID").val(), " ", " ", 0, " ");
-							listaObjValor.push(newItem);
+				if ($("#tbValoresEnCartera")) {
+					$("#tbValoresEnCartera").find('tr').each(function (i, el) {
+						var td = $(this).find('td');
+						if (td.eq(0)[0]) {
+							if (td.eq(5)[0].children[0].checked) {
+								var newItem = new ObjValor(ctaf_id, ctaf_denominacion, tcf_id_selected, " ", " ", td.eq(2).text(), td.eq(6).text(), td.eq(3).text(), td.eq(7).text(), td.eq(8).text(), td.eq(9).text(), td.eq(4).text().replace(',', ''), td.eq(13).text(),
+									td.eq(10).text(), td.eq(11).text(), td.eq(12).text(), $("#CtaID").val(), " ", " ", 0, " ");
+								listaObjValor.push(newItem);
+							}
 						}
-					}
-				});
+					});
+				}
 				break;
 			default:
 		}
@@ -317,7 +319,6 @@ function seleccionarTipoFin(x) {
 				$("#Fecha").attr('min', min.format('yyyy-MM-DD'));
 				$("#Fecha").attr('max', max.format('yyyy-MM-DD'));
 				$("#Fecha").val(now);
-				/*$("#Importe").val(importe);*/
 				getMaskForMoneyType("#ImporteS");
 				break;
 			case "EC"://Emision de cheques
@@ -330,11 +331,9 @@ function seleccionarTipoFin(x) {
 				$("#Fecha").val(now);
 				getMaskForMoneyType("#ImporteS");
 				$("#ANombreDe").val(valor_a_nombre_de);
-				/*$("#Importe").val(importe);*/
 				break;
 			case "EF": //Efectivo
 				getMaskForMoneyType("#ImporteS");
-				/*$("#Importe").val(importe);*/
 				break;
 			case "CH":
 				$("#chkVerSoloValoresVencidos").on("change", function () {
@@ -378,6 +377,7 @@ function seleccionarFinanciero(x) {
 	if (tcf_id_selected == "CH") {
 		AbrirWaiting("Actualizando lista...");
 		ctaf_id = x.cells[2].innerText.trim();
+		ctaf_denominacion = x.cells[0].innerText.trim();
 		var verSoloValoresVencidos = $("#chkVerSoloValoresVencidos")[0].checked
 		var data = { ctaf_id, verSoloValoresVencidos };
 		PostGenHtml(data, cargarGrillaFinancieroCarteraEnSeleccionDeValoresUrl, function (obj) {
@@ -390,21 +390,11 @@ function seleccionarFinanciero(x) {
 				ControlaMensajeInfo("Sin resultados para la Cartera seleccionada.");
 			}
 			AgregarHandlerAHeaderEnGrillaValoresEnCartera();
+			$("#btnAceptarAgregarValor").prop("disabled", false);
 		});
 	}
 	seleccionarGrilla(x, 'tbFinanciero');
 }
-
-//function desactivarGrilla(gridId) {
-//	$("#" + gridId + "").addClass("disable-table-rows");
-//	$(".table-wrapper").css("overflow", "hidden");
-//}
-
-//function activarGrilla(gridId) {
-//	$("#" + gridId + "").removeClass("disable-table-rows");
-//	$(".table-wrapper").css("overflow", "auto");
-
-//}
 
 function seleccionarValoresEnCartera(x) {
 	seleccionarGrilla(x, 'tbValoresEnCartera');

@@ -1707,7 +1707,6 @@ namespace gc.infraestructura.Helpers
 			pdf.Add(tabla);
 		}
 
-		//TODO MARCE
 		public static void CargarTablaDatosDeAcuseDeTransferencia_Origen(Document pdf, List<FinancieroTraRepoDDto> registros, Font fuenteEtiqueta, Font fuenteValor, Font titulo)
 		{
 			// FILA 1 - TITULO DE SECCION
@@ -1753,7 +1752,6 @@ namespace gc.infraestructura.Helpers
 			pdf.Add(tablaTotal);
 		}
 
-		//TODO MARCE
 		public static void CargarTablaDatosDeAcuseDeTransferencia_Destino(Document pdf, List<FinancieroTraRepoDDto> registros, Font fuenteEtiqueta, Font fuenteValor, Font titulo)
 		{
 			// FILA 1 - TITULO DE SECCION
@@ -1795,6 +1793,68 @@ namespace gc.infraestructura.Helpers
 				PaddingTop = 0f,
 				BackgroundColor = BaseColor.LightGray
 			};
+			tablaTotal.AddCell(celdaTotal);
+			pdf.Add(tablaTotal);
+		}
+
+		public static void CargarTablaDatosDeAcuseDeTransferencia_Ctag(Document pdf, List<FinancieroTraRepoCtagDto> registros, Font fuenteEtiqueta, Font fuenteValor, Font titulo)
+		{
+			// FILA 1 - TITULO DE SECCION
+			PdfPTable tabla = GeneraTabla(1, [100f], 100, 10, 10);
+			PdfPCell celdaTitulo = new PdfPCell(new Phrase("Gastos por Transferencias", HelperPdf.FontSubtituloPredeterminado(true)))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_LEFT,
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				PaddingTop = 0f,
+				PaddingBottom = 0f
+			};
+			tabla.AddCell(celdaTitulo);
+			pdf.Add(tabla);
+
+			//FILA 2 - TABLA
+			List<string> _titulosTabla = ["Código", "Denominación", "Tipo Comprobante", "Comprobante", "Número", "Importe",];
+			float[] _anchosTitulosTabla = [10f, 30f, 10f, 20f, 20f, 10f];
+			List<string> _campos = ["ctag_id", "ctag_denominacion", "tco_id", "tco_desc", "cm_compte", "cm_importe",];
+
+			HelperPdf.GeneraCabeceraLista(pdf, _titulosTabla, _anchosTitulosTabla, HelperPdf.FontNormalPredeterminado(true));
+
+			var regsAux = registros.Select(x => new
+			{
+				x.ctag_id,
+				x.ctag_denominacion,
+				x.tco_id,
+				x.tco_desc,
+				x.cm_compte,
+				x.cm_importe,
+			}).ToList();
+			HelperPdf.GenerarListadoDesdeLista(pdf, regsAux, _campos, _anchosTitulosTabla, fuenteEtiqueta);
+
+			// FILA 3
+			PdfPTable tablaTotal = GeneraTabla(1, [100f], 100, 0, 10);
+			PdfPCell celdaTotal = new PdfPCell(new Phrase($"Total: {registros.Sum(y => y.cm_importe).ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_RIGHT,
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				PaddingTop = 0f,
+				BackgroundColor = BaseColor.LightGray
+			};
+			tablaTotal.AddCell(celdaTotal);
+			pdf.Add(tablaTotal);
+		}
+
+		public static void CargarTablaDatosDeAcuseDeTransferencia_Total(Document pdf, List<FinancieroTraRepoDDto> regs, Font fuenteEtiqueta, Font fuenteValor)
+		{
+			PdfPTable tablaTotal = GeneraTabla(1, [100f], 100, 0, 10);
+			PdfPCell celdaTotal = new PdfPCell(new Phrase($"Total de Ingreso en Cuentas Destino y Gastos Asociados: {regs.Where(x=>x.grupo.Equals(1)).Sum(y => y.fc_importe)}", HelperPdf.FontNormalPredeterminado(true)))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_RIGHT,
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				PaddingTop = 0f
+			};
+
 			tablaTotal.AddCell(celdaTotal);
 			pdf.Add(tablaTotal);
 		}
