@@ -1,0 +1,85 @@
+﻿@model SeleccionValoresAPresentarModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+	var col1 = Model.titulo_col_1;
+	var col2 = Model.titulo_col_2;
+	var col3 = Model.titulo_col_3;
+}
+<div class="row justify-content-sm-center mb-1 mt-1">
+	<div class="col-md-2">
+		<div class="d-flex justify-content-sm-center">
+			<button id="btnAnterior3" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Anterior">
+				<i class="bx bx-arrow-to-left bx-xs"></i>
+			</button>
+			<button id="btnSiguiente3" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Siguiente">
+				<i class="bx bx-arrow-to-right bx-xs"></i>
+			</button>
+			<button id="btnConfirmar1" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Confirmar" disabled>
+				<i class="bx bx-check-circle"></i>
+			</button>
+			<button id="btnAbmCancelar1" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar" onclick="btnAbmCancelar_click();">
+				<i class="bx bx-x-circle bx-xs"></i>
+			</button>
+		</div>
+	</div>
+</div>
+<div class="row col-12 justify-content-sm-center mb-1">
+	<div class="col-2"></div>
+	<div class="col-8">
+		<div class="input-group input-group-sm">
+			<input type="text" asp-for="ctaf_id" class="form-control inputEditable" disabled style="text-align:center;"/>
+			<input type="text" asp-for="ctaf_desc" class="form-control inputEditable" disabled style="width:75%;"/>
+		</div>
+	</div>
+	<div class="col-2"></div>
+</div>
+<div class="row col-12 justify-content-sm-center mb-1">
+	<div class="col-2"></div>
+	<div class="col-8">
+		<div class="table-responsive table-wrapper-400-full-width" id="containerValores">
+			<table class="table table-bordered table-hover" id="tbValores">
+				<thead class="table-dark">
+					<tr>
+						<th style="width:15%;" class="col-header-small align-center tiny-row">Fecha Valor</th>
+						<th style="width:15%;" class="col-header-small align-center tiny-row">Fecha Carga</th>
+						<th style="width:40%;" class="col-header-small align-center tiny-row">@col1</th>
+						<th style="width:10%;" class="col-header-small align-center tiny-row">@col2</th>
+						<th style="width:10%;" class="col-header-small align-center tiny-row">@col3</th>
+						<th style="width:10%;" class="col-header-small align-center tiny-row">Importe</th>
+						<th style="width:2%;padding: 0;text-align-last: center;vertical-align: middle;"><input name="select_all" value="1" type="checkbox"></th>
+					</tr>
+				</thead>
+				<tbody>
+					@if (Model != null && Model.GrillaValoresAPresentar != null && Model.GrillaValoresAPresentar.ListaDatos != null && Model.GrillaValoresAPresentar.ListaDatos.Count > 0)
+					{
+						@foreach (var item in Model.GrillaValoresAPresentar.ListaDatos)
+						{
+							var nombre = item.fc_compte + "_" + item.fc_item;
+							var nombre_check = nombre + "_checkbox";
+							<tr onclick="selectReg(this, 'tbValores')">
+								<td class="@Model.GrillaValoresAPresentar.ObtenerClase(item.fc_fecha_valor) align-center cell-fit-content">@Model.GrillaValoresAPresentar.FormatearDato(item.fc_fecha_valor, FormatDato.Fecha)</td>
+								<td class="@Model.GrillaValoresAPresentar.ObtenerClase(item.fc_fecha) align-center cell-fit-content">@Model.GrillaValoresAPresentar.FormatearDato(item.fc_fecha, FormatDato.Fecha)</td>
+								<td class="@Model.GrillaValoresAPresentar.ObtenerClase(item.fc_dato1_valor) cell-fit-content">@Model.GrillaValoresAPresentar.FormatearDato(item.fc_dato1_valor, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaValoresAPresentar.ObtenerClase(item.fc_dato2_valor) cell-fit-content">@Model.GrillaValoresAPresentar.FormatearDato(item.fc_dato2_valor, FormatDato.Monto)</td>
+								<td class="@Model.GrillaValoresAPresentar.ObtenerClase(item.fc_dato3_valor) cell-fit-content">@Model.GrillaValoresAPresentar.FormatearDato(item.fc_dato3_valor, FormatDato.Monto)</td>
+								<td class="@Model.GrillaValoresAPresentar.ObtenerClase(item.fc_importe) cell-fit-content">@Model.GrillaValoresAPresentar.FormatearDato(item.fc_importe, FormatDato.Monto)</td>
+								<td style="padding: 0; text-align-last: center;"><input type="checkbox" name=@nombre_check id="@nombre_check" /></td>
+							</tr>
+						}
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<div class="col-2"></div>
+</div>
+<div class="row col-12 mb-1">
+	<div class="col-7"></div>
+	<div class="col-3 justify-content-sm-end">
+		<div class="input-group input-group-sm">
+			<span class="input-group-text">Total Seleccionado: </span>
+			<input type="text" asp-for="total" class="form-control inputEditable" disabled style="text-align:end;"/>
+		</div>
+	</div>
+	<div class="col-2"></div>
+</div>

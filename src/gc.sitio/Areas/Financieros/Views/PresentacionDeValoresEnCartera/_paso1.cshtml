@@ -1,0 +1,32 @@
+﻿@model PresDeValEnCartera_Paso1Model
+@{
+	var list = Model.ListaTipoMedioDePago;
+}
+<div class="row justify-content-sm-center mb-1 mt-1">
+	<div class="col-md-2">
+		<div class="d-flex justify-content-sm-center">
+			<button id="btnAnterior1" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Anterior" disabled>
+				<i class="bx bx-arrow-to-left bx-xs"></i>
+			</button>
+			<button id="btnSiguiente1" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Siguiente">
+				<i class="bx bx-arrow-to-right bx-xs"></i>
+			</button>
+			<button id="btnConfirmar1" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Confirmar" disabled>
+				<i class="bx bx-check-circle"></i>
+			</button>
+			<button id="btnAbmCancelar1" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar" onclick="btnAbmCancelar_click();">
+				<i class="bx bx-x-circle bx-xs"></i>
+			</button>
+		</div>
+	</div>
+</div>
+<div class="row col-12 justify-content-sm-center mb-1">
+	<div class="col-2"></div>
+	<div class="col-8">
+		<div class="input-group input-group-sm mt-1">
+			<span class="input-group-text fixed-lbl-for-abm-150">Tipo de Medio de Pago: </span>
+			@Html.DropDownListFor(m => m.tpo_medio, list, "Seleccionar...", new { @id = "listaTipoMedioPago", @class = "form-control activable" })
+		</div>
+	</div>
+	<div class="col-2"></div>
+</div>

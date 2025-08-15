@@ -1,0 +1,52 @@
+﻿@model SeleccionCtaFinModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+}
+<div class="row justify-content-sm-center mb-1 mt-1">
+	<div class="col-md-2">
+		<div class="d-flex justify-content-sm-center">
+			<button id="btnAnterior2" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Anterior">
+				<i class="bx bx-arrow-to-left bx-xs"></i>
+			</button>
+			<button id="btnSiguiente2" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Siguiente">
+				<i class="bx bx-arrow-to-right bx-xs"></i>
+			</button>
+			<button id="btnConfirmar1" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Confirmar" disabled>
+				<i class="bx bx-check-circle"></i>
+			</button>
+			<button id="btnAbmCancelar1" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar" onclick="btnAbmCancelar_click();">
+				<i class="bx bx-x-circle bx-xs"></i>
+			</button>
+		</div>
+	</div>
+</div>
+<div class="row col-12 justify-content-sm-center mb-1">
+	<div class="col-2"></div>
+	<div class="col-8">
+		<div class="table-responsive table-wrapper-200-full" id="containerCtaFin">
+			<table class="table table-bordered table-hover" id="tbCtaFin">
+				<thead class="table-dark">
+					<tr>
+						<th style="width:20%;" class="col-header-small align-center tiny-row">Cuenta Financiera</th>
+						<th style="width:70%;" class="col-header-small align-center tiny-row">Descripción</th>
+						<th style="width:10%;" class="col-header-small align-center tiny-row">Saldo</th>
+					</tr>
+				</thead>
+				<tbody>
+					@if (Model != null && Model.GrillaCtaFin != null && Model.GrillaCtaFin.ListaDatos != null && Model.GrillaCtaFin.ListaDatos.Count > 0)
+					{
+						@foreach (var item in Model.GrillaCtaFin.ListaDatos)
+						{
+							<tr onclick="selectReg(this, 'tbCtaFin')">
+								<td class="@Model.GrillaCtaFin.ObtenerClase(item.ctaf_id) align-center cell-fit-content">@Model.GrillaCtaFin.FormatearDato(item.ctaf_id, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaCtaFin.ObtenerClase(item.ctaf_denominacion) cell-fit-content">@Model.GrillaCtaFin.FormatearDato(item.ctaf_denominacion, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaCtaFin.ObtenerClase(item.ctaf_saldo) cell-fit-content">@Model.GrillaCtaFin.FormatearDato(item.ctaf_saldo, FormatDato.Monto)</td>
+							</tr>
+						}
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<div class="col-2"></div>
+</div>

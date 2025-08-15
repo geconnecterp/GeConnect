@@ -62,7 +62,7 @@ function ImprimirTRA_Generada(traCompte) {
 
 function btnAbmAceptarControlar() {
 	if ($("#concepto").val() == "") {
-		AbrirMensaje("ATENCIÓN", "Debe especificar un valor válido para 'Concoepto'.", function () {
+		AbrirMensaje("ATENCIÓN", "Debe especificar un valor válido para 'Concepto'.", function () {
 			$("#msjModal").modal("hide");
 			$("#concepto").trigger("focus");
 			return true;
