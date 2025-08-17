@@ -1,15 +1,35 @@
 ﻿$(function () {
+    // Verificar que las URLs necesarias estén definidas
+    if (typeof procesarExcelUrl === 'undefined') {
+        console.warn('⚠️ procesarExcelUrl no está definida, usando URL por defecto');
+        IMPORTAR_URLS.procesarExcel = '/Productos/Importar/ProcesarExcel';
+    }
+
+    if (typeof analizarColumnasUrl === 'undefined') {
+        console.warn('⚠️ analizarColumnasUrl no está definida, usando URL por defecto');
+        IMPORTAR_URLS.analizarColumnas = '/Productos/Importar/AnalizarColumnas';
+    } else {
+        IMPORTAR_URLS.analizarColumnas = analizarColumnasUrl;
+    }
+
     // Inicialización automática de controles de upload
     initializeUploadControls();
+    agregarBotonesDiagnostico();
 });
 
 function inicializaControlCuentaImp() {
     $("#controlConsultaCambio" + nnControlCta01).val(true);
     window["AsignaDatosCuenta" + nnControlCta01]();
-
     //muestro el control
     $("#controlCta" + nnControlCta01).show("fast");
 }
+
+// ✅ CONFIGURACIÓN: URLs centralizadas
+const IMPORTAR_URLS = {
+    analizarColumnas: '/Productos/Importar/AnalizarColumnas',
+    procesarExcel: typeof procesarExcelUrl !== 'undefined' ? procesarExcelUrl : '/Productos/Importar/ProcesarExcel',
+    diagnosticarCeldas: '/Productos/Importar/DiagnosticarCeldasCombinadas'
+};
 
 // Inicializar todos los controles de upload en la página
 function initializeUploadControls() {
@@ -52,9 +72,9 @@ function setupUploadControl(uploadId) {
         }
     });
 
-    // Click en zona de drop
+    // ✅ CORREGIDO: Click en zona de drop - Usar trigger() en lugar de click()
     $dropZone.on('click', function () {
-        $fileInput.click();
+        $fileInput.trigger('click');
     });
 
     // Selección de archivo
@@ -68,6 +88,156 @@ function setupUploadControl(uploadId) {
     $removeBtn.on('click', function () {
         removeFile(uploadId);
     });
+}
+
+// ✅ OPTIMIZAR: Función para diagnosticar celdas combinadas
+function diagnosticarCeldasCombinadas() {
+    const file = getSelectedFile('Importar');
+    if (!file) {
+        showUploadError('Primero seleccione un archivo Excel para diagnosticar');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('archivo', file);
+
+    // ✅ USAR: URL de configuración
+    $.ajax({
+        url: IMPORTAR_URLS.diagnosticarCeldas,
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        beforeSend: function () {
+            // Mostrar indicador de carga
+            if (typeof mostrarCargando === 'function') {
+                mostrarCargando(true, 'Analizando celdas combinadas...');
+            }
+        },
+        success: function (response) {
+            if (response.error) {
+                showUploadError('Error: ' + response.mensaje);
+                return;
+            }
+            mostrarDiagnosticoCeldasCombinadas(response.diagnostico);
+        },
+        error: function (xhr, status, error) {
+            console.error('Error diagnosticando celdas:', error);
+            showUploadError('Error de comunicación con el servidor');
+        },
+        complete: function () {
+            if (typeof mostrarCargando === 'function') {
+                mostrarCargando(false);
+            }
+        }
+    });
+}
+
+// ✅ OPTIMIZAR: Modal de diagnóstico mejorado
+function mostrarDiagnosticoCeldasCombinadas(diagnostico) {
+    // Verificar si ya existe un modal y eliminarlo
+    $('#modalDiagnosticoCeldas').remove();
+
+    const html = `
+        <div class="modal fade" id="modalDiagnosticoCeldas" tabindex="-1" aria-labelledby="modalDiagnosticoCeldasLabel">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalDiagnosticoCeldasLabel">
+                            <i class="bx bx-merge-cells me-2"></i>Diagnóstico de Celdas Combinadas
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h6><i class="bx bx-info-circle text-info me-1"></i>Información General:</h6>
+                                <ul class="list-unstyled ms-3">
+                                    <li><strong>Archivo:</strong> ${diagnostico.nombreArchivo}</li>
+                                    <li><strong>Hoja:</strong> ${diagnostico.nombreHoja}</li>
+                                    <li><strong>Dimensiones:</strong> ${diagnostico.totalFilas} × ${diagnostico.totalColumnas}</li>
+                                    <li><strong>Celdas combinadas:</strong> 
+                                        <span class="badge bg-${diagnostico.cantidadCeldasCombinadas > 0 ? 'warning' : 'success'}">
+                                            ${diagnostico.cantidadCeldasCombinadas}
+                                        </span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6><i class="bx bx-target text-warning me-1"></i>Impacto en Encabezados:</h6>
+                                <ul class="list-unstyled ms-3">
+                                    <li><strong>Filas afectadas:</strong> 
+                                        ${diagnostico.impactoEncabezados.filasAfectadas.length > 0 ?
+            diagnostico.impactoEncabezados.filasAfectadas.join(', ') : 'Ninguna'}
+                                    </li>
+                                    <li><strong>Posibles encabezados perdidos:</strong> 
+                                        <span class="badge bg-${diagnostico.impactoEncabezados.posiblesEncabezadosPerdidos.length > 0 ? 'danger' : 'success'}">
+                                            ${diagnostico.impactoEncabezados.posiblesEncabezadosPerdidos.length}
+                                        </span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        ${diagnostico.cantidadCeldasCombinadas > 0 ? `
+                            <h6><i class="bx bx-table text-primary me-1"></i>Detalle de Celdas Combinadas:</h6>
+                            <div class="table-responsive" style="max-height: 300px;">
+                                <table class="table table-sm table-striped">
+                                    <thead class="table-dark">
+                                        <tr><th>Rango</th><th>Valor</th><th>Filas</th><th>Columnas</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        ${diagnostico.celdasCombinadas.map(cc => `
+                                            <tr>
+                                                <td><code class="text-primary">${cc.rango}</code></td>
+                                                <td><strong>${cc.valor || '<span class="text-muted">(vacío)</span>'}</strong></td>
+                                                <td><span class="badge bg-secondary">${cc.filas}</span></td>
+                                                <td><span class="badge bg-secondary">${cc.columnas}</span></td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ` : '<div class="alert alert-success"><i class="bx bx-check-circle me-2"></i>No se encontraron celdas combinadas</div>'}
+                        
+                        ${diagnostico.impactoEncabezados.posiblesEncabezadosPerdidos.length > 0 ? `
+                            <div class="alert alert-warning mt-3">
+                                <h6><i class="bx bx-warning"></i> Posibles Encabezados Perdidos:</h6>
+                                <ul class="mb-0">
+                                    ${diagnostico.impactoEncabezados.posiblesEncabezadosPerdidos.map(enc => `
+                                        <li><strong>"${enc.valor}"</strong> en fila ${enc.filaConValor} 
+                                        (afecta filas: <span class="badge bg-warning text-dark">${enc.filasVacias.join(', ')}</span>)</li>
+                                    `).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bx bx-x me-1"></i>Cerrar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    $('body').append(html);
+    $('#modalDiagnosticoCeldas').modal('show').on('hidden.bs.modal', function () {
+        $(this).remove();
+    });
+}
+
+// ✅ SIMPLIFICAR: Solo agregar botón de diagnóstico de celdas combinadas
+function agregarBotonesDiagnostico() {
+    if ($('#btnDiagnosticoCeldas').length === 0) {
+        const boton = `
+            <button type="button" id="btnDiagnosticoCeldas" class="btn btn-outline-warning btn-sm ms-2" onclick="diagnosticarCeldasCombinadas()" title="Diagnosticar celdas combinadas">
+                <i class="bx bx-merge-cells"></i> Celdas Combinadas
+            </button>
+        `;
+        $('#btnToggleUpload').parent().append(boton);
+    }
 }
 
 // Manejar selección de archivo
@@ -95,7 +265,7 @@ function handleFileSelection(file, uploadId) {
     // Disparar evento personalizado
     $(document).trigger('fileSelected', [file, uploadId]);
 
-    console.log(`Archivo seleccionado (${uploadId}):`, file.name, formatFileSize(file.size));
+    console.log(`✅ Archivo seleccionado (${uploadId}):`, file.name, formatFileSize(file.size));
 }
 
 // Validar archivo
@@ -103,13 +273,13 @@ function validateFile(file) {
     const allowedTypes = [
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
         'application/vnd.ms-excel', // .xls
-        'text/csv' // .csv
+        'text/csv' // .csv (opcional)
     ];
 
     const maxSize = 10 * 1024 * 1024; // 10MB
 
     if (!allowedTypes.includes(file.type)) {
-        showUploadError('Tipo de archivo no permitido. Solo se aceptan archivos Excel (.xlsx, .xls) y CSV.');
+        showUploadError('Tipo de archivo no permitido. Solo se aceptan archivos Excel (.xlsx, .xls).');
         return false;
     }
 
@@ -136,13 +306,15 @@ function removeFile(uploadId) {
 
     // Mostrar drop zone y ocultar info
     $uploadInfo.hide();
-    $progressContainer.hide();
+    if ($progressContainer.length) {
+        $progressContainer.hide();
+    }
     $dropZone.show();
 
     // Disparar evento personalizado
     $(document).trigger('fileRemoved', [uploadId]);
 
-    console.log(`Archivo removido (${uploadId})`);
+    console.log(`🗑️ Archivo removido (${uploadId})`);
 }
 
 // Formatear tamaño de archivo
@@ -158,34 +330,15 @@ function formatFileSize(bytes) {
 
 // Mostrar error de upload
 function showUploadError(message) {
-    // Usar el sistema de notificaciones existente o alert
-    if (typeof showNotification === 'function') {
+    // ✅ MEJORAR: Usar sistema de notificaciones más robusto
+    if (typeof AbrirMensaje === 'function') {
+        AbrirMensaje("ERROR", message, () => $("#msjModal").modal("hide"), false, ["Aceptar"], "error!", null);
+    } else if (typeof showNotification === 'function') {
         showNotification('error', message);
     } else {
+        console.error('Upload Error:', message);
         alert(message);
     }
-}
-
-// Simular progreso de upload (para uso futuro)
-function simulateUploadProgress(uploadId, callback) {
-    const $progressContainer = $(`#uploadProgress${uploadId}`);
-    const $progressFill = $(`#progressFill${uploadId}`);
-    const $progressText = $(`#progressText${uploadId}`);
-
-    $progressContainer.show();
-
-    let progress = 0;
-    const interval = setInterval(() => {
-        progress += Math.random() * 15;
-        if (progress >= 100) {
-            progress = 100;
-            clearInterval(interval);
-            if (callback) callback();
-        }
-
-        $progressFill.css('width', progress + '%');
-        $progressText.text(Math.round(progress) + '%');
-    }, 200);
 }
 
 // Obtener archivo seleccionado
@@ -206,7 +359,7 @@ function getFileInfo(uploadId) {
     };
 }
 
-// ✅ REEMPLAZAR: La función procesarImportacion() con análisis previo
+// ✅ OPTIMIZAR: Función principal de procesamiento
 function procesarImportacion() {
     if (!archivoSeleccionado) {
         AbrirMensaje("ATENCIÓN", "No hay ningún archivo seleccionado para procesar.",
@@ -214,17 +367,14 @@ function procesarImportacion() {
         return;
     }
 
-    // ✅ PASO 1: Mostrar progreso de análisis
     $('#importResults').slideDown(300);
     $('#importProgress').css('width', '20%').text('Analizando estructura...');
 
-    // ✅ PASO 2: Crear FormData para análisis
     const formData = new FormData();
     formData.append('archivo', archivoSeleccionado);
 
-    // ✅ PASO 3: Llamada AJAX para análisis de columnas
     $.ajax({
-        url: analizarColumnasUrl,// '@Url.Action("AnalizarColumnas", "Importar", new { area = "Productos" })',
+        url: IMPORTAR_URLS.analizarColumnas,
         type: 'POST',
         data: formData,
         processData: false,
@@ -252,12 +402,12 @@ function procesarImportacion() {
     });
 }
 
-// ✅ ACTUALIZAR: Función mostrarAnalisisColumnas con combo de mapeo
+// ✅ MANTENER: Función de mostrar análisis (ACTIVA)
 function mostrarAnalisisColumnas(analisis) {
     const htmlAnalisis = `
         <div class="row mt-3">
             <div class="col-12">
-                <!-- Información general del archivo (sin cambios) -->
+                <!-- Información general del archivo -->
                 <div class="alert alert-info border-0 shadow-sm">
                     <div class="d-flex align-items-center mb-2">
                         <i class="bx bx-file-blank bx-lg text-info me-3"></i>
@@ -294,7 +444,7 @@ function mostrarAnalisisColumnas(analisis) {
                     </div>
                 </div>
 
-                <!-- ✅ TABLA ACTUALIZADA CON COMBO DE MAPEO -->
+                <!-- Tabla de análisis de columnas -->
                 <div class="card shadow-sm">
                     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                         <h6 class="mb-0">
@@ -346,7 +496,6 @@ function mostrarAnalisisColumnas(analisis) {
                                                 </div>
                                             </td>
                                             <td>
-                                                <!-- ✅ COMBO DE MAPEO PRINCIPAL -->
                                                 <div class="d-flex align-items-center gap-2">
                                                     <select class="form-select form-select-sm mapeo-combo" 
                                                             data-columna="${columna.indice}"
@@ -376,7 +525,7 @@ function mostrarAnalisisColumnas(analisis) {
                     </div>
                 </div>
 
-                <!-- Botones de acción actualizados -->
+                <!-- Botones de acción -->
                 <div class="d-flex justify-content-between align-items-center mt-4">
                     <div class="d-flex align-items-center gap-3">
                         <button type="button" class="btn btn-outline-secondary" onclick="cancelarAnalisis()">
@@ -403,21 +552,24 @@ function mostrarAnalisisColumnas(analisis) {
     `;
 
     $('#mainContent').html(htmlAnalisis).hide().slideDown(400);
-
-    // ✅ GUARDAR: Referencia global para uso posterior
     window.analisisActual = analisis;
 }
 
-// ✅ NUEVAS: Funciones de soporte para mapeo
+// ✅ MANTENER: Funciones de soporte para mapeo (ACTIVAS)
 function generarOpcionesMapeo(camposDisponibles, campoSeleccionado) {
+    if (!camposDisponibles || !Array.isArray(camposDisponibles)) {
+        return '<option value="">No hay campos disponibles</option>';
+    }
+
     return camposDisponibles.map(campo =>
-        `<option value="${campo.dato}" ${campo.dato === campoSeleccionado ? 'selected' : ''}>
-            ${campo.campo} (${campo.dato})
+        `<option value="${campo.dato || campo.Dato}" ${(campo.dato || campo.Dato) === campoSeleccionado ? 'selected' : ''}>
+            ${campo.campo || campo.Campo} (${campo.dato || campo.Dato})
         </option>`
     ).join('');
 }
 
 function contarColumnasMapepadas(columnas) {
+    if (!columnas || !Array.isArray(columnas)) return 0;
     return columnas.filter(col => col.campoMapeado && col.campoMapeado !== '').length;
 }
 
@@ -427,11 +579,12 @@ function actualizarMapeo(columnaIndice, nuevoCampo) {
     const columna = window.analisisActual.columnas.find(col => col.indice === columnaIndice);
     if (columna) {
         columna.campoMapeado = nuevoCampo;
-        columna.mapeadoAutomatico = false; // Ya no es automático
+        columna.mapeadoAutomatico = false;
 
         // Buscar descripción del campo
-        const campoInfo = window.analisisActual.camposDisponibles.find(c => c.dato === nuevoCampo);
-        columna.descripcionMapeado = campoInfo ? campoInfo.campo : '';
+        const campoInfo = window.analisisActual.camposDisponibles.find(c =>
+            (c.dato || c.Dato) === nuevoCampo);
+        columna.descripcionMapeado = campoInfo ? (campoInfo.campo || campoInfo.Campo) : '';
 
         // Actualizar contador
         $('#contadorMapeados').text(contarColumnasMapepadas(window.analisisActual.columnas));
@@ -442,11 +595,10 @@ function actualizarMapeo(columnaIndice, nuevoCampo) {
 
 function autoMapearTodas() {
     AbrirMensaje("CONFIRMACIÓN",
-        "¿Desea aplicar el mapeo automático a todas las columnas? Esto sobrescribirá los mapeos manuales.",
+        "¿Desea aplicar el mapeo automático a todas las columnas?",
         function (respuesta) {
             $("#msjModal").modal("hide");
             if (respuesta === "SI") {
-                // Re-ejecutar análisis con mapeo automático
                 procesarImportacion();
             }
         },
@@ -457,7 +609,7 @@ function validarMapeo() {
     if (!window.analisisActual) return;
 
     const columnasMapeadas = window.analisisActual.columnas.filter(col => col.campoMapeado);
-    const columnasRequeridas = ['codigo', 'precio']; // Campos mínimos requeridos
+    const columnasRequeridas = ['codigo', 'precio'];
 
     let mensajeValidacion = `<div class="mb-3">
         <strong>Resumen del Mapeo:</strong><br>
@@ -465,7 +617,6 @@ function validarMapeo() {
         • Campos detectados: ${columnasMapeadas.map(c => c.descripcionMapeado).join(', ')}
     </div>`;
 
-    // Verificar campos requeridos
     const faltantes = columnasRequeridas.filter(req =>
         !columnasMapeadas.some(col => col.campoMapeado.includes(req))
     );
@@ -481,7 +632,7 @@ function validarMapeo() {
         faltantes.length > 0 ? "warn!" : "success!", null);
 }
 
-// ✅ FUNCIONES AUXILIARES PARA PRESENTACIÓN
+// ✅ MANTENER: Funciones auxiliares para presentación (ACTIVAS)
 function getTipoBadgeClass(tipo) {
     const clases = {
         'Número': 'bg-success',
@@ -509,28 +660,27 @@ function getProgressBarClass(porcentaje) {
 }
 
 function truncateText(text, maxLength) {
-    if (text.length <= maxLength) return text;
+    if (!text || text.length <= maxLength) return text;
     return text.substring(0, maxLength - 3) + '...';
 }
 
-// ✅ FUNCIONES DE ACCIÓN
+// ✅ MANTENER: Funciones de acción (ACTIVAS)
 function cancelarAnalisis() {
     $('#mainContent').slideUp(400, function () {
         $(this).html('');
     });
-}
-
-function configurarMapeoColumnas() {
-    AbrirMensaje("INFORMACIÓN",
-        "La configuración de mapeo de columnas estará disponible en la próxima versión.",
-        () => $("#msjModal").modal("hide"),
-        false, ["Aceptar"], "info!", null);
+    // Limpiar referencia global
+    window.analisisActual = null;
 }
 
 function confirmarEIniciarImportacion() {
+    if (!archivoSeleccionado) {
+        showUploadError('No hay archivo seleccionado para importar');
+        return;
+    }
+
     AbrirMensaje("CONFIRMACIÓN",
-        `¿Desea proceder con la importación del archivo "${archivoSeleccionado.name}"?<br><br>
-         <small class="text-muted">Se procesarán todos los registros detectados.</small>`,
+        `¿Desea proceder con la importación del archivo "${archivoSeleccionado.name}"?`,
         function (respuesta) {
             $("#msjModal").modal("hide");
             if (respuesta === "SI") {
@@ -540,53 +690,309 @@ function confirmarEIniciarImportacion() {
         true, ["Continuar", "Cancelar"], "info!", null);
 }
 
-// ✅ NUEVA: Función para ejecutar importación real (después del análisis)
+// ✅ ACTUALIZAR: Función de importación real con almacenamiento de respuesta
 function ejecutarImportacionReal() {
-    // Mostrar progreso de importación real
+    if (!archivoSeleccionado) {
+        showUploadError('No hay archivo seleccionado para procesar');
+        return;
+    }
+
     $('#importResults').slideDown(300);
     $('#importProgress').css('width', '0%').text('Iniciando importación...');
 
-    // Crear FormData para importación completa
     const formData = new FormData();
     formData.append('archivo', archivoSeleccionado);
     formData.append('proveedorId', consCta);
 
-    // Llamada AJAX para importación completa
+    // ✅ ENVIAR: Mapeo de columnas del usuario
+    if (window.analisisActual && window.analisisActual.columnas) {
+        const mapeoColumnas = {};
+        window.analisisActual.columnas
+            .filter(col => col.campoMapeado)
+            .forEach(col => {
+                mapeoColumnas[col.indice] = col.campoMapeado;
+            });
+
+        if (Object.keys(mapeoColumnas).length > 0) {
+            formData.append('mapeoColumnas', JSON.stringify(mapeoColumnas));
+            console.log('✅ Enviando mapeo de columnas:', mapeoColumnas);
+        }
+    }
+
     $.ajax({
-        url: procesarExcelUrl,//'@Url.Action("ProcesarExcel", "Importar", new { area = "Productos" })',
+        url: IMPORTAR_URLS.procesarExcel,
         type: 'POST',
         data: formData,
         processData: false,
         contentType: false,
-        xhr: function () {
-            const xhr = new window.XMLHttpRequest();
-            xhr.upload.addEventListener("progress", function (evt) {
-                if (evt.lengthComputable) {
-                    const percentComplete = (evt.loaded / evt.total) * 100;
-                    $('#importProgress').css('width', percentComplete + '%').text(`Procesando... ${Math.round(percentComplete)}%`);
-                }
-            }, false);
-            return xhr;
-        },
         success: function (response) {
             $('#importProgress').css('width', '100%').text('Importación completada');
+
+            // ✅ GUARDAR: Respuesta para detalles posteriores
+            window.ultimaRespuestaImportacion = response;
 
             setTimeout(() => {
                 $('#importResults').slideUp(300);
 
                 if (response.error) {
-                    AbrirMensaje("ERROR", response.mensaje,
+                    AbrirMensaje("ERROR", `Error en la importación: ${response.mensaje}`,
                         () => $("#msjModal").modal("hide"), false, ["Aceptar"], "error!", null);
                 } else {
-                    mostrarResultadosImportacion(response);
+                    // ✅ LLAMAR: Función que ahora sí existe
+                    mostrarResultadosImportacionExitosa(response);
                 }
             }, 1500);
         },
         error: function (xhr, status, error) {
             $('#importResults').slideUp(300);
-            console.error('Error en importación:', error);
-            AbrirMensaje("ERROR", "Error de comunicación durante la importación.",
+            console.error('Error en importación:', error, xhr.responseText);
+
+            let errorMessage = 'Error de comunicación durante la importación.';
+            try {
+                const errorResponse = JSON.parse(xhr.responseText);
+                errorMessage = errorResponse.mensaje || errorResponse.message || errorMessage;
+            } catch (e) {
+                // Usar mensaje por defecto
+            }
+
+            AbrirMensaje("ERROR", errorMessage,
                 () => $("#msjModal").modal("hide"), false, ["Aceptar"], "error!", null);
         }
     });
+}
+
+// ✅ NUEVA: Mostrar resultados exitosos de importación (FUNCIÓN FALTANTE)
+function mostrarResultadosImportacionExitosa(response) {
+    const { datos, mensaje } = response;
+
+    const htmlResultados = `
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="bx bx-check-circle bx-lg text-success me-3"></i>
+                <div class="flex-grow-1">
+                    <h5 class="alert-heading mb-2">¡Importación Completada Exitosamente!</h5>
+                    <p class="mb-2">${mensaje}</p>
+                    
+                    ${datos ? `
+                        <div class="row text-center mt-3">
+                            <div class="col-md-3">
+                                <div class="border-end">
+                                    <h6 class="text-success mb-0">${datos.registrosProcesados || 0}</h6>
+                                    <small class="text-muted">Registros Procesados</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="border-end">
+                                    <h6 class="text-success mb-0">${datos.columnasUtilizadas || 0}</h6>
+                                    <small class="text-muted">Columnas Utilizadas</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="border-end">
+                                    <h6 class="text-success mb-0">${truncateText(datos.archivo || 'N/A', 20)}</h6>
+                                    <small class="text-muted">Archivo Procesado</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <h6 class="text-success mb-0">${datos.fechaProceso || 'N/A'}</h6>
+                                <small class="text-muted">Fecha/Hora</small>
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${datos && datos.detalleResultado ? `
+                        <div class="mt-3">
+                            <h6><i class="bx bx-detail me-1"></i>Detalle del Proceso:</h6>
+                            <div class="bg-light p-2 rounded">
+                                <small class="text-muted">${datos.detalleResultado}</small>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        
+        <div class="d-flex justify-content-center gap-3 mt-4">
+            <button type="button" class="btn btn-primary" onclick="location.reload()">
+                <i class="bx bx-refresh me-1"></i>Nueva Importación
+            </button>
+            <button type="button" class="btn btn-outline-secondary" onclick="verDetalleImportacion()">
+                <i class="bx bx-list-ul me-1"></i>Ver Detalles
+            </button>
+        </div>
+    `;
+
+    $('#mainContent').html(htmlResultados);
+
+    // ✅ LIMPIAR: Estado después de importación exitosa
+    setTimeout(() => {
+        manejarArchivoRemovido();
+        if (typeof uploadAreaVisible !== 'undefined' && uploadAreaVisible) {
+            toggleUploadArea();
+        }
+    }, 3000); // Dar tiempo para que el usuario vea los resultados
+
+    // ✅ OPCIONAL: Scroll hacia los resultados
+    $('html, body').animate({
+        scrollTop: $('#mainContent').offset().top - 100
+    }, 500);
+}
+
+// ✅ AGREGAR: Función auxiliar para manejar archivo removido (si no existe)
+function manejarArchivoRemovido() {
+    if (typeof archivoSeleccionado !== 'undefined') {
+        archivoSeleccionado = null;
+    }
+
+    // Ocultar información del archivo si existe
+    if ($('#fileSelectedInfo').length) {
+        $('#fileSelectedInfo').fadeOut(300);
+    }
+
+    // Deshabilitar botón procesar si existe
+    if ($('#btnProcesarArchivo').length) {
+        $('#btnProcesarArchivo').prop('disabled', true).fadeOut(300);
+    }
+
+    console.log('🗑️ Estado de archivo removido');
+}
+
+// ✅ AGREGAR: Función auxiliar para toggle de área de upload (si no existe)
+function toggleUploadArea() {
+    const $uploadArea = $('#uploadArea');
+    if ($uploadArea.length === 0) return;
+
+    const isVisible = $uploadArea.is(':visible');
+
+    if (isVisible) {
+        $uploadArea.slideUp(300);
+        if (typeof uploadAreaVisible !== 'undefined') {
+            uploadAreaVisible = false;
+        }
+    } else {
+        $uploadArea.slideDown(300);
+        if (typeof uploadAreaVisible !== 'undefined') {
+            uploadAreaVisible = true;
+        }
+    }
+}
+
+// ✅ NUEVA: Función para ver detalles de la importación
+function verDetalleImportacion() {
+    if (!window.ultimaRespuestaImportacion) {
+        AbrirMensaje("INFORMACIÓN",
+            "No hay detalles adicionales disponibles para esta importación.",
+            () => $("#msjModal").modal("hide"),
+            false, ["Aceptar"], "info!", null);
+        return;
+    }
+
+    const { datos } = window.ultimaRespuestaImportacion;
+
+    const detalleHtml = `
+        <div class="modal fade" id="modalDetalleImportacion" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="bx bx-detail me-2"></i>Detalle de la Importación
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h6><i class="bx bx-file text-primary me-1"></i>Información del Archivo:</h6>
+                                <ul class="list-unstyled ms-3">
+                                    <li><strong>Archivo:</strong> ${datos.archivo}</li>
+                                    <li><strong>Proveedor:</strong> ${datos.proveedor}</li>
+                                    <li><strong>Fecha proceso:</strong> ${datos.fechaProceso}</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6><i class="bx bx-data text-success me-1"></i>Estadísticas:</h6>
+                                <ul class="list-unstyled ms-3">
+                                    <li><strong>Registros:</strong> ${datos.registrosProcesados}</li>
+                                    <li><strong>Columnas:</strong> ${datos.columnasUtilizadas}</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        ${datos.detalleResultado ? `
+                            <h6><i class="bx bx-info-circle text-info me-1"></i>Resultado del Proceso:</h6>
+                            <div class="bg-light p-3 rounded">
+                                <pre class="mb-0">${datos.detalleResultado}</pre>
+                            </div>
+                        ` : ''}
+
+                        ${window.analisisActual && window.analisisActual.columnas ? `
+                            <h6 class="mt-3"><i class="bx bx-table text-warning me-1"></i>Mapeo de Columnas Utilizado:</h6>
+                            <div class="table-responsive" style="max-height: 300px;">
+                                <table class="table table-sm table-striped">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Columna</th>
+                                            <th>Encabezado Excel</th>
+                                            <th>Campo BD</th>
+                                            <th>Confianza</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${window.analisisActual.columnas
+                .filter(col => col.campoMapeado)
+                .map(col => `
+                                                <tr>
+                                                    <td><span class="badge bg-secondary">${col.letra}</span></td>
+                                                    <td>${col.encabezado}</td>
+                                                    <td><code>${col.campoMapeado}</code></td>
+                                                    <td>
+                                                        <span class="badge ${col.confianzaMapeo >= 80 ? 'bg-success' : col.confianzaMapeo >= 60 ? 'bg-warning' : 'bg-danger'}">
+                                                            ${col.confianzaMapeo}%
+                                                        </span>
+                                                        ${col.mapeadoAutomatico ?
+                        '<i class="bx bx-magic-wand ms-1" title="Automático"></i>' :
+                        '<i class="bx bx-user ms-1" title="Manual"></i>'
+                    }
+                                                    </td>
+                                                </tr>
+                                            `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bx bx-x me-1"></i>Cerrar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    $('body').append(detalleHtml);
+    $('#modalDetalleImportacion').modal('show').on('hidden.bs.modal', function () {
+        $(this).remove();
+    });
+}
+
+// ✅ NUEVO: Mostrar resultados de importación
+function mostrarResultadosImportacion(response) {
+    if (response.datos && response.datos.length > 0) {
+        // Mostrar tabla con resultados
+        const html = `
+            <div class="alert alert-success">
+                <h5><i class="bx bx-check-circle me-2"></i>Importación Exitosa</h5>
+                <p>Se importaron ${response.datos.length} registros correctamente.</p>
+            </div>
+        `;
+        $('#mainContent').html(html);
+    } else {
+        AbrirMensaje("INFORMACIÓN",
+            response.mensaje || "Importación completada sin errores.",
+            () => $("#msjModal").modal("hide"),
+            false, ["Aceptar"], "success!", null);
+    }
 }
