@@ -13,6 +13,7 @@ using gc.sitio.core.Servicios.Contratos.Importacion;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using NuGet.DependencyResolver;
 using OfficeOpenXml;
 using System.Globalization;
 
@@ -208,7 +209,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                             archivo = archivo.FileName,
                             proveedor = proveedorId,
                             fechaProceso = datosImportacion.FechaProceso.ToString("yyyy-MM-dd HH:mm:ss"),
-                            detalleResultado = resultado.Entidad
+                            detalleResultado = resultado.Entidad!=null && resultado.Entidad.Equals("OK")?resultado.Mensaje:resultado.Entidad
                         }
                     });
                 }
@@ -401,7 +402,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 {
                     Ok = resultado.Ok,
                     Mensaje = resultado.Mensaje ?? (resultado.Ok ? "Datos procesados exitosamente" : "Error procesando datos"),
-                    Entidad = resultado.Entidad?.ToString()
+                    Entidad = resultado.Entidad?.resultado_msj.ToString()
                 };
             }
             catch (Exception ex)
