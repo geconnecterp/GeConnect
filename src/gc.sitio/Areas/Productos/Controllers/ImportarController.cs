@@ -378,7 +378,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             try
             {
                 // ✅ Convertir a JSON para envío
-                var datosJson = JsonConvert.SerializeObject(datosImportacion.Filas, new JsonSerializerSettings
+                var datosJson = JsonConvert.SerializeObject(datosImportacion, new JsonSerializerSettings
                 {
                     NullValueHandling = NullValueHandling.Ignore,
                     DateFormatString = "yyyy-MM-dd HH:mm:ss",
