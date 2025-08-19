@@ -14,7 +14,7 @@
 		margin-left: 0px;
 		margin-right: 0px;
 		margin-bottom: 0px;
-		height: 500px;
+		height: 350px;
 	}
 
 	legend {
@@ -54,7 +54,7 @@
 			<button id="btnConfirmar1" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Confirmar">
 				<i class="bx bx-check-circle"></i>
 			</button>
-			<button id="btnAbmCancelar1" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar" onclick="btnAbmCancelar_click();">
+			<button id="btnAbmCancelar1" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar">
 				<i class="bx bx-x-circle bx-xs"></i>
 			</button>
 		</div>
@@ -74,7 +74,7 @@
 						@Html.TextBoxFor(m => m.fecha_acreditacion, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeAcreditacion(this);", @id = "fechaAcreditacion", @style = "width: 150px; max-width: 150px;" })
 					</div>
 				</div>
-				<div class="row mt-2">
+				<div class="row mt-4">
 					<div class="input-group input-group-sm">
 						<span class="input-group-text">Cuenta en Cartera:</span>
 						<span class="input-group-text" style="font-weight: 900;">@cuentaEnCartera</span>
@@ -101,7 +101,7 @@
 						@Html.Hidden("saldo_a_constituir_en_cartera_number", Model.saldo_a_constituir_en_cartera)
 					</div>
 				</div>
-				<div class="row mt-2">
+				<div class="row mt-4">
 					<div class="input-group input-group-sm">
 						<span class="input-group-text">Cuenta al Cobro:</span>
 						<span class="input-group-text" style="font-weight: 900;">@cuentaAlCobro</span>

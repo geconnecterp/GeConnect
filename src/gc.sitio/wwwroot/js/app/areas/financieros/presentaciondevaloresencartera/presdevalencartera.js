@@ -14,10 +14,19 @@
 
 });
 
-
+function ImprimirTRA_Generada(traCompte) {
+	let data = { tra_compte: traCompte };
+	cargarReporteEnArre(25, data, "TRANSFERENCIA ENTRE CUENTAS", "", "");
+	invocacionGestorDoc({});
+}
 
 function btnAbmCancelar1Validar() {
-
+	AbrirWaiting("");
+	InicializarDatosEnSesion();
+	setTimeout(() => {
+		InicializaPantalla()
+		CerrarWaiting();
+	}, 500);
 }
 
 function btnConfirmar1Validar() {
@@ -35,16 +44,12 @@ function btnConfirmar1Validar() {
 				case "SI": //Confirmar
 					//Armado de request
 					var concepto = $("#concepto").val();
-					var fecha = $("#fechaAcreditacion").val();
+					var fecha_acreditacion = $("#fechaAcreditacion").val();
+					var ctaf_id_al_cobro = $("#ctaf_id_al_cobro").val();
+					var ctaf_desc_al_cobro = $("#ctaf_desc_al_cobro").val();
 
-					//Encabezado
-					var encabezado = ObtenerEncabezado();
-
-					//Tengo que ver cual de las grillas opcionales armar para enviar los datos
-					var asociaciones = ObtenerAsociaciones();
-
-					var data = { cta_id, encabezado, asociaciones };
-					PostGen(data, confirmarComprobanteDeCompraURL, function (obj) {
+					var data = { concepto, fecha_acreditacion, ctaf_id_al_cobro, ctaf_desc_al_cobro };
+					PostGen(data, confirmarPresentacionDeValoresUrl, function (obj) {
 						if (obj.error === true) {
 							AbrirMensaje("ATENCIÓN", obj.msg, function () {
 								$("#msjModal").modal("hide");
@@ -55,13 +60,10 @@ function btnConfirmar1Validar() {
 							// MOstrar mensaje
 							AbrirMensaje("ATENCIÓN", obj.msg, function () {
 								$("#msjModal").modal("hide");
+								ImprimirTRA_Generada(obj.id);
 								///Aca hay que inicializar todo
 								InicializarDatosEnSesion();
 								InicializaPantalla();
-								LimpiarDatosDelFiltroInicial();
-								$("#btnFiltro").trigger("click");
-								$("#btnDetalle").trigger("click");
-								$("#divDetalle").collapse("hide");
 								return true;
 							}, false, ["Aceptar"], "info!", null);
 						}
@@ -76,6 +78,24 @@ function btnConfirmar1Validar() {
 
 		}, true, ["Aceptar", "Cancelar"], "question!", null);
 	}
+}
+
+function InicializarDatosEnSesion() {
+	PostGen({}, inicializarDatosEnSesionUrl, function (obj) {
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+	});
+}
+
+function InicializaPantalla() {
+	var data = {};
+	PostGenHtml(data, paso1Url, function (obj) {
+		$("#divPrincipal").html(obj);
+	});
 }
 
 function btnSiguiente1Validar() {
@@ -160,12 +180,10 @@ function btnSiguiente3Validar() {
 		var data = { totalSeleccionadoEnCartera, saldoDeCtaf, ctafIdSelected, ctafDescSelected, ctafIdLista, tcfIdSelected };
 		PostGenHtml(data, detalleDePresentacionUrl, function (obj) {
 			$("#divPrincipal").html(obj);
-			//AgregarHandlerAGrillaPresDeValores();
 			var now = moment().format('yyyy-MM-DD');
 			var max = moment().add(2, 'months');
 			$("#fechaAcreditacion").attr('min', now);
 			$("#fechaAcreditacion").attr('max', max.format('yyyy-MM-DD'));
-			console.log(formatter.format($("#saldo_cuenta_en_cartera").val()));
 			$("#saldo_cuenta_en_cartera").val(formatter.format($("#saldo_cuenta_en_cartera").val()));
 			$("#importe_a_presentar_en_cartera").val(formatter.format($("#importe_a_presentar_en_cartera").val()));
 			$("#saldo_a_constituir_en_cartera").val(formatter.format($("#saldo_a_constituir_en_cartera").val()));
@@ -173,7 +191,6 @@ function btnSiguiente3Validar() {
 			$("#saldo_cuenta_al_cobro").val(formatter.format($("#saldo_cuenta_al_cobro").val()));
 			$("#importe_a_presentar_al_cobro").val(formatter.format($("#importe_a_presentar_al_cobro").val()));
 			$("#saldo_a_constituir_al_cobro").val(formatter.format($("#saldo_a_constituir_al_cobro").val()));
-			//$("#total").val(formatter.format(total_seleccionado_en_cartera));
 		});
 	}
 }

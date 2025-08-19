@@ -7,10 +7,13 @@ using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
+using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Enumeraciones;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Financieros.Models;
 using gc.sitio.Areas.Financieros.Models.PresentacionDeValoresEnCartera;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
@@ -22,16 +25,30 @@ namespace gc.sitio.Areas.Financieros.Controllers
 	[Area("Financieros")]
 	public class PresentacionDeValoresEnCarteraController : PresentacionDeValoresEnCarteraControladorBase
 	{
+		//PARA MODULO DE IMPRESION
+		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
+		private AppModulo _modulo; //tengo el AppModulo que corresponde a la consulta de cuentas
+		private string APP_MODULO = AppModulos.TEC.ToString();
+		private readonly IDocManagerServicio _docMSv;
+
+		//************************
+
 		private readonly AppSettings _setting;
 		private readonly ITipoCuentaFinServicio _tipoCuentaFinServicio;
 		private readonly IFinancieroServicio _financieroServicio;
 		private const string param_tipo_medio_pago = "TEND";
 		public PresentacionDeValoresEnCarteraController(ITipoCuentaFinServicio tipoCuentaFinServicio, IFinancieroServicio financieroServicio,
+														IDocManagerServicio docManager, IOptions<DocsManager> docsManager,
 														IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger<PresentacionDeValoresEnCarteraController> logger) : base(options, accessor, logger)
 		{
 			_setting = options.Value;
 			_tipoCuentaFinServicio = tipoCuentaFinServicio;
 			_financieroServicio = financieroServicio;
+
+			//PARA MODULO DE IMPRESION
+			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
+			_modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO); //identifico los datos del modulo que necesito: TEC
+			_docMSv = docManager; //instancio el servicio de impresión
 		}
 
 		public IActionResult Index()
@@ -41,6 +58,15 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			{
 				var titulo = "TRANSFERENCIAS DE VALORES EN CARTERA";
 				ViewData["Titulo"] = titulo;
+
+				#region Gestor Impresion - Inicializacion de variables
+				//Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
+				DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
+				// en este mismo acto se cargan los posibles documentos
+				//que se pueden imprimir, exportar, enviar por email o whatsapp
+				ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
+
+				#endregion
 
 				var lista = _tipoCuentaFinServicio.GetTipoCuentaFinParaSeleccionDeValores(param_tipo_medio_pago, TokenCookie);
 				model.ListaTipoMedioDePago = ComboTipoMediosDePago(lista);
@@ -268,6 +294,22 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			catch (Exception ex)
 			{
 				return Json(new { error = true, warn = false, msg = ex.InnerException });
+			}
+		}
+
+		public JsonResult InicializarDatosEnSesion()
+		{
+			try
+			{
+				CtafIdSelected = string.Empty;
+				OPValoresSeleccionados = [];
+				FinancieroCarteraLista = [];
+
+				return Json(new { error = false, warn = false, msg = "Inicializacion correcta." });
+			}
+			catch (Exception)
+			{
+				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar inicializar los datos en Sesion - PRESENTACIONDEVALORESENCARTERA" });
 			}
 		}
 
