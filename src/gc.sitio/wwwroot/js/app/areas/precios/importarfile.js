@@ -2,7 +2,7 @@
     // Verificar que las URLs necesarias estén definidas
     if (typeof procesarExcelUrl === 'undefined') {
         console.warn('⚠️ procesarExcelUrl no está definida, usando URL por defecto');
-        IMPORTAR_URLS.procesarExcel = '/Productos/Importar/ProcesarExcel';
+        IMPORTAR_URLS.procesarExcel = procesarExcelUrl;
     }
 
     if (typeof analizarColumnasUrl === 'undefined') {
@@ -562,8 +562,8 @@ function generarOpcionesMapeo(camposDisponibles, campoSeleccionado) {
     }
 
     return camposDisponibles.map(campo =>
-        `<option value="${campo.dato || campo.Dato}" ${(campo.dato || campo.Dato) === campoSeleccionado ? 'selected' : ''}>
-            ${campo.campo || campo.Campo} (${campo.dato || campo.Dato})
+        `<option value="${campo.campo || campo.Campo}" ${(campo.campo || campo.Campo) === campoSeleccionado ? 'selected' : ''}>
+            ${campo.dato || campo.Dato} (${campo.campo || campo.Campo})
         </option>`
     ).join('');
 }

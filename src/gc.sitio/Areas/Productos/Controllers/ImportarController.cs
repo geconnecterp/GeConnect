@@ -245,11 +245,11 @@ namespace gc.sitio.Areas.Productos.Controllers
                     if (columna != null && !string.IsNullOrEmpty(mapeo.Value))
                     {
                         // Buscar información del campo
-                        var campoInfo = DatosParaImportacion.FirstOrDefault(d => d.Dato == mapeo.Value);
+                        var campoInfo = DatosParaImportacion.FirstOrDefault(d => d.Campo == mapeo.Value);
                         if (campoInfo != null)
                         {
                             columna.CampoMapeado = mapeo.Value;
-                            columna.DescripcionMapeado = campoInfo.Campo;
+                            columna.DescripcionMapeado = campoInfo.Dato;
                             columna.MapeadoAutomatico = false;
                             columna.ConfianzaMapeo = 100; // Mapeo manual = 100% confianza
 
@@ -378,7 +378,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             try
             {
                 // ✅ Convertir a JSON para envío
-                var datosJson = JsonConvert.SerializeObject(datosImportacion, new JsonSerializerSettings
+                var datosJson = JsonConvert.SerializeObject(datosImportacion.Filas, new JsonSerializerSettings
                 {
                     NullValueHandling = NullValueHandling.Ignore,
                     DateFormatString = "yyyy-MM-dd HH:mm:ss",
@@ -713,8 +713,8 @@ namespace gc.sitio.Areas.Productos.Controllers
 
                 if (mapeoEncontrado != null)
                 {
-                    columna.CampoMapeado = mapeoEncontrado.Dato;
-                    columna.DescripcionMapeado = mapeoEncontrado.Campo;
+                    columna.CampoMapeado = mapeoEncontrado.Campo;
+                    columna.DescripcionMapeado = mapeoEncontrado.Dato;
                     columna.MapeadoAutomatico = true;
 
                     _logger?.LogInformation($"✅ Mapeado: '{columna.Encabezado}' → '{mapeoEncontrado.Campo}' ({columna.ConfianzaMapeo}%)");
