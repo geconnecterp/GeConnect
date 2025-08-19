@@ -45,10 +45,13 @@
 		var tipoMedioPagoSelected = "";
 		var ctafIdSelected = "";
 		var ctafDescSelected = "";
+		var total_seleccionado_en_cartera = 0;
+		var saldo_de_ctaf = 0;
 
 		var paso1Url = "@Url.Action("Paso1", "presentaciondevaloresencartera", new { area = "Financieros" })";
 		var seleccionCuentaFinUrl = "@Url.Action("SeleccionCuentaFin", "presentaciondevaloresencartera", new { area = "Financieros" })";
 		var seleccionValoresAPresentarUrl = "@Url.Action("SeleccionValoresAPresentar", "presentaciondevaloresencartera", new { area = "Financieros" })";
+		var detalleDePresentacionUrl = "@Url.Action("DetalleDePresentacion", "presentaciondevaloresencartera", new { area = "Financieros" })";
 
 	</script>
 

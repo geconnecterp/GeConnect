@@ -129,6 +129,7 @@ namespace gc.api.core.Constantes
 			public const string SP_F_TR_CONFIRMA = "SPGECO_F_TR_Confirma";
 			public const string SP_F_TRA_REPO_CTAG = "SPGECO_F_Tra_Repo_Ctag";
 			public const string SP_F_TRA_REPO_D = "SPGECO_F_Tra_Repo_D";
+			public const string SP_F_CUENTA_AL_COBRO_RELA = "SPGECO_F_Cuenta_al_Cobro_rela";
 			#endregion
 
 			#region SP Depositos

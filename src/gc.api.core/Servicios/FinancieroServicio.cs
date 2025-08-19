@@ -143,5 +143,16 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<FinancieroTraRepoDDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<FinancieroCuentaAlCobroRelaDto> GetCuentaAlCobroRela(string ctaf_id)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_CUENTA_AL_COBRO_RELA;
+			var ps = new List<SqlParameter>()
+			{
+				new("@ctaf_id",ctaf_id),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<FinancieroCuentaAlCobroRelaDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

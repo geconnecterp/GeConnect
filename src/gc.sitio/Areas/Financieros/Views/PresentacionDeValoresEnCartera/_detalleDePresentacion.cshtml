@@ -1,0 +1,135 @@
+﻿@model DetalleDePresentacionModel
+@{
+	var cuentaEnCartera = Model.cuenta_en_cartera;
+	var cuentaAlCobro = Model.cuenta_al_cobro;
+}
+<style>
+	fieldset {
+		margin: 8px;
+		border: 1px solid silver;
+		padding: 8px;
+		border-radius: 4px;
+		max-width: 100%;
+		margin-top: 8px;
+		margin-left: 0px;
+		margin-right: 0px;
+		margin-bottom: 0px;
+		height: 500px;
+	}
+
+	legend {
+		padding: 2px;
+		margin-top: -22px;
+		background: #f3f5f7 !important;
+		width: 25%;
+		text-align: center;
+		font-size: small;
+	}
+
+	.en-cartera{
+		background-color: red !important;
+		color: white;
+		text-align: end;
+	}
+
+	.al-cobro{
+		background-color: blue !important;
+		color: white;
+		text-align: end;
+	}
+</style>
+@Html.Hidden("ctaf_id_cartera", Model.ctaf_id_cartera)
+@Html.Hidden("ctaf_desc_cartera", Model.ctaf_desc_cartera)
+@Html.Hidden("ctaf_id_al_cobro", Model.ctaf_id_al_cobro)
+@Html.Hidden("ctaf_desc_al_cobro", Model.ctaf_desc_al_cobro)
+<div class="row justify-content-sm-center mb-1 mt-1">
+	<div class="col-md-2">
+		<div class="d-flex justify-content-sm-center">
+			<button id="btnAnterior4" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Anterior">
+				<i class="bx bx-arrow-to-left bx-xs"></i>
+			</button>
+			<button id="btnSiguiente4" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Siguiente" disabled>
+				<i class="bx bx-arrow-to-right bx-xs"></i>
+			</button>
+			<button id="btnConfirmar1" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Confirmar">
+				<i class="bx bx-check-circle"></i>
+			</button>
+			<button id="btnAbmCancelar1" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar" onclick="btnAbmCancelar_click();">
+				<i class="bx bx-x-circle bx-xs"></i>
+			</button>
+		</div>
+	</div>
+</div>
+<div class="row">
+	<div class="col-3"></div>
+	<div class="col-6">
+		<fieldset>
+			<legend>Detalle de Presentación</legend>
+			<div>
+				<div class="row mt-1">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text">Concepto:</span>
+						<input type="text" asp-for="concepto" class="form-control activable" />
+						<span class="input-group-text">Acreditación:</span>
+						@Html.TextBoxFor(m => m.fecha_acreditacion, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeAcreditacion(this);", @id = "fechaAcreditacion", @style = "width: 150px; max-width: 150px;" })
+					</div>
+				</div>
+				<div class="row mt-2">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text">Cuenta en Cartera:</span>
+						<span class="input-group-text" style="font-weight: 900;">@cuentaEnCartera</span>
+					</div>
+				</div>
+				<div class="row mt-1 col-8">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text">Saldo Actual:</span>
+						<input type="text" asp-for="saldo_cuenta_en_cartera" class="form-control activable en-cartera" disabled />
+						@Html.Hidden("ctaf_id_cartera_number", Model.saldo_cuenta_en_cartera)
+					</div>
+				</div>
+				<div class="row mt-1 col-8">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text">Importe a Presentar:</span>
+						<input type="text" asp-for="importe_a_presentar_en_cartera" class="form-control activable" disabled style="text-align: end;" />
+						@Html.Hidden("importe_a_presentar_en_cartera_number", Model.importe_a_presentar_en_cartera)
+					</div>
+				</div>
+				<div class="row mt-1 col-8">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text">Saldo a Constituir:</span>
+						<input type="text" asp-for="saldo_a_constituir_en_cartera" class="form-control activable en-cartera" disabled />
+						@Html.Hidden("saldo_a_constituir_en_cartera_number", Model.saldo_a_constituir_en_cartera)
+					</div>
+				</div>
+				<div class="row mt-2">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text">Cuenta al Cobro:</span>
+						<span class="input-group-text" style="font-weight: 900;">@cuentaAlCobro</span>
+					</div>
+				</div>
+				<div class="row mt-1 col-8">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text">Saldo Actual:</span>
+						<input type="text" asp-for="saldo_cuenta_al_cobro" class="form-control activable al-cobro" disabled />
+						@Html.Hidden("saldo_cuenta_al_cobro_number", Model.saldo_cuenta_al_cobro)
+					</div>
+				</div>
+				<div class="row mt-1 col-8">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text">Importe a Presentar:</span>
+						<input type="text" asp-for="importe_a_presentar_al_cobro" class="form-control activable" disabled style="text-align: end;" />
+						@Html.Hidden("importe_a_presentar_al_cobro_number", Model.importe_a_presentar_al_cobro)
+					</div>
+				</div>
+				<div class="row mt-1 col-8">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text">Saldo a Constituir:</span>
+						<input type="text" asp-for="saldo_a_constituir_al_cobro" class="form-control activable al-cobro" disabled />
+						@Html.Hidden("saldo_a_constituir_al_cobro_number", Model.saldo_a_constituir_al_cobro)
+					</div>
+				</div>
+			</div>
+		</fieldset>
+	</div>
+	<div class="col-3"></div>
+</div>

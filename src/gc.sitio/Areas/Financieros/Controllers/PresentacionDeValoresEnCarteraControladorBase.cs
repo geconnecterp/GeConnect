@@ -1,4 +1,5 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
 using gc.sitio.Controllers;
 using Microsoft.AspNetCore.Mvc;
@@ -30,6 +31,42 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			{
 				var txt = JsonConvert.SerializeObject(value);
 				_context.HttpContext?.Session.SetString("CtafIdSelected", txt);
+			}
+		}
+
+		public List<ValoresDesdeObligYCredDto> OPValoresSeleccionados
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("OPValoresSeleccionados");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<ValoresDesdeObligYCredDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("OPValoresSeleccionados", json);
+			}
+		}
+
+		public List<FinancieroCarteraDto> FinancieroCarteraLista
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("FinancieroCarteraLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<FinancieroCarteraDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("FinancieroCarteraLista", json);
 			}
 		}
 	}

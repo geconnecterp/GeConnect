@@ -17,5 +17,6 @@ namespace gc.api.core.Contratos.Servicios
         List<RespuestaDto> FinancieroConfirmarTransferencia(ConfirmarTransferenciaRequest request);
         List<FinancieroTraRepoCtagDto> GetFinancieroTraRepoCtag(string tra_compte);
         List<FinancieroTraRepoDDto> GetFinancieroTraRepoDDto(string tra_compte);
+        List<FinancieroCuentaAlCobroRelaDto> GetCuentaAlCobroRela(string ctaf_id);
 	}
 }
