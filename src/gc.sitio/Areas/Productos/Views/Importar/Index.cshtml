@@ -89,8 +89,9 @@
 
         let analizarColumnasUrl = "@Url.Action("AnalizarColumnas", "Importar", new { area = "Productos" })";
         let procesarExcelUrl = "@Url.Action("ProcesarExcel", "Importar", new { area = "Productos" })";
-
-         //esta variable es para usarla en Js. El (sub) es para usarlo aca nomas
+        let diagnosticoUrl = '@Url.Action("DiagnosticarCeldasCombinadas", "Importar", new { area = "Productos" })';
+        
+        //esta variable es para usarla en Js. El (sub) es para usarlo aca nomas
         nnControlCta01 = "@(sub)";
 
         // ✅ NUEVAS: Variables para control de upload

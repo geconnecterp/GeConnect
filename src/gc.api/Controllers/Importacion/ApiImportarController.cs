@@ -41,5 +41,43 @@ namespace gc.api.Controllers.Importacion
 
             return Ok(new ApiResponse<List<PrecioFileDatos>>(resultado));
         }
+
+        [HttpGet("precio-file-perfil")]
+        public IActionResult ObtenerPerfildePreciosCliente(string ctaId)
+        {
+            if(string.IsNullOrEmpty(ctaId))
+            {
+                return BadRequest("El ID de cliente no puede estar vacío.");
+            }
+            List<ProveedorPerfilDB> resultado = _importarServicio.ObtenerPerfildePreciosCliente(ctaId);
+
+            return Ok(new ApiResponse<List<ProveedorPerfilDB>>(resultado));
+        }
+
+        [HttpPost("confirmar-perfil-precio")]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        public IActionResult ConfirmarPerfilPrecioPerfil(AbmGenDto confirmarPerfil)
+        {
+            if (confirmarPerfil == null || 
+                string.IsNullOrEmpty(confirmarPerfil.Objeto) || 
+                string.IsNullOrEmpty(confirmarPerfil.Usuario) ||
+                string.IsNullOrEmpty(confirmarPerfil.Administracion) || 
+                string.IsNullOrEmpty(confirmarPerfil.Json))
+            {
+                return BadRequest("Los datos del perfil de precios son inválidos.");
+            }
+            RespuestaDto resultado = _importarServicio.ConfirmarPerfilPrecioPerfil(
+                confirmarPerfil.Objeto, 
+                confirmarPerfil.Usuario, 
+                confirmarPerfil.Administracion, 
+                confirmarPerfil.Json);
+            if (resultado == null)
+            {
+                return BadRequest("No se pudo confirmar el perfil de precios. Verifique los datos ingresados.");
+            }
+            return Ok(new ApiResponse<RespuestaDto>(resultado));
+        }
+
     }
 }
