@@ -542,8 +542,8 @@ function mostrarAnalisisColumnas(analisis) {
                         <button type="button" class="btn btn-outline-warning" onclick="validarMapeo()">
                             <i class="bx bx-check-shield me-1"></i>Validar Mapeo
                         </button>
-                        <button type="button" class="btn btn-success" onclick="confirmarEIniciarImportacion()">
-                            <i class="bx bx-check-double me-1"></i>Confirmar e Importar
+                        <button type="button" class="btn btn-success" onclick="cargarEIniciarImportacion()">
+                            <i class="bx bx-check-double me-1"></i> Cargar archivo
                         </button>
                     </div>
                 </div>
@@ -673,7 +673,7 @@ function cancelarAnalisis() {
     window.analisisActual = null;
 }
 
-function confirmarEIniciarImportacion() {
+function cargarEIniciarImportacion() {
     if (!archivoSeleccionado) {
         showUploadError('No hay archivo seleccionado para importar');
         return;
@@ -690,7 +690,8 @@ function confirmarEIniciarImportacion() {
         true, ["Continuar", "Cancelar"], "info!", null);
 }
 
-// ✅ ACTUALIZAR: Función de importación real con almacenamiento de respuesta
+// ✅ ACTUALIZAR: Función de importación real con mejor manejo de vista parcial
+// ✅ ACTUALIZAR: Función de importación con llamada corregida
 function ejecutarImportacionReal() {
     if (!archivoSeleccionado) {
         showUploadError('No hay archivo seleccionado para procesar');
@@ -725,11 +726,32 @@ function ejecutarImportacionReal() {
         data: formData,
         processData: false,
         contentType: false,
+        xhr: function () {
+            const xhr = new window.XMLHttpRequest();
+            xhr.upload.addEventListener("progress", function (evt) {
+                if (evt.lengthComputable) {
+                    const percentComplete = Math.round((evt.loaded / evt.total) * 70);
+                    $('#importProgress').css('width', percentComplete + '%')
+                        .text(`Subiendo archivo... ${percentComplete}%`);
+                }
+            }, false);
+            return xhr;
+        },
         success: function (response) {
             $('#importProgress').css('width', '100%').text('Importación completada');
 
-            // ✅ GUARDAR: Respuesta para detalles posteriores
+            // ✅ GUARDAR: Respuesta completa para detalles posteriores
             window.ultimaRespuestaImportacion = response;
+
+            console.log('✅ Respuesta de importación recibida:', {
+                error: response.error,
+                tieneVistaResultados: !!response.vistaResultados,
+                datosEstado: response.datos ? {
+                    total: response.datos.registrosProcesados,
+                    exitosos: response.datos.registrosExitosos,
+                    errores: response.datos.registrosConError
+                } : 'Sin datos'
+            });
 
             setTimeout(() => {
                 $('#importResults').slideUp(300);
@@ -738,14 +760,14 @@ function ejecutarImportacionReal() {
                     AbrirMensaje("ERROR", `Error en la importación: ${response.mensaje}`,
                         () => $("#msjModal").modal("hide"), false, ["Aceptar"], "error!", null);
                 } else {
-                    // ✅ LLAMAR: Función que ahora sí existe
-                    mostrarResultadosImportacionExitosa(response);
+                    // ✅ CORREGIR: Usar la función inteligente unificada
+                    mostrarResultadosImportacion(response);
                 }
             }, 1500);
         },
         error: function (xhr, status, error) {
             $('#importResults').slideUp(300);
-            console.error('Error en importación:', error, xhr.responseText);
+            console.error('❌ Error en importación:', error, xhr.responseText);
 
             let errorMessage = 'Error de comunicación durante la importación.';
             try {
@@ -761,82 +783,79 @@ function ejecutarImportacionReal() {
     });
 }
 
-// ✅ NUEVA: Mostrar resultados exitosos de importación (FUNCIÓN FALTANTE)
-function mostrarResultadosImportacionExitosa(response) {
+function mostrarResultadosBasicos(response) {
     const { datos, mensaje } = response;
 
-    const htmlResultados = `
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <div class="d-flex align-items-center">
-                <i class="bx bx-check-circle bx-lg text-success me-3"></i>
-                <div class="flex-grow-1">
-                    <h5 class="alert-heading mb-2">¡Importación Completada Exitosamente!</h5>
-                    <p class="mb-2">${mensaje}</p>
-                    
-                    ${datos ? `
-                        <div class="row text-center mt-3">
-                            <div class="col-md-3">
-                                <div class="border-end">
-                                    <h6 class="text-success mb-0">${datos.registrosProcesados || 0}</h6>
-                                    <small class="text-muted">Registros Procesados</small>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="border-end">
-                                    <h6 class="text-success mb-0">${datos.columnasUtilizadas || 0}</h6>
-                                    <small class="text-muted">Columnas Utilizadas</small>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="border-end">
-                                    <h6 class="text-success mb-0">${truncateText(datos.archivo || 'N/A', 20)}</h6>
-                                    <small class="text-muted">Archivo Procesado</small>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <h6 class="text-success mb-0">${datos.fechaProceso || 'N/A'}</h6>
-                                <small class="text-muted">Fecha/Hora</small>
-                            </div>
-                        </div>
-                    ` : ''}
-
-                    ${datos && datos.detalleResultado ? `
-                        <div class="mt-3">
-                            <h6><i class="bx bx-detail me-1"></i>Detalle del Proceso:</h6>
-                            <div class="bg-light p-2 rounded">
-                                <small class="text-muted">${datos.detalleResultado}</small>
-                            </div>
-                        </div>
-                    ` : ''}
+    const htmlBasico = `
+        <div class="alert alert-info">
+            <h5><i class="bx bx-info-circle me-2"></i>Importación Completada</h5>
+            <p>${mensaje || 'El proceso de importación ha finalizado.'}</p>
+            
+            ${datos ? `
+                <div class="mt-3">
+                    <strong>Resumen:</strong>
+                    <ul class="mb-0">
+                        <li>Registros procesados: <strong>${datos.registrosProcesados || 0}</strong></li>
+                        <li>Registros exitosos: <strong class="text-success">${datos.registrosExitosos || 0}</strong></li>
+                        <li>Registros con error: <strong class="text-warning">${datos.registrosConError || 0}</strong></li>
+                        <li>Archivo: <strong>${datos.archivo || 'N/A'}</strong></li>
+                    </ul>
                 </div>
-            </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            ` : ''}
         </div>
         
-        <div class="d-flex justify-content-center gap-3 mt-4">
+        <div class="text-center mt-3">
             <button type="button" class="btn btn-primary" onclick="location.reload()">
                 <i class="bx bx-refresh me-1"></i>Nueva Importación
-            </button>
-            <button type="button" class="btn btn-outline-secondary" onclick="verDetalleImportacion()">
-                <i class="bx bx-list-ul me-1"></i>Ver Detalles
             </button>
         </div>
     `;
 
-    $('#mainContent').html(htmlResultados);
+    $('#mainContent').html(htmlBasico);
 
-    // ✅ LIMPIAR: Estado después de importación exitosa
     setTimeout(() => {
         manejarArchivoRemovido();
-        if (typeof uploadAreaVisible !== 'undefined' && uploadAreaVisible) {
-            toggleUploadArea();
-        }
-    }, 3000); // Dar tiempo para que el usuario vea los resultados
+    }, 2000);
+}
 
-    // ✅ OPCIONAL: Scroll hacia los resultados
-    $('html, body').animate({
-        scrollTop: $('#mainContent').offset().top - 100
-    }, 500);
+// ✅ OPTIMIZAR: Mostrar resultados exitosos con vista parcial incluida
+function mostrarResultadosImportacionExitosa(response) {
+    console.warn('⚠️ mostrarResultadosImportacionExitosa está obsoleta. Usar mostrarResultadosImportacion');
+    mostrarResultadosImportacion(response);
+}
+
+// ✅ MEJORAR: Función para exportar resultados con más detalles
+function exportarResultados() {
+    if (!window.ultimaRespuestaImportacion) {
+        AbrirMensaje("INFORMACIÓN",
+            "No hay datos de importación para exportar.",
+            () => $("#msjModal").modal("hide"),
+            false, ["Aceptar"], "info!", null);
+        return;
+    }
+
+    try {
+        const { datos } = window.ultimaRespuestaImportacion;
+        const estado = analizarEstadoImportacion(datos);
+
+        // ✅ CSV con más información
+        let csvContent = "Estado,Total,Exitosos,Errores,Porcentaje_Exito,Archivo,Fecha\n";
+        csvContent += `"${estado.esExitoso ? 'Exitoso' : estado.tieneMixto ? 'Mixto' : 'Con Errores'}",`;
+        csvContent += `"${estado.total}","${estado.exitosos}","${estado.errores}","${estado.porcentajeExito}%",`;
+        csvContent += `"${datos.archivo}","${datos.fechaProceso}"\n`;
+
+        // Descargar archivo
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `resultados_importacion_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.csv`;
+        link.click();
+
+        console.log('✅ Resultados exportados exitosamente');
+    } catch (error) {
+        console.error('❌ Error exportando resultados:', error);
+        showUploadError('Error al exportar los resultados');
+    }
 }
 
 // ✅ AGREGAR: Función auxiliar para manejar archivo removido (si no existe)
@@ -978,21 +997,225 @@ function verDetalleImportacion() {
     });
 }
 
-// ✅ NUEVO: Mostrar resultados de importación
+// ✅ CORREGIR: Función principal para mostrar resultados según el estado real
 function mostrarResultadosImportacion(response) {
-    if (response.datos && response.datos.length > 0) {
-        // Mostrar tabla con resultados
-        const html = `
-            <div class="alert alert-success">
-                <h5><i class="bx bx-check-circle me-2"></i>Importación Exitosa</h5>
-                <p>Se importaron ${response.datos.length} registros correctamente.</p>
-            </div>
-        `;
-        $('#mainContent').html(html);
-    } else {
-        AbrirMensaje("INFORMACIÓN",
-            response.mensaje || "Importación completada sin errores.",
-            () => $("#msjModal").modal("hide"),
-            false, ["Aceptar"], "success!", null);
+    const { datos, mensaje, vistaResultados } = response;
+
+    if (!datos) {
+        // Sin datos estadísticos, mostrar básico
+        mostrarResultadosBasicos(response);
+        return;
     }
+
+    // ✅ ANALIZAR: Estado real de la importación
+    const estadoImportacion = analizarEstadoImportacion(datos);
+
+    if (estadoImportacion.esExitoso) {
+        mostrarResultadosExitosos(response, estadoImportacion);
+    } else if (estadoImportacion.tieneMixto) {
+        mostrarResultadosMixtos(response, estadoImportacion);
+    } else {
+        mostrarResultadosConErrores(response, estadoImportacion);
+    }
+}
+
+// ✅ NUEVA: Analizar el estado real de la importación
+function analizarEstadoImportacion(datos) {
+    const total = datos.registrosProcesados || 0;
+    const exitosos = datos.registrosExitosos || 0;
+    const errores = datos.registrosConError || 0;
+
+    const porcentajeExito = total > 0 ? Math.round((exitosos / total) * 100) : 0;
+
+    return {
+        total: total,
+        exitosos: exitosos,
+        errores: errores,
+        porcentajeExito: porcentajeExito,
+        esExitoso: errores === 0 && exitosos > 0,           // Solo éxitos
+        tieneMixto: errores > 0 && exitosos > 0,            // Mixto: éxitos y errores
+        soloErrores: errores > 0 && exitosos === 0,         // Solo errores
+        sinProcesar: total === 0                            // No procesó nada
+    };
+}
+
+// ✅ CORREGIR: Función para resultados completamente exitosos
+function mostrarResultadosExitosos(response, estado) {
+    const { datos, mensaje, vistaResultados } = response;
+
+    const htmlResultados = `
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="bx bx-check-circle bx-lg text-success me-3"></i>
+                <div class="flex-grow-1">
+                    <h5 class="alert-heading mb-2">¡Importación Completada Exitosamente!</h5>
+                    <p class="mb-2">Todos los ${estado.exitosos} registros fueron procesados correctamente.</p>
+                    
+                    <div class="row text-center mt-3">
+                        <div class="col-md-4">
+                            <h6 class="text-success mb-0">${estado.total}</h6>
+                            <small class="text-muted">Total Procesados</small>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-success mb-0">${estado.exitosos}</h6>
+                            <small class="text-muted">Exitosos</small>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-info mb-0">${truncateText(datos.archivo || 'N/A', 20)}</h6>
+                            <small class="text-muted">Archivo</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        
+        ${generarBotonesAccion()}
+        ${generarContenedorResultados(vistaResultados)}
+    `;
+
+    mostrarContenidoFinal(htmlResultados);
+}
+
+// ✅ NUEVA: Función para resultados mixtos (éxitos y errores)
+function mostrarResultadosMixtos(response, estado) {
+    const { datos, mensaje, vistaResultados } = response;
+
+    const htmlResultados = `
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="bx bx-error-circle bx-lg text-warning me-3"></i>
+                <div class="flex-grow-1">
+                    <h5 class="alert-heading mb-2">Importación Completada con Advertencias</h5>
+                    <p class="mb-2">
+                        Se procesaron ${estado.exitosos} registros exitosamente, pero ${estado.errores} 
+                        registros presentaron errores que requieren revisión.
+                    </p>
+                    
+                    <div class="row text-center mt-3">
+                        <div class="col-md-3">
+                            <h6 class="text-info mb-0">${estado.total}</h6>
+                            <small class="text-muted">Total</small>
+                        </div>
+                        <div class="col-md-3">
+                            <h6 class="text-success mb-0">${estado.exitosos}</h6>
+                            <small class="text-muted">Exitosos</small>
+                        </div>
+                        <div class="col-md-3">
+                            <h6 class="text-warning mb-0">${estado.errores}</h6>
+                            <small class="text-muted">Con Errores</small>
+                        </div>
+                        <div class="col-md-3">
+                            <h6 class="text-success mb-0">${estado.porcentajeExito}%</h6>
+                            <small class="text-muted">Éxito</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        
+        ${generarBotonesAccion()}
+        ${generarContenedorResultados(vistaResultados)}
+    `;
+
+    mostrarContenidoFinal(htmlResultados);
+}
+
+// ✅ NUEVA: Función para resultados con errores predominantes
+function mostrarResultadosConErrores(response, estado) {
+    const { datos, mensaje, vistaResultados } = response;
+
+    const htmlResultados = `
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="bx bx-x-circle bx-lg text-danger me-3"></i>
+                <div class="flex-grow-1">
+                    <h5 class="alert-heading mb-2">Importación Completada con Errores</h5>
+                    <p class="mb-2">
+                        ${estado.soloErrores ?
+            `Todos los ${estado.errores} registros presentaron errores y no pudieron ser procesados.` :
+            `La mayoría de registros (${estado.errores}) presentaron errores. Solo ${estado.exitosos} fueron procesados exitosamente.`
+        }
+                    </p>
+                    
+                    <div class="row text-center mt-3">
+                        <div class="col-md-4">
+                            <h6 class="text-info mb-0">${estado.total}</h6>
+                            <small class="text-muted">Total</small>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-danger mb-0">${estado.errores}</h6>
+                            <small class="text-muted">Con Errores</small>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-success mb-0">${estado.exitosos}</h6>
+                            <small class="text-muted">Exitosos</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        
+        ${generarBotonesAccion()}
+        ${generarContenedorResultados(vistaResultados)}
+    `;
+
+    mostrarContenidoFinal(htmlResultados);
+}
+
+// ✅ NUEVA: Generar botones de acción reutilizable
+function generarBotonesAccion() {
+    return `
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0"><i class="bx bx-list-ul me-2"></i>Resultados Detallados de la Importación</h6>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="location.reload()">
+                    <i class="bx bx-refresh me-1"></i>Nueva Importación
+                </button>
+                <button type="button" class="btn btn-outline-info btn-sm" onclick="exportarResultados()">
+                    <i class="bx bx-download me-1"></i>Exportar Resultados
+                </button>
+                <button type="button" class="btn btn-outline-primary btn-sm" onclick="verDetalleImportacion()">
+                    <i class="bx bx-detail me-1"></i>Ver Detalles
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+// ✅ NUEVA: Generar contenedor de resultados reutilizable
+function generarContenedorResultados(vistaResultados) {
+    return `
+        <!-- ✅ CONTENEDOR: Para la vista parcial de resultados -->
+        <div id="contenedorResultadosDetallados" class="mt-3">
+            ${vistaResultados && vistaResultados.trim().length > 0 ?
+            vistaResultados :
+            '<div class="alert alert-info"><i class="bx bx-info-circle me-2"></i>No hay resultados detallados disponibles</div>'
+        }
+        </div>
+    `;
+}
+
+// ✅ NUEVA: Función final para mostrar contenido y manejar efectos
+function mostrarContenidoFinal(html) {
+    $('#mainContent').html(html);
+
+    // ✅ SCROLL: Hacia los resultados después de un momento
+    setTimeout(() => {
+        if ($('#contenedorResultadosDetallados').length > 0) {
+            $('html, body').animate({
+                scrollTop: $('#contenedorResultadosDetallados').offset().top - 100
+            }, 800);
+        }
+    }, 500);
+
+    // ✅ LIMPIAR: Estado después de mostrar resultados
+    setTimeout(() => {
+        manejarArchivoRemovido();
+        if (typeof uploadAreaVisible !== 'undefined' && uploadAreaVisible) {
+            toggleUploadArea();
+        }
+    }, 2000);
 }

@@ -423,6 +423,7 @@ namespace gc.sitio.Areas.Productos.Controllers
         }
 
         // ✅ NUEVO: Procesar datos reales del Excel
+        // ✅ ACTUALIZAR: Procesar datos del Excel con campo BD
         private async Task<DatosImportacionDto?> ProcesarDatosDelExcel(IFormFile archivo, AnalisisExcelDto analisis, string proveedorId)
         {
             try
@@ -449,7 +450,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                     NombreArchivo = archivo.FileName,
                     TotalFilas = analisis.TotalFilas,
                     TotalColumnas = analisis.TotalColumnas,
-                    FilaEncabezados = 1, // Detectar automáticamente o usar el detectado
+                    FilaEncabezados = 1,
                     FechaProceso = DateTime.Now,
                     MapeoColumnas = columnasMapadas.Select(c => new MapeoColumnaDto
                     {
@@ -482,8 +483,8 @@ namespace gc.sitio.Areas.Productos.Controllers
                     {
                         var valorCelda = worksheet.Cells[fila, mapeo.IndiceColumna].Value;
 
-                        // ✅ Convertir valor según tipo
-                        var valorProcesado = ProcesarValorCelda(valorCelda, mapeo.TipoDato);
+                        // ✅ CORREGIR: Pasar el campo BD para tratamiento especial
+                        var valorProcesado = ProcesarValorCelda(valorCelda, mapeo.TipoDato, mapeo.CampoBD);
 
                         filaDatos.Valores[mapeo.CampoBD] = valorProcesado;
 
@@ -491,6 +492,12 @@ namespace gc.sitio.Areas.Productos.Controllers
                         if (valorProcesado != null && !string.IsNullOrWhiteSpace(valorProcesado.ToString()))
                         {
                             filaConDatos = true;
+                        }
+
+                        // ✅ LOGGING: Para campos identificadores
+                        if (EsCampoIdentificador(mapeo.CampoBD) && valorProcesado != null)
+                        {
+                            _logger?.LogDebug($"Campo identificador procesado: {mapeo.CampoBD} = '{valorProcesado}' (Tipo: {valorProcesado.GetType().Name})");
                         }
                     }
 
@@ -512,14 +519,20 @@ namespace gc.sitio.Areas.Productos.Controllers
                 return null;
             }
         }
-
         // ✅ NUEVO: Procesar valor de celda según tipo
-        private object? ProcesarValorCelda(object? valorCelda, string tipoDato)
+        // ✅ CORREGIR: Procesar valor de celda con tratamiento especial para EAN
+        private object? ProcesarValorCelda(object? valorCelda, string tipoDato, string? campoBD = null)
         {
             if (valorCelda == null) return null;
 
             var valorTexto = valorCelda.ToString()?.Trim();
             if (string.IsNullOrEmpty(valorTexto)) return null;
+
+            // ✅ ESPECIAL: Campos que SIEMPRE deben ser string (identificadores)
+            if (!string.IsNullOrEmpty(campoBD) && EsCampoIdentificador(campoBD))
+            {
+                return valorTexto; // Mantener como string sin conversión
+            }
 
             return tipoDato switch
             {
@@ -528,6 +541,22 @@ namespace gc.sitio.Areas.Productos.Controllers
                 "Texto" => valorTexto,
                 _ => valorTexto
             };
+        }
+
+        // ✅ NUEVO: Identificar campos que deben mantenerse como string
+        private bool EsCampoIdentificador(string campoBD)
+        {
+            var camposIdentificadores = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "p_ean",
+                "p_ean_otro",
+                "p_dun",
+                "p_id",
+                "p_id_prov",
+                "p_codigo"
+            };
+
+            return camposIdentificadores.Contains(campoBD);
         }
 
         // ✅ NUEVO: Enviar datos procesados a la API
@@ -1185,6 +1214,7 @@ namespace gc.sitio.Areas.Productos.Controllers
         }
 
         // ✅ OPTIMIZAR: Análisis de estructura Excel con manejo de celdas combinadas
+        // ✅ ACTUALIZAR: Análisis de estructura Excel con mejor detección
         private async Task<AnalisisExcelDto> AnalizarEstructuraExcel(IFormFile archivo)
         {
             using var stream = new MemoryStream();
@@ -1207,10 +1237,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             if (analisis.TotalFilas == 0 || analisis.TotalColumnas == 0)
                 return analisis;
 
-            // ✅ NUEVO: Obtener información de celdas combinadas
             var celdasCombinadas = ObtenerInformacionCeldasCombinadas(worksheet);
-
-            // ✅ MEJORAR: Detectar fila de encabezados considerando celdas combinadas
             var filaEncabezados = DetectarFilaEncabezadosConCombinadas(worksheet, celdasCombinadas, 10, 2);
             var filaDatosInicio = Math.Min(analisis.TotalFilas, filaEncabezados + 1);
             var totalFilasDatos = Math.Max(0, analisis.TotalFilas - filaEncabezados);
@@ -1219,7 +1246,6 @@ namespace gc.sitio.Areas.Productos.Controllers
 
             for (int col = 1; col <= analisis.TotalColumnas; col++)
             {
-                // ✅ NUEVO: Obtener valor de encabezado considerando celdas combinadas
                 var valorEncabezado = ObtenerValorEncabezadoConCombinadas(worksheet, filaEncabezados, col, celdasCombinadas);
 
                 if (string.IsNullOrEmpty(valorEncabezado))
@@ -1227,7 +1253,8 @@ namespace gc.sitio.Areas.Productos.Controllers
                     valorEncabezado = $"Columna {GetColumnName(col)}";
                 }
 
-                var tipoDetectado = DetectarTipoDato(worksheet, col, filaDatosInicio, Math.Min(10, totalFilasDatos));
+                // ✅ MEJORAR: Pasar encabezado para mejor detección
+                var tipoDetectado = DetectarTipoDato(worksheet, col, filaDatosInicio, Math.Min(10, totalFilasDatos), valorEncabezado);
                 var valoresNoVacios = ContarValoresNoVacios(worksheet, col, filaDatosInicio, analisis.TotalFilas);
 
                 analisis.Columnas.Add(new ColumnaExcelDto
@@ -1246,6 +1273,7 @@ namespace gc.sitio.Areas.Productos.Controllers
 
             return analisis;
         }
+
 
         // ✅ NUEVO: Obtener información de todas las celdas combinadas
         private List<CeldaCombinada> ObtenerInformacionCeldasCombinadas(ExcelWorksheet worksheet)
@@ -1528,8 +1556,13 @@ namespace gc.sitio.Areas.Productos.Controllers
         }
         // --------------------------------------------------------------------
 
-
+        // ✅ MANTENER: Método original con sobrecarga para compatibilidad
         private string DetectarTipoDato(ExcelWorksheet ws, int columna, int filaInicio, int sampleRows)
+        {
+            return DetectarTipoDato(ws, columna, filaInicio, sampleRows, null);
+        }
+        // ✅ MEJORAR: Detección de tipo de dato con consideraciones especiales
+        private string DetectarTipoDato(ExcelWorksheet ws, int columna, int filaInicio, int sampleRows, string? encabezado = null)
         {
             var tipos = new Dictionary<string, int>
             {
@@ -1543,6 +1576,13 @@ namespace gc.sitio.Areas.Productos.Controllers
             if (totalRows == 0) return "Desconocido";
 
             int endRow = Math.Min(totalRows, filaInicio + sampleRows - 1);
+
+            // ✅ ESPECIAL: Si el encabezado sugiere que es un identificador, forzar como texto
+            if (!string.IsNullOrEmpty(encabezado) && EsEncabezadoDeIdentificador(encabezado))
+            {
+                _logger?.LogDebug($"Forzando detección como 'Texto' para columna con encabezado: '{encabezado}'");
+                return "Texto";
+            }
 
             for (int fila = filaInicio; fila <= endRow + 1; fila++)
             {
@@ -1558,7 +1598,20 @@ namespace gc.sitio.Areas.Productos.Controllers
                 }
                 else if (decimal.TryParse(valor.ToString(), out _))
                 {
-                    tipos["Número"]++;
+                    // ✅ ESPECIAL: Verificar si parece un EAN (números largos)
+                    var valorTexto = valor.ToString()?.Trim();
+                    if (!string.IsNullOrEmpty(valorTexto) &&
+                        valorTexto.Length >= 8 && // EAN mínimo 8 dígitos
+                        valorTexto.All(char.IsDigit) &&
+                        EsLongitudEAN(valorTexto.Length))
+                    {
+                        tipos["Texto"]++; // Tratarlo como texto
+                        _logger?.LogDebug($"Número largo detectado como EAN: '{valorTexto}' - Tratando como texto");
+                    }
+                    else
+                    {
+                        tipos["Número"]++;
+                    }
                 }
                 else
                 {
@@ -1569,6 +1622,28 @@ namespace gc.sitio.Areas.Productos.Controllers
             return tipos.OrderByDescending(x => x.Value).First().Key;
         }
 
+        // ✅ NUEVO: Verificar si un encabezado sugiere un identificador
+        private bool EsEncabezadoDeIdentificador(string encabezado)
+        {
+            var indicadoresIdentificador = new[]
+            {
+        "ean", "gtin", "upc", "barcode", "codigo barras", "cod barras",
+        "codigo", "código", "id", "identificador", "dun", "isbn"
+    };
+
+            var encabezadoLimpio = LimpiarTexto(encabezado);
+
+            return indicadoresIdentificador.Any(indicador =>
+                encabezadoLimpio.Contains(indicador, StringComparison.OrdinalIgnoreCase));
+        }
+
+        // ✅ NUEVO: Verificar longitudes típicas de EAN
+        private bool EsLongitudEAN(int longitud)
+        {
+            // Longitudes válidas de códigos EAN/UPC/GTIN
+            var longitudesValidas = new[] { 8, 12, 13, 14 };
+            return longitudesValidas.Contains(longitud);
+        }
         private int ContarValoresNoVacios(ExcelWorksheet worksheet, int columna, int filaDatosInicio, int totalFilas)
         {
             int count = 0;
