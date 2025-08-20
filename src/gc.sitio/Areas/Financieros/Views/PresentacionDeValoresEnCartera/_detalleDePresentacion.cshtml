@@ -14,7 +14,7 @@
 		margin-left: 0px;
 		margin-right: 0px;
 		margin-bottom: 0px;
-		height: 350px;
+		height: 420px;
 	}
 
 	legend {
@@ -26,14 +26,14 @@
 		font-size: small;
 	}
 
-	.en-cartera{
-		background-color: red !important;
+	.en-cartera {
+		background-color: #cd4b4b !important;
 		color: white;
 		text-align: end;
 	}
 
-	.al-cobro{
-		background-color: blue !important;
+	.al-cobro {
+		background-color: #5c5cf4 !important;
 		color: white;
 		text-align: end;
 	}
@@ -76,58 +76,64 @@
 				</div>
 				<div class="row mt-4">
 					<div class="input-group input-group-sm">
-						<span class="input-group-text">Cuenta en Cartera:</span>
-						<span class="input-group-text" style="font-weight: 900;">@cuentaEnCartera</span>
+						<span class="input-group-text fixed-lbl-for-abm-130" style="font-weight: 900;">Cuenta en Cartera:</span>
+						<span class="input-group-text" style="font-weight: 900;width: 80.5%;">@cuentaEnCartera</span>
 					</div>
 				</div>
-				<div class="row mt-1 col-8">
-					<div class="input-group input-group-sm">
-						<span class="input-group-text">Saldo Actual:</span>
-						<input type="text" asp-for="saldo_cuenta_en_cartera" class="form-control activable en-cartera" disabled />
-						@Html.Hidden("ctaf_id_cartera_number", Model.saldo_cuenta_en_cartera)
+				<fieldset style="height: 120px;">
+					<legend></legend>
+					<div class="row mt-1 col-8">
+						<div class="input-group input-group-sm">
+							<span class="input-group-text fixed-lbl-for-abm-130">Saldo Actual:</span>
+							<input type="text" asp-for="saldo_cuenta_en_cartera" class="form-control activable en-cartera" disabled />
+							@Html.Hidden("ctaf_id_cartera_number", Model.saldo_cuenta_en_cartera)
+						</div>
 					</div>
-				</div>
-				<div class="row mt-1 col-8">
-					<div class="input-group input-group-sm">
-						<span class="input-group-text">Importe a Presentar:</span>
-						<input type="text" asp-for="importe_a_presentar_en_cartera" class="form-control activable" disabled style="text-align: end;" />
-						@Html.Hidden("importe_a_presentar_en_cartera_number", Model.importe_a_presentar_en_cartera)
+					<div class="row mt-1 col-8">
+						<div class="input-group input-group-sm">
+							<span class="input-group-text fixed-lbl-for-abm-130">Importe a Presentar:</span>
+							<input type="text" asp-for="importe_a_presentar_en_cartera" class="form-control activable" disabled style="text-align: end;" />
+							@Html.Hidden("importe_a_presentar_en_cartera_number", Model.importe_a_presentar_en_cartera)
+						</div>
 					</div>
-				</div>
-				<div class="row mt-1 col-8">
-					<div class="input-group input-group-sm">
-						<span class="input-group-text">Saldo a Constituir:</span>
-						<input type="text" asp-for="saldo_a_constituir_en_cartera" class="form-control activable en-cartera" disabled />
-						@Html.Hidden("saldo_a_constituir_en_cartera_number", Model.saldo_a_constituir_en_cartera)
+					<div class="row mt-1 col-8">
+						<div class="input-group input-group-sm">
+							<span class="input-group-text fixed-lbl-for-abm-130">Saldo a Constituir:</span>
+							<input type="text" asp-for="saldo_a_constituir_en_cartera" class="form-control activable en-cartera" disabled />
+							@Html.Hidden("saldo_a_constituir_en_cartera_number", Model.saldo_a_constituir_en_cartera)
+						</div>
 					</div>
-				</div>
+				</fieldset>
 				<div class="row mt-4">
 					<div class="input-group input-group-sm">
-						<span class="input-group-text">Cuenta al Cobro:</span>
-						<span class="input-group-text" style="font-weight: 900;">@cuentaAlCobro</span>
+						<span class="input-group-text fixed-lbl-for-abm-130" style="font-weight: 900;">Cuenta al Cobro:</span>
+						<span class="input-group-text" style="font-weight: 900;width: 80.5%;">@cuentaAlCobro</span>
 					</div>
 				</div>
-				<div class="row mt-1 col-8">
-					<div class="input-group input-group-sm">
-						<span class="input-group-text">Saldo Actual:</span>
-						<input type="text" asp-for="saldo_cuenta_al_cobro" class="form-control activable al-cobro" disabled />
-						@Html.Hidden("saldo_cuenta_al_cobro_number", Model.saldo_cuenta_al_cobro)
+				<fieldset style="height: 120px;">
+					<legend></legend>
+					<div class="row mt-1 col-8">
+						<div class="input-group input-group-sm">
+							<span class="input-group-text fixed-lbl-for-abm-130">Saldo Actual:</span>
+							<input type="text" asp-for="saldo_cuenta_al_cobro" class="form-control activable al-cobro" disabled />
+							@Html.Hidden("saldo_cuenta_al_cobro_number", Model.saldo_cuenta_al_cobro)
+						</div>
 					</div>
-				</div>
-				<div class="row mt-1 col-8">
-					<div class="input-group input-group-sm">
-						<span class="input-group-text">Importe a Presentar:</span>
-						<input type="text" asp-for="importe_a_presentar_al_cobro" class="form-control activable" disabled style="text-align: end;" />
-						@Html.Hidden("importe_a_presentar_al_cobro_number", Model.importe_a_presentar_al_cobro)
+					<div class="row mt-1 col-8">
+						<div class="input-group input-group-sm">
+							<span class="input-group-text fixed-lbl-for-abm-130">Importe a Presentar:</span>
+							<input type="text" asp-for="importe_a_presentar_al_cobro" class="form-control activable" disabled style="text-align: end;" />
+							@Html.Hidden("importe_a_presentar_al_cobro_number", Model.importe_a_presentar_al_cobro)
+						</div>
 					</div>
-				</div>
-				<div class="row mt-1 col-8">
-					<div class="input-group input-group-sm">
-						<span class="input-group-text">Saldo a Constituir:</span>
-						<input type="text" asp-for="saldo_a_constituir_al_cobro" class="form-control activable al-cobro" disabled />
-						@Html.Hidden("saldo_a_constituir_al_cobro_number", Model.saldo_a_constituir_al_cobro)
+					<div class="row mt-1 col-8">
+						<div class="input-group input-group-sm">
+							<span class="input-group-text fixed-lbl-for-abm-130">Saldo a Constituir:</span>
+							<input type="text" asp-for="saldo_a_constituir_al_cobro" class="form-control activable al-cobro" disabled />
+							@Html.Hidden("saldo_a_constituir_al_cobro_number", Model.saldo_a_constituir_al_cobro)
+						</div>
 					</div>
-				</div>
+				</fieldset>
 			</div>
 		</fieldset>
 	</div>

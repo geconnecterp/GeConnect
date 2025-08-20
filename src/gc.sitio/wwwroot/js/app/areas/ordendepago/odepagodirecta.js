@@ -822,7 +822,8 @@ function CargarMascaras() {
 	$("#itemOPD_cm_compte_pto_vta").inputmask("9999");
 	$("#itemOPD_cm_compte_pto_nro").inputmask("99999999");
 
-	var now = moment().format('yyyy-MM-DD');
+	//var now = moment().format('yyyy-MM-DD');
+	var now = $("#itemOPD_cm_fecha").val();
 	$("#itemOPD_cm_fecha").attr('max', now);
 	$("#itemOPD_cm_fecha").val(now);
 }

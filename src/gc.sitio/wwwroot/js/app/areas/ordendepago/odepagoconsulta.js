@@ -96,6 +96,24 @@ function ControlalistaUsuarioSelected() {
 	}
 }
 
+function AgregarHandlerAHeaderEnGrillaListaOP() {
+	var dataTable = document.getElementById('tbListaOP');
+	var checkItAll = dataTable.querySelector('input[name="select_all"]');
+	var inputs = dataTable.querySelectorAll('tbody>tr>td>input');
+	checkItAll.addEventListener('change', function () {
+		if (checkItAll.checked) {
+			inputs.forEach(function (input) {
+				input.checked = true;
+			});
+		}
+		else {
+			inputs.forEach(function (input) {
+				input.checked = false;
+			});
+		}
+	});
+}
+
 function LimpiarDatosDelFiltroInicial() {
 	$("#chkDesdeHasta").prop('checked', true);
 	$("#chkDesdeHasta").trigger("change");
@@ -487,6 +505,8 @@ function BuscarOrdenesDePago(pag = 1) {
 		$("#divOrdenesDePago").html(obj);
 		AddEventListenerToGrid("tbListaOP");
 		ActivarBotonesTabPrincipal();
+		AgregarHandlerAHeaderEnGrillaListaOP();
+		$('input[name="select_all"]').prop('checked', true);
 		FormatearValores("#tbListaOC", 6)
 		$("#Importe").val(formatter.format($("#Importe").val()));
 		$("#divDetalle").collapse("show");

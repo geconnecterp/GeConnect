@@ -37,7 +37,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				return RedirectToAction("Login", "Token", new { area = "seguridad" });
 			}
-
+			var titulo = "RECEPCIÓN DE TRANSFERENCIAS";
+			ViewData["Titulo"] = titulo;
 			GridCoreSmart<RemitoGenDto> grid;
 			try
 			{

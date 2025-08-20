@@ -6,6 +6,7 @@ using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
+using gc.infraestructura.EntidadesComunes;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Enumeraciones;
 using gc.infraestructura.Helpers;
@@ -62,6 +63,9 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 				}
 
+				OPValoresOrigen = [];
+				OPValoresDestino = [];
+
 				var titulo = "TRANSFERENCIAS BANCARIAS Y DE CAJA CHICA O EFECTIVO";
 				ViewData["Titulo"] = titulo;
 
@@ -102,6 +106,9 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				{
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 				}
+
+				OPValoresOrigen = [];
+				OPValoresDestino = [];
 
 				var titulo = "DEPÓSITOS DE CHEQUES EN CARTERA";
 				ViewData["Titulo"] = titulo;
@@ -170,7 +177,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					else
 						return PartialView("_grillaValoresDestino", model);
 				}
-
+				var orden = 1;
 				if (sourceSeleccionado.Equals("1"))
 				{
 					if (OPValoresOrigen == null)
@@ -178,6 +185,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					var listaTemp = OPValoresOrigen;
 					listaTemp.AddRange(OPValoresDesdeObligYCredLista);
 					OPValoresDesdeObligYCredLista = [];
+					listaTemp.ForEach(x => x.orden = orden++);
 					OPValoresOrigen = listaTemp;
 					model.Grilla = ObtenerGridCoreSmart<ValoresDesdeObligYCredDto>(OPValoresOrigen);
 					return PartialView("_grillaValoresOrigen", model);
@@ -189,6 +197,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					var listaTemp = OPValoresDestino;
 					listaTemp.AddRange(OPValoresDesdeObligYCredLista);
 					OPValoresDesdeObligYCredLista = [];
+					listaTemp.ForEach(x => x.orden = orden++);
 					OPValoresDestino = listaTemp;
 					model.Grilla = ObtenerGridCoreSmart<ValoresDesdeObligYCredDto>(OPValoresDestino);
 					return PartialView("_grillaValoresDestino", model);

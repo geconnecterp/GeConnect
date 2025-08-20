@@ -223,13 +223,13 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				model.cuenta_en_cartera = $"{request.ctafIdSelected} {request.ctafDescSelected}";
 				model.saldo_cuenta_en_cartera = request.saldoDeCtaf;
 				model.importe_a_presentar_en_cartera = request.totalSeleccionadoEnCartera;
-				model.saldo_cuenta_en_cartera = request.saldoDeCtaf - request.totalSeleccionadoEnCartera;
+				model.saldo_a_constituir_en_cartera = request.saldoDeCtaf - request.totalSeleccionadoEnCartera;
 				model.ctaf_id_cartera = request.ctafIdSelected;
 				model.ctaf_desc_cartera = request.ctafDescSelected;
 
 				model.cuenta_al_cobro = $"{cuenta_al_cobro.ctaf_id} {cuenta_al_cobro.ctaf_denominacion}";
 				model.importe_a_presentar_al_cobro = request.totalSeleccionadoEnCartera;
-				model.saldo_cuenta_al_cobro = 0;
+				model.saldo_cuenta_al_cobro = cuenta_al_cobro.ctaf_saldo;
 				model.saldo_a_constituir_al_cobro = model.importe_a_presentar_al_cobro + model.saldo_cuenta_al_cobro;
 				model.ctaf_id_al_cobro = cuenta_al_cobro.ctaf_id;
 				model.ctaf_desc_al_cobro = cuenta_al_cobro.ctaf_denominacion;

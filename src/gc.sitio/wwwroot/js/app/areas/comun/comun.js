@@ -101,9 +101,9 @@ function CargarGrillaOtrosTributosDesdeSeleccion(afip_id, cm_cuit, tco_id, cm_co
 		addInCellGotFocusHandler();
 		addInCellEditHandler();
 		addInCellLostFocusHandler();
-		FormatearValores(tbGridOtroTributo, [2, 3, 4]);
+		FormatearValores("#tbGridOtroTributo", [2, 3, 4]);
 		addMaskInEditableCells();
-		desactivarGrilla(tbGridOtroTributo);
+		desactivarGrilla("#tbGridOtroTributo");
 		$("#btnAgregarOtroTributo").prop("disabled", true);
 		return true
 	});
@@ -120,7 +120,7 @@ function CargarGrillaOtrosTributos() {
 		addInCellGotFocusHandler();
 		addInCellEditHandler();
 		addInCellLostFocusHandler();
-		FormatearValores(tbGridOtroTributo, [2, 3, 4]);
+		FormatearValores("#tbGridOtroTributo", [2, 3, 4]);
 		addMaskInEditableCells();
 		return true
 	});
@@ -170,7 +170,7 @@ function quitarOtroTributo(e) {
 		addInCellGotFocusHandler();
 		addInCellEditHandler();
 		addInCellLostFocusHandler();
-		FormatearValores(tbGridOtroTributo, [2, 3, 4]);
+		FormatearValores("#tbGridOtroTributo", [2, 3, 4]);
 		addMaskInEditableCells();
 		CargarGrillaTotales();
 	});

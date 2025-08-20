@@ -56,6 +56,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 			List<ProductoAAjustarDto> listaProdAAjustar = [];
 			try
 			{
+				var titulo = "AJUSTES DE STOCK";
+				ViewData["Titulo"] = titulo;
+
 				model.ComboDepositos = CargarComboDepositos();
 				model.ComboBoxes = HelperMvc<ComboGenDto>.ListaGenerica(boxes.Select(x => new ComboGenDto { Id = x.Box_Id, Descripcion = $"{x.Box_Id}__{x.Box_desc}" }));
 				model.ComboMotivos = CargarComboTiposDeAjusteDeStock();

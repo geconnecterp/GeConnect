@@ -8,6 +8,28 @@
 		position: sticky;
 		top: 0px;
 	}
+
+	fieldset {
+		margin: 8px;
+		border: 1px solid silver;
+		padding: 8px;
+		border-radius: 4px;
+		max-width: 100%;
+		margin-top: 8px;
+		margin-left: 0px;
+		margin-right: 0px;
+		margin-bottom: 0px;
+		height: 420px;
+	}
+
+	legend {
+		padding: 2px;
+		margin-top: -22px;
+		background: #f3f5f7 !important;
+		width: 25%;
+		text-align: center;
+		font-size: small;
+	}
 </style>
 <div class="row" style="padding-top: 10px;">
 	@Html.Hidden("cm_compte", Model.DescFinanc.cm_compte)
@@ -58,141 +80,150 @@
 	</div>
 </div>
 <div class="row">
-	<div class="col-md-6">
-		@*Grilla Descuentos Financieros*@
+	<div class="col-9" style="padding-left: 25px;">
 		<div class="row">
-			<div class="col-md-8" style="display: flex; align-items: center; text-align: justify; margin-top: 5px; margin-bottom: -15px;">
-				<h6>Descuentos Financieros</h6>
-			</div>
-		</div>
-		<div id="divDescFinanc">
-			<div class="table-responsive table-wrapper-400-full-width" id="containerListaDescFinanc">
-				<table class="drageable-table table table-bordered table-hover" id="tbListaDescFinanc">
-					<thead class="table-dark">
-						<tr>
-							<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">Item</th>
-							<th style="width:15%;" class="col-header-small align-center tiny-row">Neto Fijo</th>
-							<th style="width:15%;" class="col-header-small align-center tiny-row">Dto/Tot</th>
-							<th style="width:25%;" class="col-header-small align-center tiny-row">Concepto</th>
-							<th style="width:15%;" class="col-header-small align-center tiny-row">Dto %</th>
-							<th style="width:15%;" class="col-header-small align-center tiny-row">Neto</th>
-							<th style="width:15%;" class="col-header-small align-center tiny-row"></th>
-						</tr>
-					</thead>
-					<tbody>
-						@if (Model != null && Model.GrillaDescuentosFin != null && Model.GrillaDescuentosFin.ListaDatos != null)
-						{
-							@foreach (var item in Model.GrillaDescuentosFin.ListaDatos)
-							{
-								var nombre1 = "chkNetoFijo" + item.cm_compte;
-								var nombre2 = "chkDtoTot" + item.cm_compte;
-								<tr onclick="selectListaDescFinanc(this)" class="sortme">
-									<td style="display:none;">@item.item</td>
-									@if (item.dto_fijo_bool)
-									{
-										<td class="@Model.GrillaDescuentosFin.ObtenerClase(item.dto_fijo_bool)"><input type="checkbox" name=@nombre1 id="@nombre1" checked disabled /></td>
-									}
-									else
-									{
-										<td class="@Model.GrillaDescuentosFin.ObtenerClase(item.dto_fijo_bool)"><input type="checkbox" name=@nombre1 id="@nombre1" disabled /></td>
-									}
-									@if (item.dto_sobre_total_bool)
-									{
-										<td class="@Model.GrillaDescuentosFin.ObtenerClase(item.dto_sobre_total_bool)"><input type="checkbox" name=@nombre2 id="@nombre2" checked disabled /></td>
-									}
-									else
-									{
-										<td class="@Model.GrillaDescuentosFin.ObtenerClase(item.dto_sobre_total_bool)"><input type="checkbox" name=@nombre2 id="@nombre2" disabled /></td>
-									}
-									<td class="@Model.GrillaDescuentosFin.ObtenerClase(item.dtoc_desc)">@Model.GrillaDescuentosFin.FormatearDato(item.dtoc_desc, FormatDato.Ninguno)</td>
-									<td class="@Model.GrillaDescuentosFin.ObtenerClase(item.dto)">@Model.GrillaDescuentosFin.FormatearDato(item.dto, FormatDato.Monto)</td>
-									<td class="@Model.GrillaDescuentosFin.ObtenerClase(item.dto_importe)">@Model.GrillaDescuentosFin.FormatearDato(item.dto_importe, FormatDato.Monto)</td>
-									<td><a class="btn btn-xs btn-outline-dark" data-interaction="@item.item" onclick="quitarDescFinanc(this);"> <i class="bx bxs-trash"></i></a></td>
-								</tr>
-							}
-						}
-					</tbody>
-				</table>
-			</div>
+			<fieldset style="height: 250px;">
+				<legend></legend>
+				<div class="row">
+					<div class="col-md-8">
+						@*Grilla Descuentos Financieros*@
+						<div class="row">
+							<div class="col-md-8" style="display: flex; align-items: center; text-align: justify; margin-top: 5px; margin-bottom: -15px;">
+								<h6>Descuentos Financieros</h6>
+							</div>
+						</div>
+						<div id="divDescFinanc">
+							<div class="table-responsive table-wrapper-400-full-width" id="containerListaDescFinanc">
+								<table class="drageable-table table table-bordered table-hover" id="tbListaDescFinanc">
+									<thead class="table-dark">
+										<tr>
+											<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">Item</th>
+											<th style="width:15%;" class="col-header-small align-center tiny-row">Neto Fijo</th>
+											<th style="width:15%;" class="col-header-small align-center tiny-row">Dto/Tot</th>
+											<th style="width:25%;" class="col-header-small align-center tiny-row">Concepto</th>
+											<th style="width:15%;" class="col-header-small align-center tiny-row">Dto %</th>
+											<th style="width:15%;" class="col-header-small align-center tiny-row">Neto</th>
+											<th style="width:15%;" class="col-header-small align-center tiny-row"></th>
+										</tr>
+									</thead>
+									<tbody>
+										@if (Model != null && Model.GrillaDescuentosFin != null && Model.GrillaDescuentosFin.ListaDatos != null)
+										{
+											@foreach (var item in Model.GrillaDescuentosFin.ListaDatos)
+											{
+												var nombre1 = "chkNetoFijo" + item.cm_compte;
+												var nombre2 = "chkDtoTot" + item.cm_compte;
+												<tr onclick="selectListaDescFinanc(this)" class="sortme">
+													<td style="display:none;">@item.item</td>
+													@if (item.dto_fijo_bool)
+													{
+														<td class="@Model.GrillaDescuentosFin.ObtenerClase(item.dto_fijo_bool)"><input type="checkbox" name=@nombre1 id="@nombre1" checked disabled /></td>
+													}
+													else
+													{
+														<td class="@Model.GrillaDescuentosFin.ObtenerClase(item.dto_fijo_bool)"><input type="checkbox" name=@nombre1 id="@nombre1" disabled /></td>
+													}
+													@if (item.dto_sobre_total_bool)
+													{
+														<td class="@Model.GrillaDescuentosFin.ObtenerClase(item.dto_sobre_total_bool)"><input type="checkbox" name=@nombre2 id="@nombre2" checked disabled /></td>
+													}
+													else
+													{
+														<td class="@Model.GrillaDescuentosFin.ObtenerClase(item.dto_sobre_total_bool)"><input type="checkbox" name=@nombre2 id="@nombre2" disabled /></td>
+													}
+													<td class="@Model.GrillaDescuentosFin.ObtenerClase(item.dtoc_desc)">@Model.GrillaDescuentosFin.FormatearDato(item.dtoc_desc, FormatDato.Ninguno)</td>
+													<td class="@Model.GrillaDescuentosFin.ObtenerClase(item.dto)">@Model.GrillaDescuentosFin.FormatearDato(item.dto, FormatDato.Monto)</td>
+													<td class="@Model.GrillaDescuentosFin.ObtenerClase(item.dto_importe)">@Model.GrillaDescuentosFin.FormatearDato(item.dto_importe, FormatDato.Monto)</td>
+													<td><a class="btn btn-xs btn-outline-dark" data-interaction="@item.item" onclick="quitarDescFinanc(this);"> <i class="bx bxs-trash"></i></a></td>
+												</tr>
+											}
+										}
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 mt-3">
+						@*Campos*@
+						<div class="row mt-1">
+							<div class="input-group input-group-sm">
+								<div class="form-check form-check-inline form-switch mb-2">
+									<input class="form-check-input activable" type="checkbox" asp-for="DescFinanc.dto_sobre_total_bool" value="true" id="chkSobreTotal">
+									<label class="form-check-label" for="chkSobreTotal"> Aplica sobre Total</label>
+								</div>
+							</div>
+						</div>
+						<div class="row mt-1">
+							<div class="input-group input-group-sm">
+								<div class="form-check form-check-inline form-switch mb-2" style="margin-right:170px;">
+									<input class="form-check-input activable" type="checkbox" asp-for="DescFinanc.dto_fijo_bool" value="" id="chkNetoFijo">
+									<label class="form-check-label" for="chkNetoFijo"> Neto Fijo</label>
+								</div>
+								<div class="d-flex justify-content-sm-end">
+									<button id="btnAceptarDescFinanc" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Agregar Descuento Financiero">
+										<i class="bx bx-plus-circle"></i>
+									</button>
+								</div>
+							</div>
+						</div>
+						<div class="row mt-1">
+							<div class="input-group input-group-sm">
+								<span class="input-group-text fixed-lbl-for-abm-100">Concepto: </span>
+								@Html.DropDownListFor(m => m.Comprobante.tco_id, lst, "Seleccionar...", new { @id = "listaConcDescFinanc", @class = "form-control activable" })
+							</div>
+						</div>
+						<div id="divDescFinancDto" class="show">
+							<div class="row mt-1">
+								<div class="input-group input-group-sm">
+									<span class="input-group-text fixed-lbl-for-abm-100">Dto %:</span>
+									<input type="text" asp-for="DescFinanc.dto" class="form-control activable inputEditable" />
+								</div>
+							</div>
+						</div>
+						<div id="divDescFinancDtoImporte" class="collapse">
+							<div class="row mt-1">
+								<div class="input-group input-group-sm">
+									<span class="input-group-text fixed-lbl-for-abm-100">Neto Fijo:</span>
+									<input type="text" asp-for="DescFinanc.dto_importe" class="form-control activable inputEditable" />
+								</div>
+							</div>
+						</div>
+						<div class="row mt-1">
+							<div class="input-group input-group-sm">
+								<span class="input-group-text fixed-lbl-for-abm-100">Obs.:</span>
+								<input type="text" asp-for="DescFinanc.dto_obs" maxlength="40" class="form-control activable inputEditable" />
+							</div>
+						</div>
+						<div class="row mt-1">
+							<div class="d-flex justify-content-sm-center">
+							</div>
+						</div>
+					</div>
+				</div>
+			</fieldset>
 		</div>
 	</div>
-	<div class="col-md-3">
-		@*Campos*@
-		<div class="row mt-1">
-			<div class="input-group input-group-sm">
-				<div class="form-check form-check-inline form-switch mb-2">
-					<input class="form-check-input activable" type="checkbox" asp-for="DescFinanc.dto_sobre_total_bool" value="true" id="chkSobreTotal">
-					<label class="form-check-label" for="chkSobreTotal"> Aplica sobre Total</label>
-				</div>
-			</div>
-		</div>
-		<div class="row mt-1">
-			<div class="input-group input-group-sm">
-				<div class="form-check form-check-inline form-switch mb-2" style="margin-right:170px;">
-					<input class="form-check-input activable" type="checkbox" asp-for="DescFinanc.dto_fijo_bool" value="" id="chkNetoFijo">
-					<label class="form-check-label" for="chkNetoFijo"> Neto Fijo</label>
-				</div>
-				<div class="d-flex justify-content-sm-end">
-					<button id="btnAceptarDescFinanc" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Agregar Descuento Financiero">
-						<i class="bx bx-plus-circle"></i>
+	<div class="col-3">
+		<fieldset style="height: 250px;margin-top: 0px;">
+			<legend></legend>
+			@*botones*@
+			<div class="row mt-1">
+				<div class="d-flex justify-content-sm-center">
+					<button id="btnGuardarValorizacion" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Guardar Valorización">
+						<i class="bx bxs-save bx-xs"></i>
+					</button>
+					<button id="btnConfirmarValorizacion" class="btn btn-info btn-sm mt-1 me-1" type="button" title="Confirmar Valorización">
+						<i class="bx bx-check-circle"></i>
+					</button>
+					<button id="btnCancelarValorizacion" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar carga de Valorización">
+						<i class="bx bx-x-circle bx-xs"></i>
+					</button>
+					<button id="btnAgregarProducto" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Agregar Producto" style="width: 150px;max-width: 150px;font-weight: bold;">
+						<i class="">AGREGAR PROD</i>
 					</button>
 				</div>
 			</div>
-		</div>
-		<div class="row mt-1">
-			<div class="input-group input-group-sm">
-				<span class="input-group-text fixed-lbl-for-abm-100">Concepto: </span>
-				@Html.DropDownListFor(m => m.Comprobante.tco_id, lst, "Seleccionar...", new { @id = "listaConcDescFinanc", @class = "form-control activable" })
-			</div>
-		</div>
-		<div id="divDescFinancDto" class="show">
-			<div class="row mt-1">
-				<div class="input-group input-group-sm">
-					<span class="input-group-text fixed-lbl-for-abm-100">Dto %:</span>
-					<input type="text" asp-for="DescFinanc.dto" class="form-control activable inputEditable" />
-				</div>
-			</div>
-		</div>
-		<div id="divDescFinancDtoImporte" class="collapse">
-			<div class="row mt-1">
-				<div class="input-group input-group-sm">
-					<span class="input-group-text fixed-lbl-for-abm-100">Neto Fijo:</span>
-					<input type="text" asp-for="DescFinanc.dto_importe" class="form-control activable inputEditable" />
-				</div>
-			</div>
-		</div>
-		<div class="row mt-1">
-			<div class="input-group input-group-sm">
-				<span class="input-group-text fixed-lbl-for-abm-100">Obs.:</span>
-				<input type="text" asp-for="DescFinanc.dto_obs" maxlength="40" class="form-control activable inputEditable" />
-			</div>
-		</div>
-		<div class="row mt-1">
-			<div class="d-flex justify-content-sm-center">
-			</div>
-		</div>
-	</div>
-	<div class="col-md-1">
-		@*espacio*@
-	</div>
-	<div class="col-md-2">
-		@*botones*@
-		<div class="row mt-1">
-			<div class="d-flex justify-content-sm-center">
-				<button id="btnGuardarValorizacion" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Guardar Valorización">
-					<i class="bx bxs-save bx-xs"></i>
-				</button>
-				<button id="btnConfirmarValorizacion" class="btn btn-info btn-sm mt-1 me-1" type="button" title="Confirmar Valorización">
-					<i class="bx bx-check-circle"></i>
-				</button>
-				<button id="btnCancelarValorizacion" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar carga de Valorización">
-					<i class="bx bx-x-circle bx-xs"></i>
-				</button>
-				<button id="btnAgregarProducto" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Agregar Producto">
-					<i class="bx bx-plus-circle"></i>
-				</button>
-			</div>
-		</div>
+		</fieldset>
 	</div>
 </div>
 @*Modal para cargar IVA discriminado o NO discriminado*@

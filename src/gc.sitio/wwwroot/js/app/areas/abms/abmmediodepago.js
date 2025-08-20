@@ -416,6 +416,7 @@ function selectRegDbl(x, gridId) {
 }
 
 function ActualizarTitulo() {
+	var data = {};
 	PostGenHtml(data, actualizarTituloUrl, function (obj) {
 		$("#divTitulo").html(obj);
 		CerrarWaiting();

@@ -245,13 +245,22 @@ function AgregarValorValidar(dataObjectArray, dataType, cerraModal) {
 }
 
 function LimpiarDatosEnSeccionEdicion(dataType) {
+	var impoStr = "";
+	if (importeSugerido != 0) {
+		impoStr = importeSugerido.toString().replace('.', ',');
+	}
+	else {
+		impoStr = "0";
+	}
 	switch (dataType) {
 		case "BA"://Transferencias
 			$("#txtNroTransferencia").val("");
 			var now = moment().format('yyyy-MM-DD');
 			$("#Fecha").val(now);
 			$("#Concepto").val("");
-			$("#ImporteS").val(importeSugerido);
+			Inputmask.remove(document.getElementById("ImporteS"));
+			$("#ImporteS").val(impoStr);
+			getMaskForMoneyType("#ImporteS");
 			document.getElementById("txtNroTransferencia").focus();
 			break;
 		case "EC"://Emision de cheques
@@ -259,11 +268,15 @@ function LimpiarDatosEnSeccionEdicion(dataType) {
 			var now = moment().format('yyyy-MM-DD');
 			$("#Fecha").val(now);
 			$("#ANombreDe").val("");
-			$("#ImporteS").val(importeSugerido);
+			Inputmask.remove(document.getElementById("ImporteS"));
+			$("#ImporteS").val(impoStr);
+			getMaskForMoneyType("#ImporteS");
 			document.getElementById("txtNroCheque").focus();
 			break;
 		case "EF": //Efectivo
-			$("#ImporteS").val(importeSugerido);
+			Inputmask.remove(document.getElementById("ImporteS"));
+			$("#ImporteS").val(impoStr);
+			getMaskForMoneyType("#ImporteS");
 			document.getElementById("ImporteS").focus();
 			break;
 		default:

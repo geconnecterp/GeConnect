@@ -50,6 +50,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 			List<ProductoADevolverDto> listaProdAAjustar = [];
 			try
 			{
+				var titulo = "DEVOLUCIONES A PROVEEDORES";
+				ViewData["Titulo"] = titulo;
+
 				model.ComboDepositos = CargarComboDepositos();
 				model.ComboBoxes = HelperMvc<ComboGenDto>.ListaGenerica(boxes.Select(x => new ComboGenDto { Id = x.Box_Id, Descripcion = $"{x.Box_Id}__{x.Box_desc}" }));
 				model.ProductosADevolver = ObtenerGridCoreSmart<ProductoADevolverDto>(listaProdAAjustar);

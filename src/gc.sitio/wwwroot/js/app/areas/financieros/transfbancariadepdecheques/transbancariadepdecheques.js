@@ -181,8 +181,12 @@ function ActualizarTotales() {
 			}, false, ["Aceptar"], "error!", null);
 		}
 		else {
-			$("#total_origen").val(obj.totalOrigen);
-			$("#total_destino").val(obj.totalDestino);
+			Inputmask.remove(document.getElementById("total_origen"));
+			Inputmask.remove(document.getElementById("total_destino"));
+			$("#total_origen").val(obj.totalOrigen.toString().replace('.',','));
+			$("#total_destino").val(obj.totalDestino.toString().replace('.', ','));
+			getMaskForMoneyType("#total_origen");
+			getMaskForMoneyType("#total_destino");
 		}
 	});
 }

@@ -32,7 +32,7 @@ namespace gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra
 		public string ib_id { get; set; } = string.Empty;
 		public string ib_desc { get; set; } = string.Empty;
 		public DateTime? cta_cuit_vto { get; set; }
-		public char tp_id { get; set; }
+		public char? tp_id { get; set; }
 		public string ctap_id_externo { get; set; } = string.Empty;
 		public char ctap_rgan { get; set; }
 		public string rgan_id { get; set; } = string.Empty;
