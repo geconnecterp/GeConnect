@@ -2,7 +2,6 @@
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
 using gc.sitio.Controllers;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
