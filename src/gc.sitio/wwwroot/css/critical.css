@@ -1,0 +1,26 @@
+﻿/* Critical path CSS */
+:root {
+    --bs-golden-primary: #d4af37;
+    --bs-body-bg: #fafafa
+}
+
+html {
+    font-size: 14px;
+    position: relative;
+    min-height: 100%
+}
+
+@media (min-width:768px) {
+    html {
+        font-size: 16px
+    }
+}
+
+body {
+    margin-bottom: 60px;
+    background-color: var(--bs-body-bg)
+}
+
+.btn:focus, .form-control:focus {
+    box-shadow: 0 0 0 .1rem white,0 0 0 .25rem var(--bs-golden-primary)
+}

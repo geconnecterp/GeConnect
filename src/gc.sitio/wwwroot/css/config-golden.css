@@ -1,0 +1,17 @@
+﻿/* Golden Theme Configuration */
+:root {
+    /* Primary Golden Colors */
+    --golden-primary: #d4af37;
+    --golden-secondary: #b8860b;
+    --golden-tertiary: #daa520;
+    /* Golden Variations */
+    --golden-light: #f5e6a3;
+    --golden-lighter: #faf5e4;
+    --golden-dark: #8b7355;
+    --golden-darker: #704214;
+    /* Semantic Colors with Golden Touch */
+    --success-golden: #2d7d32;
+    --info-golden: #1976d2;
+    --warning-golden: #f57f17;
+    --danger-golden: #d32f2f;
+}
