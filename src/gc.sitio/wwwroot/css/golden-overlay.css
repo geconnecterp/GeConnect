@@ -1,0 +1,326 @@
+﻿/*!
+ * Golden Theme Overlay v1.0
+ * Aplica tema dorado sobre Bootstrap/Core existente
+ * Optimizado para rendimiento y compatibilidad
+ */
+
+/* ===== VARIABLES GOLDEN (Override Core) ===== */
+:root,
+[data-bs-theme=light] {
+    /* Golden Color System */
+    --bs-golden-primary: #d4af37;
+    --bs-golden-secondary: #b8860b;
+    --bs-golden-light: #f5e6a3;
+    --bs-golden-dark: #8b7355;
+    --bs-golden-accent: #daa520;
+    /* Override Bootstrap Variables */
+    --bs-primary: var(--bs-golden-primary) !important;
+    --bs-primary-rgb: 212, 175, 55 !important;
+    --bs-secondary: var(--bs-golden-secondary) !important;
+    --bs-secondary-rgb: 184, 134, 11 !important;
+    /* Focus Ring Override */
+    --bs-focus-ring-color: rgba(212, 175, 55, 0.25) !important;
+    /* Link Colors Override */
+    --bs-link-color: var(--bs-golden-primary) !important;
+    --bs-link-hover-color: var(--bs-golden-secondary) !important;
+    --bs-link-color-rgb: 212, 175, 55 !important;
+    --bs-link-hover-color-rgb: 184, 134, 11 !important;
+}
+
+/* ===== COMPONENT OVERRIDES ===== */
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--bs-golden-primary) !important;
+    border-color: var(--bs-golden-primary) !important;
+    color: white !important;
+}
+
+    .btn-primary:hover,
+    .btn-primary:focus,
+    .btn-primary:active {
+        background-color: var(--bs-golden-secondary) !important;
+        border-color: var(--bs-golden-secondary) !important;
+        color: white !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(212, 175, 55, 0.3) !important;
+    }
+
+.btn-outline-primary {
+    color: var(--bs-golden-primary) !important;
+    border-color: var(--bs-golden-primary) !important;
+}
+
+    .btn-outline-primary:hover,
+    .btn-outline-primary:focus,
+    .btn-outline-primary:active {
+        background-color: var(--bs-golden-primary) !important;
+        border-color: var(--bs-golden-primary) !important;
+        color: white !important;
+    }
+
+/* Forms */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--bs-golden-light) !important;
+    box-shadow: 0 0 0 0.25rem rgba(212, 175, 55, 0.25) !important;
+}
+
+.form-check-input:checked {
+    background-color: var(--bs-golden-primary) !important;
+    border-color: var(--bs-golden-primary) !important;
+}
+
+/* Navigation */
+.navbar-brand {
+    color: var(--bs-golden-primary) !important;
+    font-weight: 600 !important;
+}
+
+.nav-link {
+    color: var(--bs-golden-dark) !important;
+    transition: color 0.2s ease !important;
+}
+
+    .nav-link:hover,
+    .nav-link:focus {
+        color: var(--bs-golden-primary) !important;
+    }
+
+.nav-tabs .nav-link.active {
+    color: var(--bs-golden-primary) !important;
+    border-bottom-color: var(--bs-golden-primary) !important;
+}
+
+/* Cards */
+.card {
+    border: 1px solid var(--bs-golden-light) !important;
+    box-shadow: 0 2px 6px 0 rgba(212, 175, 55, 0.1) !important;
+}
+
+.card-header {
+    background-color: var(--bs-golden-light) !important;
+    color: var(--bs-golden-dark) !important;
+    border-bottom: 1px solid var(--bs-golden-secondary) !important;
+}
+
+/* Tables */
+.table thead th {
+    color: var(--bs-golden-dark) !important;
+    border-bottom-color: var(--bs-golden-light) !important;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(212, 175, 55, 0.05) !important;
+}
+
+/* Dropdown Menus */
+.dropdown-menu {
+    border: 1px solid var(--bs-golden-light) !important;
+    box-shadow: 0 0.5rem 1rem rgba(212, 175, 55, 0.15) !important;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+    background-color: var(--bs-golden-light) !important;
+    color: var(--bs-golden-dark) !important;
+}
+
+/* Pagination */
+.page-link {
+    color: var(--bs-golden-primary) !important;
+}
+
+.page-item.active .page-link {
+    background-color: var(--bs-golden-primary) !important;
+    border-color: var(--bs-golden-primary) !important;
+}
+
+.page-link:hover {
+    color: var(--bs-golden-secondary) !important;
+    background-color: var(--bs-golden-light) !important;
+}
+
+/* Alerts */
+.alert-primary {
+    background-color: rgba(212, 175, 55, 0.1) !important;
+    border-color: var(--bs-golden-light) !important;
+    color: var(--bs-golden-dark) !important;
+}
+
+/* Badges */
+.badge.bg-primary {
+    background-color: var(--bs-golden-primary) !important;
+}
+
+/* Progress Bars */
+.progress-bar {
+    background-color: var(--bs-golden-primary) !important;
+}
+
+/* Links */
+a {
+    color: var(--bs-golden-primary) !important;
+}
+
+    a:hover,
+    a:focus {
+        color: var(--bs-golden-secondary) !important;
+    }
+
+/* Text Utilities Override */
+.text-primary {
+    color: var(--bs-golden-primary) !important;
+}
+
+.bg-primary {
+    background-color: var(--bs-golden-primary) !important;
+}
+
+.border-primary {
+    border-color: var(--bs-golden-primary) !important;
+}
+
+/* ===== MULTINIVEL DROPDOWN ESPECÍFICOS ===== */
+/*.dropdown-submenu {
+    position: relative;
+}
+
+    .dropdown-submenu > .dropdown-menu {
+        top: -12px;
+        left: 100% !important; 
+        margin-top: 0px;
+        margin-left: 0px !important; 
+        border: 1px solid var(--bs-golden-light) !important;
+        box-shadow: 0 0.5rem 1rem rgba(212, 175, 55, 0.15) !important;
+    }
+
+    .dropdown-submenu:hover > .dropdown-menu,
+    .dropdown-submenu:focus > .dropdown-menu {
+        display: block;
+    }
+
+    .dropdown-submenu > a:after {
+        border-left-color: var(--bs-golden-secondary) !important;
+    }
+
+    .dropdown-submenu:hover > a:after {
+        border-left-color: var(--bs-golden-primary) !important;
+    }*/
+
+/* Mobile Responsive */
+@media (max-width: 991px) {
+    .dropdown-submenu > .dropdown-menu {
+        border-left: 1px solid var(--bs-golden-light) !important;
+        left: 0 !important; /* Mantener comportamiento móvil */
+        margin-left: 15px !important; /* Mantener comportamiento móvil */
+        top: 100% !important; /* Mantener comportamiento móvil */
+    }
+}
+
+/* ===== BRAND ESPECÍFICOS ===== */
+.app-brand-text.demo {
+    color: var(--bs-golden-primary) !important;
+    font-weight: 600 !important;
+}
+
+/* ===== UTILIDADES DORADAS ADICIONALES ===== */
+.text-golden {
+    color: var(--bs-golden-primary) !important;
+}
+
+.text-golden-dark {
+    color: var(--bs-golden-dark) !important;
+}
+
+.bg-golden {
+    background-color: var(--bs-golden-primary) !important;
+    color: white !important;
+}
+
+.bg-golden-light {
+    background-color: var(--bs-golden-light) !important;
+    color: var(--bs-golden-dark) !important;
+}
+
+.border-golden {
+    border-color: var(--bs-golden-primary) !important;
+}
+
+.btn-golden {
+    background-color: var(--bs-golden-primary) !important;
+    border-color: var(--bs-golden-primary) !important;
+    color: white !important;
+}
+
+    .btn-golden:hover {
+        background-color: var(--bs-golden-secondary) !important;
+        border-color: var(--bs-golden-secondary) !important;
+        transform: translateY(-1px) !important;
+    }
+/* ===== NAVBAR DROPDOWN LIST FIXES ===== */
+
+/* Eliminar bullet points de los elementos de lista en dropdown de usuario */
+.navbar-dropdown.dropdown-user.dropdown {
+    list-style: none !important;
+}
+
+/* Eliminar bullet points específicamente del elemento li que contiene el dropdown de usuario */
+li.nav-item.navbar-dropdown.dropdown-user.dropdown {
+    list-style: none !important;
+    list-style-type: none !important;
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+}
+
+/* Eliminar bullet points de todos los nav-items para prevenir el problema */
+.navbar-nav .nav-item {
+    list-style: none !important;
+    list-style-type: none !important;
+}
+
+/* Asegurar que el avatar no tenga indicadores */
+.avatar-online::after,
+.avatar-online::before {
+    display: none !important;
+}
+
+/* Eliminar cualquier marcador de lista en la navegación */
+.navbar-nav,
+.navbar-nav li,
+.navbar-nav ul {
+    list-style: none !important;
+    list-style-type: none !important;
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+}
+
+/* Asegurar que no hay pseudo-elementos que generen puntos */
+.nav-item::before,
+.nav-item::after,
+.navbar-dropdown::before,
+.navbar-dropdown::after {
+    display: none !important;
+    content: none !important;
+}
+
+/* ===== PERFORMANCE & ACCESSIBILITY ===== */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+    }
+}
+
+/* Print Optimizations */
+@media print {
+    .btn {
+        box-shadow: none !important;
+    }
+
+    .card {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+    }
+}
+
