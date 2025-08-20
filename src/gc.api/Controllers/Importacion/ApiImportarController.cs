@@ -54,30 +54,27 @@ namespace gc.api.Controllers.Importacion
             return Ok(new ApiResponse<List<ProveedorPerfilDB>>(resultado));
         }
 
-        [HttpPost("confirmar-perfil-precio")]
-        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+        [HttpPost("cargar-perfil-precio")]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RespuestaCPDto>>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-        public IActionResult ConfirmarPerfilPrecioPerfil(AbmGenDto confirmarPerfil)
+        public IActionResult CargarImportacionPrecioPerfil(AbmGenDto cargarPerfil)
         {
-            if (confirmarPerfil == null || 
-                string.IsNullOrEmpty(confirmarPerfil.Objeto) || 
-                string.IsNullOrEmpty(confirmarPerfil.Usuario) ||
-                string.IsNullOrEmpty(confirmarPerfil.Administracion) || 
-                string.IsNullOrEmpty(confirmarPerfil.Json))
+            if (cargarPerfil == null || 
+                string.IsNullOrEmpty(cargarPerfil.Objeto) || 
+                string.IsNullOrEmpty(cargarPerfil.Usuario) ||
+                string.IsNullOrEmpty(cargarPerfil.Administracion) || 
+                string.IsNullOrEmpty(cargarPerfil.Json))
             {
                 return BadRequest("Los datos del perfil de precios son inválidos.");
             }
-            RespuestaDto resultado = _importarServicio.ConfirmarPerfilPrecioPerfil(
-                confirmarPerfil.Objeto, 
-                confirmarPerfil.Usuario, 
-                confirmarPerfil.Administracion, 
-                confirmarPerfil.Json);
-            if (resultado == null)
-            {
-                return BadRequest("No se pudo confirmar el perfil de precios. Verifique los datos ingresados.");
-            }
-            return Ok(new ApiResponse<RespuestaDto>(resultado));
-        }
+            List<RespuestaCPDto> resultado = _importarServicio.CargarImportacionPrecioPerfil(
+                cargarPerfil.Objeto, 
+                cargarPerfil.Usuario, 
+                cargarPerfil.Administracion, 
+                cargarPerfil.Json);
 
+            
+            return Ok(new ApiResponse<List<RespuestaCPDto>>(resultado));
+        }
     }
 }

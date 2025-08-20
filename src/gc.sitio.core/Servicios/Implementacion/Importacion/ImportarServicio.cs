@@ -31,7 +31,7 @@ namespace gc.sitio.core.Servicios.Implementacion.Importacion
 
         private const string PRECIO_FILE_DATOS = "/precio-file-dato";
         private const string PRECIO_FILE_PERFIL = "/precio-file-perfil";
-        private const string PRECIO_FILE_CONFIRMAR = "/confirmar-perfil-precio";
+        private const string PRECIO_FILE_CARGAR = "/cargar-perfil-precio";
 
         private readonly AppSettings _appSettings;
         public ImportarServicio(IOptions<AppSettings> options, ILogger<ImportarServicio> logger) : base(options, logger)
@@ -39,57 +39,63 @@ namespace gc.sitio.core.Servicios.Implementacion.Importacion
             _appSettings = options.Value;
         }
 
-        public async Task<RespuestaGenerica<RespuestaDto>> ConfirmarPerfilPrecio(AbmGenDto req, string token)
+        public async Task<RespuestaGenerica<RespuestaCPDto>> CargarImportacionPrecio(AbmGenDto req, string token)
         {
             try
             {
-                ApiResponse<RespuestaDto>? apiResponse;
-                HelperAPI helper = new();
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(req, token, out StringContent contentData);
 
-                HttpClient client = helper.InicializaCliente(req, token, out StringContent contentData);
-                HttpResponseMessage response;
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{PRECIO_FILE_CARGAR}";
 
-                var link = $"{_appSettings.RutaBase}{RutaAPI}{PRECIO_FILE_CONFIRMAR}";
-
-                response = await client.PostAsync(link, contentData);
+                using var response = await client.PostAsync(link, contentData);
 
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
-                    string stringData = await response.Content.ReadAsStringAsync();
+                    var stringData = await response.Content.ReadAsStringAsync();
+
                     if (string.IsNullOrEmpty(stringData))
                     {
-                        throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde.");
+                        return new RespuestaGenerica<RespuestaCPDto>
+                        {
+                            Ok = false,
+                            Mensaje = "No se recibió respuesta válida de la API"
+                        };
                     }
-                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
 
-                    var resp = apiResponse?.Data;
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaCPDto>>>(stringData);
 
-                    return new RespuestaGenerica<RespuestaDto> { Ok = true, Entidad = resp };
+                    return new RespuestaGenerica<RespuestaCPDto>
+                    {
+                        Ok = true,
+                        ListaEntidad = apiResponse?.Data ?? new List<RespuestaCPDto>(),
+                        Mensaje = "Importación procesada exitosamente"
+                    };
                 }
                 else
                 {
-                    string stringData = await response.Content.ReadAsStringAsync();
-                    _logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
-                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
-                    if (error.TypeException.Equals(nameof(NegocioException)))
+                    var errorData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Error API ({response.StatusCode}): {errorData}");
+
+                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(errorData);
+                    var mensaje = error?.Detail ?? "Error desconocido en la API";
+
+                    return new RespuestaGenerica<RespuestaCPDto>
                     {
-                        throw new NegocioException(error.Detail);
-                    }
-                    else if (error.TypeException.Equals(nameof(NotFoundException)))
-                    {
-                        throw new NegocioException(error.Detail);
-                    }
-                    else
-                    {
-                        throw new Exception(error.Detail);
-                    }
+                        Ok = false,
+                        Mensaje = mensaje
+                    };
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+                _logger.LogError(ex, "Error en CargarImportacionPrecio");
 
-                throw new Exception("Algo no fue bien al intentar confirmar los precios de la Importación.");
+                return new RespuestaGenerica<RespuestaCPDto>
+                {
+                    Ok = false,
+                    Mensaje = "Error interno procesando la importación"
+                };
             }
         }
 
@@ -178,5 +184,7 @@ namespace gc.sitio.core.Servicios.Implementacion.Importacion
                 return new RespuestaGenerica<PrecioFileDatos> { Ok = false, Mensaje = "Algo no fue bien al intentar obtee" };
             }
         }
+
+
     }
 }

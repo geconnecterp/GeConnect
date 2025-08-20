@@ -1,19 +1,20 @@
-﻿using DocumentFormat.OpenXml.Spreadsheet;
-using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Almacen;
-using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Importacion;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Compras.Controllers;
+using gc.sitio.Areas.Productos.Models;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.Importacion;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using NuGet.DependencyResolver;
 using OfficeOpenXml;
 using System.Globalization;
 
@@ -26,6 +27,7 @@ namespace gc.sitio.Areas.Productos.Controllers
         private readonly IProducto2Servicio _productoServicio;
         private readonly ICuentaServicio _cuentaServicio;
         private readonly IImportarServicio _impServicio;
+        private readonly ICompositeViewEngine _viewEngine; // ✅ AGREGAR: Inyección de dependencia
         private ProveedorListaDto _datosProveedor;
         private ProveedorPerfilDto _perfilProv;
 
@@ -53,6 +55,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             ILogger<CompraController> logger,
             IOptions<AppSettings> options,
             IImportarServicio impServicio,
+            ICompositeViewEngine viewEngine, // ✅ AGREGAR: Inyectar ViewEngine
             IHttpContextAccessor context) : base(options, context, logger)
 
         {
@@ -60,6 +63,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             _productoServicio = productoServicio;
             _appSettings = options.Value;
             _impServicio = impServicio;
+            _viewEngine = viewEngine; // ✅ ASIGNAR: ViewEngine
             _datosProveedor = ProveedorSeleccionado;
             _perfilProv = new ProveedorPerfilDto { detalles = [] };
         }
@@ -173,50 +177,53 @@ namespace gc.sitio.Areas.Productos.Controllers
                 // ✅ 1. Analizar estructura del Excel
                 var analisis = await AnalizarEstructuraExcel(archivo);
 
-                // ✅ 2. Aplicar mapeo (automático + manual si se envió)
+                // ✅ 2. Aplicar mapeo
                 analisis.CamposDisponibles = DatosParaImportacion;
                 AplicarMapeoAutomaticoInteligente(analisis);
 
-                // ✅ 3. Aplicar mapeo manual si se envió desde el frontend
                 if (!string.IsNullOrEmpty(mapeoColumnas))
                 {
                     AplicarMapeoManual(analisis, mapeoColumnas);
                 }
 
-                // ✅ 4. Procesar datos del Excel
+                // ✅ 3. Procesar datos del Excel
                 var datosImportacion = await ProcesarDatosDelExcel(archivo, analisis, proveedorId);
 
-                if (datosImportacion == null || !datosImportacion.Filas.Any())
+                if (datosImportacion?.Filas?.Any() != true)
                 {
                     return Json(new { error = true, mensaje = "No se encontraron datos válidos para procesar en el Excel" });
                 }
 
-                // ✅ 5. Enviar datos a la API
-                var resultado = await EnviarDatosALaAPI(datosImportacion);
+                // ✅ 4. Enviar datos a la API - OPTIMIZADO
+                var resultado = await EnviarDatosALaAPIOptimizado(datosImportacion);
 
-                if (resultado.Ok)
+                if (resultado.Ok && resultado.ListaEntidad?.Any() == true)
                 {
-                    _logger?.LogInformation($"✅ Importación exitosa: {resultado.Mensaje}");
+                    // ✅ 5. Generar vista parcial con resultados
+                    var vistaResultado = await GenerarVistaResultadosImportacion(resultado.ListaEntidad, datosImportacion);
+
+                    _logger?.LogInformation($"✅ Importación procesada: {resultado.ListaEntidad.Count} registros");
 
                     return Json(new
                     {
                         error = false,
-                        mensaje = "Importación completada exitosamente",
+                        mensaje = "Importación procesada exitosamente",
                         datos = new
                         {
-                            registrosProcesados = datosImportacion.Filas.Count,
-                            columnasUtilizadas = datosImportacion.MapeoColumnas.Count,
+                            registrosProcesados = resultado.ListaEntidad.Count,
+                            registrosConError = resultado.ListaEntidad.Count(r => r.registro_estado == -1),
+                            registrosExitosos = resultado.ListaEntidad.Count(r => r.registro_estado == 1),
                             archivo = archivo.FileName,
                             proveedor = proveedorId,
-                            fechaProceso = datosImportacion.FechaProceso.ToString("yyyy-MM-dd HH:mm:ss"),
-                            detalleResultado = resultado.Entidad!=null && resultado.Entidad.Equals("OK")?resultado.Mensaje:resultado.Entidad
-                        }
+                            fechaProceso = datosImportacion.FechaProceso.ToString("yyyy-MM-dd HH:mm:ss")
+                        },
+                        vistaResultados = vistaResultado
                     });
                 }
                 else
                 {
                     _logger?.LogWarning($"❌ Error en importación: {resultado.Mensaje}");
-                    return Json(new { error = true, mensaje = resultado.Mensaje });
+                    return Json(new { error = true, mensaje = resultado.Mensaje ?? "Error desconocido procesando la importación" });
                 }
             }
             catch (Exception ex)
@@ -227,6 +234,157 @@ namespace gc.sitio.Areas.Productos.Controllers
                     error = true,
                     mensaje = "Error interno al procesar la importación. Contacte al administrador."
                 });
+            }
+        }
+
+        // ✅ NUEVO: Método optimizado para envío a API
+        private async Task<RespuestaGenerica<RespuestaCPDto>> EnviarDatosALaAPIOptimizado(DatosImportacionDto datosImportacion)
+        {
+            try
+            {
+                // ✅ Serializar con configuración optimizada
+                var jsonSettings = new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore,
+                    DateFormatString = "yyyy-MM-dd HH:mm:ss",
+                    Formatting = Formatting.None,
+                    DefaultValueHandling = DefaultValueHandling.Ignore
+                };
+
+                var datosJson = JsonConvert.SerializeObject(datosImportacion, jsonSettings);
+
+                var abmDto = new AbmGenDto
+                {
+                    Objeto = "DATOS_IMPORTACION_PRECIOS",
+                    Usuario = User.Identity?.Name ?? "SISTEMA",
+                    Administracion = AdministracionId ?? "01",
+                    Json = datosJson,
+                    Abm = 'A'
+                };
+
+                // ✅ Llamar al servicio optimizado
+                var resultado = await _impServicio.CargarImportacionPrecio(abmDto, TokenCookie);
+
+                _logger?.LogInformation($"Respuesta API - OK: {resultado.Ok}, Registros: {resultado.ListaEntidad?.Count ?? 0}");
+
+                return resultado;
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error enviando datos a la API");
+                return new RespuestaGenerica<RespuestaCPDto>
+                {
+                    Ok = false,
+                    Mensaje = "Error interno al comunicarse con la API de importación"
+                };
+            }
+        }
+
+        // ✅ ACTUALIZADO: Método que usa la función corregida
+        private async Task<string> GenerarVistaResultadosImportacion(List<RespuestaCPDto> resultados, DatosImportacionDto datosOriginales)
+        {
+            try
+            {
+                var modelo = new ResultadoImportacionViewModel
+                {
+                    Resultados = resultados.OrderBy(r => r.p_id).ToList(),
+                    TotalRegistros = resultados.Count,
+                    RegistrosExitosos = resultados.Count(r => r.registro_estado == 1),
+                    RegistrosConError = resultados.Count(r => r.registro_estado == -1),
+                    ArchivoOriginal = datosOriginales.NombreArchivo,
+                    FechaProceso = datosOriginales.FechaProceso,
+                    ProveedorId = datosOriginales.ProveedorId
+                };
+
+                // ✅ USAR: Método corregido
+                return await RenderViewToStringAsyncSimplificado("_GridResultadosImportacion", modelo);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error generando vista de resultados");
+                return "<div class='alert alert-danger'>Error generando vista de resultados</div>";
+            }
+        }
+        // ✅ CORREGIDO: Helper para renderizar vista a string
+        private async Task<string> RenderViewToStringAsync(string viewName, object model)
+        {
+            try
+            {
+                ViewData.Model = model;
+
+                using var writer = new StringWriter();
+
+                // ✅ CORRECCIÓN 1: Usar ICompositeViewEngine en lugar de ViewEngines.Engines
+                var viewResult = _viewEngine.FindView(ControllerContext, viewName, false);
+
+                if (!viewResult.Success)
+                {
+                    _logger?.LogWarning($"Vista '{viewName}' no encontrada");
+                    return $"<div class='alert alert-warning'>Vista '{viewName}' no encontrada</div>";
+                }
+
+                // ✅ CORRECCIÓN 2: Proporcionar HtmlHelperOptions requerido
+                var viewContext = new ViewContext(
+                    ControllerContext,
+                    viewResult.View,
+                    ViewData,
+                    TempData,
+                    writer,
+                    new HtmlHelperOptions() // ✅ AGREGAR: HtmlHelperOptions requerido
+                );
+
+                // ✅ RENDERIZAR: Vista de forma asíncrona
+                await viewResult.View.RenderAsync(viewContext);
+
+                return writer.ToString();
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, $"Error renderizando vista '{viewName}'");
+                return $"<div class='alert alert-danger'>Error renderizando vista: {ex.Message}</div>";
+            }
+        }
+
+        // ✅ ALTERNATIVA: Método simplificado usando servicios de ASP.NET Core
+        private async Task<string> RenderViewToStringAsyncSimplificado(string viewName, object model)
+        {
+            try
+            {
+                // ✅ MÉTODO ALTERNATIVO: Más simple y robusto
+                var actionContext = new ActionContext(
+                    HttpContext,
+                    RouteData,
+                    ControllerContext.ActionDescriptor
+                );
+
+                using var writer = new StringWriter();
+
+                var viewResult = _viewEngine.FindView(actionContext, viewName, false);
+
+                if (!viewResult.Success)
+                {
+                    return $"<div class='alert alert-warning'>Vista parcial '{viewName}' no encontrada</div>";
+                }
+
+                var viewDictionary = new ViewDataDictionary<object>(ViewData, model);
+
+                var viewContext = new ViewContext(
+                    actionContext,
+                    viewResult.View,
+                    viewDictionary,
+                    TempData,
+                    writer,
+                    new HtmlHelperOptions()
+                );
+
+                await viewResult.View.RenderAsync(viewContext);
+
+                return writer.ToString();
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, $"Error renderizando vista '{viewName}'");
+                return $"<div class='alert alert-danger'>Error interno renderizando vista</div>";
             }
         }
 
@@ -396,7 +554,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 };
 
                 // ✅ Llamar al servicio
-                var resultado = await _impServicio.ConfirmarPerfilPrecio(abmDto, TokenCookie);
+                var resultado = await _impServicio.CargarImportacionPrecio(abmDto, TokenCookie);
 
                 return new RespuestaGenerica<string>
                 {

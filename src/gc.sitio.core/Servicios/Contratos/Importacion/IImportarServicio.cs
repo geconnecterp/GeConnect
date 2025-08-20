@@ -6,7 +6,7 @@ namespace gc.sitio.core.Servicios.Contratos.Importacion
 {
     public interface IImportarServicio
     {
-        Task<RespuestaGenerica<RespuestaDto>> ConfirmarPerfilPrecio(AbmGenDto request, string tokenCookie);
+        Task<RespuestaGenerica<RespuestaCPDto>> CargarImportacionPrecio(AbmGenDto request, string tokenCookie);
         Task<RespuestaGenerica<ProveedorPerfilDB>> ObtenerPerfilPrecioProveedor(string ctaId, string tokenCookie);
         Task<RespuestaGenerica<PrecioFileDatos>> ObtenerPrecioFileDatos(string token);
     }

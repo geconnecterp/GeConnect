@@ -41,7 +41,6 @@
     <Folder Include="Areas\Libros\Data\" />
     <Folder Include="Areas\Libros\Models\" />
     <Folder Include="Areas\Productos\Data\" />
-    <Folder Include="Areas\Productos\Models\" />
     <Folder Include="Areas\Seguridad\Data\" />
     <Folder Include="Areas\Seguridad\Models\" />
     <Folder Include="Areas\Usuarios\Data\" />

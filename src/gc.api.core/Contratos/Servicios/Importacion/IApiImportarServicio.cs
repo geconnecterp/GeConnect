@@ -7,6 +7,6 @@ namespace gc.api.core.Contratos.Servicios.Importacion
     {
         List<ProveedorPerfilDB> ObtenerPerfildePreciosCliente(string ctaId);
         List<PrecioFileDatos> ObtenerPrecioFileDatos();
-        RespuestaDto ConfirmarPerfilPrecioPerfil(string ctaId, string usuario, string admin, string json);
+        List<RespuestaCPDto> CargarImportacionPrecioPerfil(string ctaId, string usuario, string admin, string json);
     }
 }

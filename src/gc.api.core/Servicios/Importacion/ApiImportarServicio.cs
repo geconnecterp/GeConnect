@@ -38,9 +38,9 @@ namespace gc.api.core.Servicios.Importacion
             return resp;
         }
 
-        public RespuestaDto ConfirmarPerfilPrecioPerfil(string ctaId, string usuario, string admin,string json)
+        public List<RespuestaCPDto> CargarImportacionPrecioPerfil(string ctaId, string usuario, string admin,string json)
         {
-            var sp = ConstantesGC.StoredProcedures.SP_PROD_PERFIL_PRECIOS_CONFIRMA;
+            var sp = ConstantesGC.StoredProcedures.SP_PROD_PERFIL_PRECIOS_CARGA;
             var ps = new List<SqlParameter>
             {
                 new SqlParameter("@cta_id", ctaId),
@@ -49,16 +49,9 @@ namespace gc.api.core.Servicios.Importacion
                 new SqlParameter("@json", json)
             };
 
-            List<RespuestaDto> resultado = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
-            if (resultado == null || !resultado.Any())
-            {
-                return new RespuestaDto
-                {
-                    resultado = -1,
-                    resultado_msj = "No se pudo confirmar el perfil de precios. Verifique los datos ingresados."
-                };
-            }
-            return resultado.First();
+            List<RespuestaCPDto> resultado = _repository.EjecutarLstSpExt<RespuestaCPDto>(sp, ps, true);
+            
+            return resultado;
         }
 
     }

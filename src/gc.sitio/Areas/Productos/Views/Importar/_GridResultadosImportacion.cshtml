@@ -1,0 +1,212 @@
+﻿@using gc.sitio.Areas.Productos.Models
+@model ResultadoImportacionViewModel
+@using static gc.infraestructura.Helpers.GridHelper
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="fas fa-file-import text-primary"></i>
+            Resultados de Importación - @Model.ArchivoOriginal
+        </h5>
+        <div class="badge-group">
+            <span class="badge bg-success me-2">
+                <i class="fas fa-check-circle"></i> Exitosos: @Model.RegistrosExitosos
+            </span>
+            <span class="badge bg-danger">
+                <i class="fas fa-exclamation-triangle"></i> Con Error: @Model.RegistrosConError
+            </span>
+        </div>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0" id="tbGridResultadosImportacion">
+                <thead class="table-dark sticky-top">
+                    <tr>
+                        <th class="text-center" style="width: 80px;">ESTADO</th>
+                        <th class="text-center" style="width: 60px;">FILA</th>
+                        <th style="min-width: 150px;">EAN</th>
+                        <th style="min-width: 120px;">MARCA</th>
+                        <th style="min-width: 200px;">DESCRIPCIÓN</th>
+                        <th class="text-end" style="width: 100px;">PRECIO LISTA</th>
+                        <th class="text-center" style="width: 80px;">DTO 1%</th>
+                        <th class="text-center" style="width: 80px;">DTO 2%</th>
+                        <th class="text-center" style="width: 80px;">FLETE%</th>
+                        <th class="text-center" style="width: 80px;">BONI%</th>
+                        <th style="min-width: 250px;">OBSERVACIONES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        var filaIndex = 0;
+                        string claseAlterna = "";
+                    }
+
+                    @foreach (var item in Model.Resultados)
+                    {
+                        claseAlterna = (filaIndex % 2 == 0) ? "table-row-even" : "";
+                        var claseEstado = item.registro_estado == 1 ? "table-success" : "table-danger";
+                        var iconoEstado = item.registro_estado == 1 ? "fas fa-check-circle text-success" : "fas fa-exclamation-circle text-danger";
+
+                        <tr class="@claseAlterna @claseEstado" data-fila="@item.p_id">
+                            <td class="text-center">
+                                <i class="@iconoEstado" title="@item.registro_msj"></i>
+                            </td>
+
+                            <td class="text-center fw-bold">
+                                @* ✅ CORREGIDO: Usar filaIndex + 2 para simular número de fila Excel *@
+                                @(filaIndex + 2)
+                            </td>
+
+                            <td class="font-monospace">
+                                @if (!string.IsNullOrEmpty(item.p_ean))
+                                {
+                                    <span class="text-primary">@item.p_ean</span>
+                                }
+                                else if (!string.IsNullOrEmpty(item.p_ean_otro))
+                                {
+                                    <span class="text-secondary">@item.p_ean_otro</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted fst-italic">Sin EAN</span>
+                                }
+                            </td>
+
+                            <td class="fw-semibold">
+                                @if (!string.IsNullOrEmpty(item.p_marca))
+                                {
+                                    @item.p_marca
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+
+                            <td>
+                                @if (!string.IsNullOrEmpty(item.p_desc))
+                                {
+                                    <span title="@item.p_desc">
+                                        @(item.p_desc.Length > 40 ? item.p_desc.Substring(0, 40) + "..." : item.p_desc)
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Sin descripción</span>
+                                }
+                            </td>
+
+                            <td class="text-end font-monospace">
+                                @if (decimal.TryParse(item.p_plista, out var precio) && precio > 0)
+                                {
+                                    <span class="fw-bold">@precio.ToString("C2")</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">$ 0.00</span>
+                                }
+                            </td>
+
+                            <td class="text-center font-monospace">
+                                @FormatearPorcentaje(item.p_dto1)
+                            </td>
+
+                            <td class="text-center font-monospace">
+                                @FormatearPorcentaje(item.p_dto2)
+                            </td>
+
+                            <td class="text-center font-monospace">
+                                @FormatearPorcentaje(item.p_porc_flete)
+                            </td>
+
+                            <td class="text-center font-monospace">
+                                @FormatearPorcentaje(item.p_boni)
+                            </td>
+
+                            <td>
+                                @if (!string.IsNullOrEmpty(item.registro_msj))
+                                {
+                                    <span class="@(item.registro_estado == 1 ? "text-success" : "text-danger")"
+                                          title="@item.registro_msj">
+                                        @(item.registro_msj.Length > 50 ? item.registro_msj.Substring(0, 50) + "..." : item.registro_msj)
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-success">Procesado correctamente</span>
+                                }
+                            </td>
+                        </tr>
+
+                        filaIndex++;
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card-footer bg-light">
+        <div class="row">
+            <div class="col-md-6">
+                <small class="text-muted">
+                    <i class="fas fa-clock"></i> Procesado: @Model.FechaProceso.ToString("dd/MM/yyyy HH:mm:ss")
+                </small>
+            </div>
+            <div class="col-md-6 text-end">
+                <small class="text-muted">
+                    Total de registros: <strong>@Model.TotalRegistros</strong>
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+@{
+    // ✅ Funciones helper optimizadas
+    string FormatearPorcentaje(string valor)
+    {
+        if (decimal.TryParse(valor, out var porcentaje))
+        {
+            return porcentaje == 0 ? "0%" : $"{porcentaje:P2}";
+        }
+        return "0%";
+    }
+
+    @* ✅ REMOVIDO: Función GetNumeroFilaDeJsonCampo que no funciona *@
+}
+
+<style>
+    .table-row-even {
+        background-color: rgba(0,0,0,0.02);
+    }
+
+    .badge-group .badge {
+        font-size: 0.875rem;
+    }
+
+    .table th {
+        border-bottom: 2px solid #dee2e6;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .table td {
+        vertical-align: middle;
+        font-size: 0.875rem;
+    }
+
+    .font-monospace {
+        font-family: 'Courier New', monospace;
+    }
+
+    #tbGridResultadosImportacion {
+        font-size: 0.85rem;
+    }
+
+    .sticky-top {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+</style>

@@ -456,8 +456,8 @@ function mostrarAnalisisColumnas(analisis) {
                         </button>
                     </div>
                     <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
+                        <div class="table-responsive text-nowrap table-wrapper-500">
+                            <table class="table table-hover mb-0 table-wrapper-fixed-head">
                                 <thead class="table-light">
                                     <tr>
                                         <th class="text-center" style="width: 50px;">Col.</th>
@@ -609,7 +609,7 @@ function validarMapeo() {
     if (!window.analisisActual) return;
 
     const columnasMapeadas = window.analisisActual.columnas.filter(col => col.campoMapeado);
-    const columnasRequeridas = ['codigo', 'precio'];
+    const columnasRequeridas = ['p_ean', 'p_plista'];
 
     let mensajeValidacion = `<div class="mb-3">
         <strong>Resumen del Mapeo:</strong><br>
