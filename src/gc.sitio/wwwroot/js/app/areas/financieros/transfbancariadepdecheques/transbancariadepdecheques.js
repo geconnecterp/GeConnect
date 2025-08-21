@@ -293,7 +293,7 @@ function btnAgregarValorDestinoValidar() {
 	}
 	else {
 		sourceSeleccionado = "2";
-		var importe = $("#total_origen").inputmask('unmaskedvalue');
+		var importe = $("#total_origen").inputmask('unmaskedvalue') - $("#total_destino").inputmask('unmaskedvalue');
 		var valor_a_nombre_de = "";
 		var valores = [];
 		var data = { app, importe, valor_a_nombre_de, valores };

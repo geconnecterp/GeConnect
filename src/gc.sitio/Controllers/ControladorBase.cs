@@ -908,6 +908,26 @@ namespace gc.sitio.Controllers
 		}
 		#endregion
 
+		#region CUENTA
+		public List<CuentaDto> CuentasLista
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("CuentasLista") ?? string.Empty;
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return new List<CuentaDto>();
+				}
+				return JsonConvert.DeserializeObject<List<CuentaDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("CuentasLista", json);
+			}
+		}
+		#endregion
+
 		#region PROVEEDOR
 		public List<ProveedorListaDto> ProveedoresLista
 		{
@@ -2149,6 +2169,13 @@ namespace gc.sitio.Controllers
 			RubroLista = _rubSv.ObtenerListaRubros("", TokenCookie);
 		}
 
+		protected void ObtenerCuentas(ICuentaServicio _ctaSv, char tipo, string texto = "")
+		{
+			//se guardan los proveedores en session. Para ser utilizados posteriormente
+
+			CuentasLista = _ctaSv.ObtenerListaCuentaComercial(texto, tipo, TokenCookie).Result;
+		}
+
 		protected void ObtenerProveedores(ICuentaServicio _ctaSv, string opeIva = "%")
 		{
 			//se guardan los proveedores en session. Para ser utilizados posteriormente
@@ -2532,7 +2559,13 @@ namespace gc.sitio.Controllers
 			return Json(rubros);
 		}
 
-
+		[HttpPost]
+		public JsonResult BuscarCuentas(string prefix)
+		{
+			var cta = CuentasLista.Where(x => x.Cta_Denominacion.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
+			var cuentas = cta.Select(x => new ComboGenDto { Id = x.Cta_Id, Descripcion = $"{x.Cta_Denominacion} ({x.Cta_Id})" });
+			return Json(cuentas);
+		}
 
 		protected SelectList ComboProveedoresFamilia(string ctaId, ICuentaServicio _cuentaServicio, string? fam = null)
 		{

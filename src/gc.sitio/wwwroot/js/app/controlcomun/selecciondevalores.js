@@ -25,7 +25,7 @@ $(function () {
 	$(document).on("keyup", "#Fecha", ControlaKeyUpFecha);
 	$(document).on("keyup", "#Concepto", ControlaKeyUpConcepto);
 	$(document).on("keyup", "#ANombreDe", ControlaKeyUpANombreDe);
-	$(document).on("keyup", "#Importe", ControlaKeyUpImporte);
+	$(document).on("keyup", "#ImporteS", ControlaKeyUpImporte);
 	//
 });
 
@@ -49,13 +49,13 @@ function ControlaKeyUpImporte(e) {
 
 function ControlaKeyUpANombreDe(e) {
 	if (e.which == 13 || e.which == 109) {
-		$("#Importe").trigger("focus");
+		$("#ImporteS").trigger("focus");
 	}
 }
 
 function ControlaKeyUpConcepto(e) {
 	if (e.which == 13 || e.which == 109) {
-		$("#Importe").trigger("focus");
+		$("#ImporteS").trigger("focus");
 	}
 }
 
@@ -163,7 +163,7 @@ function ValidarAntesDeAgregarUnItemEnValor(tcfIdSelected) {
 				esValido = false
 				break;
 			}
-			var importe = $("#Importe").inputmask('unmaskedvalue');
+			var importe = $("#ImporteS").inputmask('unmaskedvalue');
 			if (importe <= 0) {
 				mensaje = "El campo 'Importe' tiene un valor no válido, debe ser mayor a 0.";
 				esValido = false
@@ -182,7 +182,7 @@ function ValidarAntesDeAgregarUnItemEnValor(tcfIdSelected) {
 				esValido = false
 				break;
 			}
-			var importe = $("#Importe").inputmask('unmaskedvalue');
+			var importe = $("#ImporteS").inputmask('unmaskedvalue');
 			if (importe <= 0) {
 				mensaje = "El campo 'Importe' tiene un valor no válido, debe ser mayor a 0.";
 				esValido = false
@@ -190,7 +190,7 @@ function ValidarAntesDeAgregarUnItemEnValor(tcfIdSelected) {
 			}
 			break;
 		case "EF": //Efectivo
-			var importe = $("#Importe").inputmask('unmaskedvalue');
+			var importe = $("#ImporteS").inputmask('unmaskedvalue');
 			if (importe <= 0) {
 				mensaje = "El campo 'Importe' tiene un valor no válido, debe ser mayor a 0.";
 				esValido = false

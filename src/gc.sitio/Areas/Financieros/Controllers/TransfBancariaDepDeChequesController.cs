@@ -170,13 +170,13 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 				}
 
-				if (OPValoresDesdeObligYCredLista == null || OPValoresDesdeObligYCredLista.Count <= 0) {
-					model.Grilla = new GridCoreSmart<ValoresDesdeObligYCredDto>();
-					if (sourceSeleccionado.Equals("1"))
-						return PartialView("_grillaValoresOrigen", model);
-					else
-						return PartialView("_grillaValoresDestino", model);
-				}
+				//if (OPValoresDesdeObligYCredLista == null || OPValoresDesdeObligYCredLista.Count <= 0) {
+				//	model.Grilla = new GridCoreSmart<ValoresDesdeObligYCredDto>();
+				//	if (sourceSeleccionado.Equals("1"))
+				//		return PartialView("_grillaValoresOrigen", model);
+				//	else
+				//		return PartialView("_grillaValoresDestino", model);
+				//}
 				var orden = 1;
 				if (sourceSeleccionado.Equals("1"))
 				{

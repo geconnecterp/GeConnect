@@ -56,6 +56,10 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			var model = new PresDeValEnCartera_Paso1Model();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				var titulo = "TRANSFERENCIAS DE VALORES EN CARTERA";
 				ViewData["Titulo"] = titulo;
 
@@ -90,6 +94,10 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			var model = new SeleccionCtaFinModel();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				var lista = _financieroServicio.GetFinancieroDesdeTipoParaSeleccionDeValores(tcf_id, AdministracionId, TokenCookie);
 				model.GrillaCtaFin = ObtenerGridCoreSmart<FinancieroDesdeSeleccionDeTipoDto>(lista);
 				return PartialView("_seleccionCtaFin", model);
@@ -112,6 +120,10 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			var model = new PresDeValEnCartera_Paso1Model();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				var lista = _tipoCuentaFinServicio.GetTipoCuentaFinParaSeleccionDeValores(param_tipo_medio_pago, TokenCookie);
 				model.ListaTipoMedioDePago = ComboTipoMediosDePago(lista);
 				return PartialView("_paso1", model);
@@ -134,6 +146,10 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			var model = new SeleccionValoresAPresentarModel();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				var lista = _financieroServicio.GetFinancieroCarteraParaSeleccionDeValores(ctaf_id, TokenCookie);
 				if (lista != null && lista.Count > 0)
 				{
@@ -163,12 +179,13 @@ namespace gc.sitio.Areas.Financieros.Controllers
 
 		public IActionResult DetalleDePresentacion(DetalleDePresentacionRequest request)
 		{
-			//TODO MARCE: tomar lo que viene en el campo ctafIdLista, Strings separados por '|' -> EJ: 00-01296370|00-0589510|33,00-01297340|00-0589808|20,
-			//dia_movi|fc_compte|fc_item
-			//y buscarlo en GrillaValoresAPresentar obtenidos en el metodo anterior, con esos registros que encuentre, armar los json_o y json_d
 			var model = new DetalleDePresentacionModel();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				var cuenta_al_cobro_lista = _financieroServicio.GetCuentaAlCobroRela(request.ctafIdSelected, TokenCookie);
 				if (cuenta_al_cobro_lista == null || cuenta_al_cobro_lista.Count <= 0)
 				{
