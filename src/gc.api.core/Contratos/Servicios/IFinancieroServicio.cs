@@ -13,7 +13,7 @@ namespace gc.api.core.Contratos.Servicios
         List<FinancieroEstadoDto> GetFinancieroEstados();
         List<PlanContableDto> GetPlanContableCuentaLista();
         List<FinancieroDesdeSeleccionDeTipoDto> GetFinancieroDesdeTipoParaSeleccionDeValores(string tcf_id, string adm_id);
-        List<FinancieroCarteraDto> GetFinancieroCarteraParaSeleccionDeValores(string ctaf_id);
+        List<FinancieroCarteraDto> GetFinancieroCarteraParaSeleccionDeValores(string ctaf_id, string cta_id = "%");
         List<RespuestaDto> FinancieroConfirmarTransferencia(ConfirmarTransferenciaRequest request);
         List<FinancieroTraRepoCtagDto> GetFinancieroTraRepoCtag(string tra_compte);
         List<FinancieroTraRepoDDto> GetFinancieroTraRepoDDto(string tra_compte);

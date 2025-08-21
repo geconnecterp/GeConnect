@@ -4,48 +4,111 @@
 
 	var list = Model.ListaCuentaValoresEnCartera;
 }
+@section styles {
+	<link rel="stylesheet" href="~/css/simplePagination.css" />
+	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+}
 <style>
 	thead th {
 		position: sticky;
 		top: 0px;
 	}
+
+	fieldset {
+		margin: 8px;
+		border: 1px solid silver;
+		padding: 8px;
+		border-radius: 4px;
+		max-width: 100%;
+		margin-top: 8px;
+		margin-left: 0px;
+		margin-right: 0px;
+		margin-bottom: 0px;
+		height: 420px;
+	}
+
+	legend {
+		padding: 2px;
+		margin-top: -22px;
+		background: #f3f5f7 !important;
+		width: 25%;
+		text-align: center;
+		font-size: small;
+	}
+
 </style>
-<div class="container" id="divPrincipal">
+<div class="container">
 	<div class="row col-12 justify-content-sm-center mb-1 mt-3">
 		<div class="col-2"></div>
-		<div class="col-8">
-			<div class="input-group input-group-sm mt-1">
-				<span class="input-group-text">Cuenta de Valores en Cartera: </span>
-				@Html.DropDownListFor(m => m.ctafIdSelected, list, "Seleccionar...", new { @id = "ListaCuentaValoresEnCartera", @class = "form-control activable" })
-			</div>
-			<div class="input-group input-group-sm mt-1">
-				<div class="form-check form-check-inline form-switch mb-2">
-					<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkCliente" />
-					<label class="form-check-label" for="chkCliente" id="lbCliente">Cliente</label>
+		<div class="col-8" id="divPrincipal">
+			<fieldset style="height: 210px;">
+				<legend></legend>
+				<div class="input-group input-group-sm mt-1">
+					<span class="input-group-text">Cuenta de Valores en Cartera: </span>
+					@Html.DropDownListFor(m => m.ctafIdSelected, list, "Seleccionar...", new { @id = "ListaCuentaValoresEnCartera", @class = "form-control activable" })
 				</div>
-				<input type="text" class="form-control inputEditable" name="txtCliente" id="txtCliente" disabled />
-				@Html.Hidden("txtClienteItem")
-			</div>
-			<div class="input-group input-group-sm mt-1">
-				<div class="form-check form-check-inline form-switch mb-2">
-					<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkDocumentoEnCuenta" />
-					<label class="form-check-label" for="chkDocumentoEnCuenta" id="lbCliente">Documento en Cuenta (Cheque paga Acá)</label>
+				<div class="input-group input-group-sm mt-2">
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkCliente" />
+						<label class="form-check-label" for="chkCliente" id="lbCliente">Cliente</label>
+					</div>
+					<input type="text" class="form-control inputEditable" name="txtCliente" id="txtCliente" disabled />
+					@Html.Hidden("txtClienteItem")
 				</div>
-			</div>
-			<div class="input-group input-group-sm mt-1">
-				<div class="form-check form-check-inline form-switch mb-2">
-					<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkCambioDeFechaDePresentacion" />
-					<label class="form-check-label" for="chkCambioDeFechaDePresentacion" id="lbCliente">Cambio de Fecha de Presentación</label>
+				<div class="input-group input-group-sm mt-2">
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkDocumentoEnCuenta" />
+						<label class="form-check-label" for="chkDocumentoEnCuenta" id="lbCliente">Documento en Cuenta (Cheque paga Acá)</label>
+					</div>
 				</div>
-			</div>
+				<div class="input-group input-group-sm mt-1">
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkCambioDeFechaDePresentacion" />
+						<label class="form-check-label" for="chkCambioDeFechaDePresentacion" id="lbCliente">Cambio de Fecha de Presentación</label>
+					</div>
+				</div>
+				<div class="row mt-3">
+					<div class="col-5"></div>
+					<div class="col-2">
+						<button type="button" id="btnBuscar" class="btn btn-sm btn-success"><i class="bx bx-sm bx-search"></i></button>
+						<button type="button" id="btnCancel" class="btn btn-sm btn-danger"><i class="bx bx-sm bx-x-circle"></i></button>
+					</div>
+					<div class="col-5"></div>
+				</div>
+			</fieldset>
 		</div>
 		<div class="col-2"></div>
 	</div>
 </div>
 
+<!-- para el modal del geston de impresion -->
+<div id="modalGestorDocumental"></div>
+
 @section scripts {
 	<script type="text/javascript">
+
+		var dia_movi = "";
+		var fc_compte = "";
+		var fc_item = "";
+		var docEnCuenta = false;
+		var cambioDeFecha = false;
+
+		var autoComClienteUrl = "@Url.Action("BuscarCuentas", "chequepagaaca", new { area = "Financieros" })";
+		var cargarChequesDeTercerosEnCarteraUrl = "@Url.Action("CargarChequesDeTercerosEnCartera", "chequepagaaca", new { area = "Financieros" })";
+		var cargarPasoUnoUrl = "@Url.Action("PasoUno", "chequepagaaca", new { area = "Financieros" })";
+		var inicializarDatosEnSesionURL = "@Url.Action("InicializarDatosEnSesion", "chequepagaaca", new { area = "Financieros" })";
+		var confirmarCargaDeChequeDeTerceroEnCarteraUrl = "@Url.Action("ConfirmarCargaDeChequeDeTerceroEnCartera", "chequepagaaca", new { area = "Financieros" })";
+
+		// Gestor de impresión
+		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+		var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
+		var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarEmailUrl = "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarWhatsAppUrl = "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
+		var generadorArchivoUrl = "@Url.Action("GeneradorArchivo", "GestorImpresion", new { area = "ControlComun" })";
 	</script>
+	<script src="~/lib/jstree/jstree.min.js"></script>
+	<script src="~/js/app/areas/docmngr/docmanager.js"></script>
 
 	<script src="~/js/app/areas/financieros/chequepagaaca/cpagaaca.js"></script>
 }

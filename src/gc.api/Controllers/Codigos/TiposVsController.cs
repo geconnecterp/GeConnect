@@ -141,10 +141,10 @@ namespace gc.api.Controllers.Codigos
 
 		[HttpGet]
 		[Route("[action]")]
-		public IActionResult GetFinancieroCarteraParaSeleccionDeValores(string ctaf_id)
+		public IActionResult GetFinancieroCarteraParaSeleccionDeValores(string ctaf_id, string cta_id = "%")
 		{
 			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
-			List<FinancieroCarteraDto> condAfip = _financieroServicio.GetFinancieroCarteraParaSeleccionDeValores(ctaf_id);
+			List<FinancieroCarteraDto> condAfip = _financieroServicio.GetFinancieroCarteraParaSeleccionDeValores(ctaf_id, cta_id);
 			var lista = _mapper.Map<List<FinancieroCarteraDto>>(condAfip);
 
 			var response = new ApiResponse<List<FinancieroCarteraDto>>(lista);

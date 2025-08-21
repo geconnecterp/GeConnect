@@ -217,7 +217,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 		}
 
-		public List<FinancieroCarteraDto> GetFinancieroCarteraParaSeleccionDeValores(string ctaf_id, string token)
+		public List<FinancieroCarteraDto> GetFinancieroCarteraParaSeleccionDeValores(string ctaf_id, string token, string cta_id = "%")
 		{
 			try
 			{
@@ -226,7 +226,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 				HttpClient client = helper.InicializaCliente(token);
 				HttpResponseMessage response;
 
-				var link = $"{_appSettings.RutaBase}{RutaTiposAPI}{ObtenerFinancieroCarteraParaSeleccionDeValores}?ctaf_id={ctaf_id}";
+				var link = $"{_appSettings.RutaBase}{RutaTiposAPI}{ObtenerFinancieroCarteraParaSeleccionDeValores}?ctaf_id={ctaf_id}&cta_id={cta_id}";
 				response = client.GetAsync(link).GetAwaiter().GetResult();
 
 				if (response.StatusCode == HttpStatusCode.OK)
