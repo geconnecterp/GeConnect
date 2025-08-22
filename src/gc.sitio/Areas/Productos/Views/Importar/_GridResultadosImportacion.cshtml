@@ -1,6 +1,5 @@
 ﻿@using gc.sitio.Areas.Productos.Models
 @model ResultadoImportacionViewModel
-@using static gc.infraestructura.Helpers.GridHelper
 
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
@@ -19,116 +18,54 @@
     </div>
 
     <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-sm table-hover mb-0" id="tbGridResultadosImportacion">
+        <div class="table-responsive text-nowrap table-wrapper">
+            <table class="table table-sm table-hover mb-0 table-wrapper-fixed-head " id="tbGridResultadosImportacion">
                 <thead class="table-dark sticky-top">
                     <tr>
                         <th class="text-center" style="width: 80px;">ESTADO</th>
+                        <th style="min-width: 250px;">OBSERVACIONES</th>
                         <th class="text-center" style="width: 60px;">FILA</th>
+                        <th style="min-width: 80px;">ID</th>
+                        <th style="min-width: 100px;">ID PROV</th>
                         <th style="min-width: 150px;">EAN</th>
+                        <th style="min-width: 120px;">EAN OTRO</th>
+                        <th style="min-width: 100px;">DUN</th>
                         <th style="min-width: 120px;">MARCA</th>
                         <th style="min-width: 200px;">DESCRIPCIÓN</th>
-                        <th class="text-end" style="width: 100px;">PRECIO LISTA</th>
-                        <th class="text-center" style="width: 80px;">DTO 1%</th>
-                        <th class="text-center" style="width: 80px;">DTO 2%</th>
-                        <th class="text-center" style="width: 80px;">FLETE%</th>
-                        <th class="text-center" style="width: 80px;">BONI%</th>
-                        <th style="min-width: 250px;">OBSERVACIONES</th>
+                        <th style="min-width: 100px;">CAPACIDAD</th>
+                        <th style="min-width: 120px;">UNIDAD PRES</th>
+                        <th class="text-end" style="width: 120px;">PRECIO LISTA</th>
+                        <th class="text-end" style="width: 120px;">COSTO</th>
+                        <th class="text-center" style="width: 80px;">DTO 1</th>
+                        <th class="text-center" style="width: 80px;">DTO 2</th>
+                        <th class="text-center" style="width: 80px;">DTO 3</th>
+                        <th class="text-center" style="width: 80px;">DTO 4</th>
+                        <th class="text-center" style="width: 80px;">DTO PA</th>
+                        <th class="text-center" style="width: 80px;">FLETE</th>
+                        <th class="text-center" style="width: 80px;">BONI</th>
+                        <th class="text-center" style="width: 120px;">UNID/BULTO</th>
+                        <th class="text-center" style="width: 100px;">BULTO/PISO</th>
+                        <th class="text-center" style="width: 100px;">PISO/PALLET</th>
+                        <th class="text-center" style="width: 80px;">IVA%</th>
+                        <th class="text-center" style="width: 80px;">IN%</th>
+                        <th style="min-width: 100px;">CTA GECO</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @{
-                        var filaIndex = 0;
-                        string claseAlterna = "";
-                    }
-
-                    @foreach (var item in Model.Resultados)
+                    @for (int i = 0; i < Model.Resultados.Count; i++)
                     {
-                        claseAlterna = (filaIndex % 2 == 0) ? "table-row-even" : "";
-                        var claseEstado = item.registro_estado == 1 ? "table-success" : "table-danger";
-                        var iconoEstado = item.registro_estado == 1 ? "fas fa-check-circle text-success" : "fas fa-exclamation-circle text-danger";
+                        var item = Model.Resultados[i];
+                        var claseEstado = item.registro_estado == 0 ? "table-success" : "table-danger";
+                        var iconoEstado = item.registro_estado == 0 ? "fas fa-check-circle text-success" : "fas fa-exclamation-circle text-danger";
 
-                        <tr class="@claseAlterna @claseEstado" data-fila="@item.p_id">
+                        <tr class="@claseEstado" data-fila="@item.p_id">
                             <td class="text-center">
-                                <i class="@iconoEstado" title="@item.registro_msj"></i>
+                                <i class="@iconoEstado" title="@item.registro_estado"></i>
                             </td>
-
-                            <td class="text-center fw-bold">
-                                @* ✅ CORREGIDO: Usar filaIndex + 2 para simular número de fila Excel *@
-                                @(filaIndex + 2)
-                            </td>
-
-                            <td class="font-monospace">
-                                @if (!string.IsNullOrEmpty(item.p_ean))
-                                {
-                                    <span class="text-primary">@item.p_ean</span>
-                                }
-                                else if (!string.IsNullOrEmpty(item.p_ean_otro))
-                                {
-                                    <span class="text-secondary">@item.p_ean_otro</span>
-                                }
-                                else
-                                {
-                                    <span class="text-muted fst-italic">Sin EAN</span>
-                                }
-                            </td>
-
-                            <td class="fw-semibold">
-                                @if (!string.IsNullOrEmpty(item.p_marca))
-                                {
-                                    @item.p_marca
-                                }
-                                else
-                                {
-                                    <span class="text-muted">-</span>
-                                }
-                            </td>
-
-                            <td>
-                                @if (!string.IsNullOrEmpty(item.p_desc))
-                                {
-                                    <span title="@item.p_desc">
-                                        @(item.p_desc.Length > 40 ? item.p_desc.Substring(0, 40) + "..." : item.p_desc)
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="text-muted">Sin descripción</span>
-                                }
-                            </td>
-
-                            <td class="text-end font-monospace">
-                                @if (decimal.TryParse(item.p_plista, out var precio) && precio > 0)
-                                {
-                                    <span class="fw-bold">@precio.ToString("C2")</span>
-                                }
-                                else
-                                {
-                                    <span class="text-muted">$ 0.00</span>
-                                }
-                            </td>
-
-                            <td class="text-center font-monospace">
-                                @FormatearPorcentaje(item.p_dto1)
-                            </td>
-
-                            <td class="text-center font-monospace">
-                                @FormatearPorcentaje(item.p_dto2)
-                            </td>
-
-                            <td class="text-center font-monospace">
-                                @FormatearPorcentaje(item.p_porc_flete)
-                            </td>
-
-                            <td class="text-center font-monospace">
-                                @FormatearPorcentaje(item.p_boni)
-                            </td>
-
                             <td>
                                 @if (!string.IsNullOrEmpty(item.registro_msj))
                                 {
-                                    <span class="@(item.registro_estado == 1 ? "text-success" : "text-danger")"
-                                          title="@item.registro_msj">
+                                    <span class="@(item.registro_estado == 1 ? "text-success" : "text-danger")" title="@item.registro_msj">
                                         @(item.registro_msj.Length > 50 ? item.registro_msj.Substring(0, 50) + "..." : item.registro_msj)
                                     </span>
                                 }
@@ -136,11 +73,37 @@
                                 {
                                     <span class="text-success">Procesado correctamente</span>
                                 }
-                            </td>
-                        </tr>
-
-                        filaIndex++;
-                    }
+                        </td>
+                        <td class="text-center fw-bold">@(i + 2)</td>
+                        <td>@item.p_id</td>
+                        <td>@item.p_id_prov</td>
+                        <td class="font-monospace">@item.p_ean</td>
+                        <td class="font-monospace">@item.p_ean_otro</td>
+                        <td class="font-monospace">@item.p_dun</td>
+                        <td class="fw-semibold">@item.p_marca</td>
+                        <td title="@item.p_desc">
+                            @(string.IsNullOrEmpty(item.p_desc) ? "-" :
+                                                        item.p_desc.Length > 40 ? item.p_desc.Substring(0, 40) + "..." : item.p_desc)
+                        </td>
+                        <td>@item.p_capacidad</td>
+                        <td>@item.p_unidad_pres</td>
+                        <td class="text-end font-monospace">@FormatearMoneda(item.p_plista)</td>
+                        <td class="text-end font-monospace">@FormatearMoneda(item.p_pcosto)</td>
+                        <td class="text-center font-monospace">@item.p_dto1</td>
+                        <td class="text-center font-monospace">@item.p_dto2</td>
+                        <td class="text-center font-monospace">@item.p_dto3</td>
+                        <td class="text-center font-monospace">@item.p_dto4</td>
+                        <td class="text-center font-monospace">@item.p_dto_pa</td>
+                        <td class="text-center font-monospace">@item.p_porc_flete</td>
+                        <td class="text-center font-monospace">@item.p_boni</td>
+                        <td class="text-center">@item.p_unidadxbulto</td>
+                        <td class="text-center">@item.p_bultoxpiso</td>
+                        <td class="text-center">@item.p_pisoxpallet</td>
+                        <td class="text-center font-monospace">@item.iva_alicuota</td>
+                        <td class="text-center font-monospace">@item.in_alicuota</td>
+                        <td>@item.cta_id_geco</td>
+                    </tr>
+                                        }
                 </tbody>
             </table>
         </div>
@@ -163,24 +126,18 @@
 </div>
 
 @{
-    // ✅ Funciones helper optimizadas
     string FormatearPorcentaje(string valor)
     {
-        if (decimal.TryParse(valor, out var porcentaje))
-        {
-            return porcentaje == 0 ? "0%" : $"{porcentaje:P2}";
-        }
-        return "0%";
+        return decimal.TryParse(valor, out var porcentaje) && porcentaje != 0 ? $"{porcentaje:P1}" : "0%";
     }
 
-    @* ✅ REMOVIDO: Función GetNumeroFilaDeJsonCampo que no funciona *@
+    string FormatearMoneda(string valor)
+    {
+        return decimal.TryParse(valor, out var precio) && precio > 0 ? precio.ToString("C2") : "$ 0.00";
+    }
 }
 
 <style>
-    .table-row-even {
-        background-color: rgba(0,0,0,0.02);
-    }
-
     .badge-group .badge {
         font-size: 0.875rem;
     }

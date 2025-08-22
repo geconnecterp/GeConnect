@@ -110,6 +110,10 @@ namespace gc.sitio.Areas.Productos.Controllers
         {
             try
             {
+                // Versión optimizada del código de autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return redirectResult;
+
                 if (archivo == null || archivo.Length == 0)
                 {
                     return Json(new
@@ -162,6 +166,10 @@ namespace gc.sitio.Areas.Productos.Controllers
         {
             try
             {
+                // Versión optimizada del código de autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return redirectResult;
+
                 if (archivo == null || archivo.Length == 0)
                 {
                     return Json(new { error = true, mensaje = "No se recibió ningún archivo para procesar" });
@@ -211,8 +219,8 @@ namespace gc.sitio.Areas.Productos.Controllers
                         datos = new
                         {
                             registrosProcesados = resultado.ListaEntidad.Count,
-                            registrosConError = resultado.ListaEntidad.Count(r => r.registro_estado == -1),
-                            registrosExitosos = resultado.ListaEntidad.Count(r => r.registro_estado == 1),
+                            registrosConError = resultado.ListaEntidad.Count(r => r.registro_estado != 0),
+                            registrosExitosos = resultado.ListaEntidad.Count(r => r.registro_estado == 0),
                             archivo = archivo.FileName,
                             proveedor = proveedorId,
                             fechaProceso = datosImportacion.FechaProceso.ToString("yyyy-MM-dd HH:mm:ss")
@@ -241,7 +249,8 @@ namespace gc.sitio.Areas.Productos.Controllers
         private async Task<RespuestaGenerica<RespuestaCPDto>> EnviarDatosALaAPIOptimizado(DatosImportacionDto datosImportacion)
         {
             try
-            {
+            {                
+
                 // ✅ Serializar con configuración optimizada
                 var jsonSettings = new JsonSerializerSettings
                 {
@@ -250,15 +259,22 @@ namespace gc.sitio.Areas.Productos.Controllers
                     Formatting = Formatting.None,
                     DefaultValueHandling = DefaultValueHandling.Ignore
                 };
+                //extraemos el mapeado de columnas para hacer un proceso paralelo a la carga de datos.
+                var mapeadoColumnas = datosImportacion.MapeoColumnas;
+                datosImportacion.MapeoColumnas = [];
 
-                var datosJson = JsonConvert.SerializeObject(datosImportacion, jsonSettings);
+                NormalizaDatos(datosImportacion);
 
-                var abmDto = new AbmGenDto
+                var datosJsonCarga = JsonConvert.SerializeObject(datosImportacion, jsonSettings);
+                var datosJsonMap = JsonConvert.SerializeObject(mapeadoColumnas, jsonSettings);
+
+                var abmDto = new AbmPlusGenDto
                 {
-                    Objeto = "DATOS_IMPORTACION_PRECIOS",
-                    Usuario = User.Identity?.Name ?? "SISTEMA",
-                    Administracion = AdministracionId ?? "01",
-                    Json = datosJson,
+                    Objeto = ProveedorSeleccionado.Cta_Id,
+                    Usuario = User.Identity?.Name ?? "system",
+                    Administracion = AdministracionId ?? "0000",
+                    Json = datosJsonCarga,
+                    Json2 = datosJsonMap,
                     Abm = 'A'
                 };
 
@@ -277,6 +293,52 @@ namespace gc.sitio.Areas.Productos.Controllers
                     Ok = false,
                     Mensaje = "Error interno al comunicarse con la API de importación"
                 };
+            }
+        }
+
+        /// <summary>
+        /// Esta método tiene como misión truncar los valores que tiene solo 1 decimal o 2 decimales o 3 decimales
+        /// </summary>
+        /// <param name="datosImportacion"></param>
+        private void NormalizaDatos(DatosImportacionDto datosImportacion)
+        {
+            var camposATruncar = new[] { "p_dto1", "p_dto2", "p_dto3", "p_dto4", "p_dto_pa", "p_porc_flete" };
+
+            foreach (var fila in datosImportacion.Filas)
+            {
+                TruncarCampos(fila.Valores, camposATruncar, 1);
+            }
+
+            camposATruncar = new[] {  "p_pcosto" };
+            foreach (var fila in datosImportacion.Filas)
+            {
+                TruncarCampos(fila.Valores, camposATruncar, 2);
+            }
+
+            camposATruncar = new[] { "p_plista" };
+            foreach (var fila in datosImportacion.Filas)
+            {
+                TruncarCampos(fila.Valores, camposATruncar, 3);
+            }
+        }
+
+        private void TruncarCampos(Dictionary<string, object?> diccionario, IEnumerable<string> claves, int decimales)
+        {
+            decimal factor = (decimal)Math.Pow(10, decimales);
+
+            foreach (var clave in claves)
+            {
+                if (diccionario.TryGetValue(clave, out var valor))
+                {
+                    if (valor is decimal dec)
+                    {
+                        diccionario[clave] = Math.Truncate(dec * factor) / factor;
+                    }
+                    else if (valor is double dbl)
+                    {
+                        diccionario[clave] = (double)(Math.Truncate((decimal)dbl * factor) / factor);
+                    }
+                }
             }
         }
 
@@ -304,46 +366,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 _logger?.LogError(ex, "Error generando vista de resultados");
                 return "<div class='alert alert-danger'>Error generando vista de resultados</div>";
             }
-        }
-        // ✅ CORREGIDO: Helper para renderizar vista a string
-        private async Task<string> RenderViewToStringAsync(string viewName, object model)
-        {
-            try
-            {
-                ViewData.Model = model;
-
-                using var writer = new StringWriter();
-
-                // ✅ CORRECCIÓN 1: Usar ICompositeViewEngine en lugar de ViewEngines.Engines
-                var viewResult = _viewEngine.FindView(ControllerContext, viewName, false);
-
-                if (!viewResult.Success)
-                {
-                    _logger?.LogWarning($"Vista '{viewName}' no encontrada");
-                    return $"<div class='alert alert-warning'>Vista '{viewName}' no encontrada</div>";
-                }
-
-                // ✅ CORRECCIÓN 2: Proporcionar HtmlHelperOptions requerido
-                var viewContext = new ViewContext(
-                    ControllerContext,
-                    viewResult.View,
-                    ViewData,
-                    TempData,
-                    writer,
-                    new HtmlHelperOptions() // ✅ AGREGAR: HtmlHelperOptions requerido
-                );
-
-                // ✅ RENDERIZAR: Vista de forma asíncrona
-                await viewResult.View.RenderAsync(viewContext);
-
-                return writer.ToString();
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError(ex, $"Error renderizando vista '{viewName}'");
-                return $"<div class='alert alert-danger'>Error renderizando vista: {ex.Message}</div>";
-            }
-        }
+        }      
 
         // ✅ ALTERNATIVA: Método simplificado usando servicios de ASP.NET Core
         private async Task<string> RenderViewToStringAsyncSimplificado(string viewName, object model)
@@ -557,50 +580,6 @@ namespace gc.sitio.Areas.Productos.Controllers
             };
 
             return camposIdentificadores.Contains(campoBD);
-        }
-
-        // ✅ NUEVO: Enviar datos procesados a la API
-        private async Task<RespuestaGenerica<string>> EnviarDatosALaAPI(DatosImportacionDto datosImportacion)
-        {
-            try
-            {
-                // ✅ Convertir a JSON para envío
-                var datosJson = JsonConvert.SerializeObject(datosImportacion, new JsonSerializerSettings
-                {
-                    NullValueHandling = NullValueHandling.Ignore,
-                    DateFormatString = "yyyy-MM-dd HH:mm:ss",
-                    Formatting = Formatting.None
-                });
-
-                // ✅ Preparar datos para AbmGenDto
-                var abmDto = new AbmGenDto
-                {
-                    Objeto = "DATOS_IMPORTACION_PRECIOS",
-                    Usuario = User.Identity?.Name ?? "SISTEMA",
-                    Administracion = AdministracionId ?? "01",
-                    Json = datosJson,
-                    Abm = 'A' // Alta/Inserción
-                };
-
-                // ✅ Llamar al servicio
-                var resultado = await _impServicio.CargarImportacionPrecio(abmDto, TokenCookie);
-
-                return new RespuestaGenerica<string>
-                {
-                    Ok = resultado.Ok,
-                    Mensaje = resultado.Mensaje ?? (resultado.Ok ? "Datos procesados exitosamente" : "Error procesando datos"),
-                    Entidad = resultado.Entidad?.resultado_msj.ToString()
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError(ex, "Error enviando datos a la API");
-                return new RespuestaGenerica<string>
-                {
-                    Ok = false,
-                    Mensaje = "Error interno al enviar datos a la API"
-                };
-            }
         }
 
         // ✅ NUEVO: Endpoint para verificar datos de importación
@@ -1697,7 +1676,7 @@ namespace gc.sitio.Areas.Productos.Controllers
 
             if (AnalisisFile == null || AnalisisFile.Columnas.Count == 0)
             {
-                ObtenerPerfilPrecioProveedor(_impServicio, ProveedorSeleccionado.Cta_Id).GetAwaiter();
+                ObtenerPerfilDeProveedor(_impServicio, ProveedorSeleccionado.Cta_Id).GetAwaiter();
             }
 
         }

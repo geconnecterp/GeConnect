@@ -112,8 +112,13 @@
     }
 
     // ✅ NUEVO: DTO para información de mapeo
+
+    /// <summary>
+    /// Modelo para la tabla precio_file_perfil
+    /// </summary>
     public class MapeoColumnaDto
     {
+        public string cta_id { get; set; } = string.Empty;
         public int IndiceColumna { get; set; }
         public string LetraColumna { get; set; } = string.Empty;
         public string EncabezadoOriginal { get; set; } = string.Empty;
@@ -122,5 +127,6 @@
         public string TipoDato { get; set; } = string.Empty;
         public int ConfianzaMapeo { get; set; }
         public bool MapeadoAutomatico { get; set; }
+        public DateTime FechaCarga { get; set; }
     }
 }

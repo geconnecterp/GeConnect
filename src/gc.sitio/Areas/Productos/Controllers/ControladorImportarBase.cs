@@ -51,41 +51,44 @@ namespace gc.sitio.Areas.Productos.Controllers
             DatosParaImportacion = datos.ListaEntidad ?? [];
         }
 
-        protected async Task ObtenerPerfilPrecioProveedor(IImportarServicio _impServicio, string ctaId)
+        protected async Task ObtenerPerfilDeProveedor(IImportarServicio _impServicio, string ctaId)
         {
             // Cargar datos iniciales para la importación
-            RespuestaGenerica<ProveedorPerfilDB> datos = await _impServicio.ObtenerPerfilPrecioProveedor(ctaId, TokenCookie);
-            
+            RespuestaGenerica<MapeoColumnaDto> datos = await _impServicio.ObtenerPerfilDeProveedor(ctaId, TokenCookie);
+
             AnalisisFile = MappeoPerfil2Analisis(datos);
         }
 
-        private AnalisisExcelDto MappeoPerfil2Analisis(RespuestaGenerica<ProveedorPerfilDB> datos)
+        private AnalisisExcelDto MappeoPerfil2Analisis(RespuestaGenerica<MapeoColumnaDto> datos)
         {
-            if(datos == null || !datos.Ok || (datos!=null && datos.Ok && datos.ListaEntidad?.Count==0))
+            if (datos == null || !datos.Ok || (datos != null && datos.Ok && datos.ListaEntidad?.Count == 0))
             {
                 return new AnalisisExcelDto();
             }
 
-            //paso 1. obtenermos los datos basicos del perfil
+            // ✅ PASO 1: Crear análisis base (sin datos específicos ya que vienen del mapeo guardado)
             AnalisisExcelDto analisisExcelDto = new AnalisisExcelDto
             {
-                TotalColumnas = datos.ListaEntidad[0].columnas,
-                TotalColumnasUtiles = datos.ListaEntidad[0].columnas_utiles,
-                CamposDisponibles = new List<PrecioFileDatos>()
+                TotalColumnas = datos.ListaEntidad.Count,
+                TotalColumnasUtiles = datos.ListaEntidad.Count(m => !string.IsNullOrEmpty(m.CampoBD)),
+                CamposDisponibles = DatosParaImportacion // Usar los datos ya cargados
             };
 
-
-            //paso 2. obtenemos los campos disponibles para el mapeo
+            // ✅ PASO 2: Convertir mapeos guardados a columnas de análisis
             analisisExcelDto.Columnas = [];
-            foreach (var item in datos?.ListaEntidad ?? [])
+            var ctaId = ProveedorSeleccionado.Cta_Id;
+            foreach (var mapeo in datos?.ListaEntidad ?? [])
             {
                 ColumnaExcelDto columna = new ColumnaExcelDto
                 {
-                    Indice = item.indice,
-                    Letra = item.letra,
-                    Encabezado = item.encabezado,
-                    TipoDetectado = item.tipo,                    
-                    CampoMapeado = item.campo,
+                    Indice = mapeo.IndiceColumna,
+                    Letra = mapeo.LetraColumna,
+                    Encabezado = mapeo.EncabezadoOriginal,
+                    TipoDetectado = mapeo.TipoDato,
+                    CampoMapeado = mapeo.CampoBD,
+                    DescripcionMapeado = mapeo.DescripcionCampo,
+                    ConfianzaMapeo = mapeo.ConfianzaMapeo,
+                    MapeadoAutomatico = mapeo.MapeadoAutomatico
                 };
 
                 analisisExcelDto.Columnas.Add(columna);

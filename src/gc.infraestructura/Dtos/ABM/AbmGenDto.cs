@@ -8,4 +8,16 @@
         public string Usuario { get; set; }=string.Empty ;
         public string Administracion { get; set; } = string.Empty;
     }
+
+    /// <summary>
+    /// Esta clase tendrá como misión poder enviar más json en el envio para procesos paralelos
+    /// </summary>
+    public class AbmPlusGenDto:AbmGenDto
+    {
+        public string Json2 { get; set; } = string.Empty;
+        public string Json3 { get; set; } = string.Empty;
+        public string Json4 { get; set; } = string.Empty;
+        public string Json5 { get; set; } = string.Empty;
+
+    }
 }

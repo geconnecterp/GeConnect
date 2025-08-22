@@ -1,28 +1,16 @@
-﻿$(function () {
-    // Verificar que las URLs necesarias estén definidas
-    if (typeof procesarExcelUrl === 'undefined') {
-        console.warn('⚠️ procesarExcelUrl no está definida, usando URL por defecto');
-        IMPORTAR_URLS.procesarExcel = procesarExcelUrl;
-    }
-
-    if (typeof analizarColumnasUrl === 'undefined') {
-        console.warn('⚠️ analizarColumnasUrl no está definida, usando URL por defecto');
-        IMPORTAR_URLS.analizarColumnas = '/Productos/Importar/AnalizarColumnas';
-    } else {
-        IMPORTAR_URLS.analizarColumnas = analizarColumnasUrl;
-    }
-
-    // Inicialización automática de controles de upload
-    initializeUploadControls();
-    agregarBotonesDiagnostico();
-});
-
-function inicializaControlCuentaImp() {
-    $("#controlConsultaCambio" + nnControlCta01).val(true);
-    window["AsignaDatosCuenta" + nnControlCta01]();
-    //muestro el control
-    $("#controlCta" + nnControlCta01).show("fast");
-}
+﻿// Configuración simplificada
+const CONFIGURACION_FORMATEO = {
+    p_plista: { decimales: 3, tipo: 'moneda' },
+    p_dto1: { decimales: 1, tipo: 'porcentaje' },
+    p_dto2: { decimales: 1, tipo: 'porcentaje' },
+    p_dto3: { decimales: 1, tipo: 'porcentaje' },
+    p_dto4: { decimales: 1, tipo: 'porcentaje' },
+    p_dto_pa: { decimales: 1, tipo: 'porcentaje' },
+    p_porc_flete: { decimales: 1, tipo: 'porcentaje' },
+    in_alicuota: { decimales: 1, tipo: 'porcentaje' },
+    p_boni: { decimales: 0, tipo: 'string' },
+    p_pcosto: { decimales: 2, tipo: 'moneda' }
+};
 
 // ✅ CONFIGURACIÓN: URLs centralizadas
 const IMPORTAR_URLS = {
@@ -30,6 +18,83 @@ const IMPORTAR_URLS = {
     procesarExcel: typeof procesarExcelUrl !== 'undefined' ? procesarExcelUrl : '/Productos/Importar/ProcesarExcel',
     diagnosticarCeldas: '/Productos/Importar/DiagnosticarCeldasCombinadas'
 };
+
+$(function () {
+    // Configurar URLs si están definidas
+    if (typeof procesarExcelUrl !== 'undefined') {
+        IMPORTAR_URLS.procesarExcel = procesarExcelUrl;
+    }
+    if (typeof analizarColumnasUrl !== 'undefined') {
+        IMPORTAR_URLS.analizarColumnas = analizarColumnasUrl;
+    }
+
+    initializeUploadControls();
+    agregarBotonesDiagnostico();
+});
+
+// ✅ MANTENER: Solo funciones de formateo esenciales
+function FormatearPorcentaje(valor) {
+    if (!valor || valor === '0' || valor === 0) return '0%';
+    const num = parseFloat(valor);
+    return isNaN(num) ? '0%' : `${num.toFixed(1)}%`;
+}
+
+function FormatearMoneda(valor, decimales = 2) {
+    if (!valor || valor === '0' || valor === 0) return `$ 0.${'0'.repeat(decimales)}`;
+    const num = parseFloat(valor);
+    return isNaN(num) ? `$ 0.${'0'.repeat(decimales)}` : `$ ${num.toFixed(decimales)}`;
+}
+
+function FormatearTexto(valor) {
+    return (!valor || valor === '0' || valor === 0) ? '-' : valor.toString();
+}
+
+// ✅ SIMPLIFICAR: Función de formateo más directa
+function formatearValor(valor, nombreCampo) {
+    // Valores vacíos o nulos
+    if (valor === null || valor === undefined || valor === '' || valor === '0.00' || valor === '0') {
+        if (nombreCampo.includes('dto') || nombreCampo.includes('alicuota') || nombreCampo.includes('flete')) {
+            return '0%';
+        }
+        if (nombreCampo === 'p_boni') {
+            return '-';
+        }
+        if (nombreCampo === 'p_plista' || nombreCampo === 'p_pcosto') {
+            return '$ 0.00';
+        }
+        return '-';
+    }
+
+    const config = CONFIGURACION_FORMATEO[nombreCampo];
+    if (!config) {
+        return valor.toString();
+    }
+
+    const valorNum = parseFloat(valor);
+    if (isNaN(valorNum)) {
+        return valor.toString();
+    }
+
+    switch (config.tipo) {
+        case 'moneda':
+            return `$ ${valorNum.toFixed(config.decimales)}`;
+        case 'porcentaje':
+            return `${valorNum.toFixed(config.decimales)}%`;
+        case 'string':
+            return valor.toString();
+        default:
+            return valorNum.toFixed(config.decimales);
+    }
+}
+
+
+
+function inicializaControlCuentaImp() {
+    $("#controlConsultaCambio" + nnControlCta01).val(true);
+    window["AsignaDatosCuenta" + nnControlCta01]();
+    //muestro el control
+    $("#controlCta" + nnControlCta01).show("fast");
+}
 
 // Inicializar todos los controles de upload en la página
 function initializeUploadControls() {
@@ -690,8 +755,7 @@ function cargarEIniciarImportacion() {
         true, ["Continuar", "Cancelar"], "info!", null);
 }
 
-// ✅ ACTUALIZAR: Función de importación real con mejor manejo de vista parcial
-// ✅ ACTUALIZAR: Función de importación con llamada corregida
+// ✅ SIMPLIFICAR: Función de importación sin validaciones innecesarias
 function ejecutarImportacionReal() {
     if (!archivoSeleccionado) {
         showUploadError('No hay archivo seleccionado para procesar');
@@ -726,58 +790,31 @@ function ejecutarImportacionReal() {
         data: formData,
         processData: false,
         contentType: false,
-        xhr: function () {
-            const xhr = new window.XMLHttpRequest();
-            xhr.upload.addEventListener("progress", function (evt) {
-                if (evt.lengthComputable) {
-                    const percentComplete = Math.round((evt.loaded / evt.total) * 70);
-                    $('#importProgress').css('width', percentComplete + '%')
-                        .text(`Subiendo archivo... ${percentComplete}%`);
-                }
-            }, false);
-            return xhr;
-        },
         success: function (response) {
             $('#importProgress').css('width', '100%').text('Importación completada');
-
-            // ✅ GUARDAR: Respuesta completa para detalles posteriores
             window.ultimaRespuestaImportacion = response;
 
-            console.log('✅ Respuesta de importación recibida:', {
+            console.log('✅ Respuesta recibida:', {
                 error: response.error,
-                tieneVistaResultados: !!response.vistaResultados,
-                datosEstado: response.datos ? {
-                    total: response.datos.registrosProcesados,
-                    exitosos: response.datos.registrosExitosos,
-                    errores: response.datos.registrosConError
-                } : 'Sin datos'
+                tieneVista: !!response.vistaResultados
             });
 
             setTimeout(() => {
                 $('#importResults').slideUp(300);
 
                 if (response.error) {
-                    AbrirMensaje("ERROR", `Error en la importación: ${response.mensaje}`,
+                    AbrirMensaje("ERROR", `Error: ${response.mensaje}`,
                         () => $("#msjModal").modal("hide"), false, ["Aceptar"], "error!", null);
                 } else {
-                    // ✅ CORREGIR: Usar la función inteligente unificada
                     mostrarResultadosImportacion(response);
                 }
-            }, 1500);
+            }, 1000);
         },
         error: function (xhr, status, error) {
             $('#importResults').slideUp(300);
-            console.error('❌ Error en importación:', error, xhr.responseText);
+            console.error('❌ Error:', error);
 
-            let errorMessage = 'Error de comunicación durante la importación.';
-            try {
-                const errorResponse = JSON.parse(xhr.responseText);
-                errorMessage = errorResponse.mensaje || errorResponse.message || errorMessage;
-            } catch (e) {
-                // Usar mensaje por defecto
-            }
-
-            AbrirMensaje("ERROR", errorMessage,
+            AbrirMensaje("ERROR", "Error de comunicación con el servidor.",
                 () => $("#msjModal").modal("hide"), false, ["Aceptar"], "error!", null);
         }
     });
@@ -1198,11 +1235,11 @@ function generarContenedorResultados(vistaResultados) {
     `;
 }
 
-// ✅ NUEVA: Función final para mostrar contenido y manejar efectos
+// ✅ SIMPLIFICAR: Función de mostrar contenido sin formateo innecesario
 function mostrarContenidoFinal(html) {
     $('#mainContent').html(html);
 
-    // ✅ SCROLL: Hacia los resultados después de un momento
+    // ✅ SCROLL: Hacia los resultados
     setTimeout(() => {
         if ($('#contenedorResultadosDetallados').length > 0) {
             $('html, body').animate({

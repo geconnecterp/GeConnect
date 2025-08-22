@@ -39,7 +39,7 @@ namespace gc.sitio.core.Servicios.Implementacion.Importacion
             _appSettings = options.Value;
         }
 
-        public async Task<RespuestaGenerica<RespuestaCPDto>> CargarImportacionPrecio(AbmGenDto req, string token)
+        public async Task<RespuestaGenerica<RespuestaCPDto>> CargarImportacionPrecio(AbmPlusGenDto req, string token)
         {
             try
             {
@@ -99,11 +99,11 @@ namespace gc.sitio.core.Servicios.Implementacion.Importacion
             }
         }
 
-        public async Task<RespuestaGenerica<ProveedorPerfilDB>> ObtenerPerfilPrecioProveedor(string ctaId, string token)
+        public async Task<RespuestaGenerica<MapeoColumnaDto>> ObtenerPerfilDeProveedor(string ctaId, string token)
         {
             try
             {
-                ApiResponse<List<ProveedorPerfilDB>> apiResponse;
+                ApiResponse<List<MapeoColumnaDto>> apiResponse;
 
                 HelperAPI helper = new();
 
@@ -122,9 +122,9 @@ namespace gc.sitio.core.Servicios.Implementacion.Importacion
 
                         return new() { Ok = false, Mensaje = "No se recepcionó una respuesta válida. Intente de nuevo más tarde." };
                     }
-                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProveedorPerfilDB>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+                    apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<MapeoColumnaDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 
-                    return new RespuestaGenerica<ProveedorPerfilDB> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
+                    return new RespuestaGenerica<MapeoColumnaDto> { Ok = true, Mensaje = "OK", ListaEntidad = apiResponse.Data };
 
                 }
                 else
@@ -138,7 +138,7 @@ namespace gc.sitio.core.Servicios.Implementacion.Importacion
             {
                 _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
-                return new RespuestaGenerica<ProveedorPerfilDB> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener el perfil del Cliente" };
+                return new RespuestaGenerica<MapeoColumnaDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener el perfil del Cliente" };
             }
         }
 
