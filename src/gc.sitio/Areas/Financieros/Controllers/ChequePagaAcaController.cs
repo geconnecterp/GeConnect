@@ -163,7 +163,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				Console.WriteLine($"adm_id: {request.adm_id}");
 				request.tra_concepto = string.Empty;
 				Console.WriteLine($"tra_concepto : {request.tra_concepto}");
-				request.tra_fecha = CambioDeFechaDePresentacion ? fecha_valor : null;
+				request.tra_fecha = CambioDeFechaDePresentacion ? fecha_valor : DateTime.Now;
 				Console.WriteLine($"tra_fecha: {request.tra_fecha}");
 
 				var ctafDenominacion = string.Empty;
