@@ -71,13 +71,23 @@ function btnAceptarValidar() {
 								}, false, ["Aceptar"], "info!", null);
 							}
 							else {
-								AbrirMensaje("ATENCIÓN", obj.msg, function () {
-									$("#msjModal").modal("hide");
-									ImprimirTRA_Generada(obj.id);
-									InicializarDatosEnSesion();
-									btnCancelValidar();
-									return true;
-								}, false, ["Aceptar"], "info!", null);
+								if (obj.id != "0") {
+									AbrirMensaje("ATENCIÓN", obj.msg, function () {
+										$("#msjModal").modal("hide");
+										ImprimirTRA_Generada(obj.id);
+										InicializarDatosEnSesion();
+										btnCancelValidar();
+										return true;
+									}, false, ["Aceptar"], "info!", null);
+								}
+								else {
+									AbrirMensaje("ATENCIÓN", obj.msg, function () {
+										$("#msjModal").modal("hide");
+										InicializarDatosEnSesion();
+										btnCancelValidar();
+										return true;
+									}, false, ["Aceptar"], "info!", null);
+								}
 							}
 						}
 					});
