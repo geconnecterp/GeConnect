@@ -64,15 +64,21 @@ function btnAceptarValidar() {
 							}, false, ["Aceptar"], "error!", null);
 						}
 						else {
-							// MOstrar mensaje
-							AbrirMensaje("ATENCIÓN", obj.msg, function () {
-								$("#msjModal").modal("hide");
-								ImprimirTRA_Generada(obj.id);
-								///Aca hay que inicializar todo
-								InicializarDatosEnSesion();
-								btnCancelValidar();
-								return true;
-							}, false, ["Aceptar"], "info!", null);
+							if (obj.id == null || obj.id == undefined) {
+								AbrirMensaje("ATENCIÓN", "Se ha producido un error al intentar obtener el identificador de la transferencia.", function () {
+									$("#msjModal").modal("hide");
+									return true;
+								}, false, ["Aceptar"], "info!", null);
+							}
+							else {
+								AbrirMensaje("ATENCIÓN", obj.msg, function () {
+									$("#msjModal").modal("hide");
+									ImprimirTRA_Generada(obj.id);
+									InicializarDatosEnSesion();
+									btnCancelValidar();
+									return true;
+								}, false, ["Aceptar"], "info!", null);
+							}
 						}
 					});
 					break;

@@ -219,6 +219,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				Console.WriteLine($"json_otro: {request.json_otro}");
 				var respuesta = _financieroServicio.FinancieroConfirmarTransferencia(request, TokenCookie);
 				return AnalizarRespuesta(respuesta, "La Transferencia se confirmó con Éxito");
+				//return Json(new { error = false, warn = false, msg = "Anulación de comprobante correctamente." });
 			}
 			catch (NegocioException ex)
 			{
