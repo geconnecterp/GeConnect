@@ -54,6 +54,12 @@ const TypeIntervalo = {
 	Otros: '4'
 }
 
+//function ImprimirTRA_Generada(traCompte) {
+//	let data = { tra_compte: traCompte };
+//	cargarReporteEnArre(25, data, "TRANSFERENCIA ENTRE CUENTAS", "", "");
+//	invocacionGestorDoc({});
+//}
+
 function ImprimirTRA_Generada(traCompte) {
 	let data = { tra_compte: traCompte };
 	cargarReporteEnArre(25, data, "TRANSFERENCIA ENTRE CUENTAS", "", "");
