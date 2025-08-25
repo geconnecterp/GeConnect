@@ -3,6 +3,7 @@ using gc.api.core.Constantes;
 using gc.api.core.Contratos.Servicios.Importacion;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
+using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Asientos;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Importacion;
@@ -14,7 +15,7 @@ namespace gc.api.core.Servicios.Importacion
     {
         public ApiImportarServicio(IUnitOfWork uow) : base(uow)
         {
-            
+
         }
 
         public List<MapeoColumnaDto> ObtenerPerfilDeProveedor(string ctaId)
@@ -27,7 +28,7 @@ namespace gc.api.core.Servicios.Importacion
             };
 
             List<MapeoColumnaDto> resultadoDB = _repository.EjecutarLstSpExt<MapeoColumnaDto>(sp, ps, true);
-            
+
             return resultadoDB;
         }
 
@@ -39,19 +40,40 @@ namespace gc.api.core.Servicios.Importacion
             return resp;
         }
 
-        public List<RespuestaCPDto> CargarImportacionPrecioPerfil(string ctaId, string usuario, string admin,string json)
+        public List<RespuestaCPDto> CargarImportacionPrecioPerfil(AbmPlusGenDto req)
         {
-            var sp = ConstantesGC.StoredProcedures.SP_PROD_FILE_CARGA;
+            string sp;
+            if (req.Abm.Equals('A'))
+            {
+                sp = ConstantesGC.StoredProcedures.SP_PROD_FILE_CARGA;
+            }
+            else
+            {
+                sp = ConstantesGC.StoredProcedures.SP_PROD_FILE_CONFIRMA;
+            }
+
             var ps = new List<SqlParameter>
             {
-                new SqlParameter("@cta_id", ctaId),
-                new SqlParameter("@usu_id", usuario),
-                new SqlParameter("@adm_id", admin),
-                new SqlParameter("@json", json)
+                new SqlParameter("@cta_id", req.Objeto),
+                new SqlParameter("@usu_id", req.Usuario),
+                new SqlParameter("@adm_id", req.Administracion),            
             };
 
+            if (req.Abm.Equals('A'))
+            {
+                ps.Add(new SqlParameter("@json", req.Json));
+            }
+            else
+            {
+                ps.Add(new SqlParameter("@idfile", req.IdFile));
+                ps.Add(new SqlParameter("@solo_plista", req.SoloPLista));
+                ps.Add(new SqlParameter("@nuevos", req.Nuevos));
+                ps.Add(new SqlParameter("@datos_logisticos", req.DatosLogisticos));
+                ps.Add(new SqlParameter("@inactivos", req.Inactivos));
+
+            }
             List<RespuestaCPDto> resultado = _repository.EjecutarLstSpExt<RespuestaCPDto>(sp, ps, true);
-            
+
             return resultado;
         }
 
@@ -66,7 +88,7 @@ namespace gc.api.core.Servicios.Importacion
                 new SqlParameter("@json", json)
             };
 
-           List< RespuestaDto> resultado = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+            List<RespuestaDto> resultado = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
             if (resultado.Count == 0)
             {
                 return new RespuestaDto { resultado = -1, resultado_msj = "Hubo algun problema al intentar cargar el perfil del Proveedor." };

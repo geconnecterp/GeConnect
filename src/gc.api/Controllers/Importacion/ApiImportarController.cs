@@ -84,11 +84,7 @@ namespace gc.api.Controllers.Importacion
                 
             }
 
-            List<RespuestaCPDto> resultado = _importarServicio.CargarImportacionPrecioPerfil(
-                req.Objeto, 
-                req.Usuario, 
-                req.Administracion, 
-                req.Json);
+            List<RespuestaCPDto> resultado = _importarServicio.CargarImportacionPrecioPerfil(req);
 
             
             return Ok(new ApiResponse<List<RespuestaCPDto>>(resultado));

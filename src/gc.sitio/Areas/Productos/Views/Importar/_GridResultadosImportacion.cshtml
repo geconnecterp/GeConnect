@@ -18,6 +18,25 @@
     </div>
 
     <div class="card-body p-0">
+        <!-- ✅ AGREGAR: Botón confirmar si no hay errores -->
+        @if (Model.PuedeConfirmar)
+        {
+            <div class="alert alert-success mb-3 mx-3 mt-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>¡Importación exitosa!</strong>
+                        Todos los registros se procesaron correctamente.
+                    </div>
+                    <button type="button"
+                            class="btn btn-success btn-sm"
+                            onclick="confirmarImportacion('@Model.ProveedorId', '@Model.ArchivoOriginal')"
+                            id="btnConfirmarImportacion">
+                        <i class="fas fa-check me-1"></i>CONFIRMAR IMPORTACIÓN
+                    </button>
+                </div>
+            </div>
+        }
         <div class="table-responsive text-nowrap table-wrapper">
             <table class="table table-sm table-hover mb-0 table-wrapper-fixed-head " id="tbGridResultadosImportacion">
                 <thead class="table-dark sticky-top">
@@ -170,3 +189,198 @@
         z-index: 10;
     }
 </style>
+<script>
+        $(document).ready(function() {
+        // ✅ OPTIMIZAR: Función de confirmación integrada con el patrón del proyecto
+        window.confirmarImportacion = function(proveedorId, archivoOriginal) {
+            // Validación de parámetros
+            if (!proveedorId || !archivoOriginal) {
+                showUploadError('Faltan datos para confirmar la importación');
+                return;
+            }
+
+            // Confirmación usando el patrón del proyecto
+            if (typeof AbrirMensaje === 'function') {
+                AbrirMensaje("CONFIRMACIÓN",
+                    "¿Está seguro de que desea confirmar esta importación?<br><small class='text-muted'>Esta acción no se puede deshacer.</small>",
+                    function (respuesta) {
+                        $("#msjModal").modal("hide");
+                        if (respuesta === "SI") {
+                            ejecutarConfirmacionImportacion(proveedorId, archivoOriginal);
+                        }
+                    },
+                    true, ["Confirmar", "Cancelar"], "question!", null);
+            } else {
+                // Fallback a confirm nativo si no está disponible AbrirMensaje
+                if (confirm('¿Está seguro de que desea confirmar esta importación?\nEsta acción no se puede deshacer.')) {
+                    ejecutarConfirmacionImportacion(proveedorId, archivoOriginal);
+                }
+            }
+        };
+
+        // ✅ FUNCIÓN: Ejecutar la confirmación usando jQuery AJAX
+        function ejecutarConfirmacionImportacion(proveedorId, archivoOriginal) {
+            const $btn = $('#btnConfirmarImportacion');
+
+            if ($btn.length === 0) {
+                console.error('Botón de confirmación no encontrado');
+                return;
+            }
+
+            // Estado de carga
+            $btn.prop('disabled', true)
+                .html('<i class="bx bx-loader-alt bx-spin me-1"></i>Confirmando...');
+
+            // Preparar datos para envío
+            const postData = {
+                proveedorId: proveedorId,
+                archivoOriginal: archivoOriginal
+            };
+
+            // ✅ USAR: jQuery AJAX con patrón consistente del proyecto
+            $.ajax({
+                url: '/Productos/Importar/ConfirmarImportacion',
+                type: 'POST',
+                data: postData,
+                dataType: 'json',
+                beforeSend: function() {
+                    console.log('🚀 Enviando confirmación de importación:', postData);
+                },
+                success: function(response) {
+                    console.log('✅ Respuesta de confirmación:', response);
+
+                    if (response.error) {
+                        manejarErrorConfirmacion(response.mensaje, $btn);
+                    } else {
+                        manejarExitoConfirmacion(response, $btn);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('❌ Error AJAX confirmando importación:', { xhr, status, error });
+
+                    let mensajeError = 'Error de comunicación con el servidor';
+                    if (xhr.responseJSON && xhr.responseJSON.mensaje) {
+                        mensajeError = xhr.responseJSON.mensaje;
+                    } else if (xhr.status === 404) {
+                        mensajeError = 'Endpoint de confirmación no encontrado';
+                    } else if (xhr.status === 500) {
+                        mensajeError = 'Error interno del servidor';
+                    }
+
+                    manejarErrorConfirmacion(mensajeError, $btn);
+                }
+            });
+        }
+
+        // ✅ FUNCIÓN: Manejar error de confirmación
+        function manejarErrorConfirmacion(mensaje, $btn) {
+            // Mostrar error usando el sistema del proyecto
+            if (typeof AbrirMensaje === 'function') {
+                AbrirMensaje("ERROR", mensaje,
+                    () => $("#msjModal").modal("hide"),
+                    false, ["Aceptar"], "error!", null);
+            } else {
+                showUploadError('Error: ' + mensaje);
+            }
+
+            // Restaurar botón
+            $btn.prop('disabled', false)
+                .html('<i class="bx bx-check me-1"></i>CONFIRMAR IMPORTACIÓN');
+        }
+
+        // ✅ FUNCIÓN: Manejar éxito de confirmación
+        function manejarExitoConfirmacion(response, $btn) {
+            // Actualizar botón a estado confirmado
+            $btn.html('<i class="bx bxs-check-circle me-1"></i>CONFIRMADO')
+                .removeClass('btn-success')
+                .addClass('btn-outline-success')
+                .prop('disabled', true);
+
+            // Actualizar el alert de éxito
+            const $alertDiv = $btn.closest('.alert');
+            if ($alertDiv.length > 0) {
+                const fechaConfirmacion = response.datos && response.datos.fechaConfirmacion
+                    ? response.datos.fechaConfirmacion
+                    : new Date().toLocaleString();
+
+                $alertDiv.removeClass('alert-success')
+                        .addClass('alert-info')
+                        .html(`
+                            <div class="d-flex align-items-center">
+                                <i class="bx bxs-check-circle text-success me-2"></i>
+                                <strong>Importación confirmada exitosamente</strong>
+                                <span class="ms-2 text-muted">${fechaConfirmacion}</span>
+                            </div>
+                        `);
+            }
+
+            // Mostrar mensaje de éxito usando el sistema del proyecto
+            if (typeof AbrirMensaje === 'function') {
+                AbrirMensaje("ÉXITO",
+                    "La importación ha sido confirmada exitosamente.",
+                    () => $("#msjModal").modal("hide"),
+                    false, ["Aceptar"], "success!", null);
+            }
+
+            // Log del éxito
+            console.log('✅ Importación confirmada exitosamente:', response);
+
+            // ✅ OPCIONAL: Trigger evento personalizado para otros listeners
+            $(document).trigger('importacionConfirmada', [response]);
+        }
+
+        // ✅ EVENTO: Listener para eventos personalizados (opcional)
+        $(document).on('importacionConfirmada', function(event, response) {
+            console.log('🎉 Evento importacionConfirmada disparado:', response);
+            // Aquí se pueden agregar acciones adicionales tras la confirmación
+        });
+    });
+
+    // function confirmarImportacion(proveedorId, archivoOriginal) {
+    //     if (!confirm('¿Está seguro de que desea confirmar esta importación? Esta acción no se puede deshacer.')) {
+    //         return;
+    //     }
+
+    //     const btn = document.getElementById('btnConfirmarImportacion');
+    //     btn.disabled = true;
+    //     btn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i>Confirmando...';
+
+    //     fetch('/Productos/Importar/ConfirmarImportacion', {
+    //         method: 'POST',
+    //         headers: {
+    //             'Content-Type': 'application/x-www-form-urlencoded',
+    //         },
+    //         body: `proveedorId=${encodeURIComponent(proveedorId)}&archivoOriginal=${encodeURIComponent(archivoOriginal)}`
+    //     })
+    //     .then(response => response.json())
+    //     .then(data => {
+    //         if (data.error) {
+    //             alert('Error: ' + data.mensaje);
+    //             btn.disabled = false;
+    //             btn.innerHTML = '<i class="bx bx-check me-1"></i>CONFIRMAR IMPORTACIÓN';
+    //         } else {
+    //             btn.innerHTML = '<i class="bx bxs-check-circle me-1"></i>CONFIRMADO';
+    //             btn.classList.remove('btn-success');
+    //             btn.classList.add('btn-outline-success');
+
+    //             // Mostrar mensaje de éxito
+    //             const alertDiv = btn.closest('.alert');
+    //             alertDiv.innerHTML = `
+    //                 <div class="d-flex align-items-center">
+    //                     <i class="bx bxs-check-circle text-success me-2"></i>
+    //                     <strong>Importación confirmada exitosamente</strong>
+    //                     <span class="ms-2 text-muted">${data.datos.fechaConfirmacion}</span>
+    //                 </div>
+    //             `;
+    //             alertDiv.classList.remove('alert-success');
+    //             alertDiv.classList.add('alert-info');
+    //         }
+    //     })
+    //     .catch(error => {
+    //         console.error('Error:', error);
+    //         alert('Error de comunicación con el servidor');
+    //         btn.disabled = false;
+    //         btn.innerHTML = '<i class="bx bx-check me-1"></i>CONFIRMAR IMPORTACIÓN';
+    //     });
+    // }
+</script>

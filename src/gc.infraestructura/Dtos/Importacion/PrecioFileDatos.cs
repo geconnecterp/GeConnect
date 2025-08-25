@@ -19,6 +19,7 @@
         public List<ColumnaExcelDto> Columnas { get; set; } = [];
         // ✅ NUEVO: Lista de campos disponibles para mapeo
         public List<PrecioFileDatos> CamposDisponibles { get; set; } = [];
+        public string IdFile { get; set; } = string.Empty;
     }
 
     // ✅ ASEGURAR: DTOs están correctos

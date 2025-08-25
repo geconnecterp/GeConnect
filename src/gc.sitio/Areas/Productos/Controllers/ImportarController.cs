@@ -215,8 +215,13 @@ namespace gc.sitio.Areas.Productos.Controllers
                 // ✅ 4. Enviar datos a la API - OPTIMIZADO
                 var resultado = await EnviarDatosALaAPIOptimizado(datosImportacion);
 
+
+
                 if (resultado.Ok && resultado.ListaEntidad?.Any() == true)
-                {
+                {                    
+                    //resguardamos el idfile, clave para la confirmación
+                    analisis.IdFile = resultado.ListaEntidad.First().idfile;
+                    AnalisisFile = analisis;
                     // ✅ 5. Generar vista parcial con resultados
                     var vistaResultado = await GenerarVistaResultadosImportacion(resultado.ListaEntidad, datosImportacion);
 
@@ -255,6 +260,61 @@ namespace gc.sitio.Areas.Productos.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<JsonResult> ConfirmarImportacion(string proveedorId, string archivoOriginal)
+        {
+            try
+            {
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { error = true, mensaje = "No autorizado" });
+
+                if (string.IsNullOrEmpty(proveedorId))
+                {
+                    return Json(new { error = true, mensaje = "ID de proveedor requerido" });
+                }
+
+                _logger?.LogInformation($"Confirmando importación para proveedor: {proveedorId}, archivo: {archivoOriginal}");
+
+                // ✅ Llamar al servicio para confirmar la importación
+                var abmDto = new AbmPlusGenDto
+                {
+                    Objeto = proveedorId,
+                    Usuario = UserName ?? "system",
+                    Administracion = AdministracionId ?? "0000",
+                    Json = JsonConvert.SerializeObject(new { archivo = archivoOriginal }),
+                    Abm = 'C' // C = Confirmar
+                };
+
+                var resultado = await _impServicio.CargarImportacionPrecio(abmDto, TokenCookie);
+
+                if (resultado.Ok)
+                {
+                    _logger?.LogInformation($"✅ Importación confirmada exitosamente para proveedor: {proveedorId}");
+                    return Json(new
+                    {
+                        error = false,
+                        mensaje = "Importación confirmada exitosamente",
+                        datos = new
+                        {
+                            proveedor = proveedorId,
+                            archivo = archivoOriginal,
+                            fechaConfirmacion = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                        }
+                    });
+                }
+                else
+                {
+                    _logger?.LogWarning($"❌ Error confirmando importación: {resultado.Mensaje}");
+                    return Json(new { error = true, mensaje = resultado.Mensaje ?? "Error desconocido confirmando la importación" });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error confirmando importación");
+                return Json(new { error = true, mensaje = "Error interno al confirmar la importación. Contacte al administrador." });
+            }
+        }
+
         // ✅ NUEVO: Método optimizado para envío a API
         private async Task<RespuestaGenerica<RespuestaCPDto>> EnviarDatosALaAPIOptimizado(DatosImportacionDto datosImportacion)
         {
@@ -287,11 +347,16 @@ namespace gc.sitio.Areas.Productos.Controllers
                 var abmDto = new AbmPlusGenDto
                 {
                     Objeto = ProveedorSeleccionado.Cta_Id,
-                    Usuario = User.Identity?.Name ?? "system",
+                    Usuario = UserName ?? "system",
                     Administracion = AdministracionId ?? "0000",
                     Json = datosJsonCarga,
                     Json2 = datosJsonMap,
-                    Abm = 'A'
+                    Abm = 'A',
+                    IdFile = AnalisisFile.IdFile,
+                    SoloPLista = '1',
+                    Nuevos = false,
+                    DatosLogisticos = false,
+                    Inactivos = false
                 };
 
                 // ✅ Llamar al servicio optimizado
@@ -367,7 +432,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 {
                     Resultados = resultados.OrderBy(r => r.p_id).ToList(),
                     TotalRegistros = resultados.Count,
-                    RegistrosExitosos = resultados.Count(r => r.registro_estado == 1),
+                    RegistrosExitosos = resultados.Count(r => r.registro_estado == 0 || r.registro_estado==2 || r.registro_estado == 3 || r.registro_estado== 4),
                     RegistrosConError = resultados.Count(r => r.registro_estado == -1),
                     ArchivoOriginal = datosOriginales.NombreArchivo,
                     FechaProceso = datosOriginales.FechaProceso,

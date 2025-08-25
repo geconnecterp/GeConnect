@@ -19,5 +19,12 @@
         public string Json4 { get; set; } = string.Empty;
         public string Json5 { get; set; } = string.Empty;
 
+        public string IdFile { get; set; } = string.Empty;
+        public char SoloPLista { get; set; }
+        public bool Nuevos { get; set; }
+        public bool DatosLogisticos { get; set; }
+        public bool Inactivos { get; set; }
+
+
     }
 }
