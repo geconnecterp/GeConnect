@@ -75,7 +75,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 // Versión optimizada del código de autenticación
                 if (!VerificarAutenticacion(out IActionResult redirectResult))
                     return redirectResult;
-
+                AnalisisFile = new();
                 CargarDatosIniciales();
                 string titulo = "Productos - IMPORTACIÓN de Precios";
                 ViewData["Titulo"] = titulo;
@@ -142,10 +142,13 @@ namespace gc.sitio.Areas.Productos.Controllers
                 // ✅ NUEVO: Aplicar mapeo automático inteligente
                 AplicarMapeoAutomaticoInteligente(analisis);
 
+                //RESGUARDAMOS EL ANALISIS
+                AnalisisFile = analisis;
+
                 return Json(new
                 {
                     error = false,
-                    analisis = analisis,
+                    analisis,
                     mensaje = "Análisis de estructura completado"
                 });
             }
@@ -182,16 +185,23 @@ namespace gc.sitio.Areas.Productos.Controllers
 
                 _logger?.LogInformation($"Procesando Excel: {archivo.FileName} para proveedor: {proveedorId}");
 
-                // ✅ 1. Analizar estructura del Excel
-                var analisis = await AnalizarEstructuraExcel(archivo);
+                #region Este codigo se quita ya que ya se analizo la estructura y se realizo el Mapeo Automático inteligente previamente.
 
-                // ✅ 2. Aplicar mapeo
-                analisis.CamposDisponibles = DatosParaImportacion;
-                AplicarMapeoAutomaticoInteligente(analisis);
+                var analisis = AnalisisFile;
 
+                //// ✅ 1. Analizar estructura del Excel
+                //var analisis = await AnalizarEstructuraExcel(archivo);
+
+                //// ✅ 2. Aplicar mapeo
+                //analisis.CamposDisponibles = DatosParaImportacion;
+                //AplicarMapeoAutomaticoInteligente(analisis);
+
+                #endregion
                 if (!string.IsNullOrEmpty(mapeoColumnas))
                 {
                     AplicarMapeoManual(analisis, mapeoColumnas);
+                    //resguardamos el mapeo inteligente y manual
+                    AnalisisFile = analisis;
                 }
 
                 // ✅ 3. Procesar datos del Excel
@@ -257,11 +267,17 @@ namespace gc.sitio.Areas.Productos.Controllers
                     NullValueHandling = NullValueHandling.Ignore,
                     DateFormatString = "yyyy-MM-dd HH:mm:ss",
                     Formatting = Formatting.None,
-                    DefaultValueHandling = DefaultValueHandling.Ignore
+                    //DefaultValueHandling = DefaultValueHandling.Ignore
                 };
                 //extraemos el mapeado de columnas para hacer un proceso paralelo a la carga de datos.
                 var mapeadoColumnas = datosImportacion.MapeoColumnas;
+                foreach (var item in mapeadoColumnas.Where(x=>x.mapeado_automatico!=true))
+                {
+                    item.mapeado_automatico = false;
+                }
                 datosImportacion.MapeoColumnas = [];
+                
+                
 
                 NormalizaDatos(datosImportacion);
 
@@ -429,12 +445,15 @@ namespace gc.sitio.Areas.Productos.Controllers
                         var campoInfo = DatosParaImportacion.FirstOrDefault(d => d.Campo == mapeo.Value);
                         if (campoInfo != null)
                         {
-                            columna.CampoMapeado = mapeo.Value;
-                            columna.DescripcionMapeado = campoInfo.Dato;
-                            columna.MapeadoAutomatico = false;
-                            columna.ConfianzaMapeo = 100; // Mapeo manual = 100% confianza
+                            if (!columna.CampoMapeado.Equals(mapeo.Value))
+                            {
+                                columna.CampoMapeado = mapeo.Value;
+                                columna.DescripcionMapeado = campoInfo.Dato;
+                                columna.MapeadoAutomatico = false;
+                                columna.ConfianzaMapeo = 100; // Mapeo manual = 100% confianza
 
-                            _logger?.LogInformation($"Mapeo manual aplicado: '{columna.Encabezado}' → '{campoInfo.Campo}'");
+                                _logger?.LogInformation($"Mapeo manual aplicado: '{columna.Encabezado}' → '{campoInfo.Campo}'");
+                            }
                         }
                     }
                 }
@@ -473,18 +492,18 @@ namespace gc.sitio.Areas.Productos.Controllers
                     NombreArchivo = archivo.FileName,
                     TotalFilas = analisis.TotalFilas,
                     TotalColumnas = analisis.TotalColumnas,
-                    FilaEncabezados = 1,
+                    FilaEncabezados = analisis.FilaEncabezados,
                     FechaProceso = DateTime.Now,
                     MapeoColumnas = columnasMapadas.Select(c => new MapeoColumnaDto
                     {
-                        IndiceColumna = c.Indice,
-                        LetraColumna = c.Letra,
-                        EncabezadoOriginal = c.Encabezado,
-                        CampoBD = c.CampoMapeado,
-                        DescripcionCampo = c.DescripcionMapeado,
-                        TipoDato = c.TipoDetectado,
-                        ConfianzaMapeo = c.ConfianzaMapeo,
-                        MapeadoAutomatico = c.MapeadoAutomatico
+                        indice_columna = c.Indice,
+                        letra_columna = c.Letra,
+                        encabezado_original = c.Encabezado,
+                        campo_bd = c.CampoMapeado,
+                        descripcion_campo = c.DescripcionMapeado,
+                        tipo_dato = c.TipoDetectado,
+                        confianza_mapeo = c.ConfianzaMapeo,
+                        mapeado_automatico = c.MapeadoAutomatico
                     }).ToList()
                 };
 
@@ -504,12 +523,12 @@ namespace gc.sitio.Areas.Productos.Controllers
                     // ✅ Procesar cada columna mapeada
                     foreach (var mapeo in datosImportacion.MapeoColumnas)
                     {
-                        var valorCelda = worksheet.Cells[fila, mapeo.IndiceColumna].Value;
+                        var valorCelda = worksheet.Cells[fila, mapeo.indice_columna].Value;
 
                         // ✅ CORREGIR: Pasar el campo BD para tratamiento especial
-                        var valorProcesado = ProcesarValorCelda(valorCelda, mapeo.TipoDato, mapeo.CampoBD);
+                        var valorProcesado = ProcesarValorCelda(valorCelda, mapeo.tipo_dato, mapeo.campo_bd);
 
-                        filaDatos.Valores[mapeo.CampoBD] = valorProcesado;
+                        filaDatos.Valores[mapeo.campo_bd] = valorProcesado;
 
                         // ✅ Verificar si la fila tiene datos útiles
                         if (valorProcesado != null && !string.IsNullOrWhiteSpace(valorProcesado.ToString()))
@@ -518,9 +537,9 @@ namespace gc.sitio.Areas.Productos.Controllers
                         }
 
                         // ✅ LOGGING: Para campos identificadores
-                        if (EsCampoIdentificador(mapeo.CampoBD) && valorProcesado != null)
+                        if (EsCampoIdentificador(mapeo.campo_bd) && valorProcesado != null)
                         {
-                            _logger?.LogDebug($"Campo identificador procesado: {mapeo.CampoBD} = '{valorProcesado}' (Tipo: {valorProcesado.GetType().Name})");
+                            _logger?.LogDebug($"Campo identificador procesado: {mapeo.campo_bd} = '{valorProcesado}' (Tipo: {valorProcesado.GetType().Name})");
                         }
                     }
 
@@ -873,10 +892,22 @@ namespace gc.sitio.Areas.Productos.Controllers
             if (analisis.Columnas == null || !analisis.Columnas.Any())
                 return;
 
+            //hay que verificar que Analisis tiene ya los mejores mapeos obtenidos de la base de datos.
+            var analisisDb = AnalisisFile;
+            if (analisisDb.Columnas.Count != 0)
+            {
+                foreach (var col in analisisDb.Columnas)
+                {
+                    analisis.Columnas[col.Indice-1] = col;
+                }
+                
+                return;
+            }
+
             foreach (var columna in analisis.Columnas)
             {
                 var mapeoEncontrado = BuscarMejorMapeo(columna, analisis.CamposDisponibles, debug: true);
-
+                //marco a la caolumna con el campo de la base de datos posible
                 if (mapeoEncontrado != null)
                 {
                     columna.CampoMapeado = mapeoEncontrado.Campo;
@@ -886,9 +917,9 @@ namespace gc.sitio.Areas.Productos.Controllers
                     _logger?.LogInformation($"✅ Mapeado: '{columna.Encabezado}' → '{mapeoEncontrado.Campo}' ({columna.ConfianzaMapeo}%)");
                 }
             }
-
-            DiagnosticarMapeos(analisis);
-            ResolverConflictosMapeo(analisis);
+            //lo que se quiere hacer en el diagnostico es ver si el campo esta repetido. Pero eso ya lo verifico y chequeo en el campo para tal fin HasChecked 
+            //DiagnosticarMapeos(analisis);
+            //ResolverConflictosMapeo(analisis);
         }
 
         // ✅ MEJORAR: Función de cálculo de confianza con similitud aproximada
@@ -1141,7 +1172,8 @@ namespace gc.sitio.Areas.Productos.Controllers
                 return null;
             }
 
-            PrecioFileDatos? mejorMapeo = null;
+            PrecioFileDatos? mejorMapeo = null;           
+            
             int mayorConfianza = 0;
             ////se armara un diccionario con la equivalencia de existente en camposDisponibles entre campo y dato
             //var camposDbDict = camposDisponibles
@@ -1158,7 +1190,11 @@ namespace gc.sitio.Areas.Productos.Controllers
                     mejorMapeo = campo;
                     columna.ConfianzaMapeo = confianza;
                     campo.HasChecked = true;
-                    break;
+                    //si la confianza es del 90% o más existe alta probabilidad de exito
+                    if (mayorConfianza >= 90)
+                    {
+                        break;
+                    }
                 }
             }
 
@@ -1196,15 +1232,17 @@ namespace gc.sitio.Areas.Productos.Controllers
         // ✅ ACTUALIZAR: Análisis de estructura Excel con mejor detección
         private async Task<AnalisisExcelDto> AnalizarEstructuraExcel(IFormFile archivo)
         {
+            AnalisisExcelDto analisis;
+
             using var stream = new MemoryStream();
             await archivo.CopyToAsync(stream);
 
             ExcelPackage.License.SetNonCommercialPersonal("Geconet");
 
             using var package = new ExcelPackage(stream);
-            var worksheet = package.Workbook.Worksheets[0];
+            var worksheet = package.Workbook.Worksheets[0];        
 
-            var analisis = new AnalisisExcelDto
+            analisis = new AnalisisExcelDto
             {
                 NombreArchivo = archivo.FileName,
                 NombreHoja = worksheet.Name,
@@ -1220,7 +1258,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             var filaEncabezados = DetectarFilaEncabezadosConCombinadas(worksheet, celdasCombinadas, 10, 2);
             var filaDatosInicio = Math.Min(analisis.TotalFilas, filaEncabezados + 1);
             var totalFilasDatos = Math.Max(0, analisis.TotalFilas - filaEncabezados);
-
+            analisis.FilaEncabezados = filaDatosInicio - 1; //determino la fila antes de los datos
             _logger?.LogInformation($"Fila encabezados detectada: {filaEncabezados}, Celdas combinadas: {celdasCombinadas.Count}");
 
             for (int col = 1; col <= analisis.TotalColumnas; col++)
@@ -1676,7 +1714,7 @@ namespace gc.sitio.Areas.Productos.Controllers
 
             if (AnalisisFile == null || AnalisisFile.Columnas.Count == 0)
             {
-                ObtenerPerfilDeProveedor(_impServicio, ProveedorSeleccionado.Cta_Id).GetAwaiter();
+                ObtenerPerfilDeProveedor(_impServicio, ProveedorSeleccionado.Cta_Id);
             }
 
         }

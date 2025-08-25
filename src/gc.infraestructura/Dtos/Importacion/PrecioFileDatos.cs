@@ -15,6 +15,7 @@
         public int TotalFilas { get; set; }
         public int TotalColumnas { get; set; }
         public int TotalColumnasUtiles { get; set; }
+        public int FilaEncabezados { get; set; }
         public List<ColumnaExcelDto> Columnas { get; set; } = [];
         // ✅ NUEVO: Lista de campos disponibles para mapeo
         public List<PrecioFileDatos> CamposDisponibles { get; set; } = [];
@@ -119,14 +120,14 @@
     public class MapeoColumnaDto
     {
         public string cta_id { get; set; } = string.Empty;
-        public int IndiceColumna { get; set; }
-        public string LetraColumna { get; set; } = string.Empty;
-        public string EncabezadoOriginal { get; set; } = string.Empty;
-        public string CampoBD { get; set; } = string.Empty;
-        public string DescripcionCampo { get; set; } = string.Empty;
-        public string TipoDato { get; set; } = string.Empty;
-        public int ConfianzaMapeo { get; set; }
-        public bool MapeadoAutomatico { get; set; }
-        public DateTime FechaCarga { get; set; }
+        public int indice_columna { get; set; }
+        public string letra_columna { get; set; } = string.Empty;
+        public string encabezado_original { get; set; } = string.Empty;
+        public string campo_bd { get; set; } = string.Empty;
+        public string descripcion_campo { get; set; } = string.Empty;
+        public string tipo_dato { get; set; } = string.Empty;
+        public int confianza_mapeo { get; set; }
+        public bool mapeado_automatico { get; set; }
+        public DateTime fecha_carga { get; set; }
     }
 }

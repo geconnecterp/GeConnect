@@ -51,26 +51,27 @@ namespace gc.sitio.Areas.Productos.Controllers
             DatosParaImportacion = datos.ListaEntidad ?? [];
         }
 
-        protected async Task ObtenerPerfilDeProveedor(IImportarServicio _impServicio, string ctaId)
+        protected void ObtenerPerfilDeProveedor(IImportarServicio _impServicio, string ctaId)
         {
             // Cargar datos iniciales para la importación
-            RespuestaGenerica<MapeoColumnaDto> datos = await _impServicio.ObtenerPerfilDeProveedor(ctaId, TokenCookie);
+            RespuestaGenerica<MapeoColumnaDto> datos = _impServicio.ObtenerPerfilDeProveedor(ctaId, TokenCookie).GetAwaiter().GetResult();
 
-            AnalisisFile = MappeoPerfil2Analisis(datos);
+           MappeoPerfil2Analisis(datos);
+            
         }
 
-        private AnalisisExcelDto MappeoPerfil2Analisis(RespuestaGenerica<MapeoColumnaDto> datos)
+        private void MappeoPerfil2Analisis(RespuestaGenerica<MapeoColumnaDto> datos)
         {
             if (datos == null || !datos.Ok || (datos != null && datos.Ok && datos.ListaEntidad?.Count == 0))
             {
-                return new AnalisisExcelDto();
+                AnalisisFile = new();
             }
 
             // ✅ PASO 1: Crear análisis base (sin datos específicos ya que vienen del mapeo guardado)
             AnalisisExcelDto analisisExcelDto = new AnalisisExcelDto
             {
                 TotalColumnas = datos.ListaEntidad.Count,
-                TotalColumnasUtiles = datos.ListaEntidad.Count(m => !string.IsNullOrEmpty(m.CampoBD)),
+                TotalColumnasUtiles = datos.ListaEntidad.Count(m => !string.IsNullOrEmpty(m.campo_bd)),
                 CamposDisponibles = DatosParaImportacion // Usar los datos ya cargados
             };
 
@@ -81,20 +82,20 @@ namespace gc.sitio.Areas.Productos.Controllers
             {
                 ColumnaExcelDto columna = new ColumnaExcelDto
                 {
-                    Indice = mapeo.IndiceColumna,
-                    Letra = mapeo.LetraColumna,
-                    Encabezado = mapeo.EncabezadoOriginal,
-                    TipoDetectado = mapeo.TipoDato,
-                    CampoMapeado = mapeo.CampoBD,
-                    DescripcionMapeado = mapeo.DescripcionCampo,
-                    ConfianzaMapeo = mapeo.ConfianzaMapeo,
-                    MapeadoAutomatico = mapeo.MapeadoAutomatico
+                    Indice = mapeo.indice_columna,
+                    Letra = mapeo.letra_columna,
+                    Encabezado = mapeo.encabezado_original,
+                    TipoDetectado = mapeo.tipo_dato,
+                    CampoMapeado = mapeo.campo_bd,
+                    DescripcionMapeado = mapeo.descripcion_campo,
+                    ConfianzaMapeo = mapeo.confianza_mapeo,
+                    MapeadoAutomatico = mapeo.mapeado_automatico
                 };
 
                 analisisExcelDto.Columnas.Add(columna);
             }
 
-            return analisisExcelDto;
+            AnalisisFile = analisisExcelDto;
         }
 
         /// <summary>

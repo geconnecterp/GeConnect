@@ -14,7 +14,7 @@ const CONFIGURACION_FORMATEO = {
 
 // ✅ CONFIGURACIÓN: URLs centralizadas
 const IMPORTAR_URLS = {
-    analizarColumnas: '/Productos/Importar/AnalizarColumnas',
+    analizarColumnas: analizarColumnasUrl, //'/Productos/Importar/AnalizarColumnas',
     procesarExcel: typeof procesarExcelUrl !== 'undefined' ? procesarExcelUrl : '/Productos/Importar/ProcesarExcel',
     diagnosticarCeldas: '/Productos/Importar/DiagnosticarCeldasCombinadas'
 };

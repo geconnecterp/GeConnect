@@ -61,7 +61,7 @@ namespace gc.api.core.Constantes
 
             public const string SP_PROD_PRECIO_FILE_DATOS = "SPGECO_P_PR_FILE_DATOS";
 			public const string SP_PROD_PERFIL_PROV = "SPGECO_P_PR_FILE_PERFIL";
-			public const string SP_PROD_PERFIL_CARGA =           "SPGECO_P_PR_FILE_PERFIL_CARGA";
+			public const string SP_PROD_PERFIL_CARGA =  "SPGECO_P_PR_PERFIL_CARGA";
 			public const string SP_PROD_FILE_CARGA = "SPGECO_P_PR_FILE_CARGA";
 			public const string SP_PROD_PERFIL_PRECIOS_CONFIRMA = "SPGECO_P_PR_FILE_PERFIL_CONFIRMA";
 
