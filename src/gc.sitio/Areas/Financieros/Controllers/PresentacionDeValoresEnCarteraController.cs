@@ -280,6 +280,9 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				Console.WriteLine($"ttra_id: PR");
 				req.ttra_id = "PR";
 				Console.WriteLine($"tra_concepto: {request.concepto}");
+				Console.WriteLine($"tra_concepto: {request.concepto}");
+				Console.WriteLine($"tra_concepto: {request.concepto}");
+				Console.WriteLine($"tra_concepto: {request.concepto}");
 				req.tra_concepto = request.concepto;
 				Console.WriteLine($"tra_fecha: {request.fecha_acreditacion}");
 				req.tra_fecha = request.fecha_acreditacion;

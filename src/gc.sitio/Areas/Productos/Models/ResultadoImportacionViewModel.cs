@@ -17,5 +17,7 @@ namespace gc.sitio.Areas.Productos.Models
 
         public bool TieneErrores => RegistrosConError > 0;
         public bool EsProcesadoCompleto => TotalRegistros > 0 && RegistrosConError == 0;
+
+        public bool PuedeConfirmar => RegistrosConError == 0 && TotalRegistros > 0;
     }
 }

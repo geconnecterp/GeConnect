@@ -153,6 +153,18 @@ namespace gc.infraestructura.Helpers
                     p.SetValue(result, this.MapDecimalNulleable(dr, p.Name, ignoreCase));
                     continue;
                 }
+
+                if (p.PropertyType == typeof(Guid))
+                {
+                    p.SetValue(result, this.MapGuid(dr, p.Name, ignoreCase));
+                    continue;
+                }
+
+                if (p.PropertyType == typeof(Nullable<Guid>))
+                {
+                    p.SetValue(result, this.MapGuidNulleable(dr, p.Name, ignoreCase));
+                    continue;
+                }
             }
 
             return result;
@@ -247,6 +259,27 @@ namespace gc.infraestructura.Helpers
                 return Convert.ToDecimal(dr[column]);
             }
             return 0;
+        }
+
+        internal Guid MapGuid(SqlDataReader dr, string column, bool ignoreCase = false)
+        {
+            if (HasColumn(dr, column, ignoreCase))
+            {
+                var value = dr[column]?.ToString();
+                if (!string.IsNullOrEmpty(value))
+                    return value.ToGuid();
+            }
+            return default;
+        }
+
+        internal Guid? MapGuidNulleable(SqlDataReader dr, string column, bool ignoreCase = false)
+        {
+            if (HasColumn(dr, column, ignoreCase))
+            {
+                if (dr[column] != null && dr[column] != DBNull.Value)
+                    return dr[column]?.ToString()?.ToGuidOrNull();
+            }
+            return null;
         }
 
         internal decimal? MapDecimalNulleable(SqlDataReader dr, string column, bool ignoreCase = false)

@@ -99,6 +99,13 @@ function InicializarDatosEnSesion() {
 	});
 }
 
+//function InicializaPantalla() {
+//	var data = {};
+//	PostGenHtml(data, paso1Url, function (obj) {
+//		$("#divPrincipal").html(obj);
+//	});
+//}
+
 function InicializaPantalla() {
 	var data = {};
 	PostGenHtml(data, paso1Url, function (obj) {

@@ -75,7 +75,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 // Versión optimizada del código de autenticación
                 if (!VerificarAutenticacion(out IActionResult redirectResult))
                     return redirectResult;
-
+                AnalisisFile = new();
                 CargarDatosIniciales();
                 string titulo = "Productos - IMPORTACIÓN de Precios";
                 ViewData["Titulo"] = titulo;
@@ -110,6 +110,10 @@ namespace gc.sitio.Areas.Productos.Controllers
         {
             try
             {
+                // Versión optimizada del código de autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return redirectResult;
+
                 if (archivo == null || archivo.Length == 0)
                 {
                     return Json(new
@@ -138,10 +142,13 @@ namespace gc.sitio.Areas.Productos.Controllers
                 // ✅ NUEVO: Aplicar mapeo automático inteligente
                 AplicarMapeoAutomaticoInteligente(analisis);
 
+                //RESGUARDAMOS EL ANALISIS
+                AnalisisFile = analisis;
+
                 return Json(new
                 {
                     error = false,
-                    analisis = analisis,
+                    analisis,
                     mensaje = "Análisis de estructura completado"
                 });
             }
@@ -162,6 +169,10 @@ namespace gc.sitio.Areas.Productos.Controllers
         {
             try
             {
+                // Versión optimizada del código de autenticación
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return redirectResult;
+
                 if (archivo == null || archivo.Length == 0)
                 {
                     return Json(new { error = true, mensaje = "No se recibió ningún archivo para procesar" });
@@ -174,16 +185,23 @@ namespace gc.sitio.Areas.Productos.Controllers
 
                 _logger?.LogInformation($"Procesando Excel: {archivo.FileName} para proveedor: {proveedorId}");
 
-                // ✅ 1. Analizar estructura del Excel
-                var analisis = await AnalizarEstructuraExcel(archivo);
+                #region Este codigo se quita ya que ya se analizo la estructura y se realizo el Mapeo Automático inteligente previamente.
 
-                // ✅ 2. Aplicar mapeo
-                analisis.CamposDisponibles = DatosParaImportacion;
-                AplicarMapeoAutomaticoInteligente(analisis);
+                var analisis = AnalisisFile;
 
+                //// ✅ 1. Analizar estructura del Excel
+                //var analisis = await AnalizarEstructuraExcel(archivo);
+
+                //// ✅ 2. Aplicar mapeo
+                //analisis.CamposDisponibles = DatosParaImportacion;
+                //AplicarMapeoAutomaticoInteligente(analisis);
+
+                #endregion
                 if (!string.IsNullOrEmpty(mapeoColumnas))
                 {
                     AplicarMapeoManual(analisis, mapeoColumnas);
+                    //resguardamos el mapeo inteligente y manual
+                    AnalisisFile = analisis;
                 }
 
                 // ✅ 3. Procesar datos del Excel
@@ -197,8 +215,13 @@ namespace gc.sitio.Areas.Productos.Controllers
                 // ✅ 4. Enviar datos a la API - OPTIMIZADO
                 var resultado = await EnviarDatosALaAPIOptimizado(datosImportacion);
 
+
+
                 if (resultado.Ok && resultado.ListaEntidad?.Any() == true)
-                {
+                {                    
+                    ////resguardamos el idfile, clave para la confirmación
+                    //analisis.IdFile = resultado.ListaEntidad.First().idfile;
+                    //AnalisisFile = analisis;
                     // ✅ 5. Generar vista parcial con resultados
                     var vistaResultado = await GenerarVistaResultadosImportacion(resultado.ListaEntidad, datosImportacion);
 
@@ -211,8 +234,8 @@ namespace gc.sitio.Areas.Productos.Controllers
                         datos = new
                         {
                             registrosProcesados = resultado.ListaEntidad.Count,
-                            registrosConError = resultado.ListaEntidad.Count(r => r.registro_estado == -1),
-                            registrosExitosos = resultado.ListaEntidad.Count(r => r.registro_estado == 1),
+                            registrosConError = resultado.ListaEntidad.Count(r => r.registro_estado != 0),
+                            registrosExitosos = resultado.ListaEntidad.Count(r => r.registro_estado == 0),
                             archivo = archivo.FileName,
                             proveedor = proveedorId,
                             fechaProceso = datosImportacion.FechaProceso.ToString("yyyy-MM-dd HH:mm:ss")
@@ -237,36 +260,118 @@ namespace gc.sitio.Areas.Productos.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<JsonResult> ConfirmarImportacion(string proveedorId, string archivoOriginal)
+        {
+            try
+            {
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { error = true, mensaje = "No autorizado" });
+
+                if (string.IsNullOrEmpty(proveedorId))
+                {
+                    return Json(new { error = true, mensaje = "ID de proveedor requerido" });
+                }
+
+                _logger?.LogInformation($"Confirmando importación para proveedor: {proveedorId}, archivo: {archivoOriginal}");
+
+                // ✅ Llamar al servicio para confirmar la importación
+                var abmDto = new AbmPlusGenDto
+                {
+                    Objeto = proveedorId,
+                    Usuario = UserName ?? "system",
+                    Administracion = AdministracionId ?? "0000",
+                    Json = JsonConvert.SerializeObject(new { archivo = archivoOriginal }),
+                    Abm = 'C', // C = Confirmar,
+                    IdFile = AnalisisFile.IdFile,
+                    SoloPLista = '1',
+                    DatosLogisticos = false,
+                    Inactivos = false,
+                };
+
+                var resultado = await _impServicio.CargarImportacionPrecio(abmDto, TokenCookie);
+
+                if (resultado.Ok)
+                {
+                    _logger?.LogInformation($"✅ Importación confirmada exitosamente para proveedor: {proveedorId}");
+                    return Json(new
+                    {
+                        error = false,
+                        mensaje = "Importación confirmada exitosamente",
+                        datos = new
+                        {
+                            proveedor = proveedorId,
+                            archivo = archivoOriginal,
+                            fechaConfirmacion = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                        }
+                    });
+                }
+                else
+                {
+                    _logger?.LogWarning($"❌ Error confirmando importación: {resultado.Mensaje}");
+                    return Json(new { error = true, mensaje = resultado.Mensaje ?? "Error desconocido confirmando la importación" });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error confirmando importación");
+                return Json(new { error = true, mensaje = "Error interno al confirmar la importación. Contacte al administrador." });
+            }
+        }
+
         // ✅ NUEVO: Método optimizado para envío a API
         private async Task<RespuestaGenerica<RespuestaCPDto>> EnviarDatosALaAPIOptimizado(DatosImportacionDto datosImportacion)
         {
             try
-            {
+            {                
+
                 // ✅ Serializar con configuración optimizada
                 var jsonSettings = new JsonSerializerSettings
                 {
                     NullValueHandling = NullValueHandling.Ignore,
                     DateFormatString = "yyyy-MM-dd HH:mm:ss",
                     Formatting = Formatting.None,
-                    DefaultValueHandling = DefaultValueHandling.Ignore
+                    //DefaultValueHandling = DefaultValueHandling.Ignore
                 };
-
-                var datosJson = JsonConvert.SerializeObject(datosImportacion, jsonSettings);
-
-                var abmDto = new AbmGenDto
+                //extraemos el mapeado de columnas para hacer un proceso paralelo a la carga de datos.
+                var mapeadoColumnas = datosImportacion.MapeoColumnas;
+                foreach (var item in mapeadoColumnas.Where(x=>x.mapeado_automatico!=true))
                 {
-                    Objeto = "DATOS_IMPORTACION_PRECIOS",
-                    Usuario = User.Identity?.Name ?? "SISTEMA",
-                    Administracion = AdministracionId ?? "01",
-                    Json = datosJson,
-                    Abm = 'A'
+                    item.mapeado_automatico = false;
+                }
+                datosImportacion.MapeoColumnas = [];               
+
+                NormalizaDatos(datosImportacion);
+
+                var datosJsonCarga = JsonConvert.SerializeObject(datosImportacion, jsonSettings);
+                var datosJsonMap = JsonConvert.SerializeObject(mapeadoColumnas, jsonSettings);
+
+                var abmDto = new AbmPlusGenDto
+                {
+                    Objeto = ProveedorSeleccionado.Cta_Id,
+                    Usuario = UserName ?? "system",
+                    Administracion = AdministracionId ?? "0000",
+                    Json = datosJsonCarga,
+                    Json2 = datosJsonMap,
+                    Abm = 'A',
+                    IdFile = AnalisisFile.IdFile,
+                    SoloPLista = '1',
+                    Nuevos = false,
+                    DatosLogisticos = false,
+                    Inactivos = false
                 };
 
                 // ✅ Llamar al servicio optimizado
                 var resultado = await _impServicio.CargarImportacionPrecio(abmDto, TokenCookie);
 
                 _logger?.LogInformation($"Respuesta API - OK: {resultado.Ok}, Registros: {resultado.ListaEntidad?.Count ?? 0}");
-
+                if(resultado.Ok && resultado.ListaEntidad!=null && resultado.ListaEntidad.Count > 0)
+                {
+                    //resguardamos el idfile, clave para la confirmación
+                    var analisis = AnalisisFile;
+                    analisis.IdFile = resultado.ListaEntidad.First().idfile;
+                    AnalisisFile = analisis;
+                }
                 return resultado;
             }
             catch (Exception ex)
@@ -280,6 +385,52 @@ namespace gc.sitio.Areas.Productos.Controllers
             }
         }
 
+        /// <summary>
+        /// Esta método tiene como misión truncar los valores que tiene solo 1 decimal o 2 decimales o 3 decimales
+        /// </summary>
+        /// <param name="datosImportacion"></param>
+        private void NormalizaDatos(DatosImportacionDto datosImportacion)
+        {
+            var camposATruncar = new[] { "p_dto1", "p_dto2", "p_dto3", "p_dto4", "p_dto_pa", "p_porc_flete" };
+
+            foreach (var fila in datosImportacion.Filas)
+            {
+                TruncarCampos(fila.Valores, camposATruncar, 1);
+            }
+
+            camposATruncar = new[] {  "p_pcosto" };
+            foreach (var fila in datosImportacion.Filas)
+            {
+                TruncarCampos(fila.Valores, camposATruncar, 2);
+            }
+
+            camposATruncar = new[] { "p_plista" };
+            foreach (var fila in datosImportacion.Filas)
+            {
+                TruncarCampos(fila.Valores, camposATruncar, 3);
+            }
+        }
+
+        private void TruncarCampos(Dictionary<string, object?> diccionario, IEnumerable<string> claves, int decimales)
+        {
+            decimal factor = (decimal)Math.Pow(10, decimales);
+
+            foreach (var clave in claves)
+            {
+                if (diccionario.TryGetValue(clave, out var valor))
+                {
+                    if (valor is decimal dec)
+                    {
+                        diccionario[clave] = Math.Truncate(dec * factor) / factor;
+                    }
+                    else if (valor is double dbl)
+                    {
+                        diccionario[clave] = (double)(Math.Truncate((decimal)dbl * factor) / factor);
+                    }
+                }
+            }
+        }
+
         // ✅ ACTUALIZADO: Método que usa la función corregida
         private async Task<string> GenerarVistaResultadosImportacion(List<RespuestaCPDto> resultados, DatosImportacionDto datosOriginales)
         {
@@ -289,7 +440,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 {
                     Resultados = resultados.OrderBy(r => r.p_id).ToList(),
                     TotalRegistros = resultados.Count,
-                    RegistrosExitosos = resultados.Count(r => r.registro_estado == 1),
+                    RegistrosExitosos = resultados.Count(r => r.registro_estado == 0 || r.registro_estado==2 || r.registro_estado == 3 || r.registro_estado== 4),
                     RegistrosConError = resultados.Count(r => r.registro_estado == -1),
                     ArchivoOriginal = datosOriginales.NombreArchivo,
                     FechaProceso = datosOriginales.FechaProceso,
@@ -304,46 +455,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 _logger?.LogError(ex, "Error generando vista de resultados");
                 return "<div class='alert alert-danger'>Error generando vista de resultados</div>";
             }
-        }
-        // ✅ CORREGIDO: Helper para renderizar vista a string
-        private async Task<string> RenderViewToStringAsync(string viewName, object model)
-        {
-            try
-            {
-                ViewData.Model = model;
-
-                using var writer = new StringWriter();
-
-                // ✅ CORRECCIÓN 1: Usar ICompositeViewEngine en lugar de ViewEngines.Engines
-                var viewResult = _viewEngine.FindView(ControllerContext, viewName, false);
-
-                if (!viewResult.Success)
-                {
-                    _logger?.LogWarning($"Vista '{viewName}' no encontrada");
-                    return $"<div class='alert alert-warning'>Vista '{viewName}' no encontrada</div>";
-                }
-
-                // ✅ CORRECCIÓN 2: Proporcionar HtmlHelperOptions requerido
-                var viewContext = new ViewContext(
-                    ControllerContext,
-                    viewResult.View,
-                    ViewData,
-                    TempData,
-                    writer,
-                    new HtmlHelperOptions() // ✅ AGREGAR: HtmlHelperOptions requerido
-                );
-
-                // ✅ RENDERIZAR: Vista de forma asíncrona
-                await viewResult.View.RenderAsync(viewContext);
-
-                return writer.ToString();
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError(ex, $"Error renderizando vista '{viewName}'");
-                return $"<div class='alert alert-danger'>Error renderizando vista: {ex.Message}</div>";
-            }
-        }
+        }      
 
         // ✅ ALTERNATIVA: Método simplificado usando servicios de ASP.NET Core
         private async Task<string> RenderViewToStringAsyncSimplificado(string viewName, object model)
@@ -406,12 +518,15 @@ namespace gc.sitio.Areas.Productos.Controllers
                         var campoInfo = DatosParaImportacion.FirstOrDefault(d => d.Campo == mapeo.Value);
                         if (campoInfo != null)
                         {
-                            columna.CampoMapeado = mapeo.Value;
-                            columna.DescripcionMapeado = campoInfo.Dato;
-                            columna.MapeadoAutomatico = false;
-                            columna.ConfianzaMapeo = 100; // Mapeo manual = 100% confianza
+                            if (!columna.CampoMapeado.Equals(mapeo.Value))
+                            {
+                                columna.CampoMapeado = mapeo.Value;
+                                columna.DescripcionMapeado = campoInfo.Dato;
+                                columna.MapeadoAutomatico = false;
+                                columna.ConfianzaMapeo = 100; // Mapeo manual = 100% confianza
 
-                            _logger?.LogInformation($"Mapeo manual aplicado: '{columna.Encabezado}' → '{campoInfo.Campo}'");
+                                _logger?.LogInformation($"Mapeo manual aplicado: '{columna.Encabezado}' → '{campoInfo.Campo}'");
+                            }
                         }
                     }
                 }
@@ -450,18 +565,18 @@ namespace gc.sitio.Areas.Productos.Controllers
                     NombreArchivo = archivo.FileName,
                     TotalFilas = analisis.TotalFilas,
                     TotalColumnas = analisis.TotalColumnas,
-                    FilaEncabezados = 1,
+                    FilaEncabezados = analisis.FilaEncabezados,
                     FechaProceso = DateTime.Now,
                     MapeoColumnas = columnasMapadas.Select(c => new MapeoColumnaDto
                     {
-                        IndiceColumna = c.Indice,
-                        LetraColumna = c.Letra,
-                        EncabezadoOriginal = c.Encabezado,
-                        CampoBD = c.CampoMapeado,
-                        DescripcionCampo = c.DescripcionMapeado,
-                        TipoDato = c.TipoDetectado,
-                        ConfianzaMapeo = c.ConfianzaMapeo,
-                        MapeadoAutomatico = c.MapeadoAutomatico
+                        indice_columna = c.Indice,
+                        letra_columna = c.Letra,
+                        encabezado_original = c.Encabezado,
+                        campo_bd = c.CampoMapeado,
+                        descripcion_campo = c.DescripcionMapeado,
+                        tipo_dato = c.TipoDetectado,
+                        confianza_mapeo = c.ConfianzaMapeo,
+                        mapeado_automatico = c.MapeadoAutomatico
                     }).ToList()
                 };
 
@@ -481,12 +596,12 @@ namespace gc.sitio.Areas.Productos.Controllers
                     // ✅ Procesar cada columna mapeada
                     foreach (var mapeo in datosImportacion.MapeoColumnas)
                     {
-                        var valorCelda = worksheet.Cells[fila, mapeo.IndiceColumna].Value;
+                        var valorCelda = worksheet.Cells[fila, mapeo.indice_columna].Value;
 
                         // ✅ CORREGIR: Pasar el campo BD para tratamiento especial
-                        var valorProcesado = ProcesarValorCelda(valorCelda, mapeo.TipoDato, mapeo.CampoBD);
+                        var valorProcesado = ProcesarValorCelda(valorCelda, mapeo.tipo_dato, mapeo.campo_bd);
 
-                        filaDatos.Valores[mapeo.CampoBD] = valorProcesado;
+                        filaDatos.Valores[mapeo.campo_bd] = valorProcesado;
 
                         // ✅ Verificar si la fila tiene datos útiles
                         if (valorProcesado != null && !string.IsNullOrWhiteSpace(valorProcesado.ToString()))
@@ -495,9 +610,9 @@ namespace gc.sitio.Areas.Productos.Controllers
                         }
 
                         // ✅ LOGGING: Para campos identificadores
-                        if (EsCampoIdentificador(mapeo.CampoBD) && valorProcesado != null)
+                        if (EsCampoIdentificador(mapeo.campo_bd) && valorProcesado != null)
                         {
-                            _logger?.LogDebug($"Campo identificador procesado: {mapeo.CampoBD} = '{valorProcesado}' (Tipo: {valorProcesado.GetType().Name})");
+                            _logger?.LogDebug($"Campo identificador procesado: {mapeo.campo_bd} = '{valorProcesado}' (Tipo: {valorProcesado.GetType().Name})");
                         }
                     }
 
@@ -557,50 +672,6 @@ namespace gc.sitio.Areas.Productos.Controllers
             };
 
             return camposIdentificadores.Contains(campoBD);
-        }
-
-        // ✅ NUEVO: Enviar datos procesados a la API
-        private async Task<RespuestaGenerica<string>> EnviarDatosALaAPI(DatosImportacionDto datosImportacion)
-        {
-            try
-            {
-                // ✅ Convertir a JSON para envío
-                var datosJson = JsonConvert.SerializeObject(datosImportacion, new JsonSerializerSettings
-                {
-                    NullValueHandling = NullValueHandling.Ignore,
-                    DateFormatString = "yyyy-MM-dd HH:mm:ss",
-                    Formatting = Formatting.None
-                });
-
-                // ✅ Preparar datos para AbmGenDto
-                var abmDto = new AbmGenDto
-                {
-                    Objeto = "DATOS_IMPORTACION_PRECIOS",
-                    Usuario = User.Identity?.Name ?? "SISTEMA",
-                    Administracion = AdministracionId ?? "01",
-                    Json = datosJson,
-                    Abm = 'A' // Alta/Inserción
-                };
-
-                // ✅ Llamar al servicio
-                var resultado = await _impServicio.CargarImportacionPrecio(abmDto, TokenCookie);
-
-                return new RespuestaGenerica<string>
-                {
-                    Ok = resultado.Ok,
-                    Mensaje = resultado.Mensaje ?? (resultado.Ok ? "Datos procesados exitosamente" : "Error procesando datos"),
-                    Entidad = resultado.Entidad?.resultado_msj.ToString()
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError(ex, "Error enviando datos a la API");
-                return new RespuestaGenerica<string>
-                {
-                    Ok = false,
-                    Mensaje = "Error interno al enviar datos a la API"
-                };
-            }
         }
 
         // ✅ NUEVO: Endpoint para verificar datos de importación
@@ -894,10 +965,22 @@ namespace gc.sitio.Areas.Productos.Controllers
             if (analisis.Columnas == null || !analisis.Columnas.Any())
                 return;
 
+            //hay que verificar que Analisis tiene ya los mejores mapeos obtenidos de la base de datos.
+            var analisisDb = AnalisisFile;
+            if (analisisDb.Columnas.Count != 0)
+            {
+                foreach (var col in analisisDb.Columnas)
+                {
+                    analisis.Columnas[col.Indice-1] = col;
+                }
+                
+                return;
+            }
+
             foreach (var columna in analisis.Columnas)
             {
                 var mapeoEncontrado = BuscarMejorMapeo(columna, analisis.CamposDisponibles, debug: true);
-
+                //marco a la caolumna con el campo de la base de datos posible
                 if (mapeoEncontrado != null)
                 {
                     columna.CampoMapeado = mapeoEncontrado.Campo;
@@ -907,9 +990,9 @@ namespace gc.sitio.Areas.Productos.Controllers
                     _logger?.LogInformation($"✅ Mapeado: '{columna.Encabezado}' → '{mapeoEncontrado.Campo}' ({columna.ConfianzaMapeo}%)");
                 }
             }
-
-            DiagnosticarMapeos(analisis);
-            ResolverConflictosMapeo(analisis);
+            //lo que se quiere hacer en el diagnostico es ver si el campo esta repetido. Pero eso ya lo verifico y chequeo en el campo para tal fin HasChecked 
+            //DiagnosticarMapeos(analisis);
+            //ResolverConflictosMapeo(analisis);
         }
 
         // ✅ MEJORAR: Función de cálculo de confianza con similitud aproximada
@@ -1162,7 +1245,8 @@ namespace gc.sitio.Areas.Productos.Controllers
                 return null;
             }
 
-            PrecioFileDatos? mejorMapeo = null;
+            PrecioFileDatos? mejorMapeo = null;           
+            
             int mayorConfianza = 0;
             ////se armara un diccionario con la equivalencia de existente en camposDisponibles entre campo y dato
             //var camposDbDict = camposDisponibles
@@ -1179,7 +1263,11 @@ namespace gc.sitio.Areas.Productos.Controllers
                     mejorMapeo = campo;
                     columna.ConfianzaMapeo = confianza;
                     campo.HasChecked = true;
-                    break;
+                    //si la confianza es del 90% o más existe alta probabilidad de exito
+                    if (mayorConfianza >= 90)
+                    {
+                        break;
+                    }
                 }
             }
 
@@ -1217,15 +1305,17 @@ namespace gc.sitio.Areas.Productos.Controllers
         // ✅ ACTUALIZAR: Análisis de estructura Excel con mejor detección
         private async Task<AnalisisExcelDto> AnalizarEstructuraExcel(IFormFile archivo)
         {
+            AnalisisExcelDto analisis;
+
             using var stream = new MemoryStream();
             await archivo.CopyToAsync(stream);
 
             ExcelPackage.License.SetNonCommercialPersonal("Geconet");
 
             using var package = new ExcelPackage(stream);
-            var worksheet = package.Workbook.Worksheets[0];
+            var worksheet = package.Workbook.Worksheets[0];        
 
-            var analisis = new AnalisisExcelDto
+            analisis = new AnalisisExcelDto
             {
                 NombreArchivo = archivo.FileName,
                 NombreHoja = worksheet.Name,
@@ -1241,7 +1331,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             var filaEncabezados = DetectarFilaEncabezadosConCombinadas(worksheet, celdasCombinadas, 10, 2);
             var filaDatosInicio = Math.Min(analisis.TotalFilas, filaEncabezados + 1);
             var totalFilasDatos = Math.Max(0, analisis.TotalFilas - filaEncabezados);
-
+            analisis.FilaEncabezados = filaDatosInicio - 1; //determino la fila antes de los datos
             _logger?.LogInformation($"Fila encabezados detectada: {filaEncabezados}, Celdas combinadas: {celdasCombinadas.Count}");
 
             for (int col = 1; col <= analisis.TotalColumnas; col++)
@@ -1697,7 +1787,7 @@ namespace gc.sitio.Areas.Productos.Controllers
 
             if (AnalisisFile == null || AnalisisFile.Columnas.Count == 0)
             {
-                ObtenerPerfilPrecioProveedor(_impServicio, ProveedorSeleccionado.Cta_Id).GetAwaiter();
+                ObtenerPerfilDeProveedor(_impServicio, ProveedorSeleccionado.Cta_Id);
             }
 
         }
