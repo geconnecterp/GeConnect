@@ -209,7 +209,7 @@
                             ejecutarConfirmacionImportacion(proveedorId, archivoOriginal);
                         }
                     },
-                    true, ["Confirmar", "Cancelar"], "question!", null);
+                    true, ["Confirmar", "Cancelar"], "warn!", null);
             } else {
                 // Fallback a confirm nativo si no está disponible AbrirMensaje
                 if (confirm('¿Está seguro de que desea confirmar esta importación?\nEsta acción no se puede deshacer.')) {
@@ -319,7 +319,7 @@
                 AbrirMensaje("ÉXITO",
                     "La importación ha sido confirmada exitosamente.",
                     () => $("#msjModal").modal("hide"),
-                    false, ["Aceptar"], "success!", null);
+                    false, ["Aceptar"], "succ!", null);
             }
 
             // Log del éxito

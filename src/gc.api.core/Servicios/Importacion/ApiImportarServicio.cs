@@ -79,6 +79,10 @@ namespace gc.api.core.Servicios.Importacion
 
         public RespuestaDto CargaPerfilCuenta(string ctaId, string usu, string adm, string json)
         {
+            if (string.IsNullOrEmpty(json))
+            {
+                return new();
+            }
             var sp = ConstantesGC.StoredProcedures.SP_PROD_PERFIL_CARGA;
             var ps = new List<SqlParameter>
             {

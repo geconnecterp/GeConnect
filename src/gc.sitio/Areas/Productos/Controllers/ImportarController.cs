@@ -219,9 +219,9 @@ namespace gc.sitio.Areas.Productos.Controllers
 
                 if (resultado.Ok && resultado.ListaEntidad?.Any() == true)
                 {                    
-                    //resguardamos el idfile, clave para la confirmación
-                    analisis.IdFile = resultado.ListaEntidad.First().idfile;
-                    AnalisisFile = analisis;
+                    ////resguardamos el idfile, clave para la confirmación
+                    //analisis.IdFile = resultado.ListaEntidad.First().idfile;
+                    //AnalisisFile = analisis;
                     // ✅ 5. Generar vista parcial con resultados
                     var vistaResultado = await GenerarVistaResultadosImportacion(resultado.ListaEntidad, datosImportacion);
 
@@ -282,7 +282,11 @@ namespace gc.sitio.Areas.Productos.Controllers
                     Usuario = UserName ?? "system",
                     Administracion = AdministracionId ?? "0000",
                     Json = JsonConvert.SerializeObject(new { archivo = archivoOriginal }),
-                    Abm = 'C' // C = Confirmar
+                    Abm = 'C', // C = Confirmar,
+                    IdFile = AnalisisFile.IdFile,
+                    SoloPLista = '1',
+                    DatosLogisticos = false,
+                    Inactivos = false,
                 };
 
                 var resultado = await _impServicio.CargarImportacionPrecio(abmDto, TokenCookie);
@@ -335,9 +339,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 {
                     item.mapeado_automatico = false;
                 }
-                datosImportacion.MapeoColumnas = [];
-                
-                
+                datosImportacion.MapeoColumnas = [];               
 
                 NormalizaDatos(datosImportacion);
 
@@ -363,7 +365,13 @@ namespace gc.sitio.Areas.Productos.Controllers
                 var resultado = await _impServicio.CargarImportacionPrecio(abmDto, TokenCookie);
 
                 _logger?.LogInformation($"Respuesta API - OK: {resultado.Ok}, Registros: {resultado.ListaEntidad?.Count ?? 0}");
-
+                if(resultado.Ok && resultado.ListaEntidad!=null && resultado.ListaEntidad.Count > 0)
+                {
+                    //resguardamos el idfile, clave para la confirmación
+                    var analisis = AnalisisFile;
+                    analisis.IdFile = resultado.ListaEntidad.First().idfile;
+                    AnalisisFile = analisis;
+                }
                 return resultado;
             }
             catch (Exception ex)

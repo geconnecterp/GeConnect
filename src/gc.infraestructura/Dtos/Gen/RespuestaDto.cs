@@ -59,6 +59,6 @@ namespace gc.infraestructura.Dtos.Gen
         public string cta_id_geco { get; set; } = string.Empty;
         public short registro_estado { get; set; }
         public string registro_msj { get; set; } = string.Empty;
-        public string idfile  { get; set; } = string.Empty;
+        public Guid idfile { get; set; } 
     }
 }
