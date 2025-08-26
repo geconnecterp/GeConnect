@@ -43,7 +43,7 @@
 				{
 					@foreach (var item in Model.GrillaChequesEnCartera.ListaDatos)
 					{
-						<tr onclick="selectReg(this, 'tbListaChequesDeTercerosEnCartera')">
+						<tr onclick="selectReg(this, 'tbListaChequesDeTercerosEnCartera')" title="@item.concepto_valor">
 							<td class="@Model.GrillaChequesEnCartera.ObtenerClase(item.fc_fecha_valor) cell-fit-content">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_fecha_valor, FormatDato.Fecha)</td>
 							<td class="@Model.GrillaChequesEnCartera.ObtenerClase(item.fc_fecha) cell-fit-content">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_fecha, FormatDato.Fecha)</td>
 							<td class="@Model.GrillaChequesEnCartera.ObtenerClase(item.fc_dato1_valor) cell-fit-content">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_dato1_valor, FormatDato.Ninguno)</td>

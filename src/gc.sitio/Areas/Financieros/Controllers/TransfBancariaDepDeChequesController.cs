@@ -65,6 +65,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 
 				OPValoresOrigen = [];
 				OPValoresDestino = [];
+				OPValoresDesdeObligYCredLista = [];
 
 				var titulo = "TRANSFERENCIAS BANCARIAS Y DE CAJA CHICA O EFECTIVO";
 				ViewData["Titulo"] = titulo;
@@ -109,6 +110,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 
 				OPValoresOrigen = [];
 				OPValoresDestino = [];
+				OPValoresDesdeObligYCredLista = [];
 
 				var titulo = "DEPÓSITOS DE CHEQUES EN CARTERA";
 				ViewData["Titulo"] = titulo;
@@ -166,22 +168,21 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			{
 				var auth = EstaAutenticado;
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
-				{
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
-				}
 
-				//if (OPValoresDesdeObligYCredLista == null || OPValoresDesdeObligYCredLista.Count <= 0) {
-				//	model.Grilla = new GridCoreSmart<ValoresDesdeObligYCredDto>();
-				//	if (sourceSeleccionado.Equals("1"))
-				//		return PartialView("_grillaValoresOrigen", model);
-				//	else
-				//		return PartialView("_grillaValoresDestino", model);
-				//}
 				var orden = 1;
 				if (sourceSeleccionado.Equals("1"))
 				{
 					if (OPValoresOrigen == null)
 						OPValoresOrigen = [];
+					if (ValidarExistenciaDeValoresAAgregar(OPValoresOrigen, OPValoresDesdeObligYCredLista))
+					{
+						OPValoresDesdeObligYCredLista = [];
+						model.Grilla = ObtenerGridCoreSmart<ValoresDesdeObligYCredDto>(OPValoresOrigen);
+						model.YaExiste = true;
+						model.MensajeExiste = "Algunos de los valores que está intentando agregar ya existe.";
+						return PartialView("_grillaValoresOrigen", model);
+					}
 					var listaTemp = OPValoresOrigen;
 					listaTemp.AddRange(OPValoresDesdeObligYCredLista);
 					OPValoresDesdeObligYCredLista = [];
@@ -190,10 +191,18 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					model.Grilla = ObtenerGridCoreSmart<ValoresDesdeObligYCredDto>(OPValoresOrigen);
 					return PartialView("_grillaValoresOrigen", model);
 				}
-				else 
+				else
 				{
 					if (OPValoresDestino == null)
 						OPValoresDestino = [];
+					if (ValidarExistenciaDeValoresAAgregar(OPValoresDestino, OPValoresDesdeObligYCredLista))
+					{
+						OPValoresDesdeObligYCredLista = [];
+						model.Grilla = ObtenerGridCoreSmart<ValoresDesdeObligYCredDto>(OPValoresDestino);
+						model.YaExiste = true;
+						model.MensajeExiste = "Algunos de los valores que está intentando agregar ya existe.";
+						return PartialView("_grillaValoresDestino", model);
+					}
 					var listaTemp = OPValoresDestino;
 					listaTemp.AddRange(OPValoresDesdeObligYCredLista);
 					OPValoresDesdeObligYCredLista = [];
@@ -216,12 +225,13 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
-		public JsonResult InicializarDatosEnSesion() 
+		public JsonResult InicializarDatosEnSesion()
 		{
 			try
 			{
 				OPValoresOrigen = [];
 				OPValoresDestino = [];
+				OPValoresDesdeObligYCredLista = [];
 				return Json(new { error = false, warn = false, msg = "" });
 			}
 			catch (NegocioException ex)
@@ -365,7 +375,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 		{
 			try
 			{
-				if (request==null)
+				if (request == null)
 					return Json(new { error = true, warn = false, msg = "No se han enviado datos para confirmar." });
 
 				Console.WriteLine($"ttra_id: {request.ttra_id}");
@@ -382,7 +392,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				var encabezado = new Encabezado();
 				var ListaConceptoFacturado = new List<ConceptoFacturadoDto>();
 				var ListaOtrosTributos = new List<OtroTributoDto>();
-				
+
 				request.json_concepto = JsonConvert.SerializeObject(ListaConceptoFacturado, new JsonSerializerSettings());
 				Console.WriteLine($"json_concepto: {request.json_concepto}");
 				request.json_encabezado = JsonConvert.SerializeObject(ListaConceptoFacturado, new JsonSerializerSettings());

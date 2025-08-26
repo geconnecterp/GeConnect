@@ -30,17 +30,25 @@
 	$(document).on("click", "#btnAceptar", btnAceptarValidar);
 });
 
+function ObtenerMensaje() {
+	if (docEnCuenta) {
+		return "¿Confirma la carga de Cheque Paga Acá?";
+	}
+	else {
+		return "¿Confirma el cambio de Fecha de Presentación?";
+	}
+}
+
 function btnAceptarValidar() {
 	if (dia_movi == "") {
-		AbrirMensaje("ATENCIÓN", "Debe seleccionar un Cheque de Tercero en Cartera.", function () {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un valor de la lista.", function () {
 			$("#msjModal").modal("hide");
 			return true;
 		}, false, ["Aceptar"], "error!", null);
 	}
 	else {
-		//TODO Marce: Mandar al BE: la fecha (en el caso de ser necesario), dia_movi, fc_compte, fc_item
-		//El resto de los campos los completo en el BE
-		AbrirMensaje("ATENCIÓN", "¿Confirma la carga del cheque de tercero en cartera seleccionado", function (e) {
+		var mensajeDeConfirmacion = ObtenerMensaje();
+		AbrirMensaje("ATENCIÓN", mensajeDeConfirmacion, function (e) {
 			$("#msjModal").modal("hide");
 			switch (e) {
 				case "SI": //Confirmar
@@ -103,10 +111,18 @@ function btnAceptarValidar() {
 	}
 }
 
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
 function ImprimirTRA_Generada(traCompte) {
-	let data = { tra_compte: traCompte };
-	cargarReporteEnArre(25, data, "TRANSFERENCIA ENTRE CUENTAS", "", "");
-	invocacionGestorDoc({});
+	ReseteoDeReportes();
+	setTimeout(() => {
+		let data = { tra_compte: traCompte };
+		cargarReporteEnArre(25, data, "TRANSFERENCIA ENTRE CUENTAS", "", "");
+		invocacionGestorDoc({});
+	}, 500);
 }
 
 function btnCancelValidar() {

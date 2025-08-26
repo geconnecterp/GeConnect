@@ -10,6 +10,9 @@
 				<th style="width:55%;" class="col-header-small align-center tiny-row">Valor</th>
 				<th style="width:10%;" class="col-header-small align-center tiny-row">Importe</th>
 				<th style="width:0%; display:none;">orden</th>
+				<th style="width:0%; display:none;">dia_movi</th>
+				<th style="width:0%; display:none;">fc_compte</th>
+				<th style="width:0%; display:none;">fc_item</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -22,6 +25,9 @@
 						<td class="@Model.ObtenerClase(item.concepto_valor) cell-fit-content">@Model.FormatearDato(item.concepto_valor, FormatDato.Monto)</td>
 						<td class="@Model.ObtenerClase(item.op_importe) cell-fit-content">@Model.FormatearDato(item.op_importe, FormatDato.Monto)</td>
 						<td style="display:none;">@item.orden</td>
+						<td style="display:none;">@item.fc_dia_movi</td>
+						<td style="display:none;">@item.fc_compte</td>
+						<td style="display:none;">@item.fc_item</td>
 					</tr>
 				}
 			}

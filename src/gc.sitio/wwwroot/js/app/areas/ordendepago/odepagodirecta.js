@@ -237,9 +237,21 @@ function btnAgregarValorValidar() {
 	if (saldoN != NaN && saldoN > 0)
 		importe = saldoN;
 	var valor_a_nombre_de = aNombreDe;
-	var valores = [];
+	var valores = ObtenerListaDeValores("tbListaValores_Paso2");
 	var data = { app, importe, valor_a_nombre_de, valores };
 	invocarModalDeSeleccionDeValores(data);
+}
+
+function ObtenerListaDeValores(tbGrilla) {
+	var valores = [];
+	$("#" + tbGrilla + " tbody tr").each(function () {
+		var fc_dia_movi = $(this).find("td").eq(4).text();
+		var fc_compte = $(this).find("td").eq(5).text();
+		var fc_item = $(this).find("td").eq(6).text();
+		var item = { fc_dia_movi, fc_compte, fc_item };
+		valores.push(item);
+	});
+	return valores;
 }
 
 function btnAnterior2() {
@@ -266,7 +278,7 @@ function ValidarAntesDeConfirmar() {
 		btnAnterior2();
 		return false;
 	}
-	
+
 	return true;
 }
 
@@ -275,10 +287,18 @@ function imprimirOPP() {
 	invocacionGestorDoc({});
 }
 
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
 function ImprimirOPD_Generada(opCompte, ctaId) {
-	let data = { op_compte: opCompte, ctaId: ctaId };
-	cargarReporteEnArre(23, data, "ORDEN DE PAGO DIRECTA", "", "");
-	invocacionGestorDoc({});
+	ReseteoDeReportes();
+	setTimeout(() => {
+		let data = { op_compte: opCompte, ctaId: ctaId };
+		cargarReporteEnArre(23, data, "ORDEN DE PAGO DIRECTA", "", "");
+		invocacionGestorDoc({});
+	}, 500);
 }
 
 function CancelarCarga() {
@@ -380,7 +400,7 @@ function btnConfirmar() {
 							ActualizarTotalesSuperiores();
 							setTimeout(() => {
 								$("#divFiltro").collapse("show");
-								$("#divDetalle").collapse("hide");	
+								$("#divDetalle").collapse("hide");
 								CerrarWaiting();
 							}, 1000);
 						}
@@ -890,7 +910,7 @@ function selectReg(x, gridId) {
 	});
 	$(x).addClass("selected-row");
 
-	if ($("#Paso").val() == "Paso1" && gridId =="tbListaObligaciones_Paso1") {
+	if ($("#Paso").val() == "Paso1" && gridId == "tbListaObligaciones_Paso1") {
 		CargarItemsObligacionDesdeElementoSeleccionado(x);
 		EstadoBotonesABM(AbmAction.MODIFICACION, true);
 	}
