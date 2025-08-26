@@ -736,6 +736,8 @@ function cancelarAnalisis() {
     });
     // Limpiar referencia global
     window.analisisActual = null;
+
+    window.location.href = homeCPUrl;
 }
 
 function cargarEIniciarImportacion() {
