@@ -2130,11 +2130,22 @@ function cargaEventosCP() {
     $("#Rel01").on("autocompleteselect", () => setTimeout(verificarYDesactivarControles, 100));
 
     // Evento para chkRel01
+    $("#chkRel01").prop("checked", true);
+    $("#Rel01").prop("disabled", false);
     $("#chkRel01").on("change", function () {
+        if ($(this).is(":checked")) {
+            $("#Rel01List").prop("disabled", true);
+        }
+    });
+
+    $("#Rel03List").on("change", function () {
         if (!$(this).is(":checked")) {
             ["#chkRel03", "#Rel03", "#Rel03List"].forEach(sel => $(sel).prop("checked", false).prop("disabled", true).empty());
         }
     });
+
+    
+
 
     // Evento para Rel03
     $("#Rel03").on("change", function () {
