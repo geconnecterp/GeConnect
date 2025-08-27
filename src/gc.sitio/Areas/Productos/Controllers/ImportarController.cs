@@ -165,7 +165,7 @@ namespace gc.sitio.Areas.Productos.Controllers
 
         // ✅ CORREGIR: Endpoint ProcesarExcel - Procesar datos reales
         [HttpPost]
-        public async Task<IActionResult> ProcesarExcel(IFormFile archivo, string proveedorId, string mapeoColumnas)
+        public async Task<IActionResult> ProcesarExcel(IFormFile archivo, string proveedorId, string mapeoColumnas, bool hayDiferencia = true)
         {
             try
             {
@@ -197,7 +197,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 //AplicarMapeoAutomaticoInteligente(analisis);
 
                 #endregion
-                if (!string.IsNullOrEmpty(mapeoColumnas))
+                if (!string.IsNullOrEmpty(mapeoColumnas) && hayDiferencia)
                 {
                     AplicarMapeoManual(analisis, mapeoColumnas);
                     //resguardamos el mapeo inteligente y manual
@@ -213,12 +213,12 @@ namespace gc.sitio.Areas.Productos.Controllers
                 }
 
                 // ✅ 4. Enviar datos a la API - OPTIMIZADO
-                var resultado = await EnviarDatosALaAPIOptimizado(datosImportacion);
+                var resultado = await EnviarDatosALaAPIOptimizado(datosImportacion, hayDiferencia);
 
 
 
                 if (resultado.Ok && resultado.ListaEntidad?.Any() == true)
-                {                    
+                {
                     ////resguardamos el idfile, clave para la confirmación
                     //analisis.IdFile = resultado.ListaEntidad.First().idfile;
                     //AnalisisFile = analisis;
@@ -261,7 +261,8 @@ namespace gc.sitio.Areas.Productos.Controllers
         }
 
         [HttpPost]
-        public async Task<JsonResult> ConfirmarImportacion(string proveedorId, string archivoOriginal)
+        public async Task<JsonResult> ConfirmarImportacion(string proveedorId, string archivoOriginal,
+            char soloPLista = '1', bool nuevo = false, bool datosLogisticos = false, bool inactivos = false)
         {
             try
             {
@@ -284,9 +285,10 @@ namespace gc.sitio.Areas.Productos.Controllers
                     Json = JsonConvert.SerializeObject(new { archivo = archivoOriginal }),
                     Abm = 'C', // C = Confirmar,
                     IdFile = AnalisisFile.IdFile,
-                    SoloPLista = '1',
-                    DatosLogisticos = false,
-                    Inactivos = false,
+                    SoloPLista = soloPLista,
+                    Nuevos = nuevo,
+                    DatosLogisticos = datosLogisticos,
+                    Inactivos = inactivos,
                 };
 
                 var resultado = await _impServicio.CargarImportacionPrecio(abmDto, TokenCookie);
@@ -320,11 +322,10 @@ namespace gc.sitio.Areas.Productos.Controllers
         }
 
         // ✅ NUEVO: Método optimizado para envío a API
-        private async Task<RespuestaGenerica<RespuestaCPDto>> EnviarDatosALaAPIOptimizado(DatosImportacionDto datosImportacion)
+        private async Task<RespuestaGenerica<RespuestaCPDto>> EnviarDatosALaAPIOptimizado(DatosImportacionDto datosImportacion, bool hayDiferencia = true)
         {
             try
-            {                
-
+            {
                 // ✅ Serializar con configuración optimizada
                 var jsonSettings = new JsonSerializerSettings
                 {
@@ -335,17 +336,20 @@ namespace gc.sitio.Areas.Productos.Controllers
                 };
                 //extraemos el mapeado de columnas para hacer un proceso paralelo a la carga de datos.
                 var mapeadoColumnas = datosImportacion.MapeoColumnas;
-                foreach (var item in mapeadoColumnas.Where(x=>x.mapeado_automatico!=true))
+                foreach (var item in mapeadoColumnas.Where(x => x.mapeado_automatico != true))
                 {
                     item.mapeado_automatico = false;
                 }
-                datosImportacion.MapeoColumnas = [];               
+                datosImportacion.MapeoColumnas = [];
 
                 NormalizaDatos(datosImportacion);
 
                 var datosJsonCarga = JsonConvert.SerializeObject(datosImportacion, jsonSettings);
-                var datosJsonMap = JsonConvert.SerializeObject(mapeadoColumnas, jsonSettings);
-
+                string datosJsonMap = string.Empty;
+                if (hayDiferencia)
+                {
+                    datosJsonMap = JsonConvert.SerializeObject(mapeadoColumnas, jsonSettings);
+                }
                 var abmDto = new AbmPlusGenDto
                 {
                     Objeto = ProveedorSeleccionado.Cta_Id,
@@ -365,7 +369,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 var resultado = await _impServicio.CargarImportacionPrecio(abmDto, TokenCookie);
 
                 _logger?.LogInformation($"Respuesta API - OK: {resultado.Ok}, Registros: {resultado.ListaEntidad?.Count ?? 0}");
-                if(resultado.Ok && resultado.ListaEntidad!=null && resultado.ListaEntidad.Count > 0)
+                if (resultado.Ok && resultado.ListaEntidad != null && resultado.ListaEntidad.Count > 0)
                 {
                     //resguardamos el idfile, clave para la confirmación
                     var analisis = AnalisisFile;
@@ -398,7 +402,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 TruncarCampos(fila.Valores, camposATruncar, 1);
             }
 
-            camposATruncar = new[] {  "p_pcosto" };
+            camposATruncar = new[] { "p_pcosto" };
             foreach (var fila in datosImportacion.Filas)
             {
                 TruncarCampos(fila.Valores, camposATruncar, 2);
@@ -440,7 +444,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 {
                     Resultados = resultados.OrderBy(r => r.p_id).ToList(),
                     TotalRegistros = resultados.Count,
-                    RegistrosExitosos = resultados.Count(r => r.registro_estado == 0 || r.registro_estado==2 || r.registro_estado == 3 || r.registro_estado== 4),
+                    RegistrosExitosos = resultados.Count(r => r.registro_estado == 0 || r.registro_estado == 2 || r.registro_estado == 3 || r.registro_estado == 4),
                     RegistrosConError = resultados.Count(r => r.registro_estado == -1),
                     ArchivoOriginal = datosOriginales.NombreArchivo,
                     FechaProceso = datosOriginales.FechaProceso,
@@ -455,7 +459,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 _logger?.LogError(ex, "Error generando vista de resultados");
                 return "<div class='alert alert-danger'>Error generando vista de resultados</div>";
             }
-        }      
+        }
 
         // ✅ ALTERNATIVA: Método simplificado usando servicios de ASP.NET Core
         private async Task<string> RenderViewToStringAsyncSimplificado(string viewName, object model)
@@ -509,9 +513,11 @@ namespace gc.sitio.Areas.Productos.Controllers
 
                 if (mapeoManual == null) return;
 
-                foreach (var mapeo in mapeoManual)
+                foreach (var columna in analisis.Columnas)
                 {
-                    var columna = analisis.Columnas?.FirstOrDefault(c => c.Indice == mapeo.Key);
+                    var mapeo = mapeoManual.FirstOrDefault(m => m.Key == columna.Indice);
+
+                    //var columna = analisis.Columnas?.FirstOrDefault(c => c.Indice == mapeo.Key);
                     if (columna != null && !string.IsNullOrEmpty(mapeo.Value))
                     {
                         // Buscar información del campo
@@ -528,6 +534,24 @@ namespace gc.sitio.Areas.Productos.Controllers
                                 _logger?.LogInformation($"Mapeo manual aplicado: '{columna.Encabezado}' → '{campoInfo.Campo}'");
                             }
                         }
+                        else
+                        {
+                            columna.CampoMapeado = string.Empty;
+                            columna.DescripcionMapeado = string.Empty;
+                            columna.ConfianzaMapeo = 0;
+                            columna.MapeadoAutomatico = false;
+                            _logger?.LogInformation($"Mapeo manual. Limpiando: '{columna.Encabezado}' → ''");
+                        }
+                    }
+                    else if(columna != null && 
+                        string.IsNullOrEmpty(mapeo.Value) && 
+                        !string.IsNullOrEmpty(columna.CampoMapeado))
+                    {
+                        columna.CampoMapeado = string.Empty;
+                        columna.DescripcionMapeado = string.Empty;
+                        columna.ConfianzaMapeo = 0;
+                        columna.MapeadoAutomatico = false;
+                        _logger?.LogInformation($"Mapeo manual. Limpiando: '{columna.Encabezado}' → ''");
                     }
                 }
             }
@@ -930,32 +954,32 @@ namespace gc.sitio.Areas.Productos.Controllers
             };
         }
 
-        // ✅ NUEVO: Método para diagnosticar mapeos (útil para debugging)
-        private void DiagnosticarMapeos(AnalisisExcelDto analisis)
-        {
-            if (_logger == null || !_logger.IsEnabled(LogLevel.Information)) return;
+        //// ✅ NUEVO: Método para diagnosticar mapeos (útil para debugging)
+        //private void DiagnosticarMapeos(AnalisisExcelDto analisis)
+        //{
+        //    if (_logger == null || !_logger.IsEnabled(LogLevel.Information)) return;
 
-            _logger.LogInformation("=== DIAGNÓSTICO DE MAPEOS ===");
+        //    _logger.LogInformation("=== DIAGNÓSTICO DE MAPEOS ===");
 
-            var agrupados = analisis.Columnas
-                .Where(c => !string.IsNullOrEmpty(c.CampoMapeado))
-                .GroupBy(c => c.CampoMapeado)
-                .Where(g => g.Count() > 1); // Solo conflictos
+        //    var agrupados = analisis.Columnas
+        //        .Where(c => !string.IsNullOrEmpty(c.CampoMapeado))
+        //        .GroupBy(c => c.CampoMapeado)
+        //        .Where(g => g.Count() > 1); // Solo conflictos
 
-            foreach (var grupo in agrupados)
-            {
-                _logger.LogWarning($"⚠️ CONFLICTO: Campo BD '{grupo.Key}' mapeado a múltiples columnas:");
-                foreach (var columna in grupo)
-                {
-                    _logger.LogWarning($"  - '{columna.Encabezado}' (Confianza: {columna.ConfianzaMapeo}%)");
-                }
-            }
+        //    foreach (var grupo in agrupados)
+        //    {
+        //        _logger.LogWarning($"⚠️ CONFLICTO: Campo BD '{grupo.Key}' mapeado a múltiples columnas:");
+        //        foreach (var columna in grupo)
+        //        {
+        //            _logger.LogWarning($"  - '{columna.Encabezado}' (Confianza: {columna.ConfianzaMapeo}%)");
+        //        }
+        //    }
 
-            var noMapeados = analisis.Columnas.Count(c => string.IsNullOrEmpty(c.CampoMapeado));
-            var mapeados = analisis.Columnas.Count - noMapeados;
+        //    var noMapeados = analisis.Columnas.Count(c => string.IsNullOrEmpty(c.CampoMapeado));
+        //    var mapeados = analisis.Columnas.Count - noMapeados;
 
-            _logger.LogInformation($"📊 Resumen: {mapeados} mapeados, {noMapeados} sin mapear de {analisis.Columnas.Count} total");
-        }
+        //    _logger.LogInformation($"📊 Resumen: {mapeados} mapeados, {noMapeados} sin mapear de {analisis.Columnas.Count} total");
+        //}
 
         // ✅ SIMPLIFICAR: Mapeo automático optimizado
         private void AplicarMapeoAutomaticoInteligente(AnalisisExcelDto analisis)
@@ -971,9 +995,11 @@ namespace gc.sitio.Areas.Productos.Controllers
             {
                 foreach (var col in analisisDb.Columnas)
                 {
-                    analisis.Columnas[col.Indice-1] = col;
+                    //resguardamos los datos previamente generados
+                    col.EjemplosValores = analisis.Columnas[col.Indice - 1].EjemplosValores;
+                    analisis.Columnas[col.Indice - 1] = col;
                 }
-                
+                analisis.ColumnasInit = analisis.Columnas;
                 return;
             }
 
@@ -1245,8 +1271,8 @@ namespace gc.sitio.Areas.Productos.Controllers
                 return null;
             }
 
-            PrecioFileDatos? mejorMapeo = null;           
-            
+            PrecioFileDatos? mejorMapeo = null;
+
             int mayorConfianza = 0;
             ////se armara un diccionario con la equivalencia de existente en camposDisponibles entre campo y dato
             //var camposDbDict = camposDisponibles
@@ -1313,7 +1339,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             ExcelPackage.License.SetNonCommercialPersonal("Geconet");
 
             using var package = new ExcelPackage(stream);
-            var worksheet = package.Workbook.Worksheets[0];        
+            var worksheet = package.Workbook.Worksheets[0];
 
             analisis = new AnalisisExcelDto
             {

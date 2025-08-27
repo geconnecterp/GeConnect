@@ -17,6 +17,7 @@
         public int TotalColumnasUtiles { get; set; }
         public int FilaEncabezados { get; set; }
         public List<ColumnaExcelDto> Columnas { get; set; } = [];
+        public List<ColumnaExcelDto> ColumnasInit { get; set; } = [];
         // ✅ NUEVO: Lista de campos disponibles para mapeo
         public List<PrecioFileDatos> CamposDisponibles { get; set; } = [];
         public Guid IdFile { get; set; } 

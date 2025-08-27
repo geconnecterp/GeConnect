@@ -86,10 +86,13 @@
         consRrss = "@Model.Cta_Denominacion";
         consTipo = "P";
         let importarUrl = "@Url.Action("Index", "importar", new { area = "productos" })";
+        let homeCPUrl = "@Url.Action("Index", "cargaprecios", new { area = "productos" })";
+
 
         let analizarColumnasUrl = "@Url.Action("AnalizarColumnas", "Importar", new { area = "Productos" })";
         let procesarExcelUrl = "@Url.Action("ProcesarExcel", "Importar", new { area = "Productos" })";
         let diagnosticoUrl = '@Url.Action("DiagnosticarCeldasCombinadas", "Importar", new { area = "Productos" })';
+        let ConfirmarImportacionUrl = '@Url.Action("ConfirmarImportacion", "Importar", new { area = "Productos" })';
         
         //esta variable es para usarla en Js. El (sub) es para usarlo aca nomas
         nnControlCta01 = "@(sub)";

@@ -618,6 +618,9 @@ function mostrarAnalisisColumnas(analisis) {
 
     $('#mainContent').html(htmlAnalisis).hide().slideDown(400);
     window.analisisActual = analisis;
+    // ✅ CREAR: Backup del estado inicial para comparación posterior
+    window.analisisInicial = JSON.parse(JSON.stringify(analisis.columnas));
+    console.log('✅ Análisis inicial guardado para comparación:', window.analisisInicial.length, 'columnas');
 }
 
 // ✅ MANTENER: Funciones de soporte para mapeo (ACTIVAS)
@@ -643,6 +646,7 @@ function actualizarMapeo(columnaIndice, nuevoCampo) {
 
     const columna = window.analisisActual.columnas.find(col => col.indice === columnaIndice);
     if (columna) {
+        const campoAnterior = columna.campoMapeado;
         columna.campoMapeado = nuevoCampo;
         columna.mapeadoAutomatico = false;
 
@@ -654,7 +658,10 @@ function actualizarMapeo(columnaIndice, nuevoCampo) {
         // Actualizar contador
         $('#contadorMapeados').text(contarColumnasMapepadas(window.analisisActual.columnas));
 
-        console.log(`✅ Mapeo actualizado: Columna ${columna.letra} → ${nuevoCampo}`);
+        console.log(`✅ Mapeo actualizado: Columna ${columna.letra} → ${nuevoCampo}`, {
+            anterior: campoAnterior || '(sin mapear)',
+            nuevo: nuevoCampo || '(sin mapear)'
+        });
     }
 }
 
@@ -771,21 +778,61 @@ function ejecutarImportacionReal() {
     formData.append('archivo', archivoSeleccionado);
     formData.append('proveedorId', consCta);
 
-    // ✅ ENVIAR: Mapeo de columnas del usuario
+    // ✅ PASO 1: Comparar mapeos para determinar si hay diferencias
+    let hayDiferencia = compararMapeos();
+
+    // ✅ PASO 2: Enviar mapeo de columnas del usuario solo si hay diferencias
     if (window.analisisActual && window.analisisActual.columnas) {
         const mapeoColumnas = {};
-        window.analisisActual.columnas
-            .filter(col => col.campoMapeado)
-            .forEach(col => {
-                mapeoColumnas[col.indice] = col.campoMapeado;
-            });
+        const columnasMapeadas = window.analisisActual.columnas.filter(col => col.campoMapeado);
+
+        columnasMapeadas.forEach(col => {
+            mapeoColumnas[col.indice] = col.campoMapeado;
+        });
 
         if (Object.keys(mapeoColumnas).length > 0) {
             formData.append('mapeoColumnas', JSON.stringify(mapeoColumnas));
-            console.log('✅ Enviando mapeo de columnas:', mapeoColumnas);
+            console.log(`✅ Enviando mapeo de columnas (diferencias: ${hayDiferencia}):`, mapeoColumnas);
         }
     }
+    if (hayDiferencia === true) {
+        //debo consultar si el usuario quiere conservar la modificacion del perfil de mapeo
+        AbrirMensaje("¡¡ATENCIÓN!!",
+            "Se ha modificado el mapeo original."+
+            "<br/>¿Quiere resguardarlo para próximas importaciones? Hacer \"click\" en \"Resguardar\"." + 
+            "<br/>¿Desea conservar el mapeo que se encuentra resguardado, para proximas importaciones? Hacer \"click\" en \"No Resg.\"." +
+            "<br/>O simplemente cancelar la operación.",
+            function (respuesta) {
+                $("#msjModal").modal("hide");
+                if (respuesta === "SI2") {
+                    //si bien hubieron cambios en el mapeo, el usuario prefiere no modificar el perfil de mapeo.
+                    hayDiferencia = false;
+                }
+                if (respuesta === "SI" || respuesta === "SI2") {
+                    // ✅ PASO 3: Enviar bandera de diferencias
+                    formData.append('hayDiferencia', hayDiferencia);
 
+                    // ✅ LOGGING: Para debugging
+                    console.log(`🔍 Estado de comparación de mapeos:`, {
+                        hayDiferencia: hayDiferencia,
+                        columnasActuales: window.analisisActual?.columnas?.length || 0,
+                        columnasIniciales: window.analisisInicial?.length || 0
+                    });
+
+                    invocarProcesarExcel(formData);
+                }
+            },
+            true, ["Resguardar","No Resguardar", "Cancelar"], "warn!", null);
+
+    }
+    else {
+        formData.append('hayDiferencia', false);
+        invocarProcesarExcel(formData);
+    }
+}
+
+function invocarProcesarExcel(formData) {
+    
     $.ajax({
         url: IMPORTAR_URLS.procesarExcel,
         type: 'POST',
@@ -798,7 +845,8 @@ function ejecutarImportacionReal() {
 
             console.log('✅ Respuesta recibida:', {
                 error: response.error,
-                tieneVista: !!response.vistaResultados
+                tieneVista: !!response.vistaResultados,
+                diferenciaEnviada: formData.hayDiferencia
             });
 
             setTimeout(() => {
@@ -820,6 +868,42 @@ function ejecutarImportacionReal() {
                 () => $("#msjModal").modal("hide"), false, ["Aceptar"], "error!", null);
         }
     });
+}
+
+// ✅ NUEVA: Función para comparar mapeos inicial vs actual
+function compararMapeos() {
+    // Validar que existan ambas referencias
+    if (!window.analisisActual?.columnas || !window.analisisInicial) {
+        console.warn('⚠️ No se puede comparar: faltan referencias de análisis');
+        return false; // Sin diferencias por defecto si no se puede comparar
+    }
+
+    const columnasActuales = window.analisisActual.columnas;
+    const columnasIniciales = window.analisisInicial;
+
+    // ✅ COMPARAR: Cada columna por su índice
+    for (let i = 0; i < columnasActuales.length; i++) {
+        const columnaActual = columnasActuales[i];
+        const columnaInicial = columnasIniciales.find(col => col.indice === columnaActual.indice);
+
+        if (!columnaInicial) continue; // Skip si no encontramos la columna inicial
+
+        // ✅ DETECTAR: Diferencias en el mapeo
+        const mapeoActual = columnaActual.campoMapeado || '';
+        const mapeoInicial = columnaInicial.campoMapeado || '';
+
+        if (mapeoActual !== mapeoInicial) {
+            console.log(`📝 Diferencia detectada en columna ${columnaActual.letra}:`, {
+                inicial: mapeoInicial || '(sin mapear)',
+                actual: mapeoActual || '(sin mapear)',
+                indice: columnaActual.indice
+            });
+            return true; // Hay diferencias
+        }
+    }
+
+    console.log('✅ Sin diferencias entre mapeo inicial y actual');
+    return false; // No hay diferencias
 }
 
 function mostrarResultadosBasicos(response) {

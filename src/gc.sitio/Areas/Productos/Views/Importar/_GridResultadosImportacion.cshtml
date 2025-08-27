@@ -28,12 +28,47 @@
                         <strong>¡Importación exitosa!</strong>
                         Todos los registros se procesaron correctamente.
                     </div>
-                    <button type="button"
-                            class="btn btn-success btn-sm"
-                            onclick="confirmarImportacion('@Model.ProveedorId', '@Model.ArchivoOriginal')"
-                            id="btnConfirmarImportacion">
-                        <i class="fas fa-check me-1"></i>CONFIRMAR IMPORTACIÓN
-                    </button>
+                    <!-- ✅ AGREGAR: Sección de checkboxes y botón -->
+                    <div class="d-flex align-items-center gap-3">
+                        <!-- ✅ Checkboxes de configuración -->
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                            <div class="form-check form-check-sm">
+                                <input class="form-check-input" type="checkbox" id="chkSoloPrecioLista" checked>
+                                <label class="form-check-label small" for="chkSoloPrecioLista">
+                                    Solo Precio Lista
+                                </label>
+                            </div>
+
+                            <div class="form-check form-check-sm">
+                                <input class="form-check-input" type="checkbox" id="chkNuevos">
+                                <label class="form-check-label small" for="chkNuevos">
+                                    Nuevos
+                                </label>
+                            </div>
+
+                            <div class="form-check form-check-sm">
+                                <input class="form-check-input" type="checkbox" id="chkDatosLogisticos">
+                                <label class="form-check-label small" for="chkDatosLogisticos">
+                                    Datos Logísticos
+                                </label>
+                            </div>
+
+                            <div class="form-check form-check-sm">
+                                <input class="form-check-input" type="checkbox" id="chkInactivos">
+                                <label class="form-check-label small" for="chkInactivos">
+                                    Inactivos
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- ✅ Botón de confirmación -->
+                        <button type="button"
+                                class="btn btn-success btn-sm"
+                                onclick="confirmarImportacion('@Model.ProveedorId', '@Model.ArchivoOriginal')"
+                                id="btnConfirmarImportacion">
+                            <i class="bx bx-check me-1"></i>CONFIRMAR IMPORTACIÓN
+                        </button>
+                    </div>
                 </div>
             </div>
         }
@@ -74,9 +109,9 @@
                     @for (int i = 0; i < Model.Resultados.Count; i++)
                     {
                         var item = Model.Resultados[i];
-                        var claseEstado = item.registro_estado == -1 ? "table-danger": "table-success";
-                        var iconoEstado = item.registro_estado == 0 ? "bx bxs-check-circle text-success" : 
-                                          item.registro_estado == 2 ? "bx bxs-plus-circle text-primary" :
+                        var claseEstado = item.registro_estado == -1 ? "table-danger" : "table-success";
+                        var iconoEstado = item.registro_estado == 0 ? "bx bxs-check-circle text-success" :
+                        item.registro_estado == 2 ? "bx bxs-plus-circle text-primary" :
                         item.registro_estado == 3 ? "bx bx-transfer text-primary" :
                         item.registro_estado == 4 ? "bx bx-pause-circle text-secondary" : "bx bx-help-circl text-secondary";
 
@@ -188,10 +223,46 @@
         top: 0;
         z-index: 10;
     }
+
+    /* ✅ NUEVO: Estilos para checkboxes compactos */
+    .form-check-sm .form-check-input {
+        width: 0.9em;
+        height: 0.9em;
+        margin-top: 0.1em;
+    }
+
+    .form-check-sm .form-check-label {
+        font-size: 0.8rem;
+        padding-left: 0.3rem;
+    }
+
+    /* ✅ Responsividad para pantallas pequeñas */
+    @@media (max-width: 768px) {
+        .d-flex.gap-3 {
+            flex-direction: column;
+            gap: 1rem !important;
+            align-items: flex-start !important;
+        }
+
+        .d-flex.gap-2 {
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+    }
 </style>
 <script>
-        $(document).ready(function() {
-        // ✅ OPTIMIZAR: Función de confirmación integrada con el patrón del proyecto
+    $(document).ready(function() {
+        // ✅ NUEVA: Función para obtener configuración de checkboxes
+        function obtenerConfiguracionCheckboxes() {
+            return {
+                soloPrecioLista: $('#chkSoloPrecioLista').is(':checked') ? '1' : '0',
+                nuevos: $('#chkNuevos').is(':checked'),
+                datosLogisticos: $('#chkDatosLogisticos').is(':checked'),
+                inactivos: $('#chkInactivos').is(':checked')
+            };
+        }
+
+        // ✅ OPTIMIZAR: Función de confirmación integrada con checkboxes
         window.confirmarImportacion = function(proveedorId, archivoOriginal) {
             // Validación de parámetros
             if (!proveedorId || !archivoOriginal) {
@@ -199,27 +270,40 @@
                 return;
             }
 
+            // ✅ OBTENER: Configuración de checkboxes
+            const configuracion = obtenerConfiguracionCheckboxes();
+
+            // Mensaje con configuración seleccionada
+            let mensajeConfig = '<div class="mt-2"><strong>Configuración seleccionada:</strong><ul class="mb-0">';
+            mensajeConfig += `<li>Solo Precio Lista: <strong>${configuracion.soloPrecioLista === '1' ? 'SÍ' : 'NO'}</strong></li>`;
+            mensajeConfig += `<li>Incluir Nuevos: <strong>${configuracion.nuevos ? 'SÍ' : 'NO'}</strong></li>`;
+            mensajeConfig += `<li>Datos Logísticos: <strong>${configuracion.datosLogisticos ? 'SÍ' : 'NO'}</strong></li>`;
+            mensajeConfig += `<li>Incluir Inactivos: <strong>${configuracion.inactivos ? 'SÍ' : 'NO'}</strong></li>`;
+            mensajeConfig += '</ul></div>';
+
             // Confirmación usando el patrón del proyecto
             if (typeof AbrirMensaje === 'function') {
                 AbrirMensaje("CONFIRMACIÓN",
-                    "¿Está seguro de que desea confirmar esta importación?<br><small class='text-muted'>Esta acción no se puede deshacer.</small>",
+                    "¿Está seguro de que desea confirmar esta importación?" +
+                    "<br><small class='text-muted'>Esta acción no se puede deshacer.</small>" +
+                    mensajeConfig,
                     function (respuesta) {
                         $("#msjModal").modal("hide");
                         if (respuesta === "SI") {
-                            ejecutarConfirmacionImportacion(proveedorId, archivoOriginal);
+                            ejecutarConfirmacionImportacion(proveedorId, archivoOriginal, configuracion);
                         }
                     },
                     true, ["Confirmar", "Cancelar"], "warn!", null);
             } else {
-                // Fallback a confirm nativo si no está disponible AbrirMensaje
+                // Fallback a confirm nativo
                 if (confirm('¿Está seguro de que desea confirmar esta importación?\nEsta acción no se puede deshacer.')) {
-                    ejecutarConfirmacionImportacion(proveedorId, archivoOriginal);
+                    ejecutarConfirmacionImportacion(proveedorId, archivoOriginal, configuracion);
                 }
             }
         };
 
-        // ✅ FUNCIÓN: Ejecutar la confirmación usando jQuery AJAX
-        function ejecutarConfirmacionImportacion(proveedorId, archivoOriginal) {
+        // ✅ FUNCIÓN: Ejecutar confirmación con configuración de checkboxes
+        function ejecutarConfirmacionImportacion(proveedorId, archivoOriginal, configuracion) {
             const $btn = $('#btnConfirmarImportacion');
 
             if ($btn.length === 0) {
@@ -231,15 +315,21 @@
             $btn.prop('disabled', true)
                 .html('<i class="bx bx-loader-alt bx-spin me-1"></i>Confirmando...');
 
-            // Preparar datos para envío
+            // ✅ PREPARAR: Datos con configuración de checkboxes
             const postData = {
                 proveedorId: proveedorId,
-                archivoOriginal: archivoOriginal
+                archivoOriginal: archivoOriginal,
+                soloPLista: configuracion.soloPrecioLista,
+                nuevo: configuracion.nuevos,
+                datosLogisticos: configuracion.datosLogisticos,
+                inactivos: configuracion.inactivos
             };
 
-            // ✅ USAR: jQuery AJAX con patrón consistente del proyecto
+            console.log('🚀 Enviando confirmación con configuración:', postData);
+
+            // jQuery AJAX con configuración
             $.ajax({
-                url: '/Productos/Importar/ConfirmarImportacion',
+                url: ConfirmarImportacionUrl,
                 type: 'POST',
                 data: postData,
                 dataType: 'json',
@@ -272,9 +362,8 @@
             });
         }
 
-        // ✅ FUNCIÓN: Manejar error de confirmación
+        // ✅ Las demás funciones permanecen igual...
         function manejarErrorConfirmacion(mensaje, $btn) {
-            // Mostrar error usando el sistema del proyecto
             if (typeof AbrirMensaje === 'function') {
                 AbrirMensaje("ERROR", mensaje,
                     () => $("#msjModal").modal("hide"),
@@ -283,20 +372,16 @@
                 showUploadError('Error: ' + mensaje);
             }
 
-            // Restaurar botón
             $btn.prop('disabled', false)
                 .html('<i class="bx bx-check me-1"></i>CONFIRMAR IMPORTACIÓN');
         }
 
-        // ✅ FUNCIÓN: Manejar éxito de confirmación
         function manejarExitoConfirmacion(response, $btn) {
-            // Actualizar botón a estado confirmado
             $btn.html('<i class="bx bxs-check-circle me-1"></i>CONFIRMADO')
                 .removeClass('btn-success')
                 .addClass('btn-outline-success')
                 .prop('disabled', true);
 
-            // Actualizar el alert de éxito
             const $alertDiv = $btn.closest('.alert');
             if ($alertDiv.length > 0) {
                 const fechaConfirmacion = response.datos && response.datos.fechaConfirmacion
@@ -314,73 +399,19 @@
                         `);
             }
 
-            // Mostrar mensaje de éxito usando el sistema del proyecto
             if (typeof AbrirMensaje === 'function') {
                 AbrirMensaje("ÉXITO",
                     "La importación ha sido confirmada exitosamente.",
-                    () => $("#msjModal").modal("hide"),
+                    () => window.location.href = homeCPUrl,
                     false, ["Aceptar"], "succ!", null);
             }
 
-            // Log del éxito
             console.log('✅ Importación confirmada exitosamente:', response);
-
-            // ✅ OPCIONAL: Trigger evento personalizado para otros listeners
             $(document).trigger('importacionConfirmada', [response]);
         }
 
-        // ✅ EVENTO: Listener para eventos personalizados (opcional)
         $(document).on('importacionConfirmada', function(event, response) {
             console.log('🎉 Evento importacionConfirmada disparado:', response);
-            // Aquí se pueden agregar acciones adicionales tras la confirmación
         });
     });
-
-    // function confirmarImportacion(proveedorId, archivoOriginal) {
-    //     if (!confirm('¿Está seguro de que desea confirmar esta importación? Esta acción no se puede deshacer.')) {
-    //         return;
-    //     }
-
-    //     const btn = document.getElementById('btnConfirmarImportacion');
-    //     btn.disabled = true;
-    //     btn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i>Confirmando...';
-
-    //     fetch('/Productos/Importar/ConfirmarImportacion', {
-    //         method: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/x-www-form-urlencoded',
-    //         },
-    //         body: `proveedorId=${encodeURIComponent(proveedorId)}&archivoOriginal=${encodeURIComponent(archivoOriginal)}`
-    //     })
-    //     .then(response => response.json())
-    //     .then(data => {
-    //         if (data.error) {
-    //             alert('Error: ' + data.mensaje);
-    //             btn.disabled = false;
-    //             btn.innerHTML = '<i class="bx bx-check me-1"></i>CONFIRMAR IMPORTACIÓN';
-    //         } else {
-    //             btn.innerHTML = '<i class="bx bxs-check-circle me-1"></i>CONFIRMADO';
-    //             btn.classList.remove('btn-success');
-    //             btn.classList.add('btn-outline-success');
-
-    //             // Mostrar mensaje de éxito
-    //             const alertDiv = btn.closest('.alert');
-    //             alertDiv.innerHTML = `
-    //                 <div class="d-flex align-items-center">
-    //                     <i class="bx bxs-check-circle text-success me-2"></i>
-    //                     <strong>Importación confirmada exitosamente</strong>
-    //                     <span class="ms-2 text-muted">${data.datos.fechaConfirmacion}</span>
-    //                 </div>
-    //             `;
-    //             alertDiv.classList.remove('alert-success');
-    //             alertDiv.classList.add('alert-info');
-    //         }
-    //     })
-    //     .catch(error => {
-    //         console.error('Error:', error);
-    //         alert('Error de comunicación con el servidor');
-    //         btn.disabled = false;
-    //         btn.innerHTML = '<i class="bx bx-check me-1"></i>CONFIRMAR IMPORTACIÓN';
-    //     });
-    // }
 </script>
