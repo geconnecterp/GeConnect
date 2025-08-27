@@ -214,28 +214,36 @@ function btnImprimirOP() {
 }
 
 function ImprimirListadoDeOP() {
-	var Buscar = "";
-	var Date1 = $("#Date1").val();
-	var Date2 = $("#Date2").val();
-	var Date1Print = moment($("#Date1").val()).format('DD/MM/yyyy')
-	var Date2Print = moment($("#Date2").val()).format('DD/MM/yyyy')
-	var Id = "";
-	var Id2 = "";
-	var Rel01 = [];
-	var Rel02 = [];
-	var Rel03 = [];
-	$("#Rel01List").children().each(function (i, item) { Rel01.push($(item).val()) });
-	$("#Rel02List").children().each(function (i, item) { Rel02.push($(item).val()) });
-	$("#Rel03List").children().each(function (i, item) {
-		var aux = { Id: $(item).val(), Descripcion: $(item).text() };
-		Rel03.push(aux);
-	});
-	var rel01 = Rel01.toString();
-	var rel02 = Rel02.toString();
-	var rel03 = Rel03.toString();
-	var data = { Buscar, Id, Id2, Date1, Date2, rel01, rel02, rel03, Date1Print, Date2Print };
-	cargarReporteEnArre(24, data, "CONSULTA DE ORDENES DE PAGO", "", "");
-	invocacionGestorDoc({});
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var Buscar = "";
+		var Date1 = $("#Date1").val();
+		var Date2 = $("#Date2").val();
+		var Date1Print = moment($("#Date1").val()).format('DD/MM/yyyy')
+		var Date2Print = moment($("#Date2").val()).format('DD/MM/yyyy')
+		var Id = "";
+		var Id2 = "";
+		var Rel01 = [];
+		var Rel02 = [];
+		var Rel03 = [];
+		$("#Rel01List").children().each(function (i, item) { Rel01.push($(item).val()) });
+		$("#Rel02List").children().each(function (i, item) { Rel02.push($(item).val()) });
+		$("#Rel03List").children().each(function (i, item) {
+			var aux = { Id: $(item).val(), Descripcion: $(item).text() };
+			Rel03.push(aux);
+		});
+		var rel01 = Rel01.toString();
+		var rel02 = Rel02.toString();
+		var rel03 = Rel03.toString();
+		var data = { Buscar, Id, Id2, Date1, Date2, rel01, rel02, rel03, Date1Print, Date2Print };
+		cargarReporteEnArre(24, data, "CONSULTA DE ORDENES DE PAGO", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
 }
 
 function ImprimirOPSeleccionadas() {
@@ -266,21 +274,28 @@ function ImprimirOPSeleccionadas() {
 		}
 		else {
 			CerrarWaiting();
-			let data = { Ids };
-			cargarReporteEnArre(17, data, "ORDEN DE PAGO A PROVEEDORES", "", "");
-			if (obj.imprimeIIBB) {
-				cargarReporteEnArre(18, data, "CERTIFICADO RETENCIÓN IIBB", "", "");
-			}
-			if (obj.imprimeIVA) {
-				cargarReporteEnArre(20, data, "CERTIFICADO RETENCIÓN IVA", "", "");
-			}
-			if (obj.imprimeGAN) {
-				cargarReporteEnArre(19, data, "CERTIFICADO RETENCIÓN GA", "", "");
-			}
-			//TODO MARCE: Modificar los reportes de IVA y GA para soportar la multiple generación de reportes.
-			invocacionGestorDoc({});
+			ReseteoDeReportes();
+			setTimeout(() => {
+				let data = { Ids };
+				cargarReporteEnArre(17, data, "ORDEN DE PAGO A PROVEEDORES", "", "");
+				if (obj.imprimeIIBB) {
+					cargarReporteEnArre(18, data, "CERTIFICADO RETENCIÓN IIBB", "", "");
+				}
+				if (obj.imprimeIVA) {
+					cargarReporteEnArre(20, data, "CERTIFICADO RETENCIÓN IVA", "", "");
+				}
+				if (obj.imprimeGAN) {
+					cargarReporteEnArre(19, data, "CERTIFICADO RETENCIÓN GA", "", "");
+				}
+				invocacionGestorDoc({});
+			}, 500);
 		}
 	});
+}
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
 }
 
 function btnAnularCertRet() {

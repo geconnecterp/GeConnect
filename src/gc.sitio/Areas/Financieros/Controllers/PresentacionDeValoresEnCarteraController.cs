@@ -72,6 +72,10 @@ namespace gc.sitio.Areas.Financieros.Controllers
 
 				#endregion
 
+				CtafIdSelected = string.Empty;
+				OPValoresSeleccionados = [];
+				FinancieroCarteraLista = [];
+
 				var lista = _tipoCuentaFinServicio.GetTipoCuentaFinParaSeleccionDeValores(param_tipo_medio_pago, TokenCookie);
 				model.ListaTipoMedioDePago = ComboTipoMediosDePago(lista);
 				return View(model);

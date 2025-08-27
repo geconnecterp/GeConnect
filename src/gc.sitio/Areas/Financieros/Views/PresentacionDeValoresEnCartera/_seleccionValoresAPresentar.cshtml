@@ -59,7 +59,7 @@
 						{
 							var nombre = item.fc_compte + "_" + item.fc_item;
 							var nombre_check = nombre + "_checkbox";
-							<tr onclick="selectReg(this, 'tbValores')">
+							<tr onclick="selectReg(this, 'tbValores')" title="@item.concepto_valor">
 								<td class="@Model.GrillaValoresAPresentar.ObtenerClase(item.fc_fecha_valor) align-center cell-fit-content">@Model.GrillaValoresAPresentar.FormatearDato(item.fc_fecha_valor, FormatDato.Fecha)</td>
 								<td class="@Model.GrillaValoresAPresentar.ObtenerClase(item.fc_fecha) align-center cell-fit-content">@Model.GrillaValoresAPresentar.FormatearDato(item.fc_fecha, FormatDato.Fecha)</td>
 								<td class="@Model.GrillaValoresAPresentar.ObtenerClase(item.fc_dato1_valor) cell-fit-content">@Model.GrillaValoresAPresentar.FormatearDato(item.fc_dato1_valor, FormatDato.Ninguno)</td>

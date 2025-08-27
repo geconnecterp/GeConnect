@@ -14,10 +14,18 @@
 
 });
 
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
 function ImprimirTRA_Generada(traCompte) {
-	let data = { tra_compte: traCompte };
-	cargarReporteEnArre(25, data, "TRANSFERENCIA ENTRE CUENTAS", "", "");
-	invocacionGestorDoc({});
+	ReseteoDeReportes();
+	setTimeout(() => {
+		let data = { tra_compte: traCompte };
+		cargarReporteEnArre(25, data, "TRANSFERENCIA ENTRE CUENTAS", "", "");
+		invocacionGestorDoc({});
+	}, 500);
 }
 
 function btnAbmCancelar1Validar() {

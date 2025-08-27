@@ -2868,6 +2868,32 @@ namespace gc.sitio.Controllers
 			return respuesta;
 		}
 
+		/// <summary>
+		/// Valida si existen elementos en común entre dos listas de <see cref="ValoresDesdeObligYCredDto"/>,
+		/// comparando por los campos fc_dia_movi, fc_compte y fc_item.
+		/// Retorna true si al menos un elemento de la listaQueEnvia ya existe en la listaQueRecibe.
+		/// </summary>
+		/// <param name="listaQueRecibe">Lista de valores que ya existen.</param>
+		/// <param name="listaQueEnvia">Lista de valores que se desean agregar.</param>
+		/// <returns>True si existe al menos un valor en común, de lo contrario false.</returns>
+		protected bool ValidarExistenciaDeValoresAAgregar(List<ValoresDesdeObligYCredDto> listaQueRecibe, List<ValoresDesdeObligYCredDto> listaQueEnvia)
+		{
+			var retValue = false;
+			if (!listaQueEnvia.Any())
+				return retValue;
+			if (!listaQueRecibe.Any())
+				return retValue;
+			foreach (var itemEnvia in listaQueEnvia)
+			{
+				if (listaQueRecibe.Exists(x => x.fc_dia_movi == itemEnvia.fc_dia_movi && x.fc_compte == itemEnvia.fc_compte && x.fc_item == itemEnvia.fc_item))
+				{
+					retValue = true;
+					break;
+				}
+			}
+			return retValue;
+		}
+
 		protected enum TipoDeRespuestaMock
 		{
 			EsError = 1,

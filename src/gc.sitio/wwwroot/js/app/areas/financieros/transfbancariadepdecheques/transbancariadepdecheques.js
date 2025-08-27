@@ -54,16 +54,18 @@ const TypeIntervalo = {
 	Otros: '4'
 }
 
-//function ImprimirTRA_Generada(traCompte) {
-//	let data = { tra_compte: traCompte };
-//	cargarReporteEnArre(25, data, "TRANSFERENCIA ENTRE CUENTAS", "", "");
-//	invocacionGestorDoc({});
-//}
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
 
 function ImprimirTRA_Generada(traCompte) {
-	let data = { tra_compte: traCompte };
-	cargarReporteEnArre(25, data, "TRANSFERENCIA ENTRE CUENTAS", "", "");
-	invocacionGestorDoc({});
+	ReseteoDeReportes();
+	setTimeout(() => {	
+		let data = { tra_compte: traCompte };
+		cargarReporteEnArre(25, data, "TRANSFERENCIA ENTRE CUENTAS", "", "");
+		invocacionGestorDoc({});
+	}, 500);
 }
 
 function btnAbmAceptarControlar() {
@@ -86,7 +88,7 @@ function btnAbmAceptarControlar() {
 				}, false, ["Aceptar"], "error!", null);
 			}
 			else {
-				AbrirMensaje("ATENCIÓN", "¿Confirma?", function (e) {
+				AbrirMensaje("ATENCIÓN", mensajeConfirma, function (e) {
 					$("#msjModal").modal("hide");
 					switch (e) {
 						case "SI": //Confirmar
@@ -107,7 +109,7 @@ function btnAbmAceptarControlar() {
 									}, false, ["Aceptar"], "error!", null);
 								}
 								else {
-									AbrirMensaje("ATENCIÓN", obj.msg, function () {
+									AbrirMensaje("ATENCIÓN", mensajeOk, function () {
 										$("#msjModal").modal("hide");
 										console.log(obj.id); //Tomar este valor para imprimir.
 										ImprimirTRA_Generada(obj.id);
@@ -173,6 +175,14 @@ function CargarValoresDesdeObligYCredSeleccionados() {
 			$("#divDestino").html(obj);
 		}
 		ActualizarTotales();
+		if ($("#YaExiste").val() == "True") {
+			AbrirMensaje("ATENCIÓN", $("#MensajeExiste").val(), function () {
+				$("#msjModal").modal("hide");
+				$("#YaExiste").val(false);
+				$("#MensajeExiste").val("");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
 		CerrarWaiting();
 	});
 }
@@ -189,7 +199,7 @@ function ActualizarTotales() {
 		else {
 			Inputmask.remove(document.getElementById("total_origen"));
 			Inputmask.remove(document.getElementById("total_destino"));
-			$("#total_origen").val(obj.totalOrigen.toString().replace('.',','));
+			$("#total_origen").val(obj.totalOrigen.toString().replace('.', ','));
 			$("#total_destino").val(obj.totalDestino.toString().replace('.', ','));
 			getMaskForMoneyType("#total_origen");
 			getMaskForMoneyType("#total_destino");
@@ -272,9 +282,20 @@ function formatearFecha(fecha) {
 }
 
 
-
 function onChangeAcreditacion() {
 
+}
+
+function ObtenerListaDeValores(tbGrilla) {
+	var valores = [];
+	$("#" + tbGrilla + " tbody tr").each(function () {
+		var fc_dia_movi = $(this).find("td").eq(4).text();
+		var fc_compte = $(this).find("td").eq(5).text();
+		var fc_item = $(this).find("td").eq(6).text();
+		var item = { fc_dia_movi, fc_compte, fc_item };
+		valores.push(item);
+	});
+	return valores;
 }
 
 //Abro modal de seleccion de valores
@@ -283,7 +304,7 @@ function btnAgregarValorOrigenValidar() {
 	var app = $("#parametro_valores_origen").val();
 	var importe = 0;
 	var valor_a_nombre_de = "";
-	var valores = [];
+	var valores = ObtenerListaDeValores("tbListaOrigen");
 	var data = { app, importe, valor_a_nombre_de, valores };
 	invocarModalDeSeleccionDeValores(data);
 }
@@ -301,7 +322,7 @@ function btnAgregarValorDestinoValidar() {
 		sourceSeleccionado = "2";
 		var importe = $("#total_origen").inputmask('unmaskedvalue') - $("#total_destino").inputmask('unmaskedvalue');
 		var valor_a_nombre_de = "";
-		var valores = [];
+		var valores = ObtenerListaDeValores("tbListaDestino");
 		var data = { app, importe, valor_a_nombre_de, valores };
 		invocarModalDeSeleccionDeValores(data);
 	}

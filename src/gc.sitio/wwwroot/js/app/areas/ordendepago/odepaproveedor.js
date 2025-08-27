@@ -142,10 +142,6 @@ function ImprimirOPP_Generada(opCompte, ctaId) {
 
 function ReseteoDeReportes() {
 	console.log("Reseto de reportes");
-	//ReporteResetCeldaEnArre(17);
-	//ReporteResetCeldaEnArre(18);
-	//ReporteResetCeldaEnArre(19);
-	//ReporteResetCeldaEnArre(20);
 	ReporteResetArre();
 }
 
@@ -215,9 +211,21 @@ function btnAgregarValorValidar() {
 	if (saldoN != NaN && saldoN >0)
 		importe = saldoN;
 	var valor_a_nombre_de = valorANombreDe;
-	var valores = [];
+	var valores = ObtenerListaDeValores("tbListaValores_Paso2");
 	var data = { app, importe, valor_a_nombre_de, valores };
 	invocarModalDeSeleccionDeValores(data);
+}
+
+function ObtenerListaDeValores(tbGrilla) {
+	var valores = [];
+	$("#" + tbGrilla + " tbody tr").each(function () {
+		var fc_dia_movi = $(this).find("td").eq(4).text();
+		var fc_compte = $(this).find("td").eq(5).text();
+		var fc_item = $(this).find("td").eq(6).text();
+		var item = { fc_dia_movi, fc_compte, fc_item };
+		valores.push(item);
+	});
+	return valores;
 }
 
 //Me muevo al paso1

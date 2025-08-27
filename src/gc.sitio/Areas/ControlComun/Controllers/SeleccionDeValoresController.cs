@@ -71,6 +71,30 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 
 		}
 
+		/// <summary>
+		/// Obtiene o establece la lista de valores desde obligaciones y créditos almacenada en la sesión actual.
+		/// Se utiliza para mantere una lista de los valores que recibe como parametro, y comparar con lo que se desea agregar.
+		/// Al obtener, deserializa la lista desde la sesión; si no existe, retorna una lista vacía.
+		/// Al establecer, serializa la lista y la guarda en la sesión.
+		/// </summary>
+		public List<ValoresDesdeObligYCredDto> ListaValoresDesdeObligYCred
+		{
+			get
+			{
+				var txt = _context.HttpContext?.Session.GetString("ListaValoresDesdeObligYCred");
+				if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<ValoresDesdeObligYCredDto>>(txt) ?? [];
+			}
+			set
+			{
+				var valor = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ListaValoresDesdeObligYCred", valor);
+			}
+		}
+
 		public IActionResult Index()
 		{
 			return View();
@@ -84,6 +108,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 			{
 				CtaValoresANombre = req.valor_a_nombre_de;
 				ImporteSaldo = req.importeSugerido;
+				ListaValoresDesdeObligYCred = req.valores;
 				var tipoCuentaFinLista = _tipoCuentaFinServicio.GetTipoCuentaFinParaSeleccionDeValores(req.app, TokenCookie);
 				var model = new SeleccionDeValoresViewModel()
 				{
@@ -277,7 +302,14 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 					return new Resultado() { Exito = false, Mensaje = "Objeto origen vacío." };
 				if (req.DataObject.Count <= 0)
 					return new Resultado() { Exito = false, Mensaje = "Objeto origen vacío." };
-				if (!NoExisteElItem(req))
+
+				//TODO Marce: Controlar si es conveniente que esta validación siga estando, ya que lo que tengo que hacer es validar lo que quiero insertar (req.DataObject) contra lo que ya tengo (ListaValoresDesdeObligYCred)
+				//que es lo que hago en el if que sigue. De esta forma evito que se superpongan validaciones desde diferentes ambitos o contextos
+				//Lo voy a comentar, y probar
+				//if (!NoExisteElItem(req)) 
+				//	return new Resultado() { Exito = false, Mensaje = "El/Los elemento/s que esta intentando agregar ya existe/n." };
+
+				if(ValidarExistenciaDeValoresAAgregar(req.DataObject, ListaValoresDesdeObligYCred))
 					return new Resultado() { Exito = false, Mensaje = "El/Los elemento/s que esta intentando agregar ya existe/n." };
 
 				var listaAux = new List<ValoresDesdeObligYCredDto>();

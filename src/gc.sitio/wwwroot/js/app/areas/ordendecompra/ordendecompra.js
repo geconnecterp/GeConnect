@@ -231,10 +231,18 @@ function ConfirmarOrdenDeCompra() {
 	}, true, ["Aceptar", "Cancelar"], "question!", null);
 }
 
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
 function ImprimirOC_Generada(ocCompte, ctaId) {
-	let data = { oc_compte: ocCompte, ctaId: ctaId };
-	cargarReporteEnArre(21, data, "ORDEN DE COMPRA", "", "");
-	invocacionGestorDoc({});
+	ReseteoDeReportes();
+	setTimeout(() => {
+		let data = { oc_compte: ocCompte, ctaId: ctaId };
+		cargarReporteEnArre(21, data, "ORDEN DE COMPRA", "", "");
+		invocacionGestorDoc({});
+	}, 500);
 }
 
 function InicializarDatosEnSesion() {
@@ -324,7 +332,7 @@ function AplicarSeteoMasivo() {
 	});
 	if (alMenosUno) {
 		//Recorrer los items seleccionados y enviarlos al backend, junto con los valores de los campos de seteo masivo.
-		
+
 		//$("#tbListaProductoOC").find('tr').each(function (i, el) {
 		//	var td = $(this).find('td');
 		//	if (td.length > 0 && td[1].innerText !== undefined) {

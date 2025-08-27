@@ -90,7 +90,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				#endregion
 
-
+				OPValoresDesdeObligYCredLista = [];
 				var listR01 = new List<ComboGenDto>();
 				ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
 
@@ -712,7 +712,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 				OPCreditoNuevaLista = [];
 				OPRetencionesDesdeObligYCredLista = [];
 				OPValoresDesdeObligYCredLista = [];
-
 				return Json(new { error = false, warn = false, msg = "Inicializacion correcta." });
 			}
 			catch (Exception)
