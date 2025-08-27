@@ -1,0 +1,66 @@
+﻿@model ChequesDepositadosModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+}
+<fieldset style="height: 460px;">
+	<legend></legend>
+	<div class="row">
+		<div class="col-4">
+			<div class="input-group input-group-sm">
+				<span class="input-group-text">Rechazado: </span>
+				@Html.TextBoxFor(m => m.FechaRechazado, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeFechaRechazado(this);", @id = "fechaRechazado" })
+			</div>
+		</div>
+		<div class="col-4">
+			<button type="button" id="btnAceptar" class="btn btn-sm btn-success"><i class="bx bx-check-circle"></i></button>
+			<button type="button" id="btnCancel" class="btn btn-sm btn-danger"><i class="bx bx-sm bx-x-circle"></i></button>
+		</div>
+		<div class="col-4"></div>
+	</div>
+	<div class="table-responsive table-wrapper-400-full-width mt-2" id="containerChequesDepositados">
+		<table class="table table-bordered table-hover" id="tbListaChequesDepositados">
+			<thead class="table-dark">
+				<tr>
+					<th style="width:15%;" class="col-header-small align-center tiny-row">N° de Transf.</th>
+					<th style="width:10%;" class="col-header-small align-center tiny-row">Fecha Dep.</th>
+					<th style="width:40%;" class="col-header-small align-center tiny-row">Cliente</th>
+					<th style="width:20%;" class="col-header-small align-center tiny-row">CH Banco</th>
+					<th style="width:10%;" class="col-header-small align-center tiny-row">CH N°</th>
+					<th style="width:10%;" class="col-header-small align-center tiny-row">CH Fecha</th>
+					<th style="width:10%;" class="col-header-small align-center tiny-row">Importe</th>
+					<th style="width:10%;" class="col-header-small align-center tiny-row">Conciliado</th>
+					<th style="width:10%;" class="col-header-small align-center tiny-row">Rechazado</th>
+					<th style="width:0%; display:none;">fc_dia_movi</th>
+					<th style="width:0%; display:none;">fc_compte</th>
+					<th style="width:0%; display:none;">fc_item</th>
+					<th style="width:0%; display:none;">conciliado</th>
+					<th style="width:0%; display:none;">rechazado</th>
+				</tr>
+			</thead>
+			<tbody>
+				@if (Model != null && Model.GrillaChequesDepositados != null && Model.GrillaChequesDepositados.ListaDatos != null && Model.GrillaChequesDepositados.ListaDatos.Count > 0)
+				{
+					@foreach (var item in Model.GrillaChequesDepositados.ListaDatos)
+					{
+						<tr onclick="selectReg(this, 'tbListaChequesDepositados')">
+							<td class="@Model.GrillaChequesDepositados.ObtenerClase(item.tra_compte) align-center cell-fit-content">@Model.GrillaChequesDepositados.FormatearDato(item.tra_compte, FormatDato.Ninguno)</td>
+							<td class="@Model.GrillaChequesDepositados.ObtenerClase(item.tra_fecha_movi) cell-fit-content">@Model.GrillaChequesDepositados.FormatearDato(item.tra_fecha_movi, FormatDato.Fecha)</td>
+							<td class="@Model.GrillaChequesDepositados.ObtenerClase(item.Cliente) cell-fit-content">@Model.GrillaChequesDepositados.FormatearDato(item.Cliente, FormatDato.Ninguno)</td>
+							<td class="@Model.GrillaChequesDepositados.ObtenerClase(item.fc_dato1_valor) cell-fit-content">@Model.GrillaChequesDepositados.FormatearDato(item.fc_dato1_valor, FormatDato.Ninguno)</td>
+							<td class="@Model.GrillaChequesDepositados.ObtenerClase(item.fc_dato2_valor) align-center cell-fit-content">@Model.GrillaChequesDepositados.FormatearDato(item.fc_dato2_valor, FormatDato.Ninguno)</td>
+							<td class="@Model.GrillaChequesDepositados.ObtenerClase(item.fc_fecha_valor) cell-fit-content">@Model.GrillaChequesDepositados.FormatearDato(item.fc_fecha_valor, FormatDato.Fecha)</td>
+							<td class="@Model.GrillaChequesDepositados.ObtenerClase(item.fc_importe) cell-fit-content">@Model.GrillaChequesDepositados.FormatearDato(item.fc_importe, FormatDato.Monto)</td>
+							<td class="@Model.GrillaChequesDepositados.ObtenerClase(item.StrConciliado) align-center cell-fit-content">@Model.GrillaChequesDepositados.FormatearDato(item.StrConciliado, FormatDato.Ninguno)</td>
+							<td class="@Model.GrillaChequesDepositados.ObtenerClase(item.StrRechazado) align-center cell-fit-content">@Model.GrillaChequesDepositados.FormatearDato(item.StrRechazado, FormatDato.Ninguno)</td>
+							<td style="display:none;">@item.fc_dia_movi</td>
+							<td style="display:none;">@item.fc_compte</td>
+							<td style="display:none;">@item.fc_item</td>
+							<td style="display:none;">@item.conciliado</td>
+							<td style="display:none;">@item.rechazado</td>
+						</tr>
+					}
+				}
+			</tbody>
+		</table>
+	</div>
+</fieldset>

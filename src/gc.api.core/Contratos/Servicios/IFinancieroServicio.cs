@@ -18,5 +18,6 @@ namespace gc.api.core.Contratos.Servicios
         List<FinancieroTraRepoCtagDto> GetFinancieroTraRepoCtag(string tra_compte);
         List<FinancieroTraRepoDDto> GetFinancieroTraRepoDDto(string tra_compte);
         List<FinancieroCuentaAlCobroRelaDto> GetCuentaAlCobroRela(string ctaf_id);
+		List<FinancieroChequeDepositadoDto> GetFinancieroChequeDepositado(FinancieroChequeDepositadoRequest r);
 	}
 }

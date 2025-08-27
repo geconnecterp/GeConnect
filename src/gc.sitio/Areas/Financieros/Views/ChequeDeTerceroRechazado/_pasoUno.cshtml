@@ -1,0 +1,25 @@
+﻿@model ChequeRechazadoPasoUnoModel
+@{
+	var list = Model.ListaCuentasBancarias;
+}
+<fieldset style="height: 140px;">
+	<legend></legend>
+	<div class="input-group input-group-sm mt-1">
+		<span class="input-group-text">Cuenta de Banco: </span>
+		@Html.DropDownListFor(m => m.ctaSelected, list, "Seleccionar...", new { @id = "ListaCuentaBancaria", @class = "form-control activable" })
+	</div>
+	<div class="input-group input-group-sm mt-1">
+		<span class="input-group-text">Desde: </span>
+		@Html.TextBoxFor(m => m.FechaDesde, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeFechaDesde(this);", @id = "fechaDesde" })
+		<span class="input-group-text">Hasta: </span>
+		@Html.TextBoxFor(m => m.FechaHasta, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeFechaHasta(this);", @id = "fechaHasta" })
+	</div>
+	<div class="row mt-3">
+		<div class="col-5"></div>
+		<div class="col-2">
+			<button type="button" id="btnBuscar" class="btn btn-sm btn-success"><i class="bx bx-sm bx-search"></i></button>
+			<button type="button" id="btnCancel" class="btn btn-sm btn-danger"><i class="bx bx-sm bx-x-circle"></i></button>
+		</div>
+		<div class="col-5"></div>
+	</div>
+</fieldset>
