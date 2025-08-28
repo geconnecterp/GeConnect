@@ -5,6 +5,7 @@ namespace gc.sitio.Areas.Productos.Models
     public class ResultadoImportacionViewModel
     {
         public List<RespuestaCPDto> Resultados { get; set; } = new();
+        public RespuestaCPDto FirstReg { get; set; } = new();
         public int TotalRegistros { get; set; }
         public int RegistrosExitosos { get; set; }
         public int RegistrosConError { get; set; }
@@ -18,6 +19,8 @@ namespace gc.sitio.Areas.Productos.Models
         public bool TieneErrores => RegistrosConError > 0;
         public bool EsProcesadoCompleto => TotalRegistros > 0 && RegistrosConError == 0;
 
-        public bool PuedeConfirmar => RegistrosConError == 0 && TotalRegistros > 0;
+        //public bool PuedeConfirmar => RegistrosConError == 0 && TotalRegistros > 0;
+        public bool PuedeConfirmar => FirstReg.resultado == 0;
+        public string Mensaje_proc => FirstReg.registro_msj;
     }
 }
