@@ -29,7 +29,7 @@ $(function () {
     }
 
     initializeUploadControls();
-    agregarBotonesDiagnostico();
+    //agregarBotonesDiagnostico();
 });
 
 // ✅ MANTENER: Solo funciones de formateo esenciales
@@ -1158,7 +1158,8 @@ function analizarEstadoImportacion(datos) {
         esExitoso: errores === 0 && exitosos > 0,           // Solo éxitos
         tieneMixto: errores > 0 && exitosos > 0,            // Mixto: éxitos y errores
         soloErrores: errores > 0 && exitosos === 0,         // Solo errores
-        sinProcesar: total === 0                            // No procesó nada
+        sinProcesar: total === 0,                           // No procesó nada
+        mensajeProc: datos.mensajeProc
     };
 }
 
@@ -1210,6 +1211,8 @@ function mostrarResultadosMixtos(response, estado) {
                 <i class="bx bx-error-circle bx-lg text-warning me-3"></i>
                 <div class="flex-grow-1">
                     <h5 class="alert-heading mb-2">Importación Completada con Advertencias</h5>
+                    <h5 class="alert-heading mb-2">${estado.mensajeProc}</h5>
+                    
                     <p class="mb-2">
                         Se procesaron ${estado.exitosos} registros exitosamente, pero ${estado.errores} 
                         registros presentaron errores que requieren revisión.
@@ -1255,6 +1258,7 @@ function mostrarResultadosConErrores(response, estado) {
                 <i class="bx bx-x-circle bx-lg text-danger me-3"></i>
                 <div class="flex-grow-1">
                     <h5 class="alert-heading mb-2">Importación Completada con Errores</h5>
+                    <h5 class="alert-heading mb-2">${estado.mensajeProc}</h5>
                     <p class="mb-2">
                         ${estado.soloErrores ?
             `Todos los ${estado.errores} registros presentaron errores y no pudieron ser procesados.` :
@@ -1294,6 +1298,9 @@ function generarBotonesAccion() {
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h6 class="mb-0"><i class="bx bx-list-ul me-2"></i>Resultados Detallados de la Importación</h6>
             <div class="d-flex gap-2">
+                 <button type="button" class="btn btn-outline-danger btn-sm" onclick="cancelarAnalisis()">
+                    <i class="bx bx-x me-1"></i>Cancelar
+                </button>
                 <button type="button" class="btn btn-outline-secondary btn-sm" onclick="location.reload()">
                     <i class="bx bx-refresh me-1"></i>Nueva Importación
                 </button>

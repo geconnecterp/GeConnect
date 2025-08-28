@@ -226,7 +226,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                     var vistaResultado = await GenerarVistaResultadosImportacion(resultado.ListaEntidad, datosImportacion);
 
                     _logger?.LogInformation($"✅ Importación procesada: {resultado.ListaEntidad.Count} registros");
-
+                    var first = resultado.ListaEntidad.First();
                     return Json(new
                     {
                         error = false,
@@ -238,7 +238,8 @@ namespace gc.sitio.Areas.Productos.Controllers
                             registrosExitosos = resultado.ListaEntidad.Count(r => r.registro_estado == 0),
                             archivo = archivo.FileName,
                             proveedor = proveedorId,
-                            fechaProceso = datosImportacion.FechaProceso.ToString("yyyy-MM-dd HH:mm:ss")
+                            fechaProceso = datosImportacion.FechaProceso.ToString("yyyy-MM-dd HH:mm:ss"),
+                            mensajeProc = first.resultado_msj
                         },
                         vistaResultados = vistaResultado
                     });
@@ -262,7 +263,8 @@ namespace gc.sitio.Areas.Productos.Controllers
 
         [HttpPost]
         public async Task<JsonResult> ConfirmarImportacion(string proveedorId, string archivoOriginal,
-            char soloPLista = '1', bool nuevo = false, bool datosLogisticos = false, bool inactivos = false)
+            char soloPLista = '1', bool nuevo = false, bool datosLogisticos = false, 
+            bool inactivos = false, bool vaciarTemporal = true)
         {
             try
             {
@@ -289,6 +291,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                     Nuevos = nuevo,
                     DatosLogisticos = datosLogisticos,
                     Inactivos = inactivos,
+                    vaciarTemporal = vaciarTemporal
                 };
 
                 var resultado = await _impServicio.CargarImportacionPrecio(abmDto, TokenCookie);
@@ -373,7 +376,10 @@ namespace gc.sitio.Areas.Productos.Controllers
                 {
                     //resguardamos el idfile, clave para la confirmación
                     var analisis = AnalisisFile;
-                    analisis.IdFile = resultado.ListaEntidad.First().idfile;
+                    var firstReg = resultado.ListaEntidad.First();
+                    analisis.IdFile = firstReg.idfile;
+                    //analisis.ResultadoCarga = firstReg.resultado;
+                    //analisis.ResultadoMsg = firstReg.resultado_msj;
                     AnalisisFile = analisis;
                 }
                 return resultado;
@@ -396,10 +402,10 @@ namespace gc.sitio.Areas.Productos.Controllers
         private void NormalizaDatos(DatosImportacionDto datosImportacion)
         {
             var camposATruncar = new[] { "p_dto1", "p_dto2", "p_dto3", "p_dto4", "p_dto_pa", "p_porc_flete" };
-
+            //vamos a tener que dejar para el envio de los datos para estos campos 2 digitos, sino ven 0
             foreach (var fila in datosImportacion.Filas)
-            {
-                TruncarCampos(fila.Valores, camposATruncar, 1);
+            {   //cambiamos el truncado de 1 a 2
+                TruncarCampos(fila.Valores, camposATruncar, 2);
             }
 
             camposATruncar = new[] { "p_pcosto" };
@@ -448,7 +454,8 @@ namespace gc.sitio.Areas.Productos.Controllers
                     RegistrosConError = resultados.Count(r => r.registro_estado == -1),
                     ArchivoOriginal = datosOriginales.NombreArchivo,
                     FechaProceso = datosOriginales.FechaProceso,
-                    ProveedorId = datosOriginales.ProveedorId
+                    ProveedorId = datosOriginales.ProveedorId,
+                    FirstReg = resultados.First()
                 };
 
                 // ✅ USAR: Método corregido

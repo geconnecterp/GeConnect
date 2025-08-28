@@ -1,4 +1,6 @@
-﻿namespace gc.infraestructura.Dtos.ABM
+﻿using System.Data;
+
+namespace gc.infraestructura.Dtos.ABM
 {
     public class AbmGenDto
     {
@@ -24,6 +26,7 @@
         public bool Nuevos { get; set; }
         public bool DatosLogisticos { get; set; }
         public bool Inactivos { get; set; }
+        public bool vaciarTemporal { get; set; }
 
 
     }

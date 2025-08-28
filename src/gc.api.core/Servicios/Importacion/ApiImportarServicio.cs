@@ -70,6 +70,7 @@ namespace gc.api.core.Servicios.Importacion
                 ps.Add(new SqlParameter("@nuevos", req.Nuevos));
                 ps.Add(new SqlParameter("@datos_logisticos", req.DatosLogisticos));
                 ps.Add(new SqlParameter("@inactivos", req.Inactivos));
+                ps.Add(new SqlParameter("@vaciatmp", req.vaciarTemporal));
 
             }
             List<RespuestaCPDto> resultado = _repository.EjecutarLstSpExt<RespuestaCPDto>(sp, ps, true);
