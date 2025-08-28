@@ -263,7 +263,7 @@ namespace gc.sitio.Areas.Productos.Controllers
 
         [HttpPost]
         public async Task<JsonResult> ConfirmarImportacion(string proveedorId, string archivoOriginal,
-            char soloPLista = '1', bool nuevo = false, bool datosLogisticos = false, 
+            char soloPLista = '1', bool nuevo = false, bool datosLogisticos = false,
             bool inactivos = false, bool vaciarTemporal = true)
         {
             try
@@ -405,7 +405,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             //vamos a tener que dejar para el envio de los datos para estos campos 2 digitos, sino ven 0
             foreach (var fila in datosImportacion.Filas)
             {   //cambiamos el truncado de 1 a 2
-                TruncarCampos(fila.Valores, camposATruncar, 2);
+                TruncarCampos(fila.Valores, camposATruncar, 2, true);
             }
 
             camposATruncar = new[] { "p_pcosto" };
@@ -421,7 +421,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             }
         }
 
-        private void TruncarCampos(Dictionary<string, object?> diccionario, IEnumerable<string> claves, int decimales)
+        private void TruncarCampos(Dictionary<string, object?> diccionario, IEnumerable<string> claves, int decimales, bool multXFactor = false)
         {
             decimal factor = (decimal)Math.Pow(10, decimales);
 
@@ -431,11 +431,11 @@ namespace gc.sitio.Areas.Productos.Controllers
                 {
                     if (valor is decimal dec)
                     {
-                        diccionario[clave] = Math.Truncate(dec * factor) / factor;
+                        diccionario[clave] = !multXFactor ? Math.Truncate(dec * factor) / factor : (Math.Truncate(dec * factor) / factor) * factor;
                     }
                     else if (valor is double dbl)
                     {
-                        diccionario[clave] = (double)(Math.Truncate((decimal)dbl * factor) / factor);
+                        diccionario[clave] = !multXFactor ? (double)(Math.Truncate((decimal)dbl * factor) / factor) : (double)(((Math.Truncate((decimal)dbl * factor) / factor)) * factor);
                     }
                 }
             }
@@ -550,8 +550,8 @@ namespace gc.sitio.Areas.Productos.Controllers
                             _logger?.LogInformation($"Mapeo manual. Limpiando: '{columna.Encabezado}' → ''");
                         }
                     }
-                    else if(columna != null && 
-                        string.IsNullOrEmpty(mapeo.Value) && 
+                    else if (columna != null &&
+                        string.IsNullOrEmpty(mapeo.Value) &&
                         !string.IsNullOrEmpty(columna.CampoMapeado))
                     {
                         columna.CampoMapeado = string.Empty;
