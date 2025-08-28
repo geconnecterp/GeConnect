@@ -32,5 +32,23 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				_context.HttpContext?.Session.SetString("ListaCuentaBancos", json);
 			}
 		}
+
+		public List<FinancieroChequeDepositadoDto> ListaCheques
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("ListaCheques");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<FinancieroChequeDepositadoDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ListaCheques", json);
+			}
+		}
 	}
 }

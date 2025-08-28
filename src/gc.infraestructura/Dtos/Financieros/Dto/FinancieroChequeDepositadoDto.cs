@@ -6,6 +6,7 @@ namespace gc.infraestructura.Dtos
 		public string tra_compte { get; set; } = string.Empty;
 		public int tra_item { get; set; }
 		public string ctaf_id { get; set; } = string.Empty;
+		public string ctaf_denominacion { get; set; } = string.Empty;
 		public string fc_dia_movi { get; set; } = string.Empty;
 		public string fc_compte { get; set; } = string.Empty;
 		public int fc_item { get; set; }

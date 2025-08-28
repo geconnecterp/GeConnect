@@ -1846,8 +1846,9 @@ namespace gc.infraestructura.Helpers
 
 		public static void CargarTablaDatosDeAcuseDeTransferencia_Total(Document pdf, List<FinancieroTraRepoDDto> regs, Font fuenteEtiqueta, Font fuenteValor)
 		{
+			//PdfPCell celdaTotal = new PdfPCell(new Phrase($"Total Egreso Cuentas Origen: {registros.Sum(y => y.fc_importe).ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
 			PdfPTable tablaTotal = GeneraTabla(1, [100f], 100, 0, 10);
-			PdfPCell celdaTotal = new PdfPCell(new Phrase($"Total de Ingreso en Cuentas Destino y Gastos Asociados: {regs.Where(x=>x.grupo.Equals(1)).Sum(y => y.fc_importe)}", HelperPdf.FontNormalPredeterminado(true)))
+			PdfPCell celdaTotal = new PdfPCell(new Phrase($"Total de Ingreso en Cuentas Destino y Gastos Asociados: {regs.Where(x=>x.grupo.Equals(1)).Sum(y => y.fc_importe).ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
 			{
 				Border = Rectangle.NO_BORDER,
 				HorizontalAlignment = Element.ALIGN_RIGHT,
