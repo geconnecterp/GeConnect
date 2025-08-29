@@ -54,5 +54,18 @@ namespace gc.api.Controllers.Financieros
 
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<FinancieroChequeDepositadoDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetFinancieroChequeDepositado([FromBody] FinancieroChequeDepositadoRequest r)
+		{
+			ApiResponse<List<FinancieroChequeDepositadoDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.GetFinancieroChequeDepositado(r);
+			response = new ApiResponse<List<FinancieroChequeDepositadoDto>>(res);
+			return Ok(response);
+		}
 	}
 }

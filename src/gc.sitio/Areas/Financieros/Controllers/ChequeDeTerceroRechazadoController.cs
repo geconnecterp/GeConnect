@@ -21,7 +21,7 @@ using Newtonsoft.Json;
 namespace gc.sitio.Areas.Financieros.Controllers
 {
 	[Area("Financieros")]
-	public class ChequePagaAcaController : ChequePagaAcaControladorBase
+	public class ChequeDeTerceroRechazadoController : ChequeDeTerceroRechazadoControladorBase
 	{
 		//PARA MODULO DE IMPRESION
 		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
@@ -33,16 +33,13 @@ namespace gc.sitio.Areas.Financieros.Controllers
 
 		private readonly AppSettings _setting;
 		private readonly IFinancieroServicio _financieroServicio;
-		private readonly ICuentaServicio _cuentaServicio;
-		private readonly string tipoCF = "CH";
-
-		public ChequePagaAcaController(IFinancieroServicio financieroServicio, ICuentaServicio cuentaServicio,
-									   IDocManagerServicio docManager, IOptions<DocsManager> docsManager,
-									   IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger<ChequePagaAcaController> logger) : base(options, accessor, logger)
+		private readonly string tipoCTAF = "BA";
+		public ChequeDeTerceroRechazadoController(IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger<ChequeDeTerceroRechazadoController> logger,
+												  IDocManagerServicio docManager, IOptions<DocsManager> docsManager,
+												  IFinancieroServicio financieroServicio) : base(options, accessor, logger)
 		{
 			_setting = options.Value;
 			_financieroServicio = financieroServicio;
-			_cuentaServicio = cuentaServicio;
 
 			//PARA MODULO DE IMPRESION
 			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
@@ -52,14 +49,14 @@ namespace gc.sitio.Areas.Financieros.Controllers
 
 		public IActionResult Index()
 		{
-			var model = new PasoUnoModel();
+			var model = new ChequeRechazadoPasoUnoModel();
 			try
 			{
 				var auth = EstaAutenticado;
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 
-				var titulo = "CHEQUE PAGA ACÁ y CAMBIO DE FECHA DE PRESENTACIÓN";
+				var titulo = "CHEQUES DEPOSITADOS RECHAZADOS";
 				ViewData["Titulo"] = titulo;
 
 				#region Gestor Impresion - Inicializacion de variables
@@ -71,11 +68,9 @@ namespace gc.sitio.Areas.Financieros.Controllers
 
 				#endregion
 
-				CargarDatosIniciales(true);
-
-				var listaCuentaValores = _financieroServicio.GetFinancieroDesdeTipoParaSeleccionDeValores(tipoCF, AdministracionId, TokenCookie);
-				ListaFinancieroDesdeSeleccionDeTipo = listaCuentaValores;
-				model.ListaCuentaValoresEnCartera = ComboCuentaValoresEnCartera(listaCuentaValores);
+				var listaCuentasBancos = _financieroServicio.GetFinancieroDesdeTipoParaSeleccionDeValores(tipoCTAF, AdministracionId, TokenCookie);
+				ListaCuentaBancos = listaCuentasBancos;
+				model.ListaCuentasBancarias = ComboCuentaBancos(ListaCuentaBancos);
 
 				return View(model);
 			}
@@ -92,41 +87,21 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
-		public IActionResult CargarChequesDeTercerosEnCartera(string ctaf_id, string cta_id, bool mostrarFecha, bool docEnCuenta)
-		{
-			var model = new CargarChequesDeTercerosEnCarteraModel();
+		public IActionResult BuscarChequesDepositados(string ctaf_id, DateTime fechaDesde, DateTime fechaHasta)
+		{ 
+			var model = new ChequesDepositadosModel();
 			try
 			{
 				var auth = EstaAutenticado;
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 
-				var cheques = _financieroServicio.GetFinancieroCarteraParaSeleccionDeValores(ctaf_id, TokenCookie, cta_id);
+				var listaDeCheques = _financieroServicio.GetFinancieroChequeDepositado(ctaf_id, fechaDesde, fechaHasta, TokenCookie);
+				model.GrillaChequesDepositados = ObtenerGridCoreSmart<FinancieroChequeDepositadoDto>(listaDeCheques);
+				ListaCheques = listaDeCheques;
+				model.FechaRechazado = DateTime.Today;
 
-				if (cheques == null || cheques.Count() == 0)
-				{
-					RespuestaGenerica<EntidadBase> response = new()
-					{
-						Ok = false,
-						EsError = true,
-						EsWarn = false,
-						Mensaje = "No se han encontrado Cheques en Cartera"
-					};
-					return PartialView("_gridMensaje", response);
-				}
-
-				CambioDeFechaDePresentacion = mostrarFecha;
-				DocumentoEnCuenta = docEnCuenta;
-
-				ListaFinancieroCartera = cheques;
-				var item = cheques.First();
-				model.titulo_col_1 = item.ins_dato1_desc;
-				model.titulo_col_2 = item.ins_dato2_desc;
-				model.titulo_col_3 = item.ins_dato3_desc;
-				model.GrillaChequesEnCartera = ObtenerGridCoreSmart<FinancieroCarteraDto>(cheques);
-				model.mostrar_fecha = mostrarFecha;
-				model.fecha_valor = DateTime.Today;
-				return PartialView("_chequesDeTercerosEnCartera", model);
+				return PartialView("_chequesDepositados", model);
 			}
 			catch (Exception ex)
 			{
@@ -141,19 +116,20 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
-		public IActionResult PasoUno()
+		public IActionResult VolverPasoUno()
 		{
-			var model = new PasoUnoModel();
+			var model = new ChequeRechazadoPasoUnoModel();
 			try
 			{
 				var auth = EstaAutenticado;
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 
-				var listaCuentaValores = _financieroServicio.GetFinancieroDesdeTipoParaSeleccionDeValores(tipoCF, AdministracionId, TokenCookie);
-				model.ListaCuentaValoresEnCartera = ComboCuentaValoresEnCartera(listaCuentaValores);
+				var listaCuentasBancos = _financieroServicio.GetFinancieroDesdeTipoParaSeleccionDeValores(tipoCTAF, AdministracionId, TokenCookie);
+				ListaCuentaBancos = listaCuentasBancos;
+				model.ListaCuentasBancarias = ComboCuentaBancos(ListaCuentaBancos);
 
-				return PartialView("_paso1", model);
+				return PartialView("_pasoUno", model);
 			}
 			catch (Exception ex)
 			{
@@ -168,66 +144,60 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
-		public JsonResult ConfirmarCargaDeChequeDeTerceroEnCartera(string dia_movi, string fc_compte, string fc_item, DateTime fecha_valor)
+		public JsonResult ConfirmarRechazoDeValor(string tra_compte_selected, string fc_dia_movi_selected, string fc_compte_selected, string fc_item_selected, DateTime fechaRechazo)
 		{
 			try
 			{
-				if (string.IsNullOrEmpty(dia_movi) || string.IsNullOrEmpty(fc_compte) || string.IsNullOrEmpty(fc_item))
-					return Json(new { error = true, warn = false, msg = $"Faltan especificar algunos datos. dia_movi: {dia_movi} - fc_compte: {fc_compte} - fc_item: {fc_item}" });
+				if (string.IsNullOrEmpty(tra_compte_selected) || string.IsNullOrEmpty(fc_dia_movi_selected) || string.IsNullOrEmpty(fc_compte_selected) || string.IsNullOrEmpty(fc_item_selected))
+					return Json(new { error = true, warn = false, msg = $"Faltan especificar algunos datos. tra_compte: {tra_compte_selected} - fc_dia_movi: {fc_dia_movi_selected} - fc_compte: {fc_compte_selected} - fc_item: {fc_item_selected}" });
 
-				var itemEnListaFinancieroCartera = ListaFinancieroCartera.Where(x => x.dia_movi.Equals(dia_movi) && x.fc_item.Equals(Convert.ToInt32(fc_item)) && x.fc_compte == fc_compte);
-				if (itemEnListaFinancieroCartera == null || itemEnListaFinancieroCartera.Count() <= 0)
-					return Json(new { error = true, warn = false, msg = $"Se ha producido un error al intentar obtener el ítem. dia_movi: {dia_movi} - fc_compte: {fc_compte} - fc_item: {fc_item}" });
+				var itemSeleccionado = ListaCheques.Where(x => x.tra_compte == tra_compte_selected && x.fc_dia_movi == fc_dia_movi_selected && x.fc_compte == fc_compte_selected && x.fc_item == Convert.ToInt32(fc_item_selected)).FirstOrDefault();
+				if (itemSeleccionado == null)
+					return Json(new { error = true, warn = false, msg = $"Se ha producido un error al intentar obtener el ítem. tra_compte: {tra_compte_selected} - fc_dia_movi: {fc_dia_movi_selected} - fc_compte: {fc_compte_selected} - fc_item: {fc_item_selected}" });
 
+				var request = new ConfirmarTransferenciaRequest
+				{
+					ttra_id = "VR",
+					usu_id = UserName,
+					adm_id = AdministracionId,
+					tra_concepto = "",
+					tra_fecha = fechaRechazo
+				};
 
-				var request = new ConfirmarTransferenciaRequest();
-				request.ttra_id = DocumentoEnCuenta ? "CQ" : "CF";
 				Console.WriteLine($"ttra_id: {request.ttra_id}");
-				request.usu_id = UserName;
-				Console.WriteLine($"usu_id : {request.usu_id}");
-				request.adm_id = AdministracionId;
+				Console.WriteLine($"usu_id: {request.usu_id}");
 				Console.WriteLine($"adm_id: {request.adm_id}");
-				request.tra_concepto = string.Empty;
-				Console.WriteLine($"tra_concepto : {request.tra_concepto}");
-				request.tra_fecha = CambioDeFechaDePresentacion ? fecha_valor : DateTime.Now;
+				Console.WriteLine($"tra_concepto: {request.tra_concepto}");
 				Console.WriteLine($"tra_fecha: {request.tra_fecha}");
-
-				var ctafDenominacion = string.Empty;
-				var i = itemEnListaFinancieroCartera.First();
-				var itemCtaf = ListaFinancieroDesdeSeleccionDeTipo.Where(x => x.ctaf_id.Equals(i.ctaf_id));
-				if (itemCtaf.Any())
-					ctafDenominacion = itemCtaf.First().ctaf_denominacion;
 
 				var newValor = new ValoresDesdeObligYCredDto()
 				{
-					ctaf_id = i.ctaf_id,
-					ctaf_denominacion = ctafDenominacion,
-					tcf_id = i.tcf_id,
+					ctaf_id = itemSeleccionado.ctaf_id,
+					ctaf_denominacion = itemSeleccionado.ctaf_denominacion,
+					tcf_id = "BA",
 					tipo = " ",
-					automatico = ' ',
-					op_dato1_valor = i.fc_dato1_valor,
-					op_dato1_desc = i.ins_dato1_desc,
-					op_dato2_valor = i.fc_dato2_valor,
-					op_dato2_desc = i.ins_dato2_desc,
-					op_dato3_valor = i.fc_dato3_valor,
-					op_dato3_desc = i.ins_dato3_desc,
-					op_importe = i.fc_importe,
-					op_fecha_valor = i.fc_fecha_valor,
-					fc_compte = i.fc_compte,
-					fc_item = i.fc_item,
-					fc_dia_movi = i.dia_movi,
-					fc_cta_id = i.cta_id,
+					automatico = 'N',
+					op_dato1_valor = itemSeleccionado.fc_dato1_valor,
+					op_dato1_desc = " ",
+					op_dato2_valor = itemSeleccionado.fc_dato2_valor,
+					op_dato2_desc = " ",
+					op_dato3_valor = itemSeleccionado.fc_dato3_valor,
+					op_dato3_desc = " ",
+					op_importe = itemSeleccionado.fc_importe,
+					op_fecha_valor = itemSeleccionado.fc_fecha_valor,
+					fc_compte = itemSeleccionado.fc_compte,
+					fc_item = itemSeleccionado.fc_item,
+					fc_dia_movi = itemSeleccionado.fc_dia_movi,
+					fc_cta_id = itemSeleccionado.fc_cta_id,
 					fc_anombre = " ",
-					concepto_valor = i.concepto_valor,
+					concepto_valor = itemSeleccionado.tra_compte,
 					resultado = 0,
 					resultado_msj = " ",
 				};
-
 				var listaAux = new List<ValoresDesdeObligYCredDto>
 				{
 					newValor
 				};
-
 				request.json_o = JsonConvert.SerializeObject(listaAux, new JsonSerializerSettings());
 				Console.WriteLine($"json_o: {request.json_o}");
 				listaAux = [];
@@ -244,8 +214,8 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				request.json_otro = JsonConvert.SerializeObject(ListaOtrosTributos, new JsonSerializerSettings());
 				Console.WriteLine($"json_otro: {request.json_otro}");
 				var respuesta = _financieroServicio.FinancieroConfirmarTransferencia(request, TokenCookie);
-				return AnalizarRespuesta(respuesta, "La Transferencia se confirmó con Éxito");
-				//return Json(new { error = false, warn = false, msg = "Anulación de comprobante correctamente." });
+				return AnalizarRespuesta(respuesta, "La confirmación del rechazo del valor se ha realizado con éxito.");
+				//return Json(new { error = false, warn = false, msg = "[MOCK] La confirmación del rechazo del valor se ha realizado con éxito." });
 			}
 			catch (NegocioException ex)
 			{
@@ -261,10 +231,8 @@ namespace gc.sitio.Areas.Financieros.Controllers
 		{
 			try
 			{
-				CambioDeFechaDePresentacion = false;
-				DocumentoEnCuenta = false;
-				ListaFinancieroCartera = [];
-				ListaFinancieroDesdeSeleccionDeTipo = [];
+				ListaCheques = [];
+				ListaCuentaBancos = [];
 				return Json(new { error = false, warn = false, msg = "" });
 			}
 			catch (NegocioException ex)
@@ -277,18 +245,39 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
-		#region Métodos privados
-		protected SelectList ComboCuentaValoresEnCartera(List<FinancieroDesdeSeleccionDeTipoDto> listaTemp)
+		public IActionResult Paso1()
+		{
+			var model = new ChequeRechazadoPasoUnoModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				var listaCuentasBancos = _financieroServicio.GetFinancieroDesdeTipoParaSeleccionDeValores(tipoCTAF, AdministracionId, TokenCookie);
+				ListaCuentaBancos = listaCuentasBancos;
+				model.ListaCuentasBancarias = ComboCuentaBancos(ListaCuentaBancos);
+
+				return PartialView("_paso1", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		#region Métodos Privados
+		protected SelectList ComboCuentaBancos(List<FinancieroDesdeSeleccionDeTipoDto> listaTemp)
 		{
 			var lista = listaTemp.Select(x => new ComboGenDto { Id = x.ctaf_id, Descripcion = $"{x.ctaf_denominacion} ({x.ctaf_id})" });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
-		}
-
-		private void CargarDatosIniciales(bool actualizar)
-		{
-			if (CuentasLista.Count == 0 || actualizar)
-				ObtenerCuentas(_cuentaServicio, 'C', "%");
-
 		}
 		#endregion
 	}

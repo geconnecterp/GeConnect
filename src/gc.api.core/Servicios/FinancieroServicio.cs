@@ -155,5 +155,18 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<FinancieroCuentaAlCobroRelaDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<FinancieroChequeDepositadoDto> GetFinancieroChequeDepositado(FinancieroChequeDepositadoRequest r)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_CHEQUES_DEPOSITADOS;
+			var ps = new List<SqlParameter>()
+			{
+				new("@ctaf_id",r.ctaf_id),
+				new("@desde",r.fechaDesde),
+				new("@hasta",r.fechaHasta),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<FinancieroChequeDepositadoDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }
