@@ -1,11 +1,13 @@
 ﻿using gc.api.Controllers.Almacen;
 using gc.api.core.Contratos.Servicios.Importacion;
 using gc.api.core.Entidades;
+using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Importacion;
 using gc.infraestructura.Dtos.Productos;
+using gc.infraestructura.Dtos.Productos.Actualiza;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -26,6 +28,9 @@ namespace gc.api.Controllers.Importacion
             _logger = logger;
             _importarServicio = importarServicio;
         }
+
+        #region Metodos de IMPORTACIÓN
+
 
         [HttpGet("precio-file-dato")]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<PrecioFileDatos>>))]
@@ -89,5 +94,62 @@ namespace gc.api.Controllers.Importacion
             
             return Ok(new ApiResponse<List<RespuestaCPDto>>(resultado));
         }
+        #endregion
+
+        #region METODOS DE ACTUALIZACION
+
+        [HttpGet("proveedores-actualizar")]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<ActualizaProveedorDto>>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        public IActionResult ObtenerProveedoresConProductosParaActualizar()
+        {
+
+            var resultado = _importarServicio.ObtenerProveedoresConProductosParaActualizar();
+
+            if (resultado == null)
+            {
+                return BadRequest("No se pudo obtener el listado de los datos de referencia para la importación de listas de precio. Verifique los datos ingresados.");
+            }
+
+            return Ok(new ApiResponse<List<ActualizaProveedorDto>>(resultado));
+        }
+
+        [HttpPost("productos-actualizar")]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<ProductoDetalleDto>>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        public IActionResult ObtenerProductosDelProveedorParaActualizar(QueryFilters filters)
+        {
+
+            var resultado = _importarServicio.ObtenerProductosDelProveedorParaActualizar(filters);
+
+            if (resultado == null)
+            {
+                return BadRequest("No se pudo obtener el listado de los datos de referencia para la importación de listas de precio. Verifique los datos ingresados.");
+            }
+
+            return Ok(new ApiResponse<List<ProductoDetalleDto>>(resultado));
+        }
+
+        [HttpPost("confirmar-actualizacion-precio")]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        public IActionResult ConfirmarActualizacionPrecioProductosDeProveedor(AbmGenDto req)
+        {
+            if (req == null ||
+                string.IsNullOrEmpty(req.Objeto) ||
+                string.IsNullOrEmpty(req.Usuario) ||
+                string.IsNullOrEmpty(req.Administracion) ||
+                string.IsNullOrEmpty(req.Json))
+            {
+                return BadRequest("Los datos para confirmar la actualización de precios son inválidos.");
+            }
+            RespuestaDto resultado = _importarServicio.ConfirmarActualizacionPrecioProductosDeProveedor(req);
+            if (resultado == null)
+            {
+                return BadRequest("No se pudo confirmar la actualización de precios. Verifique los datos ingresados.");
+            }
+            return Ok(new ApiResponse<RespuestaDto>(resultado));
+        }
+        #endregion
     }
 }

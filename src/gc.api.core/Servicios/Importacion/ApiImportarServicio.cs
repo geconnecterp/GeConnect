@@ -1,12 +1,13 @@
-﻿using DocumentFormat.OpenXml.Spreadsheet;
-using gc.api.core.Constantes;
+﻿using gc.api.core.Constantes;
 using gc.api.core.Contratos.Servicios.Importacion;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
+using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Dtos.ABM;
-using gc.infraestructura.Dtos.Asientos;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Importacion;
+using gc.infraestructura.Dtos.Productos;
+using gc.infraestructura.Dtos.Productos.Actualiza;
 using Microsoft.Data.SqlClient;
 
 namespace gc.api.core.Servicios.Importacion
@@ -17,6 +18,7 @@ namespace gc.api.core.Servicios.Importacion
         {
 
         }
+        #region Metodos de Importación
 
         public List<MapeoColumnaDto> ObtenerPerfilDeProveedor(string ctaId)
         {
@@ -56,7 +58,7 @@ namespace gc.api.core.Servicios.Importacion
             {
                 new SqlParameter("@cta_id", req.Objeto),
                 new SqlParameter("@usu_id", req.Usuario),
-                new SqlParameter("@adm_id", req.Administracion),            
+                new SqlParameter("@adm_id", req.Administracion),
             };
 
             if (req.Abm.Equals('A'))
@@ -100,5 +102,52 @@ namespace gc.api.core.Servicios.Importacion
             }
             return resultado.First();
         }
+        #endregion
+
+        #region Metodos para la Actualización de Precios
+
+        public RespuestaDto ConfirmarActualizacionPrecioProductosDeProveedor(AbmGenDto req)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_PROD_ACTUALIZA_CONFIRMAR;
+
+            var ps = new List<SqlParameter>() {
+                new SqlParameter("@cta_id",req.Objeto),
+                new SqlParameter("@usu_id",req.Usuario),
+                new SqlParameter("@adm_id",req.Administracion),
+                new SqlParameter("@json",req.Json)
+            };
+            List<RespuestaDto> resultado = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+            if (resultado.Count == 0)
+            {
+                return new RespuestaDto { resultado = -1, resultado_msj = "No se pudo procesar la solicitud" };
+            }
+            return resultado.First();
+        }
+
+        public List<ProductoDetalleDto> ObtenerProductosDelProveedorParaActualizar(QueryFilters filters)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_PROD_ACTUALIZA_PRECIO_PROV_D;
+
+            var ps = new List<SqlParameter>() {
+                new SqlParameter("@cta_id",filters.Id),
+                new SqlParameter("@registros",filters.Registros),
+                new SqlParameter("@pagina",filters.Pagina),
+                new SqlParameter("@ordenar",filters.Sort)
+            };
+            List<ProductoDetalleDto> resultado = _repository.EjecutarLstSpExt<ProductoDetalleDto>(sp, ps, true);
+            return resultado;
+        }
+
+        public List<ActualizaProveedorDto> ObtenerProveedoresConProductosParaActualizar()
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_PROD_ACTUALIZA_PRECIO_PROV;
+
+            var ps = new List<SqlParameter>();
+            List<ActualizaProveedorDto> resultado = _repository.EjecutarLstSpExt<ActualizaProveedorDto>(sp, ps, true);
+            return resultado;
+        }
+
+        #endregion
+
     }
 }
