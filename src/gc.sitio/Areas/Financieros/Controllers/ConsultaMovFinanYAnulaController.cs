@@ -3,6 +3,7 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Helpers;
+using gc.sitio.Areas.Compras.Models;
 using gc.sitio.Areas.Financieros.Models;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
@@ -52,6 +53,35 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				};
 				return PartialView("_gridMensaje", response);
 			}
+		}
+
+		[HttpPost]
+		public IActionResult ActualizarListaDeUsuarios(DateTime desde, DateTime hasta)
+		{
+			var model = new ListaUsuariosModel();
+			try
+			{
+				var usuLista = _financieroServicio.GetFinancieroTraUsu(desde, hasta, TokenCookie);
+				var listaUsu = usuLista.Select(x => new ComboGenDto { Id = x.usu_id, Descripcion = $"{x.usu_apellidoynombre} ({x.usu_id})" });
+				model.ListaUsu = HelperMvc<ComboGenDto>.ListaGenerica(listaUsu);
+
+				var usuList = new List<ComboGenDto>();
+				ViewBag.UsuList = HelperMvc<ComboGenDto>.ListaGenerica(usuList);
+
+				return PartialView("_listaUsuarios", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+
 		}
 
 		#region Métodos privados

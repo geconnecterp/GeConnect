@@ -1,4 +1,6 @@
 ﻿$(function () {
+	$("#Date1, #Date2").on("blur", ValidarFechasClick);
+
 	$(document).on("change", "#listaCFO", ControlalistaCFOSelected);
 	$(document).on("change", "#listaCFD", ControlalistaCFDSelected);
 	$(document).on("change", "#listaTT", ControlalistaTTSelected);
@@ -11,6 +13,41 @@
 
 	InicializarCamposEnFiltros();
 });
+
+function ValidarFechasClick() {
+	const desde = $("#Date1").val();
+	const hasta = $("#Date2").val();
+
+	if (desde && hasta && desde > hasta) {
+		AbrirMensaje("ATENCIÓN", "El valor de Fecha Desde no puede ser mayor a Fecha Hasta, revise.", function () {
+			$("#msjModal").modal("hide");
+			$("#Date1").val($("#Date2").val());
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	} else {
+		ActualizarListaDeUsuarios();
+	}
+}
+
+function ActualizarListaDeUsuarios() {
+	var data = { desde: $("#Date1").val(), hasta: $("#Date2").val() };
+	PostGenHtml(data, actualizarListaDeUsuariosURL, function (obj) {
+		$("#divUsuarios").html(obj);
+		$("#chkUsu").on("click", function () {
+			if ($("#chkUsu").is(":checked")) {
+				$("#listaUsu").prop("disabled", false);
+				$("#UsuList").prop("disabled", false);
+				$("#listaUsu").trigger("focus");
+			}
+			else {
+				$("#listaUsu").prop("disabled", true);
+				$("#UsuList").prop("disabled", true);
+			}
+		});
+		CerrarWaiting();
+		return true
+	});
+}
 
 function ControlalistaUsuSelected() {
 	var item = $("#listaUsu").val();
