@@ -1,0 +1,114 @@
+﻿@using static gc.infraestructura.Helpers.GridHelper
+@model GridCoreSmart<ProductoDetalleDto>
+
+@{
+    var alt = true;
+    string clase = string.Empty;
+}
+
+<div class="card card-golden">
+    <div class="card-body p-2">
+        <div class="table-responsive text-nowrap table-wrapper-500">
+            <table class="table table-sm mb-0 table-hover table-golden" id="tbGridProductos">
+                <thead class="table-golden-header">
+                    <tr class="header">
+                        <th class="text-center" scope="col">ID PRODUCTO</th>
+                        <th class="text-center" scope="col">CÓDIGO</th>
+                        <th class="text-left" scope="col">DESCRIPCIÓN</th>
+                        <th class="text-right" scope="col">P.LISTA</th>
+                        <th class="text-right" scope="col">DTO1</th>
+                        <th class="text-right" scope="col">DTO2</th>
+                        <th class="text-right" scope="col">DTO3</th>
+                        <th class="text-right" scope="col">DTO4</th>
+                        <th class="text-right" scope="col">DTO PA</th>
+                        <th class="text-right" scope="col">FLETE</th>
+                        <th class="text-right" scope="col">COSTO</th>
+                        <th class="text-right" scope="col">IMP INT</th>
+                        <th class="text-right" scope="col">NETO</th>
+                        <th class="text-right" scope="col">IVA</th>
+                        <th class="text-right" scope="col">P.VTA</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.ListaDatos != null && Model.ListaDatos.Any())
+                    {
+                        @foreach (var item in Model.ListaDatos)
+                        {
+                            if (alt) { clase = "table-row-alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+                            <tr class="@clase">
+                                <td class="@Model.ObtenerClase(item.p_id) text-center">
+                                    @Model.FormatearDato(item.p_id, FormatDato.Ninguno)
+                                </td>
+                                <td class="@Model.ObtenerClase(item.pg_id) text-center">
+                                    @Model.FormatearDato(item.pg_id, FormatDato.Ninguno)
+                                </td>
+                                <td class="@Model.ObtenerClase(item.p_desc) text-left">
+                                    @Model.FormatearDato(item.p_desc, FormatDato.Ninguno)
+                                </td>
+                                <td class="@Model.ObtenerClase(item.tp_plista) text-right">
+                                    @Model.FormatearDato(item.tp_plista, FormatDato.Monto)
+                                </td>
+                                <td class="@Model.ObtenerClase(item.tp_dto1) text-right">
+                                    @Model.FormatearDato(item.tp_dto1, FormatDato.Monto)
+                                </td>
+                                <td class="@Model.ObtenerClase(item.tp_dto2) text-right">
+                                    @Model.FormatearDato(item.tp_dto2, FormatDato.Monto)
+                                </td>
+                                <td class="@Model.ObtenerClase(item.tp_dto3) text-right">
+                                    @Model.FormatearDato(item.tp_dto3, FormatDato.Monto)
+                                </td>
+                                <td class="@Model.ObtenerClase(item.tp_dto4) text-right">
+                                    @Model.FormatearDato(item.tp_dto4, FormatDato.Monto)
+                                </td>
+                                <td class="@Model.ObtenerClase(item.tp_dto_pa) text-right">
+                                    @Model.FormatearDato(item.tp_dto_pa, FormatDato.Monto)
+                                </td>
+                                <td class="@Model.ObtenerClase(item.tp_porc_flete) text-right">
+                                    @Model.FormatearDato(item.tp_porc_flete, FormatDato.Monto)
+                                </td>
+                                <td class="@Model.ObtenerClase(item.tp_pcosto) text-right">
+                                    @Model.FormatearDato(item.tp_pcosto, FormatDato.Monto)
+                                </td>
+                                <td class="@Model.ObtenerClase(item.tin_alicuota) text-right">
+                                    @Model.FormatearDato(item.tin_alicuota, FormatDato.Monto)
+                                </td>
+                                <td class="@Model.ObtenerClase(item.tp_pneto) text-right">
+                                    @Model.FormatearDato(item.tp_pneto, FormatDato.Monto)
+                                </td>
+                                <td class="@Model.ObtenerClase(item.tp_iva) text-right">
+                                    @Model.FormatearDato(item.tp_iva, FormatDato.Monto)
+                                </td>
+                                <td class="@Model.ObtenerClase(item.tp_pvta) text-right">
+                                    @Model.FormatearDato(item.tp_pvta, FormatDato.Monto)
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="15" class="text-center text-muted py-4">
+                                <i class="fas fa-info-circle me-2"></i>
+                                No se encontraron productos para este proveedor
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (Model.ListaDatos != null && Model.ListaDatos.Any())
+        {
+            <div class="d-flex justify-content-between align-items-center mt-3 px-2">
+                <div class="text-muted small">
+                    <i class="fas fa-calculator me-1"></i>
+                    Total: @Model.CantidadReg productos con precios
+                </div>
+                <div class="text-muted small">
+                    @Model.DatoAux01
+                </div>
+            </div>
+        }
+    </div>
+</div>

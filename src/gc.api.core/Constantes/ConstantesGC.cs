@@ -59,16 +59,21 @@ namespace gc.api.core.Constantes
 			public const string SP_PROD_CARGA_ALL = "SPGECO_P_PR_Carga_All";
 			public const string SP_PROD_CONFIRMA_TEMP = "SPGECO_P_PR_Confirma";
 
+            //SP para la importacion de listas de precios y perfiles de proveedores
             public const string SP_PROD_PRECIO_FILE_DATOS = "SPGECO_P_PR_FILE_DATOS";
 			public const string SP_PROD_PERFIL_PROV = "SPGECO_P_PR_FILE_PERFIL";
 			public const string SP_PROD_PERFIL_CARGA =  "SPGECO_P_PR_PERFIL_CARGA";
 			public const string SP_PROD_FILE_CARGA = "SPGECO_P_PR_FILE_CARGA";
 			public const string SP_PROD_FILE_CONFIRMA = "SPGECO_P_PR_FILE_CONFIRMA";
 
-			#endregion
+			//SP para la Actualización de precios de proveedores.
+			public const string SP_PROD_ACTUALIZA_PRECIO_PROV = "SPGECO_P_PR_Actu_Proveedores";
+			public const string SP_PROD_ACTUALIZA_PRECIO_PROV_D = "SPGECO_P_PR_Actu_Proveedores_d";
+            public const string SP_PROD_ACTUALIZA_CONFIRMAR = "SPGECO_P_PR_Confirma";
+            #endregion
 
 
-			public const string SP_AJ_TIPOS = "dbo.SPGECO_AJ_Tipos";
+            public const string SP_AJ_TIPOS = "dbo.SPGECO_AJ_Tipos";
 			public const string SP_AJ_PREVIOS_CARGADOS = "dbo.SPGECO_AJ_Previos_Cargados";
 			public const string SP_AJ_AJUSTE_REVERTIDO = "dbo.SPGECO_AJ_Datos";
 			public const string SP_AJ_CONFIRMA = "dbo.SPGECO_AJ_Confirmar";
@@ -408,10 +413,10 @@ namespace gc.api.core.Constantes
 
 
 
-			#endregion
+            #endregion
 
-			#region MyRegion
-			public const string SP_LIBRO_MAYOR_LISTA = "SPGECO_Conta_Libro_Mayor";
+            #region Libros Contables
+            public const string SP_LIBRO_MAYOR_LISTA = "SPGECO_Conta_Libro_Mayor";
 			public const string SP_BALANCE_SS_LISTA = "SPGECO_Conta_BSS";
 			public const string SP_BALANCE_GR_LISTA = "SPGECO_Conta_BGRL";
 
