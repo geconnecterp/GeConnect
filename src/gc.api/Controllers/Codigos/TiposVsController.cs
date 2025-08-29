@@ -47,6 +47,7 @@ namespace gc.api.Controllers.Codigos
 		private readonly ITipoTributoServicio _tipoTributoServicio;
 		private readonly ITipoDtoValorizaRprServicio _tipoDtoValorizaRprServicio;
 		private readonly ITipoOrdenDePagoServicio _tipoOrdenDePagoServicio;
+		private readonly ITipoTransferenciaServicio _tipoTramsferenciaServicio;
 
 		public TiposVsController( IMapper mapper, IUriService uriService, ILogger<TiposVsController> logger, ICondicionAfipServicio condicionAfipServicio,
 								ICondicionIBServicio condicionIBServicio, IDepartamentoServicio departamentoServicio, IFormaDePagoServicio formaDePagoServicio,
@@ -57,7 +58,7 @@ namespace gc.api.Controllers.Codigos
 								ITipoProveedorServicio tipoProveedorServicio, ITipoGastoServicio tipoGastoServicio, ITipoRetGanServicio tipoRetGanServicio,
 								ITipoRetIbServicio tipoRetIbServicio, ITipoCuentaFinServicio tipoCuentaFinServicio, ITipoMonedaServicio tipoMonedaServicio,
 								ITipoCuentaGastoServicio tipoCuentaGastoServicio, IOrdenDeCompraEstadoServicio ordenDeCompraEstadoServicio, ITipoTributoServicio tipoTributoServicio,
-								ITipoDtoValorizaRprServicio tipoDtoValorizaRprServicio, ITipoOrdenDePagoServicio tipoOrdenDePagoServicio)
+								ITipoDtoValorizaRprServicio tipoDtoValorizaRprServicio, ITipoOrdenDePagoServicio tipoOrdenDePagoServicio, ITipoTransferenciaServicio tipoTransferenciaServicio)
         {
             _mapper = mapper;
             _uriService = uriService;
@@ -89,6 +90,7 @@ namespace gc.api.Controllers.Codigos
 			_tipoTributoServicio = tipoTributoServicio;
 			_tipoDtoValorizaRprServicio = tipoDtoValorizaRprServicio;
 			_tipoOrdenDePagoServicio = tipoOrdenDePagoServicio;
+			_tipoTramsferenciaServicio = tipoTransferenciaServicio;
 		}
 
 		[HttpGet]
@@ -484,6 +486,18 @@ namespace gc.api.Controllers.Codigos
 			var lista = _mapper.Map<List<TipoOrdenDePagoDto>>(financiero);
 
 			var response = new ApiResponse<List<TipoOrdenDePagoDto>>(lista);
+			return Ok(response);
+		}
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult GetTiposTransferencia()
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			List<TipoTransferenciaDto> financiero = _tipoTramsferenciaServicio.GetTipoTransferenciaLista();
+			var lista = _mapper.Map<List<TipoTransferenciaDto>>(financiero);
+
+			var response = new ApiResponse<List<TipoTransferenciaDto>>(lista);
 			return Ok(response);
 		}
 		//

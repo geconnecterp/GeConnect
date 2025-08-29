@@ -3,6 +3,7 @@ using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Users;
 
 namespace gc.api.core.Contratos.Servicios
 {
@@ -19,5 +20,6 @@ namespace gc.api.core.Contratos.Servicios
         List<FinancieroTraRepoDDto> GetFinancieroTraRepoDDto(string tra_compte);
         List<FinancieroCuentaAlCobroRelaDto> GetCuentaAlCobroRela(string ctaf_id);
 		List<FinancieroChequeDepositadoDto> GetFinancieroChequeDepositado(FinancieroChequeDepositadoRequest r);
+        List<PerfilUserDto> GetFinancieroTraUsu(FinancieroTraUsuRequest request);
 	}
 }

@@ -6,6 +6,7 @@ using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Dtos;
+using gc.infraestructura.Dtos.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -65,6 +66,21 @@ namespace gc.api.Controllers.Financieros
 			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
 			var res = _financieroServicio.GetFinancieroChequeDepositado(r);
 			response = new ApiResponse<List<FinancieroChequeDepositadoDto>>(res);
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<PerfilUserDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetFinancieroTraUsu(FinancieroTraUsuRequest request)
+		{
+			ApiResponse<List<PerfilUserDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.GetFinancieroTraUsu(request);
+
+			response = new ApiResponse<List<PerfilUserDto>>(res);
+
 			return Ok(response);
 		}
 	}

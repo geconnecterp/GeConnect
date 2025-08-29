@@ -1,0 +1,126 @@
+﻿@using gc.infraestructura.Dtos.Gen
+@model ConsultaMovFinanYAnulaModel
+@{
+	var list = new List<ComboGenDto>();
+	var ls02 = new SelectList(list, "Id", "Descripcion");
+
+}
+<div class="card card-golden">
+	<div class="card-header mb-2">
+		<h5 class="mb-0" id="tituloLegend">Filtros </h5>
+	</div>
+	<div class="card-body">
+		<div class=" col-sm-5">
+			<div class="row">
+				<div class="input-group input-group-sm">
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkDesdeHasta" />
+						<label class="form-check-label" for="chkDesdeHasta" id="lbChkDesdeHasta"></label>
+					</div>
+				</div>
+				<div class=" col-sm-6">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text" id="lbIdDesde">Desde:</span>
+						<input type="date" class="form-control inputEditable" asp-for="Date1" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />
+					</div>
+				</div>
+				<div class=" col-sm-6">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text" id="lbIdHasta">Hasta:</span>
+						<input type="date" class="form-control inputEditable" asp-for="Date2" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-6">
+				<div class="input-group input-group-sm">
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkCFO" />
+						<label class="form-check-label" for="chkCFO" id="lbCFO"></label>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-6" id="divCFO">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text">Cuenta Financiera Origen</span>
+					@Html.DropDownListFor(m => m.selectedValue, Model.ListaCFO, "Seleccionar", new { @id = "listaCFO", disabled = "disabled", @class = "form-control inputEditable activable" })
+				</div>
+			</div>
+			<div class="col-sm-6">
+				@Html.ListBox("CFOList", null, new { @class = "form-control", @disabled = "disabled" })
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-6">
+				<div class="input-group input-group-sm">
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkCFD" />
+						<label class="form-check-label" for="chkCFD" id="lbCFD"></label>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-6" id="divCFD">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text">Cuenta Financiera Destino</span>
+					@Html.DropDownListFor(m => m.selectedValue, Model.ListaCFD, "Seleccionar", new { @id = "listaCFD", disabled = "disabled", @class = "form-control inputEditable activable" })
+				</div>
+			</div>
+			<div class="col-sm-6">
+				@Html.ListBox("CFDList", null, new { @class = "form-control", @disabled = "disabled" })
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-6">
+				<div class="input-group input-group-sm">
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkTT" />
+						<label class="form-check-label" for="chkTT" id="lbTT"></label>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-6" id="divTT">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text">Tipo Movimiento</span>
+					@Html.DropDownListFor(m => m.selectedValue, Model.ListaTT, "Seleccionar", new { @id = "listaTT", disabled = "disabled", @class = "form-control inputEditable activable" })
+				</div>
+			</div>
+			<div class="col-sm-6">
+				@Html.ListBox("TTList", null, new { @class = "form-control", @disabled = "disabled" })
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-6">
+				<div class="input-group input-group-sm">
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkUsu" />
+						<label class="form-check-label" for="chkUsu" id="lbUsu"></label>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-6" id="divUsu">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text">Usuario</span>
+					@Html.DropDownListFor(m => m.selectedValue, Model.ListaUsu, "Seleccionar", new { @id = "listaUsu", disabled = "disabled", @class = "form-control inputEditable activable" })
+				</div>
+			</div>
+			<div class="col-sm-6">
+				@Html.ListBox("UsuList", null, new { @class = "form-control", @disabled = "disabled" })
+			</div>
+		</div>
+	</div>
+</div>
+<div class="row m-3">
+	<div class="d-flex justify-content-around">
+		<button type="button" id="btnCancel" class="btn btn-sm btn-danger"><i class="bx bx-sm bx-x-circle"></i></button>
+		<button type="button" id="btnBuscar" class="btn btn-sm btn-success"><i class="bx bx-sm bx-search"></i></button>
+	</div>
+</div>

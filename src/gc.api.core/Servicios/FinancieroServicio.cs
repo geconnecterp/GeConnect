@@ -7,6 +7,7 @@ using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.OrdenDePago.Request;
+using gc.infraestructura.Dtos.Users;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 
@@ -166,6 +167,18 @@ namespace gc.api.core.Servicios
 				new("@hasta",r.fechaHasta),
 			};
 			var listaTemp = _repository.EjecutarLstSpExt<FinancieroChequeDepositadoDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<PerfilUserDto> GetFinancieroTraUsu(FinancieroTraUsuRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_TR_USUARIOS;
+			var ps = new List<SqlParameter>()
+			{
+				new("@desde",request.FechaDesde),
+				new("@hasta",request.FechaHasta),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<PerfilUserDto>(sp, ps, true);
 			return listaTemp;
 		}
 	}

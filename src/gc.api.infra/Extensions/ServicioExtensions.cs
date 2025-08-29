@@ -101,6 +101,7 @@ namespace gc.api.infra.Extensions
             services.AddScoped<IABMPlanCuentaServicio, ABMPlanCuentaServicio>();
             services.AddScoped<ITipoDtoValorizaRprServicio, TipoDtoValorizaRprServicio>();
 			services.AddScoped<ITipoOrdenDePagoServicio, TipoOrdenDePagoServicio>();
+			services.AddScoped<ITipoTransferenciaServicio, TipoTransferenciaServicio>();
 			/// Servicios de Asientos
 			services.AddScoped<IAsientoServicio, AsientoServicio>();
             services.AddScoped<IAsientoTemporalServicio, AsientoTemporalServicio>();

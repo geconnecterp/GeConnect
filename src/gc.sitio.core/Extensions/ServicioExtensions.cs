@@ -91,8 +91,9 @@ namespace gc.sitio.core.Extensions
             services.AddScoped<IBalanceGrServicio, BalanceGrServicio>();
 			services.AddScoped<ITipoOrdenDePagoServicio, TipoOrdenDePagoServicio>();
             services.AddScoped<IImportarServicio, ImportarServicio>();
+			services.AddScoped<ITipoTransferenciaServicio, TipoTransferenciaServicio>();
 
-            services.AddScoped<IOrdenDePagoServicio, OrdenDePagoServicio>();
+			services.AddScoped<IOrdenDePagoServicio, OrdenDePagoServicio>();
 
             return services;
         }

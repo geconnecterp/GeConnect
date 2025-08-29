@@ -139,7 +139,8 @@ namespace gc.api.core.Constantes
 			public const string SP_F_TRA_REPO_D = "SPGECO_F_Tra_Repo_D";
 			public const string SP_F_CUENTA_AL_COBRO_RELA = "SPGECO_F_Cuenta_al_Cobro_rela";
 			public const string SP_F_CHEQUES_DEPOSITADOS = "SPGECO_F_Cheques_Depositados";
-			//
+			public const string SP_F_TR_USUARIOS = "SPGECO_F_TR_Usu";
+			//SPGECO_F_TR_Usu
 			#endregion
 
 			#region SP Depositos
@@ -372,6 +373,7 @@ namespace gc.api.core.Constantes
 			public const string SP_TIPO_TRIBUTO = "SPGECO_Tipos_Tributos";
 			public const string SP_TIPO_DTOS_VALORIZA_RPR_LISTA = "SPGECO_Tipos_Dtos_Valoriza_RPR_Lista";
 			public const string SP_TIPO_ORDEN_PAGO = "SPGECO_Tipos_Orden_Pagos";
+			public const string SP_TIPO_TRANSFERENCIA = "SPGECO_Tipos_Transferencias";
 			//
 			#endregion
 
