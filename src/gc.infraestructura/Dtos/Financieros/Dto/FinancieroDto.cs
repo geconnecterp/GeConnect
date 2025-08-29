@@ -55,6 +55,7 @@ namespace gc.infraestructura.Dtos
 		public DateTime? fc_fecha { get; set; }
 		public char propio { get; set; }
 		public string? cta_id { get; set; }
+		public string? cta_denominacion { get; set; } = string.Empty;
 		public string tco_id { get; set; } = string.Empty;
 		public string tco_desc { get; set; } = string.Empty;
 		public string? ins_dato1_desc { get; set; }

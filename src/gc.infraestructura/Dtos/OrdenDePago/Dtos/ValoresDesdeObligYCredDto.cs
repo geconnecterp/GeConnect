@@ -25,5 +25,6 @@ namespace gc.infraestructura.Dtos.OrdenDePago.Dtos
 		public int resultado { get; set; }
 		public string resultado_msj { get; set; } = string.Empty;
 		public int orden { get; set; } = 0;
+		public string? cta_id { get; set; } = string.Empty;
 	}
 }

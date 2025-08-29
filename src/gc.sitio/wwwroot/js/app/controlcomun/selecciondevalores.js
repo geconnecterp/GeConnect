@@ -131,7 +131,7 @@ function btnAceptarAgregarValorValidar() {
 						if (td.eq(0)[0]) {
 							if (td.eq(5)[0].children[0].checked) {
 								var newItem = new ObjValor(ctaf_id, ctaf_denominacion, tcf_id_selected, " ", " ", td.eq(2).text(), td.eq(6).text(), td.eq(3).text(), td.eq(7).text(), td.eq(8).text(), td.eq(9).text(), td.eq(4).text().replace(',', ''), td.eq(13).text(),
-									td.eq(10).text(), td.eq(11).text(), td.eq(12).text(), $("#CtaID").val(), " ", " ", 0, " ");
+									td.eq(10).text(), td.eq(11).text(), td.eq(12).text(), $("#CtaID").val(), td.eq(15).text(), " ", 0, " ", td.eq(14).text());
 								listaObjValor.push(newItem);
 							}
 						}
@@ -438,7 +438,7 @@ function getMaskForMoneyType(selector) {
 
 class ObjValor {
 	constructor(ctaf_id, ctaf_denominacion, tcf_id, tipo, automatico, op_dato1_valor, op_dato1_desc, op_dato2_valor, op_dato2_desc, op_dato3_valor, op_dato3_desc, op_importe, op_fecha_valor,
-		fc_compte, fc_item, fc_dia_movi, fc_cta_id, fc_anombre, concepto_valor, resultado, resultado_msj) {
+		fc_compte, fc_item, fc_dia_movi, fc_cta_id, fc_anombre, concepto_valor, resultado, resultado_msj, cta_id) {
 		this.ctaf_id = ctaf_id;
 		this.ctaf_denominacion = ctaf_denominacion;
 		this.tcf_id = tcf_id;
@@ -460,6 +460,7 @@ class ObjValor {
 		this.concepto_valor = concepto_valor;
 		this.resultado = resultado;
 		this.resultado_msj = resultado_msj;
+		this.cta_id = cta_id;
 	}
 };
 
