@@ -225,32 +225,188 @@ function mostrarAlertaInfo($container, message) {
 }
 
 // Funciones para los botones
-function confirmarActualizacion() {
+async function confirmarActualizacion() {
     const proveedoresSeleccionados = ActualizarPP.obtenerProveedoresSeleccionados();
 
     if (proveedoresSeleccionados.length === 0) {
-        alert('Debe seleccionar al menos un proveedor');
+        AbrirMensaje("Validación", 'Debe seleccionar al menos un proveedor para confirmar la actualización.',
+            () => $("#msjModal").modal("hide"),
+            false, ["Aceptar"], "warn!", null);
         return;
     }
 
-    if (confirm(`¿Confirmar actualización de ${proveedoresSeleccionados.length} proveedores?`)) {
-        // Aquí iría la lógica de confirmación
-        console.log('Confirmando actualización para:', proveedoresSeleccionados);
+    // Confirmar antes de proceder
+    AbrirMensaje("Confirmar Actualización",
+        `¿Confirmar actualización de <strong>${proveedoresSeleccionados.length}</strong> proveedores?<br>
+         <small class="text-muted">Esta acción aplicará los cambios de precios definitivamente.</small>`,
+        async () => {
+            $("#msjModal").modal("hide");
+            await ejecutarConfirmacionActualizacion(proveedoresSeleccionados);
+        },
+        false, ["Confirmar", "Cancelar"], "warn!", null);
+}
 
-        // Ejemplo de llamada AJAX
-        const $btn = $('#btnConfirmarActualizacion');
+/**
+ * Ejecuta la confirmación de actualización llamando al controller
+ * @param {Array} ctasId - Array de IDs de proveedores seleccionados
+ */
+async function ejecutarConfirmacionActualizacion(ctasId) {
+    const $btn = $('#btnConfirmarActualizacion');
+
+    try {
+        // Estado de carga
         $btn.prop('disabled', true)
-            .html('<i class="bx bx-loader-alt bx-spin me-2"></i><span>Procesando...</span>');
+            .html('<i class="bx bx-loader-alt bx-spin me-2"></i><span>Procesando actualización...</span>');
 
-        // Simular proceso (reemplazar con llamada real)
-        setTimeout(() => {
-            $btn.prop('disabled', false)
-                .html('<i class="bx bx-check-circle me-2"></i><div class="d-flex flex-column"><span class="fw-bold">CONFIRMAR</span><small class="opacity-75">Aplicar cambios</small></div>');
-            alert('Actualización completada');
-        }, 2000);
+        console.log('Confirmando actualización para proveedores:', ctasId);
+
+        const response = await $.ajax({
+            url: ConfirmarProveedoresUrl,
+            type: 'POST',
+            traditional: true, // Para enviar arrays correctamente
+            data: { ctasId: ctasId },
+            timeout: 60000, // 1 minuto para operaciones de actualización
+            headers: {
+                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() || ''
+            }
+        });
+
+        console.log('Respuesta del servidor:', response);
+
+        // Procesar respuesta según el patrón del controller optimizado
+        procesarRespuestaConfirmacion(response, $btn, ctasId.length);
+
+    } catch (error) {
+        console.error('Error AJAX en confirmación:', error);
+
+        let errorMessage = 'Error de comunicación con el servidor';
+        if (error.status === 0) {
+            errorMessage = 'Error de conexión. Verifique su conexión a internet.';
+        } else if (error.status >= 500) {
+            errorMessage = 'Error interno del servidor. Intente nuevamente.';
+        } else if (error.status === 404) {
+            errorMessage = 'Servicio de confirmación no encontrado.';
+        } else if (error.timeout) {
+            errorMessage = 'Tiempo de espera agotado. La operación puede haber tardado demasiado.';
+        }
+
+        manejarErrorConfirmacion(errorMessage, $btn);
     }
 }
 
+/**
+ * Procesa la respuesta del servidor según el patrón del controller
+ * @param {Object} response - Respuesta del servidor
+ * @param {jQuery} $btn - Botón de confirmación
+ * @param {number} cantidadProveedores - Cantidad de proveedores procesados
+ */
+function procesarRespuestaConfirmacion(response, $btn, cantidadProveedores) {
+    // Validar estructura de respuesta
+    if (!response || typeof response !== 'object') {
+        manejarErrorConfirmacion('Respuesta inválida del servidor', $btn);
+        return;
+    }
+
+    // Verificar errores críticos primero
+    if (response.error === true) {
+        manejarErrorConfirmacion(response.msg || 'Error crítico en el servidor', $btn);
+        return;
+    }
+
+    // Verificar advertencias y autenticación
+    if (response.warn === true) {
+        // Si auth = true, es un problema de autenticación
+        if (response.auth === true) {
+            manejarErrorAutenticacion($btn);
+            return;
+        }
+
+        // Si auth = false o undefined, es una advertencia de negocio
+        manejarAdvertenciaConfirmacion(response.msg || 'Advertencia del sistema', $btn);
+        return;
+    }
+
+    // Si no hay errores ni advertencias, es éxito
+    manejarExitoConfirmacion(response.msg || 'Actualización completada exitosamente', $btn, cantidadProveedores);
+}
+
+/**
+ * Maneja errores de confirmación
+ */
+function manejarErrorConfirmacion(mensaje, $btn) {
+    AbrirMensaje("Error", mensaje,
+        () => $("#msjModal").modal("hide"),
+        false, ["Aceptar"], "error!", null);
+
+    // Restaurar botón
+    restaurarBotonConfirmar($btn);
+}
+
+/**
+ * Maneja advertencias de confirmación (no relacionadas con auth)
+ */
+function manejarAdvertenciaConfirmacion(mensaje, $btn) {
+    AbrirMensaje("Advertencia", mensaje,
+        () => $("#msjModal").modal("hide"),
+        false, ["Aceptar"], "warn!", null);
+
+    // Restaurar botón
+    restaurarBotonConfirmar($btn);
+}
+
+/**
+ * Maneja error de autenticación con redirección a home
+ */
+function manejarErrorAutenticacion($btn) {
+    AbrirMensaje("Sesión Expirada", "Su sesión ha terminado. Debe volver a autenticarse.",
+        () => {
+            $("#msjModal").modal("hide");
+            // Redirigir a home usando variable global
+            window.location.href = home;
+        },
+        false, ["Aceptar"], "warn!", null);
+
+    // Restaurar botón (aunque no se verá por la redirección)
+    restaurarBotonConfirmar($btn);
+}
+
+/**
+ * Maneja éxito de confirmación
+ */
+function manejarExitoConfirmacion(mensaje, $btn, cantidadProveedores) {
+    // Cambiar estado visual del botón a completado
+    $btn.html('<i class="bx bxs-check-circle text-success me-2"></i><span class="text-success">COMPLETADO</span>')
+        .removeClass('btn-success')
+        .addClass('btn-outline-success')
+        .prop('disabled', true);
+
+    // Limpiar selecciones
+    $('.proveedor-check').prop('checked', false);
+    $('#selectAllProveedores').prop('checked', false);
+    actualizarContadores();
+
+    // Mostrar mensaje de éxito
+    AbrirMensaje("Actualización Completada",
+        `${mensaje}<br><small class="text-muted">Se procesaron ${cantidadProveedores} proveedores exitosamente.</small>`,
+        () => {
+            $("#msjModal").modal("hide");
+            // Recargar grid para reflejar cambios
+            ActualizarPP.recargarProveedores();
+        },
+        false, ["Aceptar"], "succ!", null);
+
+    console.log('Actualización completada exitosamente');
+}
+
+/**
+ * Función utilitaria para restaurar el estado original del botón
+ * @param {jQuery} $btn - Botón a restaurar
+ */
+function restaurarBotonConfirmar($btn) {
+    $btn.prop('disabled', false)
+        .html('<i class="bx bx-check-circle me-2"></i><div class="d-flex flex-column"><span class="fw-bold">CONFIRMAR</span><small class="opacity-75">Aplicar cambios</small></div>');
+}
+// Función cancelar permanece igual
 function cancelarActualizacion() {
     AbrirMensaje("Cancelar Selección", '¿Cancelar y descartar todos los cambios?',
         () => {
@@ -258,7 +414,7 @@ function cancelarActualizacion() {
             // Limpiar selecciones
             $('.proveedor-check').prop('checked', false);
             $('#selectAllProveedores').prop('checked', false);
-            actualizarContadores(); // Usar función unificada
+            actualizarContadores();
 
             console.log('Actualizaciones canceladas');
         },
