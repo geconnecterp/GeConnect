@@ -378,13 +378,14 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				if (request == null)
 					return Json(new { error = true, warn = false, msg = "No se han enviado datos para confirmar." });
 
+				var listaTemp = OPValoresOrigen;
+				listaTemp.ForEach(x => x.fc_cta_id = x.cta_id);
+				OPValoresOrigen = listaTemp;
 
-				Console.WriteLine($"ttra_id: {request.ttra_id}");
-				Console.WriteLine($"tra_concepto: {request.tra_concepto}");
-				Console.WriteLine($"ttra_id: {request.ttra_id}");
-				Console.WriteLine($"tra_concepto: {request.tra_concepto}");
-				Console.WriteLine($"ttra_id: {request.ttra_id}");
-				Console.WriteLine($"tra_concepto: {request.tra_concepto}");
+				listaTemp = OPValoresDestino;
+				listaTemp.ForEach(x => x.fc_cta_id = x.cta_id);
+				OPValoresDestino = listaTemp;
+
 				Console.WriteLine($"ttra_id: {request.ttra_id}");
 				Console.WriteLine($"tra_concepto: {request.tra_concepto}");
 				Console.WriteLine($"tra_fecha: {request.tra_fecha}");
