@@ -22,11 +22,11 @@ function initializeDocumentEvents() {
     // Event delegation para elementos dinámicos
     $(document).on('change', '#selectAllProveedores', function () {
         $('.proveedor-check').prop('checked', $(this).prop('checked'));
-        actualizarContadorSeleccionados();
+        actualizarContadores();
     });
 
     $(document).on('change', '.proveedor-check', function () {
-        actualizarContadorSeleccionados();
+        actualizarContadores();
     });
 
     $(document).on('click', '.proveedor-row', function (e) {
@@ -68,8 +68,8 @@ async function cargarProveedores() {
 
         $container.html(response);
 
-        // Inicializar contador después de cargar
-        actualizarContadorSeleccionados();
+        // Inicializar contadores después de cargar
+        actualizarContadores();
 
         console.log('Proveedores cargados exitosamente');
 
@@ -135,14 +135,15 @@ function obtenerProveedoresSeleccionados() {
 }
 
 /**
- * Actualiza el contador de elementos seleccionados
+ * Función unificada para actualizar todos los contadores
  */
-function actualizarContadorSeleccionados() {
+function actualizarContadores() {
     const seleccionados = $('.proveedor-check:checked').length;
     const total = $('.proveedor-check').length;
 
-    // Actualizar contador en la interfaz
+    // Actualizar contadores en la interfaz
     $('#selectedCount').text(seleccionados);
+    $('#contadorSeleccionados').text(seleccionados);
 
     // Actualizar estado del checkbox principal
     const $selectAll = $('#selectAllProveedores');
@@ -155,6 +156,9 @@ function actualizarContadorSeleccionados() {
             $selectAll.prop('indeterminate', true).prop('checked', false);
         }
     }
+
+    // Habilitar/deshabilitar botón confirmar
+    $('#btnConfirmarActualizacion').prop('disabled', seleccionados === 0);
 }
 
 // ===== FUNCIONES DE UTILIDAD OPTIMIZADAS =====
@@ -218,4 +222,49 @@ function mostrarAlertaInfo($container, message) {
             ${message}
         </div>
     `);
+}
+
+// Funciones para los botones
+function confirmarActualizacion() {
+    const proveedoresSeleccionados = ActualizarPP.obtenerProveedoresSeleccionados();
+
+    if (proveedoresSeleccionados.length === 0) {
+        alert('Debe seleccionar al menos un proveedor');
+        return;
+    }
+
+    if (confirm(`¿Confirmar actualización de ${proveedoresSeleccionados.length} proveedores?`)) {
+        // Aquí iría la lógica de confirmación
+        console.log('Confirmando actualización para:', proveedoresSeleccionados);
+
+        // Ejemplo de llamada AJAX
+        const $btn = $('#btnConfirmarActualizacion');
+        $btn.prop('disabled', true)
+            .html('<i class="bx bx-loader-alt bx-spin me-2"></i><span>Procesando...</span>');
+
+        // Simular proceso (reemplazar con llamada real)
+        setTimeout(() => {
+            $btn.prop('disabled', false)
+                .html('<i class="bx bx-check-circle me-2"></i><div class="d-flex flex-column"><span class="fw-bold">CONFIRMAR</span><small class="opacity-75">Aplicar cambios</small></div>');
+            alert('Actualización completada');
+        }, 2000);
+    }
+}
+
+function cancelarActualizacion() {
+    AbrirMensaje("Cancelar Selección", '¿Cancelar y descartar todos los cambios?',
+        () => {
+            $("#msjModal").modal("hide");
+            // Limpiar selecciones
+            $('.proveedor-check').prop('checked', false);
+            $('#selectAllProveedores').prop('checked', false);
+            actualizarContadores(); // Usar función unificada
+
+            console.log('Actualizaciones canceladas');
+        },
+        false,
+        ["Continuar", "Cancelar"],
+        "warn!",
+        null
+    );
 }

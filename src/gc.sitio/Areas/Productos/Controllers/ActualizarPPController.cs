@@ -2,12 +2,15 @@
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Core.Helpers;
+using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Dtos.Productos.Actualiza;
 using gc.sitio.core.Servicios.Contratos.Importacion;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using X.PagedList;
 
 namespace gc.sitio.Areas.Productos.Controllers
@@ -108,7 +111,67 @@ namespace gc.sitio.Areas.Productos.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<JsonResult> ConfirmarProveedores(string[] ctasId)
+        {
+            try
+            {
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
+                }
+
+                if (ctasId.Length == 0)
+                {
+                    throw new NegocioException("Para confirmar es necesario especificar al menos una cuenta de proveedor.");
+                }
+
+
+                //prod.P_Obs = prod.P_Obs.ToUpper();
+                AbmGenDto abm = new AbmGenDto()
+                {
+                    Json = JsonConvert.SerializeObject(ctasId),
+                    Objeto = "Cuentas",
+                    Administracion = AdministracionId,
+                    Usuario = UserName,
+                    Abm = 'C'
+                };
+
+                var res = await _importarServicio.ConfirmarActualizacionPrecioProductosDeProveedor(abm, TokenCookie);
+                if (res.Ok)
+                {
+                    string msg;
+                    
+                    msg = $"EL PROCESAMIENTO de 9 SE REALIZO SATISFACTORIAMENTE";
+
+                    ProvedoresParaActualizar = [];
+
+                    return Json(new { error = false, warn = false, msg });
+                }
+                else
+                {
+                    return Json(new { error = false, warn = true, msg = res.Entidad.resultado_msj, focus = res.Entidad.resultado_setfocus });
+                }
+            }
+            catch (NegocioException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (UnauthorizedException ex)
+            {
+                return Json(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = true, warn = false, msg = ex.Message });
+            }
+        }
+
+
         #region Métodos Privados
+
+
 
         /// <summary>
         /// Genera el grid optimizado para productos usando GridCoreSmart
